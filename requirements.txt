@@ -1,0 +1,12 @@
+Django==1.11.4
+psycopg2
+djangorestframework==3.6.4
+djangorestframework_simplejwt==2.1
+djangorestframework-camel-case
+channels
+asgi_redis
+coreapi
+pygments
+markdown
+django-rest-swagger
+django-reversion
