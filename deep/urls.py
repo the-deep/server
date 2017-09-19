@@ -36,10 +36,11 @@ urlpatterns = [
     url(r'^$', FrontendView.as_view()),
     url(r'^admin/', admin.site.urls),
 
-    url(r'^api/v1/token/$', TokenObtainPairView.as_view()),
-    url(r'^api/v1/token/refresh/$', TokenRefreshView.as_view()),
-
     # Future reference: (v1|v2|v3...)
+
+    url(r'^api/(?P<version>(v1))/token/$', TokenObtainPairView.as_view()),
+    url(r'^api/(?P<version>(v1))/token/refresh/$', TokenRefreshView.as_view()),
+
     url(r'^api/(?P<version>(v1))/', include(router.urls)),
 
     url(r'^api-auth/', include('rest_framework.urls',
