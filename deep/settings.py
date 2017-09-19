@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'djangorestframework_camel_case',
     'rest_framework_swagger',
     'reversion',
+    'channels',
 
     'redis_store',
 
@@ -170,6 +171,19 @@ CELERY_TIMEZONE = TIME_ZONE
 
 
 # REDIS STORE CONFIG
+
 REDIS_STORE_HOST = os.environ.get('REDIS_HOST', 'redis')
 REDIS_STORE_PORT = os.environ.get('REDIS_PORT', '6379')
 REDIS_STORE_DB = os.environ.get('REDIS_DB_NUM', '0')
+
+
+# CHANNELS CONFIG
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'asgi_redis.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [(os.environ.get('REDIS_HOST', 'redis'), 6379)],
+        },
+        'ROUTING': 'deep.routing.channel_routing',
+    },
+}
