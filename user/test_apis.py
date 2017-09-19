@@ -15,7 +15,7 @@ class UserTests(APITestCase):
 
     def get_access_token(self):
         result = self.client.post(
-            '/api/token/',
+            '/api/v1/token/',
             data={
                 'username': 'test@test.com',
                 'password': 'admin123',
@@ -23,7 +23,7 @@ class UserTests(APITestCase):
         return result.data['access']
 
     def test_create_and_update_user(self):
-        url = '/api/users/'
+        url = '/api/v1/users/'
         data = {
             'username': 'bibekdahal.bd16@gmail.com',
             'email': 'bibekdahal.bd16@gmail.com',
@@ -41,7 +41,7 @@ class UserTests(APITestCase):
         self.assertEqual(response.data['username'], data['username'])
 
     def test_patch_user(self):
-        url = '/api/users/{}/'.format(self.user.pk)
+        url = '/api/v1/users/{}/'.format(self.user.pk)
         data = {
             'password': 'newpassword',
         }
