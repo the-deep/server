@@ -12,14 +12,6 @@ class Region(models.Model):
         return self.title
 
 
-class GeoShape(models.Model):
-    data = JSONField(default=None, blank=True, null=True)
-
-    def __str__(self):
-        if self.adminlevel:
-            return self.adminlevel
-
-
 class AdminLevel(models.Model):
     region = models.ForeignKey(Region, on_delete=models.CASCADE)
     parent = models.ForeignKey('AdminLevel',
@@ -30,8 +22,8 @@ class AdminLevel(models.Model):
     pcode_prop = models.CharField(max_length=255, blank=True)
     parent_name_prop = models.CharField(max_length=255, blank=True)
     parent_pcode_prop = models.CharField(max_length=255, blank=True)
-    shape = models.OneToOneField(GeoShape,
-                                 null=True, blank=True, default=None)
+
+    geo_shape = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
         return self.title
