@@ -29,6 +29,9 @@ class AdminLevelViewSet(viewsets.ModelViewSet):
 
 class AdminLevelUploadViewSet(mixins.UpdateModelMixin,
                               viewsets.GenericViewSet):
+    """
+    Admin Level Upload API Point [Geo file]
+    """
     queryset = AdminLevel.objects.all()
     serializer_class = AdminLevelUploadSerializer
     parser_classes = (MultiPartParser, FormParser,)

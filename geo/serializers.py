@@ -25,11 +25,11 @@ class AdminLevelUploadSerializer(serializers.ModelSerializer):
     """
     Admin Level Upload Serializer [Geo file]
     """
-    geo_shape = serializers.FileField(max_length=100000,
-                                      allow_empty_file=True,)
+    geo_shape = serializers.FileField(max_length=100000)
 
     def update(self, instance, validated_data):
         # Add geo extraction job
+        # validated_date.pop('geo_shape') is the file
         return instance
 
     class Meta:
