@@ -21,6 +21,11 @@ from project.views import (
     ProjectViewSet,
     ProjectMembershipViewSet,
 )
+from geo.views import (
+    RegionViewSet,
+    AdminLevelViewSet,
+    AdminLevelUploadViewSet,
+)
 from deep.views import FrontendView
 
 
@@ -30,6 +35,9 @@ router.register(r'user-groups', UserGroupViewSet)
 router.register(r'group-memberships', GroupMembershipViewSet)
 router.register(r'projects', ProjectViewSet)
 router.register(r'project-memberships', ProjectMembershipViewSet)
+router.register(r'regions', RegionViewSet)
+router.register(r'admin-levels', AdminLevelViewSet)
+router.register(r'admin-levels-upload', AdminLevelUploadViewSet)
 
 
 urlpatterns = [
