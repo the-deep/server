@@ -1,26 +1,12 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
+from user.tests import AuthMixin
 from user.models import User
 
 
-class UserTests(APITestCase):
+class UserTests(AuthMixin, APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            username='test@test.com',
-            first_name='Test',
-            last_name='Test',
-            password='admin123',
-            email='test@test.com',
-        )
-
-    def get_access_token(self):
-        result = self.client.post(
-            '/api/v1/token/',
-            data={
-                'username': 'test@test.com',
-                'password': 'admin123',
-            }, format='json')
-        return result.data['access']
+        self.auth = self.get_auth()
 
     def test_create_and_update_user(self):
         url = '/api/v1/users/'
@@ -45,8 +31,7 @@ class UserTests(APITestCase):
         data = {
             'password': 'newpassword',
         }
-        auth = 'Bearer {0}'.format(self.get_access_token())
         response = self.client.patch(url, data,
-                                     HTTP_AUTHORIZATION=auth,
+                                     HTTP_AUTHORIZATION=self.auth,
                                      format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
