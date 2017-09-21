@@ -1,3 +1,4 @@
+import json
 from rest_framework import serializers
 from .models import Region, AdminLevel  # , GeoShape
 
@@ -28,8 +29,11 @@ class AdminLevelUploadSerializer(serializers.ModelSerializer):
     geo_shape = serializers.FileField(max_length=100000)
 
     def update(self, instance, validated_data):
-        # Add geo extraction job
-        # validated_date.pop('geo_shape') is the file
+        # TODO: Add geo extraction job
+        self.fields.pop('geo_shape')
+        instance.geo_shape = json.loads(
+                validated_data.pop('geo_shape').read().decode('utf-8'))
+        instance.save()
         return instance
 
     class Meta:

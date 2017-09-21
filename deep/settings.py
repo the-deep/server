@@ -187,3 +187,5 @@ CHANNEL_LAYERS = {
         'ROUTING': 'deep.routing.channel_routing',
     },
 }
+
+TEST_DIR = os.path.join(BASE_DIR, 'deep/test_files')
