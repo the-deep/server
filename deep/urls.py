@@ -26,6 +26,9 @@ from geo.views import (
     AdminLevelViewSet,
     AdminLevelUploadViewSet,
 )
+from lead.views import (
+        LeadViewSet
+)
 from deep.views import FrontendView
 
 
@@ -38,6 +41,7 @@ router.register(r'project-memberships', ProjectMembershipViewSet)
 router.register(r'regions', RegionViewSet)
 router.register(r'admin-levels', AdminLevelViewSet)
 router.register(r'admin-levels-upload', AdminLevelUploadViewSet)
+router.register(r'leads', LeadViewSet)
 
 
 urlpatterns = [
