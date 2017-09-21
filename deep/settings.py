@@ -40,10 +40,12 @@ INSTALLED_APPS = [
 
     'redis_store',
 
+    'user_resource',
     'user',
     'user_group',
     'project',
     'geo',
+    'lead',
 ]
 
 MIDDLEWARE = [

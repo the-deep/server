@@ -1,11 +1,12 @@
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from user_resource.models import UserResource
 from geo.models import Region
 from user_group.models import UserGroup
 
 
-class Project(models.Model):
+class Project(UserResource):
     title = models.CharField(max_length=255)
     members = models.ManyToManyField(User, blank=True,
                                      through='ProjectMembership')
