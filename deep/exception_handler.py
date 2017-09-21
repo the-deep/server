@@ -3,6 +3,9 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def custom_exception_handler(exc, context):
@@ -28,6 +31,6 @@ def custom_exception_handler(exc, context):
 
     if settings.DEBUG:
         import traceback
-        print(traceback.format_exc())
+        logger.error(traceback.format_exc())
 
     return response
