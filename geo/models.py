@@ -19,9 +19,9 @@ class AdminLevel(models.Model):
                                null=True, blank=True, default=None)
     title = models.CharField(max_length=255)
     name_prop = models.CharField(max_length=255, blank=True)
-    pcode_prop = models.CharField(max_length=255, blank=True)
+    code_prop = models.CharField(max_length=255, blank=True)
     parent_name_prop = models.CharField(max_length=255, blank=True)
-    parent_pcode_prop = models.CharField(max_length=255, blank=True)
+    parent_code_prop = models.CharField(max_length=255, blank=True)
 
     geo_shape = JSONField(default=None, blank=True, null=True)
 
@@ -35,9 +35,8 @@ class GeoArea(models.Model):
                                on_delete=models.SET_NULL,
                                null=True, blank=True, default=None)
     title = models.CharField(max_length=255)
+    code = models.CharField(max_length=255, blank=True)
     data = JSONField(default=None, blank=True, null=True)
-    name = models.CharField(max_length=255, blank=True)
-    pcode = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return self.title

@@ -18,8 +18,8 @@ class AdminLevelSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = AdminLevel
-        fields = ('pk', 'title', 'name_prop', 'pcode_prop', 'parent_name_prop',
-                  'parent_pcode_prop', 'region', 'parent', 'geo_shape',)
+        fields = ('pk', 'title', 'name_prop', 'code_prop', 'parent_name_prop',
+                  'parent_code_prop', 'region', 'parent', 'geo_shape',)
 
 
 class AdminLevelUploadSerializer(serializers.ModelSerializer):
