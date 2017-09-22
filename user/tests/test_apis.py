@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
-from user.tests import AuthMixin
+from user.tests.auth_mixin import AuthMixin
 from user.models import User
 
 
