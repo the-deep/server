@@ -9,9 +9,15 @@ from geo.models import Region, AdminLevel, GeoArea
 import json
 
 
-class CeleryTest(TestCase):
-    def test_load_areas(self):
+class LoadGeoAreasTaskTest(TestCase):
+    """
+    Test to test if the load_geo_areas task
+    perform correctly.
 
+    For this test, we use the zone and district admin levels
+    for Nepal.
+    """
+    def setUp(self):
         # Create a dummy region
         region = Region(code='NPL', title='Nepal')
         region.save()
@@ -43,14 +49,19 @@ class CeleryTest(TestCase):
 
         admin_level1.save()
 
-        result = load_geo_areas(region.pk)
+        self.region = region
+        self.admin_level0 = admin_level0
+        self.admin_level1 = admin_level1
+
+    def test_load_areas(self):
+        result = load_geo_areas(self.region.pk)
         self.assertTrue(result)
 
         # Test if a geo area in admin level 0 is correctly set
 
         bagmati = GeoArea.objects.filter(
             title='Bagmati',
-            admin_level=admin_level0,
+            admin_level=self.admin_level0,
             parent=None,
             code='NP-C-BAG',
         ).first()
@@ -61,7 +72,7 @@ class CeleryTest(TestCase):
 
         sindhupalchowk = GeoArea.objects.filter(
             title='Sindhupalchok',
-            admin_level=admin_level1,
+            admin_level=self.admin_level1,
             parent__title='Bagmati',
             parent__code='NP-C-BAG',
             code='NP-C-BAG-23',

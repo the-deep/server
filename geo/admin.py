@@ -12,4 +12,10 @@ class RegionAdmin(VersionAdmin):
     inlines = [AdminLevelInline]
 
 
-admin.site.register(GeoArea)
+class GeoAreaInline(admin.StackedInline):
+    model = GeoArea
+
+
+@admin.register(AdminLevel)
+class AdminLevelAdmin(VersionAdmin):
+    inlines = [GeoAreaInline]
