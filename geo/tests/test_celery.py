@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .tasks import add
+from geo.tasks import add
 
 
 class CeleryTest(TestCase):
