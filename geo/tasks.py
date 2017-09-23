@@ -1,6 +1,11 @@
 from celery import shared_task
 from django.db.models import Q
-from geo.models import AdminLevel, GeoArea
+from geo.models import Region, AdminLevel, GeoArea
+
+
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
 
 
 @shared_task
@@ -9,7 +14,7 @@ def add(x, y):
 
 
 @shared_task
-def load_geoareas(region):
+def load_geo_areas(region_id):
     """
     A task to auto load geo areas from all admin levels in a region/country.
 
@@ -22,10 +27,13 @@ def load_geoareas(region):
     parent's name and code.
     """
 
+    region = Region.objects.get(pk=region_id)
+
     if AdminLevel.objects.filter(region=region).count() == 0:
         return
 
-    admin_level = AdminLevel.objects.get(region=region, parent=None)
+    admin_level = AdminLevel.objects.filter(region=region, parent=None)\
+        .first()
     parent = None
     while admin_level:
 
@@ -47,31 +55,41 @@ def load_geoareas(region):
 
             geo_area = GeoArea.objects.filter(
                 Q(code=None) | Q(code=code),
-                name=name,
+                title=name,
                 admin_level=admin_level,
             ).first()
 
             if not geo_area:
                 geo_area = GeoArea()
 
-            geo_area.name = name
+            geo_area.title = name
             geo_area.code = code
+            geo_area.admin_level = admin_level
 
             if parent:
                 if admin_level.parent_name_prop:
                     candidates = GeoArea.objects.filter(
                         admin_level=parent,
-                        name=props[admin_level.parent_name_prop]
+                        title=props[admin_level.parent_name_prop]
                     )
 
-                    if admin_level.pareant_code_prop:
+                    if admin_level.parent_code_prop:
                         candidates = candidates.filter(
                             code=props[admin_level.parent_code_prop]
                         )
-
                     geo_area.parent = candidates.first()
+
+                elif admin_level.parent_code_prop:
+                    geo_area.parent = GeoArea.objects.filter(
+                        admin_level=parent,
+                        code=props[admin_level.parent_code_prop]
+                    ).first()
 
             geo_area.save()
 
         parent = admin_level
         admin_level = AdminLevel.objects.filter(parent=parent).first()
+
+        # TODO: Clean up old geo areas ?
+
+    return True
