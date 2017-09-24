@@ -4,8 +4,11 @@ from redis_store import redis
 
 
 """
-List of all valid subscription channels
-and their events as well as other required fields.
+List of all valid subscription channels.
+
+For each channel, the user provides an event name and
+a set of other require fields that uniquely identifies
+the event.
 """
 subcription_channels = {
     'leads': {
@@ -20,56 +23,101 @@ subcription_channels = {
 
 
 class SubscriptionConsumer(JsonWebsocketConsumer):
+    """
+    A websocket consumer for subscribe/ and unsubscribe/ routes.
+
+    User can subscribe to events in different subscription channels.
+    Each event is uniquely identified by a *code*. Whenever an event
+    occurs, all clients subscribed to that event are notified.
+    """
+
     def receive(self, content):
+        """
+        A subscribe or unsubscribe request is received in the websocket.
+
+        Note:
+        - Every subscription request is serialized to a single string code.
+
+        - Multiple clients with same code are grouped together
+        in `Group(code)` so that whenever the event occurs, all the clients
+        listening to that event can be notified together.
+
+        - For reference: for each client, we also store the list of groups
+        (or rather list of codes) that the client has been added to.
+        """
+
         try:
             r = redis.get_connection()
-            redis_key = 'followers-{}'.format(self.message.reply_channel)
-            path = self.path.strip('/')
 
+            # In redis, we store, for each client, the list of groups
+            # he has been added to.
+            redis_key = '{}-groups'.format(self.message.reply_channel)
+
+            # Subscribe or unsubscribe ?
+            path = self.path.strip('/')
             if path == 'subscribe':
                 # Subscribe to a group
 
-                # Step 1: validate, and encode
+                # Step 1: validate, and encode the request
                 self.validate(content)
                 code = self.encode(content)
 
                 # Step 2: Add to subscription channel group
                 # and also store the group reference in the
-                # redis followers list
+                # redis list for the client.
                 Group(code).add(self.message.reply_channel)
                 r.lpush(redis_key, code)
 
-                # Step 3: send a success reply with group code
+                # Step 3: send a success reply along with group code
                 self.send({'code': code, 'success': True})
 
             elif path == 'unsubscribe':
                 if content['channel'] == 'all':
                     # Unsubscribe from all groups
+
+                    # For this, we use the redis group list for the client.
+                    # Iteratively, pop each group from the list,
+                    # remove the client from the group itself.
+
+                    # Also maintain list of codes of unsubscribed events.
+                    unsubscribed_codes = []
+
                     code = r.lpop(redis_key)
-                    codes = []
                     while code:
                         code = code.decode('utf-8')
-                        codes.append(code)
+
                         Group(code).discard(self.message.reply_channel)
+                        unsubscribed_codes.append(code)
+
                         code = r.lpop(redis_key)
 
+                    # If the list is empty, we may as well remove the list
+                    # from the redis store.
                     if r.llen(redis_key) == 0:
                         r.delete(redis_key)
 
-                    self.send({'codes': codes, 'success': True})
+                    # Reply back with the unscubscribed_codes
+                    self.send({'unsubscribed_codes': unsubscribed_codes,
+                               'success': True})
 
                 else:
                     # Unsubscribe from a single group
+                    # The request is in similar form as subscription,
+                    # so we get the code from the request.
                     self.validate(content)
                     code = self.encode(content)
 
+                    # Remove the client from the group
+                    # Then remove the group from the redis list for the client
                     Group(code).discard(self.message.reply_channel)
-
                     r.lrem(redis_key, 0, code)
+
+                    # If empty, remove the redis list
                     if r.llen(redis_key) == 0:
                         r.delete(redis_key)
 
-                    self.send({'code': code, 'success': True})
+                    # Reply back with the unsubscribed_codes.
+                    self.send({'ubsubscribed_codes': [code], 'success': True})
 
         except Exception as e:
             self.send({
