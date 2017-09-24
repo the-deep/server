@@ -12,4 +12,4 @@ channels==1.1.8
 redis==2.10.6
 asgi-redis==1.4.3
 celery[redis]==4.1.0
-codecov==2.0.9
+tox

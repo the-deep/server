@@ -1,0 +1,14 @@
+[run]
+branch = true
+source = .
+omit = */migrations/*
+        */wsgi.py
+        manage.py
+        .tox/*
+
+[report]
+show_missing = true
+exclude_lines =
+    # Don't complain if non-runnable code isn't run:
+    if 0:
+    if __name__ == .__main__.:
