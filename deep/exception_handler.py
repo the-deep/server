@@ -4,7 +4,7 @@ from rest_framework import status
 from django.utils import timezone
 from django.conf import settings
 
-from deep.error_codes import map_error_codes
+from deep.errors import map_error_codes
 
 import logging
 

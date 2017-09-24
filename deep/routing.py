@@ -1,9 +1,9 @@
 from channels.routing import route_class
-from deep.consumers import TestConsumer
-from deep.subscription import SubscriptionConsumer
+from websocket.dummy_consumer import DummyConsumer
+from websocket.subscription import SubscriptionConsumer
 
 
 channel_routing = [
-    route_class(TestConsumer, path=r'/test/$'),
+    route_class(DummyConsumer, path=r'/test/$'),
     route_class(SubscriptionConsumer, path=r'/subscribe/$'),
 ]
