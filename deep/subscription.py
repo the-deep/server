@@ -54,8 +54,12 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
             redis_key = '{}-groups'.format(self.message.reply_channel)
 
             # Subscribe or unsubscribe ?
-            path = self.path.strip('/')
-            if path == 'subscribe':
+            action = content['action']
+
+            if not action:
+                raise Exception('Action not provided')
+
+            if action == 'subscribe':
                 # Subscribe to a group
 
                 # Step 1: validate, and encode the request
@@ -71,7 +75,7 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
                 # Step 3: send a success reply along with group code
                 self.send({'code': code, 'success': True})
 
-            elif path == 'unsubscribe':
+            elif action == 'unsubscribe':
                 if content['channel'] == 'all':
                     # Unsubscribe from all groups
 

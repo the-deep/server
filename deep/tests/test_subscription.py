@@ -13,6 +13,7 @@ class TestSubscription(ChannelTestCase):
         # Test if we can subscribe to on_new event for leads
         client.send_and_consume('websocket.receive',
                                 text={
+                                    'action': 'subscribe',
                                     'channel': 'leads',
                                     'event': 'on_new',
                                     'project_id': 220,
@@ -34,17 +35,19 @@ class TestSubscription(ChannelTestCase):
 
         # TODO Test if the group was added to redis follower list
 
-        # Test if we can connect to unsubscription endpoint
-        client.send_and_consume('websocket.connect', path='/unsubscribe/')
-        self.assertIsNone(client.receive())
-
         # Test if we can unsubscribe to all groups
         client.send_and_consume('websocket.receive',
-                                text={'channel': 'all'},
-                                path='/unsubscribe/')
+                                text={
+                                    'channel': 'all',
+                                    'action': 'unsubscribe',
+                                },
+                                path='/subscribe/')
         response = client.receive()
         self.assertEqual(response,
-                         {'codes': ['leads-on_new-220'], 'success': True})
+                         {
+                             'unsubscribed_codes': ['leads-on_new-220'],
+                             'success': True
+                         })
 
         # TODO Test if the group was removed from the redis follower list
         # TODO Test single channel unsubscription instead of channel
