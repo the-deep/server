@@ -121,7 +121,7 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
                         r.delete(redis_key)
 
                     # Reply back with the unsubscribed_codes.
-                    self.send({'ubsubscribed_codes': [code], 'success': True})
+                    self.send({'unsubscribed_codes': [code], 'success': True})
 
         except Exception as e:
             self.send({
