@@ -38,14 +38,21 @@ def custom_exception_handler(exc, context):
             exc.get_codes(), response.status_code)
 
     # Error message can be defined by the exception as message
-    # or detail attribuets.
+    # or detail attributres
     # Otherwise, it is simply the stringified exception.
+
+    errors = None
     if hasattr(exc, 'message'):
-        response.data['error_message'] = exc.message
+        errors = exc.message
     elif hasattr(exc, 'detail'):
-        response.data['error_message'] = exc.detail
+        errors = exc.detail
     else:
-        response.data['error_message'] = str(exc)
+        errors = str(exc)
+
+    # Wrap up string error inside non-field-errors
+    if isinstance(errors, str):
+        errors = {'non_field_errors': [errors]}
+    response.data['errors'] = errors
 
     # If there is a link available for the exception,
     # send back the link as well.

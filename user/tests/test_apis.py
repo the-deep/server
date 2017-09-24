@@ -26,6 +26,9 @@ class UserTests(AuthMixin, APITestCase):
         self.assertEqual(User.objects.count(), 2)
         self.assertEqual(response.data['username'], data['username'])
 
+        # TODO: Following is a bug of drf, needs to be fixed
+        # self.assertEqual(response.data['organization'], data['organization'])
+
     def test_patch_user(self):
         url = '/api/v1/users/{}/'.format(self.user.pk)
         data = {
