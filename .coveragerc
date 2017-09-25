@@ -5,6 +5,9 @@ omit = */migrations/*
         */wsgi.py
         manage.py
         .tox/*
+        */apps.py
+        */urls.py
+        */tests.py
 
 [report]
 show_missing = true

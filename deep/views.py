@@ -13,5 +13,6 @@ class FrontendView(View):
                                    'build', 'index.html')) as f:
                 return HttpResponse(f.read())
         except FileNotFoundError:
-            logging.exception('Production build of app not found')
+            if not settings.TESTING:
+                logging.exception('Production build of app not found')
             return HttpResponse(status=404)

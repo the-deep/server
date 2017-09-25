@@ -19,6 +19,7 @@ class Project(UserResource):
 
 
 class ProjectMembership(models.Model):
+
     ROLES = [
         ('normal', 'Normal'),
         ('admin', 'Admin'),
