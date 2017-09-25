@@ -34,6 +34,7 @@ class TestSubscription(ChannelTestCase):
         # We should get back a timestamp
         self.client.send_and_consume('websocket.receive',
                                      text={
+                                         'sn': 1,
                                          'action': 'hb',
                                      },
                                      path='/subscribe/')
@@ -51,6 +52,7 @@ class TestSubscription(ChannelTestCase):
         self.connect()
         self.client.send_and_consume('websocket.receive',
                                      text={
+                                         'sn': 1,
                                          'action': 'subscribe',
                                          'channel': 'leads',
                                          'event': 'onEdited',
@@ -58,6 +60,7 @@ class TestSubscription(ChannelTestCase):
                                      },
                                      path='/subscribe/')
         response = self.client.receive()
+        self.assertEqual(response['sn'], 1)
         self.assertEqual(response['code'], 403)
         self.assertFalse(response['success'])
 
@@ -66,6 +69,7 @@ class TestSubscription(ChannelTestCase):
         self.connect()
         self.client.send_and_consume('websocket.receive',
                                      text={
+                                         'sn': 1,
                                          'action': 'subscribe',
                                          'channel': 'leads',
                                          'event': 'onNew',
@@ -74,8 +78,11 @@ class TestSubscription(ChannelTestCase):
                                      path='/subscribe/')
 
         response = self.client.receive()
-        self.assertEqual(response,
-                         {'code': 'leads-onNew-220', 'success': True})
+        self.assertEqual(response, {
+            'sn': 1,
+            'code': 'leads-onNew-220',
+            'success': True,
+        })
 
         # Test if we were added to the leads on_new group
         WebsocketConsumer.group_send(
@@ -89,6 +96,7 @@ class TestSubscription(ChannelTestCase):
         # Test if we can unsubscribe to all groups
         self.client.send_and_consume('websocket.receive',
                                      text={
+                                         'sn': 1,
                                          'channel': 'all',
                                          'action': 'unsubscribe',
                                      },
@@ -96,6 +104,7 @@ class TestSubscription(ChannelTestCase):
         response = self.client.receive()
         self.assertEqual(response,
                          {
+                             'sn': 1,
                              'unsubscribed_codes': ['leads-onNew-220'],
                              'success': True
                          })

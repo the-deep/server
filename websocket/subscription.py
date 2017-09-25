@@ -22,6 +22,7 @@ from deep.token_utils import get_user_from_token
 from websocket.constants import subcription_channels, websocket_actions
 from websocket.permissions import permissions
 from websocket.errors import (
+    SnNotProvidederror,
     ActionValueError,
     PermissionDenied,
     ChannelValueError,
@@ -125,9 +126,18 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
 
         - For reference: for each client, we also store the list of groups
         (or rather list of codes) that the client has been added to.
+
+        Note that for each request, a sequence number `sn` is provided by
+        client which is then returned in the response.
         """
 
+        sn = None
         try:
+            # Sequence number
+            sn = content.get('sn')
+            if not sn:
+                raise SnNotProvidederror()
+
             # The intended action of the user
             action = content.get('action')
 
@@ -139,8 +149,10 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
                 # any other stuffs including verifying user
                 # for this action.
                 self.send(json.loads(
-                    JSONRenderer().render({'timestamp': timezone.now()})
-                    .decode('utf-8')
+                    JSONRenderer().render({
+                        'sn': sn,
+                        'timestamp': timezone.now()
+                    }).decode('utf-8')
                 ))
                 return
 
@@ -186,7 +198,7 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
                 r.lpush(redis_key, code)
 
                 # Step 3: send a success reply along with group code
-                self.send({'code': code, 'success': True})
+                self.send({'sn': sn, 'code': code, 'success': True})
 
             elif action == 'unsubscribe':
                 if content['channel'] == 'all':
@@ -214,8 +226,11 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
                         r.delete(redis_key)
 
                     # Reply back with the unscubscribed_codes
-                    self.send({'unsubscribed_codes': unsubscribed_codes,
-                               'success': True})
+                    self.send({
+                        'sn': sn,
+                        'unsubscribed_codes': unsubscribed_codes,
+                        'success': True,
+                    })
 
                 else:
                     # Unsubscribe from a single group
@@ -234,10 +249,15 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
                         r.delete(redis_key)
 
                     # Reply back with the unsubscribed_codes.
-                    self.send({'unsubscribed_codes': [code], 'success': True})
+                    self.send({
+                        'sn': sn,
+                        'unsubscribed_codes': [code],
+                        'success': True
+                    })
 
         except Exception as e:
             reply = {'success': False}
+            reply['sn'] = sn
 
             if hasattr(e, 'code'):
                 reply['code'] = e.code
