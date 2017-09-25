@@ -68,12 +68,12 @@ class AdminLevelTests(AuthMixin, RegionMixin, APITestCase):
         if not admin_level:
             url = '/api/v1/admin-levels/'
             data = {
-                    'region': self.create_or_get_region(self.auth).pk,
-                    'title': 'test',
-                    'name_prop': 'test',
-                    'pcode_prop': 'test',
-                    'parent_name_prop': 'test',
-                    'parent_pcode_prop': 'test',
+                'region': self.create_or_get_region(self.auth).pk,
+                'title': 'test',
+                'name_prop': 'test',
+                'pcode_prop': 'test',
+                'parent_name_prop': 'test',
+                'parent_pcode_prop': 'test',
             }
 
             response = self.client.post(url, data,
@@ -96,11 +96,11 @@ class AdminLevelTests(AuthMixin, RegionMixin, APITestCase):
         Upload Admin Level GeoShape Test
         """
         admin_level = self.create_or_get_admin_level()
-        url = '/api/v1/admin-levels-upload/'+str(admin_level.pk)+'/'
+        url = '/api/v1/admin-levels-upload/' + str(admin_level.pk) + '/'
         with open(join(settings.TEST_DIR, 'geo.json'),
                   'rb') as fp:
             data = {
-                    'geo_shape': fp,
+                'geo_shape': fp,
             }
 
             response = self.client.put(url, data,

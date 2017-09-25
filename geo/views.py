@@ -4,8 +4,10 @@ from rest_framework import permissions
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from .models import Region, AdminLevel  # , GeoShape
-from .serializers import RegionSerializer, AdminLevelSerializer, \
-                         AdminLevelUploadSerializer
+from .serializers import (
+    RegionSerializer, AdminLevelSerializer,
+    AdminLevelUploadSerializer
+)
 
 
 class RegionViewSet(viewsets.ModelViewSet):

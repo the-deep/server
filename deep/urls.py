@@ -27,7 +27,7 @@ from geo.views import (
     AdminLevelUploadViewSet,
 )
 from lead.views import (
-        LeadViewSet
+    LeadViewSet
 )
 from deep.views import FrontendView
 

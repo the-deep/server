@@ -82,7 +82,7 @@ class LeadMixin():
         TODO: Add required attachment
         """
         lead = self.create_or_get_lead(auth)
-        url = self.URL+str(lead.pk)+'/'
+        url = self.URL + str(lead.pk) + '/'
         with open(join(settings.TEST_DIR, 'geo.json'),
                   'rb') as fp:
             data = {'attachment': fp}

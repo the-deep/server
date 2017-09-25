@@ -200,6 +200,6 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
 
         keys = subcription_channels[channel][event]
         for i, key in enumerate(keys):
-            data[key] = parts[i+2]
+            data[key] = parts[i + 2]
 
         return data

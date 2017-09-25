@@ -39,7 +39,7 @@ class AdminLevelUploadSerializer(serializers.ModelSerializer):
 
         self.fields.pop('geo_shape')
         instance.geo_shape = json.loads(
-                validated_data.pop('geo_shape').read().decode('utf-8'))
+            validated_data.pop('geo_shape').read().decode('utf-8'))
         instance.save()
         return instance
 
