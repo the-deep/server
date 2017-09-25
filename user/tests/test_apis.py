@@ -56,11 +56,18 @@ class AuthMixin():
         return result.data['access']
 
 
-class UserTests(AuthMixin, APITestCase):
+class UserApiTests(AuthMixin, APITestCase):
+    """
+    Tests for user apis
+    """
+
     def setUp(self):
         self.auth = self.get_auth()
 
     def test_create_user(self):
+        """
+        Post new user
+        """
         url = '/api/v1/users/'
         data = {
             'username': 'bibekdahal.bd16@gmail.com',
@@ -82,6 +89,11 @@ class UserTests(AuthMixin, APITestCase):
         # self.assertEqual(response.data['organization'], data['organization'])
 
     def test_patch_user(self):
+        """
+        Change password of existing user
+
+        TODO: Add old_password to change password
+        """
         url = '/api/v1/users/{}/'.format(self.user.pk)
         data = {
             'password': 'newpassword',
@@ -90,3 +102,13 @@ class UserTests(AuthMixin, APITestCase):
                                      HTTP_AUTHORIZATION=self.auth,
                                      format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_me(self):
+        """
+        Get self
+        """
+        url = '/api/v1/users/me/'
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth,
+                                   format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['username'], self.user.username)

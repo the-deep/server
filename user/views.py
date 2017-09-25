@@ -35,3 +35,10 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()  # .order_by('-date_joined)
     serializer_class = UserSerializer
     permission_classes = [UserPermission]
+
+    def get_object(self):
+        pk = self.kwargs['pk']
+        if pk == 'me':
+            return self.request.user
+        else:
+            return super().get_object()
