@@ -7,7 +7,7 @@ class UserGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserGroup
-        fields = ('pk', 'title', 'display_picture',
+        fields = ('id', 'title', 'display_picture',
                   'memberships',
                   'members', 'global_crisis_monitoring')
 
@@ -28,4 +28,10 @@ class UserGroupSerializer(serializers.ModelSerializer):
 class GroupMembershipSerializer(serializers.ModelSerializer):
     class Meta:
         model = GroupMembership
-        fields = ('pk', 'member', 'group', 'role', 'joined_at')
+        fields = ('id', 'member', 'group', 'role', 'joined_at')
+
+    # Validations
+    def validate_group(self, group):
+        if not group.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('Invalid user group')
+        return group

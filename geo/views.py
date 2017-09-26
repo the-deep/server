@@ -3,6 +3,8 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework.parsers import MultiPartParser, FormParser
 
+from deep.permissions import ModifyPermission
+
 from .models import Region, AdminLevel  # , GeoShape
 from .serializers import (
     RegionSerializer, AdminLevelSerializer,
@@ -11,22 +13,24 @@ from .serializers import (
 
 
 class RegionViewSet(viewsets.ModelViewSet):
-    """
-    TODO: is_global only for acaps admins
-    TODO: Add permissions for related project admins
-    """
-    queryset = Region.objects.all()
     serializer_class = RegionSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
+                          ModifyPermission]
+
+    def get_queryset(self):
+        return Region.get_for(self.request.user)
 
 
 class AdminLevelViewSet(viewsets.ModelViewSet):
     """
     Admin Level API Point
     """
-    queryset = AdminLevel.objects.all()
     serializer_class = AdminLevelSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
+                          ModifyPermission]
+
+    def get_queryset(self):
+        return AdminLevel.get_for(self.request.user)
 
 
 class AdminLevelUploadViewSet(mixins.UpdateModelMixin,
@@ -34,7 +38,10 @@ class AdminLevelUploadViewSet(mixins.UpdateModelMixin,
     """
     Admin Level Upload API Point [Geo file]
     """
-    queryset = AdminLevel.objects.all()
     serializer_class = AdminLevelUploadSerializer
     parser_classes = (MultiPartParser, FormParser,)
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
+                          ModifyPermission]
+
+    def get_queryset(self):
+        return AdminLevel.get_for(self.request.user)

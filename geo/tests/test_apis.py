@@ -18,7 +18,7 @@ class RegionMixin():
             region = Region.objects.create(
                 code='NLP',
                 title='Nepal',
-                is_global=True,
+                public=True,
             )
         return region
 
@@ -42,7 +42,7 @@ class RegionTests(AuthMixin, RegionMixin, APITestCase):
             'code': 'NLP',
             'title': 'Nepal',
             'data': {'testfield': 'testfile'},
-            'is_global': True,
+            'public': True,
         }
 
         response = self.client.post(url, data,
@@ -62,6 +62,7 @@ class AdminLevelTests(AuthMixin, RegionMixin, APITestCase):
         Get HTTP_AUTHORIZATION Header
         """
         self.auth = self.get_auth()
+        self.super_auth = self.get_super_auth()
 
     def create_or_get_admin_level(self):
         """
@@ -90,7 +91,7 @@ class AdminLevelTests(AuthMixin, RegionMixin, APITestCase):
         }
 
         response = self.client.post(url, data,
-                                    HTTP_AUTHORIZATION=self.auth,
+                                    HTTP_AUTHORIZATION=self.super_auth,
                                     format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(AdminLevel.objects.count(), 1)
@@ -109,6 +110,6 @@ class AdminLevelTests(AuthMixin, RegionMixin, APITestCase):
             }
 
             response = self.client.put(url, data,
-                                       HTTP_AUTHORIZATION=self.auth,
+                                       HTTP_AUTHORIZATION=self.super_auth,
                                        format='multipart')
             self.assertEqual(response.status_code, status.HTTP_200_OK)

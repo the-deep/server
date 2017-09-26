@@ -1,17 +1,18 @@
 import json
 from django.conf import settings
 from rest_framework import serializers
+from user_resource.serializers import UserResourceSerializer
 from .models import Region, AdminLevel  # , GeoShape
 from .tasks import load_geo_areas
 
 
-class RegionSerializer(serializers.ModelSerializer):
+class RegionSerializer(UserResourceSerializer):
     """
     Region Model Serializer
     """
     class Meta:
         model = Region
-        fields = ('pk', 'code', 'title', 'data', 'is_global')
+        fields = ('__all__')
 
 
 class AdminLevelSerializer(serializers.ModelSerializer):
@@ -21,9 +22,14 @@ class AdminLevelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AdminLevel
-        fields = ('pk', 'title', 'name_prop', 'code_prop', 'parent_name_prop',
-                  'parent_code_prop', 'region', 'parent', 'geo_shape',)
+        fields = ('__all__')
         read_only_fields = ('geo_shape',)
+
+    # Validations
+    def validate_region(self, region):
+        if not region.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('Invalid region')
+        return region
 
 
 class AdminLevelUploadSerializer(serializers.ModelSerializer):
@@ -45,4 +51,4 @@ class AdminLevelUploadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AdminLevel
-        fields = ('pk', 'geo_shape',)
+        fields = ('id', 'geo_shape',)

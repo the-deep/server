@@ -7,6 +7,10 @@ from user_group.models import UserGroup
 
 
 class Project(UserResource):
+    """
+    Project model
+    """
+
     title = models.CharField(max_length=255)
     members = models.ManyToManyField(User, blank=True,
                                      through='ProjectMembership')
@@ -17,8 +21,33 @@ class Project(UserResource):
     def __str__(self):
         return self.title
 
+    @staticmethod
+    def get_for(user):
+        """
+        Project can be accessed only if
+        * user is member of project
+        * user is member of a group in the project
+        """
+        return Project.objects.filter(
+            models.Q(members=user) |
+            models.Q(user_groups__members=user)
+        ).distinct()
+
+    def can_get(self, user):
+        return self in Project.get_for(user)
+
+    def can_modify(self, user):
+        return ProjectMembership.objects.filter(
+            project=self,
+            member=user,
+            role='admin',
+        ).count() > 0
+
 
 class ProjectMembership(models.Model):
+    """
+    Project-Member relationship attributes
+    """
 
     ROLES = [
         ('normal', 'Normal'),
@@ -34,3 +63,21 @@ class ProjectMembership(models.Model):
     def __str__(self):
         return '{} @ {}'.format(str(self.member),
                                 self.project.title)
+
+    @staticmethod
+    def get_for(user):
+        """
+        Project (and it's membership) can be accessed only if
+        * user is member of project
+        * user is member of a group in the project
+        """
+        return ProjectMembership.objects.filter(
+            models.Q(project__members=user) |
+            models.Q(project__user_groups__members=user)
+        ).distinct()
+
+    def can_get(self, user):
+        return self.project.can_get(user)
+
+    def can_modify(self, user):
+        return self.project.can_modify(user)

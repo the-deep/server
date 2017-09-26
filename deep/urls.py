@@ -33,15 +33,24 @@ from deep.views import FrontendView
 
 
 router = routers.DefaultRouter()
-router.register(r'users', UserViewSet)
-router.register(r'user-groups', UserGroupViewSet)
-router.register(r'group-memberships', GroupMembershipViewSet)
-router.register(r'projects', ProjectViewSet)
-router.register(r'project-memberships', ProjectMembershipViewSet)
-router.register(r'regions', RegionViewSet)
-router.register(r'admin-levels', AdminLevelViewSet)
-router.register(r'admin-levels-upload', AdminLevelUploadViewSet)
-router.register(r'leads', LeadViewSet)
+router.register(r'users', UserViewSet,
+                base_name='user')
+router.register(r'user-groups', UserGroupViewSet,
+                base_name='user_group')
+router.register(r'group-memberships', GroupMembershipViewSet,
+                base_name='group_membership')
+router.register(r'projects', ProjectViewSet,
+                base_name='project')
+router.register(r'project-memberships', ProjectMembershipViewSet,
+                base_name='project_membership')
+router.register(r'regions', RegionViewSet,
+                base_name='region')
+router.register(r'admin-levels', AdminLevelViewSet,
+                base_name='admin_level')
+router.register(r'admin-levels-upload', AdminLevelUploadViewSet,
+                base_name='admin_level_upload')
+router.register(r'leads', LeadViewSet,
+                base_name='lead')
 
 
 urlpatterns = [

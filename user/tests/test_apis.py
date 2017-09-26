@@ -15,6 +15,13 @@ class AuthMixin():
         auth = 'Bearer {0}'.format(self.get_access_token())
         return auth
 
+    def get_super_auth(self):
+        """
+        Generates HTTP_AUTHORIZATION for super user
+        """
+        auth = 'Bearer {0}'.format(self.get_superuser_acess_token())
+        return auth
+
     def create_new_user(self):
         """
         Create new user.
@@ -51,6 +58,28 @@ class AuthMixin():
             '/api/v1/token/',
             data={
                 'username': 'test@test.com',
+                'password': 'admin123',
+            }, format='json')
+        return result.data['access']
+
+    def get_superuser_acess_token(self):
+        """
+        Create a superuser
+        Generate auth token
+        """
+        self.user = User.objects.create_user(
+            username='super@test.com',
+            first_name='Super',
+            last_name='Test',
+            password='admin123',
+            email='super@test.com',
+            is_superuser=True,
+            is_staff=True,
+        )
+        result = self.client.post(
+            '/api/v1/token/',
+            data={
+                'username': 'super@test.com',
                 'password': 'admin123',
             }, format='json')
         return result.data['access']

@@ -29,13 +29,15 @@ def custom_exception_handler(exc, context):
         # If the raised exception defines a code, send it as
         # internal error code
         response.data['error_code'] = exc.code
-    else:
+    elif hasattr(exc, 'get_codes'):
         # Otherwise, try to map the exception.get_codes() value to an
         # internal error code.
         # If no internal code avaialble, return http status code as
         # internal error code by default.
         response.data['error_code'] = map_error_codes(
             exc.get_codes(), response.status_code)
+    else:
+        response.data['error_code'] = response.status_code
 
     # Error message can be defined by the exception as message
     # or detail attributres

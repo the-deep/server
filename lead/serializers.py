@@ -1,8 +1,8 @@
-from rest_framework import serializers
+from user_resource.serializers import UserResourceSerializer
 from .models import Lead
 
 
-class LeadSerializer(serializers.ModelSerializer):
+class LeadSerializer(UserResourceSerializer):
     """
     Lead Model Serializer
     """

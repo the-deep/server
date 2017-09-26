@@ -3,6 +3,9 @@ from django.db import models
 
 
 class UserGroup(models.Model):
+    """
+    User group model
+    """
     title = models.CharField(max_length=255, blank=True)
     display_picture = models.FileField(upload_to='group_dp/',
                                        null=True, blank=True, default=None)
@@ -13,8 +16,28 @@ class UserGroup(models.Model):
     def __str__(self):
         return self.title
 
+    @staticmethod
+    def get_for(user):
+        """
+        UserGroup can be accessed only if user is a member
+        """
+        return UserGroup.objects.filter(members=user).distinct()
+
+    def can_get(self, user):
+        return user in self.members.all()
+
+    def can_modify(self, user):
+        return GroupMembership.objects.filter(
+            group=self,
+            member=user,
+            role='admin',
+        ).count() > 0
+
 
 class GroupMembership(models.Model):
+    """
+    User group-Member relationship attributes
+    """
     ROLES = [
         ('normal', 'Normal'),
         ('admin', 'Admin'),
@@ -29,3 +52,14 @@ class GroupMembership(models.Model):
     def __str__(self):
         return '{} @ {}'.format(str(self.member),
                                 self.group.title)
+
+    @staticmethod
+    def get_for(user):
+        return GroupMembership.objects.filter(
+            group__members=user).distinct()
+
+    def can_get(self, user):
+        return self.group.can_get(user)
+
+    def can_modify(self, user):
+        return self.group.can_modify(user)

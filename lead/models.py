@@ -5,6 +5,16 @@ from user_resource.models import UserResource
 
 
 class Lead(UserResource):
+    """
+    Lead model
+
+    Represents either text, url or file attachment along with
+    some basic attributes such as title, condidentiality, date published,
+    source etc.
+
+    A lead belongs to one project.
+    """
+
     # Confidentiality choices
     UNPROTECTED = 'unprotected'
     PROTECTED = 'protected'
