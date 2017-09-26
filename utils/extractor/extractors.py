@@ -22,11 +22,16 @@ class BaseStripper:
         Return text, images
         """
         self.verify()
-        return self.SIMPLIFIER(self.doc)
+        return self.__class__.SIMPLIFIER(self.doc)
 
     def verify(self):
         if not self.doc:
             raise StripError(self.ERROR_MSG)
+        if not hasattr(self.__class__, 'SIMPLIFIER'):
+            raise StripError(
+                "Class '{}' have no SIMPLIFIER Method".
+                format(self.__class__.__name__)
+            )
 
 
 class HtmlStripper(BaseStripper):

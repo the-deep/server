@@ -2,7 +2,7 @@ import requests
 import tempfile
 from django.conf import settings
 
-from ..common import (write_file, USER_AGENT)
+from utils.common import (write_file, USER_AGENT)
 from .extractor import extractors
 
 HTML = 'html'

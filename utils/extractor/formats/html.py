@@ -5,7 +5,7 @@ import tempfile
 
 from django.conf import settings
 
-from ..common import write_file
+from utils.common import write_file
 
 
 def process(doc):
