@@ -1,7 +1,7 @@
 from .exception import StripError
-from .html import process as html_simplify
-from .pdf import process as pdf_simplify
-from .docx import (
+from .formats.html import process as html_simplify
+from .formats.pdf import process as pdf_simplify
+from .formats.docx import (
     process as docx_simplify,
     pptx_process as pptx_simplify
 )
