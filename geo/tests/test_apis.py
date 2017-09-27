@@ -12,13 +12,13 @@ class RegionMixin():
     """
     Create or get region mixin
     """
-    def create_or_get_region(self):
-        region = Region.objects.first()
+    def create_or_get_region(self, public=True):
+        region = Region.objects.filter(public=public).first()
         if not region:
             region = Region.objects.create(
                 code='NLP',
                 title='Nepal',
-                public=True,
+                public=public,
             )
         return region
 

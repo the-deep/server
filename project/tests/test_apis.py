@@ -71,7 +71,6 @@ class ProjectApiTest(AuthMixin, ProjectMixin, APITestCase):
         Add Project Members
         """
         project = self.create_or_get_project()
-
         test_user = self.create_new_user()
 
         url = '/api/v1/project-memberships/'

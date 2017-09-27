@@ -31,12 +31,15 @@ class Region(UserResource):
         return self in Region.get_for(user)
 
     def can_modify(self, user):
-        return user.is_superuser or Region.objects.filter(
-            models.Q(created_by=user) |
-            models.Q(project__projectmembership__member=user,
-                     project__projectmembership__role='admin',
-                     public=False)
-        ).count() > 0
+        import project
+        return user.is_superuser or (self.public and (
+            self.created_by == user or
+            project.models.ProjectMembership.objects.filter(
+                project__regions=self,
+                member=user,
+                role='admin'
+            ).count() > 0
+        ))
 
 
 class AdminLevel(models.Model):
