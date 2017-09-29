@@ -7,7 +7,7 @@ from .serializers import UserGroupSerializer, GroupMembershipSerializer
 
 class UserGroupViewSet(viewsets.ModelViewSet):
     serializer_class = UserGroupSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
+    permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
 
     def get_queryset(self):
@@ -16,7 +16,7 @@ class UserGroupViewSet(viewsets.ModelViewSet):
 
 class GroupMembershipViewSet(viewsets.ModelViewSet):
     serializer_class = GroupMembershipSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
+    permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
 
     def get_queryset(self):

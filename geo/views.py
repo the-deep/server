@@ -12,7 +12,7 @@ from .serializers import (
 
 class RegionViewSet(viewsets.ModelViewSet):
     serializer_class = RegionSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
+    permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
 
     def get_queryset(self):
@@ -24,7 +24,7 @@ class AdminLevelViewSet(viewsets.ModelViewSet):
     Admin Level API Point
     """
     serializer_class = AdminLevelSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
+    permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
 
     def get_queryset(self):
@@ -38,7 +38,7 @@ class AdminLevelUploadViewSet(mixins.UpdateModelMixin,
     """
     serializer_class = AdminLevelUploadSerializer
     parser_classes = (MultiPartParser, FormParser,)
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
+    permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
 
     def get_queryset(self):

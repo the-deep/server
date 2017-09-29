@@ -30,7 +30,7 @@ class LeadViewSet(viewsets.ModelViewSet):
     queryset = Lead.objects.all()
     serializer_class = LeadSerializer
     parser_classes = (MultiPartParser, FormParser,)
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (permissions.IsAuthenticated,)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter,)
     filter_class = LeadFilterSet
