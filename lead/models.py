@@ -31,12 +31,10 @@ class Lead(UserResource):
     # Status of a lead that can be pending, processed or deleted.
     PENDING = 'pending'
     PROCESSED = 'processed'
-    DELETED = 'deleted'
 
     STATUSES = (
         (PENDING, 'Pending'),
         (PROCESSED, 'Processed'),
-        (DELETED, 'Deleted'),
     )
 
     project = models.ForeignKey(Project)

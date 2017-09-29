@@ -1,6 +1,4 @@
-from rest_framework import mixins
-from rest_framework import viewsets
-from rest_framework import permissions
+from rest_framework import mixins, viewsets, permissions
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from deep.permissions import ModifyPermission
