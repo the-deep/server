@@ -14,3 +14,4 @@ class UserResource(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['-modified_at', '-created_at']
