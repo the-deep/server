@@ -1,0 +1,643 @@
+TRIBHUVAN UNIVERSITY
+
+INSTITUTE OF ENGINEERING
+
+CENTRAL CAMPUS, PULCHOWK
+
+
+
+[Organization and Management]
+
+A
+
+Case Study Report
+
+On
+
+Leapfrog Technology
+
+
+
+
+
+By:
+
+Navin Ayer [069/BCT/526]
+
+Prabesh Pathak [069/BCT/529]
+
+Pramod Maharjan [069/BCT/530]
+
+Uttam Raj Khanal [069/BCT/546]
+
+Bikash Shrestha [069/BCT/511]
+
+Manil Vaidhya [069/BCT/520]
+
+Bishal Sainju [069/BCT/513]
+
+Kiran Khaniya [069/BCT/518]
+
+
+
+
+
+Submitted To:
+
+Prof. Shyam Krishna Joshi
+
+        March 13, 2016
+
+
+
+ACKNOWLEDGEMENT
+
+
+
+Firstly, we would like to express our sincere gratitude to Prof. Shyam Krishna Joshi for his invaluable assistance, proper guidance and immense support to make us understand the core concept of Organization and Management. Without his comments and suggestions, the completion of this study wouldn't have been possible. 
+
+
+
+We would also like to express our gratitude to Leapfrog Technology for not only allowing us to perform the study but also for helping us in all manners possible. Specifically, we would like to thank Mr. Kiran Kumar Regmi, Training Manager at Leapfrog Technology, for dedicating his invaluable time and effort towards this study and assisting us in the endeavor. 
+
+Lastly, we would like to thank all our friends and other people for their support and suggestions.
+
+Thank you.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TABLE OF CONTENTS
+
+
+
+
+
+
+
+
+
+1. INTRODUCTION …..................................................................................................... 4
+
+1.1 History ….................................................................................................................................. 4
+
+1.2 Process and Services ................................................................................................................ 4
+
+1.3 Company Statements.................................................................................................................7
+
+2. ORGANIZATIONAL STRUCTURE........................................................................... 8
+
+3. PERSONNEL MANAGEMENT ................................................................................. 9
+
+3.1 Policies and Reasons................................................................................................................9
+
+3.2 Company Benefits ...................................................................................................................10
+
+3.3 Manpower Planning ............................................................................................................... 10
+
+3.4 Recruitment, Selection and Training ..................................................................................... 10
+
+3.5 Wages and Incentives ...................................................................................................…….11
+
+3.6 Job evaluation and Performance Appraisal........................................................................... 12
+
+4. RECOMMENDATIONS AND SUGGESTIONS...................................................... 13
+
+5. CONCLUSION............................................................................................................ 14
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1. INTRODUCTION
+
+
+
+Leapfrog Technology Inc. is a US based software development company, with it’s headquarter at Massachusetts, USA and development center in Dillibazar, Nepal. It provides enterprise software solutions and full life cycle technology services to its clients in North America, Europe and Nepal including VC-funded startups in Silicon Valley. The company subscribes to the principal of lean software development and its processes are suited to rapid prototyping and quick turn-around on challenging software projects.
+
+1.1 History
+
+Leapfrog Technology was established in 2010 with the ambition of making software relevant to the masses. Their first project was to deliver on the promise of mobile phones in developing countries: use mobile phones to take the banks to the people. Since then they have grown to take on many projects from many different continents, but they always take the same lens in all the projects they do.
+
+
+
+1.2 Process and Services
+
+They break development into phases (kickoff requirements, iterations (sprints) to launch, and post-launch monitoring and development), and are committed to building the product that meets or surpasses the vision in the head of clients.
+
+First they expect clients to tell them about their business cases and users. They’ll start wire-framing some basic interface designs to make sure they're on the same page. Then they'll give you an estimate and get started building, soliciting your feedback week by week to make sure they're painting the picture that's in client’s head. Once they're happy and are done building your app, Leapfroggers will try to break it. They'll do security testing, final acceptance testing, and performance tuning— to make sure there are only pleasant surprises for the users come launch day. Finally they'll take your product to the cloud; they'll deploy it on a super-scalable architecture with all the fancy server monitoring, support teams, and product analytics in place to make sure your app never goes down and your key metrics keep going up.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Company Belief
+
+
+
+
+
+
+
+Process Cycle
+
+
+
+
+
+
+
+
+
+Services
+
+Software Development
+
+Product Development
+
+Visual Design
+
+Server Operations
+
+Mobile App Development
+
+UI/UX
+
+Security
+
+
+
+Technology Employed
+
+
+
+JEE/Spring
+
+Grails
+
+Ruby on Rails
+
+iOS
+
+Android
+
+PHP
+
+
+
+Tools Used
+
+
+
+JIRA/GreenHopper
+
+Confluence
+
+Github
+
+Join.me, Webex and Skype
+
+HipChat
+
+
+
+Some Featured Clients
+
+Kumari Bank Ltd. – One of the famous banking association of Nepal and pioneer in mobile banking
+
+Munchha.com – Famous e-commerce web application of Nepal
+
+Interact – A Leader in Debit Card and Electronic Payment System in Canada
+
+Dinube – World’s first streaming wallet that works with merchants across Europe.
+
+
+
+
+
+1.3 Company Statements
+
+Vision
+
+Our vision is to build world class software and be a role model company in Nepal.
+
+
+
+Core Values
+
+At leapfrog, our core values act as guiding principles for our behaviors, rationalizations and actions.
+
+
+Ownership
+
+Customer happiness is the best outcome; we go beyond given responsibilities to make our customers successful.
+
+We strive to set examples for craftsmanship, innovation and operation standards.
+
+We walk the talk and take responsibility for our actions.
+
+
+Integrity 
+
+We respect all individuals irrespective of color, gender, nationality, religion or beliefs.
+
+We adhere to high moral principles and ethics in our behaviors and actions, no matter how difficult the situation.
+
+We encourage open communication.
+
+
+Learning
+
+We are always open to hear new ideas and challenge the status quo - Never Settle.
+
+We take pride in teaching, mentoring and helping each other.
+
+We understand mistakes are part of life; we make mistakes, we learn from them so that we do not to repeat them.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2. ORGANIZATIONAL STRUCTURE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chief Executive Officer: At the top of the organization hierarchy. Responsible for the overall strategy and direction of the organization.
+
+Business Manager: Responsible for handling the business transactions and marketing all around the organization
+
+Chief Technical Officer: Responsible in the technical field of the organization
+
+VP of Engineering: Vice President who works under the CTO with works related in multiple countries and associating them
+
+Research and Development Managers: Responsible for supervising engineers or engineering technologists, project management, working with clients, and providing advice and acting as a resource.
+
+People Operator: Responsible for Human Resource Management
+
+Coaches: Leads a group of developers to work on a particular part of the project.
+
+Developers: Write code and work on developing the applications.
+
+3. PERSONNEL MANAGEMENT
+
+Policies and Reasons 
+
+
+
+Policies as expressed by the company itself are evaluated in following points: 
+
+
+
+Lead us
+
+Be a team leader, be a manager, lead one of our talk series or just show initiatives in one of the many many things we do. We will throw a number of opportunities your way where you can hone your leadership skills or learn to lead.
+
+
+
+Challenge yourself
+
+We will put you in challenging situations. You will learn to be outspoken and opinionated (if you are not already). You will be dealing directly with clients, proposing solutions and often questioning your seniors, all in the process of delivering results.
+
+
+
+Follow your passion
+
+Leapfroggers are passionate about what they do and about things around them. And while our personal passions differ, we share one common passion: passion to innovate towards improving business and society.
+
+
+
+Be part of a great team
+
+A great team is more than the sum of its individual parts and, in Leapfrog, team performance matters more than individual performance. When the going gets tough, your team is right there and the entire Leapfrog team is just a few steps away.
+
+
+
+Be part of our diversity
+
+We are proud of our diversity. We are home to a diverse group of individuals who are talented, motivated and opinionated. It's this extraordinary mix that makes Leapfrog an inspirational workplace and a successful technology company.
+
+
+
+Have fun while you work
+
+We work hard and play harder. Our social calendar includes four quarterly retreats, numerous sports' events, and frequent night outs. Leapfrog is a fun workplace, where enthusiasm, hard work and results are rewarded.
+
+
+
+Give and get respect
+
+We value and respect every Leapfrogger, regardless of position. We listen to you. You are encouraged to be outspoken and opinionated. We mandate an open door policy for all of our managers. We're all part of the same team, so everyone is given the chance to contribute.
+
+
+
+
+
+Company Benefits
+
+Five working days (Monday to Friday)
+
+Transportation (pick and drop off) Facility
+
+Office provided Lunch and Refreshment
+
+Spacious and Friendly working Environment
+
+Dashain Allowance (based on basic salary only)
+
+Provident Fund Facility
+
+Periodic Performance Evaluation by HRIS
+
+Training and Development Programs
+
+Internet incentives
+
+Periodic Team-building activities
+
+
+
+Manpower Planning
+
+
+It refers to the selection of right number of people, right kind of people at the right place, right time, doing the right things for which they are suited for the achievement of goals of the organization. Human Resource Planning has got an important place in the arena of industrialization. Human Resource Planning has to be a systems approach and is carried out in a set procedure.
+
+
+
+Currently there are 93 engineers at Leapfrog Technology Nepal. Including all the staffs under the organization the numbers sums up to 120. These number of people are well managed by the human resource department. Though considers a flat organizational structure within a country, the manpower planning has been effective throughout the running period of the organization.
+
+
+
+Recruitment , Selection and Training
+
+
+
+The recruitment process involves either an Internship Program or a training program that leads to full time employment at this organization.
+
+
+
+Interns: In a year 3-4 months are allocated as internship months for enthusiastic developers. It involves engineering students as well as computer science students. 
+
+
+Full-Time Employee: According to the manpower planning, through the vacancy announcement and going through training program a full-fledged job is given to the applicant.
+
+
+
+
+
+
+
+Procedures for candidate selection
+
+Call for applicants:
+
+Advertisements and vacancy announcements are circulated mostly through online means.
+
+
+Application Collection:
+
+The applications are received along with any supporting documents like a resume.
+
+
+Resume Assessment:
+
+The resumes sent by the candidates are then screened by senior project managers and/or the HR department to reduce the number of potential candidates.
+
+
+Exam:
+After the CV assessment, the students have to go firstly through an online exam. Afterwards they have to appear on an exam physically that involves various computational questions. 
+
+
+Interview Process:
+
+The final part of the selection process involves one or more stages of interviews. Along with the technical skills necessary for the particular post, the attitude and work-ethic of the candidate are also evaluated.
+
+
+
+This procedure is not the overall mechanism of handing over the job. The selected applicants will then have to go through 3 months of training session on respective fields. Training has specific goals of improving one's capability, capacity, productivity and performance. It forms the core of apprenticeships and provides the backbone of any organization. People within many professions and occupations may refer to this sort of training as professional development. During this training program stipend is given to the applicants. After they are done through the training program then only a full-fledged job is assigned.
+
+
+
+Wages and Incentives
+
+
+Work and skill assessment of every employee is carried out time to time. It may also involve how much project an individual is associated with and how much efforts have been put on. Though fixed salary may have been fixed during the contractual agreement, incentives are given according to these evaluation factors. Similarly, incentives and bonuses are also given on key functions that the organization celebrates. Non-monetary incentives are also practiced that involves tours, trips, parties, etc. The motive of the incentive is to increase the productivity of the employees and to help them enjoy work.
+
+
+
+
+
+Job Evaluation and Performance Appraisal
+
+It is used in Leapfrog Tech. to evaluate the personalities, potentialities and contribution of the employees. The performance appraisal seeks to provide adequate feedback to each individual for his/her performance. Hence it attempts to mobilize the best possible efforts from employees. Basic performance appraisal method may involve the ranking, person-to-person comparison or grading method. But these are not so strictly followed. The coaches constantly supervise the developers and the project they are working on. So every effort of the individual in helping organization reach its goal is taken into account. Thus, the satisfaction of the client is taken as the final level of the evaluation process.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4. RECOMMENDATION AND SUGGESTIONS
+
+Leapfrog is one of the biggest IT Company of Nepal. Still we felt that there were some areas of improvement within the organization.
+
+The company is basically focused on international clients and projects. So if the priority are given to local clients it can help in the development of IT sector within Nepal.
+
+
+
+The selection procedure here is a bit complex one. The applicants have to go through multiple exams and training to land upon a full-time job. So it is a little tedious.
+
+
+Internship programs are not well promoted. Lots of IT related students can benefit if proper flow information about internship programs is maintained.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5. CONCLUSION
+
+Leapfrog is an evolving story. They started with 8 people in the beginning of 2012 in Nepal and now they are more than 93 team members and growing. They have been able to convince many bright people to join their tent and become part of the LF story and share in their vision of making software relevant to the masses. They bring out considerable expertise in technology and project delivery to make the vision of the clients come true.
+
+They are continually striving to do better. They are defining newer models of engagements and partnerships with the clients so that they can achieve their goals of world class products with a much more engaged technology team. They are also creating an ever-evolving, but constantly-more-flexible work environment for their people so that they can do what they like best.
+
+Hence, it was a great opportunity for us all team members to get to know about the organization and its detail in a depth. It has even motivated us to a point if we could end up opening our own organization. The job procedure of recruitment, selection and placement would come in handy for us in the future as well when searching for the job. The relation within the members of the organization and to that of clients was also quite fascinating to understand. The personnel management of the organization is what makes it stand out within the other competitive organization. Thus this case study has been a huge platform for us to understand the core concepts of our course Organization and Management.
+
+
+
+
+
+14

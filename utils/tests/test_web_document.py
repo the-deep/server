@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.conf import settings
 
 from utils.common import (get_or_write_file, makedirs)
-from ..webdocument import WebDocument
+from ..web_document import WebDocument
 
 # TODO: Review/Add better urls
 HTML_URL = 'https://www.reddit.com'
