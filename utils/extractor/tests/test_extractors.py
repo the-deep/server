@@ -5,7 +5,7 @@ from django.conf import settings
 
 from utils.common import get_or_write_file
 from ..extractors import (
-    PdfStripper, DocxStripper, PptxStripper
+    PdfExtractor, DocxExtractor, PptxExtractor
 )
 
 
@@ -19,7 +19,7 @@ class ExtractorTest(TestCase):
         self.path = join(settings.TEST_DIR, 'documents')
 
     def extract(self, extractor, path):
-        text, images = extractor.simplify()
+        text, images = extractor.extract()
         extracted = get_or_write_file(path + '.txt', text)
 
         self.assertEqual(text, extracted.read())
@@ -31,7 +31,7 @@ class ExtractorTest(TestCase):
         Test Docx import
         """
         docx_file = join(self.path, 'doc.docx')
-        extractor = DocxStripper(open(docx_file, 'rb+'))
+        extractor = DocxExtractor(open(docx_file, 'rb+'))
         self.extract(extractor, docx_file)
 
     def test_pptx(self):
@@ -39,7 +39,7 @@ class ExtractorTest(TestCase):
         Test pptx import
         """
         pptx_file = join(self.path, 'doc.pptx')
-        extractor = PptxStripper(open(pptx_file, 'rb+'))
+        extractor = PptxExtractor(open(pptx_file, 'rb+'))
         self.extract(extractor, pptx_file)
 
     def test_pdf(self):
@@ -47,5 +47,5 @@ class ExtractorTest(TestCase):
         Test Pdf import
         """
         pdf_file = join(self.path, 'doc.pdf')
-        extractor = PdfStripper(open(pdf_file, 'rb+'))
+        extractor = PdfExtractor(open(pdf_file, 'rb+'))
         self.extract(extractor, pdf_file)

@@ -1,3 +1,3 @@
-class StripError(Exception):
+class ExtractError(Exception):
     def __init__(self, *args, **kwargs):
-        super(StripError, self).__init__(*args, **kwargs)
+        super(ExtractError, self).__init__(*args, **kwargs)

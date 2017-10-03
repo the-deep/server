@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.conf import settings
 
 from utils.common import (get_or_write_file, makedirs)
-from ..attachment_document import AttachmentDocument
+from ..file_document import FileDocument
 
 # TODO: Review/Add better urls
 DOCX_FILE = 'doc.docx'
@@ -12,7 +12,7 @@ PPTX_FILE = 'doc.pptx'
 PDF_FILE = 'doc.pdf'
 
 
-class AttachmentDocumentTest(TestCase):
+class FileDocumentTest(TestCase):
     """
     Import Test using files
     Html, Pdf, Pptx and docx
@@ -24,10 +24,10 @@ class AttachmentDocumentTest(TestCase):
 
     def extract(self, path):
         file = open(join(self.documents, path), 'rb')
-        text, images = AttachmentDocument(
+        text, images = FileDocument(
             file,
             file.name.split('/')[-1]
-        ).simplify()
+        ).extract()
         path = join(self.path, file.name.split('/')[-1])
 
         extracted = get_or_write_file(path + '.txt', text)

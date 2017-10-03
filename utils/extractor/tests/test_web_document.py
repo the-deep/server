@@ -24,7 +24,7 @@ class WebDocumentTest(TestCase):
         makedirs(self.path)
 
     def extract(self, url):
-        text, images = WebDocument(url).simplify()
+        text, images = WebDocument(url).extract()
         path = join(self.path, '.'.join(url.split('/')[-1:]))
 
         extracted = get_or_write_file(path + '.txt', text)

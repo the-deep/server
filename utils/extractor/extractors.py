@@ -1,15 +1,15 @@
-from .exception import StripError
-from .formats.html import process as html_simplify
-from .formats.pdf import process as pdf_simplify
+from .exception import ExtractError
+from .formats.html import process as html_extract
+from .formats.pdf import process as pdf_extract
 from .formats.docx import (
-    process as docx_simplify,
-    pptx_process as pptx_simplify
+    process as docx_extract,
+    pptx_process as pptx_extract
 )
 
 
-class BaseStripper:
+class BaseExtractor:
     """
-    Basic Stripper Class
+    Basic Extractor Class
     Take doc
     Verify
     Simlify
@@ -17,50 +17,50 @@ class BaseStripper:
     def __init__(self, doc):
         self.doc = doc
 
-    def simplify(self):
+    def extract(self):
         """
         Return text, images
         """
         self.verify()
-        return self.__class__.SIMPLIFIER(self.doc)
+        return self.__class__.EXTRACT_METHOD(self.doc)
 
     def verify(self):
         if not self.doc:
-            raise StripError(self.ERROR_MSG)
-        if not hasattr(self.__class__, 'SIMPLIFIER'):
-            raise StripError(
-                "Class '{}' have no SIMPLIFIER Method".
+            raise ExtractError(self.ERROR_MSG)
+        if not hasattr(self.__class__, 'EXTRACT_METHOD'):
+            raise ExtractError(
+                "Class '{}' have no EXTRACT_METHOD Method".
                 format(self.__class__.__name__)
             )
 
 
-class HtmlStripper(BaseStripper):
+class HtmlExtractor(BaseExtractor):
     """
-    Stripper class to simplify HTML documents.
+    Extractor class to extract HTML documents.
     """
     ERROR_MSG = "Not a html document"
-    SIMPLIFIER = html_simplify
+    EXTRACT_METHOD = html_extract
 
 
-class PdfStripper(BaseStripper):
+class PdfExtractor(BaseExtractor):
     """
-    Stripper class to simplify PDF documents.
+    Extractor class to extract PDF documents.
     """
     ERROR_MSG = "Not a pdf document"
-    SIMPLIFIER = pdf_simplify
+    EXTRACT_METHOD = pdf_extract
 
 
-class DocxStripper(BaseStripper):
+class DocxExtractor(BaseExtractor):
     """
-    Stripper class to simplify Docx documents.
+    Extractor class to extract Docx documents.
     """
     ERROR_MSG = "Not a docx document"
-    SIMPLIFIER = docx_simplify
+    EXTRACT_METHOD = docx_extract
 
 
-class PptxStripper(BaseStripper):
+class PptxExtractor(BaseExtractor):
     """
-    Stripper class to simplify PPTX documents.
+    Extractor class to extract PPTX documents.
     """
     ERROR_MSG = "Not a pptx document"
-    SIMPLIFIER = pptx_simplify
+    EXTRACT_METHOD = pptx_extract
