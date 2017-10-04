@@ -60,3 +60,23 @@ class Lead(UserResource):
 
     def __str__(self):
         return '{}'.format(self.title)
+
+    @staticmethod
+    def get_for(user):
+        """
+        Lead can only be accessed by users who have access to
+        it's project
+        """
+        return Lead.objects.filter(
+            models.Q(project__members=user) |
+            models.Q(project__user_groups__members=user)
+        ).distinct()
+
+    def can_get(self, user):
+        return self.project.can_get(user)
+
+    def can_modify(self, user):
+        # Not project.can_modify as only admin of projects
+        # can modify a project but anybody who can view project
+        # can modify a lead in that project
+        return self.project.can_get(user)
