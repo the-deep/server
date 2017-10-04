@@ -1,1 +1,4 @@
-from .hid import HumanitarianId # noqa
+from .hid import (  # noqa
+    HumanitarianId,
+    config
+)
