@@ -54,7 +54,6 @@ router.register(r'leads', LeadViewSet,
 
 
 urlpatterns = [
-    url(r'^$', FrontendView.as_view()),
     url(r'^admin/', admin.site.urls),
 
     # Future reference: (v1|v2|v3...)
@@ -69,4 +68,6 @@ urlpatterns = [
 
     # url(r'^docs/', include_docs_urls(title='DEEP API')),
     url(r'^api/v1/docs/', get_swagger_view(title='DEEP API')),
+
+    url(r'^', FrontendView.as_view()),
 ] + static.static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
