@@ -1,6 +1,6 @@
 from channels.routing import route_class
-from websocket.dummy_consumer import DummyConsumer
-from websocket.subscription import SubscriptionConsumer
+from utils.websocket.dummy_consumer import DummyConsumer
+from utils.websocket.subscription import SubscriptionConsumer
 
 
 channel_routing = [

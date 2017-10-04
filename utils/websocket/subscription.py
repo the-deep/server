@@ -19,9 +19,9 @@ from deep.errors import (
     UserNotFoundError,
 )
 from deep.token_utils import get_user_from_token
-from websocket.constants import subcription_channels, websocket_actions
-from websocket.permissions import permissions
-from websocket.errors import (
+from .constants import subcription_channels, websocket_actions
+from .permissions import permissions
+from .errors import (
     SnNotProvidederror,
     ActionValueError,
     PermissionDenied,
