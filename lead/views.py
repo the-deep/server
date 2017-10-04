@@ -32,6 +32,7 @@ class LeadViewSet(viewsets.ModelViewSet):
     parser_classes = (MultiPartParser, FormParser,)
     permission_classes = (permissions.IsAuthenticated,)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
-                       filters.SearchFilter,)
+                       filters.SearchFilter, filters.OrderingFilter)
     filter_class = LeadFilterSet
     search_fields = ('title', 'source', 'text', 'url', 'website',)
+    # ordering_fields = omitted to allow ordering by all read-only fields
