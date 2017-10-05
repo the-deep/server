@@ -43,7 +43,10 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class HIDTokenObtainSerializer(serializers.Serializer):
-    access_token = serializers.CharField()
+    access_token = serializers.CharField(required=True)
+    expires_in = serializers.IntegerField(required=False)
+    token_type = serializers.CharField(required=False)
+    state = serializers.IntegerField(required=False)
 
     def validate(self, attrs):
         hid = HumanitarianId(attrs['access_token'])
