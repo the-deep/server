@@ -36,7 +36,7 @@ class HumanitarianId:
             self.status = False
             return
 
-        url = config.auth_uri + 'api/v2/user/' + self.user_id
+        url = config.auth_uri + '/api/v2/user/' + self.user_id
         r = requests.get(url,
                          headers={'Authorization': 'Bearer ' + self.token})
         # Verify User
@@ -56,13 +56,10 @@ class HumanitarianId:
         profile = Profile.objects.filter(hid=self.user_id).first()
         if profile is None:
             user = User.objects.filter(email=self.data['email']).first()
-            try:
-                if user:
-                    self._save_user(user)
-                else:
-                    user = self._create_user()
-            except:
-                logging.exception('HID Integration Exception')
+            if user:
+                self._save_user(user)
+            else:
+                user = self._create_user()
             return user
         return profile.user
 
@@ -105,7 +102,7 @@ class HumanitarianId:
 
     def get_token_and_user_id(self, access_token):
         if config.client_id:
-            url = config.auth_uri + 'account.json?' \
+            url = config.auth_uri + '/account.json?' \
                 'access_token=' + access_token
 
             r = requests.get(url)

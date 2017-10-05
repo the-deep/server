@@ -50,7 +50,12 @@ class HIDTokenObtainSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         hid = HumanitarianId(attrs['access_token'])
-        self.user = hid.get_user()
+        try:
+            self.user = hid.get_user()
+        except:
+            raise serializers.ValidationError(
+                _('Error in HID Integration, Please Contact Support'),
+            )
 
         # Prior to Django 1.10, inactive users could be authenticated with the
         # default `ModelBackend`.  As of Django 1.10, the `ModelBackend`
@@ -62,7 +67,8 @@ class HIDTokenObtainSerializer(serializers.Serializer):
         if self.user is None or not self.user.is_active:
             # TODO: Better Validation Error [Also in utils/hid.py]
             raise serializers.ValidationError(
-                _('No active account found with the given credentials'),
+                _('No active account found for given HID user,'
+                  ' Please Contact Support '),
             )
 
         return {}

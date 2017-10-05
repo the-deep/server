@@ -17,10 +17,10 @@ HID_FIRSTNAME = 'Togglecorp'
 HID_LASTNAME = 'Dev'
 
 # TODO: use redirect_uri from django config
-HID_LOGIN_URL = hid_config.auth_uri + 'oauth/authorize?'\
+HID_LOGIN_URL = hid_config.auth_uri + '/oauth/authorize?'\
     'response_type=token&client_id=' + hid_config.client_id +\
     '&scope=profile&state=12345&'\
-    'redirect_uri=http://deep.togglecorp.com/login/'
+    'redirect_uri=' + hid_config.redirect_url
 
 logger = logging.getLogger(__name__)
 
@@ -35,10 +35,17 @@ class HIDIntegrationTest(TestCase):
             'User-Agent': USER_AGENT
         }
 
-    def show_auth_warning(self):
-        logger.warning('*' * 30)
-        logger.warning('HID AUTHS are not working')
-        logger.warning('*' * 30)
+    def show_auth_warning(self, response=None, no_access_token=False):
+        border_len = 50
+        logger.warning('*' * border_len)
+        logger.warning('---- HID AUTHS/Config are not working ----')
+        logger.warning('HID AUTH URL: ' + HID_LOGIN_URL)
+        if response is not None:
+            logger.warning('Response Code: ' + str(response.status_code))
+            logger.warning('Response Text: ' + str(response.content))
+        if no_access_token:
+            logger.warning('Got No Access Token From HID')
+        logger.warning('*' * border_len)
 
     def get_access_token(self):
         """
@@ -46,7 +53,7 @@ class HIDIntegrationTest(TestCase):
         """
         response = self.requests.get(hid_config.auth_uri, headers=self.headers)
         response = self.requests.post(
-            hid_config.auth_uri + 'login',
+            hid_config.auth_uri + '/login',
             data={
                 'email': HID_EMAIL,
                 'password': HID_PASSWORD,
@@ -57,7 +64,7 @@ class HIDIntegrationTest(TestCase):
 
         if response.status_code == status.HTTP_403_FORBIDDEN\
                 or len(response.history) < 1:
-            self.show_auth_warning()
+            self.show_auth_warning(response=response)
             return
 
         redirect_url = response.history[0].headers.get('location')
@@ -65,7 +72,7 @@ class HIDIntegrationTest(TestCase):
         access_token = {query.split('=')[0]: query.split('=')[1]
                         for query in p.query.split('&')}.get('access_token')
         if access_token is None:
-            self.show_auth_warning()
+            self.show_auth_warning(response=response, no_access_token=True)
         return access_token
 
     def test_new_user(self):
