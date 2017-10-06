@@ -13,6 +13,7 @@ class Profile(models.Model):
     """
     user = models.OneToOneField(User)
     organization = models.CharField(max_length=300, blank=True)
+    hid = models.TextField(default=None, null=True, blank=True)
     # country = models.ForeignKey(Country)
     display_picture = models.FileField(upload_to='user_dp/',
                                        null=True, blank=True, default=None)

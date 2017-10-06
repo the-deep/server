@@ -12,7 +12,10 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from user.views import UserViewSet
+from user.views import (
+    UserViewSet,
+    HIDTokenObtainPairView,
+)
 from user_group.views import (
     UserGroupViewSet,
     GroupMembershipViewSet,
@@ -59,6 +62,7 @@ urlpatterns = [
     # Future reference: (v1|v2|v3...)
 
     url(r'^api/v1/token/$', TokenObtainPairView.as_view()),
+    url(r'^api/v1/token/hid/$', HIDTokenObtainPairView.as_view()),
     url(r'^api/v1/token/refresh/$', TokenRefreshView.as_view()),
 
     url(r'^api/v1/', include(router.urls)),

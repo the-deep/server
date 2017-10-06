@@ -1,6 +1,11 @@
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
+from django.utils.six import text_type
+from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
+
 from user.models import Profile
+from utils.hid import HumanitarianId
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -37,4 +42,45 @@ class UserSerializer(serializers.ModelSerializer):
         Profile.objects.update_or_create(user=user, defaults=profile_data)
 
 
-# EOF
+class HIDTokenObtainSerializer(serializers.Serializer):
+    access_token = serializers.CharField(required=True)
+    expires_in = serializers.IntegerField(required=False)
+    token_type = serializers.CharField(required=False)
+    state = serializers.IntegerField(required=False)
+
+    def validate(self, attrs):
+        hid = HumanitarianId(attrs['access_token'])
+        try:
+            self.user = hid.get_user()
+        except:
+            raise serializers.ValidationError(
+                _('Error in HID Integration, Please Contact Support'),
+            )
+
+        # Prior to Django 1.10, inactive users could be authenticated with the
+        # default `ModelBackend`.  As of Django 1.10, the `ModelBackend`
+        # prevents inactive users from authenticating.  App designers can still
+        # allow inactive users to authenticate by opting for the new
+        # `AllowAllUsersModelBackend`.  However, we explicitly prevent inactive
+        # users from authenticating to enforce a reasonable policy and provide
+        # sensible backwards compatibility with older Django versions.
+        if self.user is None or not self.user.is_active:
+            # TODO: Better Validation Error [Also in utils/hid.py]
+            raise serializers.ValidationError(
+                _('No active account found for given HID user,'
+                  ' Please Contact Support '),
+            )
+
+        return {}
+
+
+class HIDTokenObtainPairSerializer(HIDTokenObtainSerializer):
+    def validate(self, attrs):
+        data = super(HIDTokenObtainPairSerializer, self).validate(attrs)
+
+        refresh = RefreshToken.for_user(self.user)
+
+        data['refresh'] = text_type(refresh)
+        data['access'] = text_type(refresh.access_token)
+
+        return data

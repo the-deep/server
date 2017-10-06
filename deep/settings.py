@@ -218,3 +218,12 @@ CHANNEL_LAYERS = {
 }
 
 TEST_DIR = os.path.join(BASE_DIR, 'deep/test_files')
+
+# HID CONFIGS [NOTE: Update config in React too]
+HID_CLIENT_ID = os.environ.get('HID_CLIENT_ID', 'deep-local')
+HID_CLIENT_NAME = os.environ.get('HID_CLIENT_NAME', 'Deep Local')
+HID_CLIENT_REDIRECT_URL = os.environ.get(
+    'HID_CLIENT_REDIRECT_URL', 'http://localhost:3000/login/')
+HID_AUTH_URI = os.environ.get(
+    'HID_AUTH_URI',
+    'https://api2.dev.humanitarian.id')  # https://api2.dev.humanitarian.id
