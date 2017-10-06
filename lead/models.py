@@ -55,7 +55,7 @@ class Lead(UserResource):
     url = models.CharField(max_length=255, blank=True)
     website = models.CharField(max_length=255, blank=True)
 
-    attachment = models.FileField(upload_to='lead_attachments/%Y/%m/',
+    attachment = models.FileField(upload_to='lead-attachments/%Y/%m/',
                                   default=None, null=True, blank=True)
 
     def __str__(self):
