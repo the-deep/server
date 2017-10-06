@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.fields import ArrayField
 
-from leads.models import Lead
+from user_resource.models import UserResource
+from lead.models import Lead
 from analysis_framework.models import (
     AnalysisFramework,
     Widget,
@@ -11,7 +12,7 @@ from analysis_framework.models import (
 )
 
 
-class Entry(models.Model):
+class Entry(UserResource):
     """
     Entry belonging to a lead
 
@@ -29,12 +30,15 @@ class Entry(models.Model):
 
     def __str__(self):
         if self.image:
-            return 'Image for {}'.format(self.lead.title)
+            return 'Image ({})'.format(self.lead.title)
         else:
-            return '"{}" for {}'.format(
+            return '"{}" ({})'.format(
                 self.excerpt[:30],
                 self.lead.title,
             )
+
+    class Meta(UserResource.Meta):
+        verbose_name_plural = 'entries'
 
 
 class Attribute(models.Model):
@@ -49,7 +53,7 @@ class Attribute(models.Model):
     data = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
-        return 'Attribute for ({}, {})'.format(
+        return 'Attribute ({}, {})'.format(
             self.entry.lead.title,
             self.widget.title,
         )
@@ -72,7 +76,7 @@ class FilterData(models.Model):
     number = models.IntegerField(default=None, blank=True, null=True)
 
     def __str__(self):
-        return 'Filter data for ({}, {})'.format(
+        return 'Filter data ({}, {})'.format(
             self.entry.lead.title,
             self.filter.title,
         )
@@ -87,7 +91,7 @@ class ExportData(models.Model):
     data = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
-        return 'Export data for ({}, {})'.format(
+        return 'Export data ({}, {})'.format(
             self.entry.lead.title,
-            self.exportable.widget.title,
+            self.exportable.schema_id,
         )

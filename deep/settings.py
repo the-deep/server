@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     'project',
     'geo',
     'lead',
+    'analysis_framework',
+    'entry',
 ]
 
 MIDDLEWARE = [
