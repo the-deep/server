@@ -17,9 +17,9 @@ SECRET_KEY = os.environ.get(
     '=p5!pos4^@$tb1yi@++o5_s)ya@62odvk_mf--#8ozaw0wnc0q')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', True)
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOST', '*')]
+ALLOWED_HOSTS = [os.environ.get('DJANGO_ALLOWED_HOST', '*')]
 
 
 # See if we are inside a test environment
@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'corsheaders',
+    'storages',
     'rest_framework',
     'django_filters',
     'crispy_forms',
@@ -59,6 +61,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -96,7 +99,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('DATABASE_NAME', 'postgres'),
         'USER': os.environ.get('DATABASE_USER', 'postgres'),
-        'PASSWORD': os.environ.get('DATABASE_USER', 'postgres'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'postgres'),
         'PORT': os.environ.get('DATABASE_PORT', '5432'),
         'HOST': os.environ.get('DATABASE_HOST', 'db'),
     }
@@ -171,21 +174,39 @@ USE_L10N = True
 USE_TZ = True
 
 
-REACT_APP_DIR = os.path.join(BASE_DIR, '../frontend')
-
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(REACT_APP_DIR, 'build', 'static'),
-]
+if os.environ.get('DJANGO_USE_S3', 'False').lower() == 'true':
+    # AWS S3 Bucket Credentials
+    AWS_STORAGE_BUCKET_NAME_STATIC = os.environ[
+        'DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC']
+    AWS_STORAGE_BUCKET_NAME_MEDIA = os.environ[
+        'DJANGO_AWS_STORAGE_BUCKET_NAME_MEDIA']
+    AWS_ACCESS_KEY_ID = os.environ['S3_AWS_ACCESS_KEY_ID']
+    AWS_SECRET_ACCESS_KEY = os.environ['S3_AWS_SECRET_ACCESS_KEY']
 
-STATIC_ROOT = '/static'
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_DEFAULT_ACL = 'private'
+    AWS_QUERYSTRING_AUTH = True
+    AWS_S3_CUSTOM_DOMAIN = None
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = '/media'
+    # Static configuration
+    STATICFILES_LOCATION = 'static'
+    STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN,
+                                     STATICFILES_LOCATION)
+    STATICFILES_STORAGE = 'deep.s3_storages.StaticStorage'
+
+    # Media configuration
+    MEDIAFILES_LOCATION = 'media'
+    MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
+    DEFAULT_FILE_STORAGE = 'deep.s3_storages.MediaStorage'
+else:
+    STATIC_URL = '/static/'
+    STATIC_ROOT = '/static'
+
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = '/media'
 
 
 # CELERY CONFIG
@@ -222,3 +243,102 @@ HID_CLIENT_REDIRECT_URL = os.environ.get(
 HID_AUTH_URI = os.environ.get(
     'HID_AUTH_URI',
     'https://api2.dev.humanitarian.id')  # https://api2.dev.humanitarian.id
+
+# Logging Errors to Papertrail
+
+
+def add_username_attribute(record):
+    """
+    Append username(email) to logs
+    """
+    if hasattr(record.request, 'user') and\
+            not record.request.user.is_anonymous():
+        record.username = record.request.user.username
+    else:
+        record.username = 'Anonymous_User'
+    return True
+
+
+if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'filters': {
+            'add_username_attribute': {
+                '()': 'django.utils.log.CallbackFilter',
+                'callback': add_username_attribute,
+            }
+        },
+        'formatters': {
+            'simple': {
+                'format': '%(asctime)s ' + os.environ.get('EBS_HOSTNAME', '') +
+                          ' DJANGO-' + os.environ.get('EBS_ENV_TYPE', '') +
+                          ': %(username)s %(message)s',
+                'datefmt': '%Y-%m-%dT%H:%M:%S',
+            },
+        },
+        'handlers': {
+            'SysLog': {
+                'level': 'ERROR',
+                'class': 'logging.handlers.SysLogHandler',
+                'filters': ['add_username_attribute'],
+                'formatter': 'simple',
+                'address': (os.environ.get('PAPERTRAIL_HOST'),
+                            int(os.environ.get('PAPERTRAIL_PORT')))
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['SysLog'],
+                'propagate': True,
+            },
+        },
+    }
+
+# CORS CONFIGS
+CORS_ORIGIN_WHITELIST = (
+    os.environ.get('FRONTEND_HOST', 'localhost:3000')
+)
+
+CORS_URLS_REGEX = r'^/api/.*$'
+
+CORS_ALLOW_METHODS = (
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+)
+
+CORS_ALLOW_HEADERS = (
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+)
+
+# Email CONFIGS
+USE_EMAIL_CONFIG = os.environ.get('USE_EMAIL_CONFIG',
+                                  'False').lower() == 'true'
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER',
+                                 'deepnotifications1@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'deep1234')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT')) if os.environ.get('EMAIL_PORT')\
+    else 587
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+ADMINS = [('Ewan', 'ewanogle@gmail.com'),
+          ('Togglecorp', 'info@togglecorp.com')]
+
+if not USE_EMAIL_CONFIG:
+    """
+    DUMP THE EMAIL TO CONSOLE
+    """
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

@@ -20,4 +20,7 @@ redis==2.10.6
 requests==2.13.0
 ipython==6.2.1
 pyjwt==1.5.3
+boto3==1.4.4
+django-storages==1.5.2
+django-cors-headers==2.1.0
 tox
