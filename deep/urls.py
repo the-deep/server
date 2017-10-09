@@ -7,14 +7,9 @@ from django.conf import settings
 from rest_framework import routers
 from rest_framework_swagger.views import get_swagger_view
 # from rest_framework.documentation import include_docs_urls
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
 
 from user.views import (
     UserViewSet,
-    HIDTokenObtainPairView,
 )
 from user_group.views import (
     UserGroupViewSet,
@@ -33,6 +28,12 @@ from lead.views import (
     LeadViewSet
 )
 from deep.views import FrontendView
+
+from jwt_auth.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    HIDTokenObtainPairView,
+)
 
 
 router = routers.DefaultRouter()
@@ -58,8 +59,6 @@ router.register(r'leads', LeadViewSet,
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-
-    # Future reference: (v1|v2|v3...)
 
     url(r'^api/v1/token/$', TokenObtainPairView.as_view()),
     url(r'^api/v1/token/hid/$', HIDTokenObtainPairView.as_view()),

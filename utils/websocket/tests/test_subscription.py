@@ -1,7 +1,7 @@
 from user.models import User
 from channels.generic.websockets import WebsocketConsumer
 from channels.test import ChannelTestCase, WSClient
-from rest_framework_simplejwt.tokens import AccessToken
+from jwt_auth.token import AccessToken
 
 
 class TestSubscription(ChannelTestCase):
@@ -20,7 +20,7 @@ class TestSubscription(ChannelTestCase):
         user.save()
 
         # Get the access token for this user
-        self.jwt = str(AccessToken.for_user(user))
+        self.jwt = AccessToken.for_user(user).encode()
         self.user = user
 
     def connect(self):

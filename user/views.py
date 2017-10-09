@@ -1,9 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import viewsets, permissions
-from rest_framework_simplejwt.views import TokenViewBase
 from .serializers import (
     UserSerializer,
-    HIDTokenObtainPairSerializer
 )
 
 
@@ -46,11 +44,3 @@ class UserViewSet(viewsets.ModelViewSet):
             return self.request.user
         else:
             return super().get_object()
-
-
-class HIDTokenObtainPairView(TokenViewBase):
-    """
-    Takes a hid token for a user and returns an access and refresh JSON web
-    token pair to prove the authentication of those hid token.
-    """
-    serializer_class = HIDTokenObtainPairSerializer

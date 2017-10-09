@@ -32,7 +32,7 @@ def custom_exception_handler(exc, context):
     elif hasattr(exc, 'get_codes'):
         # Otherwise, try to map the exception.get_codes() value to an
         # internal error code.
-        # If no internal code avaialble, return http status code as
+        # If no internal code available, return http status code as
         # internal error code by default.
         response.data['error_code'] = map_error_codes(
             exc.get_codes(), response.status_code)

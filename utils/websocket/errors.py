@@ -8,7 +8,7 @@ EVENT_INVALID = 40022
 FIELD_INVALID = 40023
 
 
-class SnNotProvidederror(Exception):
+class SnNotProvidedError(Exception):
     code = SN_NOT_PROVIDED
     message = 'Sequence number is not provided'
 

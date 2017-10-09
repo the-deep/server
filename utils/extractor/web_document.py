@@ -36,6 +36,7 @@ class WebDocument(Document):
             # If we can't get header, assume html and try to continue.
             r = requests.get(url, headers=headers)
             doc = r.content
+            super(WebDocument, self).__init__(doc, type)
             return
 
         if any(x in r.headers["content-type"] for x in self.HTML_TYPES):

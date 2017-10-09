@@ -6,23 +6,21 @@ from rest_framework.renderers import JSONRenderer
 
 from channels.generic.websockets import JsonWebsocketConsumer
 from channels import Group
-from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework_simplejwt.exceptions import TokenError
+from jwt_auth.token import AccessToken, TokenError
 
 from redis_store import redis
 from urllib.parse import parse_qs
 
-from deep.errors import (
+from jwt_auth.errors import (
     NOT_AUTHENTICATED,
     AUTHENTICATION_FAILED,
     NotAuthenticatedError,
     UserNotFoundError,
 )
-from deep.token_utils import get_user_from_token
 from .constants import subcription_channels, websocket_actions
 from .permissions import permissions
 from .errors import (
-    SnNotProvidederror,
+    SnNotProvidedError,
     ActionValueError,
     PermissionDenied,
     ChannelValueError,
@@ -66,7 +64,7 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
                 # If the jwt is available, try to authorize
                 # using it.
                 try:
-                    user = get_user_from_token(AccessToken(jwt))
+                    user = AccessToken(jwt).get_user()
 
                     # Save the user's id in the session for future requests
                     self.message.channel_session['user'] = user.pk
@@ -81,7 +79,7 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
                     self.message.reply_channel.send({
                         'accept': False,
                         'errorCode': AUTHENTICATION_FAILED,
-                        'error': str(e),
+                        'error': e.message,
                     })
                     return
 
@@ -136,7 +134,7 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
             # Sequence number
             sn = content.get('sn')
             if not sn:
-                raise SnNotProvidederror()
+                raise SnNotProvidedError()
 
             # The intended action of the user
             action = content.get('action')

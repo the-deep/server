@@ -3,7 +3,6 @@ Django settings for deep project.
 """
 import os
 import sys
-from datetime import timedelta
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -40,7 +39,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'crispy_forms',
-    'rest_framework_simplejwt',
     'djangorestframework_camel_case',
     'rest_framework_swagger',
     'reversion',
@@ -132,7 +130,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'jwt_auth.authentication.JwtAuthentication',
     ),
     'EXCEPTION_HANDLER': 'deep.exception_handler.custom_exception_handler',
     'DEFAULT_RENDERER_CLASSES': (
@@ -156,11 +154,6 @@ REST_FRAMEWORK = {
 
 # Crispy forms for better django filters rendering
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
-
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-}
 
 DEFAULT_VERSION = 'v1'
 
