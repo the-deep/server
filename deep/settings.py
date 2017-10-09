@@ -251,11 +251,12 @@ def add_username_attribute(record):
     """
     Append username(email) to logs
     """
-    if hasattr(record.request, 'user') and\
-            not record.request.user.is_anonymous():
-        record.username = record.request.user.username
-    else:
-        record.username = 'Anonymous_User'
+    if hasattr(record, 'request'):
+        if hasattr(record.request, 'user') and\
+                not record.request.user.is_anonymous():
+            record.username = record.request.user.username
+        else:
+            record.username = 'Anonymous_User'
     return True
 
 
@@ -279,7 +280,7 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
         },
         'handlers': {
             'SysLog': {
-                'level': 'ERROR',
+                'level': 'DEBUG',
                 'class': 'logging.handlers.SysLogHandler',
                 'filters': ['add_username_attribute'],
                 'formatter': 'simple',
@@ -288,6 +289,14 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
             },
         },
         'loggers': {
+            'celery': {
+                'handlers': ['SysLog'],
+                'propagate': True,
+            },
+            'channels': {
+                'handlers': ['SysLog'],
+                'propagate': True,
+            },
             'django': {
                 'handlers': ['SysLog'],
                 'propagate': True,
