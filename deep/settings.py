@@ -242,7 +242,7 @@ HID_CLIENT_REDIRECT_URL = os.environ.get(
     'HID_CLIENT_REDIRECT_URL', 'http://localhost:3000/login/')
 HID_AUTH_URI = os.environ.get(
     'HID_AUTH_URI',
-    'https://api2.dev.humanitarian.id')  # https://api2.dev.humanitarian.id
+    'https://api2.dev.humanitarian.id')  # https://auth.humanitarian.id
 
 # Logging Errors to Papertrail
 
