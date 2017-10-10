@@ -49,7 +49,7 @@ class TokenRefreshSerializer(serializers.Serializer):
                 'Invalid refresh token'
             )
 
-        if user.is_active:
+        if not user.is_active:
             raise AuthenticationFailed('User not active')
 
         access_token = AccessToken.for_user(user)

@@ -20,7 +20,10 @@ class TokenError(Exception):
         self.message = message
 
 
+# Secret key to encode jwt
 SECRET = settings.SECRET_KEY
+
+# Default access token life time
 ACCESS_TOKEN_LIFETIME = datetime.timedelta(minutes=15)
 
 

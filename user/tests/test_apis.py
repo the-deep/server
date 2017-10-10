@@ -60,6 +60,9 @@ class AuthMixin():
                 'username': 'test@test.com',
                 'password': 'admin123',
             }, format='json')
+
+        self.access = result.data['access']
+        self.refresh = result.data['refresh']
         return result.data['access']
 
     def get_superuser_acess_token(self):

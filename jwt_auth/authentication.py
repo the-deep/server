@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.utils.six import text_type
 from rest_framework import HTTP_HEADER_ENCODING, authentication
 from rest_framework.exceptions import AuthenticationFailed
