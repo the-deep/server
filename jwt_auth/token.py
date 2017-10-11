@@ -98,7 +98,8 @@ class AccessToken(Token):
 
         token['userId'] = user.id
         token['username'] = user.username
-        token['displayName'] = str(user)
+        token['displayName'] = user.get_full_name() if \
+            user.first_name else user.username
 
         return token
 

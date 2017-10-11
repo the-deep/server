@@ -10,12 +10,17 @@ class UserSerializer(serializers.ModelSerializer):
     display_picture = serializers.FileField(source='profile.display_picture',
                                             allow_empty_file=True,
                                             required=False)
+    display_name = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ('id', 'username', 'password', 'first_name', 'last_name',
+                  'display_name',
                   'email', 'organization', 'display_picture',)
         extra_kwargs = {'password': {'write_only': True}}
+
+    def get_display_name(self, user):
+        return user.get_full_name() if user.first_name else user.username
 
     def create(self, validated_data):
         profile_data = validated_data.pop('profile', None)
