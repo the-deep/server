@@ -10,7 +10,7 @@ class ProjectSerializer(UserResourceSerializer):
         model = Project
         fields = ('id', 'title', 'members', 'regions',
                   'memberships',
-                  'user_groups', 'data',
+                  'user_groups', 'data', 'analysis_framework',
                   'created_at', 'created_by', 'modified_at', 'modified_by')
         read_only_fields = ('memberships', 'members',)
 

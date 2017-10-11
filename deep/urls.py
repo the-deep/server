@@ -27,6 +27,14 @@ from geo.views import (
 from lead.views import (
     LeadViewSet
 )
+from entry.views import (
+    EntryViewSet, AttributeViewSet, FilterDataViewSet,
+    ExportDataViewSet
+)
+from analysis_framework.views import (
+    AnalysisFrameworkViewSet, WidgetViewSet, FilterViewSet,
+    ExportableViewSet
+)
 from deep.views import FrontendView
 
 from jwt_auth.views import (
@@ -55,6 +63,26 @@ router.register(r'admin-levels-upload', AdminLevelUploadViewSet,
                 base_name='admin_level_upload')
 router.register(r'leads', LeadViewSet,
                 base_name='lead')
+
+# Entry Routers
+router.register(r'entries', EntryViewSet,
+                base_name='entry_lead')
+router.register(r'entry-attribute', AttributeViewSet,
+                base_name='entry_attribute')
+router.register(r'entry-filter-data', FilterDataViewSet,
+                base_name='entry_filter_data')
+router.register(r'entry-export-data', ExportDataViewSet,
+                base_name='entry_export_data')
+
+# Analysis Routers
+router.register(r'analysis-framework', AnalysisFrameworkViewSet,
+                base_name='analysis_framework')
+router.register(r'analysis-framework-widget', WidgetViewSet,
+                base_name='analysis_framework_widget')
+router.register(r'analysis-framework-filter', FilterViewSet,
+                base_name='analysis_framework_filter')
+router.register(r'analysis-framework-exportable', ExportableViewSet,
+                base_name='analysis_framework_exportable')
 
 
 urlpatterns = [

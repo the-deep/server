@@ -37,6 +37,23 @@ class Entry(UserResource):
                 self.lead.title,
             )
 
+    @staticmethod
+    def get_for(user):
+        """
+        Entry can only be accessed by users who have access to
+        it's lead
+        """
+        return Entry.objects.filter(
+            models.Q(lead__project__members=user) |
+            models.Q(lead__project__user_groups__members=user)
+        ).distinct()
+
+    def can_get(self, user):
+        return self.lead.can_get(user)
+
+    def can_modify(self, user):
+        return self.lead.can_modify(user)
+
     class Meta(UserResource.Meta):
         verbose_name_plural = 'entries'
 
@@ -51,6 +68,23 @@ class Attribute(models.Model):
     entry = models.ForeignKey(Entry)
     widget = models.ForeignKey(Widget)
     data = JSONField(default=None, blank=True, null=True)
+
+    @staticmethod
+    def get_for(user):
+        """
+        Attribute can only be accessed by users who have access to
+        it's entry
+        """
+        return Attribute.objects.filter(
+            models.Q(entry__lead__project__members=user) |
+            models.Q(entry__lead__project__user_groups__members=user)
+        ).distinct()
+
+    def can_get(self, user):
+        return self.entry.can_get(user)
+
+    def can_modify(self, user):
+        return self.entry.can_modify(user)
 
     def __str__(self):
         return 'Attribute ({}, {})'.format(
@@ -75,6 +109,23 @@ class FilterData(models.Model):
     # Just number for numeric comparision
     number = models.IntegerField(default=None, blank=True, null=True)
 
+    @staticmethod
+    def get_for(user):
+        """
+        Filter data can only be accessed by users who have access to
+        it's entry
+        """
+        return FilterData.objects.filter(
+            models.Q(entry__lead__project__members=user) |
+            models.Q(entry__lead__project__user_groups__members=user)
+        ).distinct()
+
+    def can_get(self, user):
+        return self.entry.can_get(user)
+
+    def can_modify(self, user):
+        return self.entry.can_modify(user)
+
     def __str__(self):
         return 'Filter data ({}, {})'.format(
             self.entry.lead.title,
@@ -89,6 +140,23 @@ class ExportData(models.Model):
     entry = models.ForeignKey(Entry)
     exportable = models.ForeignKey(Exportable)
     data = JSONField(default=None, blank=True, null=True)
+
+    @staticmethod
+    def get_for(user):
+        """
+        Export data can only be accessed by users who have access to
+        it's entry
+        """
+        return ExportData.objects.filter(
+            models.Q(entry__lead__project__members=user) |
+            models.Q(entry__lead__project__user_groups__members=user)
+        ).distinct()
+
+    def can_get(self, user):
+        return self.entry.can_get(user)
+
+    def can_modify(self, user):
+        return self.entry.can_modify(user)
 
     def __str__(self):
         return 'Export data ({}, {})'.format(

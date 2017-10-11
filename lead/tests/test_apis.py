@@ -13,6 +13,7 @@ from lead.models import Lead
 class LeadMixin():
     """
     Lead Related methods
+    Required Mixins: ProjectMixin [project.tests.test_apis]
     """
     URL = '/api/v1/leads/'
 

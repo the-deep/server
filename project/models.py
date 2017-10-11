@@ -4,6 +4,7 @@ from django.db import models
 from user_resource.models import UserResource
 from geo.models import Region
 from user_group.models import UserGroup
+from analysis_framework.models import AnalysisFramework
 
 
 class Project(UserResource):
@@ -16,6 +17,9 @@ class Project(UserResource):
                                      through='ProjectMembership')
     regions = models.ManyToManyField(Region, blank=True)
     user_groups = models.ManyToManyField(UserGroup, blank=True)
+    analysis_framework = models.ForeignKey(AnalysisFramework, blank=True,
+                                           default=None, null=True,
+                                           on_delete=models.SET_NULL)
     data = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):

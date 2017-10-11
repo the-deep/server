@@ -11,6 +11,24 @@ class AnalysisFramework(UserResource):
     """
     title = models.CharField(max_length=255)
 
+    @staticmethod
+    def get_for(user):
+        """
+        Analysis Framework can only be accessed by users who have access to
+        it's project
+        """
+        return AnalysisFramework.objects.filter(
+            models.Q(project=None) |
+            models.Q(project__members=user) |
+            models.Q(project__user_groups__members=user)
+        ).distinct()
+
+    def can_get(self, user):
+        return self.project.can_get(user)
+
+    def can_modify(self, user):
+        return self.project.can_modify(user)
+
 
 class Widget(models.Model):
     """
@@ -23,6 +41,24 @@ class Widget(models.Model):
 
     def __str__(self):
         return '{} ({})'.format(self.title, self.schema_id)
+
+    @staticmethod
+    def get_for(user):
+        """
+        Widget can only be accessed by users who have access to
+        AnalysisFramework which has access to it's project
+        """
+        return Widget.objects.filter(
+            models.Q(analysis_framework__project=None) |
+            models.Q(analysis_framework__project__members=user) |
+            models.Q(analysis_framework__project__user_groups__members=user)
+        ).distinct()
+
+    def can_get(self, user):
+        return self.analysis_framework.can_get(user)
+
+    def can_modify(self, user):
+        return self.analysis_framework.can_modify(user)
 
 
 class Filter(models.Model):
@@ -37,6 +73,24 @@ class Filter(models.Model):
     def __str__(self):
         return '{} ({})'.format(self.title, self.schema_id)
 
+    @staticmethod
+    def get_for(user):
+        """
+        Filter can only be accessed by users who have access to
+        AnalysisFramework which has access to it's project
+        """
+        return Filter.objects.filter(
+            models.Q(analysis_framework__project=None) |
+            models.Q(analysis_framework__project__members=user) |
+            models.Q(analysis_framework__project__user_groups__members=user)
+        ).distinct()
+
+    def can_get(self, user):
+        return self.analysis_framework.can_get(user)
+
+    def can_modify(self, user):
+        return self.analysis_framework.can_modify(user)
+
 
 class Exportable(models.Model):
     """
@@ -48,3 +102,21 @@ class Exportable(models.Model):
 
     def __str__(self):
         return 'Exportable ({})'.format(self.schema_id)
+
+    @staticmethod
+    def get_for(user):
+        """
+        Exportable can only be accessed by users who have access to
+        AnalysisFramework which has access to it's project
+        """
+        return Exportable.objects.filter(
+            models.Q(analysis_framework__project=None) |
+            models.Q(analysis_framework__project__members=user) |
+            models.Q(analysis_framework__project__user_groups__members=user)
+        ).distinct()
+
+    def can_get(self, user):
+        return self.analysis_framework.can_get(user)
+
+    def can_modify(self, user):
+        return self.analysis_framework.can_modify(user)
