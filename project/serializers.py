@@ -8,9 +8,8 @@ class ProjectSerializer(UserResourceSerializer):
 
     class Meta:
         model = Project
-        fields = ('id', 'title', 'members', 'regions',
-                  'memberships',
-                  'user_groups', 'data', 'analysis_framework',
+        fields = ('id', 'title', 'regions', 'memberships',
+                  'user_groups', 'data',
                   'created_at', 'created_by', 'modified_at', 'modified_by')
         read_only_fields = ('memberships', 'members',)
 
@@ -24,8 +23,9 @@ class ProjectSerializer(UserResourceSerializer):
         return project
 
     def get_memberships(self, project):
-        return ProjectMembership.objects.filter(project=project)\
-            .distinct().values_list('id', flat=True)
+        memberships = ProjectMembership.objects.filter(project=project)\
+            .distinct()
+        return ProjectMembershipSerializer(memberships, many=True).data
 
     # Validations
     def validate_user_groups(self, user_groups):
@@ -44,9 +44,15 @@ class ProjectSerializer(UserResourceSerializer):
 
 
 class ProjectMembershipSerializer(serializers.ModelSerializer):
+    member_name = serializers.SerializerMethodField()
+
     class Meta:
         model = ProjectMembership
-        fields = ('__all__')
+        fields = ('id', 'member', 'member_name',
+                  'project', 'role', 'joined_at')
+
+    def get_member_name(self, membership):
+        return membership.member.profile.get_display_name()
 
     # Validations
     def validate_project(self, project):

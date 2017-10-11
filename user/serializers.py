@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
     def get_display_name(self, user):
-        return user.get_full_name() if user.first_name else user.username
+        return user.profile.get_display_name()
 
     def create(self, validated_data):
         profile_data = validated_data.pop('profile', None)

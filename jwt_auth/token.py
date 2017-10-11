@@ -99,9 +99,7 @@ class AccessToken(Token):
 
         token['userId'] = user.id
         token['username'] = user.username
-        token['displayName'] = user.get_full_name() if \
-            user.first_name else user.username
-
+        token['displayName'] = user.profile.get_display_name()
         return token
 
     def get_user(self):

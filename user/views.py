@@ -3,6 +3,7 @@ from rest_framework import viewsets, permissions
 from .serializers import (
     UserSerializer,
 )
+from docs.registrar import register_for_docs
 
 
 class UserPermission(permissions.BasePermission):
@@ -12,6 +13,7 @@ class UserPermission(permissions.BasePermission):
         return obj == request.user
 
 
+@register_for_docs
 class UserViewSet(viewsets.ModelViewSet):
     """
     create:

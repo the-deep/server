@@ -5,8 +5,6 @@ from django.contrib import admin
 from django.conf import settings
 
 from rest_framework import routers
-from rest_framework_swagger.views import get_swagger_view
-# from rest_framework.documentation import include_docs_urls
 
 from user.views import (
     UserViewSet,
@@ -15,17 +13,17 @@ from gallery.views import (
     FileViewSet,
 )
 from user_group.views import (
-    UserGroupViewSet,
     GroupMembershipViewSet,
+    UserGroupViewSet,
 )
 from project.views import (
-    ProjectViewSet,
     ProjectMembershipViewSet,
+    ProjectViewSet,
 )
 from geo.views import (
-    RegionViewSet,
-    AdminLevelViewSet,
     AdminLevelUploadViewSet,
+    AdminLevelViewSet,
+    RegionViewSet,
 )
 from lead.views import (
     LeadViewSet
@@ -38,12 +36,17 @@ from analysis_framework.views import (
     AnalysisFrameworkViewSet, WidgetViewSet, FilterViewSet,
     ExportableViewSet
 )
-from deep.views import FrontendView
+from deep.views import (
+    FrontendView,
+)
+from docs.views import (
+    DocsView,
+)
 
 from jwt_auth.views import (
+    HIDTokenObtainPairView,
     TokenObtainPairView,
     TokenRefreshView,
-    HIDTokenObtainPairView,
 )
 
 
@@ -90,20 +93,35 @@ router.register(r'analysis-framework-exportable', ExportableViewSet,
                 base_name='analysis_framework_exportable')
 
 
+# Versioning : (v1|v2|v3)
+
+API_PREFIX = r'^api/(?P<version>(v1))/'
+
+
+def get_api_path(path):
+    return '{}{}'.format(API_PREFIX, path)
+
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
 
-    url(r'^api/v1/token/$', TokenObtainPairView.as_view()),
-    url(r'^api/v1/token/hid/$', HIDTokenObtainPairView.as_view()),
-    url(r'^api/v1/token/refresh/$', TokenRefreshView.as_view()),
+    url(get_api_path(r'token/$'),
+        TokenObtainPairView.as_view()),
 
-    url(r'^api/v1/', include(router.urls)),
+    url(get_api_path(r'token/hid/$'),
+        HIDTokenObtainPairView.as_view()),
+
+    url(get_api_path(r'token/refresh/$'),
+        TokenRefreshView.as_view()),
+
+    url(get_api_path(''), include(router.urls)),
+    url(get_api_path(r'docs/'), DocsView.as_view()),
+
+    url(get_api_path(''), include('drf_openapi.urls')),
 
     url(r'^api-auth/', include('rest_framework.urls',
                                namespace='rest_framework')),
 
-    # url(r'^docs/', include_docs_urls(title='DEEP API')),
-    url(r'^api/v1/docs/', get_swagger_view(title='DEEP API')),
 ] + static.static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += [
