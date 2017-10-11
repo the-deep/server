@@ -31,7 +31,7 @@ class Token:
     """
     Wrapper for jwt token
     """
-    def __init__(self, token=None):
+    def __init__(self, token=None, verify=True):
         """
         Initialize with given jwt string to decode or create a new one
         """
@@ -44,9 +44,10 @@ class Token:
             try:
                 self.payload = jwt.decode(self.token,
                                           SECRET,
-                                          algorithms=['HS256'])
+                                          algorithms=['HS256'],
+                                          verify=verify)
             except jwt.ExpiredSignatureError:
-                raise TokenError('Token is invalid or expired')
+                    raise TokenError('Token is invalid or expired')
         else:
             # Not token was given, so create a new one
             # Also set proper lifetime starting now

@@ -8,6 +8,11 @@ from .token import AccessToken, TokenError
 # The auth header type 'Bearer' encoded to bytes
 AUTH_HEADER_TYPE_BYTES = 'Bearer'.encode(HTTP_HEADER_ENCODING)
 
+# Paths for which no verification of access token in performed
+# such as expiry verifications
+# TODO: Use more generalized way to check safe path such as regex
+SAFE_PATHS = ['/api/v1/token/refresh/']
+
 
 class JwtAuthentication(authentication.BaseAuthentication):
     """
@@ -35,7 +40,7 @@ class JwtAuthentication(authentication.BaseAuthentication):
             header = header.encode(HTTP_HEADER_ENCODING)
 
         # Get the access token from the header
-        access_token = self.get_access_token(header)
+        access_token = self.get_access_token(header, request)
         if not access_token:
             return None
 
@@ -45,7 +50,7 @@ class JwtAuthentication(authentication.BaseAuthentication):
         except Exception as e:
             raise AuthenticationFailed(e.message)
 
-    def get_access_token(self, header):
+    def get_access_token(self, header, request):
         """
         Parse and verity authentication header for
         access token and return the decoded jwt object
@@ -67,7 +72,8 @@ class JwtAuthentication(authentication.BaseAuthentication):
         # We got the token string, decode and return the
         # access token object
         try:
-            access_token = AccessToken(token)
+            access_token = AccessToken(token,
+                                       verify=request.path not in SAFE_PATHS)
             return access_token
         except TokenError as e:
             raise AuthenticationFailed(e.message)
