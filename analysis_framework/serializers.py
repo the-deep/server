@@ -24,10 +24,10 @@ class WidgetSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
     # Validations
-    def validate_region(self, widget):
-        if not widget.can_modify(self.context['request'].user):
-            raise serializers.ValidationError('Invalid widget')
-        return widget
+    def validate_analysis_framework(self, analysis_framework):
+        if not analysis_framework.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('Invalid Analysis Framework')
+        return analysis_framework
 
 
 class FilterSerializer(serializers.ModelSerializer):
@@ -40,10 +40,10 @@ class FilterSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
     # Validations
-    def validate_region(self, filter):
-        if not filter.can_modify(self.context['request'].user):
-            raise serializers.ValidationError('Invalid Filter')
-        return filter
+    def validate_analysis_framework(self, analysis_framework):
+        if not analysis_framework.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('Invalid Analysis Framework')
+        return analysis_framework
 
 
 class ExportableSerializer(serializers.ModelSerializer):
@@ -56,7 +56,7 @@ class ExportableSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
     # Validations
-    def validate_region(self, exportable):
-        if not exportable.can_modify(self.context['request'].user):
-            raise serializers.ValidationError('Invalid Exportable')
-        return exportable
+    def validate_analysis_framework(self, analysis_framework):
+        if not analysis_framework.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('Invalid Analysis Framework')
+        return analysis_framework

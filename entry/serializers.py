@@ -24,10 +24,10 @@ class AttributeSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
     # Validations
-    def validate_region(self, attribute):
-        if not attribute.can_modify(self.context['request'].user):
-            raise serializers.ValidationError('Invalid Attribute')
-        return attribute
+    def validate_entry(self, entry):
+        if not entry.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('Invalid Entry')
+        return entry
 
 
 class FilterDataSerializer(serializers.ModelSerializer):
@@ -40,10 +40,10 @@ class FilterDataSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
     # Validations
-    def validate_region(self, filter_data):
-        if not filter_data.can_modify(self.context['request'].user):
-            raise serializers.ValidationError('Invalid Filter data')
-        return filter_data
+    def validate_entry(self, entry):
+        if not entry.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('Invalid Entry')
+        return entry
 
 
 class ExportDataSerializer(serializers.ModelSerializer):
@@ -56,7 +56,7 @@ class ExportDataSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
     # Validations
-    def validate_region(self, export_data):
-        if not export_data.can_modify(self.context['request'].user):
-            raise serializers.ValidationError('Invalid Export data')
-        return export_data
+    def validate_entry(self, entry):
+        if not entry.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('Invalid Entry')
+        return entry

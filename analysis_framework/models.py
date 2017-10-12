@@ -24,9 +24,13 @@ class AnalysisFramework(UserResource):
         ).distinct()
 
     def can_get(self, user):
+        # TODO: update required logic for permission
+        return True
         return self.project.can_get(user)
 
     def can_modify(self, user):
+        # TODO: update required logic for permission
+        return True
         return self.project.can_modify(user)
 
 
