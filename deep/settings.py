@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'lead',
     'analysis_framework',
     'entry',
+    'dummy_data',
 ]
 
 MIDDLEWARE = [

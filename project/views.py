@@ -11,7 +11,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
                           ModifyPermission]
 
     def get_queryset(self):
-        return Project.get_for(self.request.user)
+        user = self.request.GET.get('user', self.request.user)
+        return Project.get_for(user)
 
 
 class ProjectMembershipViewSet(viewsets.ModelViewSet):
