@@ -5,19 +5,26 @@ from django.utils.encoding import force_text
 from rest_framework import exceptions, serializers
 from rest_framework.compat import uritemplate
 
+from .utils import is_list_view
 from . import schema
 
 
-def field_to_schema(field):
-    title = force_text(field.label) if field.label else ''
-    description = force_text(field.help_text) if field.help_text else ''
+def to_camel_case(snake_str):
+    components = snake_str.split('_')
+    return components[0] + "".join(x.title() for x in components[1:])
+
+
+def field_to_schema(field, camelcase=True):
+    # title = force_text(field.label) if field.label else ''
+    # if camelcase:
+    #     title = to_camel_case(title)
+    # description = force_text(field.help_text) if field.help_text else ''
 
     if isinstance(field, (serializers.ListSerializer, serializers.ListField)):
         return schema.Array(
             items=field_to_schema(field.child),
-            title=title,
-            description=description
         )
+
     elif isinstance(field, serializers.Serializer):
         return schema.Object(
             properties=OrderedDict([
@@ -25,46 +32,54 @@ def field_to_schema(field):
                 for key, value
                 in field.fields.items()
             ]),
-            title=title,
-            description=description
         )
+
     elif isinstance(field, serializers.ManyRelatedField):
         return schema.Array(
             items=field_to_schema(field.child_relation),
-            title=title,
-            description=description
         )
+
     elif isinstance(field, serializers.RelatedField):
         # TODO Check if stringrelatedfield or primarykeyrelatedfield
         #      or ...
-        return schema.Integer(title=title, description=description)
+        return schema.Integer()
+
     elif isinstance(field, serializers.MultipleChoiceField):
         return schema.Array(
             items=schema.Enum(enum=list(field.choices.keys())),
-            title=title,
-            description=description
         )
     elif isinstance(field, serializers.ChoiceField):
         return schema.Enum(
             enum=list(field.choices.keys()),
-            title=title,
-            description=description
         )
+
     elif isinstance(field, serializers.BooleanField):
-        return schema.Boolean(title=title, description=description)
+        return schema.Boolean()
     elif isinstance(field, (serializers.DecimalField, serializers.FloatField)):
-        return schema.Number(title=title, description=description)
+        return schema.Number()
     elif isinstance(field, serializers.IntegerField):
-        return schema.Integer(title=title, description=description)
+        return schema.Integer()
+
+    elif isinstance(field, serializers.JSONField):
+        return schema.CustomJson()
+    elif isinstance(field, serializers.DateField):
+        return schema.Date()
+    elif isinstance(field, serializers.TimeField):
+        return schema.Time()
+    elif isinstance(field, serializers.DateTimeField):
+        return schema.DateTime()
+    elif isinstance(field, serializers.URLField):
+        return schema.URL()
+
+    elif isinstance(field, (serializers.FileField, serializers.ImageField)):
+        return schema.File()
 
     if field.style.get('base_template') == 'textarea.html':
         return schema.String(
-            title=title,
-            description=description,
             format='textarea'
         )
 
-    return schema.String(title=title, description=description)
+    return schema.String()
 
 
 def get_pk_description(model, model_field):
@@ -75,25 +90,23 @@ def get_pk_description(model, model_field):
     else:
         value_type = 'unique value'
 
-    return 'A {value_type} identifying this {name}'.format(
+    return 'A {value_type} identifying this {title}'.format(
         value_type=value_type,
-        name=model._meta.verbose_name,
+        title=model._meta.verbose_name,
     )
 
 
 class Field:
     def __init__(self,
-                 name='',
-                 location='',
+                 title='',
                  required='',
                  schema=None):
-        self.name = name
-        self.location = location
+        self.title = title
         self.required = required
         self.schema = schema
 
     def __str__(self):
-        return self.name
+        return self.title
 
     def __repr__(self):
         return str(self)
@@ -108,9 +121,12 @@ class ViewSchema:
 
         self.request_fields = []
         self.response_fields = []
+        self.path_fields = []
 
         self.get_path_fields()
         self.get_serializer_fields()
+
+        self.handle_pagination()
 
     def get_path_fields(self):
         view = self.view
@@ -142,27 +158,26 @@ class ViewSchema:
                 if hasattr(view, 'lookup_value_regex') and \
                         view.lookup_field == variable:
                     kwargs['pattern'] = view.lookup_value_regex
-                elif isinstance(model_field, models.AutoField):
+                if isinstance(model_field, models.AutoField):
                     schema_cls = schema.Integer
 
                 # Check other field types ? It's mostly string though
 
             field = Field(
-                name=variable,
-                location='path',
+                title=variable,
                 required=True,
-                schema=schema_cls(title=title, description=description,
-                                  **kwargs)
+                schema=schema_cls(**kwargs)
             )
-            self.request_fields.append(field)
-            self.response_fields.append(field)
+            self.path_fields.append(field)
 
     def get_serializer_fields(self):
         view = self.view
         method = self.method
 
-        if method not in ('PUT', 'PATCH', 'POST'):
+        if method in ('DELETE',):
             return
+
+        takes_request = method in ('PUT', 'PATCH', 'POST')
 
         if not hasattr(view, 'get_serializer'):
             return
@@ -176,8 +191,7 @@ class ViewSchema:
         if isinstance(serializer, serializers.ListSerializer):
             # self.request_fields.append([
             #     Field(
-            #         name='data',
-            #         location='body',
+            #         title='data',
             #         required=True,
             #         schema=schema.Array(),
             #     )
@@ -195,13 +209,53 @@ class ViewSchema:
 
             required = field.required and method != 'PATCH'
             out_field = Field(
-                name=field.field_name,
-                location='form',
+                title=to_camel_case(field.field_name),
                 required=required,
                 schema=field_to_schema(field),
             )
 
-            if not field.read_only:
+            if not field.read_only and takes_request:
                 self.request_fields.append(out_field)
             if not field.write_only:
                 self.response_fields.append(out_field)
+
+    def handle_pagination(self):
+        # TODO: Check if pagination is enabled and is of this format
+
+        # For now assume, limit offset pagination
+
+        if is_list_view(self.path, self.method, self.view):
+            response_fields = []
+
+            response_fields.append(Field(
+                title='count',
+                required=True,
+                schema=schema.Integer(),
+            ))
+
+            response_fields.append(Field(
+                title='next',
+                required=False,
+                schema=schema.URL(),
+            ))
+
+            response_fields.append(Field(
+                title='previous',
+                required=False,
+                schema=schema.URL(),
+            ))
+
+            response_fields.append(Field(
+                title='results',
+                required=True,
+                schema=schema.Array(
+                    items=schema.Object(
+                        properties=OrderedDict([
+                            (field.title, field.schema) for field in
+                            self.response_fields
+                        ])
+                    ),
+                ),
+            ))
+
+            self.response_fields = response_fields

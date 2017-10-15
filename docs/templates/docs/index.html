@@ -1,3 +1,40 @@
+{
+    "title": "DEEP API Docs",
+    "apis": [
+    {% for key, endpoint in endpoints %}
+        {
+            "title": "{{ key }}",
+            "endpoints": [
+                {% for endpoint_name, methods in endpoint %}
+                {
+                    "title": "{{ endpoint_name }}",
+                    "methods": [
+                        {% for method_name, schema in methods.items %}
+                        {
+                            "title": "{{ method_name }}",
+                            "path": "{{ schema.path }}",
+                            "request_schema":{
+                                {% for field in schema.request_fields %}
+                                "{{ field.title }}": {{ field.schema|safe }}{% if not forloop.last %},{% endif %}
+                                {% endfor %}
+                            },
+                            "response_schema": {
+                                {% for field in schema.response_fields %}
+                                "{{ field.title }}": {{ field.schema|safe }}{% if not forloop.last %},{% endif %}
+                                {% endfor %} 
+                            }
+                        }{% if not forloop.last %},{% endif %}
+                        {% endfor %}
+                    ]
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ]
+        }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+    ]
+}
+
+{% comment %}
 {% for key, endpoint in endpoints %}
 <div>
     <h2>{{ key }}</h2>
@@ -13,30 +50,43 @@
             {{ schema.path }}
         </div>
 
+        {% if schema.request_fields %}
         <div>
             <h5>Request Schema</h5>
 
-            {% for field in schema.request_fields %}
-            <p>
-            {{ field.name }}: {{ field.description }}
-            {{ field.schema }}
-            {% endfor %}
-            </p>
+            <pre>
+            {{% for field in schema.request_fields %}
+                "{{ field.title }}": {{ field.schema }}{% if not forloop.last %},{% endif %}{% endfor %}
+            }
+            </pre>
         </div>
+        {% endif %}
 
+        {% if schema.response_fields %}
         <div>
             <h5>Response Schema</h5>
 
-            {% for field in schema.response_fields %}
-            <p>
-            {{ field.name }}: {{ field.description }}
-            {{ field.schema }}
-            {% endfor %}
-            </p>
+            <pre>
+            {{% for field in schema.response_fields %}
+                "{{ field.title }}": {{ field.schema }}{% if not forloop.last %},{% endif %}{% endfor %}
+            }
+            </pre>
         </div>
+        {% endif %}
         {% endfor %}
     </div>
     {% endfor %}
 
 </div>
 {% endfor %}
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('pre').each(function() {
+            const json = JSON.stringify(JSON.parse($(this).text()), null, 4);
+            $(this).text(json);
+        });
+    });
+</script>
+{% endcomment %}

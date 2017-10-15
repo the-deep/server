@@ -115,7 +115,7 @@ urlpatterns = [
         TokenRefreshView.as_view()),
 
     url(get_api_path(''), include(router.urls)),
-    url(get_api_path(r'docs/'), DocsView.as_view()),
+    url(get_api_path(r'docs.json'), DocsView.as_view()),
 
     # url(get_api_path(''), include('drf_openapi.urls')),
 

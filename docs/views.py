@@ -1,7 +1,10 @@
-from django.shortcuts import render
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 from django.views.generic import View
 
 from .schema_generator import SchemaGenerator
+
+import json
 
 
 class DocsView(View):
@@ -16,4 +19,11 @@ class DocsView(View):
             ]))
 
         context['endpoints'] = endpoints
-        return render(request, 'docs/index.html', context)
+        return HttpResponse(
+            json.dumps(
+                json.loads(
+                    render_to_string('docs/index.html', context)
+                ),
+            ),
+            content_type='application/json',
+        )

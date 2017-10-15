@@ -31,7 +31,8 @@ class ProjectSerializer(UserResourceSerializer):
         model = Project
         fields = ('id', 'title', 'regions', 'memberships',
                   'user_groups', 'data',
-                  'created_at', 'created_by', 'modified_at', 'modified_by')
+                  'created_at', 'created_by', 'modified_at', 'modified_by',
+                  'created_by_name', 'modified_by_name')
         read_only_fields = ('memberships', 'members',)
 
     def create(self, validated_data):
@@ -42,11 +43,6 @@ class ProjectSerializer(UserResourceSerializer):
             role='admin',
         )
         return project
-
-    # def get_memberships(self, project):
-    #     memberships = ProjectMembership.objects.filter(project=project)\
-    #         .distinct()
-    #     return ProjectMembershipSerializer(memberships, many=True).data
 
     # Validations
     def validate_user_groups(self, user_groups):
