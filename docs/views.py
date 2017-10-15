@@ -1,22 +1,19 @@
-from django.views.generic import View
 from django.shortcuts import render
-from .registrar import registered_views
+from django.views.generic import View
 
-import inspect
-
-class DummyObject:
-    pass
+from .schema_generator import SchemaGenerator
 
 
 class DocsView(View):
-    def get(self, request, version):
+    def get(self, request, version=None):
         context = {}
+        endpoints = []
 
-        views = []
-        for view in registered_views:
-            view_data = DummyObject()
-            view_data.data = inspect.getmembers(view),
-            views.append(view_data)
+        for key, endpoint in SchemaGenerator().links.items():
+            endpoints.append((key, [
+                (key, e) for (key, e) in endpoint.items()
+                if isinstance(e, dict)
+            ]))
 
-        context['views'] = views
+        context['endpoints'] = endpoints
         return render(request, 'docs/index.html', context)

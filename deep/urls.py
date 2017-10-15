@@ -117,7 +117,7 @@ urlpatterns = [
     url(get_api_path(''), include(router.urls)),
     url(get_api_path(r'docs/'), DocsView.as_view()),
 
-    url(get_api_path(''), include('drf_openapi.urls')),
+    # url(get_api_path(''), include('drf_openapi.urls')),
 
     url(r'^api-auth/', include('rest_framework.urls',
                                namespace='rest_framework')),

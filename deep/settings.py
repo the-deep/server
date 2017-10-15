@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'crispy_forms',
     'django_filters',
     'djangorestframework_camel_case',
-    'drf_openapi',
     'redis_store',
     'rest_framework',
     'reversion',

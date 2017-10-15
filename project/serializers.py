@@ -3,8 +3,29 @@ from user_resource.serializers import UserResourceSerializer
 from project.models import Project, ProjectMembership
 
 
+class ProjectMembershipSerializer(serializers.ModelSerializer):
+    member_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectMembership
+        fields = ('id', 'member', 'member_name',
+                  'project', 'role', 'joined_at')
+
+    def get_member_name(self, membership):
+        return membership.member.profile.get_display_name()
+
+    # Validations
+    def validate_project(self, project):
+        if not project.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('Invalid project')
+        return project
+
+
 class ProjectSerializer(UserResourceSerializer):
-    memberships = serializers.SerializerMethodField()
+    memberships = ProjectMembershipSerializer(
+        source='projectmembership_set',
+        many=True, read_only=True
+    )
 
     class Meta:
         model = Project
@@ -22,10 +43,10 @@ class ProjectSerializer(UserResourceSerializer):
         )
         return project
 
-    def get_memberships(self, project):
-        memberships = ProjectMembership.objects.filter(project=project)\
-            .distinct()
-        return ProjectMembershipSerializer(memberships, many=True).data
+    # def get_memberships(self, project):
+    #     memberships = ProjectMembership.objects.filter(project=project)\
+    #         .distinct()
+    #     return ProjectMembershipSerializer(memberships, many=True).data
 
     # Validations
     def validate_user_groups(self, user_groups):
@@ -41,21 +62,3 @@ class ProjectSerializer(UserResourceSerializer):
                 raise serializers.ValidationError(
                     'Invalid region: {}'.format(region.id))
         return regions
-
-
-class ProjectMembershipSerializer(serializers.ModelSerializer):
-    member_name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = ProjectMembership
-        fields = ('id', 'member', 'member_name',
-                  'project', 'role', 'joined_at')
-
-    def get_member_name(self, membership):
-        return membership.member.profile.get_display_name()
-
-    # Validations
-    def validate_project(self, project):
-        if not project.can_modify(self.context['request'].user):
-            raise serializers.ValidationError('Invalid project')
-        return project

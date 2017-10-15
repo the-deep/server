@@ -1,3 +1,42 @@
-{% for view in views %}
-{{ view.data }}
+{% for key, endpoint in endpoints %}
+<div>
+    <h2>{{ key }}</h2>
+
+    {% for endpoint_name, methods in endpoint %}
+    <div>
+        <h3>{{ endpoint_name }}</h3>
+
+        {% for method_name, schema in methods.items %}
+        <h4>{{ method_name }}</h4>
+
+        <div>
+            {{ schema.path }}
+        </div>
+
+        <div>
+            <h5>Request Schema</h5>
+
+            {% for field in schema.request_fields %}
+            <p>
+            {{ field.name }}: {{ field.description }}
+            {{ field.schema }}
+            {% endfor %}
+            </p>
+        </div>
+
+        <div>
+            <h5>Response Schema</h5>
+
+            {% for field in schema.response_fields %}
+            <p>
+            {{ field.name }}: {{ field.description }}
+            {{ field.schema }}
+            {% endfor %}
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+</div>
 {% endfor %}
