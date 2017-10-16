@@ -6,6 +6,12 @@ class UserResourceSerializer(serializers.ModelSerializer):
     modified_at = serializers.DateTimeField(read_only=True)
     created_by = serializers.PrimaryKeyRelatedField(read_only=True)
     modified_by = serializers.PrimaryKeyRelatedField(read_only=True)
+    created_by_name = serializers.CharField(
+        source='created_by.username',
+        read_only=True)
+    modified_by_name = serializers.CharField(
+        source='modified_by.username',
+        read_only=True)
 
     def create(self, validated_data):
         resource = super(UserResourceSerializer, self).create(validated_data)
