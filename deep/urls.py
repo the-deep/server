@@ -11,6 +11,9 @@ from rest_framework_swagger.views import get_swagger_view
 from user.views import (
     UserViewSet,
 )
+from gallery.views import (
+    FileViewSet,
+)
 from user_group.views import (
     UserGroupViewSet,
     GroupMembershipViewSet,
@@ -47,6 +50,8 @@ from jwt_auth.views import (
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet,
                 base_name='user')
+router.register(r'files', FileViewSet,
+                base_name='file')
 router.register(r'user-groups', UserGroupViewSet,
                 base_name='user_group')
 router.register(r'group-memberships', GroupMembershipViewSet,
@@ -99,6 +104,8 @@ urlpatterns = [
 
     # url(r'^docs/', include_docs_urls(title='DEEP API')),
     url(r'^api/v1/docs/', get_swagger_view(title='DEEP API')),
-
-    url(r'^', FrontendView.as_view()),
 ] + static.static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns += [
+    url(r'^', FrontendView.as_view()),
+]

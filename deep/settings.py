@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'user',
     'user_group',
     'project',
+    'gallery',
     'geo',
     'lead',
     'analysis_framework',
@@ -144,6 +145,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': (
         'djangorestframework_camel_case.parser.CamelCaseJSONParser',
         'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
     ),
     'DEFAULT_VERSIONING_CLASS':
         'rest_framework.versioning.URLPathVersioning',
