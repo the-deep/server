@@ -1,9 +1,5 @@
-
-from os.path import join
-
 from rest_framework import status
 from rest_framework.test import APITestCase
-from django.conf import settings
 
 from user.tests.test_apis import AuthMixin
 from project.tests.test_apis import ProjectMixin
@@ -64,16 +60,3 @@ class LeadTests(AuthMixin, ProjectMixin, LeadMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Lead.objects.count(), 1)
         self.assertEqual(response.data['title'], data['title'])
-
-    def test_lead_upload(self):
-        """
-        Lead Upload Test
-        """
-        lead = self.create_or_get_lead()
-        url = self.URL + str(lead.pk) + '/'
-        with open(join(settings.TEST_DIR, 'geo.json'),
-                  'rb') as fp:
-            data = {'attachment': fp}
-            response = self.client.patch(url, data,
-                                         HTTP_AUTHORIZATION=self.auth)
-            self.assertEqual(response.status_code, status.HTTP_200_OK)

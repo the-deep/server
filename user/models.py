@@ -3,6 +3,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from gallery.models import File
+
 
 class Profile(models.Model):
     """
@@ -15,8 +17,8 @@ class Profile(models.Model):
     organization = models.CharField(max_length=300, blank=True)
     hid = models.TextField(default=None, null=True, blank=True)
     # country = models.ForeignKey(Country)
-    display_picture = models.FileField(upload_to='user_dp/',
-                                       null=True, blank=True, default=None)
+    display_picture = models.ForeignKey(File,
+                                        null=True, blank=True, default=None)
 
     def __str__(self):
         return str(self.user)

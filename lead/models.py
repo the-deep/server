@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from project.models import Project
 from user_resource.models import UserResource
+from gallery.models import File
 
 
 class Lead(UserResource):
@@ -55,8 +56,8 @@ class Lead(UserResource):
     url = models.CharField(max_length=255, blank=True)
     website = models.CharField(max_length=255, blank=True)
 
-    attachment = models.FileField(upload_to='lead-attachments/%Y/%m/',
-                                  default=None, null=True, blank=True)
+    attachment = models.ForeignKey(File,
+                                   default=None, null=True, blank=True)
 
     def __str__(self):
         return '{}'.format(self.title)
