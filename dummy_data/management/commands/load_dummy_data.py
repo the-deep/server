@@ -7,6 +7,16 @@ from dummy_data.models import DummyData
 import csv
 
 
+def update_user(user, **kwargs):
+    password = kwargs['password']
+    del kwargs['password']
+    for key, value in kwargs.items():
+        setattr(user, key, value)
+    user.set_password(password)
+    user.save()
+    return user
+
+
 class Command(BaseCommand):
     """
     Management command to load dummy data
@@ -18,7 +28,7 @@ class Command(BaseCommand):
     """
     def handle(self, *args, **kwargs):
         self.stdout.write('Loading users')
-        self.load('user', 'User', User, User.objects.create_user)
+        self.load('user', 'User', User, User.objects.create_user, update_user)
 
         self.stdout.write('Loading projects and members')
         self.load('project', 'Project')
@@ -95,7 +105,8 @@ class Command(BaseCommand):
                 # Add obj2 to obj1.field
                 getattr(obj1, field).add(obj2)
 
-    def load(self, app_name, filename, model=None, create_obj=None):
+    def load(self, app_name, filename, model=None,
+             create_obj=None, update_obj=None):
         """
         Load objects from a csv file
 
@@ -152,15 +163,23 @@ class Command(BaseCommand):
                         data_id=row['id'],
                     )
 
-                    # We don't want to use this id
-                    # This is only used for reference in the
-                    # dummy data files
-                    del row['id']
+                # We don't want to use this id
+                # This is only used for reference in the
+                # dummy data files
+                del row['id']
 
+                if not obj:
                     if create_obj:
                         obj = create_obj(**row)
                     else:
                         obj = model.objects.create(**row)
+                else:
+                    if update_obj:
+                        update_obj(obj, **row)
+                    else:
+                        for (key, value) in row.items():
+                            setattr(obj, key, value)
+                        obj.save()
 
                 # Finally save the dummy data object in the database
                 # for future reference
