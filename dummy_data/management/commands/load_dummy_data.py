@@ -17,16 +17,24 @@ class Command(BaseCommand):
     This helps prevent that no data is loaded multiple times in future.
     """
     def handle(self, *args, **kwargs):
+        self.stdout.write('Loading users')
         self.load('user', 'User', User, User.objects.create_user)
 
+        self.stdout.write('Loading projects and members')
         self.load('project', 'Project')
         self.load('project', 'ProjectMembership')
 
+        self.stdout.write('Loading user groups')
         self.load('user_group', 'UserGroup')
+
+        self.stdout.write('Loading leads')
         self.load('lead', 'Lead')
 
+        self.stdout.write('Adding user groups to projects')
         self.load_manytomany('project', 'Project_UserGroup',
                              'user_groups')
+
+        self.stdout.write('Done')
 
     def load_manytomany(self, app_name1, filename, field, model1=None):
         """
