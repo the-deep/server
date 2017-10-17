@@ -2,14 +2,17 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from user.models import Profile
+from gallery.models import File
 
 
 class UserSerializer(serializers.ModelSerializer):
     organization = serializers.CharField(source='profile.organization',
                                          allow_blank=True)
-    display_picture = serializers.FileField(source='profile.display_picture',
-                                            allow_empty_file=True,
-                                            required=False)
+    display_picture = serializers.PrimaryKeyRelatedField(
+        source='profile.display_picture',
+        queryset=File.objects.all(),
+        allow_null=True,
+    )
     display_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -27,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
         user = super(UserSerializer, self).create(validated_data)
         user.set_password(validated_data['password'])
         user.save()
-        self.update_or_create_profile(user, profile_data)
+        user.profile = self.update_or_create_profile(user, profile_data)
         return user
 
     def update(self, instance, validated_data):
@@ -36,8 +39,11 @@ class UserSerializer(serializers.ModelSerializer):
         if 'password' in validated_data:
             user.set_password(validated_data['password'])
             user.save()
-        self.update_or_create_profile(user, profile_data)
+        user.profile = self.update_or_create_profile(user, profile_data)
         return user
 
     def update_or_create_profile(self, user, profile_data):
-        Profile.objects.update_or_create(user=user, defaults=profile_data)
+        profile, created = Profile.objects.update_or_create(
+            user=user, defaults=profile_data
+        )
+        return profile

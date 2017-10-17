@@ -108,6 +108,7 @@ class UserApiTests(AuthMixin, APITestCase):
             'last_name': 'Dahal',
             'organization': 'Togglecorp',
             'password': 'admin123',
+            'display_picture': None,
         }
 
         # TODO: Test display picture api
