@@ -13,12 +13,12 @@
                         {
                             "title": "{{ method_name }}",
                             "path": "{{ schema.path }}",
-                            "request_schema":{
+                            "requestSchema":{
                                 {% for field in schema.request_fields %}
                                 "{{ field.title }}": {{ field.schema|safe }}{% if not forloop.last %},{% endif %}
                                 {% endfor %}
                             },
-                            "response_schema": {
+                            "responseSchema": {
                                 {% for field in schema.response_fields %}
                                 "{{ field.title }}": {{ field.schema|safe }}{% if not forloop.last %},{% endif %}
                                 {% endfor %} 

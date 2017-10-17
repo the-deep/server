@@ -7,10 +7,10 @@ class UserResourceSerializer(serializers.ModelSerializer):
     created_by = serializers.PrimaryKeyRelatedField(read_only=True)
     modified_by = serializers.PrimaryKeyRelatedField(read_only=True)
     created_by_name = serializers.CharField(
-        source='created_by.username',
+        source='created_by.profile.get_display_name',
         read_only=True)
     modified_by_name = serializers.CharField(
-        source='modified_by.username',
+        source='modified_by.profile.get_display_name',
         read_only=True)
 
     def create(self, validated_data):

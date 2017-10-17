@@ -6,3 +6,4 @@ id,project,member,role
 5,project.Project.3,user.User.1,admin
 6,project.Project.3,user.User.2,normal
 7,project.Project.4,user.User.2,admin
+8,project.Project.2,user.User.1,normal
