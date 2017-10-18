@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.views.generic import View
 
@@ -19,11 +19,8 @@ class DocsView(View):
             ]))
 
         context['endpoints'] = endpoints
-        return HttpResponse(
-            json.dumps(
-                json.loads(
-                    render_to_string('docs/index.html', context)
-                ),
+        return JsonResponse(
+            json.loads(
+                render_to_string('docs/index.html', context)
             ),
-            content_type='application/json',
         )

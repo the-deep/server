@@ -1,7 +1,6 @@
 from collections import OrderedDict
 
 from django.db import models
-from django.utils.encoding import force_text
 from rest_framework import exceptions, serializers
 from rest_framework.compat import uritemplate
 
@@ -135,8 +134,6 @@ class ViewSchema:
         model = getattr(getattr(view, 'queryset', None), 'model', None)
 
         for variable in uritemplate.variables(path):
-            title = ''
-            description = ''
             schema_cls = schema.String
             kwargs = {}
 
@@ -146,14 +143,14 @@ class ViewSchema:
                 except:
                     model_field = None
 
-                if model_field is not None:
-                    if model_field.verbose_name:
-                        title = force_text(model_field.verbose_name)
+                # if model_field is not None:
+                #     if model_field.verbose_name:
+                #         title = force_text(model_field.verbose_name)
 
-                    if model_field.help_text:
-                        description = force_text(model_field.help_text)
-                    elif model_field.primary_key:
-                        description = get_pk_description(model, model_field)
+                #     if model_field.help_text:
+                #         description = force_text(model_field.help_text)
+                #     elif model_field.primary_key:
+                #         description = get_pk_description(model, model_field)
 
                 if hasattr(view, 'lookup_value_regex') and \
                         view.lookup_field == variable:

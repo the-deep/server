@@ -56,13 +56,12 @@ class ProjectApiTest(AuthMixin, ProjectMixin, APITestCase):
         self.assertEqual(response.data['title'], data['title'])
 
         # Test that the user has been made admin
-        self.assertEqual(len(response.data['members']), 1)
-        self.assertEqual(response.data['members'][0], self.user.pk)
-
         self.assertEqual(len(response.data['memberships']), 1)
+        self.assertEqual(response.data['memberships'][0]['member'],
+                         self.user.pk)
 
         membership = ProjectMembership.objects.get(
-            pk=response.data['memberships'][0])
+            pk=response.data['memberships'][0]['id'])
         self.assertEqual(membership.member.pk, self.user.pk)
         self.assertEqual(membership.role, 'admin')
 
