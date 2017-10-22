@@ -1,3 +1,4 @@
+from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
 from .models import (
@@ -5,7 +6,7 @@ from .models import (
 )
 
 
-class AnalysisFrameworkSerializer(UserResourceSerializer):
+class AnalysisFrameworkSerializer(DynamicFieldsMixin, UserResourceSerializer):
     """
     Analysis Framework Model Serializer
     """
@@ -14,7 +15,7 @@ class AnalysisFrameworkSerializer(UserResourceSerializer):
         fields = ('__all__')
 
 
-class WidgetSerializer(serializers.ModelSerializer):
+class WidgetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Widget Model Serializer
     """
@@ -30,7 +31,7 @@ class WidgetSerializer(serializers.ModelSerializer):
         return analysis_framework
 
 
-class FilterSerializer(serializers.ModelSerializer):
+class FilterSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Filter data Serializer
     """
@@ -46,7 +47,7 @@ class FilterSerializer(serializers.ModelSerializer):
         return analysis_framework
 
 
-class ExportableSerializer(serializers.ModelSerializer):
+class ExportableSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Export data Serializer
     """

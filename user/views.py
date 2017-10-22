@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, filters
+
 from .serializers import (
     UserSerializer,
 )
@@ -33,10 +34,12 @@ class UserViewSet(viewsets.ModelViewSet):
     Modify an existing user partially
     """
 
-    queryset = User.objects.all()\
-        .order_by('-date_joined')
+    queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
     permission_classes = [UserPermission]
+
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter)
+    search_fields = ('username', 'first_name', 'last_name', 'email')
 
     def get_object(self):
         pk = self.kwargs['pk']

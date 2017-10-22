@@ -1,8 +1,10 @@
+from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from user_group.models import UserGroup, GroupMembership
 
 
-class GroupMembershipSerializer(serializers.ModelSerializer):
+class GroupMembershipSerializer(DynamicFieldsMixin,
+                                serializers.ModelSerializer):
     member_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -20,7 +22,7 @@ class GroupMembershipSerializer(serializers.ModelSerializer):
         return group
 
 
-class UserGroupSerializer(serializers.ModelSerializer):
+class UserGroupSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     memberships = GroupMembershipSerializer(
         source='groupmembership_set',
         many=True, read_only=True

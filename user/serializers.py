@@ -1,11 +1,12 @@
 from django.contrib.auth.models import User
+from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
 from user.models import Profile
 from gallery.models import File
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     organization = serializers.CharField(source='profile.organization',
                                          allow_blank=True)
     display_picture = serializers.PrimaryKeyRelatedField(

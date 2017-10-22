@@ -1,9 +1,10 @@
+from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
 from .models import Lead
 
 
-class LeadSerializer(UserResourceSerializer):
+class LeadSerializer(DynamicFieldsMixin, UserResourceSerializer):
     """
     Lead Model Serializer
     """

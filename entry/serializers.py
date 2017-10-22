@@ -1,3 +1,4 @@
+from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
 from .models import (
@@ -5,16 +6,7 @@ from .models import (
 )
 
 
-class EntrySerializer(UserResourceSerializer):
-    """
-    Entry Model Serializer
-    """
-    class Meta:
-        model = Entry
-        fields = ('__all__')
-
-
-class AttributeSerializer(serializers.ModelSerializer):
+class AttributeSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Entry Attribute Model Serializer
     """
@@ -30,7 +22,20 @@ class AttributeSerializer(serializers.ModelSerializer):
         return entry
 
 
-class FilterDataSerializer(serializers.ModelSerializer):
+class EntrySerializer(DynamicFieldsMixin, UserResourceSerializer):
+    """
+    Entry Model Serializer
+    """
+    attributes = AttributeSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Entry
+        fields = ('id', 'lead', 'analysis_framework', 'excerpt', 'image',
+                  'attributes',
+                  'created_at', 'created_by', 'modified_at', 'modified_by')
+
+
+class FilterDataSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Filter data Serializer
     """
@@ -46,7 +51,7 @@ class FilterDataSerializer(serializers.ModelSerializer):
         return entry
 
 
-class ExportDataSerializer(serializers.ModelSerializer):
+class ExportDataSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Export data Serializer
     """

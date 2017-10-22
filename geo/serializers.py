@@ -1,12 +1,13 @@
 import json
 from django.conf import settings
+from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
 from .models import Region, AdminLevel  # , GeoShape
 from .tasks import load_geo_areas
 
 
-class RegionSerializer(UserResourceSerializer):
+class RegionSerializer(DynamicFieldsMixin, UserResourceSerializer):
     """
     Region Model Serializer
     """
@@ -15,7 +16,7 @@ class RegionSerializer(UserResourceSerializer):
         fields = ('__all__')
 
 
-class AdminLevelSerializer(serializers.ModelSerializer):
+class AdminLevelSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Admin Level Model Serializer
     """
@@ -32,7 +33,8 @@ class AdminLevelSerializer(serializers.ModelSerializer):
         return region
 
 
-class AdminLevelUploadSerializer(serializers.ModelSerializer):
+class AdminLevelUploadSerializer(DynamicFieldsMixin,
+                                 serializers.ModelSerializer):
     """
     Admin Level Upload Serializer [Geo file]
     """
