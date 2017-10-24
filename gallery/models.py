@@ -21,6 +21,7 @@ class File(UserResource):
     @staticmethod
     def get_for(user):
         return File.objects.filter(
+            models.Q(created_by=user) |
             models.Q(is_public=True) |
             models.Q(permitted_users=user) |
             models.Q(permitted_user_groups__members=user)

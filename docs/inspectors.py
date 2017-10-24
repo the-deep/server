@@ -27,9 +27,12 @@ def field_to_schema(field, camelcase=True):
     elif isinstance(field, serializers.Serializer):
         return schema.Object(
             properties=OrderedDict([
-                (key, field_to_schema(value))
-                for key, value
-                in field.fields.items()
+                (
+                    '{}{}'.format(value.field_name, '*'
+                                  if value.required
+                                  else ''),
+                    field_to_schema(value)
+                ) for value in field.fields.values()
             ]),
         )
 
@@ -98,13 +101,15 @@ def get_pk_description(model, model_field):
 class Field:
     def __init__(self,
                  title='',
-                 required='',
+                 required=False,
                  schema=None):
         self.title = title
         self.required = required
         self.schema = schema
 
     def __str__(self):
+        if self.required:
+            return self.title + '*'
         return self.title
 
     def __repr__(self):
@@ -248,7 +253,7 @@ class ViewSchema:
                 schema=schema.Array(
                     items=schema.Object(
                         properties=OrderedDict([
-                            (field.title, field.schema) for field in
+                            (str(field), field.schema) for field in
                             self.response_fields
                         ])
                     ),
