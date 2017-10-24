@@ -12,6 +12,7 @@ from analysis_framework.tests.test_apis import (
 from entry.models import (
     Entry, Attribute, FilterData, ExportData
 )
+from analysis_framework.models import Filter
 
 
 # Mixins
@@ -96,7 +97,7 @@ class ExportDataMixin():
 
 # Tests
 
-class EntryTests(AuthMixin, LeadMixin, ProjectMixin,
+class EntryTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
                  AnalysisFrameworkMixin, APITestCase):
     """
     Entry Tests
@@ -126,6 +127,57 @@ class EntryTests(AuthMixin, LeadMixin, ProjectMixin,
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Entry.objects.count(), old_count + 1)
         self.assertEqual(response.data['excerpt'], data['excerpt'])
+
+    def filter_test(self, params, count=1):
+        """
+        Request to `url?params` and check if given count of
+        data returns.
+        """
+        url = '/api/v1/entries/?{}'.format(params)
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth,
+                                   format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), count)
+
+    def test_filters(self):
+        """
+        Add some filter data to the entry and test the
+        GET apis with filter params
+        """
+        entry = self.create_or_get_entry()
+
+        filter = Filter.objects.create(
+            analysis_framework=entry.analysis_framework,
+            schema_id='test_filter',
+            title='Test Filter',
+            filter_type=Filter.NUMBER,
+        )
+        FilterData.objects.create(
+            entry=entry,
+            filter=filter,
+            number=500,
+        )
+
+        self.filter_test('test_filter=500')
+        self.filter_test('test_filter__lt=600')
+        self.filter_test('test_filter__gt=400')
+        self.filter_test('test_filter__lt=400', 0)
+
+        filter = Filter.objects.create(
+            analysis_framework=entry.analysis_framework,
+            schema_id='test_list_filter',
+            title='Test List Filter',
+            filter_type=Filter.LIST,
+        )
+        FilterData.objects.create(
+            entry=entry,
+            filter=filter,
+            values=['abc', 'def', 'ghi'],
+        )
+
+        self.filter_test('test_list_filter=abc')
+        self.filter_test('test_list_filter=ghi,def', 1)
+        self.filter_test('test_list_filter=abc,hij', 0)
 
 
 class AttributeTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,

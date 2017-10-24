@@ -5,6 +5,7 @@ from user_resource.filters import UserResourceFilterSet
 import django_filters
 
 from lead.models import Lead
+from analysis_framework.models import Filter
 from .models import (
     Entry, Attribute, FilterData, ExportData
 )
@@ -42,6 +43,9 @@ class EntryFilterSet(UserResourceFilterSet):
 
 
 class EntryViewSet(viewsets.ModelViewSet):
+    """
+    Entry view set
+    """
     serializer_class = EntrySerializer
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
@@ -52,8 +56,50 @@ class EntryViewSet(viewsets.ModelViewSet):
     search_fields = ('lead__title', 'excerpt')
 
     def get_queryset(self):
+        """
+        Get queryset of entries based on filters in query params
+        """
         entries = Entry.get_for(self.request.user)
-        # filter_data = FilterData.get_for(self.request.user)
+        filters = Filter.get_for(self.request.user)
+
+        for filter in filters:
+            # For each filter, see if there is a query for that filter
+            # and then perform filtering based on that query.
+
+            query = self.request.GET.get(filter.schema_id)
+            query_lt = self.request.GET.get(
+                filter.schema_id + '__lt'
+            )
+            query_gt = self.request.GET.get(
+                filter.schema_id + '__gt'
+            )
+
+            if filter.filter_type == Filter.NUMBER:
+                if query:
+                    entries = entries.filter(
+                        filterdata__filter=filter,
+                        filterdata__number=query,
+                    )
+                if query_lt:
+                    entries = entries.filter(
+                        filterdata__filter=filter,
+                        filterdata__number__lt=query_lt,
+                    )
+                if query_gt:
+                    entries = entries.filter(
+                        filterdata__filter=filter,
+                        filterdata__number__gt=query_gt,
+                    )
+
+            if filter.filter_type == Filter.LIST and query:
+                    query = query.split(',')
+
+                    if len(query) > 0:
+                        entries = entries.filter(
+                            filterdata__filter=filter,
+                            filterdata__values__contains=query,
+                        )
+
         return entries
 
 

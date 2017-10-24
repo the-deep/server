@@ -80,10 +80,20 @@ class Filter(models.Model):
     """
     A filter for a widget in an analysis framework
     """
+    NUMBER = 'number'
+    LIST = 'list'
+
+    FILTER_TYPES = (
+        (NUMBER, 'number'),
+        (LIST, 'list'),
+    )
+
     analysis_framework = models.ForeignKey(AnalysisFramework)
     schema_id = models.CharField(max_length=100, db_index=True)
     title = models.CharField(max_length=255)
     properties = JSONField(default=None, blank=True, null=True)
+    filter_type = models.CharField(max_length=20, choices=FILTER_TYPES,
+                                   default=LIST)
 
     def __str__(self):
         return '{} ({})'.format(self.title, self.schema_id)
