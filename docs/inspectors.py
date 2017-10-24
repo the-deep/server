@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from django.db import models
+from django.core.exceptions import FieldDoesNotExist
 from rest_framework import exceptions, serializers
 from rest_framework.compat import uritemplate
 
@@ -145,7 +146,7 @@ class ViewSchema:
             if model is not None:
                 try:
                     model_field = model._meta.get_field(variable)
-                except:
+                except FieldDoesNotExist:
                     model_field = None
 
                 # if model_field is not None:

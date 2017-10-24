@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 from user.models import User
 
 from rest_framework.renderers import JSONRenderer
@@ -162,7 +163,7 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
             try:
                 user = User.objects.get(
                     pk=self.message.channel_session['user'])
-            except:
+            except ObjectDoesNotExist:
                 raise UserNotFoundError()
 
             # Get a redis connection

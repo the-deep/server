@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 
@@ -70,7 +71,7 @@ class HIDTokenObtainPairSerializer(serializers.Serializer):
 
         try:
             user = hid.get_user()
-        except:
+        except ObjectDoesNotExist:
             raise serializers.ValidationError(
                 'Error in HID Integration'
             )

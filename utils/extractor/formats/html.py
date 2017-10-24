@@ -20,7 +20,7 @@ def process(doc):
             r = requests.get(img.get('src'), stream=True)
             write_file(r, fp)
             images.append(fp)
-        except:
+        except Exception:
             pass
 
     html = "<h1>" + title + "</h1>" + summary

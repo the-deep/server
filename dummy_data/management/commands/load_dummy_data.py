@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.core.exceptions import ObjectDoesNotExist
 from django.apps import apps
 from django.contrib.auth.models import User
 
@@ -154,7 +155,7 @@ class Command(BaseCommand):
                     dd = existing[0]
                     try:
                         obj = model.objects.get(id=dd.db_id)
-                    except:
+                    except ObjectDoesNotExist:
                         dd.delete()
                 if not obj:
                     # If not, create new one

@@ -32,7 +32,7 @@ class WebDocument(Document):
 
         try:
             r = requests.head(url, headers=headers)
-        except:
+        except requests.exceptions.RequestException:
             # If we can't get header, assume html and try to continue.
             r = requests.get(url, headers=headers)
             doc = r.content
