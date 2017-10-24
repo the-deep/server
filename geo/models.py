@@ -38,7 +38,7 @@ class Region(UserResource):
                 project__regions=self,
                 member=user,
                 role='admin'
-            ).count() > 0
+            ).exists()
         ))
 
 

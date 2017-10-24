@@ -21,6 +21,7 @@ class AnalysisFrameworkMixin():
         if not analysis_framework:
             analysis_framework = AnalysisFramework.objects.create(
                 title='This is a test AnalysisFramework',
+                created_by=self.user,
             )
         return analysis_framework
 

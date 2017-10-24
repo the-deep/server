@@ -37,13 +37,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'channels',
-    'channels',
     'corsheaders',
     'crispy_forms',
     'django_filters',
     'djangorestframework_camel_case',
     'drf_dynamic_fields',
+    'rest_framework',
     'reversion',
+    'reversion',
+    'storages',
 
     'redis_store',
     'rest_framework',

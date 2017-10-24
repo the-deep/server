@@ -24,14 +24,25 @@ class AnalysisFramework(UserResource):
         ).distinct()
 
     def can_get(self, user):
-        # TODO: update required logic for permission
-        return True
-        return self.project.can_get(user)
+        return self in AnalysisFramework.get_for(user)
 
     def can_modify(self, user):
-        # TODO: update required logic for permission
-        return True
-        return self.project.can_modify(user)
+        """
+        Analysis framework can be modified by a user if:
+        * user created the framework, or
+        * user is super user, or
+        * the framework belongs to a project where the user is admin
+        """
+        import project
+        return (
+            self.created_by == user or
+            user.is_superuser or
+            project.models.ProjectMembership.objects.filter(
+                project__in=self.project_set.all(),
+                member=user,
+                role='admin',
+            ).exists()
+        )
 
 
 class Widget(models.Model):

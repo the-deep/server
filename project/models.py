@@ -45,7 +45,7 @@ class Project(UserResource):
             project=self,
             member=user,
             role='admin',
-        ).count() > 0
+        ).exists()
 
 
 class ProjectMembership(models.Model):

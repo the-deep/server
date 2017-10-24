@@ -31,7 +31,7 @@ class UserGroup(models.Model):
             group=self,
             member=user,
             role='admin',
-        ).count() > 0
+        ).exists()
 
 
 class GroupMembership(models.Model):

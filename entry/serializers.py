@@ -22,19 +22,6 @@ class AttributeSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         return entry
 
 
-class EntrySerializer(DynamicFieldsMixin, UserResourceSerializer):
-    """
-    Entry Model Serializer
-    """
-    attributes = AttributeSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Entry
-        fields = ('id', 'lead', 'analysis_framework', 'excerpt', 'image',
-                  'attributes',
-                  'created_at', 'created_by', 'modified_at', 'modified_by')
-
-
 class FilterDataSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Filter data Serializer
@@ -65,3 +52,21 @@ class ExportDataSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         if not entry.can_modify(self.context['request'].user):
             raise serializers.ValidationError('Invalid Entry')
         return entry
+
+
+class EntrySerializer(DynamicFieldsMixin, UserResourceSerializer):
+    """
+    Entry Model Serializer
+    """
+    attributes = AttributeSerializer(source='attribute_set', many=True,
+                                     required=False)
+    filter_data = FilterDataSerializer(source='filterdata_set', many=True,
+                                       required=False)
+    export_data = ExportDataSerializer(source='exportdata_set', many=True,
+                                       required=False)
+
+    class Meta:
+        model = Entry
+        fields = ('id', 'lead', 'analysis_framework', 'excerpt', 'image',
+                  'attributes', 'filter_data', 'export_data',
+                  'created_at', 'created_by', 'modified_at', 'modified_by')

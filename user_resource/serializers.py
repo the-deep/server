@@ -1,7 +1,11 @@
+from deep.serializers import NestedUpdateMixin, NestedCreateMixin
 from rest_framework import serializers
 
 
-class UserResourceSerializer(serializers.ModelSerializer):
+class UserResourceSerializer(NestedCreateMixin,
+                             NestedUpdateMixin,
+                             serializers.ModelSerializer):
+
     created_at = serializers.DateTimeField(read_only=True)
     modified_at = serializers.DateTimeField(read_only=True)
     created_by = serializers.PrimaryKeyRelatedField(read_only=True)
