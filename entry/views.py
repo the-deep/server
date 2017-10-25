@@ -26,11 +26,16 @@ class EntryFilterSet(UserResourceFilterSet):
         lookup_expr='in',
         widget=django_filters.widgets.CSVWidget,
     )
-    lead__published_on = django_filters.DateFromToRangeFilter()
+    lead__published_on__lte = django_filters.DateFilter(
+        name='lead__published_on', lookup_expr='lte',
+    )
+    lead__published_on__gte = django_filters.DateFilter(
+        name='lead__published_on', lookup_expr='gte',
+    )
 
     class Meta:
         model = Entry
-        fields = ['id', 'lead', 'excerpt', 'lead__title', 'lead__published_on',
+        fields = ['id', 'excerpt', 'lead__title',
                   'created_at', 'created_by', 'modified_at', 'modified_by']
         filter_overrides = {
             models.CharField: {

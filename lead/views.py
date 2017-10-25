@@ -22,7 +22,13 @@ class LeadFilterSet(UserResourceFilterSet):
     Also make most fields filerable by multiple values using
     'in' lookup expressions and CSVWidget.
     """
-    published_on = django_filters.DateFromToRangeFilter()
+    published_on__lte = django_filters.DateFilter(
+        name='published_on', lookup_expr='lte',
+    )
+    published_on__gte = django_filters.DateFilter(
+        name='published_on', lookup_expr='gte',
+    )
+
     project = django_filters.ModelMultipleChoiceFilter(
         queryset=Project.objects.all(),
         lookup_expr='in',
@@ -46,8 +52,9 @@ class LeadFilterSet(UserResourceFilterSet):
 
     class Meta:
         model = Lead
-        fields = ('__all__')
-        exclude = ['attachment']
+        fields = ['id', 'title',
+                  'text', 'url', 'website']
+
         filter_overrides = {
             models.CharField: {
                 'filter_class': django_filters.CharFilter,
