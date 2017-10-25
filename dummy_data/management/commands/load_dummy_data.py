@@ -35,8 +35,9 @@ class Command(BaseCommand):
         self.load('project', 'Project')
         self.load('project', 'ProjectMembership')
 
-        self.stdout.write('Loading user groups')
+        self.stdout.write('Loading user groups and members')
         self.load('user_group', 'UserGroup')
+        self.load('user_group', 'GroupMembership')
 
         self.stdout.write('Loading leads')
         self.load('lead', 'Lead')

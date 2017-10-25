@@ -84,8 +84,8 @@ class Filter(models.Model):
     LIST = 'list'
 
     FILTER_TYPES = (
-        (NUMBER, 'number'),
-        (LIST, 'list'),
+        (NUMBER, 'Number'),
+        (LIST, 'List'),
     )
 
     analysis_framework = models.ForeignKey(AnalysisFramework)

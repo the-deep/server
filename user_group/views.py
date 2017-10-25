@@ -11,7 +11,8 @@ class UserGroupViewSet(viewsets.ModelViewSet):
                           ModifyPermission]
 
     def get_queryset(self):
-        return UserGroup.get_for(self.request.user)
+        user = self.request.GET.get('user', self.request.user)
+        return UserGroup.get_for(user)
 
 
 class GroupMembershipViewSet(viewsets.ModelViewSet):
