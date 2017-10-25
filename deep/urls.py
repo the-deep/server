@@ -26,7 +26,8 @@ from geo.views import (
     RegionViewSet,
 )
 from lead.views import (
-    LeadViewSet
+    LeadViewSet,
+    LeadFilterOptionsView,
 )
 from entry.views import (
     EntryViewSet, AttributeViewSet, FilterDataViewSet,
@@ -51,28 +52,40 @@ from jwt_auth.views import (
 
 
 router = routers.DefaultRouter()
+
+# User routers
 router.register(r'users', UserViewSet,
                 base_name='user')
+
+# File routers
 router.register(r'files', FileViewSet,
                 base_name='file')
+
+# User group registers
 router.register(r'user-groups', UserGroupViewSet,
                 base_name='user_group')
 router.register(r'group-memberships', GroupMembershipViewSet,
                 base_name='group_membership')
+
+# Project routers
 router.register(r'projects', ProjectViewSet,
                 base_name='project')
 router.register(r'project-memberships', ProjectMembershipViewSet,
                 base_name='project_membership')
+
+# Geo routers
 router.register(r'regions', RegionViewSet,
                 base_name='region')
 router.register(r'admin-levels', AdminLevelViewSet,
                 base_name='admin_level')
 router.register(r'admin-levels-upload', AdminLevelUploadViewSet,
                 base_name='admin_level_upload')
+
+# Lead routers
 router.register(r'leads', LeadViewSet,
                 base_name='lead')
 
-# Entry Routers
+# Entry routers
 router.register(r'entries', EntryViewSet,
                 base_name='entry_lead')
 router.register(r'entry-attribute', AttributeViewSet,
@@ -82,7 +95,7 @@ router.register(r'entry-filter-data', FilterDataViewSet,
 router.register(r'entry-export-data', ExportDataViewSet,
                 base_name='entry_export_data')
 
-# Analysis Routers
+# Analysis routers
 router.register(r'analysis-framework', AnalysisFrameworkViewSet,
                 base_name='analysis_framework')
 router.register(r'analysis-framework-widget', WidgetViewSet,
@@ -105,6 +118,7 @@ def get_api_path(path):
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
 
+    # JWT Authentication
     url(get_api_path(r'token/$'),
         TokenObtainPairView.as_view()),
 
@@ -114,11 +128,17 @@ urlpatterns = [
     url(get_api_path(r'token/refresh/$'),
         TokenRefreshView.as_view()),
 
+    # Filter options
+    url(get_api_path(r'lead-filter-options/$'),
+        LeadFilterOptionsView.as_view()),
+
+    # Viewsets
     url(get_api_path(''), include(router.urls)),
+
+    # Docs
     url(get_api_path(r'docs/'), DocsView.as_view()),
 
-    # url(get_api_path(''), include('drf_openapi.urls')),
-
+    # DRF auth, TODO: logout
     url(r'^api-auth/', include('rest_framework.urls',
                                namespace='rest_framework')),
 

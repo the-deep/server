@@ -44,14 +44,9 @@ INSTALLED_APPS = [
     'drf_dynamic_fields',
     'rest_framework',
     'reversion',
-    'reversion',
     'storages',
 
     'redis_store',
-    'rest_framework',
-    'reversion',
-    'storages',
-
     'analysis_framework',
     'docs',
     'dummy_data',

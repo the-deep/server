@@ -11,8 +11,6 @@ class LeadMixin():
     Lead Related methods
     Required Mixins: ProjectMixin [project.tests.test_apis]
     """
-    URL = '/api/v1/leads/'
-
     def create_or_get_lead(self):
         """
         Create new or return recent lead
@@ -46,6 +44,7 @@ class LeadTests(AuthMixin, ProjectMixin, LeadMixin, APITestCase):
         Create Lead Test
         """
 
+        url = '/api/v1/leads/'
         data = {
             'title': 'test title',
             'project': self.create_or_get_project().pk,
@@ -55,8 +54,16 @@ class LeadTests(AuthMixin, ProjectMixin, LeadMixin, APITestCase):
             'text': 'this is some random text',
         }
 
-        response = self.client.post(self.URL, data,
+        response = self.client.post(url, data,
                                     HTTP_AUTHORIZATION=self.auth)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Lead.objects.count(), 1)
         self.assertEqual(response.data['title'], data['title'])
+
+    def test_filter_options(self):
+        """
+        Filter options api
+        """
+        url = '/api/v1/lead-filter-options/'
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
