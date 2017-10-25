@@ -14,6 +14,14 @@ def to_camel_case(snake_str):
     return components[0] + "".join(x.title() for x in components[1:])
 
 
+def format_field_name(field_name, required, camelcase):
+    if camelcase:
+        field_name = to_camel_case(field_name)
+    if required:
+        field_name += '*'
+    return field_name
+
+
 def field_to_schema(field, camelcase=True):
     # title = force_text(field.label) if field.label else ''
     # if camelcase:
@@ -29,9 +37,8 @@ def field_to_schema(field, camelcase=True):
         return schema.Object(
             properties=OrderedDict([
                 (
-                    '{}{}'.format(value.field_name, '*'
-                                  if value.required
-                                  else ''),
+                    format_field_name(value.field_name,
+                                      value.required, camelcase),
                     field_to_schema(value)
                 ) for value in field.fields.values()
             ]),
