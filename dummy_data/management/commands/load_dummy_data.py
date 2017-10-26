@@ -48,6 +48,9 @@ class Command(BaseCommand):
         self.load_manytomany('project', 'user_group', 'Project_UserGroup',
                              'user_groups')
 
+        self.stdout.write('Loading regions')
+        self.load('geo', 'Region')
+
         self.stdout.write('Done')
 
     def load_manytomany(self, app_name1, app_name2,
