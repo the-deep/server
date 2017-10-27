@@ -50,5 +50,11 @@ class GalleryTests(AuthMixin, APITestCase):
         self.assertEqual(File.objects.count(), last_count + 1)
         self.assertEqual(response.data['title'], data['title'])
 
+        # Let's delete the file from the filesystem to keep
+        # things clean
+        last = File.objects.last()
+        if os.path.isfile(last.file.path):
+            os.remove(last.file.path)
+
         # TODO Retrive contents from url data['file'] and assert
         # the text data.
