@@ -89,6 +89,8 @@ class LeadFilterOptionsView(APIView):
     """
     def get(self, request, version=None):
         project_query = request.GET.get('project')
+        fields = request.GET.get('fields')
+
         projects = None
         if project_query:
             projects = project_query.split(',')
@@ -99,31 +101,33 @@ class LeadFilterOptionsView(APIView):
         if projects:
             assigned_to = assigned_to.filter(lead__project__in=projects)
 
-        assigned_to = [
-            {
-                'key': user.id,
-                'value': user.profile.get_display_name(),
-            } for user in assigned_to.distinct()
-        ]
+        filter_options = {}
 
-        confidentiality = [
-            {
-                'key': c[0],
-                'value': c[1],
-            } for c in Lead.CONFIDENTIALITIES
-        ]
+        if (fields is None or 'assigned_to' in fields):
+            assigned_to = [
+                {
+                    'key': user.id,
+                    'value': user.profile.get_display_name(),
+                } for user in assigned_to.distinct()
+            ]
+            filter_options['assigned_to'] = assigned_to
 
-        status = [
-            {
-                'key': s[0],
-                'value': s[1],
-            } for s in Lead.STATUSES
-        ]
+        if (fields is None or 'confidentiality' in fields):
+            confidentiality = [
+                {
+                    'key': c[0],
+                    'value': c[1],
+                } for c in Lead.CONFIDENTIALITIES
+            ]
+            filter_options['confidentiality'] = confidentiality
 
-        filter_options = {
-            'assigned_to': assigned_to,
-            'confidentiality': confidentiality,
-            'status': status,
-        }
+        if (fields is None or 'status' in fields):
+            status = [
+                {
+                    'key': s[0],
+                    'value': s[1],
+                } for s in Lead.STATUSES
+            ]
+            filter_options['status'] = status
 
         return Response(filter_options)
