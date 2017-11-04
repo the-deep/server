@@ -1,5 +1,16 @@
 from django.contrib import admin
-from lead.models import Lead
+from reversion.admin import VersionAdmin
+from .models import Lead, LeadPreview, LeadPreviewImage
 
 
-admin.site.register(Lead)
+class LeadPreviewInline(admin.StackedInline):
+    model = LeadPreview
+
+
+class LeadPreviewImageInline(admin.TabularInline):
+    model = LeadPreviewImage
+
+
+@admin.register(Lead)
+class LeadAdmin(VersionAdmin):
+    inlines = [LeadPreviewInline, LeadPreviewImageInline]

@@ -20,5 +20,6 @@ subcription_channels = {
     'leads': {
         'onNew': ['projectId'],
         'onEdited': ['leadId'],
+        'onPreviewExtracted': ['leadId'],
     },
 }

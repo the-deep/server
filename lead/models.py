@@ -81,3 +81,19 @@ class Lead(UserResource):
         # can modify a project but anybody who can view project
         # can modify a lead in that project
         return self.project.can_get(user)
+
+
+class LeadPreview(models.Model):
+    lead = models.OneToOneField(Lead)
+    text_extract = models.TextField(blank=True)
+
+    def __str__(self):
+        return 'Text extracted for {}'.format(self.lead)
+
+
+class LeadPreviewImage(models.Model):
+    lead = models.ForeignKey(Lead)
+    file = models.FileField(upload_to='lead-preview/')
+
+    def __str__(self):
+        return 'Image extracted for {}'.format(self.lead)

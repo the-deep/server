@@ -182,7 +182,7 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
 
                 # Step 1: validate, and encode the request
                 self.validate(content)
-                code = self.encode(content)
+                code = SubscriptionConsumer.encode(content)
 
                 # Note to check for permissions while subscribing
                 check_permissions = permissions.get(content['channel'])
@@ -236,7 +236,7 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
                     # The request is in similar form as subscription,
                     # so first get the code from the request.
                     self.validate(content)
-                    code = self.encode(content)
+                    code = SubscriptionConsumer.encode(content)
 
                     # Remove the client from the group
                     # Then remove the group from the redis list for the client
@@ -308,11 +308,12 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
             if not content.get(key):
                 raise FieldValueError(key)
 
-    def encode(self, data):
+    @staticmethod
+    def encode(data):
         """
         Encode subscription request to a string code
 
-        An example of encoded string is "leads:onNew:223".
+        An example of encoded string is "leads-onNew-223".
 
         See validate for example of json request.
         """
@@ -327,7 +328,8 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
 
         return code
 
-    def decode(self, code):
+    @staticmethod
+    def decode(code):
         """
         Decode subscription request string code to json
 
