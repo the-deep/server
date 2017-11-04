@@ -89,28 +89,31 @@ class LeadFilterOptionsView(APIView):
     """
     def get(self, request, version=None):
         project_query = request.GET.get('project')
-        fields = request.GET.get('fields')
+        fields_query = request.GET.get('fields')
 
         projects = None
         if project_query:
             projects = project_query.split(',')
 
-        assigned_to = User.objects.filter(
-            lead__isnull=False,
-        )
-        if projects:
-            assigned_to = assigned_to.filter(lead__project__in=projects)
+        fields = None
+        if fields_query:
+            fields = fields_query.split(',')
 
         filter_options = {}
 
         if (fields is None or 'assigned_to' in fields):
-            assigned_to = [
+            assigned_to = User.objects.filter(
+                lead__isnull=False,
+            )
+            if projects:
+                assigned_to = assigned_to.filter(lead__project__in=projects)
+
+            filter_options['assigned_to'] = [
                 {
                     'key': user.id,
                     'value': user.profile.get_display_name(),
                 } for user in assigned_to.distinct()
             ]
-            filter_options['assigned_to'] = assigned_to
 
         if (fields is None or 'confidentiality' in fields):
             confidentiality = [
