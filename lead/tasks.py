@@ -9,8 +9,8 @@ from lead.models import (
 )
 from redis_store import redis
 from rest_framework.renderers import JSONRenderer
-from utils.extractors.file_document import FileDocument
-from utils.extractors.web_document import WebDocument
+from utils.extractor.file_document import FileDocument
+from utils.extractor.web_document import WebDocument
 from utils.websocket.subscription import SubscriptionConsumer
 
 import json
@@ -39,7 +39,7 @@ def _extract_from_lead_core(lead):
 
             elif lead.url:
                 text, images = WebDocument(lead.url).extract()
-        except Exception:
+        except Exception as e:
             return False
 
         # Save extracted text as LeadPreview
@@ -57,9 +57,13 @@ def _extract_from_lead_core(lead):
             LeadPreviewImage.objects.filter(lead=lead).delete()
             for image in images:
                 lead_image = LeadPreviewImage(lead=lead)
-                lead_image.image.save(os.path.basename(image.name),
-                                      File(image), True)
+                lead_image.file.save(os.path.basename(image.name),
+                                     File(image), True)
                 lead_image.save()
+
+            for image in images:
+                os.unlink(image.name)
+
     return True
 
 
@@ -97,30 +101,33 @@ def extract_from_lead(lead_id):
             return False
         r.set(key, '1')
 
-    # Actual extraction process
-    return_value = _extract_from_lead_core(lead)
+    try:
+        # Actual extraction process
+        return_value = _extract_from_lead_core(lead)
 
-    # Send signal to all pending websocket clients
-    # that the lead extraction has completed.
+        # Send signal to all pending websocket clients
+        # that the lead extraction has completed.
 
-    code = SubscriptionConsumer.enocde({
-        'channel': 'leads',
-        'event': 'onPreviewExtracted',
-        'leadId': lead.id,
-    })
+        code = SubscriptionConsumer.encode({
+            'channel': 'leads',
+            'event': 'onPreviewExtracted',
+            'leadId': lead.id,
+        })
 
-    # TODO: Discuss and decide the notification response format
-    # Also TODO: Should a handler be added during subscription
-    # to immediately reply with already extracted lead?
+        # TODO: Discuss and decide the notification response format
+        # Also TODO: Should a handler be added during subscription
+        # to immediately reply with already extracted lead?
 
-    Group(code).send(json.loads(
-        JSONRenderer().render({
-            'code': code,
-            'timestamp': timezone.now(),
-            'type': 'notification',
-            'status': return_value,
-        }).decode('utf-8')
-    ))
+        Group(code).send(json.loads(
+            JSONRenderer().render({
+                'code': code,
+                'timestamp': timezone.now(),
+                'type': 'notification',
+                'status': return_value,
+            }).decode('utf-8')
+        ))
+    except Exception:
+        return_value = False
 
     # Once done, we delete the key to say that this task is done.
     r.delete(key)

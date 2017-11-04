@@ -28,6 +28,7 @@ from geo.views import (
 from lead.views import (
     LeadViewSet,
     LeadFilterOptionsView,
+    LeadExtractionTriggerView,
 )
 from entry.views import (
     EntryViewSet, AttributeViewSet, FilterDataViewSet,
@@ -131,6 +132,10 @@ urlpatterns = [
     # Filter options
     url(get_api_path(r'lead-filter-options/$'),
         LeadFilterOptionsView.as_view()),
+
+    # Lead extraction triggering api
+    url(get_api_path(r'lead-extraction-trigger/(?P<lead_id>\d+)/$'),
+        LeadExtractionTriggerView.as_view()),
 
     # Viewsets
     url(get_api_path(''), include(router.urls)),

@@ -32,7 +32,7 @@ def get_lock(lock):
     """
     Get a distributed lock based on redis using RedLock algorithm
     """
-    RedLock(
+    return RedLock(
         lock,
         connection_details=[
             {'connection_pool': pool},

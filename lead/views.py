@@ -1,8 +1,14 @@
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
-from rest_framework import viewsets, permissions, filters
-from rest_framework.views import APIView
+from rest_framework import (
+    exceptions,
+    filters,
+    permissions,
+    viewsets,
+)
 from rest_framework.response import Response
+from rest_framework.views import APIView
 import django_filters
 
 from deep.permissions import ModifyPermission
@@ -11,6 +17,8 @@ from user_resource.filters import UserResourceFilterSet
 from project.models import Project
 from lead.models import Lead
 from lead.serializers import LeadSerializer
+
+from .tasks import extract_from_lead
 
 
 class LeadFilterSet(UserResourceFilterSet):
@@ -87,13 +95,15 @@ class LeadFilterOptionsView(APIView):
     """
     Filter options for various filters available for leads
     """
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, version=None):
         project_query = request.GET.get('project')
         fields_query = request.GET.get('fields')
 
-        projects = None
+        projects = Project.get_for(request.user)
         if project_query:
-            projects = project_query.split(',')
+            projects = projects.filter(id__in=project_query.split(','))
 
         fields = None
         if fields_query:
@@ -134,3 +144,24 @@ class LeadFilterOptionsView(APIView):
             filter_options['status'] = status
 
         return Response(filter_options)
+
+
+class LeadExtractionTriggerView(APIView):
+    """
+    A trigger for extracting lead to generate previews
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, lead_id, version=None):
+        if not Lead.objects.filter(id=lead_id).exists():
+            raise exceptions.NotFound()
+
+        if not Lead.objects.get(id=lead_id).can_modify(request.user):
+            raise exceptions.PermissionDenied()
+
+        if not settings.TESTING:
+            extract_from_lead.delay(lead_id)
+
+        return Response({
+            'extraction_triggered': lead_id,
+        })
