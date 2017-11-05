@@ -91,9 +91,9 @@ class LeadViewSet(viewsets.ModelViewSet):
         return Lead.get_for(self.request.user)
 
 
-class LeadFilterOptionsView(APIView):
+class LeadOptionsView(APIView):
     """
-    Filter options for various filters available for leads
+    Options for various attributes related to lead
     """
     permission_classes = [permissions.IsAuthenticated]
 
@@ -109,20 +109,17 @@ class LeadFilterOptionsView(APIView):
         if fields_query:
             fields = fields_query.split(',')
 
-        filter_options = {}
+        options = {}
 
         if (fields is None or 'assigned_to' in fields):
-            assigned_to = User.objects.filter(
-                lead__isnull=False,
+            assignee = User.objects.filter(
+                project__in=projects,
             )
-            if projects:
-                assigned_to = assigned_to.filter(lead__project__in=projects)
-
-            filter_options['assigned_to'] = [
+            options['assigned_to'] = [
                 {
                     'key': user.id,
                     'value': user.profile.get_display_name(),
-                } for user in assigned_to.distinct()
+                } for user in assignee.distinct()
             ]
 
         if (fields is None or 'confidentiality' in fields):
@@ -132,7 +129,7 @@ class LeadFilterOptionsView(APIView):
                     'value': c[1],
                 } for c in Lead.CONFIDENTIALITIES
             ]
-            filter_options['confidentiality'] = confidentiality
+            options['confidentiality'] = confidentiality
 
         if (fields is None or 'status' in fields):
             status = [
@@ -141,9 +138,18 @@ class LeadFilterOptionsView(APIView):
                     'value': s[1],
                 } for s in Lead.STATUSES
             ]
-            filter_options['status'] = status
+            options['status'] = status
 
-        return Response(filter_options)
+        if (fields is None or 'project' in fields):
+            projects = Project.get_for(request.user)
+            options['project'] = [
+                {
+                    'key': project.id,
+                    'value': project.title,
+                } for project in projects.distinct()
+            ]
+
+        return Response(options)
 
 
 class LeadExtractionTriggerView(APIView):

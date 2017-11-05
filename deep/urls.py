@@ -27,7 +27,7 @@ from geo.views import (
 )
 from lead.views import (
     LeadViewSet,
-    LeadFilterOptionsView,
+    LeadOptionsView,
     LeadExtractionTriggerView,
 )
 from entry.views import (
@@ -130,8 +130,8 @@ urlpatterns = [
         TokenRefreshView.as_view()),
 
     # Filter options
-    url(get_api_path(r'lead-filter-options/$'),
-        LeadFilterOptionsView.as_view()),
+    url(get_api_path(r'lead-options/$'),
+        LeadOptionsView.as_view()),
 
     # Lead extraction triggering api
     url(get_api_path(r'lead-extraction-trigger/(?P<lead_id>\d+)/$'),
