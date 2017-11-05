@@ -67,3 +67,15 @@ class LeadTests(AuthMixin, ProjectMixin, LeadMixin, APITestCase):
         url = '/api/v1/lead-filter-options/'
         response = self.client.get(url, HTTP_AUTHORIZATION=self.auth)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_trigger_api(self):
+        """
+        We can't really test for background tasks that happen in separate
+        process.
+
+        So create a dummy test and perform actual test in test_tasks
+        """
+        lead = self.create_or_get_lead()
+        url = '/api/v1/lead-extraction-trigger/{}/'.format(lead.id)
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
