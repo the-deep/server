@@ -39,6 +39,7 @@ from analysis_framework.views import (
     ExportableViewSet
 )
 from deep.views import (
+    Api_404View,
     FrontendView,
 )
 from docs.views import (
@@ -51,6 +52,12 @@ from jwt_auth.views import (
     TokenRefreshView,
 )
 
+from django.conf.urls import (
+    handler404
+    # handler403, handler400, handler500
+)
+
+handler404 = Api_404View # noqa
 
 router = routers.DefaultRouter()
 
@@ -150,5 +157,6 @@ urlpatterns = [
 ] + static.static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += [
-    url(r'^', FrontendView.as_view()),
+    url(r'^$', FrontendView.as_view()),
+    url(r'^api/', Api_404View.as_view()),
 ]

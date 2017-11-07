@@ -20,6 +20,7 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = [os.environ.get('DJANGO_ALLOWED_HOST', '*')]
+DEEPER_FRONTEND_HOST = os.environ.get('FRONTEND_HOST', 'localhost:3000')
 
 
 # See if we are inside a test environment
@@ -309,7 +310,7 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
 
 # CORS CONFIGS
 CORS_ORIGIN_WHITELIST = (
-    os.environ.get('FRONTEND_HOST', 'localhost:3000')
+    DEEPER_FRONTEND_HOST
 )
 
 CORS_URLS_REGEX = r'^/api/.*$'
