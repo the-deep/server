@@ -60,11 +60,11 @@ class LeadTests(AuthMixin, ProjectMixin, LeadMixin, APITestCase):
         self.assertEqual(Lead.objects.count(), 1)
         self.assertEqual(response.data['title'], data['title'])
 
-    def test_filter_options(self):
+    def test_options(self):
         """
-        Filter options api
+        Options api
         """
-        url = '/api/v1/lead-filter-options/'
+        url = '/api/v1/lead-options/'
         response = self.client.get(url, HTTP_AUTHORIZATION=self.auth)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
