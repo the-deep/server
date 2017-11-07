@@ -19,6 +19,9 @@ class Region(UserResource):
     def __str__(self):
         return self.title
 
+    class Meta:
+        ordering = ['title', 'code']
+
     @staticmethod
     def get_for(user):
         return Region.objects.filter(
