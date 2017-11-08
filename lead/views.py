@@ -111,11 +111,11 @@ class LeadOptionsView(APIView):
 
         options = {}
 
-        if (fields is None or 'assigned_to' in fields):
+        if (fields is None or 'assignee' in fields):
             assignee = User.objects.filter(
                 project__in=projects,
             )
-            options['assigned_to'] = [
+            options['assignee'] = [
                 {
                     'key': user.id,
                     'value': user.profile.get_display_name(),
