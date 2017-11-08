@@ -4,6 +4,7 @@ from utils.hid import config as hid_config
 from utils.common import USER_AGENT
 from urllib.parse import urlparse
 import requests
+from requests.exceptions import ConnectionError
 import logging
 
 from utils.hid import HumanitarianId
@@ -51,7 +52,10 @@ class HIDIntegrationTest(TestCase):
         """
         Get access token from HID
         """
+        # Send request to get crumb cookie, required for login.
         response = self.requests.get(hid_config.auth_uri, headers=self.headers)
+
+        # Try to login with dev user
         response = self.requests.post(
             hid_config.auth_uri + '/login',
             data={
@@ -60,17 +64,26 @@ class HIDIntegrationTest(TestCase):
                 'crumb': response.cookies.get('crumb'),
             },
             headers=self.headers)
-        response = self.requests.get(HID_LOGIN_URL, headers=self.headers)
 
-        if response.status_code == status.HTTP_403_FORBIDDEN\
-                or len(response.history) < 1:
-            self.show_auth_warning(response=response)
-            return
+        try:
+            # Now try to get callback user.
+            response = self.requests.get(HID_LOGIN_URL, headers=self.headers)
 
-        redirect_url = response.history[0].headers.get('location')
+            if response.status_code == status.HTTP_403_FORBIDDEN\
+                    or len(response.history) < 1:
+                self.show_auth_warning(response=response)
+                return
+
+            redirect_url = response.history[0].headers.get('location')
+        except ConnectionError as response:
+            # get the final url where we get timeout, since the callback is
+            # into react container 3000 instead of django 8000
+            redirect_url = response.request.url
+
         p = urlparse(redirect_url.replace('#', '?', 1))
         access_token = {query.split('=')[0]: query.split('=')[1]
                         for query in p.query.split('&')}.get('access_token')
+
         if access_token is None:
             self.show_auth_warning(response=response, no_access_token=True)
         return access_token
