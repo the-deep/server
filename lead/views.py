@@ -20,7 +20,10 @@ from user_resource.filters import UserResourceFilterSet
 
 from project.models import Project
 from lead.models import Lead
-from lead.serializers import LeadSerializer
+from lead.serializers import (
+    LeadSerializer,
+    LeadPreviewSerializer,
+)
 
 from .tasks import extract_from_lead
 from utils.common import USER_AGENT
@@ -101,7 +104,6 @@ class LeadViewSet(viewsets.ModelViewSet):
     """
     Lead View
     """
-    queryset = Lead.objects.all()
     serializer_class = LeadSerializer
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
@@ -122,6 +124,15 @@ class LeadViewSet(viewsets.ModelViewSet):
             ).filter(similarity__gt=0.3).order_by('-similarity')
 
         return leads
+
+
+class LeadPreviewViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = LeadPreviewSerializer
+    permission_classes = [permissions.IsAuthenticated,
+                          ModifyPermission]
+
+    def get_queryset(self):
+        return Lead.get_for(self.request.user)
 
 
 class LeadOptionsView(APIView):

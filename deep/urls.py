@@ -33,6 +33,7 @@ from geo.views import (
 )
 from lead.views import (
     LeadViewSet,
+    LeadPreviewViewSet,
     LeadOptionsView,
     LeadExtractionTriggerView,
     LeadWebsiteFetch,
@@ -106,6 +107,8 @@ router.register(r'admin-levels', AdminLevelViewSet,
 # Lead routers
 router.register(r'leads', LeadViewSet,
                 base_name='lead')
+router.register(r'lead-previews', LeadPreviewViewSet,
+                base_name='lead_preview')
 
 # Entry routers
 router.register(r'entries', EntryViewSet,

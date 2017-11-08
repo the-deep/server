@@ -1,7 +1,7 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
-from .models import Lead
+from .models import Lead, LeadPreview
 
 
 class LeadSerializer(DynamicFieldsMixin, UserResourceSerializer):
@@ -25,3 +25,23 @@ class LeadSerializer(DynamicFieldsMixin, UserResourceSerializer):
         return project
 
     # TODO: Probably also validate assignee to valid list of users
+
+
+class LeadPreviewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """
+    Serializer for lead preview
+    """
+
+    text = serializers.CharField(source='leadpreview.text_extract',
+                                 read_only=True)
+    images = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Lead
+        fields = ('id', 'text', 'images')
+
+    def get_images(self, lead):
+        return [
+            image.file.url
+            for image in lead.leadpreviewimage_set.all()
+        ]
