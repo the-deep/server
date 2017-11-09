@@ -18,6 +18,6 @@ class FrontendView(View):
 
 
 class Api_404View(APIView):
-    def get(self, request):
+    def get(self, request, version):
         raise NotFound(detail="Error 404, page not found",
                        code=status.HTTP_404_NOT_FOUND)

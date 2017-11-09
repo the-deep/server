@@ -158,5 +158,5 @@ urlpatterns = [
 
 urlpatterns += [
     url(r'^$', FrontendView.as_view()),
-    url(r'^api/', Api_404View.as_view()),
+    url(get_api_path(''), Api_404View.as_view()),
 ]
