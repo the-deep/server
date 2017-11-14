@@ -53,6 +53,9 @@ class GroupMembership(models.Model):
         return '{} @ {}'.format(str(self.member),
                                 self.group.title)
 
+    class Meta:
+        unique_together = ('member', 'group')
+
     @staticmethod
     def get_for(user):
         return GroupMembership.objects.filter(

@@ -68,6 +68,9 @@ class ProjectMembership(models.Model):
         return '{} @ {}'.format(str(self.member),
                                 self.project.title)
 
+    class Meta:
+        unique_together = ('member', 'project')
+
     @staticmethod
     def get_for(user):
         """
