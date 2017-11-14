@@ -1,4 +1,4 @@
-from rest_framework import generics, viewsets, permissions
+from rest_framework import viewsets, permissions
 from deep.permissions import ModifyPermission
 
 from .models import (
@@ -28,7 +28,7 @@ class GroupMembershipViewSet(viewsets.ModelViewSet):
 
     def get_serializer(self, instance=None,
                        data=None, many=False, partial=False):
-        list = data.get('list')
+        list = data and data.get('list')
         if list:
             return super(GroupMembershipViewSet, self).get_serializer(
                 data=list,
@@ -36,6 +36,12 @@ class GroupMembershipViewSet(viewsets.ModelViewSet):
                 many=True,
                 partial=partial,
             )
+        return super(GroupMembershipViewSet, self).get_serializer(
+            data=data,
+            instance=instance,
+            many=many,
+            partial=partial,
+        )
 
     def get_queryset(self):
         return GroupMembership.get_for(self.request.user)

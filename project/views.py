@@ -29,7 +29,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
 
     def get_serializer(self, instance=None,
                        data=None, many=False, partial=False):
-        list = data.get('list')
+        list = data and data.get('list')
         if list:
             return super(ProjectMembershipViewSet, self).get_serializer(
                 data=list,
@@ -37,6 +37,12 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
                 many=True,
                 partial=partial,
             )
+        return super(ProjectMembershipViewSet, self).get_serializer(
+            data=data,
+            instance=instance,
+            many=many,
+            partial=partial,
+        )
 
     def get_queryset(self):
         return ProjectMembership.get_for(self.request.user)
