@@ -26,21 +26,31 @@ class GroupMembershipViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
 
-    def get_serializer(self, instance=None,
-                       data=None, many=False, partial=False):
+    def get_serializer(self, *args, **kwargs):
+        data = kwargs.get('data')
         list = data and data.get('list')
         if list:
+            kwargs.pop('data')
+            kwargs.pop('many', None)
             return super(GroupMembershipViewSet, self).get_serializer(
                 data=list,
-                instance=instance,
                 many=True,
-                partial=partial,
+                *args,
+                **kwargs,
             )
         return super(GroupMembershipViewSet, self).get_serializer(
-            data=data,
-            instance=instance,
-            many=many,
-            partial=partial,
+            *args,
+            **kwargs,
+        )
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        if request.method == 'POST' and isinstance(response.data, list):
+            response.data = {
+                'results': response.data,
+            }
+        return super(GroupMembershipViewSet, self).finalize_response(
+            request, response,
+            *args, **kwargs,
         )
 
     def get_queryset(self):

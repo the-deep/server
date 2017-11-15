@@ -5,11 +5,12 @@ from user_group.models import UserGroup, GroupMembership
 
 class GroupMembershipSerializer(DynamicFieldsMixin,
                                 serializers.ModelSerializer):
+    member_email = serializers.CharField(source='member.email', read_only=True)
     member_name = serializers.SerializerMethodField()
 
     class Meta:
         model = GroupMembership
-        fields = ('id', 'member', 'member_name',
+        fields = ('id', 'member', 'member_name', 'member_email',
                   'group', 'role', 'joined_at')
 
     def get_member_name(self, membership):

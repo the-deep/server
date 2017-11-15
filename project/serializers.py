@@ -6,11 +6,12 @@ from project.models import Project, ProjectMembership
 
 class ProjectMembershipSerializer(DynamicFieldsMixin,
                                   serializers.ModelSerializer):
+    member_email = serializers.CharField(source='member.email', read_only=True)
     member_name = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectMembership
-        fields = ('id', 'member', 'member_name',
+        fields = ('id', 'member', 'member_name', 'member_email',
                   'project', 'role', 'joined_at')
 
     def get_member_name(self, membership):
