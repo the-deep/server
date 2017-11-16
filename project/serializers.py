@@ -50,7 +50,7 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
     # Validations
     def validate_user_groups(self, user_groups):
         for user_group in user_groups:
-            if not user_group.can_modify(self.context['request'].user):
+            if not user_group.can_get(self.context['request'].user):
                 raise serializers.ValidationError(
                     'Invalid user group: {}'.format(user_group.id))
         return user_groups
