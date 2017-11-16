@@ -34,15 +34,9 @@ class Region(UserResource):
         return self in Region.get_for(user)
 
     def can_modify(self, user):
-        import project
-        return user.is_superuser or (self.public and (
-            self.created_by == user or
-            project.models.ProjectMembership.objects.filter(
-                project__regions=self,
-                member=user,
-                role='admin'
-            ).exists()
-        ))
+        return (user.is_superuser and self.public) or (
+            self.created_by == user
+        )
 
 
 class AdminLevel(models.Model):

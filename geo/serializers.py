@@ -1,10 +1,10 @@
 import json
-from django.conf import settings
+# from django.conf import settings
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
 from .models import Region, AdminLevel  # , GeoShape
-from .tasks import load_geo_areas
+# from .tasks import load_geo_areas
 
 
 class RegionSerializer(DynamicFieldsMixin, UserResourceSerializer):
@@ -42,8 +42,8 @@ class AdminLevelUploadSerializer(DynamicFieldsMixin,
 
     def update(self, instance, validated_data):
 
-        if not settings.TESTING:
-            load_geo_areas.delay(instance.region.pk)
+        # if not settings.TESTING:
+        #     load_geo_areas.delay(instance.region.pk)
 
         self.fields.pop('geo_shape')
         instance.geo_shape = json.loads(

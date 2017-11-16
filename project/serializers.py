@@ -57,13 +57,13 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
 
     def validate_regions(self, regions):
         for region in regions:
-            if not region.can_modify(self.context['request'].user):
+            if not region.can_get(self.context['request'].user):
                 raise serializers.ValidationError(
                     'Invalid region: {}'.format(region.id))
         return regions
 
     def validate_analysis_framework(self, analysis_framework):
-        if not analysis_framework.can_modify(self.context['request'].user):
+        if not analysis_framework.can_get(self.context['request'].user):
             raise serializers.ValidationError(
                 'Invalid analysis framework: {}'.format(analysis_framework.id))
         return analysis_framework
