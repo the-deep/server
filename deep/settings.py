@@ -355,3 +355,16 @@ if not USE_EMAIL_CONFIG:
     DUMP THE EMAIL TO CONSOLE
     """
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
+# List of mime types supported in deep
+DEEP_SUPPORTED_MIME_TYPES = [
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/rtf', 'text/plain', 'font/otf', 'application/pdf',
+    'application/vnd.openxmlformats-officedocument.presentationml.'
+    'presentation',
+    'application/vnd.ms-powerpoint', 'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/csv', 'image/png', 'image/jpeg', 'image/fig',
+    'application/json', 'application/xml', 'application/msword',
+]

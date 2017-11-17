@@ -24,4 +24,5 @@ readability-lxml==0.6.2
 redis==2.10.6
 redlock==1.2.0
 requests==2.13.0
+google-api-python-client==1.6.4
 tox
