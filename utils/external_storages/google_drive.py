@@ -34,15 +34,16 @@ def get_credentials(access_token):
 
 def download(
         file_id,
-        mimeType,
+        mime_type,
         access_token,
-        SUPPORTED_MIME_TYPES):
+        SUPPORTED_MIME_TYPES,
+        exception=None):
     """
     Download/Export file from google drive
 
     params:
         fileId: file id from google drive
-        mimeType: file mime types from google drive
+        mime_type: file mime types from google drive
         access_token: access token provided by google drive
         SUPPORTED_MIME_TYPES: which types of file to download
     """
@@ -52,11 +53,11 @@ def download(
 
     service = discovery.build('drive', 'v3', http=http)
 
-    if mimeType in SUPPORTED_MIME_TYPES:
+    if mime_type in SUPPORTED_MIME_TYPES:
         # Directly dowload the file
         request = service.files().get_media(fileId=file_id)
     else:
-        export_mime_type = GOOLE_DRIVE_EXPORT_MAP.get(mimeType)
+        export_mime_type = GOOLE_DRIVE_EXPORT_MAP.get(mime_type)
 
         if export_mime_type and export_mime_type in SUPPORTED_MIME_TYPES:
             # Convert the google files to supported file
@@ -65,7 +66,9 @@ def download(
                 mimeType=export_mime_type
             )
         else:
-            return None
+            if exception:
+                raise exception('Unsupported Mime Type: ' + mime_type)
+            return
 
     outfp = tempfile.TemporaryFile("wb+")
     downloader = MediaIoBaseDownload(outfp, request)
@@ -75,29 +78,3 @@ def download(
         # print('Download %d%%.' % int(status.progress() * 100))
 
     return outfp
-
-
-"""
-# TODO: Only for testing, remove this
-DEEP_SUPPORTED_MIME_TYPES = [
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/rtf', 'text/plain', 'font/otf', 'application/pdf',
-    'application/vnd.openxmlformats-officedocument.presentationml.'
-    'presentation',
-    'application/vnd.ms-powerpoint', 'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'text/csv', 'image/png', 'image/jpeg', 'image/fig',
-    'application/json', 'application/xml', 'application/msword',
-]
-
-if __name__ == '__main__':
-    file_id = ''
-    mimeType = ''
-    access_token = ''
-
-    print(download(
-        file_id, mimeType,
-        access_token,
-        DEEP_SUPPORTED_MIME_TYPES,
-    ))
-"""

@@ -11,6 +11,8 @@ from user.views import (
 )
 from gallery.views import (
     FileViewSet,
+    GoogleDriveFileViewSet,
+    DropboxFileViewSet,
 )
 from user_group.views import (
     GroupMembershipViewSet,
@@ -67,6 +69,12 @@ router.register(r'users', UserViewSet,
 
 # File routers
 router.register(r'files', FileViewSet,
+                base_name='file')
+
+router.register(r'files-google-drive', GoogleDriveFileViewSet,
+                base_name='file')
+
+router.register(r'files-dropbox', DropboxFileViewSet,
                 base_name='file')
 
 # User group registers
