@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models
 from rest_framework import (
     exceptions,
@@ -88,7 +89,16 @@ class LeadViewSet(viewsets.ModelViewSet):
     # ordering_fields = omitted to allow ordering by all read-only fields
 
     def get_queryset(self):
-        return Lead.get_for(self.request.user)
+        leads = Lead.get_for(self.request.user)
+
+        lead_id = self.request.GET.get('similar')
+        if lead_id:
+            similar_lead = Lead.objects.get(id=lead_id)
+            leads = leads.filter(project=similar_lead.project).annotate(
+                similarity=TrigramSimilarity('title', similar_lead.title)
+            ).filter(similarity__gt=0.3).order_by('-similarity')
+
+        return leads
 
 
 class LeadOptionsView(APIView):
