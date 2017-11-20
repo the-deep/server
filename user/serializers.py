@@ -13,6 +13,7 @@ class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         source='profile.display_picture',
         queryset=File.objects.all(),
         allow_null=True,
+        required=False,
     )
     display_name = serializers.SerializerMethodField()
 
