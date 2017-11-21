@@ -20,6 +20,7 @@ from user_group.views import (
 )
 from project.views import (
     ProjectMembershipViewSet,
+    ProjectOptionsView,
     ProjectViewSet,
 )
 from geo.views import (
@@ -144,9 +145,11 @@ urlpatterns = [
     url(get_api_path(r'token/refresh/$'),
         TokenRefreshView.as_view()),
 
-    # Filter options
+    # Attribute options for various models
     url(get_api_path(r'lead-options/$'),
         LeadOptionsView.as_view()),
+    url(get_api_path(r'project-options/$'),
+        ProjectOptionsView.as_view()),
 
     # Lead extraction triggering api
     url(get_api_path(r'lead-extraction-trigger/(?P<lead_id>\d+)/$'),

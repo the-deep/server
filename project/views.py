@@ -1,6 +1,10 @@
 from rest_framework import viewsets, permissions
-from deep.permissions import ModifyPermission
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
+from deep.permissions import ModifyPermission
+from geo.models import Region
+from user_group.models import UserGroup
 from .models import Project, ProjectMembership
 from .serializers import ProjectSerializer, ProjectMembershipSerializer
 
@@ -60,3 +64,54 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return ProjectMembership.get_for(self.request.user)
+
+
+class ProjectOptionsView(APIView):
+    """
+    Options for various attributes related to project
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, version=None):
+        project_query = request.GET.get('project')
+        fields_query = request.GET.get('fields')
+
+        projects = Project.get_for(request.user)
+        if project_query:
+            projects = projects.filter(id__in=project_query.split(','))
+
+        fields = None
+        if fields_query:
+            fields = fields_query.split(',')
+
+        options = {}
+
+        if (fields is None or 'regions' in fields):
+            regions1 = Region.objects.filter(
+                project__in=projects
+            )
+            regions2 = Region.get_for(request.user).distinct()
+            regions = regions1.union(regions2)
+
+            options['regions'] = [
+                {
+                    'key': region.id,
+                    'value': region.title,
+                } for region in regions.distinct()
+            ]
+
+        if (fields is None or 'user_groups' in fields):
+            user_groups1 = UserGroup.objects.filter(
+                project__in=projects
+            )
+            user_groups2 = UserGroup.get_for(request.user).distinct()
+            user_groups = user_groups1.union(user_groups2)
+
+            options['user_groups'] = [
+                {
+                    'key': user_group.id,
+                    'value': user_group.title,
+                } for user_group in user_groups.distinct()
+            ]
+
+        return Response(options)

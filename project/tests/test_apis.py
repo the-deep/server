@@ -88,5 +88,13 @@ class ProjectApiTest(AuthMixin, ProjectMixin, APITestCase):
         self.assertEqual(response.data['member'], data['member'])
         self.assertEqual(response.data['project'], data['project'])
 
+    def test_options(self):
+        """
+        Options api
+        """
+        url = '/api/v1/project-options/'
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 # EOF

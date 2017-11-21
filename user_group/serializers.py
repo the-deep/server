@@ -3,6 +3,12 @@ from rest_framework import serializers
 from user_group.models import UserGroup, GroupMembership
 
 
+class SimpleUserGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserGroup
+        fields = ('id', 'title')
+
+
 class GroupMembershipSerializer(DynamicFieldsMixin,
                                 serializers.ModelSerializer):
     member_email = serializers.CharField(source='member.email', read_only=True)

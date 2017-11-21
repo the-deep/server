@@ -4,6 +4,8 @@ from rest_framework import serializers
 from geo.models import Region
 from geo.serializers import SimpleRegionSerializer
 from project.models import Project, ProjectMembership
+from user_group.models import UserGroup
+from user_group.serializers import SimpleUserGroupSerializer
 from user_resource.serializers import UserResourceSerializer
 
 
@@ -34,6 +36,7 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
         read_only=True,
     )
     regions = SimpleRegionSerializer(many=True, required=False)
+    user_groups = SimpleUserGroupSerializer(many=True, required=False)
 
     class Meta:
         model = Project
@@ -54,7 +57,8 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
 
     # Validations
     def validate_user_groups(self, user_groups):
-        for user_group in user_groups:
+        for user_group_obj in self.initial_data['user_groups']:
+            user_group = UserGroup.objects.get(id=user_group_obj['id'])
             if self.instance and user_group in self.instance.user_groups.all():
                 continue
             if not user_group.can_modify(self.context['request'].user):
@@ -67,7 +71,8 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
             region = Region.objects.get(id=region_obj.get('id'))
             if self.instance and region in self.instance.regions.all():
                 continue
-            if not region.can_get(self.context['request'].user):
+            if not region.public and \
+                    not region.can_modify(self.context['request'].user):
                 raise serializers.ValidationError(
                     'Invalid region: {}'.format(region.id))
         return data
