@@ -13,6 +13,11 @@ class Project(UserResource):
     """
 
     title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+
+    start_date = models.DateField(default=None, null=True, blank=True)
+    end_date = models.DateField(default=None, null=True, blank=True)
+
     members = models.ManyToManyField(User, blank=True,
                                      through='ProjectMembership')
     regions = models.ManyToManyField(Region, blank=True)

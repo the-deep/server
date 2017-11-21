@@ -37,8 +37,8 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
 
     class Meta:
         model = Project
-        fields = ('id', 'title', 'regions', 'memberships',
-                  'user_groups', 'data',
+        fields = ('id', 'title', 'description', 'start_date', 'end_date',
+                  'regions', 'memberships', 'user_groups', 'data',
                   'created_at', 'created_by', 'modified_at', 'modified_by',
                   'created_by_name', 'modified_by_name')
         read_only_fields = ('memberships', 'members',)
