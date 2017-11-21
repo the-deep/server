@@ -7,10 +7,31 @@ from .models import Region, AdminLevel  # , GeoShape
 # from .tasks import load_geo_areas
 
 
+class SimpleRegionSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = Region
+        fields = ('id', 'title')
+
+
+class SimpleAdminLevelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdminLevel
+        fields = ('id', 'title', 'name_prop', 'code_prop',
+                  'parent_name_prop', 'parent_code_prop',)
+
+
 class RegionSerializer(DynamicFieldsMixin, UserResourceSerializer):
     """
     Region Model Serializer
     """
+    admin_levels = SimpleAdminLevelSerializer(
+        many=True,
+        source='adminlevel_set',
+        read_only=True,
+    )
+
     class Meta:
         model = Region
         fields = ('__all__')

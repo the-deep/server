@@ -52,7 +52,6 @@ class BaseNestedModelSerializer(serializers.ModelSerializer):
                 else:
                     reverse_relations[field_name] = (
                         related_field, field, field.source)
-
         return relations, reverse_relations
 
     def _get_related_field(self, field):

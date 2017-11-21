@@ -13,8 +13,12 @@ class Region(UserResource):
     """
     code = models.CharField(max_length=10)
     title = models.CharField(max_length=255)
-    data = JSONField(default=None, blank=True, null=True)
     public = models.BooleanField(default=True)
+
+    regional_groups = JSONField(default=None, blank=True, null=True)
+    key_figures = JSONField(default=None, blank=True, null=True)
+    population_data = JSONField(default=None, blank=True, null=True)
+    media_sources = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
         return self.title

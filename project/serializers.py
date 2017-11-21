@@ -1,7 +1,10 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
-from user_resource.serializers import UserResourceSerializer
+
+from geo.models import Region
+from geo.serializers import SimpleRegionSerializer
 from project.models import Project, ProjectMembership
+from user_resource.serializers import UserResourceSerializer
 
 
 class ProjectMembershipSerializer(DynamicFieldsMixin,
@@ -27,8 +30,10 @@ class ProjectMembershipSerializer(DynamicFieldsMixin,
 class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
     memberships = ProjectMembershipSerializer(
         source='projectmembership_set',
-        many=True, read_only=True
+        many=True,
+        read_only=True,
     )
+    regions = SimpleRegionSerializer(many=True, required=False)
 
     class Meta:
         model = Project
@@ -55,12 +60,13 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
                     'Invalid user group: {}'.format(user_group.id))
         return user_groups
 
-    def validate_regions(self, regions):
-        for region in regions:
+    def validate_regions(self, data):
+        for region_obj in self.initial_data['regions']:
+            region = Region.objects.get(id=region_obj.get('id'))
             if not region.can_get(self.context['request'].user):
                 raise serializers.ValidationError(
                     'Invalid region: {}'.format(region.id))
-        return regions
+        return data
 
     def validate_analysis_framework(self, analysis_framework):
         if not analysis_framework.can_get(self.context['request'].user):
