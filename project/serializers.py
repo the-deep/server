@@ -55,7 +55,9 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
     # Validations
     def validate_user_groups(self, user_groups):
         for user_group in user_groups:
-            if not user_group.can_get(self.context['request'].user):
+            if self.instance and user_group in self.instance.user_groups.all():
+                continue
+            if not user_group.can_modify(self.context['request'].user):
                 raise serializers.ValidationError(
                     'Invalid user group: {}'.format(user_group.id))
         return user_groups
@@ -63,6 +65,8 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
     def validate_regions(self, data):
         for region_obj in self.initial_data['regions']:
             region = Region.objects.get(id=region_obj.get('id'))
+            if self.instance and region in self.instance.regions.all():
+                continue
             if not region.can_get(self.context['request'].user):
                 raise serializers.ValidationError(
                     'Invalid region: {}'.format(region.id))
