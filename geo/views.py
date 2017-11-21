@@ -20,7 +20,7 @@ class RegionFilterSet(UserResourceFilterSet):
     """
     class Meta:
         model = Region
-        fields = ['id', 'code', 'title', 'public',
+        fields = ['id', 'code', 'title', 'public', 'project',
                   'created_at', 'created_by', 'modified_at', 'modified_by']
         filter_overrides = {
             models.CharField: {
