@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 
@@ -12,6 +13,8 @@ class UserGroup(models.Model):
     members = models.ManyToManyField(User, blank=True,
                                      through='GroupMembership')
     global_crisis_monitoring = models.BooleanField(default=False)
+
+    custom_project_fields = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
         return self.title

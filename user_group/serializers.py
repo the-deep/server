@@ -38,7 +38,8 @@ class UserGroupSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = UserGroup
         fields = ('id', 'title', 'display_picture',
-                  'memberships', 'global_crisis_monitoring')
+                  'memberships', 'global_crisis_monitoring',
+                  'custom_project_fields')
 
     def create(self, validated_data):
         user_group = super(UserGroupSerializer, self).create(validated_data)
