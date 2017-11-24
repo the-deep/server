@@ -50,12 +50,12 @@ class Widget(models.Model):
     Widget inserted into a framework
     """
     analysis_framework = models.ForeignKey(AnalysisFramework)
-    schema_id = models.CharField(max_length=100, db_index=True)
+    widget_id = models.CharField(max_length=100, db_index=True)
     title = models.CharField(max_length=255)
     properties = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
-        return '{} ({})'.format(self.title, self.schema_id)
+        return '{} ({})'.format(self.title, self.widget_id)
 
     @staticmethod
     def get_for(user):
@@ -89,14 +89,14 @@ class Filter(models.Model):
     )
 
     analysis_framework = models.ForeignKey(AnalysisFramework)
-    schema_id = models.CharField(max_length=100, db_index=True)
+    widget_id = models.CharField(max_length=100, db_index=True)
     title = models.CharField(max_length=255)
     properties = JSONField(default=None, blank=True, null=True)
     filter_type = models.CharField(max_length=20, choices=FILTER_TYPES,
                                    default=LIST)
 
     def __str__(self):
-        return '{} ({})'.format(self.title, self.schema_id)
+        return '{} ({})'.format(self.title, self.widget_id)
 
     @staticmethod
     def get_for(user):
@@ -122,11 +122,11 @@ class Exportable(models.Model):
     Export data for given widget
     """
     analysis_framework = models.ForeignKey(AnalysisFramework)
-    schema_id = models.CharField(max_length=100, db_index=True)
+    widget_id = models.CharField(max_length=100, db_index=True)
     inline = models.BooleanField(default=False)
 
     def __str__(self):
-        return 'Exportable ({})'.format(self.schema_id)
+        return 'Exportable ({})'.format(self.widget_id)
 
     @staticmethod
     def get_for(user):
