@@ -53,6 +53,7 @@ class Widget(models.Model):
     Widget inserted into a framework
     """
     analysis_framework = models.ForeignKey(AnalysisFramework)
+    key = models.CharField(max_length=100, default=None, blank=True, null=True)
     widget_id = models.CharField(max_length=100, db_index=True)
     title = models.CharField(max_length=255)
     properties = JSONField(default=None, blank=True, null=True)
