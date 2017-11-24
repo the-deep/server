@@ -148,7 +148,7 @@ class EntryTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
 
         filter = Filter.objects.create(
             analysis_framework=entry.analysis_framework,
-            schema_id='test_filter',
+            widget_id='test_filter',
             title='Test Filter',
             filter_type=Filter.NUMBER,
         )
@@ -165,7 +165,7 @@ class EntryTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
 
         filter = Filter.objects.create(
             analysis_framework=entry.analysis_framework,
-            schema_id='test_list_filter',
+            widget_id='test_list_filter',
             title='Test List Filter',
             filter_type=Filter.LIST,
         )
@@ -197,7 +197,7 @@ class AttributeTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
         """
         # TODO: Add Better data
         old_count = Attribute.objects.count()
-        url = '/api/v1/entry-attribute/'
+        url = '/api/v1/entry-attributes/'
         data = {
             'entry': self.create_or_get_entry().pk,
             'widget': self.create_or_get_widget().pk,

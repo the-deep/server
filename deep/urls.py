@@ -106,7 +106,7 @@ router.register(r'leads', LeadViewSet,
 # Entry routers
 router.register(r'entries', EntryViewSet,
                 base_name='entry_lead')
-router.register(r'entry-attribute', AttributeViewSet,
+router.register(r'entry-attributes', AttributeViewSet,
                 base_name='entry_attribute')
 router.register(r'entry-filter-data', FilterDataViewSet,
                 base_name='entry_filter_data')
@@ -114,13 +114,13 @@ router.register(r'entry-export-data', ExportDataViewSet,
                 base_name='entry_export_data')
 
 # Analysis routers
-router.register(r'analysis-framework', AnalysisFrameworkViewSet,
+router.register(r'analysis-frameworks', AnalysisFrameworkViewSet,
                 base_name='analysis_framework')
-router.register(r'analysis-framework-widget', WidgetViewSet,
+router.register(r'analysis-framework-widgets', WidgetViewSet,
                 base_name='analysis_framework_widget')
-router.register(r'analysis-framework-filter', FilterViewSet,
+router.register(r'analysis-framework-filters', FilterViewSet,
                 base_name='analysis_framework_filter')
-router.register(r'analysis-framework-exportable', ExportableViewSet,
+router.register(r'analysis-framework-exportables', ExportableViewSet,
                 base_name='analysis_framework_exportable')
 
 

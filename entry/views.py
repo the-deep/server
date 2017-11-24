@@ -71,12 +71,12 @@ class EntryViewSet(viewsets.ModelViewSet):
             # For each filter, see if there is a query for that filter
             # and then perform filtering based on that query.
 
-            query = self.request.GET.get(filter.schema_id)
+            query = self.request.GET.get(filter.widget_id)
             query_lt = self.request.GET.get(
-                filter.schema_id + '__lt'
+                filter.widget_id + '__lt'
             )
             query_gt = self.request.GET.get(
-                filter.schema_id + '__gt'
+                filter.widget_id + '__gt'
             )
 
             if filter.filter_type == Filter.NUMBER:
