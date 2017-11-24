@@ -26,6 +26,7 @@ from project.views import (
 from geo.views import (
     AdminLevelUploadViewSet,
     AdminLevelViewSet,
+    RegionCloneView,
     RegionViewSet,
 )
 from lead.views import (
@@ -154,6 +155,10 @@ urlpatterns = [
     # Lead extraction triggering api
     url(get_api_path(r'lead-extraction-trigger/(?P<lead_id>\d+)/$'),
         LeadExtractionTriggerView.as_view()),
+
+    # Clone apis
+    url(get_api_path(r'clone-region/(?P<region_id>\d+)/$'),
+        RegionCloneView.as_view()),
 
     # Viewsets
     url(get_api_path(''), include(router.urls)),

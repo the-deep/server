@@ -6,6 +6,7 @@ from django.conf import settings
 
 from user.tests.test_apis import AuthMixin
 from geo.models import Region, AdminLevel
+from project.tests.test_apis import ProjectMixin
 
 
 class RegionMixin():
@@ -23,7 +24,7 @@ class RegionMixin():
         return region
 
 
-class RegionTests(AuthMixin, RegionMixin, APITestCase):
+class RegionTests(AuthMixin, ProjectMixin, RegionMixin, APITestCase):
     """
     Region Tests
     """
@@ -51,6 +52,31 @@ class RegionTests(AuthMixin, RegionMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Region.objects.count(), 1)
         self.assertEqual(response.data['code'], data['code'])
+
+    def test_clone_region(self):
+        """
+        Test cloning region
+        Includes updating region list of a project whe project id provided
+        """
+        project = self.create_or_get_project()
+        region = self.create_or_get_region()
+        project.regions.add(region)
+
+        url = '/api/v1/clone-region/{}/'.format(region.id)
+        data = {
+            'project': project.id,
+        }
+
+        response = self.client.post(url, data,
+                                    HTTP_AUTHORIZATION=self.auth,
+                                    format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertNotEqual(response.data['id'], region.id)
+        self.assertFalse(response.data['public'])
+        self.assertFalse(region in project.regions.all())
+
+        new_region = Region.objects.get(id=response.data['id'])
+        self.assertTrue(new_region in project.regions.all())
 
 
 class AdminLevelTests(AuthMixin, RegionMixin, APITestCase):

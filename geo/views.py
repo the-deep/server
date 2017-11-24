@@ -1,10 +1,20 @@
 from django.db import models
-from rest_framework import mixins, viewsets, permissions, filters
+from rest_framework import (
+    exceptions,
+    filters,
+    mixins,
+    permissions,
+    response,
+    status,
+    views,
+    viewsets,
+)
 import django_filters
 
 from deep.permissions import ModifyPermission
 from user_resource.filters import UserResourceFilterSet
 
+from project.models import Project
 from .models import Region, AdminLevel  # , GeoShape
 from .serializers import (
     RegionSerializer, AdminLevelSerializer,
@@ -43,6 +53,30 @@ class RegionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Region.get_for(self.request.user)
+
+
+class RegionCloneView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, region_id, version=None):
+        if not Region.objects.filter(id=region_id).exists():
+            raise exceptions.NotFound()
+
+        region = Region.objects.get(id=region_id)
+        if not region.can_get(request.user):
+            raise exceptions.PermissionDenied()
+
+        new_region = region.clone_to_private(request.user)
+        serializer = RegionSerializer(new_region)
+
+        project = request.data.get('project')
+        if project:
+            project = Project.objects.get(id=project)
+            project.regions.remove(region)
+            project.regions.add(new_region)
+
+        return response.Response(serializer.data,
+                                 status=status.HTTP_201_CREATED)
 
 
 class AdminLevelFilterSet(filters.FilterSet):

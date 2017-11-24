@@ -15,8 +15,8 @@ class Region(UserResource):
     title = models.CharField(max_length=255)
     public = models.BooleanField(default=True)
 
-    regional_groups = JSONField(default=None, blank=True, null=True)
     key_figures = JSONField(default=None, blank=True, null=True)
+    regional_groups = JSONField(default=None, blank=True, null=True)
     population_data = JSONField(default=None, blank=True, null=True)
     media_sources = JSONField(default=None, blank=True, null=True)
 
@@ -25,6 +25,33 @@ class Region(UserResource):
 
     class Meta:
         ordering = ['title', 'code']
+
+    def clone_to_private(self, user):
+        region = Region(
+            code=self.code,
+            title=self.title,
+            public=False,
+            regional_groups=self.regional_groups,
+            key_figures=self.key_figures,
+            population_data=self.population_data,
+            media_sources=self.media_sources,
+        )
+
+        root_level = AdminLevel.objects.filter(
+            region=self,
+            parent=None,
+        ).first()
+
+        parent = None
+        admin_level = root_level
+        while admin_level:
+            parent = admin_level.clone_to(self, parent)
+
+        region.created_by = user
+        region.modified_by = user
+
+        region.save()
+        return region
 
     @staticmethod
     def get_for(user):
@@ -75,6 +102,31 @@ class AdminLevel(models.Model):
     def __str__(self):
         return self.title
 
+    def clone_to(self, region, parent):
+        admin_level = AdminLevel(
+            region=region,
+            parent=parent,
+            title=self.title,
+            name_prop=self.name_prop,
+            code_prop=self.code_prop,
+            parent_name_prop=self.parent_name_prop,
+            parent_code_prop=self.parent_code_prop,
+            geo_shape=self.geo_shape,
+        )
+
+        root_area = GeoArea.objects.filter(
+            admin_level=self,
+            parent=None,
+        ).first()
+
+        parent = None
+        area = root_area
+        while area:
+            parent = area.clone_to(self, parent)
+
+        admin_level.save()
+        return admin_level
+
     # Admin level permissions are same as region permissions
 
     @staticmethod
@@ -106,6 +158,17 @@ class GeoArea(models.Model):
 
     def __str__(self):
         return self.title
+
+    def clone_to(self, admin_level, parent):
+        geo_area = GeoArea(
+            admin_level=admin_level,
+            parent=parent,
+            title=self.title,
+            code=self.code,
+            data=self.data
+        )
+        geo_area.save()
+        return geo_area
 
     # Permissions are same as region
     @staticmethod
