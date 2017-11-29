@@ -76,9 +76,11 @@ class ProjectOptionsView(APIView):
         project_query = request.GET.get('project')
         fields_query = request.GET.get('fields')
 
-        projects = Project.get_for(request.user)
+        projects = None
         if project_query:
-            projects = projects.filter(id__in=project_query.split(','))
+            projects = Project.get_for(request.user).filter(
+                id__in=project_query.split(',')
+            )
 
         fields = None
         if fields_query:
@@ -87,23 +89,29 @@ class ProjectOptionsView(APIView):
         options = {}
 
         if (fields is None or 'regions' in fields):
-            regions1 = Region.objects.filter(
-                project__in=projects
-            )
+            if projects:
+                regions1 = Region.objects.filter(
+                    project__in=projects
+                )
+            else:
+                regions1 = Region.objects.none()
             regions2 = Region.get_for(request.user).distinct()
             regions = regions1.union(regions2)
 
             options['regions'] = [
                 {
                     'key': region.id,
-                    'value': region.title,
+                    'value': region.get_verbose_title(),
                 } for region in regions.distinct()
             ]
 
         if (fields is None or 'user_groups' in fields):
-            user_groups1 = UserGroup.objects.filter(
-                project__in=projects
-            )
+            if projects:
+                user_groups1 = UserGroup.objects.filter(
+                    project__in=projects
+                )
+            else:
+                user_groups1 = UserGroup.objects.none()
             user_groups2 = UserGroup.get_for(request.user).distinct()
             user_groups = user_groups1.union(user_groups2)
 

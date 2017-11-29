@@ -26,6 +26,11 @@ class Region(UserResource):
     class Meta:
         ordering = ['title', 'code']
 
+    def get_verbose_title(self):
+        if self.public:
+            return self.title
+        return '{} (Private)'.format(self.title)
+
     def clone_to_private(self, user):
         region = Region(
             code=self.code,
