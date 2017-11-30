@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 import requests
 from requests.exceptions import ConnectionError
 import logging
+import traceback
 
 from utils.hid import HumanitarianId
 from utils.hid.hid import User
@@ -36,7 +37,8 @@ class HIDIntegrationTest(TestCase):
             'User-Agent': USER_AGENT
         }
 
-    def show_auth_warning(self, response=None, no_access_token=False):
+    def show_auth_warning(self, response=None, no_access_token=False,
+                          message=None):
         border_len = 50
         logger.warning('*' * border_len)
         logger.warning('---- HID AUTHS/Config are not working ----')
@@ -46,6 +48,8 @@ class HIDIntegrationTest(TestCase):
             logger.warning('Response Text: ' + str(response.content))
         if no_access_token:
             logger.warning('Got No Access Token From HID')
+        if message:
+            logger.warning(message)
         logger.warning('*' * border_len)
 
     def get_access_token(self):
@@ -96,9 +100,12 @@ class HIDIntegrationTest(TestCase):
         # NOTE: To avoid error on auth fail
         if access_token is None:
             return
-        user = HumanitarianId(access_token).get_user()
-        self.assertEqual(user.email, HID_EMAIL)
-        user.delete()
+        try:
+            user = HumanitarianId(access_token).get_user()
+            self.assertEqual(getattr(user, 'email', None), HID_EMAIL)
+            user.delete()
+        except AssertionError:
+            self.show_auth_warning(message=traceback.format_exc())
 
     def test_link_user(self):
         """
@@ -110,14 +117,17 @@ class HIDIntegrationTest(TestCase):
         if access_token is None:
             return
 
-        user = User.objects.create_user(
-            first_name=HID_FIRSTNAME,
-            last_name=HID_LASTNAME,
-            email=HID_EMAIL,
-            username=HID_EMAIL,
-            password=HID_PASSWORD
-        )
+        try:
+            user = User.objects.create_user(
+                first_name=HID_FIRSTNAME,
+                last_name=HID_LASTNAME,
+                email=HID_EMAIL,
+                username=HID_EMAIL,
+                password=HID_PASSWORD
+            )
 
-        hid_user = HumanitarianId(access_token).get_user()
-        self.assertEqual(hid_user, user)
-        user.delete()
+            hid_user = HumanitarianId(access_token).get_user()
+            self.assertEqual(hid_user, user)
+            user.delete()
+        except AssertionError:
+            self.show_auth_warning(message=traceback.format_exc())
