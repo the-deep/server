@@ -67,7 +67,7 @@ class RegionCloneView(views.APIView):
             raise exceptions.PermissionDenied()
 
         new_region = region.clone_to_private(request.user)
-        serializer = RegionSerializer(new_region)
+        serializer = RegionSerializer(new_region, context={'request': request})
 
         project = request.data.get('project')
         if project:

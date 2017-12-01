@@ -38,12 +38,16 @@ class RegionTests(AuthMixin, ProjectMixin, RegionMixin, APITestCase):
         """
         Create Region Test
         """
+
+        project = self.create_or_get_project()
+
         url = '/api/v1/regions/'
         data = {
             'code': 'NLP',
             'title': 'Nepal',
             'data': {'testfield': 'testfile'},
             'public': True,
+            'project': project.id,
         }
 
         response = self.client.post(url, data,
@@ -52,6 +56,9 @@ class RegionTests(AuthMixin, ProjectMixin, RegionMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Region.objects.count(), 1)
         self.assertEqual(response.data['code'], data['code'])
+
+        self.assertIn(Region.objects.get(id=response.data['id']),
+                      project.regions.all())
 
     def test_clone_region(self):
         """

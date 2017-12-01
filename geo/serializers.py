@@ -82,8 +82,7 @@ class AdminLevelSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         return region
 
 
-class AdminLevelUploadSerializer(DynamicFieldsMixin,
-                                 serializers.ModelSerializer):
+class AdminLevelUploadSerializer(serializers.ModelSerializer):
     """
     Admin Level Upload Serializer [Geo file]
     """
