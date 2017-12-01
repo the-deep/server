@@ -112,7 +112,8 @@ class ProjectOptionsView(APIView):
                 )
             else:
                 user_groups1 = UserGroup.objects.none()
-            user_groups2 = UserGroup.get_for(request.user).distinct()
+            user_groups2 = UserGroup.get_modifiable_for(request.user)\
+                .distinct()
             user_groups = user_groups1.union(user_groups2)
 
             options['user_groups'] = [

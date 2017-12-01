@@ -26,6 +26,15 @@ class UserGroup(models.Model):
         """
         return UserGroup.objects.filter(members=user).distinct()
 
+    @staticmethod
+    def get_modifiable_for(user):
+        return UserGroup.objects.filter(
+            groupmembership__in=GroupMembership.objects.filter(
+                member=user,
+                role='admin',
+            )
+        ).distinct()
+
     def can_get(self, user):
         return user in self.members.all()
 

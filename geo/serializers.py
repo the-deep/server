@@ -3,7 +3,8 @@ import json
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
-from .models import Region, AdminLevel  # , GeoShape
+from geo.models import Region, AdminLevel  # , GeoShape
+from project.models import Project
 # from .tasks import load_geo_areas
 
 
@@ -32,9 +33,36 @@ class RegionSerializer(DynamicFieldsMixin, UserResourceSerializer):
         read_only=True,
     )
 
+    project = serializers.IntegerField(
+        write_only=True,
+        required=False,
+    )
+
     class Meta:
         model = Region
         fields = ('__all__')
+
+    def validate_project(self, project):
+        try:
+            project = Project.objects.get(id=project)
+        except Project.DoesNotExist:
+            raise serializers.ValidationError(
+                'Project matching query does not exist'
+            )
+
+        if not project.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('Invalid project')
+        return project.id
+
+    def create(self, validated_data):
+        project = validated_data.pop('project', None)
+        region = super(RegionSerializer, self).create(validated_data)
+
+        if project:
+            project = Project.objects.get(id=project)
+            project.regions.add(region)
+
+        return region
 
 
 class AdminLevelSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
