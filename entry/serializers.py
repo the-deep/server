@@ -69,4 +69,5 @@ class EntrySerializer(DynamicFieldsMixin, UserResourceSerializer):
         model = Entry
         fields = ('id', 'lead', 'analysis_framework', 'excerpt', 'image',
                   'attributes', 'filter_data', 'export_data',
-                  'created_at', 'created_by', 'modified_at', 'modified_by')
+                  'created_at', 'created_by', 'modified_at', 'modified_by',
+                  'version_id')

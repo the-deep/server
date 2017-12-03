@@ -44,7 +44,7 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
                   'regions', 'memberships', 'user_groups', 'data',
                   'analysis_framework',
                   'created_at', 'created_by', 'modified_at', 'modified_by',
-                  'created_by_name', 'modified_by_name')
+                  'created_by_name', 'modified_by_name', 'version_id')
         read_only_fields = ('memberships', 'members',)
 
     def create(self, validated_data):

@@ -69,4 +69,5 @@ class AnalysisFrameworkSerializer(DynamicFieldsMixin, UserResourceSerializer):
         model = AnalysisFramework
         fields = ('id', 'title',
                   'widgets', 'filters', 'exportables',
-                  'created_at', 'created_by', 'modified_at', 'modified_by')
+                  'created_at', 'created_by', 'modified_at', 'modified_by',
+                  'version_id')
