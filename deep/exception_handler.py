@@ -2,10 +2,10 @@ from rest_framework.views import exception_handler
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
-from django.conf import settings
 
 from deep.errors import map_error_codes
 
+import traceback
 import logging
 
 logger = logging.getLogger(__name__)
@@ -61,9 +61,7 @@ def custom_exception_handler(exc, context):
     if hasattr(exc, 'link'):
         response.data['link'] = exc.link
 
-    # Logging for debugging
-    if settings.DEBUG:
-        import traceback
-        logger.error(traceback.format_exc())
+    # Logging
+    logger.error(traceback.format_exc())
 
     return response
