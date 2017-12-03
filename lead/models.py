@@ -38,9 +38,29 @@ class Lead(UserResource):
         (PROCESSED, 'Processed'),
     )
 
+    # Type of lead source
+    TEXT = 'text'
+    DISK = 'disk'
+    WEBSITE = 'website'
+    DROPBOX = 'dropbox'
+    GOOGLE_DRIVE = 'google-drive'
+    UNKNOWN = 'unknown'
+
+    SOURCE_TYPES = (
+        (TEXT, 'Text'),
+        (DISK, 'Disk'),
+        (WEBSITE, 'Website'),
+        (DROPBOX, 'Dropbox'),
+        (GOOGLE_DRIVE, 'Google Drive'),
+        (UNKNOWN, 'Unknown'),
+    )
+
     project = models.ForeignKey(Project)
     title = models.CharField(max_length=255)
     source = models.CharField(max_length=255, blank=True)
+    source_type = models.CharField(max_length=30,
+                                   choices=SOURCE_TYPES,
+                                   default=UNKNOWN)
 
     confidentiality = models.CharField(max_length=30,
                                        choices=CONFIDENTIALITIES,
