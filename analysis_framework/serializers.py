@@ -67,6 +67,8 @@ class AnalysisFrameworkSerializer(DynamicFieldsMixin, UserResourceSerializer):
     exportables = ExportableSerializer(source='exportable_set', many=True,
                                        required=False)
 
+    is_admin = serializers.SerializerMethodField()
+
     project = serializers.IntegerField(
         write_only=True,
         required=False,
@@ -77,7 +79,7 @@ class AnalysisFrameworkSerializer(DynamicFieldsMixin, UserResourceSerializer):
         fields = ('id', 'title',
                   'widgets', 'filters', 'exportables',
                   'created_at', 'created_by', 'modified_at', 'modified_by',
-                  'project',
+                  'project', 'is_admin',
                   'version_id')
 
     def validate_project(self, project):
@@ -103,3 +105,6 @@ class AnalysisFrameworkSerializer(DynamicFieldsMixin, UserResourceSerializer):
             project.save()
 
         return af
+
+    def get_is_admin(self, analysis_framework):
+        return analysis_framework.can_modify(self.context['request'].user)
