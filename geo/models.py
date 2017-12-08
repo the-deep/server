@@ -41,6 +41,9 @@ class Region(UserResource):
             population_data=self.population_data,
             media_sources=self.media_sources,
         )
+
+        region.created_by = user
+        region.modified_by = user
         region.save()
 
         root_level = AdminLevel.objects.filter(
@@ -52,9 +55,6 @@ class Region(UserResource):
         admin_level = root_level
         while admin_level:
             parent = admin_level.clone_to(self, parent)
-
-        region.created_by = user
-        region.modified_by = user
 
         return region
 

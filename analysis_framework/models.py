@@ -15,7 +15,7 @@ class AnalysisFramework(UserResource):
     def __str__(self):
         return self.title
 
-    def clone(self):
+    def clone(self, user):
         """
         Clone analysis framework along with all widgets,
         filters and exportables
@@ -24,6 +24,8 @@ class AnalysisFramework(UserResource):
             title='{} (Cloned)'.format(self.title),
             description=self.description,
         )
+        analysis_framework.created_by = user
+        analysis_framework.modified_by = user
         analysis_framework.save()
 
         [widget.clone_to(analysis_framework) for widget

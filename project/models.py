@@ -30,13 +30,13 @@ class Project(UserResource):
     def __str__(self):
         return self.title
 
-    def save(self, *args, **kwargs):
-        # If analysis framework not set, set one automatically
-        if not self.analysis_framework:
-            analysis_framework = AnalysisFramework(title=self.title)
-            analysis_framework.save()
-            self.analysis_framework = analysis_framework
-        super(UserResource, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     # If analysis framework not set, set one automatically
+    #     if not self.analysis_framework:
+    #         analysis_framework = AnalysisFramework(title=self.title)
+    #         analysis_framework.save()
+    #         self.analysis_framework = analysis_framework
+    #     super(UserResource, self).save(*args, **kwargs)
 
     @staticmethod
     def get_for(user):

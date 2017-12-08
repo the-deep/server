@@ -42,7 +42,7 @@ class AnalysisFrameworkCloneView(views.APIView):
         if not analysis_framework.can_get(request.user):
             raise exceptions.PermissionDenied()
 
-        new_af = analysis_framework.clone()
+        new_af = analysis_framework.clone(request.user)
         serializer = AnalysisFrameworkSerializer(
             new_af,
             context={'request': request},
@@ -52,6 +52,7 @@ class AnalysisFrameworkCloneView(views.APIView):
         if project:
             project = Project.objects.get(id=project)
             project.analysis_framework = new_af
+            project.modified_by = request.user
             project.save()
 
         return response.Response(

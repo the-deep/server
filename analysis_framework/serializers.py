@@ -1,9 +1,11 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
-from .models import (
+
+from analysis_framework.models import (
     AnalysisFramework, Widget, Filter, Exportable
 )
+from project.models import Project
 
 
 class WidgetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -65,9 +67,39 @@ class AnalysisFrameworkSerializer(DynamicFieldsMixin, UserResourceSerializer):
     exportables = ExportableSerializer(source='exportable_set', many=True,
                                        required=False)
 
+    project = serializers.IntegerField(
+        write_only=True,
+        required=False,
+    )
+
     class Meta:
         model = AnalysisFramework
         fields = ('id', 'title',
                   'widgets', 'filters', 'exportables',
                   'created_at', 'created_by', 'modified_at', 'modified_by',
+                  'project',
                   'version_id')
+
+    def validate_project(self, project):
+        try:
+            project = Project.objects.get(id=project)
+        except Project.DoesNotExist:
+            raise serializers.ValidationError(
+                'Project matching query does not exist'
+            )
+
+        if not project.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('Invalid project')
+        return project.id
+
+    def create(self, validated_data):
+        project = validated_data.pop('project', None)
+        af = super(AnalysisFrameworkSerializer, self).create(validated_data)
+
+        if project:
+            project = Project.objects.get(id=project)
+            project.analysis_framework = af
+            project.modified_by = self.context['request'].user
+            project.save()
+
+        return af

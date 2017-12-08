@@ -101,10 +101,13 @@ class AnalysisFrameworkTests(AuthMixin, ProjectMixin,
         """
         Create Analysis Framework Test
         """
+        project = self.create_or_get_project()
+
         old_count = AnalysisFramework.objects.count()
         url = '/api/v1/analysis-frameworks/'
         data = {
             'title': 'Test AnalysisFramework Title',
+            'project': project.id,
         }
 
         response = self.client.post(url, data,
@@ -113,6 +116,9 @@ class AnalysisFrameworkTests(AuthMixin, ProjectMixin,
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(AnalysisFramework.objects.count(), old_count + 1)
         self.assertEqual(response.data['title'], data['title'])
+
+        project = Project.objects.get(id=project.id)
+        self.assertEqual(project.analysis_framework.id, response.data['id'])
 
     def test_clone_analysis_framework(self):
         """
@@ -140,8 +146,7 @@ class AnalysisFrameworkTests(AuthMixin, ProjectMixin,
         self.assertNotEqual(project.analysis_framework.id,
                             analysis_framework.id)
 
-        new_af = AnalysisFramework.objects.get(id=response.data['id'])
-        self.assertEqual(project.analysis_framework.id, new_af.id)
+        self.assertEqual(project.analysis_framework.id, response.data['id'])
 
 
 class WidgetTests(AuthMixin, AnalysisFrameworkMixin, APITestCase):
