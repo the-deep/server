@@ -141,6 +141,8 @@ class AnalysisFrameworkTests(AuthMixin, ProjectMixin,
                                     format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertNotEqual(response.data['id'], analysis_framework.id)
+        self.assertEqual(response.data['title'],
+                         analysis_framework.title + ' (cloned)')
 
         project = Project.objects.get(id=project.id)
         self.assertNotEqual(project.analysis_framework.id,

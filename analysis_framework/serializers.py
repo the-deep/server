@@ -76,11 +76,7 @@ class AnalysisFrameworkSerializer(DynamicFieldsMixin, UserResourceSerializer):
 
     class Meta:
         model = AnalysisFramework
-        fields = ('id', 'title',
-                  'widgets', 'filters', 'exportables',
-                  'created_at', 'created_by', 'modified_at', 'modified_by',
-                  'project', 'is_admin',
-                  'version_id')
+        fields = ('__all__')
 
     def validate_project(self, project):
         try:

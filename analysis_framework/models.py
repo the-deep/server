@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField
 from user_resource.models import UserResource
 
+from gallery.models import File
+
 
 class AnalysisFramework(UserResource):
     """
@@ -12,6 +14,13 @@ class AnalysisFramework(UserResource):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
+    snapshot_one = models.ForeignKey(File,
+                                     related_name='page_one_framework',
+                                     null=True, blank=True, default=None)
+    snapshot_two = models.ForeignKey(File,
+                                     related_name='page_two_framework',
+                                     null=True, blank=True, default=None)
+
     def __str__(self):
         return self.title
 
@@ -21,7 +30,7 @@ class AnalysisFramework(UserResource):
         filters and exportables
         """
         analysis_framework = AnalysisFramework(
-            title='{} (Cloned)'.format(self.title),
+            title='{} (cloned)'.format(self.title),
             description=self.description,
         )
         analysis_framework.created_by = user
