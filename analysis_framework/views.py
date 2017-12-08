@@ -1,6 +1,14 @@
-from rest_framework import viewsets, permissions
+from rest_framework import (
+    exceptions,
+    permissions,
+    response,
+    status,
+    views,
+    viewsets,
+)
 from deep.permissions import ModifyPermission
 
+from project.models import Project
 from .models import (
     AnalysisFramework, Widget, Filter, Exportable
 )
@@ -17,6 +25,39 @@ class AnalysisFrameworkViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return AnalysisFramework.get_for(self.request.user)
+
+
+class AnalysisFrameworkCloneView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, af_id, version=None):
+        if not AnalysisFramework.objects.filter(
+            id=af_id
+        ).exists():
+            raise exceptions.NotFound()
+
+        analysis_framework = AnalysisFramework.objects.get(
+            id=af_id
+        )
+        if not analysis_framework.can_get(request.user):
+            raise exceptions.PermissionDenied()
+
+        new_af = analysis_framework.clone()
+        serializer = AnalysisFrameworkSerializer(
+            new_af,
+            context={'request': request},
+        )
+
+        project = request.data.get('project')
+        if project:
+            project = Project.objects.get(id=project)
+            project.analysis_framework = new_af
+            project.save()
+
+        return response.Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class WidgetViewSet(viewsets.ModelViewSet):

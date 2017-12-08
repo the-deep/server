@@ -17,7 +17,7 @@ class AnalysisFrameworkPermissionsTest(
     def setUp(self):
         self.auth = self.get_auth()
 
-        # Create a project, a entry and a new test user
+        # Create a project, an analysis framework and a new test user
         analysis_framework = self.create_or_get_analysis_framework()
         test_user = self.create_new_user()
         project = self.create_or_get_project()
@@ -36,11 +36,13 @@ class AnalysisFrameworkPermissionsTest(
         )
 
         # The url and data used for requests
-        self.url = '/api/v1/entries/{}/'.format(analysis_framework.id)
+        self.url = '/api/v1/analysis-frameworks/{}/'.format(
+            analysis_framework.id
+        )
         self.data = {
             'title': 'Test AnalysisFramework Title',
         }
-        self.entry = analysis_framework
+        self.analysis_framework = analysis_framework
 
     def get_patch_response(self):
         # Try a patch request

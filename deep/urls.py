@@ -39,8 +39,11 @@ from entry.views import (
     ExportDataViewSet
 )
 from analysis_framework.views import (
-    AnalysisFrameworkViewSet, WidgetViewSet, FilterViewSet,
-    ExportableViewSet
+    AnalysisFrameworkCloneView,
+    AnalysisFrameworkViewSet,
+    ExportableViewSet,
+    FilterViewSet,
+    WidgetViewSet,
 )
 from deep.views import (
     Api_404View,
@@ -159,6 +162,8 @@ urlpatterns = [
     # Clone apis
     url(get_api_path(r'clone-region/(?P<region_id>\d+)/$'),
         RegionCloneView.as_view()),
+    url(get_api_path(r'clone-analysis-framework/(?P<af_id>\d+)/$'),
+        AnalysisFrameworkCloneView.as_view()),
 
     # Viewsets
     url(get_api_path(''), include(router.urls)),

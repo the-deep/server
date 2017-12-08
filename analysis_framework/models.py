@@ -10,9 +10,32 @@ class AnalysisFramework(UserResource):
     Analysis is done to create entries out of leads.
     """
     title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return self.title
+
+    def clone(self):
+        """
+        Clone analysis framework along with all widgets,
+        filters and exportables
+        """
+        analysis_framework = AnalysisFramework(
+            title='{} (Cloned)'.format(self.title),
+            description=self.description,
+        )
+        analysis_framework.save()
+
+        [widget.clone_to(analysis_framework) for widget
+         in self.widget_set.all()]
+
+        [filter.clone_to(analysis_framework) for filter
+         in self.filter_set.all()]
+
+        [exportable.clone_to(analysis_framework) for exportable
+         in self.exportable_set.all()]
+
+        return analysis_framework
 
     @staticmethod
     def get_for(user):
@@ -61,6 +84,17 @@ class Widget(models.Model):
     def __str__(self):
         return '{} ({})'.format(self.title, self.widget_id)
 
+    def clone_to(self, analysis_framework):
+        widget = Widget(
+            analysis_framework=analysis_framework,
+            key=self.key,
+            widget_id=self.widget_id,
+            title=self.title,
+            properties=self.properties,
+        )
+        widget.save()
+        return widget
+
     @staticmethod
     def get_for(user):
         """
@@ -102,6 +136,17 @@ class Filter(models.Model):
     def __str__(self):
         return '{} ({})'.format(self.title, self.widget_id)
 
+    def clone_to(self, analysis_framework):
+        filter = Filter(
+            analysis_framework=analysis_framework,
+            widget_id=self.widget_id,
+            title=self.title,
+            properties=self.properties,
+            filter_type=self.filter_type,
+        )
+        filter.save()
+        return filter
+
     @staticmethod
     def get_for(user):
         """
@@ -131,6 +176,15 @@ class Exportable(models.Model):
 
     def __str__(self):
         return 'Exportable ({})'.format(self.widget_id)
+
+    def clone_to(self, analysis_framework):
+        exportable = Exportable(
+            analysis_framework=analysis_framework,
+            widget_id=self.widget_id,
+            inline=self.inline,
+        )
+        exportable.save()
+        return exportable
 
     @staticmethod
     def get_for(user):
