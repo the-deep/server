@@ -24,7 +24,6 @@ from project.views import (
     ProjectViewSet,
 )
 from geo.views import (
-    AdminLevelUploadViewSet,
     AdminLevelViewSet,
     RegionCloneView,
     RegionViewSet,
@@ -99,8 +98,6 @@ router.register(r'regions', RegionViewSet,
                 base_name='region')
 router.register(r'admin-levels', AdminLevelViewSet,
                 base_name='admin_level')
-router.register(r'admin-levels-upload', AdminLevelUploadViewSet,
-                base_name='admin_level_upload')
 
 # Lead routers
 router.register(r'leads', LeadViewSet,

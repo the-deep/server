@@ -2,11 +2,11 @@ from os.path import join
 
 from django.test import TestCase
 from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from geo.tasks import load_geo_areas
 from geo.models import Region, AdminLevel, GeoArea
-
-import json
+from gallery.models import File
 
 
 class LoadGeoAreasTaskTest(TestCase):
@@ -28,10 +28,15 @@ class LoadGeoAreasTaskTest(TestCase):
                                   name_prop='ZONE_NAME',
                                   code_prop='HRPCode')
         shape_data = open(join(settings.TEST_DIR,
-                               'nepal-geo-json/admin_level2.geo.json')
-                          ).read()
-        admin_level0.geo_shape = json.loads(shape_data)
-
+                               'nepal-geo-json/admin_level2.geo.json'),
+                          'rb').read()
+        admin_level0.geo_shape_file = File.objects.create(
+            title='al2',
+            file=SimpleUploadedFile(
+                name='al2.geo.json',
+                content=shape_data,
+            )
+        )
         admin_level0.save()
 
         # Load admin level 1 similarly
@@ -42,9 +47,15 @@ class LoadGeoAreasTaskTest(TestCase):
                                   parent_name_prop='ZONE',
                                   parent_code_prop='HRParent')
         shape_data = open(join(settings.TEST_DIR,
-                               'nepal-geo-json/admin_level3.geo.json')
-                          ).read()
-        admin_level1.geo_shape = json.loads(shape_data)
+                               'nepal-geo-json/admin_level3.geo.json'),
+                          'rb').read()
+        admin_level1.geo_shape_file = File.objects.create(
+            title='al3',
+            file=SimpleUploadedFile(
+                name='al3.geo.json',
+                content=shape_data,
+            )
+        )
         admin_level1.parent = admin_level0
 
         admin_level1.save()
@@ -58,7 +69,6 @@ class LoadGeoAreasTaskTest(TestCase):
         self.assertTrue(result)
 
         # Test if a geo area in admin level 0 is correctly set
-
         bagmati = GeoArea.objects.filter(
             title='Bagmati',
             admin_level=self.admin_level0,
@@ -69,7 +79,6 @@ class LoadGeoAreasTaskTest(TestCase):
         self.assertIsNotNone(bagmati)
 
         # Test if a geo area in admin level 1 is correctly set
-
         sindhupalchowk = GeoArea.objects.filter(
             title='Sindhupalchok',
             admin_level=self.admin_level1,
