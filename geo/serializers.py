@@ -1,4 +1,3 @@
-import json
 # from django.conf import settings
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers

@@ -1,8 +1,5 @@
-from os.path import join
-
 from rest_framework import status
 from rest_framework.test import APITestCase
-from django.conf import settings
 
 from user.tests.test_apis import AuthMixin
 from geo.models import Region, AdminLevel
