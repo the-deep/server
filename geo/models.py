@@ -1,6 +1,7 @@
-from django.db import models
+from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 from user_resource.models import UserResource
+from gallery.models import File
 
 
 class Region(UserResource):
@@ -102,7 +103,8 @@ class AdminLevel(models.Model):
     parent_name_prop = models.CharField(max_length=255, blank=True)
     parent_code_prop = models.CharField(max_length=255, blank=True)
 
-    geo_shape = JSONField(default=None, blank=True, null=True)
+    geo_shape_file = models.ForeignKey(File,
+                                       null=True, blank=True, default=None)
 
     def __str__(self):
         return self.title
@@ -116,7 +118,7 @@ class AdminLevel(models.Model):
             code_prop=self.code_prop,
             parent_name_prop=self.parent_name_prop,
             parent_code_prop=self.parent_code_prop,
-            geo_shape=self.geo_shape,
+            geo_shape_file=self.geo_shape_file,
         )
         admin_level.save()
 
@@ -160,6 +162,8 @@ class GeoArea(models.Model):
     title = models.CharField(max_length=255)
     code = models.CharField(max_length=255, blank=True)
     data = JSONField(default=None, blank=True, null=True)
+
+    polygons = models.MultiPolygonField()
 
     def __str__(self):
         return self.title
