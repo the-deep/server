@@ -54,7 +54,7 @@ class GalleryTests(AuthMixin, APITestCase):
         # things clean
         last = File.objects.last()
         if os.path.isfile(last.file.path):
-            os.remove(last.file.path)
+            os.unlink(last.file.path)
 
         # TODO Retrive contents from url data['file'] and assert
         # the text data.

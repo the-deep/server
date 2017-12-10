@@ -1,5 +1,3 @@
-from os.path import join
-
 from django.test import TestCase
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -7,6 +5,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from geo.tasks import load_geo_areas
 from geo.models import Region, AdminLevel, GeoArea
 from gallery.models import File
+
+import os
 
 
 class LoadGeoAreasTaskTest(TestCase):
@@ -27,9 +27,11 @@ class LoadGeoAreasTaskTest(TestCase):
                                   title='Zone',
                                   name_prop='ZONE_NAME',
                                   code_prop='HRPCode')
-        shape_data = open(join(settings.TEST_DIR,
-                               'nepal-geo-json/admin_level2.geo.json'),
-                          'rb').read()
+        shape_data = open(
+            os.path.join(settings.TEST_DIR,
+                         'nepal-geo-json/admin_level2.geo.json'),
+            'rb',
+        ).read()
         admin_level0.geo_shape_file = File.objects.create(
             title='al2',
             file=SimpleUploadedFile(
@@ -46,9 +48,11 @@ class LoadGeoAreasTaskTest(TestCase):
                                   code_prop='HRPCode',
                                   parent_name_prop='ZONE',
                                   parent_code_prop='HRParent')
-        shape_data = open(join(settings.TEST_DIR,
-                               'nepal-geo-json/admin_level3.geo.json'),
-                          'rb').read()
+        shape_data = open(
+            os.path.join(settings.TEST_DIR,
+                         'nepal-geo-json/admin_level3.geo.json'),
+            'rb',
+        ).read()
         admin_level1.geo_shape_file = File.objects.create(
             title='al3',
             file=SimpleUploadedFile(
@@ -63,6 +67,12 @@ class LoadGeoAreasTaskTest(TestCase):
         self.region = region
         self.admin_level0 = admin_level0
         self.admin_level1 = admin_level1
+
+    def tearDown(self):
+        if os.path.isfile(self.admin_level0.geo_shape_file.file.path):
+            os.unlink(self.admin_level0.geo_shape_file.file.path)
+        if os.path.isfile(self.admin_level1.geo_shape_file.file.path):
+            os.unlink(self.admin_level1.geo_shape_file.file.path)
 
     def test_load_areas(self):
         result = load_geo_areas(self.region.pk)
