@@ -161,5 +161,5 @@ class ExportData(models.Model):
     def __str__(self):
         return 'Export data ({}, {})'.format(
             self.entry.lead.title,
-            self.exportable.widget_id,
+            self.exportable.key,
         )

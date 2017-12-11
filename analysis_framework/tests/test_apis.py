@@ -41,6 +41,7 @@ class WidgetMixin():
             analysis_framework = self.create_or_get_analysis_framework()
             widget = Widget.objects.create(
                 analysis_framework=analysis_framework,
+                key='TEST_SCHEMA1',
                 widget_id='TEST_SCHEMA',
                 title="Test Title",
             )
@@ -60,7 +61,7 @@ class FilterMixin():
             analysis_framework = self.create_or_get_analysis_framework()
             filter = Filter.objects.create(
                 analysis_framework=analysis_framework,
-                widget_id='TEST_SCHEMA',
+                key='TEST_SCHEMA',
                 title="Test Title"
             )
         return filter
@@ -79,7 +80,7 @@ class ExportableMixin():
             analysis_framework = self.create_or_get_analysis_framework()
             exportable = Exportable.objects.create(
                 analysis_framework=analysis_framework,
-                widget_id='TEST_SCHEMA',
+                key='TEST_SCHEMA',
             )
         return exportable
 
@@ -169,6 +170,7 @@ class WidgetTests(AuthMixin, AnalysisFrameworkMixin, APITestCase):
         url = '/api/v1/analysis-framework-widgets/'
         data = {
             'analysis_framework': self.create_or_get_analysis_framework().pk,
+            'key': 'TEST_SCHEMA_1',
             'widget_id': 'TEST_SCHEMA',
             'title': 'Test Title',
         }
@@ -201,7 +203,7 @@ class FilterTests(AuthMixin, AnalysisFrameworkMixin, APITestCase):
         url = '/api/v1/analysis-framework-filters/'
         data = {
             'analysis_framework': self.create_or_get_analysis_framework().pk,
-            'widget_id': 'TEST_SCHEMA',
+            'key': 'TEST_SCHEMA',
             'title': 'Test Title',
             'properties': {},
         }
@@ -212,7 +214,7 @@ class FilterTests(AuthMixin, AnalysisFrameworkMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Filter.objects.count(), old_count + 1)
         self.assertEqual(response.data['title'], data['title'])
-        self.assertEqual(response.data['widget_id'], data['widget_id'])
+        self.assertEqual(response.data['key'], data['key'])
         self.assertEqual(response.data['properties'], data['properties'])
 
 
@@ -234,7 +236,7 @@ class ExportableTests(AuthMixin, AnalysisFrameworkMixin, APITestCase):
         url = '/api/v1/analysis-framework-exportables/'
         data = {
             'analysis_framework': self.create_or_get_analysis_framework().pk,
-            'widget_id': 'TEST_SCHEMA',
+            'key': 'TEST_SCHEMA',
             'inline': True,
         }
 
@@ -244,4 +246,4 @@ class ExportableTests(AuthMixin, AnalysisFrameworkMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Exportable.objects.count(), old_count + 1)
         self.assertEqual(response.data['inline'], data['inline'])
-        self.assertEqual(response.data['widget_id'], data['widget_id'])
+        self.assertEqual(response.data['key'], data['key'])

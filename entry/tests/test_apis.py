@@ -159,7 +159,7 @@ class EntryTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
 
         filter = Filter.objects.create(
             analysis_framework=entry.analysis_framework,
-            widget_id='test_filter',
+            key='test_filter',
             title='Test Filter',
             filter_type=Filter.NUMBER,
         )
@@ -176,7 +176,7 @@ class EntryTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
 
         filter = Filter.objects.create(
             analysis_framework=entry.analysis_framework,
-            widget_id='test_list_filter',
+            key='test_list_filter',
             title='Test List Filter',
             filter_type=Filter.LIST,
         )
