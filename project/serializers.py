@@ -37,6 +37,7 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
     )
     regions = SimpleRegionSerializer(many=True, required=False)
     user_groups = SimpleUserGroupSerializer(many=True, required=False)
+    is_admin = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -55,6 +56,9 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
             role='admin',
         )
         return project
+
+    def get_is_admin(self, project):
+        return project.can_modify(self.context['request'].user)
 
     # Validations
     def validate_user_groups(self, user_groups):
