@@ -54,16 +54,37 @@ class ExportDataSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         return entry
 
 
+class SimpleAttributeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attribute
+        fields = ('id', 'data', 'widget')
+
+
+class SimpleFilterDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FilterData
+        fields = ('id', 'filter', 'values', 'number')
+
+
+class SimpleExportDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExportData
+        fields = ('id', 'exportable', 'data')
+
+
 class EntrySerializer(DynamicFieldsMixin, UserResourceSerializer):
     """
     Entry Model Serializer
     """
-    attributes = AttributeSerializer(source='attribute_set', many=True,
-                                     required=False)
-    filter_data = FilterDataSerializer(source='filterdata_set', many=True,
-                                       required=False)
-    export_data = ExportDataSerializer(source='exportdata_set', many=True,
-                                       required=False)
+    attributes = SimpleAttributeSerializer(source='attribute_set',
+                                           many=True,
+                                           required=False)
+    filter_data = SimpleFilterDataSerializer(source='filterdata_set',
+                                             many=True,
+                                             required=False)
+    export_data = SimpleExportDataSerializer(source='exportdata_set',
+                                             many=True,
+                                             required=False)
 
     class Meta:
         model = Entry

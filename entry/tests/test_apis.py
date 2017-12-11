@@ -98,7 +98,7 @@ class ExportDataMixin():
 # Tests
 
 class EntryTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
-                 AnalysisFrameworkMixin, APITestCase):
+                 AnalysisFrameworkMixin, WidgetMixin, APITestCase):
     """
     Entry Tests
     """
@@ -114,11 +114,20 @@ class EntryTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
         Create Entry Test
         """
         old_count = Entry.objects.count()
+        analysis_framework = self.create_or_get_analysis_framework()
+        widget = self.create_or_get_widget()
+
         url = '/api/v1/entries/'
         data = {
             'lead': self.create_or_get_lead().pk,
-            'analysis_framework': self.create_or_get_analysis_framework().pk,
+            'analysis_framework': analysis_framework.pk,
             'excerpt': 'This is test excerpt',
+            'attributes': [
+                {
+                    'widget': widget.pk,
+                    'data': {'a': 'b'},
+                },
+            ],
         }
 
         response = self.client.post(url, data,
@@ -127,6 +136,8 @@ class EntryTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Entry.objects.count(), old_count + 1)
         self.assertEqual(response.data['excerpt'], data['excerpt'])
+        self.assertEqual(response.data['attributes'][0]['widget'], widget.pk)
+        self.assertEqual(response.data['attributes'][0]['data']['a'], 'b')
 
     def filter_test(self, params, count=1):
         """
