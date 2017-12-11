@@ -37,13 +37,13 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
     )
     regions = SimpleRegionSerializer(many=True, required=False)
     user_groups = SimpleUserGroupSerializer(many=True, required=False)
-    is_admin = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
         fields = ('id', 'title', 'description', 'start_date', 'end_date',
                   'regions', 'memberships', 'user_groups', 'data',
-                  'analysis_framework', 'is_admin',
+                  'analysis_framework', 'role',
                   'created_at', 'created_by', 'modified_at', 'modified_by',
                   'created_by_name', 'modified_by_name', 'version_id')
         read_only_fields = ('memberships', 'members',)
@@ -57,8 +57,14 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
         )
         return project
 
-    def get_is_admin(self, project):
-        return project.can_modify(self.context['request'].user)
+    def get_role(self, project):
+        membership = ProjectMembership.objects.filter(
+            project=project,
+            member=self.context['request'].user
+        ).first()
+        if membership:
+            return membership.role
+        return None
 
     # Validations
     def validate_user_groups(self, user_groups):

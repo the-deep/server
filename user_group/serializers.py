@@ -34,11 +34,11 @@ class UserGroupSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         source='groupmembership_set',
         many=True, read_only=True
     )
-    is_admin = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
 
     class Meta:
         model = UserGroup
-        fields = ('id', 'title', 'display_picture', 'is_admin',
+        fields = ('id', 'title', 'display_picture', 'role',
                   'memberships', 'global_crisis_monitoring',
                   'custom_project_fields')
 
@@ -51,5 +51,11 @@ class UserGroupSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         )
         return user_group
 
-    def get_is_admin(self, user_group):
-        return user_group.can_modify(self.context['request'].user)
+    def get_role(self, user_group):
+        membership = GroupMembership.objects.filter(
+            group=user_group,
+            member=self.context['request'].user
+        ).first()
+        if membership:
+            return membership.role
+        return None
