@@ -56,16 +56,37 @@ class ExportableSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         return analysis_framework
 
 
+class SimpleWidgetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Widget
+        fields = ('key', 'widget_id', 'title', 'properties')
+
+
+class SimpleFilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Filter
+        fields = ('key', 'title', 'properties', 'filter_type')
+
+
+class SimpleExportableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exportable
+        fields = ('key', 'inline')
+
+
 class AnalysisFrameworkSerializer(DynamicFieldsMixin, UserResourceSerializer):
     """
     Analysis Framework Model Serializer
     """
-    widgets = WidgetSerializer(source='widget_set', many=True,
-                               required=False)
-    filters = FilterSerializer(source='filter_set', many=True,
-                               required=False)
-    exportables = ExportableSerializer(source='exportable_set', many=True,
-                                       required=False)
+    widgets = SimpleWidgetSerializer(source='widget_set',
+                                     many=True,
+                                     required=False)
+    filters = SimpleFilterSerializer(source='filter_set',
+                                     many=True,
+                                     required=False)
+    exportables = SimpleExportableSerializer(source='exportable_set',
+                                             many=True,
+                                             required=False)
 
     is_admin = serializers.SerializerMethodField()
 

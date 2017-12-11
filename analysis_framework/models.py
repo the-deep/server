@@ -138,19 +138,19 @@ class Filter(models.Model):
     )
 
     analysis_framework = models.ForeignKey(AnalysisFramework)
-    widget_id = models.CharField(max_length=100, db_index=True)
+    key = models.CharField(max_length=100, db_index=True)
     title = models.CharField(max_length=255)
     properties = JSONField(default=None, blank=True, null=True)
     filter_type = models.CharField(max_length=20, choices=FILTER_TYPES,
                                    default=LIST)
 
     def __str__(self):
-        return '{} ({})'.format(self.title, self.widget_id)
+        return '{} ({})'.format(self.title, self.key)
 
     def clone_to(self, analysis_framework):
         filter = Filter(
             analysis_framework=analysis_framework,
-            widget_id=self.widget_id,
+            key=self.key,
             title=self.title,
             properties=self.properties,
             filter_type=self.filter_type,
@@ -182,16 +182,16 @@ class Exportable(models.Model):
     Export data for given widget
     """
     analysis_framework = models.ForeignKey(AnalysisFramework)
-    widget_id = models.CharField(max_length=100, db_index=True)
+    key = models.CharField(max_length=100, db_index=True)
     inline = models.BooleanField(default=False)
 
     def __str__(self):
-        return 'Exportable ({})'.format(self.widget_id)
+        return 'Exportable ({})'.format(self.key)
 
     def clone_to(self, analysis_framework):
         exportable = Exportable(
             analysis_framework=analysis_framework,
-            widget_id=self.widget_id,
+            key=self.key,
             inline=self.inline,
         )
         exportable.save()
