@@ -98,6 +98,7 @@ class AdminLevel(models.Model):
                                on_delete=models.SET_NULL,
                                null=True, blank=True, default=None)
     title = models.CharField(max_length=255)
+    level = models.IntegerField(null=True, blank=True, default=None)
     name_prop = models.CharField(max_length=255, blank=True)
     code_prop = models.CharField(max_length=255, blank=True)
     parent_name_prop = models.CharField(max_length=255, blank=True)
