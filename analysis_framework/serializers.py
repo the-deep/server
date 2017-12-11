@@ -59,19 +59,19 @@ class ExportableSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 class SimpleWidgetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Widget
-        fields = ('key', 'widget_id', 'title', 'properties')
+        fields = ('id', 'key', 'widget_id', 'title', 'properties')
 
 
 class SimpleFilterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Filter
-        fields = ('key', 'title', 'properties', 'filter_type')
+        fields = ('id', 'key', 'title', 'properties', 'filter_type')
 
 
 class SimpleExportableSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exportable
-        fields = ('key', 'inline')
+        fields = ('id', 'key', 'inline')
 
 
 class AnalysisFrameworkSerializer(DynamicFieldsMixin, UserResourceSerializer):
