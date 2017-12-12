@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from rest_framework import (
     exceptions,
@@ -19,6 +20,8 @@ from .serializers import (
     AdminLevelSerializer,
     RegionSerializer,
 )
+
+from geo.tasks import load_geo_areas
 
 
 class RegionFilterSet(UserResourceFilterSet):
@@ -111,3 +114,25 @@ class AdminLevelViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return AdminLevel.get_for(self.request.user)
+
+
+class GeoAreasLoadTriggerView(views.APIView):
+    """
+    A trigger for loading geo areas from admin level
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, region_id, version=None):
+        if not Region.objects.filter(id=region_id).exists():
+            raise exceptions.NotFound()
+
+        if not Region.objects.get(id=region_id).can_modify(request.user):
+            raise exceptions.PermissionDenied()
+
+        tolerance = request.GET.get('tolerance', 0.0001)
+        if not settings.TESTING:
+            load_geo_areas.delay(region_id, tolerance=tolerance)
+
+        return response.Response({
+            'load_triggered': region_id,
+        })
