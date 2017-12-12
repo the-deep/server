@@ -8,6 +8,8 @@ from django.contrib.gis.geos import (
 from django.db.models import Q
 from geo.models import Region, AdminLevel, GeoArea
 
+from redis_store import redis
+
 import reversion
 import os
 
@@ -75,10 +77,9 @@ def _save_geo_area(admin_level, parent, feature, tolerance):
     return geo_area
 
 
-@shared_task
-def load_geo_areas(region_id, tolerance=0.0001):
+def _load_geo_areas(region_id, tolerance=0.0001):
     """
-    A task to auto load geo areas from all admin levels in a region/country.
+    The main load geo areas procedure
 
     Basically, it  starts with root admin level and iterate through all the
     children.
@@ -119,3 +120,23 @@ def load_geo_areas(region_id, tolerance=0.0001):
             admin_level = AdminLevel.objects.filter(parent=parent).first()
 
     return True
+
+
+@shared_task
+def load_geo_areas(region_id, tolerance=0.0001):
+    r = redis.get_connection()
+    key = 'load_geo_areas_{}'.format(region_id)
+    lock = 'lock_{}'.format(key)
+
+    with redis.get_lock(lock):
+        if r.exists(key):
+            return False
+        r.set(key, '1')
+
+    try:
+        return_value = _load_geo_areas(region_id, tolerance)
+    except Exception:
+        return_value = False
+
+    r.delete(key)
+    return return_value

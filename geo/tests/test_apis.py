@@ -29,6 +29,7 @@ class RegionTests(AuthMixin, ProjectMixin, RegionMixin, APITestCase):
         """
         Get HTTP_AUTHORIZATION Header
         """
+        self.super_auth = self.get_super_auth()
         self.auth = self.get_auth()
 
     def test_create_region(self):
@@ -81,6 +82,18 @@ class RegionTests(AuthMixin, ProjectMixin, RegionMixin, APITestCase):
 
         new_region = Region.objects.get(id=response.data['id'])
         self.assertTrue(new_region in project.regions.all())
+
+    def test_trigger_api(self):
+        """
+        Cannot really test for background tasks which happend in separate
+        process.
+
+        So create a dummy test and perform actual test in test_tasks
+        """
+        region = self.create_or_get_region()
+        url = '/api/v1/geo-areas-load-trigger/{}/'.format(region.id)
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.super_auth)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class AdminLevelTests(AuthMixin, RegionMixin, APITestCase):
