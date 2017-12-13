@@ -358,6 +358,8 @@ if not USE_EMAIL_CONFIG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 
+# DEEP GALLERY CONFIGS ###
+
 # List of mime types supported in deep
 # NOTE: also change in frontend
 DEEP_SUPPORTED_MIME_TYPES = [
@@ -370,3 +372,6 @@ DEEP_SUPPORTED_MIME_TYPES = [
     'text/csv', 'image/png', 'image/jpeg', 'image/fig',
     'application/json', 'application/xml', 'application/msword',
 ]
+
+# Gallery files Cache-control max-age in seconds
+MAX_FILE_CACHE_AGE = 60 * 60 * 24
