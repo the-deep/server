@@ -1,3 +1,4 @@
+import requests
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.postgres.search import TrigramSimilarity
@@ -20,6 +21,7 @@ from lead.models import Lead
 from lead.serializers import LeadSerializer
 
 from .tasks import extract_from_lead
+from utils.common import USER_AGENT
 
 
 class LeadFilterSet(UserResourceFilterSet):
@@ -180,4 +182,31 @@ class LeadExtractionTriggerView(APIView):
 
         return Response({
             'extraction_triggered': lead_id,
+        })
+
+
+class LeadWebsiteFetch(APIView):
+    """
+    Get Information about the website
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        url = request.data.get('url')
+        https_url = url.replace('http:', 'https:', 1)
+
+        headers = {
+            'User-Agent': USER_AGENT
+        }
+
+        try:
+            r = requests.head(https_url, headers=headers)
+        except requests.exceptions.RequestException:
+            r = requests.get(https_url, headers=headers)
+
+        print('*' * 22)
+        print(r.headers)
+        return Response({
+            'headers': r.headers,
+            'url': https_url,
         })

@@ -35,6 +35,7 @@ from lead.views import (
     LeadViewSet,
     LeadOptionsView,
     LeadExtractionTriggerView,
+    LeadWebsiteFetch,
 )
 from entry.views import (
     EntryViewSet, AttributeViewSet, FilterDataViewSet,
@@ -158,6 +159,11 @@ urlpatterns = [
     # Triggering api
     url(get_api_path(r'lead-extraction-trigger/(?P<lead_id>\d+)/$'),
         LeadExtractionTriggerView.as_view()),
+
+    # Website fetch api
+    url(get_api_path(r'lead-webiste-fetch/$'),
+        LeadWebsiteFetch.as_view()),
+
     url(get_api_path(r'geo-areas-load-trigger/(?P<region_id>\d+)/$'),
         GeoAreasLoadTriggerView.as_view()),
 
