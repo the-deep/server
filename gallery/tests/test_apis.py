@@ -3,6 +3,7 @@ from rest_framework.test import APITestCase
 from user.tests.test_apis import AuthMixin
 
 from gallery.models import File
+from django.conf import settings
 
 import os
 import tempfile
@@ -21,15 +22,18 @@ class GalleryTests(AuthMixin, APITestCase):
         tmp_file = tempfile.NamedTemporaryFile(delete=False)
         tmp_file.write(b'Hello world')
         tmp_file.close()
-        self.file = tmp_file.name
+
+        path = os.path.join(settings.TEST_DIR, 'documents')
+        self.supported_file = os.path.join(path, 'doc.docx')
+        self.unsupported_file = tmp_file.name
 
     def tearDown(self):
         """
         Delete test file
         """
-        os.unlink(self.file)
+        os.unlink(self.unsupported_file)
 
-    def test_upload_file(self):
+    def test_upload_supported_file(self):
         """
         Test if file uploads successfully
         """
@@ -39,7 +43,7 @@ class GalleryTests(AuthMixin, APITestCase):
 
         data = {
             'title': 'Test file',
-            'file': open(self.file, 'rb'),
+            'file': open(self.supported_file, 'rb'),
             'isPublic': True,
         }
 
@@ -58,3 +62,23 @@ class GalleryTests(AuthMixin, APITestCase):
 
         # TODO Retrive contents from url data['file'] and assert
         # the text data.
+
+    def test_upload_unsupported_file(self):
+        """
+        Test if file uploads unsuccessfully
+        """
+
+        last_count = File.objects.count()
+        url = '/api/v1/files/'
+
+        data = {
+            'title': 'Test file',
+            'file': open(self.unsupported_file, 'rb'),
+            'isPublic': True,
+        }
+
+        response = self.client.post(url, data,
+                                    HTTP_AUTHORIZATION=self.auth,
+                                    format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(File.objects.count(), last_count)
