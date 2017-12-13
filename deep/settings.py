@@ -359,6 +359,7 @@ if not USE_EMAIL_CONFIG:
 
 
 # List of mime types supported in deep
+# NOTE: also change in frontend
 DEEP_SUPPORTED_MIME_TYPES = [
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/rtf', 'text/plain', 'font/otf', 'application/pdf',
