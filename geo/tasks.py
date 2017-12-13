@@ -16,6 +16,10 @@ import os
 
 @shared_task
 def add(x, y):
+    """
+    Simple task for sole purpose testing celery
+    Used in geo.tests.test_celery module
+    """
     return x + y
 
 
