@@ -35,5 +35,8 @@ class UserResourceSerializer(NestedCreateMixin,
         return resource
 
     def get_version_id(self, resource):
-        versions = Version.objects.get_for_object(resource)
-        return len(versions)
+        version_id = len(Version.objects.get_for_object(resource))
+
+        if self.context['request'].method in ['POST', 'PUT', 'PATCH']:
+            version_id += 1
+        return version_id

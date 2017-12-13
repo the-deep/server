@@ -135,6 +135,7 @@ class EntryTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
                                     format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Entry.objects.count(), old_count + 1)
+        self.assertEqual(response.data['version_id'], 1)
         self.assertEqual(response.data['excerpt'], data['excerpt'])
         self.assertEqual(response.data['attributes'][0]['widget'], widget.pk)
         self.assertEqual(response.data['attributes'][0]['data']['a'], 'b')
