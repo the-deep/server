@@ -1,6 +1,8 @@
 """deep URL Configuration
 """
+from django.views.decorators.clickjacking import xframe_options_exempt
 from django.conf.urls import url, include, static
+from django.views.static import serve
 from django.contrib import admin
 from django.conf import settings
 
@@ -175,7 +177,9 @@ urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls',
                                namespace='rest_framework')),
 
-] + static.static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static.static(
+    settings.MEDIA_URL, view=xframe_options_exempt(serve),
+    document_root=settings.MEDIA_ROOT)
 
 urlpatterns += [
     url(r'^$', FrontendView.as_view()),

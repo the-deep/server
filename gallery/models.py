@@ -7,8 +7,10 @@ from user_resource.models import UserResource
 
 class File(UserResource):
     title = models.CharField(max_length=255)
+
     file = models.FileField(upload_to='gallery/',
                             null=True, blank=True, default=None)
+    mime_type = models.CharField(max_length=130, blank=True, null=True)
     meta_data = JSONField(default=None, blank=True, null=True)
 
     is_public = models.BooleanField(default=True)

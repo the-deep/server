@@ -15,7 +15,16 @@ class FileSerializer(UserResourceSerializer):
         model = File
         fields = ('__all__')
 
+    # Validations
+    def validate_file(self, file):
+        if file.content_type not in settings.DEEP_SUPPORTED_MIME_TYPES:
+            raise serializers.ValidationError(
+                'Unsupported file type {}'.format(file.content_type))
+        return file
+
     def create(self, validated_data):
+        validated_data['mime_type'] = validated_data.get('file').content_type
+
         file = super(FileSerializer, self).create(validated_data)
         file.permitted_users.add(self.context['request'].user)
         return file
@@ -24,7 +33,7 @@ class FileSerializer(UserResourceSerializer):
 class GoogleDriveFileSerializer(UserResourceSerializer):
     access_token = serializers.CharField(write_only=True)
     file_id = serializers.CharField(write_only=True)
-    mime_type = serializers.CharField(write_only=True)
+    mime_type = serializers.CharField()
 
     class Meta:
         model = File
@@ -34,7 +43,7 @@ class GoogleDriveFileSerializer(UserResourceSerializer):
         title = validated_data.get('title')
         access_token = validated_data.pop('access_token')
         file_id = validated_data.pop('file_id')
-        mime_type = validated_data.pop('mime_type', '')
+        mime_type = validated_data.get('mime_type', '')
 
         file = g_download(
             file_id,
@@ -75,6 +84,8 @@ class DropboxFileSerializer(UserResourceSerializer):
         validated_data['file'] = InMemoryUploadedFile(
             file, None, title, mime_type, None, None
         )
+
+        validated_data['mime_type'] = mime_type
 
         file = super(DropboxFileSerializer, self).create(validated_data)
         file.permitted_users.add(self.context['request'].user)
