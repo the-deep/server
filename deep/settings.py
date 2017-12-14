@@ -375,3 +375,5 @@ DEEP_SUPPORTED_MIME_TYPES = [
 
 # Gallery files Cache-control max-age in seconds
 MAX_FILE_CACHE_AGE = 60 * 60 * 24
+# Lead website fetch timeout
+LEAD_WEBSITE_FETCH_TIMEOUT = 15
