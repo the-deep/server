@@ -193,7 +193,14 @@ class LeadWebsiteFetch(APIView):
 
     def post(self, request, *args, **kwargs):
         url = request.data.get('url')
-        https_url = url.replace('http:', 'https:', 1)
+        https_url = url
+        http_url = url
+
+        if url.find('http://') >= 0:
+            https_url = url.replace('http://', 'https://', 1)
+        elif not url.find('https://') >= 0:
+            https_url = 'https://' + url
+            http_url = 'http://' + url
 
         headers = {
             'User-Agent': USER_AGENT
@@ -209,4 +216,5 @@ class LeadWebsiteFetch(APIView):
         return Response({
             'headers': r.headers,
             'url': https_url,
+            'httpUrl': http_url
         })
