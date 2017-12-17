@@ -28,18 +28,16 @@ def _extract_from_lead_core(lead_id):
     # Get the lead to be extracted
     lead = Lead.objects.get(id=lead_id)
 
-    # We can't possible extract from anything other than
-    # file attachment or web url
-    if not lead.attachment and not lead.url:
-        return False
-
     with reversion.create_revision():
         text, images = '', []
 
         # Extract either using FileDocument or WebDocument
         # as per the document type
         try:
-            if lead.attachment:
+            if lead.text:
+                text = lead.text
+                images = []
+            elif lead.attachment:
                 text, images = FileDocument(
                     lead.attachment.file,
                     lead.attachment.file.name,
