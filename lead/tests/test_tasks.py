@@ -42,4 +42,7 @@ class ExtractFromLeadTaskTest(ProjectMixin, LeadMixin, TestCase):
         # This is similar to test_web_document
         path = join(self.path, '.'.join(HTML_URL.split('/')[-1:]))
         extracted = get_or_write_file(path + '.txt', lead_preview.text_extract)
-        self.assertEqual(lead_preview.text_extract, extracted.read())
+        self.assertEqual(
+            ' '.join(lead_preview.text_extract.split()),
+            ' '.join(extracted.read().split()),
+        )

@@ -27,7 +27,7 @@ def process(doc):
     html = '<h1>' + title + '</h1>' + summary
 
     regex = re.compile('\n*', flags=re.IGNORECASE)
-    html = '<div>{}></div>'.format(regex.sub('', html))
+    html = '<div>{}</div>'.format(regex.sub('', html))
 
     text = '\n'.join(fragment_fromstring(html).itertext()).strip()
     return text, images

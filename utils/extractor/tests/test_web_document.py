@@ -34,7 +34,7 @@ class WebDocumentTest(TestCase):
 
         try:
             # TODO: Better way to handle the errors
-            self.assertEqual(text, extracted.read())
+            self.assertEqual(text.strip(), extracted.read().strip())
         except AssertionError:
             import traceback
             logger.warning('\n' + ('*' * 30))
