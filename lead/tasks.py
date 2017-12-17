@@ -16,6 +16,11 @@ from utils.websocket.subscription import SubscriptionConsumer
 import json
 import reversion
 import os
+import re
+
+
+def _preprocess(text):
+    return re.sub(r'\n(\s*\n)+', '\n\n', text)
 
 
 def _extract_from_lead_core(lead_id):
@@ -45,6 +50,8 @@ def _extract_from_lead_core(lead_id):
 
             elif lead.url:
                 text, images = WebDocument(lead.url).extract()
+
+            text = _preprocess(text)
         except Exception as e:
             return False
 
