@@ -20,7 +20,7 @@ import re
 
 
 def _preprocess(text):
-    return re.sub(r'\n(\s*\n)+', '\n\n', text)
+    return re.sub(r'\n(\s*\n)*', '\n\n', text)
 
 
 def _extract_from_lead_core(lead_id):

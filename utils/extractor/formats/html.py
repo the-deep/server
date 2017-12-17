@@ -2,6 +2,7 @@ from readability.readability import Document
 import re
 import requests
 import tempfile
+from lxml.html import fragment_fromstring
 
 from django.conf import settings
 
@@ -23,8 +24,10 @@ def process(doc):
         except Exception:
             pass
 
-    html = "<h1>" + title + "</h1>" + summary
+    html = '<h1>' + title + '</h1>' + summary
 
     regex = re.compile('\n*', flags=re.IGNORECASE)
-    html = regex.sub('', html)
-    return html, images
+    html = '<div>{}></div>'.format(regex.sub('', html))
+
+    text = '\n'.join(fragment_fromstring(html).itertext()).strip()
+    return text, images
