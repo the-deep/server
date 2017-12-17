@@ -19,9 +19,22 @@ class Entry(UserResource):
     An entry can either be an excerpt or an image
     and contain several attributes.
     """
+
+    EXCERPT = 'excerpt'
+    IMAGE = 'image'
+    ENTRY_TYPES = (
+        (EXCERPT, 'Excerpt'),
+        (IMAGE, 'Excerpt'),
+    )
+
     lead = models.ForeignKey(Lead)
     analysis_framework = models.ForeignKey(AnalysisFramework)
 
+    entry_type = models.CharField(
+        max_length=10,
+        choices=ENTRY_TYPES,
+        default=EXCERPT,
+    )
     excerpt = models.TextField(blank=True)
     image = models.FileField(
         upload_to='entry-images/%Y/%m/',
