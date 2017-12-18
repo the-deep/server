@@ -1,15 +1,17 @@
-from django.test import TestCase
+from rest_framework import status
+from rest_framework.test import APITestCase
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from geo.tasks import load_geo_areas
 from geo.models import Region, AdminLevel, GeoArea
 from gallery.models import File
+from user.tests.test_apis import AuthMixin
 
 import os
 
 
-class LoadGeoAreasTaskTest(TestCase):
+class LoadGeoAreasTaskTest(AuthMixin, APITestCase):
     """
     Test to test if the load_geo_areas task
     perform correctly.
@@ -98,3 +100,19 @@ class LoadGeoAreasTaskTest(TestCase):
         ).first()
 
         self.assertIsNotNone(sindhupalchowk)
+
+    def test_geojson_api(self):
+        result = load_geo_areas(self.region.pk)
+        self.assertTrue(result)
+
+        # Test if geojson api works
+        url = '/api/v1/admin-levels/{}/geojson/'.format(self.admin_level0.pk)
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=self.get_auth(),
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['type'], 'FeatureCollection')
+        self.assertIsNotNone(response.data['features'])
+        self.assertTrue(len(response.data['features']) > 0)

@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.serializers import serialize
 from django.db import models
 from rest_framework import (
     exceptions,
@@ -15,13 +16,14 @@ from deep.permissions import ModifyPermission
 from user_resource.filters import UserResourceFilterSet
 
 from project.models import Project
-from .models import Region, AdminLevel  # , GeoShape
+from .models import Region, AdminLevel
 from .serializers import (
     AdminLevelSerializer,
     RegionSerializer,
 )
 
 from geo.tasks import load_geo_areas
+import json
 
 
 class RegionFilterSet(UserResourceFilterSet):
@@ -136,3 +138,25 @@ class GeoAreasLoadTriggerView(views.APIView):
         return response.Response({
             'load_triggered': region_id,
         })
+
+
+class GeoJsonView(views.APIView):
+    """
+    A view that returns geojson for given admin level
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, admin_level_id, version=None):
+        if not AdminLevel.objects.filter(id=admin_level_id).exists():
+            raise exceptions.NotFound()
+
+        admin_level = AdminLevel.objects.get(id=admin_level_id)
+        if not admin_level.can_get(request.user):
+            raise exceptions.PermissionDenied()
+
+        return response.Response(json.loads(serialize(
+            'geojson',
+            admin_level.geoarea_set.all(),
+            geometry_field='polygons',
+            fields=('title', 'code', 'parent'),
+        )))

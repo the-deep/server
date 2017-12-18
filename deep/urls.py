@@ -30,6 +30,7 @@ from geo.views import (
     RegionCloneView,
     RegionViewSet,
     GeoAreasLoadTriggerView,
+    GeoJsonView,
 )
 from lead.views import (
     LeadViewSet,
@@ -163,12 +164,16 @@ urlpatterns = [
     url(get_api_path(r'lead-extraction-trigger/(?P<lead_id>\d+)/$'),
         LeadExtractionTriggerView.as_view()),
 
+    url(get_api_path(r'geo-areas-load-trigger/(?P<region_id>\d+)/$'),
+        GeoAreasLoadTriggerView.as_view()),
+
     # Website fetch api
     url(get_api_path(r'lead-webiste-fetch/$'),
         LeadWebsiteFetch.as_view()),
 
-    url(get_api_path(r'geo-areas-load-trigger/(?P<region_id>\d+)/$'),
-        GeoAreasLoadTriggerView.as_view()),
+    # Geojson api
+    url(get_api_path(r'admin-levels/(?P<admin_level_id>\d+)/geojson/$'),
+        GeoJsonView.as_view()),
 
     # Clone apis
     url(get_api_path(r'clone-region/(?P<region_id>\d+)/$'),
