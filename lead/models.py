@@ -102,6 +102,12 @@ class Lead(UserResource):
         # can modify a lead in that project
         return self.project.can_get(user)
 
+    # Lead preview is invalid upon save
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        LeadPreview.objects.filter(lead=self).delete()
+        LeadPreviewImage.objects.filter(lead=self).delete()
+
 
 class LeadPreview(models.Model):
     lead = models.OneToOneField(Lead)
