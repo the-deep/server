@@ -107,8 +107,15 @@ class AdminLevel(models.Model):
     geo_shape_file = models.ForeignKey(File,
                                        null=True, blank=True, default=None)
 
+    stale_geo_areas = models.BooleanField(default=True)
+
     def __str__(self):
         return self.title
+
+    # GeoAreas are invalid upon save
+    def save(self, *args, **kwargs):
+        self.stale_geo_areas = True
+        super().save(*args, **kwargs)
 
     def clone_to(self, region, parent):
         admin_level = AdminLevel(

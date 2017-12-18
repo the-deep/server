@@ -78,3 +78,23 @@ class AdminLevelSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         if not region.can_modify(self.context['request'].user):
             raise serializers.ValidationError('Invalid region')
         return region
+
+    def create(self, validated_data):
+        admin_level = super(AdminLevelSerializer, self).create(validated_data)
+        admin_level.save()
+
+        region = admin_level.region
+        region.modified_by = self.context['request'].user
+        region.save()
+
+        return admin_level
+
+    def update(self, validated_data):
+        admin_level = super(AdminLevelSerializer, self).update(validated_data)
+        admin_level.save()
+
+        region = admin_level.region
+        region.modified_by = self.context['request'].user
+        region.save()
+
+        return admin_level

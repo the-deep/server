@@ -120,6 +120,9 @@ def _load_geo_areas(region_id, tolerance=0.0001):
                         admin_level=admin_level
                     ).exclude(id__in=added_areas).delete()
 
+            admin_level.stale_geo_areas = False
+            admin_level.save()
+
             parent = admin_level
             admin_level = AdminLevel.objects.filter(parent=parent).first()
 
