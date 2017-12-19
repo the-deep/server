@@ -112,11 +112,6 @@ class AdminLevel(models.Model):
     def __str__(self):
         return self.title
 
-    # GeoAreas are invalid upon save
-    def save(self, *args, **kwargs):
-        self.stale_geo_areas = True
-        super().save(*args, **kwargs)
-
     def clone_to(self, region, parent):
         admin_level = AdminLevel(
             region=region,

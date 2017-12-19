@@ -80,6 +80,11 @@ class LoadGeoAreasTaskTest(AuthMixin, APITestCase):
         result = load_geo_areas(self.region.pk)
         self.assertTrue(result)
 
+        latest_a0 = AdminLevel.objects.get(pk=self.admin_level0.pk)
+        latest_a1 = AdminLevel.objects.get(pk=self.admin_level1.pk)
+        self.assertFalse(latest_a0.stale_geo_areas)
+        self.assertFalse(latest_a1.stale_geo_areas)
+
         # Test if a geo area in admin level 0 is correctly set
         bagmati = GeoArea.objects.filter(
             title='Bagmati',
