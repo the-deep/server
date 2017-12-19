@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.gis.gdal import Envelope
 from django.core.serializers import serialize
 from django.db import models
 from rest_framework import (
@@ -160,3 +161,38 @@ class GeoJsonView(views.APIView):
             geometry_field='polygons',
             fields=('title', 'code', 'parent'),
         )))
+
+
+class GeoBoundsView(views.APIView):
+    """
+    A view that returns geojson for given admin level
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, admin_level_id, version=None):
+        if not AdminLevel.objects.filter(id=admin_level_id).exists():
+            raise exceptions.NotFound()
+
+        admin_level = AdminLevel.objects.get(id=admin_level_id)
+        if not admin_level.can_get(request.user):
+            raise exceptions.PermissionDenied()
+
+        areas = admin_level.geoarea_set.all()
+        if areas.count() > 0:
+            envelope = Envelope(*areas[0].polygons.extent)
+
+            for area in areas[1:]:
+                envelope.expand_to_include(*area.polygons.extent)
+
+            return response.Response({
+                'bounds': {
+                    'min_x': envelope.min_x,
+                    'min_y': envelope.min_y,
+                    'max_x': envelope.max_x,
+                    'max_y': envelope.max_y,
+                }
+            })
+
+        return response.Response({
+            'bounds': None,
+        })

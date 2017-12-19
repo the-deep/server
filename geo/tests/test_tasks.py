@@ -110,14 +110,28 @@ class LoadGeoAreasTaskTest(AuthMixin, APITestCase):
         result = load_geo_areas(self.region.pk)
         self.assertTrue(result)
 
+        auth = self.get_auth()
+
         # Test if geojson api works
         url = '/api/v1/admin-levels/{}/geojson/'.format(self.admin_level0.pk)
         response = self.client.get(
             url,
-            HTTP_AUTHORIZATION=self.get_auth(),
+            HTTP_AUTHORIZATION=auth,
             format='json',
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['type'], 'FeatureCollection')
         self.assertIsNotNone(response.data['features'])
         self.assertTrue(len(response.data['features']) > 0)
+
+        # Test if geobounds also works
+        url = '/api/v1/admin-levels/{}/geojson/bounds/'.format(
+            self.admin_level0.pk
+        )
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=auth,
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsNotNone(response.data['bounds'])
