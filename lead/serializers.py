@@ -10,7 +10,12 @@ class LeadSerializer(DynamicFieldsMixin, UserResourceSerializer):
     """
     no_of_entries = serializers.IntegerField(
         source='entry_set.count',
-        read_only=True)
+        read_only=True,
+    )
+    attachment_mime_type = serializers.CharField(
+        source='attachment.mime_type',
+        read_only=True,
+    )
 
     class Meta:
         model = Lead
