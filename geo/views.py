@@ -159,7 +159,7 @@ class GeoJsonView(views.APIView):
             'geojson',
             admin_level.geoarea_set.all(),
             geometry_field='polygons',
-            fields=('title', 'code', 'parent'),
+            fields=('pk', 'title', 'code', 'parent'),
         )))
 
 
