@@ -5,6 +5,7 @@ from user_resource.models import UserResource
 from geo.models import Region
 from user_group.models import UserGroup
 from analysis_framework.models import AnalysisFramework
+from category_editor.models import CategoryEditor
 
 
 class Project(UserResource):
@@ -25,6 +26,9 @@ class Project(UserResource):
     analysis_framework = models.ForeignKey(AnalysisFramework, blank=True,
                                            default=None, null=True,
                                            on_delete=models.SET_NULL)
+    category_editor = models.ForeignKey(CategoryEditor, blank=True,
+                                        default=None, null=True,
+                                        on_delete=models.SET_NULL)
     data = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):

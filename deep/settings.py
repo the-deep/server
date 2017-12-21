@@ -48,8 +48,8 @@ INSTALLED_APPS = [
     'reversion',
     'storages',
 
-    'redis_store',
     'analysis_framework',
+    'category_editor',
     'docs',
     'dummy_data',
     'entry',
@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'geo',
     'lead',
     'project',
+    'redis_store',
     'user',
     'user_group',
     'user_resource',

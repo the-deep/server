@@ -51,6 +51,9 @@ from analysis_framework.views import (
     FilterViewSet,
     WidgetViewSet,
 )
+from category_editor.views import (
+    CategoryEditorViewSet,
+)
 from deep.views import (
     Api_404View,
     FrontendView,
@@ -122,7 +125,7 @@ router.register(r'entry-filter-data', FilterDataViewSet,
 router.register(r'entry-export-data', ExportDataViewSet,
                 base_name='entry_export_data')
 
-# Analysis routers
+# Analysis framework routers
 router.register(r'analysis-frameworks', AnalysisFrameworkViewSet,
                 base_name='analysis_framework')
 router.register(r'analysis-framework-widgets', WidgetViewSet,
@@ -131,6 +134,10 @@ router.register(r'analysis-framework-filters', FilterViewSet,
                 base_name='analysis_framework_filter')
 router.register(r'analysis-framework-exportables', ExportableViewSet,
                 base_name='analysis_framework_exportable')
+
+# Category editor routers
+router.register(r'category-editors', CategoryEditorViewSet,
+                base_name='category_editor')
 
 
 # Versioning : (v1|v2|v3)

@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase
-from user.tests.test_apis import AuthMixin
 from rest_framework import status
+from user.tests.test_apis import AuthMixin
 from analysis_framework.models import (
     AnalysisFramework, Widget,
     Filter, Exportable
@@ -17,7 +17,7 @@ class AnalysisFrameworkMixin():
     """
     def create_or_get_analysis_framework(self):
         """
-        Create or get  AnalysisFramework
+        Create or get AnalysisFramework
         """
         analysis_framework = AnalysisFramework.objects.first()
         if not analysis_framework:
