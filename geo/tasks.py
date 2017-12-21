@@ -97,6 +97,9 @@ def _load_geo_areas(region_id, tolerance=0.0001):
         admin_level = AdminLevel.objects.filter(region=region, parent=None)\
             .first()
         parent = None
+
+        # TODO: Check for cycle and for admin levels
+        # with no parent
         while admin_level:
             geo_shape_file = admin_level.geo_shape_file
             if geo_shape_file:
