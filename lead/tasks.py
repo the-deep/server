@@ -17,6 +17,10 @@ import json
 import reversion
 import os
 import re
+import requests
+
+
+DEEPL_CLASSIFY_URL = 'http://deepl.togglecorp.com/api/v2/classify/'
 
 
 def _preprocess(text):
@@ -57,12 +61,22 @@ def _extract_from_lead_core(lead_id):
 
         # Save extracted text as LeadPreview
         if text:
+            # Classify the text and get doc id
+            data = {
+                'deeper': 1,
+                'text': text,
+            }
+            response = requests.post(DEEPL_CLASSIFY_URL,
+                                     data=data).json()
+            classified_doc_id = response['id']
+
             # Make sure there isn't existing lead preview
             LeadPreview.objects.filter(lead=lead).delete()
             # and create new one
             LeadPreview.objects.create(
                 lead=lead,
                 text_extract=text,
+                classified_doc_id=classified_doc_id,
             )
 
         # Save extracted images as LeadPreviewImage instances
@@ -131,7 +145,7 @@ def extract_from_lead(lead_id):
                 'status': return_value,
             }).decode('utf-8')
         ))
-    except Exception:
+    except Exception as e:
         return_value = False
 
     # Once done, we delete the key to say that this task is done.

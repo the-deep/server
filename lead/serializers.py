@@ -40,10 +40,14 @@ class LeadPreviewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     text = serializers.CharField(source='leadpreview.text_extract',
                                  read_only=True)
     images = serializers.SerializerMethodField()
+    classified_doc_id = serializers.IntegerField(
+        source='leadpreview.classified_doc_id',
+        read_only=True,
+    )
 
     class Meta:
         model = Lead
-        fields = ('id', 'text', 'images')
+        fields = ('id', 'text', 'images', 'classified_doc_id')
 
     def get_images(self, lead):
         return [

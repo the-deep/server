@@ -113,6 +113,9 @@ class LeadPreview(models.Model):
     lead = models.OneToOneField(Lead)
     text_extract = models.TextField(blank=True)
 
+    classified_doc_id = models.IntegerField(default=None,
+                                            null=True, blank=True)
+
     def __str__(self):
         return 'Text extracted for {}'.format(self.lead)
 
