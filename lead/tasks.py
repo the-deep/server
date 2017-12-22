@@ -19,8 +19,13 @@ import os
 import re
 import requests
 
+import traceback
+import logging
 
-DEEPL_CLASSIFY_URL = 'http://deepl.togglecorp.com/api/v2/classify/'
+logger = logging.getLogger(__name__)
+
+
+DEEPL_CLASSIFY_URL = 'https://deepl.togglecorp.com/api/v2/classify/'
 
 
 def _preprocess(text):
@@ -57,6 +62,7 @@ def _extract_from_lead_core(lead_id):
 
             text = _preprocess(text)
         except Exception as e:
+            logger.error(traceback.format_exc())
             return False
 
         # Save extracted text as LeadPreview
@@ -146,6 +152,7 @@ def extract_from_lead(lead_id):
             }).decode('utf-8')
         ))
     except Exception as e:
+        logger.error(traceback.format_exc())
         return_value = False
 
     # Once done, we delete the key to say that this task is done.

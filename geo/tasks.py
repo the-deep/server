@@ -13,6 +13,11 @@ from redis_store import redis
 import reversion
 import os
 
+import traceback
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 @shared_task
 def add(x, y):
@@ -145,6 +150,7 @@ def load_geo_areas(region_id):
     try:
         return_value = _load_geo_areas(region_id)
     except Exception:
+        logger.error(traceback.format_exc())
         return_value = False
 
     r.delete(key)
