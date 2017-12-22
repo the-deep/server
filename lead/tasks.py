@@ -95,7 +95,8 @@ def _extract_from_lead_core(lead_id):
                 lead_image.save()
 
             for image in images:
-                os.unlink(image.name)
+                if os.path.exists(image.name):
+                    os.unlink(image.name)
 
     return True
 
