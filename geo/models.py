@@ -106,6 +106,7 @@ class AdminLevel(models.Model):
 
     geo_shape_file = models.ForeignKey(File,
                                        null=True, blank=True, default=None)
+    tolerance = models.FloatField(default=0.0001)
 
     stale_geo_areas = models.BooleanField(default=True)
 

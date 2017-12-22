@@ -23,7 +23,7 @@ def add(x, y):
     return x + y
 
 
-def _save_geo_area(admin_level, parent, feature, tolerance):
+def _save_geo_area(admin_level, parent, feature):
     name = None
     code = None
 
@@ -46,7 +46,7 @@ def _save_geo_area(admin_level, parent, feature, tolerance):
 
     geom = feature.geom
     geom = GEOSGeometry(geom.wkt).simplify(
-        tolerance=tolerance,
+        tolerance=admin_level.tolerance,
         preserve_topology=True,
     )
 
@@ -80,7 +80,7 @@ def _save_geo_area(admin_level, parent, feature, tolerance):
     return geo_area
 
 
-def _load_geo_areas(region_id, tolerance=0.0001):
+def _load_geo_areas(region_id):
     """
     The main load geo areas procedure
 
@@ -114,7 +114,7 @@ def _load_geo_areas(region_id, tolerance=0.0001):
                     for feature in layer:
                         geo_area = _save_geo_area(
                             admin_level, parent,
-                            feature, tolerance,
+                            feature
                         )
                         added_areas.append(geo_area.id)
 
@@ -132,7 +132,7 @@ def _load_geo_areas(region_id, tolerance=0.0001):
 
 
 @shared_task
-def load_geo_areas(region_id, tolerance=0.0001):
+def load_geo_areas(region_id):
     r = redis.get_connection()
     key = 'load_geo_areas_{}'.format(region_id)
     lock = 'lock_{}'.format(key)
@@ -143,7 +143,7 @@ def load_geo_areas(region_id, tolerance=0.0001):
         r.set(key, '1')
 
     try:
-        return_value = _load_geo_areas(region_id, tolerance)
+        return_value = _load_geo_areas(region_id)
     except Exception:
         return_value = False
 

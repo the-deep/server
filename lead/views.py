@@ -25,7 +25,7 @@ from lead.serializers import (
     LeadPreviewSerializer,
 )
 
-from .tasks import extract_from_lead
+from lead.tasks import extract_from_lead
 from utils.common import USER_AGENT
 
 headers = {

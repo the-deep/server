@@ -132,9 +132,8 @@ class GeoAreasLoadTriggerView(views.APIView):
         if not Region.objects.get(id=region_id).can_modify(request.user):
             raise exceptions.PermissionDenied()
 
-        tolerance = request.GET.get('tolerance', 0.0001)
         if not settings.TESTING:
-            load_geo_areas.delay(region_id, tolerance=tolerance)
+            load_geo_areas.delay(region_id)
 
         return response.Response({
             'load_triggered': region_id,

@@ -1,10 +1,10 @@
-# from django.conf import settings
+from django.conf import settings
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
 from geo.models import Region, AdminLevel  # , GeoShape
+from geo.tasks import load_geo_areas
 from project.models import Project
-# from .tasks import load_geo_areas
 
 
 class SimpleRegionSerializer(serializers.ModelSerializer):
@@ -88,6 +88,9 @@ class AdminLevelSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         region.modified_by = self.context['request'].user
         region.save()
 
+        if not settings.TESTING:
+            load_geo_areas.delay(region.id)
+
         return admin_level
 
     def update(self, instance, validated_data):
@@ -101,5 +104,8 @@ class AdminLevelSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         region = admin_level.region
         region.modified_by = self.context['request'].user
         region.save()
+
+        if not settings.TESTING:
+            load_geo_areas.delay(region.id)
 
         return admin_level
