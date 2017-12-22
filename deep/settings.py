@@ -21,6 +21,9 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = [os.environ.get('DJANGO_ALLOWED_HOST', '*')]
 DEEPER_FRONTEND_HOST = os.environ.get('FRONTEND_HOST', 'localhost:3000')
+DJANGO_API_HOST = os.environ.get('DJANGO_ALLOWED_HOST', 'localhost:8000')
+DEEPER_SITE_NAME = os.environ.get('DEEPER_SITE_NAME', 'DEEPER')
+HTTP_PROTOCOL = os.environ.get('DEEP_HTTPS', 'http')
 
 
 # See if we are inside a test environment

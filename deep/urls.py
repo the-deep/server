@@ -3,6 +3,7 @@
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.conf.urls import url, include, static
 from django.views.static import serve
+from django.contrib.auth import views as auth_views
 from django.contrib import admin
 from django.conf import settings
 
@@ -10,6 +11,7 @@ from rest_framework import routers
 
 from user.views import (
     UserViewSet,
+    PasswordResetView,
 )
 from gallery.views import (
     FileViewSet,
@@ -161,6 +163,34 @@ urlpatterns = [
 
     url(get_api_path(r'token/refresh/$'),
         TokenRefreshView.as_view()),
+
+    # password reset
+    url(get_api_path(r'password/reset/$'),
+        PasswordResetView.as_view()),
+
+    url(r'^password/reset/done/$',
+        auth_views.password_reset_done,
+        name="password_rest_done"),
+
+    url(r'^password/reset/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
+        auth_views.password_reset_confirm,
+        {
+            'post_reset_redirect': '{}://{}/login/'.format(
+                settings.HTTP_PROTOCOL, settings.DEEPER_FRONTEND_HOST)
+        },
+        name="password_reset_confirm"),
+
+    url(r'^password/done/$',
+        auth_views.password_reset_complete,
+        name="password_reset_complete"),
+
+    url(r'^password/change/$',
+        auth_views.password_change,
+        name="password_change"),
+
+    url(r'^password/change/done/$',
+        auth_views.password_change,
+        name="password_change_done"),
 
     # Attribute options for various models
     url(get_api_path(r'lead-options/$'),

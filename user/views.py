@@ -1,8 +1,17 @@
 from django.contrib.auth.models import User
-from rest_framework import viewsets, permissions, filters
+from rest_framework import (
+    status,
+    viewsets,
+    permissions,
+    filters,
+    exceptions,
+    response,
+    views,
+)
 
 from .serializers import (
     UserSerializer,
+    PasswordResetSerializer,
 )
 
 
@@ -47,3 +56,16 @@ class UserViewSet(viewsets.ModelViewSet):
             return self.request.user
         else:
             return super().get_object()
+
+
+class PasswordResetView(views.APIView):
+    def post(self, request, version=None):
+        user = User.objects.filter(email=request.data.get('email'))
+        if not user.exists():
+            raise exceptions.NotFound()
+
+        serializer = PasswordResetSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+        return response.Response(serializer.data,
+                                 status=status.HTTP_200_OK)
