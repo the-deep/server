@@ -176,7 +176,7 @@ class GeoBoundsView(views.APIView):
         if not admin_level.can_get(request.user):
             raise exceptions.PermissionDenied()
 
-        areas = admin_level.geoarea_set.all()
+        areas = admin_level.geoarea_set.filter(polygons__isnull=False)
         if areas.count() > 0:
             envelope = Envelope(*areas[0].polygons.extent)
 

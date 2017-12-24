@@ -47,15 +47,13 @@ class Region(UserResource):
         region.modified_by = user
         region.save()
 
-        root_level = AdminLevel.objects.filter(
+        root_levels = AdminLevel.objects.filter(
             region=self,
             parent=None,
-        ).first()
+        ).distinct()
 
-        parent = None
-        admin_level = root_level
-        while admin_level:
-            parent = admin_level.clone_to(self, parent)
+        for root_level in root_levels:
+            root_level.clone_to(region)
 
         return region
 
@@ -113,7 +111,7 @@ class AdminLevel(models.Model):
     def __str__(self):
         return self.title
 
-    def clone_to(self, region, parent):
+    def clone_to(self, region, parent=None):
         admin_level = AdminLevel(
             region=region,
             parent=parent,
@@ -123,18 +121,22 @@ class AdminLevel(models.Model):
             parent_name_prop=self.parent_name_prop,
             parent_code_prop=self.parent_code_prop,
             geo_shape_file=self.geo_shape_file,
+            tolerance=self.tolerance,
         )
+        admin_level.stale_geo_areas = True
         admin_level.save()
 
-        root_area = GeoArea.objects.filter(
-            admin_level=self,
-            parent=None,
-        ).first()
+        # new_parent_areas = []
+        # for area in self.geoarea_set.all():
+        #     parent = None
+        #     if area.parent:
+        #         parent = next((p for p in new_parent_areas
+        #                       if p.title == area.parent.title and
+        #                       p.code == area.parent.code), None)
+        #     new_parent_areas.append(area.clone_to(self, parent))
 
-        parent = None
-        area = root_area
-        while area:
-            parent = area.clone_to(self, parent)
+        for child_level in self.adminlevel_set.all():
+            child_level.clone_to(region, admin_level)
 
         return admin_level
 
@@ -180,6 +182,7 @@ class GeoArea(models.Model):
             data=self.data
         )
         geo_area.save()
+
         return geo_area
 
     # Permissions are same as region
