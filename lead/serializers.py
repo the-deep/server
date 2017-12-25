@@ -1,6 +1,7 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
+from gallery.serializers import SimpleFileSerializer
 from .models import Lead
 
 
@@ -12,10 +13,7 @@ class LeadSerializer(DynamicFieldsMixin, UserResourceSerializer):
         source='entry_set.count',
         read_only=True,
     )
-    attachment_mime_type = serializers.CharField(
-        source='attachment.mime_type',
-        read_only=True,
-    )
+    attachment = SimpleFileSerializer(required=False)
 
     class Meta:
         model = Lead

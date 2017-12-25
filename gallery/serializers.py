@@ -10,6 +10,16 @@ from utils.external_storages.dropbox import download as d_download
 from .models import File
 
 
+class SimpleFileSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=False)
+    file = serializers.FileField(required=False)
+    mime_type = serializers.CharField(required=False)
+
+    class Meta:
+        model = File
+        fields = ('id', 'title', 'file', 'mime_type')
+
+
 class FileSerializer(UserResourceSerializer):
     class Meta:
         model = File
