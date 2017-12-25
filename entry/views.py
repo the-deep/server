@@ -118,6 +118,10 @@ class EntryViewSet(viewsets.ModelViewSet):
         Get queryset of entries based on filters in query params
         """
         entries = Entry.get_for(self.request.user)
+        project = self.request.GET.get('project')
+        if project:
+            entries = entries.filter(lead__project__id=project)
+
         filters = Filter.get_for(self.request.user)
 
         for filter in filters:
