@@ -29,6 +29,7 @@ from collections import OrderedDict
 class EntryPaginationByLead(pagination.LimitOffsetPagination):
     def paginate_queryset(self, queryset, request, view=None):
         self.limit = int(request.query_params.get('limit', self.default_limit))
+        self.leads = None
         if not self.limit:
             return None
 
@@ -50,7 +51,10 @@ class EntryPaginationByLead(pagination.LimitOffsetPagination):
         return list(queryset.filter(lead__pk__in=lead_ids))
 
     def get_paginated_response(self, data):
-        leads = SimpleLeadSerializer(self.leads, many=True).data
+        if self.leads:
+            leads = SimpleLeadSerializer(self.leads, many=True).data
+        else:
+            leads = []
         return response.Response(OrderedDict([
             ('count', self.count),
             ('next', self.get_next_link()),

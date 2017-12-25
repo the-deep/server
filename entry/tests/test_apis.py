@@ -149,7 +149,7 @@ class EntryTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
         response = self.client.get(url, HTTP_AUTHORIZATION=self.auth,
                                    format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), count)
+        self.assertEqual(len(response.data['results']['entries']), count)
 
     def test_filters(self):
         """
