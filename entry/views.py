@@ -1,11 +1,20 @@
 from django.db import models
-from rest_framework import viewsets, permissions, filters
+from rest_framework import (
+    filters,
+    pagination,
+    permissions,
+    response,
+    viewsets,
+)
 from deep.permissions import ModifyPermission
 from user_resource.filters import UserResourceFilterSet
 import django_filters
 
 from lead.models import Lead
 from analysis_framework.models import Filter
+
+from lead.serializers import SimpleLeadSerializer
+
 from .models import (
     Entry, Attribute, FilterData, ExportData
 )
@@ -13,6 +22,44 @@ from .serializers import (
     EntrySerializer, AttributeSerializer,
     FilterDataSerializer, ExportDataSerializer
 )
+
+from collections import OrderedDict
+
+
+class EntryPaginationByLead(pagination.LimitOffsetPagination):
+    def paginate_queryset(self, queryset, request, view=None):
+        self.limit = int(request.query_params.get('limit', self.default_limit))
+        if not self.limit:
+            return None
+
+        self.request = request
+        self.offset = int(request.query_params.get('offset', 0))
+
+        lead_ids = queryset.values_list('lead__id', flat=True).distinct()
+        self.count = lead_ids.count()
+
+        if self.count > self.limit and self.template is not None:
+            self.display_page_controls = True
+
+        if self.count == 0 or self.offset > self.count:
+            return []
+
+        lead_ids = list(lead_ids[self.offset:self.offset + self.limit])
+        self.leads = Lead.objects.filter(pk__in=lead_ids).distinct()
+
+        return list(queryset.filter(lead__pk__in=lead_ids))
+
+    def get_paginated_response(self, data):
+        leads = SimpleLeadSerializer(self.leads, many=True).data
+        return response.Response(OrderedDict([
+            ('count', self.count),
+            ('next', self.get_next_link()),
+            ('previous', self.get_previous_link()),
+            ('results', {
+                'leads': leads,
+                'entries': data,
+            })
+        ]))
 
 
 class EntryFilterSet(UserResourceFilterSet):
@@ -58,6 +105,8 @@ class EntryViewSet(viewsets.ModelViewSet):
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter)
     filter_class = EntryFilterSet
+
+    pagination_class = EntryPaginationByLead
     search_fields = ('lead__title', 'excerpt')
 
     def get_queryset(self):
@@ -105,7 +154,7 @@ class EntryViewSet(viewsets.ModelViewSet):
                             filterdata__values__contains=query,
                         )
 
-        return entries
+        return entries.order_by('-lead__created_by', 'lead')
 
 
 class AttributeViewSet(viewsets.ModelViewSet):
