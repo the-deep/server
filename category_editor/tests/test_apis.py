@@ -17,12 +17,13 @@ class CategoryEditorMixin():
         category_editor = CategoryEditor.objects.first()
         if not category_editor:
             category_editor = CategoryEditor.objects.create(
+                title='Test Category Editor',
                 created_by=self.user,
             )
         return category_editor
 
 
-class CategoryEditorTests(AuthMixin, ProjectMixin,
+class CategoryEditorTests(AuthMixin, ProjectMixin, CategoryEditorMixin,
                           APITestCase):
     """
     Category Editor Tests
@@ -42,6 +43,7 @@ class CategoryEditorTests(AuthMixin, ProjectMixin,
         old_count = CategoryEditor.objects.count()
         url = '/api/v1/category-editors/'
         data = {
+            'title': 'New Category Editor',
             'project': project.id,
         }
 
@@ -52,4 +54,34 @@ class CategoryEditorTests(AuthMixin, ProjectMixin,
         self.assertEqual(CategoryEditor.objects.count(), old_count + 1)
 
         project = Project.objects.get(id=project.id)
+        self.assertEqual(project.category_editor.id, response.data['id'])
+
+    def test_clone_category_editor(self):
+        """
+        Test cloning
+        """
+        project = self.create_or_get_project()
+        category_editor = self.create_or_get_category_editor()
+        project.category_editor = category_editor
+        project.save()
+
+        url = '/api/v1/clone-category-editor/{}/'.format(
+            category_editor.id
+        )
+        data = {
+            'project': project.id,
+        }
+
+        response = self.client.post(url, data,
+                                    HTTP_AUTHORIZATION=self.auth,
+                                    format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertNotEqual(response.data['id'], category_editor.id)
+        self.assertEqual(response.data['title'],
+                         category_editor.title + ' (cloned)')
+
+        project = Project.objects.get(id=project.id)
+        self.assertNotEqual(project.category_editor.id,
+                            category_editor.id)
+
         self.assertEqual(project.category_editor.id, response.data['id'])
