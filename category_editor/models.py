@@ -4,10 +4,11 @@ from user_resource.models import UserResource
 
 
 class CategoryEditor(UserResource):
+    title = models.CharField(max_length=255)
     data = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
-        return 'Category Editor by {}'.format(self.created_by)
+        return self.title
 
     @staticmethod
     def get_for(user):
