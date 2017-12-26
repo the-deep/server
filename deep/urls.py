@@ -55,6 +55,7 @@ from analysis_framework.views import (
 )
 from category_editor.views import (
     CategoryEditorViewSet,
+    CategoryEditorCloneView,
 )
 from deep.views import (
     Api_404View,
@@ -220,6 +221,8 @@ urlpatterns = [
         RegionCloneView.as_view()),
     url(get_api_path(r'clone-analysis-framework/(?P<af_id>\d+)/$'),
         AnalysisFrameworkCloneView.as_view()),
+    url(get_api_path(r'clone-category-editor/(?P<ce_id>\d+)/$'),
+        CategoryEditorCloneView.as_view()),
 
     # Viewsets
     url(get_api_path(''), include(router.urls)),

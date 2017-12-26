@@ -10,6 +10,20 @@ class CategoryEditor(UserResource):
     def __str__(self):
         return self.title
 
+    def clone(self, user):
+        """
+        Clone category editor
+        """
+        category_editor = CategoryEditor(
+            title='{} (cloned)'.format(self.title),
+            data=self.data,
+        )
+        category_editor.created_by = user
+        category_editor.modified_by = user
+        category_editor.save()
+
+        return category_editor
+
     @staticmethod
     def get_for(user):
         """
