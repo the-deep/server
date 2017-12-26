@@ -151,11 +151,14 @@ class EntryTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']['entries']), count)
 
-    def post_filter_test(self, params, count=1):
+    def post_filter_test(self, filters, count=1):
         """
         Similar to above but this time pass filter params as post body
         """
         url = '/api/v1/entries/filter/'
+        params = {
+            'filters': [[k, v] for k, v in filters.items()]
+        }
         response = self.client.post(url, params,
                                     HTTP_AUTHORIZATION=self.auth,
                                     format='json')
@@ -200,7 +203,7 @@ class EntryTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
 
         self.filter_test('test_list_filter=abc')
         self.filter_test('test_list_filter=ghi,def', 1)
-        self.filter_test('test_list_filter=abc,hij', 0)
+        self.filter_test('test_list_filter=uml,hij', 0)
 
     def test_post_filters(self):
         """
@@ -239,8 +242,8 @@ class EntryTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
         )
 
         self.post_filter_test({'test_list_filter': 'abc'})
-        self.post_filter_test({'test_list_filter': 'ghi,def'}, 1)
-        self.post_filter_test({'test_list_filter': 'abc,hij'}, 0)
+        self.post_filter_test({'test_list_filter': 'ghi,def'})
+        self.post_filter_test({'test_list_filter': 'uml,hij'}, 0)
 
         entry.excerpt = 'hello'
         entry.save()

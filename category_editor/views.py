@@ -54,6 +54,3 @@ class CategoryEditorCloneView(views.APIView):
             serializer.data,
             status=status.HTTP_201_CREATED,
         )
-
-
-

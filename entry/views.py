@@ -140,13 +140,14 @@ def _get_entry_queryset(user, queries):
                 )
 
         if filter.filter_type == Filter.LIST and query:
+            if not isinstance(query, list):
                 query = query.split(',')
 
-                if len(query) > 0:
-                    entries = entries.filter(
-                        filterdata__filter=filter,
-                        filterdata__values__contains=query,
-                    )
+            if len(query) > 0:
+                entries = entries.filter(
+                    filterdata__filter=filter,
+                    filterdata__values__overlap=query,
+                )
 
     return entries.order_by('-lead__created_by', 'lead')
 
@@ -179,16 +180,19 @@ class EntryFilterView(generics.GenericAPIView):
     pagination_class = EntryPaginationByLead
 
     def post(self, request, version=None):
-        queryset = _get_entry_queryset(request.user, request.data)
+        filters = request.data.get('filters', [])
+        filters = {f[0]: f[1] for f in filters}
 
-        search = request.data.get('search')
+        queryset = _get_entry_queryset(request.user, filters)
+
+        search = filters.get('search')
         if search:
             queryset = queryset.filter(
                 models.Q(lead__title__icontains=search) |
                 models.Q(excerpt__icontains=search)
             )
 
-        queryset = EntryFilterSet(request.data, queryset=queryset).qs
+        queryset = EntryFilterSet(filters, queryset=queryset).qs
 
         page = self.paginate_queryset(queryset)
 
