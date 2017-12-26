@@ -1,10 +1,10 @@
 from django.db import models
 from rest_framework import (
     filters,
+    generics,
     pagination,
     permissions,
     response,
-    views,
     viewsets,
 )
 from deep.permissions import ModifyPermission
@@ -170,13 +170,34 @@ class EntryViewSet(viewsets.ModelViewSet):
         return _get_entry_queryset(self.request.user, self.request.GET)
 
 
-class EntryFilterView(views.APIView):
+class EntryFilterView(generics.GenericAPIView):
+    """
+    Entry view for getting entries based filters in POST body
+    """
+    serializer_class = EntrySerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = EntryPaginationByLead
 
     def post(self, request, version=None):
         queryset = _get_entry_queryset(request.user, request.data)
-        result = EntryFilterSet(request.data, queryset=queryset)
+
+        search = request.data.get('search')
+        if search:
+            queryset = queryset.filter(
+                models.Q(lead__title__icontains=search) |
+                models.Q(excerpt__icontains=search)
+            )
+
+        queryset = EntryFilterSet(request.data, queryset=queryset).qs
+
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return response.Response(serializer.data)
 
 
 class AttributeViewSet(viewsets.ModelViewSet):

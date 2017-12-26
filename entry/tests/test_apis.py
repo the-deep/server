@@ -151,6 +151,17 @@ class EntryTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']['entries']), count)
 
+    def post_filter_test(self, params, count=1):
+        """
+        Similar to above but this time pass filter params as post body
+        """
+        url = '/api/v1/entries/filter/'
+        response = self.client.post(url, params,
+                                    HTTP_AUTHORIZATION=self.auth,
+                                    format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']['entries']), count)
+
     def test_filters(self):
         """
         Add some filter data to the entry and test the
@@ -190,6 +201,51 @@ class EntryTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
         self.filter_test('test_list_filter=abc')
         self.filter_test('test_list_filter=ghi,def', 1)
         self.filter_test('test_list_filter=abc,hij', 0)
+
+    def test_post_filters(self):
+        """
+        Add some filter data to the entry and test the
+        POST entry/filters api
+        """
+        entry = self.create_or_get_entry()
+
+        filter = Filter.objects.create(
+            analysis_framework=entry.analysis_framework,
+            key='test_filter',
+            title='Test Filter',
+            filter_type=Filter.NUMBER,
+        )
+        FilterData.objects.create(
+            entry=entry,
+            filter=filter,
+            number=500,
+        )
+
+        self.post_filter_test({'test_filter': 500})
+        self.post_filter_test({'test_filter__lt': 600})
+        self.post_filter_test({'test_filter__gt': 400})
+        self.post_filter_test({'test_filter__lt': 400}, 0)
+
+        filter = Filter.objects.create(
+            analysis_framework=entry.analysis_framework,
+            key='test_list_filter',
+            title='Test List Filter',
+            filter_type=Filter.LIST,
+        )
+        FilterData.objects.create(
+            entry=entry,
+            filter=filter,
+            values=['abc', 'def', 'ghi'],
+        )
+
+        self.post_filter_test({'test_list_filter': 'abc'})
+        self.post_filter_test({'test_list_filter': 'ghi,def'}, 1)
+        self.post_filter_test({'test_list_filter': 'abc,hij'}, 0)
+
+        entry.excerpt = 'hello'
+        entry.save()
+        self.post_filter_test({'search': 'el'}, 1)
+        self.post_filter_test({'search': 'pollo'}, 0)
 
 
 class AttributeTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
