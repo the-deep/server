@@ -61,6 +61,7 @@ class FilterMixin():
             analysis_framework = self.create_or_get_analysis_framework()
             filter = Filter.objects.create(
                 analysis_framework=analysis_framework,
+                widget_key='TEST_SCHEMA',
                 key='TEST_SCHEMA',
                 title="Test Title"
             )
@@ -204,6 +205,7 @@ class FilterTests(AuthMixin, AnalysisFrameworkMixin, APITestCase):
         data = {
             'analysis_framework': self.create_or_get_analysis_framework().pk,
             'key': 'TEST_SCHEMA',
+            'widget_key': 'TEST_SCHEMA',
             'title': 'Test Title',
             'properties': {},
         }

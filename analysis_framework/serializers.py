@@ -65,7 +65,8 @@ class SimpleWidgetSerializer(serializers.ModelSerializer):
 class SimpleFilterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Filter
-        fields = ('id', 'key', 'title', 'properties', 'filter_type')
+        fields = ('id', 'key', 'widget_key', 'title',
+                  'properties', 'filter_type')
 
 
 class SimpleExportableSerializer(serializers.ModelSerializer):

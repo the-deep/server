@@ -139,6 +139,7 @@ class Filter(models.Model):
 
     analysis_framework = models.ForeignKey(AnalysisFramework)
     key = models.CharField(max_length=100, db_index=True)
+    widget_key = models.CharField(max_length=100)
     title = models.CharField(max_length=255)
     properties = JSONField(default=None, blank=True, null=True)
     filter_type = models.CharField(max_length=20, choices=FILTER_TYPES,
