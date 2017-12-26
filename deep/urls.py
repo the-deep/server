@@ -44,6 +44,7 @@ from lead.views import (
 )
 from entry.views import (
     EntryViewSet, AttributeViewSet, FilterDataViewSet,
+    EntryFilterView,
     ExportDataViewSet
 )
 from analysis_framework.views import (
@@ -207,8 +208,11 @@ urlpatterns = [
         GeoAreasLoadTriggerView.as_view()),
 
     # Website fetch api
-    url(get_api_path(r'lead-webiste-fetch/$'),
+    url(get_api_path(r'lead-website-fetch/$'),
         LeadWebsiteFetch.as_view()),
+
+    # Filter and Export apis
+    url(get_api_path(r'entries/filter/'), EntryFilterView.as_view()),
 
     # Geojson api
     url(get_api_path(r'admin-levels/(?P<admin_level_id>\d+)/geojson/$'),
