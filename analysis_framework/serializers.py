@@ -72,7 +72,7 @@ class SimpleFilterSerializer(serializers.ModelSerializer):
 class SimpleExportableSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exportable
-        fields = ('id', 'key', 'inline')
+        fields = ('id', 'widget_key', 'inline', 'order', 'data')
 
 
 class AnalysisFrameworkSerializer(DynamicFieldsMixin, UserResourceSerializer):

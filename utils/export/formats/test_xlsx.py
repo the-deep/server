@@ -26,4 +26,9 @@ class RowsBuilderTest(TestCase):
             ['Hello', 'My', 'Name', 'Jon', '2', '5', '6'],
         ]
 
+        group_result = [
+            'Hello', 'My', 'Name', 'Is, Not, Jon', '1, 2', '3, 5', '4, 6'
+        ]
+
         self.assertEqual(result, builder.rows)
+        self.assertEqual(group_result, builder.group_rows)

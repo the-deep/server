@@ -183,16 +183,21 @@ class Exportable(models.Model):
     Export data for given widget
     """
     analysis_framework = models.ForeignKey(AnalysisFramework)
-    key = models.CharField(max_length=100, db_index=True)
+    widget_key = models.CharField(max_length=100, db_index=True)
     inline = models.BooleanField(default=False)
+    order = models.IntegerField(default=1)
+    data = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
-        return 'Exportable ({})'.format(self.key)
+        return 'Exportable ({})'.format(self.widget_key)
+
+    class Meta:
+        ordering = ['order']
 
     def clone_to(self, analysis_framework):
         exportable = Exportable(
             analysis_framework=analysis_framework,
-            key=self.key,
+            widget_key=self.widget_key,
             inline=self.inline,
         )
         exportable.save()

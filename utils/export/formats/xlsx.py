@@ -1,36 +1,7 @@
 from openpyxl import Workbook
 # from openpyxl.writer.excel import save_virtual_workbook
 
-from .common import get_valid_xml_string as xstr
-
-
-class WorkSheet:
-    def __init__(self, ws):
-        self.ws = ws
-
-    def set_title(self, title):
-        self.ws.title = title
-        return self
-
-    def auto_fit_cells_in_row(self, row_id, ws=None):
-        if ws is None:
-            ws = self.get_active()
-        row = list(ws.rows)[row_id - 1]
-        for cell in row:
-            ws.column_dimensions[cell.column].width =\
-                max(len(cell.value), 15)
-
-        return self
-
-    def append(self, rows, ws=None):
-        if ws is None:
-            ws = self.get_active()
-        [ws.append(row) for row in rows]
-
-        return self
-
-    def build_rows(self):
-        return RowsBuilder(self)
+from utils.export.common import get_valid_xml_string as xstr
 
 
 class WorkBook:
@@ -47,11 +18,34 @@ class WorkBook:
         self.wb.save(filename)
 
 
+class WorkSheet:
+    def __init__(self, ws):
+        self.ws = ws
+
+    def set_title(self, title):
+        self.ws.title = title
+        return self
+
+    def auto_fit_cells_in_row(self, row_id):
+        row = list(self.ws.rows)[row_id - 1]
+        for cell in row:
+            self.ws.column_dimensions[cell.column].width =\
+                max(len(cell.value), 15)
+
+        return self
+
+    def append(self, rows):
+        [self.ws.append(row) for row in rows]
+
+        return self
+
+
 class RowsBuilder:
-    def __init__(self, work_sheet=None):
+    def __init__(self, split_sheet=None, group_sheet=None):
         self.rows = [[]]
         self.group_rows = []
-        self.work_sheet = work_sheet
+        self.split_sheet = split_sheet
+        self.group_sheet = group_sheet
 
     def add_value(self, value):
         val = xstr(value)
@@ -111,11 +105,13 @@ class RowsBuilder:
                     self.rows[i * len(oldrows) + j].append(values[i][k])
 
         for column in list(map(list, zip(*values))):
-            self.group_rows.append(', '.join(list(set(column))))
+            self.group_rows.append(', '.join(list(dict.fromkeys(column))))
 
         return self
 
     def apply(self):
-        if self.work_sheet:
-            self.work_sheet.append(self.rows)
-        return self.work_sheet
+        if self.split_sheet:
+            self.split_sheet.append(self.rows)
+
+        if self.group_sheet:
+            self.group_sheet.append(self.group_rows)
