@@ -1,7 +1,7 @@
 from openpyxl import Workbook
-# from openpyxl.writer.excel import save_virtual_workbook
+from openpyxl.writer.excel import save_virtual_workbook
 
-from utils.export.common import get_valid_xml_string as xstr
+from export.common import get_valid_xml_string as xstr
 
 
 class WorkBook:
@@ -14,8 +14,8 @@ class WorkBook:
     def create_sheet(self, title):
         return WorkSheet(self.wb.create_sheet(title))
 
-    def save_to(self, filename):
-        self.wb.save(filename)
+    def save(self):
+        return save_virtual_workbook(self.wb)
 
 
 class WorkSheet:
@@ -90,9 +90,11 @@ class RowsBuilder:
 
         if num == 0:
             self.add_value('')
+            return self
 
         if num == 1:
             self.add_value_list(values[0])
+            return self
 
         oldrows = self.rows[:]
         for i in range(1, num):
@@ -114,4 +116,4 @@ class RowsBuilder:
             self.split_sheet.append(self.rows)
 
         if self.group_sheet:
-            self.group_sheet.append(self.group_rows)
+            self.group_sheet.append([self.group_rows])

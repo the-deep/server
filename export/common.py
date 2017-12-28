@@ -1,4 +1,5 @@
 from xml.sax.saxutils import escape
+import time
 
 
 # TODO Check if we can export 0xD800
@@ -15,3 +16,11 @@ def format_date(date):
         return date.strftime('%d-%m-%Y')
     else:
         return None
+
+
+def generate_filename(title, extension):
+    return '{} DEEP {}.{}'.format(
+        time.strftime('%Y%m%d'),
+        title,
+        extension,
+    )

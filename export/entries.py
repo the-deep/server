@@ -1,14 +1,16 @@
-from .formats.xlsx import WorkBook, RowsBuilder
-from .common import format_date
+from django.core.files.base import ContentFile
+
+from export.formats.xlsx import WorkBook, RowsBuilder
+from export.common import format_date, generate_filename
 
 from entry.models import ExportData
 
 
-class EntriesExporter:
+class ExcelExporter:
     def __init__(self):
         self.wb = WorkBook()
 
-        self.split = self.wb.get_active_sheet\
+        self.split = self.wb.get_active_sheet()\
             .set_title('Split Entries')
         self.group = self.wb.create_sheet('Grouped Entries')
 
@@ -51,8 +53,11 @@ class EntriesExporter:
             elif data.get('title'):
                 self.titles.append(data.get('title'))
 
+        self.split.append([self.titles])
+        self.group.append([self.titles])
         self.exportables = exportables
         self.regions = regions
+        return self
 
     def add_entries(self, entries):
         for entry in entries:
@@ -62,7 +67,7 @@ class EntriesExporter:
             # TODO Check for information dates
 
             rows.add_value_list([
-                entry.created_by,
+                entry.created_by.profile.get_display_name(),
                 format_date(entry.created_at.date()),
                 entry.lead.title,
                 entry.lead.source,
@@ -112,3 +117,16 @@ class EntriesExporter:
                             rows.add_value(export_data.get('value'))
 
             rows.apply()
+        return self
+
+    def export(self, export_entity):
+        buffer = self.wb.save()
+        filename = generate_filename('Entries Export', 'xlsx')
+
+        export_entity.title = filename
+        export_entity.type = 'entries'
+        export_entity.format = 'xlsx'
+        export_entity.pending = False
+        export_entity.file.save(filename, ContentFile(buffer))
+
+        export_entity.save()

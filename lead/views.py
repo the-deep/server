@@ -8,11 +8,11 @@ from rest_framework import (
     exceptions,
     filters,
     permissions,
+    response,
+    status,
+    views,
     viewsets,
 )
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.views import APIView
 import django_filters
 
 from deep.permissions import ModifyPermission
@@ -135,7 +135,7 @@ class LeadPreviewViewSet(viewsets.ReadOnlyModelViewSet):
         return Lead.get_for(self.request.user)
 
 
-class LeadOptionsView(APIView):
+class LeadOptionsView(views.APIView):
     """
     Options for various attributes related to lead
     """
@@ -193,10 +193,10 @@ class LeadOptionsView(APIView):
                 } for project in projects.distinct()
             ]
 
-        return Response(options)
+        return response.Response(options)
 
 
-class LeadExtractionTriggerView(APIView):
+class LeadExtractionTriggerView(views.APIView):
     """
     A trigger for extracting lead to generate previews
     """
@@ -212,12 +212,12 @@ class LeadExtractionTriggerView(APIView):
         if not settings.TESTING:
             extract_from_lead.delay(lead_id)
 
-        return Response({
+        return response.Response({
             'extraction_triggered': lead_id,
         })
 
 
-class LeadWebsiteFetch(APIView):
+class LeadWebsiteFetch(views.APIView):
     """
     Get Information about the website
     """
@@ -229,7 +229,7 @@ class LeadWebsiteFetch(APIView):
         http_url = url
 
         if not valid_lead_url_regex.match(url):
-            return Response({
+            return response.Response({
                 'error': 'Url is not valid'
             }, status=status.HTTP_400_BAD_REQUEST)
 
@@ -254,11 +254,11 @@ class LeadWebsiteFetch(APIView):
                 )
             except requests.exceptions.RequestException:
                 # doesn't work
-                return Response({
+                return response.Response({
                     'error': 'can\'t fetch url'
                 })
 
-        return Response({
+        return response.Response({
             'headers': r.headers,
             'httpsUrl': https_url,
             'httpUrl': http_url

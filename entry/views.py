@@ -8,23 +8,20 @@ from rest_framework import (
     viewsets,
 )
 from deep.permissions import ModifyPermission
-from user_resource.filters import UserResourceFilterSet
-import django_filters
 
 from lead.models import Lead
-from analysis_framework.models import Filter
-
 from lead.serializers import SimpleLeadSerializer
-
 from .models import (
-    Entry, Attribute, FilterData, ExportData
+    Attribute, FilterData, ExportData
 )
 from .serializers import (
     EntrySerializer, AttributeSerializer,
     FilterDataSerializer, ExportDataSerializer
 )
+from .filter_set import EntryFilterSet, get_filtered_entries
 
 from collections import OrderedDict
+import django_filters
 
 
 class EntryPaginationByLead(pagination.LimitOffsetPagination):
@@ -67,91 +64,6 @@ class EntryPaginationByLead(pagination.LimitOffsetPagination):
         ]))
 
 
-class EntryFilterSet(UserResourceFilterSet):
-    """
-    Entry filter set
-
-    Basic filtering with lead, excerpt, lead title and dates
-    """
-    lead = django_filters.ModelMultipleChoiceFilter(
-        queryset=Lead.objects.all(),
-        lookup_expr='in',
-        widget=django_filters.widgets.CSVWidget,
-    )
-    lead__published_on__lte = django_filters.DateFilter(
-        name='lead__published_on', lookup_expr='lte',
-    )
-    lead__published_on__gte = django_filters.DateFilter(
-        name='lead__published_on', lookup_expr='gte',
-    )
-
-    class Meta:
-        model = Entry
-        fields = ['id', 'excerpt', 'lead__title',
-                  'created_at', 'created_by', 'modified_at', 'modified_by']
-        filter_overrides = {
-            models.CharField: {
-                'filter_class': django_filters.CharFilter,
-                'extra': lambda f: {
-                    'lookup_expr': 'icontains',
-                },
-            },
-        }
-
-
-def _get_entry_queryset(user, queries):
-    """
-    Get queryset of entries based on filters in query params
-    """
-    entries = Entry.get_for(user)
-    project = queries.get('project')
-    if project:
-        entries = entries.filter(lead__project__id=project)
-
-    filters = Filter.get_for(user)
-
-    for filter in filters:
-        # For each filter, see if there is a query for that filter
-        # and then perform filtering based on that query.
-
-        query = queries.get(filter.key)
-        query_lt = queries.get(
-            filter.key + '__lt'
-        )
-        query_gt = queries.get(
-            filter.key + '__gt'
-        )
-
-        if filter.filter_type == Filter.NUMBER:
-            if query:
-                entries = entries.filter(
-                    filterdata__filter=filter,
-                    filterdata__number=query,
-                )
-            if query_lt:
-                entries = entries.filter(
-                    filterdata__filter=filter,
-                    filterdata__number__lt=query_lt,
-                )
-            if query_gt:
-                entries = entries.filter(
-                    filterdata__filter=filter,
-                    filterdata__number__gt=query_gt,
-                )
-
-        if filter.filter_type == Filter.LIST and query:
-            if not isinstance(query, list):
-                query = query.split(',')
-
-            if len(query) > 0:
-                entries = entries.filter(
-                    filterdata__filter=filter,
-                    filterdata__values__overlap=query,
-                )
-
-    return entries.order_by('-lead__created_by', 'lead')
-
-
 class EntryViewSet(viewsets.ModelViewSet):
     """
     Entry view set
@@ -168,7 +80,7 @@ class EntryViewSet(viewsets.ModelViewSet):
     search_fields = ('lead__title', 'excerpt')
 
     def get_queryset(self):
-        return _get_entry_queryset(self.request.user, self.request.GET)
+        return get_filtered_entries(self.request.user, self.request.GET)
 
 
 class EntryFilterView(generics.GenericAPIView):
@@ -183,7 +95,7 @@ class EntryFilterView(generics.GenericAPIView):
         filters = request.data.get('filters', [])
         filters = {f[0]: f[1] for f in filters}
 
-        queryset = _get_entry_queryset(request.user, filters)
+        queryset = get_filtered_entries(request.user, filters)
 
         search = filters.get('search')
         if search:

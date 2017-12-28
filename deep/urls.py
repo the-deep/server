@@ -58,6 +58,10 @@ from category_editor.views import (
     CategoryEditorViewSet,
     CategoryEditorCloneView,
 )
+from export.views import (
+    ExportTriggerView,
+    ExportViewSet,
+)
 from deep.views import (
     Api_404View,
     FrontendView,
@@ -143,6 +147,9 @@ router.register(r'analysis-framework-exportables', ExportableViewSet,
 router.register(r'category-editors', CategoryEditorViewSet,
                 base_name='category_editor')
 
+# Export routers
+router.register(r'exports', ExportViewSet, base_name='export')
+
 
 # Versioning : (v1|v2|v3)
 
@@ -207,11 +214,14 @@ urlpatterns = [
     url(get_api_path(r'geo-areas-load-trigger/(?P<region_id>\d+)/$'),
         GeoAreasLoadTriggerView.as_view()),
 
+    url(get_api_path(r'export-trigger/$'),
+        ExportTriggerView.as_view()),
+
     # Website fetch api
     url(get_api_path(r'lead-website-fetch/$'),
         LeadWebsiteFetch.as_view()),
 
-    # Filter and Export apis
+    # Filter apis
     url(get_api_path(r'entries/filter/'), EntryFilterView.as_view()),
 
     # Geojson api

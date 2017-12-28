@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'docs',
     'dummy_data',
     'entry',
+    'export',
     'gallery',
     'geo',
     'lead',
