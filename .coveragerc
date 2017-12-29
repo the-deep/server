@@ -8,6 +8,7 @@ omit = */migrations/*
         */apps.py
         */urls.py
         */tests.py
+        export/*
 
 [report]
 show_missing = true

@@ -34,6 +34,9 @@ def _insert_element_before(parent, elm, successors):
 
 
 class Run:
+    """
+    Single run inside a paragraph
+    """
     def __init__(self, ref):
         self.ref = ref
 
@@ -43,6 +46,10 @@ class Run:
 
 
 class Paragraph:
+    """
+    One paragraph: supports normal text runs, hyperlinks,
+    horizontal lines.
+    """
     def __init__(self, ref):
         self.ref = ref
 
@@ -107,6 +114,9 @@ class Paragraph:
 
 
 class Document:
+    """
+    A docx document representation
+    """
     def __init__(self, template=None):
         self.doc = docx.Document(template)
 

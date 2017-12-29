@@ -5,6 +5,9 @@ from utils.common import get_valid_xml_string as xstr
 
 
 class WorkBook:
+    """
+    An xlsx workbook
+    """
     def __init__(self):
         self.wb = Workbook()
 
@@ -19,6 +22,9 @@ class WorkBook:
 
 
 class WorkSheet:
+    """
+    A worksheet inside a workbook
+    """
     def __init__(self, ws):
         self.ws = ws
 
@@ -41,6 +47,9 @@ class WorkSheet:
 
 
 class RowsBuilder:
+    """
+    Rows builder to build rows that permute with new rows
+    """
     def __init__(self, split_sheet=None, group_sheet=None):
         self.rows = [[]]
         self.group_rows = []
@@ -48,16 +57,22 @@ class RowsBuilder:
         self.group_sheet = group_sheet
 
     def add_value(self, value):
+        # Add single value to end of each row
         val = xstr(value)
         [row.append(val) for row in self.rows]
         self.group_rows.append(val)
         return self
 
     def add_value_list(self, value_list):
+        # Add each value in the list to end of each row
+        # iteratively, that is as columns
         [self.add_value(val) for val in value_list]
         return self
 
     def add_rows_of_values(self, rows):
+        # From a list of values, for each value
+        # Duplicate all rows and append that value to one set of rows
+
         values = [xstr(val) for val in rows]
         num = len(values)
 
@@ -70,10 +85,13 @@ class RowsBuilder:
             return self
 
         oldrows = self.rows[:]
+
+        # Make a copy of old rows num times
         for i in range(1, num):
             for j, row in enumerate(oldrows):
                 self.rows.insert(i * len(oldrows) + j, row.copy())
 
+        # Append each value to corresponding set of rows
         for i in range(0, num):
             for j in range(0, len(oldrows)):
                 self.rows[i * len(oldrows) + j].append(values[i])
@@ -83,6 +101,10 @@ class RowsBuilder:
         return self
 
     def add_rows_of_value_lists(self, rows):
+        # From a list of lists, for each list
+        # Duplicate all rows and append each value of
+        # that list to one set of rows
+
         values = []
         for row in rows:
             values.append([xstr(val) for val in row])
@@ -97,17 +119,25 @@ class RowsBuilder:
             return self
 
         oldrows = self.rows[:]
+
+        # Make a copy of old rows num times
         for i in range(1, num):
             for j, row in enumerate(oldrows):
                 self.rows.insert(i * len(oldrows) + j, row.copy())
 
+        # Append each list of values to corresponding set of rows
         for i in range(0, num):
             for j in range(0, len(oldrows)):
                 for k in range(0, len(values[i])):
                     self.rows[i * len(oldrows) + j].append(values[i][k])
 
+        # Zip to group together elements of same column,
+        # Convert each zipped to list and convert overall to list as well
         for column in list(map(list, zip(*values))):
-            self.group_rows.append(', '.join(list(dict.fromkeys(column))))
+            # Make sure each column only contains unique values
+            self.group_rows.append(', '.join(
+                sorted(list(dict.fromkeys(column)))
+            ))
 
         return self
 

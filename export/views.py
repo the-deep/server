@@ -31,6 +31,7 @@ class ExportTriggerView(views.APIView):
         export_type = request.data.get('export_type', 'excel')
 
         export = Export.objects.create(
+            title='tmp',
             exported_by=request.user,
             pending=True,
         )

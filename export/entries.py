@@ -16,10 +16,12 @@ class ExcelExporter:
     def __init__(self):
         self.wb = WorkBook()
 
+        # Create two worksheets
         self.split = self.wb.get_active_sheet()\
             .set_title('Split Entries')
         self.group = self.wb.create_sheet('Grouped Entries')
 
+        # Initial titles
         self.titles = [
             'Date of Lead Publication',
             'Imported By',
@@ -28,15 +30,18 @@ class ExcelExporter:
             'Source',
             'Excerpt',
         ]
-        self.info_date = None
 
     def load_exportables(self, exportables, regions=None):
+        # Take all exportables that contains excel info
         exportables = exportables.filter(
             data__excel__isnull=False,
         )
 
         # information_date_index = 1
         for exportable in exportables:
+            # For each exportable, create titles according to type
+            # and data
+
             data = exportable.data.get('excel')
             export_type = data.get('type')
 
@@ -71,6 +76,9 @@ class ExcelExporter:
 
     def add_entries(self, entries):
         for entry in entries:
+            # Export each entry
+            # Start building rows and export data for each exportable
+
             rows = RowsBuilder(self.split, self.group)
             rows.add_value(format_date(entry.lead.published_on))
 
@@ -85,6 +93,12 @@ class ExcelExporter:
             ])
 
             for exportable in self.exportables:
+                # Get export data for this entry corresponding to this
+                # exportable
+
+                # And write some value based on type and data
+                # or empty strings if no data
+
                 data = exportable.data.get('excel')
                 export_data = ExportData.objects.filter(
                     exportable=exportable,
@@ -164,7 +178,14 @@ class ReportExporter:
         return self
 
     def _generate_for_entry(self, entry):
-        print(entry.excerpt)
+        """
+        Generate paragraphs for an entry
+        """
+
+        # Format is
+        # excerpt (source)
+        # where source is hyperlinked to appropriate url
+
         para = self.doc.add_paragraph(entry.excerpt).justify()
 
         lead = entry.lead
@@ -174,17 +195,23 @@ class ReportExporter:
         url = lead.url or (
             lead.attachment and lead.attachment.file and
             lead.attachment.file.url
-        ) or 'Manual Entry'
+        )
 
         # TODO Information Date: ', {}'.format(info_date)
 
         para.add_run(' (')
-        para.add_hyperlink(url, source)
+        if url:
+            para.add_hyperlink(url, source)
+        else:
+            para.add_run(source)
         para.add_run(')')
 
         self.doc.add_paragraph()
 
     def _load_into_levels(self, entry, keys, levels, result):
+        """
+        Map an entry into corresponding levels
+        """
         for level in levels:
             level_id = level.get('id')
             if level_id in keys:
@@ -203,6 +230,10 @@ class ReportExporter:
             structures=None,
             heading_level=2,
     ):
+        """
+        Generate paragraphs for all entries in this level and recursively
+        do it for further sublevels
+        """
         if structures is not None:
             level_map = dict((level.get('id'), level) for level in levels)
             levels = [level_map[s['id']] for s in structures]
@@ -215,7 +246,6 @@ class ReportExporter:
             if entries or sublevels:
                 self.doc.add_heading(title, heading_level)
                 self.doc.add_paragraph()
-                print(title)
 
             if entries:
                 [self._generate_for_entry(entry) for entry in entries]
@@ -234,9 +264,11 @@ class ReportExporter:
                     substructures,
                     heading_level + 1,
                 )
-                print('==================')
 
     def add_entries(self, entries):
+        """
+        Add entries and generate parapgraphs for all entries
+        """
         exportables = self.exportables
 
         if self.structure:
@@ -278,6 +310,11 @@ class ReportExporter:
         return self
 
     def export(self, export_entity):
+        """
+        Export and save in export_entity
+        """
+
+        # Get all leads to generate Bibliography
         lead_ids = list(set(self.lead_ids))
         leads = Lead.objects.filter(id__in=lead_ids)
 
@@ -287,6 +324,9 @@ class ReportExporter:
         self.doc.add_paragraph()
 
         for lead in leads:
+            # Format is"
+            # Source. Title. Date. Url
+
             para = self.doc.add_paragraph()
             if lead.source and lead.source != '':
                 para.add_run('{}.'.format(lead.source.title()))
@@ -300,13 +340,12 @@ class ReportExporter:
                 ))
 
             para = self.doc.add_paragraph()
-            if lead.url and lead.url != '':
-                para.add_hyperlink(lead.url, lead.url)
-
-            elif lead.attachment and lead.attachment.file:
-                para.add_hyperlink(lead.attachment.file.url,
-                                   lead.attachment.file.url)
-
+            url = lead.url or (
+                lead.attachment and lead.attachment.file and
+                lead.attachment.file.url
+            )
+            if url:
+                para.add_hyperlink(url, url)
             else:
                 para.add_run('Missing url.')
 
