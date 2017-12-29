@@ -9,7 +9,7 @@ from rest_framework import (
 from export.serializers import ExportSerializer
 from export.models import Export
 
-from export.task_entries import export_entries
+from export.tasks_entries import export_entries
 
 
 class ExportViewSet(viewsets.ReadOnlyModelViewSet):

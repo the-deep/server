@@ -1,9 +1,15 @@
+from django.conf import settings
 from django.core.files.base import ContentFile
+from django.db.models import Case, When
 
 from export.formats.xlsx import WorkBook, RowsBuilder
-from export.common import format_date, generate_filename
+from export.formats.docx import Document
 
 from entry.models import ExportData
+from lead.models import Lead
+from utils.common import format_date, generate_filename
+
+import os
 
 
 class ExcelExporter:
@@ -26,12 +32,12 @@ class ExcelExporter:
 
     def load_exportables(self, exportables, regions=None):
         exportables = exportables.filter(
-            data__isnull=False,
+            data__excel__isnull=False,
         )
 
         # information_date_index = 1
         for exportable in exportables:
-            data = exportable.data
+            data = exportable.data.get('excel')
             export_type = data.get('type')
 
             # if export_type == 'information-date':
@@ -55,6 +61,10 @@ class ExcelExporter:
 
         self.split.append([self.titles])
         self.group.append([self.titles])
+
+        self.split.auto_fit_cells_in_row(1)
+        self.group.auto_fit_cells_in_row(1)
+
         self.exportables = exportables
         self.regions = regions
         return self
@@ -75,12 +85,14 @@ class ExcelExporter:
             ])
 
             for exportable in self.exportables:
-                data = exportable.data
+                data = exportable.data.get('excel')
                 export_data = ExportData.objects.filter(
                     exportable=exportable,
                     entry=entry,
+                    data__excel__isnull=False,
                 ).first()
-                export_data = export_data and export_data.data
+
+                export_data = export_data and export_data.data.get('excel')
                 export_type = data.get('type')
 
                 if export_type == 'multiple':
@@ -127,6 +139,188 @@ class ExcelExporter:
         export_entity.type = 'entries'
         export_entity.format = 'xlsx'
         export_entity.pending = False
+        export_entity.file.save(filename, ContentFile(buffer))
+
+        export_entity.save()
+
+
+class ReportExporter:
+    def __init__(self):
+        self.doc = Document(
+            os.path.join(settings.BASE_DIR, 'static/doc_export/template.docx')
+        )
+        self.lead_ids = []
+
+    def load_exportables(self, exportables):
+        exportables = exportables.filter(
+            data__report__levels__isnull=False,
+        )
+
+        self.exportables = exportables
+        return self
+
+    def load_structure(self, structure):
+        self.structure = structure
+        return self
+
+    def _generate_for_entry(self, entry):
+        print(entry.excerpt)
+        para = self.doc.add_paragraph(entry.excerpt).justify()
+
+        lead = entry.lead
+        self.lead_ids.append(lead.id)
+
+        source = lead.source or 'Reference'
+        url = lead.url or (
+            lead.attachment and lead.attachment.file and
+            lead.attachment.file.url
+        ) or 'Manual Entry'
+
+        # TODO Information Date: ', {}'.format(info_date)
+
+        para.add_run(' (')
+        para.add_hyperlink(url, source)
+        para.add_run(')')
+
+        self.doc.add_paragraph()
+
+    def _load_into_levels(self, entry, keys, levels, result):
+        for level in levels:
+            level_id = level.get('id')
+            if level_id in keys:
+                if not result.get(level_id):
+                    result[level_id] = []
+                result[level_id].append(entry)
+
+            sublevels = level.get('sublevels')
+            if sublevels:
+                self._load_into_levels(entry, keys, sublevels, result)
+
+    def _generate_for_levels(
+            self,
+            levels,
+            level_entries_map,
+            structures=None,
+            heading_level=2,
+    ):
+        if structures is not None:
+            level_map = dict((level.get('id'), level) for level in levels)
+            levels = [level_map[s['id']] for s in structures]
+
+        for level in levels:
+            title = level.get('title')
+            entries = level_entries_map.get(level.get('id'))
+            sublevels = level.get('sublevels')
+
+            if entries or sublevels:
+                self.doc.add_heading(title, heading_level)
+                self.doc.add_paragraph()
+                print(title)
+
+            if entries:
+                [self._generate_for_entry(entry) for entry in entries]
+
+            if sublevels:
+                substructures = None
+                if structures:
+                    substructures = next((
+                        s.get('levels') for s in structures
+                        if s['id'] == level.get('id')
+                    ), None)
+
+                self._generate_for_levels(
+                    sublevels,
+                    level_entries_map,
+                    substructures,
+                    heading_level + 1,
+                )
+                print('==================')
+
+    def add_entries(self, entries):
+        exportables = self.exportables
+
+        if self.structure:
+            ids = [s['id'] for s in self.structure]
+            order = Case(*[
+                When(pk=pk, then=pos)
+                for pos, pk
+                in enumerate(ids)
+            ])
+            exportables = exportables.filter(pk__in=ids).order_by(order)
+
+        for exportable in exportables:
+            levels = exportable.data.get('report').get('levels')
+
+            level_entries_map = {}
+            for entry in entries:
+                # TODO
+                # Set entry.report_data to all exportdata for all exportable
+                # for this entry for later use
+
+                export_data = ExportData.objects.filter(
+                    entry=entry,
+                    exportable=exportable,
+                    data__report__keys__isnull=False,
+                ).first()
+
+                if export_data:
+                    self._load_into_levels(
+                        entry, export_data.data.get('report').get('keys'),
+                        levels, level_entries_map,
+                    )
+
+            structures = self.structure and next((
+                s.get('levels') for s in self.structure
+                if s['id'] == exportable.id
+            ), None)
+            self._generate_for_levels(levels, level_entries_map, structures)
+
+        return self
+
+    def export(self, export_entity):
+        lead_ids = list(set(self.lead_ids))
+        leads = Lead.objects.filter(id__in=lead_ids)
+
+        self.doc.add_paragraph().add_horizontal_line()
+        self.doc.add_paragraph()
+        self.doc.add_heading('Bibliography', 1)
+        self.doc.add_paragraph()
+
+        for lead in leads:
+            para = self.doc.add_paragraph()
+            if lead.source and lead.source != '':
+                para.add_run('{}.'.format(lead.source.title()))
+            else:
+                para.add_run('Missing source.')
+
+            para.add_run(' {}.'.format(lead.title.title()))
+            if lead.published_on:
+                para.add_run(' {}.'.format(
+                    lead.published_on.strftime('%m/%d/%y')
+                ))
+
+            para = self.doc.add_paragraph()
+            if lead.url and lead.url != '':
+                para.add_hyperlink(lead.url, lead.url)
+
+            elif lead.attachment and lead.attachment.file:
+                para.add_hyperlink(lead.attachment.file.url,
+                                   lead.attachment.file.url)
+
+            else:
+                para.add_run('Missing url.')
+
+            self.doc.add_paragraph()
+        self.doc.add_page_break()
+
+        buffer = self.doc.save()
+        filename = generate_filename('Entries General Export', 'docx')
+
+        export_entity.title = filename
+        export_entity.type = 'entries'
+        export_entity.format = 'docx'
+        export_entity.pending = False
+
         export_entity.file.save(filename, ContentFile(buffer))
 
         export_entity.save()

@@ -5,7 +5,7 @@ from django.db import models
 from analysis_framework.models import Exportable
 from entry.filter_set import EntryFilterSet, get_filtered_entries
 from export.models import Export
-from export.entries import ExcelExporter
+from export.entries import ExcelExporter, ReportExporter
 
 import traceback
 import logging
@@ -26,6 +26,8 @@ def _export_entries(export_type, export_id, user_id, project_id, filters):
             models.Q(excerpt__icontains=search)
         )
 
+    filters['project'] = project_id
+
     queryset = EntryFilterSet(filters, queryset=queryset).qs
 
     exportables = Exportable.objects.filter(
@@ -35,6 +37,13 @@ def _export_entries(export_type, export_id, user_id, project_id, filters):
     if export_type == 'excel':
         ExcelExporter()\
             .load_exportables(exportables)\
+            .add_entries(queryset)\
+            .export(export)
+
+    elif export_type == 'report':
+        ReportExporter()\
+            .load_exportables(exportables)\
+            .load_structure(filters.get('structure'))\
             .add_entries(queryset)\
             .export(export)
 

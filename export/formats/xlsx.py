@@ -1,7 +1,7 @@
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
-from export.common import get_valid_xml_string as xstr
+from utils.common import get_valid_xml_string as xstr
 
 
 class WorkBook:
