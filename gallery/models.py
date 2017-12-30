@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 from user_group.models import UserGroup
 from user_resource.models import UserResource
@@ -37,8 +37,10 @@ class File(UserResource):
 
 
 class FilePreview(models.Model):
-    file = models.OneToOneField(File)
-    text_extract = models.TextField(blank=True)
+    file_ids = ArrayField(models.IntegerField())
+    text = models.TextField(blank=True)
+    ngrams = JSONField(null=True, blank=True, default=None)
+    extracted = models.BooleanField(default=False)
 
     def __str__(self):
         return 'Text extracted for {}'.format(self.file)

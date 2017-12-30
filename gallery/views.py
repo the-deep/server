@@ -10,7 +10,7 @@ from rest_framework import (
 )
 
 from .tasks import extract_from_file
-from .models import File
+from .models import File, FilePreview
 from .serializers import (
     FileSerializer,
     GoogleDriveFileSerializer,
@@ -48,26 +48,25 @@ class DropboxFileViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
 class FilePreviewViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = FilePreviewSerializer
-    permission_classes = [permissions.IsAuthenticated,
-                          ModifyPermission]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return File.get_for(self.request.user)
+        return FilePreview.objects.all()
 
 
 class FileExtractionTriggerView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, file_id, version=None):
-        if not File.objects.filter(id=file_id).exists():
-            raise exceptions.NotFound()
-
-        if not File.objects.get(id=file_id).can_modify(request.user):
-            raise exceptions.PermissionDenied()
+    def post(self, request, version=None):
+        file_ids = request.data.getlist('file_ids')
+        file_preview = FilePreview.objects.create(
+            file_ids=file_ids,
+            extracted=False
+        )
 
         if not settings.TESTING:
-            extract_from_file(file_id)
+            extract_from_file(file_preview.id)
 
         return response.Response({
-            'extraction_triggered': file_id,
+            'extraction_triggered': file_preview.id,
         })

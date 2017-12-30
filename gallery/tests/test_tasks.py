@@ -9,7 +9,7 @@ from utils.common import (
 )
 from utils.extractor.tests.test_file_document import DOCX_FILE
 
-from gallery.models import File
+from gallery.models import File, FilePreview
 
 
 class ExtractFromFileTaskTest(TestCase):
@@ -33,19 +33,26 @@ class ExtractFromFileTaskTest(TestCase):
             ),
         )
 
+        self.file_preview = FilePreview.objects.create(
+            file_ids=[self.file.id],
+            extracted=False,
+        )
+
     def test_extraction(self):
         # Check if extraction works succesfully
-        result = extract_from_file(self.file.id)
+        result = extract_from_file(self.file_preview.id)
         self.assertTrue(result)
 
-        # Check if the extraction did create proper file preview
-        file_preview = self.file.filepreview
-        self.assertIsNotNone(file_preview)
+        # Check if the extraction did occur
+        self.file_preview = FilePreview.objects.get(id=self.file_preview.id)
+        self.assertTrue(self.file_preview.extracted)
 
         # This is similar to test_file_document
         path = join(self.path, DOCX_FILE)
-        extracted = get_or_write_file(path + '.txt', file_preview.text_extract)
+        extracted = get_or_write_file(
+            path + '.txt', self.file_preview.text
+        )
         self.assertEqual(
-            ' '.join(file_preview.text_extract.split()),
+            ' '.join(self.file_preview.text.split()),
             ' '.join(extracted.read().split()),
         )

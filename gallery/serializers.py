@@ -8,7 +8,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from user_resource.serializers import UserResourceSerializer
 from utils.external_storages.google_drive import download as g_download
 from utils.external_storages.dropbox import download as d_download
-from .models import File
+from .models import File, FilePreview
 
 
 class SimpleFileSerializer(serializers.ModelSerializer):
@@ -104,9 +104,6 @@ class DropboxFileSerializer(UserResourceSerializer):
 
 
 class FilePreviewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    text = serializers.CharField(source='filepreview.text_extract',
-                                 read_only=True)
-
     class Meta:
-        model = File
-        fields = ('id', 'text')
+        model = FilePreview
+        fields = ('id', 'text', 'ngrams', 'extracted')

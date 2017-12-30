@@ -213,7 +213,7 @@ urlpatterns = [
     url(get_api_path(r'lead-extraction-trigger/(?P<lead_id>\d+)/$'),
         LeadExtractionTriggerView.as_view()),
 
-    url(get_api_path(r'file-extraction-trigger/(?P<file_id>\d+)/$'),
+    url(get_api_path(r'file-extraction-trigger/$'),
         FileExtractionTriggerView.as_view()),
 
     url(get_api_path(r'geo-areas-load-trigger/(?P<region_id>\d+)/$'),

@@ -89,18 +89,20 @@ class GalleryTests(AuthMixin, APITestCase):
             created_by=self.user,
         )
 
-        url = '/api/v1/file-extraction-trigger/{}/'.format(file.id)
-        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth)
+        url = '/api/v1/file-extraction-trigger/'
+        data = {
+            'file_ids': [file.id],
+        }
+        response = self.client.post(url, data, HTTP_AUTHORIZATION=self.auth)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(FilePreview.objects.filter(
+            id=response.data['extraction_triggered']
+        ).exists())
 
     def test_preview_api(self):
-        file = File.objects.create(
-            title='Test',
-            created_by=self.user,
-        )
-        preview = FilePreview.objects.create(file=file, text_extract='dummy')
+        preview = FilePreview.objects.create(file_ids=[], text='dummy')
 
         url = '/api/v1/file-previews/{}/'.format(preview.id)
         response = self.client.get(url, HTTP_AUTHORIZATION=self.auth)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['text'], preview.text_extract)
+        self.assertEqual(response.data['text'], preview.text)
