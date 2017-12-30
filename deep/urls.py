@@ -17,6 +17,8 @@ from gallery.views import (
     FileViewSet,
     GoogleDriveFileViewSet,
     DropboxFileViewSet,
+    FilePreviewViewSet,
+    FileExtractionTriggerView,
 )
 from user_group.views import (
     GroupMembershipViewSet,
@@ -92,12 +94,12 @@ router.register(r'users', UserViewSet,
 # File routers
 router.register(r'files', FileViewSet,
                 base_name='file')
-
 router.register(r'files-google-drive', GoogleDriveFileViewSet,
                 base_name='file')
-
 router.register(r'files-dropbox', DropboxFileViewSet,
                 base_name='file')
+router.register(r'file-previews', FilePreviewViewSet,
+                base_name='file_preview')
 
 # User group registers
 router.register(r'user-groups', UserGroupViewSet,
@@ -210,6 +212,9 @@ urlpatterns = [
     # Triggering api
     url(get_api_path(r'lead-extraction-trigger/(?P<lead_id>\d+)/$'),
         LeadExtractionTriggerView.as_view()),
+
+    url(get_api_path(r'file-extraction-trigger/(?P<file_id>\d+)/$'),
+        FileExtractionTriggerView.as_view()),
 
     url(get_api_path(r'geo-areas-load-trigger/(?P<region_id>\d+)/$'),
         GeoAreasLoadTriggerView.as_view()),

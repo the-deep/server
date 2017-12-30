@@ -34,3 +34,11 @@ class File(UserResource):
 
     def can_modify(self, user):
         return self.created_by == user
+
+
+class FilePreview(models.Model):
+    file = models.OneToOneField(File)
+    text_extract = models.TextField(blank=True)
+
+    def __str__(self):
+        return 'Text extracted for {}'.format(self.file)

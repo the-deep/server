@@ -1,3 +1,4 @@
+from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
@@ -20,7 +21,7 @@ class SimpleFileSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'file', 'mime_type')
 
 
-class FileSerializer(UserResourceSerializer):
+class FileSerializer(DynamicFieldsMixin, UserResourceSerializer):
     class Meta:
         model = File
         fields = ('__all__')
@@ -100,3 +101,12 @@ class DropboxFileSerializer(UserResourceSerializer):
         file = super(DropboxFileSerializer, self).create(validated_data)
         file.permitted_users.add(self.context['request'].user)
         return file
+
+
+class FilePreviewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    text = serializers.CharField(source='filepreview.text_extract',
+                                 read_only=True)
+
+    class Meta:
+        model = File
+        fields = ('id', 'text')
