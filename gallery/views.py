@@ -2,7 +2,6 @@ from rest_framework import mixins
 from deep.permissions import ModifyPermission
 from django.conf import settings
 from rest_framework import (
-    exceptions,
     permissions,
     response,
     views,
