@@ -2,7 +2,10 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
 from gallery.serializers import SimpleFileSerializer
-from .models import Lead
+from .models import (
+    Lead,
+    LeadPreviewImage,
+)
 
 
 class SimpleLeadSerializer(serializers.ModelSerializer):
@@ -36,6 +39,24 @@ class LeadSerializer(DynamicFieldsMixin, UserResourceSerializer):
     # TODO: Probably also validate assignee to valid list of users
 
 
+class LeadPreviewImageSerializer(
+        DynamicFieldsMixin, serializers.ModelSerializer):
+    """
+    Serializer for lead preview image
+    """
+
+    file = serializers.FileField(required=False)
+
+    class Meta:
+        model = LeadPreviewImage
+        fields = ('file',)
+
+    def to_representation(self, instance):
+        """Convert to string. so leadPreview have array of urls"""
+        ret = super().to_representation(instance)
+        return ret.get('file')
+
+
 class LeadPreviewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Serializer for lead preview
@@ -43,7 +64,7 @@ class LeadPreviewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     text = serializers.CharField(source='leadpreview.text_extract',
                                  read_only=True)
-    images = serializers.SerializerMethodField()
+    images = LeadPreviewImageSerializer(many=True, read_only=True)
     classified_doc_id = serializers.IntegerField(
         source='leadpreview.classified_doc_id',
         read_only=True,
@@ -52,9 +73,3 @@ class LeadPreviewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Lead
         fields = ('id', 'text', 'images', 'classified_doc_id')
-
-    def get_images(self, lead):
-        return [
-            image.file.url
-            for image in lead.leadpreviewimage_set.all()
-        ]

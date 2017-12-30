@@ -127,7 +127,7 @@ class LeadPreview(models.Model):
 
 
 class LeadPreviewImage(models.Model):
-    lead = models.ForeignKey(Lead)
+    lead = models.ForeignKey(Lead, related_name='images')
     file = models.FileField(upload_to='lead-preview/')
 
     def __str__(self):
