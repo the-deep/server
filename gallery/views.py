@@ -1,15 +1,19 @@
-from rest_framework import mixins
-from deep.permissions import ModifyPermission
-from django.conf import settings
-from rest_framework import (
-    permissions,
-    response,
-    views,
-    viewsets,
-)
-
 from .tasks import extract_from_file
 from .models import File, FilePreview
+from rest_framework import (
+    views,
+    viewsets,
+    permissions,
+    response,
+    filters,
+    mixins,
+)
+from deep.permissions import ModifyPermission
+from django.conf import settings
+from django.db import models
+import django_filters
+
+from user_resource.filters import UserResourceFilterSet
 from .serializers import (
     FileSerializer,
     GoogleDriveFileSerializer,
@@ -18,10 +22,38 @@ from .serializers import (
 )
 
 
+class FileFilterSet(UserResourceFilterSet):
+    """
+    File filter set
+
+    Exclude the attachment field and set the published_on field
+    to support range of date.
+    Also make most fields filerable by multiple values using
+    'in' lookup expressions and CSVWidget.
+    """
+
+    class Meta:
+        model = File
+        fields = ['id', 'title', 'mime_type']
+
+        filter_overrides = {
+            models.CharField: {
+                'filter_class': django_filters.CharFilter,
+                'extra': lambda f: {
+                    'lookup_expr': 'icontains',
+                },
+            },
+        }
+
+
 class FileViewSet(viewsets.ModelViewSet):
     serializer_class = FileSerializer
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
+                       filters.SearchFilter, filters.OrderingFilter)
+    filter_class = FileFilterSet
+    search_fields = ('title', 'file')
 
     def get_queryset(self):
         return File.get_for(self.request.user)
