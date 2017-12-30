@@ -51,6 +51,10 @@ class AnalysisFrameworkCloneView(views.APIView):
         project = request.data.get('project')
         if project:
             project = Project.objects.get(id=project)
+            if not project.can_modify(request.user):
+                raise exceptions.ValidationError({
+                    'project': 'Invalid project',
+                })
             project.analysis_framework = new_af
             project.modified_by = request.user
             project.save()
