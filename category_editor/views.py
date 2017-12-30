@@ -119,7 +119,7 @@ class CategoryEditorClassifyView(views.APIView):
         ngrams = category.get('ngrams', [])
 
         category_results = []
-        results.push({
+        results.append({
             'title': title,
             'keywords': category_results,
         })

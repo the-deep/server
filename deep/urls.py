@@ -59,6 +59,7 @@ from analysis_framework.views import (
 from category_editor.views import (
     CategoryEditorViewSet,
     CategoryEditorCloneView,
+    CategoryEditorClassifyView,
 )
 from export.views import (
     ExportTriggerView,
@@ -228,6 +229,10 @@ urlpatterns = [
 
     # Filter apis
     url(get_api_path(r'entries/filter/'), EntryFilterView.as_view()),
+
+    url(get_api_path(
+        r'projects/(?P<project_id>\d+)/category-editor/classify/'
+    ), CategoryEditorClassifyView.as_view()),
 
     # Geojson api
     url(get_api_path(r'admin-levels/(?P<admin_level_id>\d+)/geojson/$'),
