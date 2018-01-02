@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db import models
+from django.db import models, transaction
 from project.models import Project
 from user_resource.models import UserResource
 from gallery.models import File
@@ -86,13 +86,13 @@ class Lead(UserResource):
     # Lead preview is invalid upon save
     # Retrigger extraction
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
+        super(Lead, self).save(*args, **kwargs)
         from lead.tasks import extract_from_lead
         LeadPreview.objects.filter(lead=self).delete()
         LeadPreviewImage.objects.filter(lead=self).delete()
 
         if not settings.TESTING:
-            extract_from_lead.delay(self.id)
+            transaction.on_commit(lambda: extract_from_lead.delay(self.id))
 
     @staticmethod
     def get_for(user):

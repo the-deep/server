@@ -68,13 +68,18 @@ def _extract_from_lead_core(lead_id):
         # Save extracted text as LeadPreview
         if text:
             # Classify the text and get doc id
-            data = {
-                'deeper': 1,
-                'text': text,
-            }
-            response = requests.post(DEEPL_CLASSIFY_URL,
-                                     data=data).json()
-            classified_doc_id = response['id']
+
+            try:
+                data = {
+                    'deeper': 1,
+                    'text': text,
+                }
+                response = requests.post(DEEPL_CLASSIFY_URL,
+                                         data=data).json()
+                classified_doc_id = response['id']
+            except Exception as e:
+                logger.error(traceback.format_exc())
+                classified_doc_id = None
 
             # Make sure there isn't existing lead preview
             LeadPreview.objects.filter(lead=lead).delete()
