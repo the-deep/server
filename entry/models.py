@@ -36,10 +36,7 @@ class Entry(UserResource):
         default=EXCERPT,
     )
     excerpt = models.TextField(blank=True)
-    image = models.FileField(
-        upload_to='entry-images/%Y/%m/',
-        default=None, null=True, blank=True
-    )
+    image = models.TextField(blank=True)
 
     def __str__(self):
         if self.image:
