@@ -9,8 +9,11 @@ from rest_framework import (
 from deep.permissions import ModifyPermission
 
 from project.models import Project
+from lead.models import LeadPreview
 from .models import CategoryEditor
 from .serializers import CategoryEditorSerializer
+
+import re
 
 
 class CategoryEditorViewSet(viewsets.ModelViewSet):
@@ -77,12 +80,18 @@ class CategoryEditorClassifyView(views.APIView):
         ce_data = project.category_editor.data
         category = request.data.get('category')
         text = request.data.get('text')
+        preview_id = request.data.get('preview_id')
 
         errors = {}
         if not category:
             errors['category'] = 'Value not provided'
-        if not text:
+        if not text and not preview_id:
             errors['text'] = 'Value not provided'
+            errors['preview_id'] = 'Value not provided'
+
+        if not text:
+            text = LeadPreview.objects.get(id=preview_id).text_extract
+            # TODO: Raise error if preview_id is invalid
 
         if errors:
             raise exceptions.ValidationError(errors)
@@ -116,7 +125,7 @@ class CategoryEditorClassifyView(views.APIView):
 
     def _process_subcategory(self, category, text, results):
         title = category.get('title')
-        ngrams = category.get('ngrams', [])
+        ngrams = category.get('ngrams', {})
 
         category_results = []
         results.append({
@@ -124,13 +133,22 @@ class CategoryEditorClassifyView(views.APIView):
             'keywords': category_results,
         })
 
-        for ngram in ngrams:
+        for _, ngram in ngrams.items():
             [
-                category_results.append(word) for word
-                in ngram
+                category_results.extend(self._search_word(title, word, text))
+                for word in ngram
                 if word.lower() in text
             ]
 
         subcategories = category.get('subcategories', [])
         for subcategory in subcategories:
             self._process_subcategory(subcategory, text, results)
+
+    def _search_word(self, title, word, text):
+        return [
+            {
+                'start': a.start(),
+                'length': len(word),
+                'subcategory': title,
+            } for a in list(re.finditer(word, text))
+        ]

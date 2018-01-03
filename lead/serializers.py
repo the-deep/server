@@ -69,7 +69,11 @@ class LeadPreviewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         source='leadpreview.classified_doc_id',
         read_only=True,
     )
+    preview_id = serializers.IntegerField(
+        source='leadpreview.pk',
+        read_only=True,
+    )
 
     class Meta:
         model = Lead
-        fields = ('id', 'text', 'images', 'classified_doc_id')
+        fields = ('id', 'preview_id', 'text', 'images', 'classified_doc_id')

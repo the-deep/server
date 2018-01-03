@@ -104,10 +104,10 @@ class CategoryEditorTests(AuthMixin, ProjectMixin, CategoryEditorMixin,
                     'subcategories': [
                         {
                             'title': 'WASH',
-                            'ngrams': [
-                                ['affected', 'water'],
-                                ['affected not', 'water not'],
-                            ],
+                            'ngrams': {
+                                1: ['affected', 'water'],
+                                2: ['affected not', 'water not'],
+                            },
                         },
                     ],
                 },
@@ -116,7 +116,7 @@ class CategoryEditorTests(AuthMixin, ProjectMixin, CategoryEditorMixin,
         category_editor.data = ce_data
         category_editor.save()
 
-        text = 'My water not is not affected'
+        text = 'My water aaloooo'
 
         url = '/api/v1/projects/{}/category-editor/classify/'.format(
             project.id
@@ -134,8 +134,14 @@ class CategoryEditorTests(AuthMixin, ProjectMixin, CategoryEditorMixin,
         expected = [
             {
                 'title': 'WASH',
-                'keywords': ['affected', 'water', 'water not'],
+                'keywords': [
+                    {'start': 3, 'length': 5, 'subcategory': 'WASH'},
+                ],
             },
         ]
         got = [dict(c) for c in response.data.get('classifications')]
+        for g in got:
+            g['keywords'] = [
+                dict(k) for k in g['keywords']
+            ]
         self.assertEqual(got, expected)
