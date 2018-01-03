@@ -93,7 +93,9 @@ class GalleryTests(AuthMixin, APITestCase):
         data = {
             'file_ids': [file.id],
         }
-        response = self.client.post(url, data, HTTP_AUTHORIZATION=self.auth)
+        response = self.client.post(url, data,
+                                    format='json',
+                                    HTTP_AUTHORIZATION=self.auth)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(FilePreview.objects.filter(
             id=response.data['extraction_triggered']

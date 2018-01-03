@@ -89,7 +89,7 @@ class FileExtractionTriggerView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, version=None):
-        file_ids = request.data.getlist('file_ids')
+        file_ids = request.data.get('file_ids')
         file_preview = FilePreview.objects.create(
             file_ids=file_ids,
             extracted=False
