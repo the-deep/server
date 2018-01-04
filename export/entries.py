@@ -125,7 +125,7 @@ class ExcelExporter:
                                 export_data.get('values')
                             )
                     else:
-                        rows.add_value('' * len(data.get('titles')))
+                        rows.add_value_list([''] * len(data.get('titles')))
 
                 elif export_type == 'geo' and self.regions:
                     geo_data = {}
