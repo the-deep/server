@@ -1,5 +1,4 @@
 from celery import shared_task
-from django.conf import settings
 from django.contrib.gis.gdal import DataSource
 from django.contrib.gis.geos import (
     GEOSGeometry,
@@ -11,7 +10,7 @@ from geo.models import Region, AdminLevel, GeoArea
 from redis_store import redis
 
 import reversion
-import os
+import tempfile
 
 import traceback
 import logging
@@ -108,10 +107,10 @@ def _load_geo_areas(region_id):
         while admin_level:
             geo_shape_file = admin_level.geo_shape_file
             if geo_shape_file:
-                data_source = DataSource(os.path.join(
-                    settings.MEDIA_ROOT,
-                    geo_shape_file.file.name
-                ))
+                f = tempfile.NamedTemporaryFile()
+                f.write(geo_shape_file.file.read())
+                data_source = DataSource(f.name)
+                f.close()
                 if data_source.layer_count == 1:
                     layer = data_source[0]
 
