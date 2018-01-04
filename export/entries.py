@@ -214,25 +214,48 @@ class ReportExporter:
 
         self.doc.add_paragraph()
 
-    def _load_into_levels(self, entry, keys, levels, result):
+    def _load_into_levels(
+            self,
+            entry,
+            keys,
+            levels,
+            entries_map,
+            valid_levels,
+    ):
         """
         Map an entry into corresponding levels
         """
+        parent_level_valid = False
         for level in levels:
             level_id = level.get('id')
-            if level_id in keys:
-                if not result.get(level_id):
-                    result[level_id] = []
-                result[level_id].append(entry)
+            valid_level = (level_id in keys)
+
+            if valid_level:
+                if not entries_map.get(level_id):
+                    entries_map[level_id] = []
+                entries_map[level_id].append(entry)
 
             sublevels = level.get('sublevels')
             if sublevels:
-                self._load_into_levels(entry, keys, sublevels, result)
+                valid_level = valid_level or self._load_into_levels(
+                    entry,
+                    keys,
+                    sublevels,
+                    entries_map,
+                    valid_levels,
+                )
+
+            if valid_level and level_id not in valid_levels:
+                valid_levels.append(level_id)
+
+            parent_level_valid = parent_level_valid or valid_level
+        return parent_level_valid
 
     def _generate_for_levels(
             self,
             levels,
             level_entries_map,
+            valid_levels,
             structures=None,
             heading_level=2,
     ):
@@ -245,6 +268,9 @@ class ReportExporter:
             levels = [level_map[s['id']] for s in structures]
 
         for level in levels:
+            if level.get('id') not in valid_levels:
+                continue
+
             title = level.get('title')
             entries = level_entries_map.get(level.get('id'))
             sublevels = level.get('sublevels')
@@ -267,6 +293,7 @@ class ReportExporter:
                 self._generate_for_levels(
                     sublevels,
                     level_entries_map,
+                    valid_levels,
                     substructures,
                     heading_level + 1,
                 )
@@ -290,6 +317,7 @@ class ReportExporter:
             levels = exportable.data.get('report').get('levels')
 
             level_entries_map = {}
+            valid_levels = []
             for entry in entries:
                 # TODO
                 # Set entry.report_data to all exportdata for all exportable
@@ -304,14 +332,15 @@ class ReportExporter:
                 if export_data:
                     self._load_into_levels(
                         entry, export_data.data.get('report').get('keys'),
-                        levels, level_entries_map,
+                        levels, level_entries_map, valid_levels,
                     )
 
             structures = self.structure and next((
                 s.get('levels') for s in self.structure
                 if s['id'] == exportable.id
             ), None)
-            self._generate_for_levels(levels, level_entries_map, structures)
+            self._generate_for_levels(levels, level_entries_map,
+                                      valid_levels, structures)
 
         return self
 
