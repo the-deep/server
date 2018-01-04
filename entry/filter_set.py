@@ -72,12 +72,12 @@ def get_filtered_entries(user, queries):
             if query_lt:
                 entries = entries.filter(
                     filterdata__filter=filter,
-                    filterdata__number__lt=query_lt,
+                    filterdata__number__lte=query_lt,
                 )
             if query_gt:
                 entries = entries.filter(
                     filterdata__filter=filter,
-                    filterdata__number__gt=query_gt,
+                    filterdata__number__gte=query_gt,
                 )
 
         if filter.filter_type == Filter.LIST and query:

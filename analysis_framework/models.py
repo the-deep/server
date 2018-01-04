@@ -145,6 +145,9 @@ class Filter(models.Model):
     filter_type = models.CharField(max_length=20, choices=FILTER_TYPES,
                                    default=LIST)
 
+    class Meta:
+        ordering = ['title', 'widget_key', 'key']
+
     def __str__(self):
         return '{} ({})'.format(self.title, self.key)
 
