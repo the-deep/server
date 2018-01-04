@@ -30,6 +30,7 @@ class Export(models.Model):
     format = models.CharField(max_length=100, choices=FORMATS, blank=True)
     type = models.CharField(max_length=100, choices=TYPES, blank=True)
 
+    mime_type = models.CharField(max_length=200, blank=True)
     file = models.FileField(upload_to='export/', max_length=255,
                             null=True, blank=True, default=None)
     exported_by = models.ForeignKey(User)

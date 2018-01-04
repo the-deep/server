@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db import transaction
 from rest_framework import (
     permissions,
     response,
@@ -27,8 +28,8 @@ class ExportTriggerView(views.APIView):
         filters = request.data.get('filters', [])
         filters = {f[0]: f[1] for f in filters}
 
-        project_id = request.data.get('project')
-        export_type = request.data.get('export_type', 'excel')
+        project_id = filters.get('project')
+        export_type = filters.get('export_type', 'excel')
 
         export = Export.objects.create(
             title='tmp',
@@ -37,13 +38,13 @@ class ExportTriggerView(views.APIView):
         )
 
         if not settings.TESTING:
-            export_entries.delay(
+            transaction.on_commit(lambda: export_entries.delay(
                 export_type,
                 export.id,
                 request.user.id,
                 project_id,
                 filters,
-            )
+            ))
 
         return response.Response({
             'export_triggered': export.id,

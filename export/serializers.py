@@ -10,5 +10,4 @@ class ExportSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Export
-        fields = ('id', 'title', 'format', 'type', 'file',
-                  'exported_by', 'exported_at', 'pending')
+        fields = ('__all__')

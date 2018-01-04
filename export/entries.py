@@ -11,6 +11,11 @@ from utils.common import format_date, generate_filename
 
 import os
 
+DOCX_MIME_TYPE = \
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+EXCEL_MIME_TYPE = \
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
 
 class ExcelExporter:
     def __init__(self):
@@ -153,8 +158,9 @@ class ExcelExporter:
         export_entity.type = 'entries'
         export_entity.format = 'xlsx'
         export_entity.pending = False
-        export_entity.file.save(filename, ContentFile(buffer))
+        export_entity.mime_type = EXCEL_MIME_TYPE
 
+        export_entity.file.save(filename, ContentFile(buffer))
         export_entity.save()
 
 
@@ -359,7 +365,7 @@ class ReportExporter:
         export_entity.type = 'entries'
         export_entity.format = 'docx'
         export_entity.pending = False
+        export_entity.mime_type = DOCX_MIME_TYPE
 
         export_entity.file.save(filename, ContentFile(buffer))
-
         export_entity.save()
