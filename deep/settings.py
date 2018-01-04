@@ -320,9 +320,7 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
     }
 
 # CORS CONFIGS
-CORS_ORIGIN_WHITELIST = (
-    DEEPER_FRONTEND_HOST
-)
+CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_URLS_REGEX = r'^/api/.*$'
 
