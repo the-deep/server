@@ -6,6 +6,7 @@ from analysis_framework.models import Exportable
 from entry.filter_set import EntryFilterSet, get_filtered_entries
 from export.models import Export
 from export.entries import ExcelExporter, ReportExporter
+from geo.models import Region
 
 import traceback
 import logging
@@ -33,10 +34,13 @@ def _export_entries(export_type, export_id, user_id, project_id, filters):
     exportables = Exportable.objects.filter(
         analysis_framework__project__id=project_id
     ).distinct()
+    regions = Region.objects.filter(
+        project__id=project_id
+    ).distinct()
 
     if export_type == 'excel':
         ExcelExporter()\
-            .load_exportables(exportables)\
+            .load_exportables(exportables, regions)\
             .add_entries(queryset)\
             .export(export)
 

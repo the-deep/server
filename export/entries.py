@@ -7,6 +7,7 @@ from export.formats.docx import Document
 
 from entry.models import ExportData
 from lead.models import Lead
+from geo.models import GeoArea
 from utils.common import format_date, generate_filename
 
 import os
@@ -128,17 +129,24 @@ class ExcelExporter:
                         rows.add_value_list([''] * len(data.get('titles')))
 
                 elif export_type == 'geo' and self.regions:
-                    geo_data = {}
+                    values = []
                     if export_data:
-                        geo_data = export_data.geo_data
+                        values = export_data.get('values', [])
 
                     for region in self.regions:
-                        region_data = geo_data.get(region.code, {})
                         admin_levels = region.adminlevel_set.all()
 
                         for admin_level in admin_levels:
-                            al_data = region_data.get(admin_level.level, [''])
-                            rows.add_rows_of_values(al_data)
+                            geo_data = GeoArea.objects.filter(
+                                admin_level=admin_level,
+                                id__in=values,
+                            ).distinct()
+                            if geo_data.count() > 0:
+                                rows.add_rows_of_values([
+                                    g.title for g in geo_data
+                                ])
+                            else:
+                                rows.add_rows_of_values([''])
 
                 else:
                     if export_data:
