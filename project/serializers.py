@@ -64,6 +64,14 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
         ).first()
         if membership:
             return membership.role
+
+        group_membership = UserGroup.objects.filter(
+            project=project,
+            member=self.context['request'].user,
+        ).first()
+        if group_membership:
+            return 'normal'
+
         return None
 
     # Validations
