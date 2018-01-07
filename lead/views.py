@@ -113,6 +113,34 @@ class LeadViewSet(viewsets.ModelViewSet):
     search_fields = ('title', 'source', 'text', 'url', 'website')
     # ordering_fields = omitted to allow ordering by all read-only fields
 
+    def get_serializer(self, *args, **kwargs):
+        data = kwargs.get('data')
+        project_list = data and data.get('project')
+
+        if project_list and isinstance(project_list, list):
+            kwargs.pop('data')
+            kwargs.pop('many', None)
+            data.pop('project')
+
+            data_list = []
+            for project in project_list:
+                data_list.append({
+                    **data,
+                    'project': project,
+                })
+
+            return super(LeadViewSet, self).get_serializer(
+                data=data_list,
+                many=True,
+                *args,
+                **kwargs,
+            )
+
+        return super(LeadViewSet, self).get_serializer(
+            *args,
+            **kwargs,
+        )
+
     def get_queryset(self):
         leads = Lead.get_for(self.request.user)
 

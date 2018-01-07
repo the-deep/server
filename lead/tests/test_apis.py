@@ -3,6 +3,7 @@ from rest_framework.test import APITestCase
 
 from user.tests.test_apis import AuthMixin
 from project.tests.test_apis import ProjectMixin
+from project.models import Project, ProjectMembership
 from lead.models import Lead
 
 
@@ -43,7 +44,7 @@ class LeadTests(AuthMixin, ProjectMixin, LeadMixin, APITestCase):
         """
         Create Lead Test
         """
-
+        lead_count = Lead.objects.count()
         url = '/api/v1/leads/'
         data = {
             'title': 'test title',
@@ -57,7 +58,7 @@ class LeadTests(AuthMixin, ProjectMixin, LeadMixin, APITestCase):
         response = self.client.post(url, data,
                                     HTTP_AUTHORIZATION=self.auth)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Lead.objects.count(), 1)
+        self.assertEqual(Lead.objects.count(), lead_count + 1)
         self.assertEqual(response.data['title'], data['title'])
 
     def test_options(self):
@@ -79,3 +80,36 @@ class LeadTests(AuthMixin, ProjectMixin, LeadMixin, APITestCase):
         url = '/api/v1/lead-extraction-trigger/{}/'.format(lead.id)
         response = self.client.get(url, HTTP_AUTHORIZATION=self.auth)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_multiple_project(self):
+        """
+        Test adding same lead to multiple project
+        """
+        project1 = Project.objects.create(title='test project')
+        ProjectMembership.objects.create(member=self.user, project=project1,
+                                         role='normal')
+        project2 = Project.objects.create(title='test project')
+        ProjectMembership.objects.create(member=self.user, project=project2,
+                                         role='normal')
+
+        lead_count = Lead.objects.count()
+
+        url = '/api/v1/leads/'
+        data = {
+            'title': 'test title',
+            'project': [project1.id, project2.id],
+            'source': 'test source',
+            'confidentiality': Lead.UNPROTECTED,
+            'status': Lead.PENDING,
+            'text': 'this is some random text',
+        }
+
+        response = self.client.post(url, data,
+                                    format='json',
+                                    HTTP_AUTHORIZATION=self.auth)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Lead.objects.count(), lead_count + 2)
+
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0].get('project'), project1.id)
+        self.assertEqual(response.data[1].get('project'), project2.id)
