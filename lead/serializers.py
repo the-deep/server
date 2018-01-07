@@ -19,7 +19,6 @@ class LeadSerializer(DynamicFieldsMixin, UserResourceSerializer):
     Lead Model Serializer
     """
     no_of_entries = serializers.IntegerField(
-        source='entry_set.count',
         read_only=True,
     )
     attachment = SimpleFileSerializer(required=False)

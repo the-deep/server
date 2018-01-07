@@ -150,7 +150,6 @@ class LeadViewSet(viewsets.ModelViewSet):
             leads = leads.filter(project=similar_lead.project).annotate(
                 similarity=TrigramSimilarity('title', similar_lead.title)
             ).filter(similarity__gt=0.3).order_by('-similarity')
-
         return leads
 
 
