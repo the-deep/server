@@ -187,6 +187,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
+# Gallery files Cache-control max-age in seconds
+GALLERY_FILE_EXPIRE = 60 * 60 * 24
+
 if os.environ.get('DJANGO_USE_S3', 'False').lower() == 'true':
     # AWS S3 Bucket Credentials
     AWS_STORAGE_BUCKET_NAME_STATIC = os.environ[
@@ -200,6 +203,7 @@ if os.environ.get('DJANGO_USE_S3', 'False').lower() == 'true':
     AWS_DEFAULT_ACL = 'private'
     AWS_QUERYSTRING_AUTH = True
     AWS_S3_CUSTOM_DOMAIN = None
+    AWS_QUERYSTRING_EXPIRE = GALLERY_FILE_EXPIRE
 
     # Static configuration
     STATICFILES_LOCATION = 'static'
@@ -377,8 +381,8 @@ DEEP_SUPPORTED_MIME_TYPES = [
     'text/csv', 'image/png', 'image/jpeg', 'image/fig',
     'application/json', 'application/xml', 'application/msword',
 ]
+# Gallery files Cache-control max-age - 1hr from s3
+MAX_FILE_CACHE_AGE = GALLERY_FILE_EXPIRE - (60 * 60)
 
-# Gallery files Cache-control max-age in seconds
-MAX_FILE_CACHE_AGE = 60 * 60 * 24
 # Lead website fetch timeout
 LEAD_WEBSITE_FETCH_TIMEOUT = 15
