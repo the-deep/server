@@ -90,6 +90,19 @@ class FileExtractionTriggerView(views.APIView):
 
     def post(self, request, version=None):
         file_ids = request.data.get('file_ids')
+
+        # Check if preview with same file ids already exists
+        existing = FilePreview.objects.filter(
+            file_ids__contains=file_ids,
+            file_ids__len=len(file_ids),
+        ).first()
+
+        # If so, just return that
+        if existing:
+            return response.Response({
+                'extraction_triggered': existing.id,
+            })
+
         file_preview = FilePreview.objects.create(
             file_ids=file_ids,
             extracted=False

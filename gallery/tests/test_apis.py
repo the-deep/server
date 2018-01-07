@@ -84,14 +84,13 @@ class GalleryTests(AuthMixin, APITestCase):
         self.assertEqual(File.objects.count(), last_count)
 
     def test_trigger_api(self):
-        file = File.objects.create(
-            title='Test',
-            created_by=self.user,
-        )
-
+        """
+        Test if file preview is triggered and gives proper response
+        Actual task is tested in test_tasks
+        """
         url = '/api/v1/file-extraction-trigger/'
         data = {
-            'file_ids': [file.id],
+            'file_ids': [1],
         }
         response = self.client.post(url, data,
                                     format='json',
@@ -101,7 +100,26 @@ class GalleryTests(AuthMixin, APITestCase):
             id=response.data['extraction_triggered']
         ).exists())
 
+    def test_duplicate_trigger_api(self):
+        """
+        Test if preview with same file ids is returned as is and not triggered
+        again
+        """
+        preview = FilePreview.objects.create(file_ids=[1, 2], text='dummy')
+        url = '/api/v1/file-extraction-trigger/'
+        data = {
+            'file_ids': [2, 1],
+        }
+        response = self.client.post(url, data,
+                                    format='json',
+                                    HTTP_AUTHORIZATION=self.auth)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['extraction_triggered'], preview.id)
+
     def test_preview_api(self):
+        """
+        Test the preview api to get previously triggered preview
+        """
         preview = FilePreview.objects.create(file_ids=[], text='dummy')
 
         url = '/api/v1/file-previews/{}/'.format(preview.id)
