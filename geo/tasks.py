@@ -84,6 +84,63 @@ def _save_geo_area(admin_level, parent, feature):
     return geo_area
 
 
+def _generate_geo_areas(admin_level, parent):
+    # Get the geo shape file
+    geo_shape_file = admin_level.geo_shape_file
+    if geo_shape_file:
+        # Create temporary file with same content
+        # This is necessary in server where the file is
+        # originally in s3 server and GDAL expects file in local
+        # disk.
+
+        # Then load data from that file
+        f = tempfile.NamedTemporaryFile()
+        f.write(geo_shape_file.file.read())
+        data_source = DataSource(f.name)
+        f.close()
+
+        # If more than one layer exists, extract from the first layer
+        if data_source.layer_count == 1:
+            layer = data_source[0]
+
+            added_areas = []
+            for feature in layer:
+                # Each feature is a geo area
+                geo_area = _save_geo_area(
+                    admin_level, parent,
+                    feature,
+                )
+                added_areas.append(geo_area.id)
+
+            # Delete all previous geo areas that have not been added
+            GeoArea.objects.filter(
+                admin_level=admin_level
+            ).exclude(id__in=added_areas).delete()
+
+    admin_level.stale_geo_areas = False
+    admin_level.save()
+
+
+def _extract_from_admin_levels(admin_levels, parent, completed_levels):
+    for admin_level in admin_levels:
+        # Cyclic check
+        if admin_level.id in completed_levels:
+            continue
+        completed_levels.append(admin_level.id)
+
+        # Generate geo areas
+        _generate_geo_areas(admin_level, parent)
+
+        # Extract children areas
+        children_levels = AdminLevel.objects.filter(parent=admin_level)
+        if children_levels.count() > 0:
+            _extract_from_admin_levels(
+                children_levels,
+                admin_level,
+                completed_levels,
+            )
+
+
 def _load_geo_areas(region_id):
     """
     The main load geo areas procedure
@@ -98,39 +155,15 @@ def _load_geo_areas(region_id):
         if AdminLevel.objects.filter(region=region).count() == 0:
             return
 
-        admin_level = AdminLevel.objects.filter(region=region, parent=None)\
-            .first()
-        parent = None
-
-        # TODO: Check for cycle and for admin levels
-        # with no parent
-        while admin_level:
-            geo_shape_file = admin_level.geo_shape_file
-            if geo_shape_file:
-                f = tempfile.NamedTemporaryFile()
-                f.write(geo_shape_file.file.read())
-                data_source = DataSource(f.name)
-                f.close()
-                if data_source.layer_count == 1:
-                    layer = data_source[0]
-
-                    added_areas = []
-                    for feature in layer:
-                        geo_area = _save_geo_area(
-                            admin_level, parent,
-                            feature
-                        )
-                        added_areas.append(geo_area.id)
-
-                    GeoArea.objects.filter(
-                        admin_level=admin_level
-                    ).exclude(id__in=added_areas).delete()
-
-            admin_level.stale_geo_areas = False
-            admin_level.save()
-
-            parent = admin_level
-            admin_level = AdminLevel.objects.filter(parent=parent).first()
+        parent_admin_levels = AdminLevel.objects.filter(
+            region=region, parent=None
+        )
+        completed_levels = []
+        _extract_from_admin_levels(
+            parent_admin_levels,
+            None,
+            completed_levels,
+        )
 
     return True
 
