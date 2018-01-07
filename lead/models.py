@@ -77,7 +77,7 @@ class Lead(UserResource):
     url = models.CharField(max_length=255, blank=True)
     website = models.CharField(max_length=255, blank=True)
 
-    attachment = models.ForeignKey(File,
+    attachment = models.ForeignKey(File, on_delete=models.SET_NULL,
                                    default=None, null=True, blank=True)
 
     def __str__(self):

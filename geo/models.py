@@ -102,7 +102,7 @@ class AdminLevel(models.Model):
     parent_name_prop = models.CharField(max_length=255, blank=True)
     parent_code_prop = models.CharField(max_length=255, blank=True)
 
-    geo_shape_file = models.ForeignKey(File,
+    geo_shape_file = models.ForeignKey(File, on_delete=models.SET_NULL,
                                        null=True, blank=True, default=None)
     tolerance = models.FloatField(default=0.0001)
 

@@ -17,7 +17,7 @@ class Profile(models.Model):
     organization = models.CharField(max_length=300, blank=True)
     hid = models.TextField(default=None, null=True, blank=True)
     # country = models.ForeignKey(Country)
-    display_picture = models.ForeignKey(File,
+    display_picture = models.ForeignKey(File, on_delete=models.SET_NULL,
                                         null=True, blank=True, default=None)
 
     def __str__(self):

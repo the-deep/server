@@ -14,10 +14,10 @@ class AnalysisFramework(UserResource):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
-    snapshot_one = models.ForeignKey(File,
+    snapshot_one = models.ForeignKey(File, on_delete=models.SET_NULL,
                                      related_name='page_one_framework',
                                      null=True, blank=True, default=None)
-    snapshot_two = models.ForeignKey(File,
+    snapshot_two = models.ForeignKey(File, on_delete=models.SET_NULL,
                                      related_name='page_two_framework',
                                      null=True, blank=True, default=None)
 
