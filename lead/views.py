@@ -57,10 +57,10 @@ class LeadFilterSet(UserResourceFilterSet):
     Also make most fields filerable by multiple values using
     'in' lookup expressions and CSVWidget.
     """
-    published_on__lte = django_filters.DateFilter(
+    published_on__lt = django_filters.DateFilter(
         name='published_on', lookup_expr='lte',
     )
-    published_on__gte = django_filters.DateFilter(
+    published_on__gt = django_filters.DateFilter(
         name='published_on', lookup_expr='gte',
     )
 

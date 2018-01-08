@@ -19,10 +19,10 @@ class EntryFilterSet(UserResourceFilterSet):
         lookup_expr='in',
         widget=django_filters.widgets.CSVWidget,
     )
-    lead__published_on__lte = django_filters.DateFilter(
+    lead__published_on__lt = django_filters.DateFilter(
         name='lead__published_on', lookup_expr='lte',
     )
-    lead__published_on__gte = django_filters.DateFilter(
+    lead__published_on__gt = django_filters.DateFilter(
         name='lead__published_on', lookup_expr='gte',
     )
 
