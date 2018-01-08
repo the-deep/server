@@ -32,12 +32,22 @@ def makedirs(path):
         pass
 
 
-def get_valid_xml_string(string):
-    # TODO Check if we can export 0xD800
-    # Otherwise we also need to use valid_xml_char_ordinal)
+def is_valid_xml_char_ordinal(c):
+    codepoint = ord(c)
+    # conditions ordered by presumed frequency
+    return (
+        0x20 <= codepoint <= 0xD7FF or
+        codepoint in (0x9, 0xA, 0xD) or
+        0xE000 <= codepoint <= 0xFFFD or
+        0x10000 <= codepoint <= 0x10FFFF
+    )
 
+
+def get_valid_xml_string(string):
     if string:
-        return escape(string)
+        s = escape(string)
+        return ''.join(c for c in s
+                       if is_valid_xml_char_ordinal(c))
     return ''
 
 

@@ -39,15 +39,17 @@ def _export_entries(export_type, export_id, user_id, project_id, filters):
     ).distinct()
 
     if export_type == 'excel':
-        ExcelExporter()\
+        decoupled = filters.get('decoupled', True)
+        ExcelExporter(decoupled)\
             .load_exportables(exportables, regions)\
             .add_entries(queryset)\
             .export(export)
 
     elif export_type == 'report':
+        report_structure = filters.get('report_structure')
         ReportExporter()\
             .load_exportables(exportables)\
-            .load_structure(filters.get('report_structure'))\
+            .load_structure(report_structure)\
             .add_entries(queryset)\
             .export(export)
 

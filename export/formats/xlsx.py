@@ -50,16 +50,18 @@ class RowsBuilder:
     """
     Rows builder to build rows that permute with new rows
     """
-    def __init__(self, split_sheet=None, group_sheet=None):
+    def __init__(self, split_sheet=None, group_sheet=None, split=True):
         self.rows = [[]]
         self.group_rows = []
         self.split_sheet = split_sheet
         self.group_sheet = group_sheet
+        self.split = split
 
     def add_value(self, value):
-        # Add single value to end of each row
         val = xstr(value)
-        [row.append(val) for row in self.rows]
+        if self.split:
+            # Add single value to end of each row
+            [row.append(val) for row in self.rows]
         self.group_rows.append(val)
         return self
 
@@ -84,17 +86,18 @@ class RowsBuilder:
             self.add_value(values[0])
             return self
 
-        oldrows = self.rows[:]
+        if self.split:
+            oldrows = self.rows[:]
 
-        # Make a copy of old rows num times
-        for i in range(1, num):
-            for j, row in enumerate(oldrows):
-                self.rows.insert(i * len(oldrows) + j, row.copy())
+            # Make a copy of old rows num times
+            for i in range(1, num):
+                for j, row in enumerate(oldrows):
+                    self.rows.insert(i * len(oldrows) + j, row.copy())
 
-        # Append each value to corresponding set of rows
-        for i in range(0, num):
-            for j in range(0, len(oldrows)):
-                self.rows[i * len(oldrows) + j].append(values[i])
+            # Append each value to corresponding set of rows
+            for i in range(0, num):
+                for j in range(0, len(oldrows)):
+                    self.rows[i * len(oldrows) + j].append(values[i])
 
         self.group_rows.append(', '.join(values))
 
@@ -118,18 +121,19 @@ class RowsBuilder:
             self.add_value_list(values[0])
             return self
 
-        oldrows = self.rows[:]
+        if self.split:
+            oldrows = self.rows[:]
 
-        # Make a copy of old rows num times
-        for i in range(1, num):
-            for j, row in enumerate(oldrows):
-                self.rows.insert(i * len(oldrows) + j, row.copy())
+            # Make a copy of old rows num times
+            for i in range(1, num):
+                for j, row in enumerate(oldrows):
+                    self.rows.insert(i * len(oldrows) + j, row.copy())
 
-        # Append each list of values to corresponding set of rows
-        for i in range(0, num):
-            for j in range(0, len(oldrows)):
-                for k in range(0, len(values[i])):
-                    self.rows[i * len(oldrows) + j].append(values[i][k])
+            # Append each list of values to corresponding set of rows
+            for i in range(0, num):
+                for j in range(0, len(oldrows)):
+                    for k in range(0, len(values[i])):
+                        self.rows[i * len(oldrows) + j].append(values[i][k])
 
         # Zip to group together elements of same column,
         # Convert each zipped to list and convert overall to list as well
@@ -142,7 +146,7 @@ class RowsBuilder:
         return self
 
     def apply(self):
-        if self.split_sheet:
+        if self.split and self.split_sheet:
             self.split_sheet.append(self.rows)
 
         if self.group_sheet:

@@ -19,13 +19,18 @@ EXCEL_MIME_TYPE = \
 
 
 class ExcelExporter:
-    def __init__(self):
+    def __init__(self, decoupled=True):
         self.wb = WorkBook()
 
         # Create two worksheets
-        self.split = self.wb.get_active_sheet()\
-            .set_title('Split Entries')
-        self.group = self.wb.create_sheet('Grouped Entries')
+        if decoupled:
+            self.split = self.wb.get_active_sheet()\
+                .set_title('Split Entries')
+            self.group = self.wb.create_sheet('Grouped Entries')
+        else:
+            self.split = None
+            self.group = self.wb.get_active_sheet().set_title('Entries')
+        self.decoupled = decoupled
 
         # Initial titles
         self.titles = [
@@ -70,10 +75,12 @@ class ExcelExporter:
             elif data.get('title'):
                 self.titles.append(data.get('title'))
 
-        self.split.append([self.titles])
+        if self.decoupled and self.split:
+            self.split.append([self.titles])
         self.group.append([self.titles])
 
-        self.split.auto_fit_cells_in_row(1)
+        if self.decoupled and self.split:
+            self.split.auto_fit_cells_in_row(1)
         self.group.auto_fit_cells_in_row(1)
 
         self.exportables = exportables
@@ -85,7 +92,7 @@ class ExcelExporter:
             # Export each entry
             # Start building rows and export data for each exportable
 
-            rows = RowsBuilder(self.split, self.group)
+            rows = RowsBuilder(self.split, self.group, self.decoupled)
             rows.add_value(format_date(entry.lead.published_on))
 
             # TODO Check for information dates
