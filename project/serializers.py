@@ -58,16 +58,19 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
         return project
 
     def get_role(self, project):
+        request = self.context['request']
+        user = request.GET.get('user', request.user)
+
         membership = ProjectMembership.objects.filter(
             project=project,
-            member=self.context['request'].user
+            member=user
         ).first()
         if membership:
             return membership.role
 
         group_membership = UserGroup.objects.filter(
             project=project,
-            member=self.context['request'].user,
+            members=user,
         ).first()
         if group_membership:
             return 'normal'

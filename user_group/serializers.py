@@ -52,9 +52,12 @@ class UserGroupSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         return user_group
 
     def get_role(self, user_group):
+        request = self.context['request']
+        user = request.GET.get('user', request.user)
+
         membership = GroupMembership.objects.filter(
             group=user_group,
-            member=self.context['request'].user
+            member=user
         ).first()
         if membership:
             return membership.role
