@@ -218,10 +218,11 @@ class GeoOptionsView(views.APIView):
         regions = regions.distinct()
         result = {}
         for region in regions:
-            result['{}'.format(region.id)] = [
+            result[str(region.id)] = [
                 {
                     'label': self._get_label(geo_area),
-                    'key': geo_area.id,
+                    'short_label': self._get_label(geo_area, False),
+                    'key': str(geo_area.id),
                 } for geo_area in GeoArea.objects.filter(
                     admin_level__region=region
                 ).distinct()
@@ -229,9 +230,13 @@ class GeoOptionsView(views.APIView):
 
         return response.Response(result)
 
-    def _get_label(self, geo_area):
+    def _get_label(self, geo_area, prepend_region=True):
         if geo_area.parent:
             return '{} / {}'.format(self._get_label(geo_area.parent),
                                     geo_area.title)
-        return '{} / {}'.format(geo_area.admin_level.region.title,
-                                geo_area.title)
+
+        if prepend_region:
+            return '{} / {}'.format(geo_area.admin_level.region.title,
+                                    geo_area.title)
+        else:
+            return str(geo_area.title)
