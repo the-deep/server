@@ -133,7 +133,6 @@ class ExcelExporter:
                         else:
                             rows.add_value_list(
                                 export_data.get('values'),
-                                col_span,
                             )
                     else:
                         rows.add_value_list([''] * col_span)
