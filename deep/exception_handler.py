@@ -48,6 +48,8 @@ def custom_exception_handler(exc, context):
         errors = exc.message
     elif hasattr(exc, 'detail'):
         errors = exc.detail
+    elif response.status_code == 404:
+        errors = 'Resource not found'
     else:
         errors = str(exc)
 
