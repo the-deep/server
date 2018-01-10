@@ -123,17 +123,20 @@ class ExcelExporter:
                 export_type = data.get('type')
 
                 if export_type == 'multiple':
+                    col_span = len(data.get('titles'))
                     if export_data:
                         if export_data.get('type') == 'lists':
                             rows.add_rows_of_value_lists(
-                                export_data.get('values')
+                                export_data.get('values'),
+                                col_span,
                             )
                         else:
                             rows.add_value_list(
-                                export_data.get('values')
+                                export_data.get('values'),
+                                col_span,
                             )
                     else:
-                        rows.add_value_list([''] * len(data.get('titles')))
+                        rows.add_value_list([''] * col_span)
 
                 elif export_type == 'geo' and self.regions:
                     values = []
@@ -153,7 +156,7 @@ class ExcelExporter:
                                     g.title for g in geo_data
                                 ])
                             else:
-                                rows.add_rows_of_values([''])
+                                rows.add_value('')
 
                 else:
                     if export_data:
@@ -161,6 +164,8 @@ class ExcelExporter:
                             rows.add_rows_of_values(export_data.get('value'))
                         else:
                             rows.add_value(export_data.get('value'))
+                    else:
+                        rows.add_value('')
 
             rows.apply()
         return self

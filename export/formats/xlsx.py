@@ -103,7 +103,7 @@ class RowsBuilder:
 
         return self
 
-    def add_rows_of_value_lists(self, rows):
+    def add_rows_of_value_lists(self, rows, col_span=1):
         # From a list of lists, for each list
         # Duplicate all rows and append each value of
         # that list to one set of rows
@@ -114,7 +114,7 @@ class RowsBuilder:
         num = len(values)
 
         if num == 0:
-            self.add_value('')
+            self.add_value_list([''] * col_span)
             return self
 
         if num == 1:
