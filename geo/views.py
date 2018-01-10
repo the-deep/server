@@ -17,7 +17,7 @@ from deep.permissions import ModifyPermission
 from user_resource.filters import UserResourceFilterSet
 
 from project.models import Project
-from .models import Region, AdminLevel
+from .models import Region, AdminLevel, GeoArea
 from .serializers import (
     AdminLevelSerializer,
     RegionSerializer,
@@ -199,3 +199,39 @@ class GeoBoundsView(views.APIView):
         return response.Response({
             'bounds': None,
         })
+
+
+class GeoOptionsView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, version=None):
+        regions = Region.objects.all()
+
+        project = request.GET.get('project')
+        if project:
+            project = Project.objects.get(id=project)
+            if not project.can_get(request.user):
+                raise exceptions.PermissionDenied()
+
+            regions = regions.filter(project=project)
+
+        regions = regions.distinct()
+        result = {}
+        for region in regions:
+            result['{}'.format(region.id)] = [
+                {
+                    'label': self._get_label(geo_area),
+                    'key': geo_area.id,
+                } for geo_area in GeoArea.objects.filter(
+                    admin_level__region=region
+                ).distinct()
+            ]
+
+        return response.Response(result)
+
+    def _get_label(self, geo_area):
+        if geo_area.parent:
+            return '{} / {}'.format(self._get_label(geo_area.parent),
+                                    geo_area.title)
+        return '{} / {}'.format(geo_area.admin_level.region.title,
+                                geo_area.title)

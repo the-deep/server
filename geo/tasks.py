@@ -185,7 +185,7 @@ def load_geo_areas(region_id):
 
     try:
         return_value = _load_geo_areas(region_id)
-    except Exception:
+    except Exception as e:
         logger.error(traceback.format_exc())
         return_value = False
 

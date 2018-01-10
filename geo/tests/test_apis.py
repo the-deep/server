@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from user.tests.test_apis import AuthMixin
-from geo.models import Region, AdminLevel
+from geo.models import Region, AdminLevel, GeoArea
 from project.tests.test_apis import ProjectMixin
 
 
@@ -139,3 +139,39 @@ class AdminLevelTests(AuthMixin, RegionMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(AdminLevel.objects.count(), 1)
         self.assertEqual(response.data['title'], data['title'])
+
+
+class GeoOptionsApi(AuthMixin, RegionMixin, APITestCase):
+    def setUp(self):
+        self.auth = self.get_auth()
+
+    def test_geo_options(self):
+        region = self.create_or_get_region()
+        admin_level1 = AdminLevel.objects.create(
+            region=region,
+            title='admin1',
+        )
+        admin_level2 = AdminLevel.objects.create(
+            region=region,
+            parent=admin_level1,
+            title='admin2',
+        )
+        geo_area1 = GeoArea.objects.create(
+            admin_level=admin_level1,
+            title='geo1',
+        )
+        geo_area2 = GeoArea.objects.create(
+            admin_level=admin_level2,
+            parent=geo_area1,
+            title='geo2',
+        )
+
+        url = '/api/v1/geo-options/'
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth,
+                                   format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['{}'.format(region.id)][1].get('label'),
+                         '{} / {} / {}'.format(region.title,
+                                               geo_area1.title,
+                                               geo_area2.title))

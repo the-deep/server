@@ -36,6 +36,7 @@ from geo.views import (
     GeoAreasLoadTriggerView,
     GeoJsonView,
     GeoBoundsView,
+    GeoOptionsView,
 )
 from lead.views import (
     LeadViewSet,
@@ -239,6 +240,8 @@ urlpatterns = [
         GeoJsonView.as_view()),
     url(get_api_path(r'admin-levels/(?P<admin_level_id>\d+)/geojson/bounds/$'),
         GeoBoundsView.as_view()),
+    url(get_api_path(r'geo-options/$'),
+        GeoOptionsView.as_view()),
 
     # Clone apis
     url(get_api_path(r'clone-region/(?P<region_id>\d+)/$'),
