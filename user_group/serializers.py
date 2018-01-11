@@ -38,7 +38,7 @@ class UserGroupSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     class Meta:
         model = UserGroup
-        fields = ('id', 'title', 'display_picture', 'role',
+        fields = ('id', 'title', 'description', 'display_picture', 'role',
                   'memberships', 'global_crisis_monitoring',
                   'custom_project_fields')
 

@@ -8,6 +8,7 @@ class UserGroup(models.Model):
     User group model
     """
     title = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True)
     display_picture = models.FileField(upload_to='group_dp/',
                                        null=True, blank=True, default=None)
     members = models.ManyToManyField(User, blank=True,
