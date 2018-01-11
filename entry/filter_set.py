@@ -1,5 +1,5 @@
 from django.db import models
-from user_resource.filters import UserResourceFilterSet
+from django.contrib.auth.models import User
 
 from analysis_framework.models import Filter
 from lead.models import Lead
@@ -7,8 +7,10 @@ from entry.models import Entry
 
 import django_filters
 
+from datetime import datetime
 
-class EntryFilterSet(UserResourceFilterSet):
+
+class EntryFilterSet(django_filters.FilterSet):
     """
     Entry filter set
 
@@ -25,6 +27,10 @@ class EntryFilterSet(UserResourceFilterSet):
     lead__published_on__gt = django_filters.DateFilter(
         name='lead__published_on', lookup_expr='gte',
     )
+    created_by = django_filters.ModelChoiceFilter(
+        queryset=User.objects.all())
+    modified_by = django_filters.ModelChoiceFilter(
+        queryset=User.objects.all())
 
     class Meta:
         model = Entry
@@ -50,6 +56,28 @@ def get_filtered_entries(user, queries):
         entries = entries.filter(lead__project__id=project)
 
     filters = Filter.get_for(user)
+
+    ONE_DAY = 24 * 60 * 60
+
+    created_at__lt = queries.get('created_at__lt')
+    if created_at__lt:
+        created_at__lt = datetime.fromtimestamp(created_at__lt * ONE_DAY)
+        entries = entries.filter(created_at__lte=created_at__lt)
+
+    created_at__gt = queries.get('created_at__gt')
+    if created_at__gt:
+        created_at__gt = datetime.fromtimestamp(created_at__gt * ONE_DAY)
+        entries = entries.filter(created_at__gte=created_at__gt)
+
+    modified_at__lt = queries.get('modified_at__lt')
+    if modified_at__lt:
+        modified_at__lt = datetime.fromtimestamp(modified_at__lt * ONE_DAY)
+        entries = entries.filter(modified_at__lte=modified_at__lt)
+
+    modified_at__gt = queries.get('modified_at__gt')
+    if modified_at__gt:
+        modified_at__gt = datetime.fromtimestamp(modified_at__gt * ONE_DAY)
+        entries = entries.filter(modified_at__gte=modified_at__gt)
 
     for filter in filters:
         # For each filter, see if there is a query for that filter
