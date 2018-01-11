@@ -5,8 +5,6 @@ import articleDateExtractor
 import requests
 import tldextract
 
-from project.models import Project
-
 
 class WebInfoExtractor:
     def __init__(self, url):
@@ -29,14 +27,6 @@ class WebInfoExtractor:
         if country:
             return country[0].text.strip()
 
-        return None
-
-    def get_project(self):
-        country = self.get_country()
-        if country:
-            return Project.objects.filter(
-                regions__title__icontains=country
-            ).first()
         return None
 
     def get_source(self):

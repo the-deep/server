@@ -4,6 +4,7 @@ from rest_framework.test import APITestCase
 from user.tests.test_apis import AuthMixin
 from project.tests.test_apis import ProjectMixin
 from project.models import Project, ProjectMembership
+from geo.models import Region
 from lead.models import Lead
 
 
@@ -113,3 +114,55 @@ class LeadTests(AuthMixin, ProjectMixin, LeadMixin, APITestCase):
         self.assertEqual(len(response.data), 2)
         self.assertEqual(response.data[0].get('project'), project1.id)
         self.assertEqual(response.data[1].get('project'), project2.id)
+
+
+SAMPLE_WEB_INFO_URL = ''
+SAMPLE_WEB_INFO_SOURCE = ''
+SAMPLE_WEB_INFO_COUNTRY = ''
+SAMPLE_WEB_INFO_DATE = ''
+SAMPLE_WEB_INFO_WEBSITE = ''
+
+
+class WebInfoExtractionTests(AuthMixin, APITestCase):
+    def setUp(self):
+        """
+        Get HTTP_AUTHORIZATION Header
+        """
+        self.auth = self.get_auth()
+
+        self.sample_region = Region.objects.create(
+            code='TEST',
+            title=SAMPLE_WEB_INFO_COUNTRY,
+            public=True,
+            created_by=self.user,
+        )
+        self.sample_project = Project.objects.create(
+            title='Test project',
+            created_by=self.user,
+        )
+        ProjectMembership.objects.create(
+            project=self.sample_project,
+            member=self.user,
+            role='normal',
+        )
+        self.sample_project.regions.add(self.sample_region)
+
+    def test_extract_web_info(self):
+        url = '/api/v1/web-info-extract/'
+        data = {
+            'url': SAMPLE_WEB_INFO_URL
+        }
+
+        response = self.client.post(url, data,
+                                    format='json',
+                                    HTTP_AUTHORIZATION=self.auth)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        expected = {
+            'project': self.sample_project.id,
+            'date': SAMPLE_WEB_INFO_DATE,
+            'country': SAMPLE_WEB_INFO_COUNTRY,
+            'website': SAMPLE_WEB_INFO_WEBSITE,
+            'source': SAMPLE_WEB_INFO_SOURCE,
+        }
+        self.assertEqual(response.data, expected)

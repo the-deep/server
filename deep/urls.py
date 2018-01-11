@@ -44,6 +44,8 @@ from lead.views import (
     LeadOptionsView,
     LeadExtractionTriggerView,
     LeadWebsiteFetch,
+
+    WebInfoExtractView,
 )
 from entry.views import (
     EntryViewSet, AttributeViewSet, FilterDataViewSet,
@@ -227,6 +229,9 @@ urlpatterns = [
     # Website fetch api
     url(get_api_path(r'lead-website-fetch/$'),
         LeadWebsiteFetch.as_view()),
+
+    url(get_api_path(r'web-info-extract/$'),
+        WebInfoExtractView.as_view()),
 
     # Filter apis
     url(get_api_path(r'entries/filter/'), EntryFilterView.as_view()),

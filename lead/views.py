@@ -26,6 +26,7 @@ from lead.serializers import (
 )
 
 from lead.tasks import extract_from_lead
+from utils.web_info_extractor import WebInfoExtractor
 from utils.common import USER_AGENT
 
 headers = {
@@ -289,4 +290,35 @@ class LeadWebsiteFetch(views.APIView):
             'headers': r.headers,
             'httpsUrl': https_url,
             'httpUrl': http_url
+        })
+
+
+class WebInfoExtractView(views.APIView):
+    """
+    Extract information from a website for new lead
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, version_id=None):
+        url = request.data.get('url')
+
+        extractor = WebInfoExtractor(url)
+        date = extractor.get_date()
+        country = extractor.get_country()
+        source = extractor.get_source()
+        website = extractor.get_website()
+
+        if country:
+            project = Project.get_for(request.user).filter(
+                regions__title__icontains=country
+            ).first()
+        else:
+            project = None
+
+        return response.Response({
+            'project': project.id,
+            'date': date,
+            'country': country,
+            'website': website,
+            'source': source,
         })
