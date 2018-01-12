@@ -365,6 +365,15 @@ if not USE_EMAIL_CONFIG:
     DUMP THE EMAIL TO CONSOLE
     """
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    """
+    Use AWS SES
+    """
+    EMAIL_BACKEND = 'django_ses.SESBackend'
+    AWS_SES_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
+    AWS_SES_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
+    # AWS_SES_REGION_NAME = 'us-east-1'
+    # AWS_SES_REGION_ENDPOINT = 'email.us-east-1.amazonaws.com'
 
 
 # DEEP GALLERY CONFIGS ###
