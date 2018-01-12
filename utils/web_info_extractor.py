@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
+from .date_extractor import extract_date
 
-import articleDateExtractor
 import requests
 import tldextract
 
@@ -14,9 +14,7 @@ class WebInfoExtractor:
         self.page = BeautifulSoup(html, 'lxml')
 
     def get_date(self):
-        return articleDateExtractor.extractArticlePublishedDate(
-            self.url
-        )
+        return extract_date(self.url, self.page)
 
     def get_country(self):
         country = self.page.select('.primary-country .country a')

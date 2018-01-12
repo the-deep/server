@@ -299,7 +299,7 @@ class WebInfoExtractView(views.APIView):
     """
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request, version_id=None):
+    def post(self, request, version=None):
         url = request.data.get('url')
 
         extractor = WebInfoExtractor(url)

@@ -7,6 +7,8 @@ from project.models import Project, ProjectMembership
 from geo.models import Region
 from lead.models import Lead
 
+from datetime import datetime
+
 
 class LeadMixin():
     """
@@ -116,11 +118,15 @@ class LeadTests(AuthMixin, ProjectMixin, LeadMixin, APITestCase):
         self.assertEqual(response.data[1].get('project'), project2.id)
 
 
-SAMPLE_WEB_INFO_URL = ''
-SAMPLE_WEB_INFO_SOURCE = ''
-SAMPLE_WEB_INFO_COUNTRY = ''
-SAMPLE_WEB_INFO_DATE = ''
-SAMPLE_WEB_INFO_WEBSITE = ''
+# Data to use for testing web info extractor
+# Including, url of the page and its attributes:
+# source, country, date, website
+
+SAMPLE_WEB_INFO_URL = 'https://reliefweb.int/report/yemen/yemen-emergency-food-security-and-nutrition-assessment-efsna-2016-preliminary-results' # noqa
+SAMPLE_WEB_INFO_SOURCE = 'World Food Programme, UN Children\'s Fund, Food and Agriculture Organization of the United Nations' # noqa
+SAMPLE_WEB_INFO_COUNTRY = 'Yemen'
+SAMPLE_WEB_INFO_DATE = datetime(2017, 1, 26)
+SAMPLE_WEB_INFO_WEBSITE = 'reliefweb.int'
 
 
 class WebInfoExtractionTests(AuthMixin, APITestCase):
@@ -130,6 +136,7 @@ class WebInfoExtractionTests(AuthMixin, APITestCase):
         """
         self.auth = self.get_auth()
 
+        # Create a sample project containing the sample country
         self.sample_region = Region.objects.create(
             code='TEST',
             title=SAMPLE_WEB_INFO_COUNTRY,

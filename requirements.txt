@@ -1,6 +1,5 @@
 Markdown==2.6.9
 Pygments==2.2.0
-articleDateExtractor==0.17
 asgi-redis==1.4.3
 beautifulsoup4==4.6.0
 boto3==1.4.4
@@ -33,3 +32,4 @@ requests==2.13.0
 django-ses==0.8.5
 tldextract==2.2.0
 tox
+python-dateutil==2.6.1
