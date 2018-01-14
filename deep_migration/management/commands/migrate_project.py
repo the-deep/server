@@ -4,21 +4,34 @@ from deep_migration.utils import (
     get_source_url,
     request_with_auth,
 )
-from deep_migration.models import ProjectMigration
-from project.models import Project
+from deep_migration.models import (
+    CountryMigration,
+    ProjectMigration,
+    UserMigration,
+)
+from project.models import Project, ProjectMembership
 
 
-EVENTS_URL = get_source_url('events')
+EVENTS_URL = get_source_url('events2', 'v1')
+
+
+def get_user(old_user_id):
+    migration = UserMigration.objects.filter(old_id=old_user_id).first()
+    return migration and migration.user
+
+
+def get_region(reference_code):
+    migration = CountryMigration.objects.filter(code=reference_code).first()
+    return migration and migration.region
 
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
-        data = request_with_auth(EVENTS_URL)
+        projects = request_with_auth(EVENTS_URL)
 
-        if not data or not data.get('data'):
+        if not projects:
             print('Couldn\'t find projects data at {}'.format(EVENTS_URL))
 
-        projects = data['data']
         for project in projects:
             self.import_project(project)
 
@@ -45,3 +58,26 @@ class Command(BaseCommand):
         project.start_date = data['start_date']
         project.end_date = data['end_date']
         project.save()
+
+        for user_id in data['admins']:
+            user = get_user(user_id)
+            if user:
+                ProjectMembership.objects.get_or_create(
+                    project=project,
+                    member=user,
+                    defaults={'role': 'admin'},
+                )
+
+        for user_id in data['members']:
+            user = get_user(user_id)
+            if user:
+                ProjectMembership.objects.get_or_create(
+                    project=project,
+                    member=user,
+                    defaults={'role': 'normal'},
+                )
+
+        for region_code in data['countries']:
+            region = get_region(region_code)
+            if region and region not in project.regions.all():
+                project.regions.add(region)
