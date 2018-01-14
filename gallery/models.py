@@ -14,6 +14,8 @@ class File(UserResource):
     meta_data = JSONField(default=None, blank=True, null=True)
 
     is_public = models.BooleanField(default=True)
+
+    # TODO Use following and add permitted_projects
     permitted_users = models.ManyToManyField(User, blank=True)
     permitted_user_groups = models.ManyToManyField(UserGroup, blank=True)
 

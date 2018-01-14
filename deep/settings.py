@@ -53,6 +53,7 @@ INSTALLED_APPS = [
 
     'analysis_framework',
     'category_editor',
+    'deep_migration',
     'docs',
     'dummy_data',
     'entry',

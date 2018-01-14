@@ -16,8 +16,8 @@ class Region(UserResource):
     title = models.CharField(max_length=255)
     public = models.BooleanField(default=True)
 
-    key_figures = JSONField(default=None, blank=True, null=True)
     regional_groups = JSONField(default=None, blank=True, null=True)
+    key_figures = JSONField(default=None, blank=True, null=True)
     population_data = JSONField(default=None, blank=True, null=True)
     media_sources = JSONField(default=None, blank=True, null=True)
 
