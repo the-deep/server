@@ -19,7 +19,6 @@ class EntryFilterSet(django_filters.FilterSet):
     lead = django_filters.ModelMultipleChoiceFilter(
         queryset=Lead.objects.all(),
         lookup_expr='in',
-        widget=django_filters.widgets.CSVWidget,
     )
     lead__published_on__lt = django_filters.DateFilter(
         name='lead__published_on', lookup_expr='lte',
@@ -27,10 +26,12 @@ class EntryFilterSet(django_filters.FilterSet):
     lead__published_on__gt = django_filters.DateFilter(
         name='lead__published_on', lookup_expr='gte',
     )
-    created_by = django_filters.ModelChoiceFilter(
-        queryset=User.objects.all())
-    modified_by = django_filters.ModelChoiceFilter(
-        queryset=User.objects.all())
+    created_by = django_filters.ModelMultipleChoiceFilter(
+        queryset=User.objects.all(),
+    )
+    modified_by = django_filters.ModelMultipleChoiceFilter(
+        queryset=User.objects.all(),
+    )
 
     class Meta:
         model = Entry
