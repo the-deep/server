@@ -5,6 +5,7 @@ from geo.models import (
     AdminLevel,
 )
 from project.models import Project
+from lead.models import Lead
 
 
 class BaseMigration(models.Model):
@@ -38,3 +39,9 @@ class ProjectMigration(BaseMigration):
     old_id = models.IntegerField(unique=True)
     project = models.ForeignKey(Project,
                                 default=None, blank=True, null=True)
+
+
+class LeadMigration(BaseMigration):
+    old_id = models.IntegerField(unique=True)
+    lead = models.ForeignKey(Lead,
+                             default=None, blank=True, null=True)

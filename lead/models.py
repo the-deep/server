@@ -74,7 +74,7 @@ class Lead(UserResource):
     published_on = models.DateField(default=None, null=True, blank=True)
 
     text = models.TextField(blank=True)
-    url = models.CharField(max_length=255, blank=True)
+    url = models.TextField()
     website = models.CharField(max_length=255, blank=True)
 
     attachment = models.ForeignKey(File, on_delete=models.SET_NULL,
