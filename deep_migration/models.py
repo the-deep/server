@@ -6,6 +6,7 @@ from geo.models import (
 )
 from project.models import Project
 from lead.models import Lead
+from analysis_framework.models import AnalysisFramework
 
 
 class BaseMigration(models.Model):
@@ -45,3 +46,9 @@ class LeadMigration(BaseMigration):
     old_id = models.IntegerField(unique=True)
     lead = models.ForeignKey(Lead,
                              default=None, blank=True, null=True)
+
+
+class AnalysisFrameworkMigration(BaseMigration):
+    old_id = models.IntegerField(unique=True)
+    analysis_framework = models.ForeignKey(AnalysisFramework,
+                                           default=None, blank=True, null=True)

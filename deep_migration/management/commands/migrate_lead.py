@@ -9,11 +9,19 @@ from deep_migration.utils import (
 from deep_migration.models import (
     LeadMigration,
     ProjectMigration,
+    UserMigration,
 )
 from lead.models import Lead
 
+import reversion
+
 
 LEADS_URL = get_source_url('leads')
+
+
+def get_user(old_user_id):
+    migration = UserMigration.objects.filter(old_id=old_user_id).first()
+    return migration and migration.user
 
 
 def get_project(project_id):
@@ -42,8 +50,9 @@ class Command(BaseCommand):
             print('Couldn\'t find leads data at {}'.format(LEADS_URL))
 
         leads = data['data']
-        for lead in leads:
-            self.import_lead(lead)
+        with reversion.create_revision():
+            for lead in leads:
+                self.import_lead(lead)
 
     def import_lead(self, data):
         print('------------')
@@ -78,6 +87,8 @@ class Command(BaseCommand):
         lead.status = STATUS_MAP[data['status']]
 
         lead.published_on = data['published_at']
+        lead.created_by = get_user(data['created_by'])
+        lead.modified_by = lead.created_by
 
         if data.get('description'):
             lead.source_type = Lead.TEXT
@@ -95,7 +106,6 @@ class Command(BaseCommand):
             )
 
         lead.save()
-
         Lead.objects.filter(id=lead.id).update(created_at=data['created_at'])
 
         return lead

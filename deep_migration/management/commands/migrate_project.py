@@ -11,6 +11,8 @@ from deep_migration.models import (
 )
 from project.models import Project, ProjectMembership
 
+import reversion
+
 
 EVENTS_URL = get_source_url('events2', 'v1')
 
@@ -32,8 +34,9 @@ class Command(BaseCommand):
         if not projects:
             print('Couldn\'t find projects data at {}'.format(EVENTS_URL))
 
-        for project in projects:
-            self.import_project(project)
+        with reversion.create_revision():
+            for project in projects:
+                self.import_project(project)
 
     def import_project(self, data):
         print('------------')
