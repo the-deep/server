@@ -50,7 +50,8 @@ from lead.views import (
 from entry.views import (
     EntryViewSet, AttributeViewSet, FilterDataViewSet,
     EntryFilterView,
-    ExportDataViewSet
+    ExportDataViewSet,
+    EntryOptionsView,
 )
 from analysis_framework.views import (
     AnalysisFrameworkCloneView,
@@ -210,6 +211,8 @@ urlpatterns = [
     # Attribute options for various models
     url(get_api_path(r'lead-options/$'),
         LeadOptionsView.as_view()),
+    url(get_api_path(r'entry-options/$'),
+        EntryOptionsView.as_view()),
     url(get_api_path(r'project-options/$'),
         ProjectOptionsView.as_view()),
 

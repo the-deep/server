@@ -140,6 +140,14 @@ class EntryTests(AuthMixin, EntryMixin, LeadMixin, ProjectMixin,
         self.assertEqual(response.data['attributes'][0]['widget'], widget.pk)
         self.assertEqual(response.data['attributes'][0]['data']['a'], 'b')
 
+    def test_options(self):
+        """
+        Options api
+        """
+        url = '/api/v1/entry-options/'
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def filter_test(self, params, count=1):
         """
         Request to `url?params` and check if given count of

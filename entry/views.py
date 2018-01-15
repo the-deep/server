@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from rest_framework import (
     filters,
@@ -5,12 +6,15 @@ from rest_framework import (
     pagination,
     permissions,
     response,
+    views,
     viewsets,
 )
 from deep.permissions import ModifyPermission
 
+from project.models import Project
 from lead.models import Lead
 from lead.serializers import SimpleLeadSerializer
+
 from .models import (
     Attribute, FilterData, ExportData
 )
@@ -141,3 +145,37 @@ class ExportDataViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return ExportData.get_for(self.request.user)
+
+
+class EntryOptionsView(views.APIView):
+    """
+    Options for various attributes related to entry
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, version=None):
+        project_query = request.GET.get('project')
+        fields_query = request.GET.get('fields')
+
+        projects = Project.get_for(request.user)
+        if project_query:
+            projects = projects.filter(id__in=project_query.split(','))
+
+        fields = None
+        if fields_query:
+            fields = fields_query.split(',')
+
+        options = {}
+
+        if fields is None or 'created_by' in fields:
+            created_by = User.objects.filter(
+                project__in=projects,
+            )
+            options['created_by'] = [
+                {
+                    'key': user.id,
+                    'value': user.profile.get_display_name(),
+                } for user in created_by.distinct()
+            ]
+
+        return response.Response(options)
