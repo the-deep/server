@@ -17,7 +17,8 @@ def process(doc):
 
     for img in html_body.reverse_tags(html_body.html, 'img'):
         try:
-            fp = tempfile.NamedTemporaryFile(dir=settings.BASE_DIR)
+            fp = tempfile.NamedTemporaryFile(dir=settings.BASE_DIR,
+                                             delete=False)
             r = requests.get(img.get('src'), stream=True)
             write_file(r, fp)
             images.append(fp)

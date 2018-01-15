@@ -8,7 +8,9 @@ from gallery.models import File
 
 
 # BASE_URL = 'http://www.thedeep.io/api/v2/'
-BASE_URL = 'http://172.21.0.1:9000/api'
+BASE_URL = os.environ.get('DEEP_1_URL', 'http://172.21.0.1:9000/api')
+USERNAME = os.environ.get('DEEP_1_USER', 'test@toggle.com')
+PASSWORD = os.environ.get('DEEP_1_PASSWORD', 'admin123')
 
 
 def get_source_url(suffix, version='v2'):
@@ -41,10 +43,6 @@ def get_migrated_gallery_file(s3_url, title=None):
     )
 
     return gallery_file
-
-
-USERNAME = 'test@toggle.com'
-PASSWORD = 'admin123'
 
 
 def request_with_auth(url):

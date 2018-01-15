@@ -63,6 +63,11 @@ def _extract_from_lead_core(lead_id):
             text = _preprocess(text)
         except Exception as e:
             logger.error(traceback.format_exc())
+            if images:
+                for image in images:
+                    if os.path.exists(image.name):
+                        os.unlink(image.name)
+
             return False
 
         # Save extracted text as LeadPreview

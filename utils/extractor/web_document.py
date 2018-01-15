@@ -39,7 +39,8 @@ class WebDocument(Document):
             super(WebDocument, self).__init__(doc, type)
             return
 
-        if any(x in r.headers["content-type"] for x in self.HTML_TYPES):
+        if not r.headers.get('content-type') or \
+                any(x in r.headers["content-type"] for x in self.HTML_TYPES):
             r = requests.get(url, headers=headers)
             doc = r.content
         else:
@@ -48,13 +49,16 @@ class WebDocument(Document):
             write_file(r, fp)
 
             doc = fp
-            if any(x in r.headers["content-type"] for x in self.PDF_TYPES):
+            if any(x in r.headers["content-type"]
+                   for x in self.PDF_TYPES):
                 type = PDF
 
-            elif any(x in r.headers["content-type"] for x in self.DOCX_TYPES):
+            elif any(x in r.headers["content-type"]
+                     for x in self.DOCX_TYPES):
                 type = DOCX
 
-            elif any(x in r.headers["content-type"] for x in self.PPTX_TYPES):
+            elif any(x in r.headers["content-type"]
+                     for x in self.PPTX_TYPES):
                 type = PPTX
 
         super(WebDocument, self).__init__(doc, type)

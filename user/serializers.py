@@ -12,11 +12,6 @@ from user.models import Profile
 from gallery.models import File
 
 
-class Dummy:
-    def __init__(self, entries):
-        self.__dict__.update(entries)
-
-
 class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     organization = serializers.CharField(source='profile.organization',
                                          allow_blank=True)
@@ -133,5 +128,4 @@ class PasswordResetSerializer(serializers.Serializer):
                 html_email_template_name=html_email_template_name,
             )
 
-            return Dummy(validated_data)
-        return Dummy(validated_data)
+            return validated_data

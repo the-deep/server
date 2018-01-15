@@ -349,9 +349,11 @@ class Command(BaseCommand):
                 'title': element['label'],
                 'properties': {
                     'list_grid_layout': self.get_layout(element),
-                    'data': self.convert_multiselect(
-                        element['options']
-                    ),
+                    'data': {
+                        'options': self.convert_multiselect(
+                            element['options']
+                        ),
+                    },
                 },
             },
         )
@@ -499,6 +501,7 @@ class Command(BaseCommand):
                         subpillar['name'],
                     ),
                 })
+        return options
 
     def convert_matrix1d_export(self, pillars):
         excel = {
@@ -644,6 +647,7 @@ class Command(BaseCommand):
                         subpillar['title'],
                     ),
                 })
+        return options
 
     def convert_matrix2d_filter2(self, sectors):
         options = []
@@ -661,6 +665,7 @@ class Command(BaseCommand):
                         subsector['title'],
                     ),
                 })
+        return options
 
     def convert_matrix2d_export(self, element):
         excel = {

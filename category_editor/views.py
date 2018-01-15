@@ -68,14 +68,14 @@ class CategoryEditorClassifyView(views.APIView):
 
     def post(self, request, project_id, version=None):
         if not Project.objects.filter(id=project_id).exists():
-            return exceptions.NotFound()
+            raise exceptions.NotFound()
 
         project = Project.objects.get(id=project_id)
         if not project.can_get(request.user):
             raise exceptions.PermissionDenied()
 
         if not project.category_editor:
-            return exceptions.NotFound()
+            raise exceptions.NotFound()
 
         ce_data = project.category_editor.data
         category = request.data.get('category')

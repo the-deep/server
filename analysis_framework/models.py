@@ -55,6 +55,7 @@ class AnalysisFramework(UserResource):
         it's project
         """
         return AnalysisFramework.objects.filter(
+            models.Q(created_by=user) |
             models.Q(project=None) |
             models.Q(project__members=user) |
             models.Q(project__user_groups__members=user)
@@ -155,6 +156,7 @@ class Filter(models.Model):
         filter = Filter(
             analysis_framework=analysis_framework,
             key=self.key,
+            widget_key=self.widget_key,
             title=self.title,
             properties=self.properties,
             filter_type=self.filter_type,
