@@ -18,7 +18,17 @@ class ExportViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Export.get_for(self.request.user)
+        exports = Export.get_for(self.request.user)
+
+        project = self.request.GET.get('project')
+        if project:
+            exports = exports.filter(project__id=project)
+
+        is_preview = self.request.GET.get('is_preview')
+        if is_preview:
+            exports = exports.filter(is_preview=True)
+
+        return exports
 
 
 class ExportTriggerView(views.APIView):
@@ -31,10 +41,14 @@ class ExportTriggerView(views.APIView):
         project_id = filters.get('project')
         export_type = filters.get('export_type', 'excel')
 
+        is_preview = filters.get('preview', False)
+
         export = Export.objects.create(
             title='tmp',
             exported_by=request.user,
             pending=True,
+            project=project_id,
+            is_preview=is_preview,
         )
 
         if not settings.TESTING:

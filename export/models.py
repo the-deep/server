@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from project.models import Project
+
 
 class Export(models.Model):
     """
@@ -24,6 +26,10 @@ class Export(models.Model):
     TYPES = (
         (ENTRIES, 'entries'),
     )
+
+    project = models.ForeignKey(Project, default=None,
+                                null=True, blank=True)
+    is_preview = models.BooleanField(default=False)
 
     title = models.CharField(max_length=255, blank=True)
 
