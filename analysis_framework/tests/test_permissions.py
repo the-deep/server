@@ -19,6 +19,8 @@ class AnalysisFrameworkPermissionsTest(
 
         # Create a project, an analysis framework and a new test user
         analysis_framework = self.create_or_get_analysis_framework()
+        analysis_framework.created_by = None
+        analysis_framework.save()
         test_user = self.create_new_user()
         project = self.create_or_get_project()
 
