@@ -307,6 +307,7 @@ class WebInfoExtractView(views.APIView):
         country = extractor.get_country()
         source = extractor.get_source()
         website = extractor.get_website()
+        title = extractor.get_title()
 
         if country:
             project = Project.get_for(request.user).filter(
@@ -316,9 +317,11 @@ class WebInfoExtractView(views.APIView):
             project = None
 
         return response.Response({
-            'project': project.id,
+            'project': project and project.id,
+            'title': title,
             'date': date,
             'country': country,
             'website': website,
+            'url': url,
             'source': source,
         })

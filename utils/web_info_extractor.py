@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from readability.readability import Document
 from urllib.parse import urlparse
 from .date_extractor import extract_date
 
@@ -11,7 +12,11 @@ class WebInfoExtractor:
         self.url = url
 
         html = requests.get(url).text
+        self.readable = Document(html)
         self.page = BeautifulSoup(html, 'lxml')
+
+    def get_title(self):
+        return self.readable.short_title()
 
     def get_date(self):
         return extract_date(self.url, self.page)
