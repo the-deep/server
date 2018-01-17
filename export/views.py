@@ -9,6 +9,7 @@ from rest_framework import (
 
 from export.serializers import ExportSerializer
 from export.models import Export
+from project.models import Project
 
 from export.tasks_entries import export_entries
 
@@ -26,7 +27,7 @@ class ExportViewSet(viewsets.ReadOnlyModelViewSet):
 
         is_preview = self.request.GET.get('is_preview')
         if is_preview:
-            exports = exports.filter(is_preview=True)
+            exports = exports.filter(is_preview=(int(is_preview) == 1))
 
         return exports
 
@@ -41,13 +42,14 @@ class ExportTriggerView(views.APIView):
         project_id = filters.get('project')
         export_type = filters.get('export_type', 'excel')
 
-        is_preview = filters.get('preview', False)
+        is_preview = filters.get('is_preview', False)
 
+        project = Project.objects.get(id=project_id)
         export = Export.objects.create(
             title='tmp',
             exported_by=request.user,
             pending=True,
-            project=project_id,
+            project=project,
             is_preview=is_preview,
         )
 
