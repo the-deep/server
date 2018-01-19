@@ -65,9 +65,7 @@ def _extract_from_lead_core(lead_id):
             logger.error(traceback.format_exc())
             if images:
                 for image in images:
-                    if os.path.exists(image.name):
-                        os.unlink(image.name)
-
+                    image.close()
             return False
 
         # Save extracted text as LeadPreview
@@ -103,10 +101,7 @@ def _extract_from_lead_core(lead_id):
                 lead_image.file.save(os.path.basename(image.name),
                                      File(image), True)
                 lead_image.save()
-
-            for image in images:
-                if os.path.exists(image.name):
-                    os.unlink(image.name)
+                image.close()
 
     return True
 

@@ -130,8 +130,7 @@ def process(docx, pptx=False, img_dir=None):
                     dst_f.write(zipf.read(fname))
                 images.append(dst_fname)
             else:
-                dst_f = tempfile.NamedTemporaryFile(dir=settings.BASE_DIR,
-                                                    delete=False)
+                dst_f = tempfile.NamedTemporaryFile(dir=settings.BASE_DIR)
                 dst_f.write(zipf.read(fname))
                 images.append(dst_f)
 
