@@ -36,6 +36,7 @@ class ExportTests(AuthMixin, APITestCase):
         response = self.client.post(url,
                                     HTTP_AUTHORIZATION=self.auth,
                                     format='json')
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         export = Export.objects.get(id=response.data['export_triggered'])
         self.assertTrue(export.pending)

@@ -44,7 +44,11 @@ class ExportTriggerView(views.APIView):
 
         is_preview = filters.get('is_preview', False)
 
-        project = Project.objects.get(id=project_id)
+        if project_id:
+            project = Project.objects.get(id=project_id)
+        else:
+            project = None
+
         export = Export.objects.create(
             title='tmp',
             exported_by=request.user,
