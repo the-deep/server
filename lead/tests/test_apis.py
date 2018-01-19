@@ -127,6 +127,7 @@ SAMPLE_WEB_INFO_SOURCE = 'World Food Programme, UN Children\'s Fund, Food and Ag
 SAMPLE_WEB_INFO_COUNTRY = 'Yemen'
 SAMPLE_WEB_INFO_DATE = datetime(2017, 1, 26)
 SAMPLE_WEB_INFO_WEBSITE = 'reliefweb.int'
+SAMPLE_WEB_INFO_TITLE = 'Yemen Emergency Food Security and Nutrition Assessment (EFSNA) 2016 - Preliminary Results' # noqa
 
 
 class WebInfoExtractionTests(AuthMixin, APITestCase):
@@ -170,6 +171,8 @@ class WebInfoExtractionTests(AuthMixin, APITestCase):
             'date': SAMPLE_WEB_INFO_DATE,
             'country': SAMPLE_WEB_INFO_COUNTRY,
             'website': SAMPLE_WEB_INFO_WEBSITE,
+            'title': SAMPLE_WEB_INFO_TITLE,
+            'url': SAMPLE_WEB_INFO_URL,
             'source': SAMPLE_WEB_INFO_SOURCE,
         }
         self.assertEqual(response.data, expected)
