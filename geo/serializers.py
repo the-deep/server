@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db import transaction
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
@@ -89,7 +90,7 @@ class AdminLevelSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         region.save()
 
         if not settings.TESTING:
-            load_geo_areas.delay(region.id)
+            transaction.on_commit(lambda: load_geo_areas.delay(region.id))
 
         return admin_level
 
@@ -106,6 +107,6 @@ class AdminLevelSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         region.save()
 
         if not settings.TESTING:
-            load_geo_areas.delay(region.id)
+            transaction.on_commit(lambda: load_geo_areas.delay(region.id))
 
         return admin_level

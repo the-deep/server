@@ -57,6 +57,8 @@ def get_filtered_entries(user, queries):
         entries = entries.filter(lead__project__id=project)
 
     filters = Filter.get_for(user)
+    if project:
+        filters = filters.filter(analysis_framework__project__id=project)
 
     ONE_DAY = 24 * 60 * 60
 
@@ -113,6 +115,13 @@ def get_filtered_entries(user, queries):
             if not isinstance(query, list):
                 query = query.split(',')
 
+            print(query)
+            print([
+                [
+                    f.values for f
+                    in entry.filterdata_set.all()
+                ] for entry in entries
+            ])
             if len(query) > 0:
                 entries = entries.filter(
                     filterdata__filter=filter,

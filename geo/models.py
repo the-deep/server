@@ -171,6 +171,19 @@ class GeoArea(models.Model):
     polygons = models.MultiPolygonField(null=True, blank=True, default=None)
 
     def __str__(self):
+        return self.get_label()
+
+    def get_label(self, prepend_region=True):
+        if self.parent:
+            return '{} / {}'.format(
+                self.parent.get_label(prepend_region),
+                self.title,
+            )
+        if prepend_region and self.admin_level.region.title != self.title:
+            return '{} / {}'.format(
+                self.admin_level.region.title,
+                self.title,
+            )
         return self.title
 
     def clone_to(self, admin_level, parent):

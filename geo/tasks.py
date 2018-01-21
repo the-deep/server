@@ -62,9 +62,11 @@ def _save_geo_area(admin_level, parent, feature):
         raise Exception('Invalid geometry type for geoarea')
 
     geo_area.polygons = geom
+    feature_names = feature.fields
 
     if parent:
-        if admin_level.parent_name_prop:
+        if admin_level.parent_name_prop and \
+                admin_level.parent_name_prop in feature_names:
             candidates = GeoArea.objects.filter(
                 admin_level=parent,
                 title=feature.get(admin_level.parent_name_prop)
@@ -76,7 +78,8 @@ def _save_geo_area(admin_level, parent, feature):
                 )
             geo_area.parent = candidates.first()
 
-        elif admin_level.parent_code_prop:
+        elif admin_level.parent_code_prop and \
+                admin_level.parent_code_prop in feature_names:
             geo_area.parent = GeoArea.objects.filter(
                 admin_level=parent,
                 code=feature.get(admin_level.parent_code_prop)

@@ -103,7 +103,8 @@ class Command(BaseCommand):
         admin_level.level = level
         admin_level.name_prop = data['property_name']
         admin_level.code_prop = data['property_pcode']
-        admin_level.parent_name_prop = 'NAME_{}'.format(level - 1)
+        if level > 0:
+            admin_level.parent_name_prop = 'NAME_{}'.format(level - 1)
         admin_level.geo_shape_file = get_migrated_gallery_file(data['geojson'])
         admin_level.stale_geo_areas = True
         admin_level.save()

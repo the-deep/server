@@ -124,7 +124,10 @@ class Command(BaseCommand):
             widget_id='excerptWidget',
             analysis_framework=framework,
             defaults={
-                'title': element.get('label') or element.get('excerptLabel'),
+                'title': (
+                    element.get('label') or
+                    element.get('excerptLabel') or 'Excerpt'
+                ),
                 'key': element['id'],
                 'properties': {},
             },
@@ -141,12 +144,13 @@ class Command(BaseCommand):
         widget.save()
 
     def migrate_number(self, framework, element):
+        title = element['label'] or 'Number'
         widget, _ = Widget.objects.get_or_create(
             widget_id='numberWidget',
             analysis_framework=framework,
             key=element['id'],
             defaults={
-                'title': element['label'],
+                'title': title,
                 'properties': {
                     'list_grid_layout': self.get_layout(element),
                 },
@@ -158,7 +162,7 @@ class Command(BaseCommand):
             analysis_framework=framework,
             widget_key=element['id'],
             defaults={
-                'title': element['label'],
+                'title': title,
                 'properties': {
                     'type': 'number',
                 },
@@ -170,18 +174,19 @@ class Command(BaseCommand):
             analysis_framework=framework,
             defaults={
                 'data': {
-                    'excel': {'title': element['label']}
+                    'excel': {'title': title}
                 },
             },
         )
 
     def migrate_date(self, framework, element):
+        title = element['label'] or 'Date'
         widget, _ = Widget.objects.get_or_create(
             widget_id='dateWidget',
             analysis_framework=framework,
             key=element['id'],
             defaults={
-                'title': element['label'],
+                'title': title,
                 'properties': {
                     'list_grid_layout': self.get_layout(element),
                 },
@@ -193,7 +198,7 @@ class Command(BaseCommand):
             analysis_framework=framework,
             widget_key=element['id'],
             defaults={
-                'title': element['label'],
+                'title': title,
                 'properties': {
                     'type': 'date',
                 },
@@ -205,18 +210,19 @@ class Command(BaseCommand):
             analysis_framework=framework,
             defaults={
                 'data': {
-                    'excel': {'title': element['label']}
+                    'excel': {'title': title}
                 },
             },
         )
 
     def migrate_scale(self, framework, element):
+        title = element['label'] or 'Scale'
         widget, _ = Widget.objects.get_or_create(
             widget_id='scaleWidget',
             analysis_framework=framework,
             key=element['id'],
             defaults={
-                'title': element['label'],
+                'title': title,
                 'properties': {
                     'list_grid_layout': self.get_layout(element),
                     'data': {
@@ -233,7 +239,7 @@ class Command(BaseCommand):
             analysis_framework=framework,
             widget_key=element['id'],
             defaults={
-                'title': element['label'],
+                'title': title,
                 'properties': {
                     'type': 'multiselect-range',
                     'options': self.convert_scale_filter_values(
@@ -248,7 +254,7 @@ class Command(BaseCommand):
             analysis_framework=framework,
             defaults={
                 'data': {
-                    'excel': {'title': element['label']}
+                    'excel': {'title': title}
                 },
             },
         )
@@ -272,12 +278,13 @@ class Command(BaseCommand):
         ]
 
     def migrate_organigram(self, framework, element):
+        title = element['label'] or 'Organigram'
         widget, _ = Widget.objects.get_or_create(
             widget_id='organigramWidget',
             analysis_framework=framework,
             key=element['id'],
             defaults={
-                'title': element['label'],
+                'title': title,
                 'properties': {
                     'list_grid_layout': self.get_layout(element),
                     'data': self.convert_organigram(element['nodes']),
@@ -290,7 +297,7 @@ class Command(BaseCommand):
             analysis_framework=framework,
             widget_key=element['id'],
             defaults={
-                'title': element['label'],
+                'title': title,
                 'properties': {
                     'type': 'multiselect',
                     'options': self.get_organigram_filter_nodes(
@@ -305,7 +312,7 @@ class Command(BaseCommand):
             analysis_framework=framework,
             defaults={
                 'data': {
-                    'excel': {'title': element['label']}
+                    'excel': {'title': title}
                 },
             },
         )
@@ -341,12 +348,13 @@ class Command(BaseCommand):
         return values
 
     def migrate_multiselect(self, framework, element):
+        title = element['label'] or 'Groups'
         widget, _ = Widget.objects.get_or_create(
             widget_id='multiselectWidget',
             analysis_framework=framework,
             key=element['id'],
             defaults={
-                'title': element['label'],
+                'title': title,
                 'properties': {
                     'list_grid_layout': self.get_layout(element),
                     'data': {
@@ -363,7 +371,7 @@ class Command(BaseCommand):
             analysis_framework=framework,
             widget_key=element['id'],
             defaults={
-                'title': element['label'],
+                'title': title,
                 'properties': {
                     'type': 'multiselect',
                     'options': self.convert_multiselect(
@@ -378,7 +386,7 @@ class Command(BaseCommand):
             analysis_framework=framework,
             defaults={
                 'data': {
-                    'excel': {'title': element['label']}
+                    'excel': {'title': title}
                 },
             },
         )
@@ -392,12 +400,13 @@ class Command(BaseCommand):
         ]
 
     def migrate_geo(self, framework, element):
+        title = element['label'] or 'Geo'
         widget, _ = Widget.objects.get_or_create(
             widget_id='geoWidget',
             analysis_framework=framework,
             key=element['id'],
             defaults={
-                'title': element['label'],
+                'title': title,
                 'properties': {
                     'list_grid_layout': self.get_layout(element),
                 },
@@ -409,7 +418,7 @@ class Command(BaseCommand):
             analysis_framework=framework,
             widget_key=element['id'],
             defaults={
-                'title': element['label'],
+                'title': title,
                 'properties': {
                     'type': 'geo',
                 },
@@ -435,7 +444,7 @@ class Command(BaseCommand):
                 'title': element['title'],
                 'properties': {
                     'overview_grid_layout': self.get_layout(element),
-                    'list_grid_layout': self.get_layout(element['list']),
+                    'list_grid_layout': self.get_layout(element.get('list')),
                     'data': {
                         'rows': self.convert_matrix1d_rows(element['pillars']),
                     },
@@ -539,7 +548,7 @@ class Command(BaseCommand):
                 'title': element['title'],
                 'properties': {
                     'overview_grid_layout': self.get_layout(element),
-                    'list_grid_layout': self.get_layout(element['list']),
+                    'list_grid_layout': self.get_layout(element.get('list')),
                     'data': {
                         'dimensions': self.convert_matrix2d_dimensions(
                             element['pillars']
@@ -600,7 +609,7 @@ class Command(BaseCommand):
                 'subdimensions': self.convert_matrix2d_subdimensions(
                     pillar['subpillars']
                 )
-            } for pillar in pillars
+            } for pillar in pillars if pillar.get('id')
         ]
 
     def convert_matrix2d_subdimensions(self, subpillars):
@@ -609,7 +618,7 @@ class Command(BaseCommand):
                 'id': subpillar['id'],
                 'title': subpillar['title'],
                 'tooltip': subpillar['tooltip'],
-            } for subpillar in subpillars
+            } for subpillar in subpillars if subpillar.get('id')
         ]
 
     def convert_matrix2d_sectors(self, sectors):
@@ -620,7 +629,7 @@ class Command(BaseCommand):
                 'subsectors': self.convert_matrix2d_subsectors(
                     sector['subsectors']
                 )
-            } for sector in sectors
+            } for sector in sectors if sector.get('id')
         ]
 
     def convert_matrix2d_subsectors(self, subsectors):
@@ -628,12 +637,14 @@ class Command(BaseCommand):
             {
                 'id': subsector['id'],
                 'title': subsector['title'],
-            } for subsector in subsectors
+            } for subsector in subsectors if subsector.get('id')
         ]
 
     def convert_matrix2d_filter1(self, pillars):
         options = []
         for pillar in pillars:
+            if not pillar.get('id'):
+                continue
             options.append({
                 'key': pillar['id'],
                 'label': pillar['title'],
@@ -652,6 +663,8 @@ class Command(BaseCommand):
     def convert_matrix2d_filter2(self, sectors):
         options = []
         for sector in sectors:
+            if not sector.get('id'):
+                continue
             options.append({
                 'key': sector['id'],
                 'label': sector['title'],
@@ -675,12 +688,18 @@ class Command(BaseCommand):
 
         levels = []
         for sector in element['sectors']:
+            if not sector.get('id'):
+                continue
             sublevels = []
 
             for pillar in element['pillars']:
+                if not pillar.get('id'):
+                    continue
                 subsublevels = []
 
                 for subpillar in pillar['subpillars']:
+                    if not subpillar.get('id'):
+                        continue
                     subsublevels.append({
                         'id': subpillar['id'],
                         'title': subpillar['title'],
@@ -708,6 +727,8 @@ class Command(BaseCommand):
         }
 
     def get_layout(self, element):
+        if not element:
+            element = {}
         default_size = {
             'width': element.get('width') or 240,
             'height': element.get('height') or 240,

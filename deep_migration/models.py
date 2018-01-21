@@ -6,6 +6,7 @@ from geo.models import (
 )
 from project.models import Project
 from lead.models import Lead
+from entry.models import Entry
 from analysis_framework.models import AnalysisFramework
 
 
