@@ -62,7 +62,7 @@ def _save_geo_area(admin_level, parent, feature):
         raise Exception('Invalid geometry type for geoarea')
 
     geo_area.polygons = geom
-    feature_names = feature.fields
+    feature_names = [f.decode('utf-8') for f in feature.fields]
 
     if parent:
         if admin_level.parent_name_prop and \
