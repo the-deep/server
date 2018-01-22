@@ -7,11 +7,16 @@ import requests
 import tldextract
 
 
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36', # noqa
+}
+
+
 class WebInfoExtractor:
     def __init__(self, url):
         self.url = url
 
-        html = requests.get(url).text
+        html = requests.get(url, headers=HEADERS).text
         self.readable = Document(html)
         self.page = BeautifulSoup(html, 'lxml')
 
