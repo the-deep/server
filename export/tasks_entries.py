@@ -47,11 +47,12 @@ def _export_entries(export_type, export_id, user_id, project_id, filters):
 
     elif export_type == 'report':
         report_structure = filters.get('report_structure')
+        pdf = filters.get('pdf', False)
         ReportExporter()\
             .load_exportables(exportables)\
             .load_structure(report_structure)\
             .add_entries(queryset)\
-            .export(export)
+            .export(export, pdf)
 
     return True
 
