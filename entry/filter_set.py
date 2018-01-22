@@ -115,13 +115,6 @@ def get_filtered_entries(user, queries):
             if not isinstance(query, list):
                 query = query.split(',')
 
-            print(query)
-            print([
-                [
-                    f.values for f
-                    in entry.filterdata_set.all()
-                ] for entry in entries
-            ])
             if len(query) > 0:
                 entries = entries.filter(
                     filterdata__filter=filter,

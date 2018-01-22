@@ -229,6 +229,9 @@ class Command(BaseCommand):
                         'scale_units': self.convert_scale_values(
                             element['scaleValues']
                         ),
+                        'value': self.get_default_scale_value(
+                            element['scaleValues']
+                        ),
                     },
                 },
             },
@@ -268,6 +271,11 @@ class Command(BaseCommand):
                 'default': v['default'],
             } for v in values
         ]
+
+    def get_default_scale_value(self, values):
+        return next((
+            v['id'] for v in values if v['default']
+        ), None)
 
     def convert_scale_filter_values(self, values):
         return [

@@ -54,6 +54,7 @@ def get_analysis_framework(lead_id):
     ).first()
     return migration and migration.analysis_framework
 
+
 def get_region(code):
     migration = CountryMigration.objects.filter(
         code=code
@@ -160,6 +161,8 @@ class Command(BaseCommand):
             'multiselectWidget': self.migrate_multiselect,
             'organigramWidget': self.migrate_organigram,
             'geoWidget': self.migrate_geo,
+            'matrix1dWidget': self.migrate_matrix1d,
+            'matrix2dWidget': self.migrate_matrix2d,
         }
 
         method = widget_method_map.get(widget.widget_id)
@@ -175,11 +178,12 @@ class Command(BaseCommand):
             },
         )
 
-    def migrate_filter_data(self, entry, widget, number=None, values=None):
-        filter = Filter.objects.get(
+    def migrate_filter_data(self, entry, widget, index=0,
+                            number=None, values=None):
+        filter = Filter.objects.filter(
             widget_key=widget.key,
             analysis_framework=widget.analysis_framework,
-        )
+        )[index]
         filter_data, _ = FilterData.objects.get_or_create(
             entry=entry,
             filter=filter,
@@ -249,7 +253,7 @@ class Command(BaseCommand):
         })
 
     def migrate_multiselect(self, entry, widget, element):
-        value = element.get('value') or []
+        value = element.get('value', [])
         self.migrate_attribute_data(entry, widget, {
             'value': value,
         })
@@ -274,7 +278,7 @@ class Command(BaseCommand):
         })
 
     def migrate_organigram(self, entry, widget, element):
-        value = element.get('value') or []
+        value = element.get('value', [])
         widget_data = widget.properties['data']
         nodes = self.get_organigram_nodes([widget_data], value)
 
@@ -363,3 +367,180 @@ class Command(BaseCommand):
             areas = areas.filter(code=area_code)
 
         return areas.first()
+
+    def migrate_matrix1d(self, entry, widget, element):
+        selections = element.get('selections', [])
+        attribute = self.get_matrix1d_attribute(selections)
+        self.migrate_attribute_data(entry, widget, attribute)
+
+        widget_data = widget.properties['data']
+        rows = widget_data['rows']
+
+        self.migrate_filter_data(
+            entry, widget,
+            values=self.get_matrix1d_filter_values(selections),
+        )
+        self.migrate_export_data(
+            entry, widget,
+            self.get_matrix1d_export_data(selections, rows),
+        )
+
+    def get_matrix1d_attribute(self, selections):
+        attribute = {}
+        for selection in selections:
+            pillar = selection['pillar']
+            subpillar = selection['subpillar']
+            if pillar not in attribute:
+                attribute[pillar] = {}
+            attribute[pillar][subpillar] = True
+        return attribute
+
+    def get_matrix1d_filter_values(self, selections):
+        filter_values = []
+        for selection in selections:
+            pillar = selection['pillar']
+            subpillar = selection['subpillar']
+            if pillar not in filter_values:
+                filter_values.append(pillar)
+            filter_values.append(subpillar)
+        return filter_values
+
+    def get_matrix1d_export_data(self, selections, rows):
+        excel_values = []
+        report_values = []
+
+        for selection in selections:
+            row = next((r for r in rows if r['key'] == selection['pillar']),
+                       None)
+            if not row:
+                continue
+            cell = next((c for c in row['cells']
+                         if c['key'] == selection['subpillar']),
+                        None)
+            if not cell:
+                continue
+
+            excel_values.append([row['title'], cell['value']])
+            report_values.append('{}-{}'.format(
+                row['key'],
+                cell['key'],
+            ))
+
+        return {
+            'excel': {
+                'type': 'lists',
+                'values': excel_values,
+            },
+            'report': {
+                'keys': report_values,
+            },
+        }
+
+    def migrate_matrix2d(self, entry, widget, element):
+        selections = element.get('selections', [])
+        attribute = self.get_matrix2d_attribute(selections)
+        self.migrate_attribute_data(entry, widget, attribute)
+
+        widget_data = widget.properties['data']
+
+        filter_values1, filter_values2 = self.get_matrix2d_filter_values(
+            selections
+        )
+        self.migrate_filter_data(
+            entry, widget,
+            index=0,
+            values=filter_values1,
+        )
+        self.migrate_filter_data(
+            entry, widget,
+            index=1,
+            values=filter_values2,
+        )
+        self.migrate_export_data(
+            entry, widget,
+            self.get_matrix2d_export_data(selections, widget_data),
+        )
+
+    def get_matrix2d_attribute(self, selections):
+        attribute = {}
+        for selection in selections:
+            pillar = selection['pillar']
+            subpillar = selection['subpillar']
+            sector = selection['sector']
+            subsectors = selection.get('subsectors', [])
+
+            if pillar not in attribute:
+                attribute[pillar] = {}
+            if subpillar not in attribute[pillar]:
+                attribute[pillar][subpillar] = {}
+            attribute[pillar][subpillar][sector] = subsectors
+        return attribute
+
+    def get_matrix2d_filter_values(self, selections):
+        filter_values1 = []
+        filter_values2 = []
+
+        for selection in selections:
+            pillar = selection['pillar']
+            subpillar = selection['subpillar']
+            sector = selection['sector']
+            subsectors = selection.get('subsectors', [])
+
+            if pillar not in filter_values1:
+                filter_values1.append(pillar)
+            if subpillar not in filter_values1:
+                filter_values1.append(subpillar)
+
+            filter_values2.append(sector)
+            filter_values2.extend(subsectors)
+        return filter_values1, filter_values2
+
+    def get_matrix2d_export_data(self, selections, data):
+        excel_values = []
+        report_values = []
+        dimensions = data['dimensions']
+        sectors = data['sectors']
+
+        for selection in selections:
+            dim = next((d for d in dimensions
+                       if d['id'] == selection['pillar']),
+                       None)
+            if not dim:
+                continue
+            sub = next((s for s in dim['subdimensions']
+                        if s['id'] == selection['subpillar']),
+                       None)
+            if not sub:
+                continue
+            sector = next((s for s in sectors
+                           if s['id'] == selection['sector']),
+                          None)
+            if not sector:
+                continue
+
+            subsector_names = []
+            for subsector in selection.get('subsectors', []):
+                ss = next((ss for ss in sector['subsectors']
+                           if ss['id'] == subsector), None)
+                if ss:
+                    subsector_names.append(ss['title'])
+
+            excel_values.append([
+                dim['title'],
+                sub['title'],
+                sector['title'],
+                ','.join(subsector_names),
+            ])
+            report_values.append('{}-{}-{}'.format(
+                dim['id'], sub['id'], sector['id'],
+            ))
+
+        return {
+            'excel': {
+                'type': 'lists',
+                'values': excel_values,
+            },
+            'report': {
+                'keys': report_values,
+            },
+        }
