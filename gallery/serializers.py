@@ -12,9 +12,9 @@ from .models import File, FilePreview
 
 
 class SimpleFileSerializer(serializers.ModelSerializer):
-    title = serializers.CharField(required=False)
-    file = serializers.FileField(required=False)
-    mime_type = serializers.CharField(required=False)
+    title = serializers.CharField(required=False, read_only=True)
+    file = serializers.FileField(required=False, read_only=True)
+    mime_type = serializers.CharField(required=False, read_only=True)
 
     class Meta:
         model = File
