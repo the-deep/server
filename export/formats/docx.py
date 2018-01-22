@@ -131,6 +131,9 @@ class Document:
         self.doc.add_page_break()
         return self
 
+    def save_to_file(self, fp):
+        self.doc.save(fp)
+
     def save(self):
         buffer = io.BytesIO()
         self.doc.save(buffer)

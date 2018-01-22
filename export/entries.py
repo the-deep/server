@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.core.files.base import ContentFile
+from django.core.files.base import ContentFile, File
 from django.db.models import Case, When
 
 from export.formats.xlsx import WorkBook, RowsBuilder
@@ -413,32 +413,33 @@ class ReportExporter:
 
         if pdf:
             temp_doc = tempfile.NamedTemporaryFile(dir=settings.BASE_DIR)
-            temp_pdf = tempfile.NamedTemporaryFile(dir=settings.BASE_DIR,
-                                                   delete=False)
-            temp_pdf.close()
+            self.doc.save_to_file(temp_doc)
+
+            filename = temp_doc.name.split('/')[-1]
+            temp_pdf = os.path.join(settings.BASE_DIR,
+                                    '{}.pdf'.format(filename))
 
             call(['libreoffice', '--headless', '--convert-to',
-                  'pdf', temp_doc.name, '--outdir', temp_pdf.name],
-                 stdout=open(os.devnull, 'wb'))
+                  'pdf', temp_doc.name, '--outdir', settings.BASE_DIR])
 
-            buffer = open(temp_pdf.name, 'rb').read()
             filename = generate_filename('Entries General Export', 'pdf')
+            export_entity.file.save(filename, File(open(temp_pdf, 'rb')))
 
-            os.unlink(temp_pdf.name)
+            os.unlink(temp_pdf)
             temp_doc.close()
-            export_format = Export.PDF
-            mime_type = PDF_MIME_TYPE
+
+            export_entity.format = Export.PDF
+            export_entity.mime_type = PDF_MIME_TYPE
         else:
             buffer = self.doc.save()
             filename = generate_filename('Entries General Export', 'docx')
-            export_format = Export.DOCX
-            mime_type = DOCX_MIME_TYPE
+            export_entity.file.save(filename, ContentFile(buffer))
+
+            export_entity.format = Export.DOCX
+            export_entity.mime_type = DOCX_MIME_TYPE
 
         export_entity.title = filename
         export_entity.type = Export.ENTRIES
-        export_entity.format = export_format
         export_entity.pending = False
-        export_entity.mime_type = mime_type
 
-        export_entity.file.save(filename, ContentFile(buffer))
         export_entity.save()
