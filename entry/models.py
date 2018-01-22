@@ -29,6 +29,8 @@ class Entry(UserResource):
 
     lead = models.ForeignKey(Lead)
     analysis_framework = models.ForeignKey(AnalysisFramework)
+    information_date = models.DateField(default=None,
+                                        null=True, blank=True)
 
     entry_type = models.CharField(
         max_length=10,
