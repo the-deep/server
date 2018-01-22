@@ -78,6 +78,13 @@ class CategoryEditorClassifyView(views.APIView):
             raise exceptions.NotFound()
 
         ce_data = project.category_editor.data
+        if not ce_data:
+            return response.Response(
+                {
+                    'classifications': [],
+                },
+                status=status.HTTP_200_OK,
+            )
         category = request.data.get('category')
         text = request.data.get('text')
         preview_id = request.data.get('preview_id')
