@@ -24,7 +24,7 @@ class Entry(UserResource):
     IMAGE = 'image'
     ENTRY_TYPES = (
         (EXCERPT, 'Excerpt'),
-        (IMAGE, 'Excerpt'),
+        (IMAGE, 'image'),
     )
 
     lead = models.ForeignKey(Lead)
