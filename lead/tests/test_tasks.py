@@ -8,6 +8,7 @@ from utils.common import (
 )
 from utils.extractor.tests.test_web_document import HTML_URL
 
+from lead.tasks import _preprocess
 from lead.tests.test_apis import LeadMixin
 from project.tests.test_apis import ProjectMixin
 
@@ -44,5 +45,5 @@ class ExtractFromLeadTaskTest(ProjectMixin, LeadMixin, TestCase):
         extracted = get_or_write_file(path + '.txt', lead_preview.text_extract)
         self.assertEqual(
             ' '.join(lead_preview.text_extract.split()),
-            ' '.join(extracted.read().split()),
+            _preprocess(' '.join(extracted.read().split())),
         )

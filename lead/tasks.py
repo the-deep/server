@@ -29,7 +29,15 @@ DEEPL_CLASSIFY_URL = 'https://deepl.togglecorp.com/api/v2/classify/'
 
 
 def _preprocess(text):
-    return re.sub(r'\n(\s*\n)*', '\n\n', text)
+    # Tabs to space
+    text = re.sub(r'\t', ' ', text)
+    # Single line breaks to spaces
+    text = re.sub(r'(?<!\n)[ \t]*\n[ \t]*(?!\n)', ' ', text)
+    # Multiple spaces to single
+    text = re.sub(r' +', ' ', text)
+    # More than 3 line breaks to just 3 line breaks
+    text = re.sub(r'\n\s*\n\s*(\n\s*)+', '\n\n\n', text)
+    return text.strip()
 
 
 def _extract_from_lead_core(lead_id):
