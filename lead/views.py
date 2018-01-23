@@ -3,7 +3,7 @@ import re
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.postgres.search import TrigramSimilarity
-from django.db import models
+from django.db import models, transaction
 from rest_framework import (
     exceptions,
     filters,
@@ -238,7 +238,7 @@ class LeadExtractionTriggerView(views.APIView):
             raise exceptions.PermissionDenied()
 
         if not settings.TESTING:
-            extract_from_lead.delay(lead_id)
+            transaction.on_commit(lambda: extract_from_lead.delay(lead_id))
 
         return response.Response({
             'extraction_triggered': lead_id,

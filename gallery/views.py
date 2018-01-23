@@ -10,7 +10,7 @@ from rest_framework import (
 )
 from deep.permissions import ModifyPermission
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
 import django_filters
 
 from user_resource.filters import UserResourceFilterSet
@@ -109,7 +109,9 @@ class FileExtractionTriggerView(views.APIView):
         )
 
         if not settings.TESTING:
-            extract_from_file(file_preview.id)
+            transaction.on_commit(
+                lambda: extract_from_file.delay(file_preview.id)
+            )
 
         return response.Response({
             'extraction_triggered': file_preview.id,
