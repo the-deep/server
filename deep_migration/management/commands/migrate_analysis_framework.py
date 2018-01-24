@@ -113,6 +113,8 @@ class Command(BaseCommand):
             'organigram': self.migrate_organigram,
             'multiselect': self.migrate_multiselect,
             'geolocations': self.migrate_geo,
+
+            'number2d': self.migrate_number_matrix,
         }
 
         method = type_method_map.get(element['type'])
@@ -163,6 +165,7 @@ class Command(BaseCommand):
             widget_key=element['id'],
             defaults={
                 'title': title,
+                'filter_type': 'number',
                 'properties': {
                     'type': 'number',
                 },
@@ -199,6 +202,7 @@ class Command(BaseCommand):
             widget_key=element['id'],
             defaults={
                 'title': title,
+                'filter_type': 'number',
                 'properties': {
                     'type': 'date',
                 },
@@ -442,6 +446,71 @@ class Command(BaseCommand):
                 },
             },
         )
+
+    def migrate_number_matrix(self, framework, element):
+        widget, _ = Widget.objects.get_or_create(
+            widget_id='numberMatrixWidget',
+            analysis_framework=framework,
+            key=element['id'],
+            defaults={
+                'title': element['title'],
+                'properties': {
+                    'overview_grid_layout': self.get_layout(element),
+                    'list_grid_layout': self.get_layout(element.get('list')),
+                    'data': self.convert_number_matrix(element['rows'],
+                                                       element['columns']),
+                },
+            },
+        )
+
+        filter, _ = Filter.objects.get_or_create(
+            key=element['id'],
+            analysis_framework=framework,
+            widget_key=element['id'],
+            defaults={
+                'title': element['title'],
+                'properties': {
+                    'type': 'number-2d',
+                },
+            },
+        )
+
+        exportable, _ = Exportable.objects.get_or_create(
+            widget_key=element['id'],
+            analysis_framework=framework,
+            defaults={
+                'data': self.convert_number_matrix_export(element['rows'],
+                                                          element['columns']),
+            },
+        )
+
+    def convert_number_matrix(self, rows, columns):
+        row_headers = []
+        column_headers = []
+        for row in rows:
+            row_headers.append({'key': row['id'],
+                                'title': row['title']})
+        for column in columns:
+            column_headers.append({'key': column['id'],
+                                   'title': column['title']})
+
+        return {
+            'row_headers': row_headers,
+            'column_headers': column_headers,
+        }
+
+    def convert_number_matrix_export(self, rows, columns):
+        titles = []
+        for row in rows:
+            for column in columns:
+                titles.append('{}-{}'.format(row['title'], column['title']))
+
+        return {
+            'excel': {
+                'type': 'multiple',
+                'titles': titles,
+            },
+        }
 
     def migrate_matrix1d(self, framework, element):
         widget, _ = Widget.objects.get_or_create(

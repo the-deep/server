@@ -163,6 +163,7 @@ class Command(BaseCommand):
             'geoWidget': self.migrate_geo,
             'matrix1dWidget': self.migrate_matrix1d,
             'matrix2dWidget': self.migrate_matrix2d,
+            'numberMatrixWidget': self.migrate_number_matrix,
         }
 
         method = widget_method_map.get(widget.widget_id)
@@ -367,6 +368,51 @@ class Command(BaseCommand):
             areas = areas.filter(code=area_code)
 
         return areas.first()
+
+    def migrate_number_matrix(self, entry, widget, element):
+        numbers = element.get('numbers', [])
+        attribute = self.get_number_matrix(numbers)
+        self.migrate_attribute_data(entry, widget, attribute)
+
+        widget_data = widget.properties['data']
+        rows = widget_data['row_headers']
+        columns = widget_data['column_headers']
+
+        self.migrate_export_data(
+            entry, widget,
+            self.get_number_matrix_export_data(attribute, rows, columns),
+        )
+
+    def get_number_matrix(self, numbers):
+        attribute = {}
+        for number in numbers:
+            row = number['row']
+            column = number['column']
+            if row not in attribute:
+                attribute[row] = {}
+            attribute[row][column] = int(number['value'])
+
+        return attribute
+
+    def get_number_matrix_export_data(self, attribute, rows, columns):
+        excel_values = []
+        for row in rows:
+            row_values = []
+            for column in columns:
+                value = attribute.get(row['key'], {}).get(column['key'], None)
+                if value is not None:
+                    excel_values.append(str(value))
+                    row_values.append(int(value))
+                else:
+                    excel_values.append('')
+            is_same = len(row_values) == 0 or len(set(row_values)) == 1
+            excel_values.append('True' if is_same else 'False')
+
+        return {
+            'excel': {
+                'values': excel_values
+            }
+        }
 
     def migrate_matrix1d(self, entry, widget, element):
         selections = element.get('selections', [])
