@@ -111,6 +111,9 @@ class AdminLevel(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        ordering = ['level']
+
     def clone_to(self, region, parent=None):
         admin_level = AdminLevel(
             region=region,

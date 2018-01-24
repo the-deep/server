@@ -146,6 +146,7 @@ class ExcelExporter:
                     values = []
                     if export_data:
                         values = export_data.get('values', [])
+                        values = [int(v) for v in values]
 
                     for region in self.regions:
                         admin_levels = region.adminlevel_set.all()

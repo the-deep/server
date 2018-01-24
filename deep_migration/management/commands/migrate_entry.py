@@ -327,22 +327,24 @@ class Command(BaseCommand):
         values = [
             {
                 'key': area.id,
+                'short_label': area.get_label(prepend_region=False),
                 'label': area.get_label(),
             } for area in areas
         ]
-        keys = [v['key'] for v in values]
+        keys = [str(v['key']) for v in values]
 
         self.migrate_attribute_data(entry, widget, {
             'values': values,
         })
         self.migrate_filter_data(
-            entry, widget,
+            entry,
+            widget,
             values=keys,
         )
 
         self.migrate_export_data(entry, widget, {
             'excel': {
-                'value': keys,
+                'values': keys,
             }
         })
 
@@ -361,6 +363,7 @@ class Command(BaseCommand):
             return None
 
         areas = GeoArea.objects.filter(
+            admin_level__region=region,
             admin_level__level=admin_level,
             title=area_title,
         )
