@@ -1,6 +1,5 @@
-from django.core.management.base import BaseCommand
-
 from deep_migration.utils import (
+    MigrationCommand,
     get_source_url,
     request_with_auth,
 )
@@ -29,7 +28,6 @@ from datetime import datetime
 import reversion
 
 
-ENTRIES_URL = get_source_url('entries/?template=1', 'v1')
 ONE_DAY = 24 * 60 * 60 * 1000
 
 
@@ -62,12 +60,14 @@ def get_region(code):
     return migration and migration.region
 
 
-class Command(BaseCommand):
-    def handle(self, *args, **kwargs):
-        entries = request_with_auth(ENTRIES_URL)
+class Command(MigrationCommand):
+    def run(self):
+        entries = request_with_auth(
+            get_source_url('entries/?template=1', 'v1')
+        )
 
         if not entries:
-            print('Couldn\'t find entries data at {}'.format(ENTRIES_URL))
+            print('Couldn\'t find entries data')
 
         with reversion.create_revision():
             for entry in entries:

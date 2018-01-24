@@ -1,6 +1,5 @@
-from django.core.management.base import BaseCommand
-
 from deep_migration.utils import (
+    MigrationCommand,
     get_source_url,
     request_with_auth,
 )
@@ -22,9 +21,6 @@ import reversion
 import re
 
 
-ENTRY_TEMPLATES_URL = get_source_url('entry-templates', 'v1')
-
-
 def get_user(old_user_id):
     migration = UserMigration.objects.filter(old_id=old_user_id).first()
     return migration and migration.user
@@ -41,12 +37,12 @@ def snap(x, default=16):
     return round(x / default) * default
 
 
-class Command(BaseCommand):
-    def handle(self, *args, **kwargs):
-        frameworks = request_with_auth(ENTRY_TEMPLATES_URL)
+class Command(MigrationCommand):
+    def run(self):
+        frameworks = request_with_auth(get_source_url('entry-templates', 'v1'))
 
         if not frameworks:
-            print('Couldn\'t find AF data at {}'.format(ENTRY_TEMPLATES_URL))
+            print('Couldn\'t find AF data at')
 
         with reversion.create_revision():
             for framework in frameworks:

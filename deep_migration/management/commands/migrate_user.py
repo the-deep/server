@@ -1,8 +1,8 @@
 from django.contrib.auth.models import User
-from django.core.management.base import BaseCommand
 import requests
 
 from deep_migration.utils import (
+    MigrationCommand,
     get_source_url,
     get_migrated_gallery_file,
 )
@@ -10,15 +10,12 @@ from deep_migration.utils import (
 from deep_migration.models import UserMigration
 
 
-USERS_URL = get_source_url('users2', 'v1')
-
-
-class Command(BaseCommand):
-    def handle(self, *args, **kwargs):
-        data = requests.get(USERS_URL).json()
+class Command(MigrationCommand):
+    def run(self):
+        data = requests.get(get_source_url('users2', 'v1')).json()
 
         if not data:
-            print('Couldn\'t find users data at {}'.format(USERS_URL))
+            print('Couldn\'t find users data')
             return
 
         for user in data:

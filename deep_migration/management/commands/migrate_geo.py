@@ -1,7 +1,7 @@
-from django.core.management.base import BaseCommand
 import requests
 
 from deep_migration.utils import (
+    MigrationCommand,
     get_source_url,
     get_migrated_gallery_file,
 )
@@ -18,15 +18,12 @@ from deep_migration.models import (
 from geo.tasks import load_geo_areas
 
 
-COUNTRIES_URL = get_source_url('countries')
-
-
-class Command(BaseCommand):
-    def handle(self, *args, **kwargs):
-        data = requests.get(COUNTRIES_URL).json()
+class Command(MigrationCommand):
+    def run(self):
+        data = requests.get(get_source_url('countries')).json()
 
         if not data or not data.get('data'):
-            print('Couldn\'t find countries data at {}'.format(COUNTRIES_URL))
+            print('Couldn\'t find countries data')
             return
 
         countries = data['data']

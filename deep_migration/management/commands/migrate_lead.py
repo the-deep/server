@@ -1,6 +1,5 @@
-from django.core.management.base import BaseCommand
-
 from deep_migration.utils import (
+    MigrationCommand,
     get_source_url,
     request_with_auth,
     get_migrated_gallery_file,
@@ -14,9 +13,6 @@ from deep_migration.models import (
 from lead.models import Lead
 
 import reversion
-
-
-LEADS_URL = get_source_url('leads')
 
 
 def get_user(old_user_id):
@@ -42,12 +38,12 @@ STATUS_MAP = {
 }
 
 
-class Command(BaseCommand):
-    def handle(self, *args, **kwargs):
-        data = request_with_auth(LEADS_URL)
+class Command(MigrationCommand):
+    def run(self):
+        data = request_with_auth(get_source_url('leads'))
 
         if not data or not data.get('data'):
-            print('Couldn\'t find leads data at {}'.format(LEADS_URL))
+            print('Couldn\'t find leads data')
 
         leads = data['data']
         with reversion.create_revision():

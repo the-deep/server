@@ -1,6 +1,5 @@
-from django.core.management.base import BaseCommand
-
 from deep_migration.utils import (
+    MigrationCommand,
     get_source_url,
     request_with_auth,
 )
@@ -14,9 +13,6 @@ from project.models import Project, ProjectMembership
 import reversion
 
 
-EVENTS_URL = get_source_url('events2', 'v1')
-
-
 def get_user(old_user_id):
     migration = UserMigration.objects.filter(old_id=old_user_id).first()
     return migration and migration.user
@@ -27,12 +23,12 @@ def get_region(reference_code):
     return migration and migration.region
 
 
-class Command(BaseCommand):
-    def handle(self, *args, **kwargs):
-        projects = request_with_auth(EVENTS_URL)
+class Command(MigrationCommand):
+    def run(self):
+        projects = request_with_auth(get_source_url('events2', 'v1'))
 
         if not projects:
-            print('Couldn\'t find projects data at {}'.format(EVENTS_URL))
+            print('Couldn\'t find projects data')
 
         with reversion.create_revision():
             for project in projects:
