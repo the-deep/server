@@ -329,7 +329,10 @@ class WebInfoExtractView(views.APIView):
             project = None
 
         return response.Response({
-            'project': project and project.id,
+            'project': (
+                (project and project.id) or
+                request.user.profile.last_active_project
+            ),
             'title': title,
             'date': date,
             'country': country,
