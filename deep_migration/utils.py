@@ -57,7 +57,7 @@ def get_source_url(suffix, version='v2'):
 def get_migrated_s3_key(s3_url):
     url_data = urlparse(s3_url)
     old_key = unquote(url_data.path)[len('/media/'):]
-    return 'deep-1/{}'.format(old_key)
+    return 'deep-v1/{}'.format(old_key)
 
 
 def is_using_s3():
@@ -66,6 +66,8 @@ def is_using_s3():
 
 def get_migrated_gallery_file(s3_url, title=None):
     if not is_using_s3():
+        return None
+    if not s3_url:
         return None
 
     key = get_migrated_s3_key(s3_url)

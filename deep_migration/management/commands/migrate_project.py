@@ -10,6 +10,7 @@ from deep_migration.models import (
 )
 from project.models import Project, ProjectMembership
 
+from django.utils.dateparse import parse_date
 import reversion
 
 
@@ -54,8 +55,10 @@ class Command(MigrationCommand):
             migration.save()
 
         project = migration.project
-        project.start_date = data['start_date']
-        project.end_date = data['end_date']
+        project.start_date = data['start_date'] and \
+            parse_date(data['start_date'])
+        project.end_date = data['end_date'] and \
+            parse_date(data['end_date'])
         project.save()
 
         for user_id in data['admins']:
@@ -80,3 +83,5 @@ class Command(MigrationCommand):
             region = get_region(region_code)
             if region and region not in project.regions.all():
                 project.regions.add(region)
+
+        return project

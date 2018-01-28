@@ -4,6 +4,7 @@ from geo.models import (
     Region,
     AdminLevel,
 )
+from user_group.models import UserGroup
 from project.models import Project
 from lead.models import Lead
 from analysis_framework.models import AnalysisFramework
@@ -52,3 +53,9 @@ class AnalysisFrameworkMigration(BaseMigration):
     old_id = models.IntegerField(unique=True)
     analysis_framework = models.ForeignKey(AnalysisFramework,
                                            default=None, blank=True, null=True)
+
+
+class UserGroupMigration(BaseMigration):
+    old_id = models.IntegerField(unique=True)
+    user_group = models.ForeignKey(UserGroup,
+                                   default=None, blank=True, null=True)
