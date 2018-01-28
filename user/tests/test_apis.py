@@ -1,5 +1,6 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
+from project.models import Project, ProjectMembership
 from user.models import User
 
 
@@ -120,6 +121,24 @@ class UserApiTests(AuthMixin, APITestCase):
 
         # TODO: Following is a bug of drf, needs to be fixed
         # self.assertEqual(response.data['organization'], data['organization'])
+
+    def test_active_project(self):
+        project = Project.objects.create(title='Test')
+        ProjectMembership.objects.create(project=project,
+                                         member=self.user)
+        url = '/api/v1/users/{}/'.format(self.user.pk)
+        data = {
+            'last_active_project': project.id,
+        }
+        response = self.client.patch(url, data,
+                                     HTTP_AUTHORIZATION=self.auth,
+                                     format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Get latest user info from db and check if last active
+        # project is set properly
+        self.user = User.objects.get(id=self.user.id)
+        self.assertEqual(self.user.profile.last_active_project, project)
 
     def test_patch_user(self):
         """

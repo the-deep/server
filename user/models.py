@@ -4,6 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from gallery.models import File
+from project.models import Project
 
 
 class Profile(models.Model):
@@ -19,6 +20,10 @@ class Profile(models.Model):
     # country = models.ForeignKey(Country)
     display_picture = models.ForeignKey(File, on_delete=models.SET_NULL,
                                         null=True, blank=True, default=None)
+
+    last_active_project = models.ForeignKey(Project,
+                                            null=True, blank=True,
+                                            default=None)
 
     def __str__(self):
         return str(self.user)

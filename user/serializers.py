@@ -9,6 +9,7 @@ from django.template import loader
 from django.core.mail import EmailMultiAlternatives
 
 from user.models import Profile
+from project.models import Project
 from gallery.models import File
 
 
@@ -22,16 +23,27 @@ class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         required=False,
     )
     display_name = serializers.SerializerMethodField()
+    last_active_project = serializers.PrimaryKeyRelatedField(
+        source='profile.last_active_project',
+        queryset=Project.objects.all(),
+        allow_null=True,
+        required=False,
+    )
 
     class Meta:
         model = User
         fields = ('id', 'username', 'password', 'first_name', 'last_name',
-                  'display_name',
+                  'display_name', 'last_active_project',
                   'email', 'organization', 'display_picture',)
         extra_kwargs = {'password': {'write_only': True}}
 
     def get_display_name(self, user):
         return user.profile.get_display_name()
+
+    def validate_last_active_project(self, project):
+        if not project.can_get(self.context['request'].user):
+            raise serializers.ValidationError('Invalid project')
+        return project
 
     def create(self, validated_data):
         profile_data = validated_data.pop('profile', None)
