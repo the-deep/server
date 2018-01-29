@@ -13,6 +13,7 @@ from redis_store import redis
 import os
 import reversion
 import tempfile
+import zipfile
 
 import traceback
 import logging
@@ -37,6 +38,8 @@ def _save_geo_area(admin_level, parent, feature):
         name = feature.get(admin_level.name_prop)
     if admin_level.code_prop:
         code = feature.get(admin_level.code_prop)
+
+    name = name or ''
 
     geo_area = GeoArea.objects.filter(
         Q(code=None, title=name) | Q(code=code),
@@ -103,7 +106,19 @@ def _generate_geo_areas(admin_level, parent):
         f = tempfile.NamedTemporaryFile(suffix=extension,
                                         dir=settings.BASE_DIR)
         f.write(geo_shape_file.file.read())
-        data_source = DataSource(f.name)
+
+        if extension == '.zip':
+            with tempfile.TemporaryDirectory(
+                dir=settings.BASE_DIR
+            ) as tmpdirname:
+                zipfile.ZipFile(f.name, 'r').extractall(tmpdirname)
+                files = os.listdir(tmpdirname)
+                shape_file = next((f for f in files if f.endswith('.shp')),
+                                  None)
+                data_source = DataSource(os.path.join(tmpdirname, shape_file))
+        else:
+            data_source = DataSource(f.name)
+
         f.close()
 
         # If more than one layer exists, extract from the first layer

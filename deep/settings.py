@@ -389,6 +389,12 @@ DEEP_SUPPORTED_MIME_TYPES = [
     'text/csv', 'image/png', 'image/jpeg', 'image/fig',
     'application/json', 'application/xml', 'application/msword',
 ]
+DEEP_SUPPORTED_EXTENSIONS = [
+    'docx', 'xlsx', 'pdf', 'pptx',
+    'json', 'png', 'jpg', 'jpeg', 'csv', 'txt',
+    'geojson', 'zip',
+]
+
 # Gallery files Cache-control max-age - 1hr from s3
 MAX_FILE_CACHE_AGE = GALLERY_FILE_EXPIRE - (60 * 60)
 

@@ -10,6 +10,8 @@ from utils.external_storages.google_drive import download as g_download
 from utils.external_storages.dropbox import download as d_download
 from .models import File, FilePreview
 
+import os
+
 
 class SimpleFileSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=False, read_only=True)
@@ -28,7 +30,9 @@ class FileSerializer(DynamicFieldsMixin, UserResourceSerializer):
 
     # Validations
     def validate_file(self, file):
-        if file.content_type not in settings.DEEP_SUPPORTED_MIME_TYPES:
+        extension = os.path.splitext(file.name)[1][1:]
+        if file.content_type not in settings.DEEP_SUPPORTED_MIME_TYPES and \
+                extension not in settings.DEEP_SUPPORTED_EXTENSIONS:
             raise serializers.ValidationError(
                 'Unsupported file type {}'.format(file.content_type))
         return file
