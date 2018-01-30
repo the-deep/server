@@ -1,6 +1,10 @@
-from rest_framework import viewsets, permissions
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from rest_framework import (
+    viewsets,
+    permissions,
+    views,
+    response,
+    status,
+)
 
 from deep.permissions import ModifyPermission
 from geo.models import Region
@@ -28,6 +32,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
             projects = projects.filter(user_groups=user_group)
 
         return projects
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        if request.method == 'GET' and \
+                response.status_code == status.HTTP_200_OK:
+            profile = request.user.profile
+            response.data['extra'] = {
+                'last_active_project': profile.last_active_project.id,
+            }
+
+        return super(ProjectViewSet, self).finalize_response(
+            request, response,
+            *args, **kwargs,
+        )
 
 
 class ProjectMembershipViewSet(viewsets.ModelViewSet):
@@ -66,7 +83,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         return ProjectMembership.get_for(self.request.user)
 
 
-class ProjectOptionsView(APIView):
+class ProjectOptionsView(views.APIView):
     """
     Options for various attributes related to project
     """
@@ -124,4 +141,4 @@ class ProjectOptionsView(APIView):
                 } for user_group in user_groups.distinct()
             ]
 
-        return Response(options)
+        return response.Response(options)

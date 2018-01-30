@@ -65,6 +65,18 @@ class ProjectApiTest(AuthMixin, ProjectMixin, APITestCase):
         self.assertEqual(membership.member.pk, self.user.pk)
         self.assertEqual(membership.role, 'admin')
 
+    def test_active_project(self):
+        project = self.create_or_get_project()
+        self.user.profile.last_active_project = project
+        self.user.save()
+        url = '/api/v1/projects/'
+        response = self.client.get(url,
+                                   HTTP_AUTHORIZATION=self.auth,
+                                   format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['extra']['last_active_project'],
+                         project.id)
+
     def test_add_member(self):
         """
         Add Project Members
