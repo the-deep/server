@@ -12,6 +12,7 @@ from deep_migration.models import (
 )
 from lead.models import Lead
 
+from django.utils.dateparse import parse_date
 import reversion
 
 
@@ -82,7 +83,8 @@ class Command(MigrationCommand):
         lead.confidentiality = CONFIDENTIALITY_MAP[data['confidentiality']]
         lead.status = STATUS_MAP[data['status']]
 
-        lead.published_on = data['published_at']
+        lead.published_on = data['published_at'] and \
+            parse_date(data['published_at'])
         lead.created_by = get_user(data['created_by'])
         lead.modified_by = lead.created_by
 

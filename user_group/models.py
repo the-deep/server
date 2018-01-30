@@ -9,8 +9,9 @@ class UserGroup(models.Model):
     """
     title = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
-    display_picture = models.FileField(upload_to='group_dp/',
-                                       null=True, blank=True, default=None)
+    display_picture = models.ForeignKey('gallery.File',
+                                        on_delete=models.SET_NULL,
+                                        null=True, blank=True, default=None)
     members = models.ManyToManyField(User, blank=True,
                                      through='GroupMembership')
     global_crisis_monitoring = models.BooleanField(default=False)

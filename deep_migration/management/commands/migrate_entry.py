@@ -513,9 +513,11 @@ class Command(MigrationCommand):
     def get_matrix2d_attribute(self, selections):
         attribute = {}
         for selection in selections:
-            pillar = selection['pillar']
-            subpillar = selection['subpillar']
-            sector = selection['sector']
+            pillar = selection.get('pillar')
+            subpillar = selection.get('subpillar')
+            sector = selection.get('sector')
+            if not pillar or not subpillar or not sector:
+                continue
             subsectors = selection.get('subsectors', [])
 
             if pillar not in attribute:
@@ -530,9 +532,11 @@ class Command(MigrationCommand):
         filter_values2 = []
 
         for selection in selections:
-            pillar = selection['pillar']
-            subpillar = selection['subpillar']
-            sector = selection['sector']
+            pillar = selection.get('pillar')
+            subpillar = selection.get('subpillar')
+            sector = selection.get('sector')
+            if not pillar or not subpillar or not sector:
+                continue
             subsectors = selection.get('subsectors', [])
 
             if pillar not in filter_values1:
@@ -551,18 +555,24 @@ class Command(MigrationCommand):
         sectors = data['sectors']
 
         for selection in selections:
+            pillar = selection.get('pillar')
+            subpillar = selection.get('subpillar')
+            sector = selection.get('sector')
+            if not pillar or not subpillar or not sector:
+                continue
+
             dim = next((d for d in dimensions
-                       if d['id'] == selection['pillar']),
+                       if d['id'] == pillar),
                        None)
             if not dim:
                 continue
             sub = next((s for s in dim['subdimensions']
-                        if s['id'] == selection['subpillar']),
+                        if s['id'] == subpillar),
                        None)
             if not sub:
                 continue
             sector = next((s for s in sectors
-                           if s['id'] == selection['sector']),
+                           if s['id'] == sector),
                           None)
             if not sector:
                 continue
