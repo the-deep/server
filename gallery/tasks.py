@@ -48,10 +48,14 @@ def _extract_from_file_core(file_preview_id):
             data = {
                 'document': all_text
             }
-            response = requests.post(DEEPL_NGRAMS_URL,
-                                     data=data).json()
-            file_preview.ngrams = response
-            file_preview.extracted = True
+            try:
+                response = requests.post(DEEPL_NGRAMS_URL,
+                                         data=data).json()
+                file_preview.ngrams = response
+                file_preview.extracted = True
+            except Exception as e:
+                logger.error(traceback.format_exc())
+
             file_preview.save()
 
     return True
