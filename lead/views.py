@@ -183,10 +183,13 @@ class LeadOptionsView(views.APIView):
 
         options = {}
 
+        def _filter_by_projects(qs, projects):
+            for p in projects:
+                qs = qs.filter(project=p)
+            return qs
+
         if (fields is None or 'assignee' in fields):
-            assignee = User.objects.filter(
-                project__in=projects,
-            )
+            assignee = _filter_by_projects(User.objects, projects)
             options['assignee'] = [
                 {
                     'key': user.id,

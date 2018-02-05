@@ -88,11 +88,14 @@ class ProjectOptionsView(APIView):
 
         options = {}
 
+        def _filter_by_projects(qs, projects):
+            for p in projects:
+                qs = qs.filter(project=p)
+            return qs
+
         if (fields is None or 'regions' in fields):
             if projects:
-                regions1 = Region.objects.filter(
-                    project__in=projects
-                )
+                regions1 = _filter_by_projects(Region.objects, projects)
             else:
                 regions1 = Region.objects.none()
             regions2 = Region.get_for(request.user).distinct()
@@ -107,9 +110,7 @@ class ProjectOptionsView(APIView):
 
         if (fields is None or 'user_groups' in fields):
             if projects:
-                user_groups1 = UserGroup.objects.filter(
-                    project__in=projects
-                )
+                user_groups1 = _filter_by_projects(UserGroup.objects, projects)
             else:
                 user_groups1 = UserGroup.objects.none()
             user_groups2 = UserGroup.get_modifiable_for(request.user)\
