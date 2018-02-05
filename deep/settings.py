@@ -386,7 +386,7 @@ DEEP_SUPPORTED_MIME_TYPES = [
     'presentation',
     'application/vnd.ms-powerpoint', 'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'text/csv', 'image/png', 'image/jpeg', 'image/fig',
+    'text/csv', 'image/png', 'image/jpeg', 'image/fig', 'image/gif',
     'application/json', 'application/xml', 'application/msword',
 ]
 DEEP_SUPPORTED_EXTENSIONS = [
