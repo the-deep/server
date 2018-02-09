@@ -256,6 +256,15 @@ class LeadWebsiteFetch(views.APIView):
 
     def post(self, request, *args, **kwargs):
         url = request.data.get('url')
+        return self.website_fetch(url)
+
+    def get(self, request, *args, **kwargs):
+        url = request.query_params.get('url')
+        response = self.website_fetch(url)
+        response['Cache-Control'] = 'max-age={}'.format(60 * 60)
+        return response
+
+    def website_fetch(self, url):
         https_url = url
         http_url = url
 
