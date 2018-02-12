@@ -38,7 +38,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 response.status_code == status.HTTP_200_OK:
             profile = request.user.profile
             response.data['extra'] = {
-                'last_active_project': profile.last_active_project.id,
+                'last_active_project': (
+                    profile.last_active_project and
+                    profile.last_active_project.id
+                ),
             }
 
         return super(ProjectViewSet, self).finalize_response(
