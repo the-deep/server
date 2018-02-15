@@ -28,6 +28,7 @@ class Entry(UserResource):
     )
 
     lead = models.ForeignKey(Lead)
+    order = models.IntegerField(default=1)
     analysis_framework = models.ForeignKey(AnalysisFramework)
     information_date = models.DateField(default=None,
                                         null=True, blank=True)
@@ -68,6 +69,7 @@ class Entry(UserResource):
 
     class Meta(UserResource.Meta):
         verbose_name_plural = 'entries'
+        ordering = ['order', '-created_at']
 
 
 class Attribute(models.Model):
