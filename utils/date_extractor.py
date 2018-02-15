@@ -105,4 +105,4 @@ def extract_date(url, page):
     if date is None:
         date = _extract_from_url(url)
 
-    return date
+    return date.date()
