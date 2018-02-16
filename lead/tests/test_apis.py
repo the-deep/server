@@ -7,7 +7,7 @@ from project.models import Project, ProjectMembership
 from geo.models import Region
 from lead.models import Lead
 
-from datetime import datetime
+from datetime import date
 
 
 class LeadMixin():
@@ -125,7 +125,7 @@ class LeadTests(AuthMixin, ProjectMixin, LeadMixin, APITestCase):
 SAMPLE_WEB_INFO_URL = 'https://reliefweb.int/report/yemen/yemen-emergency-food-security-and-nutrition-assessment-efsna-2016-preliminary-results' # noqa
 SAMPLE_WEB_INFO_SOURCE = 'World Food Programme, UN Children\'s Fund, Food and Agriculture Organization of the United Nations' # noqa
 SAMPLE_WEB_INFO_COUNTRY = 'Yemen'
-SAMPLE_WEB_INFO_DATE = datetime(2017, 1, 26)
+SAMPLE_WEB_INFO_DATE = date(2017, 1, 26)
 SAMPLE_WEB_INFO_WEBSITE = 'reliefweb.int'
 SAMPLE_WEB_INFO_TITLE = 'Yemen Emergency Food Security and Nutrition Assessment (EFSNA) 2016 - Preliminary Results' # noqa
 
