@@ -110,6 +110,7 @@ class UserApiTests(AuthMixin, APITestCase):
             'organization': 'Togglecorp',
             'password': 'admin123',
             'display_picture': None,
+            'recaptcha_response': 'TEST',
         }
 
         # TODO: Test display picture api

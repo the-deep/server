@@ -12,6 +12,8 @@ from user.models import Profile
 from project.models import Project
 from gallery.models import File
 
+from jwt_auth.recaptcha import validate_recaptcha
+
 
 class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     organization = serializers.CharField(source='profile.organization',
@@ -29,16 +31,29 @@ class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         allow_null=True,
         required=False,
     )
+    login_attempts = serializers.IntegerField(
+        source='profile.login_attempts',
+        read_only=True,
+    )
+
+    recaptcha_response = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
         fields = ('id', 'username', 'password', 'first_name', 'last_name',
                   'display_name', 'last_active_project',
+                  'login_attempts', 'recaptcha_response',
                   'email', 'organization', 'display_picture',)
         extra_kwargs = {'password': {'write_only': True}}
 
     def get_display_name(self, user):
         return user.profile.get_display_name()
+
+    def validate_recaptcha_response(self, recaptcha_response):
+        if not validate_recaptcha(recaptcha_response):
+            raise serializers.ValidationError(
+                'Invalid Captcha'
+            )
 
     def validate_last_active_project(self, project):
         if not project.can_get(self.context['request'].user):
@@ -47,6 +62,7 @@ class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     def create(self, validated_data):
         profile_data = validated_data.pop('profile', None)
+        validated_data.pop('recaptcha_response', None)
         user = super(UserSerializer, self).create(validated_data)
         user.set_password(validated_data['password'])
         user.save()

@@ -25,6 +25,8 @@ class Profile(models.Model):
                                             null=True, blank=True,
                                             default=None)
 
+    login_attempts = models.IntegerField(default=0)
+
     def __str__(self):
         return str(self.user)
 
