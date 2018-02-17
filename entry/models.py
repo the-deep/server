@@ -11,6 +11,8 @@ from analysis_framework.models import (
     Exportable,
 )
 
+from .utils import update_entry_attribute
+
 
 class Entry(UserResource):
     """
@@ -82,6 +84,10 @@ class Attribute(models.Model):
     entry = models.ForeignKey(Entry)
     widget = models.ForeignKey(Widget)
     data = JSONField(default=None, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        super(Attribute, self).save(*args, **kwargs)
+        update_entry_attribute(self)
 
     @staticmethod
     def get_for(user):
