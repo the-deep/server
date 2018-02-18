@@ -22,7 +22,7 @@ def validate_recaptcha(recaptcha_response):
     r = requests.post(
         RECAPTCHA_URL,
         data=data,
-        header=HEADERS,
+        headers=HEADERS,
     ).json()
 
     return r.get('success')

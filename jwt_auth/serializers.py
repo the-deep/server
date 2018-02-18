@@ -7,6 +7,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from utils.hid import HumanitarianId
 from .token import AccessToken, RefreshToken
 from .recaptcha import validate_recaptcha
+from .errors import InvalidCaptchaError
 
 
 class TokenObtainPairSerializer(serializers.Serializer):
@@ -14,11 +15,17 @@ class TokenObtainPairSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
     recaptcha_response = serializers.CharField(write_only=True, required=False)
 
+    def check_login_attempts(self, user, recaptcha_response):
+        if user.profile.login_attempts > settings.MAX_LOGIN_ATTEMPTS:
+            if not validate_recaptcha(recaptcha_response):
+                raise InvalidCaptchaError
+
     def validate(self, data):
         user = authenticate(
             username=data['username'],
             password=data['password']
         )
+        recaptcha_response = data.get('recaptcha_response')
 
         if not user or not user.is_active:
             user = models.User.objects.filter(username=data['username'])\
@@ -27,21 +34,12 @@ class TokenObtainPairSerializer(serializers.Serializer):
                 user.profile.login_attempts += 1
                 user.save()
 
-            if user.profile.login_attempts > settings.MAX_LOGIN_ATTEMPTS:
-                if not validate_recaptcha(data.get('recaptcha_response')):
-                    raise serializers.ValidationError(
-                        'Invalid Captcha'
-                    )
-
+            self.check_login_attempts(user, recaptcha_response)
             raise serializers.ValidationError(
                 'No active account found with the given credentials'
             )
 
-        if user.profile.login_attempts > settings.MAX_LOGIN_ATTEMPTS:
-            if not validate_recaptcha(data.get('recaptcha_response')):
-                raise serializers.ValidationError(
-                    'Invalid Captcha'
-                )
+        self.check_login_attempts(user, recaptcha_response)
 
         if user.profile.login_attempts > 0:
             user.profile.login_attempts = 0

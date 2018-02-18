@@ -25,6 +25,9 @@ def custom_exception_handler(exc, context):
     # Timestamp of exception
     response.data['timestamp'] = timezone.now()
 
+    if hasattr(exc, 'status_code'):
+        response.status_code = exc.status_code
+
     if hasattr(exc, 'code'):
         # If the raised exception defines a code, send it as
         # internal error code
