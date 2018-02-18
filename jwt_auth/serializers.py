@@ -28,7 +28,7 @@ class TokenObtainPairSerializer(serializers.Serializer):
                 user.save()
 
             if user.profile.login_attempts > settings.MAX_LOGIN_ATTEMPTS:
-                if not validate_recaptcha(data['recaptcha_response']):
+                if not validate_recaptcha(data.get('recaptcha_response')):
                     raise serializers.ValidationError(
                         'Invalid Captcha'
                     )
@@ -38,7 +38,7 @@ class TokenObtainPairSerializer(serializers.Serializer):
             )
 
         if user.profile.login_attempts > settings.MAX_LOGIN_ATTEMPTS:
-            if not validate_recaptcha(data['recaptcha_response']):
+            if not validate_recaptcha(data.get('recaptcha_response')):
                 raise serializers.ValidationError(
                     'Invalid Captcha'
                 )
