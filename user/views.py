@@ -14,6 +14,9 @@ from .serializers import (
     PasswordResetSerializer,
 )
 
+from jwt_auth.recaptcha import validate_recaptcha
+from jwt_auth.errors import InvalidCaptchaError
+
 
 class UserPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -60,7 +63,11 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class PasswordResetView(views.APIView):
     def post(self, request, version=None):
-        user = User.objects.filter(email=request.data.get('email'))
+        email = request.data.get('email')
+        recaptcha_response = request.data.get('recaptcha_response')
+        user = User.objects.filter(email=email)
+        if not validate_recaptcha(recaptcha_response):
+            raise InvalidCaptchaError
         if not user.exists():
             raise exceptions.NotFound()
 

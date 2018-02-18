@@ -13,6 +13,7 @@ from project.models import Project
 from gallery.models import File
 
 from jwt_auth.recaptcha import validate_recaptcha
+from jwt_auth.errors import InvalidCaptchaError
 
 
 class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -51,9 +52,7 @@ class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     def validate_recaptcha_response(self, recaptcha_response):
         if not validate_recaptcha(recaptcha_response):
-            raise serializers.ValidationError(
-                'Invalid Captcha'
-            )
+            raise InvalidCaptchaError
 
     def validate_last_active_project(self, project):
         if not project.can_get(self.context['request'].user):
