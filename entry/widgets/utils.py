@@ -8,7 +8,7 @@ def set_filter_data(entry, widget, index=0,
         widget_key=widget.key,
         analysis_framework=widget.analysis_framework,
     )[index]
-    FilterData.objects.get_or_create(
+    f, _ = FilterData.objects.update_or_create(
         entry=entry,
         filter=filter,
         defaults={
@@ -16,6 +16,7 @@ def set_filter_data(entry, widget, index=0,
             'values': values,
         },
     )
+    return f
 
 
 def set_export_data(entry, widget, data):
@@ -23,10 +24,11 @@ def set_export_data(entry, widget, data):
         widget_key=widget.key,
         analysis_framework=widget.analysis_framework,
     )
-    ExportData.objects.get_or_create(
+    e, _ = ExportData.objects.update_or_create(
         entry=entry,
         exportable=exportable,
         defaults={
             'data': data,
         },
     )
+    return e

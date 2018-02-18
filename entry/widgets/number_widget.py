@@ -1,19 +1,13 @@
-from datetime import datetime
 from .utils import set_filter_data, set_export_data
-
-
-ONE_DAY = 24 * 60 * 60
 
 
 def update_attribute(entry, widget, data, widget_data):
     value = data.get('value')
 
-    date = value and datetime.strptime(value, '%Y-%m-%d')
-    number = date and int(date.timestamp() / ONE_DAY)
     set_filter_data(
         entry,
         widget,
-        number=number,
+        number=value,
     )
 
     set_export_data(
@@ -21,7 +15,7 @@ def update_attribute(entry, widget, data, widget_data):
         widget,
         {
             'excel': {
-                'value': date and date.strftime('%d-%m-%Y'),
+                'value': value and str(value),
             },
         },
     )

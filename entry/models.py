@@ -11,8 +11,6 @@ from analysis_framework.models import (
     Exportable,
 )
 
-from .utils import update_entry_attribute
-
 
 class Entry(UserResource):
     """
@@ -87,6 +85,7 @@ class Attribute(models.Model):
 
     def save(self, *args, **kwargs):
         super(Attribute, self).save(*args, **kwargs)
+        from .utils import update_entry_attribute
         update_entry_attribute(self)
 
     @staticmethod

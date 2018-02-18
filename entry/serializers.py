@@ -79,17 +79,17 @@ class EntrySerializer(DynamicFieldsMixin, UserResourceSerializer):
     attributes = SimpleAttributeSerializer(source='attribute_set',
                                            many=True,
                                            required=False)
-    filter_data = SimpleFilterDataSerializer(source='filterdata_set',
-                                             many=True,
-                                             required=False)
-    export_data = SimpleExportDataSerializer(source='exportdata_set',
-                                             many=True,
-                                             required=False)
+    # filter_data = SimpleFilterDataSerializer(source='filterdata_set',
+    #                                          many=True,
+    #                                          required=False)
+    # export_data = SimpleExportDataSerializer(source='exportdata_set',
+    #                                          many=True,
+    #                                          required=False)
 
     class Meta:
         model = Entry
         fields = ('id', 'lead', 'analysis_framework',
                   'entry_type', 'excerpt', 'image', 'information_date',
-                  'attributes', 'filter_data', 'export_data', 'order',
+                  'attributes', 'order',
                   'created_at', 'created_by', 'modified_at', 'modified_by',
                   'version_id')
