@@ -326,13 +326,10 @@ class WebInfoExtractView(views.APIView):
                 regions__title__icontains=country
             ).first()
         else:
-            project = None
+            project = request.user.profile.last_active_project
 
         return response.Response({
-            'project': (
-                (project and project.id) or
-                request.user.profile.last_active_project
-            ),
+            'project': project and project.id,
             'title': title,
             'date': date,
             'country': country,
