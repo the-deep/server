@@ -93,6 +93,11 @@ class Widget(models.Model):
     title = models.CharField(max_length=255)
     properties = JSONField(default=None, blank=True, null=True)
 
+    def save(self, *args, **kwargs):
+        super(Widget, self).save(*args, **kwargs)
+        from .utils import update_widget
+        update_widget(self)
+
     def __str__(self):
         return '{} ({})'.format(self.title, self.widget_id)
 

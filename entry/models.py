@@ -88,6 +88,12 @@ class Attribute(models.Model):
         from .utils import update_entry_attribute
         update_entry_attribute(self)
 
+    def __str__(self):
+        return 'Attribute ({}, {})'.format(
+            self.entry.lead.title,
+            self.widget.title,
+        )
+
     @staticmethod
     def get_for(user):
         """
@@ -104,12 +110,6 @@ class Attribute(models.Model):
 
     def can_modify(self, user):
         return self.entry.can_modify(user)
-
-    def __str__(self):
-        return 'Attribute ({}, {})'.format(
-            self.entry.lead.title,
-            self.widget.title,
-        )
 
 
 class FilterData(models.Model):

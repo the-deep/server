@@ -84,10 +84,10 @@ class AnalysisFrameworkSerializer(DynamicFieldsMixin, UserResourceSerializer):
                                      required=False)
     filters = SimpleFilterSerializer(source='filter_set',
                                      many=True,
-                                     required=False)
+                                     read_only=True)
     exportables = SimpleExportableSerializer(source='exportable_set',
                                              many=True,
-                                             required=False)
+                                             read_only=True)
 
     is_admin = serializers.SerializerMethodField()
 

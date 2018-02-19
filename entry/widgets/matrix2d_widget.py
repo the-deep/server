@@ -68,13 +68,13 @@ def update_attribute(entry, widget, data, widget_data):
     set_filter_data(
         entry,
         widget,
-        index=0,
+        key='{}-dimensions'.format(widget.key),
         values=filter1_values,
     )
     set_filter_data(
         entry,
         widget,
-        index=1,
+        key='{}-sectors'.format(widget.key),
         values=filter2_values,
     )
     set_export_data(

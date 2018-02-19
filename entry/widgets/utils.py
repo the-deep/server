@@ -2,12 +2,14 @@ from analysis_framework.models import Filter, Exportable
 from entry.models import FilterData, ExportData
 
 
-def set_filter_data(entry, widget, index=0,
+def set_filter_data(entry, widget, key=None,
                     number=None, values=None):
+    key = key or widget.key
     filter = Filter.objects.filter(
         widget_key=widget.key,
         analysis_framework=widget.analysis_framework,
-    )[index]
+        key=key,
+    ).first()
     f, _ = FilterData.objects.update_or_create(
         entry=entry,
         filter=filter,
