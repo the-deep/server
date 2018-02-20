@@ -1,0 +1,3 @@
+{% load i18n %}{% autoescape off %}
+{% if welcome %}DEEP Account Activation{% endif %}
+{% endautoescape %}

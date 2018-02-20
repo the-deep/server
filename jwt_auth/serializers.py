@@ -5,9 +5,14 @@ from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 
 from utils.hid import HumanitarianId
+from user.utils import send_account_activation
 from .token import AccessToken, RefreshToken
 from .recaptcha import validate_recaptcha
-from .errors import InvalidCaptchaError
+from .errors import (
+    InvalidCaptchaError,
+    AuthenticationFailedError,
+    UserInactiveError,
+)
 
 
 class TokenObtainPairSerializer(serializers.Serializer):
@@ -15,29 +20,43 @@ class TokenObtainPairSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
     recaptcha_response = serializers.CharField(write_only=True, required=False)
 
+    def validate_recaptcha(self, recaptcha_response):
+        if not validate_recaptcha(recaptcha_response):
+            raise InvalidCaptchaError
+
+    def deactivate_account(self, user):
+        if user.is_active:
+            user.is_active = False
+            user.save()
+            send_account_activation(user)
+        raise UserInactiveError(
+            message='Account is deactivated, check your email')
+
     def check_login_attempts(self, user, recaptcha_response):
-        if user.profile.login_attempts > settings.MAX_LOGIN_ATTEMPTS:
-            if not validate_recaptcha(recaptcha_response):
-                raise InvalidCaptchaError
+        login_attempts = user.profile.login_attempts
+        if login_attempts >= settings.MAX_LOGIN_ATTEMPTS:
+            self.deactivate_account(user)
+        elif login_attempts >= settings.MIN_LOGIN_ATTEMPTS:
+            self.validate_recaptcha(recaptcha_response)
 
     def validate(self, data):
+        # NOTE: authenticate only works for active users
         user = authenticate(
             username=data['username'],
             password=data['password']
         )
         recaptcha_response = data.get('recaptcha_response')
 
+        # user not active or user credentials don't match
         if not user or not user.is_active:
             user = models.User.objects.filter(username=data['username'])\
                 .first()
             if user:
                 user.profile.login_attempts += 1
                 user.save()
-
-            self.check_login_attempts(user, recaptcha_response)
-            raise serializers.ValidationError(
-                'No active account found with the given credentials'
-            )
+                self.check_login_attempts(user, recaptcha_response)
+                raise AuthenticationFailedError(user.profile.login_attempts)
+            raise AuthenticationFailedError()
 
         self.check_login_attempts(user, recaptcha_response)
 

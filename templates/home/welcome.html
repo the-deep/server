@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        #container {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        #content {
+            padding: 0;
+            height: calc(100vh - 60px);
+        }
+
+        .welcome {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+
+<div class="welcome">
+    <h1>THIS IS DEEP API ENDPOINT</h1>
+    <p>Useful links:</p>
+    <ul>
+    <li>Goto Deep Website: <a href="{{frontend_url}}">{{frontend_url}}</a></li>
+    <li>Goto Deep Admin: <a href="/admin">Admin Panel</a></li>
+    </ul>
+</div>
+
+{% endblock %}

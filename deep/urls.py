@@ -12,6 +12,7 @@ from rest_framework import routers
 from user.views import (
     UserViewSet,
     PasswordResetView,
+    user_activate_confirm,
 )
 from gallery.views import (
     FileViewSet,
@@ -180,13 +181,18 @@ urlpatterns = [
     url(get_api_path(r'token/refresh/$'),
         TokenRefreshView.as_view()),
 
+    # Activate User
+    url(r'^user/activate/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
+        user_activate_confirm,
+        name='user_activate_confirm'),
+
     # password reset
     url(get_api_path(r'password/reset/$'),
         PasswordResetView.as_view()),
 
     url(r'^password/reset/done/$',
         auth_views.password_reset_done,
-        name="password_rest_done"),
+        name='password_rest_done'),
 
     url(r'^password/reset/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
         auth_views.password_reset_confirm,
@@ -194,19 +200,19 @@ urlpatterns = [
             'post_reset_redirect': '{}://{}/login/'.format(
                 settings.HTTP_PROTOCOL, settings.DEEPER_FRONTEND_HOST)
         },
-        name="password_reset_confirm"),
+        name='password_reset_confirm'),
 
     url(r'^password/done/$',
         auth_views.password_reset_complete,
-        name="password_reset_complete"),
+        name='password_reset_complete'),
 
     url(r'^password/change/$',
         auth_views.password_change,
-        name="password_change"),
+        name='password_change'),
 
     url(r'^password/change/done/$',
         auth_views.password_change,
-        name="password_change_done"),
+        name='password_change_done'),
 
     # Attribute options for various models
     url(get_api_path(r'lead-options/$'),

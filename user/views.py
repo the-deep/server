@@ -1,21 +1,22 @@
 from django.contrib.auth.models import User
+from django.template.response import TemplateResponse
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_text
 from rest_framework import (
     status,
     viewsets,
     permissions,
     filters,
-    exceptions,
     response,
     views,
 )
 
+from deep.views import get_frontend_url
 from .serializers import (
     UserSerializer,
     PasswordResetSerializer,
 )
-
-from jwt_auth.recaptcha import validate_recaptcha
-from jwt_auth.errors import InvalidCaptchaError
 
 
 class UserPermission(permissions.BasePermission):
@@ -63,16 +64,35 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class PasswordResetView(views.APIView):
     def post(self, request, version=None):
-        email = request.data.get('email')
-        recaptcha_response = request.data.get('recaptcha_response')
-        user = User.objects.filter(email=email)
-        if not validate_recaptcha(recaptcha_response):
-            raise InvalidCaptchaError
-        if not user.exists():
-            raise exceptions.NotFound()
-
         serializer = PasswordResetSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-        return response.Response(serializer.data,
-                                 status=status.HTTP_200_OK)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return response.Response(
+            serializer.data, status=status.HTTP_201_CREATED)
+
+
+def user_activate_confirm(
+    request, uidb64, token,
+    template_name='registration/user_activation_confirm.html',
+    token_generator=default_token_generator,
+):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    context = {
+        'success': True,
+        'login_url': get_frontend_url('login/'),
+        'title': 'Account Activation',
+    }
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.profile.login_attempts = 0
+        user.save()
+    else:
+        context['success'] = False
+
+    return TemplateResponse(request, template_name, context)

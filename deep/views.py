@@ -3,18 +3,25 @@ from rest_framework import status
 from rest_framework.views import APIView
 
 from django.views.generic import View
-from django.http import HttpResponse
 from django.conf import settings
+from django.template.response import TemplateResponse
+
+
+def get_frontend_url(path=''):
+    return '{protocol}://{domain}/{path}'.format(
+        protocol=settings.HTTP_PROTOCOL or 'http',
+        domain=settings.DEEPER_FRONTEND_HOST or 'localhost:3000',
+        path=path,
+    )
 
 
 class FrontendView(View):
     def get(self, request):
         # TODO: make nice redirect page
-        frontend_url = settings.DEEPER_FRONTEND_HOST
-        frontend_url = frontend_url if frontend_url is not '*' else\
-            'localhost:3000'
-        return HttpResponse('THIS IS DEEP API ENDPOINT GOTO: http://' +
-                            frontend_url)
+        context = {
+            'frontend_url': get_frontend_url(),
+        }
+        return TemplateResponse(request, 'home/welcome.html', context)
 
 
 class Api_404View(APIView):
