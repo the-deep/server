@@ -248,6 +248,11 @@ class ReportExporter:
             para.add_hyperlink(url, source)
         else:
             para.add_run(source)
+
+        date = entry.lead.published_on
+        if date:
+            para.add_run(', {}'.format(date.strftime('%d/%m/%Y')))
+
         para.add_run(')')
 
         self.doc.add_paragraph()
