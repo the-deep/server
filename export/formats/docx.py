@@ -3,9 +3,20 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 
 import docx
+import requests
 import io
+import re
+import tempfile
+import base64
 
 from utils.common import get_valid_xml_string as xstr
+
+
+def _write_file(r, fp):
+    for chunk in r.iter_content(chunk_size=1024):
+        if chunk:
+            fp.write(chunk)
+    return fp
 
 
 def _first_child_found_in(parent, tagnames):
@@ -43,6 +54,17 @@ class Run:
     def add_text(self, text):
         self.ref.add_text(xstr(text))
         return self
+
+    def add_image(self, image):
+        if image and len(image) > 0:
+            fimage = tempfile.NamedTemporaryFile()
+            if re.search(r'http[s]?://', image):
+                image = requests.get(image, stream=True)
+                _write_file(image, fimage)
+            else:
+                image = base64.b64decode(image.split(',')[1])
+                fimage.write(image)
+            self.ref.add_picture(fimage)
 
 
 class Paragraph:
@@ -122,6 +144,26 @@ class Document:
 
     def add_paragraph(self, text=None):
         return Paragraph(self.doc.add_paragraph(xstr(text)))
+
+    def add_image(self, image):
+        if image and len(image):
+            sec = self.doc.sections[-1]
+            try:
+                cols = int(sec._sectPr.xpath('./w:cols')[0].get(qn('w:num')))
+                width = ((sec.page_width / cols) -
+                         (sec.right_margin + sec.left_margin))
+            except Exception:
+                width = (sec.page_width - (sec.right_margin + sec.left_margin))
+
+            fimage = tempfile.NamedTemporaryFile()
+            if re.search(r'http[s]?://', image):
+                image = requests.get(image, stream=True)
+                _write_file(image, fimage)
+            else:
+                image = base64.b64decode(image.split(',')[1])
+                fimage.write(image)
+            self.doc.add_picture(fimage, width=width)
+        return self
 
     def add_heading(self, text, level):
         self.doc.add_heading(text, level=level)

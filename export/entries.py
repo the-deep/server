@@ -5,7 +5,7 @@ from django.db.models import Case, When
 from export.formats.xlsx import WorkBook, RowsBuilder
 from export.formats.docx import Document
 
-from entry.models import ExportData
+from entry.models import Entry, ExportData
 from lead.models import Lead
 from geo.models import GeoArea
 from utils.common import format_date, generate_filename
@@ -107,7 +107,9 @@ class ExcelExporter:
                 format_date(entry.created_at.date()),
                 entry.lead.title,
                 entry.lead.source,
-                entry.excerpt,
+                entry.excerpt
+                if entry.entry_type == Entry.EXCERPT
+                else 'IMAGE',
             ])
 
             for exportable in self.exportables:
@@ -217,7 +219,18 @@ class ReportExporter:
         # excerpt (source)
         # where source is hyperlinked to appropriate url
 
-        para = self.doc.add_paragraph(entry.excerpt).justify()
+        # Excerpt can also be image
+        excerpt = (
+            entry.excerpt if entry.entry_type == Entry.EXCERPT
+            else ''
+        )
+        para = self.doc.add_paragraph(excerpt).justify()
+
+        # NOTE: Use doc.add_image instead of run.add_image
+        # for full width image
+
+        if entry.entry_type == Entry.IMAGE:
+            para.add_run().add_image(entry.image)
 
         lead = entry.lead
         self.lead_ids.append(lead.id)
