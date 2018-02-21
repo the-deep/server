@@ -24,15 +24,17 @@ class File(UserResource):
 
     @staticmethod
     def get_for(user):
-        return File.objects.filter(
-            models.Q(created_by=user) |
-            models.Q(is_public=True) |
-            models.Q(permitted_users=user) |
-            models.Q(permitted_user_groups__members=user)
-        ).distinct()
+        return File.objects.all()
+        # return File.objects.filter(
+        #     models.Q(created_by=user) |
+        #     models.Q(is_public=True) |
+        #     models.Q(permitted_users=user) |
+        #     models.Q(permitted_user_groups__members=user)
+        # ).distinct()
 
     def can_get(self, user):
-        return self in File.get_for(user)
+        return True
+        # return self in File.get_for(user)
 
     def can_modify(self, user):
         return self.created_by == user
