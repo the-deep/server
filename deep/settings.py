@@ -402,7 +402,9 @@ MAX_FILE_CACHE_AGE = GALLERY_FILE_EXPIRE - (60 * 60)
 LEAD_WEBSITE_FETCH_TIMEOUT = 15
 
 # Max login attempts to allow before using captcha
-MIN_LOGIN_ATTEMPTS = 3
+MAX_LOGIN_ATTEMPTS_FOR_CAPTCHA = 3
+# Max login attempts to allow before preventing further logins
 MAX_LOGIN_ATTEMPTS = 10
+
 RECAPTCHA_SECRET = os.environ.get(
     'RECAPTCHA_SECRET', '6LcsukYUAAAAAIlG2_PMXGDeVXUWNXFZOmLIkq4-')

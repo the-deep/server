@@ -25,10 +25,12 @@ class TokenObtainPairSerializer(serializers.Serializer):
             raise InvalidCaptchaError
 
     def deactivate_account(self, user):
-        if user.is_active:
-            user.is_active = False
-            user.save()
+        if user.profile.login_attempts == settings.MAX_LOGIN_ATTEMPTS:
             send_account_activation(user)
+        # if user.is_active:
+        #     user.is_active = False
+        #     user.save()
+        #     send_account_activation(user)
         raise UserInactiveError(
             message='Account is deactivated, check your email')
 
@@ -36,7 +38,7 @@ class TokenObtainPairSerializer(serializers.Serializer):
         login_attempts = user.profile.login_attempts
         if login_attempts >= settings.MAX_LOGIN_ATTEMPTS:
             self.deactivate_account(user)
-        elif login_attempts >= settings.MIN_LOGIN_ATTEMPTS:
+        elif login_attempts >= settings.MAX_LOGIN_ATTEMPTS_FOR_CAPTCHA:
             self.validate_recaptcha(recaptcha_response)
 
     def validate(self, data):
