@@ -10,11 +10,15 @@ class Field(models.Model):
     STRING = 'string'
     NUMBER = 'number'
     DATE = 'date'
+    SELECT = 'select'
+    MULTISELECT = 'multiselect'
 
     FIELD_TYPES = (
         (STRING, 'String'),
         (NUMBER, 'Number'),
         (DATE, 'Date'),
+        (SELECT, 'Select'),
+        (MULTISELECT, 'Multiselect')
     )
 
     field_type = models.CharField(

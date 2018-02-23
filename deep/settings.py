@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'storages',
 
     'analysis_framework',
+    'ary',
     'category_editor',
     'deep_migration',
     'docs',
