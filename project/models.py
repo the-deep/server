@@ -29,6 +29,9 @@ class Project(UserResource):
     category_editor = models.ForeignKey(CategoryEditor, blank=True,
                                         default=None, null=True,
                                         on_delete=models.SET_NULL)
+    assessment_template = models.ForeignKey('ary.AssessmentTemplate',
+                                            blank=True, default=None,
+                                            null=True)
     data = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):

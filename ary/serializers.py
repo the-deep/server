@@ -30,13 +30,19 @@ class AssessmentTemplateSerializer(DynamicFieldsMixin, UserResourceSerializer):
             'title': item.title,
         }
 
+    def serialize_option(self, item):
+        return {
+            'key': item.key,
+            'label': item.title,
+        }
+
     def serialize_field(self, field):
         return {
             'id': field.id,
             'title': field.title,
             'field_type': field.field_type,
             'options': [
-                self.serialize_item(option)
+                self.serialize_option(option)
                 for option in field.options.all()
             ],
         }
