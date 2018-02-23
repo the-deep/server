@@ -80,5 +80,7 @@ class AssessmentTemplateSerializer(DynamicFieldsMixin, UserResourceSerializer):
         ]
 
     def get_affected_groups(self, template):
-        parent = template.affectedgroup_set.filter(parent=None).first()
-        return parent and self.serialize_node(parent)
+        return [
+            self.serialize_node(parent)
+            for parent in template.affectedgroup_set.filter(parent=None)
+        ]

@@ -24,6 +24,7 @@ class EntryMixin():
     def create_or_get_entry(self):
         """
         Create or get entry
+        Required mixin: LeadMixin, ProjectMixin, AnalysisFrameworkMixin
         """
         entry = Entry.objects.first()
         if not entry:
