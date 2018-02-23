@@ -26,7 +26,7 @@ class MetadataGroup(models.Model):
 
 
 class MetadataField(Field):
-    group = models.ForeignKey(MetadataGroup)
+    group = models.ForeignKey(MetadataGroup, related_name='fields')
     order = models.IntegerField(default=1)
 
     def __str__(self):
@@ -37,7 +37,7 @@ class MetadataField(Field):
 
 
 class MetadataOption(FieldOption):
-    field = models.ForeignKey(MetadataField)
+    field = models.ForeignKey(MetadataField, related_name='options')
     order = models.IntegerField(default=1)
 
     def __str__(self):
@@ -60,7 +60,7 @@ class MethodologyGroup(models.Model):
 
 
 class MethodologyField(Field):
-    group = models.ForeignKey(MethodologyGroup)
+    group = models.ForeignKey(MethodologyGroup, related_name='fields')
     order = models.IntegerField(default=1)
 
     def __str__(self):
@@ -71,7 +71,7 @@ class MethodologyField(Field):
 
 
 class MethodologyOption(FieldOption):
-    field = models.ForeignKey(MethodologyField)
+    field = models.ForeignKey(MethodologyField, related_name='options')
     order = models.IntegerField(default=1)
 
     def __str__(self):
@@ -96,6 +96,7 @@ class AssessmentTopic(models.Model):
 class AffectedGroup(models.Model):
     template = models.ForeignKey(AssessmentTemplate)
     parent = models.ForeignKey('AffectedGroup',
+                               related_name='children',
                                default=None, null=True, blank=True)
     title = models.CharField(max_length=255)
     order = models.IntegerField(default=1)

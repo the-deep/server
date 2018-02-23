@@ -1,6 +1,7 @@
 from deep.serializers import NestedUpdateMixin, NestedCreateMixin
 from rest_framework import serializers
 from reversion.models import Version
+import reversion
 
 
 class UserResourceSerializer(NestedCreateMixin,
@@ -35,6 +36,8 @@ class UserResourceSerializer(NestedCreateMixin,
         return resource
 
     def get_version_id(self, resource):
+        if not reversion.is_registered(resource.__class__):
+            return None
         version_id = len(Version.objects.get_for_object(resource))
 
         if self.context['request'].method in ['POST', 'PUT', 'PATCH']:
