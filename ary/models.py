@@ -12,6 +12,17 @@ class AssessmentTemplate(UserResource):
     def __str__(self):
         return self.title
 
+    @staticmethod
+    def get_for(user):
+        # TODO restrict to users of ACAPS project
+        return AssessmentTemplate.objects.all()
+
+    def can_get(self, user):
+        return True
+
+    def can_modify(self, user):
+        return False
+
 
 class MetadataGroup(models.Model):
     template = models.ForeignKey(AssessmentTemplate)
@@ -118,3 +129,20 @@ class Assessment(UserResource):
 
     def __str__(self):
         return str(self.lead)
+
+    @staticmethod
+    def get_for(user):
+        """
+        Assessment can only be accessed by users who have access to
+        it's lead
+        """
+        return Assessment.objects.filter(
+            models.Q(lead__project__members=user) |
+            models.Q(lead__project__user_groups__members=user)
+        ).distinct()
+
+    def can_get(self, user):
+        return self.lead.can_get(user)
+
+    def can_modify(self, user):
+        return self.lead.can_modify(user)

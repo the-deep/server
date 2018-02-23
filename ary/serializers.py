@@ -4,20 +4,14 @@ from user_resource.serializers import UserResourceSerializer
 
 from .models import (
     AssessmentTemplate,
-
-    MetadataGroup,
-    MetadataField,
-    MetadataOption,
-
-    MethodologyGroup,
-    MethodologyField,
-    MethodologyOption,
-
-    AssessmentTopic,
-    AffectedGroup,
-
     Assessment,
 )
+
+
+class AssessmentSerializer(DynamicFieldsMixin, UserResourceSerializer):
+    class Meta:
+        model = Assessment
+        fields = ('__all__')
 
 
 class AssessmentTemplateSerializer(DynamicFieldsMixin, UserResourceSerializer):
