@@ -5,7 +5,7 @@ from django.db import models
 from analysis_framework.models import Exportable
 from entry.filter_set import EntryFilterSet, get_filtered_entries
 from export.models import Export
-from export.entries import ExcelExporter, ReportExporter
+from export.entries import ExcelExporter, ReportExporter, JsonExporter
 from geo.models import Region
 
 import traceback
@@ -53,6 +53,12 @@ def _export_entries(export_type, export_id, user_id, project_id, filters):
             .load_structure(report_structure)\
             .add_entries(queryset)\
             .export(export, pdf)
+
+    elif export_type == 'json':
+        JsonExporter()\
+            .load_exportables(exportables)\
+            .add_entries(queryset)\
+            .export(export)
 
     return True
 

@@ -14,11 +14,13 @@ class Export(models.Model):
     XLSX = 'xlsx'
     DOCX = 'docx'
     PDF = 'pdf'
+    JSON = 'json'
 
     FORMATS = (
         (XLSX, 'xlsx'),
         (DOCX, 'docx'),
         (PDF, 'pdf'),
+        (JSON, 'json')
     )
 
     ENTRIES = 'entries'

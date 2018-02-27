@@ -1,10 +1,12 @@
 from django.conf import settings
 from django.core.files.base import ContentFile, File
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Case, When
 
 from export.formats.xlsx import WorkBook, RowsBuilder
 from export.formats.docx import Document
 
+from analysis_framework.models import Widget
 from entry.models import Entry, ExportData
 from lead.models import Lead
 from geo.models import GeoArea
@@ -14,6 +16,8 @@ from export.models import Export
 from subprocess import call
 import os
 import tempfile
+import json
+
 
 DOCX_MIME_TYPE = \
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
@@ -21,6 +25,8 @@ PDF_MIME_TYPE = \
     'application/pdf'
 EXCEL_MIME_TYPE = \
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+JSON_MIME_TYPE = \
+    'application/json'
 
 
 class ExcelExporter:
@@ -456,6 +462,72 @@ class ReportExporter:
 
             export_entity.format = Export.DOCX
             export_entity.mime_type = DOCX_MIME_TYPE
+
+        export_entity.title = filename
+        export_entity.type = Export.ENTRIES
+        export_entity.pending = False
+
+        export_entity.save()
+
+
+class JsonExporter:
+    def __init__(self):
+        self.data = {}
+
+    def load_exportables(self, exportables):
+        self.exportables = exportables
+        self.widget_ids = []
+
+        self.data['widgets'] = []
+        for exportable in self.exportables:
+            widget = Widget.objects.get(
+                analysis_framework=exportable.analysis_framework,
+                key=exportable.widget_key,
+            )
+            self.widget_ids.append(widget.id)
+
+            data = {}
+            data['id'] = widget.key
+            data['widget_type'] = widget.widget_id
+            data['title'] = widget.title
+            data['properties'] = widget.properties
+            self.data['widgets'].append(data)
+
+        return self
+
+    def add_entries(self, entries):
+        self.data['entries'] = []
+        for entry in entries:
+            data = {}
+            data['id'] = entry.id
+            data['lead_id'] = entry.lead.id
+            data['lead'] = entry.lead.title
+            data['source'] = entry.lead.source
+            data['date'] = entry.lead.published_on
+            data['excerpt'] = entry.excerpt
+            data['image'] = entry.image
+            data['attributes'] = []
+
+            for attribute in entry.attribute_set.all():
+                attribute_data = {}
+                attribute_data['widget_id'] = attribute.widget.key
+                attribute_data['data'] = attribute.data
+                data['attributes'].append(attribute_data)
+            self.data['entries'].append(data)
+        return self
+
+    def export(self, export_entity):
+        """
+        Export and save in export_entity
+        """
+        filename = generate_filename('Entries JSON Export', 'json')
+        export_entity.file.save(filename, ContentFile(
+            json.dumps(self.data, sort_keys=True, indent=2,
+                       cls=DjangoJSONEncoder)
+        ))
+
+        export_entity.format = Export.JSON
+        export_entity.mime_type = JSON_MIME_TYPE
 
         export_entity.title = filename
         export_entity.type = Export.ENTRIES
