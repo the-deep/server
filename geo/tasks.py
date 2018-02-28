@@ -1,10 +1,7 @@
 from celery import shared_task
 from django.conf import settings
 from django.contrib.gis.gdal import DataSource
-from django.contrib.gis.geos import (
-    GEOSGeometry,
-    MultiPolygon,
-)
+from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q
 from geo.models import Region, AdminLevel, GeoArea
 
