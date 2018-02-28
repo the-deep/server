@@ -133,7 +133,7 @@ class GeoAreasLoadTriggerView(views.APIView):
         if not Region.objects.filter(id=region_id).exists():
             raise exceptions.NotFound()
 
-        if not Region.objects.get(id=region_id).can_modify(request.user):
+        if not Region.objects.get(id=region_id).can_get(request.user):
             raise exceptions.PermissionDenied()
 
         if not settings.TESTING:
