@@ -171,7 +171,7 @@ class GeoArea(models.Model):
     title = models.CharField(max_length=255)
     code = models.CharField(max_length=255, blank=True)
     data = JSONField(default=None, blank=True, null=True)
-    polygons = models.MultiPolygonField(null=True, blank=True, default=None)
+    polygons = models.GeometryField(null=True, blank=True, default=None)
 
     def __str__(self):
         return self.get_label()

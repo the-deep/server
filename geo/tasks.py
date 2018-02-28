@@ -59,10 +59,10 @@ def _save_geo_area(admin_level, parent, feature):
         preserve_topology=True,
     )
 
-    if geom.geom_type == 'Polygon':
-        geom = MultiPolygon(geom)
-    elif geom.geom_type != 'MultiPolygon':
-        raise Exception('Invalid geometry type for geoarea')
+    # if geom.geom_type == 'Polygon':
+    #     geom = MultiPolygon(geom)
+    # elif geom.geom_type != 'MultiPolygon':
+    #     raise Exception('Invalid geometry type for geoarea')
 
     geo_area.polygons = geom
     feature_names = [f.decode('utf-8') for f in feature.fields]
