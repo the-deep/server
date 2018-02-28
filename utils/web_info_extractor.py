@@ -16,17 +16,24 @@ class WebInfoExtractor:
     def __init__(self, url):
         self.url = url
 
-        html = requests.get(url, headers=HEADERS).text
-        self.readable = Document(html)
-        self.page = BeautifulSoup(html, 'lxml')
+        head = requests.head(url, headers=HEADERS)
+        if 'text/html' in head.headers.get('content-type'):
+            html = requests.get(url, headers=HEADERS).text
+            self.readable = Document(html)
+            self.page = BeautifulSoup(html, 'lxml')
+        else:
+            self.readable = None
+            self.page = None
 
     def get_title(self):
-        return self.readable.short_title()
+        return self.readable and self.readable.short_title()
 
     def get_date(self):
         return extract_date(self.url, self.page)
 
     def get_country(self):
+        if not self.page:
+            return None
         country = self.page.select('.primary-country .country a')
         if country:
             return country[0].text.strip()
@@ -38,9 +45,10 @@ class WebInfoExtractor:
         return None
 
     def get_source(self):
-        source = self.page.select('.field-source')
-        if source:
-            return source[0].text.strip()
+        if self.page:
+            source = self.page.select('.field-source')
+            if source:
+                return source[0].text.strip()
 
         return tldextract.extract(self.url).domain
 

@@ -99,10 +99,13 @@ def extract_date(url, page):
     Extract date from given url and given page data
     where the page is a BeautifulSoup object
     """
-    date = _extract_from_meta(page)
-    if date is None:
-        date = _extract_from_tags(page)
-    if date is None:
+    if not page:
         date = _extract_from_url(url)
+    else:
+        date = _extract_from_meta(page)
+        if date is None:
+            date = _extract_from_tags(page)
+        if date is None:
+            date = _extract_from_url(url)
 
-    return date.date()
+    return date and date.date()
