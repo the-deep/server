@@ -36,16 +36,16 @@ def get_users(email):
         '%s__iexact' % User.get_email_field_name(): email,
         'is_active': True,
     })
-    return (u for u in active_users if u.has_usable_password())
+    return (u for u in active_users)
 
 
 def send_password_reset(
     email, users=None, domain_override=None, welcome=False,
     subject_template_name='registration/password_reset_subject.txt',
     email_template_name='registration/password_reset_email.html',
-    use_https=False, token_generator=default_token_generator,
-    from_email=None, request=None, html_email_template_name=None,
-    extra_email_context=None
+    use_https=settings.HTTP_PROTOCOL == 'https',
+    token_generator=default_token_generator, from_email=None, request=None,
+    html_email_template_name=None, extra_email_context=None
 ):
     """
     Generate a one-use only link for resetting password and send it to the
@@ -79,9 +79,9 @@ def send_account_activation(
     user=None, domain_override=None,
     subject_template_name='registration/user_activation_subject.txt',
     email_template_name='registration/user_activation_email.html',
-    use_https=False, token_generator=default_token_generator,
-    from_email=None, request=None, html_email_template_name=None,
-    extra_email_context=None
+    use_https=settings.HTTP_PROTOCOL == 'https',
+    token_generator=default_token_generator, from_email=None, request=None,
+    html_email_template_name=None, extra_email_context=None
 ):
     """
     Generate a one-use only link for account activation and send it to the

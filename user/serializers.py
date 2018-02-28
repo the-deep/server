@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
-from django.conf import settings
 
 from user.models import Profile
 from user.utils import send_password_reset
@@ -60,12 +59,7 @@ class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         user = super(UserSerializer, self).create(validated_data)
         user.save()
         user.profile = self.update_or_create_profile(user, profile_data)
-        send_password_reset(
-            email=validated_data["email"],
-            users=[user],
-            welcome=True,
-            use_https=settings.HTTP_PROTOCOL == 'https',
-        )
+        send_password_reset(email=validated_data["email"], welcome=True)
         return user
 
     def update(self, instance, validated_data):
@@ -99,7 +93,4 @@ class PasswordResetSerializer(serializers.Serializer):
             raise InvalidCaptchaError
 
     def save(self):
-        send_password_reset(
-            email=self.validated_data["email"],
-            use_https=settings.HTTP_PROTOCOL == 'https',
-        )
+        send_password_reset(email=self.validated_data["email"])
