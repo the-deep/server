@@ -1,9 +1,0 @@
-id,project,member,role
-1,project.Project.1,user.User.1,admin
-2,project.Project.1,user.User.2,normal
-3,project.Project.1,user.User.3,normal
-4,project.Project.2,user.User.2,admin
-5,project.Project.3,user.User.1,admin
-6,project.Project.3,user.User.2,normal
-7,project.Project.4,user.User.2,admin
-8,project.Project.2,user.User.1,normal

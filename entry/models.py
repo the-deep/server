@@ -42,7 +42,7 @@ class Entry(UserResource):
     image = models.TextField(blank=True)
 
     def __str__(self):
-        if self.image:
+        if self.entry_type == Entry.IMAGE:
             return 'Image ({})'.format(self.lead.title)
         else:
             return '"{}" ({})'.format(

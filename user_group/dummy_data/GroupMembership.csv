@@ -1,7 +1,0 @@
-id,group,member,role
-1,user_group.UserGroup.1,user.User.1,admin
-2,user_group.UserGroup.1,user.User.2,normal
-3,user_group.UserGroup.2,user.User.2,admin
-4,user_group.UserGroup.3,user.User.3,admin
-5,user_group.UserGroup.3,user.User.1,normal
-6,user_group.UserGroup.1,user.User.3,normal
