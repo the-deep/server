@@ -71,6 +71,10 @@ INSTALLED_APPS = [
     'user',
     'user_group',
     'user_resource',
+
+    'deep_migration',
+    'docs',
+    'profiling',
 ]
 
 MIDDLEWARE = [
