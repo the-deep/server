@@ -23,6 +23,7 @@ class Profile(models.Model):
 
     last_active_project = models.ForeignKey(Project,
                                             null=True, blank=True,
+                                            on_delete=models.SET_NULL,
                                             default=None)
 
     login_attempts = models.IntegerField(default=0)
