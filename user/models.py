@@ -17,14 +17,13 @@ class Profile(models.Model):
     user = models.OneToOneField(User)
     organization = models.CharField(max_length=300, blank=True)
     hid = models.TextField(default=None, null=True, blank=True)
-    # country = models.ForeignKey(Country)
+    # country = models.ForeignKey(Country, on_delete=models.SET_NULL)
     display_picture = models.ForeignKey(File, on_delete=models.SET_NULL,
                                         null=True, blank=True, default=None)
 
-    last_active_project = models.ForeignKey(Project,
-                                            null=True, blank=True,
-                                            on_delete=models.SET_NULL,
-                                            default=None)
+    last_active_project = models.ForeignKey(Project, null=True,
+                                            blank=True, default=None,
+                                            on_delete=models.SET_NULL)
 
     login_attempts = models.IntegerField(default=0)
 
