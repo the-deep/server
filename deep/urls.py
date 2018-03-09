@@ -63,6 +63,7 @@ from analysis_framework.views import (
 )
 from ary.views import (
     AssessmentViewSet,
+    AssessmentOptionsView,
     AssessmentTemplateViewSet,
 )
 from category_editor.views import (
@@ -227,6 +228,8 @@ urlpatterns = [
     # Attribute options for various models
     url(get_api_path(r'lead-options/$'),
         LeadOptionsView.as_view()),
+    url(get_api_path(r'assessment-options/$'),
+        AssessmentOptionsView.as_view()),
     url(get_api_path(r'entry-options/$'),
         EntryOptionsView.as_view()),
     url(get_api_path(r'project-options/$'),

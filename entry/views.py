@@ -167,10 +167,13 @@ class EntryOptionsView(views.APIView):
 
         options = {}
 
+        def _filter_by_projects(qs, projects):
+            for p in projects:
+                qs = qs.filter(project=p)
+            return qs
+
         if fields is None or 'created_by' in fields:
-            created_by = User.objects.filter(
-                project__in=projects,
-            )
+            created_by = _filter_by_projects(User.objects, projects)
             options['created_by'] = [
                 {
                     'key': user.id,

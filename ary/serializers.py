@@ -9,6 +9,9 @@ from .models import (
 
 
 class AssessmentSerializer(DynamicFieldsMixin, UserResourceSerializer):
+    lead_title = serializers.CharField(source='lead.title',
+                                       read_only=True)
+
     class Meta:
         model = Assessment
         fields = ('__all__')

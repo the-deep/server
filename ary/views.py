@@ -1,7 +1,10 @@
 from django.db import models
+from django.contrib.auth.models import User
 from rest_framework import (
     filters,
     permissions,
+    response,
+    views,
     viewsets,
 )
 import django_filters
@@ -51,11 +54,55 @@ class AssessmentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
-                       filters.OrderingFilter)
+                       filters.OrderingFilter, filters.SearchFilter)
     filter_class = AssessmentFilterSet
+    search_fields = ('lead__title',)
 
     def get_queryset(self):
         return Assessment.get_for(self.request.user)
+
+
+class AssessmentOptionsView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, version=None):
+        project_query = request.GET.get('project')
+        fields_query = request.GET.get('fields')
+
+        projects = Project.get_for(request.user)
+        if project_query:
+            projects = projects.filter(id__in=project_query.split(','))
+
+        fields = None
+        if fields_query:
+            fields = fields_query.split(',')
+
+        options = {}
+
+        def _filter_by_projects(qs, projects):
+            for p in projects:
+                qs = qs.filter(project=p)
+            return qs
+
+        if (fields is None or 'created_by' in fields):
+            created_by = _filter_by_projects(User.objects, projects)
+            options['created_by'] = [
+                {
+                    'key': user.id,
+                    'value': user.profile.get_display_name(),
+                } for user in created_by.distinct()
+            ]
+
+        if (fields is None or 'project' in fields):
+            projects = Project.get_for(request.user)
+            options['project'] = [
+                {
+                    'key': project.id,
+                    'value': project.title,
+                } for project in projects.distinct()
+            ]
+
+        return response.Response(options)
 
 
 class AssessmentTemplateViewSet(viewsets.ReadOnlyModelViewSet):

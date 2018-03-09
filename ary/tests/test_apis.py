@@ -115,3 +115,11 @@ class AssessmentTests(AuthMixin, LeadMixin, ProjectMixin,
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # TODO: More detailed test
+
+    def test_options(self):
+        """
+        Options api
+        """
+        url = '/api/v1/assessment-options/'
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
