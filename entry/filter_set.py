@@ -10,6 +10,8 @@ import django_filters
 from datetime import datetime
 
 
+# We don't use UserResourceFilterSet since created_at and modified_at
+# are overridden below
 class EntryFilterSet(django_filters.FilterSet):
     """
     Entry filter set

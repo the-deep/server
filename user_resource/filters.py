@@ -15,7 +15,7 @@ class UserResourceFilterSet(django_filters.FilterSet):
     modified_at__gt = django_filters.DateFilter(
         name='modified_at', lookup_expr='gte',
     )
-    created_by = django_filters.ModelChoiceFilter(
+    created_by = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all())
-    modified_by = django_filters.ModelChoiceFilter(
+    modified_by = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all())
