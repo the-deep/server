@@ -1,6 +1,8 @@
 """deep URL Configuration
 """
 from django.views.decorators.clickjacking import xframe_options_exempt
+from deep.views import get_frontend_url
+from django.views.generic.base import RedirectView
 from django.conf.urls import url, include, static
 from django.views.static import serve
 from django.contrib.auth import views as auth_views
@@ -288,6 +290,11 @@ urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls',
                                namespace='rest_framework')),
 
+    url(r'^favicon.ico$',
+        RedirectView.as_view(
+            url=get_frontend_url('favicon.ico'),
+        ),
+        name="favicon"),
 ] + static.static(
     settings.MEDIA_URL, view=xframe_options_exempt(serve),
     document_root=settings.MEDIA_ROOT)

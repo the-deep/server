@@ -2,7 +2,6 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
 from gallery.serializers import SimpleFileSerializer
-from ary.serializers import AssessmentSerializer
 from .models import (
     Lead,
     LeadPreviewImage,
