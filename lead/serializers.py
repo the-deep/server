@@ -43,7 +43,9 @@ class LeadSerializer(DynamicFieldsMixin, UserResourceSerializer):
     # TODO: Probably also validate assignee to valid list of users
 
     def get_assessment(self, lead):
-        return lead.assessment_set.first()
+        assessment = lead.assessment_set.first()
+        if assessment:
+            return assessment.pk
 
 
 class LeadPreviewImageSerializer(
