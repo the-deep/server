@@ -34,6 +34,11 @@ class AssessmentFilterSet(UserResourceFilterSet):
         queryset=Lead.objects.all(),
         lookup_expr='in',
     )
+    created_by = django_filters.ModelMultipleChoiceFilter(
+        queryset=User.objects.all(),
+        lookup_expr='in',
+        widget=django_filters.widgets.CSVWidget,
+    )
 
     class Meta:
         model = Assessment
@@ -56,6 +61,7 @@ class AssessmentViewSet(viewsets.ModelViewSet):
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.OrderingFilter, filters.SearchFilter)
     filter_class = AssessmentFilterSet
+    ordering_fields = ('lead__title', 'created_by', 'created_at')
     search_fields = ('lead__title',)
 
     def get_queryset(self):
