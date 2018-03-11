@@ -6,11 +6,12 @@ import random
 
 
 class LeadAutoFixture(AutoFixture):
+    overwrite_defaults = True
     field_values = {
         'text': '',
         'url': '',
         'website': '',
-        'attachment': None
+        'attachment': None,
     }
 
     def post_process_instance(self, instance, commit):

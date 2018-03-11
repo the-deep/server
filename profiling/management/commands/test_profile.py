@@ -1,36 +1,40 @@
-from django import test
 from django.core.management.base import BaseCommand
+from profiling.profiler import Profiler
 
-import cProfile
-import pstats
-import os
+import autofixture
 
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
-        # test.utils.setup_test_environment()
-        # old_config = test.utils.setup_databases(3, False)
+        p = Profiler()
 
-        pr = cProfile.Profile()
-        pr.enable()
-        client = test.Client()
-        client.get('/api/v1/users/')
-        pr.disable()
+        print('creating users')
+        users = autofixture.create('auth.User', 20, overwrite_defaults=True)
+        user = users[0]
+        p.authorise_with(user)
 
-        regex = os.getcwd()
+        print('creating regions')
+        autofixture.create('geo.Region', 5, field_values={
+            'created_by': user,
+        })
 
-        stats = pstats.Stats(pr)
-        stats.sort_stats('cumulative')
+        print('creating projects')
+        autofixture.create('project.Project', 5, field_values={
+            'created_by': user,
+        })
 
-        print('Stats')
-        stats.print_stats(regex)
+        print('creating leads')
+        autofixture.create('lead.Lead', 1000, field_values={
+            'created_by': user,
+        })
 
-        print('Callers')
-        stats.print_callers(regex)
-
-        print('Callees')
-        stats.print_callees(regex)
-
-        print('End')
-        # test.utils.teardown_databases(old_config, 3)
-        # test.utils.teardown_test_environment()
+        p.profile_get(
+            '/api/v1/leads/?'
+            'status=pending&'
+            'assignee={0}&'
+            'published_on__lt=5000-01-10'
+            'assignee={0}&'
+            'search=abc&'
+            ''.format(
+                ','.join([str(users[1].id), str(users[2].id)]),
+            ))

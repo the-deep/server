@@ -1,8 +1,11 @@
 from django import test
+from django.conf import settings
 
 import cProfile
 import pstats
 import os
+
+from jwt_auth.token import AccessToken
 
 
 class Profiler:
@@ -17,6 +20,8 @@ class Profiler:
         return self
 
     def create(self):
+        self.last_test_settings = settings.TESTING
+        settings.TESTING = True
         test.utils.setup_test_environment()
         self.old_config = test.utils.setup_databases(3, False)
         self.client = test.Client()
@@ -36,24 +41,14 @@ class Profiler:
         if self.pr:
             self.pr.disable()
             self.print_stats()
+        settings.TESTING = self.last_test_settings
         test.utils.teardown_databases(self.old_config, 3)
         test.utils.teardown_test_environment()
         self.created = False
 
-    def profile_get(self, *args, **kwargs):
-        self.start_profiling()
-        self.client.get(*args, **kwargs)
-        self.stop_profiling()
-
-    def profile_post(self, *args, **kwargs):
-        self.start_profiling()
-        self.client.post(*args, **kwargs)
-        self.stop_profiling()
-
-    def profile_put(self, *args, **kwargs):
-        self.start_profiling()
-        self.client.put(*args, **kwargs)
-        self.stop_profiling()
+    def authorise_with(self, user):
+        self.access = AccessToken.for_user(user).encode()
+        self.auth = 'Bearer {0}'.format(self.access)
 
     def start_profiling(self):
         self.pr = cProfile.Profile()
@@ -82,3 +77,48 @@ class Profiler:
         stats.print_callees(regex)
 
         print('End')
+
+    def profile_get(self, *args, **kwargs):
+        self.start_profiling()
+
+        r = self.client.get(
+            HTTP_AUTHORIZATION=self.auth,
+            *args,
+            **kwargs,
+        )
+
+        print('Response:')
+        print(r.data)
+        print('\n\n')
+
+        self.stop_profiling()
+
+    def profile_post(self, *args, **kwargs):
+        self.start_profiling()
+
+        r = self.client.post(
+            HTTP_AUTHORIZATION=self.auth,
+            *args,
+            **kwargs,
+        )
+
+        print('Response:')
+        print(r.data)
+        print('\n\n')
+
+        self.stop_profiling()
+
+    def profile_patch(self, *args, **kwargs):
+        self.start_profiling()
+
+        r = self.client.patch(
+            HTTP_AUTHORIZATION=self.auth,
+            *args,
+            **kwargs,
+        )
+
+        print('Response:')
+        print(r.data)
+        print('\n\n')
+
+        self.stop_profiling()
