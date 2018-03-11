@@ -3,12 +3,13 @@ from django.core.management.base import BaseCommand
 
 import cProfile
 import pstats
+import os
 
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
-        test.utils.setup_test_environment()
-        old_config = test.utils.setup_databases(3, False)
+        # test.utils.setup_test_environment()
+        # old_config = test.utils.setup_databases(3, False)
 
         pr = cProfile.Profile()
         pr.enable()
@@ -16,7 +17,7 @@ class Command(BaseCommand):
         client.get('/api/v1/users/')
         pr.disable()
 
-        regex = '\/code\/backend'
+        regex = os.getcwd()
 
         stats = pstats.Stats(pr)
         stats.sort_stats('cumulative')
@@ -31,5 +32,5 @@ class Command(BaseCommand):
         stats.print_callees(regex)
 
         print('End')
-        test.utils.teardown_databases(old_config, 3)
-        test.utils.teardown_test_environment()
+        # test.utils.teardown_databases(old_config, 3)
+        # test.utils.teardown_test_environment()
