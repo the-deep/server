@@ -19,6 +19,9 @@ class ProjectMembershipSerializer(DynamicFieldsMixin,
         fields = ('id', 'member', 'member_name', 'member_email',
                   'project', 'role', 'joined_at')
 
+    def get_unique_together_validators(self):
+        return []
+
     def get_member_name(self, membership):
         return membership.member.profile.get_display_name()
 
@@ -33,7 +36,7 @@ class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
     memberships = ProjectMembershipSerializer(
         source='projectmembership_set',
         many=True,
-        read_only=True,
+        required=False,
     )
     regions = SimpleRegionSerializer(many=True, required=False)
     user_groups = SimpleUserGroupSerializer(many=True, required=False)
