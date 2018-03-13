@@ -67,6 +67,7 @@ from ary.views import (
     AssessmentViewSet,
     AssessmentOptionsView,
     AssessmentTemplateViewSet,
+    LeadAssessmentViewSet,
 )
 from category_editor.views import (
     CategoryEditorViewSet,
@@ -161,6 +162,8 @@ router.register(r'analysis-framework-exportables', ExportableViewSet,
 # Assessment registry
 router.register(r'assessments', AssessmentViewSet,
                 base_name='assessment')
+router.register(r'lead-assessments', LeadAssessmentViewSet,
+                base_name='lead_assessment')
 router.register(r'assessment-templates', AssessmentTemplateViewSet,
                 base_name='assessment_template')
 

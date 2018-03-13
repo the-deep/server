@@ -61,6 +61,37 @@ class AssessmentTests(AuthMixin, LeadMixin, ProjectMixin,
         self.assertEqual(response.data['methodology_data'],
                          data['methodology_data'])
 
+    def test_create_lead_assessment(self):
+        """
+        Create assessment using existing lead through a PUT request
+        and update using same PUT request
+        """
+        old_count = Assessment.objects.count()
+
+        lead = self.create_or_get_lead()
+        url = '/api/v1/lead-assessments/{}/'.format(lead.pk)
+        data = {
+            'meta_data': {'test_meta': 'Test 1'},
+            'methodology_data': {'test_methodology': 'Test 2'},
+        }
+        response = self.client.put(url, data,
+                                   HTTP_AUTHORIZATION=self.auth,
+                                   format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Assessment.objects.count(), old_count + 1)
+        self.assertEqual(response.data['version_id'], 1)
+        self.assertEqual(response.data['meta_data'], data['meta_data'])
+        self.assertEqual(response.data['methodology_data'],
+                         data['methodology_data'])
+
+        data['meta_data'] = {'test_meta': 'Test 1 new'}
+        response = self.client.put(url, data,
+                                   HTTP_AUTHORIZATION=self.auth,
+                                   format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['version_id'], 2)
+        self.assertEqual(response.data['meta_data'], data['meta_data'])
+
     def test_get_template(self):
         """
         Test getting assessment template

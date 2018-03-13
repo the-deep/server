@@ -1,7 +1,9 @@
+from django.shortcuts import get_object_or_404
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
-from user_resource.serializers import UserResourceSerializer
 
+from user_resource.serializers import UserResourceSerializer
+from lead.models import Lead
 from .models import (
     AssessmentTemplate,
     Assessment,
@@ -15,6 +17,26 @@ class AssessmentSerializer(DynamicFieldsMixin, UserResourceSerializer):
     class Meta:
         model = Assessment
         fields = ('__all__')
+
+
+class LeadAssessmentSerializer(DynamicFieldsMixin, UserResourceSerializer):
+    lead_title = serializers.CharField(source='lead.title',
+                                       read_only=True)
+
+    class Meta:
+        model = Assessment
+        fields = ('__all__')
+        read_only_fields = ('lead',)
+
+    def create(self, validated_data):
+        # If this assessment is being created for the first time,
+        # we want to set lead to the one which has its id in the url
+        assessment = super(LeadAssessmentSerializer, self).create({
+            **validated_data,
+            'lead': get_object_or_404(Lead, pk=self.initial_data['lead']),
+        })
+        assessment.save()
+        return assessment
 
 
 class AssessmentTemplateSerializer(DynamicFieldsMixin, UserResourceSerializer):

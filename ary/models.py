@@ -123,7 +123,7 @@ class Assessment(UserResource):
     """
     Assesssment belonging to a lead
     """
-    lead = models.ForeignKey(Lead)
+    lead = models.OneToOneField(Lead)
     meta_data = JSONField(default=None, blank=True, null=True)
     methodology_data = JSONField(default=None, blank=True, null=True)
 

@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.http import Http404
 from rest_framework import (
     filters,
+    mixins,
     permissions,
     response,
     views,
@@ -21,6 +23,7 @@ from .models import (
 from .serializers import (
     AssessmentSerializer,
     AssessmentTemplateSerializer,
+    LeadAssessmentSerializer,
 )
 
 
@@ -66,6 +69,53 @@ class AssessmentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Assessment.get_for(self.request.user)
+
+
+class LeadAssessmentViewSet(mixins.RetrieveModelMixin,
+                            mixins.UpdateModelMixin,
+                            mixins.DestroyModelMixin,
+                            viewsets.GenericViewSet):
+    """
+    Assessments accessed using associated lead id.
+
+    Only allow, put, patch, and get requests as this api
+    is accessed through lead.
+    In put requests, if there is no existing assessment, one is
+    automatically created.
+    """
+    serializer_class = LeadAssessmentSerializer
+    permission_classes = [permissions.IsAuthenticated,
+                          ModifyPermission]
+    lookup_field = 'lead'
+    lookup_url_kwarg = 'pk'
+
+    def get_queryset(self):
+        return Assessment.get_for(self.request.user)
+
+    def get_object(self):
+        try:
+            return super(LeadAssessmentViewSet, self).get_object()
+        except Http404:
+            return None
+
+    def update(self, request, *args, **kwargs):
+        # For put/patch request, we want to set `lead` data
+        # from url
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        data = {
+            **request.data,
+            'lead': kwargs['pk'],
+        }
+        serializer = self.get_serializer(instance, data=data,
+                                         partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+
+        return response.Response(serializer.data)
 
 
 class AssessmentOptionsView(views.APIView):
