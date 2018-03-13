@@ -66,15 +66,12 @@ INSTALLED_APPS = [
     'gallery',
     'geo',
     'lead',
+    'profiling',
     'project',
     'redis_store',
     'user',
     'user_group',
     'user_resource',
-
-    'deep_migration',
-    'docs',
-    'profiling',
 ]
 
 MIDDLEWARE = [

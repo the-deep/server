@@ -36,7 +36,7 @@ def create_many_leads(num, created_by, project):
     leads = []
     for i in range(num):
         lead = Lead()
-        lead.title = generators.LoremGenerator(255).generate()
+        lead.title = generators.LoremGenerator(max_length=20).generate()
         lead.project = project
         lead.created_by = created_by
         lead.modified_by = created_by
@@ -56,7 +56,7 @@ def create_many_leads(num, created_by, project):
     assignee_throughs = []
 
     all_users = list(User.objects.all())
-    count = all_users.count()
+    count = len(all_users)
     for lead in leads:
         assignee_throughs.append(
             LeadAssigneeThrough(
