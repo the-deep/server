@@ -26,7 +26,10 @@ class LeadSerializer(DynamicFieldsMixin, UserResourceSerializer):
         source='leadpreview.classified_doc_id',
         read_only=True,
     )
-    assessment = serializers.SerializerMethodField()
+    assessment = serializers.IntegerField(
+        source='assessment.id',
+        read_only=True,
+    )
 
     class Meta:
         model = Lead
@@ -41,11 +44,6 @@ class LeadSerializer(DynamicFieldsMixin, UserResourceSerializer):
         return project
 
     # TODO: Probably also validate assignee to valid list of users
-
-    def get_assessment(self, lead):
-        assessment = lead.assessment_set.first()
-        if assessment:
-            return assessment.pk
 
 
 class LeadPreviewImageSerializer(
