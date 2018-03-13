@@ -93,16 +93,17 @@ class LeadAssessmentViewSet(mixins.RetrieveModelMixin,
         return Assessment.get_for(self.request.user)
 
     def get_object(self):
-        try:
-            return super(LeadAssessmentViewSet, self).get_object()
-        except Http404:
-            return None
+        return super(LeadAssessmentViewSet, self).get_object()
 
     def update(self, request, *args, **kwargs):
         # For put/patch request, we want to set `lead` data
         # from url
         partial = kwargs.pop('partial', False)
-        instance = self.get_object()
+        try:
+            instance = self.get_object()
+        except Http404:
+            instance = None
+
         data = {
             **request.data,
             'lead': kwargs['pk'],
