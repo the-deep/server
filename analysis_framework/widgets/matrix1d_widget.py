@@ -14,6 +14,7 @@ def get_filters(widget, data):
                     row.get('title'),
                     cell.get('value'),
                 ),
+                'key': cell.get('key'),
             })
 
     return [{

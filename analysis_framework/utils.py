@@ -1,4 +1,4 @@
-from analysis_framework.models import Filter, Exportable
+from analysis_framework.models import Widget, Filter, Exportable
 from .widgets.store import widget_store
 
 
@@ -27,3 +27,9 @@ def update_widget(widget):
                     'data': exportable,
                 },
             )
+
+
+def update_widgets(widget_id):
+    widgets = Widget.objects.filter(widget_id=widget_id)
+    for widget in widgets:
+        update_widget(widget)
