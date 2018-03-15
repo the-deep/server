@@ -45,16 +45,6 @@ class ProjectPermissionsTest(AuthMixin, ProjectMixin, APITestCase):
                                      format='json')
         return response
 
-    def test_404(self):
-        """
-        Test whether a non-member can see the project
-        """
-
-        # We should get 404 error since the user is not a member
-        # of the project and cannot see the resource
-        self.assertEqual(self.get_patch_response().status_code,
-                         status.HTTP_404_NOT_FOUND)
-
     def test_403(self):
         """
         Test whether a non-admin member can modify the project
