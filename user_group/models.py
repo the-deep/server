@@ -23,10 +23,7 @@ class UserGroup(models.Model):
 
     @staticmethod
     def get_for(user):
-        """
-        UserGroup can be accessed only if user is a member
-        """
-        return UserGroup.objects.filter(members=user).distinct()
+        return UserGroup.objects.all()
 
     @staticmethod
     def get_modifiable_for(user):
@@ -38,7 +35,7 @@ class UserGroup(models.Model):
         ).distinct()
 
     def can_get(self, user):
-        return user in self.members.all()
+        return True
 
     def can_modify(self, user):
         return GroupMembership.objects.filter(
@@ -72,8 +69,7 @@ class GroupMembership(models.Model):
 
     @staticmethod
     def get_for(user):
-        return GroupMembership.objects.filter(
-            group__members=user).distinct()
+        return GroupMembership.objects.all()
 
     def can_get(self, user):
         return self.group.can_get(user)

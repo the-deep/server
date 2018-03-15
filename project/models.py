@@ -48,18 +48,10 @@ class Project(UserResource):
 
     @staticmethod
     def get_for(user):
-        """
-        Project can be accessed only if
-        * user is member of project
-        * user is member of a group in the project
-        """
-        return Project.objects.filter(
-            models.Q(members=user) |
-            models.Q(user_groups__members=user)
-        ).distinct()
+        return Project.objects.all()
 
     def can_get(self, user):
-        return self in Project.get_for(user)
+        return True
 
     def can_modify(self, user):
         return ProjectMembership.objects.filter(
@@ -94,18 +86,10 @@ class ProjectMembership(models.Model):
 
     @staticmethod
     def get_for(user):
-        """
-        Project (and it's membership) can be accessed only if
-        * user is member of project
-        * user is member of a group in the project
-        """
-        return ProjectMembership.objects.filter(
-            models.Q(project__members=user) |
-            models.Q(project__user_groups__members=user)
-        ).distinct()
+        return ProjectMembership.objects.all()
 
     def can_get(self, user):
-        return self.project.can_get(user)
+        return True
 
     def can_modify(self, user):
         return self.project.can_modify(user)
