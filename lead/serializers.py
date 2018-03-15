@@ -1,5 +1,7 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
+
+from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
 from gallery.serializers import SimpleFileSerializer
 from .models import (
@@ -8,13 +10,15 @@ from .models import (
 )
 
 
-class SimpleLeadSerializer(serializers.ModelSerializer):
+class SimpleLeadSerializer(RemoveNullFieldsMixin,
+                           serializers.ModelSerializer):
     class Meta:
         model = Lead
         fields = ('id', 'title', 'source', 'created_at', 'created_by')
 
 
-class LeadSerializer(DynamicFieldsMixin, UserResourceSerializer):
+class LeadSerializer(RemoveNullFieldsMixin,
+                     DynamicFieldsMixin, UserResourceSerializer):
     """
     Lead Model Serializer
     """
@@ -46,8 +50,9 @@ class LeadSerializer(DynamicFieldsMixin, UserResourceSerializer):
     # TODO: Probably also validate assignee to valid list of users
 
 
-class LeadPreviewImageSerializer(
-        DynamicFieldsMixin, serializers.ModelSerializer):
+class LeadPreviewImageSerializer(RemoveNullFieldsMixin,
+                                 DynamicFieldsMixin,
+                                 serializers.ModelSerializer):
     """
     Serializer for lead preview image
     """
@@ -64,7 +69,8 @@ class LeadPreviewImageSerializer(
         return ret.get('file')
 
 
-class LeadPreviewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class LeadPreviewSerializer(RemoveNullFieldsMixin,
+                            DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Serializer for lead preview
     """

@@ -1,6 +1,7 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
+from deep.serializers import RemoveNullFieldsMixin
 from geo.models import Region
 from geo.serializers import SimpleRegionSerializer
 from project.models import Project, ProjectMembership
@@ -9,7 +10,8 @@ from user_group.serializers import SimpleUserGroupSerializer
 from user_resource.serializers import UserResourceSerializer
 
 
-class ProjectMembershipSerializer(DynamicFieldsMixin,
+class ProjectMembershipSerializer(RemoveNullFieldsMixin,
+                                  DynamicFieldsMixin,
                                   serializers.ModelSerializer):
     member_email = serializers.CharField(source='member.email', read_only=True)
     member_name = serializers.SerializerMethodField()
@@ -32,7 +34,8 @@ class ProjectMembershipSerializer(DynamicFieldsMixin,
         return project
 
 
-class ProjectSerializer(DynamicFieldsMixin, UserResourceSerializer):
+class ProjectSerializer(RemoveNullFieldsMixin,
+                        DynamicFieldsMixin, UserResourceSerializer):
     memberships = ProjectMembershipSerializer(
         source='projectmembership_set',
         many=True,

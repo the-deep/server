@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
+from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
 from lead.models import Lead
 from .models import (
@@ -10,7 +11,8 @@ from .models import (
 )
 
 
-class AssessmentSerializer(DynamicFieldsMixin, UserResourceSerializer):
+class AssessmentSerializer(RemoveNullFieldsMixin,
+                           DynamicFieldsMixin, UserResourceSerializer):
     lead_title = serializers.CharField(source='lead.title',
                                        read_only=True)
 
@@ -19,7 +21,8 @@ class AssessmentSerializer(DynamicFieldsMixin, UserResourceSerializer):
         fields = ('__all__')
 
 
-class LeadAssessmentSerializer(DynamicFieldsMixin, UserResourceSerializer):
+class LeadAssessmentSerializer(RemoveNullFieldsMixin,
+                               DynamicFieldsMixin, UserResourceSerializer):
     lead_title = serializers.CharField(source='lead.title',
                                        read_only=True)
 
@@ -39,7 +42,8 @@ class LeadAssessmentSerializer(DynamicFieldsMixin, UserResourceSerializer):
         return assessment
 
 
-class AssessmentTemplateSerializer(DynamicFieldsMixin, UserResourceSerializer):
+class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
+                                   DynamicFieldsMixin, UserResourceSerializer):
     metadata_groups = serializers.SerializerMethodField()
     methodology_groups = serializers.SerializerMethodField()
     assessment_topics = serializers.SerializerMethodField()

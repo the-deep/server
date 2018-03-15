@@ -1,15 +1,18 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
+from deep.serializers import RemoveNullFieldsMixin
 from user_group.models import UserGroup, GroupMembership
 
 
-class SimpleUserGroupSerializer(serializers.ModelSerializer):
+class SimpleUserGroupSerializer(RemoveNullFieldsMixin,
+                                serializers.ModelSerializer):
     class Meta:
         model = UserGroup
         fields = ('id', 'title')
 
 
-class GroupMembershipSerializer(DynamicFieldsMixin,
+class GroupMembershipSerializer(RemoveNullFieldsMixin,
+                                DynamicFieldsMixin,
                                 serializers.ModelSerializer):
     member_email = serializers.CharField(source='member.email', read_only=True)
     member_name = serializers.SerializerMethodField()
@@ -29,7 +32,8 @@ class GroupMembershipSerializer(DynamicFieldsMixin,
         return group
 
 
-class UserGroupSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class UserGroupSerializer(RemoveNullFieldsMixin,
+                          DynamicFieldsMixin, serializers.ModelSerializer):
     memberships = GroupMembershipSerializer(
         source='groupmembership_set',
         many=True, read_only=True

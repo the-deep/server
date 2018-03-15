@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
+from deep.serializers import RemoveNullFieldsMixin
 from user.models import Profile
 from user.utils import send_password_reset
 from project.models import Project
@@ -11,7 +12,8 @@ from jwt_auth.recaptcha import validate_recaptcha
 from jwt_auth.errors import (UserNotFoundError, InvalidCaptchaError)
 
 
-class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class UserSerializer(RemoveNullFieldsMixin,
+                     DynamicFieldsMixin, serializers.ModelSerializer):
     organization = serializers.CharField(source='profile.organization',
                                          allow_blank=True)
     display_picture = serializers.PrimaryKeyRelatedField(
@@ -78,7 +80,8 @@ class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         return profile
 
 
-class PasswordResetSerializer(serializers.Serializer):
+class PasswordResetSerializer(RemoveNullFieldsMixin,
+                              serializers.Serializer):
     email = serializers.EmailField(required=True)
     recaptcha_response = serializers.CharField(required=True)
 

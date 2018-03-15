@@ -5,6 +5,7 @@ from rest_framework.exceptions import APIException
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
+from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
 from utils.external_storages.google_drive import download as g_download
 from utils.external_storages.dropbox import download as d_download
@@ -13,7 +14,8 @@ from .models import File, FilePreview
 import os
 
 
-class SimpleFileSerializer(serializers.ModelSerializer):
+class SimpleFileSerializer(RemoveNullFieldsMixin,
+                           serializers.ModelSerializer):
     title = serializers.CharField(required=False, read_only=True)
     file = serializers.FileField(required=False, read_only=True)
     mime_type = serializers.CharField(required=False, read_only=True)
@@ -23,7 +25,8 @@ class SimpleFileSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'file', 'mime_type')
 
 
-class FileSerializer(DynamicFieldsMixin, UserResourceSerializer):
+class FileSerializer(RemoveNullFieldsMixin,
+                     DynamicFieldsMixin, UserResourceSerializer):
     class Meta:
         model = File
         fields = ('__all__')
@@ -45,7 +48,8 @@ class FileSerializer(DynamicFieldsMixin, UserResourceSerializer):
         return file
 
 
-class GoogleDriveFileSerializer(UserResourceSerializer):
+class GoogleDriveFileSerializer(RemoveNullFieldsMixin,
+                                UserResourceSerializer):
     access_token = serializers.CharField(write_only=True)
     file_id = serializers.CharField(write_only=True)
     mime_type = serializers.CharField()
@@ -78,7 +82,8 @@ class GoogleDriveFileSerializer(UserResourceSerializer):
         return file
 
 
-class DropboxFileSerializer(UserResourceSerializer):
+class DropboxFileSerializer(RemoveNullFieldsMixin,
+                            UserResourceSerializer):
     file_url = serializers.CharField(write_only=True)
 
     class Meta:
@@ -107,7 +112,8 @@ class DropboxFileSerializer(UserResourceSerializer):
         return file
 
 
-class FilePreviewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class FilePreviewSerializer(RemoveNullFieldsMixin,
+                            DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = FilePreview
         fields = ('id', 'text', 'ngrams', 'extracted')

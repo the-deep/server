@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import transaction
 from drf_dynamic_fields import DynamicFieldsMixin
+
+from deep.serializers import RemoveNullFieldsMixin
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
 from geo.models import Region, AdminLevel  # , GeoShape
@@ -8,7 +10,8 @@ from geo.tasks import load_geo_areas
 from project.models import Project
 
 
-class SimpleRegionSerializer(serializers.ModelSerializer):
+class SimpleRegionSerializer(RemoveNullFieldsMixin,
+                             serializers.ModelSerializer):
     title = serializers.CharField(read_only=True)
 
     class Meta:
@@ -16,14 +19,16 @@ class SimpleRegionSerializer(serializers.ModelSerializer):
         fields = ('id', 'title')
 
 
-class SimpleAdminLevelSerializer(serializers.ModelSerializer):
+class SimpleAdminLevelSerializer(RemoveNullFieldsMixin,
+                                 serializers.ModelSerializer):
     class Meta:
         model = AdminLevel
         fields = ('id', 'title', 'name_prop', 'code_prop',
                   'parent_name_prop', 'parent_code_prop',)
 
 
-class RegionSerializer(DynamicFieldsMixin, UserResourceSerializer):
+class RegionSerializer(RemoveNullFieldsMixin,
+                       DynamicFieldsMixin, UserResourceSerializer):
     """
     Region Model Serializer
     """
@@ -65,7 +70,8 @@ class RegionSerializer(DynamicFieldsMixin, UserResourceSerializer):
         return region
 
 
-class AdminLevelSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class AdminLevelSerializer(RemoveNullFieldsMixin,
+                           DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Admin Level Model Serializer
     """

@@ -1,4 +1,7 @@
-from deep.serializers import NestedUpdateMixin, NestedCreateMixin
+from deep.serializers import (
+    NestedCreateMixin,
+    NestedUpdateMixin,
+)
 from rest_framework import serializers
 from reversion.models import Version
 import reversion

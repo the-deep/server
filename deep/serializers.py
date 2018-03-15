@@ -8,6 +8,27 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 
+def remove_null(d):
+    if not isinstance(d, (dict, list)):
+        return d
+    if isinstance(d, list):
+        return [v for v in (remove_null(v) for v in d) if v]
+    return {
+        k: v
+        for k, v in (
+            (k, remove_null(v))
+            for k, v in d.items()
+        )
+        if v is not None
+    }
+
+
+class RemoveNullFieldsMixin:
+    def to_representation(self, instance):
+        rep = super(RemoveNullFieldsMixin, self).to_representation(instance)
+        return remove_null(rep)
+
+
 class BaseNestedModelSerializer(serializers.ModelSerializer):
     def _extract_relations(self, validated_data):
         reverse_relations = OrderedDict()

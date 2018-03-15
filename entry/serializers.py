@@ -1,12 +1,15 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
+
+from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
 from .models import (
     Entry, Attribute, FilterData, ExportData
 )
 
 
-class AttributeSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class AttributeSerializer(RemoveNullFieldsMixin,
+                          DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Entry Attribute Model Serializer
     """
@@ -22,7 +25,8 @@ class AttributeSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         return entry
 
 
-class FilterDataSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class FilterDataSerializer(RemoveNullFieldsMixin,
+                           DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Filter data Serializer
     """
@@ -38,7 +42,8 @@ class FilterDataSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         return entry
 
 
-class ExportDataSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class ExportDataSerializer(RemoveNullFieldsMixin,
+                           DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Export data Serializer
     """
@@ -54,25 +59,29 @@ class ExportDataSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         return entry
 
 
-class SimpleAttributeSerializer(serializers.ModelSerializer):
+class SimpleAttributeSerializer(RemoveNullFieldsMixin,
+                                serializers.ModelSerializer):
     class Meta:
         model = Attribute
         fields = ('id', 'data', 'widget')
 
 
-class SimpleFilterDataSerializer(serializers.ModelSerializer):
+class SimpleFilterDataSerializer(RemoveNullFieldsMixin,
+                                 serializers.ModelSerializer):
     class Meta:
         model = FilterData
         fields = ('id', 'filter', 'values', 'number')
 
 
-class SimpleExportDataSerializer(serializers.ModelSerializer):
+class SimpleExportDataSerializer(RemoveNullFieldsMixin,
+                                 serializers.ModelSerializer):
     class Meta:
         model = ExportData
         fields = ('id', 'exportable', 'data')
 
 
-class EntrySerializer(DynamicFieldsMixin, UserResourceSerializer):
+class EntrySerializer(RemoveNullFieldsMixin,
+                      DynamicFieldsMixin, UserResourceSerializer):
     """
     Entry Model Serializer
     """

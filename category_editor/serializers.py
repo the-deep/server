@@ -1,12 +1,15 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
+
+from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
 
 from project.models import Project
 from category_editor.models import CategoryEditor
 
 
-class CategoryEditorSerializer(DynamicFieldsMixin, UserResourceSerializer):
+class CategoryEditorSerializer(RemoveNullFieldsMixin,
+                               DynamicFieldsMixin, UserResourceSerializer):
     is_admin = serializers.SerializerMethodField()
     project = serializers.IntegerField(
         write_only=True,

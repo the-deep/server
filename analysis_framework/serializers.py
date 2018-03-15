@@ -1,14 +1,16 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
-from user_resource.serializers import UserResourceSerializer
 
+from deep.serializers import RemoveNullFieldsMixin
+from user_resource.serializers import UserResourceSerializer
 from analysis_framework.models import (
     AnalysisFramework, Widget, Filter, Exportable
 )
 from project.models import Project
 
 
-class WidgetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class WidgetSerializer(RemoveNullFieldsMixin,
+                       DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Widget Model Serializer
     """
@@ -24,7 +26,8 @@ class WidgetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         return analysis_framework
 
 
-class FilterSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class FilterSerializer(RemoveNullFieldsMixin,
+                       DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Filter data Serializer
     """
@@ -40,7 +43,8 @@ class FilterSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         return analysis_framework
 
 
-class ExportableSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class ExportableSerializer(RemoveNullFieldsMixin,
+                           DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Export data Serializer
     """
@@ -56,26 +60,30 @@ class ExportableSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         return analysis_framework
 
 
-class SimpleWidgetSerializer(serializers.ModelSerializer):
+class SimpleWidgetSerializer(RemoveNullFieldsMixin,
+                             serializers.ModelSerializer):
     class Meta:
         model = Widget
         fields = ('id', 'key', 'widget_id', 'title', 'properties')
 
 
-class SimpleFilterSerializer(serializers.ModelSerializer):
+class SimpleFilterSerializer(RemoveNullFieldsMixin,
+                             serializers.ModelSerializer):
     class Meta:
         model = Filter
         fields = ('id', 'key', 'widget_key', 'title',
                   'properties', 'filter_type')
 
 
-class SimpleExportableSerializer(serializers.ModelSerializer):
+class SimpleExportableSerializer(RemoveNullFieldsMixin,
+                                 serializers.ModelSerializer):
     class Meta:
         model = Exportable
         fields = ('id', 'widget_key', 'inline', 'order', 'data')
 
 
-class AnalysisFrameworkSerializer(DynamicFieldsMixin, UserResourceSerializer):
+class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
+                                  DynamicFieldsMixin, UserResourceSerializer):
     """
     Analysis Framework Model Serializer
     """
