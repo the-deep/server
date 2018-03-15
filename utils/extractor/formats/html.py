@@ -2,11 +2,30 @@ from readability.readability import Document
 import re
 import requests
 import tempfile
-from lxml.html import fragment_fromstring
+from bs4 import BeautifulSoup
 
 from django.conf import settings
 
 from utils.common import write_file
+
+
+def _replace_with_newlines(element):
+    text = ''
+    for elem in element.recursiveChildGenerator():
+        if isinstance(elem, str):
+            text += elem.strip()
+        elif elem.name == 'br':
+            text += '\n\n'
+    return text.strip()
+
+
+def _get_plain_text(soup):
+    plain_text = ''
+    for line in soup.findAll('p'):
+        line = _replace_with_newlines(line)
+        plain_text += line
+        plain_text += '\n\n'
+    return plain_text.strip()
 
 
 def process(doc):
@@ -27,7 +46,8 @@ def process(doc):
     html = '<h1>' + title + '</h1>' + summary
 
     regex = re.compile('\n*', flags=re.IGNORECASE)
-    html = '<div>{}</div>'.format(regex.sub('', html))
+    html = '<p>{}</p>'.format(regex.sub('', html))
 
-    text = '\n'.join(fragment_fromstring(html).itertext()).strip()
+    soup = BeautifulSoup(html, 'lxml')
+    text = _get_plain_text(soup)
     return text, images
