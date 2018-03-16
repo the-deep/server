@@ -104,7 +104,7 @@ class HIDIntegrationTest(TestCase):
             user = HumanitarianId(access_token).get_user()
             self.assertEqual(getattr(user, 'email', None), HID_EMAIL)
             user.delete()
-        except AssertionError:
+        except Exception:
             self.show_auth_warning(message=traceback.format_exc())
 
     def test_link_user(self):
@@ -129,5 +129,5 @@ class HIDIntegrationTest(TestCase):
             hid_user = HumanitarianId(access_token).get_user()
             self.assertEqual(hid_user, user)
             user.delete()
-        except AssertionError:
+        except Exception:
             self.show_auth_warning(message=traceback.format_exc())
