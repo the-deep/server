@@ -96,11 +96,11 @@ class HIDIntegrationTest(TestCase):
         """
         Test for new user
         """
-        access_token = self.get_access_token()
-        # NOTE: To avoid error on auth fail
-        if access_token is None:
-            return
         try:
+            access_token = self.get_access_token()
+            # NOTE: To avoid error on auth fail
+            if access_token is None:
+                return
             user = HumanitarianId(access_token).get_user()
             self.assertEqual(getattr(user, 'email', None), HID_EMAIL)
             user.delete()
@@ -112,12 +112,12 @@ class HIDIntegrationTest(TestCase):
         Test for old user
         """
 
-        access_token = self.get_access_token()
-        # NOTE: To avoid error on auth fail
-        if access_token is None:
-            return
-
         try:
+            access_token = self.get_access_token()
+            # NOTE: To avoid error on auth fail
+            if access_token is None:
+                return
+
             user = User.objects.create_user(
                 first_name=HID_FIRSTNAME,
                 last_name=HID_LASTNAME,
