@@ -35,6 +35,8 @@ class Project(UserResource):
                                             on_delete=models.SET_NULL)
     data = JSONField(default=None, blank=True, null=True)
 
+    is_default = models.BooleanField(default=False)
+
     def __str__(self):
         return self.title
 

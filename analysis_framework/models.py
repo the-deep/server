@@ -44,19 +44,21 @@ class AnalysisFramework(UserResource):
 
     @staticmethod
     def get_for(user):
+        return AnalysisFramework.objects.all()
         """
         Analysis Framework can only be accessed by users who have access to
         it's project
         """
-        return AnalysisFramework.objects.filter(
-            models.Q(created_by=user) |
-            models.Q(project=None) |
-            models.Q(project__members=user) |
-            models.Q(project__user_groups__members=user)
-        ).distinct()
+        # return AnalysisFramework.objects.filter(
+        #     models.Q(created_by=user) |
+        #     models.Q(project=None) |
+        #     models.Q(project__members=user) |
+        #     models.Q(project__user_groups__members=user)
+        # ).distinct()
 
     def can_get(self, user):
-        return self in AnalysisFramework.get_for(user)
+        return True
+        # return self in AnalysisFramework.get_for(user)
 
     def can_modify(self, user):
         """

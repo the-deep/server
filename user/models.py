@@ -4,7 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from gallery.models import File
-from project.models import Project
+from project.models import Project, ProjectMembership
 
 
 class Profile(models.Model):
@@ -35,6 +35,19 @@ class Profile(models.Model):
             else self.user.username
 
 
+def assign_to_default_project(user):
+    """
+    Get a default project if any and add the user as its member
+    """
+    default_projects = Project.objects.filter(is_default=True)
+    for default_project in default_projects:
+        ProjectMembership.objects.create(
+            member=user,
+            project=default_project,
+            role='normal',
+        )
+
+
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, created, **kwargs):
     """
@@ -43,5 +56,6 @@ def save_user_profile(sender, instance, created, **kwargs):
     """
     if created or Profile.objects.filter(user=instance).count() == 0:
         Profile.objects.create(user=instance)
+        assign_to_default_project(instance)
     else:
         instance.profile.save()
