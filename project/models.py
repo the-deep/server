@@ -48,10 +48,13 @@ class Project(UserResource):
 
     @staticmethod
     def get_for(user):
-        return Project.objects.all()
+        return Project.objects.filter(
+            models.Q(members=user) |
+            models.Q(user_groups__members=user)
+        ).distinct()
 
     def can_get(self, user):
-        return True
+        return self in Project.get_for(user)
 
     def can_modify(self, user):
         return ProjectMembership.objects.filter(

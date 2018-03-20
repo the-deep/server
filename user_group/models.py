@@ -23,7 +23,9 @@ class UserGroup(models.Model):
 
     @staticmethod
     def get_for(user):
-        return UserGroup.objects.all()
+        return UserGroup.objects.filter(
+            members=user
+        ).distinct()
 
     @staticmethod
     def get_modifiable_for(user):
@@ -35,7 +37,7 @@ class UserGroup(models.Model):
         ).distinct()
 
     def can_get(self, user):
-        return True
+        return self in UserGroup.get_for(user)
 
     def can_modify(self, user):
         return GroupMembership.objects.filter(
