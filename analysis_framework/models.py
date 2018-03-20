@@ -40,12 +40,6 @@ class AnalysisFramework(UserResource):
         [widget.clone_to(analysis_framework) for widget
          in self.widget_set.all()]
 
-        [filter.clone_to(analysis_framework) for filter
-         in self.filter_set.all()]
-
-        [exportable.clone_to(analysis_framework) for exportable
-         in self.exportable_set.all()]
-
         return analysis_framework
 
     @staticmethod
