@@ -147,6 +147,23 @@ class AssessmentTests(AuthMixin, LeadMixin, ProjectMixin,
 
         # TODO: More detailed test
 
+    def test_project_assessment_template(self):
+        project = self.create_or_get_project()
+        template = AssessmentTemplate.objects.create(
+            title='Test template'
+        )
+        project.assessment_template = template
+        project.save()
+
+        url = '/api/v1/projects/{}/assessment-template/'.format(
+            project.id
+        )
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth,
+                                   format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], template.id)
+        self.assertEqual(response.data['title'], template.title)
+
     def test_options(self):
         """
         Options api

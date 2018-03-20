@@ -83,8 +83,20 @@ class Lead(UserResource):
     def __str__(self):
         return '{}'.format(self.title)
 
-    # Lead preview is invalid upon save
-    # Retrigger extraction
+    # Lead preview is invalid while saving url/text/attachment
+    # Retrigger extraction at such cases
+
+    def __init__(self, *args, **kwargs):
+        super(Lead, self).__init__(*args, **kwargs)
+        self.__initial = self.get_dict()
+
+    def get_dict(self):
+        return {
+            'text': self.text,
+            'url': self.url,
+            'attachment': self.attachment,
+        }
+
     def save(self, *args, **kwargs):
         super(Lead, self).save(*args, **kwargs)
         from lead.tasks import extract_from_lead
@@ -92,7 +104,12 @@ class Lead(UserResource):
         LeadPreviewImage.objects.filter(lead=self).delete()
 
         if not settings.TESTING:
-            transaction.on_commit(lambda: extract_from_lead.delay(self.id))
+            d1 = self.__initial
+            d2 = self.get_dict()
+            if d1.get('text') != d2.get('text') or \
+                    d1.get('url') != d2.get('url') or \
+                    d1.get('attachment') != d2.get('attachment'):
+                transaction.on_commit(lambda: extract_from_lead.delay(self.id))
 
     @staticmethod
     def get_for(user):

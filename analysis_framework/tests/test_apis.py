@@ -152,6 +152,21 @@ class AnalysisFrameworkTests(AuthMixin, ProjectMixin,
 
         self.assertEqual(project.analysis_framework.id, response.data['id'])
 
+    def test_project_analysis_framework(self):
+        project = self.create_or_get_project()
+        analysis_framework = self.create_or_get_analysis_framework()
+        project.analysis_framework = analysis_framework
+        project.save()
+
+        url = '/api/v1/projects/{}/analysis-framework/'.format(
+            project.id
+        )
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth,
+                                   format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], analysis_framework.id)
+        self.assertEqual(response.data['title'], analysis_framework.title)
+
 
 class WidgetTests(AuthMixin, AnalysisFrameworkMixin, APITestCase):
     """
