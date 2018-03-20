@@ -17,8 +17,10 @@ def send_mail(subject_template_name, email_template_name,
     # Email subject *must not* contain newlines
     subject = ''.join(subject.splitlines())
     body = loader.render_to_string(email_template_name, context)
+    print(body)
     email_message = EmailMultiAlternatives(
         subject, body, from_email, [to_email])
+    email_message.attach_alternative(body, "text/html")
     if html_email_template_name is not None:
         html_email = loader.render_to_string(
             html_email_template_name, context)

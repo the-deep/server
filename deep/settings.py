@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'reversion',
     'storages',
+    'django_premailer',
 
     'analysis_framework',
     'ary',

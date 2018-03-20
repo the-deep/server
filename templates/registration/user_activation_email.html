@@ -1,14 +1,12 @@
-{% load i18n %}{% autoescape off %}
-Hi there -
-
-It seems your deep account is deactivated.
-Please go to the following page to activate.
-{% block reset_link %}
-{{ protocol }}://{{ domain }}{% url 'user_activate_confirm' uidb64=uid token=token %}
+{% extends "base_email.html" %}
+{% block body %}
+    <p>
+        It seems your DEEP account is not active - please go to the following page to activate it
+    </p>
+    <a
+        class="link"
+        href="{{ protocol }}://{{ domain }}{% url 'user_activate_confirm' uidb64=uid token=token %}"
+        >
+        Activate your account
+    </a>
 {% endblock %}
-
-{% trans "Incase you've forgotten, your username is" %} {{ user.get_username }}
-
--The DEEP team
-
-{% endautoescape %}
