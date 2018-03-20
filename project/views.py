@@ -1,10 +1,12 @@
 from rest_framework import (
-    viewsets,
+    exceptions,
     permissions,
-    views,
     response,
     status,
+    views,
+    viewsets,
 )
+from rest_framework.decorators import detail_route
 
 from deep.permissions import ModifyPermission
 from geo.models import Region
@@ -48,6 +50,28 @@ class ProjectViewSet(viewsets.ModelViewSet):
             request, response,
             *args, **kwargs,
         )
+
+    @detail_route(permission_classes=[permissions.IsAuthenticated],
+                  url_path='analysis-framework')
+    def get_framework(self, request, pk=None, version=None):
+        from analysis_framework.serializers import AnalysisFrameworkSerializer
+        project = self.get_object()
+        if not project.analysis_framework:
+            raise exceptions.NotFound('Resource not found')
+        serializer = AnalysisFrameworkSerializer(project.analysis_framework,
+                                                 context={'request': request})
+        return response.Response(serializer.data)
+
+    @detail_route(permission_classes=[permissions.IsAuthenticated],
+                  url_path='assessment-template')
+    def get_assessment_template(self, request, pk=None, version=None):
+        from ary.serializers import AssessmentTemplateSerializer
+        project = self.get_object()
+        if not project.assessment_template:
+            raise exceptions.NotFound('Resource not found')
+        serializer = AssessmentTemplateSerializer(project.assessment_template,
+                                                  context={'request': request})
+        return response.Response(serializer.data)
 
 
 class ProjectMembershipViewSet(viewsets.ModelViewSet):
