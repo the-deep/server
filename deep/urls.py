@@ -79,10 +79,10 @@ from export.views import (
     ExportViewSet,
 )
 from deep.views import (
-    AccountActivate,
     Api_404View,
     FrontendView,
     PasswordReset,
+    AccountActivate,
 )
 from docs.views import (
     DocsView,
@@ -295,9 +295,10 @@ urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls',
                                namespace='rest_framework')),
 
-    # NOTE: uncomment for debug email template
-    # url(r'^pr-email/$', PasswordReset.as_view()),
-    # url(r'^aa-email/$', AccountActivate.as_view()),
+    # NOTE: For debuging email templates
+    url(r'^pr-email/$', PasswordReset.as_view()),
+    url(r'^aa-email/$', AccountActivate.as_view()),
+
     url(r'^favicon.ico$',
         RedirectView.as_view(
             url=get_frontend_url('favicon.ico'),

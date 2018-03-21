@@ -37,18 +37,16 @@ class PasswordReset(View):
     """
     def get(self, request):
         from user.models import User
-        from django.contrib.auth.tokens import default_token_generator
-        from django.utils.http import urlsafe_base64_encode
-        from django.utils.encoding import force_bytes
+        welcome = request.GET.get('welcome', False)
         user = User.objects.get(pk=1)
         context = {
             'email': user.email,
             'domain': 'localhost:8000',
             'site_name': 'DEEPER',
-            'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+            'uid': 'fakeuid',
             'user': user,
-            'welcome': True,
-            'token': default_token_generator.make_token(user),
+            'welcome': welcome,
+            'token': 'faketoken',
             'protocol': 'https' if True else 'http',
         }
         return TemplateResponse(
@@ -62,18 +60,14 @@ class AccountActivate(View):
     """
     def get(self, request):
         from user.models import User
-        from django.contrib.auth.tokens import default_token_generator
-        from django.utils.http import urlsafe_base64_encode
-        from django.utils.encoding import force_bytes
         user = User.objects.get(pk=1)
         context = {
             'email': user.email,
             'domain': 'localhost:8000',
             'site_name': 'DEEPER',
-            'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+            'uid': 'fakeuid',
             'user': user,
-            'welcome': True,
-            'token': default_token_generator.make_token(user),
+            'token': 'faketoken',
             'protocol': 'https' if True else 'http',
         }
         return TemplateResponse(

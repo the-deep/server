@@ -36,11 +36,6 @@
                 transition: 0.2s all ease-in-out;
                 margin: 18px 0 8px 0;
             }
-            .after-link {
-                text-align: center;
-                color: #414141;
-                font-size: 0.9em;
-            }
             .link:hover {
                 filter: brightness(90%);
             }
@@ -72,13 +67,13 @@
             </p>
 
             {% block body %}{% endblock %}
-            <p class="after-link">
+            <p>
                 Your username, in case you've forgotten: {{ user.get_username }}
             </p>
 
             <div class="deep-team">
                 <p>Thanks for using DEEP</p>
-                <p>The DEEP team</p>
+                <p>-The DEEP team</p>
             </div>
             {% endautoescape %}
         </div>
