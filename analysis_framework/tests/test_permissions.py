@@ -53,12 +53,12 @@ class AnalysisFrameworkPermissionsTest(
                                      format='json')
         return response
 
-    def test_404(self):
+    def test_403(self):
         """
-        Test whether a non-project member can access the analysis framework
+        Test whether a non-project member can edit the analysis framework
         """
         self.assertEqual(self.get_patch_response().status_code,
-                         status.HTTP_404_NOT_FOUND)
+                         status.HTTP_403_FORBIDDEN)
 
     # There's no need for any more tests since all other cases
     # are successful ones and are auto tested when testing the
