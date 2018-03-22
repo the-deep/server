@@ -1,3 +1,4 @@
+from entry.models import Attribute
 from .widgets.store import widget_store
 
 
@@ -13,3 +14,10 @@ def update_entry_attribute(attribute):
         widget_data = widget.properties and widget.properties.get('data')
         widget_module.update_attribute(entry, widget,
                                        data, widget_data or {})
+
+
+def update_attributes():
+    attributes = Attribute.objects.all()
+
+    for attribute in attributes:
+        update_entry_attribute(attribute)

@@ -10,6 +10,7 @@ def get_filters(widget, data):
 def get_exportable(widget, data):
     return {
         'excel': {
+            'type': 'geo',
             'title': widget.title,
         },
     }

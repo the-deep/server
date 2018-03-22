@@ -3,8 +3,8 @@ from .utils import set_filter_data, set_export_data
 
 def update_attribute(entry, widget, data, widget_data):
     data = data or {}
-    dimensions = data.get('dimensions', [])
-    sectors = data.get('sectors', [])
+    dimensions = widget_data.get('dimensions', [])
+    sectors = widget_data.get('sectors', [])
 
     filter1_values = []
     filter2_values = []
