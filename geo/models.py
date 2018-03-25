@@ -173,8 +173,16 @@ class GeoArea(models.Model):
     data = JSONField(default=None, blank=True, null=True)
     polygons = models.GeometryField(null=True, blank=True, default=None)
 
+    long_label = models.TextField(blank=True)
+    short_label = models.TextField(blank=True)
+
     def __str__(self):
         return self.get_label()
+
+    def save(self, *args, **kwargs):
+        self.long_label = self.get_label()
+        self.short_label = self.get_label(False)
+        super(GeoArea, self).save(*args, **kwargs)
 
     def get_label(self, prepend_region=True):
         if self.parent:
