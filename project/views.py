@@ -23,6 +23,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
+    extra = True
 
     def get_queryset(self):
         user = self.request.GET.get('user', self.request.user)
@@ -37,7 +38,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     def finalize_response(self, request, response, *args, **kwargs):
         if request.method == 'GET' and \
-                response.status_code == status.HTTP_200_OK:
+                response.status_code == status.HTTP_200_OK and \
+                self.extra:
             profile = request.user.profile
             response.data['extra'] = {
                 'last_active_project': (
@@ -55,22 +57,34 @@ class ProjectViewSet(viewsets.ModelViewSet):
                   url_path='analysis-framework')
     def get_framework(self, request, pk=None, version=None):
         from analysis_framework.serializers import AnalysisFrameworkSerializer
+
         project = self.get_object()
         if not project.analysis_framework:
             raise exceptions.NotFound('Resource not found')
-        serializer = AnalysisFrameworkSerializer(project.analysis_framework,
-                                                 context={'request': request})
+
+        serializer = AnalysisFrameworkSerializer(
+            project.analysis_framework,
+            context={'request': request},
+        )
+
+        self.extra = False
         return response.Response(serializer.data)
 
     @detail_route(permission_classes=[permissions.IsAuthenticated],
                   url_path='assessment-template')
     def get_assessment_template(self, request, pk=None, version=None):
         from ary.serializers import AssessmentTemplateSerializer
+
         project = self.get_object()
         if not project.assessment_template:
             raise exceptions.NotFound('Resource not found')
-        serializer = AssessmentTemplateSerializer(project.assessment_template,
-                                                  context={'request': request})
+
+        serializer = AssessmentTemplateSerializer(
+            project.assessment_template,
+            context={'request': request},
+        )
+
+        self.extra = False
         return response.Response(serializer.data)
 
 
