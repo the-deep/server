@@ -3,7 +3,7 @@ def get_filters(widget, data):
         'filter_type': 'list',
         'properties': {
             'type': 'multiselect',
-            'options': data.get('options', {}),
+            'options': data if type(data) == list else data.get('options', []),
         },
     }]
 

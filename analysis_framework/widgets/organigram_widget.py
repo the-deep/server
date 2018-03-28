@@ -19,7 +19,7 @@ def get_filters(widget, data):
         'filter_type': 'list',
         'properties': {
             'type': 'multiselect',
-            'options': get_values_for_organ(data or [], None),
+            'options': get_values_for_organ(data, None) if data else [],
         },
     }]
 
