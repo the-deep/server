@@ -119,6 +119,7 @@ class AdminLevel(models.Model):
             region=region,
             parent=parent,
             title=self.title,
+            level=self.level,
             name_prop=self.name_prop,
             code_prop=self.code_prop,
             parent_name_prop=self.parent_name_prop,
