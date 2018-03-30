@@ -32,7 +32,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         user_group = self.request.GET.get('user_group')
         if user_group:
             user_group = user_group.split(',')
-            projects = projects.filter(user_groups=user_group)
+            projects = projects.filter(user_groups__id__in=user_group)
 
         return projects
 
