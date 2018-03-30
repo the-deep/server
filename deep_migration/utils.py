@@ -49,9 +49,9 @@ class MigrationCommand(BaseCommand):
 # PASSWORD = os.environ.get('DEEP_1_PASSWORD', 'admin123')
 
 
-def get_source_url(suffix, version='v2'):
+def get_source_url(suffix, version='v2', query=''):
     BASE_URL = os.environ.get('DEEP_1_URL', 'http://172.21.0.1:9000')
-    return '{}/api/{}/{}/'.format(BASE_URL, version, suffix)
+    return '{}/api/{}/{}/?{}'.format(BASE_URL, version, suffix, query)
 
 
 def get_migrated_s3_key(s3_url):

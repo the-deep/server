@@ -221,16 +221,20 @@ class Command(MigrationCommand):
 
     def migrate_date(self, entry, widget, element):
         value = element['value']
-        self.migrate_attribute_data(entry, widget, {
-            'value': value,
-        })
 
-        date = datetime.strptime(value, '%Y-%m-%d')
-        number = int(date.timestamp() / ONE_DAY)
+        try:
+            date = datetime.strptime(value, '%Y-%m-%d')
+        except Exception:
+            date = datetime.strptime(value, '%d-%m-%Y')
+
+        self.migrate_attribute_data(entry, widget, {
+            'value': date and date.strftime('%Y-%m-%d'),
+        })
+        number = date and int(date.timestamp() / ONE_DAY)
         self.migrate_filter_data(entry, widget, number=number)
         self.migrate_export_data(entry, widget, {
             'excel': {
-                'value': date.strftime('%d-%m-%Y'),
+                'value': date and date.strftime('%d-%m-%Y'),
             }
         })
 
@@ -254,7 +258,7 @@ class Command(MigrationCommand):
         })
 
     def migrate_multiselect(self, entry, widget, element):
-        value = element.get('value', [])
+        value = element.get('value') or []
         self.migrate_attribute_data(entry, widget, {
             'value': value,
         })
@@ -279,7 +283,7 @@ class Command(MigrationCommand):
         })
 
     def migrate_organigram(self, entry, widget, element):
-        value = element.get('value', [])
+        value = element.get('value') or []
         widget_data = widget.properties['data']
         nodes = self.get_organigram_nodes([widget_data], value)
 
@@ -373,7 +377,7 @@ class Command(MigrationCommand):
         return areas.first()
 
     def migrate_number_matrix(self, entry, widget, element):
-        numbers = element.get('numbers', [])
+        numbers = element.get('numbers') or []
         attribute = self.get_number_matrix(numbers)
         self.migrate_attribute_data(entry, widget, attribute)
 
@@ -418,7 +422,7 @@ class Command(MigrationCommand):
         }
 
     def migrate_matrix1d(self, entry, widget, element):
-        selections = element.get('selections', [])
+        selections = element.get('selections') or []
         attribute = self.get_matrix1d_attribute(selections)
         self.migrate_attribute_data(entry, widget, attribute)
 
@@ -486,7 +490,7 @@ class Command(MigrationCommand):
         }
 
     def migrate_matrix2d(self, entry, widget, element):
-        selections = element.get('selections', [])
+        selections = element.get('selections') or []
         attribute = self.get_matrix2d_attribute(selections)
         self.migrate_attribute_data(entry, widget, attribute)
 
@@ -518,7 +522,7 @@ class Command(MigrationCommand):
             sector = selection.get('sector')
             if not pillar or not subpillar or not sector:
                 continue
-            subsectors = selection.get('subsectors', [])
+            subsectors = selection.get('subsectors') or []
 
             if pillar not in attribute:
                 attribute[pillar] = {}
@@ -537,7 +541,7 @@ class Command(MigrationCommand):
             sector = selection.get('sector')
             if not pillar or not subpillar or not sector:
                 continue
-            subsectors = selection.get('subsectors', [])
+            subsectors = selection.get('subsectors') or []
 
             if pillar not in filter_values1:
                 filter_values1.append(pillar)
@@ -578,7 +582,7 @@ class Command(MigrationCommand):
                 continue
 
             subsector_names = []
-            for subsector in selection.get('subsectors', []):
+            for subsector in selection.get('subsectors') or []:
                 ss = next((ss for ss in sector['subsectors']
                            if ss['id'] == subsector), None)
                 if ss:
