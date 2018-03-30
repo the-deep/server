@@ -9,7 +9,7 @@ from ary.models import (
     AssessmentTemplate,
     MetadataGroup, MetadataField, MetadataOption,
     MethodologyGroup,
-    AssessmentTopic,
+    Sector,
     AffectedGroup,
 )
 
@@ -122,7 +122,7 @@ class AssessmentTests(AuthMixin, LeadMixin, ProjectMixin,
             template=template,
             title='Test MTHD Group',
         )
-        AssessmentTopic.objects.create(
+        Sector.objects.create(
             template=template,
             title='Health',
         )

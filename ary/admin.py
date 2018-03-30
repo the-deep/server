@@ -11,8 +11,14 @@ from .models import (
     MethodologyField,
     MethodologyOption,
 
-    AssessmentTopic,
+    Sector,
+    Focus,
     AffectedGroup,
+
+    PrioritySector,
+    PriorityIssue,
+    SpecificNeedGroup,
+    AffectedLocation,
 
     Assessment,
 )
@@ -21,8 +27,13 @@ from .models import (
 admin.site.register(AssessmentTemplate)
 admin.site.register(MetadataGroup)
 admin.site.register(MethodologyGroup)
-admin.site.register(AssessmentTopic)
+admin.site.register(Sector)
+admin.site.register(Focus)
 admin.site.register(AffectedGroup)
+admin.site.register(PrioritySector)
+admin.site.register(PriorityIssue)
+admin.site.register(SpecificNeedGroup)
+admin.site.register(AffectedLocation)
 
 
 class MetadataOptionInline(admin.StackedInline):

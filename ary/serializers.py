@@ -46,8 +46,13 @@ class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
                                    DynamicFieldsMixin, UserResourceSerializer):
     metadata_groups = serializers.SerializerMethodField()
     methodology_groups = serializers.SerializerMethodField()
-    assessment_topics = serializers.SerializerMethodField()
+    sectors = serializers.SerializerMethodField()
+    focuses = serializers.SerializerMethodField()
     affected_groups = serializers.SerializerMethodField()
+    priority_sectors = serializers.SerializerMethodField()
+    priority_issues = serializers.SerializerMethodField()
+    specific_need_groups = serializers.SerializerMethodField()
+    affected_locations = serializers.SerializerMethodField()
 
     class Meta:
         model = AssessmentTemplate
@@ -108,14 +113,44 @@ class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
             for group in template.methodologygroup_set.all()
         ]
 
-    def get_assessment_topics(self, template):
+    def get_sectors(self, template):
         return [
             self.serialize_item(topic)
-            for topic in template.assessmenttopic_set.all()
+            for topic in template.sector_set.all()
+        ]
+
+    def get_focuses(self, template):
+        return [
+            self.serialize_item(topic)
+            for topic in template.focus_set.all()
         ]
 
     def get_affected_groups(self, template):
         return [
             self.serialize_node(parent)
             for parent in template.affectedgroup_set.filter(parent=None)
+        ]
+
+    def get_priority_sectors(self, template):
+        return [
+            self.serialize_node(parent)
+            for parent in template.prioritysector_set.filter(parent=None)
+        ]
+
+    def get_priority_issues(self, template):
+        return [
+            self.serialize_node(parent)
+            for parent in template.priorityissue_set.filter(parent=None)
+        ]
+
+    def get_specific_need_groups(self, template):
+        return [
+            self.serialize_item(topic)
+            for topic in template.specificneedgroup_set.all()
+        ]
+
+    def get_affected_locations(self, template):
+        return [
+            self.serialize_item(topic)
+            for topic in template.affectedlocation_set.all()
         ]
