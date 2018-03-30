@@ -329,12 +329,13 @@ class WebInfoExtractView(views.APIView):
         website = extractor.get_website()
         title = extractor.get_title()
 
+        project = None
         if country:
             project = Project.get_for(request.user).filter(
                 regions__title__icontains=country
             ).first()
-        else:
-            project = request.user.profile.last_active_project
+
+        project = project or request.user.profile.last_active_project
 
         return response.Response({
             'project': project and project.id,
