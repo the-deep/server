@@ -172,6 +172,5 @@ class GeoOptionsApi(AuthMixin, RegionMixin, APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[str(region.id)][1].get('label'),
-                         '{} / {} / {}'.format(region.title,
-                                               geo_area1.title,
-                                               geo_area2.title))
+                         '{} / {}'.format(admin_level2.title,
+                                          geo_area2.title))

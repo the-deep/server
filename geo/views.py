@@ -220,12 +220,12 @@ class GeoOptionsView(views.APIView):
         for region in regions:
             result[str(region.id)] = [
                 {
-                    'label': geo_area.long_label,
-                    'short_label': geo_area.short_label,
+                    'label': '{} / {}'.format(geo_area.admin_level.title,
+                                              geo_area.title),
                     'key': str(geo_area.id),
                     'admin_level_title': geo_area.admin_level.title,
                 } for geo_area in GeoArea.objects.select_related(
-                    'admin_level'
+                    'admin_level', 'admin_level__region',
                 ).filter(
                     admin_level__region=region
                 ).distinct()
