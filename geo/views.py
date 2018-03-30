@@ -182,19 +182,23 @@ class GeoBoundsView(views.APIView):
 
         areas = admin_level.geoarea_set.filter(polygons__isnull=False)
         if areas.count() > 0:
-            envelope = Envelope(*areas[0].polygons.extent)
+            try:
+                envelope = Envelope(*areas[0].polygons.extent)
+                for area in areas[1:]:
+                    envelope.expand_to_include(*area.polygons.extent)
 
-            for area in areas[1:]:
-                envelope.expand_to_include(*area.polygons.extent)
-
-            return response.Response({
-                'bounds': {
-                    'min_x': envelope.min_x,
-                    'min_y': envelope.min_y,
-                    'max_x': envelope.max_x,
-                    'max_y': envelope.max_y,
-                }
-            })
+                return response.Response({
+                    'bounds': {
+                        'min_x': envelope.min_x,
+                        'min_y': envelope.min_y,
+                        'max_x': envelope.max_x,
+                        'max_y': envelope.max_y,
+                    }
+                })
+            except ValueError as e:
+                return response.Response({
+                    'bounds': None,
+                })
 
         return response.Response({
             'bounds': None,

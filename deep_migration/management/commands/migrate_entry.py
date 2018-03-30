@@ -63,7 +63,7 @@ def get_region(code):
 class Command(MigrationCommand):
     def run(self):
         entries = request_with_auth(
-            get_source_url('entries/?template=1', 'v1')
+            get_source_url('entries', query='template=1', version='v1')
         )
 
         if not entries:
@@ -333,7 +333,7 @@ class Command(MigrationCommand):
                 'key': area.id,
                 'short_label': area.get_label(prepend_region=False),
                 'label': area.get_label(),
-            } for area in areas
+            } for area in areas if area
         ]
         keys = [str(v['key']) for v in values]
 
