@@ -17,6 +17,7 @@ djangorestframework-camel-case==0.2.0
 djangorestframework==3.6.4
 django-premailer==0.2.0
 drf-dynamic-fields==0.2.0
+feedparser==5.2.1
 google-api-python-client==1.6.4
 ipython==6.2.1
 lxml==3.7.2
