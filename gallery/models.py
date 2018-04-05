@@ -11,7 +11,7 @@ class File(UserResource):
     file = models.FileField(upload_to='gallery/', max_length=255,
                             null=True, blank=True, default=None)
     mime_type = models.CharField(max_length=130, blank=True, null=True)
-    meta_data = JSONField(default=None, blank=True, null=True)
+    metadata = JSONField(default=None, blank=True, null=True)
 
     is_public = models.BooleanField(default=True)
 

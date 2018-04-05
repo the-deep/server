@@ -25,8 +25,8 @@ class AssessmentMixin():
             lead = self.create_or_get_lead()
             assessment = Assessment.objects.create(
                 lead=lead,
-                meta_data={'test_meta': 'Test'},
-                methodology_data={'test_methodology': 'Test'},
+                metadata={'test_meta': 'Test'},
+                methodology={'test_methodology': 'Test'},
             )
         return assessment
 
@@ -48,8 +48,8 @@ class AssessmentTests(AuthMixin, LeadMixin, ProjectMixin,
         url = '/api/v1/assessments/'
         data = {
             'lead': self.create_or_get_lead().pk,
-            'meta_data': {'test_meta': 'Test'},
-            'methodology_data': {'test_methodology': 'Test'},
+            'metadata': {'test_meta': 'Test'},
+            'methodology': {'test_methodology': 'Test'},
         }
         response = self.client.post(url, data,
                                     HTTP_AUTHORIZATION=self.auth,
@@ -57,9 +57,9 @@ class AssessmentTests(AuthMixin, LeadMixin, ProjectMixin,
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Assessment.objects.count(), old_count + 1)
         self.assertEqual(response.data['version_id'], 1)
-        self.assertEqual(response.data['meta_data'], data['meta_data'])
-        self.assertEqual(response.data['methodology_data'],
-                         data['methodology_data'])
+        self.assertEqual(response.data['metadata'], data['metadata'])
+        self.assertEqual(response.data['methodology'],
+                         data['methodology'])
 
     def test_create_lead_assessment(self):
         """
@@ -71,8 +71,8 @@ class AssessmentTests(AuthMixin, LeadMixin, ProjectMixin,
         lead = self.create_or_get_lead()
         url = '/api/v1/lead-assessments/{}/'.format(lead.pk)
         data = {
-            'meta_data': {'test_meta': 'Test 1'},
-            'methodology_data': {'test_methodology': 'Test 2'},
+            'metadata': {'test_meta': 'Test 1'},
+            'methodology': {'test_methodology': 'Test 2'},
         }
         response = self.client.put(url, data,
                                    HTTP_AUTHORIZATION=self.auth,
@@ -80,17 +80,17 @@ class AssessmentTests(AuthMixin, LeadMixin, ProjectMixin,
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Assessment.objects.count(), old_count + 1)
         self.assertEqual(response.data['version_id'], 1)
-        self.assertEqual(response.data['meta_data'], data['meta_data'])
-        self.assertEqual(response.data['methodology_data'],
-                         data['methodology_data'])
+        self.assertEqual(response.data['metadata'], data['metadata'])
+        self.assertEqual(response.data['methodology'],
+                         data['methodology'])
 
-        data['meta_data'] = {'test_meta': 'Test 1 new'}
+        data['metadata'] = {'test_meta': 'Test 1 new'}
         response = self.client.put(url, data,
                                    HTTP_AUTHORIZATION=self.auth,
                                    format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['version_id'], 2)
-        self.assertEqual(response.data['meta_data'], data['meta_data'])
+        self.assertEqual(response.data['metadata'], data['metadata'])
 
     def test_get_template(self):
         """

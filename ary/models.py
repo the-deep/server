@@ -144,8 +144,8 @@ class Assessment(UserResource):
     Assesssment belonging to a lead
     """
     lead = models.OneToOneField(Lead)
-    meta_data = JSONField(default=None, blank=True, null=True)
-    methodology_data = JSONField(default=None, blank=True, null=True)
+    metadata = JSONField(default=None, blank=True, null=True)
+    methodology = JSONField(default=None, blank=True, null=True)
     summary_data = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
