@@ -104,6 +104,11 @@ def _generate_geo_areas(admin_level, parent):
                                         dir=settings.BASE_DIR)
         f.write(geo_shape_file.file.read())
 
+        # Flush the file before reading it with GDAL
+        # Otherwise, for small files, GDAL may attempt to read before
+        # the write is complete and will raise an exception.
+        f.flush()
+
         if extension == '.zip':
             with tempfile.TemporaryDirectory(
                 dir=settings.BASE_DIR
