@@ -45,6 +45,8 @@ class Lead(UserResource):
     WEBSITE = 'website'
     DROPBOX = 'dropbox'
     GOOGLE_DRIVE = 'google-drive'
+    RSS = 'rss'
+    WEB_API = 'api'
     UNKNOWN = 'unknown'
 
     SOURCE_TYPES = (
@@ -53,6 +55,9 @@ class Lead(UserResource):
         (WEBSITE, 'Website'),
         (DROPBOX, 'Dropbox'),
         (GOOGLE_DRIVE, 'Google Drive'),
+
+        (RSS, 'RSS Feed'),
+        (WEB_API, 'Web API'),
         (UNKNOWN, 'Unknown'),
     )
 
