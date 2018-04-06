@@ -175,7 +175,7 @@ class GeoArea(models.Model):
     polygons = models.GeometryField(null=True, blank=True, default=None)
 
     def __str__(self):
-        return self.get_label()
+        return self.title
 
     def clone_to(self, admin_level, parent):
         geo_area = GeoArea(
