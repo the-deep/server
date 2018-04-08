@@ -58,7 +58,7 @@ class GroupMembership(models.Model):
 
     member = models.ForeignKey(User, on_delete=models.CASCADE)
     group = models.ForeignKey(UserGroup, on_delete=models.CASCADE)
-    role = models.CharField(max_length=100, choices=ROLES,
+    role = models.CharField(max_length=96, choices=ROLES,
                             default='normal')
     joined_at = models.DateTimeField(auto_now_add=True)
 
