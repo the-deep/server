@@ -137,6 +137,7 @@ def extract_from_lead(lead_id):
     # Also use lock while doing this.
     with redis.get_lock(lock):
         if r.exists(key):
+            logger.error('Lead Redis Locked')
             return False
         r.set(key, '1')
 

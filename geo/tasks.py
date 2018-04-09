@@ -177,7 +177,7 @@ def _load_geo_areas(region_id):
         region = Region.objects.get(pk=region_id)
 
         if AdminLevel.objects.filter(region=region).count() == 0:
-            return
+            return True
 
         parent_admin_levels = AdminLevel.objects.filter(
             region=region, parent=None
@@ -200,6 +200,7 @@ def load_geo_areas(region_id):
 
     with redis.get_lock(lock):
         if r.exists(key):
+            logger.error('Geo Area Redis Locked')
             return False
         r.set(key, '1')
 

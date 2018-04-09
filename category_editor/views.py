@@ -85,13 +85,10 @@ class CategoryEditorClassifyView(views.APIView):
                 },
                 status=status.HTTP_200_OK,
             )
-        category = request.data.get('category')
         text = request.data.get('text')
         preview_id = request.data.get('preview_id')
 
         errors = {}
-        if not category:
-            errors['category'] = 'Value not provided'
         if not text and not preview_id:
             errors['text'] = 'Value not provided'
             errors['preview_id'] = 'Value not provided'
@@ -103,7 +100,9 @@ class CategoryEditorClassifyView(views.APIView):
         if errors:
             raise exceptions.ValidationError(errors)
 
-        classifications = self._classify(ce_data, category, text)
+        classifications = []
+        for category in ce_data.get('categories'):
+            self._classify(ce_data, category, text, classifications)
 
         return response.Response(
             {
@@ -112,17 +111,7 @@ class CategoryEditorClassifyView(views.APIView):
             status=status.HTTP_200_OK,
         )
 
-    def _classify(self, ce_data, category, text):
-        category = next((
-            c for c in
-            ce_data.get('categories')
-            if c.get('title').lower() == category.lower()
-        ), None)
-
-        if not category:
-            return []
-
-        results = []
+    def _classify(self, ce_data, category, text, results):
         subcategories = category.get('subcategories', [])
 
         for subcategory in subcategories:

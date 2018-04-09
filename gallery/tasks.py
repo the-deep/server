@@ -69,6 +69,7 @@ def extract_from_file(file_preview_id):
 
     with redis.get_lock(lock):
         if r.exists(key):
+            logger.error('File Redis Locked')
             return False
         r.set(key, '1')
 
