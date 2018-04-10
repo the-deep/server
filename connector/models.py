@@ -21,6 +21,24 @@ class Connector(UserResource):
     def __str__(self):
         return self.title
 
+    @staticmethod
+    def get_for(user):
+        return Connector.objects.filter(
+            models.Q(users=user) |
+            models.Q(projects__members=user) |
+            models.Q(projects__user_groups__members=user)
+        ).distinct()
+
+    def can_get(self, user):
+        return self in Connector.get_for(user)
+
+    def can_modify(self, user):
+        return ConnectorUser.objects.filter(
+            connector=self,
+            user=user,
+            role='admin',
+        ).exists()
+
 
 class ConnectorUser(models.Model):
     """
@@ -44,6 +62,16 @@ class ConnectorUser(models.Model):
     class Meta:
         unique_together = ('user', 'connector')
 
+    @staticmethod
+    def get_for(user):
+        return ConnectorUser.objects.all()
+
+    def can_get(self, user):
+        return True
+
+    def can_modify(self, user):
+        return self.connector.can_modify(user)
+
 
 class ConnectorProject(models.Model):
     """
@@ -66,3 +94,13 @@ class ConnectorProject(models.Model):
 
     class Meta:
         unique_together = ('project', 'connector')
+
+    @staticmethod
+    def get_for(user):
+        return ConnectorProject.objects.all()
+
+    def can_get(self, user):
+        return True
+
+    def can_modify(self, user):
+        return self.connector.can_modify(user)
