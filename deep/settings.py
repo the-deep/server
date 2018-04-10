@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'analysis_framework',
     'ary',
     'category_editor',
+    'connector',
     'deep_migration',
     'docs',
     'dummy_data',

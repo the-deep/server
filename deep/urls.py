@@ -76,6 +76,9 @@ from category_editor.views import (
 )
 from connector.views import (
     SourceViewSet,
+    ConnectorViewSet,
+    ConnectorUserViewSet,
+    ConnectorProjectViewSet,
 )
 from export.views import (
     ExportTriggerView,
@@ -179,6 +182,12 @@ router.register(r'category-editors', CategoryEditorViewSet,
 # Connector routers
 router.register(r'connector-sources', SourceViewSet,
                 base_name='connector_source')
+router.register(r'connectors', ConnectorViewSet,
+                base_name='connector')
+router.register(r'connector-users', ConnectorUserViewSet,
+                base_name='connector_users')
+router.register(r'connector-projects', ConnectorProjectViewSet,
+                base_name='connector_projects')
 
 # Export routers
 router.register(r'exports', ExportViewSet, base_name='export')

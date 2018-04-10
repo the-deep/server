@@ -1,6 +1,7 @@
 from . import (
     rss_feed,
 )
+import random
 
 
 source_store = {
@@ -20,3 +21,8 @@ def get_sources():
         sources.append((key, source.title))
     sources = tuple(sources)
     return sources
+
+
+def get_random_source():
+    sources = get_sources()
+    return random.choice(sources)[0]

@@ -63,8 +63,8 @@ class ConnectorUserSerializer(RemoveNullFieldsMixin,
 class ConnectorProjectSerializer(RemoveNullFieldsMixin,
                                  DynamicFieldsMixin,
                                  serializers.ModelSerializer):
-    project_title = serializers.SerializerMethodField(source='project.title',
-                                                      read_only=True)
+    project_title = serializers.CharField(source='project.title',
+                                          read_only=True)
 
     class Meta:
         model = ConnectorProject
@@ -102,7 +102,7 @@ class ConnectorSerializer(RemoveNullFieldsMixin,
         connector = super(ConnectorSerializer, self).create(validated_data)
         ConnectorUser.objects.create(
             connector=connector,
-            user=self.context['reques'].user,
+            user=self.context['request'].user,
             role='admin',
         )
         return connector

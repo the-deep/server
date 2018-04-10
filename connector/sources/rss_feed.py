@@ -14,6 +14,11 @@ class RssFeed(Source):
             'title': 'Feed URL'
         },
         {
+            'key': 'website',
+            'field_type': 'string',
+            'title': 'Website'
+        },
+        {
             'key': 'title-field',
             'field_type': 'string',
             'title': 'Title field'
@@ -44,12 +49,13 @@ class RssFeed(Source):
             date = entry[params['date-field']]
             source = entry[params['source-field']]
             url = entry[params['url-field']]
+            website = entry[params['website']]
             data = Lead(
                 title=title,
                 published_on=date,
                 source=source,
                 url=url,
-                website='reliefweb.int',
+                website=website,
                 source_type=Lead.RSS,
             )
 
