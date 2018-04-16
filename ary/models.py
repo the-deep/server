@@ -146,7 +146,7 @@ class Assessment(UserResource):
     lead = models.OneToOneField(Lead)
     metadata = JSONField(default=None, blank=True, null=True)
     methodology = JSONField(default=None, blank=True, null=True)
-    summary_data = JSONField(default=None, blank=True, null=True)
+    summary = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
         return str(self.lead)
