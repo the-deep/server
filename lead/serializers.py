@@ -30,10 +30,6 @@ class LeadSerializer(RemoveNullFieldsMixin,
         source='leadpreview.classified_doc_id',
         read_only=True,
     )
-    assessment = serializers.IntegerField(
-        source='assessment.id',
-        read_only=True,
-    )
 
     class Meta:
         model = Lead
