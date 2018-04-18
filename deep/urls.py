@@ -326,5 +326,6 @@ urlpatterns = [
 
 urlpatterns += [
     url(r'^$', FrontendView.as_view()),
-    url(get_api_path(''), Api_404View.as_view()),
 ]
+
+handler404 = Api_404View.as_view()
