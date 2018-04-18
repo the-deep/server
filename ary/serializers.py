@@ -42,115 +42,126 @@ class LeadAssessmentSerializer(RemoveNullFieldsMixin,
         return assessment
 
 
+class RecursiveSerializer(serializers.Serializer):
+    def to_representation(self, value):
+        serializer = self.parent.parent.__class__(value, context=self.context)
+        return serializer.data
+
+
+class ItemSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+
+
+class TreeSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    children = RecursiveSerializer(many=True, read_only=True)
+
+
+class OptionSerializer(serializers.Serializer):
+    key = serializers.CharField()
+    label = serializers.CharField(source='title')
+
+
+class FieldSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    field_type = serializers.CharField()
+    options = OptionSerializer(many=True, read_only=True)
+
+
+class GroupSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    fields = FieldSerializer(many=True, read_only=True)
+
+
+class ScoreScaleSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    color = serializers.CharField()
+    value = serializers.IntegerField()
+
+
+class ScoreQuestionSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    description = serializers.CharField()
+
+
+class ScorePillarSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    weight = serializers.FloatField()
+    questions = ScoreQuestionSerializer(many=True, read_only=True)
+
+
+class ScoreMatrixScaleSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    value = serializers.CharField()
+
+
+class ScoreMatrixRowSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+
+
+class ScoreMatrixColumnSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+
+
+class ScoreMatrixPillarSerializer(serializers.Serializer):
+    rows = ScoreMatrixRowSerializer(many=True, read_only=True)
+    columns = ScoreMatrixColumnSerializer(many=True, read_only=True)
+    scales = serializers.SerializerMethodField()
+
+    def get_scales(self, pillar):
+        data = {}
+        for row in pillar.rows.all():
+            row_data = {}
+            for column in pillar.columns.all():
+                scale = pillar.scales.filter(row=row, column=column).first()
+                if not scale:
+                    continue
+                serializer = ScoreMatrixScaleSerializer(instance=scale)
+                row_data[str(column.id)] = serializer.data
+            data[str(row.id)] = row_data
+        return data
+
+
 class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
                                    DynamicFieldsMixin, UserResourceSerializer):
-    metadata_groups = serializers.SerializerMethodField()
-    methodology_groups = serializers.SerializerMethodField()
-    sectors = serializers.SerializerMethodField()
-    focuses = serializers.SerializerMethodField()
-    affected_groups = serializers.SerializerMethodField()
-    priority_sectors = serializers.SerializerMethodField()
-    priority_issues = serializers.SerializerMethodField()
-    specific_need_groups = serializers.SerializerMethodField()
-    affected_locations = serializers.SerializerMethodField()
+    metadata_groups = GroupSerializer(source='metadatagroup_set',
+                                      many=True, read_only=True)
+    methodology_groups = GroupSerializer(source='methodologygroup_set',
+                                         many=True, read_only=True)
+    sectors = ItemSerializer(source='sector_set',
+                             many=True, read_only=True)
+    focuses = ItemSerializer(source='focus_set',
+                             many=True, read_only=True)
+    affected_groups = TreeSerializer(source='affectedgroup_set',
+                                     many=True, read_only=True)
+
+    priority_sectors = TreeSerializer(source='prioritysector_set',
+                                      many=True, read_only=True)
+    priority_issues = TreeSerializer(source='priorityissue_set',
+                                     many=True, read_only=True)
+    specific_need_groups = ItemSerializer(source='specificneedgroup_set',
+                                          many=True, read_only=True)
+    affected_locations = ItemSerializer(source='affectedlocation_set',
+                                        many=True, read_only=True)
+
+    score_scales = ScoreScaleSerializer(source='scorescale_set',
+                                        many=True, read_only=True)
+    score_pillars = ScorePillarSerializer(source='scorepillar_set',
+                                          many=True, read_only=True)
+    score_matrix_pillars = ScoreMatrixPillarSerializer(
+        source='scorematrixpillar_set',
+        many=True,
+        read_only=True,
+    )
 
     class Meta:
         model = AssessmentTemplate
         fields = ('__all__')
-
-    def serialize_item(self, item):
-        return {
-            'id': item.id,
-            'title': item.title,
-        }
-
-    def serialize_option(self, item):
-        return {
-            'key': item.key,
-            'label': item.title,
-        }
-
-    def serialize_field(self, field):
-        return {
-            'id': field.id,
-            'title': field.title,
-            'field_type': field.field_type,
-            'options': [
-                self.serialize_option(option)
-                for option in field.options.all()
-            ],
-        }
-
-    def serialize_group(self, group):
-        return {
-            'id': group.id,
-            'title': group.title,
-            'fields': [
-                self.serialize_field(field)
-                for field in group.fields.all()
-            ],
-        }
-
-    def serialize_node(self, node):
-        return {
-            'id': node.id,
-            'title': node.title,
-            'children': [
-                self.serialize_node(child)
-                for child in node.children.all()
-            ]
-        }
-
-    def get_metadata_groups(self, template):
-        return [
-            self.serialize_group(group)
-            for group in template.metadatagroup_set.all()
-        ]
-
-    def get_methodology_groups(self, template):
-        return [
-            self.serialize_group(group)
-            for group in template.methodologygroup_set.all()
-        ]
-
-    def get_sectors(self, template):
-        return [
-            self.serialize_item(topic)
-            for topic in template.sector_set.all()
-        ]
-
-    def get_focuses(self, template):
-        return [
-            self.serialize_item(topic)
-            for topic in template.focus_set.all()
-        ]
-
-    def get_affected_groups(self, template):
-        return [
-            self.serialize_node(parent)
-            for parent in template.affectedgroup_set.filter(parent=None)
-        ]
-
-    def get_priority_sectors(self, template):
-        return [
-            self.serialize_node(parent)
-            for parent in template.prioritysector_set.filter(parent=None)
-        ]
-
-    def get_priority_issues(self, template):
-        return [
-            self.serialize_node(parent)
-            for parent in template.priorityissue_set.filter(parent=None)
-        ]
-
-    def get_specific_need_groups(self, template):
-        return [
-            self.serialize_item(topic)
-            for topic in template.specificneedgroup_set.all()
-        ]
-
-    def get_affected_locations(self, template):
-        return [
-            self.serialize_item(topic)
-            for topic in template.affectedlocation_set.all()
-        ]

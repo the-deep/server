@@ -9,21 +9,6 @@ from lead.models import Lead
 class AssessmentTemplate(UserResource):
     title = models.CharField(max_length=255)
 
-    sector_moderate_pin_tooltip = models.TextField(blank=True)
-    sector_severe_pin_tooltip = models.TextField(blank=True)
-    sector_pin_tooltip = models.TextField(blank=True)
-
-    sector_priority_tooltip = models.TextField(blank=True)
-    sector_affected_tooltip = models.TextField(blank=True)
-    sector_specific_need_tooltip = models.TextField(blank=True)
-
-    humanitarian_limited_tooltip = models.TextField(blank=True)
-    humanitarian_restricted_tooltip = models.TextField(blank=True)
-    humanitarian_access_constraints_tooltip = models.TextField(blank=True)
-
-    humanitarian_priority_issue_tooltip = models.TextField(blank=True)
-    humanitarian_affected_location_tooltip = models.TextField(blank=True)
-
     def __str__(self):
         return self.title
 
@@ -37,6 +22,18 @@ class AssessmentTemplate(UserResource):
 
     def can_modify(self, user):
         return False
+
+
+class BasicEntity(models.Model):
+    title = models.CharField(max_length=255)
+    order = models.IntegerField(default=1)
+
+    def __str__(self):
+        return '{}'.format(self.title)
+
+    class Meta:
+        abstract = True
+        ordering = ['order']
 
 
 class BasicTemplateEntity(models.Model):
@@ -137,6 +134,57 @@ class SpecificNeedGroup(BasicTemplateEntity):
 
 class AffectedLocation(BasicTemplateEntity):
     pass
+
+
+class ScorePillar(BasicTemplateEntity):
+    weight = models.FloatField()
+
+
+class ScoreQuestion(BasicEntity):
+    pillar = models.ForeignKey(ScorePillar, on_delete=models.CASCADE,
+                               related_name='questions')
+    description = models.TextField(blank=True)
+
+
+class ScoreScale(models.Model):
+    template = models.ForeignKey(AssessmentTemplate)
+    color = models.CharField(max_length=255)
+    value = models.IntegerField(default=1)
+
+    def __str__(self):
+        return '{} ({})'.format(self.title, self.template)
+
+    class Meta:
+        ordering = ['value']
+
+
+class ScoreMatrixPillar(BasicTemplateEntity):
+    weight = models.FloatField()
+
+
+class ScoreMatrixRow(BasicEntity):
+    pillar = models.ForeignKey(ScoreMatrixPillar, on_delete=models.CASCADE,
+                               related_name='rows')
+
+
+class ScoreMatrixColumn(BasicEntity):
+    pillar = models.ForeignKey(ScoreMatrixPillar, on_delete=models.CASCADE,
+                               related_name='columns')
+
+
+class ScoreMatrixScale(models.Model):
+    pillar = models.ForeignKey(ScoreMatrixPillar, on_delete=models.CASCADE,
+                               related_name='scales')
+    row = models.ForeignKey(ScoreMatrixRow, on_delete=models.CASCADE)
+    column = models.ForeignKey(ScoreMatrixColumn, on_delete=models.CASCADE)
+    value = models.IntegerField(default=1)
+
+    def __str__(self):
+        return '{}-{} : {}'.format(str(self.row), str(self.column),
+                                   str(self.value))
+
+    class Meta:
+        ordering = ['value']
 
 
 class Assessment(UserResource):

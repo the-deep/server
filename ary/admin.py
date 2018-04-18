@@ -20,6 +20,14 @@ from .models import (
     SpecificNeedGroup,
     AffectedLocation,
 
+    ScorePillar,
+    ScoreQuestion,
+    ScoreScale,
+    ScoreMatrixPillar,
+    ScoreMatrixRow,
+    ScoreMatrixColumn,
+    ScoreMatrixScale,
+
     Assessment,
 )
 
@@ -34,14 +42,17 @@ admin.site.register(PrioritySector)
 admin.site.register(PriorityIssue)
 admin.site.register(SpecificNeedGroup)
 admin.site.register(AffectedLocation)
+admin.site.register(ScoreScale)
 
 
 class MetadataOptionInline(admin.StackedInline):
     model = MetadataOption
+    extra = 0
 
 
 class MethodologyOptionInline(admin.StackedInline):
     model = MethodologyOption
+    extra = 0
 
 
 @admin.register(MetadataField)
@@ -52,6 +63,38 @@ class MetadataFieldAdmin(admin.ModelAdmin):
 @admin.register(MethodologyField)
 class MethodologyFieldAdmin(admin.ModelAdmin):
     inlines = [MethodologyOptionInline]
+
+
+class ScoreQuestionInline(admin.TabularInline):
+    model = ScoreQuestion
+    extra = 0
+
+
+@admin.register(ScorePillar)
+class ScorePillarAdmin(admin.ModelAdmin):
+    inlines = [ScoreQuestionInline]
+
+
+class ScoreMatrixRowInline(admin.TabularInline):
+    model = ScoreMatrixRow
+    extra = 0
+
+
+class ScoreMatrixColumnInline(admin.TabularInline):
+    model = ScoreMatrixColumn
+    extra = 0
+
+
+class ScoreMatrixScaleInline(admin.TabularInline):
+    model = ScoreMatrixScale
+    extra = 0
+
+
+@admin.register(ScoreMatrixPillar)
+class ScoreMatrixPillarAdmin(admin.ModelAdmin):
+    inlines = [ScoreMatrixRowInline,
+               ScoreMatrixColumnInline,
+               ScoreMatrixScaleInline]
 
 
 @admin.register(Assessment)
