@@ -137,7 +137,7 @@ class AffectedLocation(BasicTemplateEntity):
 
 
 class ScorePillar(BasicTemplateEntity):
-    weight = models.FloatField()
+    weight = models.FloatField(default=0.2)
 
 
 class ScoreQuestion(BasicEntity):
@@ -148,18 +148,24 @@ class ScoreQuestion(BasicEntity):
 
 class ScoreScale(models.Model):
     template = models.ForeignKey(AssessmentTemplate)
+    title = models.CharField(max_length=255)
     color = models.CharField(max_length=255)
     value = models.IntegerField(default=1)
 
     def __str__(self):
-        return '{} ({})'.format(self.title, self.template)
+        return '{} ({} : {}) - ({})'.format(
+            self.title,
+            self.value,
+            self.color,
+            self.template,
+        )
 
     class Meta:
         ordering = ['value']
 
 
 class ScoreMatrixPillar(BasicTemplateEntity):
-    weight = models.FloatField()
+    weight = models.FloatField(default=0.2)
 
 
 class ScoreMatrixRow(BasicEntity):
