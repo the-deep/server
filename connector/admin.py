@@ -1,3 +1,8 @@
-# from django.contrib import admin
+from django.contrib import admin
+from reversion.admin import VersionAdmin
+from connector.models import Connector
 
-# Register your models here.
+
+@admin.register(Connector)
+class ConnectorAdmin(VersionAdmin):
+    pass
