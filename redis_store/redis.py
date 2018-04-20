@@ -18,7 +18,8 @@ def init():
         return
     pool = redis.ConnectionPool(host=settings.REDIS_STORE_HOST,
                                 port=settings.REDIS_STORE_PORT,
-                                db=settings.REDIS_STORE_DB)
+                                db=settings.REDIS_STORE_DB,
+                                password=settings.REDIS_STORE_PASSWORD)
 
 
 def get_connection():

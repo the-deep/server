@@ -237,6 +237,7 @@ CELERY_TIMEZONE = TIME_ZONE
 
 REDIS_STORE_HOST = os.environ.get('REDIS_HOST', 'redis')
 REDIS_STORE_PORT = os.environ.get('REDIS_PORT', '6379')
+REDIS_STORE_PASSWORD = os.environ.get('REDIS_PASSWORD', '')
 REDIS_STORE_DB = os.environ.get('REDIS_DB_NUM', '0')
 
 
@@ -245,7 +246,16 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'asgi_redis.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [(os.environ.get('REDIS_HOST', 'redis'), 6379)],
+            'hosts': [
+                (
+                    "redis://:{password}@{host}:{port}/{db}".format(
+                        password=REDIS_STORE_PASSWORD,
+                        host=REDIS_STORE_HOST,
+                        port=REDIS_STORE_PORT,
+                        db=REDIS_STORE_DB,
+                    )
+                )
+            ],
         },
         'ROUTING': 'deep.routing.channel_routing',
     },
