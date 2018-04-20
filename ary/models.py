@@ -151,6 +151,7 @@ class ScoreScale(models.Model):
     title = models.CharField(max_length=255)
     color = models.CharField(max_length=255)
     value = models.IntegerField(default=1)
+    default = models.BooleanField(default=False)
 
     def __str__(self):
         return '{} ({} : {}) - ({})'.format(
@@ -184,6 +185,7 @@ class ScoreMatrixScale(models.Model):
     row = models.ForeignKey(ScoreMatrixRow, on_delete=models.CASCADE)
     column = models.ForeignKey(ScoreMatrixColumn, on_delete=models.CASCADE)
     value = models.IntegerField(default=1)
+    default = models.BooleanField(default=False)
 
     def __str__(self):
         return '{}-{} : {}'.format(str(self.row), str(self.column),
@@ -201,6 +203,7 @@ class Assessment(UserResource):
     metadata = JSONField(default=None, blank=True, null=True)
     methodology = JSONField(default=None, blank=True, null=True)
     summary = JSONField(default=None, blank=True, null=True)
+    score = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
         return str(self.lead)

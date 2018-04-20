@@ -82,6 +82,7 @@ class ScoreScaleSerializer(serializers.Serializer):
     title = serializers.CharField()
     color = serializers.CharField()
     value = serializers.IntegerField()
+    default = serializers.BooleanField()
 
 
 class ScoreQuestionSerializer(serializers.Serializer):
@@ -100,6 +101,7 @@ class ScorePillarSerializer(serializers.Serializer):
 class ScoreMatrixScaleSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     value = serializers.CharField()
+    default = serializers.BooleanField()
 
 
 class ScoreMatrixRowSerializer(serializers.Serializer):
