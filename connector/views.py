@@ -23,7 +23,10 @@ class SourceViewSet(viewsets.ViewSet):
     def list(self, request, version=None):
         sources = source_store.values()
         serializer = SourceSerializer(sources, many=True)
-        return response.Response(serializer.data)
+        return response.Response({
+            'count': len(serializer.data),
+            'results': serializer.data,
+        })
 
 
 # TODO Fetch from source API that returns SourceData
