@@ -97,7 +97,6 @@ def _generate_geo_areas(admin_level, parent):
         # This is necessary in server where the file is
         # originally in s3 server and GDAL expects file in local
         # disk.
-
         # Then load data from that file
         filename, extension = os.path.splitext(geo_shape_file.file.name)
         f = tempfile.NamedTemporaryFile(suffix=extension,

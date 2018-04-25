@@ -56,6 +56,7 @@ from entry.views import (
     EntryFilterView,
     ExportDataViewSet,
     EntryOptionsView,
+    EditEntriesDataViewSet,
 )
 from analysis_framework.views import (
     AnalysisFrameworkCloneView,
@@ -157,6 +158,8 @@ router.register(r'entry-filter-data', FilterDataViewSet,
                 base_name='entry_filter_data')
 router.register(r'entry-export-data', ExportDataViewSet,
                 base_name='entry_export_data')
+router.register(r'edit-entries-data', EditEntriesDataViewSet,
+                base_name='edit_entries_data')
 
 # Analysis framework routers
 router.register(r'analysis-frameworks', AnalysisFrameworkViewSet,

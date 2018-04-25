@@ -151,6 +151,8 @@ class GeoJsonView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, admin_level_id, version=None):
+        # TODO: Use get_object_or_404
+
         if not AdminLevel.objects.filter(id=admin_level_id).exists():
             raise exceptions.NotFound()
 

@@ -73,6 +73,13 @@ class Region(UserResource):
             self.created_by == user
         )
 
+    def get_geo_areas(self):
+        return GeoArea.objects.select_related(
+            'admin_level', 'admin_level__region',
+        ).filter(
+            admin_level__region=self,
+        ).order_by('admin_level__level').distinct()
+
 
 class AdminLevel(models.Model):
     """
@@ -172,6 +179,8 @@ class GeoArea(models.Model):
     title = models.CharField(max_length=255)
     code = models.CharField(max_length=255, blank=True)
     data = JSONField(default=None, blank=True, null=True)
+
+    # TODO Rename to geometry
     polygons = models.GeometryField(null=True, blank=True, default=None)
 
     def __str__(self):
@@ -203,3 +212,7 @@ class GeoArea(models.Model):
 
     def can_modify(self, user):
         return self.admin_level.can_modify(user)
+
+    def get_label(self):
+        return '{} / {}'.format(self.admin_level.title,
+                                self.title)

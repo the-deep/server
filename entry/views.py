@@ -20,7 +20,8 @@ from .models import (
 )
 from .serializers import (
     EntrySerializer, AttributeSerializer,
-    FilterDataSerializer, ExportDataSerializer
+    FilterDataSerializer, ExportDataSerializer,
+    EditEntriesDataSerializer,
 )
 from .filter_set import EntryFilterSet, get_filtered_entries
 
@@ -118,6 +119,17 @@ class EntryFilterView(generics.GenericAPIView):
 
         serializer = self.get_serializer(queryset, many=True)
         return response.Response(serializer.data)
+
+
+class EditEntriesDataViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Page API for Edit Entries
+    """
+    serializer_class = EditEntriesDataSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Lead.get_for(self.request.user)
 
 
 class AttributeViewSet(viewsets.ModelViewSet):
