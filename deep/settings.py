@@ -19,7 +19,9 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = [os.environ.get('DJANGO_ALLOWED_HOST', '*')]
+DEEP_ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOST', '*')
+
+ALLOWED_HOSTS = [DEEP_ALLOWED_HOSTS if DEEP_ALLOWED_HOSTS else '*']
 DEEPER_FRONTEND_HOST = os.environ.get('FRONTEND_HOST', 'localhost:3000')
 DJANGO_API_HOST = os.environ.get('DJANGO_ALLOWED_HOST', 'localhost:8000')
 DEEPER_SITE_NAME = os.environ.get('DEEPER_SITE_NAME', 'DEEPER')
@@ -227,35 +229,21 @@ else:
     MEDIA_ROOT = '/media'
 
 
-# CELERY CONFIG
-
-CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://redis:6379')
-CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://redis:6379')
+# CELERY CONFIG "redis://:{password}@{host}:{port}/{db}"
+CELERY_REDIS_URL = os.environ.get('CELERY_REDIS_URL', 'redis://redis:6379')
+CELERY_BROKER_URL = CELERY_REDIS_URL
+CELERY_RESULT_BACKEND = CELERY_REDIS_URL
 CELERY_TIMEZONE = TIME_ZONE
 
-# REDIS STORE CONFIG
-
-REDIS_STORE_HOST = os.environ.get('REDIS_HOST', 'redis')
-REDIS_STORE_PORT = os.environ.get('REDIS_PORT', '6379')
-REDIS_STORE_PASSWORD = os.environ.get('REDIS_PASSWORD', '')
-REDIS_STORE_DB = os.environ.get('REDIS_DB_NUM', '0')
-
+# REDIS STORE CONFIG "redis://:{password}@{host}:{port}/{db}"
+CHANNEL_REDIS_URL = os.environ.get('CHANNEL_REDIS_URL', 'redis://redis:6379')
 
 # CHANNELS CONFIG
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'asgi_redis.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [
-                (
-                    "redis://:{password}@{host}:{port}/{db}".format(
-                        password=REDIS_STORE_PASSWORD,
-                        host=REDIS_STORE_HOST,
-                        port=REDIS_STORE_PORT,
-                        db=REDIS_STORE_DB,
-                    )
-                )
-            ],
+            'hosts': [CHANNEL_REDIS_URL],
         },
         'ROUTING': 'deep.routing.channel_routing',
     },

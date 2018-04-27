@@ -16,10 +16,7 @@ def init():
     global pool
     if pool:
         return
-    pool = redis.ConnectionPool(host=settings.REDIS_STORE_HOST,
-                                port=settings.REDIS_STORE_PORT,
-                                db=settings.REDIS_STORE_DB,
-                                password=settings.REDIS_STORE_PASSWORD)
+    pool = redis.ConnectionPool.from_url(url=settings.CELERY_REDIS_URL)
 
 
 def get_connection():
