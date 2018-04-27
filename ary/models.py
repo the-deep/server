@@ -136,6 +136,24 @@ class AffectedLocation(BasicTemplateEntity):
     pass
 
 
+class ScoreBucket(models.Model):
+    template = models.ForeignKey(AssessmentTemplate)
+    min_value = models.FloatField(default=0)
+    max_value = models.FloatField(default=5)
+    score = models.FloatField(default=1)
+
+    def __str__(self):
+        return '{} <= x < {} : {} ({})'.format(
+            self.min_value,
+            self.max_value,
+            self.score,
+            str(self.template),
+        )
+
+    class Meta:
+        ordering = ['min_value']
+
+
 class ScorePillar(BasicTemplateEntity):
     weight = models.FloatField(default=0.2)
 

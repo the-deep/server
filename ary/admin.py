@@ -20,6 +20,7 @@ from .models import (
     SpecificNeedGroup,
     AffectedLocation,
 
+    ScoreBucket,
     ScorePillar,
     ScoreQuestion,
     ScoreScale,
@@ -32,7 +33,16 @@ from .models import (
 )
 
 
-admin.site.register(AssessmentTemplate)
+class ScoreBucketInline(admin.TabularInline):
+    model = ScoreBucket
+    extra = 0
+
+
+@admin.register(AssessmentTemplate)
+class AnalysisFrameworkAdmin(VersionAdmin):
+    inlines = [ScoreBucketInline]
+
+
 admin.site.register(MetadataGroup)
 admin.site.register(MethodologyGroup)
 admin.site.register(Sector)

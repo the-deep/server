@@ -11,8 +11,10 @@ from rest_framework import serializers
 def remove_null(d):
     if not isinstance(d, (dict, list)):
         return d
+
     if isinstance(d, list):
-        return [v for v in (remove_null(v) for v in d) if v]
+        return [v for v in (remove_null(v) for v in d) if v is not None]
+
     return {
         k: v
         for k, v in (

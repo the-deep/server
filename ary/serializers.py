@@ -168,6 +168,15 @@ class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
         read_only=True,
     )
 
+    score_buckets = serializers.SerializerMethodField()
+
     class Meta:
         model = AssessmentTemplate
         fields = ('__all__')
+
+    def get_score_buckets(self, template):
+        buckets = template.scorebucket_set.all()
+        return [
+            [b.min_value, b.max_value, b.score]
+            for b in buckets
+        ]
