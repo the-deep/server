@@ -12,6 +12,18 @@ from jwt_auth.recaptcha import validate_recaptcha
 from jwt_auth.errors import (UserNotFoundError, InvalidCaptchaError)
 
 
+class SimpleUserSerializer(RemoveNullFieldsMixin,
+                           serializers.ModelSerializer):
+    display_name = serializers.CharField(
+        source='profile.get_display_name',
+        read_only=True,
+    )
+
+    class Meta:
+        model = User
+        fields = ('id', 'display_name', 'email')
+
+
 class UserSerializer(RemoveNullFieldsMixin,
                      DynamicFieldsMixin, serializers.ModelSerializer):
     organization = serializers.CharField(source='profile.organization',
@@ -22,7 +34,10 @@ class UserSerializer(RemoveNullFieldsMixin,
         allow_null=True,
         required=False,
     )
-    display_name = serializers.SerializerMethodField()
+    display_name = serializers.CharField(
+        source='profile.get_display_name',
+        read_only=True,
+    )
     last_active_project = serializers.PrimaryKeyRelatedField(
         source='profile.last_active_project',
         queryset=Project.objects.all(),
@@ -42,9 +57,6 @@ class UserSerializer(RemoveNullFieldsMixin,
                   'display_name', 'last_active_project',
                   'login_attempts', 'recaptcha_response',
                   'email', 'organization', 'display_picture',)
-
-    def get_display_name(self, user):
-        return user.profile.get_display_name()
 
     def validate_recaptcha_response(self, recaptcha_response):
         if not validate_recaptcha(recaptcha_response):

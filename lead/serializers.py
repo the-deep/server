@@ -2,6 +2,7 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
 from deep.serializers import RemoveNullFieldsMixin
+from user.serializers import SimpleUserSerializer
 from user_resource.serializers import UserResourceSerializer
 from gallery.serializers import SimpleFileSerializer
 from .models import (
@@ -28,6 +29,12 @@ class LeadSerializer(RemoveNullFieldsMixin,
     attachment = SimpleFileSerializer(required=False)
     classified_doc_id = serializers.IntegerField(
         source='leadpreview.classified_doc_id',
+        read_only=True,
+    )
+
+    assignee_details = SimpleUserSerializer(
+        source='assignee',
+        many=True,
         read_only=True,
     )
 
