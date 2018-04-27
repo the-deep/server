@@ -117,6 +117,7 @@ class ScoreMatrixColumnSerializer(serializers.Serializer):
 class ScoreMatrixPillarSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     title = serializers.CharField()
+    weight = serializers.FloatField()
     rows = ScoreMatrixRowSerializer(many=True, read_only=True)
     columns = ScoreMatrixColumnSerializer(many=True, read_only=True)
     scales = serializers.SerializerMethodField()
