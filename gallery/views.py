@@ -13,6 +13,7 @@ from django.conf import settings
 from django.db import models, transaction
 import django_filters
 
+from project.models import Project
 from user_resource.filters import UserResourceFilterSet
 from .serializers import (
     FileSerializer,
@@ -31,6 +32,13 @@ class FileFilterSet(UserResourceFilterSet):
     Also make most fields filerable by multiple values using
     'in' lookup expressions and CSVWidget.
     """
+
+    project = django_filters.ModelMultipleChoiceFilter(
+        name='lead__project',
+        queryset=Project.objects.all(),
+        lookup_expr='in',
+        widget=django_filters.widgets.CSVWidget,
+    )
 
     class Meta:
         model = File
