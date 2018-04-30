@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
+from analysis_framework.serializers import SimpleWidgetSerializer
 from .models import (
     Entry, Attribute, FilterData, ExportData
 )
@@ -61,9 +62,13 @@ class ExportDataSerializer(RemoveNullFieldsMixin,
 
 class SimpleAttributeSerializer(RemoveNullFieldsMixin,
                                 serializers.ModelSerializer):
+
+    widget_obj = SimpleWidgetSerializer(source='widget',
+                                        read_only=True)
+
     class Meta:
         model = Attribute
-        fields = ('id', 'data', 'widget')
+        fields = ('id', 'data', 'widget', 'widget_obj')
 
 
 class SimpleFilterDataSerializer(RemoveNullFieldsMixin,
