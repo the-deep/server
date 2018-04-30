@@ -63,12 +63,12 @@ class ConnectorUserSerializer(RemoveNullFieldsMixin,
 class ConnectorProjectSerializer(RemoveNullFieldsMixin,
                                  DynamicFieldsMixin,
                                  serializers.ModelSerializer):
-    project_title = serializers.CharField(source='project.title',
-                                          read_only=True)
+    title = serializers.CharField(source='project.title',
+                                  read_only=True)
 
     class Meta:
         model = ConnectorProject
-        fields = ('id', 'project', 'project_title',
+        fields = ('id', 'project', 'title',
                   'connector', 'role', 'added_at')
 
     def get_unique_together_validators(self):
