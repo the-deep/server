@@ -100,7 +100,7 @@ class ScorePillarSerializer(serializers.Serializer):
 
 class ScoreMatrixScaleSerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    value = serializers.CharField()
+    value = serializers.IntegerField()
     default = serializers.BooleanField()
 
 
