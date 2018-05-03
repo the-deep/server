@@ -1,0 +1,3 @@
+SHELL=/bin/bash
+
+* * * * * . /aws-script/env_var.sh; . /venv/bin/activate ; python3 /code/deploy/scripts/aws_metrics_put.py
