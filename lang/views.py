@@ -48,4 +48,4 @@ class LanguageViewSet(viewsets.ViewSet):
             **request.data,
         })
         serializer.save()
-        return response.Response({'saved': True})
+        return self.retrieve(request, pk=pk)

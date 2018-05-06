@@ -1,5 +1,3 @@
-from django.core.exceptions import ObjectDoesNotExist
-from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
 from deep.serializers import RemoveNullFieldsMixin
@@ -14,16 +12,20 @@ class LanguageSerializer(RemoveNullFieldsMixin,
 
 class StringSerializer(RemoveNullFieldsMixin,
                        serializers.ModelSerializer):
+    action = serializers.CharField(write_only=True)
+
     class Meta:
         model = String
-        fields = ('id', 'value')
+        fields = ('id', 'value', 'action')
 
 
 class LinkSerializer(RemoveNullFieldsMixin,
                      serializers.ModelSerializer):
+    action = serializers.CharField(write_only=True)
+
     class Meta:
         model = Link
-        fields = ('id', 'key', 'string')
+        fields = ('id', 'key', 'string', 'action')
 
 
 # Expects a object containing 'code', title', `strings` and `links`
@@ -34,39 +36,24 @@ class StringsSerializer(RemoveNullFieldsMixin,
     strings = StringSerializer(many=True)
     links = LinkSerializer(many=True)
 
-    strings_to_delete = serializers.ListField(child=serializers.IntegerField(),
-                                              write_only=True,
-                                              required=False)
-    links_to_delete = serializers.ListField(child=serializers.IntegerField(),
-                                            write_only=True,
-                                            required=False)
-
     def save(self):
         code = self.initial_data['code']
         strings = self.initial_data.get('strings') or []
         links = self.initial_data.get('links') or []
 
-        strings_to_delete = self.initial_data.get('strings_to_delete') or []
-        links_to_delete = self.initial_data.get('links_to_delete') or []
-
-        String.objects.filter(
-            language=code,
-            id__in=strings_to_delete,
-        ).delete()
-
-        Link.objects.filter(
-            language=code,
-            id__in=links_to_delete,
-        ).delete()
-
         string_map = {}
         for string_data in strings:
+            action = string_data['action']
             id = string_data['id']
-            try:
-                id = int(id)
-                string = String.objects.get(id=id)
-            except (ValueError, ObjectDoesNotExist):
+
+            if action == 'add':
                 string = String()
+            else:
+                string = String.objects.get(id=id)
+
+            if action == 'delete':
+                string.delete()
+                continue
 
             string.language = code
             string.value = string_data['value']
@@ -75,12 +62,17 @@ class StringsSerializer(RemoveNullFieldsMixin,
             string_map[id] = string
 
         for link_data in links:
+            action = link_data['action']
             id = link_data['id']
-            try:
-                id = int(id)
-                link = Link.objects.get(id=id)
-            except (ValueError, ObjectDoesNotExist):
+
+            if action == 'add':
                 link = Link()
+            else:
+                link = Link.objects.get(id=id)
+
+            if action == 'delete':
+                link.delete()
+                continue
 
             link.language = code
             link.key = link_data['key']
