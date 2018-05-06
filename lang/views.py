@@ -6,7 +6,7 @@ from rest_framework import (
 )
 from deep.permissions import IsSuperAdmin
 from .serializers import LanguageSerializer, StringsSerializer
-from .models import String, Link
+from .models import String, LinkCollection
 
 
 class LanguageViewSet(viewsets.ViewSet):
@@ -17,11 +17,18 @@ class LanguageViewSet(viewsets.ViewSet):
         code = pk
         languages = settings.LANGUAGES
         language = next((l for l in languages if l[0] == code), None)
+
+        def get_links(collection):
+            return collection.links.filter(language=code)
+
         obj = {
             'code': code,
             'title': language[1],
             'strings': String.objects.filter(language=code),
-            'links': Link.objects.filter(language=code),
+            'links': {
+                l.key: get_links(l)
+                for l in LinkCollection.objects.all()
+            },
         }
 
         return response.Response(StringsSerializer(obj).data)

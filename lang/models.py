@@ -14,12 +14,21 @@ class String(models.Model):
         return '{} ({})'.format(self.value, self.language)
 
 
+class LinkCollection(models.Model):
+    key = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.key
+
+
 class Link(models.Model):
     language = models.CharField(
         max_length=255,
         choices=settings.LANGUAGES,
         default=settings.LANGUAGE_CODE,
     )
+    link_collection = models.ForeignKey(LinkCollection,
+                                        related_name='links')
     key = models.CharField(max_length=255)
     string = models.ForeignKey(String)
 
