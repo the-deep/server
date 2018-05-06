@@ -146,12 +146,12 @@ class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
                              many=True, read_only=True)
     focuses = ItemSerializer(source='focus_set',
                              many=True, read_only=True)
-    affected_groups = TreeSerializer(source='affectedgroup_set',
+    affected_groups = TreeSerializer(source='get_parent_affected_groups',
                                      many=True, read_only=True)
 
-    priority_sectors = TreeSerializer(source='prioritysector_set',
+    priority_sectors = TreeSerializer(source='get_parent_priority_sectors',
                                       many=True, read_only=True)
-    priority_issues = TreeSerializer(source='priorityissue_set',
+    priority_issues = TreeSerializer(source='get_parent_priority_issues',
                                      many=True, read_only=True)
     specific_need_groups = ItemSerializer(source='specificneedgroup_set',
                                           many=True, read_only=True)

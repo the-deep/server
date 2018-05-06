@@ -23,6 +23,15 @@ class AssessmentTemplate(UserResource):
     def can_modify(self, user):
         return False
 
+    def get_parent_affected_groups(self):
+        return self.affectedgroup_set.filter(parent=None)
+
+    def get_parent_priority_sectors(self):
+        return self.prioritysector_set.filter(parent=None)
+
+    def get_parent_priority_issues(self):
+        return self.priorityissue_set.filter(parent=None)
+
 
 class BasicEntity(models.Model):
     title = models.CharField(max_length=255)
