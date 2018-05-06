@@ -92,6 +92,9 @@ from deep.views import (
     PasswordReset,
     AccountActivate,
 )
+from lang.views import (
+    LanguageViewSet,
+)
 from docs.views import (
     DocsView,
 )
@@ -195,6 +198,9 @@ router.register(r'connector-projects', ConnectorProjectViewSet,
 
 # Export routers
 router.register(r'exports', ExportViewSet, base_name='export')
+
+# Language routers
+router.register(r'languages', LanguageViewSet, base_name='language')
 
 
 # Versioning : (v1|v2|v3)

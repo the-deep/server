@@ -70,7 +70,7 @@ class Profiler:
         self.pr = None
 
     def print_stats(self):
-        regex = '({})|(\/db\/models.*(fetch|execute_sql))'\
+        regex = '({})|(/db/models.*(fetch|execute_sql))'\
             .format(os.getcwd())
 
         print('Stats')
