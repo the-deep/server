@@ -33,7 +33,7 @@ class SourceDataSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = Lead
         fields = ('title', 'source', 'source_type', 'url',
-                  'website', 'text', 'published_on')
+                  'website', 'published_on')
 
 
 class ConnectorUserSerializer(RemoveNullFieldsMixin,

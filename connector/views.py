@@ -2,10 +2,13 @@ from rest_framework import (
     viewsets,
     response,
     permissions,
+    exceptions,
 )
+from rest_framework.decorators import detail_route
 from deep.permissions import ModifyPermission
 from .serializers import (
     SourceSerializer,
+    SourceDataSerializer,
 
     ConnectorSerializer,
     ConnectorUserSerializer,
@@ -20,12 +23,15 @@ from .sources.store import source_store
 
 
 class SourceViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
     def list(self, request, version=None):
         sources = source_store.values()
         serializer = SourceSerializer(sources, many=True)
+        results = serializer.data
         return response.Response({
-            'count': len(serializer.data),
-            'results': serializer.data,
+            'count': len(results),
+            'results': results,
         })
 
 
@@ -34,12 +40,32 @@ class SourceViewSet(viewsets.ViewSet):
 
 class ConnectorViewSet(viewsets.ModelViewSet):
     serializer_class = ConnectorSerializer
-    permissions = [permissions.IsAuthenticated,
-                   ModifyPermission]
+    permission_classes = [permissions.IsAuthenticated,
+                          ModifyPermission]
 
     def get_queryset(self):
         user = self.request.GET.get('user', self.request.user)
         return Connector.get_for(user)
+
+    @detail_route(permission_classes=[permissions.IsAuthenticated],
+                  url_path='leads')
+    def get_leads(self, request, pk=None, version=None):
+        connector = self.get_object()
+        if not connector.can_get(request.user):
+            raise exceptions.PermissionDenied()
+
+        source = source_store[connector.source]()
+        data = source.fetch(connector.params)
+        serializer = SourceDataSerializer(
+            data,
+            many=True,
+            context={'request': request},
+        )
+        results = serializer.data
+        return response.Response({
+            'count': len(results),
+            'results': results
+        })
 
 
 class ConnectorUserViewSet(viewsets.ModelViewSet):
