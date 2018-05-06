@@ -41,21 +41,23 @@ class RssFeed(Source):
     ]
 
     def fetch(self, params, page=None, limit=None):
-        feed = feedparser.parse(params['feed-url'])
         results = []
+        if not params or not params.get('feed-url'):
+            return results
+
+        feed = feedparser.parse(params['feed-url'])
 
         title_field = params.get('title-field')
         date_field = params.get('date-field')
         source_field = params.get('source-field')
         url_field = params.get('url-field')
-        website_field = params.get('website')
+        website = params.get('website')
 
         for entry in feed.entries:
             title = title_field and entry.get(title_field)
             date = date_field and entry.get(date_field)
             source = source_field and entry.get(source_field)
             url = url_field and entry.get(url_field)
-            website = website_field and entry.get(website_field)
 
             data = Lead(
                 title=title,

@@ -35,9 +35,6 @@ class SourceViewSet(viewsets.ViewSet):
         })
 
 
-# TODO Fetch from source API that returns SourceData
-
-
 class ConnectorViewSet(viewsets.ModelViewSet):
     serializer_class = ConnectorSerializer
     permission_classes = [permissions.IsAuthenticated,
@@ -48,7 +45,8 @@ class ConnectorViewSet(viewsets.ModelViewSet):
         return Connector.get_for(user)
 
     @detail_route(permission_classes=[permissions.IsAuthenticated],
-                  url_path='leads')
+                  url_path='leads',
+                  serializer_class=SourceDataSerializer)
     def get_leads(self, request, pk=None, version=None):
         connector = self.get_object()
         if not connector.can_get(request.user):
