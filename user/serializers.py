@@ -92,6 +92,31 @@ class UserSerializer(RemoveNullFieldsMixin,
         return profile
 
 
+class UserPreferencesSerializer(RemoveNullFieldsMixin,
+                                serializers.ModelSerializer):
+    display_picture = serializers.PrimaryKeyRelatedField(
+        source='profile.display_picture',
+        queryset=File.objects.all(),
+        allow_null=True,
+        required=False,
+    )
+    display_name = serializers.CharField(
+        source='profile.get_display_name',
+        read_only=True,
+    )
+    last_active_project = serializers.PrimaryKeyRelatedField(
+        source='profile.last_active_project',
+        queryset=Project.objects.all(),
+        allow_null=True,
+        required=False,
+    )
+
+    class Meta:
+        model = User
+        fields = ('display_name', 'username', 'email', 'last_active_project',
+                  'display_picture', 'is_superuser')
+
+
 class PasswordResetSerializer(RemoveNullFieldsMixin,
                               serializers.Serializer):
     email = serializers.EmailField(required=True)

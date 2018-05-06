@@ -67,6 +67,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
             context={'request': request},
         )
 
+        # Extra data is sent in `finalize_response` but we don't want
+        # that in this particular api
         self.extra = False
         return response.Response(serializer.data)
 

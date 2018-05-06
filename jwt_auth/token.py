@@ -98,9 +98,6 @@ class AccessToken(Token):
         token = AccessToken()
 
         token['userId'] = user.id
-        token['username'] = user.username
-        token['displayName'] = user.profile.get_display_name()
-        token['isSuperuser'] = user.is_superuser
         return token
 
     def get_user(self):

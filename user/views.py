@@ -4,17 +4,20 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_text
 from rest_framework import (
-    status,
-    viewsets,
-    permissions,
+    exceptions,
     filters,
+    permissions,
     response,
+    status,
     views,
+    viewsets,
 )
+from rest_framework.decorators import detail_route
 
 from deep.views import get_frontend_url
 from .serializers import (
     UserSerializer,
+    UserPreferencesSerializer,
     PasswordResetSerializer,
 )
 
@@ -60,6 +63,22 @@ class UserViewSet(viewsets.ModelViewSet):
             return self.request.user
         else:
             return super().get_object()
+
+    @detail_route(
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='preferences',
+        serializer_class=UserPreferencesSerializer,
+    )
+    def get_preferences(self, request, pk=None, version=None):
+        user = self.get_object()
+        if user != request.user:
+            raise exceptions.PermissionDenied()
+
+        serializer = UserPreferencesSerializer(
+            user,
+            context={'request': request},
+        )
+        return response.Response(serializer.data)
 
 
 class PasswordResetView(views.APIView):
