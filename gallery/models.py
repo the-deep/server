@@ -1,7 +1,5 @@
-from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
-from user_group.models import UserGroup
 from user_resource.models import UserResource
 
 
@@ -14,10 +12,7 @@ class File(UserResource):
     metadata = JSONField(default=None, blank=True, null=True)
 
     is_public = models.BooleanField(default=True)
-
-    # TODO Use following and add permitted_projects
-    permitted_users = models.ManyToManyField(User, blank=True)
-    permitted_user_groups = models.ManyToManyField(UserGroup, blank=True)
+    projects = models.ManyToManyField('project.Project', blank=True)
 
     def __str__(self):
         return self.title
