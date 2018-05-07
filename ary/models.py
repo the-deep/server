@@ -64,6 +64,7 @@ class MetadataGroup(BasicTemplateEntity):
 
 class MetadataField(Field):
     group = models.ForeignKey(MetadataGroup, related_name='fields')
+    tooltip = models.TextField(blank=True)
     order = models.IntegerField(default=1)
 
     def __str__(self):
@@ -90,6 +91,7 @@ class MethodologyGroup(BasicTemplateEntity):
 
 class MethodologyField(Field):
     group = models.ForeignKey(MethodologyGroup, related_name='fields')
+    tooltip = models.TextField(blank=True)
     order = models.IntegerField(default=1)
 
     def __str__(self):
