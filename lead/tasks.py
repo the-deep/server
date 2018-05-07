@@ -83,6 +83,7 @@ def _extract_from_lead_core(lead_id):
             try:
                 data = {
                     'deeper': 1,
+                    'group_id': lead.project.id,
                     'text': text,
                 }
                 response = requests.post(DEEPL_CLASSIFY_URL,
