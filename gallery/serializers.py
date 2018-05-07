@@ -42,10 +42,7 @@ class FileSerializer(RemoveNullFieldsMixin,
 
     def create(self, validated_data):
         validated_data['mime_type'] = validated_data.get('file').content_type
-
-        file = super(FileSerializer, self).create(validated_data)
-        file.permitted_users.add(self.context['request'].user)
-        return file
+        return super(FileSerializer, self).create(validated_data)
 
 
 class GoogleDriveFileSerializer(RemoveNullFieldsMixin,
@@ -77,9 +74,7 @@ class GoogleDriveFileSerializer(RemoveNullFieldsMixin,
             file, None, title, mime_type, None, None
         )
 
-        file = super(GoogleDriveFileSerializer, self).create(validated_data)
-        file.permitted_users.add(self.context['request'].user)
-        return file
+        return super(GoogleDriveFileSerializer, self).create(validated_data)
 
 
 class DropboxFileSerializer(RemoveNullFieldsMixin,
@@ -107,9 +102,7 @@ class DropboxFileSerializer(RemoveNullFieldsMixin,
 
         validated_data['mime_type'] = mime_type
 
-        file = super(DropboxFileSerializer, self).create(validated_data)
-        file.permitted_users.add(self.context['request'].user)
-        return file
+        return super(DropboxFileSerializer, self).create(validated_data)
 
 
 class FilePreviewSerializer(RemoveNullFieldsMixin,
