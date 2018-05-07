@@ -23,7 +23,10 @@ from .serializers import (
 )
 
 
-def filter_files_by_project(qs, name, value):
+def filter_files_by_projects(qs, name, value):
+    if value.count() == 0:
+        return qs
+
     return qs.filter(
         models.Q(projects__in=value) |
         models.Q(lead__project__in=value)
@@ -40,11 +43,12 @@ class FileFilterSet(UserResourceFilterSet):
     'in' lookup expressions and CSVWidget.
     """
 
-    project = django_filters.ModelMultipleChoiceFilter(
+    projects = django_filters.ModelMultipleChoiceFilter(
+        name='projects',
         queryset=Project.objects.all(),
         lookup_expr='in',
         widget=django_filters.widgets.CSVWidget,
-        method=filter_files_by_project,
+        method=filter_files_by_projects,
     )
 
     class Meta:

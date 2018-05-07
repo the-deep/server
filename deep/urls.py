@@ -122,9 +122,9 @@ router.register(r'users', UserViewSet,
 router.register(r'files', FileViewSet,
                 base_name='file')
 router.register(r'files-google-drive', GoogleDriveFileViewSet,
-                base_name='file')
+                base_name='file_google_drive')
 router.register(r'files-dropbox', DropboxFileViewSet,
-                base_name='file')
+                base_name='file_dropbox')
 router.register(r'file-previews', FilePreviewViewSet,
                 base_name='file_preview')
 

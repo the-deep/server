@@ -15,6 +15,11 @@ class CategoryEditorSerializer(RemoveNullFieldsMixin,
         write_only=True,
         required=False,
     )
+    projects = serializers.PrimaryKeyRelatedField(
+        source='project_set.all',
+        read_only=True,
+        many=True,
+    )
 
     class Meta:
         model = CategoryEditor
