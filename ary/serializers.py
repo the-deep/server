@@ -68,8 +68,9 @@ class FieldSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     title = serializers.CharField()
     tooltip = serializers.CharField()
-    field_type = serializers.CharField()
-    options = OptionSerializer(many=True, read_only=True)
+    field_type = serializers.CharField(source='get_type')
+    options = OptionSerializer(source='get_options',
+                               many=True, read_only=True)
 
 
 class GroupSerializer(serializers.Serializer):
