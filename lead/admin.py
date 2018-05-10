@@ -1,6 +1,9 @@
 from django.contrib import admin
 from reversion.admin import VersionAdmin
-from .models import Lead, LeadPreview, LeadPreviewImage
+from .models import (
+    Lead, LeadGroup,
+    LeadPreview, LeadPreviewImage,
+)
 
 
 class LeadPreviewInline(admin.StackedInline):
@@ -14,3 +17,8 @@ class LeadPreviewImageInline(admin.TabularInline):
 @admin.register(Lead)
 class LeadAdmin(VersionAdmin):
     inlines = [LeadPreviewInline, LeadPreviewImageInline]
+
+
+@admin.register(LeadGroup)
+class LeadGroupAdmin(VersionAdmin):
+    pass

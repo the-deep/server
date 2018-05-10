@@ -230,6 +230,18 @@ class LeadOptionsView(views.APIView):
                 )
             return qs
 
+        if (fields is None or 'lead_group' in fields):
+            lead_groups = _filter_by_projects(
+                LeadGroup.objects,
+                projects,
+            )
+            options['lead_group'] = [
+                {
+                    'key': group.id,
+                    'value': group.title,
+                } for group in lead_groups.distinct()
+            ]
+
         if (fields is None or 'assignee' in fields):
             assignee = _filter_by_projects_and_groups(User.objects, projects)
             options['assignee'] = [
