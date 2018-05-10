@@ -28,6 +28,11 @@ class UserSerializer(RemoveNullFieldsMixin,
                      DynamicFieldsMixin, serializers.ModelSerializer):
     organization = serializers.CharField(source='profile.organization',
                                          allow_blank=True)
+    language = serializers.CharField(
+        source='profile.language',
+        allow_null=True,
+        required=False,
+    )
     display_picture = serializers.PrimaryKeyRelatedField(
         source='profile.display_picture',
         queryset=File.objects.all(),
@@ -56,7 +61,8 @@ class UserSerializer(RemoveNullFieldsMixin,
         fields = ('id', 'username', 'first_name', 'last_name',
                   'display_name', 'last_active_project',
                   'login_attempts', 'recaptcha_response',
-                  'email', 'organization', 'display_picture',)
+                  'email', 'organization', 'display_picture',
+                  'language')
 
     def validate_recaptcha_response(self, recaptcha_response):
         if not validate_recaptcha(recaptcha_response):
@@ -111,10 +117,18 @@ class UserPreferencesSerializer(RemoveNullFieldsMixin,
         required=False,
     )
 
+    language = serializers.CharField(source='profile.language',
+                                     read_only=True)
+    fallback_language = serializers.CharField(
+        source='profile.get_fallback_language',
+        read_only=True,
+    )
+
     class Meta:
         model = User
         fields = ('display_name', 'username', 'email', 'last_active_project',
-                  'display_picture', 'is_superuser')
+                  'display_picture', 'is_superuser', 'language',
+                  'fallback_language')
 
 
 class PasswordResetSerializer(RemoveNullFieldsMixin,

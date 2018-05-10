@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.conf import settings
 
 from gallery.models import File
 from project.models import Project, ProjectMembership
@@ -25,6 +26,12 @@ class Profile(models.Model):
                                             blank=True, default=None,
                                             on_delete=models.SET_NULL)
 
+    language = models.CharField(
+        max_length=255,
+        choices=settings.LANGUAGES,
+        default=settings.LANGUAGE_CODE,
+    )
+
     login_attempts = models.IntegerField(default=0)
 
     def __str__(self):
@@ -33,6 +40,9 @@ class Profile(models.Model):
     def get_display_name(self):
         return self.user.get_full_name() if self.user.first_name \
             else self.user.username
+
+    def get_fallback_language(self):
+        return settings.LANGUAGE_CODE
 
 
 def assign_to_default_project(user):
