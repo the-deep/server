@@ -4,7 +4,8 @@ from rest_framework import serializers
 
 from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
-from lead.models import Lead
+from lead.serializers import SimpleLeadSerializer
+from lead.models import Lead, LeadGroup
 from .models import (
     AssessmentTemplate,
     Assessment,
@@ -15,6 +16,8 @@ class AssessmentSerializer(RemoveNullFieldsMixin,
                            DynamicFieldsMixin, UserResourceSerializer):
     lead_title = serializers.CharField(source='lead.title',
                                        read_only=True)
+    lead_group_title = serializers.CharField(source='lead_group.title',
+                                       read_only=True)
 
     class Meta:
         model = Assessment
@@ -22,14 +25,15 @@ class AssessmentSerializer(RemoveNullFieldsMixin,
 
 
 class LeadAssessmentSerializer(RemoveNullFieldsMixin,
-                               DynamicFieldsMixin, UserResourceSerializer):
+                               DynamicFieldsMixin,
+                               UserResourceSerializer):
     lead_title = serializers.CharField(source='lead.title',
                                        read_only=True)
 
     class Meta:
         model = Assessment
         fields = ('__all__')
-        read_only_fields = ('lead',)
+        read_only_fields = ('lead', 'lead_group')
 
     def create(self, validated_data):
         # If this assessment is being created for the first time,
@@ -37,6 +41,34 @@ class LeadAssessmentSerializer(RemoveNullFieldsMixin,
         assessment = super(LeadAssessmentSerializer, self).create({
             **validated_data,
             'lead': get_object_or_404(Lead, pk=self.initial_data['lead']),
+        })
+        assessment.save()
+        return assessment
+
+
+class LeadGroupAssessmentSerializer(RemoveNullFieldsMixin,
+                                    DynamicFieldsMixin,
+                                    UserResourceSerializer):
+    lead_group_title = serializers.CharField(source='lead_group.title',
+                                             read_only=True)
+    leads = SimpleLeadSerializer(source='lead_group.lead_set',
+                                 many=True,
+                                 read_only=True)
+
+    class Meta:
+        model = Assessment
+        fields = ('__all__')
+        read_only_fields = ('lead', 'lead_group')
+
+    def create(self, validated_data):
+        # If this assessment is being created for the first time,
+        # we want to set lead group to the one which has its id in the url
+        assessment = super(LeadGroupAssessmentSerializer, self).create({
+            **validated_data,
+            'lead_group': get_object_or_404(
+                LeadGroup,
+                pk=self.initial_data['lead_group']
+            ),
         })
         assessment.save()
         return assessment

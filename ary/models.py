@@ -1,9 +1,10 @@
 from django.db import models
 from django.contrib.postgres.fields import JSONField
+from django.core.exceptions import ValidationError
 
 from user_resource.models import UserResource
 from deep.models import Field, FieldOption
-from lead.models import Lead
+from lead.models import Lead, LeadGroup
 
 
 class AssessmentTemplate(UserResource):
@@ -228,7 +229,9 @@ class Assessment(UserResource):
     """
     Assesssment belonging to a lead
     """
-    lead = models.OneToOneField(Lead)
+    lead = models.OneToOneField(Lead, default=None, blank=True, null=True)
+    lead_group = models.OneToOneField(LeadGroup,
+                                      default=None, blank=True, null=True)
     metadata = JSONField(default=None, blank=True, null=True)
     methodology = JSONField(default=None, blank=True, null=True)
     summary = JSONField(default=None, blank=True, null=True)
@@ -236,6 +239,21 @@ class Assessment(UserResource):
 
     def __str__(self):
         return str(self.lead)
+
+    def clean(self):
+        if not self.lead and not self.lead_group:
+            raise ValidationError(
+                'Neither `lead` nor `lead_group` defined'
+            )
+        if self.lead and self.lead_group:
+            raise ValidationError(
+                'Assessment cannot have both `lead` and `lead_group` defined'
+            )
+        return super(Assessment, self).clean()
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        return super(Assessment, self).save(*args, **kwargs)
 
     @staticmethod
     def get_for(user):
@@ -245,11 +263,19 @@ class Assessment(UserResource):
         """
         return Assessment.objects.filter(
             models.Q(lead__project__members=user) |
-            models.Q(lead__project__user_groups__members=user)
+            models.Q(lead__project__user_groups__members=user) |
+            models.Q(lead_group__project__members=user) |
+            models.Q(lead_group__project__user_groups__members=user)
         ).distinct()
 
     def can_get(self, user):
-        return self.lead.can_get(user)
+        return (
+            (self.lead and self.lead.can_get(user)) or
+            (self.lead_group and self.lead_group.can_get(user))
+        )
 
     def can_modify(self, user):
-        return self.lead.can_modify(user)
+        return (
+            (self.lead and self.lead.can_modify(user)) or
+            (self.lead_group and self.lead_group.can_modify(user))
+        )

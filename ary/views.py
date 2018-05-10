@@ -14,7 +14,7 @@ import django_filters
 from deep.permissions import ModifyPermission
 from user_resource.filters import UserResourceFilterSet
 from project.models import Project
-from lead.models import Lead
+from lead.models import Lead, LeadGroup
 
 from .models import (
     Assessment,
@@ -24,6 +24,7 @@ from .serializers import (
     AssessmentSerializer,
     AssessmentTemplateSerializer,
     LeadAssessmentSerializer,
+    LeadGroupAssessmentSerializer,
 )
 
 
@@ -37,6 +38,10 @@ class AssessmentFilterSet(UserResourceFilterSet):
         queryset=Lead.objects.all(),
         lookup_expr='in',
     )
+    lead_group = django_filters.ModelMultipleChoiceFilter(
+        queryset=LeadGroup.objects.all(),
+        lookup_expr='in',
+    )
     created_by = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all(),
         lookup_expr='in',
@@ -45,7 +50,7 @@ class AssessmentFilterSet(UserResourceFilterSet):
 
     class Meta:
         model = Assessment
-        fields = ['id', 'lead__title']
+        fields = ['id', 'lead__title', 'lead_group__title']
 
         filter_overrides = {
             models.CharField: {
@@ -92,9 +97,6 @@ class LeadAssessmentViewSet(mixins.RetrieveModelMixin,
     def get_queryset(self):
         return Assessment.get_for(self.request.user)
 
-    def get_object(self):
-        return super(LeadAssessmentViewSet, self).get_object()
-
     def update(self, request, *args, **kwargs):
         # For put/patch request, we want to set `lead` data
         # from url
@@ -107,6 +109,51 @@ class LeadAssessmentViewSet(mixins.RetrieveModelMixin,
         data = {
             **request.data,
             'lead': kwargs['pk'],
+        }
+        serializer = self.get_serializer(instance, data=data,
+                                         partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+
+        return response.Response(serializer.data)
+
+
+class LeadGroupAssessmentViewSet(mixins.RetrieveModelMixin,
+                                 mixins.UpdateModelMixin,
+                                 mixins.DestroyModelMixin,
+                                 viewsets.GenericViewSet):
+    """
+    Assessments accessed using associated lead group id.
+
+    Only allow, put, patch, and get requests as this api
+    is accessed through lead.
+    In put requests, if there is no existing assessment, one is
+    automatically created.
+    """
+    serializer_class = LeadGroupAssessmentSerializer
+    permission_classes = [permissions.IsAuthenticated,
+                          ModifyPermission]
+    lookup_field = 'lead_group'
+    lookup_url_kwarg = 'pk'
+
+    def get_queryset(self):
+        return Assessment.get_for(self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        # For put/patch request, we want to set `lead_group` data
+        # from url
+        partial = kwargs.pop('partial', False)
+        try:
+            instance = self.get_object()
+        except Http404:
+            instance = None
+
+        data = {
+            **request.data,
+            'lead_group': kwargs['pk'],
         }
         serializer = self.get_serializer(instance, data=data,
                                          partial=partial)
