@@ -17,7 +17,7 @@ class AssessmentSerializer(RemoveNullFieldsMixin,
     lead_title = serializers.CharField(source='lead.title',
                                        read_only=True)
     lead_group_title = serializers.CharField(source='lead_group.title',
-                                       read_only=True)
+                                             read_only=True)
 
     class Meta:
         model = Assessment
