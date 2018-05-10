@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'geo',
     'lang',
     'lead',
+    'organization',
     'profiling',
     'project',
     'redis_store',
