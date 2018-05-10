@@ -43,6 +43,7 @@ from geo.views import (
     GeoOptionsView,
 )
 from lead.views import (
+    LeadGroupViewSet,
     LeadViewSet,
     LeadPreviewViewSet,
     LeadOptionsView,
@@ -147,6 +148,8 @@ router.register(r'admin-levels', AdminLevelViewSet,
                 base_name='admin_level')
 
 # Lead routers
+router.register(r'lead-groups', LeadGroupViewSet,
+                base_name='lead_group')
 router.register(r'leads', LeadViewSet,
                 base_name='lead')
 router.register(r'lead-previews', LeadPreviewViewSet,

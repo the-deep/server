@@ -19,8 +19,9 @@ from deep.permissions import ModifyPermission
 from user_resource.filters import UserResourceFilterSet
 
 from project.models import Project
-from lead.models import Lead
+from lead.models import LeadGroup, Lead
 from lead.serializers import (
+    LeadGroupSerializer,
     LeadSerializer,
     LeadPreviewSerializer,
 )
@@ -47,6 +48,39 @@ valid_lead_url_regex = re.compile(
     # optional port
     r'(?::\d+)?'
     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+
+
+class LeadGroupFilterSet(UserResourceFilterSet):
+    project = django_filters.ModelMultipleChoiceFilter(
+        queryset=Project.objects.all(),
+        lookup_expr='in',
+        widget=django_filters.widgets.CSVWidget,
+    )
+
+    class Meta:
+        model = LeadGroup
+        fields = ['id', 'title']
+
+        filter_overrides = {
+            models.CharField: {
+                'filter_class': django_filters.CharFilter,
+                'extra': lambda f: {
+                    'lookup_expr': 'icontains',
+                },
+            },
+        }
+
+
+class LeadGroupViewSet(viewsets.ModelViewSet):
+    serializer_class = LeadGroupSerializer
+    permission_classes = [permissions.IsAuthenticated,
+                          ModifyPermission]
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend, )
+    filter_class = LeadGroupFilterSet
+
+    def get_queryset(self):
+        user = self.request.GET.get('user', self.request.user)
+        return LeadGroup.get_for(user)
 
 
 class LeadFilterSet(UserResourceFilterSet):

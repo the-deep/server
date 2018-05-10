@@ -6,6 +6,27 @@ from user_resource.models import UserResource
 from gallery.models import File
 
 
+class LeadGroup(UserResource):
+    title = models.CharField(max_length=255, blank=True)
+    project = models.ForeignKey(Project)
+
+    def __str__(self):
+        return self.title
+
+    @staticmethod
+    def get_for(user):
+        return LeadGroup.objects.filter(
+            models.Q(project__members=user) |
+            models.Q(project__user_groups__members=user)
+        ).distinct()
+
+    def can_get(self, user):
+        return self.project.can_get(user)
+
+    def can_modify(self, user):
+        return self.project.can_get(user)
+
+
 class Lead(UserResource):
     """
     Lead model
@@ -59,6 +80,12 @@ class Lead(UserResource):
         (RSS, 'RSS Feed'),
         (WEB_API, 'Web API'),
         (UNKNOWN, 'Unknown'),
+    )
+
+    lead_group = models.ForeignKey(
+        LeadGroup,
+        on_delete=models.SET_NULL,
+        null=True, blank=True, default=None,
     )
 
     project = models.ForeignKey(Project)
