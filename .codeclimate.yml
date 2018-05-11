@@ -1,0 +1,57 @@
+version: "2"
+checks:
+  complex-logic:
+    enabled: true
+    config:
+        threshold: 10
+  file-lines:
+    enabled: true
+    config:
+        threshold: 999
+  method-complexity:
+    enabled: true
+    config:
+        threshold: 10
+  method-count:
+    enabled: true
+    config:
+        threshold: 20
+  method-lines:
+    enabled: true
+    config:
+        threshold: 100
+  nested-control-flow:
+    enabled: true
+    config:
+        threshold: 4
+  return-statements:
+    enabled: true
+    config:
+        threshold: 5
+  argument-count:
+    enabled: false
+  similar-code:
+    enabled: false
+  identical-code:
+    enabled: false
+
+plugins:
+  pep8:
+    enabled: true
+    checks:
+      complexity:
+        enabled: false
+plugins:
+  fixme:
+    enabled: true
+    config:
+      strings:
+      - FIXME
+      - XXX
+      - TODO
+
+exclude_patterns:
+- "**/migrations/*"
+- "**/tests/*"
+- "**/wsgi.py"
+- "manage.py"

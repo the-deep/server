@@ -1,0 +1,17 @@
+files:
+  - path: /var/log/uwsgi/access.log
+    tag: uwsgi/access
+  - path: /var/log/uwsgi/error.log
+    tag: uwsgi/error
+  - path: /var/log/celery/celery.log
+    tag: celery
+  - path: /var/log/daphne/access.log
+    tag: django-channel
+  - path: /var/log/deep.log
+    tag: deep-info
+
+hostname: <hostname>
+destination:
+  host: <host>
+  port: <port>
+  protocol: tls

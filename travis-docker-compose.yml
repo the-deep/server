@@ -1,0 +1,36 @@
+version: '3.2'
+
+services:
+    db:
+        image: thedeep/deep-postgres:latest
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+
+    redis:
+        image: redis:latest
+        volumes:
+            - redis-data:/data
+
+    server:
+        image: thedeep/deep-server:latest
+        build:
+          context: .
+          cache_from:
+            - ubuntu:16.04
+            - thedeep/deep-server:latest
+        env_file:
+            - .env
+        command: bash -c '/code/scripts/wait-for-it.sh db:5432 && /code/scripts/run_develop.sh'
+        volumes:
+            - .:/code
+            - media:/media
+        ports:
+            - '8000:8000'
+        depends_on:
+            - db
+            - redis
+
+volumes:
+  media:
+  postgres-data:
+  redis-data:
