@@ -1,0 +1,30 @@
+sudo: required
+
+services:
+    - docker
+
+before_install:
+    - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > /tmp/cc-test-reporter
+    - chmod +x /tmp/cc-test-reporter
+
+    - env > .env
+    - mv travis-docker-compose.yml docker-compose.yml
+    - docker-compose pull
+    - docker build --cache-from thedeep/deep-server:latest --tag thedeep/deep-server:latest .
+
+before_script:
+    - docker-compose up -d
+    - /tmp/cc-test-reporter before-build
+
+script:
+    - docker-compose exec server /code/scripts/run_tests.sh
+
+after_success:
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - /tmp/cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+    - docker-compose push server
+
+notifications:
+  slack:
+    rooms:
+      - secure: "VRVU1jcDK5Pj14xxVwNHFVvSBQ5ZcP8MVZojkJ0xXrnokxoRNlJZ2vUzvXRtDas8t5tDEDAS6jtdodDp12GHgZEhiQakk8JJ8AidDcWLhj30t1pE+bL3rmI9sdDPJOnDxPvFkG+7S7OpPX247EMER/4PXrPtgDZegfttv3nPzBRIUbd9ocXmHRJbHOkKLV30vwGbk2ZjZFjJq5GzovT0Te5MyCiYS4LsmgtyX0i8BVtlU7tgvm7JavqVRXL08ZlGzFEzUNF1lSrt7S6DzUtUzeRaLJ0J/5vr18gaFX2CZieF/b6ETqRo4OUoXv/b2cJtLtz3TFdwa/OSaTbk3ZiQkhmb3tZsOBjvJKaXyLxcVWm6jkRDcDh5ePdZWxVAWnDfl1zAapr5yBE94zKr6NDiY1OjZumlaRjx+KTSNt1KgOf8awFB/Q8tfeMvOZxGnpw1/oiNDnsmcK9KQLDCsSLoKR15cjHXy9ByML357qZ0IkWLWmPfP8Q5SNCANegbB0Y8v7aK4u8uTIyqVSfjTRJceikm21vV0381fijG+VDRhskQx0OedpgnZFSv6WpOlwipcDNfaQmcSGDbaIHUln0C/AVfHOswKiX9+xYv4bstdqPgDST5PxSZ8RZY2U/HHcFVyP8mQZFuhQrScISCFn6J9wI/07p0Xu1+rwjG0bgDIVw="
