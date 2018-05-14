@@ -80,6 +80,7 @@ from category_editor.views import (
 )
 from connector.views import (
     SourceViewSet,
+    SourceQueryView,
     ConnectorViewSet,
     ConnectorUserViewSet,
     ConnectorProjectViewSet,
@@ -300,6 +301,11 @@ urlpatterns = [
     url(get_api_path(
         r'projects/(?P<project_id>\d+)/category-editor/classify/'
     ), CategoryEditorClassifyView.as_view()),
+
+    # Source query api
+    url(get_api_path(
+        r'connector-sources/(?P<source_type>[-\w]+)/(?P<query>[-\w]+)/',
+    ), SourceQueryView.as_view()),
 
     # Geojson api
     url(get_api_path(r'admin-levels/(?P<admin_level_id>\d+)/geojson/$'),
