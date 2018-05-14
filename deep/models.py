@@ -14,6 +14,7 @@ class Field(models.Model):
     MULTISELECT = 'multiselect'
     COUNTRIES = 'countries'
     ORGANIZATIONS = 'organizations'
+    DONORS = 'donors'
 
     FIELD_TYPES = (
         (STRING, 'String'),
@@ -23,6 +24,7 @@ class Field(models.Model):
         (MULTISELECT, 'Multiselect'),
         (COUNTRIES, 'Countries'),
         (ORGANIZATIONS, 'Organizations'),
+        (DONORS, 'Donors'),
     )
 
     field_type = models.CharField(
@@ -38,7 +40,8 @@ class Field(models.Model):
 
     def get_type(self):
         if self.field_type == Field.COUNTRIES or \
-                self.field_type == Field.ORGANIZATIONS:
+                self.field_type == Field.ORGANIZATIONS or \
+                self.field_type == Field.DONORS:
             return Field.SELECT
 
         return self.field_type
@@ -63,6 +66,15 @@ class Field(models.Model):
                     'key': org.id,
                     'title': org.title,
                 } for org in organizations
+            ]
+
+        if self.field_type == Field.DONORS:
+            donors = Organization.objects.filter(donor=True)
+            return [
+                {
+                    'key': org.id,
+                    'title': org.title,
+                } for org in donors
             ]
 
         return self.options
