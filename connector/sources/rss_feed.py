@@ -71,3 +71,10 @@ class RssFeed(Source):
             results.append(data)
 
         return results
+
+    def query_fields(self, params):
+        if not params or not params.get('feed-url'):
+            return []
+
+        feed = feedparser.parse(params['feed-url'])
+        return list(feed.entries[0].keys())

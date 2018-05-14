@@ -1,8 +1,9 @@
 from rest_framework import (
-    viewsets,
-    response,
-    permissions,
     exceptions,
+    permissions,
+    response,
+    views,
+    viewsets,
 )
 from rest_framework.decorators import detail_route
 from deep.permissions import ModifyPermission
@@ -33,6 +34,23 @@ class SourceViewSet(viewsets.ViewSet):
             'count': len(results),
             'results': results,
         })
+
+
+class SourceQueryView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, source_type, query, version=None):
+        source = source_store[source_type]()
+        method = getattr(source, 'query_{}'.format(query))
+        results = method(request.GET)
+
+        if isinstance(results, list):
+            return response.Response({
+                'count': len(results),
+                'results': results,
+            })
+
+        return response.Response(results)
 
 
 class ConnectorViewSet(viewsets.ModelViewSet):

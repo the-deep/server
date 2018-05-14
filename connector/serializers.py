@@ -2,14 +2,13 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
 from deep.serializers import RemoveNullFieldsMixin
+from user_resource.serializers import UserResourceSerializer
 from lead.models import Lead
 from .models import (
     Connector,
     ConnectorUser,
     ConnectorProject,
 )
-
-from user_resource.serializers import UserResourceSerializer
 
 
 class SourceOptionSerializer(RemoveNullFieldsMixin,
