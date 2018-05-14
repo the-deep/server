@@ -1,3 +1,4 @@
+from django.db import models
 from rest_framework import (
     exceptions,
     permissions,
@@ -5,6 +6,9 @@ from rest_framework import (
     views,
     viewsets,
 )
+import django_filters
+
+from user_resource.filters import UserResourceFilterSet
 from rest_framework.decorators import detail_route
 from deep.permissions import ModifyPermission
 from .serializers import (
@@ -20,6 +24,7 @@ from .models import (
     ConnectorUser,
     ConnectorProject,
 )
+from project.models import Project
 from .sources.store import source_store
 
 
@@ -53,10 +58,33 @@ class SourceQueryView(views.APIView):
         return response.Response(results)
 
 
+class ConnectorFilterSet(UserResourceFilterSet):
+    projects = django_filters.ModelMultipleChoiceFilter(
+        queryset=Project.objects.all(),
+        lookup_expr='in',
+        widget=django_filters.widgets.CSVWidget,
+    )
+
+    class Meta:
+        model = Connector
+        fields = ['id', 'title', 'source']
+
+        filter_overrides = {
+            models.CharField: {
+                'filter_class': django_filters.CharFilter,
+                'extra': lambda f: {
+                    'lookup_expr': 'icontains',
+                },
+            },
+        }
+
+
 class ConnectorViewSet(viewsets.ModelViewSet):
     serializer_class = ConnectorSerializer
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend, )
+    filter_class = ConnectorFilterSet
 
     def get_queryset(self):
         user = self.request.GET.get('user', self.request.user)
