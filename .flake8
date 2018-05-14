@@ -1,0 +1,4 @@
+[flake8]
+ignore = C901, W504
+exclude = .git,__pycache__,old,build,dist,*migrations*,manage.py
+max-complexity = 10
