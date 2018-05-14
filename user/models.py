@@ -42,7 +42,8 @@ class Profile(models.Model):
             else self.user.username
 
     def get_fallback_language(self):
-        return settings.LANGUAGE_CODE
+        return None
+        # return settings.LANGUAGE_CODE
 
 
 def assign_to_default_project(user):
