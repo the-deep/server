@@ -92,6 +92,7 @@ class ConnectorSerializer(RemoveNullFieldsMixin,
         many=True,
         required=False,
     )
+    role = serializers.SerializerMethodField()
 
     class Meta:
         model = Connector
@@ -105,3 +106,16 @@ class ConnectorSerializer(RemoveNullFieldsMixin,
             role='admin',
         )
         return connector
+
+    def get_role(self, connector):
+        request = self.context['request']
+        user = request.GET.get('user', request.user)
+
+        usership = ConnectorUser.objects.filter(
+            connector=connector,
+            user=user
+        ).first()
+        if usership:
+            return usership.role
+
+        return None
