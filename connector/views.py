@@ -6,9 +6,7 @@ from rest_framework import (
     views,
     viewsets,
 )
-import django_filters
 
-from user_resource.filters import UserResourceFilterSet
 from rest_framework.decorators import detail_route
 from deep.permissions import ModifyPermission
 from .serializers import (
@@ -24,7 +22,6 @@ from .models import (
     ConnectorUser,
     ConnectorProject,
 )
-from project.models import Project
 from .sources.store import source_store
 
 
@@ -58,37 +55,40 @@ class SourceQueryView(views.APIView):
         return response.Response(results)
 
 
-class ConnectorFilterSet(UserResourceFilterSet):
-    projects = django_filters.ModelMultipleChoiceFilter(
-        queryset=Project.objects.all(),
-        lookup_expr='in',
-        widget=django_filters.widgets.CSVWidget,
-    )
-
-    class Meta:
-        model = Connector
-        fields = ['id', 'title', 'source']
-
-        filter_overrides = {
-            models.CharField: {
-                'filter_class': django_filters.CharFilter,
-                'extra': lambda f: {
-                    'lookup_expr': 'icontains',
-                },
-            },
-        }
-
-
 class ConnectorViewSet(viewsets.ModelViewSet):
     serializer_class = ConnectorSerializer
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend, )
-    filter_class = ConnectorFilterSet
 
     def get_queryset(self):
         user = self.request.GET.get('user', self.request.user)
-        return Connector.get_for(user)
+        project_ids = self.request.GET.get('projects')
+        connectors = Connector.get_for(user)
+
+        role = self.request.GET.get('role')
+        if role:
+            users = ConnectorUser.objects.filter(
+                role=role,
+                user=user,
+            )
+            connectors = connectors.filter(
+                connectoruser__in=users
+            )
+
+        if not project_ids:
+            return connectors
+
+        project_ids = project_ids.split(',')
+        projects = ConnectorProject.objects.filter(
+            project__id__in=project_ids,
+        )
+        self_projects = projects.filter(role='self')
+        global_projects = projects.filter(role='global')
+
+        return connectors.filter(
+            models.Q(connectorproject__in=self_projects, users=user) |
+            models.Q(connectorproject__in=global_projects),
+        )
 
     @detail_route(permission_classes=[permissions.IsAuthenticated],
                   url_path='leads',
