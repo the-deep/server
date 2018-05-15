@@ -1,3 +1,4 @@
+from django.db import models
 from rest_framework import (
     exceptions,
     permissions,
@@ -5,6 +6,7 @@ from rest_framework import (
     views,
     viewsets,
 )
+
 from rest_framework.decorators import detail_route
 from deep.permissions import ModifyPermission
 from .serializers import (
@@ -60,7 +62,33 @@ class ConnectorViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.GET.get('user', self.request.user)
-        return Connector.get_for(user)
+        project_ids = self.request.GET.get('projects')
+        connectors = Connector.get_for(user)
+
+        role = self.request.GET.get('role')
+        if role:
+            users = ConnectorUser.objects.filter(
+                role=role,
+                user=user,
+            )
+            connectors = connectors.filter(
+                connectoruser__in=users
+            )
+
+        if not project_ids:
+            return connectors
+
+        project_ids = project_ids.split(',')
+        projects = ConnectorProject.objects.filter(
+            project__id__in=project_ids,
+        )
+        self_projects = projects.filter(role='self')
+        global_projects = projects.filter(role='global')
+
+        return connectors.filter(
+            models.Q(connectorproject__in=self_projects, users=user) |
+            models.Q(connectorproject__in=global_projects),
+        )
 
     @detail_route(permission_classes=[permissions.IsAuthenticated],
                   url_path='leads',
