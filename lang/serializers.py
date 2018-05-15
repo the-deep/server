@@ -25,7 +25,7 @@ class LinkSerializer(RemoveNullFieldsMixin,
 
     class Meta:
         model = Link
-        fields = ('id', 'key', 'string', 'action')
+        fields = ('key', 'string', 'action')
 
 
 # Override DictField with partial value set to solve a DRF Bug
@@ -72,12 +72,13 @@ class StringsSerializer(RemoveNullFieldsMixin,
             )
             for link_data in links:
                 action = link_data['action']
-                id = link_data['id']
+                key = link_data['key']
 
+                # TODO: index key
                 if action == 'add':
                     link = Link()
                 else:
-                    link = Link.objects.get(id=id)
+                    link = Link.objects.get(key=key)
 
                 if action == 'delete':
                     link.delete()
@@ -85,7 +86,7 @@ class StringsSerializer(RemoveNullFieldsMixin,
 
                 link.language = code
                 link.link_collection = collection
-                link.key = link_data['key']
+                link.key = key
 
                 str_id = link_data['string']
                 link.string = string_map.get(str_id) or \
