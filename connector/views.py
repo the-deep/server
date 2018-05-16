@@ -9,6 +9,7 @@ from rest_framework import (
 
 from rest_framework.decorators import detail_route
 from deep.permissions import ModifyPermission
+from project.models import Project
 from .serializers import (
     SourceSerializer,
     SourceDataSerializer,
@@ -98,14 +99,20 @@ class ConnectorViewSet(viewsets.ModelViewSet):
         if not connector.can_get(request.user):
             raise exceptions.PermissionDenied()
 
+        project_id = request.GET.get('project')
+        project = None
+        if project_id:
+            project = Project.objects.get(id=project_id)
+
         source = source_store[connector.source]()
         data = source.fetch(connector.params)
         serializer = SourceDataSerializer(
             data,
             many=True,
-            context={'request': request},
+            context={'request': request, 'project': project},
         )
         results = serializer.data
+
         return response.Response({
             'count': len(results),
             'results': results

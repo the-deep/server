@@ -4,6 +4,7 @@ from rest_framework import serializers
 from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
 from lead.models import Lead
+from lead.views import check_if_url_exists
 from .models import (
     Connector,
     ConnectorUser,
@@ -29,10 +30,17 @@ class SourceSerializer(RemoveNullFieldsMixin,
 
 class SourceDataSerializer(RemoveNullFieldsMixin,
                            serializers.ModelSerializer):
+    existing = serializers.SerializerMethodField()
+
     class Meta:
         model = Lead
         fields = ('title', 'source', 'source_type', 'url',
-                  'website', 'published_on')
+                  'website', 'published_on', 'existing')
+
+    def get_existing(self, lead):
+        return check_if_url_exists(lead.url,
+                                   self.context['request'].user,
+                                   self.context.get('project'))
 
 
 class ConnectorUserSerializer(RemoveNullFieldsMixin,
