@@ -1,25 +1,18 @@
-from rest_framework import status
-from rest_framework.test import APITestCase
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 
+from deep.tests import TestCase
 from geo.tasks import load_geo_areas
 from geo.models import Region, AdminLevel, GeoArea
 from gallery.models import File
-from user.tests.test_apis import AuthMixin
 
 import os
 
 
-class LoadGeoAreasTaskTest(AuthMixin, APITestCase):
-    """
-    Test to test if the load_geo_areas task
-    perform correctly.
-
-    For this test, we use the zone and district admin levels
-    for Nepal.
-    """
+class LoadGeoAreasTaskTest(TestCase):
     def setUp(self):
+        super().setUp()
+
         # Create a dummy region
         region = Region(code='NPL', title='Nepal')
         region.save()
@@ -110,16 +103,13 @@ class LoadGeoAreasTaskTest(AuthMixin, APITestCase):
         result = load_geo_areas(self.region.pk)
         self.assertTrue(result)
 
-        auth = self.get_auth()
-
         # Test if geojson api works
         url = '/api/v1/admin-levels/{}/geojson/'.format(self.admin_level0.pk)
-        response = self.client.get(
-            url,
-            HTTP_AUTHORIZATION=auth,
-            format='json',
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+
         self.assertEqual(response.data['type'], 'FeatureCollection')
         self.assertIsNotNone(response.data['features'])
         self.assertTrue(len(response.data['features']) > 0)
@@ -128,10 +118,8 @@ class LoadGeoAreasTaskTest(AuthMixin, APITestCase):
         url = '/api/v1/admin-levels/{}/geojson/bounds/'.format(
             self.admin_level0.pk
         )
-        response = self.client.get(
-            url,
-            HTTP_AUTHORIZATION=auth,
-            format='json',
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.get(url)
+        self.assert_200(response)
+
         self.assertIsNotNone(response.data['bounds'])
