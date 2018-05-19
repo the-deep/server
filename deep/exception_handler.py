@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.utils import timezone
 
 from rest_framework.views import exception_handler
@@ -69,7 +68,6 @@ def custom_exception_handler(exc, context):
         response.data['link'] = exc.link
 
     # Logging
-    if not settings.TESTING:
-        logger.error(traceback.format_exc())
+    logger.error(traceback.format_exc())
 
     return response
