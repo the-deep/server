@@ -351,4 +351,6 @@ urlpatterns += [
 ]
 
 handler404 = Api_404View.as_view()
-autofixture.autodiscover()
+
+# TODO Uncomment after fixing custom autofixtures
+# autofixture.autodiscover()

@@ -17,11 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 class ExtractFromFileTaskTest(TestCase):
-    """
-    Test to test if the extract_from_file task works properly.
-
-    Use a simple file stored in the repo to test this.
-    """
     def setUp(self):
         # This is similar to test_file_document
         self.path = join(settings.TEST_DIR, 'documents_attachment')

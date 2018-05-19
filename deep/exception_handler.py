@@ -1,7 +1,9 @@
+from django.conf import settings
+from django.utils import timezone
+
 from rest_framework.views import exception_handler
 from rest_framework.response import Response
 from rest_framework import status
-from django.utils import timezone
 
 from deep.errors import map_error_codes
 
@@ -67,6 +69,7 @@ def custom_exception_handler(exc, context):
         response.data['link'] = exc.link
 
     # Logging
-    logger.error(traceback.format_exc())
+    if not settings.TESTING:
+        logger.error(traceback.format_exc())
 
     return response

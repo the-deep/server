@@ -1,81 +1,40 @@
-from rest_framework.test import APITestCase
-from rest_framework import status
-from user.tests.test_apis import AuthMixin
+from deep.tests import TestCase
 from category_editor.models import CategoryEditor
 from project.models import Project
-from project.tests.test_apis import ProjectMixin
 
 
-class CategoryEditorMixin():
-    """
-    Category Editor Mixin
-    """
-    def create_or_get_category_editor(self):
-        """
-        Create or get CategoryEditor
-        """
-        category_editor = CategoryEditor.objects.first()
-        if not category_editor:
-            category_editor = CategoryEditor.objects.create(
-                title='Test Category Editor',
-                created_by=self.user,
-            )
-        return category_editor
-
-
-class CategoryEditorTests(AuthMixin, ProjectMixin, CategoryEditorMixin,
-                          APITestCase):
-    """
-    Category Editor Tests
-    """
-    def setUp(self):
-        """
-        Get HTTP_AUTHORIZATION Header
-        """
-        self.auth = self.get_auth()
-
+class CategoryEditorTests(TestCase):
     def test_create_category_editor(self):
-        """
-        Create Category Editor Test
-        """
-        project = self.create_or_get_project()
+        project = self.create(Project)
 
-        old_count = CategoryEditor.objects.count()
+        ce_count = CategoryEditor.objects.count()
         url = '/api/v1/category-editors/'
         data = {
             'title': 'New Category Editor',
             'project': project.id,
         }
 
-        response = self.client.post(url, data,
-                                    HTTP_AUTHORIZATION=self.auth,
-                                    format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(CategoryEditor.objects.count(), old_count + 1)
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
 
+        self.assertEqual(CategoryEditor.objects.count(), ce_count + 1)
         project = Project.objects.get(id=project.id)
         self.assertEqual(project.category_editor.id, response.data['id'])
 
     def test_clone_category_editor(self):
-        """
-        Test cloning
-        """
-        project = self.create_or_get_project()
-        category_editor = self.create_or_get_category_editor()
-        project.category_editor = category_editor
-        project.save()
+        category_editor = self.create(CategoryEditor)
+        project = self.create(Project, category_editor=category_editor)
 
-        url = '/api/v1/clone-category-editor/{}/'.format(
-            category_editor.id
-        )
+        url = '/api/v1/clone-category-editor/{}/'.format(category_editor.id)
         data = {
             'project': project.id,
         }
 
-        response = self.client.post(url, data,
-                                    HTTP_AUTHORIZATION=self.auth,
-                                    format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
         self.assertNotEqual(response.data['id'], category_editor.id)
         self.assertEqual(response.data['title'],
                          category_editor.title + ' (cloned)')
@@ -87,16 +46,6 @@ class CategoryEditorTests(AuthMixin, ProjectMixin, CategoryEditorMixin,
         self.assertEqual(project.category_editor.id, response.data['id'])
 
     def test_classify(self):
-        """
-        First create a dummy category edtior and then test classifying
-        text with it
-        """
-
-        project = self.create_or_get_project()
-        category_editor = self.create_or_get_category_editor()
-        project.category_editor = category_editor
-        project.save()
-
         ce_data = {
             'categories': [
                 {
@@ -113,11 +62,11 @@ class CategoryEditorTests(AuthMixin, ProjectMixin, CategoryEditorMixin,
                 },
             ],
         }
-        category_editor.data = ce_data
-        category_editor.save()
+
+        category_editor = self.create(CategoryEditor, data=ce_data)
+        project = self.create(Project, category_editor=category_editor)
 
         text = 'My water aaloooo'
-
         url = '/api/v1/projects/{}/category-editor/classify/'.format(
             project.id
         )
@@ -126,10 +75,9 @@ class CategoryEditorTests(AuthMixin, ProjectMixin, CategoryEditorMixin,
             'category': 'sector',
         }
 
-        response = self.client.post(url, data,
-                                    HTTP_AUTHORIZATION=self.auth,
-                                    format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_200(response)
 
         expected = [
             {

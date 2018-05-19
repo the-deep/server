@@ -46,6 +46,13 @@ class UserGroup(models.Model):
             role='admin',
         ).exists()
 
+    def add_member(self, user, role='normal'):
+        return GroupMembership.objects.create(
+            member=user,
+            role=role,
+            group=self,
+        )
+
 
 class GroupMembership(models.Model):
     """

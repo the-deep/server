@@ -1,14 +1,9 @@
-from rest_framework import status
-from rest_framework.test import APITestCase
-from user.tests.test_apis import AuthMixin
+from deep.tests import TestCase
+from user.models import User
 
 
-class JwtApiTests(AuthMixin, APITestCase):
-    def setUp(self):
-        self.auth = self.get_auth()
-        self.test_user = self.create_new_user()
-
-    def test_acces_token(self):
+class JwtApiTests(TestCase):
+    def test_access_token(self):
         """
         Test access token
 
@@ -18,30 +13,27 @@ class JwtApiTests(AuthMixin, APITestCase):
            our own data. This should succeed.
         """
 
+        test_user = self.create(User)
         data = {
             'password': 'newpassword',
         }
-        url = '/api/v1/users/{}/'.format(self.test_user.pk)
-        response = self.client.patch(url, data,
-                                     HTTP_AUTHORIZATION=self.auth,
-                                     format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        url = '/api/v1/users/{}/'.format(test_user.pk)
+
+        self.authenticate()
+        response = self.client.patch(url, data)
+        self.assert_403(response)
 
         url = '/api/v1/users/{}/'.format(self.user.pk)
-        response = self.client.patch(url, data,
-                                     HTTP_AUTHORIZATION=self.auth,
-                                     format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.patch(url, data)
+        self.assert_200(response)
 
     def test_refresh_token(self):
-        """
-        Test refresh token
-        """
+        _, refresh = self.authenticate()
+
         data = {
-            'refresh': self.refresh,
+            'refresh': refresh,
         }
         url = '/api/v1/token/refresh/'
-        response = self.client.post(url, data,
-                                    HTTP_AUTHORIZATION=self.auth,
-                                    format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.post(url, data)
+        self.assert_200(response)
