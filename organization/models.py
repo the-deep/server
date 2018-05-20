@@ -29,5 +29,7 @@ class Organization(models.Model):
         null=True, blank=True, default=None,
     )
 
+    donor = models.BooleanField(default=False)
+
     def __str__(self):
         return self.title

@@ -6,4 +6,16 @@ from organization.models import (
 
 
 admin.site.register(OrganizationType)
-admin.site.register(Organization)
+
+
+def set_donor(modeladmin, request, queryset):
+    queryset.update(donor=True)
+
+
+def reset_donor(modeladmin, request, queryset):
+    queryset.update(donor=False)
+
+
+@admin.register(Organization)
+class OrganizationAdmin(admin.ModelAdmin):
+    actions = [set_donor, reset_donor]
