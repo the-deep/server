@@ -7,7 +7,7 @@ from entry.filter_set import EntryFilterSet, get_filtered_entries
 from export.models import Export
 from export.entries.excel_exporter import ExcelExporter
 from export.entries.report_exporter import ReportExporter
-from export.entries.json_reporter import JsonExporter
+from export.entries.json_exporter import JsonExporter
 from geo.models import Region
 
 import traceback

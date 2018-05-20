@@ -2,6 +2,10 @@
 branch = true
 source = .
 omit = */migrations/*
+        */management/*
+        analysis_framework/widgets/*
+        entry/widgets/*
+        __init.py__
         */wsgi.py
         manage.py
         .tox/*
