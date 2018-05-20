@@ -50,9 +50,6 @@ class EntryFilterSet(django_filters.FilterSet):
 
 
 def get_filtered_entries(user, queries):
-    """
-    Get queryset of entries based on dynamic filters
-    """
     entries = Entry.get_for(user)
     project = queries.get('project')
     if project:

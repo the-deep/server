@@ -66,19 +66,21 @@ class StringsSerializer(RemoveNullFieldsMixin,
 
             string_map[id] = string
 
-        for key, links in link_collections.items():
+        for collection_key, links in link_collections.items():
             collection, _ = LinkCollection.objects.get_or_create(
-                key=key
+                key=collection_key
             )
             for link_data in links:
                 action = link_data['action']
                 key = link_data['key']
 
-                # TODO: index key
                 if action == 'add':
                     link = Link()
                 else:
-                    link = Link.objects.get(key=key)
+                    link = Link.objects.get(
+                        key=key,
+                        link_collection=collection,
+                    )
 
                 if action == 'delete':
                     link.delete()
@@ -92,3 +94,5 @@ class StringsSerializer(RemoveNullFieldsMixin,
                 link.string = string_map.get(str_id) or \
                     String.objects.get(id=str_id)
                 link.save()
+
+        LinkCollection.objects.filter(links__isnull=True).delete()
