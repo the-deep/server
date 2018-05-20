@@ -39,6 +39,13 @@ class Connector(UserResource):
             role='admin',
         ).exists()
 
+    def add_member(self, user, role='normal'):
+        return ConnectorUser.objects.create(
+            user=user,
+            role=role,
+            connector=self,
+        )
+
 
 class ConnectorUser(models.Model):
     """

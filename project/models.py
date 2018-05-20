@@ -57,6 +57,13 @@ class Project(UserResource):
             role='admin',
         ).exists()
 
+    def add_member(self, user, role='normal'):
+        return ProjectMembership.objects.create(
+            member=user,
+            role=role,
+            project=self,
+        )
+
 
 class ProjectMembership(models.Model):
     """

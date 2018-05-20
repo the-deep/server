@@ -30,7 +30,9 @@ class Link(models.Model):
     link_collection = models.ForeignKey(LinkCollection,
                                         related_name='links')
     key = models.CharField(max_length=255)
-    string = models.ForeignKey(String)
+    string = models.ForeignKey(String,
+                               null=True, blank=True, default=None,
+                               on_delete=models.SET_NULL)
 
     def __str__(self):
         return '{} : {} ({})'.format(self.key, self.string.value,
