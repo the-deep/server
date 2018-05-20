@@ -16,7 +16,8 @@ class SimpleLeadSerializer(RemoveNullFieldsMixin,
                            serializers.ModelSerializer):
     class Meta:
         model = Lead
-        fields = ('id', 'title', 'source', 'created_at', 'created_by')
+        fields = ('id', 'title', 'source', 'created_at', 'created_by',
+                  'source_type')
 
 
 class LeadGroupSerializer(RemoveNullFieldsMixin,
