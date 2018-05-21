@@ -16,19 +16,7 @@ class SimpleLeadSerializer(RemoveNullFieldsMixin,
                            serializers.ModelSerializer):
     class Meta:
         model = Lead
-        fields = ('id', 'title', 'source', 'created_at', 'created_by',
-                  'source_type')
-
-
-class LeadGroupSerializer(RemoveNullFieldsMixin,
-                          DynamicFieldsMixin, UserResourceSerializer):
-    leads = SimpleLeadSerializer(source='lead_set',
-                                 many=True,
-                                 read_only=True)
-
-    class Meta:
-        model = LeadGroup
-        fields = ('__all__')
+        fields = ('id', 'title', 'source', 'created_at', 'created_by')
 
 
 class LeadSerializer(RemoveNullFieldsMixin,
@@ -106,3 +94,14 @@ class LeadPreviewSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = Lead
         fields = ('id', 'preview_id', 'text', 'images', 'classified_doc_id')
+
+
+class LeadGroupSerializer(RemoveNullFieldsMixin,
+                          DynamicFieldsMixin, UserResourceSerializer):
+    leads = LeadSerializer(source='lead_set',
+                           many=True,
+                           read_only=True)
+
+    class Meta:
+        model = LeadGroup
+        fields = ('__all__')
