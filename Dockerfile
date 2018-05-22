@@ -29,7 +29,9 @@ RUN apt-get update -y ; \
         # Required by cloudwatch scripts
         unzip \
         libwww-perl \
-        libdatetime-perl
+        libdatetime-perl \
+        # Required by deploy/scripts/aws_metrics_put.py
+        sysstat
 
 # Support utf-8
 RUN locale-gen en_US.UTF-8

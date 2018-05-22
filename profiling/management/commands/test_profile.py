@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
 from profiling.profiler import Profiler
-from lead.autofixtures import create_many_leads
 from project.models import Project, ProjectMembership
 
 import autofixture
@@ -32,10 +31,10 @@ class Command(BaseCommand):
                                              role='admin')
 
         print('Creating leads')
-        create_many_leads(1000, user, project)
-        # autofixture.create('lead.Lead', 1000, field_values={
-        #     'created_by': user,
-        # })
+        # create_many_leads(1000, user, project)
+        autofixture.create('lead.Lead', 100, field_values={
+            'created_by': user,
+        })
 
         print('Starting profiling')
         p.profile_get(
