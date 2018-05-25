@@ -77,7 +77,19 @@ class Field(models.Model):
                 } for org in donors
             ]
 
-        return self.options
+        return [{'key': x.key, 'title': x.title} for x in self.options.all()]
+
+    def get_value(self, raw_value):
+        value = raw_value
+        options = {x['key']: x['title'] for x in self.get_options()}
+        if self.field_type in (
+                Field.SELECT, Field.ORGANIZATIONS,
+                Field.COUNTRIES, Field.DONORS):
+            value = options.get(raw_value, raw_value)
+        elif self.field_type == Field.MULTISELECT:
+            value = [options.get(x, x) for x in raw_value]
+        # TODO: for other types
+        return value
 
 
 class FieldOption(models.Model):

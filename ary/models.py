@@ -279,3 +279,78 @@ class Assessment(UserResource):
             (self.lead and self.lead.can_modify(user)) or
             (self.lead_group and self.lead_group.can_modify(user))
         )
+
+    def _load_schema(self, FieldClass, GroupClass=None):
+        schema = {}
+        assessment_template = self.lead.project.assessment_template
+        if GroupClass is not None:
+            groups = GroupClass.objects.filter(template=assessment_template)
+            schema = {
+                group.title: [
+                    {
+                        'id': field.id,
+                        'name': field.title,
+                        'type': field.field_type,
+                        'options': {
+                            x['key']: x['title'] for x in field.get_options()
+                        }
+                    }
+                    for field in group.fields.all()
+                ] for group in groups
+            }
+        else:
+            fields = FieldClass.objects.filter(template=assessment_template)
+            schema = [
+                {
+                    'id': field.id,
+                    'name': field.title,
+                    'type': field.field_type,
+                    'options': {
+                        x['key']: x['title'] for x in field.get_options()
+                    }
+                }
+                for field in fields
+            ]
+        return schema
+
+    def _data_from_schema(self, schema, raw_data):
+        if not raw_data:
+            return {}
+        if 'id' in schema:
+            key = str(schema['id'])
+            value = raw_data.get(key, '')
+            if schema['type'] == Field.SELECT:
+                value = schema['options'].get(value, value)
+            if schema['type'] == Field.MULTISELECT:
+                value = [schema['options'].get(x, x) for x in value]
+            return {schema['name']: value}
+        if isinstance(schema, dict):
+            data = {
+                k: self._data_from_schema(v, raw_data)
+                for k, v in schema.items()}
+        elif isinstance(schema, list):
+            data = [self._data_from_schema(x, raw_data) for x in schema]
+        else:
+            raise Exception("Something that could not be parsed from schema")
+        return data
+
+    def to_exportable_json(self):
+        if not self.lead:
+            return {}
+        # for meta data
+        metadata_schema = self._load_schema(MetadataField, MetadataGroup)
+        metadata_raw = self.metadata or {}
+        metadata_raw = metadata_raw.get('basic_information', {})
+        metadata = self._data_from_schema(metadata_schema, metadata_raw)
+        # for methodology
+        methodology_sch = self._load_schema(MethodologyField, MethodologyGroup)
+        methodology_raw = self.methodology or {}
+        methodology_raw = methodology_raw.get('attributes', [])
+        methodology = [
+            self._data_from_schema(methodology_sch, x)
+            for x in methodology_raw
+        ]
+        return {
+            'metadata': metadata,
+            'methodology': methodology
+        }
