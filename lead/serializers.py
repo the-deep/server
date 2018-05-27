@@ -40,7 +40,10 @@ class LeadSerializer(RemoveNullFieldsMixin,
         # many=True,
         read_only=True,
     )
-    assignee = serializers.IntegerField(source='get_assignee.id')
+    assignee = serializers.IntegerField(
+        source='get_assignee.id',
+        required=False,
+    )
 
     class Meta:
         model = Lead

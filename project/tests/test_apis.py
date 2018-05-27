@@ -30,20 +30,6 @@ class ProjectApiTest(TestCase):
         self.assertEqual(membership.member.pk, self.user.pk)
         self.assertEqual(membership.role, 'admin')
 
-    def test_active_project(self):
-        project = self.create(Project)
-        self.user.profile.last_active_project = project
-        self.user.save()
-
-        url = '/api/v1/projects/'
-
-        self.authenticate()
-        response = self.client.get(url)
-        self.assert_200(response)
-
-        self.assertEqual(response.data['extra']['last_active_project'],
-                         project.id)
-
     def test_add_member(self):
         project = self.create(Project)
         test_user = self.create(User)
