@@ -161,6 +161,15 @@ class LeadViewSet(viewsets.ModelViewSet):
     search_fields = ('title', 'source', 'text', 'url', 'website')
     # ordering_fields = omitted to allow ordering by all read-only fields
 
+    def filter_queryset(self, queryset):
+        # For some reason, the ordering is not working for `assignee` field
+        # so, force ordering with anything passed in the query param
+        qs = super(LeadViewSet, self).filter_queryset(queryset)
+        ordering = self.request.GET.get('ordering')
+        if ordering:
+            return qs.order_by(ordering)
+        return qs
+
     def get_serializer(self, *args, **kwargs):
         data = kwargs.get('data')
         project_list = data and data.get('project')
