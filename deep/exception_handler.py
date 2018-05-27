@@ -10,6 +10,10 @@ import traceback
 import logging
 
 logger = logging.getLogger(__name__)
+standard_error_string = (
+    'Something unexpected has occured. '
+    'Please contact an admin to fix this issue.'
+)
 
 
 def custom_exception_handler(exc, context):
@@ -48,6 +52,8 @@ def custom_exception_handler(exc, context):
     # Otherwise, it is simply the stringified exception.
 
     errors = None
+    user_error = None
+
     if hasattr(exc, 'message'):
         errors = exc.message
     elif hasattr(exc, 'detail'):
@@ -56,10 +62,21 @@ def custom_exception_handler(exc, context):
         errors = 'Resource not found'
     else:
         errors = str(exc)
+        user_error = standard_error_string
+
+    if hasattr(exc, 'user_message'):
+        user_error = exc.user_message
 
     # Wrap up string error inside non-field-errors
     if isinstance(errors, str):
-        errors = {'non_field_errors': [errors]}
+        errors = {
+            'non_field_errors': [errors],
+        }
+
+    if user_error:
+        errors['internal_non_field_errors'] = errors.get('non_field_errors')
+        errors['non_field_errors'] = [user_error]
+
     response.data['errors'] = errors
 
     # If there is a link available for the exception,
