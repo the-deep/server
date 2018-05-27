@@ -23,7 +23,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
-    extra = True
 
     def get_queryset(self):
         user = self.request.GET.get('user', self.request.user)
@@ -35,23 +34,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
             projects = projects.filter(user_groups__id__in=user_group)
 
         return projects
-
-    def finalize_response(self, request, response, *args, **kwargs):
-        if request.method == 'GET' and \
-                response.status_code == status.HTTP_200_OK and \
-                self.extra:
-            profile = request.user.profile
-            response.data['extra'] = {
-                'last_active_project': (
-                    profile.last_active_project and
-                    profile.last_active_project.id
-                ),
-            }
-
-        return super(ProjectViewSet, self).finalize_response(
-            request, response,
-            *args, **kwargs,
-        )
 
     @detail_route(permission_classes=[permissions.IsAuthenticated],
                   url_path='analysis-framework')
@@ -67,9 +49,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
             context={'request': request},
         )
 
-        # Extra data is sent in `finalize_response` but we don't want
-        # that in this particular api
-        self.extra = False
         return response.Response(serializer.data)
 
     @detail_route(permission_classes=[permissions.IsAuthenticated],
@@ -86,7 +65,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
             context={'request': request},
         )
 
-        self.extra = False
         return response.Response(serializer.data)
 
 
