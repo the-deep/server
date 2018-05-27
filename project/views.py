@@ -2,7 +2,6 @@ from rest_framework import (
     exceptions,
     permissions,
     response,
-    status,
     views,
     viewsets,
 )
