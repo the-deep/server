@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
@@ -5,6 +6,7 @@ from deep.serializers import RemoveNullFieldsMixin
 from user.serializers import SimpleUserSerializer
 from user_resource.serializers import UserResourceSerializer
 from gallery.serializers import SimpleFileSerializer
+from user.models import User
 from .models import (
     LeadGroup,
     Lead,
@@ -34,10 +36,11 @@ class LeadSerializer(RemoveNullFieldsMixin,
     )
 
     assignee_details = SimpleUserSerializer(
-        source='assignee',
-        many=True,
+        source='get_assignee',
+        # many=True,
         read_only=True,
     )
+    assignee = serializers.IntegerField(source='get_assignee.id')
 
     class Meta:
         model = Lead
@@ -52,6 +55,32 @@ class LeadSerializer(RemoveNullFieldsMixin,
         return project
 
     # TODO: Probably also validate assignee to valid list of users
+
+    def create(self, validated_data):
+        assignee_field = validated_data.pop('get_assignee', None)
+        assignee_id = assignee_field and assignee_field.get('id', None)
+        assignee = assignee_id and get_object_or_404(User, id=assignee_id)
+
+        lead = super(LeadSerializer, self).create(validated_data)
+        lead.save()
+
+        if assignee:
+            lead.assignee.add(assignee)
+        return lead
+
+    def update(self, instance, validated_data):
+        assignee_field = validated_data.pop('get_assignee', None)
+        assignee_id = assignee_field and assignee_field.get('id', None)
+        assignee = assignee_id and get_object_or_404(User, id=assignee_id)
+
+        lead = super(LeadSerializer, self).update(instance, validated_data)
+        lead.save()
+
+        if assignee_field:
+            lead.assignee.clear()
+            if assignee:
+                lead.assignee.add(assignee)
+        return lead
 
 
 class LeadPreviewImageSerializer(RemoveNullFieldsMixin,

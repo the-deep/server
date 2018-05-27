@@ -165,6 +165,9 @@ class Lead(UserResource):
         # can modify a lead in that project
         return self.project.can_get(user)
 
+    def get_assignee(self):
+        return self.assignee.first()
+
 
 class LeadPreview(models.Model):
     lead = models.OneToOneField(Lead)
