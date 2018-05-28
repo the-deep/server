@@ -447,6 +447,36 @@ class Assessment(UserResource):
         # add cross_sector
         return summary_data
 
+    def get_score_json(self):
+        if not self.score:
+            return {}
+        pillars_raw = self.score['pillars']
+        matrix_pillars_raw = self.score['matrix_pillars']
+        pillars = {}
+        for pid, pdata in pillars_raw.items():
+            pillar = ScorePillar.objects.get(id=pid)
+            data = {}
+            for qid, sid in pdata.items():
+                q = ScoreQuestion.objects.get(id=qid).title
+                scale = ScoreScale.objects.get(id=sid)
+                data[q] = {'title': scale.title, 'value': scale.value}
+            pillars[pillar.title] = data
+        matrix_pillars = {}
+        for mpid, mpdata in matrix_pillars_raw.items():
+            mpillar = ScoreMatrixPillar.objects.get(id=mpid)
+            data = {}
+            for sid, msid in mpdata.items():
+                sector = Sector.objects.get(id=sid)
+                scale = ScoreMatrixScale.objects.get(id=msid)
+                data[sector.title] = {
+                    'value': scale.value,
+                    'title': '{} / {}'.format(
+                        scale.row.title, scale.column.title)
+                }
+            matrix_pillars[mpillar.title] = data
+        pillars.update(matrix_pillars)
+        return pillars
+
     def to_exportable_json(self):
         if not self.lead:
             return {}
@@ -456,8 +486,11 @@ class Assessment(UserResource):
         methodology = self.get_methodology_json()
         # summary
         summary = self.get_summary_json()
+        # score
+        score = self.get_score_json()
         return {
             'metadata': metadata,
             'methodology': methodology,
             'summary': summary,
+            'score': score
         }
