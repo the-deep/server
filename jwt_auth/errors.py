@@ -19,7 +19,7 @@ class UserNotFoundError(Exception):
 class UserInactiveError(Exception):
     status_code = 401
     code = USER_INACTIVE
-    message = 'User not active'
+    message = 'User account is deactivated'
 
     def __init__(self, message):
         if (message):

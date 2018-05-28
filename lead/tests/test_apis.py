@@ -1,5 +1,6 @@
 from deep.tests import TestCase
-from project.models import Project
+from user.models import User
+from project.models import Project, ProjectMembership
 from geo.models import Region
 from lead.models import Lead
 
@@ -22,6 +23,7 @@ class LeadTests(TestCase):
             'confidentiality': Lead.UNPROTECTED,
             'status': Lead.PENDING,
             'text': 'Alien shapeship has been spotted in the sky',
+            'assignee': self.user.id,
         }
 
         self.authenticate()
@@ -30,6 +32,30 @@ class LeadTests(TestCase):
 
         self.assertEqual(Lead.objects.count(), lead_count + 1)
         self.assertEqual(response.data['title'], data['title'])
+        self.assertEqual(response.data['assignee'], self.user.id)
+
+    def test_update_assignee(self):
+        # Since we have multiple assignee supported in the Lead model
+        # but currently we have only restricted assignee to single value
+        # in the API, check if it works in the `update` request
+
+        project = self.create(Project)
+        user = self.create(User)
+        self.create(ProjectMembership, project=project, member=user)
+        lead = self.create(Lead, project=project)
+
+        url = '/api/v1/leads/{}/'.format(lead.id)
+        data = {
+            'assignee': user.id,
+        }
+
+        self.authenticate()
+        response = self.client.patch(url, data)
+        self.assert_200(response)
+
+        self.assertEqual(response.data['assignee'], user.id)
+        lead = Lead.objects.get(id=lead.id)
+        self.assertEqual(lead.get_assignee().id, user.id)
 
     def test_options(self):
         url = '/api/v1/lead-options/'
@@ -61,6 +87,7 @@ class LeadTests(TestCase):
             'confidentiality': Lead.UNPROTECTED,
             'status': Lead.PENDING,
             'text': 'this is some random text',
+            'assignee': self.user.id,
         }
 
         self.authenticate()
