@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from user_resource.models import UserResource
 from deep.models import Field, FieldOption
 from lead.models import Lead, LeadGroup
+from geo.models import GeoArea
 
 
 class AssessmentTemplate(UserResource):
@@ -334,23 +335,129 @@ class Assessment(UserResource):
             raise Exception("Something that could not be parsed from schema")
         return data
 
-    def to_exportable_json(self):
-        if not self.lead:
-            return {}
-        # for meta data
+    def get_metadata_json(self):
         metadata_schema = self._load_schema(MetadataField, MetadataGroup)
         metadata_raw = self.metadata or {}
         metadata_raw = metadata_raw.get('basic_information', {})
         metadata = self._data_from_schema(metadata_schema, metadata_raw)
-        # for methodology
+        return metadata
+
+    def get_methodology_json(self):
         methodology_sch = self._load_schema(MethodologyField, MethodologyGroup)
         methodology_raw = self.methodology or {}
-        methodology_raw = methodology_raw.get('attributes', [])
-        methodology = [
+        attributes_raw = methodology_raw.get('attributes', [])
+        attributes = [
             self._data_from_schema(methodology_sch, x)
-            for x in methodology_raw
+            for x in attributes_raw
         ]
+        sectors = [
+            Sector.objects.get(id=x).title
+            for x in self.methodology.get('sectors', [])
+        ]
+        focuses = [
+            Focus.objects.get(id=x).title
+            for x in self.methodology.get('focuses', [])
+        ]
+        affected_groups = [
+            x['name']
+            for x in self.methodology.get('affected_groups', [])
+        ]
+        locations = [
+            GeoArea.objects.get(id=x).title
+            for x in self.methodology.get('locations', [])
+        ]
+        data_collection_techniques = self.methodology.get(
+            'data_collection_techniques', []
+        )
+        objectives = self.methodology.get('objectives', [])
+        sampling = self.methodology.get('sampling', [])
+        limitations = self.methodology.get('limitations', [])
+        methodology = {
+            'Attributes': attributes,
+            'Focuses': focuses,
+            'Sectors': sectors,
+            'Affected Groups': affected_groups,
+            'Locations': locations,
+            'Data Collection Techniques': data_collection_techniques,
+            'Objectives': objectives,
+            'Sampling': sampling,
+            'Limitations': limitations
+        }
+        return methodology
+
+    def get_summary_json(self):
+        # functions to get exact value of an entry in summary group
+        def identity(x):
+            return x
+        value_functions = {
+            'specific_need_group': lambda x: SpecificNeedGroup.objects.get(
+                id=x).title,
+            'affected_group': lambda x: AffectedGroup.objects.get(id=x).title,
+            'underlying_factors': identity,
+            'outcomes': identity,
+            'affected_location': lambda x: AffectedLocation.objects.get(
+                id=x).title,
+            'priority_sector': lambda x: PrioritySector.objects.get(
+                id=x).title,
+            'priority_issue': lambda x: PriorityIssue.objects.get(id=x).title
+        }
+
+        # Formatting of underscored keywords, by default is upper case as given
+        # by default_format() function below
+        formatting = {
+            'priority_sector': lambda x: 'Most Unmet Needs Sectors',
+            'affected_location': lambda x: 'Settings Facing Most Humanitarian Issues'  # noqa
+        }
+
+        def default_format(x):
+            return ' '.join([x.title() for x in x.split('_')])
+
+        summary_raw = self.summary
+        if not summary_raw:
+            return {}
+        summary_data = {}
+        # first pop cross_sector and humanitarian access, other are sectors
+        # cross_sector = summary_raw.pop('cross_sector', {})
+        # humanitarian_access = summary_raw.pop('humanitarian_access', {})
+        # Add sectors data first
+        for k, v in summary_raw.items():
+            try:
+                _, sec_id = k.split('-')
+                sector = Sector.objects.get(id=sec_id).title
+            # Exception because, we have cross_sector and humanitarian_access
+            # in addition to "sector-<id>" keys
+            except ValueError:
+                sector = default_format(k)
+            data = {}
+            for kk, vv in v.items():
+                grouping, rowindex, col = kk.split('-')
+                # format them
+                grouping_f = formatting.get(grouping, default_format)(grouping)
+                col_f = formatting.get(col, default_format)(col)
+                # get exact value
+                value = value_functions[grouping](vv)
+
+                group_data = data.get(grouping_f, {})
+                # first time, initialize to list of 3 empty strings
+                coldata = group_data.get(col_f, ['']*3)
+                coldata[int(rowindex)] = value
+                group_data[col_f] = coldata
+                data[grouping_f] = group_data
+            summary_data[sector] = data
+        # add cross_sector
+        return summary_data
+
+    def to_exportable_json(self):
+        if not self.lead:
+            return {}
+        # for meta data
+        metadata = self.get_metadata_json()
+        # for methodology
+        methodology = self.get_methodology_json()
+        # summary
+        summary = self.get_summary_json()
         return {
             'metadata': metadata,
-            'methodology': methodology
+            'methodology': methodology,
+            'summary': summary,
         }
