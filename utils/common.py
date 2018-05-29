@@ -89,3 +89,11 @@ def generate_timeseries(entities):
         })
 
     return timeseries
+
+
+def identity(x):
+    return x
+
+
+def underscore_to_title(x):
+    return ' '.join([y.title() for y in x.split('_')])

@@ -7,6 +7,8 @@ from deep.models import Field, FieldOption
 from lead.models import Lead, LeadGroup
 from geo.models import GeoArea
 
+from utils.common import identity, underscore_to_title
+
 
 class AssessmentTemplate(UserResource):
     title = models.CharField(max_length=255)
@@ -281,27 +283,12 @@ class Assessment(UserResource):
             (self.lead_group and self.lead_group.can_modify(user))
         )
 
-    def _load_schema(self, FieldClass, GroupClass=None):
-        schema = {}
+    def _load_schema(self, FieldClass, GroupClass):
+        """Schema loader for Field groups"""
         assessment_template = self.lead.project.assessment_template
-        if GroupClass is not None:
-            groups = GroupClass.objects.filter(template=assessment_template)
-            schema = {
-                group.title: [
-                    {
-                        'id': field.id,
-                        'name': field.title,
-                        'type': field.field_type,
-                        'options': {
-                            x['key']: x['title'] for x in field.get_options()
-                        }
-                    }
-                    for field in group.fields.all()
-                ] for group in groups
-            }
-        else:
-            fields = FieldClass.objects.filter(template=assessment_template)
-            schema = [
+        groups = GroupClass.objects.filter(template=assessment_template)
+        return {
+            group.title: [
                 {
                     'id': field.id,
                     'name': field.title,
@@ -310,14 +297,17 @@ class Assessment(UserResource):
                         x['key']: x['title'] for x in field.get_options()
                     }
                 }
-                for field in fields
-            ]
-        return schema
+                for field in group.fields.all()
+            ] for group in groups
+        }
 
     def _data_from_schema(self, schema, raw_data):
+        """Returns schema based data from raw data"""
         if not raw_data:
             return {}
         if 'id' in schema:
+            # This condition is before checking dict because,
+            # this is also a dict
             key = str(schema['id'])
             value = raw_data.get(key, '')
             if schema['type'] == Field.SELECT:
@@ -345,50 +335,28 @@ class Assessment(UserResource):
     def get_methodology_json(self):
         methodology_sch = self._load_schema(MethodologyField, MethodologyGroup)
         methodology_raw = self.methodology or {}
-        attributes_raw = methodology_raw.get('attributes', [])
-        attributes = [
-            self._data_from_schema(methodology_sch, x)
-            for x in attributes_raw
-        ]
-        sectors = [
-            Sector.objects.get(id=x).title
-            for x in self.methodology.get('sectors', [])
-        ]
-        focuses = [
-            Focus.objects.get(id=x).title
-            for x in self.methodology.get('focuses', [])
-        ]
-        affected_groups = [
-            x['name']
-            for x in self.methodology.get('affected_groups', [])
-        ]
-        locations = [
-            GeoArea.objects.get(id=x).title
-            for x in self.methodology.get('locations', [])
-        ]
-        data_collection_techniques = self.methodology.get(
-            'data_collection_techniques', []
-        )
-        objectives = self.methodology.get('objectives', [])
-        sampling = self.methodology.get('sampling', [])
-        limitations = self.methodology.get('limitations', [])
-        methodology = {
-            'Attributes': attributes,
-            'Focuses': focuses,
-            'Sectors': sectors,
-            'Affected Groups': affected_groups,
-            'Locations': locations,
-            'Data Collection Techniques': data_collection_techniques,
-            'Objectives': objectives,
-            'Sampling': sampling,
-            'Limitations': limitations
+
+        mapping = {
+            'attributes': lambda x: self._data_from_schema(methodology_sch, x),
+            'sectors': lambda x: Sector.objects.get(id=x).title,
+            'focuses': lambda x: Focus.objects.get(id=x).title,
+            'affected_groups': lambda x: x['name'],
+            'locations': lambda x: GeoArea.objects.get(id=x).title,
+            'objectives': identity,
+            'sampling': identity,
+            'limitations': identity,
+            'data_collection_techniques': identity
         }
-        return methodology
+
+        return {
+            underscore_to_title(k):
+                v if not isinstance(v, list)
+                else [mapping[k](y) for y in v]
+            for k, v in methodology_raw.items()
+        }
 
     def get_summary_json(self):
         # functions to get exact value of an entry in summary group
-        def identity(x):
-            return x
         value_functions = {
             'specific_need_group': lambda x: SpecificNeedGroup.objects.get(
                 id=x).title,
@@ -409,17 +377,12 @@ class Assessment(UserResource):
             'affected_location': lambda x: 'Settings Facing Most Humanitarian Issues'  # noqa
         }
 
-        def default_format(x):
-            return ' '.join([x.title() for x in x.split('_')])
+        default_format = underscore_to_title   # function
 
         summary_raw = self.summary
         if not summary_raw:
             return {}
         summary_data = {}
-        # first pop cross_sector and humanitarian access, other are sectors
-        # cross_sector = summary_raw.pop('cross_sector', {})
-        # humanitarian_access = summary_raw.pop('humanitarian_access', {})
-        # Add sectors data first
         for k, v in summary_raw.items():
             try:
                 _, sec_id = k.split('-')
