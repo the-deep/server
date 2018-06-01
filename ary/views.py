@@ -173,7 +173,7 @@ class AssessmentOptionsView(views.APIView):
         project_query = request.GET.get('project')
         fields_query = request.GET.get('fields')
 
-        projects = Project.get_for(request.user)
+        projects = Project.get_for_member(request.user)
         if project_query:
             projects = projects.filter(id__in=project_query.split(','))
 
@@ -198,7 +198,7 @@ class AssessmentOptionsView(views.APIView):
             ]
 
         if (fields is None or 'project' in fields):
-            projects = Project.get_for(request.user)
+            projects = Project.get_for_member(request.user)
             options['project'] = [
                 {
                     'key': project.id,
