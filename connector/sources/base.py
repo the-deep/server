@@ -11,3 +11,10 @@ class Source(ABC):
     @abstractmethod
     def fetch(params, page=None, limit=None):
         pass
+
+    def query_leads(self, params):
+        from connector.serializers import SourceDataSerializer
+        return SourceDataSerializer(
+            self.fetch(params),
+            many=True,
+        ).data

@@ -8,6 +8,15 @@ from connector.models import (
 )
 
 
+SAMPLE_RSS_PARAMS = {
+    'feed-url': 'https://reliefweb.int/country/afg/rss.xml?primary_country=16',
+    'website': 'reliefweb',
+    'title-field': 'title',
+    'date-field': 'published',
+    'url-field': 'link',
+}
+
+
 class ConnectorApiTest(TestCase):
     def test_create_connector(self):
         url = '/api/v1/connectors/'
@@ -77,3 +86,39 @@ class ConnectorApiTest(TestCase):
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
+
+    def test_get_leads_from_connector(self):
+        # TODO Check existing status of leads
+
+        connector = self.create(Connector, params=SAMPLE_RSS_PARAMS)
+        url = '/api/v1/connectors/{}/leads/'.format(connector.id)
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        self.assertIsNotNone(response.data.get('results'))
+        self.assertTrue(response.data['count'] > 0)
+        self.assertIsInstance(response.data['results'], list)
+
+    def test_get_leads_from_source(self):
+        url = '/api/v1/connector-sources/{}/leads/'.format('rss-feed')
+
+        self.authenticate()
+        response = self.client.post(url, data=SAMPLE_RSS_PARAMS)
+        self.assert_200(response)
+
+        self.assertIsNotNone(response.data.get('results'))
+        self.assertTrue(response.data['count'] > 0)
+        self.assertIsInstance(response.data['results'], list)
+
+    def test_get_fields_from_rss(self):
+        url = '/api/v1/connector-sources/rss-feed/fields/'
+
+        self.authenticate()
+        response = self.client.post(url, data=SAMPLE_RSS_PARAMS)
+        self.assert_200(response)
+
+        self.assertIsNotNone(response.data.get('results'))
+        self.assertTrue(response.data['count'] > 0)
+        self.assertIsInstance(response.data['results'], list)

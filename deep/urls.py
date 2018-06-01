@@ -10,7 +10,7 @@ from django.contrib import admin
 from django.conf import settings
 from rest_framework import routers
 
-import autofixture
+# import autofixture
 
 from user.views import (
     UserViewSet,

@@ -42,10 +42,10 @@ class SourceViewSet(viewsets.ViewSet):
 class SourceQueryView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, source_type, query, version=None):
+    def query(self, source_type, query, params):
         source = source_store[source_type]()
         method = getattr(source, 'query_{}'.format(query))
-        results = method(request.GET)
+        results = method(params)
 
         if isinstance(results, list):
             return response.Response({
@@ -54,6 +54,12 @@ class SourceQueryView(views.APIView):
             })
 
         return response.Response(results)
+
+    def get(self, request, source_type, query, version=None):
+        return self.query(source_type, query, request.GET)
+
+    def post(self, request, source_type, query, version=None):
+        return self.query(source_type, query, request.data)
 
 
 class ConnectorViewSet(viewsets.ModelViewSet):
