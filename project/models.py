@@ -71,6 +71,24 @@ class Project(UserResource):
             project=self,
         )
 
+    def get_number_of_users(self):
+        return User.objects.filter(
+            models.Q(project=self) |
+            models.Q(usergroup__project=self)
+        ).distinct().count()
+
+    def get_number_of_leads(self):
+        from lead.models import Lead
+        return Lead.objects.filter(
+            project=self
+        ).distinct().count()
+
+    def get_number_of_entries(self):
+        from entry.models import Entry
+        return Entry.objects.filter(
+            lead__project=self
+        ).distinct().count()
+
 
 class ProjectMembership(models.Model):
     """

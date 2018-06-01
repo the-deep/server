@@ -39,7 +39,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
     memberships = ProjectMembershipSerializer(
         source='projectmembership_set',
         many=True,
-        required=False,
+        read_only=True,
     )
     regions = SimpleRegionSerializer(many=True, required=False)
     user_groups = SimpleUserGroupSerializer(many=True, required=False)
@@ -58,17 +58,24 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         read_only=True,
     )
 
+    number_of_users = serializers.IntegerField(
+        source='get_number_of_users',
+        read_only=True,
+    )
+
+    number_of_leads = serializers.IntegerField(
+        source='get_number_of_leads',
+        read_only=True,
+    )
+
+    number_of_entries = serializers.IntegerField(
+        source='get_number_of_entries',
+        read_only=True,
+    )
+
     class Meta:
         model = Project
-        fields = ('id', 'title', 'description', 'start_date', 'end_date',
-                  'regions', 'memberships', 'user_groups', 'data',
-                  'analysis_framework', 'analysis_framework_title',
-                  'assessment_template', 'assessment_template_title',
-                  'category_editor', 'category_editor_title',
-                  'role',
-                  'created_at', 'created_by', 'modified_at', 'modified_by',
-                  'created_by_name', 'modified_by_name', 'version_id')
-        read_only_fields = ('memberships', 'members',)
+        exclude = ('members', )
 
     def create(self, validated_data):
         project = super(ProjectSerializer, self).create(validated_data)
