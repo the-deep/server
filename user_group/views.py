@@ -1,4 +1,5 @@
 from rest_framework import viewsets, permissions
+from rest_framework.decorators import list_route
 from deep.permissions import ModifyPermission
 
 from .models import (
@@ -17,9 +18,18 @@ class UserGroupViewSet(viewsets.ModelViewSet):
                           ModifyPermission]
 
     def get_queryset(self):
+        return UserGroup.get_for(self.request.user)
+
+    @list_route(permission_classes=[permissions.IsAuthenticated],
+                serializer_class=UserGroupSerializer,
+                url_path='member-of')
+    def get_for_member(self, request, version=None):
         user = self.request.GET.get('user', self.request.user)
-        user_groups = UserGroup.get_for(user)
-        return user_groups
+        user_groups = UserGroup.get_for_member(user)
+
+        self.page = self.paginate_queryset(user_groups)
+        serializer = self.get_serializer(self.page, many=True)
+        return self.get_paginated_response(serializer.data)
 
 
 class GroupMembershipViewSet(viewsets.ModelViewSet):
