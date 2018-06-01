@@ -1,8 +1,5 @@
 from deep.tests import TestCase
-from analysis_framework.models import (
-    AnalysisFramework, Widget,
-    Filter, Exportable
-)
+from analysis_framework.models import AnalysisFramework
 from project.models import Project
 
 

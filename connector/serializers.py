@@ -38,6 +38,9 @@ class SourceDataSerializer(RemoveNullFieldsMixin,
                   'website', 'published_on', 'existing')
 
     def get_existing(self, lead):
+        if not self.context.get('request'):
+            return False
+
         return check_if_url_exists(lead.url,
                                    self.context['request'].user,
                                    self.context.get('project'))
