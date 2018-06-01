@@ -45,12 +45,27 @@ class ProjectSerializer(RemoveNullFieldsMixin,
     user_groups = SimpleUserGroupSerializer(many=True, required=False)
     role = serializers.SerializerMethodField()
 
+    analysis_framework_title = serializers.CharField(
+        source='analysis_framework.title',
+        read_only=True,
+    )
+    assessment_template_title = serializers.CharField(
+        source='assessment_template.title',
+        read_only=True,
+    )
+    category_editor_title = serializers.CharField(
+        source='category_editor.title',
+        read_only=True,
+    )
+
     class Meta:
         model = Project
         fields = ('id', 'title', 'description', 'start_date', 'end_date',
                   'regions', 'memberships', 'user_groups', 'data',
-                  'analysis_framework', 'assessment_template',
-                  'category_editor', 'role',
+                  'analysis_framework', 'analysis_framework_title',
+                  'assessment_template', 'assessment_template_title',
+                  'category_editor', 'category_editor_title',
+                  'role',
                   'created_at', 'created_by', 'modified_at', 'modified_by',
                   'created_by_name', 'modified_by_name', 'version_id')
         read_only_fields = ('memberships', 'members',)
@@ -82,7 +97,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         if group_membership:
             return 'normal'
 
-        return None
+        return 'null'
 
     # Validations
     def validate_user_groups(self, user_groups):
