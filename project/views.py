@@ -8,9 +8,11 @@ from rest_framework import (
     viewsets,
 )
 from rest_framework.decorators import detail_route, list_route
+import django_filters
 
 from deep.permissions import ModifyPermission
 from project.permissions import JoinPermission, AcceptRejectPermission
+from project.filter_set import ProjectFilterSet
 
 from geo.models import Region
 from user_group.models import UserGroup
@@ -35,6 +37,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend, )
+    filter_class = ProjectFilterSet
 
     def get_queryset(self):
         return Project.get_for(self.request.user)
