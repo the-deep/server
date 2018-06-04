@@ -57,7 +57,7 @@ class Project(UserResource):
         return True
 
     def is_member(self, user):
-        return self in Project.get_for_member(self)
+        return self in Project.get_for_member(user)
 
     def can_modify(self, user):
         return ProjectMembership.objects.filter(

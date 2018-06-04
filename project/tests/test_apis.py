@@ -1,6 +1,10 @@
 from user.models import User
 from deep.tests import TestCase
-from project.models import Project, ProjectMembership
+from project.models import (
+    Project,
+    ProjectMembership,
+    ProjectJoinRequest,
+)
 
 
 class ProjectApiTest(TestCase):
@@ -75,3 +79,83 @@ class ProjectApiTest(TestCase):
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
+
+    def test_join_request(self):
+        project = self.create(Project)
+        test_user = self.create(User)
+
+        url = '/api/v1/projects/{}/join/'.format(project.id)
+
+        self.authenticate(test_user)
+        response = self.client.post(url)
+        self.assert_201(response)
+
+        self.assertEqual(response.data['project'], project.id)
+        self.assertEqual(response.data['requested_by']['id'], test_user.id)
+
+    def test_accept_request(self):
+        project = self.create(Project)
+        test_user = self.create(User)
+        request = ProjectJoinRequest.objects.create(
+            project=project,
+            requested_by=test_user
+        )
+
+        url = '/api/v1/projects/{}/requests/{}/accept/'.format(
+            project.id,
+            request.id,
+        )
+
+        self.authenticate()
+        response = self.client.post(url)
+        self.assert_200(response)
+
+        self.assertEqual(response.data['responded_by']['id'], self.user.id)
+        self.assertEqual(response.data['status'], 'accepted')
+        membership = ProjectMembership.objects.filter(
+            project=project,
+            member=test_user,
+            role='normal',
+        )
+        self.assertEqual(membership.count(), 1)
+
+    def test_reject_request(self):
+        project = self.create(Project)
+        test_user = self.create(User)
+        request = ProjectJoinRequest.objects.create(
+            project=project,
+            requested_by=test_user
+        )
+
+        url = '/api/v1/projects/{}/requests/{}/reject/'.format(
+            project.id,
+            request.id,
+        )
+
+        self.authenticate()
+        response = self.client.post(url)
+        self.assert_200(response)
+
+        self.assertEqual(response.data['responded_by']['id'], self.user.id)
+        self.assertEqual(response.data['status'], 'rejected')
+        membership = ProjectMembership.objects.filter(
+            project=project,
+            member=test_user,
+            role='normal',
+        )
+        self.assertEqual(membership.count(), 0)
+
+    def test_list_request(self):
+        project = self.create(Project)
+        self.create(ProjectJoinRequest, project=project)
+        self.create(ProjectJoinRequest, project=project)
+        self.create(ProjectJoinRequest, project=project)
+
+        url = '/api/v1/projects/{}/requests/'.format(project.id)
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        self.assertEqual(len(response.data['results']), 3)
+        self.assertEqual(response.data['count'], 3)

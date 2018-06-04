@@ -45,7 +45,7 @@ class UserGroup(models.Model):
         return True
 
     def is_member(self, user):
-        return self.UserGroup.get_for_member(user)
+        return self in UserGroup.get_for_member(user)
 
     def can_modify(self, user):
         return GroupMembership.objects.filter(
