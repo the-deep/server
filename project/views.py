@@ -169,4 +169,10 @@ class ProjectOptionsView(views.APIView):
                 } for user_group in user_groups.distinct()
             ]
 
+        if (fields is None or 'status' in fields):
+            options['status'] = [
+                {'key': 'active', 'value': 'Active'},
+                {'key': 'inactive', 'value': 'Inactive'},
+            ]
+
         return response.Response(options)
