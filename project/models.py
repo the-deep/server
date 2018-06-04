@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.dispatch import receiver
 from user_resource.models import UserResource
 from geo.models import Region
 from user_group.models import UserGroup
@@ -20,6 +21,7 @@ class Project(UserResource):
     end_date = models.DateField(default=None, null=True, blank=True)
 
     members = models.ManyToManyField(User, blank=True,
+                                     through_fields=('project', 'member'),
                                      through='ProjectMembership')
     regions = models.ManyToManyField(Region, blank=True)
     user_groups = models.ManyToManyField(UserGroup, blank=True)
@@ -105,6 +107,9 @@ class ProjectMembership(models.Model):
     role = models.CharField(max_length=96, choices=ROLES,
                             default='normal')
     joined_at = models.DateTimeField(auto_now_add=True)
+    added_by = models.ForeignKey(User, on_delete=models.CASCADE,
+                                 null=True, blank=True, default=None,
+                                 related_name='added_project_memberships')
 
     def __str__(self):
         return '{} @ {}'.format(str(self.member),
@@ -139,7 +144,6 @@ class ProjectJoinRequest(models.Model):
     requested_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                      related_name='project_join_requests')
     requested_at = models.DateTimeField(auto_now_add=True)
-
     status = models.CharField(max_length=48, choices=STATUSES,
                               default='pending')
     responded_by = models.ForeignKey(User, on_delete=models.CASCADE,
@@ -156,3 +160,20 @@ class ProjectJoinRequest(models.Model):
 
     class Meta:
         ordering = ('-requested_at',)
+
+
+# Whenever a member is saved, if there is a pending request to join
+# same project by same user, accept that request.
+@receiver(models.signals.post_save, sender=ProjectMembership)
+def on_membership_saved(sender, **kwargs):
+    # if kwargs.get('created'):
+    instance = kwargs.get('instance')
+    ProjectJoinRequest.objects.filter(
+        project=instance.project,
+        requested_by=instance.member,
+        status='pending',
+    ).update(
+        status='accepted',
+        responded_by=instance.added_by,
+        responded_at=instance.joined_at,
+    )

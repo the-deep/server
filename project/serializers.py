@@ -18,8 +18,7 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
 
     class Meta:
         model = ProjectMembership
-        fields = ('id', 'member', 'member_name', 'member_email',
-                  'project', 'role', 'joined_at')
+        fields = '__all__'
 
     def get_unique_together_validators(self):
         return []
@@ -33,13 +32,20 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
             raise serializers.ValidationError('Invalid project')
         return project
 
+    def create(self, validated_data):
+        resource = super(ProjectMembershipSerializer, self)\
+            .create(validated_data)
+        resource.added_by = self.context['request'].user
+        resource.save()
+        return resource
+
 
 class ProjectSerializer(RemoveNullFieldsMixin,
                         DynamicFieldsMixin, UserResourceSerializer):
     memberships = ProjectMembershipSerializer(
         source='projectmembership_set',
         many=True,
-        read_only=True,
+        required=False,
     )
     regions = SimpleRegionSerializer(many=True, required=False)
     user_groups = SimpleUserGroupSerializer(many=True, required=False)

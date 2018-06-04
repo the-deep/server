@@ -13,6 +13,7 @@ class UserGroup(models.Model):
                                         on_delete=models.SET_NULL,
                                         null=True, blank=True, default=None)
     members = models.ManyToManyField(User, blank=True,
+                                     through_fields=('group', 'member'),
                                      through='GroupMembership')
     global_crisis_monitoring = models.BooleanField(default=False)
 
@@ -75,6 +76,9 @@ class GroupMembership(models.Model):
     role = models.CharField(max_length=96, choices=ROLES,
                             default='normal')
     joined_at = models.DateTimeField(auto_now_add=True)
+    added_by = models.ForeignKey(User, on_delete=models.CASCADE,
+                                 null=True, blank=True, default=None,
+                                 related_name='added_group_memberships')
 
     def __str__(self):
         return '{} @ {}'.format(str(self.member),
