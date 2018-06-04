@@ -122,3 +122,37 @@ class ProjectMembership(models.Model):
 
     def can_modify(self, user):
         return self.project.can_modify(user)
+
+
+class ProjectJoinRequest(models.Model):
+    """
+    Join requests to projects and their responses
+    """
+
+    STATUSES = (
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+    )
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    requested_by = models.ForeignKey(User, on_delete=models.CASCADE,
+                                     related_name='project_join_requests')
+    requested_at = models.DateTimeField(auto_now_add=True)
+
+    status = models.CharField(max_length=48, choices=STATUSES,
+                              default='pending')
+    responded_by = models.ForeignKey(User, on_delete=models.CASCADE,
+                                     null=True, blank=True, default=None,
+                                     related_name='project_join_responses')
+    responded_at = models.DateTimeField(null=True, blank=True, default=None)
+
+    def __str__(self):
+        return 'Join request for {} by {} ({})'.format(
+            self.project.title,
+            self.user.profile.get_display_name(),
+            self.status,
+        )
+
+    class Meta:
+        ordering = ('-requested_at',)
