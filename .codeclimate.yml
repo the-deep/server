@@ -48,7 +48,6 @@ plugins:
       strings:
       - FIXME
       - XXX
-      - TODO
 
 exclude_patterns:
 - "**/migrations/*"

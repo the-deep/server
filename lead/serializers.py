@@ -35,7 +35,7 @@ class LeadSerializer(RemoveNullFieldsMixin,
         read_only=True,
     )
 
-    assignee_detail = SimpleUserSerializer(
+    assignee_details = SimpleUserSerializer(
         source='get_assignee',
         # many=True,
         read_only=True,
