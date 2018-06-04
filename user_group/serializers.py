@@ -65,4 +65,4 @@ class UserGroupSerializer(RemoveNullFieldsMixin,
         ).first()
         if membership:
             return membership.role
-        return None
+        return 'null'

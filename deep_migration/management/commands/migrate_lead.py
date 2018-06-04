@@ -104,6 +104,10 @@ class Command(MigrationCommand):
             )
 
         lead.save()
+
+        if data.get('assignee'):
+            lead.assignee.add(get_user(data.get('assignee')))
+
         Lead.objects.filter(id=lead.id).update(created_at=data['created_at'])
 
         return lead
