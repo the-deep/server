@@ -4,7 +4,12 @@ from rest_framework import serializers
 from deep.serializers import RemoveNullFieldsMixin
 from geo.models import Region
 from geo.serializers import SimpleRegionSerializer
-from project.models import Project, ProjectMembership
+from project.models import (
+    Project,
+    ProjectMembership,
+    ProjectJoinRequest,
+)
+from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
 from user_group.serializers import SimpleUserGroupSerializer
 from user_resource.serializers import UserResourceSerializer
@@ -139,3 +144,14 @@ class ProjectSerializer(RemoveNullFieldsMixin,
             raise serializers.ValidationError(
                 'Invalid analysis framework: {}'.format(analysis_framework.id))
         return analysis_framework
+
+
+class ProjectJoinRequestSerializer(RemoveNullFieldsMixin,
+                                   DynamicFieldsMixin,
+                                   serializers.ModelSerializer):
+    requested_by = SimpleUserSerializer(read_only=True)
+    responded_by = SimpleUserSerializer(read_only=True)
+
+    class Meta:
+        model = ProjectJoinRequest
+        fields = '__all__'
