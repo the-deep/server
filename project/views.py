@@ -3,6 +3,7 @@ from rest_framework import (
     exceptions,
     permissions,
     response,
+    status,
     views,
     viewsets,
 )
@@ -100,6 +101,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     @detail_route(permission_classes=[permissions.IsAuthenticated,
                                       JoinPermission],
+                  methods=['post'],
                   url_path='join')
     def join_project(self, request, pk=None, version=None):
         project = self.get_object()
@@ -109,11 +111,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
             status='pending',
         )
 
-        serializer = ProjectMembershipSerializer(
+        serializer = ProjectJoinRequestSerializer(
             join_request,
             context={'request': request},
         )
-        return response.Response(serializer.data)
+        return response.Response(serializer.data,
+                                 status=status.HTTP_201_CREATED)
 
     """
     Accept a join request to this project,
@@ -121,17 +124,18 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     @detail_route(permission_classes=[permissions.IsAuthenticated,
                                       AcceptRejectPermission],
+                  methods=['post'],
                   url_path=r'requests/(?P<request_id>\d+)/accept')
     def accept_request(self, request, pk=None, version=None, request_id=None):
         project = self.get_object()
         join_request = get_object_or_404(ProjectJoinRequest,
                                          id=request_id,
                                          project=project)
-        join_request.update(
-            status='accepted',
-            responded_by=request.user,
-            responded_at=datetime.now(),
-        )
+        join_request.status = 'accepted'
+        join_request.responded_by = request.user
+        join_request.responded_at = datetime.now()
+        join_request.save()
+
         ProjectMembership.objects.update_or_create(
             project=project,
             member=join_request.requested_by,
@@ -140,7 +144,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             },
         )
 
-        serializer = ProjectMembershipSerializer(
+        serializer = ProjectJoinRequestSerializer(
             join_request,
             context={'request': request},
         )
@@ -151,19 +155,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     @detail_route(permission_classes=[permissions.IsAuthenticated,
                                       AcceptRejectPermission],
+                  methods=['post'],
                   url_path=r'requests/(?P<request_id>\d+)/reject')
     def reject_request(self, request, pk=None, version=None, request_id=None):
         project = self.get_object()
         join_request = get_object_or_404(ProjectJoinRequest,
                                          id=request_id,
                                          project=project)
-        join_request.update(
-            status='rejected',
-            responded_by=request.user,
-            responded_at=datetime.now(),
-        )
+        join_request.status = 'rejected'
+        join_request.responded_by = request.user
+        join_request.responded_at = datetime.now()
+        join_request.save()
 
-        serializer = ProjectMembershipSerializer(
+        serializer = ProjectJoinRequestSerializer(
             join_request,
             context={'request': request},
         )
