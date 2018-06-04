@@ -159,3 +159,23 @@ class ProjectApiTest(TestCase):
 
         self.assertEqual(len(response.data['results']), 3)
         self.assertEqual(response.data['count'], 3)
+
+    def test_auto_accept(self):
+        # When a project member is added, if there is a pending
+        # request for that user, auto accept that request
+        project = self.create(Project)
+        test_user = self.create(User)
+        request = ProjectJoinRequest.objects.create(
+            project=project,
+            requested_by=test_user,
+        )
+
+        ProjectMembership.objects.create(
+            project=project,
+            member=test_user,
+            added_by=self.user,
+        )
+
+        request = ProjectJoinRequest.objects.get(id=request.id)
+        self.assertEqual(request.status, 'accepted')
+        self.assertEqual(request.responded_by, self.user)
