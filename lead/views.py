@@ -229,7 +229,7 @@ class LeadOptionsView(views.APIView):
         project_query = request.GET.get('project')
         fields_query = request.GET.get('fields')
 
-        projects = Project.get_for(request.user)
+        projects = Project.get_for_member(request.user)
         if project_query:
             projects = projects.filter(id__in=project_query.split(','))
 
@@ -292,7 +292,7 @@ class LeadOptionsView(views.APIView):
             options['status'] = status
 
         if (fields is None or 'project' in fields):
-            projects = Project.get_for(request.user)
+            projects = Project.get_for_member(request.user)
             options['project'] = [
                 {
                     'key': project.id,
@@ -399,7 +399,7 @@ class WebInfoExtractView(views.APIView):
 
         project = None
         if country:
-            project = Project.get_for(request.user).filter(
+            project = Project.get_for_member(request.user).filter(
                 regions__title__icontains=country
             ).first()
 

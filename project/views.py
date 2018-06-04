@@ -5,7 +5,7 @@ from rest_framework import (
     views,
     viewsets,
 )
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, list_route
 
 from deep.permissions import ModifyPermission
 from geo.models import Region
@@ -24,15 +24,23 @@ class ProjectViewSet(viewsets.ModelViewSet):
                           ModifyPermission]
 
     def get_queryset(self):
-        user = self.request.GET.get('user', self.request.user)
-        projects = Project.get_for(user)
+        return Project.get_for(self.request.user)
 
-        user_group = self.request.GET.get('user_group')
+    @list_route(permission_classes=[permissions.IsAuthenticated],
+                serializer_class=ProjectSerializer,
+                url_path='member-of')
+    def get_for_member(self, request, version=None):
+        user = self.request.GET.get('user', request.user)
+        projects = Project.get_for_member(user)
+
+        user_group = request.GET.get('user_group')
         if user_group:
             user_group = user_group.split(',')
             projects = projects.filter(user_groups__id__in=user_group)
 
-        return projects
+        self.page = self.paginate_queryset(projects)
+        serializer = self.get_serializer(self.page, many=True)
+        return self.get_paginated_response(serializer.data)
 
     @detail_route(permission_classes=[permissions.IsAuthenticated],
                   url_path='analysis-framework')

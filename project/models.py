@@ -42,13 +42,20 @@ class Project(UserResource):
 
     @staticmethod
     def get_for(user):
+        return Project.objects.all()
+
+    @staticmethod
+    def get_for_member(user):
         return Project.objects.filter(
             models.Q(members=user) |
             models.Q(user_groups__members=user)
         ).distinct()
 
     def can_get(self, user):
-        return self in Project.get_for(user)
+        return True
+
+    def is_member(self, user):
+        return self in Project.get_for_member(self)
 
     def can_modify(self, user):
         return ProjectMembership.objects.filter(
@@ -63,6 +70,24 @@ class Project(UserResource):
             role=role,
             project=self,
         )
+
+    def get_number_of_users(self):
+        return User.objects.filter(
+            models.Q(project=self) |
+            models.Q(usergroup__project=self)
+        ).distinct().count()
+
+    def get_number_of_leads(self):
+        from lead.models import Lead
+        return Lead.objects.filter(
+            project=self
+        ).distinct().count()
+
+    def get_number_of_entries(self):
+        from entry.models import Entry
+        return Entry.objects.filter(
+            lead__project=self
+        ).distinct().count()
 
 
 class ProjectMembership(models.Model):

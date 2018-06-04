@@ -50,7 +50,7 @@ class UserViewSet(viewsets.ModelViewSet):
     Modify an existing user partially
     """
 
-    queryset = User.objects.all().order_by('-date_joined')
+    queryset = User.objects.filter(is_active=True).order_by('-date_joined')
     serializer_class = UserSerializer
     permission_classes = [UserPermission]
 
