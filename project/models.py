@@ -8,7 +8,8 @@ from user_group.models import UserGroup
 from analysis_framework.models import AnalysisFramework
 from category_editor.models import CategoryEditor
 
-from datetime import datetime, timedelta
+from django.utils import timezone
+from datetime import timedelta
 
 
 class ProjectStatus(models.Model):
@@ -68,7 +69,7 @@ class ProjectStatusCondition(models.Model):
 
     def check_for(self, project):
         from entry.models import Entry, Lead
-        time_threshold = datetime.now() - timedelta(days=self.days)
+        time_threshold = timezone.now() - timedelta(days=self.days)
 
         if self.condition_type == ProjectStatusCondition.NO_LEADS_CREATED:
             if Lead.objects.filter(
@@ -88,14 +89,14 @@ class ProjectStatusCondition(models.Model):
         return False
 
     def get_query(self):
-        time_threshold = datetime.now() - timedelta(days=self.days)
+        time_threshold = timezone.now() - timedelta(days=self.days)
         if self.condition_type == ProjectStatusCondition.NO_LEADS_CREATED:
-            return ~models.Q(
+            return models.Q(lead__isnull=False) & ~models.Q(
                 lead__created_at__gt=time_threshold,
             )
 
         if self.condition_type == ProjectStatusCondition.NO_ENTRIES_CREATED:
-            return ~models.Q(
+            return models.Q(lead__entry__isnull=False) & ~models.Q(
                 lead__entry__created_at__gt=time_threshold,
             )
 

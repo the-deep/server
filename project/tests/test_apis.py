@@ -1,10 +1,16 @@
 from user.models import User
 from deep.tests import TestCase
+from entry.models import Lead, Entry
 from project.models import (
     Project,
     ProjectMembership,
     ProjectJoinRequest,
+    ProjectStatus,
+    ProjectStatusCondition,
 )
+
+from django.utils import timezone
+from datetime import timedelta
 
 
 class ProjectApiTest(TestCase):
@@ -179,3 +185,68 @@ class ProjectApiTest(TestCase):
         request = ProjectJoinRequest.objects.get(id=request.id)
         self.assertEqual(request.status, 'accepted')
         self.assertEqual(request.responded_by, self.user)
+
+    def _test_status_filter(self, and_conditions):
+        status = self.create(ProjectStatus, and_conditions=and_conditions)
+        self.create(
+            ProjectStatusCondition,
+            project_status=status,
+            condition_type=ProjectStatusCondition.NO_LEADS_CREATED,
+            days=5,
+        )
+        self.create(
+            ProjectStatusCondition,
+            project_status=status,
+            condition_type=ProjectStatusCondition.NO_ENTRIES_CREATED,
+            days=5,
+        )
+        old_date = timezone.now() - timedelta(days=8)
+
+        # One with old lead
+        project1 = self.create(Project)
+        lead = self.create(Lead, project=project1)
+        Lead.objects.filter(pk=lead.pk).update(created_at=old_date)
+
+        # One with latest lead
+        project2 = self.create(Project)
+        self.create(Lead, project=project2)
+
+        # One empty
+        self.create(Project)
+
+        # One with latest lead but expired entry
+        project4 = self.create(Project)
+        lead = self.create(Lead, project=project4)
+        entry = self.create(Entry, lead=lead)
+        Entry.objects.filter(pk=entry.pk).update(created_at=old_date)
+
+        # One with expired lead and expired entry
+        project5 = self.create(Project)
+        lead = self.create(Lead, project=project5)
+        entry = self.create(Entry, lead=lead)
+        Lead.objects.filter(pk=lead.pk).update(created_at=old_date)
+        Entry.objects.filter(pk=entry.pk).update(created_at=old_date)
+
+        url = '/api/v1/projects/?status={}'.format(status.id)
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        expected = [
+            project5.id,
+        ] if and_conditions else [
+            project1.id,
+            project4.id,
+            project5.id,
+        ]
+        obtained = [r['id'] for r in response.data['results']]
+
+        self.assertEqual(response.data['count'], len(expected))
+        self.assertTrue(sorted(expected) == sorted(obtained))
+
+    def test_status_filter_or_conditions(self):
+        self._test_status_filter(False)
+
+    def test_status_filter_and_conditions(self):
+        self._test_status_filter(True)
