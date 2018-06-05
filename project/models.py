@@ -2,11 +2,14 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.dispatch import receiver
+
 from user_resource.models import UserResource
 from geo.models import Region
 from user_group.models import UserGroup
 from analysis_framework.models import AnalysisFramework
 from category_editor.models import CategoryEditor
+
+from utils.common import generate_timeseries
 
 from django.utils import timezone
 from datetime import timedelta
@@ -18,6 +21,9 @@ class ProjectStatus(models.Model):
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        verbose_name_plural = 'project statuses'
 
     def check_for(self, project):
         conditions = [
@@ -195,6 +201,12 @@ class Project(UserResource):
             if status.check_for(self):
                 return status
         return None
+
+    def get_entries_activity(self):
+        from entry.models import Entry
+        return generate_timeseries(
+            Entry.objects.filter(lead__project=self).distinct()
+        )
 
 
 class ProjectMembership(models.Model):

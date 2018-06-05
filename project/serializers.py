@@ -84,6 +84,10 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         read_only=True,
     )
 
+    # entries_activity = serializers.ReadOnlyField(
+    #     source='get_entries_activity',
+    # )
+
     status = serializers.IntegerField(
         source='get_status.id',
         read_only=True,
