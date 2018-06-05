@@ -84,6 +84,11 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         read_only=True,
     )
 
+    status = serializers.IntegerField(
+        source='get_status.id',
+        read_only=True,
+    )
+
     class Meta:
         model = Project
         exclude = ('members', )

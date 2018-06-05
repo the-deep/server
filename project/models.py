@@ -29,6 +29,19 @@ class ProjectStatus(models.Model):
         else:
             return any(conditions)
 
+    def get_query(self):
+        queries = [
+            c.get_query()
+            for c in self.conditions.all()
+        ]
+        query = queries.pop()
+        for q in queries:
+            if self.and_conditions:
+                query &= q
+            else:
+                query |= q
+        return query
+
 
 class ProjectStatusCondition(models.Model):
     NO_LEADS_CREATED = 'no_leads'
@@ -73,6 +86,18 @@ class ProjectStatusCondition(models.Model):
                 return False
             return True
         return False
+
+    def get_query(self):
+        time_threshold = datetime.now() - timedelta(days=self.days)
+        if self.condition_type == ProjectStatusCondition.NO_LEADS_CREATED:
+            return ~models.Q(
+                lead__created_at__gt=time_threshold,
+            )
+
+        if self.condition_type == ProjectStatusCondition.NO_ENTRIES_CREATED:
+            return ~models.Q(
+                lead__entry__created_at__gt=time_threshold,
+            )
 
 
 class Project(UserResource):
@@ -161,6 +186,7 @@ class Project(UserResource):
         for status in ProjectStatus.objects.all():
             if status.check_for(self):
                 return status
+        return None
 
 
 class ProjectMembership(models.Model):
