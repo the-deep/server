@@ -37,6 +37,23 @@ class ProjectStatus(models.Model):
             return any(conditions)
 
     def get_query(self):
+        # If not condition, negate all conditions from other
+        # statuses
+        # TODO Test THIS
+        if self.conditions.count() == 0:
+            others = ProjectStatus.objects.filter(
+                ~models.Q(id=self.id)
+            )
+            if others.count() == 0:
+                return ~models.Q(id=None)  # Always True
+
+            queries = [s.get_query() for s in others]
+            query = ~models.Q(queries.pop())
+            for q in queries:
+                query &= ~models.Q(q)
+            return query
+
+        # Otherwise combine the conditions
         queries = [
             c.get_query()
             for c in self.conditions.all()
