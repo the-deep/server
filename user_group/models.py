@@ -54,11 +54,12 @@ class UserGroup(models.Model):
             role='admin',
         ).exists()
 
-    def add_member(self, user, role='normal'):
+    def add_member(self, user, role='normal', added_by=None):
         return GroupMembership.objects.create(
             member=user,
             role=role,
             group=self,
+            added_by=added_by or user,
         )
 
 

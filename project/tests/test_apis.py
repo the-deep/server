@@ -13,6 +13,9 @@ from django.utils import timezone
 from datetime import timedelta
 
 
+# TODO Document properly some of the following complex tests
+
+
 class ProjectApiTest(TestCase):
     def test_create_project(self):
         project_count = Project.objects.count()
@@ -175,12 +178,7 @@ class ProjectApiTest(TestCase):
             project=project,
             requested_by=test_user,
         )
-
-        ProjectMembership.objects.create(
-            project=project,
-            member=test_user,
-            added_by=self.user,
-        )
+        project.add_member(test_user, 'normal', self.user)
 
         request = ProjectJoinRequest.objects.get(id=request.id)
         self.assertEqual(request.status, 'accepted')
@@ -250,3 +248,41 @@ class ProjectApiTest(TestCase):
 
     def test_status_filter_and_conditions(self):
         self._test_status_filter(True)
+
+    def test_involvment_filter(self):
+        project1 = self.create(Project)
+        project2 = self.create(Project)
+        project3 = self.create(Project)
+
+        test_user = self.create(User)
+        project1.add_member(test_user)
+        project2.add_member(test_user)
+
+        url = '/api/v1/projects/?involvement=my_projects'
+
+        self.authenticate(test_user)
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        expected = [
+            project1.id,
+            project2.id
+        ]
+        obtained = [r['id'] for r in response.data['results']]
+
+        self.assertEqual(response.data['count'], len(expected))
+        self.assertTrue(sorted(expected) == sorted(obtained))
+
+        url = '/api/v1/projects/?involvement=not_my_projects'
+
+        self.authenticate(test_user)
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        expected = [
+            project3.id,
+        ]
+        obtained = [r['id'] for r in response.data['results']]
+
+        self.assertEqual(response.data['count'], len(expected))
+        self.assertTrue(sorted(expected) == sorted(obtained))
