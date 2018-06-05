@@ -298,4 +298,10 @@ class ProjectOptionsView(views.APIView):
                 } for status in ProjectStatus.objects.all()
             ]
 
+        if (fields is None or 'involvement' in fields):
+            options['involvement'] = [
+                {'key': 'my_projects', 'value': 'My projects'},
+                {'key': 'not_my_projects', 'value': 'Not my projects'}
+            ]
+
         return response.Response(options)

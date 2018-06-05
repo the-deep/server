@@ -141,9 +141,15 @@ class Project(UserResource):
     @staticmethod
     def get_for_member(user):
         return Project.objects.filter(
+            Project.get_query_for_member(user)
+        ).distinct()
+
+    @staticmethod
+    def get_query_for_member(user):
+        return (
             models.Q(members=user) |
             models.Q(user_groups__members=user)
-        ).distinct()
+        )
 
     def can_get(self, user):
         return True
