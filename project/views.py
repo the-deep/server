@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import (
     exceptions,
+    filters,
     permissions,
     response,
     status,
@@ -37,8 +38,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend, )
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
+                       filters.SearchFilter, filters.OrderingFilter)
     filter_class = ProjectFilterSet
+    search_fields = ('title', 'description',)
 
     def get_queryset(self):
         return Project.get_for(self.request.user)
