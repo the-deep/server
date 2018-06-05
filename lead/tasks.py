@@ -69,7 +69,7 @@ def _extract_from_lead_core(lead_id):
                 text, images = WebDocument(lead.url).extract()
 
             text = _preprocess(text)
-        except Exception as e:
+        except Exception:
             logger.error(traceback.format_exc())
             if images:
                 for image in images:
@@ -89,7 +89,7 @@ def _extract_from_lead_core(lead_id):
                 response = requests.post(DEEPL_CLASSIFY_URL,
                                          data=data).json()
                 classified_doc_id = response['id']
-            except Exception as e:
+            except Exception:
                 logger.error(traceback.format_exc())
                 classified_doc_id = None
 
@@ -167,7 +167,7 @@ def extract_from_lead(lead_id):
                 'status': return_value,
             }).decode('utf-8')
         ))
-    except Exception as e:
+    except Exception:
         logger.error(traceback.format_exc())
         return_value = False
 
