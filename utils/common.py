@@ -68,14 +68,14 @@ def generate_filename(title, extension):
 
 
 def generate_timeseries(entities):
-    entities = entities.order_by('-created_by')
+    entities = entities.order_by('created_at')
     timeseries = []
 
     if entities.count() == 0:
         return timeseries
 
-    oldest_date = entities[0].created_at.date()
-    latest_date = entities[-1].created_at.date()
+    oldest_date = entities.first().created_at.date()
+    latest_date = entities.last().created_at.date()
 
     current_date = oldest_date
     while current_date <= latest_date:

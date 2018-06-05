@@ -70,7 +70,7 @@ class ProjectStatusCondition(models.Model):
         condition_types = dict(ProjectStatusCondition.CONDITION_TYPES)
         return '{} : {} days'.format(
             condition_types[self.condition_type],
-            self.value,
+            self.days,
         )
 
     def check_for(self, project):
@@ -207,6 +207,9 @@ class Project(UserResource):
         return generate_timeseries(
             Entry.objects.filter(lead__project=self).distinct()
         )
+
+    def get_leads_activity(self):
+        return generate_timeseries(self.lead_set.all())
 
 
 class ProjectMembership(models.Model):
