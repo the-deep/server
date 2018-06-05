@@ -197,7 +197,7 @@ class GeoBoundsView(views.APIView):
                         'max_y': envelope.max_y,
                     }
                 })
-            except ValueError as e:
+            except ValueError:
                 return response.Response({
                     'bounds': None,
                 })

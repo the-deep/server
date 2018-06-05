@@ -5,7 +5,7 @@ import re
 def str_to_date(string):
     try:
         return parse(string)
-    except Exception as e:
+    except Exception:
         return None
 
 
