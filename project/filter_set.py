@@ -25,13 +25,13 @@ def get_filtered_projects(user, queries):
 
     status = queries.get('status')
     if status:
-        statuses = ProjectStatus.objects.filter(
+        statuses = list(ProjectStatus.objects.filter(
             id__in=status.split(',')
-        )
+        ))
 
         query = statuses.pop().get_query()
         for status in statuses:
             query |= status.get_query()
 
         projects = projects.filter(query)
-    return projects
+    return projects.distinct()

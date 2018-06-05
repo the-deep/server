@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import (
     exceptions,
     filters,
@@ -29,7 +30,6 @@ from .serializers import (
     ProjectJoinRequestSerializer,
 )
 
-from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
@@ -141,7 +141,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                                          project=project)
         join_request.status = 'accepted'
         join_request.responded_by = request.user
-        join_request.responded_at = datetime.now()
+        join_request.responded_at = timezone.now()
         join_request.save()
 
         ProjectMembership.objects.update_or_create(
@@ -172,7 +172,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                                          project=project)
         join_request.status = 'rejected'
         join_request.responded_by = request.user
-        join_request.responded_at = datetime.now()
+        join_request.responded_at = timezone.now()
         join_request.save()
 
         serializer = ProjectJoinRequestSerializer(
