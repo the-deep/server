@@ -164,11 +164,12 @@ class Project(UserResource):
             role='admin',
         ).exists()
 
-    def add_member(self, user, role='normal'):
+    def add_member(self, user, role='normal', added_by=None):
         return ProjectMembership.objects.create(
             member=user,
             role=role,
             project=self,
+            added_by=added_by or user,
         )
 
     def get_number_of_users(self):
