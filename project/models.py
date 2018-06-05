@@ -8,6 +8,72 @@ from user_group.models import UserGroup
 from analysis_framework.models import AnalysisFramework
 from category_editor.models import CategoryEditor
 
+from datetime import datetime, timedelta
+
+
+class ProjectStatus(models.Model):
+    title = models.CharField(max_length=255)
+    and_conditions = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.title
+
+    def check_for(self, project):
+        conditions = [
+            c.check_for(project)
+            for c in self.conditions.all()
+        ]
+
+        if self.and_conditions:
+            return all(conditions)
+        else:
+            return any(conditions)
+
+
+class ProjectStatusCondition(models.Model):
+    NO_LEADS_CREATED = 'no_leads'
+    NO_ENTRIES_CREATED = 'no_entries'
+
+    CONDITION_TYPES = (
+        (NO_LEADS_CREATED, 'No leads created since'),
+        (NO_ENTRIES_CREATED, 'No entries created since'),
+    )
+
+    project_status = models.ForeignKey(ProjectStatus,
+                                       related_name='conditions',
+                                       on_delete=models.CASCADE)
+    condition_type = models.CharField(max_length=48,
+                                      choices=CONDITION_TYPES)
+    days = models.IntegerField()
+
+    def __str__(self):
+        condition_types = dict(ProjectStatusCondition.CONDITION_TYPES)
+        return '{} : {} days'.format(
+            condition_types[self.condition_type],
+            self.value,
+        )
+
+    def check_for(self, project):
+        from entry.models import Entry, Lead
+        time_threshold = datetime.now() - timedelta(days=self.days)
+
+        if self.condition_type == ProjectStatusCondition.NO_LEADS_CREATED:
+            if Lead.objects.filter(
+                project=project,
+                created_at__gt=time_threshold,
+            ).exists():
+                return False
+            return True
+
+        if self.condition_type == ProjectStatusCondition.NO_ENTRIES_CREATED:
+            if Entry.objects.filter(
+                lead__project=project,
+                created_at__gt=time_threshold,
+            ).exists():
+                return False
+            return True
+        return False
+
 
 class Project(UserResource):
     """
@@ -90,6 +156,11 @@ class Project(UserResource):
         return Entry.objects.filter(
             lead__project=self
         ).distinct().count()
+
+    def get_status(self):
+        for status in ProjectStatus.objects.all():
+            if status.check_for(self):
+                return status
 
 
 class ProjectMembership(models.Model):
