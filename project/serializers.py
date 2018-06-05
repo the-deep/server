@@ -120,7 +120,18 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         if group_membership:
             return 'normal'
 
-        return 'null'
+        join_request = ProjectJoinRequest.objects.filter(
+            project=project,
+            requested_by=user,
+        )
+
+        if join_request and (
+            join_request.status == 'pending' or
+            join_request.status == 'rejected'
+        ):
+            return join_request.status
+
+        return 'none'
 
     # Validations
     def validate_user_groups(self, user_groups):
