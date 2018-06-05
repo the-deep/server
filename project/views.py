@@ -13,11 +13,12 @@ import django_filters
 
 from deep.permissions import ModifyPermission
 from project.permissions import JoinPermission, AcceptRejectPermission
-from project.filter_set import ProjectFilterSet
+from project.filter_set import ProjectFilterSet, get_filtered_projects
 
 from geo.models import Region
 from user_group.models import UserGroup
 from .models import (
+    ProjectStatus,
     Project,
     ProjectMembership,
     ProjectJoinRequest
@@ -44,7 +45,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     search_fields = ('title', 'description',)
 
     def get_queryset(self):
-        return Project.get_for(self.request.user)
+        return get_filtered_projects(self.request.user, self.request.GET)
 
     """
     Get list of projects that user is member of
@@ -291,8 +292,10 @@ class ProjectOptionsView(views.APIView):
 
         if (fields is None or 'status' in fields):
             options['status'] = [
-                {'key': 'active', 'value': 'Active'},
-                {'key': 'inactive', 'value': 'Inactive'},
+                {
+                    'key': status.id,
+                    'value': status.title,
+                } for status in ProjectStatus.objects.all()
             ]
 
         return response.Response(options)
