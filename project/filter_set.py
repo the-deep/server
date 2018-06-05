@@ -34,4 +34,12 @@ def get_filtered_projects(user, queries):
             query |= status.get_query()
 
         projects = projects.filter(query)
+
+    involvement = queries.get('involvement')
+    if involvement:
+        if involvement == 'my_projects':
+            projects = projects.filter(Project.get_query_for_member(user))
+        if involvement == 'not_my_projects':
+            projects = projects.exclude(Project.get_query_for_member(user))
+
     return projects.distinct()
