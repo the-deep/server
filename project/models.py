@@ -174,6 +174,15 @@ class Project(UserResource):
             models.Q(user_groups__members=user)
         )
 
+    @staticmethod
+    def get_modifiable_for(user):
+        return Project.objects.filter(
+            projectmembership__in=ProjectMembership.objects.filter(
+                member=user,
+                role='admin',
+            )
+        ).distinct()
+
     def can_get(self, user):
         return True
 

@@ -1,0 +1,47 @@
+from project.models import (
+    Project,
+    ProjectJoinRequest,
+)
+from user.serializers import SimpleUserSerializer
+from project.serializers import SimpleProjectSerializer
+
+
+class Notification:
+    PROJECT_JOIN_REQUEST = 'project_join_request'
+
+    def __init__(self, date, notification_type):
+        self.date = date
+        self.notification_type = notification_type
+        self.details = {}
+
+
+def _get_project_join_requests(user):
+    admin_projects = Project.get_modifiable_for(user)\
+        .values_list('id', flat=True)
+    join_requests = ProjectJoinRequest.objects.filter(
+        project__id__in=admin_projects,
+        status='pending',
+    ).distinct()
+
+    notifications = []
+    for request in join_requests:
+        notification = Notification(
+            date=request.requested_at,
+            notification_type=Notification.PROJECT_JOIN_REQUEST,
+        )
+        notification.details = {
+            'requested_by': SimpleUserSerializer(request.requested_by).data,
+            'project': SimpleProjectSerializer(request.project).data,
+        }
+
+        notifications.append(notification)
+
+    return notifications
+
+
+def generate_notifications(user):
+    notifications = []
+    notifications += _get_project_join_requests(user)
+
+    notifications = sorted(notifications, key=lambda n: n.date, reverse=True)
+    return notifications
