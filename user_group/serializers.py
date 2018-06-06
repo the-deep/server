@@ -31,12 +31,20 @@ class GroupMembershipSerializer(RemoveNullFieldsMixin,
             raise serializers.ValidationError('Invalid user group')
         return group
 
+    def create(self, validated_data):
+        resource = super(GroupMembershipSerializer, self)\
+            .create(validated_data)
+        resource.added_by = self.context['request'].user
+        resource.save()
+        return resource
+
 
 class UserGroupSerializer(RemoveNullFieldsMixin,
                           DynamicFieldsMixin, serializers.ModelSerializer):
     memberships = GroupMembershipSerializer(
         source='groupmembership_set',
-        many=True, read_only=True
+        many=True,
+        required=False,
     )
     role = serializers.SerializerMethodField()
 

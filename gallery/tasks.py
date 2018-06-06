@@ -39,7 +39,7 @@ def _extract_from_file_core(file_preview_id):
                 if i != 0:
                     all_text += '\n\n'
                 all_text += text
-            except Exception as e:
+            except Exception:
                 logger.error(traceback.format_exc())
                 return False
 
@@ -53,7 +53,7 @@ def _extract_from_file_core(file_preview_id):
                                          data=data).json()
                 file_preview.ngrams = response
                 file_preview.extracted = True
-            except Exception as e:
+            except Exception:
                 logger.error(traceback.format_exc())
 
             file_preview.save()
@@ -75,7 +75,7 @@ def extract_from_file(file_preview_id):
 
     try:
         return_value = _extract_from_file_core(file_preview_id)
-    except Exception as e:
+    except Exception:
         logger.error(traceback.format_exc())
         return_value = False
 

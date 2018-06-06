@@ -10,6 +10,10 @@ import django_filters
 from datetime import datetime
 
 
+# TODO: Find out whether we need to call timezone.make_aware
+# from django.utils module to all datetime objects below
+
+
 # We don't use UserResourceFilterSet since created_at and modified_at
 # are overridden below
 class EntryFilterSet(django_filters.FilterSet):

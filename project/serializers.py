@@ -4,7 +4,12 @@ from rest_framework import serializers
 from deep.serializers import RemoveNullFieldsMixin
 from geo.models import Region
 from geo.serializers import SimpleRegionSerializer
-from project.models import Project, ProjectMembership
+from project.models import (
+    Project,
+    ProjectMembership,
+    ProjectJoinRequest,
+)
+from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
 from user_group.serializers import SimpleUserGroupSerializer
 from user_resource.serializers import UserResourceSerializer
@@ -18,8 +23,7 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
 
     class Meta:
         model = ProjectMembership
-        fields = ('id', 'member', 'member_name', 'member_email',
-                  'project', 'role', 'joined_at')
+        fields = '__all__'
 
     def get_unique_together_validators(self):
         return []
@@ -33,13 +37,20 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
             raise serializers.ValidationError('Invalid project')
         return project
 
+    def create(self, validated_data):
+        resource = super(ProjectMembershipSerializer, self)\
+            .create(validated_data)
+        resource.added_by = self.context['request'].user
+        resource.save()
+        return resource
+
 
 class ProjectSerializer(RemoveNullFieldsMixin,
                         DynamicFieldsMixin, UserResourceSerializer):
     memberships = ProjectMembershipSerializer(
         source='projectmembership_set',
         many=True,
-        read_only=True,
+        required=False,
     )
     regions = SimpleRegionSerializer(many=True, required=False)
     user_groups = SimpleUserGroupSerializer(many=True, required=False)
@@ -70,6 +81,18 @@ class ProjectSerializer(RemoveNullFieldsMixin,
 
     number_of_entries = serializers.IntegerField(
         source='get_number_of_entries',
+        read_only=True,
+    )
+
+    entries_activity = serializers.ReadOnlyField(
+        source='get_entries_activity',
+    )
+    leads_activity = serializers.ReadOnlyField(
+        source='get_leads_activity',
+    )
+
+    status = serializers.IntegerField(
+        source='get_status.id',
         read_only=True,
     )
 
@@ -104,7 +127,18 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         if group_membership:
             return 'normal'
 
-        return 'null'
+        join_request = ProjectJoinRequest.objects.filter(
+            project=project,
+            requested_by=user,
+        )
+
+        if join_request and (
+            join_request.status == 'pending' or
+            join_request.status == 'rejected'
+        ):
+            return join_request.status
+
+        return 'none'
 
     # Validations
     def validate_user_groups(self, user_groups):
@@ -133,3 +167,14 @@ class ProjectSerializer(RemoveNullFieldsMixin,
             raise serializers.ValidationError(
                 'Invalid analysis framework: {}'.format(analysis_framework.id))
         return analysis_framework
+
+
+class ProjectJoinRequestSerializer(RemoveNullFieldsMixin,
+                                   DynamicFieldsMixin,
+                                   serializers.ModelSerializer):
+    requested_by = SimpleUserSerializer(read_only=True)
+    responded_by = SimpleUserSerializer(read_only=True)
+
+    class Meta:
+        model = ProjectJoinRequest
+        fields = '__all__'

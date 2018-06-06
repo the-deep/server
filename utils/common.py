@@ -1,4 +1,5 @@
 from xml.sax.saxutils import escape
+from datetime import timedelta
 
 import os
 import time
@@ -64,3 +65,27 @@ def generate_filename(title, extension):
         title,
         extension,
     )
+
+
+def generate_timeseries(entities):
+    entities = entities.order_by('created_at')
+    timeseries = []
+
+    if entities.count() == 0:
+        return timeseries
+
+    oldest_date = entities.first().created_at.date()
+    latest_date = entities.last().created_at.date()
+
+    current_date = oldest_date
+    while current_date <= latest_date:
+        subset = entities.filter(
+            created_at__date=current_date
+        )
+        current_date = current_date + timedelta(days=1)
+        timeseries.append({
+            'date': current_date,
+            'count': subset.count()
+        })
+
+    return timeseries

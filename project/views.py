@@ -1,17 +1,34 @@
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import (
     exceptions,
+    filters,
     permissions,
     response,
+    status,
     views,
     viewsets,
 )
 from rest_framework.decorators import detail_route, list_route
+import django_filters
 
 from deep.permissions import ModifyPermission
+from project.permissions import JoinPermission, AcceptRejectPermission
+from project.filter_set import ProjectFilterSet, get_filtered_projects
+
 from geo.models import Region
 from user_group.models import UserGroup
-from .models import Project, ProjectMembership
-from .serializers import ProjectSerializer, ProjectMembershipSerializer
+from .models import (
+    ProjectStatus,
+    Project,
+    ProjectMembership,
+    ProjectJoinRequest
+)
+from .serializers import (
+    ProjectSerializer,
+    ProjectMembershipSerializer,
+    ProjectJoinRequestSerializer,
+)
 
 import logging
 
@@ -22,10 +39,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
+                       filters.SearchFilter, filters.OrderingFilter)
+    filter_class = ProjectFilterSet
+    search_fields = ('title', 'description',)
 
     def get_queryset(self):
-        return Project.get_for(self.request.user)
+        return get_filtered_projects(self.request.user, self.request.GET)
 
+    """
+    Get list of projects that user is member of
+    """
     @list_route(permission_classes=[permissions.IsAuthenticated],
                 serializer_class=ProjectSerializer,
                 url_path='member-of')
@@ -42,6 +66,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
 
+    """
+    Get analysis framework for this project
+    """
     @detail_route(permission_classes=[permissions.IsAuthenticated],
                   url_path='analysis-framework')
     def get_framework(self, request, pk=None, version=None):
@@ -58,6 +85,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         return response.Response(serializer.data)
 
+    """
+    Get assessment template for this project
+    """
     @detail_route(permission_classes=[permissions.IsAuthenticated],
                   url_path='assessment-template')
     def get_assessment_template(self, request, pk=None, version=None):
@@ -73,6 +103,109 @@ class ProjectViewSet(viewsets.ModelViewSet):
         )
 
         return response.Response(serializer.data)
+
+    """
+    Join request to this project
+    """
+    @detail_route(permission_classes=[permissions.IsAuthenticated,
+                                      JoinPermission],
+                  methods=['post'],
+                  url_path='join')
+    def join_project(self, request, pk=None, version=None):
+        project = self.get_object()
+        join_request = ProjectJoinRequest.objects.create(
+            project=project,
+            requested_by=request.user,
+            status='pending',
+        )
+
+        serializer = ProjectJoinRequestSerializer(
+            join_request,
+            context={'request': request},
+        )
+        return response.Response(serializer.data,
+                                 status=status.HTTP_201_CREATED)
+
+    """
+    Accept a join request to this project,
+    creating the membership while doing so.
+    """
+    @detail_route(permission_classes=[permissions.IsAuthenticated,
+                                      AcceptRejectPermission],
+                  methods=['post'],
+                  url_path=r'requests/(?P<request_id>\d+)/accept')
+    def accept_request(self, request, pk=None, version=None, request_id=None):
+        project = self.get_object()
+        join_request = get_object_or_404(ProjectJoinRequest,
+                                         id=request_id,
+                                         project=project)
+
+        if join_request.status in ['accepted', 'rejected']:
+            raise exceptions.ValidationError(
+                'This request has already been handled'
+            )
+
+        join_request.status = 'accepted'
+        join_request.responded_by = request.user
+        join_request.responded_at = timezone.now()
+        join_request.save()
+
+        ProjectMembership.objects.update_or_create(
+            project=project,
+            member=join_request.requested_by,
+            defaults={
+                'added_by': request.user,
+            },
+        )
+
+        serializer = ProjectJoinRequestSerializer(
+            join_request,
+            context={'request': request},
+        )
+        return response.Response(serializer.data)
+
+    """
+    Reject a join request to this project
+    """
+    @detail_route(permission_classes=[permissions.IsAuthenticated,
+                                      AcceptRejectPermission],
+                  methods=['post'],
+                  url_path=r'requests/(?P<request_id>\d+)/reject')
+    def reject_request(self, request, pk=None, version=None, request_id=None):
+        project = self.get_object()
+        join_request = get_object_or_404(ProjectJoinRequest,
+                                         id=request_id,
+                                         project=project)
+
+        if join_request.status in ['accepted', 'rejected']:
+            raise exceptions.ValidationError(
+                'This request has already been handled'
+            )
+
+        join_request.status = 'rejected'
+        join_request.responded_by = request.user
+        join_request.responded_at = timezone.now()
+        join_request.save()
+
+        serializer = ProjectJoinRequestSerializer(
+            join_request,
+            context={'request': request},
+        )
+        return response.Response(serializer.data)
+
+    """
+    Get list of join requests for this project
+    """
+    @detail_route(permission_classes=[permissions.IsAuthenticated,
+                                      ModifyPermission],
+                  serializer_class=ProjectJoinRequestSerializer,
+                  url_path='requests')
+    def get_requests(self, request, pk=None, version=None):
+        project = self.get_object()
+        join_requests = project.projectjoinrequest_set.all()
+        self.page = self.paginate_queryset(join_requests)
+        serializer = self.get_serializer(self.page, many=True)
+        return self.get_paginated_response(serializer.data)
 
 
 class ProjectMembershipViewSet(viewsets.ModelViewSet):
@@ -167,6 +300,20 @@ class ProjectOptionsView(views.APIView):
                     'key': user_group.id,
                     'value': user_group.title,
                 } for user_group in user_groups.distinct()
+            ]
+
+        if (fields is None or 'status' in fields):
+            options['status'] = [
+                {
+                    'key': status.id,
+                    'value': status.title,
+                } for status in ProjectStatus.objects.all()
+            ]
+
+        if (fields is None or 'involvement' in fields):
+            options['involvement'] = [
+                {'key': 'my_projects', 'value': 'My projects'},
+                {'key': 'not_my_projects', 'value': 'Not my projects'}
             ]
 
         return response.Response(options)
