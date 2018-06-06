@@ -99,7 +99,7 @@ class ProjectApiTest(TestCase):
         response = self.client.post(url)
         self.assert_201(response)
 
-        self.assertEqual(response.data['project'], project.id)
+        self.assertEqual(response.data['project']['id'], project.id)
         self.assertEqual(response.data['requested_by']['id'], test_user.id)
 
     def test_accept_request(self):
