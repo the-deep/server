@@ -139,6 +139,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
         join_request = get_object_or_404(ProjectJoinRequest,
                                          id=request_id,
                                          project=project)
+
+        if join_request.status in ['accepted', 'rejected']:
+            raise exceptions.ValidationError(
+                'This request has already been handled'
+            )
+
         join_request.status = 'accepted'
         join_request.responded_by = request.user
         join_request.responded_at = timezone.now()
@@ -170,6 +176,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
         join_request = get_object_or_404(ProjectJoinRequest,
                                          id=request_id,
                                          project=project)
+
+        if join_request.status in ['accepted', 'rejected']:
+            raise exceptions.ValidationError(
+                'This request has already been handled'
+            )
+
         join_request.status = 'rejected'
         join_request.responded_by = request.user
         join_request.responded_at = timezone.now()
