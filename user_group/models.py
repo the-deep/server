@@ -13,6 +13,7 @@ class UserGroup(models.Model):
                                         on_delete=models.SET_NULL,
                                         null=True, blank=True, default=None)
     members = models.ManyToManyField(User, blank=True,
+                                     through_fields=('group', 'member'),
                                      through='GroupMembership')
     global_crisis_monitoring = models.BooleanField(default=False)
 
@@ -44,7 +45,7 @@ class UserGroup(models.Model):
         return True
 
     def is_member(self, user):
-        return self.UserGroup.get_for_member(user)
+        return self in UserGroup.get_for_member(user)
 
     def can_modify(self, user):
         return GroupMembership.objects.filter(
@@ -53,11 +54,12 @@ class UserGroup(models.Model):
             role='admin',
         ).exists()
 
-    def add_member(self, user, role='normal'):
+    def add_member(self, user, role='normal', added_by=None):
         return GroupMembership.objects.create(
             member=user,
             role=role,
             group=self,
+            added_by=added_by or user,
         )
 
 
@@ -75,6 +77,9 @@ class GroupMembership(models.Model):
     role = models.CharField(max_length=96, choices=ROLES,
                             default='normal')
     joined_at = models.DateTimeField(auto_now_add=True)
+    added_by = models.ForeignKey(User, on_delete=models.CASCADE,
+                                 null=True, blank=True, default=None,
+                                 related_name='added_group_memberships')
 
     def __str__(self):
         return '{} @ {}'.format(str(self.member),
