@@ -2,8 +2,7 @@ from project.models import (
     Project,
     ProjectJoinRequest,
 )
-from user.serializers import SimpleUserSerializer
-from project.serializers import SimpleProjectSerializer
+from project.serializers import ProjectJoinRequestSerializer
 
 
 class Notification:
@@ -18,22 +17,19 @@ class Notification:
 def _get_project_join_requests(user):
     admin_projects = Project.get_modifiable_for(user)\
         .values_list('id', flat=True)
+
     join_requests = ProjectJoinRequest.objects.filter(
         project__id__in=admin_projects,
-        status='pending',
     ).distinct()
 
     notifications = []
     for request in join_requests:
+        date = request.responded_at or request.requested_at
         notification = Notification(
-            date=request.requested_at,
+            date=date,
             notification_type=Notification.PROJECT_JOIN_REQUEST,
         )
-        notification.details = {
-            'requested_by': SimpleUserSerializer(request.requested_by).data,
-            'project': SimpleProjectSerializer(request.project).data,
-        }
-
+        notification.details = ProjectJoinRequestSerializer(request).data
         notifications.append(notification)
 
     return notifications
