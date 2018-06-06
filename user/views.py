@@ -18,6 +18,7 @@ from deep.views import get_frontend_url
 from .serializers import (
     UserSerializer,
     UserPreferencesSerializer,
+    NotificationSerializer,
     PasswordResetSerializer,
 )
 
@@ -78,6 +79,22 @@ class UserViewSet(viewsets.ModelViewSet):
             user,
             context={'request': request},
         )
+        return response.Response(serializer.data)
+
+    @detail_route(
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='notifications',
+        serializer_class=NotificationSerializer,
+    )
+    def get_notifications(self, request, pk=None, version=None):
+        from user.notifications import generate_notifications
+        user = self.get_object()
+        if user != request.user:
+            raise exceptions.PermissionDenied()
+
+        notifications = generate_notifications(user)
+        self.page = self.paginate_queryset(notifications)
+        serializer = self.get_serializer(self.page, many=True)
         return response.Response(serializer.data)
 
 
