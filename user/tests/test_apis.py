@@ -1,6 +1,11 @@
 from deep.tests import TestCase
-from project.models import Project, ProjectMembership
+from project.models import (
+    Project,
+    ProjectMembership,
+    ProjectJoinRequest,
+)
 from user.models import User
+from user.notifications import Notification
 
 
 class UserApiTests(TestCase):
@@ -67,3 +72,23 @@ class UserApiTests(TestCase):
         self.assert_200(response)
 
         self.assertEqual(response.data['username'], self.user.username)
+
+    def test_notifications(self):
+        test_project = self.create(Project)
+        test_user = self.create(User)
+
+        request = ProjectJoinRequest.objects.create(
+            project=test_project,
+            requested_by=test_user,
+        )
+
+        url = '/api/v1/users/me/notifications/'
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        self.assertEqual(response.data['count'], 1)
+        result = response.data['results'][0]
+        self.assertEqual(result['type'], Notification.PROJECT_JOIN_REQUEST)
+        self.assertEqual(result['details']['id'], request.id)

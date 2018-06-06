@@ -95,7 +95,7 @@ class UserViewSet(viewsets.ModelViewSet):
         notifications = generate_notifications(user)
         self.page = self.paginate_queryset(notifications)
         serializer = self.get_serializer(self.page, many=True)
-        return response.Response(serializer.data)
+        return self.get_paginated_response(serializer.data)
 
 
 class PasswordResetView(views.APIView):
