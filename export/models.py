@@ -24,9 +24,11 @@ class Export(models.Model):
     )
 
     ENTRIES = 'entries'
+    ASSESSMENTS = 'assessments'
 
     TYPES = (
-        (ENTRIES, 'entries'),
+        (ENTRIES, 'Entries'),
+        (ASSESSMENTS, 'Assessments'),
     )
 
     project = models.ForeignKey(Project, default=None,
