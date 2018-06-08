@@ -142,7 +142,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         if join_request.status in ['accepted', 'rejected']:
             raise exceptions.ValidationError(
-                'This request has already been handled'
+                'This request has already been {}'.format(join_request.status)
             )
 
         join_request.status = 'accepted'
@@ -179,7 +179,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         if join_request.status in ['accepted', 'rejected']:
             raise exceptions.ValidationError(
-                'This request has already been handled'
+                'This request has already been {}'.format(join_request.status)
             )
 
         join_request.status = 'rejected'
@@ -192,6 +192,27 @@ class ProjectViewSet(viewsets.ModelViewSet):
             context={'request': request},
         )
         return response.Response(serializer.data)
+
+    """
+    Cancel a join request to this project
+    """
+    @detail_route(permission_classes=[permissions.IsAuthenticated,
+                                      AcceptRejectPermission],
+                  methods=['post'],
+                  url_path=r'requests/(?P<request_id>\d+)/cancel')
+    def cancel_request(self, request, pk=None, version=None, request_id=None):
+        project = self.get_object()
+        join_request = get_object_or_404(ProjectJoinRequest,
+                                         id=request_id,
+                                         project=project)
+
+        if join_request.status in ['accepted', 'rejected']:
+            raise exceptions.ValidationError(
+                'This request has already been {}'.format(join_request.status)
+            )
+
+        join_request.delete()
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
 
     """
     Get list of join requests for this project
