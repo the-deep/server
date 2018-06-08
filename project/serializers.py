@@ -15,6 +15,13 @@ from user_group.serializers import SimpleUserGroupSerializer
 from user_resource.serializers import UserResourceSerializer
 
 
+class SimpleProjectSerializer(RemoveNullFieldsMixin,
+                              serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ('id', 'title')
+
+
 class ProjectMembershipSerializer(RemoveNullFieldsMixin,
                                   DynamicFieldsMixin,
                                   serializers.ModelSerializer):
@@ -130,7 +137,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         join_request = ProjectJoinRequest.objects.filter(
             project=project,
             requested_by=user,
-        )
+        ).first()
 
         if join_request and (
             join_request.status == 'pending' or
@@ -172,6 +179,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
 class ProjectJoinRequestSerializer(RemoveNullFieldsMixin,
                                    DynamicFieldsMixin,
                                    serializers.ModelSerializer):
+    project = SimpleProjectSerializer(read_only=True)
     requested_by = SimpleUserSerializer(read_only=True)
     responded_by = SimpleUserSerializer(read_only=True)
 

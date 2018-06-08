@@ -99,7 +99,7 @@ class ProjectApiTest(TestCase):
         response = self.client.post(url)
         self.assert_201(response)
 
-        self.assertEqual(response.data['project'], project.id)
+        self.assertEqual(response.data['project']['id'], project.id)
         self.assertEqual(response.data['requested_by']['id'], test_user.id)
 
     def test_accept_request(self):
@@ -153,6 +153,23 @@ class ProjectApiTest(TestCase):
             role='normal',
         )
         self.assertEqual(membership.count(), 0)
+
+    def test_cancel_request(self):
+        project = self.create(Project)
+        test_user = self.create(User)
+        request = ProjectJoinRequest.objects.create(
+            project=project,
+            requested_by=test_user
+        )
+
+        url = '/api/v1/projects/{}/join/cancel/'.format(project.id)
+
+        self.authenticate(test_user)
+        response = self.client.post(url)
+        self.assert_204(response)
+
+        request = ProjectJoinRequest.objects.filter(id=request.id)
+        self.assertEqual(request.count(), 0)
 
     def test_list_request(self):
         project = self.create(Project)
