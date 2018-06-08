@@ -300,7 +300,7 @@ class ProjectJoinRequest(models.Model):
     def __str__(self):
         return 'Join request for {} by {} ({})'.format(
             self.project.title,
-            self.user.profile.get_display_name(),
+            self.requested_by.profile.get_display_name(),
             self.status,
         )
 

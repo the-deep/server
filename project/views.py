@@ -196,14 +196,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     Cancel a join request to this project
     """
-    @detail_route(permission_classes=[permissions.IsAuthenticated,
-                                      AcceptRejectPermission],
+    @detail_route(permission_classes=[permissions.IsAuthenticated],
                   methods=['post'],
-                  url_path=r'requests/(?P<request_id>\d+)/cancel')
+                  url_path=r'join/cancel')
     def cancel_request(self, request, pk=None, version=None, request_id=None):
         project = self.get_object()
         join_request = get_object_or_404(ProjectJoinRequest,
-                                         id=request_id,
+                                         requested_by=request.user,
                                          project=project)
 
         if join_request.status in ['accepted', 'rejected']:
