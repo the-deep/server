@@ -14,6 +14,21 @@ from .models import (
 )
 
 
+# TODO: Remove this once assignee is working in browser
+#       extension.
+# This field checks if incomding data is list
+# and if so returns first element of the list.
+# Else it returns the value itself.
+class SingleValueThayMayBeListField(serializers.Field):
+    def to_representation(self, obj):
+        return obj
+
+    def to_internal_value(self, data):
+        if isinstance(data, list):
+            return data[0]
+        return data
+
+
 class SimpleLeadSerializer(RemoveNullFieldsMixin,
                            serializers.ModelSerializer):
     class Meta:
@@ -40,7 +55,7 @@ class LeadSerializer(RemoveNullFieldsMixin,
         # many=True,
         read_only=True,
     )
-    assignee = serializers.IntegerField(
+    assignee = SingleValueThayMayBeListField(
         source='get_assignee.id',
         required=False,
     )

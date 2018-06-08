@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class LeadTests(TestCase):
-    def test_create_lead(self):
+    def test_create_lead(self, assignee=None):
         lead_count = Lead.objects.count()
         project = self.create(Project)
 
@@ -23,7 +23,7 @@ class LeadTests(TestCase):
             'confidentiality': Lead.UNPROTECTED,
             'status': Lead.PENDING,
             'text': 'Alien shapeship has been spotted in the sky',
-            'assignee': self.user.id,
+            'assignee': assignee or self.user.id,
         }
 
         self.authenticate()
@@ -33,6 +33,9 @@ class LeadTests(TestCase):
         self.assertEqual(Lead.objects.count(), lead_count + 1)
         self.assertEqual(response.data['title'], data['title'])
         self.assertEqual(response.data['assignee'], self.user.id)
+
+    def test_multiple_assignee(self):
+        self.test_create_lead([self.user.id])
 
     def test_update_assignee(self):
         # Since we have multiple assignee supported in the Lead model
