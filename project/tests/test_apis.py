@@ -154,6 +154,26 @@ class ProjectApiTest(TestCase):
         )
         self.assertEqual(membership.count(), 0)
 
+    def test_cancel_request(self):
+        project = self.create(Project)
+        test_user = self.create(User)
+        request = ProjectJoinRequest.objects.create(
+            project=project,
+            requested_by=test_user
+        )
+
+        url = '/api/v1/projects/{}/requests/{}/cancel/'.format(
+            project.id,
+            request.id,
+        )
+
+        self.authenticate()
+        response = self.client.post(url)
+        self.assert_204(response)
+
+        request = ProjectJoinRequest.objects.filter(id=request.id)
+        self.assertEqual(request.count(), 0)
+
     def test_list_request(self):
         project = self.create(Project)
         self.create(ProjectJoinRequest, project=project)

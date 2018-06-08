@@ -47,6 +47,9 @@ class TestCase(test.APITestCase):
     def assert_201(self, response):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def assert_204(self, response):
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
     def assert_400(self, response):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 

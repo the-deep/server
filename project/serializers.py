@@ -137,7 +137,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         join_request = ProjectJoinRequest.objects.filter(
             project=project,
             requested_by=user,
-        )
+        ).first()
 
         if join_request and (
             join_request.status == 'pending' or
