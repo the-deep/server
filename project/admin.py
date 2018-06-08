@@ -14,9 +14,14 @@ class ProjectMembershipInline(admin.TabularInline):
     extra = 0
 
 
+class ProjectJoinRequestInline(admin.TabularInline):
+    model = ProjectJoinRequest
+    extra = 0
+
+
 @admin.register(Project)
 class ProjectAdmin(VersionAdmin):
-    inlines = [ProjectMembershipInline]
+    inlines = [ProjectMembershipInline, ProjectJoinRequestInline]
 
 
 class ProjectConditionInline(admin.StackedInline):
@@ -27,6 +32,3 @@ class ProjectConditionInline(admin.StackedInline):
 @admin.register(ProjectStatus)
 class ProjectStatusAdmin(admin.ModelAdmin):
     inlines = [ProjectConditionInline]
-
-
-admin.site.register(ProjectJoinRequest)

@@ -162,12 +162,9 @@ class ProjectApiTest(TestCase):
             requested_by=test_user
         )
 
-        url = '/api/v1/projects/{}/requests/{}/cancel/'.format(
-            project.id,
-            request.id,
-        )
+        url = '/api/v1/projects/{}/join/cancel/'.format(project.id)
 
-        self.authenticate()
+        self.authenticate(test_user)
         response = self.client.post(url)
         self.assert_204(response)
 
