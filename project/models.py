@@ -174,6 +174,15 @@ class Project(UserResource):
             models.Q(user_groups__members=user)
         )
 
+    @staticmethod
+    def get_modifiable_for(user):
+        return Project.objects.filter(
+            projectmembership__in=ProjectMembership.objects.filter(
+                member=user,
+                role='admin',
+            )
+        ).distinct()
+
     def can_get(self, user):
         return True
 
@@ -291,7 +300,7 @@ class ProjectJoinRequest(models.Model):
     def __str__(self):
         return 'Join request for {} by {} ({})'.format(
             self.project.title,
-            self.user.profile.get_display_name(),
+            self.requested_by.profile.get_display_name(),
             self.status,
         )
 

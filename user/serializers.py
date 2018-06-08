@@ -18,10 +18,14 @@ class SimpleUserSerializer(RemoveNullFieldsMixin,
         source='profile.get_display_name',
         read_only=True,
     )
+    display_picture = serializers.PrimaryKeyRelatedField(
+        source='profile.display_picture',
+        read_only=True,
+    )
 
     class Meta:
         model = User
-        fields = ('id', 'display_name', 'email')
+        fields = ('id', 'display_name', 'email', 'display_picture')
 
 
 class UserSerializer(RemoveNullFieldsMixin,
@@ -148,3 +152,10 @@ class PasswordResetSerializer(RemoveNullFieldsMixin,
 
     def save(self):
         send_password_reset(email=self.validated_data["email"])
+
+
+class NotificationSerializer(RemoveNullFieldsMixin,
+                             serializers.Serializer):
+    date = serializers.DateTimeField()
+    type = serializers.CharField(source='notification_type')
+    details = serializers.ReadOnlyField()
