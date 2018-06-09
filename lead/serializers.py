@@ -67,7 +67,7 @@ class LeadSerializer(RemoveNullFieldsMixin,
     # validations
     def validate_project(self, project):
         # Make sure we have access to the given project
-        if not project.can_get(self.context['request'].user):
+        if not project.is_member(self.context['request'].user):
             raise serializers.ValidationError(
                 'Invalid project: {}'.format(project.id))
         return project

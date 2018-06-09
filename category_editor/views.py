@@ -71,7 +71,7 @@ class CategoryEditorClassifyView(views.APIView):
             raise exceptions.NotFound()
 
         project = Project.objects.get(id=project_id)
-        if not project.can_get(request.user):
+        if not project.is_member(request.user):
             raise exceptions.PermissionDenied()
 
         if not project.category_editor:

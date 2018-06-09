@@ -216,7 +216,7 @@ class GeoOptionsView(views.APIView):
         project = request.GET.get('project')
         if project:
             project = Project.objects.get(id=project)
-            if not project.can_get(request.user):
+            if not project.is_member(request.user):
                 raise exceptions.PermissionDenied()
 
             regions = regions.filter(project=project)
