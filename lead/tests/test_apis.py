@@ -103,6 +103,37 @@ class LeadTests(TestCase):
         self.assertEqual(response.data[0].get('project'), project1.id)
         self.assertEqual(response.data[1].get('project'), project2.id)
 
+    def test_url_exists(self):
+        project = self.create(Project)
+        common_url = 'https://same.com/'
+        self.create(Lead, source_type='website',
+                    project=project,
+                    url=common_url)
+        lead2 = self.create(Lead, source_type='website',
+                            project=project,
+                            url='https://different.com/')
+
+        url = '/api/v1/leads/'
+        data = {
+            'title': 'Spaceship spotted in sky',
+            'project': project.id,
+            'source': 'MCU',
+            'source_type': 'website',
+            'url': common_url,
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_400(response)
+
+        url = '/api/v1/leads/{}/'.format(lead2.id)
+        data = {
+            'url': common_url,
+        }
+
+        response = self.client.patch(url, data)
+        self.assert_400(response)
+
 
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:
