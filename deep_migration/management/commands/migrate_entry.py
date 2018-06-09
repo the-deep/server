@@ -330,7 +330,7 @@ class Command(MigrationCommand):
         areas = [self.get_geo_area(v) for v in element.get('value', [])]
         values = [
             {
-                'key': area.id,
+                'key': str(area.id),
                 'short_label': area.get_label(prepend_region=False),
                 'label': area.get_label(),
             } for area in areas if area

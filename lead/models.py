@@ -21,10 +21,10 @@ class LeadGroup(UserResource):
         ).distinct()
 
     def can_get(self, user):
-        return self.project.can_get(user)
+        return self.project.is_member(user)
 
     def can_modify(self, user):
-        return self.project.can_get(user)
+        return self.project.is_member(user)
 
 
 class Lead(UserResource):
@@ -157,13 +157,13 @@ class Lead(UserResource):
         ).distinct()
 
     def can_get(self, user):
-        return self.project.can_get(user)
+        return self.project.is_member(user)
 
     def can_modify(self, user):
         # Not project.can_modify as only admin of projects
         # can modify a project but anybody who can view project
         # can modify a lead in that project
-        return self.project.can_get(user)
+        return self.project.is_member(user)
 
     def get_assignee(self):
         return self.assignee.first()
