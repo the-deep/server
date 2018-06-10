@@ -24,23 +24,12 @@ from lead.serializers import (
     LeadGroupSerializer,
     LeadSerializer,
     LeadPreviewSerializer,
+    check_if_url_exists,
 )
 
 from lead.tasks import extract_from_lead
 from utils.web_info_extractor import WebInfoExtractor
 from utils.common import USER_AGENT
-
-
-def check_if_url_exists(url, user, project=None):
-    if not project:
-        return url and Lead.get_for(user).filter(
-            url__icontains=url,
-        ).exists()
-    else:
-        return url and Lead.objects.filter(
-            url__icontains=url,
-            project=project,
-        ).exists()
 
 
 headers = {

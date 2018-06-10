@@ -14,9 +14,22 @@ from .models import (
 )
 
 
+def check_if_url_exists(url, user=None, project=None):
+    if not project and user:
+        return url and Lead.get_for(user).filter(
+            url__icontains=url,
+        ).exists()
+    elif project:
+        return url and Lead.objects.filter(
+            url__icontains=url,
+            project=project,
+        ).exists()
+    return False
+
+
 # TODO: Remove this once assignee is working in browser
 #       extension.
-# This field checks if incomding data is list
+# This field checks if incoming data is list
 # and if so returns first element of the list.
 # Else it returns the value itself.
 class SingleValueThayMayBeListField(serializers.Field):
@@ -67,10 +80,28 @@ class LeadSerializer(RemoveNullFieldsMixin,
     # validations
     def validate_project(self, project):
         # Make sure we have access to the given project
-        if not project.can_get(self.context['request'].user):
+        if not project.is_member(self.context['request'].user):
             raise serializers.ValidationError(
                 'Invalid project: {}'.format(project.id))
         return project
+
+    def validate(self, data):
+        project = data.get('project',
+                           self.instance and self.instance.project)
+        source_type = data.get('source_type',
+                               self.instance and self.instance.source_type)
+
+        # For website types, check if url has already been added
+        if source_type == Lead.WEBSITE:
+            url = data.get('url',
+                           self.instance and self.instance.url)
+            if check_if_url_exists(url, None, project):
+                raise serializers.ValidationError(
+                    'A lead with this URL has already been added to '
+                    'this project'
+                )
+
+        return data
 
     # TODO: Probably also validate assignee to valid list of users
 
