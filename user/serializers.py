@@ -73,7 +73,7 @@ class UserSerializer(RemoveNullFieldsMixin,
             raise InvalidCaptchaError
 
     def validate_last_active_project(self, project):
-        if not project.can_get(self.context['request'].user):
+        if not project.is_member(self.context['request'].user):
             raise serializers.ValidationError('Invalid project')
         return project
 

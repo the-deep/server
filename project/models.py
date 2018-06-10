@@ -226,7 +226,10 @@ class Project(UserResource):
         for status in ProjectStatus.objects.all():
             if status.check_for(self):
                 return status
-        return None
+
+        return ProjectStatus.objects.filter(
+            conditions__isnull=True
+        ).first()
 
     def get_entries_activity(self):
         from entry.models import Entry

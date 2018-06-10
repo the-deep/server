@@ -27,7 +27,15 @@ class WebDocumentTest(TestCase):
         makedirs(self.path)
 
     def extract(self, url, type):
-        text, images = WebDocument(url).extract()
+        try:
+            text, images = WebDocument(url).extract()
+        except Exception:
+            import traceback
+            logger.warning('\n' + ('*' * 30))
+            logger.warning('EXTRACTOR ERROR: WEBDOCUMENT: ' + type.upper())
+            logger.warning(traceback.format_exc())
+            return
+
         path = join(self.path, '.'.join(url.split('/')[-1:]))
 
         extracted = get_or_write_file(path + '.txt', text)
