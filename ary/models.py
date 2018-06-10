@@ -283,11 +283,11 @@ class Assessment(UserResource):
             (self.lead_group and self.lead_group.can_modify(user))
         )
 
-    def _load_schema(self, FieldClass, GroupClass):
-        """Schema loader for Field groups"""
+    def _load_schema(self, FieldClass, GroupClass=None):
+        schema = {}
         assessment_template = self.lead.project.assessment_template
         groups = GroupClass.objects.filter(template=assessment_template)
-        return {
+        schema = {
             group.title: [
                 {
                     'id': field.id,
@@ -300,14 +300,12 @@ class Assessment(UserResource):
                 for field in group.fields.all()
             ] for group in groups
         }
+        return schema
 
     def _data_from_schema(self, schema, raw_data):
-        """Returns schema based data from raw data"""
         if not raw_data:
             return {}
         if 'id' in schema:
-            # This condition is before checking dict because,
-            # this is also a dict
             key = str(schema['id'])
             value = raw_data.get(key, '')
             if schema['type'] == Field.SELECT:
@@ -357,6 +355,8 @@ class Assessment(UserResource):
 
     def get_summary_json(self):
         # functions to get exact value of an entry in summary group
+        def identity(x):
+            return x
         value_functions = {
             'specific_need_group': lambda x: SpecificNeedGroup.objects.get(
                 id=x).title,
@@ -379,10 +379,17 @@ class Assessment(UserResource):
 
         default_format = underscore_to_title   # function
 
+        def default_format(x):
+            return ' '.join([x.title() for x in x.split('_')])
+
         summary_raw = self.summary
         if not summary_raw:
             return {}
         summary_data = {}
+        # first pop cross_sector and humanitarian access, other are sectors
+        # cross_sector = summary_raw.pop('cross_sector', {})
+        # humanitarian_access = summary_raw.pop('humanitarian_access', {})
+        # Add sectors data first
         for k, v in summary_raw.items():
             try:
                 _, sec_id = k.split('-')

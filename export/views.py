@@ -77,7 +77,8 @@ class ExportTriggerView(views.APIView):
         )
 
         if not settings.TESTING:
-            transaction.on_commit(lambda: export_task.delay(
+            # transaction.on_commit(lambda: export_task.delay(
+            transaction.on_commit(lambda: export_task(
                 export_type,
                 export.id,
                 request.user.id,
