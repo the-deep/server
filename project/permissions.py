@@ -1,3 +1,4 @@
+from django.db import models
 from rest_framework import permissions
 
 
@@ -10,6 +11,8 @@ class JoinPermission(permissions.BasePermission):
         return (
             not obj.is_member(request.user) and
             not ProjectJoinRequest.objects.filter(
+                models.Q(status='pending') |
+                models.Q(status='rejected'),
                 project=obj,
                 requested_by=request.user,
             ).exists()
