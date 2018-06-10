@@ -203,6 +203,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         project = self.get_object()
         join_request = get_object_or_404(ProjectJoinRequest,
                                          requested_by=request.user,
+                                         status='pending',
                                          project=project)
 
         if join_request.status in ['accepted', 'rejected']:
