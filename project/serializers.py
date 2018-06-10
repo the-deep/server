@@ -98,8 +98,8 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         source='get_leads_activity',
     )
 
-    status = serializers.IntegerField(
-        source='get_status.id',
+    status = serializers.CharField(
+        source='get_status.title',
         read_only=True,
     )
 
