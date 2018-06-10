@@ -5,6 +5,7 @@ from project.models import Project
 from ary.models import Assessment
 from export.models import Export
 from export.exporters import JsonExporter
+from export.assessments import ExcelExporter
 
 import logging
 logger = logging.getLogger('django')
@@ -14,20 +15,26 @@ def _export_assessments(export_type, export_id, user_id, project_id, filters):
     export = Export.objects.get(id=export_id)
     project = Project.objects.get(id=project_id)
     arys = Assessment.objects.filter(lead__project=project).distinct()
+    logger.info("in _export assessments")
     if export_type == 'json':
         exporter = JsonExporter()
         exporter.data = {
             ary.lead.project.title: ary.to_exportable_json()
             for ary in arys
         }
-        logger.info(exporter.data)
         exporter.export(export)
+    elif export_type == "excel":
+        logger.info("exporting excel")
+        ExcelExporter(decoupled=False)\
+            .add_assessments(arys)\
+            .export(export)
     return True
 
 
 @shared_task
 def export_assessment(export_type, export_id, user_id, project_id, filters):
     try:
+        logger.info("in export assessment")
         return_value = _export_assessments(
             export_type,
             export_id,

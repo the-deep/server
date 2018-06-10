@@ -402,7 +402,7 @@ class Assessment(UserResource):
 
                 group_data = data.get(grouping_f, {})
                 # first time, initialize to list of 3 empty strings
-                coldata = group_data.get(col_f, ['']*3)
+                coldata = group_data.get(col_f, [''] * 3)
                 coldata[int(rowindex)] = value
                 group_data[col_f] = coldata
                 data[grouping_f] = group_data
