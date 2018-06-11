@@ -42,7 +42,6 @@ class ExportTriggerView(views.APIView):
     def post(self, request, version=None):
         filters = request.data.get('filters', [])
         filters = {f[0]: f[1] for f in filters}
-        logger.info(filters)
 
         project_id = filters.get('project')
         export_type = filters.get('export_type', 'excel')
@@ -77,8 +76,7 @@ class ExportTriggerView(views.APIView):
         )
 
         if not settings.TESTING:
-            # transaction.on_commit(lambda: export_task.delay(
-            transaction.on_commit(lambda: export_task(
+            transaction.on_commit(lambda: export_task.delay(
                 export_type,
                 export.id,
                 request.user.id,
