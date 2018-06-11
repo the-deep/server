@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
@@ -458,9 +459,9 @@ class Assessment(UserResource):
         summary = self.get_summary_json()
         # score
         score = self.get_score_json()
-        return {
-            'metadata': metadata,
-            'methodology': methodology,
-            'summary': summary,
-            'score': score
-        }
+        return OrderedDict((
+            ('metadata', metadata),
+            ('methodology', methodology),
+            ('summary', summary),
+            ('score', score)
+        ))

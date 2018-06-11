@@ -15,7 +15,6 @@ def _export_assessments(export_type, export_id, user_id, project_id, filters):
     export = Export.objects.get(id=export_id)
     project = Project.objects.get(id=project_id)
     arys = Assessment.objects.filter(lead__project=project).distinct()
-    logger.info("in _export assessments")
     if export_type == 'json':
         exporter = JsonExporter()
         exporter.data = {
@@ -24,7 +23,6 @@ def _export_assessments(export_type, export_id, user_id, project_id, filters):
         }
         exporter.export(export)
     elif export_type == "excel":
-        logger.info("exporting excel")
         ExcelExporter(decoupled=False)\
             .add_assessments(arys)\
             .export(export)
@@ -34,7 +32,6 @@ def _export_assessments(export_type, export_id, user_id, project_id, filters):
 @shared_task
 def export_assessment(export_type, export_id, user_id, project_id, filters):
     try:
-        logger.info("in export assessment")
         return_value = _export_assessments(
             export_type,
             export_id,
