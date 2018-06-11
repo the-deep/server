@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'reversion',
     'storages',
     'django_premailer',
+    'raven.contrib.django.raven_compat',
 
     'analysis_framework',
     'ary',
@@ -419,3 +420,10 @@ MAX_LOGIN_ATTEMPTS = 10
 
 RECAPTCHA_SECRET = os.environ.get(
     'RECAPTCHA_SECRET', '6LcsukYUAAAAAIlG2_PMXGDeVXUWNXFZOmLIkq4-')
+
+# Sentry Config
+RAVEN_DSN = os.environ.get('RAVEN_DSN')
+RAVEN_CONFIG = {
+    'dsn': 'https://{}@sentry.io/1223295'.format(RAVEN_DSN),
+    # 'release': raven.fetch_git_sha(os.path.abspath(os.pardir)),
+}

@@ -1,4 +1,5 @@
 from django.utils import timezone
+from raven.contrib.django.raven_compat.models import client as sentry
 
 from rest_framework.views import exception_handler
 from rest_framework.response import Response
@@ -22,6 +23,16 @@ def custom_exception_handler(exc, context):
 
     # For 500 errors, we create new response
     if not response:
+        request = context.get('request')
+        if request and request.user and request.user.id:
+            sentry.user_context({
+                'id': request.user.id,
+                'email': request.user.email,
+            })
+            sentry.extra_context({
+                'is_superuser': request.user.is_superuser,
+            })
+        sentry.captureException()
         response = Response({}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     # Empty the response body but keep the headers
