@@ -6,6 +6,10 @@ import botocore
 import datetime
 import requests
 
+import logging
+
+logger = logging.getLogger(__file__)
+
 AWS_META_URL = 'http://169.254.169.254/latest/meta-data'
 
 sys.path.append("/code/")
@@ -103,6 +107,8 @@ def put_metric():
     auto_scaling_group_name = get_autoscaling_group()
     number_of_workers = 0
 
+    logger.info('Start: Ping Workers')
+
     for worker in ping_response:
         if(ping_response[worker].get('ok') == 'pong'):
             number_of_workers += 1
@@ -118,11 +124,16 @@ def put_metric():
         }],
     }
 
+    logger.info('Sending: Number of Workers To Cloudwatch')
+    logger.debug('Metric Data: %s', metric_data)
+
     cloudwatch.put_metric_data(
         Namespace=METRIC_NAMESPACE,
         MetricData=[metric_data],
     )
+    logger.info('Finish Metric Push')
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
     put_metric()
