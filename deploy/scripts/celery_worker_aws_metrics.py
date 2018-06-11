@@ -1,4 +1,5 @@
 import os
+import fcntl
 import boto3
 import sys
 import django
@@ -135,5 +136,13 @@ def put_metric():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    put_metric()
+    # logging.basicConfig(level=logging.INFO)
+    lock_filename = '/tmp/celery_worker_aws_metrics.lock'
+    with open(lock_filename, 'w+') as lock_file:
+        try:
+            fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except IOError:
+            raise SystemExit('Alreay running')
+        else:
+            put_metric()
+    os.remove(lock_filename)
