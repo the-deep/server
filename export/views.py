@@ -14,9 +14,6 @@ from project.models import Project
 
 from export.tasks import export_entries, export_assessment
 
-import logging
-logger = logging.getLogger('django')
-
 
 class ExportViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ExportSerializer

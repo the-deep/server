@@ -231,7 +231,7 @@ class ScoreMatrixScale(models.Model):
 
 class Assessment(UserResource):
     """
-    Assesssment belonging to a lead
+    Assessment belonging to a lead
     """
     lead = models.OneToOneField(Lead, default=None, blank=True, null=True)
     lead_group = models.OneToOneField(LeadGroup,
@@ -284,7 +284,7 @@ class Assessment(UserResource):
             (self.lead_group and self.lead_group.can_modify(user))
         )
 
-    def _load_schema(self, FieldClass, GroupClass=None):
+    def create_schema_for_group(self, GroupClass):
         schema = {}
         assessment_template = self.lead.project.assessment_template
         groups = GroupClass.objects.filter(template=assessment_template)
@@ -303,7 +303,8 @@ class Assessment(UserResource):
         }
         return schema
 
-    def _data_from_schema(self, schema, raw_data):
+    @staticmethod
+    def get_data_from_schema(schema, raw_data):
         if not raw_data:
             return {}
         if 'id' in schema:
@@ -316,27 +317,29 @@ class Assessment(UserResource):
             return {schema['name']: value}
         if isinstance(schema, dict):
             data = {
-                k: self._data_from_schema(v, raw_data)
+                k: Assessment.get_data_from_schema(v, raw_data)
                 for k, v in schema.items()}
         elif isinstance(schema, list):
-            data = [self._data_from_schema(x, raw_data) for x in schema]
+            data = [Assessment.get_data_from_schema(x, raw_data) for x in schema]
         else:
             raise Exception("Something that could not be parsed from schema")
         return data
 
     def get_metadata_json(self):
-        metadata_schema = self._load_schema(MetadataField, MetadataGroup)
+        metadata_schema = self.create_schema_for_group(MetadataGroup)
         metadata_raw = self.metadata or {}
         metadata_raw = metadata_raw.get('basic_information', {})
-        metadata = self._data_from_schema(metadata_schema, metadata_raw)
+        metadata = self.get_data_from_schema(metadata_schema, metadata_raw)
         return metadata
 
     def get_methodology_json(self):
-        methodology_sch = self._load_schema(MethodologyField, MethodologyGroup)
+        methodology_sch = self.create_schema_for_group(MethodologyGroup)
         methodology_raw = self.methodology or {}
 
         mapping = {
-            'attributes': lambda x: self._data_from_schema(methodology_sch, x),
+            'attributes': lambda x: self.get_data_from_schema(
+                methodology_sch, x
+            ),
             'sectors': lambda x: Sector.objects.get(id=x).title,
             'focuses': lambda x: Focus.objects.get(id=x).title,
             'affected_groups': lambda x: x['name'],
@@ -356,8 +359,6 @@ class Assessment(UserResource):
 
     def get_summary_json(self):
         # functions to get exact value of an entry in summary group
-        def identity(x):
-            return x
         value_functions = {
             'specific_need_group': lambda x: SpecificNeedGroup.objects.get(
                 id=x).title,
@@ -379,9 +380,6 @@ class Assessment(UserResource):
         }
 
         default_format = underscore_to_title   # function
-
-        def default_format(x):
-            return ' '.join([x.title() for x in x.split('_')])
 
         summary_raw = self.summary
         if not summary_raw:
