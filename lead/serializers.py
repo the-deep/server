@@ -14,16 +14,16 @@ from .models import (
 )
 
 
-def check_if_url_exists(url, user=None, project=None):
+def check_if_url_exists(url, user=None, project=None, exception_id=None):
     if not project and user:
         return url and Lead.get_for(user).filter(
             url__icontains=url,
-        ).exists()
+        ).exclude(id=exception_id).exists()
     elif project:
         return url and Lead.objects.filter(
             url__icontains=url,
             project=project,
-        ).exists()
+        ).exclude(id=exception_id).exists()
     return False
 
 
@@ -95,7 +95,8 @@ class LeadSerializer(RemoveNullFieldsMixin,
         if source_type == Lead.WEBSITE:
             url = data.get('url',
                            self.instance and self.instance.url)
-            if check_if_url_exists(url, None, project):
+            if check_if_url_exists(url, None, project,
+                                   self.instance and self.instance.id):
                 raise serializers.ValidationError(
                     'A lead with this URL has already been added to '
                     'this project'

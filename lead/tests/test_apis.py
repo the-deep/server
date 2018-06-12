@@ -106,7 +106,7 @@ class LeadTests(TestCase):
     def test_url_exists(self):
         project = self.create(Project)
         common_url = 'https://same.com/'
-        self.create(Lead, source_type='website',
+        lead1 = self.create(Lead, source_type='website',
                     project=project,
                     url=common_url)
         lead2 = self.create(Lead, source_type='website',
@@ -133,6 +133,15 @@ class LeadTests(TestCase):
 
         response = self.client.patch(url, data)
         self.assert_400(response)
+
+        # This should not be raised while editing same lead
+
+        url = '/api/v1/leads/{}/'.format(lead1.id)
+        data = {
+            'title': 'Spaceship allegedly spotted in sky'
+        }
+        response = self.client.patch(url, data)
+        self.assert_200(response)
 
 
 # Data to use for testing web info extractor
