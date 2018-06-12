@@ -110,9 +110,11 @@ def put_metric():
 
     logger.info('Start: Ping Workers')
 
-    for worker in ping_response:
-        if(ping_response[worker].get('ok') == 'pong'):
-            number_of_workers += 1
+    # NOTE: ping_response is None when there are no workers
+    if ping_response is not None:
+        for worker in ping_response:
+            if(ping_response[worker].get('ok') == 'pong'):
+                number_of_workers += 1
 
     metric_data = {
         'MetricName': METRIC_NAME,
