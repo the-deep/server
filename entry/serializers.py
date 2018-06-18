@@ -1,14 +1,14 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
-from deep.serializers import RemoveNullFieldsMixin
+from deep.serializers import (
+    RemoveNullFieldsMixin,
+    ListToDictField,
+)
 from user_resource.serializers import UserResourceSerializer
 from lead.serializers import LeadSerializer
 from lead.models import Lead
-from analysis_framework.serializers import (
-    AnalysisFrameworkSerializer,
-    SimpleWidgetSerializer,
-)
+from analysis_framework.serializers import AnalysisFrameworkSerializer
 from geo.serializers import GeoOptionSerializer, SimpleRegionSerializer
 from .models import (
     Entry, Attribute, FilterData, ExportData
@@ -17,10 +17,6 @@ from .models import (
 
 class AttributeSerializer(RemoveNullFieldsMixin,
                           DynamicFieldsMixin, serializers.ModelSerializer):
-    """
-    Entry Attribute Model Serializer
-    """
-
     class Meta:
         model = Attribute
         fields = ('__all__')
@@ -34,10 +30,6 @@ class AttributeSerializer(RemoveNullFieldsMixin,
 
 class FilterDataSerializer(RemoveNullFieldsMixin,
                            DynamicFieldsMixin, serializers.ModelSerializer):
-    """
-    Filter data Serializer
-    """
-
     class Meta:
         model = FilterData
         fields = ('__all__')
@@ -51,10 +43,6 @@ class FilterDataSerializer(RemoveNullFieldsMixin,
 
 class ExportDataSerializer(RemoveNullFieldsMixin,
                            DynamicFieldsMixin, serializers.ModelSerializer):
-    """
-    Export data Serializer
-    """
-
     class Meta:
         model = ExportData
         fields = ('__all__')
@@ -68,13 +56,9 @@ class ExportDataSerializer(RemoveNullFieldsMixin,
 
 class SimpleAttributeSerializer(RemoveNullFieldsMixin,
                                 serializers.ModelSerializer):
-
-    widget_obj = SimpleWidgetSerializer(source='widget',
-                                        read_only=True)
-
     class Meta:
         model = Attribute
-        fields = ('id', 'data', 'widget', 'widget_obj')
+        fields = ('id', 'data', 'widget')
 
 
 class SimpleFilterDataSerializer(RemoveNullFieldsMixin,
@@ -93,18 +77,12 @@ class SimpleExportDataSerializer(RemoveNullFieldsMixin,
 
 class EntrySerializer(RemoveNullFieldsMixin,
                       DynamicFieldsMixin, UserResourceSerializer):
-    """
-    Entry Model Serializer
-    """
-    attributes = SimpleAttributeSerializer(source='attribute_set',
-                                           many=True,
-                                           required=False)
-    # filter_data = SimpleFilterDataSerializer(source='filterdata_set',
-    #                                          many=True,
-    #                                          required=False)
-    # export_data = SimpleExportDataSerializer(source='exportdata_set',
-    #                                          many=True,
-    #                                          required=False)
+    attributes = ListToDictField(
+        child=SimpleAttributeSerializer(many=True),
+        key='widget',
+        source='attribute_set',
+        required=False,
+    )
 
     class Meta:
         model = Entry
