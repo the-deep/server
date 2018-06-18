@@ -18,6 +18,8 @@ class LeadGroup(UserResource):
         return LeadGroup.objects.filter(
             models.Q(project__members=user) |
             models.Q(project__user_groups__members=user)
+        ).annotate(
+            no_of_leads=models.Count('lead', distinct=True)
         ).distinct()
 
     def can_get(self, user):

@@ -16,8 +16,11 @@ from rest_framework import (
 import django_filters
 
 from deep.permissions import ModifyPermission
-from user_resource.filters import UserResourceFilterSet
 
+from lead.filter_set import (
+    LeadGroupFilterSet,
+    LeadFilterSet,
+)
 from project.models import Project
 from lead.models import LeadGroup, Lead
 from lead.serializers import (
@@ -52,89 +55,71 @@ valid_lead_url_regex = re.compile(
     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
-class LeadGroupFilterSet(UserResourceFilterSet):
-    project = django_filters.ModelMultipleChoiceFilter(
-        queryset=Project.objects.all(),
-        lookup_expr='in',
-        widget=django_filters.widgets.CSVWidget,
-    )
-
-    class Meta:
-        model = LeadGroup
-        fields = ['id', 'title']
-
-        filter_overrides = {
-            models.CharField: {
-                'filter_class': django_filters.CharFilter,
-                'extra': lambda f: {
-                    'lookup_expr': 'icontains',
-                },
-            },
-        }
-
-
 class LeadGroupViewSet(viewsets.ModelViewSet):
     serializer_class = LeadGroupSerializer
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend, )
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
+                       filters.SearchFilter, filters.OrderingFilter)
     filter_class = LeadGroupFilterSet
+    search_fields = ('title',)
 
     def get_queryset(self):
-        user = self.request.GET.get('user', self.request.user)
-        return LeadGroup.get_for(user)
+        return LeadGroup.get_for(self.request.user)
 
 
-class LeadFilterSet(UserResourceFilterSet):
+class LeadViewSet(viewsets.ModelViewSet):
     """
-    Lead filter set
-
-    Exclude the attachment field and set the published_on field
-    to support range of date.
-    Also make most fields filerable by multiple values using
-    'in' lookup expressions and CSVWidget.
+    Lead View
     """
-    published_on__lt = django_filters.DateFilter(
-        name='published_on', lookup_expr='lte',
-    )
-    published_on__gt = django_filters.DateFilter(
-        name='published_on', lookup_expr='gte',
-    )
+    serializer_class = LeadSerializer
+    permission_classes = [permissions.IsAuthenticated,
+                          ModifyPermission]
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
+                       filters.SearchFilter, filters.OrderingFilter)
+    filter_class = LeadFilterSet
+    search_fields = ('title', 'source', 'text', 'url', 'website')
+    # ordering_fields = omitted to allow ordering by all read-only fields
 
-    project = django_filters.ModelMultipleChoiceFilter(
-        queryset=Project.objects.all(),
-        lookup_expr='in',
-        widget=django_filters.widgets.CSVWidget,
-    )
-    confidentiality = django_filters.MultipleChoiceFilter(
-        choices=Lead.CONFIDENTIALITIES,
-        lookup_expr='in',
-        widget=django_filters.widgets.CSVWidget,
-    )
-    status = django_filters.MultipleChoiceFilter(
-        choices=Lead.STATUSES,
-        lookup_expr='in',
-        widget=django_filters.widgets.CSVWidget,
-    )
-    assignee = django_filters.ModelMultipleChoiceFilter(
-        queryset=User.objects.all(),
-        lookup_expr='in',
-        widget=django_filters.widgets.CSVWidget,
-    )
+    def filter_queryset(self, queryset):
+        # For some reason, the ordering is not working for `assignee` field
+        # so, force ordering with anything passed in the query param
+        qs = super(LeadViewSet, self).filter_queryset(queryset)
+        ordering = self.request.GET.get('ordering')
+        if ordering:
+            return qs.order_by(ordering)
+        return qs
 
-    class Meta:
-        model = Lead
-        fields = ['id', 'title',
-                  'text', 'url', 'website']
+    def get_serializer(self, *args, **kwargs):
+        data = kwargs.get('data')
+        project_list = data and data.get('project')
 
-        filter_overrides = {
-            models.CharField: {
-                'filter_class': django_filters.CharFilter,
-                'extra': lambda f: {
-                    'lookup_expr': 'icontains',
-                },
-            },
-        }
+        if project_list and isinstance(project_list, list):
+            kwargs.pop('data')
+            kwargs.pop('many', None)
+            data.pop('project')
+
+            data_list = []
+            for project in project_list:
+                data_list.append({
+                    **data,
+                    'project': project,
+                })
+
+            return super(LeadViewSet, self).get_serializer(
+                data=data_list,
+                many=True,
+                *args,
+                **kwargs,
+            )
+
+        return super(LeadViewSet, self).get_serializer(
+            *args,
+            **kwargs,
+        )
+
+    def get_queryset(self):
+        _filtered_lead_groups(self.request.user, self.request.GET)
 
 
 class LeadViewSet(viewsets.ModelViewSet):
