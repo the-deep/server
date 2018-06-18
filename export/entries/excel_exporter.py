@@ -28,6 +28,7 @@ class ExcelExporter:
             'Date Imported',
             'Lead Title',
             'Source',
+            'Assignee',
             'Excerpt',
         ]
 
@@ -91,6 +92,7 @@ class ExcelExporter:
                 format_date(entry.created_at.date()),
                 entry.lead.title,
                 entry.lead.source,
+                entry.lead.get_assignee(),
                 entry.excerpt
                 if entry.entry_type == Entry.EXCERPT
                 else 'IMAGE',
