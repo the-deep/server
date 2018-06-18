@@ -1,6 +1,9 @@
 from docx.enum.dml import MSO_THEME_COLOR_INDEX
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from docx.shared import Pt
+
+from PIL import Image
 
 import docx
 import requests
@@ -162,7 +165,14 @@ class Document:
             else:
                 image = base64.b64decode(image.split(',')[1])
                 fimage.write(image)
-            self.doc.add_picture(fimage, width=width)
+
+            image_width, _ = Image.open(fimage).size
+            image_width = Pt(image_width)
+
+            if image_width < width:
+                self.doc.add_picture(fimage)
+            else:
+                self.doc.add_picture(fimage, width=width)
         return self
 
     def add_heading(self, text, level):
