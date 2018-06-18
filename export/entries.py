@@ -50,6 +50,7 @@ class ExcelExporter:
             'Date Imported',
             'Lead Title',
             'Source',
+            'Assignee',
             'Excerpt',
         ]
 
@@ -113,6 +114,7 @@ class ExcelExporter:
                 format_date(entry.created_at.date()),
                 entry.lead.title,
                 entry.lead.source,
+                entry.lead.get_assignee(),
                 entry.excerpt
                 if entry.entry_type == Entry.EXCERPT
                 else 'IMAGE',
@@ -232,11 +234,12 @@ class ReportExporter:
         )
         para = self.doc.add_paragraph(excerpt).justify()
 
-        # NOTE: Use doc.add_image instead of run.add_image
-        # for full width image
+        # NOTE: Use doc.add_image for limiting image size to page width
+        # and run.add_image for actual size image
 
         if entry.entry_type == Entry.IMAGE:
-            para.add_run().add_image(entry.image)
+            self.doc.add_image(entry.image)
+            # para.add_run().add_image(entry.image)
 
         lead = entry.lead
         self.lead_ids.append(lead.id)
