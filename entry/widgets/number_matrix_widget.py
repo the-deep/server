@@ -3,8 +3,8 @@ from .utils import set_export_data
 
 def update_attribute(entry, widget, data, widget_data):
     data = data or {}
-    row_headers = data.get('row_headers', [])
-    column_headers = data.get('column_headers', [])
+    row_headers = widget_data.get('row_headers', [])
+    column_headers = widget_data.get('column_headers', [])
 
     excel_values = []
 
