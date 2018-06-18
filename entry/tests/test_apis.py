@@ -5,7 +5,11 @@ from lead.models import Lead
 from analysis_framework.models import (
     AnalysisFramework, Widget, Filter
 )
-from entry.models import Entry, FilterData
+from entry.models import (
+    Entry,
+    Attribute,
+    FilterData,
+)
 
 
 class EntryTests(TestCase):
@@ -38,12 +42,11 @@ class EntryTests(TestCase):
             'lead': lead.pk,
             'analysis_framework': widget.analysis_framework.pk,
             'excerpt': 'This is test excerpt',
-            'attributes': [
-                {
-                    'widget': widget.pk,
+            'attributes': {
+                widget.pk: {
                     'data': {'a': 'b'},
                 },
-            ],
+            },
         }
 
         self.authenticate()
@@ -53,8 +56,55 @@ class EntryTests(TestCase):
         self.assertEqual(Entry.objects.count(), entry_count + 1)
         self.assertEqual(response.data['version_id'], 1)
         self.assertEqual(response.data['excerpt'], data['excerpt'])
-        self.assertEqual(response.data['attributes'][0]['widget'], widget.pk)
-        self.assertEqual(response.data['attributes'][0]['data']['a'], 'b')
+
+        attributes = response.data['attributes']
+        self.assertEqual(len(attributes.values()), 1)
+
+        attribute = Attribute.objects.get(
+            id=attributes[str(widget.pk)]['id']
+        )
+        self.assertEqual(attribute.widget.pk, widget.pk)
+        self.assertEqual(attribute.data['a'], 'b')
+
+    def test_patch_attributes(self):
+        entry = self.create_entry()
+        widget1 = self.create(
+            Widget,
+            analysis_framework=entry.lead.project.analysis_framework,
+        )
+        widget2 = self.create(
+            Widget,
+            analysis_framework=entry.lead.project.analysis_framework,
+        )
+        self.create(
+            Attribute,
+            data={'a': 'b'},
+            widget=widget1,
+        )
+
+        url = '/api/v1/entries/{}/'.format(entry.id)
+        data = {
+            'attributes': {
+                widget1.pk: {
+                    'data': {'c': 'd'},
+                },
+                widget2.pk: {
+                    'data': {'e': 'f'},
+                }
+            },
+        }
+
+        self.authenticate()
+        response = self.client.patch(url, data)
+        self.assert_200(response)
+
+        attributes = response.data['attributes']
+        self.assertEqual(len(attributes.values()), 2)
+
+        attribute1 = attributes[str(widget1.pk)]
+        self.assertEqual(attribute1['data']['c'], 'd')
+        attribute2 = attributes[str(widget2.pk)]
+        self.assertEqual(attribute2['data']['e'], 'f')
 
     def test_options(self):
         url = '/api/v1/entry-options/'
