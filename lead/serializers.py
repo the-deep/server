@@ -54,9 +54,7 @@ class LeadSerializer(RemoveNullFieldsMixin,
     """
     Lead Model Serializer
     """
-    no_of_entries = serializers.IntegerField(
-        read_only=True,
-    )
+    no_of_entries = serializers.IntegerField(read_only=True)
     attachment = SimpleFileSerializer(required=False)
     classified_doc_id = serializers.IntegerField(
         source='leadpreview.classified_doc_id',
@@ -180,6 +178,7 @@ class LeadGroupSerializer(RemoveNullFieldsMixin,
     leads = LeadSerializer(source='lead_set',
                            many=True,
                            read_only=True)
+    no_of_leads = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = LeadGroup
