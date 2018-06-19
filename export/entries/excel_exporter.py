@@ -87,12 +87,13 @@ class ExcelExporter:
 
             # TODO Check for information dates
 
+            assignee = entry.lead.get_assignee()
             rows.add_value_list([
                 entry.created_by.profile.get_display_name(),
                 format_date(entry.created_at.date()),
                 entry.lead.title,
                 entry.lead.source,
-                entry.lead.get_assignee(),
+                assignee and assignee.profile.get_display_name(),
                 entry.excerpt
                 if entry.entry_type == Entry.EXCERPT
                 else 'IMAGE',
