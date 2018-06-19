@@ -1,0 +1,7 @@
+{% extends "base_email.html" %}
+{% block body %}
+    {% block container %}{% endblock %}
+    <p>
+        Your username, in case you've forgotten: {{ user.get_username }}
+    </p>
+{% endblock %}

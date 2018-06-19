@@ -7,9 +7,9 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMultiAlternatives
 
 
-def send_mail(subject_template_name, email_template_name,
-              context, from_email, to_email,
-              html_email_template_name=None):
+def _send_mail(subject_template_name, email_template_name,
+               context, from_email, to_email,
+               html_email_template_name=None):
     """
     Send a django.core.mail.EmailMultiAlternatives to `to_email`.
     """
@@ -27,6 +27,28 @@ def send_mail(subject_template_name, email_template_name,
     email_message.send()
 
 
+def send_mail_to_user(user, context={}, force_send=False, *args, **kwargs):
+    """
+    Validates email request
+    Add common context variable
+    """
+    if True or force_send:  # TODO: use user.profile.receive_email For True
+        context.update({
+            'client_domain': settings.DEEPER_FRONTEND_HOST,
+            'protocol': settings.HTTP_PROTOCOL,
+            'site_name': settings.DEEPER_SITE_NAME,
+            'domain': settings.DJANGO_API_HOST,
+            'user': user,
+        })
+
+        return _send_mail(
+            *args, **kwargs,
+            context=context,
+            from_email=None,
+            to_email=user.email,
+        )
+
+
 def get_users(email):
     """Given an email, return matching user(s) who should receive a reset.
     This allows subclasses to more easily customize the default policies
@@ -40,71 +62,58 @@ def get_users(email):
     return (u for u in active_users)
 
 
-def send_password_reset(
-    email, users=None, domain_override=None, welcome=False,
-    subject_template_name='registration/password_reset_subject.txt',
-    email_template_name='registration/password_reset_email.html',
-    use_https=settings.HTTP_PROTOCOL == 'https',
-    token_generator=default_token_generator, from_email=None, request=None,
-    html_email_template_name=None, extra_email_context=None
-):
+def send_password_reset(user, welcome=False):
     """
     Generate a one-use only link for resetting password and send it to the
     user.
     """
-    for user in users or get_users(email):
-        if not domain_override:
-            site_name = settings.DEEPER_SITE_NAME
-            domain = settings.DJANGO_API_HOST
-        else:
-            site_name = domain = domain_override
-        context = {
-            'email': email,
-            'domain': domain,
-            'site_name': site_name,
-            'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
-            'user': user,
-            'welcome': welcome,
-            'token': token_generator.make_token(user),
-            'protocol': 'https' if use_https else 'http',
-            **(extra_email_context or {}),
-        }
-        send_mail(
-            subject_template_name, email_template_name, context,
-            from_email, email,
-            html_email_template_name=html_email_template_name,
-        )
+    context = {
+        'email': user.email,
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+        'token': default_token_generator.make_token(user),
+        'welcome': welcome,
+    }
+    send_mail_to_user(
+        user=user,
+        context=context,
+        force_send=True,
+        subject_template_name='registration/password_reset_subject.txt',
+        email_template_name='registration/password_reset_email.html',
+    )
 
 
-def send_account_activation(
-    user=None, domain_override=None,
-    subject_template_name='registration/user_activation_subject.txt',
-    email_template_name='registration/user_activation_email.html',
-    use_https=settings.HTTP_PROTOCOL == 'https',
-    token_generator=default_token_generator, from_email=None, request=None,
-    html_email_template_name=None, extra_email_context=None
-):
+def send_account_activation(user):
     """
     Generate a one-use only link for account activation and send it to the
     user.
     """
-    if not domain_override:
-        site_name = settings.DEEPER_SITE_NAME
-        domain = settings.DJANGO_API_HOST
-    else:
-        site_name = domain = domain_override
     context = {
         'email': user.email,
-        'domain': domain,
-        'site_name': site_name,
         'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
-        'user': user,
-        'token': token_generator.make_token(user),
-        'protocol': 'https' if use_https else 'http',
-        **(extra_email_context or {}),
+        'token': default_token_generator.make_token(user),
     }
-    send_mail(
-        subject_template_name, email_template_name, context,
-        from_email, user.email,
-        html_email_template_name=html_email_template_name,
+    send_mail_to_user(
+        user=user,
+        context=context,
+        force_send=True,
+        subject_template_name='registration/user_activation_subject.txt',
+        email_template_name='registration/user_activation_email.html',
     )
+
+
+def send_project_join_request(request_by, project):
+    """
+    Email Notification For Project Join
+    """
+    context = {
+        'request_by': request_by,
+        'project': project,
+    }
+    for user in project.get_admins():
+        send_mail_to_user(
+            user=user,
+            context=context,
+            force_send=True,  # TODO: remove this
+            subject_template_name='project/project_join_request.txt',
+            email_template_name='project/project_join_request.html',
+        )
