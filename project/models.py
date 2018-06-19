@@ -240,6 +240,12 @@ class Project(UserResource):
     def get_leads_activity(self):
         return generate_timeseries(self.lead_set.all())
 
+    def get_admins(self):
+        return User.objects.filter(
+            projectmembership__project=self,
+            projectmembership__role='admin'
+        ).distinct()
+
 
 class ProjectMembership(models.Model):
     """

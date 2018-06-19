@@ -16,6 +16,7 @@ from deep.permissions import ModifyPermission
 from project.permissions import JoinPermission, AcceptRejectPermission
 from project.filter_set import ProjectFilterSet, get_filtered_projects
 
+from user.utils import send_project_join_request
 from geo.models import Region
 from user_group.models import UserGroup
 from .models import (
@@ -123,6 +124,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
             join_request,
             context={'request': request},
         )
+
+        # FIXME: Move this to celery job
+        send_project_join_request(request.user, project)
+
         return response.Response(serializer.data,
                                  status=status.HTTP_201_CREATED)
 
