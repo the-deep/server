@@ -12,6 +12,11 @@ class Schema:
         return '"Data"'
 
 
+class Recursive(Schema):
+    def __str__(self):
+        return '"*"'
+
+
 class Integer(Schema):
     def __str__(self):
         return '"int"'
