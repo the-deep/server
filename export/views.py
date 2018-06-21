@@ -5,13 +5,14 @@ from rest_framework import (
     response,
     views,
     viewsets,
+    status,
 )
 
 from export.serializers import ExportSerializer
 from export.models import Export
 from project.models import Project
 
-from export.tasks_entries import export_entries
+from export.tasks import export_entries, export_assessment
 
 
 class ExportViewSet(viewsets.ReadOnlyModelViewSet):
@@ -41,6 +42,7 @@ class ExportTriggerView(views.APIView):
 
         project_id = filters.get('project')
         export_type = filters.get('export_type', 'excel')
+        export_item = filters.get('export_item', 'entry')
 
         is_preview = filters.get('is_preview', False)
 
@@ -49,16 +51,29 @@ class ExportTriggerView(views.APIView):
         else:
             project = None
 
+        if export_item == 'entry':
+            export_task = export_entries
+            type = Export.ENTRIES
+        elif export_item == 'assessment':
+            export_task = export_assessment
+            type = Export.ASSESSMENTS
+        else:
+            return response.Response(
+                {'export_item': 'Invalid export item name'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         export = Export.objects.create(
             title='tmp',
             exported_by=request.user,
             pending=True,
             project=project,
+            type=type,
             is_preview=is_preview,
         )
 
         if not settings.TESTING:
-            transaction.on_commit(lambda: export_entries.delay(
+            transaction.on_commit(lambda: export_task.delay(
                 export_type,
                 export.id,
                 request.user.id,
