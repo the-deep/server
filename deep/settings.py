@@ -423,7 +423,8 @@ RECAPTCHA_SECRET = os.environ.get(
 
 # Sentry Config
 RAVEN_DSN = os.environ.get('RAVEN_DSN')
-RAVEN_CONFIG = {
-    'dsn': 'https://{}@sentry.io/1223295'.format(RAVEN_DSN),
-    # 'release': raven.fetch_git_sha(os.path.abspath(os.pardir)),
-}
+if RAVEN_DSN:
+    RAVEN_CONFIG = {
+        'dsn': 'https://{}@sentry.io/1223295'.format(RAVEN_DSN),
+        # 'release': raven.fetch_git_sha(os.path.abspath(os.pardir)),
+    }

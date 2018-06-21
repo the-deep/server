@@ -83,7 +83,7 @@ class UserSerializer(RemoveNullFieldsMixin,
         user = super(UserSerializer, self).create(validated_data)
         user.save()
         user.profile = self.update_or_create_profile(user, profile_data)
-        send_password_reset(email=validated_data["email"], welcome=True)
+        send_password_reset(user=user, welcome=True)
         return user
 
     def update(self, instance, validated_data):
@@ -140,10 +140,14 @@ class PasswordResetSerializer(RemoveNullFieldsMixin,
     email = serializers.EmailField(required=True)
     recaptcha_response = serializers.CharField(required=True)
 
-    def validate_email(self, email):
-        user = User.objects.filter(email=email)
-        if not user.exists():
+    def get_user(self, email):
+        users = User.objects.filter(email=email)
+        if not users.exists():
             raise UserNotFoundError
+        return users.first()
+
+    def validate_email(self, email):
+        self.get_user(email)
         return email
 
     def validate_recaptcha_response(self, recaptcha_response):
@@ -151,7 +155,8 @@ class PasswordResetSerializer(RemoveNullFieldsMixin,
             raise InvalidCaptchaError
 
     def save(self):
-        send_password_reset(email=self.validated_data["email"])
+        email = self.validated_data["email"]
+        send_password_reset(user=self.get_user(email))
 
 
 class NotificationSerializer(RemoveNullFieldsMixin,
