@@ -1,3 +1,4 @@
+from celery import shared_task
 from django.contrib.auth.models import User
 from django.utils.encoding import force_bytes
 from django.conf import settings
@@ -5,6 +6,8 @@ from django.utils.http import urlsafe_base64_encode
 from django.template import loader
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMultiAlternatives
+
+from project.models import Project
 
 
 def _send_mail(subject_template_name, email_template_name,
@@ -101,14 +104,19 @@ def send_account_activation(user):
     )
 
 
-def send_project_join_request(request_by, project):
+@shared_task
+def send_project_join_request_emails(request_by_id, project_id):
     """
     Email Notification For Project Join
     """
+    project = Project.objects.get(id=project_id)
+    request_by = User.objects.get(id=request_by_id)
+
     context = {
         'request_by': request_by,
         'project': project,
     }
+
     for user in project.get_admins():
         send_mail_to_user(
             user=user,

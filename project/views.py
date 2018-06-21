@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import (
@@ -16,7 +18,7 @@ from deep.permissions import ModifyPermission
 from project.permissions import JoinPermission, AcceptRejectPermission
 from project.filter_set import ProjectFilterSet, get_filtered_projects
 
-from user.utils import send_project_join_request
+from user.utils import send_project_join_request_emails
 from geo.models import Region
 from user_group.models import UserGroup
 from .models import (
@@ -125,8 +127,23 @@ class ProjectViewSet(viewsets.ModelViewSet):
             context={'request': request},
         )
 
-        # FIXME: Move this to celery job
-        send_project_join_request(request.user, project)
+        if settings.TESTING:
+            send_project_join_request_emails(
+                request.user.id,
+                project.id,
+            )
+        else:
+            # Unless we are in test environment,
+            # send the join request emails in a celery
+            # background task.
+            # This makes sure that the response is returned
+            # while the emails are being sent in the background.
+            def send_mail():
+                send_project_join_request_emails.delay(
+                    request.user.id,
+                    project.id,
+                )
+            transaction.on_commit(send_mail)
 
         return response.Response(serializer.data,
                                  status=status.HTTP_201_CREATED)
