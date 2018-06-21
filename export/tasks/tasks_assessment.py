@@ -39,7 +39,7 @@ def export_assessment(export_type, export_id, user_id, project_id, filters):
             project_id,
             filters,
         )
-    except Exception as e:
+    except Exception:
         export = Export.objects.filter(id=export_id).first()
         if export:
             export.pending = False

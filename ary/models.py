@@ -307,6 +307,7 @@ class Assessment(UserResource):
     def get_data_from_schema(schema, raw_data):
         if not raw_data:
             return {}
+
         if 'id' in schema:
             key = str(schema['id'])
             value = raw_data.get(key, '')
@@ -318,9 +319,11 @@ class Assessment(UserResource):
         if isinstance(schema, dict):
             data = {
                 k: Assessment.get_data_from_schema(v, raw_data)
-                for k, v in schema.items()}
+                for k, v in schema.items()
+            }
         elif isinstance(schema, list):
-            data = [Assessment.get_data_from_schema(x, raw_data) for x in schema]
+            data = [Assessment.get_data_from_schema(x, raw_data)
+                    for x in schema]
         else:
             raise Exception("Something that could not be parsed from schema")
         return data
@@ -384,6 +387,7 @@ class Assessment(UserResource):
         summary_raw = self.summary
         if not summary_raw:
             return {}
+
         summary_data = {}
         # first pop cross_sector and humanitarian access, other are sectors
         # cross_sector = summary_raw.pop('cross_sector', {})
@@ -397,6 +401,7 @@ class Assessment(UserResource):
             # in addition to "sector-<id>" keys
             except ValueError:
                 sector = default_format(k)
+
             data = {}
             for kk, vv in v.items():
                 grouping, rowindex, col = kk.split('-')
@@ -419,8 +424,10 @@ class Assessment(UserResource):
     def get_score_json(self):
         if not self.score:
             return {}
+
         pillars_raw = self.score['pillars']
         matrix_pillars_raw = self.score['matrix_pillars']
+
         pillars = {}
         for pid, pdata in pillars_raw.items():
             pillar = ScorePillar.objects.get(id=pid)
@@ -430,6 +437,7 @@ class Assessment(UserResource):
                 scale = ScoreScale.objects.get(id=sid)
                 data[q] = {'title': scale.title, 'value': scale.value}
             pillars[pillar.title] = data
+
         matrix_pillars = {}
         for mpid, mpdata in matrix_pillars_raw.items():
             mpillar = ScoreMatrixPillar.objects.get(id=mpid)
@@ -443,6 +451,7 @@ class Assessment(UserResource):
                         scale.row.title, scale.column.title)
                 }
             matrix_pillars[mpillar.title] = data
+
         pillars.update(matrix_pillars)
         return pillars
 
