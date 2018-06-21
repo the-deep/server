@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
@@ -5,6 +6,9 @@ from django.core.exceptions import ValidationError
 from user_resource.models import UserResource
 from deep.models import Field, FieldOption
 from lead.models import Lead, LeadGroup
+from geo.models import GeoArea
+
+from utils.common import identity, underscore_to_title
 
 
 class AssessmentTemplate(UserResource):
@@ -227,7 +231,7 @@ class ScoreMatrixScale(models.Model):
 
 class Assessment(UserResource):
     """
-    Assesssment belonging to a lead
+    Assessment belonging to a lead
     """
     lead = models.OneToOneField(Lead, default=None, blank=True, null=True)
     lead_group = models.OneToOneField(LeadGroup,
@@ -279,3 +283,192 @@ class Assessment(UserResource):
             (self.lead and self.lead.can_modify(user)) or
             (self.lead_group and self.lead_group.can_modify(user))
         )
+
+    def create_schema_for_group(self, GroupClass):
+        schema = {}
+        assessment_template = self.lead.project.assessment_template
+        groups = GroupClass.objects.filter(template=assessment_template)
+        schema = {
+            group.title: [
+                {
+                    'id': field.id,
+                    'name': field.title,
+                    'type': field.field_type,
+                    'options': {
+                        x['key']: x['title'] for x in field.get_options()
+                    }
+                }
+                for field in group.fields.all()
+            ] for group in groups
+        }
+        return schema
+
+    @staticmethod
+    def get_data_from_schema(schema, raw_data):
+        if not raw_data:
+            return {}
+
+        if 'id' in schema:
+            key = str(schema['id'])
+            value = raw_data.get(key, '')
+            if schema['type'] == Field.SELECT:
+                value = schema['options'].get(value, value)
+            if schema['type'] == Field.MULTISELECT:
+                value = [schema['options'].get(x, x) for x in value]
+            return {schema['name']: value}
+        if isinstance(schema, dict):
+            data = {
+                k: Assessment.get_data_from_schema(v, raw_data)
+                for k, v in schema.items()
+            }
+        elif isinstance(schema, list):
+            data = [Assessment.get_data_from_schema(x, raw_data)
+                    for x in schema]
+        else:
+            raise Exception("Something that could not be parsed from schema")
+        return data
+
+    def get_metadata_json(self):
+        metadata_schema = self.create_schema_for_group(MetadataGroup)
+        metadata_raw = self.metadata or {}
+        metadata_raw = metadata_raw.get('basic_information', {})
+        metadata = self.get_data_from_schema(metadata_schema, metadata_raw)
+        return metadata
+
+    def get_methodology_json(self):
+        methodology_sch = self.create_schema_for_group(MethodologyGroup)
+        methodology_raw = self.methodology or {}
+
+        mapping = {
+            'attributes': lambda x: self.get_data_from_schema(
+                methodology_sch, x
+            ),
+            'sectors': lambda x: Sector.objects.get(id=x).title,
+            'focuses': lambda x: Focus.objects.get(id=x).title,
+            'affected_groups': lambda x: x['name'],
+            'locations': lambda x: GeoArea.objects.get(id=x).title,
+            'objectives': identity,
+            'sampling': identity,
+            'limitations': identity,
+            'data_collection_techniques': identity
+        }
+
+        return {
+            underscore_to_title(k):
+                v if not isinstance(v, list)
+                else [mapping[k](y) for y in v]
+            for k, v in methodology_raw.items()
+        }
+
+    def get_summary_json(self):
+        # functions to get exact value of an entry in summary group
+        value_functions = {
+            'specific_need_group': lambda x: SpecificNeedGroup.objects.get(
+                id=x).title,
+            'affected_group': lambda x: AffectedGroup.objects.get(id=x).title,
+            'underlying_factors': identity,
+            'outcomes': identity,
+            'affected_location': lambda x: AffectedLocation.objects.get(
+                id=x).title,
+            'priority_sector': lambda x: PrioritySector.objects.get(
+                id=x).title,
+            'priority_issue': lambda x: PriorityIssue.objects.get(id=x).title
+        }
+
+        # Formatting of underscored keywords, by default is upper case as given
+        # by default_format() function below
+        formatting = {
+            'priority_sector': lambda x: 'Most Unmet Needs Sectors',
+            'affected_location': lambda x: 'Settings Facing Most Humanitarian Issues'  # noqa
+        }
+
+        default_format = underscore_to_title   # function
+
+        summary_raw = self.summary
+        if not summary_raw:
+            return {}
+
+        summary_data = {}
+        # first pop cross_sector and humanitarian access, other are sectors
+        # cross_sector = summary_raw.pop('cross_sector', {})
+        # humanitarian_access = summary_raw.pop('humanitarian_access', {})
+        # Add sectors data first
+        for k, v in summary_raw.items():
+            try:
+                _, sec_id = k.split('-')
+                sector = Sector.objects.get(id=sec_id).title
+            # Exception because, we have cross_sector and humanitarian_access
+            # in addition to "sector-<id>" keys
+            except ValueError:
+                sector = default_format(k)
+
+            data = {}
+            for kk, vv in v.items():
+                grouping, rowindex, col = kk.split('-')
+                # format them
+                grouping_f = formatting.get(grouping, default_format)(grouping)
+                col_f = formatting.get(col, default_format)(col)
+                # get exact value
+                value = value_functions[grouping](vv)
+
+                group_data = data.get(grouping_f, {})
+                # first time, initialize to list of 3 empty strings
+                coldata = group_data.get(col_f, [''] * 3)
+                coldata[int(rowindex)] = value
+                group_data[col_f] = coldata
+                data[grouping_f] = group_data
+            summary_data[sector] = data
+        # add cross_sector
+        return summary_data
+
+    def get_score_json(self):
+        if not self.score:
+            return {}
+
+        pillars_raw = self.score['pillars']
+        matrix_pillars_raw = self.score['matrix_pillars']
+
+        pillars = {}
+        for pid, pdata in pillars_raw.items():
+            pillar = ScorePillar.objects.get(id=pid)
+            data = {}
+            for qid, sid in pdata.items():
+                q = ScoreQuestion.objects.get(id=qid).title
+                scale = ScoreScale.objects.get(id=sid)
+                data[q] = {'title': scale.title, 'value': scale.value}
+            pillars[pillar.title] = data
+
+        matrix_pillars = {}
+        for mpid, mpdata in matrix_pillars_raw.items():
+            mpillar = ScoreMatrixPillar.objects.get(id=mpid)
+            data = {}
+            for sid, msid in mpdata.items():
+                sector = Sector.objects.get(id=sid)
+                scale = ScoreMatrixScale.objects.get(id=msid)
+                data[sector.title] = {
+                    'value': scale.value,
+                    'title': '{} / {}'.format(
+                        scale.row.title, scale.column.title)
+                }
+            matrix_pillars[mpillar.title] = data
+
+        pillars.update(matrix_pillars)
+        return pillars
+
+    def to_exportable_json(self):
+        if not self.lead:
+            return {}
+        # for meta data
+        metadata = self.get_metadata_json()
+        # for methodology
+        methodology = self.get_methodology_json()
+        # summary
+        summary = self.get_summary_json()
+        # score
+        score = self.get_score_json()
+        return OrderedDict((
+            ('metadata', metadata),
+            ('methodology', methodology),
+            ('summary', summary),
+            ('score', score)
+        ))
