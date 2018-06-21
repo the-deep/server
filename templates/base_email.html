@@ -48,6 +48,9 @@
             .deep-team p {
                 margin-top: 12px;
             }
+            .bold {
+                font-weight: bold;
+            }
         </style>
 
         {% block head %}{% endblock %}
@@ -67,9 +70,6 @@
             </p>
 
             {% block body %}{% endblock %}
-            <p>
-                Your username, in case you've forgotten: {{ user.get_username }}
-            </p>
 
             <div class="deep-team">
                 <p>Thanks for using DEEP</p>
