@@ -362,3 +362,9 @@ class NestedUpdateMixin(BaseNestedModelSerializer):
                 instances = e.args[1]
                 self.fail('cannot_delete_protected', instances=", ".join([
                     str(instance) for instance in instances]))
+
+
+class RecursiveSerializer(serializers.Serializer):
+    def to_representation(self, value):
+        serializer = self.parent.parent.__class__(value, context=self.context)
+        return serializer.data

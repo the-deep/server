@@ -3,7 +3,7 @@ from rest_framework.utils.model_meta import _get_pk
 
 from .endpoint_enumerator import EndpointEnumerator
 from .inspectors import ViewSchema
-from .utils import is_list_view
+from .utils import is_list_view, is_custom_action
 
 
 def common_path(paths):
@@ -49,12 +49,6 @@ def insert_into(target, keys, value):
             keys=keys
         )
         raise ValueError(msg)
-
-
-def is_custom_action(action):
-    return action not in set([
-        'retrieve', 'list', 'create', 'update', 'partial_update', 'destroy'
-    ])
 
 
 class SchemaGenerator:
@@ -162,10 +156,13 @@ class SchemaGenerator:
         ]
 
         if is_custom_action(action):
+            action_func = getattr(view, action)
+            slash_count = action_func.kwargs.get('url_path').count('/')
+
             if len(view.action_map) > 1:
                 action = self.default_mapping[method.lower()]
                 return named_path_components + [action]
             else:
-                return named_path_components[:-1] + [action]
+                return named_path_components[:-(slash_count + 1)] + [action]
 
         return named_path_components + [action]
