@@ -3,10 +3,10 @@ Django settings for deep project.
 """
 import os
 import sys
+import raven
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -21,12 +21,13 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
 
 DEEP_ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOST', '*')
 
+DEEP_ENVIRONMENT = os.environ.get('DEEP_ENVIRONMENT', 'development')
+
 ALLOWED_HOSTS = [DEEP_ALLOWED_HOSTS if DEEP_ALLOWED_HOSTS else '*']
 DEEPER_FRONTEND_HOST = os.environ.get('FRONTEND_HOST', 'localhost:3000')
 DJANGO_API_HOST = os.environ.get('DJANGO_ALLOWED_HOST', 'localhost:8000')
 DEEPER_SITE_NAME = os.environ.get('DEEPER_SITE_NAME', 'DEEPER')
 HTTP_PROTOCOL = os.environ.get('DEEP_HTTPS', 'http')
-
 
 # See if we are inside a test environment
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
@@ -426,5 +427,7 @@ RAVEN_DSN = os.environ.get('RAVEN_DSN')
 if RAVEN_DSN:
     RAVEN_CONFIG = {
         'dsn': 'https://{}@sentry.io/1223295'.format(RAVEN_DSN),
-        # 'release': raven.fetch_git_sha(os.path.abspath(os.pardir)),
+        'release': raven.fetch_git_sha(BASE_DIR),
+        'site': DJANGO_API_HOST,
+        'environment': DEEP_ENVIRONMENT,
     }
