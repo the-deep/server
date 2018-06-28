@@ -21,7 +21,12 @@ class ProjectJoinRequestInline(admin.TabularInline):
 
 @admin.register(Project)
 class ProjectAdmin(VersionAdmin):
+    search_fields = ['title']
+    list_display = ['title', 'category_editor', 'members_count']
     inlines = [ProjectMembershipInline, ProjectJoinRequestInline]
+
+    def members_count(self, obj):
+        return obj.members.count()
 
 
 class ProjectConditionInline(admin.StackedInline):
