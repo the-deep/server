@@ -7,6 +7,11 @@ from user.models import User
 from .models import Lead, LeadGroup
 
 
+class NumberInFilter(django_filters.BaseInFilter,
+                     django_filters.NumberFilter):
+    pass
+
+
 class LeadFilterSet(UserResourceFilterSet):
     """
     Lead filter set
@@ -40,6 +45,11 @@ class LeadFilterSet(UserResourceFilterSet):
     )
     assignee = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all(),
+        lookup_expr='in',
+        widget=django_filters.widgets.CSVWidget,
+    )
+    classified_doc_id = NumberInFilter(
+        name='leadpreview__classified_doc_id',
         lookup_expr='in',
         widget=django_filters.widgets.CSVWidget,
     )
