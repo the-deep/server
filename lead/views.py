@@ -119,60 +119,6 @@ class LeadViewSet(viewsets.ModelViewSet):
         )
 
     def get_queryset(self):
-        _filtered_lead_groups(self.request.user, self.request.GET)
-
-
-class LeadViewSet(viewsets.ModelViewSet):
-    """
-    Lead View
-    """
-    serializer_class = LeadSerializer
-    permission_classes = [permissions.IsAuthenticated,
-                          ModifyPermission]
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
-                       filters.SearchFilter, filters.OrderingFilter)
-    filter_class = LeadFilterSet
-    search_fields = ('title', 'source', 'text', 'url', 'website')
-    # ordering_fields = omitted to allow ordering by all read-only fields
-
-    def filter_queryset(self, queryset):
-        # For some reason, the ordering is not working for `assignee` field
-        # so, force ordering with anything passed in the query param
-        qs = super(LeadViewSet, self).filter_queryset(queryset)
-        ordering = self.request.GET.get('ordering')
-        if ordering:
-            return qs.order_by(ordering)
-        return qs
-
-    def get_serializer(self, *args, **kwargs):
-        data = kwargs.get('data')
-        project_list = data and data.get('project')
-
-        if project_list and isinstance(project_list, list):
-            kwargs.pop('data')
-            kwargs.pop('many', None)
-            data.pop('project')
-
-            data_list = []
-            for project in project_list:
-                data_list.append({
-                    **data,
-                    'project': project,
-                })
-
-            return super(LeadViewSet, self).get_serializer(
-                data=data_list,
-                many=True,
-                *args,
-                **kwargs,
-            )
-
-        return super(LeadViewSet, self).get_serializer(
-            *args,
-            **kwargs,
-        )
-
-    def get_queryset(self):
         leads = Lead.get_for(self.request.user)
 
         lead_id = self.request.GET.get('similar')
