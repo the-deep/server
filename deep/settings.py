@@ -420,13 +420,15 @@ MAX_LOGIN_ATTEMPTS_FOR_CAPTCHA = 3
 MAX_LOGIN_ATTEMPTS = 10
 
 RECAPTCHA_SECRET = os.environ.get(
-    'RECAPTCHA_SECRET', '6LcsukYUAAAAAIlG2_PMXGDeVXUWNXFZOmLIkq4-')
+    'RECAPTCHA_SECRET', '6LcsukYUAAAAAIlG2_PMXGDeVXUWNXFZOmLIkq4-'
+)
 
 # Sentry Config
-RAVEN_DSN = os.environ.get('RAVEN_DSN')
-if RAVEN_DSN:
+SENTRY_DSN = os.environ.get('SENTRY_DSN')
+
+if SENTRY_DSN:
     RAVEN_CONFIG = {
-        'dsn': 'https://{}@sentry.io/1223295'.format(RAVEN_DSN),
+        'dsn': SENTRY_DSN,
         'release': raven.fetch_git_sha(BASE_DIR),
         'site': DJANGO_API_HOST,
         'environment': DEEP_ENVIRONMENT,
