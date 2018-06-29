@@ -22,11 +22,19 @@ class ProjectJoinRequestInline(admin.TabularInline):
 @admin.register(Project)
 class ProjectAdmin(VersionAdmin):
     search_fields = ['title']
-    list_display = ['title', 'category_editor', 'members_count']
+    list_display = [
+        'title', 'category_editor', 'analysis_framework',
+        'assessment_template', 'members_count', 'associated_regions',
+    ]
     inlines = [ProjectMembershipInline, ProjectJoinRequestInline]
 
     def members_count(self, obj):
         return obj.members.count()
+
+    def associated_regions(self, obj):
+        if obj.regions.count() == 0:
+            return None
+        return ', '.join(r.title for r in obj.regions.all())
 
 
 class ProjectConditionInline(admin.StackedInline):
