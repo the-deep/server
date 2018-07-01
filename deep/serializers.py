@@ -31,6 +31,45 @@ class RemoveNullFieldsMixin:
         return remove_null(rep)
 
 
+class ListToDictField(serializers.Field):
+    """
+    Represent a list of entities as a dictionary
+    """
+    def __init__(self, *args, **kwargs):
+        self.child = kwargs.pop('child')
+        self.key = kwargs.pop('key')
+
+        assert self.child.source is None, (
+            'The `source` argument is not meaningful when '
+            'applied to a `child=` field. '
+            'Remove `source=` from the field declaration.'
+        )
+
+        super(ListToDictField, self).__init__(*args, **kwargs)
+
+    def to_representation(self, obj):
+        list_data = self.child.to_representation(obj)
+        data = {}
+
+        for item in list_data:
+            key_value = item.pop(self.key)
+            data[str(key_value)] = item
+        return data
+
+    def to_internal_value(self, data):
+        list_data = self.to_list_data(data)
+        return self.child.run_validation(list_data)
+
+    def to_list_data(self, data):
+        list_data = []
+        for key, value in data.items():
+            list_data.append({
+                self.key: key,
+                **value,
+            })
+        return list_data
+
+
 class BaseNestedModelSerializer(serializers.ModelSerializer):
     def _extract_relations(self, validated_data):
         reverse_relations = OrderedDict()
@@ -45,6 +84,16 @@ class BaseNestedModelSerializer(serializers.ModelSerializer):
             except FieldDoesNotExist:
                 continue
 
+            if isinstance(field, ListToDictField):
+                if field.source not in validated_data:
+                    # Skip field if field is not required
+                    continue
+
+                validated_data.pop(field.source)
+                reverse_relations[field_name] = (
+                    related_field, field, field.source
+                )
+
             if isinstance(field, serializers.ListSerializer) and \
                     isinstance(field.child, serializers.ModelSerializer):
                 if field.source not in validated_data:
@@ -52,9 +101,9 @@ class BaseNestedModelSerializer(serializers.ModelSerializer):
                     continue
 
                 validated_data.pop(field.source)
-
                 reverse_relations[field_name] = (
-                    related_field, field.child, field.source)
+                    related_field, field.child, field.source
+                )
 
             if isinstance(field, serializers.ModelSerializer):
                 if field.source not in validated_data:
@@ -122,7 +171,6 @@ class BaseNestedModelSerializer(serializers.ModelSerializer):
 
     def _get_related_pk(self, data, model_class):
         pk = data.get('pk') or data.get(model_class._meta.pk.attname)
-
         if pk:
             return str(pk)
 
@@ -140,6 +188,10 @@ class BaseNestedModelSerializer(serializers.ModelSerializer):
                     # Skip processing for empty data
                     continue
                 related_data = [related_data]
+
+            if isinstance(field, ListToDictField):
+                related_data = field.to_list_data(related_data)
+                field = field.child.child
 
             instances = self.prefetch_related_instances(field, related_data)
 
@@ -263,9 +315,13 @@ class NestedUpdateMixin(BaseNestedModelSerializer):
         # Delete instances which is missed in data
         for field_name, (related_field, field, field_source) in \
                 reverse_relations.items():
-            model_class = field.Meta.model
-
             related_data = self.initial_data[field_name]
+
+            if isinstance(field, ListToDictField):
+                related_data = field.to_list_data(related_data)
+                field = field.child.child
+
+            model_class = field.Meta.model
             # Expand to array of one item for one-to-one for uniformity
             if related_field.one_to_one:
                 related_data = [related_data]
