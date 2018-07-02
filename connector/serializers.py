@@ -18,6 +18,9 @@ class SourceOptionSerializer(RemoveNullFieldsMixin,
     key = serializers.CharField()
     field_type = serializers.CharField()
     title = serializers.CharField()
+    options = serializers.ListField(
+        serializers.DictField(serializers.CharField)
+    )
 
 
 class SourceSerializer(RemoveNullFieldsMixin,
