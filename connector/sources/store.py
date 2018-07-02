@@ -1,11 +1,13 @@
 from . import (
     rss_feed,
+    acaps_briefing_notes
 )
 import random
 
 
 source_store = {
     'rss-feed': rss_feed.RssFeed,
+    'acaps-briefing-notes': acaps_briefing_notes.AcapsBriefingNotes
 }
 
 sources = None
