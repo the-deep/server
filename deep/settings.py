@@ -431,3 +431,13 @@ if RAVEN_DSN:
         'site': DJANGO_API_HOST,
         'environment': DEEP_ENVIRONMENT,
     }
+
+# DEEPL Config
+DEEPL_DOMAINS = {
+    'nightly': 'https://deepl-alpha.thedeep.io',
+    'alpha': 'https://deepl-alpha.thedeep.io',
+    'beta': 'https://deepl.togglecorp.com',
+}
+
+DEEPL_DOMAIN = DEEPL_DOMAINS.get(DEEP_ENVIRONMENT, DEEPL_DOMAINS['alpha'])
+DEEPL_API = DEEPL_DOMAIN + '/api'

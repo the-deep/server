@@ -1,4 +1,5 @@
 from celery import shared_task
+from django.conf import settings
 from gallery.models import (
     File,
     FilePreview,
@@ -15,7 +16,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-DEEPL_NGRAMS_URL = 'https://deepl.togglecorp.com/api/keywords-extraction/'
+DEEPL_NGRAMS_URL = settings.DEEPL_API + '/keywords-extraction/'
 
 # SEE lead.tasks for better explanation of these functions
 
