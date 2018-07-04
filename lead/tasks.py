@@ -2,6 +2,7 @@ from celery import shared_task
 from channels import Group
 from django.core.files import File
 from django.utils import timezone
+from django.conf import settings
 from lead.models import (
     Lead,
     LeadPreview,
@@ -24,8 +25,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
-DEEPL_CLASSIFY_URL = 'https://deepl.togglecorp.com/api/v2/classify/'
+DEEPL_CLASSIFY_URL = settings.DEEPL_API + '/v2/classify/'
 
 
 def _preprocess(text):
