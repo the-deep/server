@@ -7,7 +7,9 @@ from django.template import loader
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMultiAlternatives
 
-from project.models import Project
+from .token import unsubscribe_email_token_generator
+from project.models import ProjectJoinRequest
+from project.token import project_request_token_generator
 
 
 def _send_mail(subject_template_name, email_template_name,
@@ -42,6 +44,10 @@ def send_mail_to_user(user, context={}, force_send=False, *args, **kwargs):
             'site_name': settings.DEEPER_SITE_NAME,
             'domain': settings.DJANGO_API_HOST,
             'user': user,
+            'unsubscribe_email_token':
+                unsubscribe_email_token_generator.make_token(user),
+            'unsubscribe_email_id':
+                urlsafe_base64_encode(force_bytes(user.pk)).decode(),
         })
 
         return _send_mail(
@@ -105,19 +111,28 @@ def send_account_activation(user):
 
 
 @shared_task
-def send_project_join_request_emails(request_by_id, project_id):
+def send_project_join_request_emails(join_request_id):
     """
     Email Notification For Project Join
     """
-    project = Project.objects.get(id=project_id)
-    request_by = User.objects.get(id=request_by_id)
+    join_request = ProjectJoinRequest.objects.get(id=join_request_id)
+    project = join_request.project
+    request_by = join_request.requested_by
+    request_data = {'join_request': join_request}
 
     context = {
         'request_by': request_by,
         'project': project,
+        'pid': urlsafe_base64_encode(force_bytes(join_request.pk)).decode(),
     }
 
     for user in project.get_admins():
+        request_data.update({'will_responded_by': user})
+        context.update({
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+            'token': project_request_token_generator.make_token(request_data)
+        })
+
         send_mail_to_user(
             user=user,
             context=context,

@@ -11,4 +11,10 @@
         >
         View Project Requests
     </a>
+    <a
+        class="link"
+        href="{{ protocol }}://{{ domain }}{% url 'accept_project_confirm' uidb64=uid pidb64=pid token=token %}"
+        >
+        Accept Project Request
+    </a>
 {% endblock %}
