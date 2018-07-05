@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block content %}
+
+    {% if success %}
+        <p>
+            Successfully added
+            <strong>{{ join_request.requested_by }}</strong>
+            to the project
+            <strong>{{join_request.project}}</strong>
+        </p>
+    {% else %}
+        <p>
+            Project Request link is invalid!
+        </p>
+    {% endif %}
+
+    <a class="goto-url" href="{{notification_url}}">Goto Notifications</a>
+
+    {% if project_url %}
+        <a class="goto-url" href="{{project_url}}">View Project Panel</a>
+    {% endif %}
+
+{% endblock %}

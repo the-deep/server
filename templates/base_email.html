@@ -75,6 +75,11 @@
                 <p>Thanks for using DEEP</p>
                 <p>-The DEEP team</p>
             </div>
+            <a
+                href="{{ protocol }}://{{ domain }}{% url 'unsubscribe_email' uidb64=unsubscribe_email_id token=unsubscribe_email_token %}"
+                >
+                Unsubscribe From Email
+            </a>
             {% endautoescape %}
         </div>
     <body>

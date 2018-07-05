@@ -1,4 +1,4 @@
 SHELL=/bin/bash
 
 * * * * * . /aws-script/env_var.sh; /aws-script/aws-scripts-mon/mon-put-instance-data.pl --mem-util --mem-used --mem-avail  --swap-util  --swap-used --disk-space-util  --disk-space-used  --disk-space-avail --disk-path=/ --aws-access-key-id=$AWS_ACCESS_KEY_ID --aws-secret-key=$AWS_SECRET_ACCESS_KEY --from-cron --auto-scaling=only
-*/5 * * * * . /aws-script/env_var.sh; . /venv/bin/activate; python3 /code/deploy/scripts/celery_worker_aws_metrics.py >> /var/log/deep.log 2>&1
+*/5 * * * * . /aws-script/env_var.sh; . /venv/bin/activate; /code/deploy/scripts/in_web_env.sh && python3 /code/deploy/scripts/celery_worker_aws_metrics.py >> /var/log/deep.log 2>&1
