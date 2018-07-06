@@ -208,7 +208,7 @@ class ReportExporter:
 
             structures = self.structure and next((
                 s.get('levels') for s in self.structure
-                if s['id'] == exportable.id
+                if str(s['id']) == str(exportable.id)
             ), None)
             self._generate_for_levels(levels, level_entries_map,
                                       valid_levels, structures)

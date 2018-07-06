@@ -5,7 +5,8 @@ from django.core.exceptions import FieldDoesNotExist
 from rest_framework import exceptions, serializers
 from rest_framework.compat import uritemplate
 
-from .utils import is_list_view
+from deep.serializers import RecursiveSerializer
+from .utils import is_list_view, is_custom_action
 from . import schema
 
 
@@ -27,6 +28,9 @@ def field_to_schema(field, camelcase=True):
     # if camelcase:
     #     title = to_camel_case(title)
     # description = force_text(field.help_text) if field.help_text else ''
+
+    if isinstance(field, RecursiveSerializer):
+        return schema.Recursive()
 
     if isinstance(field, (serializers.ListSerializer, serializers.ListField)):
         return schema.Array(
@@ -183,6 +187,11 @@ class ViewSchema:
     def get_serializer_fields(self):
         view = self.view
         method = self.method
+
+        if hasattr(view, 'action') and is_custom_action(view.action):
+            action = getattr(view, view.action)
+            if getattr(action, 'delete_view', False):
+                return
 
         if method in ('DELETE',):
             return

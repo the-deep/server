@@ -63,6 +63,7 @@ class JsonExporter:
 
         json_data = json.dumps(self.data, sort_keys=True, indent=2,
                                cls=DjangoJSONEncoder).encode('utf-8')
+
         export_entity.file.save(filename, ContentFile(json_data))
 
         export_entity.format = Export.JSON
