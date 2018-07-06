@@ -107,8 +107,8 @@ class LeadTests(TestCase):
         project = self.create(Project)
         common_url = 'https://same.com/'
         lead1 = self.create(Lead, source_type='website',
-                    project=project,
-                    url=common_url)
+                            project=project,
+                            url=common_url)
         lead2 = self.create(Lead, source_type='website',
                             project=project,
                             url='https://different.com/')
