@@ -301,6 +301,8 @@ class ProjectJoinRequest(models.Model):
     requested_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=48, choices=STATUSES,
                               default='pending')
+    role = models.CharField(max_length=96, choices=ProjectMembership.ROLES,
+                            default='normal')
     responded_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                      null=True, blank=True, default=None,
                                      related_name='project_join_responses')
