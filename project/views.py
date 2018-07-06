@@ -169,15 +169,18 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 'This request has already been {}'.format(join_request.status)
             )
 
+        role = request.data.get('role', 'normal')
         join_request.status = 'accepted'
         join_request.responded_by = request.user
         join_request.responded_at = timezone.now()
+        join_request.role = role
         join_request.save()
 
         ProjectMembership.objects.update_or_create(
             project=project,
             member=join_request.requested_by,
             defaults={
+                'role': role,
                 'added_by': request.user,
             },
         )
