@@ -1,1 +1,1 @@
-from .excel_exporter import ExcelExporter
+from .excel_exporter import ExcelExporter  # noqa
