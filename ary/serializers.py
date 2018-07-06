@@ -2,7 +2,10 @@ from django.shortcuts import get_object_or_404
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
-from deep.serializers import RemoveNullFieldsMixin
+from deep.serializers import (
+    RemoveNullFieldsMixin,
+    RecursiveSerializer,
+)
 from user_resource.serializers import UserResourceSerializer
 from lead.serializers import SimpleLeadSerializer
 from lead.models import Lead, LeadGroup
@@ -72,12 +75,6 @@ class LeadGroupAssessmentSerializer(RemoveNullFieldsMixin,
         })
         assessment.save()
         return assessment
-
-
-class RecursiveSerializer(serializers.Serializer):
-    def to_representation(self, value):
-        serializer = self.parent.parent.__class__(value, context=self.context)
-        return serializer.data
 
 
 class ItemSerializer(serializers.Serializer):

@@ -14,6 +14,9 @@ from rest_framework import (
 from rest_framework.decorators import detail_route, list_route
 import django_filters
 
+from docs.utils import mark_as_list, mark_as_delete
+import ary.serializers as arys
+
 from deep.permissions import ModifyPermission
 from project.permissions import JoinPermission, AcceptRejectPermission
 from project.filter_set import ProjectFilterSet, get_filtered_projects
@@ -92,15 +95,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
     Get assessment template for this project
     """
     @detail_route(permission_classes=[permissions.IsAuthenticated],
+                  serializer_class=arys.AssessmentTemplateSerializer,
                   url_path='assessment-template')
     def get_assessment_template(self, request, pk=None, version=None):
-        from ary.serializers import AssessmentTemplateSerializer
-
         project = self.get_object()
         if not project.assessment_template:
             raise exceptions.NotFound('Resource not found')
 
-        serializer = AssessmentTemplateSerializer(
+        serializer = arys.AssessmentTemplateSerializer(
             project.assessment_template,
             context={'request': request},
         )
@@ -218,6 +220,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     Cancel a join request to this project
     """
+    @mark_as_delete()
     @detail_route(permission_classes=[permissions.IsAuthenticated],
                   methods=['post'],
                   url_path=r'join/cancel')
@@ -239,6 +242,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     Get list of join requests for this project
     """
+    @mark_as_list()
     @detail_route(permission_classes=[permissions.IsAuthenticated,
                                       ModifyPermission],
                   serializer_class=ProjectJoinRequestSerializer,
