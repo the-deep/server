@@ -1,28 +1,25 @@
 from .utils import set_filter_data, set_export_data
 
 
-def get_selected_nodes(node, activeKeys):
+def get_selected_nodes(node, selected_ids):
     selected = []
     organs = node.get('organs', [])
     for organ in organs:
-        selected.extend(get_selected_nodes(organ, activeKeys))
+        selected.extend(get_selected_nodes(organ, selected_ids))
 
-    key = node.get('key')
-    if len(selected) > 0 or key in activeKeys:
-        selected.append(key)
-
+    if node.get('key') in selected_ids:
+        selected.append(node)
     return selected
 
 
 def update_attribute(entry, widget, data, widget_data):
     values = data.get('values', [])
-    selected_ids = [v.get('id') for v in values]
-    selected_node_keys = get_selected_nodes(widget_data, selected_ids)
+    selected_nodes = get_selected_nodes(widget_data, values)
 
     set_filter_data(
         entry,
         widget,
-        values=selected_node_keys,
+        values=values,
     )
 
     set_export_data(
@@ -31,7 +28,7 @@ def update_attribute(entry, widget, data, widget_data):
         {
             'excel': {
                 'type': 'list',
-                'value': [v.get('name') for v in values],
+                'value': [v.get('name') for v in selected_nodes],
             },
         },
     )
