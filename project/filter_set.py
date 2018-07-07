@@ -42,4 +42,8 @@ def get_filtered_projects(user, queries):
         if involvement == 'not_my_projects':
             projects = projects.exclude(Project.get_query_for_member(user))
 
+    ordering = queries.get('ordering')
+    if ordering:
+        projects = projects.order_by(ordering)
+
     return projects.distinct()

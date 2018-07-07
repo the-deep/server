@@ -76,20 +76,9 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         read_only=True,
     )
 
-    number_of_users = serializers.IntegerField(
-        source='get_number_of_users',
-        read_only=True,
-    )
-
-    number_of_leads = serializers.IntegerField(
-        source='get_number_of_leads',
-        read_only=True,
-    )
-
-    number_of_entries = serializers.IntegerField(
-        source='get_number_of_entries',
-        read_only=True,
-    )
+    number_of_users = serializers.IntegerField(read_only=True)
+    number_of_leads = serializers.IntegerField(read_only=True)
+    number_of_entries = serializers.IntegerField(read_only=True)
 
     entries_activity = serializers.ReadOnlyField(
         source='get_entries_activity',
