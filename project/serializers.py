@@ -87,10 +87,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         source='get_leads_activity',
     )
 
-    status = serializers.CharField(
-        source='get_status.title',
-        read_only=True,
-    )
+    status_title = serializers.ReadOnlyField(source='status.title')
 
     class Meta:
         model = Project
