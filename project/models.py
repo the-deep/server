@@ -36,36 +36,6 @@ class ProjectStatus(models.Model):
         else:
             return any(conditions)
 
-    def get_query(self):
-        # If not condition, negate all conditions from other
-        # statuses
-        # TODO Test THIS
-        if self.conditions.count() == 0:
-            others = ProjectStatus.objects.filter(
-                ~models.Q(id=self.id)
-            )
-            if others.count() == 0:
-                return ~models.Q(id=None)  # Always True
-
-            queries = [s.get_query() for s in others]
-            query = ~models.Q(queries.pop())
-            for q in queries:
-                query &= ~models.Q(q)
-            return query
-
-        # Otherwise combine the conditions
-        queries = [
-            c.get_query()
-            for c in self.conditions.all()
-        ]
-        query = queries.pop()
-        for q in queries:
-            if self.and_conditions:
-                query &= q
-            else:
-                query |= q
-        return query
-
 
 class ProjectStatusCondition(models.Model):
     NO_LEADS_CREATED = 'no_leads'
@@ -110,18 +80,6 @@ class ProjectStatusCondition(models.Model):
                 return False
             return True
         return False
-
-    def get_query(self):
-        time_threshold = timezone.now() - timedelta(days=self.days)
-        if self.condition_type == ProjectStatusCondition.NO_LEADS_CREATED:
-            return models.Q(lead__isnull=False) & ~models.Q(
-                lead__created_at__gt=time_threshold,
-            )
-
-        if self.condition_type == ProjectStatusCondition.NO_ENTRIES_CREATED:
-            return models.Q(lead__entry__isnull=False) & ~models.Q(
-                lead__entry__created_at__gt=time_threshold,
-            )
 
 
 class Project(UserResource):
