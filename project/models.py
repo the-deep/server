@@ -154,16 +154,63 @@ class Project(UserResource):
 
     is_default = models.BooleanField(default=False)
 
+    # Data for cache purposes
+    # status = models.ForeignKey(ProjectStatus,
+    #                            blank=True, default=None, null=True,
+    #                            on_delete=models.SET_NULL)
+
     def __str__(self):
         return self.title
 
     @staticmethod
+    def get_annotated():
+        from entry.models import Lead, Entry
+
+        pk = models.OuterRef('pk')
+        user_ids = (User.objects.filter(
+            project__id=models.OuterRef(pk),
+        ) | User.objects.filter(
+            usergroup__project__id=models.OuterRef(pk),
+        )).distinct('id').values('id')
+
+        threshold = timezone.now() - timedelta(days=30)
+        return Project.objects.annotate(
+            number_of_leads=models.Count('lead', distinct=True),
+            number_of_entries=models.Count('lead__entry', distinct=True),
+
+            number_of_users=models.functions.Coalesce(models.Subquery(
+                User.objects.filter(id__in=models.Subquery(user_ids))
+                .order_by().annotate(x=models.Value(1, models.IntegerField()))
+                .values('x').annotate(c=models.Count('*')).values('c')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+
+            leads_activity=models.functions.Coalesce(models.Subquery(
+                Lead.objects.filter(
+                    project=pk,
+                    created_at__gt=threshold,
+                ).order_by().values('project')
+                .annotate(c=models.Count('*')).values('c')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+
+            entries_activity=models.functions.Coalesce(models.Subquery(
+                Entry.objects.filter(
+                    lead__project=pk,
+                    created_at__gt=threshold,
+                ).order_by().values('lead__project')
+                .annotate(c=models.Count('*')).values('c')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+        )
+
+    @staticmethod
     def get_for(user):
-        return Project.objects.all()
+        return Project.get_annotated().all()
 
     @staticmethod
     def get_for_member(user):
-        return Project.objects.filter(
+        return Project.get_annotated().filter(
             Project.get_query_for_member(user)
         ).distinct()
 
@@ -176,7 +223,7 @@ class Project(UserResource):
 
     @staticmethod
     def get_modifiable_for(user):
-        return Project.objects.filter(
+        return Project.get_annotated().filter(
             projectmembership__in=ProjectMembership.objects.filter(
                 member=user,
                 role='admin',
@@ -204,24 +251,6 @@ class Project(UserResource):
             added_by=added_by or user,
         )
 
-    def get_number_of_users(self):
-        return User.objects.filter(
-            models.Q(project=self) |
-            models.Q(usergroup__project=self)
-        ).distinct().count()
-
-    def get_number_of_leads(self):
-        from lead.models import Lead
-        return Lead.objects.filter(
-            project=self
-        ).distinct().count()
-
-    def get_number_of_entries(self):
-        from entry.models import Entry
-        return Entry.objects.filter(
-            lead__project=self
-        ).distinct().count()
-
     def get_status(self):
         for status in ProjectStatus.objects.all():
             if status.check_for(self):
@@ -233,12 +262,17 @@ class Project(UserResource):
 
     def get_entries_activity(self):
         from entry.models import Entry
-        return generate_timeseries(
-            Entry.objects.filter(lead__project=self).distinct()
-        )
+        threshold = timezone.now() - timedelta(days=30)
+        return generate_timeseries(Entry.objects.filter(
+            lead__project=self,
+            created_at__gt=threshold,
+        ).distinct())
 
     def get_leads_activity(self):
-        return generate_timeseries(self.lead_set.all())
+        threshold = timezone.now() - timedelta(days=30)
+        return generate_timeseries(self.lead_set.filter(
+            created_at__gt=threshold,
+        ))
 
     def get_admins(self):
         return User.objects.filter(
