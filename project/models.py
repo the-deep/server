@@ -155,9 +155,9 @@ class Project(UserResource):
     is_default = models.BooleanField(default=False)
 
     # Data for cache purposes
-    # status = models.ForeignKey(ProjectStatus,
-    #                            blank=True, default=None, null=True,
-    #                            on_delete=models.SET_NULL)
+    status = models.ForeignKey(ProjectStatus,
+                               blank=True, default=None, null=True,
+                               on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.title
@@ -251,7 +251,7 @@ class Project(UserResource):
             added_by=added_by or user,
         )
 
-    def get_status(self):
+    def calc_status(self):
         for status in ProjectStatus.objects.all():
             if status.check_for(self):
                 return status

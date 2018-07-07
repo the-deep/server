@@ -1,6 +1,7 @@
-from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.fields import ArrayField
+from django.db import models
+from django.dispatch import receiver
 
 from user_resource.models import UserResource
 from lead.models import Lead
@@ -182,3 +183,10 @@ class ExportData(models.Model):
             self.entry.lead.title,
             self.exportable.widget_key,
         )
+
+
+@receiver(models.signals.post_save, sender=Entry)
+def on_entry_saved(sender, **kwargs):
+    project = kwargs.get('instance').lead.project
+    project.status = project.calc_status()
+    project.save()
