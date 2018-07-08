@@ -17,4 +17,16 @@
         >
         Accept Project Request
     </a>
+    <a
+        class="link"
+        href="{{ protocol }}://{{ domain }}{% url 'accept_project_confirm' uidb64=uid pidb64=pid token=token %}?role=admin"
+        >
+        Accept Project Request as Admin
+    </a>
+    <a
+        class="link"
+        href="{{ protocol }}://{{ domain }}{% url 'accept_project_confirm' uidb64=uid pidb64=pid token=token %}?accept=false"
+        >
+        Reject Project Request
+    </a>
 {% endblock %}

@@ -30,6 +30,30 @@ class Api_404View(APIView):
                        code=status.HTTP_404_NOT_FOUND)
 
 
+class ProjectJoinRequest(View):
+    """
+    Template view for project join request email
+    NOTE: Use Only For Debug
+    """
+    def get(self, request):
+        from user.models import User
+        from project.models import Project
+        user = User.objects.get(pk=1)
+        project = Project.objects.get(pk=1)
+        context = {
+            'uid': 'fakeuid',
+            'pid': 'fakeuid',
+            'user': user,
+            'request_by': user,
+            'project': project,
+            'token': 'faketoken',
+            'unsubscribe_email_token': 'faketoken',
+            'unsubscribe_email_id': 'fakeid',
+        }
+        return TemplateResponse(
+            request, 'project/project_join_request_email.html', context)
+
+
 class PasswordReset(View):
     """
     Template view for password reset email
@@ -48,6 +72,8 @@ class PasswordReset(View):
             'welcome': welcome,
             'token': 'faketoken',
             'protocol': 'https' if True else 'http',
+            'unsubscribe_email_token': 'faketoken',
+            'unsubscribe_email_id': 'fakeid',
         }
         return TemplateResponse(
             request, 'registration/password_reset_email.html', context)
@@ -69,6 +95,8 @@ class AccountActivate(View):
             'user': user,
             'token': 'faketoken',
             'protocol': 'https' if True else 'http',
+            'unsubscribe_email_token': 'faketoken',
+            'unsubscribe_email_id': 'fakeid',
         }
         return TemplateResponse(
             request, 'registration/user_activation_email.html', context)
