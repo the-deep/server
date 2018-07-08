@@ -221,6 +221,7 @@ class ProjectApiTest(TestCase):
         project1 = self.create(Project)
         lead = self.create(Lead, project=project1)
         Lead.objects.filter(pk=lead.pk).update(created_at=old_date)
+        Lead.objects.get(pk=lead.pk).save()
 
         # One with latest lead
         project2 = self.create(Project)
@@ -234,6 +235,7 @@ class ProjectApiTest(TestCase):
         lead = self.create(Lead, project=project4)
         entry = self.create(Entry, lead=lead)
         Entry.objects.filter(pk=entry.pk).update(created_at=old_date)
+        Lead.objects.get(pk=lead.pk).save()
 
         # One with expired lead and expired entry
         project5 = self.create(Project)
@@ -241,6 +243,7 @@ class ProjectApiTest(TestCase):
         entry = self.create(Entry, lead=lead)
         Lead.objects.filter(pk=lead.pk).update(created_at=old_date)
         Entry.objects.filter(pk=entry.pk).update(created_at=old_date)
+        Lead.objects.get(pk=lead.pk).save()
 
         url = '/api/v1/projects/?status={}'.format(status.id)
 
@@ -249,9 +252,11 @@ class ProjectApiTest(TestCase):
         self.assert_200(response)
 
         expected = [
+            project1.id,
             project5.id,
         ] if and_conditions else [
             project1.id,
+            project2.id,
             project4.id,
             project5.id,
         ]
