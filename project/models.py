@@ -210,7 +210,7 @@ class Project(UserResource):
         )
 
     def calc_status(self):
-        for status in ProjectStatus.objects.all():
+        for status in ProjectStatus.objects.filter():
             if status.check_for(self):
                 return status
 

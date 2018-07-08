@@ -130,10 +130,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
         )
 
         if settings.TESTING:
-            send_project_join_request_emails(
-                request.user.id,
-                project.id,
-            )
+            pass
+            # send_project_join_request_emails(
+            #     request.user.id,
+            #     project.id,
+            # )
         else:
             # Unless we are in test environment,
             # send the join request emails in a celery
