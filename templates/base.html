@@ -5,9 +5,24 @@
     {{ block.super }}
     <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
     <style>
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
 
         #header {
             background: #273646;
+            flex-shrink: 0;
+        }
+
+        #content {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+            overflow-y: auto;
         }
 
         input[type=submit], input[type=button] {
@@ -26,15 +41,48 @@
             color: white;
         }
 
+        .logo {
+            margin: auto;
+            margin-bottom: 24px;
+        }
+
         .selector .selector-available h2, .help {
             color: #b7b4b4 !important;
         }
 
-        /* FIXME: fix this */
+        .description {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
         .goto-url {
             padding: 10px;
-            color: #b7b4b4 !important;
-            background: #273646;
+            margin-left: 10px;
+            box-shadow: 0 1px 3px -1px rgba(0, 0, 0, .5);
+            background-color: #1676d3;
+            display: inline-block;
+            color: #ffffff!important;
+            border-radius: 2px;
+            padding: 6px 8px;
+            text-transform: uppercase;
+            font-size: 11px;
+            font-weight: 600;
+            transition: .2s all ease-in-out;
+        }
+
+        .goto-url:active {
+            box-shadow: 0 1px 2px -1px rgba(0, 0, 0, .5);
+            transform: translateY(1px);
+        }
+
+        .goto-url:hover {
+            background-color: #005DBA;
+        }
+
+        .actions-container {
+            display: flex;
         }
 
     </style>
