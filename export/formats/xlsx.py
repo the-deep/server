@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
@@ -140,7 +142,8 @@ class RowsBuilder:
         for column in list(map(list, zip(*values))):
             # Make sure each column only contains unique values
             self.group_rows.append(', '.join(
-                sorted(list(dict.fromkeys(column)))
+                # sorted(list(dict.fromkeys(column)))
+                list(OrderedDict.fromkeys(column))
             ))
 
         return self
