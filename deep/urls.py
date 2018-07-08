@@ -95,6 +95,7 @@ from deep.views import (
     Api_404View,
     FrontendView,
     PasswordReset,
+    ProjectJoinRequest,
     AccountActivate,
 )
 from lang.views import (
@@ -348,6 +349,7 @@ urlpatterns = [
     # NOTE: For debuging email templates
     url(r'^pr-email/$', PasswordReset.as_view()),
     url(r'^aa-email/$', AccountActivate.as_view()),
+    url(r'^pj-email/$', ProjectJoinRequest.as_view()),
 
     url(r'^favicon.ico$',
         RedirectView.as_view(

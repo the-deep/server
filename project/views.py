@@ -145,7 +145,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             # This makes sure that the response is returned
             # while the emails are being sent in the background.
             def send_mail():
-                send_project_join_request_emails(join_request.id)
+                send_project_join_request_emails.delay(join_request.id)
             transaction.on_commit(send_mail)
 
         return response.Response(serializer.data,
@@ -167,6 +167,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 'added_by': responded_by,
             },
         )
+
+    @staticmethod
+    def _reject_request(responded_by, join_request):
+        join_request.status = 'rejected'
+        join_request.responded_by = responded_by
+        join_request.responded_at = timezone.now()
+        join_request.save()
 
     """
     Accept a join request to this project,
@@ -214,10 +221,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 'This request has already been {}'.format(join_request.status)
             )
 
-        join_request.status = 'rejected'
-        join_request.responded_by = request.user
-        join_request.responded_at = timezone.now()
-        join_request.save()
+        ProjectViewSet._reject_request(request.user, join_request)
 
         serializer = ProjectJoinRequestSerializer(
             join_request,
@@ -383,6 +387,8 @@ def accept_project_confirm(
         pid = force_text(urlsafe_base64_decode(pidb64))
         user = User.objects.get(pk=uid)
         join_request = ProjectJoinRequest.objects.get(pk=pid)
+        accept = request.GET.get('accept', 'True').lower() == 'true'
+        role = request.GET.get('role', 'normal')
     except(
         TypeError, ValueError, OverflowError,
         ProjectJoinRequest.DoesNotExist, User.DoesNotExist,
@@ -397,6 +403,8 @@ def accept_project_confirm(
     context = {
         'title': 'Project Join Request',
         'success': True,
+        'accept': accept,
+        'role': role,
         'notification_url': get_frontend_url('notifications/'),
         'join_request': join_request,
         'project_url': get_frontend_url(
@@ -406,7 +414,10 @@ def accept_project_confirm(
 
     if (join_request and user) is not None and\
             project_request_token_generator.check_token(request_data, token):
-        ProjectViewSet._accept_request(user, join_request)
+        if accept:
+            ProjectViewSet._accept_request(user, join_request, role)
+        else:
+            ProjectViewSet._reject_request(user, join_request)
     else:
         context['success'] = False
 

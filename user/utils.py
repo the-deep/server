@@ -138,5 +138,5 @@ def send_project_join_request_emails(join_request_id):
             context=context,
             force_send=True,  # TODO: remove this
             subject_template_name='project/project_join_request.txt',
-            email_template_name='project/project_join_request.html',
+            email_template_name='project/project_join_request_email.html',
         )
