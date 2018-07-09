@@ -2,31 +2,44 @@
 {% block body %}
     <p>
         <span class="bold">{{ request_by.profile.get_display_name }} ({{ request_by.email }}) </span>
-            has requested to join
+            has requested to join the project
         <span class="bold"> {{ project.title }}</span>
     </p>
+    <br>
+
+    <p class="unsubscribe"> Take suitable action for the request: </p>
+    <br>
+    <br>
+    <a
+        class="accept"
+        href="{{ protocol }}://{{ domain }}{% url 'accept_project_confirm' uidb64=uid pidb64=pid token=token %}"
+        >
+        Add user to Project
+    </a>
+    <a
+        class="reject"
+        href="{{ protocol }}://{{ domain }}{% url 'accept_project_confirm' uidb64=uid pidb64=pid token=token %}?accept=false"
+        >
+        Reject Project Request
+    </a>
+    <br>
+    <br>
+    <br>
+    <a
+        class="link"
+        href="{{ protocol }}://{{ domain }}{% url 'accept_project_confirm' uidb64=uid pidb64=pid token=token %}?role=admin"
+        >
+        Add to Project as Admin
+    </a>
+    <br>
+    <br>
     <a
         class="link"
         href="{{ protocol }}://{{ client_domain }}/notifications"
         >
         View Project Requests
     </a>
-    <a
-        class="link"
-        href="{{ protocol }}://{{ domain }}{% url 'accept_project_confirm' uidb64=uid pidb64=pid token=token %}"
-        >
-        Accept Project Request
-    </a>
-    <a
-        class="link"
-        href="{{ protocol }}://{{ domain }}{% url 'accept_project_confirm' uidb64=uid pidb64=pid token=token %}?role=admin"
-        >
-        Accept Project Request as Admin
-    </a>
-    <a
-        class="link"
-        href="{{ protocol }}://{{ domain }}{% url 'accept_project_confirm' uidb64=uid pidb64=pid token=token %}?accept=false"
-        >
-        Reject Project Request
-    </a>
+    <br>
+    <br>
+    <br>
 {% endblock %}
