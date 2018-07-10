@@ -220,17 +220,24 @@ class Project(UserResource):
 
     def get_entries_activity(self):
         from entry.models import Entry
-        threshold = timezone.now() - timedelta(days=30)
-        return generate_timeseries(Entry.objects.filter(
-            lead__project=self,
-            created_at__gt=threshold,
-        ).distinct())
+        min_date = timezone.now() - timedelta(days=30)
+        max_date = timezone.now()
+
+        return generate_timeseries(
+            Entry.objects.filter(lead__project=self).distinct(),
+            min_date,
+            max_date,
+        )
 
     def get_leads_activity(self):
-        threshold = timezone.now() - timedelta(days=30)
-        return generate_timeseries(self.lead_set.filter(
-            created_at__gt=threshold,
-        ))
+        min_date = timezone.now() - timedelta(days=30)
+        max_date = timezone.now()
+
+        return generate_timeseries(
+            self.lead_set.all(),
+            min_date,
+            max_date,
+        )
 
     def get_admins(self):
         return User.objects.filter(
