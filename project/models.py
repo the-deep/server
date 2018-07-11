@@ -36,36 +36,6 @@ class ProjectStatus(models.Model):
         else:
             return any(conditions)
 
-    def get_query(self):
-        # If not condition, negate all conditions from other
-        # statuses
-        # TODO Test THIS
-        if self.conditions.count() == 0:
-            others = ProjectStatus.objects.filter(
-                ~models.Q(id=self.id)
-            )
-            if others.count() == 0:
-                return ~models.Q(id=None)  # Always True
-
-            queries = [s.get_query() for s in others]
-            query = ~models.Q(queries.pop())
-            for q in queries:
-                query &= ~models.Q(q)
-            return query
-
-        # Otherwise combine the conditions
-        queries = [
-            c.get_query()
-            for c in self.conditions.all()
-        ]
-        query = queries.pop()
-        for q in queries:
-            if self.and_conditions:
-                query &= q
-            else:
-                query |= q
-        return query
-
 
 class ProjectStatusCondition(models.Model):
     NO_LEADS_CREATED = 'no_leads'
@@ -111,18 +81,6 @@ class ProjectStatusCondition(models.Model):
             return True
         return False
 
-    def get_query(self):
-        time_threshold = timezone.now() - timedelta(days=self.days)
-        if self.condition_type == ProjectStatusCondition.NO_LEADS_CREATED:
-            return models.Q(lead__isnull=False) & ~models.Q(
-                lead__created_at__gt=time_threshold,
-            )
-
-        if self.condition_type == ProjectStatusCondition.NO_ENTRIES_CREATED:
-            return models.Q(lead__entry__isnull=False) & ~models.Q(
-                lead__entry__created_at__gt=time_threshold,
-            )
-
 
 class Project(UserResource):
     """
@@ -154,16 +112,63 @@ class Project(UserResource):
 
     is_default = models.BooleanField(default=False)
 
+    # Data for cache purposes
+    status = models.ForeignKey(ProjectStatus,
+                               blank=True, default=None, null=True,
+                               on_delete=models.SET_NULL)
+
     def __str__(self):
         return self.title
 
     @staticmethod
+    def get_annotated():
+        from entry.models import Lead, Entry
+
+        pk = models.OuterRef('pk')
+        user_ids = (User.objects.filter(
+            project__id=models.OuterRef(pk),
+        ) | User.objects.filter(
+            usergroup__project__id=models.OuterRef(pk),
+        )).distinct('id').values('id')
+
+        threshold = timezone.now() - timedelta(days=30)
+        return Project.objects.annotate(
+            number_of_leads=models.Count('lead', distinct=True),
+            number_of_entries=models.Count('lead__entry', distinct=True),
+
+            number_of_users=models.functions.Coalesce(models.Subquery(
+                User.objects.filter(id__in=models.Subquery(user_ids))
+                .order_by().annotate(x=models.Value(1, models.IntegerField()))
+                .values('x').annotate(c=models.Count('*')).values('c')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+
+            leads_activity=models.functions.Coalesce(models.Subquery(
+                Lead.objects.filter(
+                    project=pk,
+                    created_at__gt=threshold,
+                ).order_by().values('project')
+                .annotate(c=models.Count('*')).values('c')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+
+            entries_activity=models.functions.Coalesce(models.Subquery(
+                Entry.objects.filter(
+                    lead__project=pk,
+                    created_at__gt=threshold,
+                ).order_by().values('lead__project')
+                .annotate(c=models.Count('*')).values('c')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+        )
+
+    @staticmethod
     def get_for(user):
-        return Project.objects.all()
+        return Project.get_annotated().all()
 
     @staticmethod
     def get_for_member(user):
-        return Project.objects.filter(
+        return Project.get_annotated().filter(
             Project.get_query_for_member(user)
         ).distinct()
 
@@ -176,7 +181,7 @@ class Project(UserResource):
 
     @staticmethod
     def get_modifiable_for(user):
-        return Project.objects.filter(
+        return Project.get_annotated().filter(
             projectmembership__in=ProjectMembership.objects.filter(
                 member=user,
                 role='admin',
@@ -204,26 +209,8 @@ class Project(UserResource):
             added_by=added_by or user,
         )
 
-    def get_number_of_users(self):
-        return User.objects.filter(
-            models.Q(project=self) |
-            models.Q(usergroup__project=self)
-        ).distinct().count()
-
-    def get_number_of_leads(self):
-        from lead.models import Lead
-        return Lead.objects.filter(
-            project=self
-        ).distinct().count()
-
-    def get_number_of_entries(self):
-        from entry.models import Entry
-        return Entry.objects.filter(
-            lead__project=self
-        ).distinct().count()
-
-    def get_status(self):
-        for status in ProjectStatus.objects.all():
+    def calc_status(self):
+        for status in ProjectStatus.objects.filter():
             if status.check_for(self):
                 return status
 
@@ -233,12 +220,24 @@ class Project(UserResource):
 
     def get_entries_activity(self):
         from entry.models import Entry
+        min_date = timezone.now() - timedelta(days=30)
+        max_date = timezone.now()
+
         return generate_timeseries(
-            Entry.objects.filter(lead__project=self).distinct()
+            Entry.objects.filter(lead__project=self).distinct(),
+            min_date,
+            max_date,
         )
 
     def get_leads_activity(self):
-        return generate_timeseries(self.lead_set.all())
+        min_date = timezone.now() - timedelta(days=30)
+        max_date = timezone.now()
+
+        return generate_timeseries(
+            self.lead_set.all(),
+            min_date,
+            max_date,
+        )
 
     def get_admins(self):
         return User.objects.filter(
