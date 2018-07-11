@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.files.base import ContentFile, File
-from django.db.models import Case, When
+from django.db.models import Case, When, Q
 
 from export.formats.docx import Document
 from export.mime_types import (
@@ -58,6 +58,7 @@ class ReportExporter:
 
         if entry.entry_type == Entry.IMAGE:
             self.doc.add_image(entry.image)
+            para = self.doc.add_paragraph().justify()
             # para.add_run().add_image(entry.image)
 
         lead = entry.lead
@@ -169,14 +170,32 @@ class ReportExporter:
                     heading_level + 1,
                 )
 
+    def _generate_for_uncategorized(self, entries):
+        entries = entries.exclude(
+            Q(exportdata__data__report__keys__isnull=False) |
+            Q(exportdata__data__report__keys__len__gt=0)
+        )
+        if entries.count() == 0:
+            return
+
+        self.doc.add_heading('Uncategorized', 2)
+        self.doc.add_paragraph()
+
+        if entries:
+            [self._generate_for_entry(entry) for entry in entries]
+
     def add_entries(self, entries):
         """
         Add entries and generate parapgraphs for all entries
         """
         exportables = self.exportables
+        uncategorized = False
 
         if self.structure:
             ids = [s['id'] for s in self.structure]
+            uncategorized = 'uncategorized' in ids
+            ids = [id for id in ids if id != 'uncategorized']
+
             order = Case(*[
                 When(pk=pk, then=pos)
                 for pos, pk
@@ -212,6 +231,9 @@ class ReportExporter:
             ), None)
             self._generate_for_levels(levels, level_entries_map,
                                       valid_levels, structures)
+
+        if uncategorized:
+            self._generate_for_uncategorized(entries)
 
         return self
 
