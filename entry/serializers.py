@@ -88,7 +88,7 @@ class EntrySerializer(RemoveNullFieldsMixin,
         model = Entry
         fields = ('id', 'lead', 'analysis_framework',
                   'entry_type', 'excerpt', 'image', 'information_date',
-                  'attributes', 'order',
+                  'attributes', 'order', 'client_id',
                   'created_at', 'created_by', 'modified_at', 'modified_by',
                   'version_id')
 

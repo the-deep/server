@@ -8,9 +8,11 @@ from project.models import Project
 
 
 def migrate_project_status(apps, schema_editor):
-    for project in Project.objects.all():
-        project.status = project.calc_status()
-        project.save()
+    pass
+    # This doesn't really work so is a dummy migration
+    # for project in Project.objects.all():
+    #     project.status = project.calc_status()
+    #     project.save()
 
 
 class Migration(migrations.Migration):
