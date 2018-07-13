@@ -14,6 +14,9 @@ class UserResource(models.Model):
                                     default=None, blank=True, null=True,
                                     on_delete=models.SET_NULL)
 
+    client_id = models.CharField(max_length=128, unique=True,
+                                 default=None, null=True, blank=True)
+
     class Meta:
         abstract = True
         ordering = ['-created_at']
