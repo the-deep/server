@@ -4,6 +4,7 @@ from . import (
     acaps_briefing_notes,
     unhcr_portal,
     relief_web,
+    pdna,
 )
 import random
 
@@ -13,6 +14,7 @@ source_store = OrderedDict([
     ('acaps-briefing-notes', acaps_briefing_notes.AcapsBriefingNotes),
     ('unhcr-portal', unhcr_portal.UNHCRPortal),
     ('relief-web', relief_web.ReliefWeb),
+    ('post-disaster-needs-assessment', pdna.PDNA),
 ])
 
 sources = None
