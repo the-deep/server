@@ -257,7 +257,8 @@ class UNHCRPortal(Source):
         soup = Soup(resp.text, 'html.parser')
         contents = soup.findAll('ul', {'class': 'searchResults'})
         if not contents:
-            return results
+            return results, 0
+
         content = contents[0]
         for item in content.findAll('li', {'class': ['searchResultItem']}):
             itemcontent = item.find(
@@ -285,4 +286,4 @@ class UNHCRPortal(Source):
                 website='data2.unhcr.org'
             )
             results.append(data)
-        return results
+        return results, len(results)

@@ -43,7 +43,7 @@ class RssFeed(Source):
     def fetch(self, params, page=None, limit=None):
         results = []
         if not params or not params.get('feed-url'):
-            return results
+            return results, 0
 
         feed = feedparser.parse(params['feed-url'])
 
@@ -70,7 +70,7 @@ class RssFeed(Source):
 
             results.append(data)
 
-        return results
+        return results, len(results)
 
     def query_fields(self, params):
         if not params or not params.get('feed-url'):

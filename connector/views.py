@@ -30,7 +30,7 @@ class SourceViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def list(self, request, version=None):
-        sources = source_store.values()
+        sources = [s() for s in source_store.values()]
         serializer = SourceSerializer(sources, many=True)
         results = serializer.data
         return response.Response({
@@ -98,6 +98,7 @@ class ConnectorViewSet(viewsets.ModelViewSet):
         )
 
     @detail_route(permission_classes=[permissions.IsAuthenticated],
+                  methods=['post'],
                   url_path='leads',
                   serializer_class=SourceDataSerializer)
     def get_leads(self, request, pk=None, version=None):
@@ -105,13 +106,16 @@ class ConnectorViewSet(viewsets.ModelViewSet):
         if not connector.can_get(request.user):
             raise exceptions.PermissionDenied()
 
-        project_id = request.GET.get('project')
+        project_id = request.data.get('project')
         project = None
         if project_id:
             project = Project.objects.get(id=project_id)
 
+        offset = request.data.get('offset')
+        limit = request.data.get('limit')
+
         source = source_store[connector.source]()
-        data = source.fetch(connector.params)
+        data, count = source.fetch(connector.params, offset, limit)
         serializer = SourceDataSerializer(
             data,
             many=True,
@@ -120,7 +124,7 @@ class ConnectorViewSet(viewsets.ModelViewSet):
         results = serializer.data
 
         return response.Response({
-            'count': len(results),
+            'count': count,
             'results': results
         })
 
