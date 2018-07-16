@@ -276,6 +276,8 @@ class UNHCRPortal(Source):
             raw_date = datecontent.find('b').get_text()  # 4 July 2018
             date = datetime.datetime.strptime(raw_date, '%d %B %Y')
             data = Lead(
+                # FIXME: use proper key
+                id=pdfurl,
                 title=title.strip(),
                 published_on=date.date(),
                 url=pdfurl,
@@ -286,4 +288,6 @@ class UNHCRPortal(Source):
             results.append(data)
 
         # FIXME: Do proper pagination
+        offset = offset or 0
+        limit = limit or len(results)
         return results[offset:offset + limit], len(results)

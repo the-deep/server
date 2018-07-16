@@ -5,7 +5,7 @@ from lead.models import Lead
 
 
 class ReliefWeb(Source):
-    URL = 'https://api.reliefweb.int/v1/reports'
+    URL = 'https://api.reliefweb.int/v1/reports?appname=thedeep.io'
     title = 'ReliefWeb Reports'
     key = 'relief-web'
     options = [
@@ -56,6 +56,7 @@ class ReliefWeb(Source):
         for datum in resp['data']:
             fields = datum['fields']
             lead = Lead(
+                id=str(datum['id']),
                 title=fields['title'],
                 published_on=fields['date']['original'],
                 url=fields['url_alias'],
