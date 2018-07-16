@@ -98,7 +98,7 @@ class ConnectorApiTest(TestCase):
         self.assert_200(response)
 
         self.assertIsNotNone(response.data.get('results'))
-        self.assertTrue(response.data['count'] > 0)
+        self.assertTrue(response.data['count'] >= 0)
         self.assertIsInstance(response.data['results'], list)
 
     def test_get_leads_from_source(self):
