@@ -60,6 +60,8 @@ class RssFeed(Source):
             url = url_field and entry.get(url_field)
 
             data = Lead(
+                # FIXME: use proper key
+                id=url,
                 title=title,
                 published_on=date,
                 source=source,
@@ -67,10 +69,11 @@ class RssFeed(Source):
                 website=website,
                 source_type=Lead.RSS,
             )
-
             results.append(data)
 
         # FIXME: Do proper pagination
+        offset = offset or 0
+        limit = limit or len(results)
         return results[offset:offset + limit], len(results)
 
     def query_fields(self, params):

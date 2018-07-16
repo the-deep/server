@@ -153,6 +153,8 @@ class AcapsBriefingNotes(Source):
                     'div', {'class': 'field-item'}
                 ).find('a')
                 data = Lead(
+                    # FIXME: use proper key
+                    id=link['href'],
                     title=title.strip(),
                     published_on=date.date(),
                     url=link['href'],
@@ -166,4 +168,6 @@ class AcapsBriefingNotes(Source):
                 pass
 
         # FIXME: Do proper pagination
+        offset = offset or 0
+        limit = limit or len(results)
         return results[offset:offset + limit], len(results)

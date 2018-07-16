@@ -34,10 +34,11 @@ class SourceSerializer(RemoveNullFieldsMixin,
 class SourceDataSerializer(RemoveNullFieldsMixin,
                            serializers.ModelSerializer):
     existing = serializers.SerializerMethodField()
+    key = serializers.CharField(source='id')
 
     class Meta:
         model = Lead
-        fields = ('title', 'source', 'source_type', 'url',
+        fields = ('key', 'title', 'source', 'source_type', 'url',
                   'website', 'published_on', 'existing')
 
     def get_existing(self, lead):
