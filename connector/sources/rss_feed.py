@@ -40,7 +40,7 @@ class RssFeed(Source):
         },
     ]
 
-    def fetch(self, params, page=None, limit=None):
+    def fetch(self, params, offset=None, limit=None):
         results = []
         if not params or not params.get('feed-url'):
             return results, 0
@@ -70,7 +70,8 @@ class RssFeed(Source):
 
             results.append(data)
 
-        return results, len(results)
+        # FIXME: Do proper pagination
+        return results[offset:limit], len(results)
 
     def query_fields(self, params):
         if not params or not params.get('feed-url'):

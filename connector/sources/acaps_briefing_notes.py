@@ -133,7 +133,7 @@ class AcapsBriefingNotes(Source):
         }
     ]
 
-    def fetch(self, params, page=None, limit=None):
+    def fetch(self, params, offset=None, limit=None):
         results = []
         resp = requests.get(self.URL, params=params)
         soup = Soup(resp.text, 'html.parser')
@@ -164,4 +164,6 @@ class AcapsBriefingNotes(Source):
             except Exception:
                 # Just let it pass
                 pass
-        return results, len(results)
+
+        # FIXME: Do proper pagination
+        return results[offset:limit], len(results)
