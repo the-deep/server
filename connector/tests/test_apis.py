@@ -94,7 +94,7 @@ class ConnectorApiTest(TestCase):
         url = '/api/v1/connectors/{}/leads/'.format(connector.id)
 
         self.authenticate()
-        response = self.client.get(url)
+        response = self.client.post(url)
         self.assert_200(response)
 
         self.assertIsNotNone(response.data.get('results'))

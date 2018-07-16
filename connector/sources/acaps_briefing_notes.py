@@ -139,7 +139,8 @@ class AcapsBriefingNotes(Source):
         soup = Soup(resp.text, 'html.parser')
         contents = soup.findAll('div', {'class': 'wrapper-type'})
         if not contents:
-            return results
+            return results, 0
+
         content = contents[0]
         for item in content.findAll('div', {'class': 'views-row'}):
             try:
@@ -156,11 +157,11 @@ class AcapsBriefingNotes(Source):
                     published_on=date.date(),
                     url=link['href'],
                     source='Briefing Notes',
-                    source_type='',
+                    source_type='',  # FIXME source_type = website
                     website='www.acaps.org/special-reports'
                 )
                 results.append(data)
-            except Exception as e:
+            except Exception:
                 # Just let it pass
                 pass
-        return results
+        return results, len(results)
