@@ -15,6 +15,6 @@ class Source(ABC):
     def query_leads(self, params):
         from connector.serializers import SourceDataSerializer
         return SourceDataSerializer(
-            self.fetch(params),
+            self.fetch(params)[0],
             many=True,
         ).data
