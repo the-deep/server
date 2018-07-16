@@ -286,4 +286,4 @@ class UNHCRPortal(Source):
             results.append(data)
 
         # FIXME: Do proper pagination
-        return results[offset:limit], len(results)
+        return results[offset:offset + limit], len(results)
