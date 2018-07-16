@@ -6,7 +6,7 @@ from lead.models import Lead
 
 class ReliefWeb(Source):
     URL = 'https://api.reliefweb.int/v1/reports'
-    title = 'ReliefWeb'
+    title = 'ReliefWeb Reports'
     key = 'relief-web'
     options = [
         {
