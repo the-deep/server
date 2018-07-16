@@ -77,4 +77,7 @@ class RssFeed(Source):
             return []
 
         feed = feedparser.parse(params['feed-url'])
-        return list(feed.entries[0].keys())
+        entries = feed.entries
+        if len(entries) == 0:
+            return []
+        return list(entries[0].keys())
