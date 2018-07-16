@@ -246,12 +246,10 @@ class UNHCRPortal(Source):
         ]
     }
 
-    def fetch(self, params, page=None, limit=None):
+    def fetch(self, params, offset=None, limit=None):
         results = []
-        if page:
-            params['page'] = page
         if params.get('country'):
-            params['country_json'] = '{"0":"'+params['country']+'"}'
+            params['country_json'] = '{"0":"' + params['country'] + '"}'
         params.update(self.params)  # type is default
         resp = requests.get(self.URL, params=params)
         soup = Soup(resp.text, 'html.parser')
@@ -286,4 +284,6 @@ class UNHCRPortal(Source):
                 website='data2.unhcr.org'
             )
             results.append(data)
-        return results, len(results)
+
+        # FIXME: Do proper pagination
+        return results[offset:limit], len(results)
