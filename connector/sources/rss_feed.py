@@ -71,7 +71,7 @@ class RssFeed(Source):
             results.append(data)
 
         # FIXME: Do proper pagination
-        return results[offset:limit], len(results)
+        return results[offset:offset + limit], len(results)
 
     def query_fields(self, params):
         if not params or not params.get('feed-url'):

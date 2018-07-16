@@ -166,4 +166,4 @@ class AcapsBriefingNotes(Source):
                 pass
 
         # FIXME: Do proper pagination
-        return results[offset:limit], len(results)
+        return results[offset:offset + limit], len(results)
