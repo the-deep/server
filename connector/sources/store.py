@@ -3,6 +3,7 @@ from . import (
     acaps_briefing_notes,
     unhcr_portal,
     pdna,
+    research_center,
 )
 import random
 
@@ -12,6 +13,7 @@ source_store = {
     'acaps-briefing-notes': acaps_briefing_notes.AcapsBriefingNotes,
     'unhcr-portal': unhcr_portal.UNHCRPortal,
     'post-disaster-needs-assessment': pdna.PDNA,
+    'research-resource-center': research_center.ResearchResourceCenter,
 }
 
 sources = None
