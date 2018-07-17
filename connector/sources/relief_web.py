@@ -46,10 +46,18 @@ class ReliefWeb(Source):
             'include': ['url_alias', 'title', 'date.original',
                         'source', 'source.homepage']
         }
+
         if params.get('country'):
             post_params['filter'] = {
                 'field': 'country.iso3',
                 'value': params['country'],
+            }
+
+        if params.get('search'):
+            post_params['query'] = {
+                'value': params['search'],
+                'fields': ['title'],
+                'operator': 'AND',
             }
 
         if offset:
