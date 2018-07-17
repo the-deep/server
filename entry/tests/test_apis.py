@@ -66,6 +66,34 @@ class EntryTests(TestCase):
         self.assertEqual(attribute.widget.pk, widget.pk)
         self.assertEqual(attribute.data['a'], 'b')
 
+    def test_duplicate_entry(self):
+        entry_count = Entry.objects.count()
+        lead = self.create_lead()
+
+        client_id = 'randomId123'
+        url = '/api/v1/entries/'
+        data = {
+            'lead': lead.pk,
+            'excerpt': 'Test excerpt',
+            'analysis_framework': lead.project.analysis_framework.id,
+            'client_id': client_id,
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        self.assertEqual(Entry.objects.count(), entry_count + 1)
+        self.assertEqual(response.data['client_id'], client_id)
+        id = response.data['id']
+
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        self.assertEqual(Entry.objects.count(), entry_count + 1)
+        self.assertEqual(response.data['id'], id)
+        self.assertEqual(response.data['client_id'], client_id)
+
     def test_patch_attributes(self):
         entry = self.create_entry()
         widget1 = self.create(

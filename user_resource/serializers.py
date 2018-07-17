@@ -22,9 +22,18 @@ class UserResourceSerializer(NestedCreateMixin,
         source='modified_by.profile.get_display_name',
         read_only=True)
 
+    client_id = serializers.CharField(required=False)
     version_id = serializers.SerializerMethodField()
 
     def create(self, validated_data):
+        client_id = validated_data.get('client_id')
+        if client_id:
+            ModelClass = self.Meta.model
+            item = ModelClass.objects.filter(client_id=client_id).first()
+            if item:
+                validated_data['id'] = item.id
+                return self.update(item, validated_data)
+
         resource = super(UserResourceSerializer, self).create(validated_data)
         resource.created_by = self.context['request'].user
         resource.modified_by = self.context['request'].user
