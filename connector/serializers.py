@@ -5,6 +5,8 @@ from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
 from lead.models import Lead
 from lead.views import check_if_url_exists
+
+from .sources.store import source_store
 from .models import (
     Connector,
     ConnectorUser,
@@ -108,6 +110,7 @@ class ConnectorSerializer(RemoveNullFieldsMixin,
         required=False,
     )
     role = serializers.SerializerMethodField()
+    filters = serializers.SerializerMethodField()
 
     class Meta:
         model = Connector
@@ -134,3 +137,9 @@ class ConnectorSerializer(RemoveNullFieldsMixin,
             return usership.role
 
         return None
+
+    def get_filters(self, connector):
+        source = source_store[connector.source]()
+        if not hasattr(source, 'filters'):
+            return []
+        return source.filters

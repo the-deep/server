@@ -16,6 +16,13 @@ class ReliefWeb(Source):
             'options': [],
         },
     ]
+    filters = [
+        {
+            'key': 'search',
+            'field_type': 'string',
+            'title': 'Search',
+        },
+    ]
 
     def __init__(self):
         super(ReliefWeb, self).__init__()
