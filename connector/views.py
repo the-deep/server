@@ -106,16 +106,19 @@ class ConnectorViewSet(viewsets.ModelViewSet):
         if not connector.can_get(request.user):
             raise exceptions.PermissionDenied()
 
-        project_id = request.data.get('project')
-        project = None
-        if project_id:
-            project = Project.objects.get(id=project_id)
+        project_id = request.data.pop('project', None)
+        project = project_id and Project.objects.get(id=project_id)
 
-        offset = request.data.get('offset')
-        limit = request.data.get('limit')
+        offset = request.data.pop('offset', None)
+        limit = request.data.pop('limit', None)
+
+        params = {
+            **connector.params,
+            **request.data,
+        }
 
         source = source_store[connector.source]()
-        data, count = source.fetch(connector.params, offset, limit)
+        data, count = source.fetch(params, offset, limit)
         serializer = SourceDataSerializer(
             data,
             many=True,

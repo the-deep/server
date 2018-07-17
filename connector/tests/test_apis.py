@@ -90,7 +90,9 @@ class ConnectorApiTest(TestCase):
     def test_get_leads_from_connector(self):
         # TODO Check existing status of leads
 
-        connector = self.create(Connector, params=SAMPLE_RSS_PARAMS)
+        connector = self.create(Connector,
+                                source='rss-feed',
+                                params=SAMPLE_RSS_PARAMS)
         url = '/api/v1/connectors/{}/leads/'.format(connector.id)
 
         self.authenticate()
@@ -122,3 +124,26 @@ class ConnectorApiTest(TestCase):
         self.assertIsNotNone(response.data.get('results'))
         self.assertTrue(response.data['count'] > 0)
         self.assertIsInstance(response.data['results'], list)
+
+    def test_relief_web(self):
+        connector = self.create(Connector,
+                                source='relief-web',
+                                params={'country': 'NPL'})
+
+        data = {
+            'offset': 5,
+            'limit': 15,
+            'search': 'Earthquake',
+        }
+        url = '/api/v1/connectors/{}/leads/'.format(connector.id)
+
+        self.authenticate()
+        response = self.client.post(url, data=data)
+        self.assert_200(response)
+
+        self.assertIsNotNone(response.data.get('results'))
+        self.assertTrue(response.data['count'], 15)
+        self.assertIsInstance(response.data['results'], list)
+
+        for result in response.data['results']:
+            self.assertTrue('earthquake' in result['title'].lower())
