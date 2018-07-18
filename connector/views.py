@@ -113,8 +113,8 @@ class ConnectorViewSet(viewsets.ModelViewSet):
         limit = request.data.pop('limit', None)
 
         params = {
-            **connector.params,
-            **request.data,
+            **(connector.params or {}),
+            **(request.data or {}),
         }
 
         source = source_store[connector.source]()
@@ -128,6 +128,7 @@ class ConnectorViewSet(viewsets.ModelViewSet):
 
         return response.Response({
             'count': count,
+            'count_per_page': getattr(source, 'count_per_page', None),
             'results': results
         })
 
