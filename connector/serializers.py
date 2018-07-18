@@ -5,6 +5,8 @@ from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
 from lead.models import Lead
 from lead.views import check_if_url_exists
+
+from .sources.store import source_store
 from .models import (
     Connector,
     ConnectorUser,
@@ -18,6 +20,9 @@ class SourceOptionSerializer(RemoveNullFieldsMixin,
     key = serializers.CharField()
     field_type = serializers.CharField()
     title = serializers.CharField()
+    options = serializers.ListField(
+        serializers.DictField(serializers.CharField)
+    )
 
 
 class SourceSerializer(RemoveNullFieldsMixin,
@@ -31,10 +36,11 @@ class SourceSerializer(RemoveNullFieldsMixin,
 class SourceDataSerializer(RemoveNullFieldsMixin,
                            serializers.ModelSerializer):
     existing = serializers.SerializerMethodField()
+    key = serializers.CharField(source='id')
 
     class Meta:
         model = Lead
-        fields = ('title', 'source', 'source_type', 'url',
+        fields = ('key', 'title', 'source', 'source_type', 'url',
                   'website', 'published_on', 'existing')
 
     def get_existing(self, lead):
@@ -104,6 +110,7 @@ class ConnectorSerializer(RemoveNullFieldsMixin,
         required=False,
     )
     role = serializers.SerializerMethodField()
+    filters = serializers.SerializerMethodField()
 
     class Meta:
         model = Connector
@@ -130,3 +137,9 @@ class ConnectorSerializer(RemoveNullFieldsMixin,
             return usership.role
 
         return None
+
+    def get_filters(self, connector):
+        source = source_store[connector.source]()
+        if not hasattr(source, 'filters'):
+            return []
+        return source.filters
