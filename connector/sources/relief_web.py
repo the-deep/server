@@ -65,6 +65,8 @@ class ReliefWeb(Source):
         if limit:
             post_params['limit'] = limit
 
+        post_params['sort'] = ['date.original:desc', 'title:asc']
+
         resp = requests.post(self.URL, json=post_params).json()
         count = resp['totalCount']
 
