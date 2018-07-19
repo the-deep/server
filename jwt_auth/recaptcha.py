@@ -12,7 +12,7 @@ def validate_recaptcha(recaptcha_response):
     if settings.TESTING:
         return True
 
-    if not settings.RECAPTCHA_SECRET:
+    if not (recaptcha_response and settings.RECAPTCHA_SECRET):
         return False
 
     data = {
