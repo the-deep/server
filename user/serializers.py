@@ -137,8 +137,8 @@ class UserPreferencesSerializer(RemoveNullFieldsMixin,
 
 class PasswordResetSerializer(RemoveNullFieldsMixin,
                               serializers.Serializer):
-    email = serializers.EmailField(required=True)
     recaptcha_response = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
 
     def get_user(self, email):
         users = User.objects.filter(email=email)
