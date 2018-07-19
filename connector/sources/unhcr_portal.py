@@ -246,18 +246,17 @@ class UNHCRPortal(Source):
         ]
     }
 
-    def fetch(self, params, page=None, limit=None):
+    def fetch(self, params, offset=None, limit=None):
         results = []
-        if page:
-            params['page'] = page
         if params.get('country'):
-            params['country_json'] = '{"0":"'+params['country']+'"}'
+            params['country_json'] = '{"0":"' + params['country'] + '"}'
         params.update(self.params)  # type is default
         resp = requests.get(self.URL, params=params)
         soup = Soup(resp.text, 'html.parser')
         contents = soup.findAll('ul', {'class': 'searchResults'})
         if not contents:
-            return results
+            return results, 0
+
         content = contents[0]
         for item in content.findAll('li', {'class': ['searchResultItem']}):
             itemcontent = item.find(
@@ -277,6 +276,8 @@ class UNHCRPortal(Source):
             raw_date = datecontent.find('b').get_text()  # 4 July 2018
             date = datetime.datetime.strptime(raw_date, '%d %B %Y')
             data = Lead(
+                # FIXME: use proper key
+                id=pdfurl,
                 title=title.strip(),
                 published_on=date.date(),
                 url=pdfurl,
@@ -285,4 +286,5 @@ class UNHCRPortal(Source):
                 website='data2.unhcr.org'
             )
             results.append(data)
-        return results
+
+        return results, len(results)
