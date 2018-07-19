@@ -12,7 +12,7 @@ SAMPLE_RSS_PARAMS = {
     'feed-url': 'https://reliefweb.int/country/afg/rss.xml?primary_country=16',
     'website': 'reliefweb',
     'title-field': 'title',
-    'date-field': 'published',
+    'date-field': 'pubDate',
     'url-field': 'link',
 }
 
