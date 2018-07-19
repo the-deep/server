@@ -52,12 +52,7 @@ class RssFeed(Source):
         },
     ]
 
-    dynamic_fields = [
-        'title-field',
-        'date-field',
-        'source-field',
-        'url-field',
-    ]
+    dynamic_fields = [2, 3, 4, 5]
 
     def fetch(self, params, page=None, limit=None):
         results = []
