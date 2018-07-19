@@ -40,10 +40,10 @@ class RssFeed(Source):
         },
     ]
 
-    def fetch(self, params, page=None, limit=None):
+    def fetch(self, params, offset=None, limit=None):
         results = []
         if not params or not params.get('feed-url'):
-            return results
+            return results, 0
 
         feed = feedparser.parse(params['feed-url'])
 
@@ -60,6 +60,8 @@ class RssFeed(Source):
             url = url_field and entry.get(url_field)
 
             data = Lead(
+                # FIXME: use proper key
+                id=url,
                 title=title,
                 published_on=date,
                 source=source,
@@ -67,14 +69,16 @@ class RssFeed(Source):
                 website=website,
                 source_type=Lead.RSS,
             )
-
             results.append(data)
 
-        return results
+        return results, len(results)
 
     def query_fields(self, params):
         if not params or not params.get('feed-url'):
             return []
 
         feed = feedparser.parse(params['feed-url'])
-        return list(feed.entries[0].keys())
+        entries = feed.entries
+        if len(entries) == 0:
+            return []
+        return list(entries[0].keys())

@@ -133,13 +133,14 @@ class AcapsBriefingNotes(Source):
         }
     ]
 
-    def fetch(self, params, page=None, limit=None):
+    def fetch(self, params, offset=None, limit=None):
         results = []
         resp = requests.get(self.URL, params=params)
         soup = Soup(resp.text, 'html.parser')
         contents = soup.findAll('div', {'class': 'wrapper-type'})
         if not contents:
-            return results
+            return results, 0
+
         content = contents[0]
         for item in content.findAll('div', {'class': 'views-row'}):
             try:
@@ -152,15 +153,18 @@ class AcapsBriefingNotes(Source):
                     'div', {'class': 'field-item'}
                 ).find('a')
                 data = Lead(
+                    # FIXME: use proper key
+                    id=link['href'],
                     title=title.strip(),
                     published_on=date.date(),
                     url=link['href'],
                     source='Briefing Notes',
-                    source_type='',
+                    source_type='',  # FIXME source_type = website
                     website='www.acaps.org/special-reports'
                 )
                 results.append(data)
-            except Exception as e:
+            except Exception:
                 # Just let it pass
                 pass
-        return results
+
+        return results, len(results)
