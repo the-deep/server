@@ -1,3 +1,4 @@
+from rest_framework import exceptions
 from lxml import etree
 import requests
 
@@ -103,7 +104,11 @@ class RssFeed(Source):
         if not params or not params.get('feed-url'):
             return []
 
-        r = requests.get(params['feed-url'])
+        try:
+            r = requests.get(params['feed-url'])
+        except requests.exceptions.RequestException:
+            raise exceptions.ValidationError('Could not connect to this url')
+
         xml = etree.fromstring(r.content)
         item = xml.find('channel/item')
         if not item:
@@ -124,4 +129,11 @@ class RssFeed(Source):
                 'value': replace_ns(tag),
             })
 
-        return fields
+        # Remove fields that are present more than once,
+        # as we donot have support for list data yet.
+        real_fields = []
+        for field in fields:
+            if fields.count(field) == 1:
+                real_fields.append(field)
+
+        return real_fields
