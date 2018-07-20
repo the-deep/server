@@ -22,9 +22,10 @@ class RssFeed(Source):
             'title': 'Feed URL'
         },
         {
-            'key': 'website',
-            'field_type': 'string',
+            'key': 'website-field',
+            'field_type': 'select',
             'title': 'Website',
+            'options': [],
         },
         {
             'key': 'title-field',
@@ -52,7 +53,7 @@ class RssFeed(Source):
         },
     ]
 
-    dynamic_fields = [2, 3, 4, 5]
+    dynamic_fields = [1, 2, 3, 4, 5]
 
     def fetch(self, params, page=None, limit=None):
         results = []
@@ -67,7 +68,7 @@ class RssFeed(Source):
         date_field = params.get('date-field')
         source_field = params.get('source-field')
         url_field = params.get('url-field')
-        website = params.get('website')
+        website_field = params.get('website_field')
 
         for item in items:
             def get_field(field):
@@ -76,6 +77,7 @@ class RssFeed(Source):
             date = get_field(date_field)
             source = get_field(source_field)
             url = get_field(url_field)
+            website = get_field(website_field)
 
             data = Lead(
                 # FIXME: use proper key
