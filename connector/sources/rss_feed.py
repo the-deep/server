@@ -7,13 +7,6 @@ from lead.models import Lead
 from .base import Source
 
 
-class DefaultElement:
-    text = ''
-
-
-default_element = DefaultElement()
-
-
 class RssFeed(Source):
     title = 'RSS Feed'
     key = 'rss-feed'
@@ -70,11 +63,14 @@ class RssFeed(Source):
         date_field = params.get('date-field')
         source_field = params.get('source-field')
         url_field = params.get('url-field')
-        website_field = params.get('website_field')
+        website_field = params.get('website-field')
 
         for item in items:
             def get_field(field):
-                return ((field and item.find(field)) or default_element).text
+                if not field:
+                    return ''
+                element = item.find(field)
+                return element.text
             title = get_field(title_field)
             date = get_field(date_field)
             source = get_field(source_field)
