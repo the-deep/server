@@ -1,6 +1,7 @@
 from rest_framework import exceptions
 from lxml import etree
 import requests
+import copy
 
 from lead.models import Lead
 from .base import Source
@@ -96,9 +97,10 @@ class RssFeed(Source):
 
     def query_options(self, params):
         fields = self.query_fields(params)
+        options = copy.deepcopy(self.options)
         for field in self.dynamic_fields:
-            self.options[field]['options'] = fields
-        return self.options
+            options[field]['options'] = fields
+        return options
 
     def query_fields(self, params):
         if not params or not params.get('feed-url'):
@@ -126,7 +128,7 @@ class RssFeed(Source):
             tag = child.tag
             fields.append({
                 'key': tag,
-                'value': replace_ns(tag),
+                'label': replace_ns(tag),
             })
 
         # Remove fields that are present more than once,
