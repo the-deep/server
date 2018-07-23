@@ -15,6 +15,7 @@ from rest_framework import (
 from rest_framework.decorators import detail_route
 
 from deep.views import get_frontend_url
+from .token import unsubscribe_email_token_generator
 from .serializers import (
     UserSerializer,
     UserPreferencesSerializer,
@@ -124,10 +125,35 @@ def user_activate_confirm(
         'title': 'Account Activation',
     }
 
-    if user is not None and default_token_generator.check_token(user, token):
+    if user is not None and token_generator.check_token(user, token):
         user.is_active = True
         user.profile.login_attempts = 0
         user.save()
+    else:
+        context['success'] = False
+
+    return TemplateResponse(request, template_name, context)
+
+
+def unsubscribe_email(
+    request, uidb64, token,
+    template_name='user/unsubscribe_email__confirm.html',
+    token_generator=unsubscribe_email_token_generator,
+):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    context = {
+        'success': True,
+        'title': 'Unsubscribe Email',
+    }
+
+    if user is not None and token_generator.check_token(user, token):
+        # FIXME: add user.receive_email = False
+        pass
     else:
         context['success'] = False
 

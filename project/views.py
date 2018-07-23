@@ -2,6 +2,9 @@ from django.conf import settings
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_text
+from django.template.response import TemplateResponse
 from rest_framework import (
     exceptions,
     filters,
@@ -22,6 +25,7 @@ from project.permissions import JoinPermission, AcceptRejectPermission
 from project.filter_set import ProjectFilterSet, get_filtered_projects
 
 from user.utils import send_project_join_request_emails
+from user.models import User
 from geo.models import Region
 from user_group.models import UserGroup
 from .models import (
@@ -35,6 +39,9 @@ from .serializers import (
     ProjectMembershipSerializer,
     ProjectJoinRequestSerializer,
 )
+
+from .token import project_request_token_generator
+from deep.views import get_frontend_url
 
 import logging
 
@@ -130,11 +137,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         )
 
         if settings.TESTING:
-            pass
-            # send_project_join_request_emails(
-            #     request.user.id,
-            #     project.id,
-            # )
+            send_project_join_request_emails(join_request.id)
         else:
             # Unless we are in test environment,
             # send the join request emails in a celery
@@ -142,14 +145,35 @@ class ProjectViewSet(viewsets.ModelViewSet):
             # This makes sure that the response is returned
             # while the emails are being sent in the background.
             def send_mail():
-                send_project_join_request_emails.delay(
-                    request.user.id,
-                    project.id,
-                )
+                send_project_join_request_emails.delay(join_request.id)
             transaction.on_commit(send_mail)
 
         return response.Response(serializer.data,
                                  status=status.HTTP_201_CREATED)
+
+    @staticmethod
+    def _accept_request(responded_by, join_request, role='normal'):
+        join_request.status = 'accepted'
+        join_request.responded_by = responded_by
+        join_request.responded_at = timezone.now()
+        join_request.role = role
+        join_request.save()
+
+        ProjectMembership.objects.update_or_create(
+            project=join_request.project,
+            member=join_request.requested_by,
+            defaults={
+                'role': role,
+                'added_by': responded_by,
+            },
+        )
+
+    @staticmethod
+    def _reject_request(responded_by, join_request):
+        join_request.status = 'rejected'
+        join_request.responded_by = responded_by
+        join_request.responded_at = timezone.now()
+        join_request.save()
 
     """
     Accept a join request to this project,
@@ -171,20 +195,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             )
 
         role = request.data.get('role', 'normal')
-        join_request.status = 'accepted'
-        join_request.responded_by = request.user
-        join_request.responded_at = timezone.now()
-        join_request.role = role
-        join_request.save()
-
-        ProjectMembership.objects.update_or_create(
-            project=project,
-            member=join_request.requested_by,
-            defaults={
-                'role': role,
-                'added_by': request.user,
-            },
-        )
+        ProjectViewSet._accept_request(request.user, join_request, role)
 
         serializer = ProjectJoinRequestSerializer(
             join_request,
@@ -210,10 +221,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 'This request has already been {}'.format(join_request.status)
             )
 
-        join_request.status = 'rejected'
-        join_request.responded_by = request.user
-        join_request.responded_at = timezone.now()
-        join_request.save()
+        ProjectViewSet._reject_request(request.user, join_request)
 
         serializer = ProjectJoinRequestSerializer(
             join_request,
@@ -368,3 +376,49 @@ class ProjectOptionsView(views.APIView):
             ]
 
         return response.Response(options)
+
+
+def accept_project_confirm(
+    request, uidb64, pidb64, token,
+    template_name='project/project_join_request_confirm.html',
+):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        pid = force_text(urlsafe_base64_decode(pidb64))
+        user = User.objects.get(pk=uid)
+        join_request = ProjectJoinRequest.objects.get(pk=pid)
+        accept = request.GET.get('accept', 'True').lower() == 'true'
+        role = request.GET.get('role', 'normal')
+    except(
+        TypeError, ValueError, OverflowError,
+        ProjectJoinRequest.DoesNotExist, User.DoesNotExist,
+    ):
+        user = None
+        join_request = None
+
+    request_data = {
+        'join_request': join_request,
+        'will_responded_by': user,
+    }
+    context = {
+        'title': 'Project Join Request',
+        'success': True,
+        'accept': accept,
+        'role': role,
+        'notification_url': get_frontend_url('notifications/'),
+        'join_request': join_request,
+        'project_url': get_frontend_url(
+            'projects/{}/#/general'.format(join_request.project.id)
+        ) if join_request else None,
+    }
+
+    if (join_request and user) is not None and\
+            project_request_token_generator.check_token(request_data, token):
+        if accept:
+            ProjectViewSet._accept_request(user, join_request, role)
+        else:
+            ProjectViewSet._reject_request(user, join_request)
+    else:
+        context['success'] = False
+
+    return TemplateResponse(request, template_name, context)

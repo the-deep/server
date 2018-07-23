@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block content %}
+
+<div class="description">
+    <img
+        class="logo"
+        width="160"
+        height="160"
+        src="https://beta.thedeep.io/deep-logo-grey.png"
+    />
+    {% if success %}
+        {% if accept %}
+            <p>
+                Successfully added
+                <strong>{{ join_request.requested_by }}</strong>
+                to the project
+                <strong>{{join_request.project}}</strong>
+                {% if role == 'admin' %}
+                    <strong>(as Admin)</strong>
+                {% endif %}
+                .
+            </p>
+        {% else %}
+            <p>
+                Rejected request from
+                <strong>{{ join_request.requested_by }}</strong>
+                for project
+                <strong>{{join_request.project}}</strong>.
+            </p>
+        {% endif %}
+    {% else %}
+        <p>
+            Project Request link is invalid!
+        </p>
+    {% endif %}
+    </div>
+
+    <div class="actions-container" >
+        <a class="goto-url" href="{{notification_url}}">Goto Notifications</a>
+
+        {% if project_url %}
+            <a class="goto-url" href="{{project_url}}">View Project Panel</a>
+        {% endif %}
+    </div>
+
+{% endblock %}
