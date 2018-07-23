@@ -16,6 +16,7 @@ from user.views import (
     UserViewSet,
     PasswordResetView,
     user_activate_confirm,
+    unsubscribe_email,
 )
 from gallery.views import (
     FileViewSet,
@@ -32,6 +33,7 @@ from project.views import (
     ProjectMembershipViewSet,
     ProjectOptionsView,
     ProjectViewSet,
+    accept_project_confirm,
 )
 from geo.views import (
     AdminLevelViewSet,
@@ -93,6 +95,7 @@ from deep.views import (
     Api_404View,
     FrontendView,
     PasswordReset,
+    ProjectJoinRequest,
     AccountActivate,
 )
 from lang.views import (
@@ -237,6 +240,16 @@ urlpatterns = [
         user_activate_confirm,
         name='user_activate_confirm'),
 
+    # Unsubscribe User Email
+    url(r'^user/unsubscribe/email/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
+        unsubscribe_email,
+        name='unsubscribe_email'),
+    # Project Request Accept
+    url(r'^project/join-request/'
+        '(?P<uidb64>[0-9A-Za-z]+)-(?P<pidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
+        accept_project_confirm,
+        name='accept_project_confirm'),
+
     # password reset
     url(get_api_path(r'password/reset/$'),
         PasswordResetView.as_view()),
@@ -336,6 +349,7 @@ urlpatterns = [
     # NOTE: For debuging email templates
     url(r'^pr-email/$', PasswordReset.as_view()),
     url(r'^aa-email/$', AccountActivate.as_view()),
+    url(r'^pj-email/$', ProjectJoinRequest.as_view()),
 
     url(r'^favicon.ico$',
         RedirectView.as_view(

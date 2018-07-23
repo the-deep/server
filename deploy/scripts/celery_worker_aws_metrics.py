@@ -78,9 +78,9 @@ def get_autoscaling_group():
             InstanceIds=[INSTANCE_ID]
         )["AutoScalingInstances"][0]["AutoScalingGroupName"]
     except botocore.exceptions.BotoCoreError as err:
-        print(err.message)
+        print(err)
     except botocore.exceptions.ClientError as err:
-        print(err.message)
+        print(err)
 
 
 def get_cloudwatch_client():

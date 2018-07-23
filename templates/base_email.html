@@ -29,13 +29,43 @@
                 text-decoration: none;
                 text-transform: uppercase;
                 font-family: inherit;
-                padding: 10px 12px;
+                padding: 8px 10px;
                 background-color: #008975;
                 color: #fff;
                 border-radius: 5px;
                 transition: 0.2s all ease-in-out;
-                margin: 18px 0 8px 0;
+                font-size: 12px;
             }
+
+            .accept {
+                box-shadow: 0 2px 7px -2px rgba(0, 0, 0, .5);
+                text-decoration: none;
+                text-transform: uppercase;
+                font-family: inherit;
+                padding: 8px 10px;
+                background-color: #008975;
+                color: #fff;
+                border-radius: 5px;
+                transition: 0.2s all ease-in-out;
+                font-size: 12px;
+                margin-right: 20px;
+            }
+
+            .reject {
+                box-shadow: 0 2px 7px -2px rgba(0, 0, 0, .5);
+                text-decoration: none;
+                text-transform: uppercase;
+                font-family: inherit;
+                padding: 8px 10px;
+                background-color: #842505;
+                color: #fff;
+                border-radius: 5px;
+                transition: 0.2s all ease-in-out;
+                font-size: 12px;
+                margin-left: 20px;
+            }
+
+
             .link:hover {
                 filter: brightness(90%);
             }
@@ -47,9 +77,14 @@
             }
             .deep-team p {
                 margin-top: 12px;
+                font-size: 14px;
             }
             .bold {
                 font-weight: bold;
+            }
+
+            .unsubscribe {
+                font-size: 14px;
             }
         </style>
 
@@ -71,10 +106,21 @@
 
             {% block body %}{% endblock %}
 
+            <br>
             <div class="deep-team">
-                <p>Thanks for using DEEP</p>
+                <p>Thank you for using DEEP</p>
                 <p>-The DEEP team</p>
             </div>
+            <br>
+            <br>
+            <p class="unsubscribe">
+                Would you prefer to not receive these kinds of emails anymore?
+                <a
+                    href="{{ protocol }}://{{ domain }}{% url 'unsubscribe_email' uidb64=unsubscribe_email_id token=unsubscribe_email_token %}"
+                    >
+                    Click here to unsubscribe
+                </a>
+            </p>
             {% endautoescape %}
         </div>
     <body>
