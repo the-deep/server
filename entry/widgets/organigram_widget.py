@@ -13,7 +13,7 @@ def get_selected_nodes(node, selected_ids):
 
 
 def update_attribute(entry, widget, data, widget_data):
-    values = data.get('values', [])
+    values = data.get('value', [])
     selected_nodes = get_selected_nodes(widget_data, values)
 
     set_filter_data(
