@@ -1,4 +1,4 @@
-from rest_framework import exceptions
+from rest_framework import serializers
 from lxml import etree
 import requests
 import copy
@@ -105,7 +105,9 @@ class RssFeed(Source):
         try:
             r = requests.get(params['feed-url'])
         except requests.exceptions.RequestException:
-            raise exceptions.ValidationError('Could not connect to this url')
+            raise serializers.ValidationError({
+                'feed-url': 'Could not connect to this url'
+            })
 
         xml = etree.fromstring(r.content)
         item = xml.find('channel/item')
