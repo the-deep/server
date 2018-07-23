@@ -124,7 +124,10 @@ class Lead(UserResource):
 
     def __init__(self, *args, **kwargs):
         super(Lead, self).__init__(*args, **kwargs)
-        self.__initial = self.get_dict()
+        if self.pk:
+            self.__initial = self.get_dict()
+        else:
+            self.__initial = None
 
     def get_dict(self):
         return {
@@ -142,7 +145,7 @@ class Lead(UserResource):
         if not settings.TESTING:
             d1 = self.__initial
             d2 = self.get_dict()
-            if d1.get('text') != d2.get('text') or \
+            if not d1 or d1.get('text') != d2.get('text') or \
                     d1.get('url') != d2.get('url') or \
                     d1.get('attachment') != d2.get('attachment'):
                 transaction.on_commit(lambda: extract_from_lead.delay(self.id))
