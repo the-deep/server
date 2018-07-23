@@ -104,12 +104,12 @@ class RssFeed(Source):
 
         try:
             r = requests.get(params['feed-url'])
+            xml = etree.fromstring(r.content)
         except requests.exceptions.RequestException:
             raise serializers.ValidationError({
-                'feed-url': 'Could not connect to this url'
+                'feed-url': 'Could not fetch rss feed'
             })
 
-        xml = etree.fromstring(r.content)
         item = xml.find('channel/item')
         if not item:
             return []
