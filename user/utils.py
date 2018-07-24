@@ -44,6 +44,8 @@ def send_mail_to_user(user, context={}, force_send=False, *args, **kwargs):
             'site_name': settings.DEEPER_SITE_NAME,
             'domain': settings.DJANGO_API_HOST,
             'user': user,
+            # No need to show unsubscribe email if always send
+            'hide_unsubscribe_email': force_send,
             'unsubscribe_email_token':
                 unsubscribe_email_token_generator.make_token(user),
             'unsubscribe_email_id':
@@ -136,7 +138,6 @@ def send_project_join_request_emails(join_request_id):
         send_mail_to_user(
             user=user,
             context=context,
-            force_send=True,  # TODO: remove this
             subject_template_name='project/project_join_request.txt',
             email_template_name='project/project_join_request_email.html',
         )
