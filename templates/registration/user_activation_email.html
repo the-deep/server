@@ -1,10 +1,19 @@
 {% extends "registration/base_email.html" %}
+
+{% block head %}
+    <style>
+        .activation-link {
+            margin: 12px 0;
+        }
+    </style>
+{% endblock %}
+
 {% block container %}
     <p>
         It seems your DEEP account is not active – please click on the link below to activate it:
     </p>
     <a
-        class="link"
+        class="button-like-link activation-link"
         href="{{ protocol }}://{{ domain }}{% url 'user_activate_confirm' uidb64=uid token=token %}"
         >
         Activate your account
