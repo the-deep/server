@@ -30,7 +30,10 @@ def get_exportable(widget, data):
     rows = data.get('rows', [])
     excel = {
         'type': 'multiple',
-        'titles': ['Dimension', 'Subdimension'],
+        'titles': [
+            '{} - Dimension'.format(widget.title),
+            '{} - Subdimension'.format(widget.title),
+        ],
     }
 
     report = {
