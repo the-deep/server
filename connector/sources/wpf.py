@@ -164,7 +164,7 @@ class WorldFoodProgramme(Source):
         soup = Soup(resp.text, 'html.parser')
         contents = soup.find('div', {'class': 'view-content'})
         if not contents:
-            return results
+            return results, len(results)
         # iterate and get loops
         for row in contents.findAll('div', {'class': 'views-row'}):
             content = row.find('h3').find('a')
@@ -177,4 +177,4 @@ class WorldFoodProgramme(Source):
                 website='www.wfp.org'
             )
             results.append(data)
-        return results
+        return results, len(results)

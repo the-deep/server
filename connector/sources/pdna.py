@@ -83,7 +83,7 @@ class PDNA(Source):
     def fetch(self, params, page=None, limit=None):
         country = params.get('country')
         if not country:
-            return []
+            return [], 0
         results = []
         resp = requests.get(self.URL)
         soup = Soup(resp.text, 'html.parser')
@@ -106,4 +106,4 @@ class PDNA(Source):
                     website=self.website
                 )
                 results.append(data)
-        return results
+        return results, len(results)

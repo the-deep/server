@@ -87,5 +87,5 @@ class ResearchResourceCenter(Source):
                 )
                 results.append(data)
         except Exception:
-            return results
-        return results
+            return results, len(results)
+        return results, len(results)
