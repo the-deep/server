@@ -4,18 +4,21 @@
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600" rel="stylesheet">
     <head>
         <style>
+            * {
+                font-family: 'Source Sans Pro', sans-serif;
+            }
             p {
-                margin: 0;
+                margin: 6px 0;
                 font-size: 1.1em;
                 color: #616161;
             }
             .header {
-                margin-bottom: 8px;
+                margin-bottom: 12px;
                 font-size: 1.12em;
             }
             .mail {
                 margin: 0 auto;
-                max-width: 600px;
+                max-width: 640px;
                 font-family: 'Source Sans Pro', sans-serif;
                 text-align: center;
             }
@@ -29,26 +32,28 @@
                 box-shadow: 0 2px 7px -2px rgba(0, 0, 0, .5);
                 text-decoration: none;
                 text-transform: uppercase;
-                font-family: inherit;
                 padding: 8px 10px;
                 background-color: #008975;
                 color: #fff;
-                border-radius: 5px;
-                transition: 0.2s all ease-in-out;
+                font-family: inherit;
                 font-size: 12px;
+                font-weight: 400;
+                border-radius: 2px;
+                transition: 0.2s all ease-in-out;
             }
 
             .button {
+                background-color: #008975;
+                border-radius: 2px;
                 box-shadow: 0 2px 7px -2px rgba(0, 0, 0, .5);
+                color: #fff;
+                font-family: inherit;
+                font-size: 12px;
+                font-weight: 400;
+                padding: 8px 10px;
                 text-decoration: none;
                 text-transform: uppercase;
-                font-family: inherit;
-                padding: 8px 10px;
-                background-color: #008975;
-                color: #fff;
-                border-radius: 5px;
                 transition: 0.2s all ease-in-out;
-                font-size: 12px;
             }
 
             .link:hover {
@@ -108,7 +113,7 @@
                     <a
                         href="{{ protocol }}://{{ domain }}{% url 'unsubscribe_email' uidb64=unsubscribe_email_id token=unsubscribe_email_token %}"
                     >
-                        Click here to unsubscribe
+                        Click here to unsubscribe.
                     </a>
                 </p>
             {% endif %}
