@@ -7,6 +7,7 @@ from . import (
     pdna,
     research_center,
     wpf,
+    humanitarian_response,
 )
 import random
 
@@ -18,6 +19,8 @@ source_store = OrderedDict([
     ('relief-web', relief_web.ReliefWeb),
     ('post-disaster-needs-assessment', pdna.PDNA),
     ('research-resource-center', research_center.ResearchResourceCenter),
+    ('world-food-programme', wpf.WorldFoodProgramme),
+    ('humanitarian-response', humanitarian_response.HumanitarianResponse),
 ])
 
 sources = None
