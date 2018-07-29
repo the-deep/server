@@ -5,24 +5,8 @@
     {{ block.super }}
     <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
     <style>
-        #container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
         #header {
             background: #273646;
-            flex-shrink: 0;
-        }
-
-        #content {
-            display: flex;
-            justify-content: center;
-            flex-direction: column;
-            align-items: center;
-            flex-grow: 1;
-            overflow-y: auto;
         }
 
         input[type=submit], input[type=button] {
