@@ -72,6 +72,7 @@ class PasswordReset(View):
             'welcome': welcome,
             'token': 'faketoken',
             'protocol': 'https' if True else 'http',
+            'hide_unsubscribe_email': True,
             'unsubscribe_email_token': 'faketoken',
             'unsubscribe_email_id': 'fakeid',
         }
@@ -95,6 +96,7 @@ class AccountActivate(View):
             'user': user,
             'token': 'faketoken',
             'protocol': 'https' if True else 'http',
+            'hide_unsubscribe_email': True,
             'unsubscribe_email_token': 'faketoken',
             'unsubscribe_email_id': 'fakeid',
         }
