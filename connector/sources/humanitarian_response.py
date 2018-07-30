@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup as Soup
 from datetime import datetime
 
 from .base import Source
+from connector.utils import handle_connector_parse_error
 from lead.models import Lead
 
 
@@ -44,6 +45,7 @@ COUNTRIES_OPTIONS = [
 ]
 
 
+@handle_connector_parse_error
 class HumanitarianResponse(Source):
     URL = 'https://www.humanitarianresponse.info/en/documents/table'
     title = 'Humanitarian Response'
@@ -65,25 +67,20 @@ class HumanitarianResponse(Source):
             url = self.URL + '/loc/' + params['country']
         resp = requests.get(url, params={})
         soup = Soup(resp.text, 'html.parser')
-        try:
-            contents = soup.find('div', {'id': 'content'}).find('tbody')
-            for row in contents.findAll('tr'):
-                tds = row.findAll('td')
-                print(tds[0])
-                title = tds[0].find('a').get_text().strip()
-                datestr = tds[3].get_text().strip()
-                date = datetime.strptime(datestr, '%m/%d/%Y')
-                url = tds[4].find('a')['href']
-                data = Lead(
-                    title=title,
-                    published_on=date.date(),
-                    url=url,
-                    source='Humanitarian Response',
-                    website=self.URL
-                )
-                results.append(data)
-            return results, len(results)
-        except Exception as e:
-            import traceback
-            print(traceback.format_exc())
-            return results, len(results)
+        contents = soup.find('div', {'id': 'content'}).find('tbody')
+        for row in contents.findAll('tr'):
+            tds = row.findAll('td')
+            print(tds[0])
+            title = tds[0].find('a').get_text().strip()
+            datestr = tds[3].get_text().strip()
+            date = datetime.strptime(datestr, '%m/%d/%Y')
+            url = tds[4].find('a')['href']
+            data = Lead(
+                title=title,
+                published_on=date.date(),
+                url=url,
+                source='Humanitarian Response',
+                website=self.URL
+            )
+            results.append(data)
+        return results, len(results)

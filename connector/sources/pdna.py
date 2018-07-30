@@ -3,6 +3,7 @@ import requests
 import re
 
 from .base import Source
+from connector.utils import handle_connector_parse_error
 from lead.models import Lead
 
 COUNTRIES_OPTIONS = [
@@ -65,6 +66,7 @@ COUNTRIES_OPTIONS = [
 ]
 
 
+@handle_connector_parse_error
 class PDNA(Source):
     URL = 'https://www.gfdrr.org/post-disaster-needs-assessments'
     title = 'Post Disaster Needs Assessment'

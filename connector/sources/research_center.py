@@ -3,6 +3,7 @@ import datetime
 from bs4 import BeautifulSoup as Soup
 
 from .base import Source
+from connector.utils import handle_connector_parse_error
 from lead.models import Lead
 
 
@@ -52,6 +53,7 @@ COUNTRIES_OPTIONS = [
 ]
 
 
+@handle_connector_parse_error
 class ResearchResourceCenter(Source):
     URL = 'http://www.reachresourcecentre.info/advanced-search'
     title = 'Research Resource Center'
@@ -70,22 +72,19 @@ class ResearchResourceCenter(Source):
         results = []
         resp = requests.get(self.URL, params=params)
         soup = Soup(resp.text, 'html.parser')
-        try:
-            contents = soup.find('table').find('tbody').findAll('tr')
-            for row in contents:
-                tds = row.findAll('td')
-                title = tds[0].get_text().replace('_', ' ')
-                date = tds[1].find('span').attrs['content'][:10]  # just date str  # noqa
-                date = datetime.datetime.strptime(date, '%Y-%m-%d')
-                url = tds[0].find('a').attrs['href']
-                data = Lead(
-                    title=title.strip(),
-                    published_on=date.date(),
-                    url=url,
-                    source="Research Resource Center",
-                    website=self.URL
-                )
-                results.append(data)
-        except Exception:
-            return results, len(results)
+        contents = soup.find('table').find('tbody').findAll('tr')
+        for row in contents:
+            tds = row.findAll('td')
+            title = tds[0].get_text().replace('_', ' ')
+            date = tds[1].find('span').attrs['content'][:10]  # just date str  # noqa
+            date = datetime.datetime.strptime(date, '%Y-%m-%d')
+            url = tds[0].find('a').attrs['href']
+            data = Lead(
+                title=title.strip(),
+                published_on=date.date(),
+                url=url,
+                source="Research Resource Center",
+                website=self.URL
+            )
+            results.append(data)
         return results, len(results)
