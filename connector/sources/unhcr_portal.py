@@ -3,6 +3,7 @@ import requests
 import datetime
 
 from .base import Source
+from connector.utils import handle_connector_parse_error
 from lead.models import Lead
 
 
@@ -210,6 +211,7 @@ COUNTRIES_OPTIONS = [
 ]
 
 
+@handle_connector_parse_error
 class UNHCRPortal(Source):
     URL = 'https://data2.unhcr.org/en/search'
     title = 'UNHCR Portal'
