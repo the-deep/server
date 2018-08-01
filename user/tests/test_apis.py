@@ -58,6 +58,7 @@ class UserApiTests(TestCase):
         url = '/api/v1/users/{}/'.format(self.user.pk)
         data = {
             'password': 'newpassword',
+            'receive_email': False,
         }
 
         self.authenticate()
