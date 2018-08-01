@@ -53,6 +53,10 @@ class UserSerializer(RemoveNullFieldsMixin,
         allow_null=True,
         required=False,
     )
+    receive_email = serializers.BooleanField(
+        source='profile.receive_email',
+        required=False,
+    )
     login_attempts = serializers.IntegerField(
         source='profile.login_attempts',
         read_only=True,
@@ -66,7 +70,7 @@ class UserSerializer(RemoveNullFieldsMixin,
                   'display_name', 'last_active_project',
                   'login_attempts', 'recaptcha_response',
                   'email', 'organization', 'display_picture',
-                  'language')
+                  'language', 'receive_email')
 
     def validate_recaptcha_response(self, recaptcha_response):
         if not validate_recaptcha(recaptcha_response):
