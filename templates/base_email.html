@@ -107,11 +107,11 @@
             </div>
             <br>
             <br>
-            {% if not hide_unsubscribe_email %}
+            {% if email_type in unsubscribe_email_types %}
                 <p class="unsubscribe">
                     Would you prefer to not receive these kinds of emails anymore?
                     <a
-                        href="{{ protocol }}://{{ domain }}{% url 'unsubscribe_email' uidb64=unsubscribe_email_id token=unsubscribe_email_token %}"
+                        href="{{ protocol }}://{{ domain }}{% url 'unsubscribe_email' uidb64=unsubscribe_email_id token=unsubscribe_email_token email_type=email_type %}"
                     >
                         Click here to unsubscribe.
                     </a>
