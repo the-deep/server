@@ -10,6 +10,7 @@ from django.core.mail import EmailMultiAlternatives
 from .token import unsubscribe_email_token_generator
 from project.models import ProjectJoinRequest
 from project.token import project_request_token_generator
+from .models import Profile
 
 
 def _send_mail(subject_template_name, email_template_name,
@@ -32,32 +33,31 @@ def _send_mail(subject_template_name, email_template_name,
     email_message.send()
 
 
-def send_mail_to_user(user, context={}, force_send=False, *args, **kwargs):
+def send_mail_to_user(user, context={}, email_type=None, *args, **kwargs):
     """
     Validates email request
     Add common context variable
     """
-    if user.profile.receive_email or force_send:
-        context.update({
-            'client_domain': settings.DEEPER_FRONTEND_HOST,
-            'protocol': settings.HTTP_PROTOCOL,
-            'site_name': settings.DEEPER_SITE_NAME,
-            'domain': settings.DJANGO_API_HOST,
-            'user': user,
-            # No need to show unsubscribe email if always send
-            'hide_unsubscribe_email': force_send,
-            'unsubscribe_email_token':
-                unsubscribe_email_token_generator.make_token(user),
-            'unsubscribe_email_id':
-                urlsafe_base64_encode(force_bytes(user.pk)).decode(),
-        })
+    context.update({
+        'client_domain': settings.DEEPER_FRONTEND_HOST,
+        'protocol': settings.HTTP_PROTOCOL,
+        'site_name': settings.DEEPER_SITE_NAME,
+        'domain': settings.DJANGO_API_HOST,
+        'user': user,
+        'email_type': email_type,
+        'unsubscribe_email_types': Profile.EMAIL_CONDITIONS_TYPES,
+        'unsubscribe_email_token':
+            unsubscribe_email_token_generator.make_token(user),
+        'unsubscribe_email_id':
+            urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+    })
 
-        _send_mail(
-            *args, **kwargs,
-            context=context,
-            from_email=None,
-            to_email=user.email,
-        )
+    _send_mail(
+        *args, **kwargs,
+        context=context,
+        from_email=None,
+        to_email=user.email,
+    )
 
 
 def get_users(email):
@@ -87,7 +87,6 @@ def send_password_reset(user, welcome=False):
     send_mail_to_user(
         user=user,
         context=context,
-        force_send=True,
         subject_template_name='registration/password_reset_subject.txt',
         email_template_name='registration/password_reset_email.html',
     )
@@ -106,7 +105,6 @@ def send_account_activation(user):
     send_mail_to_user(
         user=user,
         context=context,
-        force_send=True,
         subject_template_name='registration/user_activation_subject.txt',
         email_template_name='registration/user_activation_email.html',
     )
@@ -121,6 +119,7 @@ def send_project_join_request_emails(join_request_id):
     project = join_request.project
     request_by = join_request.requested_by
     request_data = {'join_request': join_request}
+    email_type = 'join_requests'
 
     context = {
         'request_by': request_by,
@@ -129,15 +128,18 @@ def send_project_join_request_emails(join_request_id):
     }
 
     for user in project.get_admins():
-        request_data.update({'will_responded_by': user})
-        context.update({
-            'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
-            'token': project_request_token_generator.make_token(request_data)
-        })
+        if user.profile.receive_emails(email_type):
+            request_data.update({'will_responded_by': user})
+            context.update({
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+                'token':
+                    project_request_token_generator.make_token(request_data)
+            })
 
-        send_mail_to_user(
-            user=user,
-            context=context,
-            subject_template_name='project/project_join_request.txt',
-            email_template_name='project/project_join_request_email.html',
-        )
+            send_mail_to_user(
+                user=user,
+                context=context,
+                email_type=email_type,
+                subject_template_name='project/project_join_request.txt',
+                email_template_name='project/project_join_request_email.html',
+            )

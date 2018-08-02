@@ -241,7 +241,8 @@ urlpatterns = [
         name='user_activate_confirm'),
 
     # Unsubscribe User Email
-    url(r'^user/unsubscribe/email/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
+    url(r'^user/unsubscribe/email/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/'
+        '(?P<email_type>[A-Za-z_]+)/$',
         unsubscribe_email,
         name='unsubscribe_email'),
     # Project Request Accept
