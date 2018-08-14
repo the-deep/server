@@ -8,6 +8,7 @@ from geo.models import Region
 from user_group.models import UserGroup
 from analysis_framework.models import AnalysisFramework
 from category_editor.models import CategoryEditor
+from project.permissions import PROJECT_PERMISSIONS
 
 from utils.common import generate_timeseries
 
@@ -333,3 +334,42 @@ def on_membership_saved(sender, **kwargs):
         responded_by=instance.added_by,
         responded_at=instance.joined_at,
     )
+
+
+class ProjectRole(UserResource):
+    """
+    Role Model
+    """
+    title = models.CharField(max_length=255)
+    project = models.ForeignKey(Project)
+
+    lead_permissions = models.IntegerField(default=0)
+    excerpt_permissions = models.IntegerField(default=0)
+    setup_permissions = models.IntegerField(default=0)
+    export_permissions = models.IntegerField(default=0)
+
+    description = models.TextField(blank=True)
+
+    def __getattr__(self, name):
+        if not name.startswith('can_'):
+            # super() does not have __getattr__
+            return super().__getattribute__(name)
+        else:
+            try:
+                _, action, item = name.split('_')  # Example: can_create_lead
+            except ValueError:
+                return super().__getattribute__(name)
+
+            try:
+                item_permissions = self.__getattr__(item + '_permissions')
+            except Exception as e:
+                raise AttributeError(
+                    'No permission defined for "{}"'.format(item)
+                )
+
+            permission_bit = PROJECT_PERMISSIONS.get(item, {}).get(action)
+
+            if permission_bit is None:
+                return super().__getattribute__(name)
+
+            return item_permissions & permission_bit
