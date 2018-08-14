@@ -19,13 +19,17 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
 
-DEEP_ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOST', '*')
-
 DEEP_ENVIRONMENT = os.environ.get('DEEP_ENVIRONMENT', 'development')
 
-ALLOWED_HOSTS = [DEEP_ALLOWED_HOSTS if DEEP_ALLOWED_HOSTS else '*']
+ALLOWED_HOSTS = [os.environ.get('DJANGO_ALLOWED_HOST', '*')]
+
 DEEPER_FRONTEND_HOST = os.environ.get('FRONTEND_HOST', 'localhost:3000')
-DJANGO_API_HOST = os.environ.get('DJANGO_ALLOWED_HOST', 'localhost:8000')
+DEEPER_BACKEND_HOST = os.environ.get('DJANGO_ALLOWED_HOST', 'localhost:8000')
+
+DJANGO_API_HOST = os.environ.get('DJANGO_ALLOWED_HOST_API', 'localhost:8000')
+DJANGO_WEBSOCKET_HOST =\
+    os.environ.get('DJANGO_ALLOWED_HOST_WEBSOCKET', 'localhost:8000')
+
 DEEPER_SITE_NAME = os.environ.get('DEEPER_SITE_NAME', 'DEEPER')
 HTTP_PROTOCOL = os.environ.get('DEEP_HTTPS', 'http')
 
@@ -430,7 +434,7 @@ if SENTRY_DSN:
     RAVEN_CONFIG = {
         'dsn': SENTRY_DSN,
         'release': raven.fetch_git_sha(BASE_DIR),
-        'site': DJANGO_API_HOST,
+        'site': DEEPER_BACKEND_HOST,
         'environment': DEEP_ENVIRONMENT,
     }
 

@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from . import (
     rss_feed,
     acaps_briefing_notes,
@@ -7,12 +8,12 @@ from . import (
 import random
 
 
-source_store = {
-    'rss-feed': rss_feed.RssFeed,
-    'acaps-briefing-notes': acaps_briefing_notes.AcapsBriefingNotes,
-    'unhcr-portal': unhcr_portal.UNHCRPortal,
-    'relief-web': relief_web.ReliefWeb,
-}
+source_store = OrderedDict([
+    ('rss-feed', rss_feed.RssFeed),
+    ('acaps-briefing-notes', acaps_briefing_notes.AcapsBriefingNotes),
+    ('unhcr-portal', unhcr_portal.UNHCRPortal),
+    ('relief-web', relief_web.ReliefWeb),
+])
 
 sources = None
 
