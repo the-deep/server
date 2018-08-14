@@ -136,7 +136,7 @@ def user_activate_confirm(
 
 
 def unsubscribe_email(
-    request, uidb64, token,
+    request, uidb64, token, email_type,
     template_name='user/unsubscribe_email__confirm.html',
     token_generator=unsubscribe_email_token_generator,
 ):
@@ -152,8 +152,8 @@ def unsubscribe_email(
     }
 
     if user is not None and token_generator.check_token(user, token):
-        # FIXME: add user.receive_email = False
-        pass
+        user.profile.unsubscribe_email(email_type)
+        user.save()
     else:
         context['success'] = False
 

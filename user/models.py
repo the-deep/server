@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
@@ -15,6 +16,12 @@ class Profile(models.Model):
     Extra attributes for the user besides the django
     provided ones.
     """
+    EMAIL_CONDITIONS = (
+        ('join_requests', 'Project join requests'),
+        ('news_and_updates', 'News and updates'),
+    )
+    EMAIL_CONDITIONS_TYPES = [cond[0] for cond in EMAIL_CONDITIONS]
+
     user = models.OneToOneField(User)
     organization = models.CharField(max_length=300, blank=True)
     hid = models.TextField(default=None, null=True, blank=True)
@@ -33,6 +40,10 @@ class Profile(models.Model):
     )
 
     login_attempts = models.IntegerField(default=0)
+    email_opt_outs = ArrayField(
+        models.CharField(max_length=128, choices=EMAIL_CONDITIONS),
+        default=[],
+    )
 
     def __str__(self):
         return str(self.user)
@@ -40,6 +51,17 @@ class Profile(models.Model):
     def get_display_name(self):
         return self.user.get_full_name() if self.user.first_name \
             else self.user.username
+
+    def unsubscribe_email(self, email_type):
+        if email_type in Profile.EMAIL_CONDITIONS_TYPES and\
+                email_type not in self.email_opt_outs:
+            self.email_opt_outs.append(email_type)
+
+    def is_email_subscribed_for(self, email_type):
+        if email_type in Profile.EMAIL_CONDITIONS_TYPES and\
+                email_type not in self.email_opt_outs:
+            return True
+        return False
 
     def get_fallback_language(self):
         return None
