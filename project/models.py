@@ -446,7 +446,7 @@ class ProjectRole(UserResource):
 
             try:
                 item_permissions = self.__getattr__(item + '_permissions')
-            except Exception:
+            except Exception as e:
                 raise AttributeError(
                     'No permission defined for "{}"'.format(item)
                 )
