@@ -52,12 +52,12 @@ class Profile(models.Model):
         return self.user.get_full_name() if self.user.first_name \
             else self.user.username
 
-    def disable_email_receive(self, email_type):
+    def unsubscribe_email(self, email_type):
         if email_type in Profile.EMAIL_CONDITIONS_TYPES and\
                 email_type not in self.email_opt_outs:
             self.email_opt_outs.append(email_type)
 
-    def receive_emails(self, email_type):
+    def is_email_subscribed_for(self, email_type):
         if email_type in Profile.EMAIL_CONDITIONS_TYPES and\
                 email_type not in self.email_opt_outs:
             return True

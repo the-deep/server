@@ -152,8 +152,7 @@ def unsubscribe_email(
     }
 
     if user is not None and token_generator.check_token(user, token):
-        # user.profile.receive_email = False
-        user.profile.disable_email_receive(email_type)
+        user.profile.unsubscribe_email(email_type)
         user.save()
     else:
         context['success'] = False
