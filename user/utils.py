@@ -128,7 +128,7 @@ def send_project_join_request_emails(join_request_id):
     }
 
     for user in project.get_admins():
-        if user.profile.receive_emails(email_type):
+        if user.profile.is_email_subscribed_for(email_type):
             request_data.update({'will_responded_by': user})
             context.update({
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
