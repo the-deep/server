@@ -253,15 +253,9 @@ class ProjectMembership(models.Model):
     Project-Member relationship attributes
     """
 
-    ROLES = (
-        ('normal', 'Normal'),
-        ('admin', 'Admin'),
-    )
-
     member = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    role = models.CharField(max_length=96, choices=ROLES,
-                            default='normal')
+    role = models.ForeignKey('project.ProjectRole', null=True)
     joined_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                  null=True, blank=True, default=None,
@@ -302,8 +296,7 @@ class ProjectJoinRequest(models.Model):
     requested_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=48, choices=STATUSES,
                               default='pending')
-    role = models.CharField(max_length=96, choices=ProjectMembership.ROLES,
-                            default='normal')
+    role = models.ForeignKey('project.ProjectRole', null=True)
     responded_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                      null=True, blank=True, default=None,
                                      related_name='project_join_responses')
@@ -349,15 +342,19 @@ def on_status_updated(sender, **kwargs):
 
 class ProjectRole(UserResource):
     """
-    Role Model
+    Roles for Project
     """
-    title = models.CharField(max_length=255)
-    project = models.ForeignKey(Project)
+
+    # NOTE: now exists independently, later might co-exist with Project
+    title = models.CharField(max_length=255, unique=True)
 
     lead_permissions = models.IntegerField(default=0)
     excerpt_permissions = models.IntegerField(default=0)
     setup_permissions = models.IntegerField(default=0)
     export_permissions = models.IntegerField(default=0)
+
+    is_creator_role = models.BooleanField(default=False)
+    is_default_role = models.BooleanField(default=False)
 
     description = models.TextField(blank=True)
 
@@ -383,4 +380,5 @@ class ProjectRole(UserResource):
             if permission_bit is None:
                 return super().__getattribute__(name)
 
-            return item_permissions & permission_bit
+            # can be negative if first bit 1, so check if not zero
+            return item_permissions & permission_bit != 0

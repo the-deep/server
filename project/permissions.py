@@ -1,3 +1,4 @@
+from functools import reduce
 from django.db import models
 from rest_framework import permissions
 
@@ -6,25 +7,44 @@ from utils.data_structures import Dict
 
 PROJECT_PERMISSIONS = Dict(
     lead=Dict(  # Dict is same as dict, can acccess elements by dot
-        view=1 >> 0,
-        create=1 >> 1,
-        modify=1 >> 2,
-        delete=1 >> 3
+        view=1 << 0,
+        create=1 << 1,
+        modify=1 << 2,
+        delete=1 << 3
     ),
-    entries=Dict({
-        'view': 1 >> 0,
-        'create': 1 >> 1,
-        'modify': 1 >> 2,
-        'delete': 1 >> 3
+    entry=Dict({
+        'view': 1 << 0,
+        'create': 1 << 1,
+        'modify': 1 << 2,
+        'delete': 1 << 3
     }),
     setup=Dict({
-        'modify': 1 >> 0,
-        'delete': 1 >> 1,
+        'modify': 1 << 0,
+        'delete': 1 << 1,
     }),
     export=Dict({
-        'create': 1 >> 0
+        'create': 1 << 0
     })
 )
+
+
+def get_project_permissions_value(item, actions=[]):
+    """
+    Return the numeric value of permission for actions related to the item
+    E.g: get_permissions_value('lead', ['view', 'delete']) will return
+    1 << 0 | 1 << 3
+    """
+    if actions == '__all__':
+        # set all bits to 1
+        return reduce(lambda a, e: a | e, PROJECT_PERMISSIONS[item].values())
+    permissions = 0
+    try:
+        action_permissions = PROJECT_PERMISSIONS[item]
+        for action in actions:
+            permissions |= action_permissions[action]
+    except Exception as e:
+        return permissions
+    return permissions
 
 
 class JoinPermission(permissions.BasePermission):
@@ -52,3 +72,25 @@ class AcceptRejectPermission(permissions.BasePermission):
             member=request.user,
             role='admin',
         ).exists()
+
+
+def get_project_entities(Entity, user, action=None):
+    """
+    @Entity: classname for the entity
+    @user: User instance
+    @action: could be view, create, edit, delete, etc.
+    """
+    item = Entity.__name__.lower()
+
+    item_permissions = item + '_permissions'
+    permission = PROJECT_PERMISSIONS.get(item, {}).get(action)
+    if permission is None:
+        return Entity.objects.none()
+
+    fieldname = 'project__membership__role__{}'.format(item_permissions)
+    return Entity.objects.annotate(
+        new_permission_col=models.F(fieldname).bitand(permission)
+    ).filter(
+        project__membership__user=user,
+        new_permission_col=permission
+    )
