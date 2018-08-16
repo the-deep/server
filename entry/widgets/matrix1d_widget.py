@@ -6,7 +6,7 @@ def update_attribute(entry, widget, data, widget_data):
     excel_values = []
     report_values = []
 
-    data = data or {}
+    data = (data or {}).get('value', {})
     rows = widget_data.get('rows', [])
 
     for row_key, row in data.items():
