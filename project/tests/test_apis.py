@@ -7,6 +7,7 @@ from project.models import (
     ProjectJoinRequest,
     ProjectStatus,
     ProjectStatusCondition,
+    ProjectRole
 )
 
 from django.utils import timezone
@@ -17,6 +18,10 @@ from datetime import timedelta
 
 
 class ProjectApiTest(TestCase):
+
+    def setUp(self):
+        super().setUp()
+
     def test_create_project(self):
         project_count = Project.objects.count()
 
@@ -41,7 +46,7 @@ class ProjectApiTest(TestCase):
         membership = ProjectMembership.objects.get(
             pk=response.data['memberships'][0]['id'])
         self.assertEqual(membership.member.pk, self.user.pk)
-        self.assertEqual(membership.role, 'admin')
+        self.assertEqual(membership.role, self.admin_role)
 
     def test_member_of(self):
         project = self.create(Project)
@@ -71,7 +76,7 @@ class ProjectApiTest(TestCase):
         data = {
             'member': test_user.pk,
             'project': project.pk,
-            'role': 'normal',
+            'role': self.normal_role.id,
         }
 
         self.authenticate()
@@ -81,6 +86,22 @@ class ProjectApiTest(TestCase):
         self.assertEqual(response.data['role'], data['role'])
         self.assertEqual(response.data['member'], data['member'])
         self.assertEqual(response.data['project'], data['project'])
+
+    def test_add_member_unexistent_role(self):
+        project = self.create(Project)
+        test_user = self.create(User)
+
+        url = '/api/v1/project-memberships/'
+        data = {
+            'member': test_user.pk,
+            'project': project.pk,
+            'role': 9999
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        assert 'errors' in response.data
 
     def test_options(self):
         url = '/api/v1/project-options/'
@@ -124,7 +145,7 @@ class ProjectApiTest(TestCase):
         membership = ProjectMembership.objects.filter(
             project=project,
             member=test_user,
-            role='normal',
+            role=self.normal_role,
         )
         self.assertEqual(membership.count(), 1)
 
@@ -150,7 +171,7 @@ class ProjectApiTest(TestCase):
         membership = ProjectMembership.objects.filter(
             project=project,
             member=test_user,
-            role='normal',
+            role=self.normal_role
         )
         self.assertEqual(membership.count(), 0)
 
@@ -195,7 +216,7 @@ class ProjectApiTest(TestCase):
             project=project,
             requested_by=test_user,
         )
-        project.add_member(test_user, 'normal', self.user)
+        project.add_member(test_user, self.normal_role, self.user)
 
         request = ProjectJoinRequest.objects.get(id=request.id)
         self.assertEqual(request.status, 'accepted')
@@ -277,8 +298,8 @@ class ProjectApiTest(TestCase):
         project3 = self.create(Project)
 
         test_user = self.create(User)
-        project1.add_member(test_user)
-        project2.add_member(test_user)
+        project1.add_member(test_user, role=self.normal_role)
+        project2.add_member(test_user, role=self.normal_role)
 
         url = '/api/v1/projects/?involvement=my_projects'
 

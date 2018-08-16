@@ -4,7 +4,6 @@ from rest_framework import permissions
 
 from utils.data_structures import Dict
 
-
 PROJECT_PERMISSIONS = Dict(
     lead=Dict(  # Dict is same as dict, can acccess elements by dot
         view=1 << 0,
@@ -66,11 +65,11 @@ class JoinPermission(permissions.BasePermission):
 
 class AcceptRejectPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        from project.models import ProjectMembership
+        from project.models import ProjectMembership, ProjectRole
         return ProjectMembership.objects.filter(
             project=obj,
             member=request.user,
-            role='admin',
+            role=ProjectRole.get_admin_role(),
         ).exists()
 
 
