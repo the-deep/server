@@ -38,3 +38,4 @@ redlock==1.2.0
 requests==2.13.0
 tldextract==2.2.0
 tox
+pytest-django==3.3.3
