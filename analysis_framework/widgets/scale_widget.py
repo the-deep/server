@@ -2,7 +2,7 @@ def get_filters(widget, data):
     scale_units = data.get('scale_units', [])
     filter_options = [
         {
-            'label': s.get('title'),
+            'label': s.get('label'),
             'key': s.get('key'),
         } for s in scale_units
     ]
