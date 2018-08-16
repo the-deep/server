@@ -199,10 +199,10 @@ class Project(UserResource):
         return ProjectMembership.objects.filter(
             project=self,
             member=user,
-            role='admin',
+            role=ProjectRole.get_admin_role(),
         ).exists()
 
-    def add_member(self, user, role='normal', added_by=None):
+    def add_member(self, user, role, added_by=None):
         return ProjectMembership.objects.create(
             member=user,
             role=role,
@@ -338,7 +338,7 @@ class ProjectRole(UserResource):
     title = models.CharField(max_length=255, unique=True)
 
     lead_permissions = models.IntegerField(default=0)
-    excerpt_permissions = models.IntegerField(default=0)
+    entry_permissions = models.IntegerField(default=0)
     setup_permissions = models.IntegerField(default=0)
     export_permissions = models.IntegerField(default=0)
 
@@ -346,6 +346,20 @@ class ProjectRole(UserResource):
     is_default_role = models.BooleanField(default=False)
 
     description = models.TextField(blank=True)
+
+    @classmethod
+    def get_admin_role(cls):
+        qs = cls.objects.filter(is_creator_role=True)
+        if qs.exists():
+            return qs.first()
+        return None
+
+    @classmethod
+    def get_normal_role(cls):
+        qs = cls.objects.filter(is_default_role=True)
+        if qs.exists():
+            return qs.first()
+        return None
 
     def __getattr__(self, name):
         if not name.startswith('can_'):
