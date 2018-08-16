@@ -382,13 +382,13 @@ def accept_project_confirm(
     request, uidb64, pidb64, token,
     template_name='project/project_join_request_confirm.html',
 ):
+    accept = request.GET.get('accept', 'True').lower() == 'true'
+    role = request.GET.get('role', 'normal')
     try:
         uid = force_text(urlsafe_base64_decode(uidb64))
         pid = force_text(urlsafe_base64_decode(pidb64))
         user = User.objects.get(pk=uid)
         join_request = ProjectJoinRequest.objects.get(pk=pid)
-        accept = request.GET.get('accept', 'True').lower() == 'true'
-        role = request.GET.get('role', 'normal')
     except(
         TypeError, ValueError, OverflowError,
         ProjectJoinRequest.DoesNotExist, User.DoesNotExist,
