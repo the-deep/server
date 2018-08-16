@@ -8,6 +8,7 @@ from project.models import (
     Project,
     ProjectMembership,
     ProjectJoinRequest,
+    ProjectRole
 )
 from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
@@ -101,7 +102,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         ProjectMembership.objects.create(
             project=project,
             member=self.context['request'].user,
-            role='admin',
+            role=ProjectRole.get_admin_role(),
         )
         return project
 
@@ -114,8 +115,10 @@ class ProjectSerializer(RemoveNullFieldsMixin,
             member=user
         ).first()
         if membership:
-            return membership.role
+            return membership.role.id
 
+        # TODO: remove this after implementing: Add user's membership with all
+        # projects of usergroup when user added to that usergroup
         group_membership = UserGroup.objects.filter(
             project=project,
             members=user,
@@ -174,4 +177,12 @@ class ProjectJoinRequestSerializer(RemoveNullFieldsMixin,
 
     class Meta:
         model = ProjectJoinRequest
+        fields = '__all__'
+
+
+class ProjectRoleSerializer(RemoveNullFieldsMixin,
+                            DynamicFieldsMixin,
+                            serializers.ModelSerializer):
+    class Meta:
+        model = ProjectRole
         fields = '__all__'
