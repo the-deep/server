@@ -72,8 +72,10 @@ class TestCase(test.APITestCase):
             generate_fk=True,
         ).create_one()
 
-        if hasattr(obj, 'add_member'):
-            obj.add_member(self.user, role=self.admin_role)
+        role = kwargs.get('role')
+
+        if role and hasattr(obj, 'add_member'):
+            obj.add_member(self.user, role=role)
 
         return obj
 
