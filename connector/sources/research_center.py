@@ -84,6 +84,7 @@ class ResearchResourceCenter(Source):
                 published_on=date.date(),
                 url=url,
                 source="Research Resource Center",
+                source_type=Lead.WEBSITE,
                 website=self.URL
             )
             results.append(data)

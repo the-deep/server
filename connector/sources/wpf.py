@@ -167,7 +167,7 @@ class WorldFoodProgramme(Source):
         contents = soup.find('div', {'class': 'view-content'})
         if not contents:
             return results, len(results)
-        # iterate and get loops
+        # iterate and get leads
         for row in contents.findAll('div', {'class': 'views-row'}):
             content = row.find('h3').find('a')
             title = content.get_text()
@@ -176,6 +176,7 @@ class WorldFoodProgramme(Source):
                 title=title.strip(),
                 url=url,
                 source='WFP Assessments',
+                source_type=Lead.WEBSITE,
                 website='www.wfp.org'
             )
             results.append(data)
