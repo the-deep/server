@@ -185,7 +185,7 @@ class Project(UserResource):
         return Project.get_annotated().filter(
             projectmembership__in=ProjectMembership.objects.filter(
                 member=user,
-                role='admin',
+                role=ProjectRole.get_admin_role(),
             )
         ).distinct()
 
@@ -243,7 +243,7 @@ class Project(UserResource):
     def get_admins(self):
         return User.objects.filter(
             projectmembership__project=self,
-            projectmembership__role='admin'
+            projectmembership__role=ProjectRole.get_admin_role(),
         ).distinct()
 
 
