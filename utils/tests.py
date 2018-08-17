@@ -45,4 +45,4 @@ class TestDict(unittest.TestCase):
 
     def test_other_methods(self):
         d = Dict(a=2, b=3, c=Dict(a=1))
-        assert d.keys() == ['a', 'b', 'c']
+        assert sorted(d.keys()) == ['a', 'b', 'c']
