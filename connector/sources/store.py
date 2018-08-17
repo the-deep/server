@@ -6,6 +6,7 @@ from . import (
     relief_web,
     pdna,
     research_center,
+    wpf,
 )
 import random
 
