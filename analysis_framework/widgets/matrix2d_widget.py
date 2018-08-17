@@ -59,7 +59,12 @@ def get_filters(widget, data):
 def get_exportable(widget, data):
     excel = {
         'type': 'multiple',
-        'titles': ['Dimension', 'Subdimension', 'Sector', 'Subsectors'],
+        'titles': [
+            '{} - Dimension'.format(widget.title),
+            '{} - Subdimension'.format(widget.title),
+            '{} - Sector'.format(widget.title),
+            '{} - Subsectors'.format(widget.title),
+        ],
     }
 
     report = {
