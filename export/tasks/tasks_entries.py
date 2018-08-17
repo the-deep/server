@@ -34,7 +34,8 @@ def _export_entries(export_type, export_id, user_id, project_id, filters):
     queryset = EntryFilterSet(filters, queryset=queryset).qs
 
     exportables = Exportable.objects.filter(
-        analysis_framework__project__id=project_id
+        analysis_framework__project__id=project_id,
+        exportdata__isnull=False,
     ).distinct()
     regions = Region.objects.filter(
         project__id=project_id
