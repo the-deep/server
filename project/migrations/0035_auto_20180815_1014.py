@@ -14,11 +14,13 @@ def create_roles_for_existing_users_in_usergroup(apps, schema_editor):
 
     for ug in UserGroup.objects.all():
         for member in ug.members.all():
-            for project in ug.projects.all():
-                ProjectMembership.objects.create(
+            for project in ug.project_set.all():
+                ProjectMembership.objects.get_or_create(
                     member=member,
                     project=project,
-                    role=default_role
+                    defaults={
+                        'role': default_role
+                    },
                 )
 
 
