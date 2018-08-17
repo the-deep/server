@@ -70,7 +70,6 @@ class HumanitarianResponse(Source):
         contents = soup.find('div', {'id': 'content'}).find('tbody')
         for row in contents.findAll('tr'):
             tds = row.findAll('td')
-            print(tds[0])
             title = tds[0].find('a').get_text().strip()
             datestr = tds[3].get_text().strip()
             date = datetime.strptime(datestr, '%m/%d/%Y')
@@ -80,7 +79,8 @@ class HumanitarianResponse(Source):
                 published_on=date.date(),
                 url=url,
                 source='Humanitarian Response',
-                website=self.URL
+                website=self.URL,
+                source_type=Lead.WEBSITE
             )
             results.append(data)
         return results, len(results)

@@ -104,7 +104,7 @@ class PDNA(Source):
                     title=title.strip(),
                     url=url,
                     source='PDNA portal',
-                    source_type='',
+                    source_type=Lead.WEBSITE,
                     website=self.website
                 )
                 results.append(data)
