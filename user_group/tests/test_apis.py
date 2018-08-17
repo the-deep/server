@@ -30,7 +30,7 @@ class UserGroupApiTest(TestCase):
         self.assertEqual(membership.role, 'admin')
 
     def test_member_of(self):
-        user_group = self.create(UserGroup)
+        user_group = self.create(UserGroup, role='admin')
         test_user = self.create(User)
 
         url = '/api/v1/user-groups/member-of/'
@@ -83,7 +83,7 @@ class UserGroupApiTest(TestCase):
         self.assertEqual(user_groups[0]['id'], user_group.id)
 
     def test_add_member(self):
-        user_group = self.create(UserGroup)
+        user_group = self.create(UserGroup, role='admin')
         test_user = self.create(User)
 
         url = '/api/v1/group-memberships/'

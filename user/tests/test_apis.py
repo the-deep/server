@@ -75,7 +75,7 @@ class UserApiTests(TestCase):
         self.assertEqual(response.data['username'], self.user.username)
 
     def test_notifications(self):
-        test_project = self.create(Project)
+        test_project = self.create(Project, role=self.admin_role)
         test_user = self.create(User)
 
         request = ProjectJoinRequest.objects.create(
