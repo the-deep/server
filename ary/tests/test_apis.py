@@ -14,7 +14,7 @@ from ary.models import (
 
 class AssessmentTests(TestCase):
     def create_lead(self):
-        project = self.create(Project)
+        project = self.create(Project, role=self.admin_role)
         return self.create(Lead, project=project)
 
     def test_create_assessment(self):
