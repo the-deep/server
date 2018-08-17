@@ -55,7 +55,7 @@ def send_mail_to_user(user, context={}, email_type=None, *args, **kwargs):
     _send_mail(
         *args, **kwargs,
         context=context,
-        from_email=None,
+        from_email=settings.EMAIL_FROM,
         to_email=user.email,
     )
 

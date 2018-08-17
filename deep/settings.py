@@ -370,6 +370,7 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER',
                                  'deepnotifications1@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'deep1234')
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_FROM = 'DEEP Admin <{}>'.format(EMAIL_HOST_USER)
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT')) if os.environ.get('EMAIL_PORT')\
     else 587
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
