@@ -5,7 +5,7 @@ from project.models import Project
 
 class CategoryEditorTests(TestCase):
     def test_create_category_editor(self):
-        project = self.create(Project)
+        project = self.create(Project, role=self.admin_role)
 
         ce_count = CategoryEditor.objects.count()
         url = '/api/v1/category-editors/'
@@ -24,7 +24,10 @@ class CategoryEditorTests(TestCase):
 
     def test_clone_category_editor(self):
         category_editor = self.create(CategoryEditor)
-        project = self.create(Project, category_editor=category_editor)
+        project = self.create(
+            Project, category_editor=category_editor,
+            role=self.admin_role
+        )
 
         url = '/api/v1/clone-category-editor/{}/'.format(category_editor.id)
         data = {
@@ -64,7 +67,9 @@ class CategoryEditorTests(TestCase):
         }
 
         category_editor = self.create(CategoryEditor, data=ce_data)
-        project = self.create(Project, category_editor=category_editor)
+        project = self.create(
+            Project, category_editor=category_editor,
+            role=self.admin_role)
 
         text = 'My water aaloooo'
         url = '/api/v1/projects/{}/category-editor/classify/'.format(
