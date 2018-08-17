@@ -6,6 +6,9 @@ from django.views.generic import View
 from django.conf import settings
 from django.template.response import TemplateResponse
 
+from user.models import User, Profile
+from project.models import Project
+
 
 def get_frontend_url(path=''):
     return '{protocol}://{domain}/{path}'.format(
@@ -30,26 +33,33 @@ class Api_404View(APIView):
                        code=status.HTTP_404_NOT_FOUND)
 
 
+def get_basic_email_context():
+    user = User.objects.get(pk=1)
+    context = {
+        'uid': 'fakeuid',
+        'user': user,
+        'unsubscribe_email_types': Profile.EMAIL_CONDITIONS_TYPES,
+        'request_by': user,
+        'token': 'faketoken',
+        'unsubscribe_email_token': 'faketoken',
+        'unsubscribe_email_id': 'fakeid',
+    }
+    return context
+
+
 class ProjectJoinRequest(View):
     """
     Template view for project join request email
     NOTE: Use Only For Debug
     """
     def get(self, request):
-        from user.models import User
-        from project.models import Project
-        user = User.objects.get(pk=1)
         project = Project.objects.get(pk=1)
-        context = {
-            'uid': 'fakeuid',
-            'pid': 'fakeuid',
-            'user': user,
-            'request_by': user,
+        context = get_basic_email_context()
+        context.update({
+            'email_type': 'join_requests',
             'project': project,
-            'token': 'faketoken',
-            'unsubscribe_email_token': 'faketoken',
-            'unsubscribe_email_id': 'fakeid',
-        }
+            'pid': 'fakeuid',
+        })
         return TemplateResponse(
             request, 'project/project_join_request_email.html', context)
 
@@ -60,22 +70,9 @@ class PasswordReset(View):
     NOTE: Use Only For Debug
     """
     def get(self, request):
-        from user.models import User
-        welcome = request.GET.get('welcome', False)
-        user = User.objects.get(pk=1)
-        context = {
-            'email': user.email,
-            'domain': 'localhost:8000',
-            'site_name': 'DEEPER',
-            'uid': 'fakeuid',
-            'user': user,
-            'welcome': welcome,
-            'token': 'faketoken',
-            'protocol': 'https' if True else 'http',
-            'hide_unsubscribe_email': True,
-            'unsubscribe_email_token': 'faketoken',
-            'unsubscribe_email_id': 'fakeid',
-        }
+        welcome = request.GET.get('welcome', 'false').upper() == 'TRUE'
+        context = get_basic_email_context()
+        context.update({'welcome': welcome})
         return TemplateResponse(
             request, 'registration/password_reset_email.html', context)
 
@@ -86,19 +83,6 @@ class AccountActivate(View):
     NOTE: Use Only For Debug
     """
     def get(self, request):
-        from user.models import User
-        user = User.objects.get(pk=1)
-        context = {
-            'email': user.email,
-            'domain': 'localhost:8000',
-            'site_name': 'DEEPER',
-            'uid': 'fakeuid',
-            'user': user,
-            'token': 'faketoken',
-            'protocol': 'https' if True else 'http',
-            'hide_unsubscribe_email': True,
-            'unsubscribe_email_token': 'faketoken',
-            'unsubscribe_email_id': 'fakeid',
-        }
+        context = get_basic_email_context()
         return TemplateResponse(
             request, 'registration/user_activation_email.html', context)
