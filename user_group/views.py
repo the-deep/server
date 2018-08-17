@@ -1,5 +1,12 @@
-from rest_framework import viewsets, permissions
+from rest_framework import (
+    exceptions,
+    mixins,
+    permissions,
+    viewsets,
+)
 from rest_framework.decorators import list_route
+from django.db import models
+from django.contrib.auth.models import User
 from deep.permissions import ModifyPermission
 
 from .models import (
@@ -9,6 +16,7 @@ from .models import (
 from .serializers import (
     GroupMembershipSerializer,
     UserGroupSerializer,
+    UserGroupUserSerializer,
 )
 
 
@@ -66,3 +74,46 @@ class GroupMembershipViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return GroupMembership.get_for(self.request.user)
+
+
+class UserGroupUserSearchViewSet(viewsets.GenericViewSet,
+                                 mixins.ListModelMixin):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UserGroupUserSerializer
+
+    def get_queryset(self):
+        query = self.request.query_params.get('search', '').strip().lower()
+        if not query:
+            raise exceptions.ValidationError('Empty search string')
+
+        users = User.objects.filter(
+            models.Q(username__icontains=query) |
+            models.Q(first_name__icontains=query) |
+            models.Q(last_name__icontains=query) |
+            models.Q(email__icontains=query)
+        ).values(
+            # We have to rename each field so that the selected fields
+            # will have same name and can be merged together using
+            # union to a single query set.
+            entity_id=models.F('id'),
+            entity_username=models.F('username'),
+            entity_first_name=models.F('first_name'),
+            entity_last_name=models.F('last_name'),
+
+            entity_title=models.Value(None, models.CharField()),
+            entity_type=models.Value('user', models.CharField()),
+        )
+
+        user_groups = UserGroup.objects.filter(
+            title__icontains=query
+        ).values(
+            entity_id=models.F('id'),
+            entity_title=models.F('title'),
+
+            entity_username=models.Value(None, models.CharField()),
+            entity_first_name=models.Value(None, models.CharField()),
+            entity_last_name=models.Value(None, models.CharField()),
+            entity_type=models.Value('user_group', models.CharField()),
+        )
+
+        return users.union(user_groups)
