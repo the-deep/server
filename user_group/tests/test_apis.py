@@ -49,6 +49,42 @@ class UserGroupApiTest(TestCase):
 
         self.assertEqual(response.data['count'], 0)
 
+    def test_search_user_usergroups_validation_empty_query(self):
+        url = '/api/v1/users-user-groups/?query='
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_400(response)
+        data = response.json()
+        assert 'errors' in data
+
+    def test_serach_user_usergroups(self):
+        user_group = self.create(UserGroup, title="MyTestUserGroup")
+        test_user = self.create(User, username="mytestuser")
+        # Query should be mytest to match just
+        # the above created usergroup and user
+        url = '/api/v1/users-user-groups/?query=mytest'
+
+        # should return both user and usergroup
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        data = response.json()
+
+        assert 'items' in data
+        self.assertEqual(len(data['items']), 2)
+
+        for item in data['items']:
+            assert 'title' in item
+            assert 'type' in item
+            assert item['type'] in ['user', 'user_group']
+            assert 'id' in item
+
+        users = [x for x in data['items'] if x['type'] == 'user']
+        user_groups = [x for x in data['items'] if x['type'] == 'user_group']
+
+        self.assertEqual(users[0]['id'], test_user.id)
+        self.assertEqual(user_groups[0]['id'], user_group.id)
+
     def test_add_member(self):
         user_group = self.create(UserGroup)
         test_user = self.create(User)
