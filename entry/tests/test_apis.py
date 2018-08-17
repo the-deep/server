@@ -15,7 +15,10 @@ from entry.models import (
 class EntryTests(TestCase):
     def create_project(self):
         analysis_framework = self.create(AnalysisFramework)
-        return self.create(Project, analysis_framework=analysis_framework)
+        return self.create(
+            Project, analysis_framework=analysis_framework,
+            role=self.admin_role
+        )
 
     def create_lead(self):
         project = self.create_project()
