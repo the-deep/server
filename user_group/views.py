@@ -1,5 +1,7 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status, response
 from rest_framework.decorators import list_route
+from django.db.models import Q, F, Value, CharField
+from django.contrib.auth.models import User
 from deep.permissions import ModifyPermission
 
 from .models import (
@@ -66,3 +68,30 @@ class GroupMembershipViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return GroupMembership.get_for(self.request.user)
+
+
+class UserGroupUserSearchViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request, version=None):
+        query = request.query_params.get('query', '').strip().lower()
+        if not query:
+            return response.Response(
+                {'errors': ['Empty query']},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        users = User.objects.filter(
+            Q(username__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(email__icontains=query)
+        ).\
+            annotate(title=F('username'), type=Value('user', CharField())).\
+            values('id', 'title', 'type')
+        user_groups = UserGroup.objects.filter(title__icontains=query).\
+            annotate(type=Value('user_group', CharField())).\
+            values('id', 'title', 'type')
+        items = list(users) + list(user_groups)
+        return response.Response(
+            {'items': items}
+        )
