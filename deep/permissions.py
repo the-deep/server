@@ -35,8 +35,10 @@ class ProjectEntityPermission(permissions.BasePermission):
         project = obj.get_project()
         action = METHOD_ACTION_MAP(request.method)
         item = obj.__class__.__name__.lower()
+
         if not project.is_member(request.user):
             return False
+
         membership = ProjectMembership.objects.get(
             project=project,
             member=request.user

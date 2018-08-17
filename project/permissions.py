@@ -86,10 +86,10 @@ def get_project_entities(Entity, user, action=None):
     if permission is None:
         return Entity.objects.none()
 
-    fieldname = 'project__membership__role__{}'.format(item_permissions)
+    fieldname = 'project__projectmembership__role__{}'.format(item_permissions)
     return Entity.objects.annotate(
         new_permission_col=models.F(fieldname).bitand(permission)
     ).filter(
-        project__membership__user=user,
+        project__projectmembership__member=user,
         new_permission_col=permission
     )
