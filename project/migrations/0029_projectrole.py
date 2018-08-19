@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ('client_id', models.CharField(blank=True, default=None, max_length=128, null=True, unique=True)),
                 ('title', models.CharField(max_length=255, unique=True)),
                 ('lead_permissions', models.IntegerField(default=0)),
-                ('excerpt_permissions', models.IntegerField(default=0)),
+                ('entry_permissions', models.IntegerField(default=0)),
                 ('setup_permissions', models.IntegerField(default=0)),
                 ('export_permissions', models.IntegerField(default=0)),
                 ('is_creator_role', models.BooleanField(default=False)),

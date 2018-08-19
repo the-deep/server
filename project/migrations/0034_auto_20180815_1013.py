@@ -13,22 +13,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
+        migrations.RenameField(
             model_name='projectjoinrequest',
-            name='newrole',
+            old_name='newrole',
+            new_name='role',
         ),
-        migrations.RemoveField(
+        migrations.RenameField(
             model_name='projectmembership',
-            name='newrole',
-        ),
-        migrations.AddField(
-            model_name='projectjoinrequest',
-            name='role',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='project.ProjectRole'),
-        ),
-        migrations.AddField(
-            model_name='projectmembership',
-            name='role',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='project.ProjectRole'),
+            old_name='newrole',
+            new_name='role',
         ),
     ]
