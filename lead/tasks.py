@@ -88,7 +88,7 @@ def _extract_from_lead_core(lead_id):
                 }
                 response = requests.post(DEEPL_CLASSIFY_URL,
                                          data=data).json()
-                classified_doc_id = response['id']
+                classified_doc_id = response.get('id')
             except Exception:
                 logger.error(traceback.format_exc())
                 classified_doc_id = None
