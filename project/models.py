@@ -8,7 +8,6 @@ from geo.models import Region
 from user_group.models import UserGroup
 from analysis_framework.models import AnalysisFramework
 from category_editor.models import CategoryEditor
-from project.permissions import PROJECT_PERMISSIONS
 
 from utils.common import generate_timeseries
 
@@ -173,7 +172,7 @@ class Project(UserResource):
         return Project.get_annotated().filter(
             projectmembership__in=ProjectMembership.objects.filter(
                 member=user,
-                role=ProjectRole.get_admin_role(),
+                role='admin',
             )
         ).distinct()
 
@@ -187,10 +186,10 @@ class Project(UserResource):
         return ProjectMembership.objects.filter(
             project=self,
             member=user,
-            role=ProjectRole.get_admin_role(),
+            role='admin',
         ).exists()
 
-    def add_member(self, user, role, added_by=None):
+    def add_member(self, user, role='normal', added_by=None):
         return ProjectMembership.objects.create(
             member=user,
             role=role,
@@ -238,7 +237,7 @@ class Project(UserResource):
     def get_admins(self):
         return User.objects.filter(
             projectmembership__project=self,
-            projectmembership__role=ProjectRole.get_admin_role(),
+            projectmembership__role='admin'
         ).distinct()
 
     def get_number_of_users(self):
@@ -252,6 +251,11 @@ class ProjectMembership(models.Model):
     """
     Project-Member relationship attributes
     """
+
+    ROLES = (
+        ('normal', 'Normal'),
+        ('admin', 'Admin'),
+    )
 
     member = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
