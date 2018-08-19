@@ -13,7 +13,7 @@ def create_base_roles(apps, schema_editor):
     ProjectRole.objects.create(
             title='Admin',
             lead_permissions=get_project_permissions_value('lead', '__all__'),
-            excerpt_permissions=get_project_permissions_value(
+            entry_permissions=get_project_permissions_value(
                 'entry', '__all__'),
             setup_permissions=get_project_permissions_value(
                 'setup', '__all__'),
@@ -26,7 +26,7 @@ def create_base_roles(apps, schema_editor):
         title='Analyst',
         lead_permissions=get_project_permissions_value(
             'lead', '__all__'),
-        excerpt_permissions=get_project_permissions_value(
+        entry_permissions=get_project_permissions_value(
             'entry', '__all__'),
         setup_permissions=get_project_permissions_value('setup', []),
         export_permissions=get_project_permissions_value(
