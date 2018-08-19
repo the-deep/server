@@ -15,11 +15,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='projectjoinrequest',
             name='newrole',
-            field=models.IntegerField(default=0),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='project.ProjectRole'),
         ),
         migrations.AddField(
             model_name='projectmembership',
             name='newrole',
-            field=models.IntegerField(default=0),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='project.ProjectRole'),
         ),
     ]
