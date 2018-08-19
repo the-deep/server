@@ -8,6 +8,7 @@ from geo.models import Region
 from user_group.models import UserGroup
 from analysis_framework.models import AnalysisFramework
 from category_editor.models import CategoryEditor
+from project.permissions import PROJECT_PERMISSIONS
 
 from utils.common import generate_timeseries
 
@@ -184,7 +185,7 @@ class Project(UserResource):
         return Project.get_annotated().filter(
             projectmembership__in=ProjectMembership.objects.filter(
                 member=user,
-                role='admin',
+                role=ProjectRole.get_admin_role(),
             )
         ).distinct()
 
@@ -198,10 +199,10 @@ class Project(UserResource):
         return ProjectMembership.objects.filter(
             project=self,
             member=user,
-            role='admin',
+            role=ProjectRole.get_admin_role(),
         ).exists()
 
-    def add_member(self, user, role='normal', added_by=None):
+    def add_member(self, user, role, added_by=None):
         return ProjectMembership.objects.create(
             member=user,
             role=role,
@@ -242,7 +243,7 @@ class Project(UserResource):
     def get_admins(self):
         return User.objects.filter(
             projectmembership__project=self,
-            projectmembership__role='admin'
+            projectmembership__role=ProjectRole.get_admin_role(),
         ).distinct()
 
 
@@ -251,14 +252,9 @@ class ProjectMembership(models.Model):
     Project-Member relationship attributes
     """
 
-    ROLES = (
-        ('normal', 'Normal'),
-        ('admin', 'Admin'),
-    )
-
     member = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    role = models.ForeignKey('project.ProjectRole', null=True)
+    role = models.ForeignKey('project.ProjectRole')
     joined_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                  null=True, blank=True, default=None,
@@ -299,7 +295,7 @@ class ProjectJoinRequest(models.Model):
     requested_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=48, choices=STATUSES,
                               default='pending')
-    role = models.ForeignKey('project.ProjectRole', null=True)
+    role = models.ForeignKey('project.ProjectRole')
     responded_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                      null=True, blank=True, default=None,
                                      related_name='project_join_responses')
@@ -364,6 +360,9 @@ class ProjectRole(UserResource):
         if qs.exists():
             return qs.first()
         return None
+
+    def __str__(self):
+        return self.title
 
     def __getattr__(self, name):
         if not name.startswith('can_'):
