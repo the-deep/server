@@ -128,7 +128,8 @@ class ProjectApiTest(TestCase):
         test_user = self.create(User)
         request = ProjectJoinRequest.objects.create(
             project=project,
-            requested_by=test_user
+            requested_by=test_user,
+            role=self.admin_role
         )
 
         url = '/api/v1/projects/{}/requests/{}/accept/'.format(
@@ -154,7 +155,8 @@ class ProjectApiTest(TestCase):
         test_user = self.create(User)
         request = ProjectJoinRequest.objects.create(
             project=project,
-            requested_by=test_user
+            requested_by=test_user,
+            role=self.admin_role
         )
 
         url = '/api/v1/projects/{}/requests/{}/reject/'.format(
@@ -180,7 +182,8 @@ class ProjectApiTest(TestCase):
         test_user = self.create(User)
         request = ProjectJoinRequest.objects.create(
             project=project,
-            requested_by=test_user
+            requested_by=test_user,
+            role=self.admin_role
         )
 
         url = '/api/v1/projects/{}/join/cancel/'.format(project.id)
@@ -215,6 +218,7 @@ class ProjectApiTest(TestCase):
         request = ProjectJoinRequest.objects.create(
             project=project,
             requested_by=test_user,
+            role=self.admin_role
         )
         project.add_member(test_user, self.normal_role, self.user)
 

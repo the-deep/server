@@ -37,7 +37,8 @@ class UserApiTests(TestCase):
         # and test setting it as active project through the API
         project = Project.objects.create(title='Test')
         ProjectMembership.objects.create(project=project,
-                                         member=self.user)
+                                         member=self.user,
+                                         role=self.admin_role)
 
         url = '/api/v1/users/{}/'.format(self.user.pk)
         data = {
@@ -81,6 +82,7 @@ class UserApiTests(TestCase):
         request = ProjectJoinRequest.objects.create(
             project=test_project,
             requested_by=test_user,
+            role=self.admin_role
         )
 
         url = '/api/v1/users/me/notifications/'

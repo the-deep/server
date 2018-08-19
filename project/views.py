@@ -130,6 +130,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             project=project,
             requested_by=request.user,
             status='pending',
+            role=ProjectRole.get_normal_role()
         )
 
         serializer = ProjectJoinRequestSerializer(
