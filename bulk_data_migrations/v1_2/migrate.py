@@ -3,11 +3,23 @@ from entry.utils import update_attributes, Attribute
 
 from . import (
     matrix1d,
+    matrix2d, # TODO Check for subsectors
+    scale,
+    excerpt,
+    organigram,
+    geo,
+    number_matrix,
 )
 
 
 widgets = {
     'matrix1dWidget': matrix1d,
+    'matrix2dWidget': matrix2d,
+    'scaleWidget': scale,
+    'excerptWidget': excerpt,
+    'organigramWidget': organigram,
+    'geoWidget': geo,
+    'numberMatrixWidget': number_matrix,
 }
 
 
@@ -16,11 +28,15 @@ def migrate_widgets():
         w = widgets.get(widget.widget_id)
         if not w:
             continue
+
+        # TODO: Set widget.properties['added_from']
+
         widget_data = widget.properties and \
             widget.properties.get('data')
 
         if not widget_data:
             continue
+
         widget.properties['data'] = w.migrate_widget(widget_data)
         widget.save()
 
