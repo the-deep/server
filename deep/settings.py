@@ -80,6 +80,8 @@ INSTALLED_APPS = [
     'user',
     'user_group',
     'user_resource',
+
+    'bulk_data_migration',
 ]
 
 MIDDLEWARE = [
