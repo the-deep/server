@@ -8,7 +8,7 @@ from .models import Project, ProjectMembership
 class ProjectFilterSet(UserResourceFilterSet):
     class Meta:
         model = Project
-        fields = ['id', 'title', 'status']
+        fields = ['id', 'title', 'status', 'user_groups']
 
         filter_overrides = {
             models.CharField: {
