@@ -121,6 +121,16 @@ class Project(UserResource):
     def __str__(self):
         return self.title
 
+    def get_all_members(self):
+        return User.objects.filter(
+            projectmembership__project=self
+        )
+
+    def get_direct_members(self):
+        return self.get_all_members().filter(
+            projectmembership__is_directly_added=True
+        )
+
     @staticmethod
     def get_annotated():
         from entry.models import Lead, Entry
@@ -190,7 +200,10 @@ class Project(UserResource):
             role=ProjectRole.get_admin_role(),
         ).exists()
 
-    def add_member(self, user, role, added_by=None):
+    def add_member(
+            self, user, role=None, added_by=None):
+        if role is None:
+            role = ProjectRole.get_normal_role()
         return ProjectMembership.objects.create(
             member=user,
             role=role,
@@ -256,6 +269,7 @@ class ProjectMembership(models.Model):
     member = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     role = models.ForeignKey('project.ProjectRole')
+    is_directly_added = models.BooleanField(default=False)
     joined_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                  null=True, blank=True, default=None,
