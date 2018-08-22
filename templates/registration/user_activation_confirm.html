@@ -4,10 +4,10 @@
 {% block content %}
 
 {% if success %}
-<p>{% trans "Thank you for your email confirmation. Now you can login your account." %}</p>
+<p>{% trans "Thank you for confirming your email. You may now login to DEEP." %}</p>
 {% else %}
 <p>{% trans "Activation link is invalid!" %}</p>
 {% endif %}
-<a href="{{login_url}}">Goto Login</a>
+<a href="{{login_url}}">Login</a>
 
 {% endblock %}
