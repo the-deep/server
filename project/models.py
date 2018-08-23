@@ -121,6 +121,10 @@ class Project(UserResource):
     def __str__(self):
         return self.title
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Send signal
+
     def get_all_members(self):
         return User.objects.filter(
             projectmembership__project=self
@@ -259,6 +263,46 @@ class Project(UserResource):
             models.Q(project=self) |
             models.Q(usergroup__project=self)
         ).distinct().count()
+
+
+@receiver(models.signals.m2m_changed, sender=Project.user_groups.through)
+def refresh_project_memberships_project_updated(sender, instance, **kwargs):
+    """
+    Update project memberships when a project is saved(update/created)
+    @instance: Project instance
+    NOTE: sent after project update/created
+    """
+    if kwargs['action'] not in ['post_add', 'post_remove']:
+        return
+
+    project_ug_members = User.objects.filter(
+        groupmembership__group__project=instance
+    )
+    new_users = project_ug_members.difference(instance.get_all_members()).\
+        distinct()
+    for user in new_users:
+        instance.add_member(user)
+
+    # Also, when usergroup is deleted from project,
+    # remove membereships if necessary
+    # The logic is: project_members.diff(directly_added.union(all_ug_members))
+    all_members = instance.get_all_members()
+
+    direct_members = instance.get_direct_members()
+
+    all_ug_members = User.objects.filter(
+        groupmembership__group__project=instance
+    ).distinct()
+
+    remove_members = all_members.difference(
+        direct_members.union(all_ug_members)
+    )
+
+    remove_members = list(remove_members.values_list('id', flat=True))
+
+    ProjectMembership.objects.filter(
+        project=instance, member__id__in=remove_members
+    ).delete()
 
 
 class ProjectMembership(models.Model):
