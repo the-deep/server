@@ -7,8 +7,9 @@ from project.models import (
     ProjectJoinRequest,
     ProjectStatus,
     ProjectStatusCondition,
-    ProjectRole
 )
+
+from user_group.models import UserGroup, GroupMembership
 
 from django.utils import timezone
 from datetime import timedelta
@@ -21,6 +22,17 @@ class ProjectApiTest(TestCase):
 
     def setUp(self):
         super().setUp()
+        # create some users
+        self.user1 = self.create(User)
+        self.user2 = self.create(User)
+        self.user3 = self.create(User)
+        # and some user groups
+        self.ug1 = self.create(UserGroup, role='admin')
+        self.ug1.add_member(self.user1)
+        self.ug1.add_member(self.user2)
+        self.ug2 = self.create(UserGroup, role='admin')
+        self.ug2.add_member(self.user2)
+        self.ug2.add_member(self.user3)
 
     def test_create_project(self):
         project_count = Project.objects.count()
@@ -43,10 +55,78 @@ class ProjectApiTest(TestCase):
         self.assertEqual(response.data['memberships'][0]['member'],
                          self.user.pk)
 
+        # assert single membership
+        self.assertEqual(len(response.data['memberships']), 1)
         membership = ProjectMembership.objects.get(
             pk=response.data['memberships'][0]['id'])
         self.assertEqual(membership.member.pk, self.user.pk)
         self.assertEqual(membership.role, self.admin_role)
+
+    def test_update_project_add_ug(self):
+        project = self.create(
+            Project,
+            user_groups=[],
+            title='TestProject',
+            role=self.admin_role
+        )
+
+        memberships = ProjectMembership.objects.filter(project=project)
+        initial_member_count = memberships.count()
+
+        url = '/api/v1/projects/{}/'.format(project.id)
+        data = {
+            'title': 'TestProject',
+            'user_groups': [{'id': self.ug1.id, 'title': self.ug1.title}]
+        }
+
+        self.authenticate()
+        response = self.client.put(url, data)
+        assert response.status_code == 200
+
+        final_memberships = ProjectMembership.objects.filter(project=project)
+        final_member_count = final_memberships.count()
+        # now check for members
+        self.assertEqual(
+            initial_member_count + self.ug1.members.all().count() - 1,
+            # -1 because usergroup admin and project admin is common
+            final_member_count
+        )
+
+    def test_update_project_remove_ug(self):
+        project = self.create(
+            Project,
+            title='TestProject',
+            user_groups=[],
+            role=self.admin_role
+        )
+        project.user_groups.set([self.ug1, self.ug2])
+
+        initial_member_count = ProjectMembership.objects.filter(
+            project=project
+        ).count()
+
+        url = '/api/v1/projects/{}/'.format(project.id)
+        data = {
+            'title': 'TestProject',
+            # We keep just ug1, and remove ug2
+            'user_groups': [{'id': self.ug1.id}]
+        }
+
+        self.authenticate()
+        response = self.client.put(url, data)
+        self.assert_200(response)
+
+        final_member_count = ProjectMembership.objects.filter(
+            project=project
+        ).count()
+
+        # now check for members
+        self.assertEqual(
+            # Subtract all members from second group except
+            # the two users that are common in both user groups
+            initial_member_count - self.ug2.members.all().count() + 2,
+            final_member_count
+        )
 
     def test_member_of(self):
         project = self.create(Project, role=self.admin_role)

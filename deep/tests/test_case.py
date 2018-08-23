@@ -70,6 +70,8 @@ class TestCase(test.APITestCase):
         obj = autofixture.base.AutoFixture(
             model, field_values=kwargs,
             generate_fk=True,
+            follow_fk=False,
+            follow_m2m=False
         ).create_one()
 
         role = kwargs.get('role')
