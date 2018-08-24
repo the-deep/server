@@ -29,6 +29,7 @@ class Entry(UserResource):
     )
 
     lead = models.ForeignKey(Lead)
+    project = models.ForeignKey('project.Project')
     order = models.IntegerField(default=1)
     analysis_framework = models.ForeignKey(AnalysisFramework)
     information_date = models.DateField(default=None,

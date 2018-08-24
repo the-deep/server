@@ -234,6 +234,7 @@ class Assessment(UserResource):
     Assessment belonging to a lead
     """
     lead = models.OneToOneField(Lead, default=None, blank=True, null=True)
+    project = models.ForeignKey('project.Project')
     lead_group = models.OneToOneField(LeadGroup,
                                       default=None, blank=True, null=True)
     metadata = JSONField(default=None, blank=True, null=True)
