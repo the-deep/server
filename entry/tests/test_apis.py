@@ -27,7 +27,7 @@ class EntryTests(TestCase):
     def create_entry(self):
         lead = self.create_lead()
         return self.create(
-            Entry, lead=lead,
+            Entry, lead=lead, project=lead.project,
             analysis_framework=lead.project.analysis_framework,
         )
 
@@ -43,6 +43,7 @@ class EntryTests(TestCase):
         url = '/api/v1/entries/'
         data = {
             'lead': lead.pk,
+            'project': lead.project.pk,
             'analysis_framework': widget.analysis_framework.pk,
             'excerpt': 'This is test excerpt',
             'attributes': {
@@ -77,6 +78,7 @@ class EntryTests(TestCase):
         url = '/api/v1/entries/'
         data = {
             'lead': lead.pk,
+            'project': lead.project.pk,
             'excerpt': 'Test excerpt',
             'analysis_framework': lead.project.analysis_framework.id,
             'client_id': client_id,

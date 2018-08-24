@@ -20,9 +20,11 @@ class AssessmentTests(TestCase):
     def test_create_assessment(self):
         assessment_count = Assessment.objects.count()
 
+        lead = self.create_lead()
         url = '/api/v1/assessments/'
         data = {
-            'lead': self.create_lead().pk,
+            'lead': lead.pk,
+            'project': lead.project.pk,
             'metadata': {'test_meta': 'Test'},
             'methodology': {'test_methodology': 'Test'},
         }
@@ -46,6 +48,7 @@ class AssessmentTests(TestCase):
         data = {
             'metadata': {'test_meta': 'Test 1'},
             'methodology': {'test_methodology': 'Test 2'},
+            'project': lead.project.pk
         }
 
         self.authenticate()
