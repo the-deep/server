@@ -103,6 +103,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
             project=project,
             member=self.context['request'].user,
             role=ProjectRole.get_admin_role(),
+            is_directly_added=True
         )
         return project
 

@@ -9,7 +9,7 @@ from project.models import (
     ProjectStatusCondition,
 )
 
-from user_group.models import UserGroup, GroupMembership
+from user_group.models import UserGroup
 
 from django.utils import timezone
 from datetime import timedelta
