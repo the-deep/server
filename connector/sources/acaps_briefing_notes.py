@@ -3,6 +3,7 @@ import requests
 import datetime
 
 from .base import Source
+from connector.utils import handle_connector_parse_error
 from lead.models import Lead
 
 COUNTRIES_OPTIONS = [
@@ -98,6 +99,7 @@ COUNTRIES_OPTIONS = [
 ]
 
 
+@handle_connector_parse_error
 class AcapsBriefingNotes(Source):
     URL = 'https://www.acaps.org/special-reports'
     title = 'ACAPS Briefing Notes'
@@ -143,28 +145,24 @@ class AcapsBriefingNotes(Source):
 
         content = contents[0]
         for item in content.findAll('div', {'class': 'views-row'}):
-            try:
-                bottomcontent = item.find('div', {'class': 'content-bottom'})
-                topcontent = item.find('div', {'class': 'content-top'})
-                date = topcontent.find('span', {'class': 'updated-date'}).text
-                date = datetime.datetime.strptime(date, '%d/%m/%Y')
-                title = topcontent.find('div', {'class': 'field-item'}).text
-                link = bottomcontent.find(
-                    'div', {'class': 'field-item'}
-                ).find('a')
-                data = Lead(
-                    # FIXME: use proper key
-                    id=link['href'],
-                    title=title.strip(),
-                    published_on=date.date(),
-                    url=link['href'],
-                    source='Briefing Notes',
-                    source_type='',  # FIXME source_type = website
-                    website='www.acaps.org/special-reports'
-                )
-                results.append(data)
-            except Exception:
-                # Just let it pass
-                pass
+            bottomcontent = item.find('div', {'class': 'content-bottom'})
+            topcontent = item.find('div', {'class': 'content-top'})
+            date = topcontent.find('span', {'class': 'updated-date'}).text
+            date = datetime.datetime.strptime(date, '%d/%m/%Y')
+            title = topcontent.find('div', {'class': 'field-item'}).text
+            link = bottomcontent.find(
+                'div', {'class': 'field-item'}
+            ).find('a')
+            data = Lead(
+                # FIXME: use proper key
+                id=link['href'],
+                title=title.strip(),
+                published_on=date.date(),
+                url=link['href'],
+                source='Briefing Notes',
+                source_type=Lead.WEBSITE,
+                website='www.acaps.org/special-reports'
+            )
+            results.append(data)
 
         return results, len(results)
