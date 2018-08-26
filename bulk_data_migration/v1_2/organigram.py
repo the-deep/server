@@ -4,7 +4,7 @@ def migrate_widget(widget_data):
 
 def migrate_val(v):
     if isinstance(v, dict):
-        return v['key']
+        return v['id']
     return v
 
 

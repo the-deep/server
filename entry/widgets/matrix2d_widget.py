@@ -31,6 +31,8 @@ def update_attribute(entry, widget, data, widget_data):
 
             for sector_key, subsectors in subdimension.items():
                 if subsectors is not None:
+                    if isinstance(subsectors, bool):
+                        subsectors = []
                     dim_exists = True
                     subdim_exists = True
 
