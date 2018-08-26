@@ -22,6 +22,14 @@ widgets = {
     'numberMatrixWidget': number_matrix,
 }
 
+default_added_from = {
+    'matrix1dWidget': 'overview',
+    'matrix2dWidget': 'overview',
+    'numberMatrixWidget': 'overview',
+    'excerptWidget': 'overview',
+    # if not specified here, default is assumed to be list
+}
+
 
 def migrate_widgets():
     for widget in Widget.objects.all():
@@ -29,10 +37,14 @@ def migrate_widgets():
         if not w:
             continue
 
-        # TODO: Set widget.properties['added_from']
+        if not widget.properties:
+            widget.properties = {}
 
-        widget_data = widget.properties and \
-            widget.properties.get('data')
+        if not widget.properties.get('added_from'):
+            widget.properties['added_from'] = \
+                default_added_from.get(widget.widget_id, 'list')
+
+        widget_data = widget.properties.get('data')
 
         if not widget_data:
             continue
