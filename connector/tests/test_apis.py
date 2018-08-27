@@ -43,7 +43,7 @@ class ConnectorApiTest(TestCase):
         self.assertEqual(user.role, 'admin')
 
     def test_add_user(self):
-        connector = self.create(Connector)
+        connector = self.create(Connector, role='admin')
         test_user = self.create(User)
 
         url = '/api/v1/connector-users/'
@@ -62,7 +62,7 @@ class ConnectorApiTest(TestCase):
         self.assertEqual(response.data['connector'], data['connector'])
 
     def test_add_project(self):
-        connector = self.create(Connector)
+        connector = self.create(Connector, role='admin')
         test_project = self.create(Project)
 
         url = '/api/v1/connector-projects/'
@@ -92,7 +92,8 @@ class ConnectorApiTest(TestCase):
 
         connector = self.create(Connector,
                                 source='rss-feed',
-                                params=SAMPLE_RSS_PARAMS)
+                                params=SAMPLE_RSS_PARAMS,
+                                role='self')
         url = '/api/v1/connectors/{}/leads/'.format(connector.id)
 
         self.authenticate()
@@ -128,7 +129,8 @@ class ConnectorApiTest(TestCase):
     def test_relief_web(self):
         connector = self.create(Connector,
                                 source='relief-web',
-                                params={'country': 'NPL'})
+                                params={'country': 'NPL'},
+                                role='self')
 
         data = {
             'offset': 5,

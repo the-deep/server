@@ -4,7 +4,10 @@ from rest_framework import (
     status,
 )
 from jwt_auth.token import AccessToken, RefreshToken
+
 from user.models import User
+from project.models import ProjectRole
+from project.permissions import get_project_permissions_value
 
 
 class TestCase(test.APITestCase):
@@ -26,6 +29,8 @@ class TestCase(test.APITestCase):
             password='test123',
             email='jon@dave.com',
         )
+        # This should be called here to access roles later
+        self.create_project_roles()
 
     def authenticate(self, user=None):
         user = user or self.user
@@ -65,9 +70,41 @@ class TestCase(test.APITestCase):
         obj = autofixture.base.AutoFixture(
             model, field_values=kwargs,
             generate_fk=True,
+            follow_fk=False,
+            follow_m2m=False
         ).create_one()
 
-        if hasattr(obj, 'add_member'):
-            obj.add_member(self.user, role='admin')
+        role = kwargs.get('role')
+
+        if role and hasattr(obj, 'add_member'):
+            obj.add_member(self.user, role=role)
 
         return obj
+
+    def create_project_roles(self):
+        # Remove roles if already exist. Right now, we just have global roles
+        ProjectRole.objects.all().delete()
+        # Creator role
+        self.admin_role = ProjectRole.objects.create(
+            title='Admin',
+            lead_permissions=get_project_permissions_value('lead', '__all__'),
+            entry_permissions=get_project_permissions_value(
+                'entry', '__all__'),
+            setup_permissions=get_project_permissions_value(
+                'setup', '__all__'),
+            export_permissions=get_project_permissions_value(
+                'export', '__all__'),
+            is_creator_role=True
+        )
+        # Default role
+        self.normal_role = ProjectRole.objects.create(
+            title='Analyst',
+            lead_permissions=get_project_permissions_value(
+                'lead', '__all__'),
+            entry_permissions=get_project_permissions_value(
+                'entry', '__all__'),
+            setup_permissions=get_project_permissions_value('setup', []),
+            export_permissions=get_project_permissions_value(
+                'export', ['create']),
+            is_default_role=True
+        )

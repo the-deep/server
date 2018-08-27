@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class LeadTests(TestCase):
     def test_create_lead(self, assignee=None):
         lead_count = Lead.objects.count()
-        project = self.create(Project)
+        project = self.create(Project, role=self.admin_role)
 
         url = '/api/v1/leads/'
         data = {
@@ -42,7 +42,7 @@ class LeadTests(TestCase):
         # but currently we have only restricted assignee to single value
         # in the API, check if it works in the `update` request
 
-        project = self.create(Project)
+        project = self.create(Project, role=self.admin_role)
         user = self.create(User)
         self.create(ProjectMembership, project=project, member=user)
         lead = self.create(Lead, project=project)
@@ -68,7 +68,7 @@ class LeadTests(TestCase):
         self.assert_200(response)
 
     def test_trigger_api(self):
-        project = self.create(Project)
+        project = self.create(Project, role=self.admin_role)
         lead = self.create(Lead, project=project)
         url = '/api/v1/lead-extraction-trigger/{}/'.format(lead.id)
 
@@ -77,8 +77,8 @@ class LeadTests(TestCase):
         self.assert_200(response)
 
     def test_multiple_project(self):
-        project1 = self.create(Project)
-        project2 = self.create(Project)
+        project1 = self.create(Project, role=self.admin_role)
+        project2 = self.create(Project, role=self.admin_role)
 
         lead_count = Lead.objects.count()
 
@@ -104,7 +104,7 @@ class LeadTests(TestCase):
         self.assertEqual(response.data[1].get('project'), project2.id)
 
     def test_url_exists(self):
-        project = self.create(Project)
+        project = self.create(Project, role=self.admin_role)
         common_url = 'https://same.com/'
         lead1 = self.create(Lead, source_type='website',
                             project=project,
@@ -161,7 +161,7 @@ class WebInfoExtractionTests(TestCase):
         # Create a sample project containing the sample country
         sample_region = self.create(Region, title=SAMPLE_WEB_INFO_COUNTRY,
                                     public=True)
-        sample_project = self.create(Project)
+        sample_project = self.create(Project, role=self.admin_role)
         sample_project.regions.add(sample_region)
 
         url = '/api/v1/web-info-extract/'
