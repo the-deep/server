@@ -30,6 +30,15 @@ class RemoveNullFieldsMixin:
         rep = super(RemoveNullFieldsMixin, self).to_representation(instance)
         return remove_null(rep)
 
+    def to_internal_value(self, data):
+        # Change None char fields to blanks
+        # TODO: Handle list and dict of charfields as well
+        for field, field_type in self.fields.items():
+            if isinstance(field_type, serializers.CharField):
+                if field in data and not data.get(field):
+                    data[field] = ''
+        return super(RemoveNullFieldsMixin, self).to_internal_value(data)
+
 
 class ListToDictField(serializers.Field):
     """
