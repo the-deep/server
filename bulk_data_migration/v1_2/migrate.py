@@ -2,6 +2,7 @@ from analysis_framework.utils import update_widgets, Widget
 from entry.utils import update_attributes, Attribute
 
 from .projects import migrate_projects
+from .ary import migrate_ary
 from . import (
     matrix1d,
     matrix2d,
@@ -77,3 +78,4 @@ def migrate():
     migrate_attributes()
     update_widgets()
     update_attributes()
+    migrate_ary()
