@@ -3,6 +3,8 @@ from datetime import timedelta
 
 import os
 import time
+import random
+import string
 
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1)' + \
@@ -94,3 +96,9 @@ def identity(x):
 
 def underscore_to_title(x):
     return ' '.join([y.title() for y in x.split('_')])
+
+
+def random_key(length=16):
+    candidates = string.ascii_lowercase + string.digits
+    winners = [random.choice(candidates) for _ in range(length)]
+    return ''.join(winners)
