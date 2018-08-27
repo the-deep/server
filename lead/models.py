@@ -198,5 +198,4 @@ class LeadPreviewImage(models.Model):
 @receiver(models.signals.post_save, sender=Lead)
 def on_lead_saved(sender, **kwargs):
     project = kwargs.get('instance').project
-    project.status = project.calc_status()
-    project.save()
+    project.update_status()
