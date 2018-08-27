@@ -187,6 +187,7 @@ class ExportData(models.Model):
 
 @receiver(models.signals.post_save, sender=Entry)
 def on_entry_saved(sender, **kwargs):
-    project = kwargs.get('instance').lead.project
-    project.status = project.calc_status()
-    project.save()
+    lead = kwargs.get('instance').lead
+    # TODO After `project` is added to Entry
+    # this should not use lead
+    lead.project.update_status()

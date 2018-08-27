@@ -1,9 +1,10 @@
 from analysis_framework.utils import update_widgets, Widget
 from entry.utils import update_attributes, Attribute
 
+from .projects import migrate_projects
 from . import (
     matrix1d,
-    matrix2d, # TODO Check for subsectors
+    matrix2d,
     scale,
     excerpt,
     organigram,
@@ -71,6 +72,7 @@ def migrate_attributes():
 
 
 def migrate():
+    migrate_projects()
     migrate_widgets()
     migrate_attributes()
     update_widgets()
