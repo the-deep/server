@@ -2,7 +2,7 @@ from django.db import models
 import django_filters
 
 from user_resource.filters import UserResourceFilterSet
-from .models import Project, ProjectStatus
+from .models import Project
 
 
 class ProjectFilterSet(UserResourceFilterSet):
