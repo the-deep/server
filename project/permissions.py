@@ -92,4 +92,4 @@ def get_project_entities(Entity, user, action=None):
     ).filter(
         project__projectmembership__member=user,
         new_permission_col=permission
-    )
+    ).distinct()

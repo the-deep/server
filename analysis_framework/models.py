@@ -64,7 +64,7 @@ class AnalysisFramework(UserResource):
             project.models.ProjectMembership.objects.filter(
                 project__in=self.project_set.all(),
                 member=user,
-                role='admin',
+                role=project.models.ProjectRole.get_admin_role(),
             ).exists()
         )
 
