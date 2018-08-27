@@ -342,8 +342,10 @@ def on_membership_saved(sender, **kwargs):
     )
 
 
-# Whenever a project status value is changed, update all projects' status
+# Whenever a project status value is changed, update all projects' statuses
 @receiver(models.signals.post_save, sender=ProjectStatus)
+@receiver(models.signals.post_delete, sender=ProjectStatus)
+@receiver(models.signals.post_save, sender=ProjectStatusCondition)
 def on_status_updated(sender, **kwargs):
     with transaction.atomic():
         for project in Project.objects.all():
