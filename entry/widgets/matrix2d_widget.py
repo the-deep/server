@@ -2,7 +2,7 @@ from .utils import set_filter_data, set_export_data
 
 
 def update_attribute(entry, widget, data, widget_data):
-    data = data or {}
+    data = (data or {}).get('value', {})
     dimensions = widget_data.get('dimensions', [])
     sectors = widget_data.get('sectors', [])
 
@@ -31,6 +31,8 @@ def update_attribute(entry, widget, data, widget_data):
 
             for sector_key, subsectors in subdimension.items():
                 if subsectors is not None:
+                    if isinstance(subsectors, bool):
+                        subsectors = []
                     dim_exists = True
                     subdim_exists = True
 
