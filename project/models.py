@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
-from django.db import models
+from django.db import models, transaction
 from django.dispatch import receiver
 
 from user_resource.models import UserResource
@@ -218,6 +218,13 @@ class Project(UserResource):
             conditions__isnull=True
         ).first()
 
+    def update_status(self):
+        Project.objects.filter(
+            id=self.id
+        ).update(
+            status=self.calc_status()
+        )
+
     def get_entries_activity(self):
         from entry.models import Entry
         min_date = timezone.now() - timedelta(days=30)
@@ -333,3 +340,11 @@ def on_membership_saved(sender, **kwargs):
         responded_by=instance.added_by,
         responded_at=instance.joined_at,
     )
+
+
+# Whenever a project status value is changed, update all projects' status
+@receiver(models.signals.post_save, sender=ProjectStatus)
+def on_status_updated(sender, **kwargs):
+    with transaction.atomic():
+        for project in Project.objects.all():
+            project.update_status()
