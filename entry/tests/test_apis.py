@@ -67,8 +67,13 @@ class EntryTests(TestCase):
         attribute = Attribute.objects.get(
             id=attributes[str(widget.pk)]['id']
         )
+
         self.assertEqual(attribute.widget.pk, widget.pk)
         self.assertEqual(attribute.data['a'], 'b')
+
+        # Check if project matches
+        entry = Entry.objects.get(id=response.data['id'])
+        self.assertEqual(entry.project, entry.lead.project)
 
     def test_duplicate_entry(self):
         entry_count = Entry.objects.count()
