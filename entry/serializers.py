@@ -13,6 +13,7 @@ from geo.serializers import GeoOptionSerializer, SimpleRegionSerializer
 from .models import (
     Entry, Attribute, FilterData, ExportData
 )
+from project.models import Project
 
 
 class AttributeSerializer(RemoveNullFieldsMixin,
@@ -84,6 +85,11 @@ class EntrySerializer(RemoveNullFieldsMixin,
         required=False,
     )
 
+    project = serializers.PrimaryKeyRelatedField(
+        required=False,
+        queryset=Project.objects.all()
+    )
+
     class Meta:
         model = Entry
         fields = ('id', 'lead', 'analysis_framework', 'project',
@@ -91,6 +97,10 @@ class EntrySerializer(RemoveNullFieldsMixin,
                   'attributes', 'order', 'client_id',
                   'created_at', 'created_by', 'modified_at', 'modified_by',
                   'version_id')
+
+    def create(self, data):
+        data['project'] = data['lead'].project
+        return super().create(data)
 
 
 class EditEntriesDataSerializer(RemoveNullFieldsMixin,

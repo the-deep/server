@@ -79,7 +79,6 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
                                   serializers.ModelSerializer):
     member_email = serializers.CharField(source='member.email', read_only=True)
     member_name = serializers.SerializerMethodField()
-    role = SimpleProjectRoleSerializer()
 
     class Meta:
         model = ProjectMembership
