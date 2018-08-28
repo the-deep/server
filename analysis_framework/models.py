@@ -14,6 +14,7 @@ class AnalysisFramework(UserResource):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
+    # FIXME: Remove snapshots
     snapshot_one = models.ForeignKey(File, on_delete=models.SET_NULL,
                                      related_name='page_one_framework',
                                      null=True, blank=True, default=None)
@@ -45,20 +46,9 @@ class AnalysisFramework(UserResource):
     @staticmethod
     def get_for(user):
         return AnalysisFramework.objects.all()
-        """
-        Analysis Framework can only be accessed by users who have access to
-        it's project
-        """
-        # return AnalysisFramework.objects.filter(
-        #     models.Q(created_by=user) |
-        #     models.Q(project=None) |
-        #     models.Q(project__members=user) |
-        #     models.Q(project__user_groups__members=user)
-        # ).distinct()
 
     def can_get(self, user):
         return True
-        # return self in AnalysisFramework.get_for(user)
 
     def can_modify(self, user):
         """
@@ -77,6 +67,10 @@ class AnalysisFramework(UserResource):
                 role='admin',
             ).exists()
         )
+
+    def get_entries_count(self):
+        from entry.models import Entry
+        return Entry.objects.filter(analysis_framework=self).count()
 
 
 class Widget(models.Model):

@@ -96,6 +96,10 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
     exportables = SimpleExportableSerializer(source='exportable_set',
                                              many=True,
                                              read_only=True)
+    entries_count = serializers.IntegerField(
+        source='get_entries_count',
+        read_only=True,
+    )
 
     is_admin = serializers.SerializerMethodField()
 
