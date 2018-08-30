@@ -23,6 +23,12 @@ PROJECT_PERMISSIONS = Dict(
     }),
     export=Dict({
         'create': 1 << 0
+    }),
+    assessment=Dict({
+        'view': 1 << 0,
+        'create': 1 << 1,
+        'modify': 1 << 2,
+        'delete': 1 << 3
     })
 )
 
