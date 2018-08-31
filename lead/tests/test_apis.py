@@ -34,6 +34,52 @@ class LeadTests(TestCase):
         self.assertEqual(response.data['title'], data['title'])
         self.assertEqual(response.data['assignee'], self.user.id)
 
+    def test_create_lead_no_create_role(self, assignee=None):
+        lead_count = Lead.objects.count()
+        project = self.create(Project, role=self.admin_role)
+
+        test_user = self.create(User)
+        project.add_member(test_user, role=self.view_only_role)
+
+        url = '/api/v1/leads/'
+        data = {
+            'title': 'Spaceship spotted in sky',
+            'project': project.id,
+            'source': 'MCU',
+            'confidentiality': Lead.UNPROTECTED,
+            'status': Lead.PENDING,
+            'text': 'Alien shapeship has been spotted in the sky',
+            'assignee': assignee or self.user.id,
+        }
+
+        self.authenticate(test_user)
+        response = self.client.post(url, data)
+        self.assert_403(response)
+
+        self.assertEqual(Lead.objects.count(), lead_count)
+
+    def test_delete_lead(self):
+        project = self.create(Project, role=self.admin_role)
+        lead = self.create(Lead, project=project)
+        url = '/api/v1/leads/{}/'.format(lead.id)
+
+        self.authenticate()
+        response = self.client.delete(url)
+        self.assert_204(response)
+
+    def test_delete_lead_no_perm(self):
+        project = self.create(Project, role=self.admin_role)
+        lead = self.create(Lead, project=project)
+        user = self.create(User)
+
+        project.add_member(user, self.view_only_role)
+
+        url = '/api/v1/leads/{}/'.format(lead.id)
+
+        self.authenticate(user)
+        response = self.client.delete(url)
+        self.assert_403(response)
+
     def test_multiple_assignee(self):
         self.test_create_lead([self.user.id])
 

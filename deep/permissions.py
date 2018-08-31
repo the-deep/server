@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 METHOD_ACTION_MAP = {
     'PUT': 'modify',
+    'PATCH': 'modify',
     'GET': 'view',
     'POST': 'create',
     'DELETE': 'delete'

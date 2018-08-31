@@ -108,3 +108,18 @@ class TestCase(test.APITestCase):
                 'export', ['create']),
             is_default_role=True
         )
+        self.view_only_role = ProjectRole.objects.create(
+            title='ViewOnly',
+            lead_permissions=get_project_permissions_value(
+                'lead', ['view']
+            ),
+            entry_permissions=get_project_permissions_value(
+                'entry', ['view']
+            ),
+            setup_permissions=get_project_permissions_value(
+                'lead', []
+            ),
+            export_permissions=get_project_permissions_value(
+                'export', []
+            ),
+        )
