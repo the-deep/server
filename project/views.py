@@ -87,7 +87,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
                   url_path='analysis-framework')
     def get_framework(self, request, pk=None, version=None):
         from analysis_framework.serializers import AnalysisFrameworkSerializer
-        from analysis_framework.models import AnalysisFramework
 
         project = self.get_object()
         if not project.analysis_framework:
