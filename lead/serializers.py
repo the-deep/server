@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
 
 from deep.serializers import RemoveNullFieldsMixin
 from user.serializers import SimpleUserSerializer
@@ -105,6 +106,16 @@ class LeadSerializer(RemoveNullFieldsMixin,
     # TODO: Probably also validate assignee to valid list of users
 
     def create(self, validated_data):
+        # Check permissions for create
+        user = self.context['request'].user
+        project = validated_data['project']
+        role = project.get_role(user)
+
+        if not role or not role.can_create_lead:
+            raise PermissionDenied(
+                {'message': "You don't have permission to create lead"}
+            )
+
         assignee_field = validated_data.pop('get_assignee', None)
         assignee_id = assignee_field and assignee_field.get('id', None)
         assignee = assignee_id and get_object_or_404(User, id=assignee_id)
