@@ -3,6 +3,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.dispatch import receiver
 
+from project.mixins import ProjectEntityMixin
 from user_resource.models import UserResource
 from lead.models import Lead
 from analysis_framework.models import (
@@ -13,7 +14,7 @@ from analysis_framework.models import (
 )
 
 
-class Entry(UserResource):
+class Entry(UserResource, ProjectEntityMixin):
     """
     Entry belonging to a lead
 
@@ -65,9 +66,6 @@ class Entry(UserResource):
 
     def can_get(self, user):
         return self.lead.can_get(user)
-
-    def can_modify(self, user):
-        return self.lead.can_modify(user)
 
     class Meta(UserResource.Meta):
         verbose_name_plural = 'entries'

@@ -1,6 +1,7 @@
 from deep.tests import TestCase
 
 from project.models import Project
+from user.models import User
 from lead.models import Lead
 from analysis_framework.models import (
     AnalysisFramework, Widget, Filter
@@ -74,6 +75,59 @@ class EntryTests(TestCase):
         # Check if project matches
         entry = Entry.objects.get(id=response.data['id'])
         self.assertEqual(entry.project, entry.lead.project)
+
+    def test_create_entry_no_perm(self):
+        entry_count = Entry.objects.count()
+
+        lead = self.create_lead()
+        widget = self.create(
+            Widget,
+            analysis_framework=lead.project.analysis_framework,
+        )
+
+        user = self.create(User)
+        lead.project.add_member(user, self.view_only_role)
+
+        url = '/api/v1/entries/'
+        data = {
+            'lead': lead.pk,
+            'project': lead.project.pk,
+            'analysis_framework': widget.analysis_framework.pk,
+            'excerpt': 'This is test excerpt',
+            'attributes': {
+                widget.pk: {
+                    'data': {'a': 'b'},
+                },
+            },
+        }
+
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_403(response)
+
+        self.assertEqual(Entry.objects.count(), entry_count)
+
+    def test_delete_entry(self):
+        entry = self.create_entry()
+
+        url = '/api/v1/entries/{}/'.format(entry.id)
+
+        self.authenticate()
+
+        response = self.client.delete(url)
+        self.assert_204(response)
+
+    def test_delete_entry_no_perm(self):
+        entry = self.create_entry()
+        user = self.create(User)
+        entry.project.add_member(user, self.view_only_role)
+
+        url = '/api/v1/entries/{}/'.format(entry.id)
+
+        self.authenticate(user)
+
+        response = self.client.delete(url)
+        self.assert_403(response)
 
     def test_duplicate_entry(self):
         entry_count = Entry.objects.count()
