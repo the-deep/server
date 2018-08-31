@@ -1,5 +1,6 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
 
 from deep.serializers import (
     RemoveNullFieldsMixin,
@@ -99,7 +100,17 @@ class EntrySerializer(RemoveNullFieldsMixin,
                   'version_id')
 
     def create(self, data):
-        data['project'] = data['lead'].project
+        # Check permissions for create
+        user = self.context['request'].user
+        project = data['project']
+        role = project.get_role(user)
+
+        if not role or not role.can_create_lead:
+            raise PermissionDenied(
+                {'message': "You don't have permission to create lead"}
+            )
+
+        data['project'] = project
         return super().create(data)
 
 
