@@ -290,6 +290,32 @@ class ProjectApiTest(TestCase):
         self.assertEqual(len(response.data['results']), 3)
         self.assertEqual(response.data['count'], 3)
 
+    def test_delete_project_admin(self):
+        project = self.create(Project, role=self.admin_role)
+        url = '/api/v1/projects/{}/'.format(project.id)
+        self.authenticate()
+        response = self.client.delete(url)
+        self.assert_204(response)
+
+    def test_delete_project_normal(self):
+        project = self.create(Project, role=self.admin_role)
+        user = self.create(User)
+
+        project.add_member(user)
+
+        url = '/api/v1/projects/{}/'.format(project.id)
+        self.authenticate(user)
+
+        response = self.client.delete(url)
+        self.assert_403(response)
+
+    def test_can_modify(self):
+        project = self.create(Project, role=self.admin_role)
+        test_user = self.create(User)
+        project.add_member(test_user)
+        assert project.can_modify(self.user)
+        assert not project.can_modify(test_user)
+
     def test_auto_accept(self):
         # When a project member is added, if there is a pending
         # request for that user, auto accept that request

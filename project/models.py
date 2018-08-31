@@ -197,12 +197,21 @@ class Project(UserResource):
     def is_member(self, user):
         return self in Project.get_for_member(user)
 
-    def can_modify(self, user):
-        return ProjectMembership.objects.filter(
+    def get_role(self, user):
+        membership = ProjectMembership.objects.filter(
             project=self,
             member=user,
-            role=ProjectRole.get_admin_role(),
-        ).exists()
+        )
+        # this will return None if not exists
+        return membership.first() and membership.first().role
+
+    def can_modify(self, user):
+        role = self.get_role(user)
+        return role is not None and role.can_modify_setup
+
+    def can_delete(self, user):
+        role = self.get_role(user)
+        return role is not None and role.can_delete_setup
 
     def add_member(
             self, user, role=None, added_by=None):
