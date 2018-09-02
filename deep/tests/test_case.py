@@ -94,6 +94,8 @@ class TestCase(test.APITestCase):
                 'setup', '__all__'),
             export_permissions=get_project_permissions_value(
                 'export', '__all__'),
+            assessment_permissions=get_project_permissions_value(
+                'assessment', '__all__'),
             is_creator_role=True
         )
         # Default role
@@ -106,6 +108,8 @@ class TestCase(test.APITestCase):
             setup_permissions=get_project_permissions_value('setup', []),
             export_permissions=get_project_permissions_value(
                 'export', ['create']),
+            assessment_permissions=get_project_permissions_value(
+                'assessment', '__all__'),
             is_default_role=True
         )
         self.view_only_role = ProjectRole.objects.create(
@@ -117,9 +121,12 @@ class TestCase(test.APITestCase):
                 'entry', ['view']
             ),
             setup_permissions=get_project_permissions_value(
-                'lead', []
+                'setup', []
             ),
             export_permissions=get_project_permissions_value(
                 'export', []
+            ),
+            assessment_permissions=get_project_permissions_value(
+                'assessment', ['view']
             ),
         )

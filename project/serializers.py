@@ -1,5 +1,6 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
 
 from deep.serializers import RemoveNullFieldsMixin
 from geo.models import Region
@@ -242,3 +243,17 @@ class ProjectJoinRequestSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = ProjectJoinRequest
         fields = '__all__'
+
+
+class ProjectEntitySerializer(UserResourceSerializer):
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        project = validated_data['project']
+        role = project.get_role(user)
+
+        if not role or not role.can_create_lead:
+            raise PermissionDenied(
+                {'message': "You don't have permission to create lead"}
+            )
+        return super().create(validated_data)

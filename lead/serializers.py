@@ -1,11 +1,11 @@
 from django.shortcuts import get_object_or_404
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied
 
 from deep.serializers import RemoveNullFieldsMixin
 from user.serializers import SimpleUserSerializer
 from user_resource.serializers import UserResourceSerializer
+from project.serializers import ProjectEntitySerializer
 from gallery.serializers import SimpleFileSerializer
 from user.models import User
 from .models import (
@@ -51,7 +51,7 @@ class SimpleLeadSerializer(RemoveNullFieldsMixin,
 
 
 class LeadSerializer(RemoveNullFieldsMixin,
-                     DynamicFieldsMixin, UserResourceSerializer):
+                     DynamicFieldsMixin, ProjectEntitySerializer):
     """
     Lead Model Serializer
     """
@@ -76,14 +76,6 @@ class LeadSerializer(RemoveNullFieldsMixin,
         model = Lead
         fields = ('__all__')
 
-    # validations
-    def validate_project(self, project):
-        # Make sure we have access to the given project
-        if not project.is_member(self.context['request'].user):
-            raise serializers.ValidationError(
-                'Invalid project: {}'.format(project.id))
-        return project
-
     def validate(self, data):
         project = data.get('project',
                            self.instance and self.instance.project)
@@ -106,22 +98,11 @@ class LeadSerializer(RemoveNullFieldsMixin,
     # TODO: Probably also validate assignee to valid list of users
 
     def create(self, validated_data):
-        # Check permissions for create
-        user = self.context['request'].user
-        project = validated_data['project']
-        role = project.get_role(user)
-
-        if not role or not role.can_create_lead:
-            raise PermissionDenied(
-                {'message': "You don't have permission to create lead"}
-            )
-
         assignee_field = validated_data.pop('get_assignee', None)
         assignee_id = assignee_field and assignee_field.get('id', None)
         assignee = assignee_id and get_object_or_404(User, id=assignee_id)
 
-        lead = super(LeadSerializer, self).create(validated_data)
-        lead.save()
+        lead = super().create(validated_data)
 
         if assignee:
             lead.assignee.add(assignee)

@@ -35,24 +35,3 @@ class IsSuperAdmin(permissions.BasePermission):
             return True
 
         return request.user.is_superuser
-
-
-class ProjectEntityPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        project = obj.get_project()
-        action = METHOD_ACTION_MAP(request.method)
-        item = obj.__class__.__name__.lower()
-
-        if not project.is_member(request.user):
-            return False
-
-        membership = ProjectMembership.objects.get(
-            project=project,
-            member=request.user
-        )
-        role = membership.role
-
-        user_permissions = getattr(role, item + '_permissions')
-        permission = PROJECT_PERMISSIONS.get(item, {}).get(action)
-        return permission is not None \
-            and user_permissions & permission > 0
