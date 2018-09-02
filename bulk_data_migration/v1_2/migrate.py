@@ -48,10 +48,8 @@ def migrate_widgets():
 
         widget_data = widget.properties.get('data')
 
-        if not widget_data:
-            continue
-
-        widget.properties['data'] = w.migrate_widget(widget_data)
+        if widget_data:
+            widget.properties['data'] = w.migrate_widget(widget_data)
         widget.save()
 
 
