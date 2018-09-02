@@ -1,3 +1,5 @@
+import reversion
+
 from analysis_framework.utils import update_widgets, Widget
 from entry.utils import update_attributes, Attribute
 
@@ -48,10 +50,8 @@ def migrate_widgets():
 
         widget_data = widget.properties.get('data')
 
-        if not widget_data:
-            continue
-
-        widget.properties['data'] = w.migrate_widget(widget_data)
+        if widget_data:
+            widget.properties['data'] = w.migrate_widget(widget_data)
         widget.save()
 
 
@@ -73,9 +73,10 @@ def migrate_attributes():
 
 
 def migrate():
-    migrate_projects()
-    migrate_widgets()
-    migrate_attributes()
-    update_widgets()
-    update_attributes()
-    migrate_ary()
+    with reversion.create_revision():
+        migrate_projects()
+        migrate_widgets()
+        migrate_attributes()
+        update_widgets()
+        update_attributes()
+        migrate_ary()
