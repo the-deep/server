@@ -17,7 +17,8 @@ def update_attribute(entry, widget, data, widget_data):
             o for o in options
             if o.get('key') == item
         ), None)
-        label_list.append(option.get('label') or 'Unknown')
+        if option:
+            label_list.append(option.get('label') or 'Unknown')
 
     set_export_data(
         entry,
