@@ -125,23 +125,11 @@ class Project(UserResource):
         from entry.models import Lead, Entry
 
         pk = models.OuterRef('pk')
-        user_ids = (User.objects.filter(
-            project__id=models.OuterRef(pk),
-        ) | User.objects.filter(
-            usergroup__project__id=models.OuterRef(pk),
-        )).distinct('id').values('id')
 
         threshold = timezone.now() - timedelta(days=30)
         return Project.objects.annotate(
             number_of_leads=models.Count('lead', distinct=True),
             number_of_entries=models.Count('lead__entry', distinct=True),
-
-            number_of_users=models.functions.Coalesce(models.Subquery(
-                User.objects.filter(id__in=models.Subquery(user_ids))
-                .order_by().annotate(x=models.Value(1, models.IntegerField()))
-                .values('x').annotate(c=models.Count('*')).values('c')[:1],
-                output_field=models.IntegerField(),
-            ), 0),
 
             leads_activity=models.functions.Coalesce(models.Subquery(
                 Lead.objects.filter(
@@ -251,6 +239,12 @@ class Project(UserResource):
             projectmembership__project=self,
             projectmembership__role='admin'
         ).distinct()
+
+    def get_number_of_users(self):
+        return User.objects.filter(
+            models.Q(project=self) |
+            models.Q(usergroup__project=self)
+        ).distinct().count()
 
 
 class ProjectMembership(models.Model):
