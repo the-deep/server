@@ -37,10 +37,6 @@ default_added_from = {
 
 def migrate_widgets():
     for widget in Widget.objects.all():
-        w = widgets.get(widget.widget_id)
-        if not w:
-            continue
-
         if not widget.properties:
             widget.properties = {}
 
@@ -49,8 +45,9 @@ def migrate_widgets():
                 default_added_from.get(widget.widget_id, 'list')
 
         widget_data = widget.properties.get('data')
+        w = widgets.get(widget.widget_id)
 
-        if widget_data:
+        if widget_data and w:
             widget.properties['data'] = w.migrate_widget(widget_data)
         widget.save()
 
