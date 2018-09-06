@@ -1,5 +1,6 @@
 from . import (
     date_widget,
+    date_range_widget,
     time_widget,
     number_widget,
     scale_widget,
@@ -14,6 +15,7 @@ from . import (
 
 widget_store = {
     'dateWidget': date_widget,
+    'dateRangeWidget': date_range_widget,
     'timeWidget': time_widget,
     'numberWidget': number_widget,
     'scaleWidget': scale_widget,
