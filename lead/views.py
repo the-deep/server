@@ -33,12 +33,8 @@ from lead.serializers import (
 
 from lead.tasks import extract_from_lead
 from utils.web_info_extractor import WebInfoExtractor
-from utils.common import USER_AGENT
+from utils.common import DEFAULT_HEADERS
 
-
-headers = {
-    'User-Agent': USER_AGENT
-}
 
 valid_lead_url_regex = re.compile(
     # http:// or https://
@@ -278,7 +274,7 @@ class LeadWebsiteFetch(views.APIView):
         try:
             # Try with https
             r = requests.head(
-                https_url, headers=headers,
+                https_url, headers=DEFAULT_HEADERS,
                 timeout=settings.LEAD_WEBSITE_FETCH_TIMEOUT
             )
         except requests.exceptions.RequestException:
@@ -286,7 +282,7 @@ class LeadWebsiteFetch(views.APIView):
             # Try with http
             try:
                 r = requests.head(
-                    http_url, headers=headers,
+                    http_url, headers=DEFAULT_HEADERS,
                     timeout=settings.LEAD_WEBSITE_FETCH_TIMEOUT
                 )
             except requests.exceptions.RequestException:

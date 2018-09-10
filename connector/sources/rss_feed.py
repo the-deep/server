@@ -3,6 +3,7 @@ from lxml import etree
 import requests
 import copy
 
+from utils.common import DEFAULT_HEADERS
 from lead.models import Lead
 from .base import Source
 
@@ -103,11 +104,15 @@ class RssFeed(Source):
             return []
 
         try:
-            r = requests.get(params['feed-url'])
+            r = requests.get(params['feed-url'], headers=DEFAULT_HEADERS)
             xml = etree.fromstring(r.content)
         except requests.exceptions.RequestException:
             raise serializers.ValidationError({
                 'feed-url': 'Could not fetch rss feed'
+            })
+        except etree.XMLSyntaxError:
+            raise serializers.ValidationError({
+                'feed-url': 'Invalid XML'
             })
 
         item = xml.find('channel/item')
