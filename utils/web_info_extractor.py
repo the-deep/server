@@ -17,7 +17,7 @@ class WebInfoExtractor:
         self.url = url
 
         head = requests.head(url, headers=HEADERS)
-        if 'text/html' in head.headers.get('content-type'):
+        if 'text/html' in head.headers.get('content-type', ''):
             html = requests.get(url, headers=HEADERS).text
             self.readable = Document(html)
             self.page = BeautifulSoup(html, 'lxml')
