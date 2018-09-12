@@ -16,7 +16,7 @@ admin.site.register(Link)
 # @admin.register(Link)
 # class LinkAdmin(admin.ModelAdmin):
 #     def get_form(self, request, obj=None, **kwargs):
-#         form = super(LinkAdmin, self).get_form(
+#         form = super().get_form(
 #             request,
 #             obj,
 #             **kwargs,

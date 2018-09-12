@@ -78,7 +78,7 @@ class FileViewSet(viewsets.ModelViewSet):
         return File.get_for(self.request.user)
 
     def retrieve(self, request, *args, **kwargs):
-        response = super(FileViewSet, self).retrieve(request, *args, **kwargs)
+        response = super().retrieve(request, *args, **kwargs)
         response['Cache-Control'] = 'max-age={}'.format(
             settings.MAX_FILE_CACHE_AGE)
         return response

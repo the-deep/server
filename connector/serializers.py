@@ -117,7 +117,7 @@ class ConnectorSerializer(RemoveNullFieldsMixin,
         fields = ('__all__')
 
     def create(self, validated_data):
-        connector = super(ConnectorSerializer, self).create(validated_data)
+        connector = super().create(validated_data)
         ConnectorUser.objects.create(
             connector=connector,
             user=self.context['request'].user,

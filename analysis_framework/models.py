@@ -84,7 +84,7 @@ class Widget(models.Model):
     properties = JSONField(default=None, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        super(Widget, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         from .utils import update_widget
         update_widget(self)
 

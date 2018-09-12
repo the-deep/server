@@ -54,7 +54,7 @@ class LeadAssessmentSerializer(RemoveNullFieldsMixin,
     def create(self, validated_data):
         # If this assessment is being created for the first time,
         # we want to set lead to the one which has its id in the url
-        assessment = super(LeadAssessmentSerializer, self).create({
+        assessment = super().create({
             **validated_data,
             'lead': get_object_or_404(Lead, pk=self.initial_data['lead']),
         })
@@ -79,7 +79,7 @@ class LeadGroupAssessmentSerializer(RemoveNullFieldsMixin,
     def create(self, validated_data):
         # If this assessment is being created for the first time,
         # we want to set lead group to the one which has its id in the url
-        assessment = super(LeadGroupAssessmentSerializer, self).create({
+        assessment = super().create({
             **validated_data,
             'lead_group': get_object_or_404(
                 LeadGroup,
