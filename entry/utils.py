@@ -1,4 +1,7 @@
 from entry.models import Attribute
+from gallery.models import File
+from django.urls import reverse
+from utils.image import decode_base64_if_possible
 from .widgets.store import widget_store
 
 
@@ -21,3 +24,28 @@ def update_attributes():
 
     for attribute in attributes:
         update_entry_attribute(attribute)
+
+
+def validate_image_for_entry(image, project, request):
+    if not image:
+        return image
+
+    decoded_file, header = decode_base64_if_possible(image)
+    if isinstance(decoded_file, str):
+        return image
+
+    mime_type = ''
+    if header:
+        mime_type = header[len('data:'):]
+
+    file = File.objects.create(
+        title=decoded_file.name,
+        mime_type=mime_type,
+        created_by=request.user,
+        modified_by=request.user,
+    )
+    file.file.save(decoded_file.name, decoded_file)
+    file.projects.add(project)
+
+    url = reverse('file', kwargs={'file_id': file.id})
+    return request.build_absolute_uri(url)

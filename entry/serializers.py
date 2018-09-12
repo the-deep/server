@@ -13,6 +13,7 @@ from geo.serializers import GeoOptionSerializer, SimpleRegionSerializer
 from .models import (
     Entry, Attribute, FilterData, ExportData
 )
+from .utils import validate_image_for_entry
 
 
 class AttributeSerializer(RemoveNullFieldsMixin,
@@ -113,6 +114,24 @@ class EntrySerializer(RemoveNullFieldsMixin,
                   'attributes', 'order',
                   'created_at', 'created_by', 'modified_at', 'modified_by',
                   'version_id')
+
+    def create(self, validated_data):
+        validated_data['image'] = validate_image_for_entry(
+            validated_data['image'],
+            project=validated_data['lead'].project,
+            request=self.context['request'],
+        )
+        entry = super().create(validated_data)
+        return entry
+
+    def update(self, instance, validated_data):
+        validated_data['image'] = validate_image_for_entry(
+            validated_data['image'],
+            project=validated_data['lead'].project,
+            request=self.context['request'],
+        )
+        entry = super().update(instance, validated_data)
+        return entry
 
 
 class EditEntriesDataSerializer(RemoveNullFieldsMixin,
