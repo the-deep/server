@@ -45,7 +45,7 @@ class RegionSerializer(RemoveNullFieldsMixin,
 
     class Meta:
         model = Region
-        fields = ('__all__')
+        exclude = ('geo_options',)
 
     def validate_project(self, project):
         try:
@@ -78,7 +78,7 @@ class AdminLevelSerializer(RemoveNullFieldsMixin,
 
     class Meta:
         model = AdminLevel
-        fields = ('__all__')
+        exclude = ('geojson', 'bounds')
 
     # Validations
     def validate_region(self, region):
