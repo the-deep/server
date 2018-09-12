@@ -31,4 +31,4 @@ class FileDocument(Document):
         elif extension in self.PPTX_TYPES:
             type = PPTX
 
-        super(FileDocument, self).__init__(doc, type)
+        super().__init__(doc, type)

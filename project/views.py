@@ -290,13 +290,13 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         if list:
             kwargs.pop('data')
             kwargs.pop('many', None)
-            return super(ProjectMembershipViewSet, self).get_serializer(
+            return super().get_serializer(
                 data=list,
                 many=True,
                 *args,
                 **kwargs,
             )
-        return super(ProjectMembershipViewSet, self).get_serializer(
+        return super().get_serializer(
             *args,
             **kwargs,
         )
@@ -306,7 +306,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
             response.data = {
                 'results': response.data,
             }
-        return super(ProjectMembershipViewSet, self).finalize_response(
+        return super().finalize_response(
             request, response,
             *args, **kwargs,
         )
