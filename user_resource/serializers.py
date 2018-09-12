@@ -41,8 +41,7 @@ class UserResourceSerializer(NestedCreateMixin,
         return resource
 
     def update(self, instance, validated_data):
-        resource = super().update(
-            instance, validated_data)
+        resource = super().update(instance, validated_data)
         resource.modified_by = self.context['request'].user
         resource.save()
         return resource
