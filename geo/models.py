@@ -1,4 +1,7 @@
+import json
 from django.contrib.gis.db import models
+from django.core.serializers import serialize
+from django.contrib.gis.gdal import Envelope
 from django.contrib.postgres.fields import JSONField
 from user_resource.models import UserResource
 from gallery.models import File
@@ -21,11 +24,35 @@ class Region(UserResource):
     population_data = JSONField(default=None, blank=True, null=True)
     media_sources = JSONField(default=None, blank=True, null=True)
 
+    # cache data
+    geo_options = JSONField(default=None, blank=True, null=True)
+
     def __str__(self):
         return self.title
 
     class Meta:
         ordering = ['title', 'code']
+
+    def calc_cache(self, save=True):
+        self.geo_options = [
+            {
+                'label': '{} / {}'.format(geo_area.admin_level.title,
+                                          geo_area.title),
+                'title': geo_area.title,
+                'key': str(geo_area.id),
+                'admin_level': geo_area.admin_level.level,
+                'admin_level_title': geo_area.admin_level.title,
+                'region': geo_area.admin_level.region.id,
+                'region_title': geo_area.admin_level.region.title,
+            } for geo_area in GeoArea.objects.select_related(
+                'admin_level', 'admin_level__region',
+            ).filter(
+                admin_level__region=self
+            ).order_by('admin_level__level').distinct()
+        ]
+
+        if save:
+            self.save()
 
     def get_verbose_title(self):
         if self.public:
@@ -115,11 +142,42 @@ class AdminLevel(models.Model):
 
     stale_geo_areas = models.BooleanField(default=True)
 
+    # cache data
+    geojson = JSONField(default=None, blank=True, null=True)
+    bounds = JSONField(default=None, blank=True, null=True)
+
     def __str__(self):
         return self.title
 
     class Meta:
         ordering = ['level']
+
+    def calc_cache(self, save=True):
+        self.geojson = json.loads(serialize(
+            'geojson',
+            self.geoarea_set.all(),
+            geometry_field='polygons',
+            fields=('pk', 'title', 'code', 'parent'),
+        ))
+
+        self.bounds = {}
+        areas = self.geoarea_set.filter(polygons__isnull=False)
+        if areas.count() > 0:
+            try:
+                envelope = Envelope(*areas[0].polygons.extent)
+                for area in areas[1:]:
+                    envelope.expand_to_include(*area.polygons.extent)
+                self.bounds = {
+                    'min_x': envelope.min_x,
+                    'min_y': envelope.min_y,
+                    'max_x': envelope.max_x,
+                    'max_y': envelope.max_y,
+                }
+            except ValueError:
+                pass
+
+        if save:
+            self.save()
 
     def clone_to(self, region, parent=None):
         admin_level = AdminLevel(
@@ -136,15 +194,6 @@ class AdminLevel(models.Model):
         )
         admin_level.stale_geo_areas = True
         admin_level.save()
-
-        # new_parent_areas = []
-        # for area in self.geoarea_set.all():
-        #     parent = None
-        #     if area.parent:
-        #         parent = next((p for p in new_parent_areas
-        #                       if p.title == area.parent.title and
-        #                       p.code == area.parent.code), None)
-        #     new_parent_areas.append(area.clone_to(self, parent))
 
         for child_level in self.adminlevel_set.all():
             child_level.clone_to(region, admin_level)
