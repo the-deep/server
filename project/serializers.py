@@ -9,7 +9,8 @@ from project.models import (
     Project,
     ProjectMembership,
     ProjectJoinRequest,
-    ProjectRole
+    ProjectRole,
+    ProjectUserGroupMembership,
 )
 from project.permissions import PROJECT_PERMISSIONS
 
@@ -257,3 +258,11 @@ class ProjectEntitySerializer(UserResourceSerializer):
                 {'message': "You don't have permission to create lead"}
             )
         return super().create(validated_data)
+
+
+class ProjectUserGroupSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(source='usergroup.title', read_only=True)
+
+    class Meta:
+        model = ProjectUserGroupMembership
+        fields = '__all__'
