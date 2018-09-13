@@ -63,15 +63,11 @@ def _extract_from_file_core(file_preview_id):
 
 @shared_task
 def extract_from_file(file_preview_id):
-    r = redis.get_connection()
     key = 'file_extraction_{}'.format(file_preview_id)
-    lock = 'lock_{}'.format(key)
-
-    with redis.get_lock(lock):
-        if r.exists(key):
-            logger.error('File Redis Locked')
-            return False
-        r.set(key, '1')
+    lock = redis.get_lock(key, 60 * 60 * 24)  # Lock lifetime 24 hours
+    have_lock = lock.acquire(blocking=False)
+    if not have_lock:
+        return False
 
     try:
         return_value = _extract_from_file_core(file_preview_id)
@@ -79,5 +75,5 @@ def extract_from_file(file_preview_id):
         logger.error(traceback.format_exc())
         return_value = False
 
-    r.delete(key)
+    lock.release()
     return return_value
