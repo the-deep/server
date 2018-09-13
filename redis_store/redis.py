@@ -1,5 +1,4 @@
 from django.conf import settings
-from redlock import RedLock
 import redis
 
 
@@ -26,13 +25,6 @@ def get_connection():
     return redis.Redis(connection_pool=pool)
 
 
-def get_lock(lock):
-    """
-    Get a distributed lock based on redis using RedLock algorithm
-    """
-    return RedLock(
-        lock,
-        connection_details=[
-            {'connection_pool': pool},
-        ]
-    )
+def get_lock(key, timeout=None):
+    client = get_connection()
+    return client.lock(key, timeout=timeout)
