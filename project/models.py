@@ -98,7 +98,12 @@ class Project(UserResource):
                                      through_fields=('project', 'member'),
                                      through='ProjectMembership')
     regions = models.ManyToManyField(Region, blank=True)
-    user_groups = models.ManyToManyField(UserGroup, blank=True)
+    user_groups = models.ManyToManyField(
+        UserGroup,
+        blank=True,
+        through='ProjectUserGroupMembership',
+        through_fields=('project', 'usergroup'),
+    )
     analysis_framework = models.ForeignKey(AnalysisFramework, blank=True,
                                            default=None, null=True,
                                            on_delete=models.SET_NULL)
@@ -346,6 +351,24 @@ class ProjectMembership(models.Model):
 
     def can_get(self, user):
         return True
+
+    def can_modify(self, user):
+        return self.project.can_modify(user)
+
+
+class ProjectUserGroupMembership(models.Model):
+    """
+    Project usergroup membership model
+    """
+    project = models.ForeignKey(Project)
+    usergroup = models.ForeignKey(UserGroup)
+    joined_at = models.DateTimeField(auto_now_add=True)
+    added_by = models.ForeignKey(User, on_delete=models.CASCADE,
+                                 null=True, blank=True, default=None,
+                                 related_name='added_project_usergroups')
+
+    def __str__(self):
+        return 'Group {} @ {}'.format(self.usergroup.title, self.project.title)
 
     def can_modify(self, user):
         return self.project.can_modify(user)
