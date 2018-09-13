@@ -124,7 +124,7 @@ class FileExtractionTriggerView(views.APIView):
 
         file_preview = FilePreview.objects.create(
             file_ids=file_ids,
-            extracted=False
+            extracted=False,
         )
 
         if not settings.TESTING:

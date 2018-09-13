@@ -74,7 +74,7 @@ def _extract_from_lead_core(lead_id):
             if images:
                 for image in images:
                     image.close()
-            return False
+            # return False
 
         # Save extracted text as LeadPreview
         if text:
@@ -93,14 +93,14 @@ def _extract_from_lead_core(lead_id):
                 logger.error(traceback.format_exc())
                 classified_doc_id = None
 
-            # Make sure there isn't existing lead preview
-            LeadPreview.objects.filter(lead=lead).delete()
-            # and create new one
-            LeadPreview.objects.create(
-                lead=lead,
-                text_extract=text,
-                classified_doc_id=classified_doc_id,
-            )
+        # Make sure there isn't existing lead preview
+        LeadPreview.objects.filter(lead=lead).delete()
+        # and create new one
+        LeadPreview.objects.create(
+            lead=lead,
+            text_extract=text,
+            classified_doc_id=classified_doc_id,
+        )
 
         # Save extracted images as LeadPreviewImage instances
         if images:

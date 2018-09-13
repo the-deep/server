@@ -41,7 +41,7 @@ def _extract_from_file_core(file_preview_id):
                 all_text += text
             except Exception:
                 logger.error(traceback.format_exc())
-                return False
+                continue
 
         if all_text:
             file_preview.text = all_text
@@ -52,11 +52,11 @@ def _extract_from_file_core(file_preview_id):
                 response = requests.post(DEEPL_NGRAMS_URL,
                                          data=data).json()
                 file_preview.ngrams = response
-                file_preview.extracted = True
             except Exception:
                 logger.error(traceback.format_exc())
 
-            file_preview.save()
+        file_preview.extracted = True
+        file_preview.save()
 
     return True
 
