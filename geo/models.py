@@ -100,13 +100,6 @@ class Region(UserResource):
             self.created_by == user
         )
 
-    def get_geo_areas(self):
-        return GeoArea.objects.select_related(
-            'admin_level', 'admin_level__region',
-        ).filter(
-            admin_level__region=self,
-        ).order_by('admin_level__level').distinct()
-
 
 class AdminLevel(models.Model):
     """
@@ -145,6 +138,7 @@ class AdminLevel(models.Model):
     # cache data
     geojson = JSONField(default=None, blank=True, null=True)
     bounds = JSONField(default=None, blank=True, null=True)
+    geo_area_titles = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -153,6 +147,7 @@ class AdminLevel(models.Model):
         ordering = ['level']
 
     def calc_cache(self, save=True):
+        # GeoJSON
         self.geojson = json.loads(serialize(
             'geojson',
             self.geoarea_set.all(),
@@ -160,6 +155,13 @@ class AdminLevel(models.Model):
             fields=('pk', 'title', 'code', 'parent'),
         ))
 
+        # Titles
+        titles = {}
+        for geo_area in self.geoarea_set.all():
+            titles[str(geo_area.id)] = geo_area.title
+        self.geo_area_titles = titles
+
+        # Bounds
         self.bounds = {}
         areas = self.geoarea_set.filter(polygons__isnull=False)
         if areas.count() > 0:
