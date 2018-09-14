@@ -9,7 +9,7 @@ from analysis_framework.serializers import (
     AnalysisFrameworkSerializer,
     SimpleWidgetSerializer,
 )
-from geo.serializers import GeoOptionSerializer, SimpleRegionSerializer
+from geo.serializers import SimpleRegionSerializer
 from .models import (
     Entry, Attribute, FilterData, ExportData
 )
@@ -156,11 +156,9 @@ class EditEntriesDataSerializer(RemoveNullFieldsMixin,
                   'regions')
 
     def get_geo_options(self, lead):
-        # TODO Check if geo option is required based on analysis framework
         options = {}
         for region in lead.project.regions.all():
-            options[str(region.id)] = GeoOptionSerializer(
-                region.get_geo_areas(),
-                many=True,
-            ).data
+            if not region.geo_options:
+                region.calc_cache()
+            options[str(region.id)] = region.geo_options
         return options
