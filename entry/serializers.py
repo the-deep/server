@@ -116,20 +116,24 @@ class EntrySerializer(RemoveNullFieldsMixin,
                   'version_id')
 
     def create(self, validated_data):
-        validated_data['image'] = validate_image_for_entry(
-            validated_data['image'],
-            project=validated_data['lead'].project,
-            request=self.context['request'],
-        )
+        image = validated_data.get('image')
+        if image:
+            validated_data['image'] = validate_image_for_entry(
+                image,
+                project=validated_data['lead'].project,
+                request=self.context['request'],
+            )
         entry = super().create(validated_data)
         return entry
 
     def update(self, instance, validated_data):
-        validated_data['image'] = validate_image_for_entry(
-            validated_data['image'],
-            project=validated_data['lead'].project,
-            request=self.context['request'],
-        )
+        image = validated_data.get('image')
+        if image:
+            validated_data['image'] = validate_image_for_entry(
+                image,
+                project=validated_data['lead'].project,
+                request=self.context['request'],
+            )
         entry = super().update(instance, validated_data)
         return entry
 
