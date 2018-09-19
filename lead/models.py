@@ -151,21 +151,16 @@ class Lead(UserResource, ProjectEntityMixin):
                     d1.get('attachment') != d2.get('attachment'):
                 transaction.on_commit(lambda: extract_from_lead.delay(self.id))
 
-    @staticmethod
-    def get_for(user):
+    @classmethod
+    def get_for(cls, user):
         """
         Lead can only be accessed by users who have access to
         it's project
         """
-        return Lead.objects.filter(
-            models.Q(project__members=user) |
-            models.Q(project__user_groups__members=user)
-        ).annotate(
+        qs = super().get_for(user)
+        return qs.annotate(
             no_of_entries=models.Count('entry', distinct=True)
-        ).distinct()
-
-    def can_get(self, user):
-        return self.project.is_member(user)
+        )
 
     def get_assignee(self):
         return self.assignee.first()

@@ -53,20 +53,6 @@ class Entry(UserResource, ProjectEntityMixin):
                 self.lead.title,
             )
 
-    @staticmethod
-    def get_for(user):
-        """
-        Entry can only be accessed by users who have access to
-        it's lead
-        """
-        return Entry.objects.filter(
-            models.Q(lead__project__members=user) |
-            models.Q(lead__project__user_groups__members=user)
-        ).distinct()
-
-    def can_get(self, user):
-        return self.lead.can_get(user)
-
     class Meta(UserResource.Meta):
         verbose_name_plural = 'entries'
         ordering = ['order', '-created_at']
@@ -84,7 +70,7 @@ class Attribute(models.Model):
     data = JSONField(default=None, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        super(Attribute, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         from .utils import update_entry_attribute
         update_entry_attribute(self)
 
