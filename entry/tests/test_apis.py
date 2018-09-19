@@ -76,6 +76,49 @@ class EntryTests(TestCase):
         entry = Entry.objects.get(id=response.data['id'])
         self.assertEqual(entry.project, entry.lead.project)
 
+    def test_create_entry_no_project(self):
+        entry_count = Entry.objects.count()
+        lead = self.create_lead()
+
+        widget = self.create(
+            Widget,
+            analysis_framework=lead.project.analysis_framework,
+        )
+
+        url = '/api/v1/entries/'
+        data = {
+            'lead': lead.pk,
+            'analysis_framework': widget.analysis_framework.pk,
+            'excerpt': 'This is test excerpt',
+            'attributes': {
+                widget.pk: {
+                    'data': {'a': 'b'},
+                },
+            },
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        self.assertEqual(Entry.objects.count(), entry_count + 1)
+        self.assertEqual(response.data['version_id'], 1)
+        self.assertEqual(response.data['excerpt'], data['excerpt'])
+
+        attributes = response.data['attributes']
+        self.assertEqual(len(attributes.values()), 1)
+
+        attribute = Attribute.objects.get(
+            id=attributes[str(widget.pk)]['id']
+        )
+
+        self.assertEqual(attribute.widget.pk, widget.pk)
+        self.assertEqual(attribute.data['a'], 'b')
+
+        # Check if project matches
+        entry = Entry.objects.get(id=response.data['id'])
+        self.assertEqual(entry.project, entry.lead.project)
+
     def test_create_entry_no_perm(self):
         entry_count = Entry.objects.count()
 

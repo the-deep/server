@@ -6,6 +6,7 @@ from deep.serializers import (
     RemoveNullFieldsMixin,
     RecursiveSerializer,
 )
+from project.models import Project
 from user_resource.serializers import UserResourceSerializer
 from lead.serializers import SimpleLeadSerializer, ProjectEntitySerializer
 from lead.models import Lead, LeadGroup
@@ -21,10 +22,22 @@ class AssessmentSerializer(RemoveNullFieldsMixin,
                                        read_only=True)
     lead_group_title = serializers.CharField(source='lead_group.title',
                                              read_only=True)
+    project = serializers.PrimaryKeyRelatedField(
+        required=False,
+        queryset=Project.objects.all()
+    )
 
     class Meta:
         model = Assessment
         fields = ('__all__')
+
+    def create(self, data):
+        if data.get('project') is None:
+            if data.get('lead') is None:
+                data['project'] = data['lead_group'].project
+            else:
+                data['project'] = data['lead'].project
+        return super().create(data)
 
 
 class LeadAssessmentSerializer(RemoveNullFieldsMixin,
