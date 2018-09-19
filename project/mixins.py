@@ -1,3 +1,5 @@
+from project.permissions import get_project_entities
+
 
 class ProjectEntityMixin:
     """
@@ -24,3 +26,7 @@ class ProjectEntityMixin:
                 return super().__getattribute__(name)
 
         return permission_function
+
+    @classmethod
+    def get_for(cls, user):
+        return get_project_entities(cls, user, action='view').distinct()

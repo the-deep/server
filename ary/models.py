@@ -7,6 +7,7 @@ from user_resource.models import UserResource
 from deep.models import Field, FieldOption
 from lead.models import Lead, LeadGroup
 from geo.models import GeoArea
+from project.mixins import ProjectEntityMixin
 
 from utils.common import identity, underscore_to_title
 
@@ -229,7 +230,7 @@ class ScoreMatrixScale(models.Model):
         ordering = ['value']
 
 
-class Assessment(UserResource):
+class Assessment(UserResource, ProjectEntityMixin):
     """
     Assessment belonging to a lead
     """
@@ -254,36 +255,11 @@ class Assessment(UserResource):
             raise ValidationError(
                 'Assessment cannot have both `lead` and `lead_group` defined'
             )
-        return super(Assessment, self).clean()
+        return super().clean()
 
     def save(self, *args, **kwargs):
         self.clean()
-        return super(Assessment, self).save(*args, **kwargs)
-
-    @staticmethod
-    def get_for(user):
-        """
-        Assessment can only be accessed by users who have access to
-        it's lead
-        """
-        return Assessment.objects.filter(
-            models.Q(lead__project__members=user) |
-            models.Q(lead__project__user_groups__members=user) |
-            models.Q(lead_group__project__members=user) |
-            models.Q(lead_group__project__user_groups__members=user)
-        ).distinct()
-
-    def can_get(self, user):
-        return (
-            (self.lead and self.lead.can_get(user)) or
-            (self.lead_group and self.lead_group.can_get(user))
-        )
-
-    def can_modify(self, user):
-        return (
-            (self.lead and self.lead.can_modify(user)) or
-            (self.lead_group and self.lead_group.can_modify(user))
-        )
+        return super().save(*args, **kwargs)
 
     def create_schema_for_group(self, GroupClass):
         schema = {}

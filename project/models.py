@@ -184,10 +184,15 @@ class Project(UserResource):
 
     @staticmethod
     def get_modifiable_for(user):
+        permission = PROJECT_PERMISSIONS.setup.modify
         return Project.get_annotated().filter(
             projectmembership__in=ProjectMembership.objects.filter(
                 member=user,
-                role=ProjectRole.get_admin_role(),
+            ).annotate(
+                new_setup_permission=models.F('role__setup_permissions')
+                .bitand(permission)
+            ).filter(
+                new_setup_permission=permission
             )
         ).distinct()
 

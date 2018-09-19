@@ -85,6 +85,7 @@ def get_project_entities(Entity, user, action=None):
     @user: User instance
     @action: could be view, create, edit, delete, etc.
     """
+    # TODO: camelcase to snakecase instead of just lower()
     item = Entity.__name__.lower()
 
     item_permissions = item + '_permissions'
@@ -93,9 +94,10 @@ def get_project_entities(Entity, user, action=None):
         return Entity.objects.none()
 
     fieldname = 'project__projectmembership__role__{}'.format(item_permissions)
-    return Entity.objects.annotate(
+    return Entity.objects.filter(
+        project__projectmembership__member=user,
+    ).annotate(
         new_permission_col=models.F(fieldname).bitand(permission)
     ).filter(
-        project__projectmembership__member=user,
         new_permission_col=permission
     ).distinct()
