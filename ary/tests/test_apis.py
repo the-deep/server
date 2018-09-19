@@ -40,6 +40,27 @@ class AssessmentTests(TestCase):
         self.assertEqual(response.data['methodology'],
                          data['methodology'])
 
+    def test_create_assessment_no_project_yes_lead(self):
+        assessment_count = Assessment.objects.count()
+
+        lead = self.create_lead()
+        url = '/api/v1/assessments/'
+        data = {
+            'lead': lead.pk,
+            'metadata': {'test_meta': 'Test'},
+            'methodology': {'test_methodology': 'Test'},
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        self.assertEqual(Assessment.objects.count(), assessment_count + 1)
+        self.assertEqual(response.data['version_id'], 1)
+        self.assertEqual(response.data['metadata'], data['metadata'])
+        self.assertEqual(response.data['methodology'],
+                         data['methodology'])
+
     def test_create_assessment_no_perm(self):
         assessment_count = Assessment.objects.count()
 

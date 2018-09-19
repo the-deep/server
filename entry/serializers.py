@@ -99,9 +99,8 @@ class EntrySerializer(RemoveNullFieldsMixin,
                   'version_id')
 
     def create(self, data):
-        project = data['project']
-
-        data['project'] = project
+        if data.get('project') is None:
+            data['project'] = data['lead'].project
         return super().create(data)
 
 
