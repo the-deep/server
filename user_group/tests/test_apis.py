@@ -1,6 +1,7 @@
 from deep.tests import TestCase
 from user.models import User
 from user_group.models import UserGroup, GroupMembership
+from project.models import Project, ProjectMembership
 
 
 class UserGroupApiTest(TestCase):
@@ -30,7 +31,7 @@ class UserGroupApiTest(TestCase):
         self.assertEqual(membership.role, 'admin')
 
     def test_member_of(self):
-        user_group = self.create(UserGroup)
+        user_group = self.create(UserGroup, role='admin')
         test_user = self.create(User)
 
         url = '/api/v1/user-groups/member-of/'
@@ -83,8 +84,19 @@ class UserGroupApiTest(TestCase):
         self.assertEqual(user_groups[0]['id'], user_group.id)
 
     def test_add_member(self):
-        user_group = self.create(UserGroup)
+        # check if project membership changes or not
+        project = self.create(
+            Project,
+            user_groups=[],
+            title='TestProject',
+            role=self.admin_role
+        )
+        user_group = self.create(UserGroup, role='admin')
         test_user = self.create(User)
+
+        project.user_groups.add(user_group)
+        memberships = ProjectMembership.objects.filter(project=project)
+        initial_member_count = memberships.count()
 
         url = '/api/v1/group-memberships/'
         data = {
@@ -100,3 +112,43 @@ class UserGroupApiTest(TestCase):
         self.assertEqual(response.data['role'], data['role'])
         self.assertEqual(response.data['member'], data['member'])
         self.assertEqual(response.data['group'], data['group'])
+
+        # check for project memberships
+        final_memberships = ProjectMembership.objects.filter(project=project)
+        final_membership_count = final_memberships.count()
+        self.assertEqual(initial_member_count + 1, final_membership_count)
+
+    def test_delete_user_group(self):
+        # first create a user group
+        project = self.create(Project, role=self.admin_role)
+        # set directly_added as True
+        memship = ProjectMembership.objects.filter(project=project).last()
+        memship.is_directly_added = True
+        memship.save()
+
+        mems_count = ProjectMembership.objects.filter(project=project).count()
+        self.assertEqual(mems_count, 1)
+
+        # create user group
+        user_group = self.create(UserGroup, role='admin')
+
+        # add usergroup to project
+        project.user_groups.add(user_group)
+
+        test_user = self.create(User)
+        gm = GroupMembership.objects.create(member=test_user, group=user_group)
+
+        mems_count = ProjectMembership.objects.filter(project=project).count()
+        self.assertEqual(mems_count, 2)  # we added a user
+
+        # now delete
+        url = '/api/v1/group-memberships/{}/'.format(gm.id)
+        self.authenticate()
+
+        response = self.client.delete(url)
+        assert response.status_code == 204
+
+        # check for project memberships
+        final_memberships = ProjectMembership.objects.filter(project=project)
+        final_membership_count = final_memberships.count()
+        self.assertEqual(final_membership_count, 1)

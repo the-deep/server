@@ -3,6 +3,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.dispatch import receiver
 
+from project.mixins import ProjectEntityMixin
 from user_resource.models import UserResource
 from lead.models import Lead
 from analysis_framework.models import (
@@ -13,7 +14,7 @@ from analysis_framework.models import (
 )
 
 
-class Entry(UserResource):
+class Entry(UserResource, ProjectEntityMixin):
     """
     Entry belonging to a lead
 
@@ -29,6 +30,7 @@ class Entry(UserResource):
     )
 
     lead = models.ForeignKey(Lead)
+    project = models.ForeignKey('project.Project')
     order = models.IntegerField(default=1)
     analysis_framework = models.ForeignKey(AnalysisFramework)
     information_date = models.DateField(default=None,
@@ -51,23 +53,6 @@ class Entry(UserResource):
                 self.lead.title,
             )
 
-    @staticmethod
-    def get_for(user):
-        """
-        Entry can only be accessed by users who have access to
-        it's lead
-        """
-        return Entry.objects.filter(
-            models.Q(lead__project__members=user) |
-            models.Q(lead__project__user_groups__members=user)
-        ).distinct()
-
-    def can_get(self, user):
-        return self.lead.can_get(user)
-
-    def can_modify(self, user):
-        return self.lead.can_modify(user)
-
     class Meta(UserResource.Meta):
         verbose_name_plural = 'entries'
         ordering = ['order', '-created_at']
@@ -85,7 +70,7 @@ class Attribute(models.Model):
     data = JSONField(default=None, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        super(Attribute, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         from .utils import update_entry_attribute
         update_entry_attribute(self)
 

@@ -5,7 +5,7 @@ from deep.serializers import (
     RemoveNullFieldsMixin,
     ListToDictField,
 )
-from user_resource.serializers import UserResourceSerializer
+from project.serializers import ProjectEntitySerializer
 from lead.serializers import LeadSerializer
 from lead.models import Lead
 from analysis_framework.serializers import AnalysisFrameworkSerializer
@@ -13,6 +13,7 @@ from geo.serializers import GeoOptionSerializer, SimpleRegionSerializer
 from .models import (
     Entry, Attribute, FilterData, ExportData
 )
+from project.models import Project
 
 
 class AttributeSerializer(RemoveNullFieldsMixin,
@@ -76,7 +77,7 @@ class SimpleExportDataSerializer(RemoveNullFieldsMixin,
 
 
 class EntrySerializer(RemoveNullFieldsMixin,
-                      DynamicFieldsMixin, UserResourceSerializer):
+                      DynamicFieldsMixin, ProjectEntitySerializer):
     attributes = ListToDictField(
         child=SimpleAttributeSerializer(many=True),
         key='widget',
@@ -84,13 +85,23 @@ class EntrySerializer(RemoveNullFieldsMixin,
         required=False,
     )
 
+    project = serializers.PrimaryKeyRelatedField(
+        required=False,
+        queryset=Project.objects.all()
+    )
+
     class Meta:
         model = Entry
-        fields = ('id', 'lead', 'analysis_framework',
+        fields = ('id', 'lead', 'analysis_framework', 'project',
                   'entry_type', 'excerpt', 'image', 'information_date',
                   'attributes', 'order', 'client_id',
                   'created_at', 'created_by', 'modified_at', 'modified_by',
                   'version_id')
+
+    def create(self, data):
+        if data.get('project') is None:
+            data['project'] = data['lead'].project
+        return super().create(data)
 
 
 class EditEntriesDataSerializer(RemoveNullFieldsMixin,

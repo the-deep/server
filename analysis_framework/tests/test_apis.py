@@ -5,7 +5,7 @@ from project.models import Project
 
 class AnalysisFrameworkTests(TestCase):
     def test_create_analysis_framework(self):
-        project = self.create(Project)
+        project = self.create(Project, role=self.admin_role)
 
         af_count = AnalysisFramework.objects.count()
         url = '/api/v1/analysis-frameworks/'
@@ -26,7 +26,10 @@ class AnalysisFrameworkTests(TestCase):
 
     def test_clone_analysis_framework(self):
         analysis_framework = self.create(AnalysisFramework)
-        project = self.create(Project, analysis_framework=analysis_framework)
+        project = self.create(
+            Project, analysis_framework=analysis_framework,
+            role=self.admin_role
+        )
 
         url = '/api/v1/clone-analysis-framework/{}/'.format(
             analysis_framework.id
@@ -51,7 +54,10 @@ class AnalysisFrameworkTests(TestCase):
 
     def test_project_analysis_framework(self):
         analysis_framework = self.create(AnalysisFramework)
-        project = self.create(Project, analysis_framework=analysis_framework)
+        project = self.create(
+            Project, analysis_framework=analysis_framework,
+            role=self.admin_role
+        )
 
         url = '/api/v1/projects/{}/analysis-framework/'.format(
             project.id

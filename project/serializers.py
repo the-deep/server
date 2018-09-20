@@ -1,5 +1,6 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
 
 from deep.serializers import RemoveNullFieldsMixin
 from geo.models import Region
@@ -8,7 +9,10 @@ from project.models import (
     Project,
     ProjectMembership,
     ProjectJoinRequest,
+    ProjectRole
 )
+from project.permissions import PROJECT_PERMISSIONS
+
 from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
 from user_group.serializers import SimpleUserGroupSerializer
@@ -19,6 +23,55 @@ class SimpleProjectSerializer(RemoveNullFieldsMixin,
                               serializers.ModelSerializer):
     class Meta:
         model = Project
+        fields = ('id', 'title')
+
+
+class ProjectRoleSerializer(RemoveNullFieldsMixin,
+                            DynamicFieldsMixin,
+                            serializers.ModelSerializer):
+    lead_permissions = serializers.SerializerMethodField()
+    entry_permissions = serializers.SerializerMethodField()
+    setup_permissions = serializers.SerializerMethodField()
+    export_permissions = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectRole
+        fields = '__all__'
+
+    def get_lead_permissions(self, roleobj):
+        return [
+            k
+            for k, v in PROJECT_PERMISSIONS['lead'].items()
+            if roleobj.lead_permissions & v != 0
+        ]
+
+    def get_entry_permissions(self, roleobj):
+        return [
+            k
+            for k, v in PROJECT_PERMISSIONS['entry'].items()
+            if roleobj.entry_permissions & v != 0
+        ]
+
+    def get_setup_permissions(self, roleobj):
+        return [
+            k
+            for k, v in PROJECT_PERMISSIONS['setup'].items()
+            if roleobj.setup_permissions & v != 0
+        ]
+
+    def get_export_permissions(self, roleobj):
+        return [
+            k
+            for k, v in PROJECT_PERMISSIONS['export'].items()
+            if roleobj.export_permissions & v != 0
+        ]
+
+
+class SimpleProjectRoleSerializer(RemoveNullFieldsMixin,
+                                  DynamicFieldsMixin,
+                                  serializers.ModelSerializer):
+    class Meta:
+        model = ProjectRole
         fields = ('id', 'title')
 
 
@@ -62,6 +115,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
     regions = SimpleRegionSerializer(many=True, required=False)
     user_groups = SimpleUserGroupSerializer(many=True, required=False)
     role = serializers.SerializerMethodField()
+    join_request_status = serializers.SerializerMethodField()
 
     analysis_framework_title = serializers.CharField(
         source='analysis_framework.title',
@@ -101,27 +155,14 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         ProjectMembership.objects.create(
             project=project,
             member=self.context['request'].user,
-            role='admin',
+            role=ProjectRole.get_admin_role(),
+            is_directly_added=True
         )
         return project
 
-    def get_role(self, project):
+    def get_join_request_status(self, project):
         request = self.context['request']
         user = request.GET.get('user', request.user)
-
-        membership = ProjectMembership.objects.filter(
-            project=project,
-            member=user
-        ).first()
-        if membership:
-            return membership.role
-
-        group_membership = UserGroup.objects.filter(
-            project=project,
-            members=user,
-        ).first()
-        if group_membership:
-            return 'normal'
 
         join_request = ProjectJoinRequest.objects.filter(
             project=project,
@@ -134,7 +175,34 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         ):
             return join_request.status
 
-        return 'none'
+        return None
+
+    def get_role(self, project):
+        request = self.context['request']
+        user = request.GET.get('user', request.user)
+
+        membership = ProjectMembership.objects.filter(
+            project=project,
+            member=user
+        ).first()
+        if membership:
+            return ProjectRoleSerializer(membership.role).data
+        return None
+
+    def get_permissions(self, project):
+        request = self.context.get('request')
+        if request is None:
+            return {}
+        user = request.GET.get('user', request.user)
+
+        membership = ProjectMembership.objects.filter(
+            project=project,
+            member=user
+        ).first()
+        if membership:
+            return ProjectRoleSerializer(membership.role).data
+        # TODO: return value based on join request
+        return {}
 
     # Validations
     def validate_user_groups(self, user_groups):
@@ -175,3 +243,17 @@ class ProjectJoinRequestSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = ProjectJoinRequest
         fields = '__all__'
+
+
+class ProjectEntitySerializer(UserResourceSerializer):
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        project = validated_data['project']
+        role = project.get_role(user)
+
+        if not role or not role.can_create_lead:
+            raise PermissionDenied(
+                {'message': "You don't have permission to create lead"}
+            )
+        return super().create(validated_data)
