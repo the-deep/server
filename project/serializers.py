@@ -49,21 +49,21 @@ class ProjectRoleSerializer(RemoveNullFieldsMixin,
         return [
             k
             for k, v in PROJECT_PERMISSIONS['entry'].items()
-            if roleobj.lead_permissions & v != 0
+            if roleobj.entry_permissions & v != 0
         ]
 
     def get_setup_permissions(self, roleobj):
         return [
             k
             for k, v in PROJECT_PERMISSIONS['setup'].items()
-            if roleobj.lead_permissions & v != 0
+            if roleobj.setup_permissions & v != 0
         ]
 
     def get_export_permissions(self, roleobj):
         return [
             k
             for k, v in PROJECT_PERMISSIONS['export'].items()
-            if roleobj.lead_permissions & v != 0
+            if roleobj.export_permissions & v != 0
         ]
 
 
