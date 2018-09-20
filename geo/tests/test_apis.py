@@ -7,7 +7,7 @@ class RegionTests(TestCase):
     def test_create_region(self):
         region_count = Region.objects.count()
 
-        project = self.create(Project)
+        project = self.create(Project, role=self.admin_role)
         url = '/api/v1/regions/'
         data = {
             'code': 'NLP',
@@ -27,7 +27,7 @@ class RegionTests(TestCase):
                       project.regions.all())
 
     def test_clone_region(self):
-        project = self.create(Project)
+        project = self.create(Project, role=self.admin_role)
         region = self.create(Region)
         project.regions.add(region)
 

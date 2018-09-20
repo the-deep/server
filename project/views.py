@@ -22,6 +22,7 @@ import ary.serializers as arys
 
 from deep.permissions import ModifyPermission
 from project.permissions import JoinPermission, AcceptRejectPermission
+from project.models import ProjectRole
 from project.filter_set import ProjectFilterSet, get_filtered_projects
 
 from user.utils import send_project_join_request_emails
@@ -86,7 +87,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
                   url_path='analysis-framework')
     def get_framework(self, request, pk=None, version=None):
         from analysis_framework.serializers import AnalysisFrameworkSerializer
-        from analysis_framework.models import AnalysisFramework
 
         project = self.get_object()
         if not project.analysis_framework:
@@ -130,6 +130,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             project=project,
             requested_by=request.user,
             status='pending',
+            role=ProjectRole.get_normal_role()
         )
 
         serializer = ProjectJoinRequestSerializer(
@@ -153,7 +154,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                                  status=status.HTTP_201_CREATED)
 
     @staticmethod
-    def _accept_request(responded_by, join_request, role='normal'):
+    def _accept_request(responded_by, join_request, role):
         join_request.status = 'accepted'
         join_request.responded_by = responded_by
         join_request.responded_at = timezone.now()
@@ -195,7 +196,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 'This request has already been {}'.format(join_request.status)
             )
 
-        role = request.data.get('role', 'normal')
+        role = request.data.get('role')
+        if not role:
+            role = ProjectRole.get_normal_role()
+        else:
+            role_qs = ProjectRole.objects.filter(id=role)
+            if not role_qs.exists():
+                return response.Response(
+                    {'errors': 'Role id \'{}\' does not exist'.format(role)},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            role = role_qs.first()
         ProjectViewSet._accept_request(request.user, join_request, role)
 
         serializer = ProjectJoinRequestSerializer(

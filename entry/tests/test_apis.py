@@ -1,6 +1,7 @@
 from deep.tests import TestCase
 
 from project.models import Project
+from user.models import User
 from lead.models import Lead
 from analysis_framework.models import (
     AnalysisFramework, Widget, Filter
@@ -15,7 +16,10 @@ from entry.models import (
 class EntryTests(TestCase):
     def create_project(self):
         analysis_framework = self.create(AnalysisFramework)
-        return self.create(Project, analysis_framework=analysis_framework)
+        return self.create(
+            Project, analysis_framework=analysis_framework,
+            role=self.admin_role
+        )
 
     def create_lead(self):
         project = self.create_project()
@@ -24,7 +28,7 @@ class EntryTests(TestCase):
     def create_entry(self):
         lead = self.create_lead()
         return self.create(
-            Entry, lead=lead,
+            Entry, lead=lead, project=lead.project,
             analysis_framework=lead.project.analysis_framework,
         )
 
@@ -32,6 +36,50 @@ class EntryTests(TestCase):
         entry_count = Entry.objects.count()
 
         lead = self.create_lead()
+        widget = self.create(
+            Widget,
+            analysis_framework=lead.project.analysis_framework,
+        )
+
+        url = '/api/v1/entries/'
+        data = {
+            'lead': lead.pk,
+            'project': lead.project.pk,
+            'analysis_framework': widget.analysis_framework.pk,
+            'excerpt': 'This is test excerpt',
+            'attributes': {
+                widget.pk: {
+                    'data': {'a': 'b'},
+                },
+            },
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        self.assertEqual(Entry.objects.count(), entry_count + 1)
+        self.assertEqual(response.data['version_id'], 1)
+        self.assertEqual(response.data['excerpt'], data['excerpt'])
+
+        attributes = response.data['attributes']
+        self.assertEqual(len(attributes.values()), 1)
+
+        attribute = Attribute.objects.get(
+            id=attributes[str(widget.pk)]['id']
+        )
+
+        self.assertEqual(attribute.widget.pk, widget.pk)
+        self.assertEqual(attribute.data['a'], 'b')
+
+        # Check if project matches
+        entry = Entry.objects.get(id=response.data['id'])
+        self.assertEqual(entry.project, entry.lead.project)
+
+    def test_create_entry_no_project(self):
+        entry_count = Entry.objects.count()
+        lead = self.create_lead()
+
         widget = self.create(
             Widget,
             analysis_framework=lead.project.analysis_framework,
@@ -63,8 +111,66 @@ class EntryTests(TestCase):
         attribute = Attribute.objects.get(
             id=attributes[str(widget.pk)]['id']
         )
+
         self.assertEqual(attribute.widget.pk, widget.pk)
         self.assertEqual(attribute.data['a'], 'b')
+
+        # Check if project matches
+        entry = Entry.objects.get(id=response.data['id'])
+        self.assertEqual(entry.project, entry.lead.project)
+
+    def test_create_entry_no_perm(self):
+        entry_count = Entry.objects.count()
+
+        lead = self.create_lead()
+        widget = self.create(
+            Widget,
+            analysis_framework=lead.project.analysis_framework,
+        )
+
+        user = self.create(User)
+        lead.project.add_member(user, self.view_only_role)
+
+        url = '/api/v1/entries/'
+        data = {
+            'lead': lead.pk,
+            'project': lead.project.pk,
+            'analysis_framework': widget.analysis_framework.pk,
+            'excerpt': 'This is test excerpt',
+            'attributes': {
+                widget.pk: {
+                    'data': {'a': 'b'},
+                },
+            },
+        }
+
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_403(response)
+
+        self.assertEqual(Entry.objects.count(), entry_count)
+
+    def test_delete_entry(self):
+        entry = self.create_entry()
+
+        url = '/api/v1/entries/{}/'.format(entry.id)
+
+        self.authenticate()
+
+        response = self.client.delete(url)
+        self.assert_204(response)
+
+    def test_delete_entry_no_perm(self):
+        entry = self.create_entry()
+        user = self.create(User)
+        entry.project.add_member(user, self.view_only_role)
+
+        url = '/api/v1/entries/{}/'.format(entry.id)
+
+        self.authenticate(user)
+
+        response = self.client.delete(url)
+        self.assert_403(response)
 
     def test_duplicate_entry(self):
         entry_count = Entry.objects.count()
@@ -74,6 +180,7 @@ class EntryTests(TestCase):
         url = '/api/v1/entries/'
         data = {
             'lead': lead.pk,
+            'project': lead.project.pk,
             'excerpt': 'Test excerpt',
             'analysis_framework': lead.project.analysis_framework.id,
             'client_id': client_id,

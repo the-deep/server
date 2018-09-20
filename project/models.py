@@ -8,6 +8,7 @@ from geo.models import Region
 from user_group.models import UserGroup
 from analysis_framework.models import AnalysisFramework
 from category_editor.models import CategoryEditor
+from project.permissions import PROJECT_PERMISSIONS
 
 from utils.common import generate_timeseries
 
@@ -120,6 +121,20 @@ class Project(UserResource):
     def __str__(self):
         return self.title
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Send signal
+
+    def get_all_members(self):
+        return User.objects.filter(
+            projectmembership__project=self
+        )
+
+    def get_direct_members(self):
+        return self.get_all_members().filter(
+            projectmembership__is_directly_added=True
+        )
+
     @staticmethod
     def get_annotated():
         from entry.models import Lead, Entry
@@ -169,10 +184,15 @@ class Project(UserResource):
 
     @staticmethod
     def get_modifiable_for(user):
+        permission = PROJECT_PERMISSIONS.setup.modify
         return Project.get_annotated().filter(
             projectmembership__in=ProjectMembership.objects.filter(
                 member=user,
-                role='admin',
+            ).annotate(
+                new_setup_permission=models.F('role__setup_permissions')
+                .bitand(permission)
+            ).filter(
+                new_setup_permission=permission
             )
         ).distinct()
 
@@ -182,14 +202,26 @@ class Project(UserResource):
     def is_member(self, user):
         return self in Project.get_for_member(user)
 
-    def can_modify(self, user):
-        return ProjectMembership.objects.filter(
+    def get_role(self, user):
+        membership = ProjectMembership.objects.filter(
             project=self,
             member=user,
-            role='admin',
-        ).exists()
+        )
+        # this will return None if not exists
+        return membership.first() and membership.first().role
 
-    def add_member(self, user, role='normal', added_by=None):
+    def can_modify(self, user):
+        role = self.get_role(user)
+        return role is not None and role.can_modify_setup
+
+    def can_delete(self, user):
+        role = self.get_role(user)
+        return role is not None and role.can_delete_setup
+
+    def add_member(
+            self, user, role=None, added_by=None):
+        if role is None:
+            role = ProjectRole.get_normal_role()
         return ProjectMembership.objects.create(
             member=user,
             role=role,
@@ -237,7 +269,7 @@ class Project(UserResource):
     def get_admins(self):
         return User.objects.filter(
             projectmembership__project=self,
-            projectmembership__role='admin'
+            projectmembership__role=ProjectRole.get_admin_role(),
         ).distinct()
 
     def get_number_of_users(self):
@@ -247,20 +279,55 @@ class Project(UserResource):
         ).distinct().count()
 
 
+@receiver(models.signals.m2m_changed, sender=Project.user_groups.through)
+def refresh_project_memberships_project_updated(sender, instance, **kwargs):
+    """
+    Update project memberships when a project is saved(update/created)
+    @instance: Project instance
+    NOTE: sent after project update/created
+    """
+    if kwargs['action'] not in ['post_add', 'post_remove']:
+        return
+
+    project_ug_members = User.objects.filter(
+        groupmembership__group__project=instance
+    )
+    new_users = project_ug_members.difference(instance.get_all_members()).\
+        distinct()
+    for user in new_users:
+        instance.add_member(user)
+
+    # Also, when usergroup is deleted from project,
+    # remove membereships if necessary
+    # The logic is: project_members.diff(directly_added.union(all_ug_members))
+    all_members = instance.get_all_members()
+
+    direct_members = instance.get_direct_members()
+
+    all_ug_members = User.objects.filter(
+        groupmembership__group__project=instance
+    ).distinct()
+
+    remove_members = all_members.difference(
+        direct_members.union(all_ug_members)
+    )
+
+    remove_members = list(remove_members.values_list('id', flat=True))
+
+    ProjectMembership.objects.filter(
+        project=instance, member__id__in=remove_members
+    ).delete()
+
+
 class ProjectMembership(models.Model):
     """
     Project-Member relationship attributes
     """
 
-    ROLES = (
-        ('normal', 'Normal'),
-        ('admin', 'Admin'),
-    )
-
     member = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    role = models.CharField(max_length=96, choices=ROLES,
-                            default='normal')
+    role = models.ForeignKey('project.ProjectRole')
+    is_directly_added = models.BooleanField(default=False)
     joined_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                  null=True, blank=True, default=None,
@@ -301,8 +368,7 @@ class ProjectJoinRequest(models.Model):
     requested_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=48, choices=STATUSES,
                               default='pending')
-    role = models.CharField(max_length=96, choices=ProjectMembership.ROLES,
-                            default='normal')
+    role = models.ForeignKey('project.ProjectRole')
     responded_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                      null=True, blank=True, default=None,
                                      related_name='project_join_responses')
@@ -344,3 +410,65 @@ def on_status_updated(sender, **kwargs):
     with transaction.atomic():
         for project in Project.objects.all():
             project.update_status()
+
+
+class ProjectRole(UserResource):
+    """
+    Roles for Project
+    """
+
+    # NOTE: now exists independently, later might co-exist with Project
+    title = models.CharField(max_length=255, unique=True)
+
+    lead_permissions = models.IntegerField(default=0)
+    entry_permissions = models.IntegerField(default=0)
+    setup_permissions = models.IntegerField(default=0)
+    export_permissions = models.IntegerField(default=0)
+    assessment_permissions = models.IntegerField(default=0)
+
+    is_creator_role = models.BooleanField(default=False)
+    is_default_role = models.BooleanField(default=False)
+
+    description = models.TextField(blank=True)
+
+    @classmethod
+    def get_admin_role(cls):
+        qs = cls.objects.filter(is_creator_role=True)
+        if qs.exists():
+            return qs.first()
+        return None
+
+    @classmethod
+    def get_normal_role(cls):
+        qs = cls.objects.filter(is_default_role=True)
+        if qs.exists():
+            return qs.first()
+        return None
+
+    def __str__(self):
+        return self.title
+
+    def __getattr__(self, name):
+        if not name.startswith('can_'):
+            # super() does not have __getattr__
+            return super().__getattribute__(name)
+        else:
+            try:
+                _, action, item = name.split('_')  # Example: can_create_lead
+            except ValueError:
+                return super().__getattribute__(name)
+
+            try:
+                item_permissions = self.__getattr__(item + '_permissions')
+            except Exception as e:
+                raise AttributeError(
+                    'No permission defined for "{}"'.format(item)
+                )
+
+            permission_bit = PROJECT_PERMISSIONS.get(item, {}).get(action)
+
+            if permission_bit is None:
+                return super().__getattribute__(name)
+
+            # can be negative if first bit 1, so check if not zero
+            return item_permissions & permission_bit != 0

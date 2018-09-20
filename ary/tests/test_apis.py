@@ -1,6 +1,7 @@
 from deep.tests import TestCase
 
 from project.models import Project
+from user.models import User
 from lead.models import Lead
 from ary.models import (
     Assessment,
@@ -14,15 +15,17 @@ from ary.models import (
 
 class AssessmentTests(TestCase):
     def create_lead(self):
-        project = self.create(Project)
+        project = self.create(Project, role=self.admin_role)
         return self.create(Lead, project=project)
 
     def test_create_assessment(self):
         assessment_count = Assessment.objects.count()
 
+        lead = self.create_lead()
         url = '/api/v1/assessments/'
         data = {
-            'lead': self.create_lead().pk,
+            'lead': lead.pk,
+            'project': lead.project.pk,
             'metadata': {'test_meta': 'Test'},
             'methodology': {'test_methodology': 'Test'},
         }
@@ -37,6 +40,49 @@ class AssessmentTests(TestCase):
         self.assertEqual(response.data['methodology'],
                          data['methodology'])
 
+    def test_create_assessment_no_project_yes_lead(self):
+        assessment_count = Assessment.objects.count()
+
+        lead = self.create_lead()
+        url = '/api/v1/assessments/'
+        data = {
+            'lead': lead.pk,
+            'metadata': {'test_meta': 'Test'},
+            'methodology': {'test_methodology': 'Test'},
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        self.assertEqual(Assessment.objects.count(), assessment_count + 1)
+        self.assertEqual(response.data['version_id'], 1)
+        self.assertEqual(response.data['metadata'], data['metadata'])
+        self.assertEqual(response.data['methodology'],
+                         data['methodology'])
+
+    def test_create_assessment_no_perm(self):
+        assessment_count = Assessment.objects.count()
+
+        lead = self.create_lead()
+        user = self.create(User)
+
+        lead.project.add_member(user, self.view_only_role)
+
+        url = '/api/v1/assessments/'
+        data = {
+            'lead': lead.pk,
+            'project': lead.project.pk,
+            'metadata': {'test_meta': 'Test'},
+            'methodology': {'test_methodology': 'Test'},
+        }
+
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_403(response)
+
+        self.assertEqual(Assessment.objects.count(), assessment_count)
+
     def test_lead_assessment(self):
         # First test creating a new assessment for a new lead
         assessment_count = Assessment.objects.count()
@@ -46,6 +92,7 @@ class AssessmentTests(TestCase):
         data = {
             'metadata': {'test_meta': 'Test 1'},
             'methodology': {'test_methodology': 'Test 2'},
+            'project': lead.project.pk
         }
 
         self.authenticate()
