@@ -1,4 +1,5 @@
-from os.path import join
+from os.path import (join, isfile)
+import logging
 
 from django.test import TestCase
 from django.conf import settings
@@ -11,6 +12,7 @@ DOCX_FILE = 'doc.docx'
 PPTX_FILE = 'doc.pptx'
 PDF_FILE = 'doc.pdf'
 
+logger = logging.getLogger(__name__)
 
 class FileDocumentTest(TestCase):
     """
@@ -36,20 +38,42 @@ class FileDocumentTest(TestCase):
         # TODO: Verify image
         # self.assertEqual(len(images), 4)
 
+    def thumbnail(self, file_path):
+        ERROR_TYPE = 'THUMBNAIL ERROR'
+        doc = open(join(self.documents, file_path), 'rb')
+
+        try:
+            thumbnail = FileDocument(
+                doc,
+                doc.name.split('/')[-1]
+            ).get_thumbnail()
+        except Exception:
+            import traceback
+            logger.warning('\n' + ('*' * 30))
+            logger.warning('{}: FILEDOCUMENT: {}'.format(ERROR_TYPE, doc.name))
+            logger.warning(traceback.format_exc())
+            return
+
+        self.assertTrue(isfile(thumbnail.name))
+        # TODO: image validation
+
     def test_docx(self):
         """
         Test Docx import
         """
         self.extract(DOCX_FILE)
+        self.thumbnail(DOCX_FILE)
 
     def test_pptx(self):
         """
         Test pptx import
         """
         self.extract(PPTX_FILE)
+        self.thumbnail(PPTX_FILE)
 
     def test_pdf(self):
         """
         Test Pdf import
         """
         self.extract(PDF_FILE)
+        self.thumbnail(PDF_FILE)
