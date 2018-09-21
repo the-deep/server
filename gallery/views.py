@@ -1,5 +1,8 @@
-from .tasks import extract_from_file
-from .models import File, FilePreview
+from django.views.generic import View
+from django.conf import settings
+from django.db import models, transaction
+from django.shortcuts import redirect, get_object_or_404
+
 from rest_framework import (
     views,
     viewsets,
@@ -8,19 +11,26 @@ from rest_framework import (
     filters,
     mixins,
 )
-from deep.permissions import ModifyPermission
-from django.conf import settings
-from django.db import models, transaction
 import django_filters
 
+from deep.permissions import ModifyPermission
 from project.models import Project
 from user_resource.filters import UserResourceFilterSet
+
 from .serializers import (
     FileSerializer,
     GoogleDriveFileSerializer,
     DropboxFileSerializer,
     FilePreviewSerializer
 )
+from .tasks import extract_from_file
+from .models import File, FilePreview
+
+
+class FileView(View):
+    def get(self, request, file_id):
+        file = get_object_or_404(File, id=file_id)
+        return redirect(request.build_absolute_uri(file.file.url))
 
 
 def filter_files_by_projects(qs, name, value):
@@ -124,7 +134,7 @@ class FileExtractionTriggerView(views.APIView):
 
         file_preview = FilePreview.objects.create(
             file_ids=file_ids,
-            extracted=False
+            extracted=False,
         )
 
         if not settings.TESTING:

@@ -166,10 +166,11 @@ class ExportData(models.Model):
         Export data can only be accessed by users who have access to
         it's entry
         """
-        return ExportData.objects.select_related('lead__project').filter(
-            models.Q(entry__lead__project__members=user) |
-            models.Q(entry__lead__project__user_groups__members=user)
-        ).distinct()
+        return ExportData.objects.select_related('entry__lead__project')\
+            .filter(
+                models.Q(entry__lead__project__members=user) |
+                models.Q(entry__lead__project__user_groups__members=user))\
+            .distinct()
 
     def can_get(self, user):
         return self.entry.can_get(user)

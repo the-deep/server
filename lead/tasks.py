@@ -74,7 +74,7 @@ def _extract_from_lead_core(lead_id):
             if images:
                 for image in images:
                     image.close()
-            return False
+            # return False
 
         # Save extracted text as LeadPreview
         if text:
@@ -93,14 +93,14 @@ def _extract_from_lead_core(lead_id):
                 logger.error(traceback.format_exc())
                 classified_doc_id = None
 
-            # Make sure there isn't existing lead preview
-            LeadPreview.objects.filter(lead=lead).delete()
-            # and create new one
-            LeadPreview.objects.create(
-                lead=lead,
-                text_extract=text,
-                classified_doc_id=classified_doc_id,
-            )
+        # Make sure there isn't existing lead preview
+        LeadPreview.objects.filter(lead=lead).delete()
+        # and create new one
+        LeadPreview.objects.create(
+            lead=lead,
+            text_extract=text,
+            classified_doc_id=classified_doc_id,
+        )
 
         # Save extracted images as LeadPreviewImage instances
         if images:
@@ -127,20 +127,14 @@ def extract_from_lead(lead_id):
       need to be notified.
     """
 
-    # Use redis store to keep track of leads currently being extracted
+    # Use redis lock to keep track of leads currently being extracted
     # and try to prevent useless parallel extraction of same lead that
     # that might happen.
-    r = redis.get_connection()
     key = 'lead_extraction_{}'.format(lead_id)
-    lock = 'lock_{}'.format(key)
-
-    # Check if key exists and if so return, otherwise set the key ourself
-    # Also use lock while doing this.
-    with redis.get_lock(lock):
-        if r.exists(key):
-            logger.error('Lead Redis Locked')
-            return False
-        r.set(key, '1')
+    lock = redis.get_lock(key, 60 * 60 * 4)  # Lock lifetime 4 hours
+    have_lock = lock.acquire(blocking=False)
+    if not have_lock:
+        return False
 
     try:
         # Actual extraction process
@@ -171,6 +165,5 @@ def extract_from_lead(lead_id):
         logger.error(traceback.format_exc())
         return_value = False
 
-    # Once done, we delete the key to say that this task is done.
-    r.delete(key)
+    lock.release()
     return return_value

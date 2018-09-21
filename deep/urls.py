@@ -18,6 +18,7 @@ from user.views import (
     user_activate_confirm,
 )
 from gallery.views import (
+    FileView,
     FileViewSet,
     GoogleDriveFileViewSet,
     DropboxFileViewSet,
@@ -231,6 +232,9 @@ urlpatterns = [
 
     url(get_api_path(r'token/refresh/$'),
         TokenRefreshView.as_view()),
+
+    # Gallery
+    url(r'^file/(?P<file_id>\d+)/$', FileView.as_view(), name='file'),
 
     # Activate User
     url(r'^user/activate/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',

@@ -54,7 +54,10 @@ class StringsSerializer(RemoveNullFieldsMixin,
             if action == 'add':
                 string = String()
             else:
-                string = String.objects.get(id=id)
+                string = String.objects.filter(id=id).first()
+
+            if not string:
+                continue
 
             if action == 'delete':
                 string.delete()

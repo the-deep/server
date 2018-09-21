@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 @shared_task
 def add(x, y):
     """
-    Simple task for sole purpose testing celery
+    Simple task for sole purpose of testing celery
     Used in geo.tests.test_celery module
     """
     return x + y
@@ -141,6 +141,7 @@ def _generate_geo_areas(admin_level, parent):
             ).exclude(id__in=added_areas).delete()
 
     admin_level.stale_geo_areas = False
+    admin_level.calc_cache(False)
     admin_level.save()
 
 
@@ -188,20 +189,18 @@ def _load_geo_areas(region_id):
             completed_levels,
         )
 
+        region.calc_cache()
+
     return True
 
 
 @shared_task
 def load_geo_areas(region_id):
-    r = redis.get_connection()
     key = 'load_geo_areas_{}'.format(region_id)
-    lock = 'lock_{}'.format(key)
-
-    with redis.get_lock(lock):
-        if r.exists(key):
-            logger.error('Geo Area Redis Locked')
-            return False
-        r.set(key, '1')
+    lock = redis.get_lock(key, 60 * 30)  # Lock lifetime 30 minutes
+    have_lock = lock.acquire(blocking=False)
+    if not have_lock:
+        return False
 
     try:
         return_value = _load_geo_areas(region_id)
@@ -209,5 +208,5 @@ def load_geo_areas(region_id):
         logger.error(traceback.format_exc())
         return_value = False
 
-    r.delete(key)
+    lock.release()
     return return_value

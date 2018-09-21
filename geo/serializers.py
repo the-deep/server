@@ -45,7 +45,7 @@ class RegionSerializer(RemoveNullFieldsMixin,
 
     class Meta:
         model = Region
-        fields = ('__all__')
+        exclude = ('geo_options',)
 
     def validate_project(self, project):
         try:
@@ -78,7 +78,7 @@ class AdminLevelSerializer(RemoveNullFieldsMixin,
 
     class Meta:
         model = AdminLevel
-        fields = ('__all__')
+        exclude = ('geojson', 'bounds')
 
     # Validations
     def validate_region(self, region):
@@ -116,14 +116,3 @@ class AdminLevelSerializer(RemoveNullFieldsMixin,
             transaction.on_commit(lambda: load_geo_areas.delay(region.id))
 
         return admin_level
-
-
-class GeoOptionSerializer(RemoveNullFieldsMixin,
-                          serializers.Serializer):
-    label = serializers.CharField(source='get_label')
-    title = serializers.CharField()
-    key = serializers.CharField(source='id')
-    admin_level = serializers.CharField(source='admin_level.level')
-    admin_level_title = serializers.CharField(source='admin_level.title')
-    region = serializers.IntegerField(source='admin_level.region.id')
-    region_title = serializers.CharField(source='admin_level.region.title')

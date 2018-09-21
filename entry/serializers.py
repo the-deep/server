@@ -9,10 +9,11 @@ from analysis_framework.serializers import (
     AnalysisFrameworkSerializer,
     SimpleWidgetSerializer,
 )
-from geo.serializers import GeoOptionSerializer, SimpleRegionSerializer
+from geo.serializers import SimpleRegionSerializer
 from .models import (
     Entry, Attribute, FilterData, ExportData
 )
+from .utils import validate_image_for_entry
 
 
 class AttributeSerializer(RemoveNullFieldsMixin,
@@ -114,6 +115,28 @@ class EntrySerializer(RemoveNullFieldsMixin,
                   'created_at', 'created_by', 'modified_at', 'modified_by',
                   'version_id')
 
+    def create(self, validated_data):
+        image = validated_data.get('image')
+        if image:
+            validated_data['image'] = validate_image_for_entry(
+                image,
+                project=validated_data['lead'].project,
+                request=self.context['request'],
+            )
+        entry = super().create(validated_data)
+        return entry
+
+    def update(self, instance, validated_data):
+        image = validated_data.get('image')
+        if image:
+            validated_data['image'] = validate_image_for_entry(
+                image,
+                project=validated_data['lead'].project,
+                request=self.context['request'],
+            )
+        entry = super().update(instance, validated_data)
+        return entry
+
 
 class EditEntriesDataSerializer(RemoveNullFieldsMixin,
                                 serializers.ModelSerializer):
@@ -133,11 +156,9 @@ class EditEntriesDataSerializer(RemoveNullFieldsMixin,
                   'regions')
 
     def get_geo_options(self, lead):
-        # TODO Check if geo option is required based on analysis framework
         options = {}
         for region in lead.project.regions.all():
-            options[str(region.id)] = GeoOptionSerializer(
-                region.get_geo_areas(),
-                many=True,
-            ).data
+            if not region.geo_options:
+                region.calc_cache()
+            options[str(region.id)] = region.geo_options
         return options
