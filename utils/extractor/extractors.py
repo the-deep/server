@@ -34,7 +34,6 @@ class BaseExtractor:
                 format(self.__class__.__name__)
             )
 
-
 class HtmlExtractor(BaseExtractor):
     """
     Extractor class to extract HTML documents.
