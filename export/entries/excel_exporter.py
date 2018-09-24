@@ -3,7 +3,6 @@ from django.core.files.base import ContentFile
 from export.formats.xlsx import WorkBook, RowsBuilder
 from export.mime_types import EXCEL_MIME_TYPE
 from entry.models import Entry, ExportData
-from geo.models import GeoArea
 from utils.common import format_date, generate_filename
 
 
@@ -32,6 +31,8 @@ class ExcelExporter:
             'Excerpt',
         ]
 
+        self.region_data = {}
+
     def load_exportables(self, exportables, regions=None):
         # Take all exportables that contains excel info
         exportables = exportables.filter(
@@ -54,10 +55,24 @@ class ExcelExporter:
             #     information_date_index += 1
 
             if export_type == 'geo' and regions:
+                self.region_data = {}
+
                 for region in regions:
                     admin_levels = region.adminlevel_set.all()
+                    admin_level_data = []
+
                     for admin_level in admin_levels:
                         self.titles.append(admin_level.title)
+
+                        # Collect geo area names for each admin level
+                        if not admin_level.geo_area_titles:
+                            admin_level.calc_cache()
+                        admin_level_data.append({
+                            'id': admin_level.id,
+                            'geo_area_titles': admin_level.geo_area_titles,
+                        })
+
+                    self.region_data[region.id] = admin_level_data
 
             elif export_type == 'multiple':
                 self.titles.extend(data.get('titles'))
@@ -135,20 +150,19 @@ class ExcelExporter:
                     values = []
                     if export_data:
                         values = export_data.get('values', [])
-                        values = [int(v) for v in values]
+                        values = [str(v) for v in values]
 
                     for region in self.regions:
-                        admin_levels = region.adminlevel_set.all()
-
+                        admin_levels = self.region_data[region.id]
                         for admin_level in admin_levels:
-                            geo_data = GeoArea.objects.filter(
-                                admin_level=admin_level,
-                                id__in=values,
-                            ).distinct()
-                            if geo_data.count() > 0:
-                                rows.add_rows_of_values([
-                                    g.title for g in geo_data
-                                ])
+                            geo_area_titles = admin_level['geo_area_titles']
+                            selected_titles = [
+                                geo_area_titles[geo_id]
+                                for geo_id in values
+                                if geo_id in geo_area_titles
+                            ]
+                            if len(selected_titles) > 0:
+                                rows.add_rows_of_values(selected_titles)
                             else:
                                 rows.add_value('')
 

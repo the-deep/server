@@ -160,17 +160,15 @@ class GeoJsonView(views.APIView):
         if not admin_level.can_get(request.user):
             raise exceptions.PermissionDenied()
 
-        return response.Response(json.loads(serialize(
-            'geojson',
-            admin_level.geoarea_set.all(),
-            geometry_field='polygons',
-            fields=('pk', 'title', 'code', 'parent'),
-        )))
+        if not admin_level.geojson:
+            admin_level.calc_cache()
+
+        return response.Response(admin_level.geojson)
 
 
 class GeoBoundsView(views.APIView):
     """
-    A view that returns geojson for given admin level
+    A view that returns geo bounds for given admin level
     """
     permission_classes = [permissions.IsAuthenticated]
 
@@ -182,28 +180,11 @@ class GeoBoundsView(views.APIView):
         if not admin_level.can_get(request.user):
             raise exceptions.PermissionDenied()
 
-        areas = admin_level.geoarea_set.filter(polygons__isnull=False)
-        if areas.count() > 0:
-            try:
-                envelope = Envelope(*areas[0].polygons.extent)
-                for area in areas[1:]:
-                    envelope.expand_to_include(*area.polygons.extent)
-
-                return response.Response({
-                    'bounds': {
-                        'min_x': envelope.min_x,
-                        'min_y': envelope.min_y,
-                        'max_x': envelope.max_x,
-                        'max_y': envelope.max_y,
-                    }
-                })
-            except ValueError:
-                return response.Response({
-                    'bounds': None,
-                })
+        if not admin_level.bounds:
+            admin_level.calc_cache()
 
         return response.Response({
-            'bounds': None,
+            'bounds': admin_level.bounds
         })
 
 
@@ -224,21 +205,8 @@ class GeoOptionsView(views.APIView):
         regions = regions.distinct()
         result = {}
         for region in regions:
-            result[str(region.id)] = [
-                {
-                    'label': '{} / {}'.format(geo_area.admin_level.title,
-                                              geo_area.title),
-                    'title': geo_area.title,
-                    'key': str(geo_area.id),
-                    'admin_level': geo_area.admin_level.level,
-                    'admin_level_title': geo_area.admin_level.title,
-                    'region': geo_area.admin_level.region.id,
-                    'region_title': geo_area.admin_level.region.title,
-                } for geo_area in GeoArea.objects.select_related(
-                    'admin_level', 'admin_level__region',
-                ).filter(
-                    admin_level__region=region
-                ).order_by('admin_level__level').distinct()
-            ]
+            if not region.geo_options:
+                region.calc_cache()
+            result[str(region.id)] = region.geo_options
 
         return response.Response(result)
