@@ -5,13 +5,13 @@ import importlib
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
-            'migration_type',
-            nargs=1,
+            'arg_list',
+            nargs='+',
         )
 
     def handle(self, *args, **kwargs):
-        migration_type = kwargs['migration_type'][0]
+        migration_type = kwargs['arg_list'][0]
         migrate = importlib.import_module(
             'bulk_data_migration.{}.migrate'.format(migration_type)
         ).migrate
-        migrate()
+        migrate(*(kwargs['arg_list'][1:]))

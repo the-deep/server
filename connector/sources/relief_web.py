@@ -25,7 +25,7 @@ class ReliefWeb(Source):
     ]
 
     def __init__(self):
-        super(ReliefWeb, self).__init__()
+        super().__init__()
 
         from geo.models import Region
         self.options[0]['options'] = [

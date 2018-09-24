@@ -27,7 +27,7 @@ def remove_null(d):
 
 class RemoveNullFieldsMixin:
     def to_representation(self, instance):
-        rep = super(RemoveNullFieldsMixin, self).to_representation(instance)
+        rep = super().to_representation(instance)
         return remove_null(rep)
 
     def to_internal_value(self, data):
@@ -37,7 +37,7 @@ class RemoveNullFieldsMixin:
             if isinstance(field_type, serializers.CharField):
                 if field in data and not data.get(field):
                     data[field] = ''
-        return super(RemoveNullFieldsMixin, self).to_internal_value(data)
+        return super().to_internal_value(data)
 
 
 class ListToDictField(serializers.Field):
@@ -54,7 +54,7 @@ class ListToDictField(serializers.Field):
             'Remove `source=` from the field declaration.'
         )
 
-        super(ListToDictField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def to_representation(self, obj):
         list_data = self.child.to_representation(obj)
@@ -255,7 +255,7 @@ class BaseNestedModelSerializer(serializers.ModelSerializer):
     def save(self, **kwargs):
         self.save_kwargs = defaultdict(dict, kwargs)
 
-        return super(BaseNestedModelSerializer, self).save(**kwargs)
+        return super().save(**kwargs)
 
     def get_save_kwargs(self, field_name):
         save_kwargs = self.save_kwargs[field_name]
@@ -281,7 +281,7 @@ class NestedCreateMixin(BaseNestedModelSerializer):
         )
 
         # Create instance
-        instance = super(NestedCreateMixin, self).create(validated_data)
+        instance = super().create(validated_data)
 
         self.update_or_create_reverse_relations(instance, reverse_relations)
 
@@ -308,7 +308,7 @@ class NestedUpdateMixin(BaseNestedModelSerializer):
         )
 
         # Update instance
-        instance = super(NestedUpdateMixin, self).update(
+        instance = super().update(
             instance,
             validated_data,
         )

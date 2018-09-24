@@ -61,7 +61,7 @@ class RegionSerializer(RemoveNullFieldsMixin,
 
     def create(self, validated_data):
         project = validated_data.pop('project', None)
-        region = super(RegionSerializer, self).create(validated_data)
+        region = super().create(validated_data)
 
         if project:
             project = Project.objects.get(id=project)
@@ -87,7 +87,7 @@ class AdminLevelSerializer(RemoveNullFieldsMixin,
         return region
 
     def create(self, validated_data):
-        admin_level = super(AdminLevelSerializer, self).create(validated_data)
+        admin_level = super().create(validated_data)
         admin_level.stale_geo_areas = True
         admin_level.save()
 
@@ -101,7 +101,7 @@ class AdminLevelSerializer(RemoveNullFieldsMixin,
         return admin_level
 
     def update(self, instance, validated_data):
-        admin_level = super(AdminLevelSerializer, self).update(
+        admin_level = super().update(
             instance,
             validated_data,
         )

@@ -84,7 +84,7 @@ class UserSerializer(RemoveNullFieldsMixin,
     def create(self, validated_data):
         profile_data = validated_data.pop('profile', None)
         validated_data.pop('recaptcha_response', None)
-        user = super(UserSerializer, self).create(validated_data)
+        user = super().create(validated_data)
         user.save()
         user.profile = self.update_or_create_profile(user, profile_data)
         send_password_reset(user=user, welcome=True)
@@ -92,7 +92,7 @@ class UserSerializer(RemoveNullFieldsMixin,
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('profile', None)
-        user = super(UserSerializer, self).update(instance, validated_data)
+        user = super().update(instance, validated_data)
         if 'password' in validated_data:
             user.set_password(validated_data['password'])
             user.save()

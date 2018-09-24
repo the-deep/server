@@ -124,7 +124,7 @@ class Lead(UserResource, ProjectEntityMixin):
     # Retrigger extraction at such cases
 
     def __init__(self, *args, **kwargs):
-        super(Lead, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if self.pk:
             self.__initial = self.get_dict()
         else:
@@ -138,7 +138,7 @@ class Lead(UserResource, ProjectEntityMixin):
         }
 
     def save(self, *args, **kwargs):
-        super(Lead, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         from lead.tasks import extract_from_lead
         LeadPreview.objects.filter(lead=self).delete()
         LeadPreviewImage.objects.filter(lead=self).delete()
