@@ -32,7 +32,7 @@ class GroupMembershipSerializer(RemoveNullFieldsMixin,
         return group
 
     def create(self, validated_data):
-        resource = super(GroupMembershipSerializer, self)\
+        resource = super()\
             .create(validated_data)
         resource.added_by = self.context['request'].user
         resource.save()
@@ -55,7 +55,7 @@ class UserGroupSerializer(RemoveNullFieldsMixin,
                   'custom_project_fields')
 
     def create(self, validated_data):
-        user_group = super(UserGroupSerializer, self).create(validated_data)
+        user_group = super().create(validated_data)
         GroupMembership.objects.create(
             group=user_group,
             member=self.context['request'].user,

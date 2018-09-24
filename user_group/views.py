@@ -51,13 +51,13 @@ class GroupMembershipViewSet(viewsets.ModelViewSet):
         if list:
             kwargs.pop('data')
             kwargs.pop('many', None)
-            return super(GroupMembershipViewSet, self).get_serializer(
+            return super().get_serializer(
                 data=list,
                 many=True,
                 *args,
                 **kwargs,
             )
-        return super(GroupMembershipViewSet, self).get_serializer(
+        return super().get_serializer(
             *args,
             **kwargs,
         )
@@ -67,7 +67,7 @@ class GroupMembershipViewSet(viewsets.ModelViewSet):
             response.data = {
                 'results': response.data,
             }
-        return super(GroupMembershipViewSet, self).finalize_response(
+        return super().finalize_response(
             request, response,
             *args, **kwargs,
         )

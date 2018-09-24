@@ -85,7 +85,7 @@ class LeadViewSet(viewsets.ModelViewSet):
     def filter_queryset(self, queryset):
         # For some reason, the ordering is not working for `assignee` field
         # so, force ordering with anything passed in the query param
-        qs = super(LeadViewSet, self).filter_queryset(queryset)
+        qs = super().filter_queryset(queryset)
         ordering = self.request.GET.get('ordering')
         if ordering:
             return qs.order_by(ordering)
@@ -107,14 +107,14 @@ class LeadViewSet(viewsets.ModelViewSet):
                     'project': project,
                 })
 
-            return super(LeadViewSet, self).get_serializer(
+            return super().get_serializer(
                 data=data_list,
                 many=True,
                 *args,
                 **kwargs,
             )
 
-        return super(LeadViewSet, self).get_serializer(
+        return super().get_serializer(
             *args,
             **kwargs,
         )

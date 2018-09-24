@@ -98,7 +98,7 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
         return project
 
     def create(self, validated_data):
-        resource = super(ProjectMembershipSerializer, self)\
+        resource = super()\
             .create(validated_data)
         resource.added_by = self.context['request'].user
         resource.save()
@@ -151,7 +151,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         exclude = ('members', )
 
     def create(self, validated_data):
-        project = super(ProjectSerializer, self).create(validated_data)
+        project = super().create(validated_data)
         ProjectMembership.objects.create(
             project=project,
             member=self.context['request'].user,

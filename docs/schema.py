@@ -69,7 +69,7 @@ class URL(Schema):
 
 class Enum(Schema):
     def __init__(self, enum=[], **kwargs):
-        super(Enum, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.enum = enum
 
     def __str__(self):
@@ -80,7 +80,7 @@ class Enum(Schema):
 
 class Array(Schema):
     def __init__(self, items=None, **kwargs):
-        super(Array, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.items = items
 
     def __str__(self):
@@ -90,7 +90,7 @@ class Array(Schema):
 class Object(Schema):
     def __init__(self, properties=OrderedDict([]),
                  **kwargs):
-        super(Object, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.properties = properties
 
     def __str__(self):

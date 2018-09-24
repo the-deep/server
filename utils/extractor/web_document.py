@@ -36,7 +36,7 @@ class WebDocument(Document):
             # If we can't get header, assume html and try to continue.
             r = requests.get(url, headers=headers)
             doc = r.content
-            super(WebDocument, self).__init__(doc, type)
+            super().__init__(doc, type)
             return
 
         if not r.headers.get('content-type') or \
@@ -61,4 +61,4 @@ class WebDocument(Document):
                      for x in self.PPTX_TYPES):
                 type = PPTX
 
-        super(WebDocument, self).__init__(doc, type)
+        super().__init__(doc, type)

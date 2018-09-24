@@ -14,6 +14,7 @@ from .models import (
     Entry, Attribute, FilterData, ExportData
 )
 from project.models import Project
+from .utils import validate_image_for_entry
 
 
 class AttributeSerializer(RemoveNullFieldsMixin,
@@ -98,10 +99,30 @@ class EntrySerializer(RemoveNullFieldsMixin,
                   'created_at', 'created_by', 'modified_at', 'modified_by',
                   'version_id')
 
-    def create(self, data):
-        if data.get('project') is None:
-            data['project'] = data['lead'].project
-        return super().create(data)
+    def create(self, validated_data):
+        if validated_data.get('project') is None:
+            validated_data['project'] = validated_data['lead'].project
+
+        image = validated_data.get('image')
+        if image:
+            validated_data['image'] = validate_image_for_entry(
+                image,
+                project=validated_data['lead'].project,
+                request=self.context['request'],
+            )
+
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        image = validated_data.get('image')
+        if image:
+            validated_data['image'] = validate_image_for_entry(
+                image,
+                project=validated_data['lead'].project,
+                request=self.context['request'],
+            )
+        entry = super().update(instance, validated_data)
+        return entry
 
 
 class EditEntriesDataSerializer(RemoveNullFieldsMixin,

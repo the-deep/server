@@ -34,15 +34,14 @@ class UserResourceSerializer(NestedCreateMixin,
                 validated_data['id'] = item.id
                 return self.update(item, validated_data)
 
-        resource = super(UserResourceSerializer, self).create(validated_data)
+        resource = super().create(validated_data)
         resource.created_by = self.context['request'].user
         resource.modified_by = self.context['request'].user
         resource.save()
         return resource
 
     def update(self, instance, validated_data):
-        resource = super(UserResourceSerializer, self).update(
-            instance, validated_data)
+        resource = super().update(instance, validated_data)
         resource.modified_by = self.context['request'].user
         resource.save()
         return resource

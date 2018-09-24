@@ -144,13 +144,13 @@ class ConnectorUserViewSet(viewsets.ModelViewSet):
         if list:
             kwargs.pop('data')
             kwargs.pop('many', None)
-            return super(ConnectorUserViewSet, self).get_serializer(
+            return super().get_serializer(
                 data=list,
                 many=True,
                 *args,
                 **kwargs,
             )
-        return super(ConnectorUserViewSet, self).get_serializer(
+        return super().get_serializer(
             *args,
             **kwargs,
         )
@@ -170,13 +170,13 @@ class ConnectorProjectViewSet(viewsets.ModelViewSet):
         if list:
             kwargs.pop('data')
             kwargs.pop('many', None)
-            return super(ConnectorProjectViewSet, self).get_serializer(
+            return super().get_serializer(
                 data=list,
                 many=True,
                 *args,
                 **kwargs,
             )
-        return super(ConnectorProjectViewSet, self).get_serializer(
+        return super().get_serializer(
             *args,
             **kwargs,
         )

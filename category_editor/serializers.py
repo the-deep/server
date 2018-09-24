@@ -39,7 +39,7 @@ class CategoryEditorSerializer(RemoveNullFieldsMixin,
 
     def create(self, validated_data):
         project = validated_data.pop('project', None)
-        ce = super(CategoryEditorSerializer, self).create(validated_data)
+        ce = super().create(validated_data)
 
         if project:
             project = Project.objects.get(id=project)
