@@ -170,6 +170,11 @@ class LeadPreview(models.Model):
     lead = models.OneToOneField(Lead)
     text_extract = models.TextField(blank=True)
 
+    thumbnail = models.FileField(upload_to='lead-thumbnail/',
+                                 default=None, null=True, blank=True)
+    word_count = models.IntegerField(default=None, null=True, blank=True)
+    page_count = models.IntegerField(default=None, null=True, blank=True)
+
     classified_doc_id = models.IntegerField(default=None,
                                             null=True, blank=True)
 
