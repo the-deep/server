@@ -2,7 +2,7 @@ import requests
 import tempfile
 from django.conf import settings
 
-from utils.common import (write_file, USER_AGENT)
+from utils.common import (write_file, DEFAULT_HEADERS)
 from .document import (
     Document,
     HTML, PDF, DOCX, PPTX,
@@ -26,26 +26,22 @@ class WebDocument(Document):
         type = HTML
         doc = None
 
-        headers = {
-            'User-Agent': USER_AGENT
-        }
-
         try:
-            r = requests.head(url, headers=headers)
+            r = requests.head(url, headers=DEFAULT_HEADERS)
         except requests.exceptions.RequestException:
             # If we can't get header, assume html and try to continue.
-            r = requests.get(url, headers=headers)
+            r = requests.get(url, headers=DEFAULT_HEADERS)
             doc = r.content
             super().__init__(doc, type)
             return
 
         if not r.headers.get('content-type') or \
                 any(x in r.headers["content-type"] for x in self.HTML_TYPES):
-            r = requests.get(url, headers=headers)
+            r = requests.get(url, headers=DEFAULT_HEADERS)
             doc = r.content
         else:
             fp = tempfile.NamedTemporaryFile(dir=settings.BASE_DIR)
-            r = requests.get(url, stream=True, headers=headers)
+            r = requests.get(url, stream=True, headers=DEFAULT_HEADERS)
             write_file(r, fp)
 
             doc = fp

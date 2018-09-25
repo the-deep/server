@@ -193,15 +193,11 @@ def _load_geo_areas(region_id):
 
 @shared_task
 def load_geo_areas(region_id):
-    r = redis.get_connection()
     key = 'load_geo_areas_{}'.format(region_id)
-    lock = 'lock_{}'.format(key)
-
-    with redis.get_lock(lock):
-        if r.exists(key):
-            logger.error('Geo Area Redis Locked')
-            return False
-        r.set(key, '1')
+    lock = redis.get_lock(key, 60 * 30)  # Lock lifetime 30 minutes
+    have_lock = lock.acquire(blocking=False)
+    if not have_lock:
+        return False
 
     try:
         return_value = _load_geo_areas(region_id)
@@ -209,5 +205,5 @@ def load_geo_areas(region_id):
         logger.error(traceback.format_exc())
         return_value = False
 
-    r.delete(key)
+    lock.release()
     return return_value
