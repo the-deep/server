@@ -1,7 +1,7 @@
 from rest_framework import status
 from django.test import TestCase
 from utils.hid import config as hid_config
-from utils.common import USER_AGENT
+from utils.common import DEFAULT_HEADERS
 from urllib.parse import urlparse
 import requests
 from requests.exceptions import ConnectionError
@@ -33,9 +33,7 @@ class HIDIntegrationTest(TestCase):
     """
     def setUp(self):
         self.requests = requests.session()
-        self.headers = {
-            'User-Agent': USER_AGENT
-        }
+        self.headers = DEFAULT_HEADERS
 
     def show_auth_warning(self, response=None, no_access_token=False,
                           message=None):

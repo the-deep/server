@@ -15,15 +15,22 @@ HEADERS = {
 class WebInfoExtractor:
     def __init__(self, url):
         self.url = url
+        self.readable = None
+        self.page = None
 
-        head = requests.head(url, headers=HEADERS)
-        if 'text/html' in head.headers.get('content-type'):
-            html = requests.get(url, headers=HEADERS).text
+        try:
+            head = requests.head(url, headers=HEADERS)
+        except requests.exceptions.RequestException:
+            return
+
+        if 'text/html' in head.headers.get('content-type', ''):
+            try:
+                html = requests.get(url, headers=HEADERS).text
+            except requests.exceptions.RequestException:
+                return
+
             self.readable = Document(html)
             self.page = BeautifulSoup(html, 'lxml')
-        else:
-            self.readable = None
-            self.page = None
 
     def get_title(self):
         return self.readable and self.readable.short_title()

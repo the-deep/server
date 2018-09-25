@@ -1,5 +1,5 @@
 import requests
-from utils.common import write_file, USER_AGENT
+from utils.common import write_file, DEFAULT_HEADERS
 import tempfile
 
 
@@ -11,14 +11,10 @@ def download(file_url, SUPPORTED_MIME_TYPES, exception=None):
         file_url: file url from dropbox
     """
 
-    headers = {
-        'User-Agent': USER_AGENT
-    }
-
     outfp = tempfile.NamedTemporaryFile()
 
     # TODO: verify url
-    r = requests.get(file_url, stream=True, headers=headers)
+    r = requests.get(file_url, stream=True, headers=DEFAULT_HEADERS)
     mime_type = r.headers["content-type"]
 
     if mime_type in SUPPORTED_MIME_TYPES:
