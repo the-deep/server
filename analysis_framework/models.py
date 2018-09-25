@@ -31,7 +31,11 @@ class AnalysisFramework(UserResource):
         filters and exportables
         """
         title = overrides.get('title', '{} (cloned)'.format(self.title))
-        analysis_framework = AnalysisFramework(title=title)
+        description = overrides.get('description', '')
+        analysis_framework = AnalysisFramework(
+            title=title,
+            description=description,
+        )
         analysis_framework.created_by = user
         analysis_framework.modified_by = user
         analysis_framework.save()
