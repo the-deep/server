@@ -57,6 +57,18 @@ class LeadSerializer(RemoveNullFieldsMixin,
     """
     no_of_entries = serializers.IntegerField(read_only=True)
     attachment = SimpleFileSerializer(required=False)
+    thumbnail = serializers.FileField(
+        source='leadpreview.thumbnail',
+        read_only=True,
+    )
+    word_count = serializers.FileField(
+        source='leadpreview.word_count',
+        read_only=True,
+    )
+    page_count = serializers.FileField(
+        source='leadpreview.page_count',
+        read_only=True,
+    )
     classified_doc_id = serializers.IntegerField(
         source='leadpreview.classified_doc_id',
         read_only=True,
