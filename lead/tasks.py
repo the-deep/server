@@ -13,6 +13,7 @@ from redis_store import redis
 from rest_framework.renderers import JSONRenderer
 from utils.extractor.file_document import FileDocument
 from utils.extractor.web_document import WebDocument
+from utils.extractor.thumbnailers import DocThumbnailer
 from utils.websocket.subscription import SubscriptionConsumer
 
 import json
@@ -20,6 +21,7 @@ import reversion
 import os
 import re
 import requests
+import tempfile
 
 import traceback
 import logging
@@ -52,7 +54,7 @@ def _extract_from_lead_core(lead_id):
     lead = Lead.objects.get(id=lead_id)
 
     with reversion.create_revision():
-        text, images = '', []
+        text, images, thumbnail = '', [], None
 
         # Extract either using FileDocument or WebDocument
         # as per the document type
@@ -60,14 +62,23 @@ def _extract_from_lead_core(lead_id):
             if lead.text:
                 text = lead.text
                 images = []
+                with tempfile.NamedTemporaryFile() as tmp_file:
+                    tmp_file.write(text.encode())
+                    tmp_file.flush()
+                    thumbnail = DocThumbnailer(tmp_file, 'txt').get_thumbnail()
+
             elif lead.attachment:
-                text, images = FileDocument(
+                doc = FileDocument(
                     lead.attachment.file,
                     lead.attachment.file.name,
-                ).extract()
+                )
+                text, images = doc.extract()
+                thumbnail = doc.get_thumbnail()
 
             elif lead.url:
-                text, images = WebDocument(lead.url).extract()
+                doc = WebDocument(lead.url)
+                text, images = doc.extract()
+                thumbnail = doc.get_thumbnail()
 
             text = _preprocess(text)
         except Exception:
@@ -85,6 +96,7 @@ def _extract_from_lead_core(lead_id):
         LeadPreview.objects.create(
             lead=lead,
             text_extract=text,
+            thumbnail=File(thumbnail)
         )
 
         if text:
@@ -92,6 +104,10 @@ def _extract_from_lead_core(lead_id):
             transaction.on_commit(
                 lambda: send_lead_text_to_deepl.s(lead.id).delay()
             )
+
+        # Delete thumbnail
+        if thumbnail:
+            os.unlink(thumbnail.name)
 
         # Save extracted images as LeadPreviewImage instances
         if images:
