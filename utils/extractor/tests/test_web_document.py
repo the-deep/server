@@ -1,4 +1,4 @@
-from os.path import join
+from os.path import (join, isfile)
 import logging
 
 from django.test import TestCase
@@ -57,10 +57,10 @@ class WebDocumentTest(TestCase):
         except Exception:
             import traceback
             logger.warning('\n' + ('*' * 30))
-            logger.warning('THUMBNAIL ERROR: WEBDOCUMENT: {}'.format(ERROR_TYPE, file_type.upper()))
+            logger.warning('THUMBNAIL ERROR: WEBDOCUMENT: {}'.format(file_type.upper()))
             logger.warning(traceback.format_exc())
             return
-        # TODO: image validation
+        self.assertTrue(isfile(thumbnail.name))
 
     def test_html(self):
         """
