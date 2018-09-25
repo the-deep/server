@@ -1,9 +1,9 @@
 import tempfile
 import os
 import logging
-import shutil
 from subprocess import call
 from selenium import webdriver
+from PIL import Image
 
 from django.core.files.base import File
 from django.conf import settings
@@ -34,7 +34,7 @@ class DocThumbnailer(Thumbnailer):
         fileprefix = os.path.splitext(os.path.basename(temp_doc.name))[0]
         thumbnail = os.path.join(settings.BASE_DIR, '{}.png'.format(fileprefix))
         temp_doc.close()
-        return File(open(thumbnail, 'rb'))
+        return open(thumbnail, 'rb')
 
 
 class WebThumbnailer(Thumbnailer):
@@ -44,9 +44,9 @@ class WebThumbnailer(Thumbnailer):
     to make thumbnail smaller and compact
     """
     def get_thumbnail(self):
-        if self.doc is not None:
+        if self.doc:
             # Filename TODO: naming?
-            file_name = 'tmp.png'
+            file_name = 'thumbnail.png'
             options = webdriver.ChromeOptions()
             options.add_argument('headless')
             options.add_argument('window-size=412x732')
@@ -59,9 +59,13 @@ class WebThumbnailer(Thumbnailer):
             }
             options.add_experimental_option("mobileEmulation", mobile_emulation)
             browser = webdriver.Chrome(chrome_options=options)
-            browser.get('http://google.com')
-            # wait 2 sec to finish rendering
+            browser.get(self.doc)
+            # wait 2 sec to settle things up
             browser.implicitly_wait(2)
             browser.get_screenshot_as_file(file_name)
-            return File(open(file_name, 'rb'))
+            # optimize the image
+            img = Image.open(file_name)
+            img = img.resize((412, 732), Image.ANTIALIAS)
+            img.save(file_name, optimize=True, quality=75)
+            return open(file_name, 'rb')
         return None
