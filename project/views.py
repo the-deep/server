@@ -23,7 +23,11 @@ import ary.serializers as arys
 from deep.permissions import ModifyPermission
 from project.permissions import JoinPermission, AcceptRejectPermission
 from project.models import ProjectRole
-from project.filter_set import ProjectFilterSet, get_filtered_projects
+from project.filter_set import (
+    ProjectFilterSet,
+    get_filtered_projects,
+    ProjectMembershipFilterSet
+)
 
 from user.utils import send_project_join_request_emails
 from user.models import User
@@ -283,6 +287,9 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectMembershipSerializer
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
+                       filters.SearchFilter, filters.OrderingFilter)
+    filter_class = ProjectMembershipFilterSet
 
     def get_serializer(self, *args, **kwargs):
         data = kwargs.get('data')
