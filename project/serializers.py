@@ -106,6 +106,13 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
         return resource
 
 
+class ProjectUsergroupMembershipSerializer(RemoveNullFieldsMixin,
+                                           DynamicFieldsMixin,
+                                           serializers.ModelSerializer):
+    id = serializers.IntegerField(source='usergroup.id')
+    title = serializers.CharField(source='usergroup.title')
+
+
 class ProjectSerializer(RemoveNullFieldsMixin,
                         DynamicFieldsMixin, UserResourceSerializer):
     memberships = ProjectMembershipSerializer(
@@ -114,7 +121,8 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         required=False,
     )
     regions = SimpleRegionSerializer(many=True, required=False)
-    user_groups = SimpleUserGroupSerializer(many=True, required=False)
+    user_groups = ProjectUsergroupMembershipSerializer(many=True,
+                                                       required=False)
     role = serializers.SerializerMethodField()
     join_request_status = serializers.SerializerMethodField()
 
