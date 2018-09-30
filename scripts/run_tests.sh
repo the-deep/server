@@ -5,7 +5,7 @@ if [ "$CI" == "true" ]; then
     pip install codecov
 
     set -e
-    coverage run --source jedi -m py.test
+    coverage run -m py.test
     coverage report
     coverage html
     codecov
