@@ -5,11 +5,11 @@ if [ "$CI" == "true" ]; then
     pip install codecov
 
     set -e
-    coverage run ./manage.py test -v 3
+    coverage run -m py.test
     coverage report
     coverage html
     codecov
     set +e
 else
-    ./manage.py test -v 3
+    py.test
 fi
