@@ -57,15 +57,15 @@ class LeadSerializer(RemoveNullFieldsMixin,
     """
     no_of_entries = serializers.IntegerField(read_only=True)
     attachment = SimpleFileSerializer(required=False)
-    thumbnail = serializers.FileField(
+    thumbnail = serializers.ImageField(
         source='leadpreview.thumbnail',
         read_only=True,
     )
-    word_count = serializers.FileField(
+    word_count = serializers.IntegerField(
         source='leadpreview.word_count',
         read_only=True,
     )
-    page_count = serializers.FileField(
+    page_count = serializers.IntegerField(
         source='leadpreview.page_count',
         read_only=True,
     )

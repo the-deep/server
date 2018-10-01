@@ -92,10 +92,9 @@ def _extract_from_lead_core(lead_id):
         LeadPreviewImage.objects.filter(lead=lead).delete()
 
         # and create new one
-        LeadPreview.objects.create(
+        leadPreview = LeadPreview.objects.create(
             lead=lead,
             text_extract=text,
-            thumbnail=File(thumbnail)
         )
 
         if text:
@@ -104,6 +103,8 @@ def _extract_from_lead_core(lead_id):
 
         # Delete thumbnail
         if thumbnail:
+            leadPreview.thumbnail.save(os.path.basename(thumbnail.name),
+                                       File(thumbnail), True)
             os.unlink(thumbnail.name)
 
         # Save extracted images as LeadPreviewImage instances
