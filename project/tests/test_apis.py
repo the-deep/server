@@ -133,6 +133,102 @@ class ProjectApiTest(TestCase):
             final_member_count
         )
 
+    def test_add_user_to_usergroup(self):
+        project = self.create(
+            Project,
+            title='TestProject',
+            user_groups=[],
+            role=self.admin_role
+        )
+        # Add usergroups
+        project_ug1 = ProjectUserGroupMembership.objects.create(
+            usergroup=self.ug1,
+            project=project
+        )
+        initial_member_count = ProjectMembership.objects.filter(
+            project=project
+        ).count()
+        # Create a new user and add it to project_ug1
+        newUser = self.create(User)
+
+        from user_group.models import GroupMembership
+        GroupMembership.objects.create(
+            member=newUser,
+            group=project_ug1.usergroup
+        )
+        final_member_count = ProjectMembership.objects.filter(
+            project=project
+        ).count()
+        self.assertEqual(initial_member_count + 1, final_member_count)
+
+    def test_remove_user_in_only_one_usergroup(self):
+        project = self.create(
+            Project,
+            title='TestProject',
+            user_groups=[],
+            role=self.admin_role
+        )
+
+        # Add usergroups
+        project_ug1 = ProjectUserGroupMembership.objects.create(
+            usergroup=self.ug1,
+            project=project
+        )
+
+        initial_member_count = ProjectMembership.objects.filter(
+            project=project
+        ).count()
+
+        from user_group.models import GroupMembership
+
+        GroupMembership.objects.filter(
+            member=self.user1,  # user1 belongs to ug1
+            group=project_ug1.usergroup
+        ).delete()
+
+        # print('project', project)
+        # print('FINAL MEMS', ProjectMembership.objects.filter(project=project))
+
+        final_member_count = ProjectMembership.objects.filter(
+            project=project
+        ).count()
+        self.assertEqual(initial_member_count - 1, final_member_count)
+
+    def test_remove_user_in_only_multiple_usergroups(self):
+        project = self.create(
+            Project,
+            title='TestProject',
+            user_groups=[],
+            role=self.admin_role
+        )
+
+        # Add usergroups
+        project_ug1 = ProjectUserGroupMembership.objects.create(
+            usergroup=self.ug1,
+            project=project
+        )
+        project_ug2 = ProjectUserGroupMembership.objects.create(
+            usergroup=self.ug2,
+            project=project
+        )
+
+        initial_member_count = ProjectMembership.objects.filter(
+            project=project
+        ).count()
+
+        from user_group.models import GroupMembership
+
+        GroupMembership.objects.filter(
+            member=self.user2,  # user1 belongs to ug1 and ug2
+            group=project_ug1.usergroup
+        ).delete()
+
+        final_member_count = ProjectMembership.objects.filter(
+            project=project
+        ).count()
+        # Should be no change in membeship as user2 is member from ug2 as well
+        self.assertEqual(initial_member_count, final_member_count)
+
     def test_member_of(self):
         project = self.create(Project, role=self.admin_role)
         test_user = self.create(User)
