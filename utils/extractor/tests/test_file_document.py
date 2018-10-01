@@ -55,7 +55,6 @@ class FileDocumentTest(TestCase):
             return
 
         self.assertTrue(isfile(thumbnail.name))
-        # TODO: image validation
 
     def test_docx(self):
         """
