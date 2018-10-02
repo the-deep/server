@@ -16,7 +16,6 @@ from project.permissions import PROJECT_PERMISSIONS
 
 from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
-from user_group.serializers import SimpleUserGroupSerializer
 from user_resource.serializers import UserResourceSerializer
 
 
@@ -111,6 +110,10 @@ class ProjectUsergroupMembershipSerializer(RemoveNullFieldsMixin,
                                            serializers.ModelSerializer):
     id = serializers.IntegerField(source='usergroup.id')
     title = serializers.CharField(source='usergroup.title')
+
+    class Meta:
+        model = ProjectUserGroupMembership
+        fields = '__all__'
 
 
 class ProjectSerializer(RemoveNullFieldsMixin,
