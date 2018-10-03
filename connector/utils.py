@@ -3,7 +3,7 @@ def handle_connector_parse_error(ConnectorClass):
         def fetch(self, *args, **kwargs):
             try:
                 ret = super().fetch(*args, **kwargs)
-            except Exception as e:
+            except Exception:
                 raise Exception(
                     "Parsing Connector Source data for {} failed. Maybe the source HTML structure has changed".format(self.title)  # noqa
                 )

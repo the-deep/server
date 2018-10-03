@@ -443,7 +443,7 @@ class ProjectRole(UserResource):
 
             try:
                 item_permissions = self.__getattr__(item + '_permissions')
-            except Exception as e:
+            except Exception:
                 raise AttributeError(
                     'No permission defined for "{}"'.format(item)
                 )
@@ -479,7 +479,6 @@ def refresh_project_memberships_usergroup_removed(sender, instance, **kwargs):
     # Also, when usergroup is deleted from project,
     # remove membereships if necessary
     # The logic is: project_members.diff(directly_added.union(all_ug_members))
-    print('RECEIVER project Usergroup')
     project = instance.project
     all_members = project.get_all_members()
 

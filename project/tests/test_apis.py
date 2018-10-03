@@ -101,7 +101,7 @@ class ProjectApiTest(TestCase):
             role=self.admin_role
         )
         # Add usergroups
-        project_ug1 = ProjectUserGroupMembership.objects.create(
+        ProjectUserGroupMembership.objects.create(
             usergroup=self.ug1,
             project=project
         )
@@ -186,9 +186,6 @@ class ProjectApiTest(TestCase):
             group=project_ug1.usergroup
         ).delete()
 
-        # print('project', project)
-        # print('FINAL MEMS', ProjectMembership.objects.filter(project=project))
-
         final_member_count = ProjectMembership.objects.filter(
             project=project
         ).count()
@@ -207,7 +204,7 @@ class ProjectApiTest(TestCase):
             usergroup=self.ug1,
             project=project
         )
-        project_ug2 = ProjectUserGroupMembership.objects.create(
+        ProjectUserGroupMembership.objects.create(
             usergroup=self.ug2,
             project=project
         )
