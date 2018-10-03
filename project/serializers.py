@@ -15,6 +15,7 @@ from project.models import (
 )
 from entry.models import Lead, Entry
 from project.permissions import PROJECT_PERMISSIONS
+from project.activity import project_activity_log
 
 from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
@@ -108,12 +109,13 @@ class ProjectDashboardSerializer(RemoveNullFieldsMixin,
 
     top_sourcers = serializers.SerializerMethodField()
     top_taggers = serializers.SerializerMethodField()
+    activity_log = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
         fields = ('created_at', 'created_by', 'regions',
-                  'top_sourcers', 'top_taggers', 'status', 'number_of_users',
-                  'number_of_leads', 'number_of_entries',
+                  'top_sourcers', 'top_taggers', 'status', 'activity_log',
+                  'number_of_users', 'number_of_leads', 'number_of_entries',
                   'leads_activity', 'entries_activity')
 
     def get_top_sourcers(self, project):
@@ -159,6 +161,9 @@ class ProjectDashboardSerializer(RemoveNullFieldsMixin,
                 'count': tagger.entries_count,
             } for tagger in taggers
         ]
+
+    def get_activity_log(self, project):
+        return list(project_activity_log(project))
 
 
 class ProjectMembershipSerializer(RemoveNullFieldsMixin,
