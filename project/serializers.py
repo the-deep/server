@@ -79,7 +79,8 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
                                   DynamicFieldsMixin,
                                   serializers.ModelSerializer):
     member_email = serializers.CharField(source='member.email', read_only=True)
-    member_name = serializers.SerializerMethodField()
+    member_name = serializers.CharField(
+        source='member.profile.get_display_name', read_only=True)
 
     class Meta:
         model = ProjectMembership
@@ -88,9 +89,6 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
     def get_unique_together_validators(self):
         return []
 
-    def get_member_name(self, membership):
-        return membership.member.profile.get_display_name()
-
     # Validations
     def validate_project(self, project):
         if not project.can_modify(self.context['request'].user):
@@ -98,8 +96,7 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
         return project
 
     def create(self, validated_data):
-        resource = super()\
-            .create(validated_data)
+        resource = super().create(validated_data)
         resource.added_by = self.context['request'].user
         resource.save()
         return resource
@@ -108,12 +105,26 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
 class ProjectUsergroupMembershipSerializer(RemoveNullFieldsMixin,
                                            DynamicFieldsMixin,
                                            serializers.ModelSerializer):
-    id = serializers.IntegerField(source='usergroup.id')
-    title = serializers.CharField(source='usergroup.title')
+    group_title = serializers.CharField(source='usergroup.title')
 
     class Meta:
         model = ProjectUserGroupMembership
         fields = '__all__'
+
+    def get_unique_together_validators(self):
+        return []
+
+    # Validations
+    def validate_project(self, project):
+        if not project.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('Invalid project')
+        return project
+
+    def create(self, validated_data):
+        resource = super().create(validated_data)
+        resource.added_by = self.context['request'].user
+        resource.save()
+        return resource
 
 
 class ProjectSerializer(RemoveNullFieldsMixin,
