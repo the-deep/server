@@ -1,5 +1,6 @@
 from os.path import (join, isfile)
 import logging
+import json
 
 from django.test import TestCase
 from django.conf import settings
@@ -24,11 +25,13 @@ class WebDocumentTest(TestCase):
     """
     def setUp(self):
         self.path = join(settings.TEST_DIR, 'documents_urls')
+        with open(join(self.path, 'pages.json'), 'r') as pages:
+            self.pages = json.load(pages)
         makedirs(self.path)
 
     def extract(self, url, type):
         try:
-            text, images = WebDocument(url).extract()
+            text, images, page_count = WebDocument(url).extract()
         except Exception:
             import traceback
             logger.warning('\n' + ('*' * 30))
@@ -43,6 +46,7 @@ class WebDocumentTest(TestCase):
         try:
             # TODO: Better way to handle the errors
             self.assertEqual(text.strip(), extracted.read().strip())
+            self.assertEqual(page_count, self.pages[type])
         except AssertionError:
             import traceback
             logger.warning('\n' + ('*' * 30))

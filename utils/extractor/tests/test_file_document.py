@@ -1,4 +1,5 @@
 from os.path import (join, isfile)
+import json
 import logging
 
 from django.test import TestCase
@@ -22,19 +23,25 @@ class FileDocumentTest(TestCase):
     def setUp(self):
         self.path = join(settings.TEST_DIR, 'documents_attachment')
         self.documents = join(settings.TEST_DIR, 'documents')
+
+        with open(join(self.documents, 'pages.json'), 'r') as pages:
+            self.pages = json.load(pages)
+
         makedirs(self.path)
 
     def extract(self, path):
         file = open(join(self.documents, path), 'rb')
-        text, images = FileDocument(
+        filename = file.name.split('/')[-1]
+        text, images, page_count = FileDocument(
             file,
-            file.name.split('/')[-1]
+            filename
         ).extract()
-        path = join(self.path, file.name.split('/')[-1])
+        path = join(self.path, filename)
 
         extracted = get_or_write_file(path + '.txt', text)
 
         self.assertEqual(text, extracted.read())
+        self.assertEqual(page_count, self.pages[filename.split('.')[-1]])
         # TODO: Verify image
         # self.assertEqual(len(images), 4)
 

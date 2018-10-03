@@ -1,9 +1,12 @@
 from io import BytesIO
 from pdfminer.pdfparser import PDFParser
 from pdfminer.pdfdocument import PDFDocument
-from pdfminer.pdfinterp import resolve1
+from pdfminer.pdfinterp import (
+    resolve1,
+    PDFResourceManager,
+    PDFPageInterpreter,
+)
 from pdfminer.converter import TextConverter
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 

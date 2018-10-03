@@ -54,13 +54,17 @@ def _extract_from_lead_core(lead_id):
     lead = Lead.objects.get(id=lead_id)
 
     with reversion.create_revision():
-        text, images, thumbnail = '', [], None
+        text, images = '', []
+        word_count, page_count = 0, 1
+        thumbnail = None
 
         # Extract either using FileDocument or WebDocument
         # as per the document type
         try:
             if lead.text:
                 text = lead.text
+                text = _preprocess(text)
+                word_count = len(re.findall(r'\b\S+\b', text))
                 images = []
                 with tempfile.NamedTemporaryFile() as tmp_file:
                     tmp_file.write(text.encode())
@@ -72,15 +76,14 @@ def _extract_from_lead_core(lead_id):
                     lead.attachment.file,
                     lead.attachment.file.name,
                 )
-                text, images = doc.extract()
+                text, images, page_count = doc.extract()
                 thumbnail = doc.get_thumbnail()
 
             elif lead.url:
                 doc = WebDocument(lead.url)
-                text, images = doc.extract()
+                text, images, page_count = doc.extract()
                 thumbnail = doc.get_thumbnail()
 
-            text = _preprocess(text)
         except Exception:
             logger.error(traceback.format_exc())
             if images:
@@ -96,6 +99,8 @@ def _extract_from_lead_core(lead_id):
         leadPreview = LeadPreview.objects.create(
             lead=lead,
             text_extract=text,
+            word_count=word_count,
+            page_count=page_count,
         )
 
         if text:
