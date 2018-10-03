@@ -22,7 +22,7 @@ class ProjectEntityMixin:
             role = self.project.get_role(user)
             try:
                 return role is not None and getattr(role, roleattr)
-            except Exception as e:
+            except Exception:
                 return super().__getattribute__(name)
 
         return permission_function

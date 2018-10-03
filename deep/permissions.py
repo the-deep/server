@@ -1,8 +1,4 @@
 from rest_framework import permissions
-
-from project.models import ProjectMembership
-from project.permissions import PROJECT_PERMISSIONS
-
 import logging
 
 logger = logging.getLogger(__name__)

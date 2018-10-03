@@ -1,7 +1,11 @@
 from deep.tests import TestCase
 from user.models import User
 from user_group.models import UserGroup, GroupMembership
-from project.models import Project, ProjectMembership
+from project.models import (
+    Project,
+    ProjectMembership,
+    ProjectUserGroupMembership
+)
 
 
 class UserGroupApiTest(TestCase):
@@ -94,7 +98,10 @@ class UserGroupApiTest(TestCase):
         user_group = self.create(UserGroup, role='admin')
         test_user = self.create(User)
 
-        project.user_groups.add(user_group)
+        ProjectUserGroupMembership.objects.create(
+            usergroup=user_group,
+            project=project
+        )
         memberships = ProjectMembership.objects.filter(project=project)
         initial_member_count = memberships.count()
 
@@ -133,7 +140,10 @@ class UserGroupApiTest(TestCase):
         user_group = self.create(UserGroup, role='admin')
 
         # add usergroup to project
-        project.user_groups.add(user_group)
+        ProjectUserGroupMembership.objects.create(
+            usergroup=user_group,
+            project=project
+        )
 
         test_user = self.create(User)
         gm = GroupMembership.objects.create(member=test_user, group=user_group)

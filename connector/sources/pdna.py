@@ -93,7 +93,7 @@ class PDNA(Source):
         for row in content.findAll('tr'):
             elem = row.find('a')
             name = elem.get_text()
-            name = re.sub('\(.*\)', '', name)
+            name = re.sub('(.*)', '', name)
             title = row.findAll('td')[-1].get_text()
             if name.strip() == country.strip():
                 # add as lead

@@ -37,12 +37,14 @@ from .models import (
     ProjectStatus,
     Project,
     ProjectMembership,
-    ProjectJoinRequest
+    ProjectJoinRequest,
+    ProjectUserGroupMembership,
 )
 from .serializers import (
     ProjectSerializer,
     ProjectMembershipSerializer,
     ProjectJoinRequestSerializer,
+    ProjectUserGroupSerializer
 )
 
 from .token import project_request_token_generator
@@ -441,3 +443,12 @@ def accept_project_confirm(
         context['success'] = False
 
     return TemplateResponse(request, template_name, context)
+
+
+class ProjectUserGroupViewSet(viewsets.ModelViewSet):
+    serializer_class = ProjectUserGroupSerializer
+    permission_classes = [permissions.IsAuthenticated, ModifyPermission]
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
+                       filters.SearchFilter, filters.OrderingFilter)
+    search_fields = ('project', 'usergroup',)
+    queryset = ProjectUserGroupMembership.objects.all()

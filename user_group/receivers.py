@@ -1,8 +1,9 @@
+from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_delete
 
 from project.models import Project, ProjectMembership
-from user_group.models import UserGroup, GroupMembership
+from user_group.models import GroupMembership
 
 
 @receiver(post_save, sender=GroupMembership)
@@ -37,24 +38,35 @@ def refresh_project_memberships_usergroup_updated(sender, instance, **kwargs):
 @receiver(pre_delete, sender=GroupMembership)
 def refresh_project_memberships_usergroup_deleted(sender, instance, **kwargs):
     """
-    Update project memberships when a usergroup is deleted.
-    @instance: UserGroup instance
-    NOTE: signal should be fired as pre_delete operation
+    Update project memberships when users added to usergroups
+    @sender: many_to_many field
     """
-    user_group = instance.group
-    projects = Project.objects.filter(user_groups=user_group)
-    user_group_members = user_group.members.all()
+    from project.models import Project, ProjectMembership
 
+    group = instance.group
+    projects = Project.objects.filter(
+        projectusergroupmembership__usergroup=group
+    )
     for project in projects:
+        # find users to remove
+        all_members = project.get_all_members()
+
+        group_members = User.objects.filter(groupmembership__group=group).\
+            exclude(pk=instance.member.pk)
+
         direct_members = project.get_direct_members()
-        # get all usergroups except this usergroup
-        other_ugs = UserGroup.objects.exclude(id=user_group.id)
-        remove_members = user_group_members\
-            .exclude(groupmembership__group__in=other_ugs)\
-            .difference(direct_members)
+
+        other_ugs = project.user_groups.exclude(id=instance.group.id)
+
+        all_ug_members = User.objects.filter(
+            groupmembership__group__in=other_ugs,
+        ).distinct()
+
+        remove_members = all_members.difference(
+            direct_members.union(all_ug_members).union(group_members)
+        )
         remove_members = list(remove_members.values_list('id', flat=True))
-        # Now remove memberships
+
         ProjectMembership.objects.filter(
-            member__in=remove_members,
-            project=project
+            project=project, member__id__in=remove_members
         ).delete()

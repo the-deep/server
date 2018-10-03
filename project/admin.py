@@ -3,6 +3,7 @@ from reversion.admin import VersionAdmin
 from .models import (
     Project,
     ProjectMembership,
+    ProjectUserGroupMembership,
     ProjectStatus,
     ProjectStatusCondition,
     ProjectJoinRequest,
@@ -11,6 +12,11 @@ from .models import (
 
 class ProjectMembershipInline(admin.TabularInline):
     model = ProjectMembership
+    extra = 0
+
+
+class ProjectUserGroupMembershipInline(admin.TabularInline):
+    model = ProjectUserGroupMembership
     extra = 0
 
 
@@ -26,7 +32,9 @@ class ProjectAdmin(VersionAdmin):
         'title', 'category_editor', 'analysis_framework',
         'assessment_template', 'members_count', 'associated_regions',
     ]
-    inlines = [ProjectMembershipInline, ProjectJoinRequestInline]
+    inlines = [ProjectMembershipInline,
+               ProjectUserGroupMembershipInline,
+               ProjectJoinRequestInline]
 
     def members_count(self, obj):
         return obj.members.count()

@@ -47,7 +47,7 @@ def get_project_permissions_value(item, actions=[]):
         action_permissions = PROJECT_PERMISSIONS[item]
         for action in actions:
             permissions |= action_permissions[action]
-    except Exception as e:
+    except Exception:
         return permissions
     return permissions
 
