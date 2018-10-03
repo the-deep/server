@@ -57,4 +57,4 @@ def process(doc, url):
 
     soup = BeautifulSoup(html, 'lxml')
     text = _get_plain_text(soup)
-    return text, images
+    return text, images, 1

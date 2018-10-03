@@ -41,7 +41,8 @@ class WebDocument(Document):
             r = requests.get(url, headers=DEFAULT_HEADERS)
             doc = r.content
         else:
-            fp = tempfile.NamedTemporaryFile(dir=settings.BASE_DIR)
+            fp = tempfile.NamedTemporaryFile(
+                dir=settings.BASE_DIR, delete=False)
             r = requests.get(url, stream=True, headers=DEFAULT_HEADERS)
             write_file(r, fp)
 

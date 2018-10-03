@@ -61,6 +61,14 @@ class LeadSerializer(RemoveNullFieldsMixin,
         source='leadpreview.thumbnail',
         read_only=True,
     )
+    thumbnail_height = serializers.IntegerField(
+        source='leadpreview.thumbnail_height',
+        read_only=True,
+    )
+    thumbnail_width = serializers.IntegerField(
+        source='leadpreview.thumbnail_width',
+        read_only=True,
+    )
     word_count = serializers.IntegerField(
         source='leadpreview.word_count',
         read_only=True,

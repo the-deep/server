@@ -99,6 +99,7 @@ def process(docx, pptx=False, img_dir=None):
     zipf = zipfile.ZipFile(docx)
     filelist = zipf.namelist()
     images = []
+    page_count = 0
 
     # get header text
     # there can be 3 header files in the zip
@@ -113,8 +114,16 @@ def process(docx, pptx=False, img_dir=None):
         for fname in filelist:
             if re.match(doc_xml, fname):
                 text += xml2text(zipf.read(fname), pptx=pptx)
+                # add page count if pptx
+                page_count += 1
     else:
         text += xml2text(zipf.read(doc_xml))
+        # get page count for docx
+        ns = 'http://schemas.openxmlformats.org/officeDocument/2006/extended-properties'
+        root = ET.fromstring(zipf.read('docProps/app.xml'))
+        pages = root.find('{{{}}}Pages'.format(ns))
+        page_count = int(pages.text) if pages is None else 0
+        # TODO: other options for page count
 
     # get footer text
     # there can be 3 footer files in the zip
@@ -137,7 +146,7 @@ def process(docx, pptx=False, img_dir=None):
                 images.append(dst_f)
 
     zipf.close()
-    return text.strip(), images
+    return text.strip(), images, page_count
 
 
 def pptx_process(docx, img_dir=None):
