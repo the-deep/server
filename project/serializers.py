@@ -9,13 +9,13 @@ from project.models import (
     Project,
     ProjectMembership,
     ProjectJoinRequest,
-    ProjectRole
+    ProjectRole,
+    ProjectUserGroupMembership,
 )
 from project.permissions import PROJECT_PERMISSIONS
 
 from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
-from user_group.serializers import SimpleUserGroupSerializer
 from user_resource.serializers import UserResourceSerializer
 
 
@@ -79,7 +79,8 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
                                   DynamicFieldsMixin,
                                   serializers.ModelSerializer):
     member_email = serializers.CharField(source='member.email', read_only=True)
-    member_name = serializers.SerializerMethodField()
+    member_name = serializers.CharField(
+        source='member.profile.get_display_name', read_only=True)
 
     class Meta:
         model = ProjectMembership
@@ -88,8 +89,30 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
     def get_unique_together_validators(self):
         return []
 
-    def get_member_name(self, membership):
-        return membership.member.profile.get_display_name()
+    # Validations
+    def validate_project(self, project):
+        if not project.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('Invalid project')
+        return project
+
+    def create(self, validated_data):
+        resource = super().create(validated_data)
+        resource.added_by = self.context['request'].user
+        resource.save()
+        return resource
+
+
+class ProjectUsergroupMembershipSerializer(RemoveNullFieldsMixin,
+                                           DynamicFieldsMixin,
+                                           serializers.ModelSerializer):
+    group_title = serializers.CharField(source='usergroup.title')
+
+    class Meta:
+        model = ProjectUserGroupMembership
+        fields = '__all__'
+
+    def get_unique_together_validators(self):
+        return []
 
     # Validations
     def validate_project(self, project):
@@ -98,8 +121,7 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
         return project
 
     def create(self, validated_data):
-        resource = super()\
-            .create(validated_data)
+        resource = super().create(validated_data)
         resource.added_by = self.context['request'].user
         resource.save()
         return resource
@@ -113,7 +135,8 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         required=False,
     )
     regions = SimpleRegionSerializer(many=True, required=False)
-    user_groups = SimpleUserGroupSerializer(many=True, required=False)
+    user_groups = ProjectUsergroupMembershipSerializer(many=True,
+                                                       required=False)
     role = serializers.SerializerMethodField()
     join_request_status = serializers.SerializerMethodField()
 
@@ -257,3 +280,11 @@ class ProjectEntitySerializer(UserResourceSerializer):
                 {'message': "You don't have permission to create lead"}
             )
         return super().create(validated_data)
+
+
+class ProjectUserGroupSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(source='usergroup.title', read_only=True)
+
+    class Meta:
+        model = ProjectUserGroupMembership
+        fields = '__all__'
