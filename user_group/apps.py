@@ -5,4 +5,4 @@ class UserGroupConfig(AppConfig):
     name = 'user_group'
 
     def ready(self):
-        from . import receivers
+        from . import receivers # noqa
