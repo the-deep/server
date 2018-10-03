@@ -37,7 +37,7 @@ class Document:
         """
         Extracts text and images from the document
 
-        Returns a tuple of text as string and images as list
+        Returns a tuple of text as string, images as list and page_count as int
         """
         extractor = EXTRACTORS.get(self.type)
         if extractor:
