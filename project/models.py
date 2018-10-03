@@ -319,20 +319,6 @@ class ProjectMembership(models.Model):
     def can_modify(self, user):
         return self.project.can_modify(user)
 
-    def get_number_of_leads(self):
-        from lead.models import Lead
-        return Lead.objects.filter(
-            created_by=self.member,
-            project=self.project,
-        ).distinct().count()
-
-    def get_number_of_entries(self):
-        from entry.models import Entry
-        return Entry.objects.filter(
-            created_by=self.member,
-            lead__project=self.project,
-        ).distinct().count()
-
 
 class ProjectUserGroupMembership(models.Model):
     """
