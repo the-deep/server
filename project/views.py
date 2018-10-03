@@ -46,7 +46,8 @@ from .serializers import (
     ProjectRoleSerializer,
     ProjectMembershipSerializer,
     ProjectJoinRequestSerializer,
-    ProjectUserGroupSerializer
+    ProjectUserGroupSerializer,
+    ProjectDashboardSerializer,
 )
 
 from .token import project_request_token_generator
@@ -288,6 +289,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
         self.page = self.paginate_queryset(join_requests)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
+
+    """
+    Get dashboard related data for this project
+    """
+    @detail_route(permission_classes=[permissions.IsAuthenticated],
+                  serializer_class=ProjectDashboardSerializer,
+                  url_path='dashboard')
+    def get_dashboard(self, request, pk=None, version=None):
+        project = self.get_object()
+        serializer = self.get_serializer(project)
+        return response.Response(serializer.data)
 
 
 class ProjectMembershipViewSet(viewsets.ModelViewSet):
