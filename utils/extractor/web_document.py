@@ -5,6 +5,7 @@ from django.conf import settings
 from utils.common import (write_file, DEFAULT_HEADERS)
 from .document import (
     Document,
+    MIME_TYPES,
     HTML, PDF, DOCX, PPTX,
 )
 
@@ -12,19 +13,18 @@ from .document import (
 class WebDocument(Document):
     """
     Web documents can be html or pdf.
-    Taks url Gives document and type
+    Takes url
+    Gives document and type
     """
-    HTML_TYPES = ['text/html', 'text/plain']
-    PDF_TYPES = ['application/pdf', ]
-    DOCX_TYPES = ['application/vnd.openxmlformats-officedocument'
-                  '.wordprocessingml.document', ]
-    PPTX_TYPES = ['application/vnd.openxmlformats-officedocument'
-                  '.presentationml.presentation', ]
+    HTML_TYPES = [MIME_TYPES[HTML], 'text/plain']
+    PDF_TYPES = [MIME_TYPES[PDF], ]
+    DOCX_TYPES = [MIME_TYPES[DOCX], ]
+    PPTX_TYPES = [MIME_TYPES[PPTX], ]
 
     def __init__(self, url):
-
         type = HTML
         doc = None
+        mime_type = None
 
         try:
             r = requests.head(url, headers=DEFAULT_HEADERS)
@@ -35,8 +35,9 @@ class WebDocument(Document):
             super().__init__(doc, type)
             return
 
-        if not r.headers.get('content-type') or \
-                any(x in r.headers["content-type"] for x in self.HTML_TYPES):
+        mime_type = r.headers.get('content-type')
+        if not mime_type or \
+                any(x in mime_type for x in self.HTML_TYPES):
             r = requests.get(url, headers=DEFAULT_HEADERS)
             doc = r.content
         else:
@@ -45,16 +46,13 @@ class WebDocument(Document):
             write_file(r, fp)
 
             doc = fp
-            if any(x in r.headers["content-type"]
-                   for x in self.PDF_TYPES):
+            if any(x in mime_type for x in self.PDF_TYPES):
                 type = PDF
 
-            elif any(x in r.headers["content-type"]
-                     for x in self.DOCX_TYPES):
+            elif any(x in mime_type for x in self.DOCX_TYPES):
                 type = DOCX
 
-            elif any(x in r.headers["content-type"]
-                     for x in self.PPTX_TYPES):
+            elif any(x in mime_type for x in self.PPTX_TYPES):
                 type = PPTX
 
-        super().__init__(doc, type)
+        super().__init__(doc, type, mime_type)

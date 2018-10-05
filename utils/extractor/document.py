@@ -12,6 +12,15 @@ EXTRACTORS = {
     PPTX: extractors.PptxExtractor,
 }
 
+MIME_TYPES = {
+    HTML: 'text/html',
+    PDF: 'application/pdf',
+    DOCX: 'application/vnd.openxmlformats-officedocument'
+          '.wordprocessingml.document',
+    PPTX: 'application/vnd.openxmlformats-officedocument'
+          '.presentationml.presentation',
+}
+
 
 class Document:
     """
@@ -19,9 +28,10 @@ class Document:
 
     Helps extract any type of file
     """
-    def __init__(self, doc, type):
+    def __init__(self, doc, type, mime_type=None):
         self.type = type
         self.doc = doc
+        self.mime_type = mime_type or MIME_TYPES[type]
 
     def extract(self):
         """
@@ -31,5 +41,12 @@ class Document:
         """
         extractor = EXTRACTORS.get(self.type)
         if extractor:
-            return extractor(self.doc).extract()
-        return '', []
+            return {
+                'mime_type': self.mime_type,
+                **extractor(self.doc).extract(),
+            }
+        return {
+            'text': '',
+            'images': [],
+            'mime_type': self.mime_type,
+        }

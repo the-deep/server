@@ -4,6 +4,7 @@ from rest_framework import (
     status,
 )
 from jwt_auth.token import AccessToken, RefreshToken
+from redis_store.redis import clean_redis_store
 
 from user.models import User
 from project.models import ProjectRole
@@ -12,6 +13,8 @@ from project.permissions import get_project_permissions_value
 
 class TestCase(test.APITestCase):
     def setUp(self):
+        clean_redis_store()
+
         self.root_user = User.objects.create_user(
             username='root@test.com',
             first_name='Root',

@@ -19,7 +19,8 @@ class ExtractorTest(TestCase):
         self.path = join(settings.TEST_DIR, 'documents')
 
     def extract(self, extractor, path):
-        text, images = extractor.extract()
+        extracted_doc = extractor.extract()
+        text = extracted_doc.get('text')
         extracted = get_or_write_file(path + '.txt', text)
 
         self.assertEqual(text, extracted.read())

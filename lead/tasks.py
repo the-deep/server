@@ -10,6 +10,7 @@ from lead.models import (
 )
 from redis_store import redis
 from rest_framework.renderers import JSONRenderer
+from utils.extractor.document import MIME_TYPES, HTML
 from utils.extractor.file_document import FileDocument
 from utils.extractor.web_document import WebDocument
 from utils.websocket.subscription import SubscriptionConsumer
@@ -49,32 +50,63 @@ def _extract_from_lead_core(lead_id):
     """
     # Get the lead to be extracted
     lead = Lead.objects.get(id=lead_id)
+    Lead.objects.filter(id=lead_id).update(
+        size_in_bytes=None,
+        mime_type=None,
+    )
 
     with reversion.create_revision():
-        text, images = '', []
+        text = ''
+        images = []
+        size = None
+        mime_type = None
 
         # Extract either using FileDocument or WebDocument
         # as per the document type
         try:
+            extracted_doc = {
+                'text': '',
+                'images': [],
+                'size': None,
+            }
             if lead.text:
-                text = lead.text
-                images = []
+                extracted_doc = {
+                    'text': lead.text,
+                    'images': [],
+                    'size': len(lead.text),
+                }
             elif lead.attachment:
-                text, images = FileDocument(
+                extracted_doc = FileDocument(
                     lead.attachment.file,
                     lead.attachment.file.name,
                 ).extract()
 
             elif lead.url:
-                text, images = WebDocument(lead.url).extract()
+                extracted_doc = WebDocument(lead.url).extract()
 
-            text = _preprocess(text)
+            text = _preprocess(extracted_doc.get('text'))
+            images = extracted_doc.get('images')
+            size = extracted_doc.get('size')
+            mime_type = extracted_doc.get('mime_type')
         except Exception:
             logger.error(traceback.format_exc())
             if images:
                 for image in images:
                     image.close()
-            # return False
+
+        if lead.attachment and lead.attachment.file:
+            if not size:
+                size = lead.attachment.file.size
+            if not mime_type:
+                mime_type = lead.attachment.mime_type
+        if lead.url and not mime_type:
+            mime_type = MIME_TYPES[HTML]
+
+        if size:
+            Lead.objects.filter(id=lead_id).update(
+                size_in_bytes=size,
+                mime_type=mime_type,
+            )
 
         # Save extracted text as LeadPreview
         if text:

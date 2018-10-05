@@ -28,7 +28,8 @@ class WebDocumentTest(TestCase):
 
     def extract(self, url, type):
         try:
-            text, images = WebDocument(url).extract()
+            extracted_doc = WebDocument(url).extract()
+            text = extracted_doc.get('text')
         except Exception:
             import traceback
             logger.warning('\n' + ('*' * 30))

@@ -2,6 +2,7 @@ from pdfminer.converter import TextConverter  # , HTMLConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfinterp import PDFResourceManager, process_pdf
 import tempfile
+import os
 
 
 def process(doc):
@@ -14,10 +15,12 @@ def process(doc):
     device = TextConverter(rmgr, outfp, laparams=params)
     process_pdf(rmgr, device, fp, None, 0)
 
-    fp.close()
-
     outfp.seek(0)
     content = outfp.read()
     outfp.close()
 
-    return content, None
+    return {
+        'text': content,
+        'images': [],
+        'size': os.path.getsize(doc.name),
+    }

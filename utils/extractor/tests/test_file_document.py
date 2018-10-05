@@ -24,10 +24,11 @@ class FileDocumentTest(TestCase):
 
     def extract(self, path):
         file = open(join(self.documents, path), 'rb')
-        text, images = FileDocument(
+        extracted_doc = FileDocument(
             file,
             file.name.split('/')[-1]
         ).extract()
+        text = extracted_doc.get('text')
         path = join(self.path, file.name.split('/')[-1])
 
         extracted = get_or_write_file(path + '.txt', text)

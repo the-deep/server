@@ -28,3 +28,8 @@ def get_connection():
 def get_lock(key, timeout=None):
     client = get_connection()
     return client.lock(key, timeout=timeout)
+
+
+def clean_redis_store():
+    r = get_connection()
+    r.flushall()

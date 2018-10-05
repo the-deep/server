@@ -1,11 +1,12 @@
-from readability.readability import Document
 import re
 import requests
 import tempfile
+import os
+
 from bs4 import BeautifulSoup
+from readability.readability import Document
 
 from django.conf import settings
-
 from utils.common import write_file
 
 
@@ -50,4 +51,9 @@ def process(doc):
 
     soup = BeautifulSoup(html, 'lxml')
     text = _get_plain_text(soup)
-    return text, images
+
+    return {
+        'text': text,
+        'images': images,
+        'size': len(doc),
+    }

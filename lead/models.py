@@ -117,6 +117,10 @@ class Lead(UserResource, ProjectEntityMixin):
     attachment = models.ForeignKey(File, on_delete=models.SET_NULL,
                                    default=None, null=True, blank=True)
 
+    # Cached data
+    size_in_bytes = models.IntegerField(default=None, null=True, blank=True)
+    mime_type = models.CharField(max_length=255, blank=True)
+
     def __str__(self):
         return '{}'.format(self.title)
 

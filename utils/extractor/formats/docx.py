@@ -135,15 +135,12 @@ def process(docx, pptx=False, img_dir=None):
                 images.append(dst_f)
 
     zipf.close()
-    return text.strip(), images
+    return {
+        'text': text.strip(),
+        'images': images,
+        'size': os.path.getsize(docx.name),
+    }
 
 
 def pptx_process(docx, img_dir=None):
     return process(docx, pptx=True, img_dir=None)
-
-
-if __name__ == '__main__':
-    args = process_args()
-    text, images = process(args.docx, args.img_dir)
-    print(text.encode('utf-8'))
-    print(images)
