@@ -135,8 +135,6 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         required=False,
     )
     regions = SimpleRegionSerializer(many=True, required=False)
-    user_groups = ProjectUsergroupMembershipSerializer(many=True,
-                                                       required=False)
     role = serializers.SerializerMethodField()
     join_request_status = serializers.SerializerMethodField()
 
