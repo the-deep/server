@@ -136,7 +136,8 @@ class ProjectSerializer(RemoveNullFieldsMixin,
     )
     regions = SimpleRegionSerializer(many=True, required=False)
     role = serializers.SerializerMethodField()
-    join_request_status = serializers.SerializerMethodField()
+
+    member_status = serializers.SerializerMethodField()
 
     analysis_framework_title = serializers.CharField(
         source='analysis_framework.title',
@@ -181,9 +182,15 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         )
         return project
 
-    def get_join_request_status(self, project):
+    def get_member_status(self, project):
         request = self.context['request']
         user = request.GET.get('user', request.user)
+
+        role = project.get_role(user)
+        if role:
+            if role.is_creator_role:
+                return 'admin'
+            return 'member'
 
         join_request = ProjectJoinRequest.objects.filter(
             project=project,
@@ -196,7 +203,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         ):
             return join_request.status
 
-        return None
+        return 'none'
 
     def get_role(self, project):
         request = self.context['request']
@@ -222,7 +229,6 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         ).first()
         if membership:
             return ProjectRoleSerializer(membership.role).data
-        # TODO: return value based on join request
         return {}
 
     # Validations
