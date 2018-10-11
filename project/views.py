@@ -161,6 +161,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def _accept_request(responded_by, join_request, role):
+        if not role or role == 'normal':
+            role = ProjectRole.get_normal_role()
+        elif role == 'admin':
+            role = ProjectRole.get_admin_role()
+        else:
+            role_qs = ProjectRole.objects.filter(id=role)
+            if not role_qs.exists():
+                return response.Response(
+                    {'errors': 'Role id \'{}\' does not exist'.format(role)},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            role = role_qs.first()
+
         join_request.status = 'accepted'
         join_request.responded_by = responded_by
         join_request.responded_at = timezone.now()
@@ -203,16 +216,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
             )
 
         role = request.data.get('role')
-        if not role:
-            role = ProjectRole.get_normal_role()
-        else:
-            role_qs = ProjectRole.objects.filter(id=role)
-            if not role_qs.exists():
-                return response.Response(
-                    {'errors': 'Role id \'{}\' does not exist'.format(role)},
-                    status=status.HTTP_404_NOT_FOUND
-                )
-            role = role_qs.first()
         ProjectViewSet._accept_request(request.user, join_request, role)
 
         serializer = ProjectJoinRequestSerializer(
