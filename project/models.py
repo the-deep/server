@@ -284,6 +284,10 @@ class Project(UserResource):
         ).distinct().count()
 
 
+def get_default_role_id():
+    return ProjectRole.get_normal_role().id
+
+
 class ProjectMembership(models.Model):
     """
     Project-Member relationship attributes
@@ -291,7 +295,8 @@ class ProjectMembership(models.Model):
 
     member = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    role = models.ForeignKey('project.ProjectRole')
+    role = models.ForeignKey('project.ProjectRole',
+                             default=get_default_role_id)
     is_directly_added = models.BooleanField(default=False)
     joined_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(User, on_delete=models.CASCADE,
@@ -321,7 +326,7 @@ class ProjectUserGroupMembership(models.Model):
     Project user group membership model
     """
     project = models.ForeignKey(Project)
-    # FIXME: use usergroup instead of usergroup for consistency
+    # FIXME: use user_group instead of usergroup for consistency
     usergroup = models.ForeignKey(UserGroup)
     joined_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(User, on_delete=models.CASCADE,
