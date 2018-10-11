@@ -119,7 +119,8 @@ class Lead(UserResource, ProjectEntityMixin):
 
     # Cached data
     size_in_bytes = models.IntegerField(default=None, null=True, blank=True)
-    mime_type = models.CharField(max_length=255, blank=True)
+    mime_type = models.CharField(max_length=255,
+                                 default=None, null=True, blank=True)
 
     def __str__(self):
         return '{}'.format(self.title)
