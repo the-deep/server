@@ -42,10 +42,10 @@ class Region(UserResource):
                 'key': str(geo_area.id),
                 'admin_level': geo_area.admin_level.level,
                 'admin_level_title': geo_area.admin_level.title,
-                'region': geo_area.admin_level.region.id,
-                'region_title': geo_area.admin_level.region.title,
-            } for geo_area in GeoArea.objects.select_related(
-                'admin_level', 'admin_level__region',
+                'region': self.id,
+                'region_title': self.title,
+            } for geo_area in GeoArea.objects.prefetch_related(
+                'admin_level',
             ).filter(
                 admin_level__region=self
             ).order_by('admin_level__level').distinct()
