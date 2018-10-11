@@ -22,7 +22,6 @@ from lead.filter_set import (
     LeadFilterSet,
 )
 from project.models import Project
-from project.permissions import get_project_entities
 from lead.models import LeadGroup, Lead
 from lead.serializers import (
     LeadGroupSerializer,
@@ -116,8 +115,7 @@ class LeadViewSet(viewsets.ModelViewSet):
         )
 
     def get_queryset(self):
-        leads = get_project_entities(Lead, self.request.user, action='view')
-
+        leads = Lead.get_for(self.request.user)
         lead_id = self.request.GET.get('similar')
         if lead_id:
             similar_lead = Lead.objects.get(id=lead_id)
@@ -133,7 +131,7 @@ class LeadPreviewViewSet(viewsets.ReadOnlyModelViewSet):
                           ModifyPermission]
 
     def get_queryset(self):
-        return get_project_entities(Lead, self.request.user, action='view')
+        return Lead.get_for(self.request.user)
 
 
 class LeadOptionsView(views.APIView):
