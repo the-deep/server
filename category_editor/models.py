@@ -10,12 +10,13 @@ class CategoryEditor(UserResource):
     def __str__(self):
         return self.title
 
-    def clone(self, user):
+    def clone(self, user, overrides={}):
         """
         Clone category editor
         """
+        title = overrides.get('title', '{} (cloned)'.format(self.title))
         category_editor = CategoryEditor(
-            title='{} (cloned)'.format(self.title),
+            title=title,
             data=self.data,
         )
         category_editor.created_by = user
