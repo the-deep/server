@@ -73,6 +73,7 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
     member_email = serializers.CharField(source='member.email', read_only=True)
     member_name = serializers.CharField(
         source='member.profile.get_display_name', read_only=True)
+    member_status = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectMembership
@@ -80,6 +81,11 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
 
     def get_unique_together_validators(self):
         return []
+
+    def get_member_status(self, membership):
+        if membership.role.is_creator_role:
+            return 'admin'
+        return 'member'
 
     # Validations
     def validate_project(self, project):
@@ -124,7 +130,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
     memberships = ProjectMembershipSerializer(
         source='projectmembership_set',
         many=True,
-        required=False,
+        read_only=True,
     )
     regions = SimpleRegionSerializer(many=True, required=False)
     role = serializers.SerializerMethodField()
