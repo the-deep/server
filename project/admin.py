@@ -2,6 +2,7 @@ from django.contrib import admin
 from reversion.admin import VersionAdmin
 from .models import (
     Project,
+    ProjectRole,
     ProjectMembership,
     ProjectUserGroupMembership,
     ProjectStatus,
@@ -53,3 +54,6 @@ class ProjectConditionInline(admin.StackedInline):
 @admin.register(ProjectStatus)
 class ProjectStatusAdmin(admin.ModelAdmin):
     inlines = [ProjectConditionInline]
+
+
+admin.site.register(ProjectRole)
