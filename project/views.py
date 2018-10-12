@@ -22,7 +22,6 @@ import ary.serializers as arys
 
 from deep.permissions import ModifyPermission
 from project.permissions import JoinPermission, AcceptRejectPermission
-from project.models import ProjectRole
 from project.filter_set import (
     ProjectFilterSet,
     get_filtered_projects,
@@ -36,12 +35,14 @@ from user_group.models import UserGroup
 from .models import (
     ProjectStatus,
     Project,
+    ProjectRole,
     ProjectMembership,
     ProjectJoinRequest,
     ProjectUserGroupMembership,
 )
 from .serializers import (
     ProjectSerializer,
+    ProjectRoleSerializer,
     ProjectMembershipSerializer,
     ProjectJoinRequestSerializer,
     ProjectUserGroupSerializer
@@ -446,6 +447,12 @@ def accept_project_confirm(
         context['success'] = False
 
     return TemplateResponse(request, template_name, context)
+
+
+class ProjectRoleViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = ProjectRoleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = ProjectRole.objects.all()
 
 
 class ProjectUserGroupViewSet(viewsets.ModelViewSet):
