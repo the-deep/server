@@ -35,6 +35,7 @@ from project.views import (
     ProjectMembershipViewSet,
     ProjectUserGroupViewSet,
     ProjectOptionsView,
+    ProjectRoleViewSet,
     ProjectViewSet,
     accept_project_confirm,
 )
@@ -143,14 +144,17 @@ router.register(r'user-groups', UserGroupViewSet,
 router.register(r'group-memberships', GroupMembershipViewSet,
                 base_name='group_membership')
 router.register(r'users-user-groups', UserGroupUserSearchViewSet,
-                base_name='users_usergroups')
+                base_name='users_usergroup')
+
 # Project routers
 router.register(r'projects', ProjectViewSet,
                 base_name='project')
+router.register(r'project-roles', ProjectRoleViewSet,
+                base_name='project_role')
 router.register(r'project-memberships', ProjectMembershipViewSet,
                 base_name='project_membership')
 router.register(r'project-usergroups', ProjectUserGroupViewSet,
-                base_name='project_usergroups')
+                base_name='project_usergroup')
 
 # Geo routers
 router.register(r'regions', RegionViewSet,

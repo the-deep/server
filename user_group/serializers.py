@@ -85,3 +85,5 @@ class UserGroupUserSerializer(RemoveNullFieldsMixin,
     username = serializers.CharField(source='entity_username')
     first_name = serializers.CharField(source='entity_first_name')
     last_name = serializers.CharField(source='entity_last_name')
+
+    similarity = serializers.FloatField()

@@ -284,6 +284,10 @@ class Project(UserResource):
         ).distinct().count()
 
 
+def get_default_role_id():
+    return ProjectRole.get_normal_role().id
+
+
 class ProjectMembership(models.Model):
     """
     Project-Member relationship attributes
@@ -291,19 +295,20 @@ class ProjectMembership(models.Model):
 
     member = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    role = models.ForeignKey('project.ProjectRole')
+    role = models.ForeignKey('project.ProjectRole',
+                             default=get_default_role_id)
     is_directly_added = models.BooleanField(default=False)
     joined_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                  null=True, blank=True, default=None,
                                  related_name='added_project_memberships')
 
+    class Meta:
+        unique_together = ('member', 'project')
+
     def __str__(self):
         return '{} @ {}'.format(str(self.member),
                                 self.project.title)
-
-    class Meta:
-        unique_together = ('member', 'project')
 
     @staticmethod
     def get_for(user):
@@ -318,17 +323,28 @@ class ProjectMembership(models.Model):
 
 class ProjectUserGroupMembership(models.Model):
     """
-    Project usergroup membership model
+    Project user group membership model
     """
     project = models.ForeignKey(Project)
+    # FIXME: use user_group instead of usergroup for consistency
     usergroup = models.ForeignKey(UserGroup)
     joined_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                  null=True, blank=True, default=None,
                                  related_name='added_project_usergroups')
 
+    class Meta:
+        unique_together = ('usergroup', 'project')
+
     def __str__(self):
         return 'Group {} @ {}'.format(self.usergroup.title, self.project.title)
+
+    @staticmethod
+    def get_for(user):
+        return ProjectMembership.objects.all()
+
+    def can_get(self, user):
+        return True
 
     def can_modify(self, user):
         return self.project.can_modify(user)
@@ -395,7 +411,7 @@ def on_status_updated(sender, **kwargs):
             project.update_status()
 
 
-class ProjectRole(UserResource):
+class ProjectRole(models.Model):
     """
     Roles for Project
     """
