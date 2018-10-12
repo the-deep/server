@@ -40,7 +40,10 @@ class CategoryEditorCloneView(views.APIView):
         if not category_editor.can_get(request.user):
             raise exceptions.PermissionDenied()
 
-        new_ce = category_editor.clone(request.user)
+        new_ce = category_editor.clone(
+            request.user,
+            request.data or {},
+        )
         serializer = CategoryEditorSerializer(
             new_ce,
             context={'request': request},
