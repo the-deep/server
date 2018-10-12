@@ -22,7 +22,6 @@ import ary.serializers as arys
 
 from deep.permissions import ModifyPermission
 from project.permissions import JoinPermission, AcceptRejectPermission
-from project.models import ProjectRole
 from project.filter_set import (
     ProjectFilterSet,
     get_filtered_projects,
@@ -36,12 +35,14 @@ from user_group.models import UserGroup
 from .models import (
     ProjectStatus,
     Project,
+    ProjectRole,
     ProjectMembership,
     ProjectJoinRequest,
     ProjectUserGroupMembership,
 )
 from .serializers import (
     ProjectSerializer,
+    ProjectRoleSerializer,
     ProjectMembershipSerializer,
     ProjectJoinRequestSerializer,
     ProjectUserGroupSerializer
@@ -161,6 +162,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def _accept_request(responded_by, join_request, role):
+        if not role or role == 'normal':
+            role = ProjectRole.get_normal_role()
+        elif role == 'admin':
+            role = ProjectRole.get_admin_role()
+        else:
+            role_qs = ProjectRole.objects.filter(id=role)
+            if not role_qs.exists():
+                return response.Response(
+                    {'errors': 'Role id \'{}\' does not exist'.format(role)},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            role = role_qs.first()
+
         join_request.status = 'accepted'
         join_request.responded_by = responded_by
         join_request.responded_at = timezone.now()
@@ -203,16 +217,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
             )
 
         role = request.data.get('role')
-        if not role:
-            role = ProjectRole.get_normal_role()
-        else:
-            role_qs = ProjectRole.objects.filter(id=role)
-            if not role_qs.exists():
-                return response.Response(
-                    {'errors': 'Role id \'{}\' does not exist'.format(role)},
-                    status=status.HTTP_404_NOT_FOUND
-                )
-            role = role_qs.first()
         ProjectViewSet._accept_request(request.user, join_request, role)
 
         serializer = ProjectJoinRequestSerializer(
@@ -443,6 +447,12 @@ def accept_project_confirm(
         context['success'] = False
 
     return TemplateResponse(request, template_name, context)
+
+
+class ProjectRoleViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = ProjectRoleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = ProjectRole.objects.all()
 
 
 class ProjectUserGroupViewSet(viewsets.ModelViewSet):

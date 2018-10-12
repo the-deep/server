@@ -67,20 +67,13 @@ class ProjectRoleSerializer(RemoveNullFieldsMixin,
         ]
 
 
-class SimpleProjectRoleSerializer(RemoveNullFieldsMixin,
-                                  DynamicFieldsMixin,
-                                  serializers.ModelSerializer):
-    class Meta:
-        model = ProjectRole
-        fields = ('id', 'title')
-
-
 class ProjectMembershipSerializer(RemoveNullFieldsMixin,
                                   DynamicFieldsMixin,
                                   serializers.ModelSerializer):
     member_email = serializers.CharField(source='member.email', read_only=True)
     member_name = serializers.CharField(
         source='member.profile.get_display_name', read_only=True)
+    member_status = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectMembership
@@ -88,6 +81,11 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
 
     def get_unique_together_validators(self):
         return []
+
+    def get_member_status(self, membership):
+        if membership.role.is_creator_role:
+            return 'admin'
+        return 'member'
 
     # Validations
     def validate_project(self, project):
@@ -132,13 +130,12 @@ class ProjectSerializer(RemoveNullFieldsMixin,
     memberships = ProjectMembershipSerializer(
         source='projectmembership_set',
         many=True,
-        required=False,
+        read_only=True,
     )
     regions = SimpleRegionSerializer(many=True, required=False)
-    user_groups = ProjectUsergroupMembershipSerializer(many=True,
-                                                       required=False)
     role = serializers.SerializerMethodField()
-    join_request_status = serializers.SerializerMethodField()
+
+    member_status = serializers.SerializerMethodField()
 
     analysis_framework_title = serializers.CharField(
         source='analysis_framework.title',
@@ -183,9 +180,15 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         )
         return project
 
-    def get_join_request_status(self, project):
+    def get_member_status(self, project):
         request = self.context['request']
         user = request.GET.get('user', request.user)
+
+        role = project.get_role(user)
+        if role:
+            if role.is_creator_role:
+                return 'admin'
+            return 'member'
 
         join_request = ProjectJoinRequest.objects.filter(
             project=project,
@@ -198,7 +201,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         ):
             return join_request.status
 
-        return None
+        return 'none'
 
     def get_role(self, project):
         request = self.context['request']
@@ -209,23 +212,8 @@ class ProjectSerializer(RemoveNullFieldsMixin,
             member=user
         ).first()
         if membership:
-            return ProjectRoleSerializer(membership.role).data
+            return membership.role.id
         return None
-
-    def get_permissions(self, project):
-        request = self.context.get('request')
-        if request is None:
-            return {}
-        user = request.GET.get('user', request.user)
-
-        membership = ProjectMembership.objects.filter(
-            project=project,
-            member=user
-        ).first()
-        if membership:
-            return ProjectRoleSerializer(membership.role).data
-        # TODO: return value based on join request
-        return {}
 
     # Validations
     def validate_user_groups(self, user_groups):
