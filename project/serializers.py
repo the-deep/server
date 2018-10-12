@@ -67,14 +67,6 @@ class ProjectRoleSerializer(RemoveNullFieldsMixin,
         ]
 
 
-class SimpleProjectRoleSerializer(RemoveNullFieldsMixin,
-                                  DynamicFieldsMixin,
-                                  serializers.ModelSerializer):
-    class Meta:
-        model = ProjectRole
-        fields = ('id', 'title')
-
-
 class ProjectMembershipSerializer(RemoveNullFieldsMixin,
                                   DynamicFieldsMixin,
                                   serializers.ModelSerializer):
@@ -214,22 +206,8 @@ class ProjectSerializer(RemoveNullFieldsMixin,
             member=user
         ).first()
         if membership:
-            return ProjectRoleSerializer(membership.role).data
+            return membership.role
         return None
-
-    def get_permissions(self, project):
-        request = self.context.get('request')
-        if request is None:
-            return {}
-        user = request.GET.get('user', request.user)
-
-        membership = ProjectMembership.objects.filter(
-            project=project,
-            member=user
-        ).first()
-        if membership:
-            return ProjectRoleSerializer(membership.role).data
-        return {}
 
     # Validations
     def validate_user_groups(self, user_groups):
