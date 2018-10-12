@@ -206,7 +206,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
             member=user
         ).first()
         if membership:
-            return membership.role
+            return membership.role.id
         return None
 
     # Validations

@@ -411,7 +411,7 @@ def on_status_updated(sender, **kwargs):
             project.update_status()
 
 
-class ProjectRole(UserResource):
+class ProjectRole(models.Model):
     """
     Roles for Project
     """
