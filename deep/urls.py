@@ -26,6 +26,10 @@ from gallery.views import (
     FilePreviewViewSet,
     FileExtractionTriggerView,
 )
+from tabular.views import (
+    BookViewSet,
+    TabularFileExtractionTriggerView,
+)
 from user_group.views import (
     GroupMembershipViewSet,
     UserGroupViewSet,
@@ -137,6 +141,11 @@ router.register(r'files-dropbox', DropboxFileViewSet,
                 base_name='file_dropbox')
 router.register(r'file-previews', FilePreviewViewSet,
                 base_name='file_preview')
+
+# Tabular routers
+
+router.register(r'tabular/book', BookViewSet,
+                base_name='tabular_book')
 
 # User group registers
 router.register(r'user-groups', UserGroupViewSet,
@@ -314,6 +323,9 @@ urlpatterns = [
 
     url(get_api_path(r'export-trigger/$'),
         ExportTriggerView.as_view()),
+
+    url(get_api_path(r'tabular/file-extraction-trigger/(?P<file_id>\d+)/$'),
+        TabularFileExtractionTriggerView.as_view()),
 
     # Website fetch api
     url(get_api_path(r'lead-website-fetch/$'),
