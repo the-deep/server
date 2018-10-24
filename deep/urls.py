@@ -28,6 +28,8 @@ from gallery.views import (
 )
 from tabular.views import (
     BookViewSet,
+    SheetViewSet,
+    FieldViewSet,
     TabularExtractionTriggerView,
 )
 from user_group.views import (
@@ -143,9 +145,12 @@ router.register(r'file-previews', FilePreviewViewSet,
                 base_name='file_preview')
 
 # Tabular routers
-
-router.register(r'tabular/books', BookViewSet,
+router.register(r'tabular-books', BookViewSet,
                 base_name='tabular_book')
+router.register(r'tabular-sheets', SheetViewSet,
+                base_name='tabular_sheet')
+router.register(r'tabular-fields', FieldViewSet,
+                base_name='tabular_field')
 
 # User group registers
 router.register(r'user-groups', UserGroupViewSet,
@@ -324,7 +329,7 @@ urlpatterns = [
     url(get_api_path(r'export-trigger/$'),
         ExportTriggerView.as_view()),
 
-    url(get_api_path(r'tabular/extraction-trigger/(?P<book_id>\d+)/$'),
+    url(get_api_path(r'tabular-extraction-trigger/(?P<book_id>\d+)/$'),
         TabularExtractionTriggerView.as_view()),
 
     # Website fetch api

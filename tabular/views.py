@@ -8,14 +8,28 @@ from rest_framework import (
     views,
 )
 
-from .models import Book
+from .models import Book, Sheet, Field
 from .tasks import tabular_extract_book
-from .serializers import BookSerializer
+from .serializers import (
+    BookSerializer, SheetSerializer, FieldSerializer
+)
 
 
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class SheetViewSet(viewsets.ModelViewSet):
+    queryset = Sheet.objects.all()
+    serializer_class = SheetSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class FieldViewSet(viewsets.ModelViewSet):
+    queryset = Field.objects.all()
+    serializer_class = FieldSerializer
     permission_classes = [permissions.IsAuthenticated]
 
 
