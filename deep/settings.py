@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'django.contrib.gis',
+    'django.contrib.postgres',
 
     'autofixture',
     'channels',

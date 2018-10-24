@@ -1,6 +1,6 @@
 import io
 import csv
-from ..models import Sheet, Field, Cell
+from ..models import Sheet, Field
 
 
 def extract(book):
@@ -27,12 +27,11 @@ def extract(book):
             )
         Field.objects.bulk_create(fields)
 
-        cell = []
-        for row in reader:
+        rows = []
+        for _row in reader:
+            row = {}
             for index, field in enumerate(fields):
-                cell.append(
-                    Cell(
-                        field=field,
-                        value=row[index],
-                    ))
-        Cell.objects.bulk_create(cell)
+                row[str(field.pk)] = _row[index]
+            rows.append(row)
+        sheet.data = rows
+        sheet.save()
