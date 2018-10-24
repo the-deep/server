@@ -5,12 +5,12 @@ from ..models import Sheet, Field
 
 def extract(book):
     options = book.options if book.options else {}
-    sheet = Sheet.objects.create(
-        title=book.title,
-        book=book,
-    )
-    with book.file.file as csv_file:
-        csv_file.open()
+    sheet = Sheet.objects.filter(book=book).delete()
+    with book.get_file() as csv_file:
+        sheet = Sheet.objects.create(
+            title=book.title,
+            book=book,
+        )
         reader = csv.reader(
             io.StringIO(csv_file.read().decode('utf-8')),
             delimiter=options.get('delimiter', ','),

@@ -2,21 +2,35 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField, ArrayField, HStoreField
 from user_resource.models import UserResource
 from gallery.models import File
+from utils.common import get_file_from_url
 
 
 class Book(UserResource):
+    # STATUS TYPES
+    INITIAL = 'initial'
+    PENDING = 'pending'
+    SUCCESS = 'success'
+    FAILED = 'failed'
+
+    STATUS_TYPES = (
+        (INITIAL, 'Initial (Book Just Added)'),
+        (PENDING, 'Pending'),
+        (SUCCESS, 'Success'),
+        (FAILED, 'Failed'),
+    )
+
     # FILE TYPES
     CSV = 'csv'
     XLSX = 'xlsx'
-
-    # ERROR TYPES
-    UNKNOWN_ERROR = 100
-    FILE_TYPE_ERROR = 101
 
     FILE_TYPES = (
         (CSV, 'CSV'),
         (XLSX, 'XLSX'),
     )
+
+    # ERROR TYPES
+    UNKNOWN_ERROR = 100
+    FILE_TYPE_ERROR = 101
 
     ERROR_TYPES = (
         (UNKNOWN_ERROR, 'Unknown error'),
@@ -26,7 +40,11 @@ class Book(UserResource):
     title = models.CharField(max_length=255)
     file = models.OneToOneField(File, null=True, blank=True)
     url = models.TextField(null=True, blank=True)
-    pending = models.BooleanField(default=True)
+    status = models.CharField(
+        max_length=30,
+        choices=STATUS_TYPES,
+        default=INITIAL,
+    )
     error = models.CharField(
         max_length=30,
         choices=ERROR_TYPES,
@@ -37,6 +55,12 @@ class Book(UserResource):
         choices=FILE_TYPES,
     )
     options = JSONField(default=None, blank=True, null=True)
+
+    def get_file(self):
+        if self.file:
+            return self.file.file
+        elif self.url:
+            return get_file_from_url(self.url)
 
     def __str__(self):
         return self.title

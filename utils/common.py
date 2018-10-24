@@ -1,10 +1,13 @@
 from xml.sax.saxutils import escape
 from datetime import timedelta
+from django.conf import settings
 
 import os
 import time
 import random
 import string
+import tempfile
+import requests
 
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1)' + \
@@ -20,6 +23,15 @@ def write_file(r, fp):
         if chunk:
             fp.write(chunk)
     return fp
+
+
+def get_file_from_url(url):
+    file = tempfile.NamedTemporaryFile(dir=settings.BASE_DIR)
+    response = requests.get(url, stream=True)
+    response.raise_for_status()
+    write_file(response, file)
+    file.seek(0)
+    return file
 
 
 def get_or_write_file(path, text):
