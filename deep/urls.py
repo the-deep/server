@@ -28,7 +28,7 @@ from gallery.views import (
 )
 from tabular.views import (
     BookViewSet,
-    TabularFileExtractionTriggerView,
+    TabularExtractionTriggerView,
 )
 from user_group.views import (
     GroupMembershipViewSet,
@@ -324,8 +324,8 @@ urlpatterns = [
     url(get_api_path(r'export-trigger/$'),
         ExportTriggerView.as_view()),
 
-    url(get_api_path(r'tabular/file-extraction-trigger/(?P<file_id>\d+)/$'),
-        TabularFileExtractionTriggerView.as_view()),
+    url(get_api_path(r'tabular/extraction-trigger/(?P<book_id>\d+)/$'),
+        TabularExtractionTriggerView.as_view()),
 
     # Website fetch api
     url(get_api_path(r'lead-website-fetch/$'),
