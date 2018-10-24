@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from user_resource.serializers import UserResourceSerializer
 from .models import Book, Sheet, Field
 
 
@@ -17,8 +18,8 @@ class SheetSerializer(serializers.ModelSerializer):
         exclude = ('book',)
 
 
-class BookSerializer(serializers.ModelSerializer):
-    sheets = SheetSerializer(many=True, source='sheet_set')
+class BookSerializer(UserResourceSerializer):
+    sheets = SheetSerializer(many=True, source='sheet_set', read_only=True)
 
     class Meta:
         model = Book

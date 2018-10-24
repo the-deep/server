@@ -144,7 +144,7 @@ router.register(r'file-previews', FilePreviewViewSet,
 
 # Tabular routers
 
-router.register(r'tabular/book', BookViewSet,
+router.register(r'tabular/books', BookViewSet,
                 base_name='tabular_book')
 
 # User group registers
