@@ -1,17 +1,9 @@
 from rest_framework import serializers
 
-from .models import Book, Sheet, Field, Cell
-
-
-class CellSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Cell
-        exclude = ('field',)
+from .models import Book, Sheet, Field
 
 
 class FieldSerializer(serializers.ModelSerializer):
-    cells = CellSerializer(many=True, source='cell_set')
-
     class Meta:
         model = Field
         exclude = ('sheet',)

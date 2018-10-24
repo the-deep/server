@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.fields import JSONField, ArrayField, HStoreField
 from user_resource.models import UserResource
 from gallery.models import File
 
@@ -43,6 +43,7 @@ class Sheet(models.Model):
     title = models.CharField(max_length=255)
     book = models.ForeignKey(Book)
     options = JSONField(default=None, blank=True, null=True)
+    data = ArrayField(HStoreField(), default=list)
 
 
 class Field(models.Model):
@@ -62,8 +63,3 @@ class Field(models.Model):
         default=STRING
     )
     options = JSONField(default=None, blank=True, null=True)
-
-
-class Cell(models.Model):
-    field = models.ForeignKey(Field)
-    value = models.TextField()
