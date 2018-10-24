@@ -38,12 +38,18 @@ class Book(UserResource):
     )
     options = JSONField(default=None, blank=True, null=True)
 
+    def __str__(self):
+        return self.title
+
 
 class Sheet(models.Model):
     title = models.CharField(max_length=255)
     book = models.ForeignKey(Book)
     options = JSONField(default=None, blank=True, null=True)
     data = ArrayField(HStoreField(), default=list)
+
+    def __str__(self):
+        return self.title
 
 
 class Field(models.Model):
@@ -63,3 +69,6 @@ class Field(models.Model):
         default=STRING
     )
     options = JSONField(default=None, blank=True, null=True)
+
+    def __str__(self):
+        return self.label
