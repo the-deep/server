@@ -1,5 +1,10 @@
 from rest_framework import serializers
+from drf_dynamic_fields import DynamicFieldsMixin
 
+from deep.serializers import (
+    NestedCreateMixin,
+    NestedUpdateMixin,
+)
 from user_resource.serializers import UserResourceSerializer
 from .models import Book, Sheet, Field
 
@@ -10,7 +15,12 @@ class FieldSerializer(serializers.ModelSerializer):
         exclude = ('sheet',)
 
 
-class SheetSerializer(serializers.ModelSerializer):
+class SheetSerializer(
+        NestedCreateMixin,
+        NestedUpdateMixin,
+        DynamicFieldsMixin,
+        serializers.ModelSerializer
+):
     fields = FieldSerializer(many=True, source='field_set')
 
     class Meta:
@@ -18,8 +28,8 @@ class SheetSerializer(serializers.ModelSerializer):
         exclude = ('book',)
 
 
-class BookSerializer(UserResourceSerializer):
-    sheets = SheetSerializer(many=True, source='sheet_set', read_only=True)
+class BookSerializer(DynamicFieldsMixin, UserResourceSerializer):
+    sheets = SheetSerializer(many=True, source='sheet_set')
 
     class Meta:
         model = Book
