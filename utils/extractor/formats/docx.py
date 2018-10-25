@@ -18,7 +18,7 @@ Usage:
 nsmap = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main',
          'p': 'http://schemas.openxmlformats.org/presentationml/2006/main',
          'a': 'http://schemas.openxmlformats.org/drawingml/2006/main',
-         'wP': 'http://schemas.openxmlformats.org/officeDocument/2006/extended-properties', # noqa
+         'wP': 'http://schemas.openxmlformats.org/officeDocument/2006/extended-properties',  # noqa
          }
 
 
@@ -119,11 +119,7 @@ def process(docx, pptx=False, img_dir=None):
     else:
         text += xml2text(zipf.read(doc_xml))
         # get page count for docx
-        ns = 'http://schemas.openxmlformats.org/officeDocument/2006/extended-properties'
-        root = ET.fromstring(zipf.read('docProps/app.xml'))
-        pages = root.find('{{{}}}Pages'.format(ns))
-        page_count = int(pages.text) if pages is None else 0
-        # TODO: other options for page count
+        page_count = get_pages_in_docx(docx)
 
     # get footer text
     # there can be 3 footer files in the zip
