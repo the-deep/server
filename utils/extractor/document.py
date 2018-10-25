@@ -42,7 +42,7 @@ class Document:
         extractor = EXTRACTORS.get(self.type)
         if extractor:
             return extractor(self.doc, self.params).extract()
-        return '', []
+        return '', [], 1
 
     def get_thumbnail(self):
         """

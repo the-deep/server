@@ -31,7 +31,8 @@ def process(doc):
             ):
                 interpreter.process_page(page)
             content = retstr.getvalue().decode()
-    return content, None
+    pages_count = get_pages_in_pdf(doc)
+    return content, None, pages_count
 
 
 def get_pages_in_pdf(file):
