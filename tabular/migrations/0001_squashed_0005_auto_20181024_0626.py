@@ -42,13 +42,6 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='Cell',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('value', models.TextField()),
-            ],
-        ),
-        migrations.CreateModel(
             name='Field',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -70,11 +63,6 @@ class Migration(migrations.Migration):
             model_name='field',
             name='sheet',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tabular.Sheet'),
-        ),
-        migrations.AddField(
-            model_name='cell',
-            name='field',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tabular.Field'),
         ),
         migrations.AddField(
             model_name='book',
@@ -104,16 +92,9 @@ class Migration(migrations.Migration):
         ),
         django.contrib.postgres.operations.HStoreExtension(
         ),
-        migrations.RemoveField(
-            model_name='cell',
-            name='field',
-        ),
         migrations.AddField(
             model_name='sheet',
             name='data',
             field=django.contrib.postgres.fields.ArrayField(base_field=django.contrib.postgres.fields.hstore.HStoreField(), default=list, size=None),
-        ),
-        migrations.DeleteModel(
-            name='Cell',
         ),
     ]
