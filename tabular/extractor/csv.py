@@ -16,16 +16,20 @@ def extract(book):
             io.StringIO(csv_file.read().decode('utf-8')),
             delimiter=options.get('delimiter', ','),
             quotechar=options.get('quotechar', '"'),
+            skipinitialspace=True,
         )
 
         fields = []
+        ordering = 1
         for header in next(reader):
             fields.append(
                 Field(
                     title=header,
                     sheet=sheet,
+                    ordering=ordering,
                 )
             )
+            ordering += 1
         Field.objects.bulk_create(fields)
 
         rows = []
