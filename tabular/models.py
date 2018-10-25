@@ -93,6 +93,10 @@ class Field(models.Model):
         default=STRING
     )
     options = JSONField(default=None, blank=True, null=True)
+    ordering = models.IntegerField(default=1)
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        ordering = ['ordering']
