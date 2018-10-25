@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from project.models import Project
 from project.mixins import ProjectEntityMixin
 from user_resource.models import UserResource
+from tabular.models import Book
 from gallery.models import File
 
 
@@ -116,6 +117,8 @@ class Lead(UserResource, ProjectEntityMixin):
 
     attachment = models.ForeignKey(File, on_delete=models.SET_NULL,
                                    default=None, null=True, blank=True)
+    tabular_book = models.ForeignKey(Book,
+                                     default=None, null=True, blank=True)
 
     def __str__(self):
         return '{}'.format(self.title)
