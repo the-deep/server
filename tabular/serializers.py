@@ -21,7 +21,7 @@ class SheetSerializer(
         DynamicFieldsMixin,
         serializers.ModelSerializer
 ):
-    fields = FieldSerializer(many=True, source='field_set')
+    fields = FieldSerializer(many=True, source='field_set', required=False)
 
     class Meta:
         model = Sheet
@@ -29,7 +29,7 @@ class SheetSerializer(
 
 
 class BookSerializer(DynamicFieldsMixin, UserResourceSerializer):
-    sheets = SheetSerializer(many=True, source='sheet_set')
+    sheets = SheetSerializer(many=True, source='sheet_set', required=False)
 
     class Meta:
         model = Book
