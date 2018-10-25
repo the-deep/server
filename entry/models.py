@@ -24,9 +24,12 @@ class Entry(UserResource, ProjectEntityMixin):
 
     EXCERPT = 'excerpt'
     IMAGE = 'image'
+    DATA_SERIES = 'dataSeries'
+
     ENTRY_TYPES = (
         (EXCERPT, 'Excerpt'),
         (IMAGE, 'Image'),
+        (DATA_SERIES, 'Data Series'),
     )
 
     lead = models.ForeignKey(Lead)
@@ -43,6 +46,8 @@ class Entry(UserResource, ProjectEntityMixin):
     )
     excerpt = models.TextField(blank=True)
     image = models.TextField(blank=True)
+    data_series = JSONField(default=None,
+                            blank=True, null=True)
 
     def __str__(self):
         if self.entry_type == Entry.IMAGE:
