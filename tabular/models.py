@@ -85,7 +85,7 @@ class Field(models.Model):
         (STRING, 'String'),
     )
 
-    label = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
     sheet = models.ForeignKey(Sheet)
     type = models.CharField(
         max_length=30,
@@ -95,4 +95,4 @@ class Field(models.Model):
     options = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
-        return self.label
+        return self.title

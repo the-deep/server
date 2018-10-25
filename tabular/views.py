@@ -39,7 +39,7 @@ class TabularExtractionTriggerView(views.APIView):
     """
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, book_id, version=None):
+    def post(self, request, book_id, version=None):
         if not Book.objects.filter(id=book_id).exists():
             raise exceptions.NotFound()
 

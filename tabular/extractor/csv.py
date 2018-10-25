@@ -1,5 +1,6 @@
 import io
 import csv
+from utils.common import random_key
 from ..models import Sheet, Field
 
 
@@ -21,7 +22,7 @@ def extract(book):
         for header in next(reader):
             fields.append(
                 Field(
-                    label=header,
+                    title=header,
                     sheet=sheet,
                 )
             )
@@ -30,8 +31,12 @@ def extract(book):
         rows = []
         for _row in reader:
             row = {}
-            for index, field in enumerate(fields):
-                row[str(field.pk)] = _row[index]
-            rows.append(row)
+            try:
+                for index, field in enumerate(fields):
+                    row[str(field.pk)] = _row[index]
+                row['key'] = random_key()
+                rows.append(row)
+            except Exception:
+                pass
         sheet.data = rows
         sheet.save()
