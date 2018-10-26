@@ -40,14 +40,14 @@ def extract(book):
     with book.get_file() as xlsx_file:
         workbook = load_workbook(xlsx_file, data_only=True, read_only=True)
         for sheet_key, wb_sheet in enumerate(workbook.worksheets):
-            sheet_options = options['sheets'].get(str(sheet_key), {})
-            if sheet_options.get('skip', True):
+            sheet_options = options.get('sheets', {}).get(str(sheet_key), {})
+            if sheet_options.get('skip', False):
                 continue
             sheet = Sheet.objects.create(
                 title=wb_sheet.title,
                 book=book,
             )
-            header_index = sheet_options['header_row']
+            header_index = sheet_options.get('header_row', 1)
             data_index = sheet_options.get('data_row_index', header_index + 1)
 
             # Fields
