@@ -6,7 +6,7 @@ from ..models import Sheet, Field
 
 def extract(book):
     options = book.options if book.options else {}
-    sheet = Sheet.objects.filter(book=book).delete()
+    Sheet.objects.filter(book=book).delete()  # Delete all previous sheets
     with book.get_file() as csv_file:
         sheet = Sheet.objects.create(
             title=book.title,
