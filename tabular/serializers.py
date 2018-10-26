@@ -39,13 +39,13 @@ class BookSerializer(DynamicFieldsMixin, UserResourceSerializer):
         model = Book
         fields = '__all__'
 
-    def save(self, *args, **kwargs):
-        book = super().save(*args, **kwargs)
+    def create(self, validated_data):
+        book = super().create(validated_data)
         if book.file_type in Book.META_REQUIRED_FILE_TYPES:
             if not settings.TESTING:
                 transaction.on_commit(
                     lambda: tabular_meta_extract_book.delay(book.id)
                 )
-            book.status = Book.PENDING
+            book.meta_status = Book.PENDING
             book.save()
         return book
