@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.db import transaction
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
 
@@ -5,6 +7,8 @@ from deep.serializers import (
     NestedCreateMixin,
     NestedUpdateMixin,
 )
+
+from .tasks import tabular_meta_extract_book
 from user_resource.serializers import UserResourceSerializer
 from .models import Book, Sheet, Field
 
@@ -34,3 +38,14 @@ class BookSerializer(DynamicFieldsMixin, UserResourceSerializer):
     class Meta:
         model = Book
         fields = '__all__'
+
+    def save(self, *args, **kwargs):
+        book = super().save(*args, **kwargs)
+        if book.file_type in Book.META_REQUIRED_FILE_TYPES:
+            if not settings.TESTING:
+                transaction.on_commit(
+                    lambda: tabular_meta_extract_book.delay(book.id)
+                )
+            book.status = Book.PENDING
+            book.save()
+        return book

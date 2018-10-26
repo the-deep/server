@@ -28,6 +28,8 @@ class Book(UserResource):
         (XLSX, 'XLSX'),
     )
 
+    META_REQUIRED_FILE_TYPES = [XLSX]
+
     # ERROR TYPES
     UNKNOWN_ERROR = 100
     FILE_TYPE_ERROR = 101
@@ -40,6 +42,11 @@ class Book(UserResource):
     title = models.CharField(max_length=255)
     file = models.OneToOneField(File, null=True, blank=True)
     url = models.TextField(null=True, blank=True)
+    meta_status = models.CharField(
+        max_length=30,
+        choices=STATUS_TYPES,
+        default=INITIAL,
+    )
     status = models.CharField(
         max_length=30,
         choices=STATUS_TYPES,
@@ -55,6 +62,7 @@ class Book(UserResource):
         choices=FILE_TYPES,
     )
     options = JSONField(default=None, blank=True, null=True)
+    meta = JSONField(default=None, blank=True, null=True)
 
     def get_file(self):
         if self.file:
