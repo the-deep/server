@@ -52,7 +52,7 @@ class WebThumbnailer(Thumbnailer):
     """
     def get_thumbnail(self):
         if self.doc:
-            file_name = 'thumbnail_'+str(uuid.uuid4())
+            file_name = 'thumbnail_'+str(uuid.uuid4())+'.png'
             options = webdriver.ChromeOptions()
             options.add_argument('headless')
             options.add_argument('window-size=412x732')
