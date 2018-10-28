@@ -1,14 +1,18 @@
 import traceback
 import logging
 
-from dateparser import parse as dateparse
-
 from celery import shared_task
 from redis_store import redis
 from django.db import transaction
 
 from .models import Book, Field
 from .extractor import csv, xlsx
+from .utils import (
+    parse_number,
+    parse_datetime,
+    parse_geo,
+    get_geos_dict,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -30,6 +34,9 @@ def _tabular_meta_extract_book(book):
 
 
 def auto_detect_and_update_fields(book):
+    # get geos first
+    geos = get_geos_dict(book.project)
+
     for sheet in book.sheet_set.all():
         data = sheet.data
 
@@ -48,6 +55,8 @@ def auto_detect_and_update_fields(book):
                     type = Field.NUMBER
                 elif parse_datetime(v):
                     type = Field.DATETIME
+                elif parse_geo(v, geos):
+                    type = Field.GEO
                 else:
                     type = Field.STRING
 
@@ -70,20 +79,6 @@ def auto_detect_and_update_fields(book):
         for field in fields:
             field.type = fields_current_types.get(field.id, Field.STRING)
             field.save()
-
-
-def parse_number(val):
-    try:
-        float(val)
-        return True
-    except ValueError:
-        return False
-
-
-def parse_datetime(val):
-    # try date parsing for english, french and spanish languages only
-    date = dateparse(val, languages=['en', 'fr', 'es'])
-    return date is not None
 
 
 @shared_task

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField, ArrayField, HStoreField
 from user_resource.models import UserResource
 from gallery.models import File
+from project.models import Project
 from utils.common import get_file_from_url
 
 
@@ -41,6 +42,7 @@ class Book(UserResource):
 
     title = models.CharField(max_length=255)
     file = models.OneToOneField(File, null=True, blank=True)
+    project = models.ForeignKey(Project, null=True, default=None)
     url = models.TextField(null=True, blank=True)
     meta_status = models.CharField(
         max_length=30,
@@ -88,11 +90,13 @@ class Field(models.Model):
     NUMBER = 'number'
     STRING = 'string'
     DATETIME = 'datetime'
+    GEO = 'geo'
 
     FIELD_TYPES = (
         (NUMBER, 'Number'),
         (STRING, 'String'),
         (DATETIME, 'Datetime'),
+        (GEO, 'Geo'),
     )
 
     title = models.CharField(max_length=255)
