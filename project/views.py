@@ -25,7 +25,8 @@ from project.permissions import JoinPermission, AcceptRejectPermission
 from project.filter_set import (
     ProjectFilterSet,
     get_filtered_projects,
-    ProjectMembershipFilterSet
+    ProjectMembershipFilterSet,
+    ProjectUserGroupMembershipFilterSet,
 )
 
 from user.utils import send_project_join_request_emails
@@ -460,5 +461,5 @@ class ProjectUserGroupViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter)
-    search_fields = ('project', 'usergroup',)
     queryset = ProjectUserGroupMembership.objects.all()
+    filter_class = ProjectUserGroupMembershipFilterSet
