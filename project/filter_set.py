@@ -2,7 +2,11 @@ from django.db import models
 import django_filters
 
 from user_resource.filters import UserResourceFilterSet
-from .models import Project, ProjectMembership
+from .models import (
+    Project,
+    ProjectMembership,
+    ProjectUserGroupMembership,
+)
 
 
 class ProjectFilterSet(UserResourceFilterSet):
@@ -24,6 +28,12 @@ class ProjectMembershipFilterSet(UserResourceFilterSet):
     class Meta:
         model = ProjectMembership
         fields = ['id', 'project', 'member']
+
+
+class ProjectUserGroupMembershipFilterSet(UserResourceFilterSet):
+    class Meta:
+        model = ProjectUserGroupMembership
+        fields = ['id', 'project', 'usergroup']
 
 
 def get_filtered_projects(user, queries):
