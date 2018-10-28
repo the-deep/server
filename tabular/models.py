@@ -87,10 +87,12 @@ class Sheet(models.Model):
 class Field(models.Model):
     NUMBER = 'number'
     STRING = 'string'
+    DATETIME = 'datetime'
 
     FIELD_TYPES = (
         (NUMBER, 'Number'),
         (STRING, 'String'),
+        (DATETIME, 'Datetime'),
     )
 
     title = models.CharField(max_length=255)

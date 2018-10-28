@@ -41,3 +41,4 @@ tox
 pluggy==0.7.1
 pytest==3.7.1
 pytest-django==3.4.1
+dateparser==0.7.0
