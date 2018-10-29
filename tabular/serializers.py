@@ -9,17 +9,18 @@ from deep.serializers import (
 )
 
 from .tasks import tabular_meta_extract_book
+from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
 from .models import Book, Sheet, Field, Geodata
 
 
-class GeodataSerializer(serializers.ModelSerializer):
+class GeodataSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Geodata
         exclude = ('field',)
 
 
-class FieldSerializer(serializers.ModelSerializer):
+class FieldSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     geodata = serializers.SerializerMethodField()
 
     class Meta:
@@ -29,9 +30,11 @@ class FieldSerializer(serializers.ModelSerializer):
     def get_geodata(self, obj):
         if obj.type == Field.GEO and hasattr(obj, 'geodata'):
             return GeodataSerializer(obj.geodata).data
+        return None
 
 
 class SheetSerializer(
+        RemoveNullFieldsMixin,
         NestedCreateMixin,
         NestedUpdateMixin,
         DynamicFieldsMixin,
@@ -44,7 +47,11 @@ class SheetSerializer(
         exclude = ('book',)
 
 
-class BookSerializer(DynamicFieldsMixin, UserResourceSerializer):
+class BookSerializer(
+        RemoveNullFieldsMixin,
+        DynamicFieldsMixin,
+        UserResourceSerializer
+):
     sheets = SheetSerializer(many=True, source='sheet_set', required=False)
 
     class Meta:
@@ -59,5 +66,7 @@ class BookSerializer(DynamicFieldsMixin, UserResourceSerializer):
                     lambda: tabular_meta_extract_book.delay(book.id)
                 )
             book.meta_status = Book.PENDING
-            book.save()
+        else:
+            book.meta_status = Book.SUCCESS
+        book.save()
         return book
