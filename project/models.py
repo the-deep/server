@@ -176,6 +176,7 @@ class Project(UserResource):
 
     @staticmethod
     def get_for_member(user):
+        # FIXME
         return Project.get_annotated().filter(
             Project.get_query_for_member(user)
         ).distinct()

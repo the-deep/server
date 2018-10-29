@@ -93,10 +93,10 @@ def _tabular_meta_extract_geo(geodata):
     geodata_data = []
     for row in geodata.field.sheet.data:
         similar_areas = []
-        query = row.get(field.pk)
+        query = row.get(str(field.pk))
         geoareas = project_geoareas.annotate(
             similarity=search.TrigramSimilarity('title', query),
-        ).filter(similarity__gt=0.4).order_by('-similarity')
+        ).filter(similarity__gt=0.2).order_by('-similarity')
         for geoarea in geoareas:
             similar_areas.append({
                 'id': geoarea.pk,

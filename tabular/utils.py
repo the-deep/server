@@ -6,7 +6,7 @@ def parse_number(val):
     try:
         float(val)
         return True
-    except ValueError as ve:
+    except ValueError:
         return False
 
 

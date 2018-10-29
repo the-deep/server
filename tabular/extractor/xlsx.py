@@ -78,7 +78,7 @@ def extract(book):
 
             # Data
             rows = []
-            for _row in wb_sheet.iter_rows(row_offset=data_index):
+            for _row in wb_sheet.iter_rows(min_row=data_index):
                 row = {}
                 if is_row_empty(_row, columns):
                     continue
