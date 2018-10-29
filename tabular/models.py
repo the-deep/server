@@ -114,3 +114,31 @@ class Field(models.Model):
 
     class Meta:
         ordering = ['ordering']
+
+
+class Geodata(models.Model):
+    # STATUS TYPES
+    PENDING = 'pending'
+    SUCCESS = 'success'
+    FAILED = 'failed'
+
+    STATUS_TYPES = (
+        (PENDING, 'Pending'),
+        (SUCCESS, 'Success'),
+        (FAILED, 'Failed'),
+    )
+
+    data = JSONField(default=None, blank=True, null=True)
+    field = models.OneToOneField(
+        Field,
+        on_delete=models.CASCADE,
+        related_name='geodata'
+    )
+    status = models.CharField(
+        max_length=30,
+        choices=STATUS_TYPES,
+        default=PENDING,
+    )
+
+    def __str__(self):
+        return '{} (Geodata)'.format(self.field.title)

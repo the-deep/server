@@ -30,7 +30,9 @@ from tabular.views import (
     BookViewSet,
     SheetViewSet,
     FieldViewSet,
+    GeodataViewSet,
     TabularExtractionTriggerView,
+    TabularGeoProcessTriggerView,
 )
 from user_group.views import (
     GroupMembershipViewSet,
@@ -151,6 +153,8 @@ router.register(r'tabular-sheets', SheetViewSet,
                 base_name='tabular_sheet')
 router.register(r'tabular-fields', FieldViewSet,
                 base_name='tabular_field')
+router.register(r'tabular-geodatas', GeodataViewSet,
+                base_name='tabular_geodata')
 
 # User group registers
 router.register(r'user-groups', UserGroupViewSet,
@@ -331,6 +335,9 @@ urlpatterns = [
 
     url(get_api_path(r'tabular-extraction-trigger/(?P<book_id>\d+)/$'),
         TabularExtractionTriggerView.as_view()),
+
+    url(get_api_path(r'tabular-geo-extraction-trigger/(?P<field_id>\d+)/$'),
+        TabularGeoProcessTriggerView.as_view()),
 
     # Website fetch api
     url(get_api_path(r'lead-website-fetch/$'),
