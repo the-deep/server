@@ -10,13 +10,25 @@ from deep.serializers import (
 
 from .tasks import tabular_meta_extract_book
 from user_resource.serializers import UserResourceSerializer
-from .models import Book, Sheet, Field
+from .models import Book, Sheet, Field, Geodata
+
+
+class GeodataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Geodata
+        exclude = ('field',)
 
 
 class FieldSerializer(serializers.ModelSerializer):
+    geodata = serializers.SerializerMethodField()
+
     class Meta:
         model = Field
         exclude = ('sheet',)
+
+    def get_geodata(self, obj):
+        if obj.type == Field.GEO and hasattr(obj, 'geodata'):
+            return GeodataSerializer(obj.geodata).data
 
 
 class SheetSerializer(
