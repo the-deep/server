@@ -129,10 +129,12 @@ class Filter(models.Model):
     """
     NUMBER = 'number'
     LIST = 'list'
+    INTERSECTS = 'intersects'
 
     FILTER_TYPES = (
         (NUMBER, 'Number'),
         (LIST, 'List'),
+        (INTERSECTS, 'Intersection between two numbers'),
     )
 
     analysis_framework = models.ForeignKey(AnalysisFramework)

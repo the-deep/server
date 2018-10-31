@@ -1,5 +1,10 @@
 def get_filters(widget, data):
-    return []
+    return [{
+        'filter_type': 'intersects',
+        'properties': {
+            'type': 'date',
+        },
+    }]
 
 
 def get_exportable(widget, data):

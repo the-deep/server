@@ -114,6 +114,27 @@ def get_filtered_entries(user, queries):
                     filterdata__number__gte=query_gt,
                 )
 
+        if filter.filter_type == Filter.INTERSECTS:
+            if query:
+                entries = entries.filter(
+                    filterdata__filter=filter,
+                    filterdata__from_number__lte=query,
+                    filterdata__to_number__gte=query,
+                )
+
+            if query_lt and query_gt:
+                q = models.Q(
+                    filterdata__from_number__lte=query_lt,
+                    filterdata__to_number__gte=query_lt,
+                ) | models.Q(
+                    filterdata__from_number__lte=query_gt,
+                    filterdata__to_number__gte=query_gt,
+                ) | models.Q(
+                    filterdata__from_number__gte=query_gt,
+                    filterdata__to_number__lte=query_lt,
+                )
+                entries = entries.filter(q, filterdata__filter=filter)
+
         if filter.filter_type == Filter.LIST and query:
             if not isinstance(query, list):
                 query = query.split(',')
