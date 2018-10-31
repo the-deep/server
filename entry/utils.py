@@ -2,6 +2,8 @@ from entry.models import Attribute
 from gallery.models import File
 from django.urls import reverse
 from utils.image import decode_base64_if_possible
+
+from .widgets.utils import set_filter_data, set_export_data
 from .widgets.store import widget_store
 
 
@@ -15,8 +17,29 @@ def update_entry_attribute(attribute):
     widget_module = widget_store.get(widget.widget_id)
     if widget_module:
         widget_data = widget.properties and widget.properties.get('data')
-        widget_module.update_attribute(entry, widget,
-                                       data, widget_data or {})
+        update_info = widget_module.update_attribute(
+            widget,
+            data,
+            widget_data or {},
+        )
+
+        filter_data_list = update_info.get('filter_data')
+        export_data = update_info.get('export_data')
+
+        if filter_data_list:
+            for filter_data in filter_data_list:
+                set_filter_data(
+                    entry,
+                    widget,
+                    **filter_data,
+                )
+
+        if export_data:
+            set_export_data(
+                entry,
+                widget,
+                **export_data,
+            )
 
 
 def update_attributes():

@@ -1,7 +1,4 @@
-from .utils import set_filter_data, set_export_data
-
-
-def update_attribute(entry, widget, data, widget_data):
+def update_attribute(widget, data, widget_data):
     data = (data or {}).get('value', {})
     dimensions = widget_data.get('dimensions', [])
     sectors = widget_data.get('sectors', [])
@@ -67,28 +64,27 @@ def update_attribute(entry, widget, data, widget_data):
         if dim_exists:
             filter1_values.append(key)
 
-    set_filter_data(
-        entry,
-        widget,
-        key='{}-dimensions'.format(widget.key),
-        values=filter1_values,
-    )
-    set_filter_data(
-        entry,
-        widget,
-        key='{}-sectors'.format(widget.key),
-        values=filter2_values,
-    )
-    set_export_data(
-        entry,
-        widget,
-        {
-            'excel': {
-                'type': 'lists',
-                'values': excel_values,
+    return {
+        'filter_data': [
+            {
+                'key': '{}-dimensions'.format(widget.key),
+                'values': filter1_values,
             },
-            'report': {
-                'keys': report_values,
+            {
+                'key': '{}-sectors'.format(widget.key),
+                'values': filter2_values,
             },
-        },
-    )
+        ],
+
+        'export_data': {
+            'data': {
+                'excel': {
+                    'type': 'lists',
+                    'values': excel_values,
+                },
+                'report': {
+                    'keys': report_values,
+                },
+            },
+        }
+    }
