@@ -246,6 +246,37 @@ class ProjectApiTest(TestCase):
 
         self.assertEqual(response.data['count'], 0)
 
+    def test_project_of_user(self):
+        test_user = self.create(User)
+
+        url = '/api/v1/projects/member-of/?user={}'.format(test_user.id)
+        self.authenticate()
+
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        self.assertEqual(response.data['count'], 0)
+
+        url = '/api/v1/projects/member-of/'
+        # authenticate test_user
+        self.authenticate(test_user)
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        self.assertEqual(response.data['count'], 0)
+
+        # Create another project and add test_user to the project
+        project1 = self.create(Project, role=self.admin_role)
+        project1.add_member(test_user)
+
+        # authenticate test_user
+        self.authenticate(test_user)
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], project1.id)
+
     def test_add_member(self):
         project = self.create(Project, role=self.admin_role)
         test_user = self.create(User)
