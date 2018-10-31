@@ -281,6 +281,22 @@ class ProjectApiTest(TestCase):
         self.assert_400(response)
         assert 'errors' in response.data
 
+    def test_add_member_duplicate(self):
+        project = self.create(Project, role=self.admin_role)
+        test_user = self.create(User)
+        project.add_member(test_user)
+
+        url = '/api/v1/project-memberships/'
+        data = {
+            'member': test_user.pk,
+            'project': project.pk,
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        assert 'errors' in response.data
+
     def test_options(self):
         url = '/api/v1/project-options/'
 
