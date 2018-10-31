@@ -1,15 +1,6 @@
-from .utils import set_filter_data, set_export_data
-
-
-def update_attribute(entry, widget, data, widget_data):
+def update_attribute(widget, data, widget_data):
     value = data.get('value')
     value = [value] if value is not None else []
-
-    set_filter_data(
-        entry,
-        widget,
-        values=value,
-    )
 
     options = widget_data.get('options', [])
     label_list = []
@@ -20,13 +11,17 @@ def update_attribute(entry, widget, data, widget_data):
         ), None)
         label_list.append(option.get('label') or 'Unknown')
 
-    set_export_data(
-        entry,
-        widget,
-        {
-            'excel': {
-                'type': 'list',
-                'value': label_list,
+    return {
+        'filter_data': [{
+            'values': value,
+        }],
+
+        'exportable': {
+            'data': {
+                'excel': {
+                    'type': 'list',
+                    'value': label_list,
+                },
             },
         },
-    )
+    }

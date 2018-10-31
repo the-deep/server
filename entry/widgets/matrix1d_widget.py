@@ -1,7 +1,4 @@
-from .utils import set_filter_data, set_export_data
-
-
-def update_attribute(entry, widget, data, widget_data):
+def update_attribute(widget, data, widget_data):
     filter_values = []
     excel_values = []
     report_values = []
@@ -36,22 +33,21 @@ def update_attribute(entry, widget, data, widget_data):
         if row_exists:
             filter_values.append(row_key)
 
-    set_filter_data(
-        entry,
-        widget,
-        values=filter_values,
-    )
+    return {
+        'filter_data': [{
+            'values': filter_values,
+        }],
 
-    set_export_data(
-        entry,
-        widget,
-        {
-            'excel': {
-                'type': 'lists',
-                'values': excel_values,
-            },
-            'report': {
-                'keys': report_values,
-            },
+        'export_data': {
+            'data': {
+                'excel': {
+                    'type': 'lists',
+                    'values': excel_values,
+                },
+                'report': {
+                    'keys': report_values,
+                },
+            }
         },
-    )
+
+    }

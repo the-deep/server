@@ -1,7 +1,4 @@
-from .utils import set_export_data
-
-
-def update_attribute(entry, widget, data, widget_data):
+def update_attribute(widget, data, widget_data):
     data = data or {}
     row_headers = widget_data.get('row_headers', [])
     column_headers = widget_data.get('column_headers', [])
@@ -22,12 +19,13 @@ def update_attribute(entry, widget, data, widget_data):
         is_same = len(row_values) == 0 or len(set(row_values)) == 1
         excel_values.append('True' if is_same else 'False')
 
-    set_export_data(
-        entry,
-        widget,
-        {
-            'excel': {
-                'values': excel_values,
-            },
-        },
-    )
+    return {
+        'filter_data': [],
+        'export_data': {
+            'data': {
+                'excel': {
+                    'values': excel_values,
+                },
+            }
+        }
+    }

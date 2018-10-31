@@ -1,7 +1,4 @@
-from .utils import set_filter_data, set_export_data
-
-
-def update_attribute(entry, widget, data, widget_data):
+def update_attribute(widget, data, widget_data):
     selected_scale = data.get('value')
 
     scale_units = widget_data.get('scale_units', [])
@@ -10,18 +7,16 @@ def update_attribute(entry, widget, data, widget_data):
         if s['key'] == selected_scale
     ), None)
 
-    set_filter_data(
-        entry,
-        widget,
-        values=[selected_scale],
-    )
+    return {
+        'filter_data': [{
+            'values': [selected_scale],
+        }],
 
-    set_export_data(
-        entry,
-        widget,
-        {
-            'excel': {
-                'value': scale.get('title') if scale else '',
+        'exportable': {
+            'data': {
+                'excel': {
+                    'value': scale.get('title') if scale else '',
+                },
             },
         },
-    )
+    }
