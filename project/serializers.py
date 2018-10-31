@@ -79,9 +79,6 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
         model = ProjectMembership
         fields = '__all__'
 
-    def get_unique_together_validators(self):
-        return []
-
     def get_member_status(self, membership):
         if membership.role.is_creator_role:
             return 'admin'
