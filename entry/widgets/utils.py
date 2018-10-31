@@ -2,8 +2,12 @@ from analysis_framework.models import Filter, Exportable
 from entry.models import FilterData, ExportData
 
 
-def set_filter_data(entry, widget, key=None,
-                    number=None, values=None):
+def set_filter_data(
+        entry, widget, key=None,
+        number=None,
+        from_number=None, to_number=None,
+        values=None,
+):
     key = key or widget.key
     filter = Filter.objects.filter(
         widget_key=widget.key,
@@ -16,6 +20,8 @@ def set_filter_data(entry, widget, key=None,
         defaults={
             'number': number,
             'values': values,
+            'from_number': from_number,
+            'to_number': to_number,
         },
     )
     return f
