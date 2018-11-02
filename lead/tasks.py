@@ -127,6 +127,8 @@ def _extract_from_lead_core(lead_id):
 
         # Make sure there isn't existing lead preview
         LeadPreview.objects.filter(lead=lead).delete()
+        LeadPreviewImage.objects.filter(lead=lead).delete()
+
         # and create new one
         LeadPreview.objects.create(
             lead=lead,
