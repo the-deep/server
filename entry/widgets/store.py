@@ -1,7 +1,10 @@
 from . import (
     date_widget,
+    date_range_widget,
+    time_widget,
     number_widget,
     scale_widget,
+    select_widget,
     multiselect_widget,
     geo_widget,
     organigram_widget,
@@ -13,8 +16,11 @@ from . import (
 
 widget_store = {
     'dateWidget': date_widget,
+    'dateRangeWidget': date_range_widget,
+    'timeWidget': time_widget,
     'numberWidget': number_widget,
     'scaleWidget': scale_widget,
+    'selectWidget': select_widget,
     'multiselectWidget': multiselect_widget,
     'geoWidget': geo_widget,
     'organigramWidget': organigram_widget,
