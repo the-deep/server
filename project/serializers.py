@@ -33,6 +33,7 @@ class ProjectRoleSerializer(RemoveNullFieldsMixin,
     entry_permissions = serializers.SerializerMethodField()
     setup_permissions = serializers.SerializerMethodField()
     export_permissions = serializers.SerializerMethodField()
+    assessment_permissions = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectRole
@@ -64,6 +65,13 @@ class ProjectRoleSerializer(RemoveNullFieldsMixin,
             k
             for k, v in PROJECT_PERMISSIONS['export'].items()
             if roleobj.export_permissions & v != 0
+        ]
+
+    def get_assessment_permissions(self, roleobj):
+        return [
+            k
+            for k, v in PROJECT_PERMISSIONS['assessment'].items()
+            if roleobj.assessment_permissions & v != 0
         ]
 
 
