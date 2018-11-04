@@ -454,6 +454,27 @@ class ProjectApiTest(TestCase):
         response = self.client.delete(url)
         self.assert_403(response)
 
+    def test_get_project_role(self):
+        project = self.create(Project, role=self.admin_role)
+        user = self.create(User)
+        project.add_member(user)
+
+        url = '/api/v1/project-roles/'
+
+        self.authenticate()
+
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        data = response.json()
+        assert "results" in data
+        for x in data["results"]:
+            assert "setupPermissions" in x
+            assert "assessmentPermissions" in x
+            assert "entryPermissions" in x
+            assert "leadPermissions" in x
+            assert "exportPermissions" in x
+
     def test_can_modify(self):
         project = self.create(Project, role=self.admin_role)
         test_user = self.create(User)
