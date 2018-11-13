@@ -79,6 +79,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
         user = self.request.GET.get('user', request.user)
         projects = Project.get_for_member(user)
 
+        user_group = request.GET.get('user_group')
+        if user_group:
+            user_group = user_group.split(',')
+            projects = projects.filter(user_groups__id__in=user_group)
+
         self.page = self.paginate_queryset(projects)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)

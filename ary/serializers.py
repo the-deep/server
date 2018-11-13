@@ -49,14 +49,16 @@ class LeadAssessmentSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = Assessment
         fields = ('__all__')
-        read_only_fields = ('lead', 'lead_group')
+        read_only_fields = ('lead', 'lead_group', 'project')
 
     def create(self, validated_data):
         # If this assessment is being created for the first time,
         # we want to set lead to the one which has its id in the url
+        lead = get_object_or_404(Lead, pk=self.initial_data['lead'])
         assessment = super().create({
             **validated_data,
-            'lead': get_object_or_404(Lead, pk=self.initial_data['lead']),
+            'lead': lead,
+            'project': lead.project,
         })
         assessment.save()
         return assessment
