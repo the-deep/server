@@ -64,7 +64,6 @@ class ExportTriggerView(views.APIView):
             )
 
         # Check permission
-        print(project)
         if project:
             role = project.get_role(request.user)
             if not role.can_create_export:
