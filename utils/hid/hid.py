@@ -37,8 +37,9 @@ class HumanitarianId:
             return
 
         url = config.auth_uri + '/api/v2/user/' + self.user_id
-        r = requests.get(url,
-                         headers={'Authorization': 'Bearer ' + self.token})
+        r = requests.get(
+            url, headers={'Authorization': 'Bearer ' + self.token},
+        )
         # Verify User
         if r.status_code == 200:
             self.data = r.json()
@@ -102,10 +103,10 @@ class HumanitarianId:
 
     def get_token_and_user_id(self, access_token):
         if config.client_id:
-            url = config.auth_uri + '/account.json?' \
-                'access_token=' + access_token
-
-            r = requests.get(url)
+            url = config.auth_uri + '/account.json'
+            r = requests.post(
+                url, headers={'Authorization': 'Bearer ' + access_token},
+            )
             if r.status_code == 200:
                 data = r.json()
                 return access_token, data['_id']
