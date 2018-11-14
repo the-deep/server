@@ -33,6 +33,7 @@ class ProjectRoleSerializer(RemoveNullFieldsMixin,
     entry_permissions = serializers.SerializerMethodField()
     setup_permissions = serializers.SerializerMethodField()
     export_permissions = serializers.SerializerMethodField()
+    assessment_permissions = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectRole
@@ -66,6 +67,13 @@ class ProjectRoleSerializer(RemoveNullFieldsMixin,
             if roleobj.export_permissions & v != 0
         ]
 
+    def get_assessment_permissions(self, roleobj):
+        return [
+            k
+            for k, v in PROJECT_PERMISSIONS['assessment'].items()
+            if roleobj.assessment_permissions & v != 0
+        ]
+
 
 class ProjectMembershipSerializer(RemoveNullFieldsMixin,
                                   DynamicFieldsMixin,
@@ -78,9 +86,6 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = ProjectMembership
         fields = '__all__'
-
-    def get_unique_together_validators(self):
-        return []
 
     def get_member_status(self, membership):
         if membership.role.is_creator_role:

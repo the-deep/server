@@ -182,10 +182,7 @@ class Project(UserResource):
 
     @staticmethod
     def get_query_for_member(user):
-        return (
-            models.Q(members=user) |
-            models.Q(user_groups__members=user)
-        )
+        return models.Q(members=user)
 
     @staticmethod
     def get_modifiable_for(user):
