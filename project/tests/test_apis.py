@@ -246,6 +246,37 @@ class ProjectApiTest(TestCase):
 
         self.assertEqual(response.data['count'], 0)
 
+    def test_project_of_user(self):
+        test_user = self.create(User)
+
+        url = '/api/v1/projects/member-of/?user={}'.format(test_user.id)
+        self.authenticate()
+
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        self.assertEqual(response.data['count'], 0)
+
+        url = '/api/v1/projects/member-of/'
+        # authenticate test_user
+        self.authenticate(test_user)
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        self.assertEqual(response.data['count'], 0)
+
+        # Create another project and add test_user to the project
+        project1 = self.create(Project, role=self.admin_role)
+        project1.add_member(test_user)
+
+        # authenticate test_user
+        self.authenticate(test_user)
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], project1.id)
+
     def test_add_member(self):
         project = self.create(Project, role=self.admin_role)
         test_user = self.create(User)
@@ -274,6 +305,22 @@ class ProjectApiTest(TestCase):
             'member': test_user.pk,
             'project': project.pk,
             'role': 9999
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        assert 'errors' in response.data
+
+    def test_add_member_duplicate(self):
+        project = self.create(Project, role=self.admin_role)
+        test_user = self.create(User)
+        project.add_member(test_user)
+
+        url = '/api/v1/project-memberships/'
+        data = {
+            'member': test_user.pk,
+            'project': project.pk,
         }
 
         self.authenticate()
@@ -406,6 +453,27 @@ class ProjectApiTest(TestCase):
 
         response = self.client.delete(url)
         self.assert_403(response)
+
+    def test_get_project_role(self):
+        project = self.create(Project, role=self.admin_role)
+        user = self.create(User)
+        project.add_member(user)
+
+        url = '/api/v1/project-roles/'
+
+        self.authenticate()
+
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        data = response.json()
+        assert "results" in data
+        for x in data["results"]:
+            assert "setupPermissions" in x
+            assert "assessmentPermissions" in x
+            assert "entryPermissions" in x
+            assert "leadPermissions" in x
+            assert "exportPermissions" in x
 
     def test_can_modify(self):
         project = self.create(Project, role=self.admin_role)

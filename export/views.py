@@ -63,6 +63,12 @@ class ExportTriggerView(views.APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Check permission
+        if project:
+            role = project.get_role(request.user)
+            if not role.can_create_export:
+                return response.Response({}, status=status.HTTP_403_FORBIDDEN)
+
         export = Export.objects.create(
             title='tmp',
             exported_by=request.user,

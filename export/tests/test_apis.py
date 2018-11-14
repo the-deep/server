@@ -1,4 +1,6 @@
 from deep.tests import TestCase
+from user.models import User
+from project.models import Project
 from export.models import Export
 
 
@@ -15,10 +17,40 @@ class ExportTests(TestCase):
         self.assertTrue(response.data['pending'])
         self.assertEqual(response.data['exported_by'], self.user.id)
 
-    def test_trigger_api(self):
+    def test_trigger_api_without_export_permission(self):
+        # Create project and modify role to have no export permission
+        project = self.create(Project)
+        project.add_member(self.user)
+        role = project.get_role(self.user)
+        assert role is not None
+        role.export_permissions = 0
+        role.save()
+
+        url = '/api/v1/export-trigger/'
+        data = {
+            'filters': [
+                ['project', project.pk],
+            ],
+        }
+
+        self.authenticate(self.user)
+        response = self.client.post(url, data)
+        self.assert_403(response)
+
+        assert Export.objects.count() == 0
+
+    def test_trigger_api_with_export_permission(self):
         url = '/api/v1/export-trigger/'
 
-        self.authenticate()
+        # Create project and modify role to have no export permission
+        project = self.create(Project)
+        project.add_member(self.user)
+        role = project.get_role(self.user)
+        assert role is not None
+        role.export_permissions = 1
+        role.save()
+
+        self.authenticate(self.user)
         response = self.client.post(url)
         self.assert_200(response)
 
