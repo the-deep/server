@@ -19,7 +19,7 @@ def update_attribute(widget, data, widget_data):
             'number': number,
         }],
 
-        'exportable': {
+        'export_data': {
             'data': {
                 'excel': {
                     'value': time and time['time_str'],

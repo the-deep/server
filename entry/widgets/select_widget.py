@@ -16,7 +16,7 @@ def update_attribute(widget, data, widget_data):
             'values': value,
         }],
 
-        'exportable': {
+        'export_data': {
             'data': {
                 'excel': {
                     'type': 'list',
