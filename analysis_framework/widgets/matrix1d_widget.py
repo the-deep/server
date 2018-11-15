@@ -39,7 +39,7 @@ def get_exportable(widget, data):
     report = {
         'levels': [
             {
-                'id': row.get('title'),
+                'id': row.get('key'),
                 'title': row.get('title'),
                 'sublevels': [
                     {

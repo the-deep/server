@@ -12,7 +12,7 @@ def update_attribute(widget, data, widget_data):
             'values': [selected_scale],
         }],
 
-        'exportable': {
+        'export_data': {
             'data': {
                 'excel': {
                     'value': scale.get('title') if scale else '',
