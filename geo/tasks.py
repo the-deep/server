@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 @shared_task
 def add(x, y):
     """
-    Simple task for sole purpose testing celery
+    Simple task for sole purpose of testing celery
     Used in geo.tests.test_celery module
     """
     return x + y
@@ -141,6 +141,11 @@ def _generate_geo_areas(admin_level, parent):
             ).exclude(id__in=added_areas).delete()
 
     admin_level.stale_geo_areas = False
+    # The following cache calculation is too much memory consuming.
+    # So instead of doing it with lot of other intesive tasks in this
+    # process, leave it to be done for the first time when the
+    # admin level get request is called.
+    # admin_level.calc_cache(False)
     admin_level.save()
 
 
@@ -187,6 +192,8 @@ def _load_geo_areas(region_id):
             None,
             completed_levels,
         )
+
+        region.calc_cache()
 
     return True
 
