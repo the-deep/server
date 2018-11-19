@@ -92,7 +92,6 @@ class AssessmentTests(TestCase):
         data = {
             'metadata': {'test_meta': 'Test 1'},
             'methodology': {'test_methodology': 'Test 2'},
-            'project': lead.project.pk
         }
 
         self.authenticate()
