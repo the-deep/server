@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'django.contrib.gis',
+    'django.contrib.postgres',
 
     'autofixture',
     'channels',
@@ -80,6 +81,8 @@ INSTALLED_APPS = [
     'user',
     'user_group',
     'user_resource',
+    'tabular',
+    'commons',
 
     'bulk_data_migration',
 ]
