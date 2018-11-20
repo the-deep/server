@@ -43,6 +43,7 @@ class Profile(models.Model):
     email_opt_outs = ArrayField(
         models.CharField(max_length=128, choices=EMAIL_CONDITIONS),
         default=[],
+        blank=True,
     )
 
     def __str__(self):
