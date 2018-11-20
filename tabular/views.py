@@ -79,8 +79,9 @@ class TabularGeoProcessTriggerView(views.APIView):
         if not geodata:
             geodata = Geodata.objects.create(field=field)
 
-        if geodata.status == Geodata.SUCCESS:
-            return response.Response({'geodata_id': geodata.pk})
+        # Always force trigger when requested
+        # if geodata.status == Geodata.SUCCESS:
+        #     return response.Response({'geodata_id': geodata.pk})
 
         if not settings.TESTING:
             transaction.on_commit(
