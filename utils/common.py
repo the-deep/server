@@ -27,7 +27,7 @@ def write_file(r, fp):
 
 def get_file_from_url(url):
     file = tempfile.NamedTemporaryFile(dir=settings.BASE_DIR)
-    response = requests.get(url, stream=True)
+    response = requests.get(url, stream=True, headers=DEFAULT_HEADERS)
     response.raise_for_status()
     write_file(response, file)
     file.seek(0)
