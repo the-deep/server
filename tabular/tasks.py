@@ -7,7 +7,7 @@ from redis_store import redis
 from django.db import transaction
 from django.contrib.postgres import search
 
-from geo.models import GeoArea
+from geo.models import models, GeoArea
 
 from .models import Book, Field, Geodata
 from .extractor import csv, xlsx
@@ -138,12 +138,27 @@ def _tabular_meta_extract_geo(geodata):
         admin_level__region__project=project
     )
     geodata_data = []
+
+    is_code = field.get_option('geo_type', 'name') == 'code'
+    admin_level = field.get_option('admin_level')
+    if admin_level:
+        project_geoareas = project_geoareas.filter(
+            admin_level__level=admin_level
+        )
+
     for row in geodata.field.sheet.data:
         similar_areas = []
         query = row.get(str(field.pk))
-        geoareas = project_geoareas.annotate(
-            similarity=search.TrigramSimilarity('title', query),
-        ).filter(similarity__gt=0.2).order_by('-similarity')
+
+        if is_code:
+            geoareas = project_geoareas.filter(code=query).annotate(
+                similarity=models.Value(1, models.FloatField()),
+            )
+        else:
+            geoareas = project_geoareas.annotate(
+                similarity=search.TrigramSimilarity('title', query),
+            ).filter(similarity__gt=0.2).order_by('-similarity')
+
         for geoarea in geoareas:
             similar_areas.append({
                 'id': geoarea.pk,
