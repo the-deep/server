@@ -79,7 +79,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
         user = self.request.GET.get('user', request.user)
         projects = Project.get_for_member(user)
 
-        # FIXME
         user_group = request.GET.get('user_group')
         if user_group:
             user_group = user_group.split(',')

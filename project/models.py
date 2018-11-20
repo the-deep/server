@@ -176,7 +176,8 @@ class Project(UserResource):
 
     @staticmethod
     def get_for_member(user):
-        # FIXME
+        # FIXME: get viewable projects
+        # Also, pick only required fields instead of annotating everytime.
         return Project.get_annotated().filter(
             Project.get_query_for_member(user)
         ).distinct()
