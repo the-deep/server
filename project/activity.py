@@ -12,7 +12,10 @@ def get_diff(v1, v2):
 
     def calc_simple_diff(key):
         if p1.get(key) != p2.get(key):
-            diff[key] = [p1.get(key), p2.get(key)]
+            diff[key] = {
+                'new': p1.get(key),
+                'old': p2.get(key),
+            }
 
     def calc_model_diff(key, model):
         id1 = p1.get(key)
@@ -21,10 +24,10 @@ def get_diff(v1, v2):
             return
         m1 = id1 and model.objects.filter(id=id1).first()
         m2 = id2 and model.objects.filter(id=id2).first()
-        diff[key] = [
-            m1 and {'id': m1.id, 'title': m1.title},
-            m2 and {'id': m2.id, 'title': m2.title},
-        ]
+        diff[key] = {
+            'new': m1 and {'id': m1.id, 'title': m1.title},
+            'old': m2 and {'id': m2.id, 'title': m2.title},
+        }
 
     calc_simple_diff('title')
     calc_simple_diff('description')
@@ -37,7 +40,10 @@ def get_diff(v1, v2):
         return {
             'key': random_key(),
             'fields': diff,
-            'user': v1.revision.user.profile.get_display_name(),
+            'user': {
+                'name': v1.revision.user.profile.get_display_name(),
+                'id': v1.revision.user.id,
+            },
             'timestamp': v1.revision.date_created,
         }
     return None
