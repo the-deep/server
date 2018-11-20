@@ -63,7 +63,35 @@ class ProjectApiTest(TestCase):
         self.assertEqual(membership.member.pk, self.user.pk)
         self.assertEqual(membership.role, self.admin_role)
 
-    def test_update_project_add_ug(self):
+    def test_project_get_with_user_group_field(self):
+        # TODO: can make this more generic for other fields as well
+        project = self.create(
+            Project,
+            user_groups=[],
+            title='TestProject',
+            role=self.admin_role
+        )
+        # Add usergroup
+        ProjectUserGroupMembership.objects.create(
+            usergroup=self.ug1,
+            project=project
+        )
+        # Now get project and validate fields
+        url = '/api/v1/projects/{}/'.format(project.pk)
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        project = response.json()
+        assert 'id' in project
+        assert 'userGroups' in project
+        assert len(project['userGroups']) > 0
+        for ug in project['userGroups']:
+            assert isinstance(ug, dict)
+            assert 'id' in ug
+            assert 'title' in ug
+
+    def test_update_project_add_user_group(self):
         project = self.create(
             Project,
             user_groups=[],
@@ -168,7 +196,6 @@ class ProjectApiTest(TestCase):
             user_groups=[],
             role=self.admin_role
         )
-
         # Add usergroups
         project_ug1 = ProjectUserGroupMembership.objects.create(
             usergroup=self.ug1,
