@@ -112,6 +112,10 @@ class Field(models.Model):
     def __str__(self):
         return self.title
 
+    def get_option(self, key, default_value=None):
+        options = self.options or {}
+        return options.get(key, default_value)
+
     class Meta:
         ordering = ['ordering']
 
