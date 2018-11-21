@@ -14,7 +14,11 @@ class CategoryEditor(UserResource):
         """
         Clone category editor
         """
-        title = overrides.get('title', '{} (cloned)'.format(self.title))
+        title = overrides.get('title', '{} (cloned)'.format(
+            # Allowing addition of ' (cloned)' to charfield with maxlen 255
+            # by stripping off extra chars
+            self.title[:230]
+        ))
         category_editor = CategoryEditor(
             title=title,
             data=self.data,
