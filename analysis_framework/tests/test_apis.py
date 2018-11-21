@@ -43,8 +43,9 @@ class AnalysisFrameworkTests(TestCase):
         self.assert_201(response)
 
         self.assertNotEqual(response.data['id'], analysis_framework.id)
-        self.assertEqual(response.data['title'],
-                         analysis_framework.title + ' (cloned)')
+        self.assertEqual(
+            response.data['title'],
+            analysis_framework.title[:230] + ' (cloned)')
 
         project = Project.objects.get(id=project.id)
         self.assertNotEqual(project.analysis_framework.id,
