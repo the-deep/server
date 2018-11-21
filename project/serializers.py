@@ -16,6 +16,7 @@ from project.permissions import PROJECT_PERMISSIONS
 
 from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
+from user_group.serializers import SimpleUserGroupSerializer
 from user_resource.serializers import UserResourceSerializer
 
 
@@ -154,6 +155,8 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         source='category_editor.title',
         read_only=True,
     )
+
+    user_groups = SimpleUserGroupSerializer(many=True, read_only=True)
 
     number_of_users = serializers.IntegerField(
         source='get_number_of_users',

@@ -59,15 +59,18 @@ class Run:
         return self
 
     def add_image(self, image):
-        if image and len(image) > 0:
-            fimage = tempfile.NamedTemporaryFile()
-            if re.search(r'http[s]?://', image):
-                image = requests.get(image, stream=True)
-                _write_file(image, fimage)
-            else:
-                image = base64.b64decode(image.split(',')[1])
-                fimage.write(image)
-            self.ref.add_picture(fimage)
+        try:
+            if image and len(image) > 0:
+                fimage = tempfile.NamedTemporaryFile()
+                if re.search(r'http[s]?://', image):
+                    image = requests.get(image, stream=True, timeout=2)
+                    _write_file(image, fimage)
+                else:
+                    image = base64.b64decode(image.split(',')[1])
+                    fimage.write(image)
+                self.ref.add_picture(fimage)
+        except Exception:
+            self.add_text('Invalid Image')
 
 
 class Paragraph:
@@ -149,31 +152,41 @@ class Document:
         return Paragraph(self.doc.add_paragraph(xstr(text)))
 
     def add_image(self, image):
-        if image and len(image):
-            sec = self.doc.sections[-1]
-            try:
-                cols = int(sec._sectPr.xpath('./w:cols')[0].get(qn('w:num')))
-                width = ((sec.page_width / cols) -
-                         (sec.right_margin + sec.left_margin))
-            except Exception:
-                width = (sec.page_width - (sec.right_margin + sec.left_margin))
+        try:
+            if image and len(image):
+                sec = self.doc.sections[-1]
+                try:
+                    cols = int(
+                        sec._sectPr.xpath('./w:cols')[0].get(qn('w:num'))
+                    )
+                    width = (
+                        (sec.page_width / cols) -
+                        (sec.right_margin + sec.left_margin)
+                    )
+                except Exception:
+                    width = (
+                        sec.page_width - (sec.right_margin + sec.left_margin)
+                    )
 
-            fimage = tempfile.NamedTemporaryFile()
-            if re.search(r'http[s]?://', image):
-                image = requests.get(image, stream=True)
-                _write_file(image, fimage)
-            else:
-                image = base64.b64decode(image.split(',')[1])
-                fimage.write(image)
+                fimage = tempfile.NamedTemporaryFile()
+                if re.search(r'http[s]?://', image):
+                    image = requests.get(image, stream=True, timeout=2)
+                    _write_file(image, fimage)
+                else:
+                    image = base64.b64decode(image.split(',')[1])
+                    fimage.write(image)
 
-            image_width, _ = Image.open(fimage).size
-            image_width = Pt(image_width)
+                image_width, _ = Image.open(fimage).size
+                image_width = Pt(image_width)
 
-            if image_width < width:
-                self.doc.add_picture(fimage)
-            else:
-                self.doc.add_picture(fimage, width=width)
-        return self
+                if image_width < width:
+                    self.doc.add_picture(fimage)
+                else:
+                    self.doc.add_picture(fimage, width=width)
+            return self
+        except Exception:
+            self.doc.add_paragraph('Invalid Image')
+            return self
 
     def add_heading(self, text, level):
         self.doc.add_heading(text, level=level)
