@@ -1,52 +1,52 @@
+ 
+
+ 
 Consultancy Announcement: On-Call Service Provider (Web portal Developer) 
 Date of Announcement: October 28, 2016 
 Duration: Initial 2 months, thereafter estimated a day per week (12 Months) 
 Location: Sanepa Chowk, Kathmandu 
+                               
 
-1. Summary 
+ 
+
+1.  Summary 
+
+ 
 
 We are currently seeking a service provider Web portal developer to support surveying and 
 mapping efforts of Habitat for Humanity’s construction initiatives in Nepal. The agency will 
 work closely with the existing technical team while the infrastructure is being created to learn 
 its technical specifications and any best practices.  
-
-Moreover, the workload will entail basic CRUD, visualization and web maps development 
-within one month as a first phase. The process for automation shall be developed in the 
+ 
+Moreover,  the  workload  will  entail  basic  CRUD,  visualization  and  web  maps  development 
+within  one  month  as  a  first  phase.  The  process  for  automation  shall  be  developed  in  the 
 second phase which will contain one month of development phase and training. The progress 
 should be updated every week in the form of demonstration. Regarding payment, it can be 
 discussed further.   
-
-Once the environment is functional and stable, the agency will assume administrative 
+ 
+Once  the  environment  is  functional  and  stable,  the  agency  will  assume  administrative 
 responsibilities including planned maintenance and ad-hoc technical support. The stack used 
 in this project will be hosted in Amazon Web Services and uses EC2 servers. 
+ 
+ 
+2.  Background 
 
-2. Background 
-
-Following last year’s earthquakes, Habitat for Humanity Nepal mobilized volunteers to 
-remove rubble, distribute temporary shelter kits and water backpacks in the worst-hit 
+Following  last  year’s  earthquakes,  Habitat  for  Humanity  Nepal  mobilized  volunteers  to 
+remove  rubble,  distribute  temporary  shelter  kits  and  water  backpacks  in  the  worst-hit 
 districts. Later in the reconstruction phase, Habitat Nepal completed safety assessments of 
 more than 16,000 damaged houses, and with the onset of winter, over 2,400 winterization 
 kits were distributed to help survivors weather the cold. 
-
-Habitat Nepal is now looking forward to support families in rebuilding through an owner -
+ 
+Habitat  Nepal  is now  looking  forward  to  support  families  in rebuilding  through  an  owner-
 driven approach in both disaster-affected and non-affected areas. Further, Habitat Nepal has 
-recently launched a Geographic Information System (GIS) mapping initiative to support 
+recently  launched  a  Geographic  Information  System  (GIS)  mapping  initiative  to  support 
 reconstruction efforts. The geographic data that the system yields will enable Habitat Nepal 
 to identify and monitor the construction progress and other program activities for families 
 who will rebuild their homes under an owner-driven approach.  
 
  
- 
-                               
- 
- 
- 
- 
- 
- 
- 
- 
-3. Technical background 
+
+3.  Technical background 
 
 The open map kit server is already set up in AWS EC2 instance and it is used for fetching 
 data to database from surveying. The baseline surveying is already completed and the 
@@ -54,37 +54,41 @@ data are in the server itself. It is uploaded to server from android application
 kit) and the process will be done on regular basis during M & E phases. The next phase of 
 task to complete is to develop a web portal for data presentation and management. The 
 web portal should contain web maps, visual graphics and CRUD table.  
-
+ 
 The web portal to be designed should also contain drag and drop elements- if new project 
 or survey is added, the map layer, and dashboard should be updated automatically with 
 less human workout.  
 
-4. Objectives for the role 
- Develop and administer web portal services 
- Ensure uptime and proper functionality of AWS EC2 instances 
- Provide ad-hoc troubleshooting support  
- Develop scripts to automate processes as needed 
- Perform routine upgrades of web portal and Open Map Kit server software 
+4.  Objectives for the role 
+  Develop and administer web portal services 
+  Ensure uptime and proper functionality of AWS EC2 instances 
+  Provide ad-hoc troubleshooting support  
+  Develop scripts to automate processes as needed 
+  Perform routine upgrades of web portal and Open Map Kit server software 
 
-5. Qualifications, professional experience and skills 
- Experience working with Amazon Web Services or similar environments (Heroku etc .) 
- Experience in Python frameworks or PHP framework and JavaScript mapping libraries 
+ 
+
+ 
+
+ 
+
+5.  Qualifications, professional experience and skills 
+  Experience working with Amazon Web Services or similar environments (Heroku etc.) 
+  Experience in Python frameworks or PHP framework and JavaScript mapping libraries 
+
 e.g. Leaflet 1.0.  
- Experience of SQL and database administration 
- Knowledge in Python, in particular process automation  
- Strong ability to understand technical requirements and ad-hoc technical support 
 
-How to Apply: Interested agencies are requested to submit a Letter of Interest , with updated 
+  Experience of SQL and database administration 
+  Knowledge in Python, in particular process automation  
+  Strong ability to understand technical requirements and ad-hoc technical support 
+
+ 
+
+How to Apply: Interested agencies are requested to submit a Letter of Interest, with updated 
 organization profile, technical proposal and a financial proposal with significant breakdown no 
 later than, 5.00 PM, November 9, 2016 to HFH Nepal by e-mail: vacancy@habitatnepal.org 
-
+ 
 Only shortlisted candidates will be called for interviews. 
+ 
 
- 
- 
- 
- 
- 
- 
- 
 
