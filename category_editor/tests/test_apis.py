@@ -40,7 +40,7 @@ class CategoryEditorTests(TestCase):
 
         self.assertNotEqual(response.data['id'], category_editor.id)
         self.assertEqual(response.data['title'],
-                         category_editor.title + ' (cloned)')
+                         category_editor.title[:230] + ' (cloned)')
 
         project = Project.objects.get(id=project.id)
         self.assertNotEqual(project.category_editor.id,

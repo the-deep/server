@@ -62,7 +62,8 @@ class Region(UserResource):
     def clone_to_private(self, user):
         region = Region(
             code=self.code,
-            title='{} (cloned)'.format(self.title),
+            # Strip off extra chars from title to add ' (cloned)
+            title='{} (cloned)'.format(self.title[:230]),
             public=False,
             regional_groups=self.regional_groups,
             key_figures=self.key_figures,
@@ -241,7 +242,8 @@ class GeoArea(models.Model):
         geo_area = GeoArea(
             admin_level=admin_level,
             parent=parent,
-            title='{} (cloned)'.format(self.title),
+            # Strip off extra chars from title to add ' (cloned)
+            title='{} (cloned)'.format(self.title[:230]),
             code=self.code,
             data=self.data
         )

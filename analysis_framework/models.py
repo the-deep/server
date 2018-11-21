@@ -30,7 +30,8 @@ class AnalysisFramework(UserResource):
         Clone analysis framework along with all widgets,
         filters and exportables
         """
-        title = overrides.get('title', '{} (cloned)'.format(self.title))
+        title = overrides.get('title', '{} (cloned)'.format(
+            self.title[:230]))  # Strip off extra chars from title
         description = overrides.get('description', '')
         analysis_framework = AnalysisFramework(
             title=title,
