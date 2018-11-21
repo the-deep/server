@@ -1,23 +1,28 @@
-from pdfminer.converter import TextConverter  # , HTMLConverter
+from io import BytesIO
+from pdfminer.converter import TextConverter
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.layout import LAParams
-from pdfminer.pdfinterp import PDFResourceManager, process_pdf
-import tempfile
+from pdfminer.pdfpage import PDFPage
 
 
 def process(doc):
     fp = doc
     fp.seek(0)
-    outfp = tempfile.TemporaryFile("w+", encoding='utf-8')
 
-    rmgr = PDFResourceManager()
-    params = LAParams()
-    device = TextConverter(rmgr, outfp, laparams=params)
-    process_pdf(rmgr, device, fp, None, 0)
-
-    fp.close()
-
-    outfp.seek(0)
-    content = outfp.read()
-    outfp.close()
-
+    with BytesIO() as retstr:
+        rsrcmgr = PDFResourceManager()
+        laparams = LAParams()
+        with TextConverter(
+                rsrcmgr, retstr, codec='utf-8', laparams=laparams,
+        ) as device:
+            interpreter = PDFPageInterpreter(rsrcmgr, device)
+            maxpages = 0
+            caching = True
+            pagenos = set()
+            for page in PDFPage.get_pages(
+                    fp, pagenos, maxpages=maxpages,
+                    caching=caching, check_extractable=True,
+            ):
+                interpreter.process_page(page)
+            content = retstr.getvalue().decode()
     return content, None
