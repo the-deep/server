@@ -329,7 +329,7 @@ class ProjectUserGroupMembership(models.Model):
     project = models.ForeignKey(Project)
     # FIXME: use user_group instead of usergroup for consistency
     usergroup = models.ForeignKey(UserGroup)
-    role = models.ForeignKey('project.ProjectMembership',
+    role = models.ForeignKey('project.ProjectRole',
                              default=get_default_role_id)
     joined_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(User, on_delete=models.CASCADE,
@@ -488,7 +488,7 @@ def refresh_project_memberships_usergroup_modified(sender, instance, **kwargs):
 
     existing_members = ProjectMembership.objects.filter(
         project=project,
-        user__groupmembership__group=user_group,
+        member__groupmembership__group=user_group,
         is_directly_added=False,
         is_role_modified=False,
     )

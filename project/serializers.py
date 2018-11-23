@@ -201,6 +201,7 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
         resource = super().update(instance, validated_data)
         if old_role != instance.role:
             resource.is_role_modified = True
+            resource.save()
         return resource
 
 
