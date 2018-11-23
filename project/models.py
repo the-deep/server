@@ -126,10 +126,6 @@ class Project(UserResource):
     def __str__(self):
         return self.title
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        # Send signal
-
     def get_all_members(self):
         return User.objects.filter(
             projectmembership__project=self
@@ -137,7 +133,7 @@ class Project(UserResource):
 
     def get_direct_members(self):
         return self.get_all_members().filter(
-            projectmembership__is_directly_added=True
+            projectmembership__linked_group__isnull=True
         )
 
     @staticmethod
@@ -222,14 +218,17 @@ class Project(UserResource):
         role = self.get_role(user)
         return role is not None and role.can_delete_setup
 
-    def add_member(self, user, role=None, added_by=None):
+    def add_member(self, user,
+                   role=None, added_by=None, linked_group=None):
         if role is None:
             role = ProjectRole.get_normal_role()
+
         return ProjectMembership.objects.create(
             member=user,
             role=role,
             project=self,
             added_by=added_by or user,
+            linked_group=linked_group,
         )
 
     def calc_status(self):
@@ -296,8 +295,8 @@ class ProjectMembership(models.Model):
     role = models.ForeignKey('project.ProjectRole',
                              default=get_default_role_id)
 
-    is_directly_added = models.BooleanField(default=False)
-    is_role_modified = models.BooleanField(default=False)
+    linked_group = models.ForeignKey(UserGroup,
+                                     default=None, null=True, blank=True)
 
     joined_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(User, on_delete=models.CASCADE,
@@ -311,6 +310,20 @@ class ProjectMembership(models.Model):
         return '{} @ {}'.format(str(self.member),
                                 self.project.title)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        group_membership = self.linked_group and \
+            ProjectUserGroupMembership.objects.filter(
+                usergroup=self.linked_group,
+                project=self.project,
+            ).first()
+        if group_membership:
+            role = group_membership.role or ProjectRole.get_normal_role()
+            if self.role != role:
+                self.role = role
+                self.save()
+
     @staticmethod
     def get_for(user):
         return ProjectMembership.objects.all()
@@ -320,6 +333,9 @@ class ProjectMembership(models.Model):
 
     def can_modify(self, user):
         return self.project.can_modify(user)
+
+    def get_user_group_options(self):
+        return self.project.user_groups.filter(members=self.member)
 
 
 class ProjectUserGroupMembership(models.Model):
@@ -387,33 +403,6 @@ class ProjectJoinRequest(models.Model):
         ordering = ('-requested_at',)
 
 
-# Whenever a member is saved, if there is a pending request to join
-# same project by same user, accept that request.
-@receiver(models.signals.post_save, sender=ProjectMembership)
-def on_membership_saved(sender, **kwargs):
-    # if kwargs.get('created'):
-    instance = kwargs.get('instance')
-    ProjectJoinRequest.objects.filter(
-        project=instance.project,
-        requested_by=instance.member,
-        status='pending',
-    ).update(
-        status='accepted',
-        responded_by=instance.added_by,
-        responded_at=instance.joined_at,
-    )
-
-
-# Whenever a project status value is changed, update all projects' statuses
-@receiver(models.signals.post_save, sender=ProjectStatus)
-@receiver(models.signals.post_delete, sender=ProjectStatus)
-@receiver(models.signals.post_save, sender=ProjectStatusCondition)
-def on_status_updated(sender, **kwargs):
-    with transaction.atomic():
-        for project in Project.objects.all():
-            project.update_status()
-
-
 class ProjectRole(models.Model):
     """
     Roles for Project
@@ -478,53 +467,65 @@ class ProjectRole(models.Model):
 
 @receiver(models.signals.post_save, sender=ProjectUserGroupMembership)
 def refresh_project_memberships_usergroup_modified(sender, instance, **kwargs):
-    """
-    Update project memberships when a user group is saved (update/created)
-    @instance: Project instance
-    NOTE: sent after project update/created
-    """
     project = instance.project
     user_group = instance.usergroup
 
     existing_members = ProjectMembership.objects.filter(
         project=project,
-        member__groupmembership__group=user_group,
-        is_directly_added=False,
-        is_role_modified=False,
+        linked_group=user_group,
     )
     existing_members.update(role=instance.role)
 
-    project_ug_members = User.objects.filter(
-        groupmembership__group__project=project
-    )
+    project_ug_members = User.objects.filter(usergroup__project=project)
     new_users = project_ug_members.difference(project.get_all_members()).\
         distinct()
     for user in new_users:
-        project.add_member(user, role=instance.role)
+        project.add_member(user, role=instance.role, linked_group=user_group)
 
 
 @receiver(models.signals.pre_delete, sender=ProjectUserGroupMembership)
 def refresh_project_memberships_usergroup_removed(sender, instance, **kwargs):
-    # Also, when usergroup is deleted from project,
-    # remove membereships if necessary
-    # The logic is: project_members.diff(directly_added.union(all_ug_members))
     project = instance.project
-    all_members = project.get_all_members()
+    user_group = instance.usergroup
 
-    direct_members = project.get_direct_members()
-
-    other_ugs = project.user_groups.exclude(id=instance.usergroup.id)
-
-    all_ug_members = User.objects.filter(
-        groupmembership__group__in=other_ugs,
-    ).distinct()
-
-    remove_members = all_members.difference(
-        direct_members.union(all_ug_members)
+    remove_memberships = ProjectMembership.objects.filter(
+        project=project,
+        linked_group=user_group,
     )
 
-    remove_members = list(remove_members.values_list('id', flat=True))
+    for membership in remove_memberships:
+        other_user_groups = membership.get_user_group_options().exclude(
+            id=user_group.id
+        )
+        if other_user_groups.count() > 0:
+            membership.linked_group = other_user_groups.first()
+            membership.save()
+        else:
+            membership.delete()
 
-    ProjectMembership.objects.filter(
-        project=project, member__id__in=remove_members
-    ).delete()
+
+# Whenever a member is saved, if there is a pending request to join
+# same project by same user, accept that request.
+@receiver(models.signals.post_save, sender=ProjectMembership)
+def on_membership_saved(sender, **kwargs):
+    # if kwargs.get('created'):
+    instance = kwargs.get('instance')
+    ProjectJoinRequest.objects.filter(
+        project=instance.project,
+        requested_by=instance.member,
+        status='pending',
+    ).update(
+        status='accepted',
+        responded_by=instance.added_by,
+        responded_at=instance.joined_at,
+    )
+
+
+# Whenever a project status value is changed, update all projects' statuses
+@receiver(models.signals.post_save, sender=ProjectStatus)
+@receiver(models.signals.post_delete, sender=ProjectStatus)
+@receiver(models.signals.post_save, sender=ProjectStatusCondition)
+def on_status_updated(sender, **kwargs):
+    with transaction.atomic():
+        for project in Project.objects.all():
+            project.update_status()

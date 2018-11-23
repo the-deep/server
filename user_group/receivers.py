@@ -1,8 +1,11 @@
-from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_delete
 
-from project.models import Project, ProjectMembership
+from project.models import (
+    Project,
+    ProjectMembership,
+    ProjectUserGroupMembership,
+)
 from user_group.models import GroupMembership
 
 
@@ -16,57 +19,57 @@ def refresh_project_memberships_usergroup_updated(sender, instance, **kwargs):
     projects = Project.objects.filter(user_groups=user_group)
     user_group_members = user_group.members.all()
     for project in projects:
+        project_group_membership = ProjectUserGroupMembership.objects.get(
+            project=project,
+            usergroup=user_group,
+        )
+
         # Create memberships, only if this is not signal from delete
         if kwargs.get('delete', False) is False:
             project_members = project.get_all_members()
             new_users = user_group_members.difference(project_members)
             for user in new_users:
-                project.add_member(user)
+                project.add_member(user, role=project_group_membership.role)
 
-        direct_members = project.get_direct_members()
+        remove_memberships = ProjectMembership.objects.filter(
+            project=project,
+            linked_group=user_group,
+        ).exclude(member__in=user_group_members)
 
-        remove_members = project_members\
-            .exclude(groupmembership__group__project=project)\
-            .difference(direct_members)\
-            .distinct()
-        remove_members = list(remove_members.values_list('id', flat=True))
-        # Now remove memberships
-        ProjectMembership.objects.filter(
-            member__id__in=remove_members).delete()
+        for membership in remove_memberships:
+            other_user_groups = membership.get_user_group_options().exclude(
+                id=user_group.id
+            )
+            if other_user_groups.count() > 0:
+                membership.linked_group = other_user_groups.first()
+                membership.save()
+            else:
+                membership.delete()
 
 
 @receiver(pre_delete, sender=GroupMembership)
 def refresh_project_memberships_usergroup_deleted(sender, instance, **kwargs):
     """
-    Update project memberships when users added to usergroups
+    Update project memberships when users removed from usergroups
     @sender: many_to_many field
     """
-    from project.models import Project, ProjectMembership
 
-    group = instance.group
-    projects = Project.objects.filter(
-        projectusergroupmembership__usergroup=group
-    )
+    user_group = instance.group
+    projects = Project.objects.filter(user_groups=user_group)
     for project in projects:
-        # find users to remove
-        all_members = project.get_all_members()
+        membership = project.projectmembership_set.filter(
+            member=instance.member,
+            linked_group=user_group,
+        ).first()
 
-        group_members = User.objects.filter(groupmembership__group=group).\
-            exclude(pk=instance.member.pk)
+        if not membership:
+            continue
 
-        direct_members = project.get_direct_members()
-
-        other_ugs = project.user_groups.exclude(id=instance.group.id)
-
-        all_ug_members = User.objects.filter(
-            groupmembership__group__in=other_ugs,
-        ).distinct()
-
-        remove_members = all_members.difference(
-            direct_members.union(all_ug_members).union(group_members)
+        other_user_groups = membership.get_user_group_options().exclude(
+            id=user_group.id
         )
-        remove_members = list(remove_members.values_list('id', flat=True))
-
-        ProjectMembership.objects.filter(
-            project=project, member__id__in=remove_members
-        ).delete()
+        if other_user_groups.count() > 0:
+            membership.linked_group = other_user_groups.first()
+            membership.save()
+        else:
+            membership.delete()
