@@ -41,7 +41,7 @@ class Book(UserResource):
     )
 
     title = models.CharField(max_length=255)
-    file = models.OneToOneField(File, null=True, blank=True)
+    file = models.ForeignKey(File, null=True, blank=True)
     project = models.ForeignKey(Project, null=True, default=None)
     url = models.TextField(null=True, blank=True)
     meta_status = models.CharField(
