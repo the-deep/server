@@ -222,8 +222,7 @@ class Project(UserResource):
         role = self.get_role(user)
         return role is not None and role.can_delete_setup
 
-    def add_member(
-            self, user, role=None, added_by=None):
+    def add_member(self, user, role=None, added_by=None):
         if role is None:
             role = ProjectRole.get_normal_role()
         return ProjectMembership.objects.create(
@@ -296,7 +295,10 @@ class ProjectMembership(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     role = models.ForeignKey('project.ProjectRole',
                              default=get_default_role_id)
+
     is_directly_added = models.BooleanField(default=False)
+    is_role_modified = models.BooleanField(default=False)
+
     joined_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                  null=True, blank=True, default=None,
@@ -327,6 +329,8 @@ class ProjectUserGroupMembership(models.Model):
     project = models.ForeignKey(Project)
     # FIXME: use user_group instead of usergroup for consistency
     usergroup = models.ForeignKey(UserGroup)
+    role = models.ForeignKey('project.ProjectMembership',
+                             default=get_default_role_id)
     joined_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                  null=True, blank=True, default=None,
@@ -473,20 +477,30 @@ class ProjectRole(models.Model):
 
 
 @receiver(models.signals.post_save, sender=ProjectUserGroupMembership)
-def refresh_project_memberships_usergroup_added(sender, instance, **kwargs):
+def refresh_project_memberships_usergroup_modified(sender, instance, **kwargs):
     """
-    Update project memberships when a project is saved(update/created)
+    Update project memberships when a user group is saved (update/created)
     @instance: Project instance
     NOTE: sent after project update/created
     """
     project = instance.project
+    user_group = instance.usergroup
+
+    existing_members = ProjectMembership.objects.filter(
+        project=project,
+        user__groupmembership__group=user_group,
+        is_directly_added=False,
+        is_role_modified=False,
+    )
+    existing_members.update(role=instance.role)
+
     project_ug_members = User.objects.filter(
         groupmembership__group__project=project
     )
     new_users = project_ug_members.difference(project.get_all_members()).\
         distinct()
     for user in new_users:
-        project.add_member(user)
+        project.add_member(user, role=instance.role)
 
 
 @receiver(models.signals.pre_delete, sender=ProjectUserGroupMembership)

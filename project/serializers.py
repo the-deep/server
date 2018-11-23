@@ -192,7 +192,15 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
     def create(self, validated_data):
         resource = super().create(validated_data)
         resource.added_by = self.context['request'].user
+        resource.is_directly_added = True
         resource.save()
+        return resource
+
+    def update(self, instance, validated_data):
+        old_role = instance.role
+        resource = super().update(instance, validated_data)
+        if old_role != instance.role:
+            resource.is_role_modified = True
         return resource
 
 
