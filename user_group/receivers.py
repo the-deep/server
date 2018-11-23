@@ -10,7 +10,7 @@ from user_group.models import GroupMembership
 
 
 @receiver(post_save, sender=GroupMembership)
-def refresh_project_memberships_usergroup_updated(sender, instance, **kwargs):
+def refresh_group_membership_updated(sender, instance, **kwargs):
     """
     Update project memberships when a usergroup is updated
     @instance: GroupMembership instance
@@ -29,7 +29,11 @@ def refresh_project_memberships_usergroup_updated(sender, instance, **kwargs):
             project_members = project.get_all_members()
             new_users = user_group_members.difference(project_members)
             for user in new_users:
-                project.add_member(user, role=project_group_membership.role)
+                project.add_member(
+                    user,
+                    role=project_group_membership.role,
+                    linked_group=user_group,
+                )
 
         remove_memberships = ProjectMembership.objects.filter(
             project=project,
@@ -48,7 +52,7 @@ def refresh_project_memberships_usergroup_updated(sender, instance, **kwargs):
 
 
 @receiver(pre_delete, sender=GroupMembership)
-def refresh_project_memberships_usergroup_deleted(sender, instance, **kwargs):
+def refresh_group_membership_deleted(sender, instance, **kwargs):
     """
     Update project memberships when users removed from usergroups
     @sender: many_to_many field
