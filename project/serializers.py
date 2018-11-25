@@ -1,3 +1,4 @@
+from django.db import models
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
@@ -12,7 +13,9 @@ from project.models import (
     ProjectRole,
     ProjectUserGroupMembership,
 )
+from entry.models import Lead, Entry
 from project.permissions import PROJECT_PERMISSIONS
+from project.activity import project_activity_log
 
 from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
@@ -74,6 +77,93 @@ class ProjectRoleSerializer(RemoveNullFieldsMixin,
             for k, v in PROJECT_PERMISSIONS['assessment'].items()
             if roleobj.assessment_permissions & v != 0
         ]
+
+
+class SimpleProjectRoleSerializer(RemoveNullFieldsMixin,
+                                  DynamicFieldsMixin,
+                                  serializers.ModelSerializer):
+    class Meta:
+        model = ProjectRole
+        fields = ('id', 'title')
+
+
+class ProjectDashboardSerializer(RemoveNullFieldsMixin,
+                                 DynamicFieldsMixin,
+                                 serializers.ModelSerializer):
+
+    created_by = serializers.CharField(
+        source='created_by.profile.get_display_name',
+        read_only=True,
+    )
+    regions = SimpleRegionSerializer(many=True, required=False)
+    number_of_users = serializers.IntegerField(
+        source='get_number_of_users',
+        read_only=True,
+    )
+    number_of_leads = serializers.IntegerField(read_only=True)
+    number_of_entries = serializers.IntegerField(read_only=True)
+    status = serializers.ReadOnlyField(source='status.title')
+
+    leads_activity = serializers.ReadOnlyField(source='get_leads_activity')
+    entries_activity = serializers.ReadOnlyField(source='get_entries_activity')
+
+    top_sourcers = serializers.SerializerMethodField()
+    top_taggers = serializers.SerializerMethodField()
+    activity_log = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Project
+        fields = ('created_at', 'created_by', 'regions',
+                  'top_sourcers', 'top_taggers', 'status', 'activity_log',
+                  'number_of_users', 'number_of_leads', 'number_of_entries',
+                  'leads_activity', 'entries_activity')
+
+    def get_top_sourcers(self, project):
+        sourcers = ProjectMembership.objects.filter(
+            project=project,
+        ).annotate(
+            leads_count=models.functions.Coalesce(models.Subquery(
+                Lead.objects.filter(
+                    project=project,
+                    created_by=models.OuterRef('member'),
+                ).order_by().values('project')
+                .annotate(cnt=models.Count('*')).values('cnt')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+        ).order_by('-leads_count')[:5]
+
+        return [
+            {
+                'id': sourcer.id,
+                'name': sourcer.member.profile.get_display_name(),
+                'count': sourcer.leads_count,
+            } for sourcer in sourcers
+        ]
+
+    def get_top_taggers(self, project):
+        taggers = ProjectMembership.objects.filter(
+            project=project,
+        ).annotate(
+            entries_count=models.functions.Coalesce(models.Subquery(
+                Entry.objects.filter(
+                    project=project,
+                    created_by=models.OuterRef('member'),
+                ).order_by().values('project')
+                .annotate(cnt=models.Count('*')).values('cnt')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+        ).order_by('-entries_count')[:5]
+
+        return [
+            {
+                'id': tagger.id,
+                'name': tagger.member.profile.get_display_name(),
+                'count': tagger.entries_count,
+            } for tagger in taggers
+        ]
+
+    def get_activity_log(self, project):
+        return list(project_activity_log(project))
 
 
 class ProjectMembershipSerializer(RemoveNullFieldsMixin,
