@@ -130,7 +130,6 @@ class UserGroupApiTest(TestCase):
         project = self.create(Project, role=self.admin_role)
         # set directly_added as True
         memship = ProjectMembership.objects.filter(project=project).last()
-        memship.is_directly_added = True
         memship.save()
 
         mems_count = ProjectMembership.objects.filter(project=project).count()

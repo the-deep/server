@@ -173,6 +173,11 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
     member_name = serializers.CharField(
         source='member.profile.get_display_name', read_only=True)
     member_status = serializers.SerializerMethodField()
+    user_group_options = SimpleUserGroupSerializer(
+        source='get_user_group_options',
+        read_only=True,
+        many=True,
+    )
 
     class Meta:
         model = ProjectMembership
@@ -228,6 +233,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         many=True,
         read_only=True,
     )
+
     regions = SimpleRegionSerializer(many=True, required=False)
     role = serializers.SerializerMethodField()
 
@@ -274,7 +280,6 @@ class ProjectSerializer(RemoveNullFieldsMixin,
             project=project,
             member=self.context['request'].user,
             role=ProjectRole.get_admin_role(),
-            is_directly_added=True
         )
         return project
 
