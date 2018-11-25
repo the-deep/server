@@ -76,10 +76,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if user != request.user:
             raise exceptions.PermissionDenied()
 
-        serializer = UserPreferencesSerializer(
-            user,
-            context={'request': request},
-        )
+        serializer = self.get_serializer(user)
         return response.Response(serializer.data)
 
     @detail_route(
