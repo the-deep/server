@@ -86,7 +86,7 @@ class TestCase(test.APITestCase):
         ProjectRole.objects.all().delete()
         # Creator role
         self.admin_role = ProjectRole.objects.create(
-            title='Admin',
+            title='Clairvoyant One',
             lead_permissions=get_project_permissions_value('lead', '__all__'),
             entry_permissions=get_project_permissions_value(
                 'entry', '__all__'),
@@ -96,7 +96,23 @@ class TestCase(test.APITestCase):
                 'export', '__all__'),
             assessment_permissions=get_project_permissions_value(
                 'assessment', '__all__'),
-            is_creator_role=True
+            is_creator_role=True,
+            level=1,
+        )
+        # Smaller admin role
+        self.smaller_admin_role = ProjectRole.objects.create(
+            title='Admin',
+            lead_permissions=get_project_permissions_value('lead', '__all__'),
+            entry_permissions=get_project_permissions_value(
+                'entry', '__all__'),
+            setup_permissions=get_project_permissions_value(
+                'setup', ['modify']),
+            export_permissions=get_project_permissions_value(
+                'export', '__all__'),
+            assessment_permissions=get_project_permissions_value(
+                'assessment', '__all__'),
+            is_creator_role=True,
+            level=100,
         )
         # Default role
         self.normal_role = ProjectRole.objects.create(
@@ -110,7 +126,8 @@ class TestCase(test.APITestCase):
                 'export', ['create']),
             assessment_permissions=get_project_permissions_value(
                 'assessment', '__all__'),
-            is_default_role=True
+            is_default_role=True,
+            level=100,
         )
         self.view_only_role = ProjectRole.objects.create(
             title='ViewOnly',

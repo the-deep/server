@@ -184,7 +184,9 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
         fields = '__all__'
 
     def get_member_status(self, membership):
-        if membership.role.is_creator_role:
+        if ProjectRole.get_admin_roles().filter(
+                id=membership.role.id
+        ).exists():
             return 'admin'
         return 'member'
 
@@ -193,6 +195,23 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
         if not project.can_modify(self.context['request'].user):
             raise serializers.ValidationError('Invalid project')
         return project
+
+    def validate(self, data):
+        role = data.get('role')
+        if not role or not role.level:
+            return data
+
+        project = data.get('project',
+                           self.instance and self.instance.project)
+        user = self.context['request'].user
+        user_role = ProjectMembership.objects.filter(
+            project=project,
+            member=user,
+        ).first().role
+
+        if user_role.level and role.level < user_role.level:
+            raise serializers.ValidationError('Invalid role')
+        return data
 
     def create(self, validated_data):
         resource = super().create(validated_data)
@@ -279,7 +298,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         ProjectMembership.objects.create(
             project=project,
             member=self.context['request'].user,
-            role=ProjectRole.get_admin_role(),
+            role=ProjectRole.get_creator_role(),
         )
         return project
 
@@ -289,7 +308,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
 
         role = project.get_role(user)
         if role:
-            if role.is_creator_role:
+            if ProjectRole.get_admin_roles().filter(id=role.id).exists():
                 return 'admin'
             return 'member'
 

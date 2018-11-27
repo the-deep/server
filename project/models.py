@@ -221,7 +221,7 @@ class Project(UserResource):
     def add_member(self, user,
                    role=None, added_by=None, linked_group=None):
         if role is None:
-            role = ProjectRole.get_normal_role()
+            role = ProjectRole.get_default_role()
 
         return ProjectMembership.objects.create(
             member=user,
@@ -271,7 +271,7 @@ class Project(UserResource):
     def get_admins(self):
         return User.objects.filter(
             projectmembership__project=self,
-            projectmembership__role=ProjectRole.get_admin_role(),
+            projectmembership__role__in=ProjectRole.get_admin_roles(),
         ).distinct()
 
     def get_number_of_users(self):
@@ -282,7 +282,10 @@ class Project(UserResource):
 
 
 def get_default_role_id():
-    return ProjectRole.get_normal_role().id
+    # Query only the id column to avoid migration issues
+    return ProjectRole.objects.filter(
+        is_default_role=True
+    ).values('id').first()['id']
 
 
 class ProjectMembership(models.Model):
@@ -319,7 +322,7 @@ class ProjectMembership(models.Model):
                 project=self.project,
             ).first()
         if group_membership:
-            role = group_membership.role or ProjectRole.get_normal_role()
+            role = group_membership.role or ProjectRole.get_default_role()
             if self.role != role:
                 self.role = role
                 self.save()
@@ -408,7 +411,6 @@ class ProjectRole(models.Model):
     Roles for Project
     """
 
-    # NOTE: now exists independently, later might co-exist with Project
     title = models.CharField(max_length=255, unique=True)
 
     lead_permissions = models.IntegerField(default=0)
@@ -417,20 +419,35 @@ class ProjectRole(models.Model):
     export_permissions = models.IntegerField(default=0)
     assessment_permissions = models.IntegerField(default=0)
 
+    level = models.IntegerField(default=None,
+                                blank=True, null=True)
+
     is_creator_role = models.BooleanField(default=False)
     is_default_role = models.BooleanField(default=False)
 
     description = models.TextField(blank=True)
 
     @classmethod
-    def get_admin_role(cls):
-        qs = cls.objects.filter(is_creator_role=True)
-        if qs.exists():
-            return qs.first()
-        return None
+    def get_admin_roles(cls):
+        modify_bit = PROJECT_PERMISSIONS.setup.modify
+        return cls.objects.annotate(
+            modify_bit=models.F('setup_permissions').bitand(modify_bit)
+        ).filter(modify_bit=modify_bit)
 
     @classmethod
-    def get_normal_role(cls):
+    def get_creator_role(cls):
+        return cls.objects.filter(is_creator_role=True).first()
+
+    @classmethod
+    def get_default_admin_role(cls):
+        # TODO: This method should not be needed.
+        # Fix use cases and remove this method.
+        return cls.get_admin_roles.filter(
+            is_creator_role=False
+        ).first()
+
+    @classmethod
+    def get_default_role(cls):
         qs = cls.objects.filter(is_default_role=True)
         if qs.exists():
             return qs.first()
