@@ -632,3 +632,23 @@ class ProjectApiTest(TestCase):
 
         self.assertEqual(response.data['count'], len(expected))
         self.assertTrue(sorted(expected) == sorted(obtained))
+
+    def test_project_role_level(self):
+        project = self.create(Project, role=self.smaller_admin_role)
+        test_user = self.create(User)
+        m = project.add_member(test_user, role=self.normal_role)
+
+        url = '/api/v1/project-memberships/{}/'.format(m.id)
+        self.authenticate()
+
+        data = {
+            'role': self.admin_role.id,
+        }
+        response = self.client.patch(url, data)
+        self.assert_400(response)
+
+        data = {
+            'role': self.smaller_admin_role.id,
+        }
+        response = self.client.patch(url, data)
+        self.assert_200(response)

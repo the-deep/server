@@ -139,7 +139,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             project=project,
             requested_by=request.user,
             status='pending',
-            role=ProjectRole.get_normal_role()
+            role=ProjectRole.get_default_role()
         )
 
         serializer = ProjectJoinRequestSerializer(
@@ -165,9 +165,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
     @staticmethod
     def _accept_request(responded_by, join_request, role):
         if not role or role == 'normal':
-            role = ProjectRole.get_normal_role()
+            role = ProjectRole.get_default_role()
         elif role == 'admin':
-            role = ProjectRole.get_admin_role()
+            role = ProjectRole.get_default_admin_role()
         else:
             role_qs = ProjectRole.objects.filter(id=role)
             if not role_qs.exists():

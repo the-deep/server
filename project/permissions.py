@@ -75,7 +75,7 @@ class AcceptRejectPermission(permissions.BasePermission):
         return ProjectMembership.objects.filter(
             project=obj,
             member=request.user,
-            role=ProjectRole.get_admin_role(),
+            role__in=ProjectRole.get_admin_roles(),
         ).exists()
 
 
