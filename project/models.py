@@ -419,9 +419,7 @@ class ProjectRole(models.Model):
     export_permissions = models.IntegerField(default=0)
     assessment_permissions = models.IntegerField(default=0)
 
-    level = models.IntegerField(default=None,
-                                blank=True, null=True)
-
+    level = models.IntegerField(default=0)
     is_creator_role = models.BooleanField(default=False)
     is_default_role = models.BooleanField(default=False)
 
