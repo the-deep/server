@@ -198,7 +198,7 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
 
     def validate(self, data):
         role = data.get('role')
-        if not role or not role.level:
+        if not role:
             return data
 
         project = data.get('project',
@@ -209,7 +209,7 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
             member=user,
         ).first().role
 
-        if user_role.level and role.level < user_role.level:
+        if role.level < user_role.level:
             raise serializers.ValidationError('Invalid role')
         return data
 

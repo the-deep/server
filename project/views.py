@@ -21,7 +21,11 @@ from docs.utils import mark_as_list, mark_as_delete
 import ary.serializers as arys
 
 from deep.permissions import ModifyPermission
-from project.permissions import JoinPermission, AcceptRejectPermission
+from project.permissions import (
+    JoinPermission,
+    AcceptRejectPermission,
+    MembershipModifyPermission,
+)
 from project.filter_set import (
     ProjectFilterSet,
     get_filtered_projects,
@@ -305,7 +309,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class ProjectMembershipViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectMembershipSerializer
     permission_classes = [permissions.IsAuthenticated,
-                          ModifyPermission]
+                          ModifyPermission, MembershipModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter)
     filter_class = ProjectMembershipFilterSet

@@ -79,6 +79,38 @@ class AcceptRejectPermission(permissions.BasePermission):
         ).exists()
 
 
+class MembershipModifyPermission(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        from project.models import ProjectMembership
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        if not obj.role:
+            return True
+
+        project = obj.project
+        user = ProjectMembership.objects.filter(
+            project=project,
+            member=request.user
+        ).first()
+        user_role = user and user.role
+
+        if not user_role or user_role.level > obj.role.level:
+            return False
+
+        if not obj.role.is_creator_role:
+            return True
+
+        # If the user is the one with creator role, only let it
+        # be changed if another membership with the creator role
+        # exists.
+        return ProjectMembership.objects.filter(
+            ~models.Q(member=request.user),
+            project=project,
+            role=obj.role,
+        ).exists()
+
+
 def get_project_entities(Entity, user, action=None):
     """
     @Entity: classname for the entity

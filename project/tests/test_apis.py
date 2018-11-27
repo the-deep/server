@@ -635,20 +635,62 @@ class ProjectApiTest(TestCase):
 
     def test_project_role_level(self):
         project = self.create(Project, role=self.smaller_admin_role)
-        test_user = self.create(User)
-        m = project.add_member(test_user, role=self.normal_role)
+        test_user1 = self.create(User)
+        test_user2 = self.create(User)
+        m1 = project.add_member(test_user1, role=self.normal_role)
+        m2 = project.add_member(test_user2, role=self.admin_role)
 
-        url = '/api/v1/project-memberships/{}/'.format(m.id)
+        url1 = '/api/v1/project-memberships/{}/'.format(m1.id)
+        url2 = '/api/v1/project-memberships/{}/'.format(m2.id)
+
+        # Initial condition: We are Admin
         self.authenticate()
 
+        # Condition 1: We are trying to change a normal
+        # user's role to Clairvaoyant One
         data = {
             'role': self.admin_role.id,
         }
-        response = self.client.patch(url, data)
+        response = self.client.patch(url1, data)
         self.assert_400(response)
 
+        # Condition 2: We are trying to change a normal
+        # user's role to Admin
         data = {
             'role': self.smaller_admin_role.id,
         }
-        response = self.client.patch(url, data)
+        response = self.client.patch(url1, data)
         self.assert_200(response)
+
+        # Condition 3: We are trying to change a CO user
+        # when he/she is the only CO user in the project
+        data = {
+            'role': self.smaller_admin_role.id,
+        }
+        response = self.client.patch(url2, data)
+        self.assert_403(response)
+
+        # Condition 4: We are trying to delete a CO user
+        # when he/she is the only CO user in the project
+        response = self.client.delete(url2)
+        self.assert_403(response)
+
+        # Initial condition: We are a CO user
+        self.authenticate(test_user2)
+
+        # Condition 5: We are CO user and are trying to
+        # delete ourself when there is no other CO user
+        # in the project.
+        response = self.client.delete(url2)
+        self.assert_403(response)
+
+        # Condition 6: We are CO user and are trying to
+        # delete ourself when there is at least one other CO user
+        # in the project.
+        ProjectMembership.objects.filter(
+            project=project,
+            member=self.user,
+        ).update(role=self.admin_role)
+
+        response = self.client.delete(url2)
+        self.assert_204(response)
