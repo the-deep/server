@@ -58,6 +58,6 @@ class CategoryEditor(UserResource):
             project.models.ProjectMembership.objects.filter(
                 project__in=self.project_set.all(),
                 member=user,
-                role='admin',
+                role__in=project.models.ProjectRole.get_admin_roles(),
             ).exists()
         )
