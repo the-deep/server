@@ -12,11 +12,9 @@ def update_attribute(widget, data, widget_data):
     value = data.get('value')
     time = value and parse_time(value)
 
-    number = time and time['time_val']
-
     return {
         'filter_data': [{
-            'number': number,
+            'number': time and time['time_val'],
         }],
 
         'export_data': {
