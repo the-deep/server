@@ -31,10 +31,16 @@ class ExcelExporter:
             'Excerpt',
         ]
 
+        self.col_types = {
+            0: 'date',
+            2: 'date',
+        }
+
         self.region_data = {}
 
     def load_exportable_titles(self, data, regions):
         export_type = data.get('type')
+        col_type = data.get('col_type')
 
         if export_type == 'nested':
             children = data.get('children')
@@ -62,10 +68,17 @@ class ExcelExporter:
                 self.region_data[region.id] = admin_level_data
 
         elif export_type == 'multiple':
+            index = len(self.titles)
             self.titles.extend(data.get('titles'))
+            if col_type:
+                for i in range(index, len(self.titles)):
+                    self.col_types[i] = col_type[i - index]
 
         elif data.get('title'):
+            index = len(self.titles)
             self.titles.append(data.get('title'))
+            if col_type:
+                self.col_types[index] = col_type
 
     def load_exportables(self, exportables, regions=None):
         # Take all exportables that contains excel info
@@ -99,6 +112,8 @@ class ExcelExporter:
             children = data.get('children')
             if export_data:
                 for i, child in enumerate(children):
+                    if i >= len(export_data):
+                        continue
                     self.add_entries_from_excel_data(
                         rows,
                         child,
@@ -190,6 +205,10 @@ class ExcelExporter:
         return self
 
     def export(self, export_entity):
+        self.group.set_col_types(self.col_types)
+        if self.split:
+            self.split.set_col_types(self.col_types)
+
         buffer = self.wb.save()
         filename = generate_filename('Entries Export', 'xlsx')
 

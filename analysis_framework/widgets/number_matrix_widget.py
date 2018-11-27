@@ -25,5 +25,6 @@ def get_exportable(widget, data):
         'excel': {
             'type': 'multiple',
             'titles': titles,
+            # TODO: col_type to list full of 'number'
         },
     }

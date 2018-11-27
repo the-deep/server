@@ -15,5 +15,9 @@ def get_exportable(widget, data):
                 '{} (From)'.format(widget.title),
                 '{} (To)'.format(widget.title),
             ],
+            'col_type': [
+                'date',
+                'date',
+            ],
         },
     }
