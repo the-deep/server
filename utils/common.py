@@ -1,5 +1,5 @@
 from xml.sax.saxutils import escape
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.conf import settings
 
 import os
@@ -71,10 +71,24 @@ def get_valid_xml_string(string):
 
 
 def format_date(date):
-    if date:
-        return date.strftime('%d-%m-%Y')
-    else:
+    return date and date.strftime('%d-%m-%Y')
+
+
+def parse_date(date_str):
+    return date_str and datetime.strptime(date_str, '%d-%m-%Y')
+
+
+def parse_time(time_str):
+    return time_str and datetime.strptime(time_str, '%H:%M').time()
+
+
+def parse_number(num_str):
+    if not num_str:
         return None
+    num = float(num_str)
+    if num == round(num):
+        return int(num)
+    return num
 
 
 def generate_filename(title, extension):

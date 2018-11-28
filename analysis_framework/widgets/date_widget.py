@@ -11,5 +11,6 @@ def get_exportable(widget, data):
     return {
         'excel': {
             'title': widget.title,
+            'col_type': 'date',
         },
     }

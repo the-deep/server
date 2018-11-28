@@ -36,6 +36,9 @@ class ExcelExporter:
             'Lead Title',
             'Source',
         ]
+        self.col_types = {
+            0: 'date',
+        }
         self._titles_dict = {k: True for k in self.titles}
 
     def to_flattened_key_vals(self, dictdata, parents=[]):
@@ -133,6 +136,10 @@ class ExcelExporter:
                 )
                 cell = sheet.cell(row=1, column=v['start'] + 1)
                 cell.alignment = Alignment(horizontal='center')
+
+        self.group.set_col_types(self.col_types)
+        if self.split:
+            self.split.set_col_types(self.col_types)
 
         buffer = self.wb.save()
         filename = generate_filename('Assessments Export', 'xlsx')
