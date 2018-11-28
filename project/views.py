@@ -21,7 +21,11 @@ from docs.utils import mark_as_list, mark_as_delete
 import ary.serializers as arys
 
 from deep.permissions import ModifyPermission
-from project.permissions import JoinPermission, AcceptRejectPermission
+from project.permissions import (
+    JoinPermission,
+    AcceptRejectPermission,
+    MembershipModifyPermission,
+)
 from project.filter_set import (
     ProjectFilterSet,
     get_filtered_projects,
@@ -139,7 +143,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             project=project,
             requested_by=request.user,
             status='pending',
-            role=ProjectRole.get_normal_role()
+            role=ProjectRole.get_default_role()
         )
 
         serializer = ProjectJoinRequestSerializer(
@@ -165,9 +169,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
     @staticmethod
     def _accept_request(responded_by, join_request, role):
         if not role or role == 'normal':
-            role = ProjectRole.get_normal_role()
+            role = ProjectRole.get_default_role()
         elif role == 'admin':
-            role = ProjectRole.get_admin_role()
+            role = ProjectRole.get_default_admin_role()
         else:
             role_qs = ProjectRole.objects.filter(id=role)
             if not role_qs.exists():
@@ -305,7 +309,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class ProjectMembershipViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectMembershipSerializer
     permission_classes = [permissions.IsAuthenticated,
-                          ModifyPermission]
+                          ModifyPermission, MembershipModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter)
     filter_class = ProjectMembershipFilterSet

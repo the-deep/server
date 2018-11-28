@@ -97,8 +97,19 @@ class Region(UserResource):
         return self in Region.get_for(user)
 
     def can_modify(self, user):
-        return (user.is_superuser and self.public) or (
-            self.created_by == user
+        from project.models import ProjectMembership, ProjectRole
+        return (
+            # Either created by user
+            (self.created_by == user) or
+            # Or is public and user is superuser
+            (self.public and user.is_superuser) or
+            # Or is private and user is admin of one of the projects
+            # with this region
+            (not self.public and ProjectMembership.objects.filter(
+                project__regions=self,
+                member=user,
+                role__in=ProjectRole.get_admin_roles(),
+            ).exists())
         )
 
 
