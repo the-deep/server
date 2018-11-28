@@ -3,7 +3,12 @@ from collections import OrderedDict
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
-from utils.common import get_valid_xml_string as xstr
+from utils.common import (
+    get_valid_xml_string as xstr,
+    parse_date,
+    parse_time,
+    parse_number,
+)
 
 
 class WorkBook:
@@ -21,6 +26,19 @@ class WorkBook:
 
     def save(self):
         return save_virtual_workbook(self.wb)
+
+
+COL_TYPES = {
+    'date': 'dd-mm-yyyy',
+    'time': 'HH:MM',
+    'number': '',
+}
+
+TYPE_CONVERTERS = {
+    'date': parse_date,
+    'time': parse_time,
+    'number': parse_number,
+}
 
 
 class WorkSheet:
@@ -44,8 +62,24 @@ class WorkSheet:
 
     def append(self, rows):
         [self.ws.append(row) for row in rows]
-
         return self
+
+    def _set_cell_type(self, cell, col_type):
+        value = cell.value
+        cell.value = value and TYPE_CONVERTERS[col_type](value)
+        cell.number_format = COL_TYPES[col_type]
+
+    def set_col_types(self, col_types):
+        for col_index, col_type in col_types.items():
+            for cell_t in self.ws.iter_rows(
+                    min_row=2,
+                    min_col=col_index + 1,
+                    max_col=col_index + 1,
+            ):
+                if len(cell_t) < 1:
+                    continue
+                cell = cell_t[0]
+                self._set_cell_type(cell, col_type)
 
 
 class RowsBuilder:

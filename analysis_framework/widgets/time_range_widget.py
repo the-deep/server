@@ -2,7 +2,7 @@ def get_filters(widget, data):
     return [{
         'filter_type': 'intersects',
         'properties': {
-            'type': 'date',
+            'type': 'time',
         },
     }]
 
@@ -16,8 +16,8 @@ def get_exportable(widget, data):
                 '{} (To)'.format(widget.title),
             ],
             'col_type': [
-                'date',
-                'date',
+                'time',
+                'time',
             ],
         },
     }
