@@ -117,6 +117,10 @@ from docs.views import (
     DocsView,
 )
 
+from notification.views import (
+    NotificationViewSet,
+)
+
 from jwt_auth.views import (
     HIDTokenObtainPairView,
     TokenObtainPairView,
@@ -236,6 +240,10 @@ router.register(r'connector-projects', ConnectorProjectViewSet,
 
 # Export routers
 router.register(r'exports', ExportViewSet, base_name='export')
+
+# Notification routers
+router.register(r'notifications',
+                NotificationViewSet, base_name='notification')
 
 # Language routers
 router.register(r'languages', LanguageViewSet, base_name='language')
