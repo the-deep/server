@@ -82,7 +82,7 @@ class LeadViewSet(viewsets.ModelViewSet):
         # For some reason, the ordering is not working for `assignee` field
         # so, force ordering with anything passed in the query param
         qs = super().filter_queryset(queryset)
-        ordering = self.request.GET.get('ordering')
+        ordering = self.request.query_params.get('ordering')
         if ordering:
             return qs.order_by(ordering)
         return qs

@@ -83,7 +83,7 @@ INSTALLED_APPS = [
     'user_resource',
     'tabular',
     'commons',
-
+    'notification',
     'bulk_data_migration',
 ]
 
