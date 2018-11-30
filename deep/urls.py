@@ -116,6 +116,9 @@ from lang.views import (
 from docs.views import (
     DocsView,
 )
+from client_page_meta.views import (
+    PageViewSet,
+)
 
 from notification.views import (
     NotificationViewSet,
@@ -247,6 +250,9 @@ router.register(r'notifications',
 
 # Language routers
 router.register(r'languages', LanguageViewSet, base_name='language')
+
+# Page routers
+router.register(r'pages', PageViewSet, base_name='page')
 
 
 # Versioning : (v1|v2|v3)
