@@ -1,21 +1,27 @@
 from django.db import models
 from django.contrib.postgres.fields import JSONField
+from django.utils import timezone
 
-from user_resource.models import UserResource
 from user.models import User
 from project.models import Project
 
-NOTIFICATION_TYPE_CHOICES = (
-    ('project_join', 'Join project'),
-)
 
-NOTIFICATION_STATUS_CHOICES = (
-    ('seen', 'Seen'),
-    ('unseen', 'Unseen'),
-)
+class Notification(models.Model):
+    PROJECT_JOIN_REQUEST = 'project_join_request'
+    PROJECT_JOIN_RESPONSE = 'project_join_response'
+    STATUS_SEEN = 'seen'
+    STATUS_UNSEEN = 'unseen'
 
+    TYPE_CHOICES = (
+        (PROJECT_JOIN_REQUEST, 'Join project request'),
+        (PROJECT_JOIN_RESPONSE, 'Join project response'),
+    )
 
-class Notification(UserResource):
+    STATUS_CHOICES = (
+        (STATUS_SEEN, 'Seen'),
+        (STATUS_UNSEEN, 'Unseen'),
+    )
+
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(
         Project,
@@ -26,13 +32,24 @@ class Notification(UserResource):
     )
     notification_type = models.CharField(
         max_length=48,
-        choices=NOTIFICATION_TYPE_CHOICES,
+        choices=TYPE_CHOICES,
     )
     data = JSONField(default=None, blank=True, null=True)
     status = models.CharField(
         max_length=48,
-        choices=NOTIFICATION_STATUS_CHOICES,
+        choices=STATUS_CHOICES,
+        default=STATUS_UNSEEN,
     )
+    timestamp = models.DateTimeField(
+        default=timezone.now,
+    )
+
+    def __str__(self):
+        # TODO
+        return 'Notification'
+
+    class Meta:
+        ordering = ['-timestamp']
 
     @staticmethod
     def get_for(user):
