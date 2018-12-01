@@ -29,11 +29,25 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
 
         return qs
 
+    # Change notification to seen once requested
+    def finalize_response(self, request, *args, **kwargs):
+        result = super().finalize_response(request, *args, **kwargs)
+
+        if not getattr(request, 'child_route', False):
+            queryset = self.paginate_queryset(
+                self.filter_queryset(self.get_queryset()))
+            Notification.objects\
+                .filter(id__in=[q.id for q in queryset])\
+                .update(status=Notification.STATUS_SEEN)
+
+        return result
+
     @list_route(
         permission_classes=[permissions.IsAuthenticated],
         url_path='unseen-count',
     )
     def get_count(self, request, version=None):
+        request.child_route = True
         qs = self.filter_queryset(self.get_queryset())
         total = qs.count()
 
