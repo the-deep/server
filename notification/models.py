@@ -9,11 +9,13 @@ from project.models import Project
 class Notification(models.Model):
     PROJECT_JOIN_REQUEST = 'project_join_request'
     PROJECT_JOIN_RESPONSE = 'project_join_response'
+    PROJECT_JOIN_REQUEST_ABORT = 'project_join_request_abort'
     STATUS_SEEN = 'seen'
     STATUS_UNSEEN = 'unseen'
 
     TYPE_CHOICES = (
         (PROJECT_JOIN_REQUEST, 'Join project request'),
+        (PROJECT_JOIN_REQUEST_ABORT, 'Join project request abort'),
         (PROJECT_JOIN_RESPONSE, 'Join project response'),
     )
 
