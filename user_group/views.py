@@ -105,7 +105,7 @@ class UserGroupUserSearchViewSet(viewsets.GenericViewSet,
                 search.TrigramSimilarity('first_name', query),
                 search.TrigramSimilarity('last_name', query),
             ),
-        ).filter(similarity__gt=0.2)
+        ).filter(similarity__gt=0.1)
 
         user_groups = UserGroup.objects.values(
             entity_id=models.F('id'),
@@ -117,7 +117,7 @@ class UserGroupUserSearchViewSet(viewsets.GenericViewSet,
             entity_type=models.Value('user_group', models.CharField()),
 
             similarity=search.TrigramSimilarity('title', query),
-        ).filter(similarity__gt=0.2)
+        ).filter(similarity__gt=0.1)
 
         project = self.request.query_params.get('project')
         if project:
