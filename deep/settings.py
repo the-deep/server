@@ -40,6 +40,7 @@ TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 # Application definition
 
 INSTALLED_APPS = [
+    # DJANGO APPS
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -49,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'django.contrib.postgres',
 
+    # LIBRARIES
     'autofixture',
     'channels',
     'corsheaders',
@@ -62,6 +64,7 @@ INSTALLED_APPS = [
     'django_premailer',
     'raven.contrib.django.raven_compat',
 
+    # DEEP APPS
     'analysis_framework',
     'ary',
     'category_editor',
@@ -77,16 +80,17 @@ INSTALLED_APPS = [
     'organization',
     'profiling',
     'project',
-    'redis_store',
     'user',
     'user_group',
     'user_resource',
     'tabular',
-    'commons',
     'notification',
     'client_page_meta',
 
+    # MISC DEEP APPS
     'bulk_data_migration',
+    'commons',
+    'redis_store',
 ]
 
 MIDDLEWARE = [
