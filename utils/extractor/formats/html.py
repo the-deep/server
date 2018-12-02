@@ -1,4 +1,8 @@
 from readability.readability import Document
+from urllib.parse import urljoin
+
+import logging
+import traceback
 import re
 import requests
 import tempfile
@@ -7,6 +11,8 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 
 from utils.common import write_file
+
+logger = logging.getLogger(__name__)
 
 
 def _replace_with_newlines(element):
@@ -28,7 +34,7 @@ def _get_plain_text(soup):
     return plain_text.strip()
 
 
-def process(doc):
+def process(doc, url):
     html_body = Document(doc)
     summary = html_body.summary()
     title = html_body.short_title()
@@ -37,11 +43,12 @@ def process(doc):
     for img in html_body.reverse_tags(html_body.html, 'img'):
         try:
             fp = tempfile.NamedTemporaryFile(dir=settings.BASE_DIR)
-            r = requests.get(img.get('src'), stream=True)
+            img_src = urljoin(url, img.get('src'))
+            r = requests.get(img_src, stream=True)
             write_file(r, fp)
             images.append(fp)
         except Exception:
-            pass
+            logger.error(traceback.format_exc())
 
     html = '<h1>' + title + '</h1>' + summary
 

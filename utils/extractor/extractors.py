@@ -14,8 +14,9 @@ class BaseExtractor:
     Verify
     Simlify
     """
-    def __init__(self, doc):
+    def __init__(self, doc, params=None):
         self.doc = doc
+        self.params = params
 
     def extract(self):
         """
@@ -40,6 +41,11 @@ class HtmlExtractor(BaseExtractor):
     """
     ERROR_MSG = "Not a html document"
     EXTRACT_METHOD = html_extract
+
+    def extract(self):
+        self.verify()
+        url = self.params.get('url') if self.params else None
+        return self.__class__.EXTRACT_METHOD(self.doc, url)
 
 
 class PdfExtractor(BaseExtractor):
