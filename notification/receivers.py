@@ -34,9 +34,8 @@ def create_notification(sender, instance, created, **kwargs):
         notification.save()
     """
 
+    data = {'join_request_id': instance.id}
     for admin in admins:
-        data = {'join_request_id': instance.id}
-
         Notification.objects.create(
             receiver=admin,
             notification_type=Notification.PROJECT_JOIN_RESPONSE,
