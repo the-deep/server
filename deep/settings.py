@@ -84,6 +84,8 @@ INSTALLED_APPS = [
     'tabular',
     'commons',
     'notification',
+    'client_page_meta',
+
     'bulk_data_migration',
 ]
 
