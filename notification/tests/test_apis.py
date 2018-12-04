@@ -4,15 +4,8 @@ from user.models import User
 from notification.models import Notification
 from project.models import ProjectJoinRequest, Project
 
-import logging
-logger = logging.getLogger(__name__)
-
 
 class TestNotificationAPIs(TestCase):
-    def setUp(self):
-        super().setUp()
-        # Clean up notifications
-        Notification.objects.all().delete()
 
     def test_get_notifications(self):
         project = self.create(Project, role=self.admin_role)
