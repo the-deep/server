@@ -96,6 +96,7 @@ class UserGroupUserSearchViewSet(viewsets.GenericViewSet,
             entity_username=models.F('username'),
             entity_first_name=models.F('first_name'),
             entity_last_name=models.F('last_name'),
+            entity_display_picture=models.F('profile__display_picture'),
 
             entity_title=models.Value(None, models.CharField()),
             entity_type=models.Value('user', models.CharField()),
@@ -115,6 +116,7 @@ class UserGroupUserSearchViewSet(viewsets.GenericViewSet,
             entity_first_name=models.Value(None, models.CharField()),
             entity_last_name=models.Value(None, models.CharField()),
             entity_type=models.Value('user_group', models.CharField()),
+            entity_display_picture=models.Value(None, models.IntegerField()),
 
             similarity=search.TrigramSimilarity('title', query),
         ).filter(similarity__gt=0.1)
