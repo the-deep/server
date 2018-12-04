@@ -34,6 +34,11 @@ class TestNotification(TestCase):
             assert notification.receiver == user
             assert notification.data['status'] == 'pending'
 
+        # Get notifications for requesting user
+        # there should be none
+        notifications = Notification.get_for(normal_user)
+        assert notifications.count() == 0
+
     def test_notification_updated_on_request_accepted(self):
         project = self.create(Project, role=self.admin_role)
         # Create users
@@ -60,10 +65,20 @@ class TestNotification(TestCase):
         join_request.role = join_request.role
         join_request.save()
 
-        # Get notifications
+        # Get notifications for admin
         notifications = Notification.get_for(self.user)
         assert notifications.count() == 2
         new_notif = Notification.get_for(self.user).order_by('-timestamp')[0]
+        assert new_notif.notification_type ==\
+            Notification.PROJECT_JOIN_RESPONSE
+        assert new_notif.data['status'] == 'accepted'
+
+        # Get notifications for requesting user
+        # He/She should get a notification saying request is accepted
+        notifications = Notification.get_for(normal_user)
+
+        assert notifications.count() == 1
+        new_notif = notifications[0]
         assert new_notif.notification_type ==\
             Notification.PROJECT_JOIN_RESPONSE
         assert new_notif.data['status'] == 'accepted'
@@ -91,10 +106,20 @@ class TestNotification(TestCase):
         join_request.role = join_request.role
         join_request.save()
 
-        # Get notifications
+        # Get notifications for admin
         notifications = Notification.get_for(self.user)
         assert notifications.count() == 2
         new_notif = notifications.order_by('-timestamp')[0]
+        assert new_notif.notification_type ==\
+            Notification.PROJECT_JOIN_RESPONSE
+        assert new_notif.data['status'] == 'rejected'
+
+        # Get notifications for requesting user
+        # He/She should get a notification saying request is rejected
+        notifications = Notification.get_for(normal_user)
+
+        assert notifications.count() == 1
+        new_notif = notifications[0]
         assert new_notif.notification_type ==\
             Notification.PROJECT_JOIN_RESPONSE
         assert new_notif.data['status'] == 'rejected'
@@ -123,5 +148,11 @@ class TestNotification(TestCase):
         notifications = Notification.get_for(self.user)
         assert notifications.count() == 2
         new_notif = notifications.order_by('-timestamp')[0]
-        [print(x.__dict__) for x in notifications]
         assert new_notif.data['status'] == 'aborted'
+        assert new_notif.notification_type ==\
+            Notification.PROJECT_JOIN_REQUEST_ABORT
+
+        # Get notifications for requesting user
+        # there should be none
+        notifications = Notification.get_for(normal_user)
+        assert notifications.count() == 0
