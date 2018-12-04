@@ -1,11 +1,8 @@
 import django_filters
 from rest_framework.decorators import list_route
 
-from .serializers import (
-    NotificationSerializer,
-    NotificationStatusSerializer
-)
-from .models import (Notification)
+from .serializers import NotificationSerializer
+from .models import Notification
 
 from rest_framework import (
     exceptions,
@@ -37,16 +34,15 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
     @list_route(permission_classes=[permissions.IsAuthenticated],
                 methods=['put'],
+                serializer_class=NotificationSerializer,
                 url_path='status')
     def status_update(self, request, version=None):
-        serializer = NotificationStatusSerializer(data=request.data, many=True)
-        valid = serializer.is_valid()
-        if not valid:
+        serializer = self.get_serializer(
+            data=request.data, many=True, partial=True
+        )
+        if not serializer.is_valid():
             raise exceptions.ValidationError(serializer.errors)
-        for item in serializer.data:
-            notification = Notification.objects.get(id=item['id'])
-            notification.status = item['status']
-            notification.save()
+        serializer.save()
         return response.Response()
 
     @list_route(

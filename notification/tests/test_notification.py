@@ -4,16 +4,9 @@ from user.models import User
 from notification.models import Notification
 from project.models import ProjectJoinRequest, Project
 
-import logging
-logger = logging.getLogger(__name__)
-
 
 class TestNotification(TestCase):
     """Unit test for Notification"""
-    def setUp(self):
-        super().setUp()
-        # Clear all notifications
-        Notification.objects.all().delete()
 
     def test_notification_created_on_project_join_request(self):
         project = self.create(Project, role=self.admin_role)
@@ -70,9 +63,10 @@ class TestNotification(TestCase):
         # Get notifications
         notifications = Notification.get_for(self.user)
         assert notifications.count() == 2
-        assert notifications.filter(
-            notification_type=Notification.PROJECT_JOIN_RESPONSE
-        ).count() == 1
+        new_notif = Notification.get_for(self.user).order_by('-timestamp')[0]
+        assert new_notif.notification_type ==\
+            Notification.PROJECT_JOIN_RESPONSE
+        assert new_notif.data['status'] == 'accepted'
 
     def test_notification_updated_on_request_rejected(self):
         project = self.create(Project, role=self.admin_role)
@@ -100,9 +94,10 @@ class TestNotification(TestCase):
         # Get notifications
         notifications = Notification.get_for(self.user)
         assert notifications.count() == 2
-        assert notifications.filter(
-            notification_type=Notification.PROJECT_JOIN_RESPONSE
-        ).count() == 1
+        new_notif = notifications.order_by('-timestamp')[0]
+        assert new_notif.notification_type ==\
+            Notification.PROJECT_JOIN_RESPONSE
+        assert new_notif.data['status'] == 'rejected'
 
     def test_notification_updated_on_request_aborted(self):
         project = self.create(Project, role=self.admin_role)
@@ -127,5 +122,6 @@ class TestNotification(TestCase):
         # Get notifications again
         notifications = Notification.get_for(self.user)
         assert notifications.count() == 2
-        new_notif = notifications.order_by('timestamp')[0]
+        new_notif = notifications.order_by('-timestamp')[0]
+        [print(x.__dict__) for x in notifications]
         assert new_notif.data['status'] == 'aborted'

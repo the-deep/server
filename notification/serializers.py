@@ -5,28 +5,9 @@ from deep.serializers import RemoveNullFieldsMixin
 from .models import (Notification)
 
 
-class NotificationStatusSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    status = serializers.ChoiceField(choices=Notification.STATUS_CHOICES)
-
-    def validate_id(self, id):
-        if Notification.objects.filter(id=id).exists():
-            return id
-        else:
-            raise serializers.ValidationError(
-                'Non existent notification for id {}'.format(id)
-            )
-
-    def validate_status(self, status):
-        if status not in dict(Notification.STATUS_CHOICES):
-            raise serializers.ValidationError(
-                'Invalid value for status: {}'.format(status)
-            )
-        return status
-
-
 class NotificationSerializer(RemoveNullFieldsMixin,
                              serializers.ModelSerializer):
+    id = serializers.IntegerField()
     data = serializers.SerializerMethodField()
 
     class Meta:
@@ -35,6 +16,18 @@ class NotificationSerializer(RemoveNullFieldsMixin,
         read_only_fields = (
             'data', 'receiver', 'project', 'notification_type'
         )
+
+    def create(self, validated_data):
+        id = validated_data.get('id')
+        if id:
+            try:
+                notification = Notification.objects.get(id=id)
+            except Notification.DoesNotExist:
+                raise serializers.ValidationError({
+                    'id': 'Invalid notification id: {}'.format(id)
+                })
+            return self.update(notification, validated_data)
+        return super().create(validated_data)
 
     def get_data(self, notification):
         if not notification.data:

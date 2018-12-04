@@ -3,6 +3,7 @@ from django.db.models.signals import post_save, post_delete
 
 from notification.models import Notification
 from project.models import ProjectJoinRequest
+from user.models import User
 from project.serializers import ProjectJoinRequestSerializer
 
 
@@ -20,7 +21,31 @@ def create_notification(sender, instance, created, **kwargs):
                 data=data,
             )
 
+        Notification.objects.create(
+            receiver=instance.requested_by,
+            notification_type=Notification.PROJECT_JOIN_RESPONSE,
+            project=instance.project,
+            data=data,
+        )
+
         return
+
+    # notifiy the requester as well
+    if instance.status in ['accepted', 'rejected']:
+        Notification.objects.create(
+            receiver=instance.requested_by,
+            notification_type=Notification.PROJECT_JOIN_RESPONSE,
+            project=instance.project,
+            data=data,
+        )
+
+    old_notifications = Notification.objects.filter(
+        data__id=instance.id
+    )
+
+    for notification in old_notifications:
+        notification.data = data
+        notification.save()
 
     for admin in admins:
         Notification.objects.create(
