@@ -9,8 +9,9 @@ def parse_time(time_string):
 
 
 def update_attribute(widget, data, widget_data):
-    from_value = data.get('from_value')
-    to_value = data.get('to_value')
+    value = data.get('value') or {}
+    from_value = value.get('from')
+    to_value = value.get('to')
 
     from_time = from_value and parse_time(from_value)
     to_time = to_value and parse_time(to_value)
