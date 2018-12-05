@@ -5,8 +5,9 @@ ONE_DAY = 24 * 60 * 60
 
 
 def update_attribute(widget, data, widget_data):
-    from_value = data.get('from_value')
-    to_value = data.get('to_value')
+    value = data.get('value', {})
+    from_value = value.get('from')
+    to_value = value.get('to')
 
     from_date = from_value and datetime.strptime(from_value, '%Y-%m-%d')
     to_date = to_value and datetime.strptime(to_value, '%Y-%m-%d')
