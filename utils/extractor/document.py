@@ -19,9 +19,10 @@ class Document:
 
     Helps extract any type of file
     """
-    def __init__(self, doc, type):
+    def __init__(self, doc, type, params=None):
         self.type = type
         self.doc = doc
+        self.params = params
 
     def extract(self):
         """
@@ -31,5 +32,5 @@ class Document:
         """
         extractor = EXTRACTORS.get(self.type)
         if extractor:
-            return extractor(self.doc).extract()
+            return extractor(self.doc, self.params).extract()
         return '', []
