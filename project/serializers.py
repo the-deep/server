@@ -173,6 +173,10 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
     member_name = serializers.CharField(
         source='member.profile.get_display_name', read_only=True)
     member_status = serializers.SerializerMethodField()
+    member_organization = serializers.CharField(
+        source='member.profile.organization',
+        read_only=True,
+    )
     user_group_options = SimpleUserGroupSerializer(
         source='get_user_group_options',
         read_only=True,
