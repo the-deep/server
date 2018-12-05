@@ -23,8 +23,22 @@ def get_geos_dict(project=None):
         geos = GeoArea.objects.filter(
             admin_level__region__project=project
         )
-    return {x.title.lower(): True for x in geos}
+    return {
+        x.title.lower(): {
+            "admin_level": x.admin_level.id,
+            "title": x.title,
+            "code": x.code,
+        }
+        for x in geos
+    }
 
 
-def parse_geo(value, geos={}):
-    return geos.get(value.lower()) is not None
+def parse_geo(value, geos_names={}, geos_codes={}):
+    val = value.lower()
+    name_match = geos_names.get(val)
+    if name_match:
+        return {**name_match, 'geo_type': 'name'}
+    code_match = geos_codes.get(val)
+    if code_match:
+        return {**code_match, 'geo_type': 'code'}
+    return None
