@@ -52,6 +52,7 @@ from .serializers import (
     ProjectJoinRequestSerializer,
     ProjectUserGroupSerializer,
     ProjectDashboardSerializer,
+    ProjectStatusConditionSerializer,
 )
 
 from .token import project_request_token_generator
@@ -408,6 +409,10 @@ class ProjectOptionsView(views.APIView):
                 {
                     'key': status.id,
                     'value': status.title,
+                    'and_conditions': status.and_conditions,
+                    'conditions': ProjectStatusConditionSerializer(
+                        status.conditions.all(), many=True,
+                    ).data,
                 } for status in ProjectStatus.objects.all()
             ]
 
