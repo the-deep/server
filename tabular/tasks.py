@@ -50,7 +50,9 @@ def auto_detect_and_update_fields(book):
     for sheet in book.sheet_set.all():
         data = sheet.data or []
 
-        field_ids = [x for x in data[0].keys() if x.isnumeric()]
+        field_ids = [
+            x for x in data[0].keys() if x.isnumeric()
+        ] if data else []
         fields = Field.objects.filter(id__in=field_ids)
 
         fields_types_count = {x.id: {} for x in fields}
