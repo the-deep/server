@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import (
     exceptions,
     mixins,
@@ -6,7 +8,7 @@ from rest_framework import (
 )
 from rest_framework.decorators import list_route
 from django.db import models
-from django.contrib.postgres import search
+
 from django.contrib.auth.models import User
 from deep.permissions import ModifyPermission
 
@@ -19,6 +21,8 @@ from .serializers import (
     UserGroupSerializer,
     UserGroupUserSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class UserGroupViewSet(viewsets.ModelViewSet):
@@ -91,7 +95,11 @@ class UserGroupUserSearchViewSet(viewsets.GenericViewSet,
         # so that the selected fields will have same name and
         # can be merged together using union to a single query set.
 
-        users = User.objects.values(
+        users = User.objects.filter(
+            models.Q(username__icontains=query) |
+            models.Q(first_name__icontains=query) |
+            models.Q(last_name__icontains=query)
+        ).values(
             entity_id=models.F('id'),
             entity_username=models.F('username'),
             entity_first_name=models.F('first_name'),
@@ -100,15 +108,11 @@ class UserGroupUserSearchViewSet(viewsets.GenericViewSet,
 
             entity_title=models.Value(None, models.CharField()),
             entity_type=models.Value('user', models.CharField()),
+        )
 
-            similarity=models.functions.Greatest(
-                search.TrigramSimilarity('username', query),
-                search.TrigramSimilarity('first_name', query),
-                search.TrigramSimilarity('last_name', query),
-            ),
-        ).filter(similarity__gt=0.1)
-
-        user_groups = UserGroup.objects.values(
+        user_groups = UserGroup.objects.filter(
+            title__icontains=query
+        ).values(
             entity_id=models.F('id'),
             entity_title=models.F('title'),
 
@@ -117,9 +121,7 @@ class UserGroupUserSearchViewSet(viewsets.GenericViewSet,
             entity_last_name=models.Value(None, models.CharField()),
             entity_type=models.Value('user_group', models.CharField()),
             entity_display_picture=models.Value(None, models.IntegerField()),
-
-            similarity=search.TrigramSimilarity('title', query),
-        ).filter(similarity__gt=0.1)
+        )
 
         project = self.request.query_params.get('project')
         if project:
@@ -127,4 +129,21 @@ class UserGroupUserSearchViewSet(viewsets.GenericViewSet,
             user_groups = user_groups.exclude(project__id=project)
 
         entities = users.union(user_groups)
-        return entities.order_by('-similarity')
+        logger.debug(entities.query)
+
+        def sort_key(item):
+            # The less the query's index, better the relevance
+            if item['entity_type'] == 'user':
+                return max([
+                    item['entity_username'].find(query),
+                    item['entity_username'].find(query),
+                    item['entity_username'].find(query),
+                ])
+            elif item['entity_type'] == 'user_group':
+                return item['entity_title'].find(query) \
+                    if item['entity_title'] else -1
+            else:
+                return -1
+
+        sorted_entities = sorted(entities, key=sort_key)
+        return sorted_entities
