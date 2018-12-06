@@ -4,9 +4,10 @@ from geo.models import GeoArea
 
 def parse_number(val):
     try:
-        float(val)
+        float()
         return True
-    except ValueError:
+        # FIXME: does ValueError even occur?
+    except (ValueError, TypeError):
         return False
 
 
