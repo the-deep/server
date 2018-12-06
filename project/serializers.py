@@ -12,6 +12,7 @@ from project.models import (
     ProjectJoinRequest,
     ProjectRole,
     ProjectUserGroupMembership,
+    ProjectStatusCondition,
 )
 from entry.models import Lead, Entry
 from project.permissions import PROJECT_PERMISSIONS
@@ -401,4 +402,10 @@ class ProjectUserGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectUserGroupMembership
+        fields = '__all__'
+
+
+class ProjectStatusConditionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectStatusCondition
         fields = '__all__'
