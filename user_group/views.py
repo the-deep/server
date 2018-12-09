@@ -88,6 +88,10 @@ class UserGroupUserSearchViewSet(viewsets.GenericViewSet,
 
     def get_queryset(self):
         query = self.request.query_params.get('search', '').strip().lower()
+        results_size = 50
+        num_results = self.request.query_params.get('num_results', '') or ''
+        if num_results.isnumeric():
+            results_size = int(num_results)
         if not query:
             raise exceptions.ValidationError('Empty search string')
 
@@ -145,5 +149,5 @@ class UserGroupUserSearchViewSet(viewsets.GenericViewSet,
             else:
                 return -1
 
-        sorted_entities = sorted(entities, key=sort_key)
+        sorted_entities = sorted(entities, key=sort_key)[:results_size]
         return sorted_entities
