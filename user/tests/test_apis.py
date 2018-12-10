@@ -75,6 +75,25 @@ class UserApiTests(TestCase):
 
         self.assertEqual(response.data['username'], self.user.username)
 
+    def test_search_user(self):
+        user1 = self.create(User, first_name='test', last_name='user')
+        user2 = self.create(User, first_name='user', last_name='test')
+        user3 = self.create(User, first_name='my test', last_name='user')
+
+        url = '/api/v1/users/?search=test'
+        self.authenticate()
+
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        data = response.json()
+
+        assert data['count'] == 3
+        # user1 is most matching and user3 is the least matching
+        assert data['results'][0]['id'] == user1.id
+        assert data['results'][1]['id'] == user3.id
+        assert data['results'][2]['id'] == user2.id
+
     def test_notifications(self):
         test_project = self.create(Project, role=self.admin_role)
         test_user = self.create(User)
