@@ -54,38 +54,19 @@ class UserGroupApiTest(TestCase):
 
         self.assertEqual(response.data['count'], 0)
 
-    def test_search_user_usergroups_validation_empty_query(self):
-        url = '/api/v1/users-user-groups/?search='
-        self.authenticate()
-        response = self.client.get(url)
-        self.assert_400(response)
+    def test_search_user_group(self):
+        user_group1 = self.create(UserGroup, title="MyTestUserGroup")
+        user_group2 = self.create(UserGroup, title="MyUserTestGroup")
+        url = '/api/v1/user-groups/?search=test'
 
-    def test_search_user_usergroups(self):
-        user_group = self.create(UserGroup, title="MyTestUserGroup")
-        test_user = self.create(User, username="mytestuser")
-        # Query should be mytest to match just
-        # the above created usergroup and user
-        url = '/api/v1/users-user-groups/?search=mytest'
-
-        # should return both user and usergroup
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
         data = response.json()
-
-        assert 'results' in data
-        assert len(data['results']) > 0, "Should be some matching name"
-
-        for item in data['results']:
-            assert 'id' in item
-            assert 'type' in item
-            assert item['type'] in ['user', 'user_group']
-
-        users = [x for x in data['results'] if x['type'] == 'user']
-        user_groups = [x for x in data['results'] if x['type'] == 'user_group']
-
-        self.assertEqual(users[0]['id'], test_user.id)
-        self.assertEqual(user_groups[0]['id'], user_group.id)
+        assert data['count'] == 2
+        assert data['results'][0]['id'] == user_group1.id,\
+            "'MyTestUserGroup' matches more to search query 'test'"
+        assert data['results'][1]['id'] == user_group2.id
 
     def test_add_member(self):
         # check if project membership changes or not
