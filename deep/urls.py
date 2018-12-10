@@ -104,6 +104,7 @@ from export.views import (
 )
 from deep.views import (
     Api_404View,
+    CombinedView,
     FrontendView,
     PasswordReset,
     ProjectJoinRequest,
@@ -384,6 +385,9 @@ urlpatterns = [
         AnalysisFrameworkCloneView.as_view()),
     url(get_api_path(r'clone-category-editor/(?P<ce_id>\d+)/$'),
         CategoryEditorCloneView.as_view()),
+
+    # Combined API View
+    url(get_api_path(r'combined/$'), CombinedView.as_view()),
 
     # Viewsets
     url(get_api_path(''), include(router.urls)),

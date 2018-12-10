@@ -1,7 +1,11 @@
 from rest_framework.exceptions import NotFound
-from rest_framework import status
-from rest_framework.views import APIView
+from rest_framework import (
+    views,
+    status,
+    response,
+)
 
+from django.urls import resolve
 from django.views.generic import View
 from django.conf import settings
 from django.template.response import TemplateResponse
@@ -27,10 +31,35 @@ class FrontendView(View):
         return TemplateResponse(request, 'home/welcome.html', context)
 
 
-class Api_404View(APIView):
+class Api_404View(views.APIView):
     def get(self, request, exception):
         raise NotFound(detail="Error 404, page not found",
                        code=status.HTTP_404_NOT_FOUND)
+
+
+class CombinedView(views.APIView):
+    def get(self, request, version=None):
+        apis = request.query_params.get('apis', None)
+        if apis is None:
+            return response.Response({})
+
+        apis = apis.split(',')
+        results = {}
+
+        api_prefix = '/'.join(request.path_info.split('/')[:-2])
+        for api in apis:
+            url = '{}/{}/'.format(api_prefix, api.strip('/'))
+            view, args, kwargs = resolve(url)
+            kwargs['request'] = request
+            api_response = view(*args, **kwargs)
+
+            if api_response.status_code >= 400:
+                return response.Response({
+                    api: api_response.data
+                }, status=api_response.status_code)
+            results[api] = api_response.data
+
+        return response.Response(results)
 
 
 def get_basic_email_context():
