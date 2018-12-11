@@ -9,34 +9,36 @@ from project.serializers import ProjectJoinRequestSerializer
 @receiver(post_save, sender=ProjectJoinRequest)
 def create_notification(sender, instance, created, **kwargs):
     admins = instance.project.get_admins()
+    data = ProjectJoinRequestSerializer(instance).data
 
     if (created):
         for admin in admins:
-            data = {'join_request_id': instance.id}
             Notification.objects.create(
                 receiver=admin,
                 notification_type=Notification.PROJECT_JOIN_REQUEST,
                 project=instance.project,
                 data=data,
             )
-
         return
 
-    # Changing unseen to seen for obsolete action (Not implemented)
-    """
-    notifications = Notification.objects.filter(
-        data__id=instance.id,
-        status='unseen',
+    # notifiy the requester as well
+    if instance.status in ['accepted', 'rejected']:
+        Notification.objects.create(
+            receiver=instance.requested_by,
+            notification_type=Notification.PROJECT_JOIN_RESPONSE,
+            project=instance.project,
+            data=data,
+        )
+
+    old_notifications = Notification.objects.filter(
+        data__id=instance.id
     )
 
-    for notification in notifications:
-        notification.status = 'seen'
+    for notification in old_notifications:
+        notification.data = data
         notification.save()
-    """
 
     for admin in admins:
-        data = {'join_request_id': instance.id}
-
         Notification.objects.create(
             receiver=admin,
             notification_type=Notification.PROJECT_JOIN_RESPONSE,
@@ -47,12 +49,21 @@ def create_notification(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=ProjectJoinRequest)
 def update_notification(sender, instance, **kwargs):
-    admins = instance.project.get_admins()
+    old_notifications = Notification.objects.filter(
+        data__id=instance.id
+    )
 
+    for notification in old_notifications:
+        notification.data['status'] = 'aborted'
+        notification.save()
+
+    admins = instance.project.get_admins()
+    data = ProjectJoinRequestSerializer(instance).data
+    data['status'] = 'aborted'
     for admin in admins:
         Notification.objects.create(
             receiver=admin,
             notification_type=Notification.PROJECT_JOIN_REQUEST_ABORT,
             project=instance.project,
-            data=ProjectJoinRequestSerializer(instance).data,
+            data=data
         )
