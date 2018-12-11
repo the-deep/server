@@ -1,15 +1,14 @@
+
 from rest_framework import (
-    exceptions,
-    mixins,
     permissions,
     viewsets,
 )
 from rest_framework.decorators import list_route
 from django.db import models
-from django.contrib.postgres import search
-from django.contrib.auth.models import User
+
 from deep.permissions import ModifyPermission
 
+from utils.db.functions import StrPos
 from .models import (
     GroupMembership,
     UserGroup,
@@ -17,7 +16,6 @@ from .models import (
 from .serializers import (
     GroupMembershipSerializer,
     UserGroupSerializer,
-    UserGroupUserSerializer,
 )
 
 
@@ -39,6 +37,18 @@ class UserGroupViewSet(viewsets.ModelViewSet):
         self.page = self.paginate_queryset(user_groups)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+        search_str = self.request.query_params.get('search')
+        if search_str is None or not search_str.strip():
+            return queryset
+        return queryset.annotate(
+            strpos=StrPos(
+                models.functions.Lower('title'),
+                models.Value(search_str.lower(), models.CharField())
+            )
+        ).filter(strpos__gte=1).order_by('strpos')
 
 
 class GroupMembershipViewSet(viewsets.ModelViewSet):
@@ -75,56 +85,3 @@ class GroupMembershipViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return GroupMembership.get_for(self.request.user)
-
-
-class UserGroupUserSearchViewSet(viewsets.GenericViewSet,
-                                 mixins.ListModelMixin):
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = UserGroupUserSerializer
-
-    def get_queryset(self):
-        query = self.request.query_params.get('search', '').strip().lower()
-        if not query:
-            raise exceptions.ValidationError('Empty search string')
-
-        # We have to rename each field of users and usergroups query
-        # so that the selected fields will have same name and
-        # can be merged together using union to a single query set.
-
-        users = User.objects.values(
-            entity_id=models.F('id'),
-            entity_username=models.F('username'),
-            entity_first_name=models.F('first_name'),
-            entity_last_name=models.F('last_name'),
-            entity_display_picture=models.F('profile__display_picture'),
-
-            entity_title=models.Value(None, models.CharField()),
-            entity_type=models.Value('user', models.CharField()),
-
-            similarity=models.functions.Greatest(
-                search.TrigramSimilarity('username', query),
-                search.TrigramSimilarity('first_name', query),
-                search.TrigramSimilarity('last_name', query),
-            ),
-        ).filter(similarity__gt=0.1)
-
-        user_groups = UserGroup.objects.values(
-            entity_id=models.F('id'),
-            entity_title=models.F('title'),
-
-            entity_username=models.Value(None, models.CharField()),
-            entity_first_name=models.Value(None, models.CharField()),
-            entity_last_name=models.Value(None, models.CharField()),
-            entity_type=models.Value('user_group', models.CharField()),
-            entity_display_picture=models.Value(None, models.IntegerField()),
-
-            similarity=search.TrigramSimilarity('title', query),
-        ).filter(similarity__gt=0.1)
-
-        project = self.request.query_params.get('project')
-        if project:
-            users = users.exclude(project__id=project)
-            user_groups = user_groups.exclude(project__id=project)
-
-        entities = users.union(user_groups)
-        return entities.order_by('-similarity')

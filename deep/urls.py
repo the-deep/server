@@ -37,7 +37,6 @@ from tabular.views import (
 from user_group.views import (
     GroupMembershipViewSet,
     UserGroupViewSet,
-    UserGroupUserSearchViewSet
 )
 from project.views import (
     ProjectMembershipViewSet,
@@ -168,8 +167,6 @@ router.register(r'user-groups', UserGroupViewSet,
                 base_name='user_group')
 router.register(r'group-memberships', GroupMembershipViewSet,
                 base_name='group_membership')
-router.register(r'users-user-groups', UserGroupUserSearchViewSet,
-                base_name='users_usergroup')
 
 # Project routers
 router.register(r'projects', ProjectViewSet,

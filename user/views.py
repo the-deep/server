@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.db import models
 from django.template.response import TemplateResponse
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
@@ -14,6 +15,7 @@ from rest_framework import (
 )
 from rest_framework.decorators import detail_route
 
+from utils.db.functions import StrPos
 from deep.views import get_frontend_url
 from .token import unsubscribe_email_token_generator
 from .serializers import (
@@ -57,7 +59,6 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [UserPermission]
 
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
-    search_fields = ('username', 'first_name', 'last_name', 'email')
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -94,6 +95,23 @@ class UserViewSet(viewsets.ModelViewSet):
         self.page = self.paginate_queryset(notifications)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+        search_str = self.request.query_params.get('search')
+        if search_str is None or not search_str.strip():
+            return queryset
+        return queryset.annotate(
+            strpos=StrPos(
+                models.functions.Lower(
+                    models.functions.Concat(
+                        'first_name', models.Value(' '), 'last_name',
+                        output_field=models.CharField()
+                    )
+                ),
+                models.Value(search_str.lower(), models.CharField())
+            )
+        ).filter(strpos__gte=1).order_by('strpos')
 
 
 class PasswordResetView(views.APIView):
