@@ -74,17 +74,3 @@ class UserGroupSerializer(RemoveNullFieldsMixin,
         if membership:
             return membership.role
         return 'null'
-
-
-class UserGroupUserSerializer(RemoveNullFieldsMixin,
-                              DynamicFieldsMixin, serializers.Serializer):
-    id = serializers.IntegerField(source='entity_id')
-    type = serializers.CharField(source='entity_type')
-
-    display_picture = serializers.IntegerField(source='entity_display_picture')
-    title = serializers.CharField(source='entity_title')
-    username = serializers.CharField(source='entity_username')
-    first_name = serializers.CharField(source='entity_first_name')
-    last_name = serializers.CharField(source='entity_last_name')
-
-    similarity = serializers.FloatField()
