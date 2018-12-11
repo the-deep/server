@@ -77,32 +77,36 @@ def update_notification_for_join_request(sender, instance, **kwargs):
 def remove_notifications_for_former_project_admin(
         sender, instance, **kwargs):
     admin_roles = ProjectRole.get_admin_roles()
-    old_membership = ProjectMembership.objects.get(id=instance.id)
 
-    if old_membership.role in admin_roles\
-            and instance.role not in admin_roles:
-        old_notifications = Notification.objects.filter(
-            receiver=instance.member,
-            project=instance.project
-        )
-        old_notifications.delete()
+    try:
+        old_membership = ProjectMembership.objects.get(id=instance.id)
 
-    if old_membership.role not in admin_roles\
-            and instance.role in admin_roles:
-
-        old_project_join_requests = ProjectJoinRequest.objects.filter(
-            project=instance.project,
-            status='pending',
-        )
-
-        for old_project_join_request in old_project_join_requests:
-            Notification.objects.create(
+        if old_membership.role in admin_roles\
+                and instance.role not in admin_roles:
+            old_notifications = Notification.objects.filter(
                 receiver=instance.member,
-                notification_type=Notification.PROJECT_JOIN_REQUEST,
-                project=instance.project,
-                data=ProjectJoinRequestSerializer(
-                    old_project_join_request).data,
+                project=instance.project
             )
+            old_notifications.delete()
+
+        if old_membership.role not in admin_roles\
+                and instance.role in admin_roles:
+
+            old_project_join_requests = ProjectJoinRequest.objects.filter(
+                project=instance.project,
+                status='pending',
+            )
+
+            for old_project_join_request in old_project_join_requests:
+                Notification.objects.create(
+                    receiver=instance.member,
+                    notification_type=Notification.PROJECT_JOIN_REQUEST,
+                    project=instance.project,
+                    data=ProjectJoinRequestSerializer(
+                        old_project_join_request).data,
+                )
+    except ProjectMembership.DoesNotExist:
+        pass
 
 
 @receiver(post_save, sender=ProjectMembership)
