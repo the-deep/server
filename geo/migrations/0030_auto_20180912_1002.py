@@ -9,7 +9,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('geo', '0029_region_client_id'),
+        ('geo', '0028_auto_20180330_0953'),
     ]
 
     operations = [
