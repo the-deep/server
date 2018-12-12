@@ -75,10 +75,13 @@ class UserApiTests(TestCase):
 
         self.assertEqual(response.data['username'], self.user.username)
 
-    def test_search_user(self):
+    def test_search_user_without_exclude(self):
+        project = self.create(Project)
         user1 = self.create(User, first_name='test', last_name='user')
         user2 = self.create(User, first_name='user', last_name='test')
         user3 = self.create(User, first_name='my test', last_name='user')
+        # Add members to project
+        project.add_member(user1)
 
         url = '/api/v1/users/?search=test'
         self.authenticate()
@@ -93,6 +96,28 @@ class UserApiTests(TestCase):
         assert data['results'][0]['id'] == user1.id
         assert data['results'][1]['id'] == user3.id
         assert data['results'][2]['id'] == user2.id
+
+    def test_search_user_with_exclude(self):
+        project = self.create(Project)
+        user1 = self.create(User, first_name='test', last_name='user')
+        user2 = self.create(User, first_name='user', last_name='test')
+        user3 = self.create(User, first_name='my test', last_name='user')
+        # Add members to project
+        project.add_member(user1)
+
+        url = '/api/v1/users/?search=test&members_exclude_project=' \
+            + str(project.id)
+        self.authenticate()
+
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        data = response.json()
+
+        assert data['count'] == 2, "user 1 is in the project, so one less"
+        # user3 is most matching and user2 is the least matching
+        assert data['results'][0]['id'] == user3.id
+        assert data['results'][1]['id'] == user2.id
 
     def test_notifications(self):
         test_project = self.create(Project, role=self.admin_role)
