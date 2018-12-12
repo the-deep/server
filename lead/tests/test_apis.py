@@ -34,6 +34,30 @@ class LeadTests(TestCase):
         self.assertEqual(response.data['title'], data['title'])
         self.assertEqual(response.data['assignee'], self.user.id)
 
+    def test_get_lead_check_no_of_entries(self, assignee=None):
+        project = self.create(Project, role=self.admin_role)
+
+        url = '/api/v1/leads/'
+        data = {
+            'title': 'Spaceship spotted in sky',
+            'project': project.id,
+            'source': 'MCU',
+            'confidentiality': Lead.UNPROTECTED,
+            'status': Lead.PENDING,
+            'text': 'Alien shapeship has been spotted in the sky',
+            'assignee': assignee or self.user.id,
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        url = '/api/v1/leads/'
+
+        response = self.client.get(url)
+
+        assert 'noOfEntries' in response.data["results"][0]
+
     def test_create_lead_no_create_role(self, assignee=None):
         lead_count = Lead.objects.count()
         project = self.create(Project, role=self.admin_role)
