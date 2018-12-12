@@ -54,10 +54,16 @@ class UserGroupApiTest(TestCase):
 
         self.assertEqual(response.data['count'], 0)
 
-    def test_search_user_group(self):
+    def test_search_user_group_without_exclusion(self):
+        project = self.create(Project)
         user_group1 = self.create(UserGroup, title="MyTestUserGroup")
         user_group2 = self.create(UserGroup, title="MyUserTestGroup")
         url = '/api/v1/user-groups/?search=test'
+
+        ProjectUserGroupMembership.objects.create(
+            project=project,
+            usergroup=user_group1
+        )
 
         self.authenticate()
         response = self.client.get(url)
@@ -67,6 +73,25 @@ class UserGroupApiTest(TestCase):
         assert data['results'][0]['id'] == user_group1.id,\
             "'MyTestUserGroup' matches more to search query 'test'"
         assert data['results'][1]['id'] == user_group2.id
+
+    def test_search_user_group_with_exclusion(self):
+        project = self.create(Project)
+        user_group1 = self.create(UserGroup, title="MyTestUserGroup")
+        user_group2 = self.create(UserGroup, title="MyUserTestGroup")
+        url = '/api/v1/user-groups/?search=test&members_exclude_project=' \
+            + str(project.id)
+
+        ProjectUserGroupMembership.objects.create(
+            project=project,
+            usergroup=user_group1
+        )
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        data = response.json()
+        assert data['count'] == 1, "user group 1 is added to project"
+        assert data['results'][0]['id'] == user_group2.id
 
     def test_add_member(self):
         # check if project membership changes or not
