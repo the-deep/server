@@ -40,9 +40,19 @@ class UserGroupViewSet(viewsets.ModelViewSet):
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
+
+        # Check if project exclusion query is present
+        exclude_project = self.request.query_params.get(
+            'members_exclude_project')
+        if exclude_project:
+            queryset = queryset.filter(
+                ~models.Q(projectusergroupmembership__project=exclude_project)
+            ).distinct()
+
         search_str = self.request.query_params.get('search')
         if search_str is None or not search_str.strip():
             return queryset
+
         return queryset.annotate(
             strpos=StrPos(
                 models.functions.Lower('title'),
