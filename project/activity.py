@@ -43,7 +43,7 @@ def get_diff(v1, v2):
             'user': {
                 'name': v1.revision.user.profile.get_display_name(),
                 'id': v1.revision.user.id,
-            },
+            } if v1.revision.user else None,  # TODO: this is just a fix
             'timestamp': v1.revision.date_created,
         }
     return None
