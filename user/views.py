@@ -116,6 +116,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 models.functions.Lower(
                     models.functions.Concat(
                         'first_name', models.Value(' '), 'last_name',
+                        models.Value(' '), 'email',
                         output_field=models.CharField()
                     )
                 ),
