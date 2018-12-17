@@ -1,3 +1,4 @@
+import logging
 from bs4 import BeautifulSoup as Soup
 import requests
 import re
@@ -5,6 +6,8 @@ import re
 from .base import Source
 from connector.utils import handle_connector_parse_error
 from lead.models import Lead
+
+logger = logging.getLogger(__name__)
 
 COUNTRIES_OPTIONS = [
     {'key': 'Somalia', 'label': 'Somalia'},
@@ -89,23 +92,30 @@ class PDNA(Source):
         results = []
         resp = requests.get(self.URL)
         soup = Soup(resp.text, 'html.parser')
-        content = soup.find('tbody')
-        for row in content.findAll('tr'):
-            elem = row.find('a')
-            name = elem.get_text()
-            name = re.sub('(.*)', '', name)
-            title = row.findAll('td')[-1].get_text()
-            if name.strip() == country.strip():
-                # add as lead
-                url = elem['href']
-                if url[0] == '/':  # means relative path
-                    url = self.website + url
-                data = Lead(
-                    title=title.strip(),
-                    url=url,
-                    source='PDNA portal',
-                    source_type=Lead.WEBSITE,
-                    website=self.website
-                )
-                results.append(data)
+        contents = soup.findAll('tbody')
+        for content in contents:
+            for row in content.findAll('tr'):
+                try:
+                    elem = row.find('a')
+                    name = elem.get_text()
+                    title = row.findAll('td')[-1].get_text()
+                    if name.strip() == country.strip():
+                        # add as lead
+                        url = elem['href']
+                        if url[0] == '/':  # means relative path
+                            url = self.website + url
+                        data = Lead(
+                            id=str(url),
+                            title=title.strip(),
+                            url=url,
+                            source='PDNA portal',
+                            source_type=Lead.WEBSITE,
+                            website=self.website
+                        )
+                        results.append(data)
+                except Exception as e:
+                    logger.warn(
+                        "Exception parsing {} with params {}: {}".format(
+                            self.URL, params, e.args)
+                    )
         return results, len(results)

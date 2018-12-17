@@ -1,3 +1,4 @@
+import logging
 import requests
 from bs4 import BeautifulSoup as Soup
 from datetime import datetime
@@ -5,6 +6,8 @@ from datetime import datetime
 from .base import Source
 from connector.utils import handle_connector_parse_error
 from lead.models import Lead
+
+logger = logging.getLogger(__name__)
 
 
 COUNTRIES_OPTIONS = [
@@ -69,18 +72,26 @@ class HumanitarianResponse(Source):
         soup = Soup(resp.text, 'html.parser')
         contents = soup.find('div', {'id': 'content'}).find('tbody')
         for row in contents.findAll('tr'):
-            tds = row.findAll('td')
-            title = tds[0].find('a').get_text().strip()
-            datestr = tds[3].get_text().strip()
-            date = datetime.strptime(datestr, '%m/%d/%Y')
-            url = tds[4].find('a')['href']
-            data = Lead(
-                title=title,
-                published_on=date.date(),
-                url=url,
-                source='Humanitarian Response',
-                website=self.URL,
-                source_type=Lead.WEBSITE
-            )
-            results.append(data)
+            try:
+                tds = row.findAll('td')
+                title = tds[0].find('a').get_text().strip()
+                datestr = tds[3].get_text().strip()
+                date = datetime.strptime(datestr, '%m/%d/%Y')
+                url = tds[4].find('a')['href']
+                data = Lead(
+                    id=url,
+                    title=title,
+                    published_on=date.date(),
+                    url=url,
+                    source='Humanitarian Response',
+                    website=self.URL,
+                    source_type=Lead.WEBSITE
+                )
+                results.append(data)
+            except Exception as e:
+                logger.warn(
+                    "Exception parsing humanitarian response connector: " +
+                    str(e.args)
+                )
+
         return results, len(results)
