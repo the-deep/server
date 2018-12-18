@@ -96,6 +96,10 @@ class ProjectDashboardSerializer(RemoveNullFieldsMixin,
         source='created_by.profile.get_display_name',
         read_only=True,
     )
+    created_by_id = serializers.IntegerField(
+        source='created_by.profile.id',
+        read_only=True,
+    )
     regions = SimpleRegionSerializer(many=True, required=False)
     number_of_users = serializers.IntegerField(
         source='get_number_of_users',
@@ -114,7 +118,7 @@ class ProjectDashboardSerializer(RemoveNullFieldsMixin,
 
     class Meta:
         model = Project
-        fields = ('created_at', 'created_by', 'regions',
+        fields = ('created_at', 'created_by', 'created_by_id', 'regions',
                   'top_sourcers', 'top_taggers', 'status', 'activity_log',
                   'number_of_users', 'number_of_leads', 'number_of_entries',
                   'leads_activity', 'entries_activity')
@@ -137,6 +141,7 @@ class ProjectDashboardSerializer(RemoveNullFieldsMixin,
             {
                 'id': sourcer.id,
                 'name': sourcer.member.profile.get_display_name(),
+                'user_id': sourcer.member.profile.id,
                 'count': sourcer.leads_count,
             } for sourcer in sourcers
         ]
@@ -159,6 +164,7 @@ class ProjectDashboardSerializer(RemoveNullFieldsMixin,
             {
                 'id': tagger.id,
                 'name': tagger.member.profile.get_display_name(),
+                'user_id': tagger.member.profile.id,
                 'count': tagger.entries_count,
             } for tagger in taggers
         ]
