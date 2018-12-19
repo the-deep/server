@@ -141,7 +141,7 @@ class ProjectDashboardSerializer(RemoveNullFieldsMixin,
             {
                 'id': sourcer.id,
                 'name': sourcer.member.profile.get_display_name(),
-                'user_id': sourcer.member.profile.id,
+                'user_id': sourcer.member.id,
                 'count': sourcer.leads_count,
             } for sourcer in sourcers
         ]
@@ -164,7 +164,7 @@ class ProjectDashboardSerializer(RemoveNullFieldsMixin,
             {
                 'id': tagger.id,
                 'name': tagger.member.profile.get_display_name(),
-                'user_id': tagger.member.profile.id,
+                'user_id': tagger.member.id,
                 'count': tagger.entries_count,
             } for tagger in taggers
         ]
