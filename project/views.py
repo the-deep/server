@@ -47,6 +47,7 @@ from .models import (
 )
 from .serializers import (
     ProjectSerializer,
+    ProjectStatSerializer,
     ProjectRoleSerializer,
     ProjectMembershipSerializer,
     ProjectJoinRequestSerializer,
@@ -78,9 +79,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     Get list of projects that user is member of
     """
-    @list_route(permission_classes=[permissions.IsAuthenticated],
-                serializer_class=ProjectSerializer,
-                url_path='member-of')
+    @list_route(
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='member-of',
+    )
     def get_for_member(self, request, version=None):
         user = self.request.GET.get('user', request.user)
         projects = Project.get_for_member(user)
@@ -294,6 +296,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
         self.page = self.paginate_queryset(join_requests)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
+
+
+# FIXME: user better API
+class ProjectStatViewSet(ProjectViewSet):
+    serializer_class = ProjectStatSerializer
+
+    def get_queryset(self):
+        return get_filtered_projects(
+            self.request.user, self.request.GET,
+            annotate=True,
+        )
 
     """
     Get dashboard related data for this project
