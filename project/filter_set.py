@@ -36,8 +36,8 @@ class ProjectUserGroupMembershipFilterSet(UserResourceFilterSet):
         fields = ['id', 'project', 'usergroup']
 
 
-def get_filtered_projects(user, queries):
-    projects = Project.get_for(user)
+def get_filtered_projects(user, queries, annotate=False):
+    projects = Project.get_for(user, annotate)
     involvement = queries.get('involvement')
     if involvement:
         if involvement == 'my_projects':
