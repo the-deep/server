@@ -105,6 +105,7 @@ class ProjectDashboardSerializer(RemoveNullFieldsMixin,
         source='get_number_of_users',
         read_only=True,
     )
+
     number_of_leads = serializers.IntegerField(read_only=True)
     number_of_entries = serializers.IntegerField(read_only=True)
     status = serializers.ReadOnlyField(source='status.title')
@@ -121,7 +122,8 @@ class ProjectDashboardSerializer(RemoveNullFieldsMixin,
         fields = ('created_at', 'created_by', 'created_by_id', 'regions',
                   'top_sourcers', 'top_taggers', 'status', 'activity_log',
                   'number_of_users', 'number_of_leads', 'number_of_entries',
-                  'leads_activity', 'entries_activity')
+                  'leads_activity', 'entries_activity'
+                  )
 
     def get_top_sourcers(self, project):
         sourcers = ProjectMembership.objects.filter(
@@ -288,16 +290,6 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         source='get_number_of_users',
         read_only=True,
     )
-    number_of_leads = serializers.IntegerField(read_only=True)
-    number_of_entries = serializers.IntegerField(read_only=True)
-
-    entries_activity = serializers.ReadOnlyField(
-        source='get_entries_activity',
-    )
-    leads_activity = serializers.ReadOnlyField(
-        source='get_leads_activity',
-    )
-
     status_title = serializers.ReadOnlyField(source='status.title')
 
     class Meta:
@@ -375,6 +367,14 @@ class ProjectSerializer(RemoveNullFieldsMixin,
             raise serializers.ValidationError(
                 'Invalid analysis framework: {}'.format(analysis_framework.id))
         return analysis_framework
+
+
+class ProjectStatSerializer(ProjectSerializer):
+    number_of_leads = serializers.IntegerField(read_only=True)
+    number_of_entries = serializers.IntegerField(read_only=True)
+
+    leads_activity = serializers.ReadOnlyField(source='get_leads_activity')
+    entries_activity = serializers.ReadOnlyField(source='get_entries_activity')
 
 
 class ProjectJoinRequestSerializer(RemoveNullFieldsMixin,
