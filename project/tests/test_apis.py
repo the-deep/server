@@ -539,6 +539,7 @@ class ProjectApiTest(TestCase):
             condition_type=ProjectStatusCondition.NO_ENTRIES_CREATED,
             days=5,
         )
+
         old_date = timezone.now() - timedelta(days=8)
 
         # One with old lead
