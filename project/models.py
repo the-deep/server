@@ -32,6 +32,11 @@ class ProjectStatus(models.Model):
             for c in self.conditions.all()
         ]
 
+        # NOTE: if there are no conditions, it should always return false
+        # PS: any([]) is False, all([]) is False
+        if len(conditions) <= 0:
+            return False
+
         if self.and_conditions:
             return all(conditions)
         else:
@@ -39,10 +44,14 @@ class ProjectStatus(models.Model):
 
 
 class ProjectStatusCondition(models.Model):
+    SOME_LEADS_CREATED = 'some_leads'
+    SOME_ENTRIES_CREATED = 'some_entries'
     NO_LEADS_CREATED = 'no_leads'
     NO_ENTRIES_CREATED = 'no_entries'
 
     CONDITION_TYPES = (
+        (SOME_LEADS_CREATED, 'Some leads created since'),
+        (SOME_ENTRIES_CREATED, 'Some entries created since'),
         (NO_LEADS_CREATED, 'No leads created since'),
         (NO_ENTRIES_CREATED, 'No entries created since'),
     )
@@ -73,6 +82,14 @@ class ProjectStatusCondition(models.Model):
                 return False
             return True
 
+        if self.condition_type == ProjectStatusCondition.SOME_LEADS_CREATED:
+            if Lead.objects.filter(
+                project=project,
+                created_at__gt=time_threshold,
+            ).exists():
+                return True
+            return False
+
         if self.condition_type == ProjectStatusCondition.NO_ENTRIES_CREATED:
             if Entry.objects.filter(
                 lead__project=project,
@@ -80,6 +97,15 @@ class ProjectStatusCondition(models.Model):
             ).exists():
                 return False
             return True
+
+        if self.condition_type == ProjectStatusCondition.SOME_ENTRIES_CREATED:
+            if Entry.objects.filter(
+                lead__project=project,
+                created_at__gt=time_threshold,
+            ).exists():
+                return True
+            return False
+
         return False
 
 
@@ -235,10 +261,12 @@ class Project(UserResource):
         )
 
     def calc_status(self):
+        # NOTE: the ordering of status if important
         for status in ProjectStatus.objects.filter():
             if status.check_for(self):
                 return status
 
+        # NOTE: if no conditions pass, return first status with no condition
         return ProjectStatus.objects.filter(
             conditions__isnull=True
         ).first()
