@@ -76,6 +76,7 @@ def _extract_from_lead_core(lead_id):
                     image.close()
             # return False
 
+        classified_doc_id = None
         # Save extracted text as LeadPreview
         if text:
             # Classify the text and get doc id
@@ -91,7 +92,6 @@ def _extract_from_lead_core(lead_id):
                 classified_doc_id = response.get('id')
             except Exception:
                 logger.error(traceback.format_exc())
-                classified_doc_id = None
 
         # Make sure there isn't existing lead preview
         LeadPreview.objects.filter(lead=lead).delete()
