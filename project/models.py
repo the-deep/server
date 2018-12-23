@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
 from django.dispatch import receiver
+from django.db.models.functions import TruncDate
 
 from user_resource.models import UserResource
 from geo.models import Region
@@ -169,19 +170,36 @@ class Project(UserResource):
         pk = models.OuterRef('pk')
 
         threshold = timezone.now() - timedelta(days=30)
-        return Project.objects.annotate(
-            number_of_leads=models.Count('lead', distinct=True),
-            number_of_entries=models.Count('lead__entry', distinct=True),
 
-            leads_activity=models.functions.Coalesce(models.Subquery(
+        # TODO: Use count while using Django 2.1
+        return Project.objects.annotate(
+            number_of_leads=models.functions.Coalesce(models.Subquery(
                 Lead.objects.filter(
                     project=pk,
-                    created_at__gt=threshold,
-                ).order_by().values('project')
+                ).distinct().order_by().values('project')
                 .annotate(c=models.Count('*')).values('c')[:1],
                 output_field=models.IntegerField(),
             ), 0),
 
+            number_of_entries=models.functions.Coalesce(models.Subquery(
+                Entry.objects.filter(
+                    lead__project=pk,
+                ).distinct().order_by().values('lead__project')
+                .annotate(c=models.Count('*')).values('c')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+
+            # NOTE: Used for sorting in discover projects
+            leads_activity=models.functions.Coalesce(models.Subquery(
+                Lead.objects.filter(
+                    project=pk,
+                    created_at__gt=threshold,
+                ).order_by().values('project')\
+                .annotate(c=models.Count('*')).values('c')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+
+            # NOTE: Used for sorting in discover projects
             entries_activity=models.functions.Coalesce(models.Subquery(
                 Entry.objects.filter(
                     lead__project=pk,
@@ -283,21 +301,34 @@ class Project(UserResource):
         min_date = timezone.now() - timedelta(days=30)
         max_date = timezone.now()
 
-        return generate_timeseries(
-            Entry.objects.filter(lead__project=self).distinct(),
-            min_date,
-            max_date,
-        )
+        activity = Entry.objects.filter(
+            lead__project=self,
+            created_at__date__gte=min_date,
+            created_at__date__lte=max_date,
+        ).annotate(
+            date=TruncDate('created_at'),
+        ).order_by().values('date').annotate(
+            count=models.Count('date'),
+        ).values('date', 'count')
+
+        return generate_timeseries(activity, min_date, max_date)
 
     def get_leads_activity(self):
+        from lead.models import Lead
         min_date = timezone.now() - timedelta(days=30)
         max_date = timezone.now()
 
-        return generate_timeseries(
-            self.lead_set.all(),
-            min_date,
-            max_date,
-        )
+        activity = Lead.objects.filter(
+            project=self,
+            created_at__date__gte=min_date,
+            created_at__date__lte=max_date,
+        ).annotate(
+            date=TruncDate('created_at'),
+        ).order_by().values('date').annotate(
+            count=models.Count('date'),
+        ).values('date', 'count')
+
+        return generate_timeseries(activity, min_date, max_date)
 
     def get_admins(self):
         return User.objects.filter(
