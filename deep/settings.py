@@ -411,7 +411,7 @@ else:
 DEEP_SUPPORTED_MIME_TYPES = [
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/rtf', 'text/plain', 'font/otf', 'application/pdf',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation', # noqa
     'application/vnd.ms-powerpoint', 'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'text/csv', 'image/png', 'image/jpeg', 'image/fig', 'image/gif',
@@ -447,6 +447,9 @@ if SENTRY_DSN:
         'release': raven.fetch_git_sha(BASE_DIR),
         'site': DEEPER_BACKEND_HOST,
         'environment': DEEP_ENVIRONMENT,
+        'tags': {
+            'in_cern': os.environ.get('IN_CERN', False),
+        }
     }
 
 # DEEPL Config
