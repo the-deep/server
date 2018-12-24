@@ -13,6 +13,7 @@ from project.models import (
     ProjectRole,
     ProjectUserGroupMembership,
     ProjectStatusCondition,
+    ProjectStatus,
 )
 from entry.models import Lead, Entry
 from project.permissions import PROJECT_PERMISSIONS
@@ -415,3 +416,13 @@ class ProjectStatusConditionSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectStatusCondition
         fields = '__all__'
+
+
+class ProjectStatusOptionsSerializer(serializers.ModelSerializer):
+    key = serializers.IntegerField(source='id', read_only=True)
+    value = serializers.CharField(source='title', read_only=True)
+    conditions = ProjectStatusConditionSerializer(many=True)
+
+    class Meta:
+        model = ProjectStatus
+        fields = ('key', 'value', 'and_conditions', 'conditions')
