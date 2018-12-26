@@ -1,7 +1,15 @@
+import pytest
+
 from django.conf import settings
 from deep.tests import TestCase
+from mock import patch
 
-from lead.tasks import extract_from_lead, _preprocess
+from lead.tasks import (
+    extract_from_lead,
+    _preprocess,
+    send_lead_text_to_deepl,
+    requests,
+)
 from lead.models import Lead
 
 from utils.common import get_or_write_file, makedirs
@@ -28,7 +36,6 @@ class ExtractFromLeadTaskTest(TestCase):
 
     def test_extraction(self):
         # Check if extraction works succesfully
-
         try:
             result = extract_from_lead(self.lead.id)
             self.assertTrue(result)
@@ -54,3 +61,11 @@ class ExtractFromLeadTaskTest(TestCase):
             logger.warning('LEAD EXTRACTION ERROR:')
             logger.warning(traceback.format_exc())
             return
+
+    @patch('lead.tasks.send_lead_text_to_deepl.retry')
+    @patch('lead.tasks.requests.post')
+    def test_deepl_request_failure(self, post_mock, send_retry_mock):
+        post_mock.side_effect = Exception()
+        send_lead_text_to_deepl(self.lead.id, "Test text")
+        # First retry has countdown 1
+        send_retry_mock.assert_called_with(countdown=1)

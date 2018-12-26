@@ -79,20 +79,8 @@ def _extract_from_lead_core(lead_id):
         classified_doc_id = None
         # Save extracted text as LeadPreview
         if text:
-            # Classify the text and get doc id
-
-            try:
-                data = {
-                    'deeper': 1,
-                    'group_id': lead.project.id,
-                    'text': text,
-                }
-                response = requests.post(DEEPL_CLASSIFY_URL,
-                                         data=data).json()
-                classified_doc_id = response.get('id')
-            except Exception:
-                logger.error(traceback.format_exc())
-
+            # Send deepl request to background
+            send_lead_text_to_deepl.delay(lead.id, text)
         # Make sure there isn't existing lead preview
         LeadPreview.objects.filter(lead=lead).delete()
         LeadPreviewImage.objects.filter(lead=lead).delete()
@@ -115,6 +103,44 @@ def _extract_from_lead_core(lead_id):
                 image.close()
 
     return True
+
+
+@shared_task(bind=True, max_retries=10)
+def send_lead_text_to_deepl(self, lead_id, text):
+    lead = Lead.objects.filter(id=lead_id).first()
+    if not lead:
+        return True
+
+    print('trying')
+    try:
+        data = {
+            'deeper': 1,
+            'group_id': lead.project.id,
+            'text': text,
+        }
+        response = requests.post(DEEPL_CLASSIFY_URL,
+                                 data=data).json()
+        classified_doc_id = response.get('id')
+
+        # Get preview
+        preview = LeadPreview.objects.filter(lead=lead).first()
+
+        if not preview:
+            # NOTE: This will be weird because by this time preview should have
+            # been created
+            logger.warn("Lead preview hasn't been created until deepl request")
+            return True
+
+        preview.classified_doc_id = classified_doc_id
+        preview.save()
+        return True
+    except Exception as e:
+        # Retry with exponential decay
+        logger.warn("Error while sending request to deepl. {}".format(
+            traceback.format_exc()))
+        retry_countdown = 2 ** self.request.retries
+        self.retry(countdown=retry_countdown)
+        return False
 
 
 @shared_task
