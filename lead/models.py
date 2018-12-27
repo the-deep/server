@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models, transaction
-from django.dispatch import receiver
 
 from project.models import Project
 from project.mixins import ProjectEntityMixin
@@ -184,9 +183,3 @@ class LeadPreviewImage(models.Model):
 
     def __str__(self):
         return 'Image extracted for {}'.format(self.lead)
-
-
-@receiver(models.signals.post_save, sender=Lead)
-def on_lead_saved(sender, **kwargs):
-    project = kwargs.get('instance').project
-    project.update_status()

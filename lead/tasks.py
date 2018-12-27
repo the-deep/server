@@ -77,10 +77,7 @@ def _extract_from_lead_core(lead_id):
             # return False
 
         classified_doc_id = None
-        # Save extracted text as LeadPreview
-        if text:
-            # Send deepl request to background
-            send_lead_text_to_deepl.delay(lead.id, text)
+
         # Make sure there isn't existing lead preview
         LeadPreview.objects.filter(lead=lead).delete()
         LeadPreviewImage.objects.filter(lead=lead).delete()
@@ -91,6 +88,10 @@ def _extract_from_lead_core(lead_id):
             text_extract=text,
             classified_doc_id=classified_doc_id,
         )
+
+        if text:
+            # Send background deepl request
+            send_lead_text_to_deepl.s(lead.id, text).delay()
 
         # Save extracted images as LeadPreviewImage instances
         if images:
@@ -111,7 +112,6 @@ def send_lead_text_to_deepl(self, lead_id, text):
     if not lead:
         return True
 
-    print('trying')
     try:
         data = {
             'deeper': 1,
@@ -128,7 +128,10 @@ def send_lead_text_to_deepl(self, lead_id, text):
         if not preview:
             # NOTE: This will be weird because by this time preview should have
             # been created
-            logger.warn("Lead preview hasn't been created until deepl request")
+            logger.warn(
+                "Lead(id:{}) preview hasn't been created until deepl request".
+                format(lead_id)
+            )
             return True
 
         preview.classified_doc_id = classified_doc_id
@@ -139,8 +142,7 @@ def send_lead_text_to_deepl(self, lead_id, text):
         logger.warn("Error while sending request to deepl. {}".format(
             traceback.format_exc()))
         retry_countdown = 2 ** self.request.retries
-        self.retry(countdown=retry_countdown)
-        return False
+        raise self.retry(countdown=retry_countdown, exc=e)
 
 
 @shared_task
