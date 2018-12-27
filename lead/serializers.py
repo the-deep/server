@@ -103,6 +103,7 @@ class LeadSerializer(RemoveNullFieldsMixin,
         assignee = assignee_id and get_object_or_404(User, id=assignee_id)
 
         lead = super().create(validated_data)
+
         if assignee:
             lead.assignee.add(assignee)
         return lead
