@@ -119,8 +119,9 @@ def send_lead_text_to_deepl(self, lead_id, text):
             'text': text,
         }
         response = requests.post(DEEPL_CLASSIFY_URL,
-                                 data=data).json()
-        classified_doc_id = response.get('id')
+                                 data=data)
+        response_data = response.json()
+        classified_doc_id = response_data.get('id')
 
         # Get preview
         preview = LeadPreview.objects.filter(lead=lead).first()
@@ -142,7 +143,7 @@ def send_lead_text_to_deepl(self, lead_id, text):
         logger.warn("Error while sending request to deepl. {}".format(
             traceback.format_exc()))
         retry_countdown = 2 ** self.request.retries
-        raise self.retry(countdown=retry_countdown, exc=e)
+        self.retry(countdown=retry_countdown)
 
 
 @shared_task
