@@ -437,7 +437,7 @@ DEEPL_DOMAINS = {
     'nightly': 'https://deepl-nightly.thedeep.io',
     'alpha': 'https://deepl-alpha.thedeep.io',
     'beta': 'https://deepl.togglecorp.com',
-    'development': os.environ.get('DEEPL_DOMAIN', 'http://192.168.1.66:8010'),
+    'development': os.environ.get('DEEPL_DOMAIN', 'http://192.168.31.92:8010'),
 }
 
 DEEPL_DOMAIN = DEEPL_DOMAINS.get(DEEP_ENVIRONMENT, DEEPL_DOMAINS['alpha'])
