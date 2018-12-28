@@ -17,7 +17,9 @@ Usage:
 
 nsmap = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main',
          'p': 'http://schemas.openxmlformats.org/presentationml/2006/main',
-         'a': 'http://schemas.openxmlformats.org/drawingml/2006/main'}
+         'a': 'http://schemas.openxmlformats.org/drawingml/2006/main',
+         'wP': 'http://schemas.openxmlformats.org/officeDocument/2006/extended-properties', # noqa
+         }
 
 
 def process_args():
@@ -140,6 +142,12 @@ def process(docx, pptx=False, img_dir=None):
 
 def pptx_process(docx, img_dir=None):
     return process(docx, pptx=True, img_dir=None)
+
+
+def get_pages_in_docx(file):
+    with zipfile.ZipFile(file) as zipf:
+        xml = zipf.read('docProps/app.xml')
+        return int(ET.fromstring(xml).find('wP:Pages', nsmap).text)
 
 
 if __name__ == '__main__':
