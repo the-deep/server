@@ -6,10 +6,14 @@ from deep.serializers import (
     RemoveNullFieldsMixin,
     RecursiveSerializer,
 )
+from django.db.models import Q
 from project.models import Project
 from user_resource.serializers import UserResourceSerializer
 from lead.serializers import SimpleLeadSerializer, ProjectEntitySerializer
 from lead.models import Lead, LeadGroup
+from deep.models import Field
+from geo.models import Region
+from organization.models import Organization
 from .models import (
     AssessmentTemplate,
     Assessment,
@@ -112,7 +116,8 @@ class FieldSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     title = serializers.CharField()
     tooltip = serializers.CharField()
-    field_type = serializers.CharField(source='get_type')
+    field_type = serializers.CharField()
+    source_type = serializers.CharField()
     options = OptionSerializer(source='get_options',
                                many=True, read_only=True)
 
@@ -215,6 +220,7 @@ class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
     )
 
     score_buckets = serializers.SerializerMethodField()
+    sources = serializers.SerializerMethodField()
 
     class Meta:
         model = AssessmentTemplate
@@ -226,3 +232,31 @@ class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
             [b.min_value, b.max_value, b.score]
             for b in buckets
         ]
+
+    def get_sources(self, instance):
+        def get_queryset(queryset):
+            return queryset.extra(
+                select={
+                    'key': 'id',
+                    'label': 'title',
+                }
+            ).values('key', 'label')
+
+        def have_source(source_type):
+            return AssessmentTemplate.objects.filter(
+                Q(metadatagroup__fields__source_type=source_type) |
+                Q(methodologygroup__fields__source_type=source_type),
+                pk=instance.pk,
+            ).exists()
+
+        return {
+            'countries': get_queryset(
+                Region.objects.filter(public=True)
+            ) if have_source(Field.COUNTRIES) else [],
+            'organizations': get_queryset(
+                Organization.objects
+            ) if have_source(Field.ORGANIZATIONS) else [],
+            'donors': get_queryset(
+                Organization.objects.filter(donor=True)
+            ) if have_source(Field.DONORS) else [],
+        }

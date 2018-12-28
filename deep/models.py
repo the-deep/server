@@ -7,21 +7,29 @@ from django.contrib.postgres.fields import JSONField
 class Field(models.Model):
     title = models.CharField(max_length=255)
 
+    # Fields
     STRING = 'string'
     NUMBER = 'number'
     DATE = 'date'
+    DATERANGE = 'daterange'
     SELECT = 'select'
     MULTISELECT = 'multiselect'
-    COUNTRIES = 'countries'
-    ORGANIZATIONS = 'organizations'
-    DONORS = 'donors'
 
     FIELD_TYPES = (
         (STRING, 'String'),
         (NUMBER, 'Number'),
         (DATE, 'Date'),
+        (DATERANGE, 'Date Range'),
         (SELECT, 'Select'),
         (MULTISELECT, 'Multiselect'),
+    )
+
+    # Sources
+    COUNTRIES = 'countries'
+    ORGANIZATIONS = 'organizations'
+    DONORS = 'donors'
+
+    SOURCE_TYPES = (
         (COUNTRIES, 'Countries'),
         (ORGANIZATIONS, 'Organizations'),
         (DONORS, 'Donors'),
@@ -33,58 +41,27 @@ class Field(models.Model):
         default=STRING,
     )
 
+    source_type = models.CharField(
+        max_length=50,
+        choices=SOURCE_TYPES,
+        null=True, blank=True,
+        default=None,
+    )
+
     properties = JSONField(default=None, blank=True, null=True)
 
     class Meta:
         abstract = True
 
-    def get_type(self):
-        if self.field_type == Field.COUNTRIES or \
-                self.field_type == Field.ORGANIZATIONS or \
-                self.field_type == Field.DONORS:
-            return Field.SELECT
-
-        return self.field_type
-
     def get_options(self):
-        from geo.models import Region
-        from organization.models import Organization
-
-        if self.field_type == Field.COUNTRIES:
-            countries = Region.objects.filter(public=True)
-            return [
-                {
-                    'key': country.id,
-                    'title': country.title,
-                } for country in countries
-            ]
-
-        if self.field_type == Field.ORGANIZATIONS:
-            organizations = Organization.objects.all()
-            return [
-                {
-                    'key': org.id,
-                    'title': org.title,
-                } for org in organizations
-            ]
-
-        if self.field_type == Field.DONORS:
-            donors = Organization.objects.filter(donor=True)
-            return [
-                {
-                    'key': org.id,
-                    'title': org.title,
-                } for org in donors
-            ]
-
+        if self.source_type in [type[0] for type in Field.SOURCE_TYPES]:
+            return []
         return [{'key': x.key, 'title': x.title} for x in self.options.all()]
 
     def get_value(self, raw_value):
         value = raw_value
         options = {x['key']: x['title'] for x in self.get_options()}
-        if self.field_type in (
-                Field.SELECT, Field.ORGANIZATIONS,
-                Field.COUNTRIES, Field.DONORS):
+        if self.field_type == Field.SELECT:
             value = options.get(raw_value, raw_value)
         elif self.field_type == Field.MULTISELECT:
             value = [options.get(x, x) for x in raw_value]
