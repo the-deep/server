@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.db import transaction
+from django.db import transaction, models
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_decode
@@ -54,6 +54,7 @@ from .serializers import (
     ProjectUserGroupSerializer,
     ProjectDashboardSerializer,
     ProjectStatusConditionSerializer,
+    ProjectStatusOptionsSerializer,
 )
 
 from .token import project_request_token_generator
@@ -410,24 +411,16 @@ class ProjectOptionsView(views.APIView):
                 .distinct()
             user_groups = user_groups1.union(user_groups2)
 
-            options['user_groups'] = [
-                {
-                    'key': user_group.id,
-                    'value': user_group.title,
-                } for user_group in user_groups.distinct()
-            ]
+            options['user_groups'] = user_groups.distinct().annotate(
+                key=models.F('id'),
+                value=models.F('title')
+            ).values('key', 'value')
 
         if (fields is None or 'status' in fields):
-            options['status'] = [
-                {
-                    'key': status.id,
-                    'value': status.title,
-                    'and_conditions': status.and_conditions,
-                    'conditions': ProjectStatusConditionSerializer(
-                        status.conditions.all(), many=True,
-                    ).data,
-                } for status in ProjectStatus.objects.all()
-            ]
+            options['status'] = ProjectStatusOptionsSerializer(
+                ProjectStatus.objects.all().prefetch_related('conditions'),
+                many=True
+            ).data
 
         if (fields is None or 'involvement' in fields):
             options['involvement'] = [
