@@ -1,5 +1,4 @@
 from deep.tests import TestCase
-from user.models import User
 from project.models import Project
 from export.models import Export
 

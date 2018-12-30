@@ -112,6 +112,15 @@ class Field(models.Model):
     def __str__(self):
         return self.title
 
+    def save(self, *args, **kwargs):
+        if hasattr(self, 'geodata'):
+            self.geodata.delete()
+        super().save(*args, **kwargs)
+
+    def get_option(self, key, default_value=None):
+        options = self.options or {}
+        return options.get(key, default_value)
+
     class Meta:
         ordering = ['ordering']
 
