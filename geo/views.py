@@ -1,6 +1,4 @@
 from django.conf import settings
-from django.contrib.gis.gdal import Envelope
-from django.core.serializers import serialize
 from django.db import models
 from rest_framework import (
     exceptions,
@@ -17,14 +15,13 @@ from deep.permissions import ModifyPermission
 from user_resource.filters import UserResourceFilterSet
 
 from project.models import Project
-from .models import Region, AdminLevel, GeoArea
+from .models import Region, AdminLevel
 from .serializers import (
     AdminLevelSerializer,
     RegionSerializer,
 )
 
 from geo.tasks import load_geo_areas
-import json
 
 
 class RegionFilterSet(UserResourceFilterSet):
