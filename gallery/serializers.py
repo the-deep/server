@@ -2,16 +2,22 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
-from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from deep.serializers import RemoveNullFieldsMixin
+import deep.documents_types as deep_doc_types
 from user_resource.serializers import UserResourceSerializer
 from utils.external_storages.google_drive import download as g_download
 from utils.external_storages.dropbox import download as d_download
+from utils.extractor.formats.docx import get_pages_in_docx
+from utils.extractor.formats.pdf import get_pages_in_pdf
 from .models import File, FilePreview
 
 import os
+import traceback
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SimpleFileSerializer(RemoveNullFieldsMixin,
@@ -34,14 +40,33 @@ class FileSerializer(RemoveNullFieldsMixin,
     # Validations
     def validate_file(self, file):
         extension = os.path.splitext(file.name)[1][1:]
-        if file.content_type not in settings.DEEP_SUPPORTED_MIME_TYPES and \
-                extension not in settings.DEEP_SUPPORTED_EXTENSIONS:
+        if file.content_type not in deep_doc_types.DEEP_SUPPORTED_MIME_TYPES\
+                and extension not in deep_doc_types.DEEP_SUPPORTED_EXTENSIONS:
             raise serializers.ValidationError(
                 'Unsupported file type {}'.format(file.content_type))
         return file
 
+    def _get_metadata(self, file):
+        metadata = {}
+        mime_type = file.content_type
+        if mime_type in deep_doc_types.PDF_MIME_TYPES:
+            metadata.update({
+                'pages': get_pages_in_pdf(file.file),
+            })
+        elif mime_type in deep_doc_types.DOCX_MIME_TYPES:
+            metadata.update({
+                'pages': get_pages_in_docx(file.file),
+            })
+        return metadata
+
     def create(self, validated_data):
         validated_data['mime_type'] = validated_data.get('file').content_type
+        try:
+            validated_data['metadata'] = self._get_metadata(
+                validated_data.get('file')
+            )
+        except Exception:
+            logger.error(traceback.format_exc())
         return super().create(validated_data)
 
 
@@ -65,7 +90,7 @@ class GoogleDriveFileSerializer(RemoveNullFieldsMixin,
             file_id,
             mime_type,
             access_token,
-            settings.DEEP_SUPPORTED_MIME_TYPES,
+            deep_doc_types.DEEP_SUPPORTED_MIME_TYPES,
             APIException,
         )
 
@@ -91,7 +116,7 @@ class DropboxFileSerializer(RemoveNullFieldsMixin,
 
         file, mime_type = d_download(
             file_url,
-            settings.DEEP_SUPPORTED_MIME_TYPES,
+            deep_doc_types.DEEP_SUPPORTED_MIME_TYPES,
             APIException,
         )
 

@@ -2,13 +2,13 @@ from xml.sax.saxutils import escape
 from datetime import timedelta, datetime
 from django.conf import settings
 
+
 import os
 import time
 import random
 import string
 import tempfile
 import requests
-
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1)' + \
     ' AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
