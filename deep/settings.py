@@ -403,26 +403,6 @@ else:
     # AWS_SES_REGION_NAME = 'us-east-1'
     # AWS_SES_REGION_ENDPOINT = 'email.us-east-1.amazonaws.com'
 
-
-# DEEP GALLERY CONFIGS ###
-
-# List of mime types supported in deep
-# NOTE: also change in frontend
-DEEP_SUPPORTED_MIME_TYPES = [
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/rtf', 'text/plain', 'font/otf', 'application/pdf',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation', # noqa
-    'application/vnd.ms-powerpoint', 'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'text/csv', 'image/png', 'image/jpeg', 'image/fig', 'image/gif',
-    'application/json', 'application/xml', 'application/msword',
-]
-DEEP_SUPPORTED_EXTENSIONS = [
-    'docx', 'xlsx', 'pdf', 'pptx',
-    'json', 'png', 'jpg', 'jpeg', 'csv', 'txt',
-    'geojson', 'zip',
-]
-
 # Gallery files Cache-control max-age - 1hr from s3
 MAX_FILE_CACHE_AGE = GALLERY_FILE_EXPIRE - (60 * 60)
 
