@@ -17,6 +17,7 @@ from .utils import (
     parse_geo,
     get_geos_dict,
 )
+from utils.common import get_max_occurence_and_count
 
 
 logger = logging.getLogger(__name__)
@@ -55,78 +56,67 @@ def auto_detect_and_update_fields(book):
         ] if data else []
         fields = Field.objects.filter(id__in=field_ids)
 
-        fields_types_count = {x.id: {} for x in fields}
-        geo_counts = {
-            x.id: {
-                'geo_types': {},
-                'admin_levels': {}
-            }
-            for x in fields
-        }  # Keep track of geo type and admin level counts
-
-        fields_default_types = {x.id: x.type for x in fields}
-
         total_rows = len(data)
 
         for row in data:
             for k, v in row.items():
+                # field_id: {'value': XXX, type: type}
 
                 if not k.isnumeric():  # because k is the pk of field
                     continue
-                key = int(k)
 
                 type = Field.STRING
                 geo_parsed = None
-                if parse_number(v):
+                if parse_number(v['value']):
                     type = Field.NUMBER
-                elif parse_datetime(v):
+                elif parse_datetime(v['value']):
                     type = Field.DATETIME
                 else:
-                    geo_parsed = parse_geo(v, geos_names, geos_codes)
-                    if geo_parsed:
-                        type = Field.GEO
-                        geo_type = geo_parsed['geo_type']
-                        admin_level = geo_parsed['admin_level']
+                    geo_parsed = parse_geo(v['value'], geos_names, geos_codes)
 
-                        geo_counts[key]['geo_types'][geo_type] = \
-                            geo_counts[key]['geo_types'].get(geo_type, 0) + 1
+                if geo_parsed is not None:
+                    type = Field.GEO
+                    v['geo_type'] = geo_parsed['geo_type']
+                    v['admin_level'] = geo_parsed['admin_level']
 
-                        geo_counts[key]['admin_levels'][admin_level] = \
-                            geo_counts[key]['admin_levels'].\
-                            get(admin_level, 0) + 1
-                    else:
-                        type = Field.STRING
+                v['type'] = type
 
-                #  Update types count
-                fields_types_count[key][type] = \
-                    fields_types_count[key].get(type, 0) + 1
+        # Store types info in row data
+        sheet.data = data
+        sheet.save()
 
         # Threshold percent for types to be same for a field
         threshold_count = math.floor(AUTO_DETECT_THRESHOLD * total_rows)
 
         for field in fields:
-            detected_field_type = [
-                k for k, v in fields_types_count[field.id].items()
-                if v >= threshold_count
-            ]
-            type = detected_field_type[0] if detected_field_type \
-                else fields_default_types[field.id]
+            fid = str(field.id)
+            id_types = [row[fid]['type'] for row in data]
+            max_type, max_count = get_max_occurence_and_count(id_types)
+
+            type = field.type
+            if max_count >= threshold_count:
+                type = max_type
 
             #  Get admin_level and geo_type for geo type field
             if type == Field.GEO:
-                geo_type = max(
-                    geo_counts[field.id]['geo_types'].items(),
-                    key=lambda kv: kv[1]
-                )[0]
-                admin_level = max(
-                    geo_counts[field.id]['admin_levels'].items(),
-                    key=lambda kv: kv[1]
-                )[0]
-                field.options = {
-                    'geo_type': geo_type,
-                    'admin_level': admin_level
-                }
+                geo_types = [
+                    row[fid]['geo_type']
+                    for row in data
+                    if row[fid]['type'] == Field.GEO
+                ]
+                admin_levels = [
+                    row[fid]['admin_level']
+                    for row in data
+                    if row[fid]['type'] == Field.GEO
+                ]
 
+                max_type, type_count = get_max_occurence_and_count(geo_types)
+                max_lev, lev_count = get_max_occurence_and_count(admin_levels)
+
+                field.options = {
+                    'geo_type': max_type,
+                    'admin_level': max_lev
+                }
             field.type = type
             field.save()
 

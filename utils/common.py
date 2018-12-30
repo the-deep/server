@@ -2,7 +2,8 @@ from xml.sax.saxutils import escape
 from datetime import timedelta, datetime
 from django.conf import settings
 
-
+from collections import Counter
+from functools import reduce
 import os
 import time
 import random
@@ -128,3 +129,15 @@ def random_key(length=16):
     candidates = string.ascii_lowercase + string.digits
     winners = [random.choice(candidates) for _ in range(length)]
     return ''.join(winners)
+
+
+def get_max_occurence_and_count(items):
+    """Return: (max_occuring_item, count)"""
+    if not items:
+        return 0, None
+    count = Counter(items)
+    return reduce(
+        lambda a, x: x if x[1] > a[1] else a,
+        count.items(),  # [(item, count)...]
+        (items[0], -1)  # Initial accumulator
+    )

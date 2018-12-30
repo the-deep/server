@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField, ArrayField, HStoreField
+from django.contrib.postgres.fields import JSONField
 from user_resource.models import UserResource
 from gallery.models import File
 from project.models import Project
@@ -80,7 +80,7 @@ class Sheet(models.Model):
     title = models.CharField(max_length=255)
     book = models.ForeignKey(Book)
     options = JSONField(default=None, blank=True, null=True)
-    data = ArrayField(HStoreField(), default=list)
+    data = JSONField(default=[])
 
     def __str__(self):
         return self.title
