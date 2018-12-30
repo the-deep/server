@@ -124,7 +124,7 @@ class UserPreferencesSerializer(RemoveNullFieldsMixin,
         allow_null=True,
         required=False,
     )
-
+    experimental = serializers.BooleanField(source='profile.experimental')
     language = serializers.CharField(source='profile.language',
                                      read_only=True)
     fallback_language = serializers.CharField(
@@ -136,7 +136,7 @@ class UserPreferencesSerializer(RemoveNullFieldsMixin,
         model = User
         fields = ('display_name', 'username', 'email', 'last_active_project',
                   'display_picture', 'is_superuser', 'language',
-                  'fallback_language')
+                  'fallback_language', 'experimental')
 
 
 class PasswordResetSerializer(RemoveNullFieldsMixin,
