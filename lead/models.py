@@ -117,7 +117,7 @@ class Lead(UserResource, ProjectEntityMixin):
 
     attachment = models.ForeignKey(File, on_delete=models.SET_NULL,
                                    default=None, null=True, blank=True)
-    tabular_book = models.ForeignKey(Book,
+    tabular_book = models.ForeignKey(Book, on_delete=models.SET_NULL,
                                      default=None, null=True, blank=True)
 
     def __str__(self):
