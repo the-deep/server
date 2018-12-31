@@ -10,7 +10,7 @@ from geo.models import GeoArea
 
 from tabular.tasks import auto_detect_and_update_fields
 from tabular.extractor import csv
-from tabular.models import Book, Field
+from tabular.models import Book, Field, Sheet
 
 consistent_csv_data = '''id,age,name,date,place
 1,10,john,2018 october 28,Kathmandu
@@ -173,6 +173,78 @@ class TestTabularExtraction(APITestCase):
                     'place is geo: more than 80% rows are of geo type'
                 assert field.options != {}
                 assert field.options['geo_type'] == 'code'
+
+    def test_sheet_data_change_on_datefield_change_to_string(self):
+        """
+        Update value type in sheet data rows when field type changed
+
+        This basically tries to cast row values to field type. In this case,
+        all values should be cast because we're casting to string
+        """
+        book = self.initialize_data_and_basic_test(consistent_csv_data)
+        auto_detect_and_update_fields(book)
+
+        sheet = book.sheet_set.all()[0]
+
+        # Now update date_field to string
+        field = Field.objects.get(
+            sheet=sheet,
+            type=Field.DATETIME
+        )
+        field.type = Field.STRING
+        field.save()
+
+        # Get sheet again, which should be updated
+        new_sheet = Sheet.objects.get(id=sheet.id)
+
+        data = new_sheet.data
+        for row in data:
+            assert row[str(field.id)]['type'] == Field.STRING
+
+    def test_sheet_data_change_on_string_change_to_geo(self):
+        """
+        Update value type in sheet data rows when field type changed
+
+        This basically tries to cast row values to field type.
+        """
+        book = self.initialize_data_and_basic_test(consistent_csv_data)
+        auto_detect_and_update_fields(book)
+
+        sheet = book.sheet_set.all()[0]
+
+        # We first cast geo field to string because initially it will be auto
+        # detected as geo
+        field = Field.objects.get(
+            sheet=sheet,
+            type=Field.GEO
+        )
+        fid = str(field.id)
+        field.type = Field.STRING
+        field.save()
+
+        # Get sheet again, which should be updated
+        new_sheet = Sheet.objects.get(id=sheet.id)
+
+        data = new_sheet.data
+        for row in data:
+            assert row[fid]['type'] == Field.STRING
+
+        # Now change type to Geo
+        field.type = Field.GEO
+        field.save()
+
+        # Get sheet again, which should be updated
+        brand_new_sheet = Sheet.objects.get(id=sheet.id)
+
+        data = brand_new_sheet.data
+        # Rows 0 to 5 and, rows 7 and 9 should now have geo fields
+        # NOTE: look at consistent_csv_data value
+        for x in range(0, 6):
+            assert data[x][fid]['type'] == Field.GEO
+        assert data[6][fid]['type'] == Field.STRING
+        assert data[7][fid]['type'] == Field.GEO
+        assert data[8][fid]['type'] == Field.STRING
+        assert data[9][fid]['type'] == Field.GEO
 
     def initialize_data_and_basic_test(self, csv_data):
         file = NamedTemporaryFile('w', dir=settings.MEDIA_ROOT, delete=False)
