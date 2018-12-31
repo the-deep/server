@@ -76,23 +76,6 @@ def _extract_from_lead_core(lead_id):
                     image.close()
             # return False
 
-        classified_doc_id = None
-        # Save extracted text as LeadPreview
-        if text:
-            # Classify the text and get doc id
-
-            try:
-                data = {
-                    'deeper': 1,
-                    'group_id': lead.project.id,
-                    'text': text,
-                }
-                response = requests.post(DEEPL_CLASSIFY_URL,
-                                         data=data).json()
-                classified_doc_id = response.get('id')
-            except Exception:
-                logger.error(traceback.format_exc())
-
         # Make sure there isn't existing lead preview
         LeadPreview.objects.filter(lead=lead).delete()
         LeadPreviewImage.objects.filter(lead=lead).delete()
@@ -101,8 +84,11 @@ def _extract_from_lead_core(lead_id):
         LeadPreview.objects.create(
             lead=lead,
             text_extract=text,
-            classified_doc_id=classified_doc_id,
         )
+
+        if text:
+            # Send background deepl request
+            send_lead_text_to_deepl.s(lead.id).delay()
 
         # Save extracted images as LeadPreviewImage instances
         if images:
@@ -115,6 +101,47 @@ def _extract_from_lead_core(lead_id):
                 image.close()
 
     return True
+
+
+@shared_task(bind=True, max_retries=10)
+def send_lead_text_to_deepl(self, lead_id):
+    lead = Lead.objects.filter(id=lead_id).first()
+    if not lead:
+        logger.warn(
+            "Lead(id:{}) does not exist but send_lead_text_to_deepl() called.".
+            format(lead_id)
+        )
+        return True
+
+    # Get preview
+    preview = LeadPreview.objects.filter(lead=lead).first()
+    if not preview:
+        logger.error(
+            "Lead(id:{}) preview hasn't been created but send_lead_text_to_deepl() called".  # noqa
+            format(lead_id)
+        )
+        return False
+
+    try:
+        data = {
+            'deeper': 1,
+            'group_id': lead.project.id,
+            'text': preview.text_extract,
+        }
+        response = requests.post(DEEPL_CLASSIFY_URL,
+                                 data=data)
+        response_data = response.json()
+        classified_doc_id = response_data.get('id')
+
+        preview.classified_doc_id = classified_doc_id
+        preview.save()
+        return True
+    except Exception as e:
+        # Retry with exponential decay
+        logger.warn("Error while sending request to deepl. {}".format(
+            traceback.format_exc()))
+        retry_countdown = 2 ** self.request.retries
+        self.retry(countdown=retry_countdown)
 
 
 @shared_task
