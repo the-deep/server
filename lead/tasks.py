@@ -76,8 +76,6 @@ def _extract_from_lead_core(lead_id):
                     image.close()
             # return False
 
-        classified_doc_id = None
-
         # Make sure there isn't existing lead preview
         LeadPreview.objects.filter(lead=lead).delete()
         LeadPreviewImage.objects.filter(lead=lead).delete()
@@ -86,12 +84,11 @@ def _extract_from_lead_core(lead_id):
         LeadPreview.objects.create(
             lead=lead,
             text_extract=text,
-            classified_doc_id=classified_doc_id,
         )
 
         if text:
             # Send background deepl request
-            send_lead_text_to_deepl.s(lead.id, text).delay()
+            send_lead_text_to_deepl.s(lead.id).delay()
 
         # Save extracted images as LeadPreviewImage instances
         if images:
@@ -107,33 +104,34 @@ def _extract_from_lead_core(lead_id):
 
 
 @shared_task(bind=True, max_retries=10)
-def send_lead_text_to_deepl(self, lead_id, text):
+def send_lead_text_to_deepl(self, lead_id):
     lead = Lead.objects.filter(id=lead_id).first()
     if not lead:
+        logger.warn(
+            "Lead(id:{}) does not exist but send_lead_text_to_deepl() called.".
+            format(lead_id)
+        )
         return True
+
+    # Get preview
+    preview = LeadPreview.objects.filter(lead=lead).first()
+    if not preview:
+        logger.error(
+            "Lead(id:{}) preview hasn't been created but send_lead_text_to_deepl() called".  # noqa
+            format(lead_id)
+        )
+        return False
 
     try:
         data = {
             'deeper': 1,
             'group_id': lead.project.id,
-            'text': text,
+            'text': preview.text_extract,
         }
         response = requests.post(DEEPL_CLASSIFY_URL,
                                  data=data)
         response_data = response.json()
         classified_doc_id = response_data.get('id')
-
-        # Get preview
-        preview = LeadPreview.objects.filter(lead=lead).first()
-
-        if not preview:
-            # NOTE: This will be weird because by this time preview should have
-            # been created
-            logger.warn(
-                "Lead(id:{}) preview hasn't been created until deepl request".
-                format(lead_id)
-            )
-            return True
 
         preview.classified_doc_id = classified_doc_id
         preview.save()
