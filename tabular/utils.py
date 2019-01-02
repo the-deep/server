@@ -10,7 +10,10 @@ def parse_number(val):
 
 
 def parse_datetime(val):
-    # try date parsing for english, french and spanish languages only
+    # Try date parsing for english, french and spanish languages only
+    # The following parses numbers as well so if number matches, return None
+    if parse_number(val):
+        return None
     date = dateparse(val, languages=['en', 'fr', 'es'])
     return date
 
