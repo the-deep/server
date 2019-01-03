@@ -4,16 +4,18 @@ from geo.models import GeoArea
 
 def parse_number(val):
     try:
-        float(val)
-        return True
+        return float(val)
     except (ValueError, TypeError):
-        return False
+        return None
 
 
 def parse_datetime(val):
-    # try date parsing for english, french and spanish languages only
+    # Try date parsing for english, french and spanish languages only
+    # The following parses numbers as well so if number matches, return None
+    if parse_number(val):
+        return None
     date = dateparse(val, languages=['en', 'fr', 'es'])
-    return date is not None
+    return date
 
 
 def get_geos_dict(project=None):

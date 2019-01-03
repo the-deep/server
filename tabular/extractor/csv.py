@@ -37,7 +37,10 @@ def extract(book):
             row = {}
             try:
                 for index, field in enumerate(fields):
-                    row[str(field.pk)] = _row[index]
+                    row[str(field.pk)] = {
+                        'value': _row[index],
+                        'type': Field.STRING
+                    }
                 row['key'] = random_key()
                 rows.append(row)
             except Exception:

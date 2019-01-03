@@ -1,9 +1,16 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField, ArrayField, HStoreField
+from django.contrib.postgres.fields import JSONField
 from user_resource.models import UserResource
 from gallery.models import File
 from project.models import Project
 from utils.common import get_file_from_url
+
+from tabular.utils import (
+    parse_number,
+    parse_geo,
+    get_geos_dict,
+    parse_datetime,
+)
 
 
 class Book(UserResource):
@@ -80,7 +87,39 @@ class Sheet(models.Model):
     title = models.CharField(max_length=255)
     book = models.ForeignKey(Book)
     options = JSONField(default=None, blank=True, null=True)
-    data = ArrayField(HStoreField(), default=list)
+    data = JSONField(default=[])
+
+    def cast_data_to(self, field):
+        type = field.type
+        if type == Field.STRING:
+            cast_func = str
+        elif type == Field.NUMBER:
+            cast_func = parse_number
+        elif type == Field.DATETIME:
+            cast_func = parse_datetime
+        elif type == Field.GEO:
+            geos_names = get_geos_dict(self.book.project)
+            geos_codes = {v['code'].lower(): v for k, v in geos_names.items()}
+            cast_func = lambda v: parse_geo(v, geos_names, geos_codes)  # noqa
+
+        fid = str(field.id)
+        newrows = []
+        for row in self.data:
+            if row.get(fid) is None:
+                continue
+            casted = cast_func(row[fid]['value'])
+            if casted is None:
+                newrows.append(row)
+                continue
+            # casted is not None means parse succeeded
+            row[fid]['type'] = field.type
+            if field.type == Field.GEO:
+                row[fid]['geo_type'] = casted['geo_type']
+                row[fid]['admin_level'] = casted['admin_level']
+            newrows.append(row)
+        self.data = newrows
+        self.save()
+        return self.data
 
     def __str__(self):
         return self.title
