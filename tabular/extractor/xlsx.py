@@ -86,7 +86,10 @@ def extract(book):
                     for index, field in enumerate(fields):
                         if field is None:
                             continue
-                        row[str(field.pk)] = _row[index].value
+                        row[str(field.pk)] = {
+                            'value': _row[index].value,
+                            'type': Field.STRING
+                        }
                     row['key'] = random_key()
                     rows.append(row)
                 except Exception:
