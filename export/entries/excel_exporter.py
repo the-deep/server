@@ -164,6 +164,27 @@ class ExcelExporter:
             else:
                 rows.add_value('')
 
+    def get_entry_data(self, entry):
+        if entry.entry_type == Entry.EXCERPT:
+            return entry.excerpt
+
+        if entry.entry_type == Entry.IMAGE:
+            return 'IMAGE'
+
+        if entry.entry_type == Entry.DATA_SERIES:
+            # Create a new tabular sheet and return reference
+            if 'tabular' not in self.wb.wb.sheetnames:
+                tabular_sheet = self.wb.create_sheet('tabular')
+            else:
+                tabular_sheet = self.wb.wb.get_sheet_by_name('tabular')
+
+            tabular_sheet.append([[entry.data_series['title']]])
+            for x in entry.data_series['series']:
+                tabular_sheet.append([[x['value']]])
+            return '=tabular!A2:A{}'.format(len(entry.data_series['series']))
+
+        return ''
+
     def add_entries(self, entries):
         for entry in entries:
             # Export each entry
@@ -179,9 +200,7 @@ class ExcelExporter:
                 entry.lead.title,
                 entry.lead.source,
                 assignee and assignee.profile.get_display_name(),
-                entry.excerpt
-                if entry.entry_type == Entry.EXCERPT
-                else 'IMAGE',
+                self.get_entry_data(entry),
             ])
 
             for exportable in self.exportables:
