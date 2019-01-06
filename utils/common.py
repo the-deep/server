@@ -141,3 +141,20 @@ def get_max_occurence_and_count(items):
         count.items(),  # [(item, count)...]
         (items[0], -1)  # Initial accumulator
     )
+
+
+def excel_column_name(column_number):
+    """
+    Returns columns name corresponding to column number
+    Example: 1 -> A, 27 -> AA, 28 -> AB
+    NOTE: column_number is 1 indexed
+    """
+    col_num = column_number - 1  # For modulus operation
+
+    if column_number < 27:
+        return chr(65 + col_num)
+
+    q = int(col_num / 26)
+    r = col_num % 26
+
+    return excel_column_name(q) + chr(65 + r)
