@@ -238,7 +238,7 @@ class ExcelExporter:
             return entry.excerpt
 
         if entry.entry_type == Entry.IMAGE:
-            return 'IMAGE'
+            return entry.image
 
         if entry.entry_type == Entry.DATA_SERIES:
             return self.get_data_series(entry)
