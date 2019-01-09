@@ -13,6 +13,10 @@ def on_field_saved(sender, **kwargs):
     field = kwargs.get('instance')
     if not field.id:
         return
+
+    if field.type == field.current_type:
+        return
+
     updated_data = field.sheet.cast_data_to(field)
 
     field.sheet.data = updated_data
