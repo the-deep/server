@@ -48,7 +48,11 @@ def extract(book):
                 book=book,
             )
             header_index = sheet_options.get('header_row', 1)
+            no_headers = sheet_options.get('no_headers', False)
             data_index = sheet_options.get('data_row_index', header_index + 1)
+
+            if no_headers:
+                data_index -= 1
 
             # Fields
             header_row = list(
@@ -64,7 +68,8 @@ def extract(book):
                     columns.append(cell.column)
                     fields.append(
                         Field(
-                            title=cell.value,
+                            title=(cell.value if not no_headers
+                                   else 'Column ' + str(ordering)),
                             sheet=sheet,
                             ordering=ordering,
                         )
@@ -72,6 +77,7 @@ def extract(book):
                 else:
                     fields.append(None)
                 ordering += 1
+
             Field.objects.bulk_create(
                 [field for field in fields if field is not None]
             )
