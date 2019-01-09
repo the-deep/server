@@ -3,7 +3,9 @@ from django.core.files.base import ContentFile
 from export.formats.xlsx import WorkBook, RowsBuilder
 from export.mime_types import EXCEL_MIME_TYPE
 from entry.models import Entry, ExportData
-from utils.common import format_date, generate_filename
+from utils.common import format_date, generate_filename, excel_column_name
+
+from tabular.models import Field
 
 
 class ExcelExporter:
@@ -35,6 +37,20 @@ class ExcelExporter:
             0: 'date',
             2: 'date',
         }
+
+        # Keep track of sheet data present
+        '''
+        tabular_sheets = {
+            'leadtitle-sheettitle': {
+                'field1_title': col_num_in_sheet,
+                'field2_title': col_num_in_sheet,
+            }
+        }
+        '''
+        self.tabular_sheets = {}
+
+        # Keep track of tabular fields
+        self.tabular_fields = {}
 
         self.region_data = {}
 
@@ -164,6 +180,71 @@ class ExcelExporter:
             else:
                 rows.add_value('')
 
+    def get_data_series(self, entry):
+        lead = entry.lead
+        field_id = entry.data_series['field_id']
+
+        # Check if field has already been pulled from database
+        field = self.tabular_fields.get(field_id)
+        if field is None:
+            field = Field.objects.filter(id=field_id).prefetch_related(
+                'sheet'
+            ).first()
+            if not field:
+                return ''
+            self.tabular_fields[field_id] = field
+
+        # Get Sheet title which is Lead title - Sheet title
+        worksheet_title = '{}-{}'.format(lead.title, field.sheet.title)
+
+        if worksheet_title not in self.wb.wb.sheetnames:
+            tabular_sheet = self.wb.create_sheet(worksheet_title).ws
+        else:
+            tabular_sheet = self.wb.wb.get_sheet_by_name(worksheet_title)
+
+        # Get fields data
+        worksheet_data = self.tabular_sheets.get(worksheet_title, {})
+
+        col_number = worksheet_data.get(field.title)
+        if col_number is None:
+            # col_number None means we don't have the field in the work sheet
+            # So, we create one assigning next number to the field
+            cols_count = len(worksheet_data.keys())
+            col_number = cols_count + 1
+            worksheet_data[field.title] = col_number
+
+            # Now add data to the column
+            # excel_column_name converts number to excel column names: 1 -> A..
+            sheet_col_name = excel_column_name(col_number)
+
+            self.tabular_sheets[worksheet_title] = worksheet_data
+
+            # Insert field title to sheet in first row
+            tabular_sheet['{}1'.format(sheet_col_name)].value =\
+                field.title
+
+            # Add field values to corresponding column
+            for i, x in enumerate(entry.data_series['series']):
+                tabular_sheet[
+                    '{}{}'.format(sheet_col_name, 2 + i)
+                ].value = x['value']
+        else:
+            sheet_col_name = excel_column_name(col_number)
+
+        return "='{}'!{}1".format(worksheet_title, sheet_col_name)
+
+    def get_entry_data(self, entry):
+        if entry.entry_type == Entry.EXCERPT:
+            return entry.excerpt
+
+        if entry.entry_type == Entry.IMAGE:
+            return entry.image
+
+        if entry.entry_type == Entry.DATA_SERIES:
+            return self.get_data_series(entry)
+
+        return ''
+
     def add_entries(self, entries):
         for entry in entries:
             # Export each entry
@@ -179,9 +260,7 @@ class ExcelExporter:
                 entry.lead.title,
                 entry.lead.source,
                 assignee and assignee.profile.get_display_name(),
-                entry.excerpt
-                if entry.entry_type == Entry.EXCERPT
-                else 'IMAGE',
+                self.get_entry_data(entry),
             ])
 
             for exportable in self.exportables:
