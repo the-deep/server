@@ -92,8 +92,13 @@ def extract(book):
                     for index, field in enumerate(fields):
                         if field is None:
                             continue
+                        value = _row[index].value
+
+                        if value is not None and not isinstance(value, str):
+                            value = _row[index].internal_value
+
                         row[str(field.pk)] = {
-                            'value': _row[index].value,
+                            'value': value,
                             'type': Field.STRING
                         }
                     row['key'] = random_key()
