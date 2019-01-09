@@ -161,6 +161,10 @@ class Field(models.Model):
     options = JSONField(default=None, blank=True, null=True)
     ordering = models.IntegerField(default=1)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.current_type = self.type
+
     def __str__(self):
         return self.title
 
