@@ -1,5 +1,6 @@
 import io
 import csv
+from itertools import chain
 from utils.common import random_key
 from ..models import Sheet, Field
 
@@ -19,12 +20,18 @@ def extract(book):
             skipinitialspace=True,
         )
 
+        no_headers = options.get('no_headers', False)
+
         fields = []
         ordering = 1
-        for header in next(reader):
+
+        first_row = list(next(reader))  # first row might be used later as data
+
+        for header in first_row:
             fields.append(
                 Field(
-                    title=header,
+                    title=(header if not no_headers
+                           else 'Column ' + str(ordering)),
                     sheet=sheet,
                     ordering=ordering,
                 )
@@ -32,8 +39,12 @@ def extract(book):
             ordering += 1
         Field.objects.bulk_create(fields)
 
+        # Create a new iterator with already extracted first row if no_headers
+        rows_iterator = chain(iter([first_row]), reader)\
+            if no_headers else reader
+
         rows = []
-        for _row in reader:
+        for _row in rows_iterator:
             row = {}
             try:
                 for index, field in enumerate(fields):
