@@ -63,8 +63,6 @@ def _extract_from_lead_core(lead_id):
         try:
             if lead.text:
                 text = lead.text
-                text = _preprocess(text)
-                word_count = len(re.findall(r'\b\S+\b', text))
                 images = []
                 with tempfile.NamedTemporaryFile() as tmp_file:
                     tmp_file.write(text.encode())
@@ -84,6 +82,8 @@ def _extract_from_lead_core(lead_id):
                 text, images, page_count = doc.extract()
                 thumbnail = doc.get_thumbnail()
 
+            text = _preprocess(text)
+            word_count = len(re.findall(r'\b\S+\b', text))
         except Exception:
             logger.error(traceback.format_exc())
             if images:

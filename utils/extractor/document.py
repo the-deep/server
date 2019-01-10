@@ -53,7 +53,7 @@ class Document:
         thumbnailer = THUMBNAILERS.get(self.type)
         if thumbnailer:
             if self.type is HTML:
-                return thumbnailer(self.params.url, self.type).get_thumbnail()
+                return thumbnailer(self.params['url'], self.type).get_thumbnail()
             else:
                 return thumbnailer(self.doc, self.type).get_thumbnail()
 
