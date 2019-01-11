@@ -1,15 +1,20 @@
 from xml.sax.saxutils import escape
+import matplotlib.pyplot as plt
 from datetime import timedelta, datetime
 from django.conf import settings
+from redis_store import redis
 
 from collections import Counter
 from functools import reduce
+import matplotlib.colors as mcolors
 import os
 import time
 import random
 import string
 import tempfile
 import requests
+import logging
+import traceback
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1)' + \
     ' AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
@@ -18,12 +23,18 @@ DEFAULT_HEADERS = {
     'User-Agent': USER_AGENT,
 }
 
+logger = logging.getLogger(__name__)
+
 
 def write_file(r, fp):
     for chunk in r.iter_content(chunk_size=1024):
         if chunk:
             fp.write(chunk)
     return fp
+
+
+def get_temp_file(dir='/tmp/'):
+    return tempfile.NamedTemporaryFile(dir=dir)
 
 
 def get_file_from_url(url):
@@ -191,3 +202,64 @@ def calculate_sample_size(pop_size, confidence_percent=90, prob=0.8):
     z_p_pmin1 = z * z * prob * (1 - prob)
     z_by_e_sq = z_p_pmin1 / e**2
     return z_by_e_sq / (1 + z_by_e_sq / pop_size)
+
+
+def create_plot_image(func):
+    """
+    Return tmp file image with func render logic
+    """
+    def func_wrapper(*args, **kwargs):
+        size = kwargs.pop('chart_size', (8, 4))
+        func(*args, **kwargs)
+        figure = plt.gcf()
+        if size:
+            figure.set_size_inches(size)
+        plt.draw()
+        fp = get_temp_file()
+        figure.savefig(fp, bbox_inches='tight', alpha=True, dpi=300)
+        plt.close(figure)
+        return fp
+    return func_wrapper
+
+
+def redis_lock(func):
+    def func_wrapper(*args, **kwargs):
+        key = '{}::{}'.format(
+            func.__name__,
+            '__'.join([str(arg) for arg in args]),
+        )
+        lock = redis.get_lock(key, 60 * 60 * 24)  # Lock lifetime 24 hours
+        have_lock = lock.acquire(blocking=False)
+        if not have_lock:
+            return False
+        try:
+            return_value = func(*args, **kwargs) or True
+        except Exception:
+            logger.error(
+                '********** {} **********\n{}'.format(
+                    func.__name__,
+                    traceback.format_exc(),
+                ),
+            )
+            return_value = False
+        lock.release()
+        return return_value
+    func_wrapper.__name__ = func.__name__
+    return func_wrapper
+
+
+def make_colormap(seq):
+    """Return a LinearSegmentedColormap
+    seq: a sequence of floats and RGB-tuples. The floats should be increasing
+    and in the interval (0,1).
+    """
+    seq = [(None,) * 3, 0.0] + list(seq) + [1.0, (None,) * 3]
+    cdict = {'red': [], 'green': [], 'blue': []}
+    for i, item in enumerate(seq):
+        if isinstance(item, float):
+            r1, g1, b1 = seq[i - 1]
+            r2, g2, b2 = seq[i + 1]
+            cdict['red'].append([item, r1, r2])
+            cdict['green'].append([item, g1, g2])
+            cdict['blue'].append([item, b1, b2])
+    return mcolors.LinearSegmentedColormap('CustomMap', cdict)
