@@ -45,6 +45,8 @@ class Command(MigrationCommand):
                 )
             migration.user = user
             migration.save()
+        else:
+            return migration.user
 
         user = migration.user
         user.username = username

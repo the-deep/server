@@ -57,6 +57,8 @@ class Command(MigrationCommand):
             )
             migration.user_group = user_group
             migration.save()
+        else:
+            return migration.user_group
 
         user_group = migration.user_group
         user_group.description = data['description']
