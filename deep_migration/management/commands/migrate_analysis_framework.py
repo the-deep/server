@@ -67,6 +67,8 @@ class Command(MigrationCommand):
             )
             migration.analysis_framework = framework
             migration.save()
+        else:
+            return migration.analysis_framework
 
         framework = migration.analysis_framework
 

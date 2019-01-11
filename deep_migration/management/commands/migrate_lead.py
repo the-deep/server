@@ -76,6 +76,8 @@ class Command(MigrationCommand):
             )
             migration.lead = lead
             migration.save()
+        else:
+            return migration.lead
 
         lead = migration.lead
         lead.title = title

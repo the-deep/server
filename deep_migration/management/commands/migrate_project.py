@@ -53,6 +53,8 @@ class Command(MigrationCommand):
             )
             migration.project = project
             migration.save()
+        else:
+            return migration.project
 
         project = migration.project
         project.start_date = data['start_date'] and \
