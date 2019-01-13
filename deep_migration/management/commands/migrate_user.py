@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.models import User
 import requests
 
@@ -12,7 +14,11 @@ from deep_migration.models import UserMigration
 
 class Command(MigrationCommand):
     def run(self):
-        data = requests.get(get_source_url('users2', 'v1')).json()
+        if self.kwargs.get('data_file'):
+            with open(self.kwargs['data_file']) as f:
+                data = json.load(f)
+        else:
+            data = requests.get(get_source_url('users2', 'v1')).json()
 
         if not data:
             print('Couldn\'t find users data')

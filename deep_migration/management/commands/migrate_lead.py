@@ -1,3 +1,5 @@
+import json
+
 from deep_migration.utils import (
     MigrationCommand,
     get_source_url,
@@ -41,12 +43,18 @@ STATUS_MAP = {
 
 class Command(MigrationCommand):
     def run(self):
-        data = request_with_auth(get_source_url('leads'))
 
-        if not data or not data.get('data'):
-            print('Couldn\'t find leads data')
+        if self.kwargs.get('data_file'):
+            with open(self.kwargs['data_file']) as f:
+                leads = json.load(f)
+        else:
+            data = request_with_auth(get_source_url('leads'))
 
-        leads = data['data']
+            if not data or not data.get('data'):
+                print('Couldn\'t find leads data')
+
+            leads = data['data']
+
         with reversion.create_revision():
             for lead in leads:
                 self.import_lead(lead)

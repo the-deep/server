@@ -1,3 +1,5 @@
+import json
+
 from deep_migration.utils import (
     MigrationCommand,
     get_source_url,
@@ -30,7 +32,13 @@ def get_project(project_id):
 
 class Command(MigrationCommand):
     def run(self):
-        user_groups = request_with_auth(get_source_url('user-groups', 'v1'))
+        if self.kwargs.get('data_file'):
+            with open(self.kwargs['data_file']) as f:
+                user_groups = json.load(f)
+        else:
+            user_groups = request_with_auth(
+                get_source_url('user-groups', 'v1')
+            )
 
         if not user_groups:
             print('Couldn\'t find user groups data')
