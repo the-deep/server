@@ -29,11 +29,11 @@ def update_widget(widget):
             )
 
 
-def update_widgets(widget_id=None):
+def update_widgets(widget_id=None, **widget_filters):
     if widget_id:
         widgets = Widget.objects.filter(widget_id=widget_id)
     else:
-        widgets = Widget.objects.all()
+        widgets = Widget.objects.filter(**widget_filters)
 
     for widget in widgets:
         update_widget(widget)

@@ -16,6 +16,6 @@ def migrate_assessment(obj):
         .update(methodology=methodology)
 
 
-def migrate_ary():
-    for obj in Assessment.objects.all():
+def migrate_ary(**filters):
+    for obj in Assessment.objects.filter(**filters):
         migrate_assessment(obj)
