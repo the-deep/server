@@ -26,6 +26,16 @@ class MigrationCommand(BaseCommand):
             '--use_s3',
             dest='DJANGO_USE_S3',
         )
+        parser.add_argument(
+            '--query_str',
+            type=str,
+            default=''
+        )
+        parser.add_argument(
+            '--data_file',
+            type=str,
+            default=None
+        )
 
     def handle(self, *args, **kwargs):
         valid_keys = [
@@ -34,6 +44,7 @@ class MigrationCommand(BaseCommand):
             'DEEP_1_PASSWORD',
             'DJANGO_USE_S3',
         ]
+        self.kwargs = kwargs
         for key, value in kwargs.items():
             if key in valid_keys and value:
                 os.environ.setdefault(key, value)

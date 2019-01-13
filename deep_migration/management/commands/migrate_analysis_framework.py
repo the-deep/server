@@ -1,3 +1,5 @@
+import json
+
 from deep_migration.utils import (
     MigrationCommand,
     get_source_url,
@@ -39,16 +41,25 @@ def snap(x, default=16):
 
 class Command(MigrationCommand):
     def run(self):
-        frameworks = request_with_auth(get_source_url('entry-templates', 'v1'))
+        if self.kwargs.get('data_file'):
+            with open(self.kwargs['data_file']) as f:
+                frameworks = json.load(f)
+        else:
+            query = self.kwargs.get('query_str', '')
+            frameworks = request_with_auth(
+                get_source_url('entry-templates', 'v1', query)
+            )
 
         if not frameworks:
             print('Couldn\'t find AF data at')
 
         with reversion.create_revision():
+            new_frameworks_file = open('new_afs.txt', 'a')
             for framework in frameworks:
-                self.import_framework(framework)
+                self.import_framework(framework, new_frameworks_file)
+            new_frameworks_file.close()
 
-    def import_framework(self, data):
+    def import_framework(self, data, file):
         print('------------')
         print('Migrating analysis framework')
 
@@ -66,6 +77,7 @@ class Command(MigrationCommand):
                 title=title,
             )
             migration.analysis_framework = framework
+            file.write('{}\n'.format(framework.id))
             migration.save()
         else:
             return migration.analysis_framework
