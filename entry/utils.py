@@ -42,8 +42,8 @@ def update_entry_attribute(attribute):
             )
 
 
-def update_attributes():
-    attributes = Attribute.objects.all()
+def update_attributes(**attr_filters):
+    attributes = Attribute.objects.filter(**attr_filters)
 
     for attribute in attributes:
         update_entry_attribute(attribute)

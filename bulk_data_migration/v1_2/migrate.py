@@ -1,3 +1,4 @@
+import json
 import reversion
 
 from analysis_framework.utils import update_widgets, Widget
@@ -35,8 +36,8 @@ default_added_from = {
 }
 
 
-def migrate_widgets():
-    for widget in Widget.objects.all():
+def migrate_widgets(**kwargs):
+    for widget in Widget.objects.filter(**kwargs):
         if not widget.properties:
             widget.properties = {}
 
@@ -52,8 +53,8 @@ def migrate_widgets():
         widget.save()
 
 
-def migrate_attributes():
-    for attr in Attribute.objects.all():
+def migrate_attributes(**kwargs):
+    for attr in Attribute.objects.filter(**kwargs):
         entry = attr.entry
         widget = attr.widget
         data = attr.data
@@ -69,11 +70,24 @@ def migrate_attributes():
         attr.save()
 
 
-def migrate():
+def migrate(*args, **kwargs):
+    if not kwargs.get('filters_file'):
+        project_filters = {}
+        widget_filters = {}
+        attributes_filters = {}
+        ary_filters = {}
+    else:
+        with open(kwargs['filters_file']) as f:
+            filter_data = json.load(f)
+            project_filters = filter_data.get('project_filters', {})
+            widget_filters = filter_data.get('widget_filters', {})
+            attributes_filters = filter_data.get('attributes_filters', {})
+            ary_filters = filter_data.get('ary_filters', {})
+
     with reversion.create_revision():
-        migrate_projects()
-        migrate_widgets()
-        migrate_attributes()
-        update_widgets()
-        update_attributes()
-        migrate_ary()
+        migrate_projects(**project_filters)
+        migrate_widgets(**widget_filters)
+        migrate_attributes(**attributes_filters)
+        update_widgets(**widget_filters)
+        update_attributes(**attributes_filters)
+        migrate_ary(**ary_filters)

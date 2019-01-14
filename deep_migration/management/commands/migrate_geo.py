@@ -51,6 +51,8 @@ class Command(MigrationCommand):
             )
             migration.region = region
             migration.save()
+        else:
+            return migration.region
 
         region = migration.region
         region.code = code
@@ -94,6 +96,8 @@ class Command(MigrationCommand):
             )
             migration.admin_level = admin_level
             migration.save()
+        else:
+            return migration.admin_level
 
         admin_level = migration.admin_level
         admin_level.parent = parent

@@ -1,3 +1,5 @@
+import json
+
 from deep_migration.utils import (
     MigrationCommand,
     get_source_url,
@@ -8,7 +10,7 @@ from deep_migration.models import (
     ProjectMigration,
     UserMigration,
 )
-from project.models import Project, ProjectMembership
+from project.models import Project, ProjectMembership, ProjectRole
 
 from django.utils.dateparse import parse_date
 import reversion
@@ -26,7 +28,11 @@ def get_region(reference_code):
 
 class Command(MigrationCommand):
     def run(self):
-        projects = request_with_auth(get_source_url('events2', 'v1'))
+        if self.kwargs.get('data_file'):
+            with open(self.kwargs['data_file']) as f:
+                projects = json.load(f)
+        else:
+            projects = request_with_auth(get_source_url('events2', 'v1'))
 
         if not projects:
             print('Couldn\'t find projects data')
@@ -53,6 +59,8 @@ class Command(MigrationCommand):
             )
             migration.project = project
             migration.save()
+        else:
+            return migration.project
 
         project = migration.project
         project.start_date = data['start_date'] and \
@@ -67,7 +75,7 @@ class Command(MigrationCommand):
                 ProjectMembership.objects.get_or_create(
                     project=project,
                     member=user,
-                    defaults={'role': 'admin'},
+                    defaults={'role': ProjectRole.get_admin_roles().first()},
                 )
 
         for user_id in data['members']:
@@ -76,7 +84,7 @@ class Command(MigrationCommand):
                 ProjectMembership.objects.get_or_create(
                     project=project,
                     member=user,
-                    defaults={'role': 'normal'},
+                    defaults={'role': ProjectRole.get_default_role()},
                 )
 
         for region_code in data['countries']:
