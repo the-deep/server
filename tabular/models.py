@@ -88,6 +88,7 @@ class Sheet(models.Model):
     book = models.ForeignKey(Book)
     options = JSONField(default=None, blank=True, null=True)
     data = JSONField(default=[])
+    hidden = models.BooleanField(default=False)
 
     def cast_data_to(self, field):
         type = field.type
@@ -145,6 +146,7 @@ class Field(models.Model):
         choices=FIELD_TYPES,
         default=STRING
     )
+    hidden = models.BooleanField(default=False)
     options = JSONField(default=None, blank=True, null=True)
     ordering = models.IntegerField(default=1)
 
