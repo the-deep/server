@@ -1,3 +1,5 @@
+import json
+
 from deep_migration.utils import (
     MigrationCommand,
     get_source_url,
@@ -62,9 +64,13 @@ def get_region(code):
 
 class Command(MigrationCommand):
     def run(self):
-        entries = request_with_auth(
-            get_source_url('entries', query='template=1', version='v1')
-        )
+        if self.kwargs.get('data_file'):
+            with open(self.kwargs['data_file']) as f:
+                entries = json.load(f)
+        else:
+            entries = request_with_auth(
+                get_source_url('entries', query='template=1', version='v1')
+            )
 
         if not entries:
             print('Couldn\'t find entries data')
@@ -132,6 +138,7 @@ class Command(MigrationCommand):
 
         entry.created_by = get_user(entry_data['created_by'])
         entry.modified_by = entry.created_by
+        entry.project = entry.lead.project
 
         entry.save()
         Entry.objects.filter(id=entry.id).update(
@@ -331,7 +338,7 @@ class Command(MigrationCommand):
         values = [
             {
                 'key': str(area.id),
-                'short_label': area.get_label(prepend_region=False),
+                'short_label': area.get_label(),
                 'label': area.get_label(),
             } for area in areas if area
         ]
