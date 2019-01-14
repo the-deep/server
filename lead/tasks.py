@@ -1,6 +1,7 @@
 from celery import shared_task
 from channels import Group
 from django.core.files import File
+from django.db import transaction
 from django.utils import timezone
 from django.conf import settings
 from lead.models import (
@@ -88,7 +89,9 @@ def _extract_from_lead_core(lead_id):
 
         if text:
             # Send background deepl request
-            send_lead_text_to_deepl.s(lead.id).delay()
+            transaction.on_commit(
+                lambda: send_lead_text_to_deepl.s(lead.id).delay()
+            )
 
         # Save extracted images as LeadPreviewImage instances
         if images:
