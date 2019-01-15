@@ -6,6 +6,7 @@ from project.models import Project
 from utils.common import get_file_from_url
 
 from tabular.utils import (
+    parse_string,
     parse_number,
     parse_geo,
     get_geos_dict,
@@ -92,31 +93,41 @@ class Sheet(models.Model):
 
     def cast_data_to(self, field):
         type = field.type
+
         if type == Field.STRING:
-            cast_func = str
+            cast_func = parse_string
         elif type == Field.NUMBER:
             cast_func = parse_number
         elif type == Field.DATETIME:
             cast_func = parse_datetime
         elif type == Field.GEO:
+            # TODO: try to convert to user specified admin level
             geos_names = get_geos_dict(self.book.project)
             geos_codes = {v['code'].lower(): v for k, v in geos_names.items()}
-            cast_func = lambda v: parse_geo(v, geos_names, geos_codes)  # noqa
+            cast_func = lambda v, **kwargs: parse_geo(v, geos_names, geos_codes, **kwargs)  # noqa
 
         fid = str(field.id)
+        field_options = field.options or {}
         newrows = []
+
         for row in self.data:
             if row.get(fid) is None:
                 continue
-            casted = cast_func(row[fid]['value'])
+            casted = cast_func(row[fid]['value'], **field_options)
             if casted is None:
                 newrows.append(row)
                 continue
+
             # casted is not None means parse succeeded
             row[fid]['type'] = field.type
+
             if field.type == Field.GEO:
                 row[fid]['geo_type'] = casted['geo_type']
                 row[fid]['admin_level'] = casted['admin_level']
+
+            elif field.type == Field.DATETIME:
+                row[fid]['date_format'] = field.options['date_format']
+
             newrows.append(row)
         self.data = newrows
         self.save()

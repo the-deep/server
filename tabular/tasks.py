@@ -13,7 +13,7 @@ from .models import Book, Field, Geodata
 from .extractor import csv, xlsx
 from .utils import (
     parse_number,
-    parse_datetime,
+    auto_detect_datetime,
     parse_geo,
     get_geos_dict,
 )
@@ -43,10 +43,10 @@ def _tabular_meta_extract_book(book):
 
 
 def auto_detect_and_update_fields(book):
-    # get geos indexed by title first
-    geos_names = get_geos_dict(book.project)
-    # Index by codes, we need to search by codes as well
-    geos_codes = {v['code'].lower(): v for k, v in geos_names.items()}
+    # Get geos indexed by title, lazily calculated later
+    geos_names = None
+    # Index by codes, we need to search by codes as well, lazily calculated
+    geos_codes = None
 
     for sheet in book.sheet_set.all():
         data = sheet.data or []
@@ -67,19 +67,32 @@ def auto_detect_and_update_fields(book):
 
                 type = Field.STRING
                 geo_parsed = None
-                if parse_number(v['value']):
-                    type = Field.NUMBER
-                elif parse_datetime(v['value']):
-                    type = Field.DATETIME
-                else:
-                    geo_parsed = parse_geo(v['value'], geos_names, geos_codes)
 
+                number_parsed = parse_number(v['value'])
+                if number_parsed:
+                    v['type'] = Field.NUMBER
+                    continue
+
+                # parse_datetime() = None or (date, format)
+                datetime_parsed = auto_detect_datetime(v['value'])
+                if datetime_parsed:
+                    v['type'] = Field.DATETIME
+                    v['date_format'] = datetime_parsed[1]
+                    continue
+
+                # Lazy loading of geos_names and geos_codes
+                if geos_names is None:
+                    geos_names = get_geos_dict(book.project)
+                    geos_codes = {
+                        v['code'].lower(): v for k, v in geos_names.items()
+                    }
+
+                geo_parsed = parse_geo(v['value'], geos_names, geos_codes)
                 if geo_parsed is not None:
-                    type = Field.GEO
+                    v['type'] = Field.GEO
                     v['geo_type'] = geo_parsed['geo_type']
                     v['admin_level'] = geo_parsed['admin_level']
-
-                v['type'] = type
+                    continue
 
         # Store types info in row data
         sheet.data = data
@@ -116,6 +129,18 @@ def auto_detect_and_update_fields(book):
                 field.options = {
                     'geo_type': max_type,
                     'admin_level': max_lev
+                }
+
+            elif type == Field.DATETIME:
+                # Get format for date
+                formats = [
+                    row[fid]['date_format']
+                    for row in data
+                    if row[fid]['type'] == Field.DATETIME
+                ]
+                max_format, format_count = get_max_occurence_and_count(formats)
+                field.options = {
+                    'date_format': max_format
                 }
             field.type = type
             field.save()
