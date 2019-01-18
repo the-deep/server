@@ -53,7 +53,6 @@ from .serializers import (
     ProjectJoinRequestSerializer,
     ProjectUserGroupSerializer,
     ProjectDashboardSerializer,
-    ProjectStatusConditionSerializer,
     ProjectStatusOptionsSerializer,
 )
 
@@ -458,7 +457,7 @@ def accept_project_confirm(
         'success': True,
         'accept': accept,
         'role': role,
-        'notification_url': get_frontend_url('notifications/'),
+        'frontend_url': get_frontend_url(''),
         'join_request': join_request,
         'project_url': get_frontend_url(
             'projects/{}/#/general'.format(join_request.project.id)

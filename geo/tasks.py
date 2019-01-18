@@ -47,7 +47,7 @@ def _save_geo_area(admin_level, parent, feature):
         geo_area = GeoArea()
 
     geo_area.title = name
-    geo_area.code = code if code else None
+    geo_area.code = code if code else ''
     geo_area.admin_level = admin_level
 
     geom = feature.geom
