@@ -172,6 +172,7 @@ class Field(models.Model):
         if hasattr(self, 'geodata'):
             self.geodata.delete()
         super().save(*args, **kwargs)
+        self.current_type = self.type
 
     def get_option(self, key, default_value=None):
         options = self.options or {}
