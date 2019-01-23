@@ -89,7 +89,8 @@ class TestTabularExtraction(APITestCase):
                 assert field.options is None
             elif field.title == 'date':
                 assert field.type == Field.DATETIME, 'date is datetime'
-                assert field.options is None
+                assert field.options is not None
+                assert 'date_format' in field.options
             elif field.title == 'place':
                 assert field.type == Field.GEO, 'place is geo'
                 assert field.options is not None
