@@ -56,7 +56,6 @@ def _extract_from_lead_core(lead_id):
     with reversion.create_revision():
         text, images = '', []
         word_count, page_count = 0, 1
-        thumbnail = None
 
         # Extract either using FileDocument or WebDocument
         # as per the document type
@@ -64,10 +63,6 @@ def _extract_from_lead_core(lead_id):
             if lead.text:
                 text = lead.text
                 images = []
-                with tempfile.NamedTemporaryFile() as tmp_file:
-                    tmp_file.write(text.encode())
-                    tmp_file.flush()
-                    thumbnail = DocThumbnailer(tmp_file, 'txt').get_thumbnail()
 
             elif lead.attachment:
                 doc = FileDocument(
@@ -75,12 +70,10 @@ def _extract_from_lead_core(lead_id):
                     lead.attachment.file.name,
                 )
                 text, images, page_count = doc.extract()
-                thumbnail = doc.get_thumbnail()
 
             elif lead.url:
                 doc = WebDocument(lead.url)
                 text, images, page_count = doc.extract()
-                thumbnail = doc.get_thumbnail()
 
             text = _preprocess(text)
             word_count = len(re.findall(r'\b\S+\b', text))
@@ -96,24 +89,19 @@ def _extract_from_lead_core(lead_id):
         LeadPreviewImage.objects.filter(lead=lead).delete()
 
         # and create new one
-        leadPreview = LeadPreview.objects.create(
+        LeadPreview.objects.create(
             lead=lead,
             text_extract=text,
             word_count=word_count,
             page_count=page_count,
         )
 
+        extract_thumbnail.s(lead.id).delay()
         if text:
             # Send background deepl request
             transaction.on_commit(
                 lambda: send_lead_text_to_deepl.s(lead.id).delay()
             )
-
-        # Delete thumbnail
-        if thumbnail:
-            leadPreview.thumbnail.save(os.path.basename(thumbnail.name),
-                                       File(thumbnail), True)
-            os.unlink(thumbnail.name)
 
         # Save extracted images as LeadPreviewImage instances
         if images:
@@ -126,6 +114,43 @@ def _extract_from_lead_core(lead_id):
                 image.close()
 
     return True
+
+
+@shared_task
+def extract_thumbnail(lead_id):
+    lead = Lead.objects.filter(id=lead_id).first()
+    leadPreview = LeadPreview.objects.filter(lead=lead).first()
+    thumbnail = None
+
+    if not leadPreview:
+        leadPreview = LeadPreview.objects.create(lead=lead)
+
+    try:
+        if lead.text:
+            with tempfile.NamedTemporaryFile() as tmp_file:
+                tmp_file.write(lead.text.encode())
+                tmp_file.flush()
+                thumbnail = DocThumbnailer(tmp_file, 'txt').get_thumbnail()
+
+        elif lead.attachment:
+            doc = FileDocument(
+                lead.attachment.file,
+                lead.attachment.file.name,
+            )
+            thumbnail = doc.get_thumbnail()
+
+        elif lead.url:
+            doc = WebDocument(lead.url)
+            thumbnail = doc.get_thumbnail()
+
+    except Exception:
+        logger.error(traceback.format_exc())
+
+    if thumbnail:
+        leadPreview.thumbnail.save(os.path.basename(thumbnail.name),
+                                   File(thumbnail), True)
+        # Delete thumbnail
+        os.unlink(thumbnail.name)
 
 
 @shared_task(bind=True, max_retries=10)
