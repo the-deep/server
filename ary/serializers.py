@@ -114,6 +114,7 @@ class OptionSerializer(serializers.Serializer):
 
 class FieldSerializer(serializers.Serializer):
     id = serializers.IntegerField()
+    is_required = serializers.BooleanField()
     title = serializers.CharField()
     tooltip = serializers.CharField()
     field_type = serializers.CharField()
