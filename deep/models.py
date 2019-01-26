@@ -6,6 +6,7 @@ from django.contrib.postgres.fields import JSONField
 
 class Field(models.Model):
     title = models.CharField(max_length=255)
+    is_required = models.BooleanField(default=True)
 
     # Fields
     STRING = 'string'
