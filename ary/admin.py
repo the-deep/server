@@ -14,6 +14,7 @@ from .models import (
     Sector,
     Focus,
     AffectedGroup,
+    UnderlyingFactor,
 
     PrioritySector,
     PriorityIssue,
@@ -47,6 +48,7 @@ admin.site.register(MetadataGroup)
 admin.site.register(MethodologyGroup)
 admin.site.register(Sector)
 admin.site.register(Focus)
+admin.site.register(UnderlyingFactor)
 admin.site.register(AffectedGroup)
 admin.site.register(PrioritySector)
 admin.site.register(PriorityIssue)
