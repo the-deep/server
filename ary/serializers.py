@@ -198,6 +198,8 @@ class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
                              many=True, read_only=True)
     focuses = ItemSerializer(source='focus_set',
                              many=True, read_only=True)
+    underlying_factors = TreeSerializer(source='get_parent_underlying_factors',
+                                        many=True, read_only=True)
     affected_groups = TreeSerializer(source='get_parent_affected_groups',
                                      many=True, read_only=True)
 
