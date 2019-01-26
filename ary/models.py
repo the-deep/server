@@ -29,6 +29,9 @@ class AssessmentTemplate(UserResource):
     def can_modify(self, user):
         return False
 
+    def get_parent_underlying_factors(self):
+        return self.underlyingfactor_set.filter(parent=None)
+
     def get_parent_affected_groups(self):
         return self.affectedgroup_set.filter(parent=None)
 
@@ -141,6 +144,12 @@ class PrioritySector(BasicTemplateEntity):
 
 class PriorityIssue(BasicTemplateEntity):
     parent = models.ForeignKey('PriorityIssue',
+                               related_name='children',
+                               default=None, null=True, blank=True)
+
+
+class UnderlyingFactor(BasicTemplateEntity):
+    parent = models.ForeignKey('UnderlyingFactor',
                                related_name='children',
                                default=None, null=True, blank=True)
 
@@ -343,7 +352,8 @@ class Assessment(UserResource, ProjectEntityMixin):
             'specific_need_group': lambda x: SpecificNeedGroup.objects.get(
                 id=x).title,
             'affected_group': lambda x: AffectedGroup.objects.get(id=x).title,
-            'underlying_factors': identity,
+            'underlying_factor': lambda x: UnderlyingFactor
+            .objects.get(id=x).title,
             'outcomes': identity,
             'affected_location': lambda x: AffectedLocation.objects.get(
                 id=x).title,
