@@ -82,10 +82,10 @@ def extract(book):
                 [field for field in fields if field is not None]
             )
 
+            sheet_columns = {}  # { '<field_id>': ['<column values>'...] }
+
             # Data
-            rows = []
             for _row in wb_sheet.iter_rows(min_row=data_index):
-                row = {}
                 if is_row_empty(_row, columns):
                     continue
                 try:
@@ -97,13 +97,17 @@ def extract(book):
                         if value is not None and not isinstance(value, str):
                             value = _row[index].internal_value
 
-                        row[str(field.pk)] = {
-                            'value': value,
-                            'type': Field.STRING
-                        }
-                    row['key'] = random_key()
-                    rows.append(row)
+                        fid = str(field.pk)
+
+                        # Insert field value to corresponding column
+                        col_vals = sheet_columns.get(fid, [])
+                        col_vals.append(value)
+                        sheet_columns[fid] = col_vals
+
+                    # rows.append(row)
                 except Exception:
                     pass
-            sheet.data = rows
+            sheet.data = {
+                'columns': sheet_columns
+            }
             sheet.save()
