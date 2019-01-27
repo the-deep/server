@@ -1,4 +1,5 @@
 import os
+from functools import reduce
 from rest_framework.test import APITestCase
 from autofixture.base import AutoFixture
 from tempfile import NamedTemporaryFile
@@ -270,6 +271,7 @@ class TestTabularExtraction(APITestCase):
         ).create_one()
         csv.extract(book)
         assert Field.objects.count() == 5
+
         fieldnames = {}
         for field in Field.objects.all():
             fieldnames[field.title] = True
@@ -280,6 +282,35 @@ class TestTabularExtraction(APITestCase):
         assert 'date' in fieldnames, 'date should be a field name'
         assert 'place' in fieldnames, 'place should be a field name'
 
+        # check structure of data in sheet
+        for sheet in book.sheet_set.all():
+            data = sheet.data
+            assert 'columns' in data
+            columns = data['columns']
+            assert isinstance(columns, dict)
+
+            # check col sizes, whichs should be same
+            colsizes = [len(v) for k, v in columns.items()]
+            if not colsizes:
+                continue
+            size = colsizes[0]
+            assert reduce(lambda a, x: x == size and a, colsizes, True), \
+                "All columns should have same size"
+
+            for k, v in columns.items():
+                assert isinstance(v, list)
+
+            # Check for invalid_values
+            if 'invalid_values' in data.keys():
+                invalids = data['invalid_values']
+                assert isinstance(invalids, dict)
+                for k, v in invalids.items():
+                    assert k in columns
+                    assert isinstance(v, list)
+                    for x in v:
+                        assert isinstance(x, int)
+                        assert x >= 0 and x < size, \
+                            "Since invalids store indices, should be within range"
         return book
 
     def tearDown(self):

@@ -43,18 +43,20 @@ def extract(book):
         rows_iterator = chain(iter([first_row]), reader)\
             if no_headers else reader
 
-        rows = []
+        sheet_columns = {}  # { '<field_id>': ['<column values>'...] }
+
         for _row in rows_iterator:
-            row = {}
             try:
                 for index, field in enumerate(fields):
-                    row[str(field.pk)] = {
-                        'value': _row[index],
-                        'type': Field.STRING
-                    }
-                row['key'] = random_key()
-                rows.append(row)
+                    fid = str(field.pk)
+                    # Insert field value to corresponding column
+                    col_vals = sheet_columns.get(fid, [])
+                    col_vals.append(_row[index])
+                    sheet_columns[fid] = col_vals
             except Exception:
                 pass
-        sheet.data = rows
+
+        sheet.data = {
+            'columns': sheet_columns
+        }
         sheet.save()
