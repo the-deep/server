@@ -52,7 +52,7 @@ def parse_datetime(val, date_format=None, **kwargs):
 
     try:
         return datetime.strptime(val, date_format)
-    except ValueError:
+    except (ValueError, TypeError):
         return None
 
 
