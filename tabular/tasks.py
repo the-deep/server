@@ -48,7 +48,7 @@ def auto_detect_and_update_fields(book):
     geos_codes = {v['code'].lower(): v for k, v in geos_names.items()}
 
     for sheet in book.sheet_set.all():
-        data = sheet.data or []
+        data = sheet.data or {}
 
         field_ids = [x for x in data['columns'].keys()]
         fields = Field.objects.filter(id__in=field_ids)
@@ -58,10 +58,6 @@ def auto_detect_and_update_fields(book):
         processed_values = {}
 
         for k, v in data['columns'].items():
-            invalids = []
-            emptys = []
-            processed = []
-
             detected_info = sample_and_detect_type_and_options(
                 v, geos_names, geos_codes
             )
@@ -72,42 +68,11 @@ def auto_detect_and_update_fields(book):
             field.options = detected_info['options']
             field.save()
 
-            # Get invalid/empty values
-            type = field.type
+            casted_info = sheet.cast_data_to(field, geos_names, geos_codes)
 
-            if type == Field.STRING:
-                cast_func = parse_string
-            elif type == Field.NUMBER:
-                cast_func = parse_number
-            elif type == Field.DATETIME:
-                cast_func = parse_datetime
-            elif type == Field.GEO:
-                # TODO: try to convert to user specified admin level
-                cast_func = lambda v, **kwargs: parse_geo(v, geos_names, geos_codes, **kwargs)  # noqa
-
-            # Now iterate through every item to find empty/invalid values
-            for i, value in enumerate(v):
-                if v is None or v == '':
-                    emptys.append(i)
-                    processed.append(None)
-                    continue
-                casted = cast_func(value, **field.options)
-                if casted is None:
-                    invalids.append(i)
-                    processed.append(None)
-                else:
-                    # TODO: calculated processed
-                    processed.append(casted)
-
-            invalid_values[k] = invalids
-            empty_values[k] = emptys
-
-            # NOTE: processed values for other fields is irrelevant now
-            if type == Field.GEO:
-                processed_values[k] = [
-                    x['id'] if x else None
-                    for x in processed
-                ]
+            invalid_values[k] = casted_info['invalid_values']
+            empty_values[k] = casted_info['empty_values']
+            processed_values[k] = casted_info['processed_values']
 
         sheet.data = {
             'columns': data['columns'],

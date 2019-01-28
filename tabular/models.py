@@ -8,8 +8,8 @@ from utils.common import get_file_from_url
 from tabular.utils import (
     parse_string,
     parse_number,
-    parse_geo,
     get_geos_dict,
+    parse_geo,
     parse_datetime,
 )
 
@@ -91,7 +91,11 @@ class Sheet(models.Model):
     data = JSONField(default=[])
     hidden = models.BooleanField(default=False)
 
-    def cast_data_to(self, field):
+    def cast_data_to(self, field, geos_names=None, geos_codes=None):
+        """
+        Returns processed, invalid and empty values corresponding to the fields
+        after trying to cast
+        """
         type = field.type
 
         if type == Field.STRING:
@@ -101,37 +105,43 @@ class Sheet(models.Model):
         elif type == Field.DATETIME:
             cast_func = parse_datetime
         elif type == Field.GEO:
-            # TODO: try to convert to user specified admin level
-            geos_names = get_geos_dict(self.book.project)
-            geos_codes = {v['code'].lower(): v for k, v in geos_names.items()}
+            geos_names = geos_names or get_geos_dict(self.book.project)
+            geos_codes = geos_codes or \
+                {v['code'].lower(): v for k, v in geos_names.items()}
             cast_func = lambda v, **kwargs: parse_geo(v, geos_names, geos_codes, **kwargs)  # noqa
 
-        fid = str(field.id)
-        field_options = field.options or {}
-        newrows = []
+        values = self.data['columns'][str(field.id)]
 
-        for row in self.data:
-            if row.get(fid) is None:
+        emptys = []
+        processed = []
+        invalids = []
+        # Now iterate through every item to find empty/invalid values
+        for i, value in enumerate(values):
+            if value is None or value == '':
+                emptys.append(i)
+                processed.append(None)
                 continue
-            casted = cast_func(row[fid]['value'], **field_options)
+            casted = cast_func(value, **field.options)
             if casted is None:
-                newrows.append(row)
-                continue
+                invalids.append(i)
+                processed.append(None)
+            else:
+                processed.append(casted)
 
-            # casted is not None means parse succeeded
-            row[fid]['type'] = field.type
+        # NOTE: processed values for other fields is irrelevant now
+        processed_values = []
+        if type == Field.GEO:
+            processed_values = [
+                x['id'] if x else None
+                for x in processed
+            ]
 
-            if field.type == Field.GEO:
-                row[fid]['geo_type'] = casted['geo_type']
-                row[fid]['admin_level'] = casted['admin_level']
-
-            elif field.type == Field.DATETIME:
-                row[fid]['date_format'] = field.options['date_format']
-
-            newrows.append(row)
-        self.data = newrows
-        self.save()
-        return self.data
+        data = {
+            'invalid_values': invalids,
+            'empty_values': emptys,
+            'processed_values': processed_values,
+        }
+        return data
 
     def __str__(self):
         return self.title
