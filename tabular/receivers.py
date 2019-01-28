@@ -17,7 +17,7 @@ def on_field_saved(sender, **kwargs):
     if field.type == field.current_type:
         return
 
-    updated_data = field.sheet.cast_data_to(field)
+    # updated_data = field.sheet.cast_data_to(field)
 
-    field.sheet.data = updated_data
-    field.sheet.save()
+    # field.sheet.data = updated_data
+    # field.sheet.save()
