@@ -229,9 +229,9 @@ class TestTabularExtraction(APITestCase):
         # Get sheet again, which should be updated
         new_sheet = Sheet.objects.get(id=sheet.id)
 
-        data = new_sheet.data
-        for row in data:
-            assert row[str(field.id)]['type'] == Field.STRING
+        invalids = new_sheet.data['invalid_values']
+        assert invalids[str(field.id)] == [], \
+            "Conversion to string should give no invalids"
 
     def test_sheet_data_change_on_string_change_to_geo(self):
         """
@@ -257,9 +257,9 @@ class TestTabularExtraction(APITestCase):
         # Get sheet again, which should be updated
         new_sheet = Sheet.objects.get(id=sheet.id)
 
-        data = new_sheet.data
-        for row in data:
-            assert row[fid]['type'] == Field.STRING
+        invalids = new_sheet.data['invalid_values']
+        assert invalids[str(field.id)] == [], \
+            "Conversion to string should give no invalids"
 
         # Now change type to Geo
         field.type = Field.GEO
@@ -268,15 +268,9 @@ class TestTabularExtraction(APITestCase):
         # Get sheet again, which should be updated
         brand_new_sheet = Sheet.objects.get(id=sheet.id)
 
-        data = brand_new_sheet.data
-        # Rows 0 to 5 and, rows 7 and 9 should now have geo fields
+        invalids = brand_new_sheet.data['invalid_values'][fid]
         # NOTE: look at consistent_csv_data value
-        for x in range(0, 6):
-            assert data[x][fid]['type'] == Field.GEO
-        assert data[6][fid]['type'] == Field.STRING
-        assert data[7][fid]['type'] == Field.GEO
-        assert data[8][fid]['type'] == Field.STRING
-        assert data[9][fid]['type'] == Field.GEO
+        assert invalids == [6, 8]
 
     def initialize_data_and_basic_test(self, csv_data):
         file = NamedTemporaryFile('w', dir=settings.MEDIA_ROOT, delete=False)
