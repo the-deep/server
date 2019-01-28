@@ -28,7 +28,7 @@ abc,30,doe,10 Nevem 2018,Kathmandu'''
 inconsistent_csv_data = '''id,age,name,date,place
 1,10,john,1994 December 29,Kathmandu
 abc,10,john,1994 Deer 29,Kathmandu
-1,10,john,199 Dmber 29,Kathmandu
+a,10,john,199 Dmber 29,Kathmandu
 1,10,john,1994 December 29,Kathmandu
 abc,10,john,14 Dber 29,Kathmandu
 abc,30,doe,10 Nevem 2018,Mango'''
@@ -38,16 +38,16 @@ geo_data_type_code = '''id,age,name,date,place
 abc,10,john,1994 Deer 29,KAT
 1,10,john,199 Dmber 29,KAT
 1,10,john,1994 December 29,KAT
-abc,10,john,14 Dber 29,Kathmandu
-abc,30,doe,10 Nevem 2018,Mango'''
+abc,10,john,14 Dber 29, KAT
+abc,30,doe,10 Nevem 2018,KAT'''
 
 geo_data_type_name = '''id,age,name,date,place
-1,10,john,1994 December 29,KAT
+1,10,john,1994 December 29,Kathmandu
 abc,10,john,1994 Deer 29,Kathmandu
-1,10,john,199 Dmber 29,KAT
+1,10,john,199 Dmber 29,Kathmandu
 1,10,john,1994 December 29,Kathmandu
 abc,10,john,14 Dber 29,Kathmandu
-abc,30,doe,10 Nevem 2018,Mango'''
+abc,30,doe,10 Nevem 2018,Kathmandu'''
 
 
 class TestTabularExtraction(APITestCase):
@@ -67,7 +67,7 @@ class TestTabularExtraction(APITestCase):
                 'code': 'KAT'
             },
             generate_fk=True
-        ).create(3)
+        ).create(1)
 
     def test_auto_detection_consistent(self):
         """
@@ -77,24 +77,41 @@ class TestTabularExtraction(APITestCase):
         # now auto detect
         auto_detect_and_update_fields(book)
 
+        # Check for sheet invalid/empty values
+        sheet = Sheet.objects.last()
+        data = sheet.data
+
+        assert 'columns' in data
+        columns = data['columns']
+
+        assert 'invalid_values' in data
+        invalid_values = data['invalid_values']
+
+        assert 'empty_values' in data
+        empty_values = data['empty_values']
+
         # now validate auto detected fields
-        for field in Field.objects.all():
+        for field in Field.objects.filter(sheet=sheet):
+            fid = str(field.pk)
+            assert len(columns[fid]) == 10
+
             if field.title == 'id':
                 assert field.type == Field.NUMBER, 'id is number'
-                assert field.options is None
+                assert invalid_values[fid] == [8, 9]
             elif field.title == 'age':
                 assert field.type == Field.NUMBER, 'age is number'
-                assert field.options is None
             elif field.title == 'name':
                 assert field.type == Field.STRING, 'name is string'
-                assert field.options is None
             elif field.title == 'date':
                 assert field.type == Field.DATETIME, 'date is datetime'
                 assert field.options is not None
                 assert 'date_format' in field.options
+                assert invalid_values[fid] == [9]
             elif field.title == 'place':
                 assert field.type == Field.GEO, 'place is geo'
                 assert field.options is not None
+                assert invalid_values[fid] == [6, 8]
+                assert empty_values[fid] == []
 
     def test_auto_detection_inconsistent(self):
         """
@@ -128,26 +145,30 @@ class TestTabularExtraction(APITestCase):
         # now auto detect
         auto_detect_and_update_fields(book)
 
-        sheets = book.sheet_set.all()
-        for sheet in sheets:
-            for row in sheet.data:
-                for k, v in row.items():
-                    if k == 'key':
-                        continue
-                    assert isinstance(v, dict)
-                    assert 'value' in v
-                    assert 'type' in v
-                    assert v['type'] != Field.GEO or 'admin_level' in v
-                    assert v['type'] != Field.GEO or 'geo_type' in v
-
         # now validate auto detected fields
+        geofield = None
         for field in Field.objects.all():
             if field.title == 'place':
+                geofield = field
                 assert field.type == Field.GEO,\
                     'place is geo: more than 80% rows are of geo type'
                 assert field.options != {}
                 assert field.options['geo_type'] == 'name'
                 assert 'admin_level' in field.options
+
+        if not geofield:
+            return
+
+        sheet = Sheet.objects.last()
+        assert 'processed_values' in sheet.data
+        processed = sheet.data['processed_values']
+
+        fid = str(geofield.id)
+        assert fid in processed
+        kathmandu_geo = GeoArea.objects.filter(code='KAT')[0]
+
+        for val in processed[fid]:
+            assert val == kathmandu_geo.id
 
     def test_auto_detection_geo_type_code(self):
         """
@@ -158,23 +179,32 @@ class TestTabularExtraction(APITestCase):
         auto_detect_and_update_fields(book)
         sheets = book.sheet_set.all()
         for sheet in sheets:
-            for row in sheet.data:
-                for k, v in row.items():
-                    if k == 'key':
-                        continue
-                    assert isinstance(v, dict)
-                    assert 'value' in v
-                    assert 'type' in v
-                    assert v['type'] != Field.GEO or 'admin_level' in v
-                    assert v['type'] != Field.GEO or 'geo_type' in v
+            # TODO: check processed values
+            pass
 
+        geofield = None
         # now validate auto detected fields
         for field in Field.objects.all():
             if field.title == 'place':
+                geofield = field
                 assert field.type == Field.GEO,\
                     'place is geo: more than 80% rows are of geo type'
                 assert field.options != {}
                 assert field.options['geo_type'] == 'code'
+
+        if not geofield:
+            return
+
+        sheet = Sheet.objects.last()
+        assert 'processed_values' in sheet.data
+        processed = sheet.data['processed_values']
+
+        fid = str(geofield.id)
+        assert fid in processed
+        kathmandu_geo = GeoArea.objects.filter(code='KAT')[0]
+
+        for i, val in enumerate(processed[fid]):
+            assert val == kathmandu_geo.id
 
     def test_sheet_data_change_on_datefield_change_to_string(self):
         """
@@ -301,7 +331,7 @@ class TestTabularExtraction(APITestCase):
                 assert isinstance(v, list)
 
             # Check for invalid_values
-            if 'invalid_values' in data.keys():
+            if 'invalid_values' in data:
                 invalids = data['invalid_values']
                 assert isinstance(invalids, dict)
                 for k, v in invalids.items():
@@ -310,7 +340,19 @@ class TestTabularExtraction(APITestCase):
                     for x in v:
                         assert isinstance(x, int)
                         assert x >= 0 and x < size, \
-                            "Since invalids store indices, should be within range"
+                            "Since invalid_values store indices, should be within range"  # noqa
+
+            # Check for empty_values
+            if 'empty_values' in data:
+                invalids = data['empty_values']
+                assert isinstance(invalids, dict)
+                for k, v in invalids.items():
+                    assert k in columns
+                    assert isinstance(v, list)
+                    for x in v:
+                        assert isinstance(x, int)
+                        assert x >= 0 and x < size, \
+                            "Since empty_values stores indices, should be within range"  # noqa
         return book
 
     def tearDown(self):
