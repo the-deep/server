@@ -1,6 +1,5 @@
 import traceback
 import logging
-import math
 
 from celery import shared_task
 from redis_store import redis
@@ -12,12 +11,13 @@ from geo.models import models, GeoArea
 from .models import Book, Field, Geodata
 from .extractor import csv, xlsx
 from .utils import (
+    parse_string,
     parse_number,
-    auto_detect_datetime,
     parse_geo,
+    parse_datetime,
     get_geos_dict,
+    sample_and_detect_type_and_options,
 )
-from utils.common import get_max_occurence_and_count
 
 
 logger = logging.getLogger(__name__)
@@ -43,107 +43,44 @@ def _tabular_meta_extract_book(book):
 
 
 def auto_detect_and_update_fields(book):
-    # Get geos indexed by title, lazily calculated later
-    geos_names = None
-    # Index by codes, we need to search by codes as well, lazily calculated
-    geos_codes = None
+    # TODO: Find some ways to lazily calculate geos_names, geos_codes
+    geos_names = get_geos_dict(book.project)
+    geos_codes = {v['code'].lower(): v for k, v in geos_names.items()}
 
     for sheet in book.sheet_set.all():
-        data = sheet.data or []
+        data = sheet.data or {}
 
-        field_ids = [
-            x for x in data[0].keys() if x.isnumeric()
-        ] if data else []
+        field_ids = [x for x in data['columns'].keys()]
         fields = Field.objects.filter(id__in=field_ids)
 
-        total_rows = len(data)
+        invalid_values = {}
+        empty_values = {}
+        processed_values = {}
 
-        for row in data:
-            for k, v in row.items():
-                # field_id: {'value': XXX, type: type}
-
-                if not k.isnumeric():  # because k is the pk of field
-                    continue
-
-                type = Field.STRING
-                geo_parsed = None
-
-                number_parsed = parse_number(v['value'])
-                if number_parsed:
-                    v['type'] = Field.NUMBER
-                    continue
-
-                # parse_datetime() = None or (date, format)
-                datetime_parsed = auto_detect_datetime(v['value'])
-                if datetime_parsed:
-                    v['type'] = Field.DATETIME
-                    v['date_format'] = datetime_parsed[1]
-                    continue
-
-                # Lazy loading of geos_names and geos_codes
-                if geos_names is None:
-                    geos_names = get_geos_dict(book.project)
-                    geos_codes = {
-                        v['code'].lower(): v for k, v in geos_names.items()
-                    }
-
-                geo_parsed = parse_geo(v['value'], geos_names, geos_codes)
-                if geo_parsed is not None:
-                    v['type'] = Field.GEO
-                    v['geo_type'] = geo_parsed['geo_type']
-                    v['admin_level'] = geo_parsed['admin_level']
-                    continue
-
-        # Store types info in row data
-        sheet.data = data
-        sheet.save()
-
-        # Threshold percent for types to be same for a field
-        threshold_count = math.floor(AUTO_DETECT_THRESHOLD * total_rows)
-
-        for field in fields:
-            fid = str(field.id)
-            id_types = [row[fid]['type'] for row in data]
-            max_type, max_count = get_max_occurence_and_count(id_types)
-
-            type = field.type
-            if max_count >= threshold_count:
-                type = max_type
-
-            #  Get admin_level and geo_type for geo type field
-            if type == Field.GEO:
-                geo_types = [
-                    row[fid]['geo_type']
-                    for row in data
-                    if row[fid]['type'] == Field.GEO
-                ]
-                admin_levels = [
-                    row[fid]['admin_level']
-                    for row in data
-                    if row[fid]['type'] == Field.GEO
-                ]
-
-                max_type, type_count = get_max_occurence_and_count(geo_types)
-                max_lev, lev_count = get_max_occurence_and_count(admin_levels)
-
-                field.options = {
-                    'geo_type': max_type,
-                    'admin_level': max_lev
-                }
-
-            elif type == Field.DATETIME:
-                # Get format for date
-                formats = [
-                    row[fid]['date_format']
-                    for row in data
-                    if row[fid]['type'] == Field.DATETIME
-                ]
-                max_format, format_count = get_max_occurence_and_count(formats)
-                field.options = {
-                    'date_format': max_format
-                }
-            field.type = type
+        for k, v in data['columns'].items():
+            detected_info = sample_and_detect_type_and_options(
+                v, geos_names, geos_codes
+            )
+            field = next(filter(lambda x: str(x.id) == k, fields), None)
+            if field is None:
+                continue
+            field.type = detected_info['type']
+            field.options = detected_info['options']
             field.save()
+
+            casted_info = sheet.cast_data_to(field, geos_names, geos_codes)
+
+            invalid_values[k] = casted_info['invalid_values']
+            empty_values[k] = casted_info['empty_values']
+            processed_values[k] = casted_info['processed_values']
+
+        sheet.data = {
+            'columns': data['columns'],
+            'invalid_values': invalid_values,
+            'empty_values': empty_values,
+            'processed_values': processed_values,
+        }
+        sheet.save()
 
 
 def _tabular_meta_extract_geo(geodata):
