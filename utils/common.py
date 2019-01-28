@@ -158,3 +158,36 @@ def excel_column_name(column_number):
     r = col_num % 26
 
     return excel_column_name(q) + chr(65 + r)
+
+
+def log_time(logger, debug=False):
+    def wrapped(f):
+        def logged(*args, **kwargs):
+            start = time.time()
+            return_val = f(*args, **kwargs)
+            end = time.time()
+
+            logfunc = print if debug else logger.info
+            logfunc('The function {} took {} seconds'.format(
+                f, end - start
+            ))
+            return return_val
+        return logged
+    return wrapped
+
+
+confidence_z_map = {
+    80: 1.28,
+    85: 1.44,
+    90: 1.65,
+    95: 1.96,
+    99: 2.58,
+}
+
+
+def calculate_sample_size(pop_size, confidence_percent=90, prob=0.8):
+    z = confidence_z_map.get(confidence_percent, 1.5)
+    e = 0.05  # Error Interval
+    z_p_pmin1 = z * z * prob * (1 - prob)
+    z_by_e_sq = z_p_pmin1 / e**2
+    return z_by_e_sq / (1 + z_by_e_sq / pop_size)
