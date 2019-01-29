@@ -30,7 +30,7 @@ AUTO_DETECT_THRESHOLD = 0.8
 def _tabular_extract_book(book):
     if book.file_type == Book.CSV:
         csv.extract(book)
-    if book.file_type == Book.XLSX:
+    elif book.file_type == Book.XLSX:
         xlsx.extract(book)
     auto_detect_and_update_fields(book)
     return True
