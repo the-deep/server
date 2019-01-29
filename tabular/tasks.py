@@ -53,9 +53,7 @@ def auto_detect_and_update_fields(book):
         field_ids = [x for x in data['columns'].keys()]
         fields = Field.objects.filter(id__in=field_ids)
 
-        invalid_values = {}
-        empty_values = {}
-        processed_values = {}
+        columns = {}
 
         for k, v in data['columns'].items():
             detected_info = sample_and_detect_type_and_options(
@@ -68,17 +66,11 @@ def auto_detect_and_update_fields(book):
             field.options = detected_info['options']
             field.save()
 
-            casted_info = sheet.cast_data_to(field, geos_names, geos_codes)
-
-            invalid_values[k] = casted_info['invalid_values']
-            empty_values[k] = casted_info['empty_values']
-            processed_values[k] = casted_info['processed_values']
+            field_values = sheet.cast_data_to(field, geos_names, geos_codes)
+            columns[k] = field_values
 
         sheet.data = {
-            'columns': data['columns'],
-            'invalid_values': invalid_values,
-            'empty_values': empty_values,
-            'processed_values': processed_values,
+            'columns': columns,
         }
         sheet.save()
 

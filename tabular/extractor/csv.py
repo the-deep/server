@@ -51,7 +51,9 @@ def extract(book):
                     fid = str(field.pk)
                     # Insert field value to corresponding column
                     col_vals = sheet_columns.get(fid, [])
-                    col_vals.append(_row[index])
+                    col_vals.append({
+                        'value': _row[index]
+                    })
                     sheet_columns[fid] = col_vals
             except Exception:
                 pass
