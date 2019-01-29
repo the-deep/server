@@ -47,6 +47,9 @@ def auto_detect_and_update_fields(book):
     geos_names = get_geos_dict(book.project)
     geos_codes = {v['code'].lower(): v for k, v in geos_names.items()}
 
+    def isValueNotEmpty(v):
+        return v.get('value')
+
     for sheet in book.sheet_set.all():
         data = sheet.data or {}
 
@@ -56,8 +59,9 @@ def auto_detect_and_update_fields(book):
         columns = {}
 
         for k, v in data['columns'].items():
+            emptyFiltered = list(filter(isValueNotEmpty, v))
             detected_info = sample_and_detect_type_and_options(
-                v, geos_names, geos_codes
+                emptyFiltered, geos_names, geos_codes
             )
             field = next(filter(lambda x: str(x.id) == k, fields), None)
             if field is None:

@@ -101,6 +101,12 @@ def sample_and_detect_type_and_options(values, geos_names={}, geos_codes={}):
     # Importing here coz this is util and might be imported in models
     from .models import Field  # noqa
 
+    if not values:
+        return {
+            'type': Field.STRING,
+            'options': {}
+        }
+
     length = len(values)
     sample_size = calculate_sample_size(length, 95, prob=0.8)
 
