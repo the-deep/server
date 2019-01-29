@@ -21,7 +21,7 @@ consistent_csv_data = '''id,age,name,date,place
 1,10,john,2018 october 28,Kathmandu
 1,10,john,2018 october 28,Kathmandu
 1,10,john,2018 october 28,banana
-1,10,john,2018 october 28,Kathmandu
+1,10,john,2018 october 28,
 abc,10,john,2018 october 28,mango
 abc,30,doe,10 Nevem 2018,Kathmandu'''
 
@@ -47,7 +47,18 @@ abc,10,john,1994 Deer 29,Kathmandu
 1,10,john,199 Dmber 29,Kathmandu
 1,10,john,1994 December 29,Kathmandu
 abc,10,john,14 Dber 29,Kathmandu
-abc,30,doe,10 Nevem 2018,Kathmandu'''
+abc,30,doe,10 Nevem 2018,'''
+
+
+def check_invalid(index, fid, columns):
+    assert 'invalid' in columns[fid][index]
+    assert columns[fid][index]['invalid'] is True
+
+
+def check_empty(index, fid, columns):
+    print(columns[fid][index])
+    assert 'empty' in columns[fid][index]
+    assert columns[fid][index]['empty'] is True
 
 
 class TestTabularExtraction(APITestCase):
@@ -84,11 +95,10 @@ class TestTabularExtraction(APITestCase):
         assert 'columns' in data
         columns = data['columns']
 
-        assert 'invalid_values' in data
-        invalid_values = data['invalid_values']
-
-        assert 'empty_values' in data
-        empty_values = data['empty_values']
+        for k, v in columns.items():
+            for x in v:
+                assert isinstance(x, dict)
+                assert 'value' in x
 
         # now validate auto detected fields
         for field in Field.objects.filter(sheet=sheet):
@@ -97,7 +107,9 @@ class TestTabularExtraction(APITestCase):
 
             if field.title == 'id':
                 assert field.type == Field.NUMBER, 'id is number'
-                assert invalid_values[fid] == [8, 9]
+                # Check invalid values
+                check_invalid(8, fid, columns)
+                check_invalid(9, fid, columns)
             elif field.title == 'age':
                 assert field.type == Field.NUMBER, 'age is number'
             elif field.title == 'name':
@@ -106,12 +118,13 @@ class TestTabularExtraction(APITestCase):
                 assert field.type == Field.DATETIME, 'date is datetime'
                 assert field.options is not None
                 assert 'date_format' in field.options
-                assert invalid_values[fid] == [9]
+                check_invalid(9, fid, columns)
             elif field.title == 'place':
                 assert field.type == Field.GEO, 'place is geo'
                 assert field.options is not None
-                assert invalid_values[fid] == [6, 8]
-                assert empty_values[fid] == []
+                check_invalid(6, fid, columns)
+                check_empty(7, fid, columns)
+                check_invalid(8, fid, columns)
 
     def test_auto_detection_inconsistent(self):
         """
@@ -121,11 +134,24 @@ class TestTabularExtraction(APITestCase):
         # now auto detect
         auto_detect_and_update_fields(book)
 
+        sheet = Sheet.objects.last()
+        data = sheet.data
+
+        assert 'columns' in data
+        columns = data['columns']
+
         # now validate auto detected fields
         for field in Field.objects.all():
+            for v in columns[str(field.id)]:
+                assert isinstance(v, dict)
+
             if field.title == 'id':
                 assert field.type == Field.STRING,\
                     'id is string as it is inconsistent'
+                # Verify that being string, no value is invalid
+                for v in columns[str(field.id)]:
+                    assert not v.get('invalid'),\
+                        "Since string, shouldn't be invalid"
             elif field.title == 'age':
                 assert field.type == Field.NUMBER, 'age is number'
             elif field.title == 'name':
@@ -160,15 +186,17 @@ class TestTabularExtraction(APITestCase):
             return
 
         sheet = Sheet.objects.last()
-        assert 'processed_values' in sheet.data
-        processed = sheet.data['processed_values']
+        columns = sheet.data['columns']
 
-        fid = str(geofield.id)
-        assert fid in processed
         kathmandu_geo = GeoArea.objects.filter(code='KAT')[0]
 
-        for val in processed[fid]:
-            assert val == kathmandu_geo.id
+        fid = str(geofield.id)
+        for v in columns[fid]:
+            assert v.get('invalid') or v.get('empty') or 'processed_value' in v
+            assert 'value' in v
+            assert v.get('empty') \
+                or v.get('invalid') \
+                or v['processed_value'] == kathmandu_geo.id
 
     def test_auto_detection_geo_type_code(self):
         """
@@ -196,15 +224,17 @@ class TestTabularExtraction(APITestCase):
             return
 
         sheet = Sheet.objects.last()
-        assert 'processed_values' in sheet.data
-        processed = sheet.data['processed_values']
+        columns = sheet.data['columns']
 
-        fid = str(geofield.id)
-        assert fid in processed
         kathmandu_geo = GeoArea.objects.filter(code='KAT')[0]
 
-        for i, val in enumerate(processed[fid]):
-            assert val == kathmandu_geo.id
+        fid = str(geofield.id)
+        for v in columns[fid]:
+            assert v.get('invalid') or v.get('empty') or 'processed_value' in v
+            assert 'value' in v
+            assert v.get('empty') \
+                or v.get('invalid') \
+                or v['processed_value'] == kathmandu_geo.id
 
     def test_sheet_data_change_on_datefield_change_to_string(self):
         """
@@ -228,10 +258,11 @@ class TestTabularExtraction(APITestCase):
 
         # Get sheet again, which should be updated
         new_sheet = Sheet.objects.get(id=sheet.id)
+        columns = new_sheet.data['columns']
 
-        invalids = new_sheet.data['invalid_values']
-        assert invalids[str(field.id)] == [], \
-            "Conversion to string should give no invalids"
+        # no vlaue should be invalid
+        for v in columns[str(field.id)]:
+            assert not v.get('invalid', None)
 
     def test_sheet_data_change_on_string_change_to_geo(self):
         """
@@ -256,21 +287,22 @@ class TestTabularExtraction(APITestCase):
 
         # Get sheet again, which should be updated
         new_sheet = Sheet.objects.get(id=sheet.id)
+        columns = new_sheet.data['columns']
 
-        invalids = new_sheet.data['invalid_values']
-        assert invalids[str(field.id)] == [], \
-            "Conversion to string should give no invalids"
-
+        # no vlaue should be invalid
+        for v in columns[fid]:
+            assert not v.get('invalid')
         # Now change type to Geo
         field.type = Field.GEO
         field.save()
 
         # Get sheet again, which should be updated
         brand_new_sheet = Sheet.objects.get(id=sheet.id)
+        columns = brand_new_sheet.data['columns']
 
-        invalids = brand_new_sheet.data['invalid_values'][fid]
-        # NOTE: look at consistent_csv_data value
-        assert invalids == [6, 8]
+        check_invalid(6, fid, columns)
+        check_empty(7, fid, columns)
+        check_invalid(8, fid, columns)
 
     def initialize_data_and_basic_test(self, csv_data):
         file = NamedTemporaryFile('w', dir=settings.MEDIA_ROOT, delete=False)
@@ -323,30 +355,6 @@ class TestTabularExtraction(APITestCase):
 
             for k, v in columns.items():
                 assert isinstance(v, list)
-
-            # Check for invalid_values
-            if 'invalid_values' in data:
-                invalids = data['invalid_values']
-                assert isinstance(invalids, dict)
-                for k, v in invalids.items():
-                    assert k in columns
-                    assert isinstance(v, list)
-                    for x in v:
-                        assert isinstance(x, int)
-                        assert x >= 0 and x < size, \
-                            "Since invalid_values store indices, should be within range"  # noqa
-
-            # Check for empty_values
-            if 'empty_values' in data:
-                invalids = data['empty_values']
-                assert isinstance(invalids, dict)
-                for k, v in invalids.items():
-                    assert k in columns
-                    assert isinstance(v, list)
-                    for x in v:
-                        assert isinstance(x, int)
-                        assert x >= 0 and x < size, \
-                            "Since empty_values stores indices, should be within range"  # noqa
         return book
 
     def tearDown(self):

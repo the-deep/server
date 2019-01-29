@@ -113,18 +113,19 @@ def sample_and_detect_type_and_options(values, geos_names={}, geos_codes={}):
     date_options = []
 
     for sample in samples:
-        number_parsed = parse_number(sample)
+        value = sample['value']
+        number_parsed = parse_number(value)
         if number_parsed:
             types.append(Field.NUMBER)
             continue
 
-        datetime_parsed = auto_detect_datetime(sample)
+        datetime_parsed = auto_detect_datetime(value)
         if datetime_parsed:
             types.append(Field.DATETIME)
             date_options.append({'date_format': datetime_parsed[1]})
             continue
 
-        geo_parsed = parse_geo(sample, geos_names, geos_codes)
+        geo_parsed = parse_geo(value, geos_names, geos_codes)
         if geo_parsed is not None:
             types.append(Field.GEO)
             geo_options.append({
