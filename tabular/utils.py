@@ -69,17 +69,18 @@ def auto_detect_datetime(val):
 
 def get_geos_dict(project=None, **kwargs):
     if project is None:
-        geos = GeoArea.objects.all()
+        geos = GeoArea.objects.all()\
+            .values('id', 'code', 'admin_level__level', 'title')
     else:
         geos = GeoArea.objects.filter(
             admin_level__region__project=project
-        )
+        ).values('id', 'code', 'admin_level__level', 'title')
     return {
-        x.title.lower(): {
-            "admin_level": x.admin_level.id,
-            "title": x.title,
-            "code": x.code,
-            "id": x.id,
+        x['title'].lower(): {
+            "admin_level": x['admin_level__level'],
+            "title": x['title'],
+            "code": x['code'],
+            "id": x['id'],
         }
         for x in geos
     }
