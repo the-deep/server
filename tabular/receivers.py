@@ -17,20 +17,10 @@ def on_field_saved(sender, **kwargs):
     if field.type == field.current_type:
         return
 
-    updated_data = field.sheet.cast_data_to(field)
+    updated_values = field.sheet.cast_data_to(field)
     # updated_data is dict of invalid/empty/processed values for the field
 
     fid = str(field.id)
-    invalid_values = field.sheet.data.get('invalid_values', {})
-    processed_values = field.sheet.data.get('processed_values', {})
-    empty_values = field.sheet.data.get('empty_values', {})
-
-    invalid_values[fid] = updated_data['invalid_values']
-    processed_values[fid] = updated_data['processed_values']
-    empty_values[fid] = updated_data['empty_values']
-
-    field.sheet.data['invalid_values'] = invalid_values
-    field.sheet.data['empty_values'] = empty_values
-    field.sheet.data['processed_values'] = processed_values
+    field.sheet.data['columns'][fid] = updated_values
 
     field.sheet.save()

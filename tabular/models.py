@@ -112,36 +112,22 @@ class Sheet(models.Model):
 
         values = self.data['columns'][str(field.id)]
 
-        emptys = []
-        processed = []
-        invalids = []
         # Now iterate through every item to find empty/invalid values
         for i, value in enumerate(values):
-            if value is None or value == '':
-                emptys.append(i)
-                processed.append(None)
+            val = value['value']
+            if val is None or val == '':
+                value['empty'] = True
                 continue
-            casted = cast_func(value, **field.options)
+            casted = cast_func(val, **field.options)
             if casted is None:
-                invalids.append(i)
-                processed.append(None)
+                value['invalid'] = True
             else:
-                processed.append(casted)
+                value['invalid'] = False
+                value['empty'] = False
+                if type == Field.GEO:
+                    value['processed_value'] = casted['id']
 
-        # NOTE: processed values for other fields is irrelevant now
-        processed_values = []
-        if type == Field.GEO:
-            processed_values = [
-                x['id'] if x else None
-                for x in processed
-            ]
-
-        data = {
-            'invalid_values': invalids,
-            'empty_values': emptys,
-            'processed_values': processed_values,
-        }
-        return data
+        return values
 
     def __str__(self):
         return self.title
