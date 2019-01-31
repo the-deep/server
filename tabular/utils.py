@@ -70,17 +70,23 @@ def auto_detect_datetime(val):
 def get_geos_dict(project=None, **kwargs):
     if project is None:
         geos = GeoArea.objects.all()\
-            .values('id', 'code', 'admin_level__level', 'title')
+            .values(
+                'id', 'code', 'admin_level__level', 'title',
+                'admin_level__region'
+        )
     else:
         geos = GeoArea.objects.filter(
             admin_level__region__project=project
-        ).values('id', 'code', 'admin_level__level', 'title')
+        ).values(
+            'id', 'code', 'admin_level__level', 'title', 'admin_level__region'
+        )
     return {
         x['title'].lower(): {
             "admin_level": x['admin_level__level'],
             "title": x['title'],
             "code": x['code'],
             "id": x['id'],
+            "region": x['admin_level__region'],
         }
         for x in geos
     }
@@ -89,12 +95,21 @@ def get_geos_dict(project=None, **kwargs):
 def parse_geo(value, geos_names={}, geos_codes={}, **kwargs):
     val = value.lower()
     name_match = geos_names.get(val)
-    if name_match:
-        return {**name_match, 'geo_type': 'name'}
     code_match = geos_codes.get(val)
-    if code_match:
-        return {**code_match, 'geo_type': 'code'}
-    return None
+    admin_level = kwargs.get('admin_level')
+    # If admin_level is present, match admin_level as well
+
+    parsed = None
+    if name_match:
+        parsed = {**name_match, 'geo_type': 'name'}
+    elif code_match:
+        parsed = {**code_match, 'geo_type': 'code'}
+    else:
+        return None
+
+    if admin_level and admin_level != parsed['admin_level']:
+        return None
+    return parsed
 
 
 def sample_and_detect_type_and_options(values, geos_names={}, geos_codes={}):
@@ -137,6 +152,7 @@ def sample_and_detect_type_and_options(values, geos_names={}, geos_codes={}):
             geo_options.append({
                 'geo_type': geo_parsed['geo_type'],
                 'admin_level': geo_parsed['admin_level'],
+                'region': geo_parsed['region'],
             })
             continue
         types.append(Field.STRING)
@@ -161,11 +177,29 @@ def sample_and_detect_type_and_options(values, geos_names={}, geos_codes={}):
         max_admin, max_count = get_max_occurence_and_count([
             x['admin_level'] for x in geo_options
         ])
+
+        max_region, max_count = get_max_occurence_and_count([
+            x['region'] for x in geo_options
+        ])
         max_options = {
             'geo_type': max_geo,
+            'region': max_region,
             'admin_level': max_admin
         }
     return {
         'type': max_type,
         'options': max_options
     }
+
+
+def get_cast_function(type, geos_names, geos_codes):
+    from .models import Field
+    if type == Field.STRING:
+        cast_func = parse_string
+    elif type == Field.NUMBER:
+        cast_func = parse_number
+    elif type == Field.DATETIME:
+        cast_func = parse_datetime
+    elif type == Field.GEO:
+        cast_func = lambda v, **kwargs: parse_geo(v, geos_names, geos_codes, **kwargs)  # noqa
+    return cast_func

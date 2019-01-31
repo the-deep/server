@@ -52,7 +52,9 @@ def extract(book):
                     # Insert field value to corresponding column
                     col_vals = sheet_columns.get(fid, [])
                     col_vals.append({
-                        'value': _row[index]
+                        'value': _row[index],
+                        'invalid': False,
+                        'empty': False,
                     })
                     sheet_columns[fid] = col_vals
             except Exception:

@@ -179,6 +179,8 @@ class TestTabularExtraction(APITestCase):
                 assert field.type == Field.GEO,\
                     'place is geo: more than 80% rows are of geo type'
                 assert field.options != {}
+                assert 'region' in field.options
+                assert 'geo_type' in field.options
                 assert field.options['geo_type'] == 'name'
                 assert 'admin_level' in field.options
 
@@ -218,6 +220,8 @@ class TestTabularExtraction(APITestCase):
                 assert field.type == Field.GEO,\
                     'place is geo: more than 80% rows are of geo type'
                 assert field.options != {}
+                assert 'region' in field.options
+                assert 'geo_type' in field.options
                 assert field.options['geo_type'] == 'code'
 
         if not geofield:
@@ -281,8 +285,11 @@ class TestTabularExtraction(APITestCase):
             sheet=sheet,
             type=Field.GEO
         )
+        options = field.options
+
         fid = str(field.id)
         field.type = Field.STRING
+        field.options = {}
         field.save()
 
         # Get sheet again, which should be updated
@@ -294,7 +301,22 @@ class TestTabularExtraction(APITestCase):
             assert not v.get('invalid')
         # Now change type to Geo
         field.type = Field.GEO
+
+        # Try removing region, and check if it's automatically added from admin
+        # level
+        options.pop('region', {})
+        field.options = {
+            **options,
+        }
         field.save()
+
+        kat_geo = GeoArea.objects.filter(code='KAT')[0]
+
+        # Check if field has region
+        field = Field.objects.get(id=fid)
+        assert 'region' in field.options
+        assert field.options['admin_level'] == kat_geo.admin_level.level
+        assert field.options['region'] == kat_geo.admin_level.region.id
 
         # Get sheet again, which should be updated
         brand_new_sheet = Sheet.objects.get(id=sheet.id)
@@ -355,6 +377,12 @@ class TestTabularExtraction(APITestCase):
 
             for k, v in columns.items():
                 assert isinstance(v, list)
+                for x in v:
+                    assert 'value' in x
+                    assert 'empty' in x
+                    assert isinstance(x['empty'], bool)
+                    assert 'invalid' in x
+                    assert isinstance(x['invalid'], bool)
         return book
 
     def tearDown(self):
