@@ -83,7 +83,7 @@ class Sheet(models.Model):
     title = models.CharField(max_length=255)
     book = models.ForeignKey(Book)
     options = JSONField(default=None, blank=True, null=True)
-    data = JSONField(default=[])
+    data = JSONField(default={})
     hidden = models.BooleanField(default=False)
 
     def cast_data_to(self, field, geos_names={}, geos_codes={}):
@@ -96,7 +96,7 @@ class Sheet(models.Model):
 
         cast_func = get_cast_function(type, geos_names, geos_codes)
 
-        values = self.data['columns'][str(field.id)]
+        values = self.data.get('columns', {}).get(str(field.id), [])
 
         # Now iterate through every item to find empty/invalid values
         for i, value in enumerate(values):
