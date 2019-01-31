@@ -11,10 +11,6 @@ from geo.models import models, GeoArea
 from .models import Book, Field, Geodata
 from .extractor import csv, xlsx
 from .utils import (
-    parse_string,
-    parse_number,
-    parse_geo,
-    parse_datetime,
     get_geos_dict,
     sample_and_detect_type_and_options,
 )
@@ -70,8 +66,11 @@ def auto_detect_and_update_fields(book):
             field.options = detected_info['options']
             field.save()
 
-            field_values = sheet.cast_data_to(field, geos_names, geos_codes)
-            columns[k] = field_values
+            cast_info = sheet.cast_data_to(field, geos_names, geos_codes)
+            columns[k] = cast_info['values']
+
+            field.options = cast_info['options']
+            field.save()
 
         sheet.data = {
             'columns': columns,

@@ -102,7 +102,9 @@ def extract(book):
                         # Insert field value to corresponding column
                         col_vals = sheet_columns.get(fid, [])
                         col_vals.append({
-                            'value': value
+                            'value': value,
+                            'empty': False,
+                            'invalid': False
                         })
                         sheet_columns[fid] = col_vals
 

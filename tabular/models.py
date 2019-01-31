@@ -5,13 +5,7 @@ from gallery.models import File
 from project.models import Project
 from utils.common import get_file_from_url
 
-from tabular.utils import (
-    parse_string,
-    parse_number,
-    get_geos_dict,
-    parse_geo,
-    parse_datetime,
-)
+from tabular.utils import get_cast_function
 
 
 class Book(UserResource):
@@ -91,24 +85,15 @@ class Sheet(models.Model):
     data = JSONField(default=[])
     hidden = models.BooleanField(default=False)
 
-    def cast_data_to(self, field, geos_names=None, geos_codes=None):
+    def cast_data_to(self, field, geos_names={}, geos_codes={}):
         """
         Returns processed, invalid and empty values corresponding to the fields
         after trying to cast
         """
         type = field.type
+        options = field.options
 
-        if type == Field.STRING:
-            cast_func = parse_string
-        elif type == Field.NUMBER:
-            cast_func = parse_number
-        elif type == Field.DATETIME:
-            cast_func = parse_datetime
-        elif type == Field.GEO:
-            geos_names = geos_names or get_geos_dict(self.book.project)
-            geos_codes = geos_codes or \
-                {v['code'].lower(): v for k, v in geos_names.items()}
-            cast_func = lambda v, **kwargs: parse_geo(v, geos_names, geos_codes, **kwargs)  # noqa
+        cast_func = get_cast_function(type, geos_names, geos_codes)
 
         values = self.data['columns'][str(field.id)]
 
@@ -117,17 +102,23 @@ class Sheet(models.Model):
             val = value['value']
             if val is None or val == '':
                 value['empty'] = True
+                value['invalid'] = False
                 continue
             casted = cast_func(val, **field.options)
             if casted is None:
                 value['invalid'] = True
+                value['empty'] = False
             else:
                 value['invalid'] = False
                 value['empty'] = False
                 if type == Field.GEO:
                     value['processed_value'] = casted['id']
+                    options['region'] = casted['region']
 
-        return values
+        return {
+            'values': values,
+            'options': options
+        }
 
     def __str__(self):
         return self.title
