@@ -94,3 +94,22 @@ class BookSerializer(
             book.meta_status = Book.SUCCESS
         book.save()
         return book
+
+
+class FieldDataSerializer(
+        RemoveNullFieldsMixin,
+        DynamicFieldsMixin,
+        serializers.ModelSerializer
+):
+    field = serializers.SerializerMethodField()
+    field_data = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Field
+        fields = ('field', 'field_data')
+
+    def get_field(self, obj):
+        return FieldSerializer(obj).data
+
+    def get_field_data(self, obj):
+        return obj.sheet.data.get('columns', {}).get(str(obj.id), [])
