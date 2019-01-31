@@ -33,6 +33,7 @@ from tabular.views import (
     GeodataViewSet,
     TabularExtractionTriggerView,
     TabularGeoProcessTriggerView,
+    TabularFieldUpdateView,
 )
 from user_group.views import (
     GroupMembershipViewSet,
@@ -353,6 +354,9 @@ urlpatterns = [
 
     url(get_api_path(r'tabular-geo-extraction-trigger/(?P<field_id>\d+)/$'),
         TabularGeoProcessTriggerView.as_view()),
+
+    url(get_api_path(r'tabular-field-update/(?P<field_id>\d+)/$'),
+        TabularFieldUpdateView.as_view()),
 
     # Website fetch api
     url(get_api_path(r'lead-website-fetch/$'),
