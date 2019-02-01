@@ -71,10 +71,17 @@ class LeadSerializer(RemoveNullFieldsMixin,
         source='get_assignee.id',
         required=False,
     )
+    tabular_book = serializers.SerializerMethodField()
 
     class Meta:
         model = Lead
         fields = ('__all__')
+
+    def get_tabular_book(self, obj):
+        file = obj.attachment
+        if file and hasattr(file, 'book'):
+            return file.book.id
+        return None
 
     def validate(self, data):
         project = data.get('project',
