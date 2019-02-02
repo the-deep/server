@@ -123,7 +123,11 @@ def extract_thumbnail(lead_id):
     thumbnail = None
 
     if not leadPreview:
-        leadPreview = LeadPreview.objects.create(lead=lead)
+        logger.error(
+            "Lead(id:{}) preview hasn't been created but extract_thumbnail() called".  # noqa
+            format(lead_id)
+        )
+        return False
 
     try:
         if lead.text:

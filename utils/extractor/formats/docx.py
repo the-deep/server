@@ -152,7 +152,9 @@ def pptx_process(docx, img_dir=None):
 def get_pages_in_docx(file):
     with zipfile.ZipFile(file) as zipf:
         xml = zipf.read('docProps/app.xml')
-        return int(ET.fromstring(xml).find('wP:Pages', nsmap).text)
+        pages = ET.fromstring(xml).find('wP:Pages', nsmap)
+        # pages could be False or None
+        return int(pages.text) if pages is not None else 0
 
 
 if __name__ == '__main__':
