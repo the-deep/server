@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
+from django.core.cache import cache
 
 from deep.serializers import RemoveNullFieldsMixin
 from user.serializers import SimpleUserSerializer
@@ -13,6 +14,7 @@ from .models import (
     Lead,
     LeadPreviewImage,
 )
+from deep import settings
 
 
 def check_if_url_exists(url, user=None, project=None, exception_id=None):
@@ -43,6 +45,19 @@ class SingleValueThayMayBeListField(serializers.Field):
         return data
 
 
+class URLCachedFileField(serializers.FileField):
+    def to_representation(self, obj):
+        if not obj:
+            return None
+        key = "url_cache_%s" % obj.name
+        url = cache.get(key)
+        if url:
+            return url
+        url = super().to_representation(obj)
+        cache.set(key, url, settings.MAX_FILE_CACHE_AGE)
+        return url
+
+
 class SimpleLeadSerializer(RemoveNullFieldsMixin,
                            serializers.ModelSerializer):
     class Meta:
@@ -57,7 +72,7 @@ class LeadSerializer(RemoveNullFieldsMixin,
     """
     no_of_entries = serializers.IntegerField(read_only=True)
     attachment = SimpleFileSerializer(required=False)
-    thumbnail = serializers.ImageField(
+    thumbnail = URLCachedFileField(
         source='leadpreview.thumbnail',
         read_only=True,
     )
