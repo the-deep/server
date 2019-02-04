@@ -26,7 +26,10 @@ def on_field_saved(sender, **kwargs):
     cast_info = field.sheet.cast_data_to(field, geos_names, geos_codes)
 
     fid = str(field.id)
-    field.sheet.data['columns'][fid] = cast_info['values']
+
+    columns = field.sheet.data.get('columns', {})
+    columns[fid] = cast_info['values']
+    field.sheet.data['columns'] = columns
 
     field.options = cast_info['options']
     # But don't save here, will cause recursion
