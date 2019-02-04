@@ -61,6 +61,13 @@ class TestCase(test.APITestCase):
     def assert_403(self, response):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def assert_404(self, response):
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def assert_405(self, response):
+        self.assertEqual(
+            response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
     def create(self, model, **kwargs):
         if not kwargs.get('created_by'):
             kwargs['created_by'] = self.user
