@@ -19,7 +19,7 @@ class ExtractorTest(TestCase):
         self.path = join(settings.TEST_DIR, 'documents')
 
     def extract(self, extractor, path):
-        text, images = extractor.extract()
+        text, images, page_count = extractor.extract()
         extracted = get_or_write_file(path + '.txt', text)
 
         self.assertEqual(text, extracted.read())

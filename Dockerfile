@@ -2,20 +2,17 @@ FROM ubuntu:16.04
 
 MAINTAINER togglecorp info@togglecorp.com
 
-# Clean apt
-RUN apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    rm -rf /var/lib/apt/lists/partial/* && \
-    rm -rf /var/cache/apt/*
-
 # Update and install common packages with apt
 RUN apt-get update -y ; \
-    apt-get install -y \
+        apt-get install -y \
         # Basic Packages
         git \
         locales \
         vim \
         curl \
+        gnupg \
+        apt-transport-https \
+        ca-certificates \
         cron \
         unzip \
         python3 \
@@ -31,7 +28,23 @@ RUN apt-get update -y ; \
         libwww-perl \
         libdatetime-perl \
         # Required by deploy/scripts/aws_metrics_put.py
-        sysstat
+        sysstat \
+        #for headless chrome //after curl is installed
+        && curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+        && echo "deb https://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+        && apt-get update -y \
+        && apt-get install -y \
+        ttf-freefont \
+        google-chrome-stable \
+        # Clean apt
+        && rm -rf /var/lib/apt/lists/*
+
+# Install chromedriver
+RUN VERSION=$(curl http://chromedriver.storage.googleapis.com/LATEST_RELEASE) \
+    && curl -sS -o /tmp/chromedriver_linux64.zip http://chromedriver.storage.googleapis.com/$VERSION/chromedriver_linux64.zip \
+    && unzip -qq /tmp/chromedriver_linux64.zip -d /usr/bin/ \
+    && chmod 755 /usr/bin/chromedriver \
+    && rm /tmp/chromedriver_linux64.zip 
 
 # Support utf-8
 RUN locale-gen en_US.UTF-8

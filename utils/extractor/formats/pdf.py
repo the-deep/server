@@ -1,9 +1,12 @@
 from io import BytesIO
 from pdfminer.pdfparser import PDFParser
 from pdfminer.pdfdocument import PDFDocument
-from pdfminer.pdfinterp import resolve1
+from pdfminer.pdfinterp import (
+    resolve1,
+    PDFResourceManager,
+    PDFPageInterpreter,
+)
 from pdfminer.converter import TextConverter
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 
@@ -28,7 +31,8 @@ def process(doc):
             ):
                 interpreter.process_page(page)
             content = retstr.getvalue().decode()
-    return content, None
+    pages_count = get_pages_in_pdf(doc)
+    return content, None, pages_count
 
 
 def get_pages_in_pdf(file):
