@@ -13,6 +13,7 @@ from redis_store import redis
 from rest_framework.renderers import JSONRenderer
 from utils.extractor.file_document import FileDocument
 from utils.extractor.web_document import WebDocument
+from utils.extractor.thumbnailers import DocThumbnailer
 from utils.websocket.subscription import SubscriptionConsumer
 
 import json
@@ -20,6 +21,7 @@ import reversion
 import os
 import re
 import requests
+import tempfile
 
 import traceback
 import logging
@@ -53,6 +55,7 @@ def _extract_from_lead_core(lead_id):
 
     with reversion.create_revision():
         text, images = '', []
+        word_count, page_count = 0, 1
 
         # Extract either using FileDocument or WebDocument
         # as per the document type
@@ -60,16 +63,20 @@ def _extract_from_lead_core(lead_id):
             if lead.text:
                 text = lead.text
                 images = []
+
             elif lead.attachment:
-                text, images = FileDocument(
+                doc = FileDocument(
                     lead.attachment.file,
                     lead.attachment.file.name,
-                ).extract()
+                )
+                text, images, page_count = doc.extract()
 
             elif lead.url:
-                text, images = WebDocument(lead.url).extract()
+                doc = WebDocument(lead.url)
+                text, images, page_count = doc.extract()
 
             text = _preprocess(text)
+            word_count = len(re.findall(r'\b\S+\b', text))
         except Exception:
             logger.error(traceback.format_exc())
             if images:
@@ -85,8 +92,11 @@ def _extract_from_lead_core(lead_id):
         LeadPreview.objects.create(
             lead=lead,
             text_extract=text,
+            word_count=word_count,
+            page_count=page_count,
         )
 
+        extract_thumbnail.s(lead.id).delay()
         if text:
             # Send background deepl request
             transaction.on_commit(
@@ -104,6 +114,47 @@ def _extract_from_lead_core(lead_id):
                 image.close()
 
     return True
+
+
+@shared_task
+def extract_thumbnail(lead_id):
+    lead = Lead.objects.filter(id=lead_id).first()
+    leadPreview = LeadPreview.objects.filter(lead=lead).first()
+    thumbnail = None
+
+    if not leadPreview:
+        logger.error(
+            "Lead(id:{}) preview hasn't been created but extract_thumbnail() called".  # noqa
+            format(lead_id)
+        )
+        return False
+
+    try:
+        if lead.text:
+            with tempfile.NamedTemporaryFile() as tmp_file:
+                tmp_file.write(lead.text.encode())
+                tmp_file.flush()
+                thumbnail = DocThumbnailer(tmp_file, 'txt').get_thumbnail()
+
+        elif lead.attachment:
+            doc = FileDocument(
+                lead.attachment.file,
+                lead.attachment.file.name,
+            )
+            thumbnail = doc.get_thumbnail()
+
+        elif lead.url:
+            doc = WebDocument(lead.url)
+            thumbnail = doc.get_thumbnail()
+
+    except Exception:
+        logger.error(traceback.format_exc())
+
+    if thumbnail:
+        leadPreview.thumbnail.save(os.path.basename(thumbnail.name),
+                                   File(thumbnail), True)
+        # Delete thumbnail
+        os.unlink(thumbnail.name)
 
 
 @shared_task(bind=True, max_retries=10)

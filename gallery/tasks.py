@@ -30,7 +30,7 @@ def _extract_from_file_core(file_preview_id):
 
         for i, file in enumerate(files):
             try:
-                text, images = FileDocument(
+                text, images, page_count = FileDocument(
                     file.file,
                     file.file.name,
                 ).extract()

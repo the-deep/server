@@ -36,6 +36,7 @@ raven==6.9.0
 readability-lxml==0.6.2
 redis==2.10.6
 requests==2.20.0
+selenium==3.14.0
 tldextract==2.2.0
 tox
 pluggy==0.7.1
