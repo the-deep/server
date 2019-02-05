@@ -141,11 +141,18 @@ class PrioritySector(BasicTemplateEntity):
                                related_name='children',
                                default=None, null=True, blank=True)
 
+    class Meta(BasicTemplateEntity.Meta):
+        verbose_name = 'sector with most unmet need'
+        verbose_name_plural = 'sectors with most unmet need'
+
 
 class PriorityIssue(BasicTemplateEntity):
     parent = models.ForeignKey('PriorityIssue',
                                related_name='children',
                                default=None, null=True, blank=True)
+
+    class Meta(BasicTemplateEntity.Meta):
+        verbose_name = 'priority humanitarian access issue'
 
 
 class UnderlyingFactor(BasicTemplateEntity):
@@ -153,13 +160,21 @@ class UnderlyingFactor(BasicTemplateEntity):
                                related_name='children',
                                default=None, null=True, blank=True)
 
+    class Meta(BasicTemplateEntity.Meta):
+        verbose_name = 'main sectoral underlying factor'
+
 
 class SpecificNeedGroup(BasicTemplateEntity):
-    pass
+    class Meta(BasicTemplateEntity.Meta):
+        verbose_name = 'priority group with specific need'
+        verbose_name_plural = 'priority groups with specific need'
 
 
+# TODO: Remove / This is text field now and is not required anymore
 class AffectedLocation(BasicTemplateEntity):
-    pass
+    class Meta(BasicTemplateEntity.Meta):
+        verbose_name = 'setting facing most humanitarian access issues'
+        verbose_name_plural = 'settings facing most humanitarian access issues'
 
 
 class ScoreBucket(models.Model):
