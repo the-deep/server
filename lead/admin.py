@@ -17,6 +17,12 @@ class LeadPreviewImageInline(admin.TabularInline):
 @admin.register(Lead)
 class LeadAdmin(VersionAdmin):
     inlines = [LeadPreviewInline, LeadPreviewImageInline]
+    search_fields = ['title']
+    list_filter = ('project', 'created_by', 'created_at')
+    list_display = [
+        'title', 'project', 'created_by', 'created_at',
+    ]
+    ordering = ('project', 'created_by', 'created_at')
 
 
 @admin.register(LeadGroup)

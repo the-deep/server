@@ -1,10 +1,9 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 MAINTAINER togglecorp info@togglecorp.com
 
 # Update and install common packages with apt
-RUN apt-get update -y ; \
-        apt-get install -y \
+RUN apt-get update -y && apt-get install -y \
         # Basic Packages
         git \
         locales \
@@ -29,22 +28,19 @@ RUN apt-get update -y ; \
         libdatetime-perl \
         # Required by deploy/scripts/aws_metrics_put.py
         sysstat \
-        #for headless chrome //after curl is installed
+        # for headless chrome
         && curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
         && echo "deb https://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
-        && apt-get update -y \
-        && apt-get install -y \
-        ttf-freefont \
-        google-chrome-stable \
+        && apt-get update -y && apt-get install -y \
+            fonts-freefont-ttf \
+            google-chrome-stable \
+        # Install chromedriver
+        && curl -sS -o /tmp/chromedriver_linux64.zip http://chromedriver.storage.googleapis.com/2.46/chromedriver_linux64.zip \
+        && unzip -qq /tmp/chromedriver_linux64.zip -d /usr/bin/ \
+        && chmod 755 /usr/bin/chromedriver \
+        && rm /tmp/chromedriver_linux64.zip \
         # Clean apt
         && rm -rf /var/lib/apt/lists/*
-
-# Install chromedriver
-RUN VERSION=$(curl http://chromedriver.storage.googleapis.com/LATEST_RELEASE) \
-    && curl -sS -o /tmp/chromedriver_linux64.zip http://chromedriver.storage.googleapis.com/$VERSION/chromedriver_linux64.zip \
-    && unzip -qq /tmp/chromedriver_linux64.zip -d /usr/bin/ \
-    && chmod 755 /usr/bin/chromedriver \
-    && rm /tmp/chromedriver_linux64.zip 
 
 # Support utf-8
 RUN locale-gen en_US.UTF-8
@@ -53,17 +49,12 @@ ENV LANG en_US.UTF-8
 COPY ./deploy/scripts/remote2_syslog_init.sh /tmp/
 RUN /tmp/remote2_syslog_init.sh
 
-# Install uwsgi for django
-RUN pip3 install uwsgi
-
 WORKDIR /code
 
-RUN pip3 install virtualenv
-RUN virtualenv /venv
-
 COPY ./requirements.txt /code/requirements.txt
-RUN . /venv/bin/activate && \
-    pip install -r requirements.txt
+RUN echo 'alias python=python3\nalias pip=pip3' >> ~/.bashrc \
+    && pip3 install uwsgi \
+    && pip3 install -r requirements.txt
 
 COPY . /code/
 

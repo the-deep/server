@@ -10,9 +10,14 @@ import requests
 import io
 import re
 import tempfile
+import traceback
 import base64
+import logging
 
 from utils.common import get_valid_xml_string as xstr
+
+
+logger = logging.getLogger(__name__)
 
 
 def _write_file(r, fp):
@@ -153,21 +158,23 @@ class Document:
 
     def add_image(self, image):
         try:
-            if image and len(image):
-                sec = self.doc.sections[-1]
-                try:
-                    cols = int(
-                        sec._sectPr.xpath('./w:cols')[0].get(qn('w:num'))
-                    )
-                    width = (
-                        (sec.page_width / cols) -
-                        (sec.right_margin + sec.left_margin)
-                    )
-                except Exception:
-                    width = (
-                        sec.page_width - (sec.right_margin + sec.left_margin)
-                    )
+            sec = self.doc.sections[-1]
+            try:
+                cols = int(
+                    sec._sectPr.xpath('./w:cols')[0].get(qn('w:num'))
+                )
+                width = (
+                    (sec.page_width / cols) -
+                    (sec.right_margin + sec.left_margin)
+                )
+            except Exception:
+                width = (
+                    sec.page_width - (sec.right_margin + sec.left_margin)
+                )
 
+            if hasattr(image, 'read'):
+                fimage = image
+            elif image and len(image):
                 fimage = tempfile.NamedTemporaryFile()
                 if re.search(r'http[s]?://', image):
                     image = requests.get(image, stream=True, timeout=2)
@@ -176,16 +183,17 @@ class Document:
                     image = base64.b64decode(image.split(',')[1])
                     fimage.write(image)
 
-                image_width, _ = Image.open(fimage).size
-                image_width = Pt(image_width)
+            image_width, _ = Image.open(fimage).size
+            image_width = Pt(image_width)
 
-                if image_width < width:
-                    self.doc.add_picture(fimage)
-                else:
-                    self.doc.add_picture(fimage, width=width)
+            if image_width < width:
+                self.doc.add_picture(fimage)
+            else:
+                self.doc.add_picture(fimage, width=width)
             return self
         except Exception:
             self.doc.add_paragraph('Invalid Image')
+            logger.error(traceback.format_exc())
             return self
 
     def add_heading(self, text, level):

@@ -26,8 +26,6 @@ sed "s/port:.*/port: $PAPERTRAIL_PORT/" -i /etc/log_files.yml
 service remote_syslog start # start remote_syslog for papaertail log collecter
 ###
 
-. /venv/bin/activate
-
 echo 'System Info:'
 echo 'HOSTNAME:     ' ${EBS_HOSTNAME}
 echo 'EBS_ENV_TYPE: ' ${EBS_ENV_TYPE}

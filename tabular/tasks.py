@@ -8,13 +8,15 @@ from django.contrib.postgres import search
 
 from geo.models import models, GeoArea
 
-from .models import Book, Field, Geodata
+from utils.common import redis_lock
+
+from .models import Book, Field, Geodata, Sheet
 from .extractor import csv, xlsx
+from .viz.renderer import sheet_field_render
 from .utils import (
     get_geos_dict,
     sample_and_detect_type_and_options,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -46,36 +48,44 @@ def auto_detect_and_update_fields(book):
     def isValueNotEmpty(v):
         return v.get('value')
 
-    for sheet in book.sheet_set.all():
-        data = sheet.data or {}
+    generate_column_columns = []
 
-        field_ids = [x for x in data['columns'].keys()]
-        fields = Field.objects.filter(id__in=field_ids)
+    with transaction.atomic():
+        for sheet in book.sheet_set.all():
+            data = sheet.data or {}
 
-        columns = {}
+            field_ids = [x for x in data['columns'].keys()]
+            fields = Field.objects.filter(id__in=field_ids)
 
-        for k, v in data['columns'].items():
-            emptyFiltered = list(filter(isValueNotEmpty, v))
-            detected_info = sample_and_detect_type_and_options(
-                emptyFiltered, geos_names, geos_codes
-            )
-            field = next(filter(lambda x: str(x.id) == k, fields), None)
-            if field is None:
-                continue
-            field.type = detected_info['type']
-            field.options = detected_info['options']
-            field.save()
+            columns = {}
 
-            cast_info = sheet.cast_data_to(field, geos_names, geos_codes)
-            columns[k] = cast_info['values']
+            for k, v in data['columns'].items():
+                emptyFiltered = list(filter(isValueNotEmpty, v))
+                detected_info = sample_and_detect_type_and_options(
+                    emptyFiltered, geos_names, geos_codes
+                )
+                field = next(filter(lambda x: str(x.id) == k, fields), None)
+                if field is None:
+                    continue
+                field.type = detected_info['type']
+                field.options = detected_info['options']
+                field.save()
 
-            field.options = cast_info['options']
-            field.save()
+                cast_info = sheet.cast_data_to(field, geos_names, geos_codes)
+                columns[k] = cast_info['values']
 
-        sheet.data = {
-            'columns': columns,
-        }
-        sheet.save()
+                field.options = cast_info['options']
+                field.save()
+                generate_column_columns.append([sheet.id, field.id])
+
+            sheet.data = {
+                'columns': columns,
+            }
+            sheet.save()
+
+    # Start chart generation tasks
+    for sheet_id, field_id in generate_column_columns:
+        tabular_generate_column_image.s(sheet_id, field_id).delay()
 
 
 def _tabular_meta_extract_geo(geodata):
@@ -118,6 +128,13 @@ def _tabular_meta_extract_geo(geodata):
     geodata.data = geodata_data
     geodata.save()
     return True
+
+
+@shared_task
+@redis_lock
+def tabular_generate_column_image(sheet_id, field_id):
+    sheet = Sheet.objects.get(pk=sheet_id)
+    return sheet_field_render(sheet, field_id)
 
 
 @shared_task

@@ -2,7 +2,7 @@ version: '3.2'
 
 services:
     db:
-        image: thedeep/deep-postgres:latest
+        image: $DOCKER_DB_IMAGE
         volumes:
             - postgres-data:/var/lib/postgresql/data
 
@@ -12,12 +12,8 @@ services:
             - redis-data:/data
 
     server:
-        image: thedeep/deep-server:latest
-        build:
-          context: .
-          cache_from:
-            - ubuntu:16.04
-            - thedeep/deep-server:latest
+        image: $DOCKER_IMAGE_SERVER
+        build: .
         env_file:
             - .env
         command: bash -c '/code/scripts/wait-for-it.sh db:5432 && /code/scripts/run_develop.sh'
