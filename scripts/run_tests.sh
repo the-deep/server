@@ -1,8 +1,7 @@
 #!/bin/bash -x
 
-. /venv/bin/activate
 if [ "$CI" == "true" ]; then
-    pip install codecov
+    pip3 install codecov
 
     set -e
     coverage run -m py.test

@@ -26,3 +26,8 @@ class ExportDataInline(admin.StackedInline):
 @admin.register(Entry)
 class EntryAdmin(VersionAdmin):
     inlines = [AttributeInline, FilterDataInline, ExportDataInline]
+    list_display = [
+        'lead', 'project', 'created_by', 'created_at',
+    ]
+    list_filter = ('project', 'created_by', 'created_at')
+    ordering = ('project', 'created_by', 'created_at')

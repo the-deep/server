@@ -11,11 +11,16 @@ from export.mime_types import (
 from entry.models import Entry, ExportData
 from lead.models import Lead
 from utils.common import generate_filename
+from tabular.viz import renderer as viz_renderer
 from export.models import Export
 
 from subprocess import call
 import os
 import tempfile
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class ReportExporter:
@@ -56,10 +61,16 @@ class ReportExporter:
         # NOTE: Use doc.add_image for limiting image size to page width
         # and run.add_image for actual size image
 
+        image = None
         if entry.entry_type == Entry.IMAGE:
-            self.doc.add_image(entry.image)
-            para = self.doc.add_paragraph().justify()
+            image = entry.image
             # para.add_run().add_image(entry.image)
+        elif entry.entry_type == Entry.DATA_SERIES:
+            image = viz_renderer.get_entry_image(entry)
+
+        if image:
+            self.doc.add_image(image)
+            para = self.doc.add_paragraph().justify()
 
         lead = entry.lead
         self.lead_ids.append(lead.id)
