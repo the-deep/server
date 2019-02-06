@@ -298,33 +298,18 @@ urlpatterns = [
         accept_project_confirm,
         name='accept_project_confirm'),
 
-    # password reset
+    # password reset API
     url(get_api_path(r'password/reset/$'),
         PasswordResetView.as_view()),
 
-    url(r'^password/reset/done/$',
-        auth_views.password_reset_done,
-        name='password_rest_done'),
-
+    # Password Reset
     url(r'^password/reset/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
-        auth_views.password_reset_confirm,
-        {
-            'post_reset_redirect': '{}://{}/login/'.format(
-                settings.HTTP_PROTOCOL, settings.DEEPER_FRONTEND_HOST)
-        },
+        auth_views.PasswordResetConfirmView.as_view(
+            success_url='{}://{}/login/'.format(
+                settings.HTTP_PROTOCOL, settings.DEEPER_FRONTEND_HOST,
+            )
+        ),
         name='password_reset_confirm'),
-
-    url(r'^password/done/$',
-        auth_views.password_reset_complete,
-        name='password_reset_complete'),
-
-    url(r'^password/change/$',
-        auth_views.password_change,
-        name='password_change'),
-
-    url(r'^password/change/done/$',
-        auth_views.password_change,
-        name='password_change_done'),
 
     # Attribute options for various models
     url(get_api_path(r'lead-options/$'),

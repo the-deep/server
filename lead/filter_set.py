@@ -22,10 +22,10 @@ class LeadFilterSet(UserResourceFilterSet):
     'in' lookup expressions and CSVWidget.
     """
     published_on__lt = django_filters.DateFilter(
-        name='published_on', lookup_expr='lte',
+        field_name='published_on', lookup_expr='lte',
     )
     published_on__gt = django_filters.DateFilter(
-        name='published_on', lookup_expr='gte',
+        field_name='published_on', lookup_expr='gte',
     )
 
     project = django_filters.ModelMultipleChoiceFilter(
@@ -49,7 +49,7 @@ class LeadFilterSet(UserResourceFilterSet):
         widget=django_filters.widgets.CSVWidget,
     )
     classified_doc_id = NumberInFilter(
-        name='leadpreview__classified_doc_id',
+        field_name='leadpreview__classified_doc_id',
         lookup_expr='in',
         widget=django_filters.widgets.CSVWidget,
     )

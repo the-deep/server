@@ -85,7 +85,7 @@ class RegionCloneView(views.APIView):
                                  status=status.HTTP_201_CREATED)
 
 
-class AdminLevelFilterSet(filters.FilterSet):
+class AdminLevelFilterSet(django_filters.rest_framework.FilterSet):
     """
     AdminLevel filter set
 

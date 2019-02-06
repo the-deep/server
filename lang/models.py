@@ -27,12 +27,15 @@ class Link(models.Model):
         choices=settings.LANGUAGES,
         default=settings.LANGUAGE_CODE,
     )
-    link_collection = models.ForeignKey(LinkCollection,
-                                        related_name='links')
+    link_collection = models.ForeignKey(
+        LinkCollection, related_name='links', on_delete=models.CASCADE,
+    )
     key = models.CharField(max_length=255)
-    string = models.ForeignKey(String,
-                               null=True, blank=True, default=None,
-                               on_delete=models.SET_NULL)
+    string = models.ForeignKey(
+        String,
+        null=True, blank=True, default=None,
+        on_delete=models.SET_NULL,
+    )
 
     def __str__(self):
         return '{} : {} ({})'.format(self.key, self.string.value,

@@ -15,12 +15,16 @@ class AnalysisFramework(UserResource):
     description = models.TextField(blank=True)
 
     # FIXME: Remove snapshots
-    snapshot_one = models.ForeignKey(File, on_delete=models.SET_NULL,
-                                     related_name='page_one_framework',
-                                     null=True, blank=True, default=None)
-    snapshot_two = models.ForeignKey(File, on_delete=models.SET_NULL,
-                                     related_name='page_two_framework',
-                                     null=True, blank=True, default=None)
+    snapshot_one = models.ForeignKey(
+        File, on_delete=models.SET_NULL,
+        related_name='page_one_framework',
+        null=True, blank=True, default=None,
+    )
+    snapshot_two = models.ForeignKey(
+        File, on_delete=models.SET_NULL,
+        related_name='page_two_framework',
+        null=True, blank=True, default=None,
+    )
 
     def __str__(self):
         return self.title
@@ -80,7 +84,9 @@ class Widget(models.Model):
     """
     Widget inserted into a framework
     """
-    analysis_framework = models.ForeignKey(AnalysisFramework)
+    analysis_framework = models.ForeignKey(
+        AnalysisFramework, on_delete=models.CASCADE,
+    )
     key = models.CharField(max_length=100, default=None, blank=True, null=True)
     widget_id = models.CharField(max_length=100, db_index=True)
     title = models.CharField(max_length=255)
@@ -138,7 +144,9 @@ class Filter(models.Model):
         (INTERSECTS, 'Intersection between two numbers'),
     )
 
-    analysis_framework = models.ForeignKey(AnalysisFramework)
+    analysis_framework = models.ForeignKey(
+        AnalysisFramework, on_delete=models.CASCADE,
+    )
     key = models.CharField(max_length=100, db_index=True)
     widget_key = models.CharField(max_length=100)
     title = models.CharField(max_length=255)
@@ -187,7 +195,9 @@ class Exportable(models.Model):
     """
     Export data for given widget
     """
-    analysis_framework = models.ForeignKey(AnalysisFramework)
+    analysis_framework = models.ForeignKey(
+        AnalysisFramework, on_delete=models.CASCADE,
+    )
     widget_key = models.CharField(max_length=100, db_index=True)
     inline = models.BooleanField(default=False)
     order = models.IntegerField(default=1)

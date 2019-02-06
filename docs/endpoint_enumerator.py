@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.admindocs.views import simplify_regex
 from importlib import import_module
 from rest_framework.compat import (
-    RegexURLPattern, RegexURLResolver
+    URLPattern, URLResolver,
 )
 
 
@@ -32,7 +32,7 @@ class EndpointEnumerator:
         for pattern in patterns:
             path_regex = prefix + pattern.regex.pattern
 
-            if isinstance(pattern, RegexURLPattern):
+            if isinstance(pattern, URLPattern):
                 path = self.get_path_from_regex(path_regex)
                 callback = pattern.callback
                 if self.should_include_endpoint(path, callback):
@@ -40,7 +40,7 @@ class EndpointEnumerator:
                         endpoint = (path, method, callback)
                         api_endpoints.append(endpoint)
 
-            elif isinstance(pattern, RegexURLResolver):
+            elif isinstance(pattern, URLResolver):
                 nested_endpoints = self.get_api_endpoints(
                     patterns=pattern.url_patterns,
                     prefix=path_regex

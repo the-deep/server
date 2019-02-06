@@ -32,10 +32,12 @@ class Entry(UserResource, ProjectEntityMixin):
         (DATA_SERIES, 'Data Series'),
     )
 
-    lead = models.ForeignKey(Lead)
-    project = models.ForeignKey('project.Project')
+    lead = models.ForeignKey(Lead, on_delete=models.CASCADE)
+    project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
     order = models.IntegerField(default=1)
-    analysis_framework = models.ForeignKey(AnalysisFramework)
+    analysis_framework = models.ForeignKey(
+        AnalysisFramework, on_delete=models.CASCADE,
+    )
     information_date = models.DateField(default=None,
                                         null=True, blank=True)
 
@@ -72,8 +74,8 @@ class Attribute(models.Model):
     Note that attributes are set by widgets and has
     the reference for that widget.
     """
-    entry = models.ForeignKey(Entry)
-    widget = models.ForeignKey(Widget)
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+    widget = models.ForeignKey(Widget, on_delete=models.CASCADE)
     data = JSONField(default=None, blank=True, null=True)
 
     def save(self, *args, **kwargs):
@@ -109,8 +111,8 @@ class FilterData(models.Model):
     """
     Filter data for an entry to use for filterting
     """
-    entry = models.ForeignKey(Entry)
-    filter = models.ForeignKey(Filter)
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+    filter = models.ForeignKey(Filter, on_delete=models.CASCADE)
 
     # List of text values
     values = ArrayField(
@@ -153,8 +155,8 @@ class ExportData(models.Model):
     """
     Export data for an entry
     """
-    entry = models.ForeignKey(Entry)
-    exportable = models.ForeignKey(Exportable)
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+    exportable = models.ForeignKey(Exportable, on_delete=models.CASCADE)
     data = JSONField(default=None, blank=True, null=True)
 
     @staticmethod

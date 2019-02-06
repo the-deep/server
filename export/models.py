@@ -31,8 +31,9 @@ class Export(models.Model):
         (ASSESSMENTS, 'Assessments'),
     )
 
-    project = models.ForeignKey(Project, default=None,
-                                null=True, blank=True)
+    project = models.ForeignKey(
+        Project, default=None, null=True, blank=True, on_delete=models.CASCADE,
+    )
     is_preview = models.BooleanField(default=False)
 
     title = models.CharField(max_length=255, blank=True)
@@ -43,7 +44,7 @@ class Export(models.Model):
     mime_type = models.CharField(max_length=200, blank=True)
     file = models.FileField(upload_to='export/', max_length=255,
                             null=True, blank=True, default=None)
-    exported_by = models.ForeignKey(User)
+    exported_by = models.ForeignKey(User, on_delete=models.CASCADE)
     exported_at = models.DateTimeField(auto_now_add=True)
 
     pending = models.BooleanField(default=True)
