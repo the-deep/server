@@ -57,9 +57,11 @@ class ProjectStatusCondition(models.Model):
         (NO_ENTRIES_CREATED, 'No entries created since'),
     )
 
-    project_status = models.ForeignKey(ProjectStatus,
-                                       related_name='conditions',
-                                       on_delete=models.CASCADE)
+    project_status = models.ForeignKey(
+        ProjectStatus,
+        related_name='conditions',
+        on_delete=models.CASCADE,
+    )
     condition_type = models.CharField(max_length=48,
                                       choices=CONDITION_TYPES)
     days = models.IntegerField()
@@ -131,24 +133,32 @@ class Project(UserResource):
         through='ProjectUserGroupMembership',
         through_fields=('project', 'usergroup'),
     )
-    analysis_framework = models.ForeignKey(AnalysisFramework, blank=True,
-                                           default=None, null=True,
-                                           on_delete=models.SET_NULL)
-    category_editor = models.ForeignKey(CategoryEditor, blank=True,
-                                        default=None, null=True,
-                                        on_delete=models.SET_NULL)
-    assessment_template = models.ForeignKey('ary.AssessmentTemplate',
-                                            blank=True, default=None,
-                                            null=True,
-                                            on_delete=models.SET_NULL)
+    analysis_framework = models.ForeignKey(
+        AnalysisFramework, blank=True,
+        default=None, null=True,
+        on_delete=models.SET_NULL,
+    )
+    category_editor = models.ForeignKey(
+        CategoryEditor, blank=True,
+        default=None, null=True,
+        on_delete=models.SET_NULL,
+    )
+    assessment_template = models.ForeignKey(
+        'ary.AssessmentTemplate',
+        blank=True, default=None,
+        null=True,
+        on_delete=models.SET_NULL,
+    )
     data = JSONField(default=None, blank=True, null=True)
 
     is_default = models.BooleanField(default=False)
 
     # Data for cache purposes
-    status = models.ForeignKey(ProjectStatus,
-                               blank=True, default=None, null=True,
-                               on_delete=models.SET_NULL)
+    status = models.ForeignKey(
+        ProjectStatus,
+        blank=True, default=None, null=True,
+        on_delete=models.SET_NULL,
+    )
 
     def __str__(self):
         return self.title
@@ -357,16 +367,23 @@ class ProjectMembership(models.Model):
 
     member = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    role = models.ForeignKey('project.ProjectRole',
-                             default=get_default_role_id)
+    role = models.ForeignKey(
+        'project.ProjectRole',
+        default=get_default_role_id,
+        on_delete=models.CASCADE,
+    )
 
-    linked_group = models.ForeignKey(UserGroup,
-                                     default=None, null=True, blank=True)
+    linked_group = models.ForeignKey(
+        UserGroup, on_delete=models.CASCADE,
+        default=None, null=True, blank=True,
+    )
 
     joined_at = models.DateTimeField(auto_now_add=True)
-    added_by = models.ForeignKey(User, on_delete=models.CASCADE,
-                                 null=True, blank=True, default=None,
-                                 related_name='added_project_memberships')
+    added_by = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        null=True, blank=True, default=None,
+        related_name='added_project_memberships',
+    )
 
     class Meta:
         unique_together = ('member', 'project')
@@ -407,15 +424,19 @@ class ProjectUserGroupMembership(models.Model):
     """
     Project user group membership model
     """
-    project = models.ForeignKey(Project)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     # FIXME: use user_group instead of usergroup for consistency
-    usergroup = models.ForeignKey(UserGroup)
-    role = models.ForeignKey('project.ProjectRole',
-                             default=get_default_role_id)
+    usergroup = models.ForeignKey(UserGroup, on_delete=models.CASCADE)
+    role = models.ForeignKey(
+        'project.ProjectRole', on_delete=models.CASCADE,
+        default=get_default_role_id,
+    )
     joined_at = models.DateTimeField(auto_now_add=True)
-    added_by = models.ForeignKey(User, on_delete=models.CASCADE,
-                                 null=True, blank=True, default=None,
-                                 related_name='added_project_usergroups')
+    added_by = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        null=True, blank=True, default=None,
+        related_name='added_project_usergroups',
+    )
 
     class Meta:
         unique_together = ('usergroup', 'project')
@@ -446,15 +467,19 @@ class ProjectJoinRequest(models.Model):
     )
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    requested_by = models.ForeignKey(User, on_delete=models.CASCADE,
-                                     related_name='project_join_requests')
+    requested_by = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='project_join_requests',
+    )
     requested_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=48, choices=STATUSES,
                               default='pending')
-    role = models.ForeignKey('project.ProjectRole')
-    responded_by = models.ForeignKey(User, on_delete=models.CASCADE,
-                                     null=True, blank=True, default=None,
-                                     related_name='project_join_responses')
+    role = models.ForeignKey('project.ProjectRole', on_delete=models.CASCADE)
+    responded_by = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        null=True, blank=True, default=None,
+        related_name='project_join_responses',
+    )
     responded_at = models.DateTimeField(null=True, blank=True, default=None)
 
     def __str__(self):

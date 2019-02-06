@@ -31,7 +31,7 @@ from .serializers import (
 class AssessmentFilterSet(UserResourceFilterSet):
     project = django_filters.ModelMultipleChoiceFilter(
         queryset=Project.objects.all(),
-        name='lead__project',
+        field_name='lead__project',
         lookup_expr='in',
     )
     lead = django_filters.ModelMultipleChoiceFilter(

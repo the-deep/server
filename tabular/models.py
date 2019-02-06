@@ -44,8 +44,11 @@ class Book(UserResource):
 
     title = models.CharField(max_length=255)
     file = models.OneToOneField(
-        File, null=True, blank=True, on_delete=models.SET_NULL)
-    project = models.ForeignKey(Project, null=True, default=None)
+        File, null=True, blank=True, on_delete=models.SET_NULL,
+    )
+    project = models.ForeignKey(
+        Project, null=True, default=None, on_delete=models.CASCADE,
+    )
     url = models.TextField(null=True, blank=True)
     status = models.CharField(
         max_length=30,
@@ -82,7 +85,7 @@ class Book(UserResource):
 
 class Sheet(models.Model):
     title = models.CharField(max_length=255)
-    book = models.ForeignKey(Book)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
     options = JSONField(default=None, blank=True, null=True)
     hidden = models.BooleanField(default=False)
 
@@ -108,7 +111,7 @@ class Field(models.Model):
     )
 
     title = models.CharField(max_length=255)
-    sheet = models.ForeignKey(Sheet)
+    sheet = models.ForeignKey(Sheet, on_delete=models.CASCADE)
     type = models.CharField(
         max_length=30,
         choices=FIELD_TYPES,

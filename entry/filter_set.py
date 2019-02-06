@@ -27,10 +27,10 @@ class EntryFilterSet(django_filters.FilterSet):
         lookup_expr='in',
     )
     lead__published_on__lt = django_filters.DateFilter(
-        name='lead__published_on', lookup_expr='lte',
+        field_name='lead__published_on', lookup_expr='lte',
     )
     lead__published_on__gt = django_filters.DateFilter(
-        name='lead__published_on', lookup_expr='gte',
+        field_name='lead__published_on', lookup_expr='gte',
     )
     created_by = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all(),

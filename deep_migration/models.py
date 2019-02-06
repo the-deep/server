@@ -21,41 +21,55 @@ class BaseMigration(models.Model):
 
 class UserMigration(models.Model):
     old_id = models.IntegerField(unique=True)
-    user = models.ForeignKey(User,
-                             default=None, blank=True, null=True)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        default=None, blank=True, null=True,
+    )
 
 
 class CountryMigration(BaseMigration):
     code = models.CharField(max_length=50, unique=True)
-    region = models.ForeignKey(Region,
-                               default=None, blank=True, null=True)
+    region = models.ForeignKey(
+        Region, on_delete=models.CASCADE,
+        default=None, blank=True, null=True,
+    )
 
 
 class AdminLevelMigration(BaseMigration):
     old_id = models.IntegerField(unique=True)
-    admin_level = models.ForeignKey(AdminLevel,
-                                    default=None, blank=True, null=True)
+    admin_level = models.ForeignKey(
+        AdminLevel, on_delete=models.CASCADE,
+        default=None, blank=True, null=True,
+    )
 
 
 class ProjectMigration(BaseMigration):
     old_id = models.IntegerField(unique=True)
-    project = models.ForeignKey(Project,
-                                default=None, blank=True, null=True)
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE,
+        default=None, blank=True, null=True,
+    )
 
 
 class LeadMigration(BaseMigration):
     old_id = models.IntegerField(unique=True)
-    lead = models.ForeignKey(Lead,
-                             default=None, blank=True, null=True)
+    lead = models.ForeignKey(
+        Lead, on_delete=models.CASCADE,
+        default=None, blank=True, null=True,
+    )
 
 
 class AnalysisFrameworkMigration(BaseMigration):
     old_id = models.IntegerField(unique=True)
-    analysis_framework = models.ForeignKey(AnalysisFramework,
-                                           default=None, blank=True, null=True)
+    analysis_framework = models.ForeignKey(
+        AnalysisFramework, on_delete=models.CASCADE,
+        default=None, blank=True, null=True,
+    )
 
 
 class UserGroupMigration(BaseMigration):
     old_id = models.IntegerField(unique=True)
-    user_group = models.ForeignKey(UserGroup,
-                                   default=None, blank=True, null=True)
+    user_group = models.ForeignKey(
+        UserGroup, on_delete=models.CASCADE,
+        default=None, blank=True, null=True,
+    )

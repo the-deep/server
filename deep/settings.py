@@ -274,13 +274,15 @@ CHANNEL_REDIS_URL = os.environ.get('CHANNEL_REDIS_URL', 'redis://redis:6379')
 # CHANNELS CONFIG
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'asgi_redis.RedisChannelLayer',
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
             'hosts': [CHANNEL_REDIS_URL],
         },
         'ROUTING': 'deep.routing.channel_routing',
     },
 }
+
+ASGI_APPLICATION = "deep.routing.application"
 
 TEST_DIR = os.path.join(BASE_DIR, 'deep/test_files')
 
@@ -303,7 +305,7 @@ def add_username_attribute(record):
     record.username = ''
     if hasattr(record, 'request'):
         if hasattr(record.request, 'user') and\
-                not record.request.user.is_anonymous():
+                not record.request.user.is_anonymous:
             record.username = record.request.user.username
         else:
             record.username = 'Anonymous_User'
@@ -496,3 +498,4 @@ TOKEN_DEFAULT_RESET_TIMEOUT_DAYS = 7
 PROJECT_REQUEST_RESET_TIMEOUT_DAYS = 7
 
 JSON_EDITOR_INIT_JS = "js/jsoneditor-init.js"
+LOGIN_URL = '/admin/login'

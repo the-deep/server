@@ -10,7 +10,7 @@ from gallery.models import File
 
 class LeadGroup(UserResource):
     title = models.CharField(max_length=255, blank=True)
-    project = models.ForeignKey(Project)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
@@ -92,7 +92,7 @@ class Lead(UserResource, ProjectEntityMixin):
         null=True, blank=True, default=None,
     )
 
-    project = models.ForeignKey(Project)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     source = models.CharField(max_length=255, blank=True)
     source_type = models.CharField(max_length=30,
@@ -113,8 +113,9 @@ class Lead(UserResource, ProjectEntityMixin):
     url = models.TextField(blank=True)
     website = models.CharField(max_length=255, blank=True)
 
-    attachment = models.ForeignKey(File, on_delete=models.SET_NULL,
-                                   default=None, null=True, blank=True)
+    attachment = models.ForeignKey(
+        File, on_delete=models.SET_NULL, default=None, null=True, blank=True,
+    )
 
     def __str__(self):
         return '{}'.format(self.title)
@@ -164,7 +165,7 @@ class Lead(UserResource, ProjectEntityMixin):
 
 
 class LeadPreview(models.Model):
-    lead = models.OneToOneField(Lead)
+    lead = models.OneToOneField(Lead, on_delete=models.CASCADE)
     text_extract = models.TextField(blank=True)
 
     thumbnail = models.ImageField(upload_to='lead-thumbnail/',
@@ -184,7 +185,9 @@ class LeadPreview(models.Model):
 
 
 class LeadPreviewImage(models.Model):
-    lead = models.ForeignKey(Lead, related_name='images')
+    lead = models.ForeignKey(
+        Lead, related_name='images', on_delete=models.CASCADE,
+    )
     file = models.FileField(upload_to='lead-preview/')
 
     def __str__(self):

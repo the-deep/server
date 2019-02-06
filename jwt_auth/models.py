@@ -3,7 +3,7 @@
 
 
 # class RefreshToken(models.Model):
-#     user = models.ForeignKey(User)
+#     user = models.ForeignKey(User, on_delete=models.CASCADE)
 #     token = models.TextField()
 #     blacklisted = models.BooleanField(default=False)
 

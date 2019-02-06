@@ -55,7 +55,7 @@ class BasicEntity(models.Model):
 
 
 class BasicTemplateEntity(models.Model):
-    template = models.ForeignKey(AssessmentTemplate)
+    template = models.ForeignKey(AssessmentTemplate, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     order = models.IntegerField(default=1)
 
@@ -72,7 +72,9 @@ class MetadataGroup(BasicTemplateEntity):
 
 
 class MetadataField(Field):
-    group = models.ForeignKey(MetadataGroup, related_name='fields')
+    group = models.ForeignKey(
+        MetadataGroup, related_name='fields', on_delete=models.CASCADE,
+    )
     tooltip = models.TextField(blank=True)
     order = models.IntegerField(default=1)
 
@@ -84,7 +86,9 @@ class MetadataField(Field):
 
 
 class MetadataOption(FieldOption):
-    field = models.ForeignKey(MetadataField, related_name='options')
+    field = models.ForeignKey(
+        MetadataField, related_name='options', on_delete=models.CASCADE,
+    )
     order = models.IntegerField(default=1)
 
     def __str__(self):
@@ -99,7 +103,9 @@ class MethodologyGroup(BasicTemplateEntity):
 
 
 class MethodologyField(Field):
-    group = models.ForeignKey(MethodologyGroup, related_name='fields')
+    group = models.ForeignKey(
+        MethodologyGroup, related_name='fields', on_delete=models.CASCADE,
+    )
     tooltip = models.TextField(blank=True)
     order = models.IntegerField(default=1)
 
@@ -111,7 +117,9 @@ class MethodologyField(Field):
 
 
 class MethodologyOption(FieldOption):
-    field = models.ForeignKey(MethodologyField, related_name='options')
+    field = models.ForeignKey(
+        MethodologyField, related_name='options', on_delete=models.CASCADE,
+    )
     order = models.IntegerField(default=1)
 
     def __str__(self):
@@ -131,15 +139,19 @@ class Focus(BasicTemplateEntity):
 
 
 class AffectedGroup(BasicTemplateEntity):
-    parent = models.ForeignKey('AffectedGroup',
-                               related_name='children',
-                               default=None, null=True, blank=True)
+    parent = models.ForeignKey(
+        'AffectedGroup',
+        related_name='children', on_delete=models.CASCADE,
+        default=None, null=True, blank=True,
+    )
 
 
 class PrioritySector(BasicTemplateEntity):
-    parent = models.ForeignKey('PrioritySector',
-                               related_name='children',
-                               default=None, null=True, blank=True)
+    parent = models.ForeignKey(
+        'PrioritySector',
+        related_name='children', on_delete=models.CASCADE,
+        default=None, null=True, blank=True,
+    )
 
     class Meta(BasicTemplateEntity.Meta):
         verbose_name = 'sector with most unmet need'
@@ -147,18 +159,22 @@ class PrioritySector(BasicTemplateEntity):
 
 
 class PriorityIssue(BasicTemplateEntity):
-    parent = models.ForeignKey('PriorityIssue',
-                               related_name='children',
-                               default=None, null=True, blank=True)
+    parent = models.ForeignKey(
+        'PriorityIssue',
+        related_name='children', on_delete=models.CASCADE,
+        default=None, null=True, blank=True,
+    )
 
     class Meta(BasicTemplateEntity.Meta):
         verbose_name = 'priority humanitarian access issue'
 
 
 class UnderlyingFactor(BasicTemplateEntity):
-    parent = models.ForeignKey('UnderlyingFactor',
-                               related_name='children',
-                               default=None, null=True, blank=True)
+    parent = models.ForeignKey(
+        'UnderlyingFactor',
+        related_name='children', on_delete=models.CASCADE,
+        default=None, null=True, blank=True,
+    )
 
     class Meta(BasicTemplateEntity.Meta):
         verbose_name = 'main sectoral underlying factor'
@@ -178,7 +194,7 @@ class AffectedLocation(BasicTemplateEntity):
 
 
 class ScoreBucket(models.Model):
-    template = models.ForeignKey(AssessmentTemplate)
+    template = models.ForeignKey(AssessmentTemplate, on_delete=models.CASCADE)
     min_value = models.FloatField(default=0)
     max_value = models.FloatField(default=5)
     score = models.FloatField(default=1)
@@ -200,13 +216,14 @@ class ScorePillar(BasicTemplateEntity):
 
 
 class ScoreQuestion(BasicEntity):
-    pillar = models.ForeignKey(ScorePillar, on_delete=models.CASCADE,
-                               related_name='questions')
+    pillar = models.ForeignKey(
+        ScorePillar, on_delete=models.CASCADE, related_name='questions',
+    )
     description = models.TextField(blank=True)
 
 
 class ScoreScale(models.Model):
-    template = models.ForeignKey(AssessmentTemplate)
+    template = models.ForeignKey(AssessmentTemplate, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     color = models.CharField(max_length=255)
     value = models.IntegerField(default=1)
@@ -229,18 +246,21 @@ class ScoreMatrixPillar(BasicTemplateEntity):
 
 
 class ScoreMatrixRow(BasicEntity):
-    pillar = models.ForeignKey(ScoreMatrixPillar, on_delete=models.CASCADE,
-                               related_name='rows')
+    pillar = models.ForeignKey(
+        ScoreMatrixPillar, on_delete=models.CASCADE, related_name='rows',
+    )
 
 
 class ScoreMatrixColumn(BasicEntity):
-    pillar = models.ForeignKey(ScoreMatrixPillar, on_delete=models.CASCADE,
-                               related_name='columns')
+    pillar = models.ForeignKey(
+        ScoreMatrixPillar, on_delete=models.CASCADE, related_name='columns',
+    )
 
 
 class ScoreMatrixScale(models.Model):
-    pillar = models.ForeignKey(ScoreMatrixPillar, on_delete=models.CASCADE,
-                               related_name='scales')
+    pillar = models.ForeignKey(
+        ScoreMatrixPillar, on_delete=models.CASCADE, related_name='scales',
+    )
     row = models.ForeignKey(ScoreMatrixRow, on_delete=models.CASCADE)
     column = models.ForeignKey(ScoreMatrixColumn, on_delete=models.CASCADE)
     value = models.IntegerField(default=1)
@@ -258,10 +278,14 @@ class Assessment(UserResource, ProjectEntityMixin):
     """
     Assessment belonging to a lead
     """
-    lead = models.OneToOneField(Lead, default=None, blank=True, null=True)
-    project = models.ForeignKey('project.Project')
-    lead_group = models.OneToOneField(LeadGroup,
-                                      default=None, blank=True, null=True)
+    lead = models.OneToOneField(
+        Lead, default=None, blank=True, null=True, on_delete=models.CASCADE,
+    )
+    project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
+    lead_group = models.OneToOneField(
+        LeadGroup, on_delete=models.CASCADE,
+        default=None, blank=True, null=True,
+    )
     metadata = JSONField(default=None, blank=True, null=True)
     methodology = JSONField(default=None, blank=True, null=True)
     summary = JSONField(default=None, blank=True, null=True)

@@ -22,16 +22,19 @@ class Profile(models.Model):
     )
     EMAIL_CONDITIONS_TYPES = [cond[0] for cond in EMAIL_CONDITIONS]
 
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     organization = models.CharField(max_length=300, blank=True)
     hid = models.TextField(default=None, null=True, blank=True)
     # country = models.ForeignKey(Country, on_delete=models.SET_NULL)
-    display_picture = models.ForeignKey(File, on_delete=models.SET_NULL,
-                                        null=True, blank=True, default=None)
+    display_picture = models.ForeignKey(
+        File, on_delete=models.SET_NULL, null=True, blank=True, default=None,
+    )
 
-    last_active_project = models.ForeignKey(Project, null=True,
-                                            blank=True, default=None,
-                                            on_delete=models.SET_NULL)
+    last_active_project = models.ForeignKey(
+        Project, null=True,
+        blank=True, default=None,
+        on_delete=models.SET_NULL,
+    )
 
     language = models.CharField(
         max_length=255,
@@ -42,7 +45,7 @@ class Profile(models.Model):
     login_attempts = models.IntegerField(default=0)
     email_opt_outs = ArrayField(
         models.CharField(max_length=128, choices=EMAIL_CONDITIONS),
-        default=[],
+        default=list,
         blank=True,
     )
     is_experimental = models.BooleanField(default=False)
