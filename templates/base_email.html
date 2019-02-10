@@ -27,6 +27,15 @@
                 margin-bottom: 24px;
             }
 
+            .icon {
+                margin-left: 8px;
+            }
+
+            .zen {
+                margin-left: 8px;
+            }
+
+
             .button-like-link {
                 display: inline-block;
                 box-shadow: 0 2px 7px -2px rgba(0, 0, 0, .5);
@@ -80,6 +89,16 @@
             .unsubscribe {
                 font-size: 14px;
             }
+
+            .community {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                p {
+                    vertical-align: sub;
+                }
+            }
         </style>
 
         {% block head %}{% endblock %}
@@ -104,6 +123,43 @@
             <div class="deep-team">
                 <p>Thank you for using DEEP</p>
                 <p>-The DEEP team</p>
+                <br>
+                <div class="community">
+                <p>Join the community on Skype or Slack!</p>
+                    <a
+                        href="https://join.skype.com/idYxL8ozLDODa"
+                    >
+                        <img
+                            class="icon"
+                            width="20"
+                            height="20"
+                            src="https://beta.thedeep.io/assets/b75807b6b25e3a0fbfef0cff2ac480b9.png"
+                        />
+                    </a>
+                    <a
+                        href="https://goo.gl/13pcuA"
+                    >
+                        <img
+                            class="icon"
+                            width="20"
+                            height="20"
+                            src="https://beta.thedeep.io/assets/ceb2ee32fae85bb99262eb68e0227915.png"
+                        />
+                    </a>
+                </div>
+                <div class="community">
+                <p>Need Help?</p>
+                    <a
+                        href="https://deephelp.zendesk.com/hc/en-us/categories/360000874911-DEEP-User-Guide"
+                    >
+                        <img
+                            class="zen"
+                            width="16"
+                            height="16"
+                            src="https://beta.thedeep.io/assets/998aff77756caa02f20f3cf3b81e03d5.png"
+                        />
+                    </a>
+                </div>
             </div>
             <br>
             <br>
