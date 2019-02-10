@@ -1,3 +1,4 @@
+import logging
 from django.views.generic import View
 from django.conf import settings
 from django.db import models, transaction
@@ -10,6 +11,7 @@ from rest_framework import (
     response,
     filters,
     mixins,
+    exceptions,
 )
 import django_filters
 
@@ -17,6 +19,7 @@ from deep.permissions import ModifyPermission
 from project.models import Project
 from user_resource.filters import UserResourceFilterSet
 
+from utils.extractor.formats import xlsx
 from .serializers import (
     FileSerializer,
     GoogleDriveFileSerializer,
@@ -25,6 +28,17 @@ from .serializers import (
 )
 from .tasks import extract_from_file
 from .models import File, FilePreview
+
+logger = logging.getLogger(__name__)
+
+
+META_EXTRACTION_FUNCTIONS = {  # The functions take file as argument
+    'xlsx': xlsx.extract_meta,
+}
+
+
+def DEFAULT_EXTRACTION_FUNCTION(file):
+    return {}
 
 
 class FileView(View):
@@ -145,3 +159,31 @@ class FileExtractionTriggerView(views.APIView):
         return response.Response({
             'extraction_triggered': file_preview.id,
         })
+
+
+class MetaExtractionView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, file_id=None, version=None):
+        file_type = request.query_params.get('file_type')
+
+        if file_type is None:
+            raise exceptions.ValidationError({
+                'file_type': 'file_type should be present'
+            })
+
+        file = File.objects.filter(id=file_id).first()
+        if file is None:
+            raise exceptions.NotFound()
+
+        extraction_function = META_EXTRACTION_FUNCTIONS.get(
+            file_type, DEFAULT_EXTRACTION_FUNCTION
+        )
+
+        try:
+            return response.Response(extraction_function(file.file))
+        except Exception as e:
+            logger.warn("Exception while extracting file {}".format(file.id))
+            raise exceptions.ValidationError({
+                'nonFieldErrors': 'Error while extracting'
+            })
