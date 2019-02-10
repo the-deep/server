@@ -25,6 +25,7 @@ from gallery.views import (
     DropboxFileViewSet,
     FilePreviewViewSet,
     FileExtractionTriggerView,
+    MetaExtractionView,
 )
 from tabular.views import (
     BookViewSet,
@@ -342,6 +343,9 @@ urlpatterns = [
 
     url(get_api_path(r'file-extraction-trigger/$'),
         FileExtractionTriggerView.as_view()),
+
+    url(get_api_path(r'meta-extraction/(?P<file_id>\d+)/$'),
+        MetaExtractionView.as_view()),
 
     url(get_api_path(r'geo-areas-load-trigger/(?P<region_id>\d+)/$'),
         GeoAreasLoadTriggerView.as_view()),
