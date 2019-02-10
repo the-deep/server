@@ -47,11 +47,6 @@ class Book(UserResource):
         File, null=True, blank=True, on_delete=models.SET_NULL)
     project = models.ForeignKey(Project, null=True, default=None)
     url = models.TextField(null=True, blank=True)
-    meta_status = models.CharField(
-        max_length=30,
-        choices=STATUS_TYPES,
-        default=INITIAL,
-    )
     status = models.CharField(
         max_length=30,
         choices=STATUS_TYPES,
