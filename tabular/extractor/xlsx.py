@@ -1,5 +1,4 @@
 from openpyxl import load_workbook
-from utils.common import random_key
 
 from ..models import Sheet, Field
 
@@ -18,20 +17,6 @@ def is_row_empty(row, columns):
             if value is not None:
                 return False
     return True
-
-
-def extract_meta(book):
-    with book.get_file() as xlsx_file:
-        workbook = load_workbook(xlsx_file, data_only=True, read_only=True)
-        wb_sheets = []
-        for index, wb_sheet in enumerate(workbook.worksheets):
-            wb_sheets.append({
-                'key': str(index),
-                'title': wb_sheet.title,
-            })
-        book.meta = {
-            'sheets': wb_sheets,
-        }
 
 
 def extract(book):
