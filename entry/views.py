@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.functions import Cast
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from rest_framework import (
     filters,
     generics,
@@ -16,7 +18,7 @@ from lead.models import Lead
 from lead.serializers import SimpleLeadSerializer
 
 from .models import (
-    Attribute, FilterData, ExportData
+    Attribute, FilterData, ExportData, Entry
 )
 from .serializers import (
     EntrySerializer, AttributeSerializer,
@@ -24,6 +26,8 @@ from .serializers import (
     EditEntriesDataSerializer,
 )
 from .filter_set import EntryFilterSet, get_filtered_entries
+
+from tabular.models import Field as TabularField
 
 from collections import OrderedDict
 import django_filters
@@ -102,11 +106,33 @@ class EntryFilterView(generics.GenericAPIView):
 
         queryset = get_filtered_entries(request.user, filters)
 
+        project = filters.get('project')
         search = filters.get('search')
+
         if search:
-            queryset = queryset.filter(
+            # For searching tabular columns
+            field_filters = {}
+            if project:
+                field_filters['sheet__book__project'] = project
+
+            fields = TabularField.objects.filter(
+                title__icontains=search,
+                **field_filters
+            )
+            queryset = queryset.annotate(
+                field_id=Cast(
+                    KeyTextTransform('field_id', 'data_series'),
+                    models.IntegerField()
+                )
+            ).filter(
                 models.Q(lead__title__icontains=search) |
-                models.Q(excerpt__icontains=search)
+                models.Q(excerpt__icontains=search) |
+                (
+                    models.Q(
+                        field_id__in=models.Subquery(
+                            fields.values_list('pk', flat=True))
+                    )
+                )
             )
 
         queryset = EntryFilterSet(filters, queryset=queryset).qs
