@@ -16,6 +16,7 @@ class GalleryTests(TestCase):
 
         path = os.path.join(settings.TEST_DIR, 'documents')
         self.supported_file = os.path.join(path, 'doc.docx')
+
         self.unsupported_file = tmp_file.name
 
     def tearDown(self):
@@ -99,3 +100,12 @@ class GalleryTests(TestCase):
         self.assert_200(response)
 
         self.assertEqual(response.data['text'], preview.text)
+
+    def test_meta_api_no_file(self):
+        url = 'api/v1/meta-extraction/1000/'
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_404(response)
+
+    # NOTE: Test for files
