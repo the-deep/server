@@ -5,7 +5,6 @@ from django.db import models, transaction
 from project.models import Project
 from project.mixins import ProjectEntityMixin
 from user_resource.models import UserResource
-from tabular.models import Book
 from gallery.models import File
 
 

@@ -1,4 +1,5 @@
 from deep.tests import TestCase
+import autofixture
 
 from project.models import Project
 from user.models import User
@@ -11,6 +12,8 @@ from entry.models import (
     Attribute,
     FilterData,
 )
+
+from tabular.models import Sheet, Field
 
 
 class EntryTests(TestCase):
@@ -25,12 +28,46 @@ class EntryTests(TestCase):
         project = self.create_project()
         return self.create(Lead, project=project)
 
-    def create_entry(self):
+    def create_entry(self, **fields):
         lead = self.create_lead()
         return self.create(
             Entry, lead=lead, project=lead.project,
             analysis_framework=lead.project.analysis_framework,
+            **fields
         )
+
+    def create_entry_with_data_series(self):
+        sheet = autofixture.create_one(Sheet, generate_fk=True)
+        field = autofixture.create_one(
+            Field,
+            field_values={
+                'sheet': sheet,
+                'title': 'Abrakadabra',
+                'type': Field.STRING
+            }
+        )
+        data_series = {
+            'field_id': field.id,
+            'series': [  # create some dummy values
+                {
+                    'value': 'helo', 'processed_value': 'helo',
+                    'invalid': False, 'empty': False
+                },
+                {
+                    'value': 'namaskar', 'processed_value': 'namaskar',
+                    'invalid': False, 'empty': False
+                },
+                {
+                    'value': 'hola', 'processed_value': 'hola',
+                    'invalid': False, 'empty': False
+                },
+            ]
+        }
+
+        entry = self.create_entry(
+            data_series=data_series, entry_type=Entry.DATA_SERIES
+        )
+        return entry, field
 
     def test_create_entry(self):
         entry_count = Entry.objects.count()
@@ -313,5 +350,12 @@ class EntryTests(TestCase):
         entry.save()
         self.post_filter_test({'search': 'el'}, 1)
         self.post_filter_test({'search': 'pollo'}, 0)
+
+    def test_search_filter(self):
+        entry, field = self.create_entry_with_data_series()
+        filters = {
+            'search': 'kadabra'
+        }
+        self.post_filter_test(filters)  # Should have single result
 
     # TODO: test export data and filter data apis
