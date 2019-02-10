@@ -1,5 +1,3 @@
-from django.conf import settings
-from django.db import transaction
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
 
@@ -14,7 +12,6 @@ from user_resource.serializers import UserResourceSerializer
 from geo.serializers import SimpleRegionSerializer, Region, AdminLevel
 
 from .models import Book, Sheet, Field, Geodata
-from .tasks import tabular_meta_extract_book
 
 
 class GeodataSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
@@ -81,19 +78,6 @@ class BookSerializer(
     class Meta:
         model = Book
         fields = '__all__'
-
-    def create(self, validated_data):
-        book = super().create(validated_data)
-        if book.file_type in Book.META_REQUIRED_FILE_TYPES:
-            if not settings.TESTING:
-                transaction.on_commit(
-                    lambda: tabular_meta_extract_book.delay(book.id)
-                )
-            book.meta_status = Book.PENDING
-        else:
-            book.meta_status = Book.SUCCESS
-        book.save()
-        return book
 
 
 class FieldDataSerializer(
