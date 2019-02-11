@@ -12,6 +12,7 @@ from geo.models import GeoArea
 from tabular.tasks import auto_detect_and_update_fields
 from tabular.extractor import csv
 from tabular.models import Book, Field, Sheet
+from tabular.utils import parse_number
 
 consistent_csv_data = '''id,age,name,date,place
 1,10,john,2018 october 28,Kathmandu
@@ -56,7 +57,6 @@ def check_invalid(index, fid, columns):
 
 
 def check_empty(index, fid, columns):
-    print(columns[fid][index])
     assert 'empty' in columns[fid][index]
     assert columns[fid][index]['empty'] is True
 
@@ -107,11 +107,15 @@ class TestTabularExtraction(APITestCase):
 
             if field.title == 'id':
                 assert field.type == Field.NUMBER, 'id is number'
+                assert 'separator' in field.options
+                assert field.options['separator'] == 'none'
                 # Check invalid values
                 check_invalid(8, fid, columns)
                 check_invalid(9, fid, columns)
             elif field.title == 'age':
                 assert field.type == Field.NUMBER, 'age is number'
+                assert 'separator' in field.options
+                assert field.options['separator'] == 'none'
             elif field.title == 'name':
                 assert field.type == Field.STRING, 'name is string'
             elif field.title == 'date':
@@ -154,6 +158,8 @@ class TestTabularExtraction(APITestCase):
                         "Since string, shouldn't be invalid"
             elif field.title == 'age':
                 assert field.type == Field.NUMBER, 'age is number'
+                assert 'separator' in field.options
+                assert field.options['separator'] == 'none'
             elif field.title == 'name':
                 assert field.type == Field.STRING, 'name is string'
             elif field.title == 'date':
@@ -389,3 +395,31 @@ class TestTabularExtraction(APITestCase):
         """Remove temp files"""
         for file in self.files:
             os.remove(file)
+
+
+def test_comma_separated_numbers():
+    assert parse_number('1,200', separator='comma') == (1200.0, 'comma')
+    assert parse_number('1,200.35', separator='comma') == (1200.35, 'comma')
+    assert parse_number('1,200.35.3', separator='comma') is None
+    assert parse_number('', separator='comma') is None
+    assert parse_number(None, separator='comma') is None
+    assert parse_number('abc,123', separator='comma') is None
+    assert parse_number('123,abc,123', separator='comma') is None
+
+
+def test_dot_separated_numbers():
+    assert parse_number('1.200', separator='dot') == (1200.0, 'dot')
+    assert parse_number('1.200,35', separator='dot') == (1200.35, 'dot')
+    assert parse_number('', separator='dot') is None
+    assert parse_number(None, separator='dot') is None
+    assert parse_number('abc.123', separator='dot') is None
+    assert parse_number('123.abc.123', separator='dot') is None
+
+
+def test_space_separated_numbers():
+    assert parse_number('1 200', separator='space') == (1200.0, 'space')
+    assert parse_number('1 200.35', separator='space') == (1200.35, 'space')
+    assert parse_number('', separator='space') is None
+    assert parse_number(None, separator='space') is None
+    assert parse_number('abc 123', separator='space') is None
+    assert parse_number('123 abc 123', separator='space') is None

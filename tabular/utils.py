@@ -34,9 +34,64 @@ DATE_FORMATS = [
 
 
 def parse_number(val, **kwargs):
+    separator = kwargs.get('separator')
+    if separator == 'comma':
+        return parse_comma_separated(val)
+    elif separator == 'dot':
+        return parse_dot_separated(val)
+    elif separator == 'space':
+        return parse_space_separated(val)
+    elif separator == 'none':
+        return parse_none_separated(val)
+    elif separator is None:
+        return parse_no_separator(val)
+
+
+def parse_no_separator(val):
+    return (
+        parse_none_separated(val) or
+        parse_comma_separated(val) or
+        parse_dot_separated(val) or
+        parse_space_separated(val) or
+        None
+    )
+
+
+def parse_none_separated(numstring):
     try:
-        return float(val)
-    except (ValueError, TypeError):
+        return float(numstring), 'none'
+    except (TypeError, ValueError):
+        return None
+
+
+def parse_comma_separated(numstring):
+    try:
+        comma_removed = numstring.replace(',', '')
+        return float(comma_removed), 'comma'
+    except (ValueError, TypeError, AttributeError):
+        # Attribute error is raised by numstring.replace if numstring is None
+        return None
+
+
+def parse_dot_separated(numstring):
+    try:
+        # first, remove dot
+        dot_removed = numstring.replace('.', '')
+        # now reeplace comma with dot, to make it parseable
+        comma_replaced = dot_removed.replace(',', '.')
+        return float(comma_replaced), 'dot'
+    except (ValueError, TypeError, AttributeError):
+        # Attribute error is raised by numstring.replace if numstring is None
+        return None
+
+
+def parse_space_separated(numstring):
+    try:
+        # first, remove space
+        space_removed = numstring.replace(' ', '')
+        return float(space_removed), 'space'
+    except (ValueError, TypeError, AttributeError):
+        # Attribute error is raised by numstring.replace if numstring is None
         return None
 
 
@@ -132,12 +187,14 @@ def sample_and_detect_type_and_options(values, geos_names={}, geos_codes={}):
     types = []
     geo_options = []
     date_options = []
+    number_options = []
 
     for sample in samples:
         value = sample['value']
         number_parsed = parse_number(value)
         if number_parsed:
             types.append(Field.NUMBER)
+            number_options.append(number_parsed[1])
             continue
 
         datetime_parsed = auto_detect_datetime(value)
@@ -167,25 +224,13 @@ def sample_and_detect_type_and_options(values, geos_names={}, geos_codes={}):
         max_format, max_count = get_max_occurence_and_count([
             x['date_format'] for x in date_options
         ])
-        max_options = {
-            'date_format': max_format
-        }
+        max_options = {'date_format': max_format}
+    elif max_type == Field.NUMBER:
+        max_format, max_count = get_max_occurence_and_count(number_options)
+        max_options = {'separator': max_format}
     elif max_type == Field.GEO:
-        max_geo, max_count = get_max_occurence_and_count([
-            x['geo_type'] for x in geo_options
-        ])
-        max_admin, max_count = get_max_occurence_and_count([
-            x['admin_level'] for x in geo_options
-        ])
+        max_options = get_geo_options(geo_options)
 
-        max_region, max_count = get_max_occurence_and_count([
-            x['region'] for x in geo_options
-        ])
-        max_options = {
-            'geo_type': max_geo,
-            'region': max_region,
-            'admin_level': max_admin
-        }
     return {
         'type': max_type,
         'options': max_options
@@ -203,3 +248,21 @@ def get_cast_function(type, geos_names, geos_codes):
     elif type == Field.GEO:
         cast_func = lambda v, **kwargs: parse_geo(v, geos_names, geos_codes, **kwargs)  # noqa
     return cast_func
+
+
+def get_geo_options(geo_options):
+    max_geo, max_count = get_max_occurence_and_count([
+        x['geo_type'] for x in geo_options
+    ])
+    max_admin, max_count = get_max_occurence_and_count([
+        x['admin_level'] for x in geo_options
+    ])
+
+    max_region, max_count = get_max_occurence_and_count([
+        x['region'] for x in geo_options
+    ])
+    return {
+        'geo_type': max_geo,
+        'region': max_region,
+        'admin_level': max_admin
+    }
