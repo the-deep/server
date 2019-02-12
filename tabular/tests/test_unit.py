@@ -1,13 +1,17 @@
 import os
 from functools import reduce
-from rest_framework.test import APITestCase
 from autofixture.base import AutoFixture
 from tempfile import NamedTemporaryFile
 
 from django.conf import settings
 
+from deep.tests import TestCase
+
 from gallery.models import File
-from geo.models import GeoArea
+from geo.models import GeoArea, Region
+
+from project.models import Project
+from user.models import User
 
 from tabular.tasks import auto_detect_and_update_fields
 from tabular.extractor import csv
@@ -61,16 +65,18 @@ def check_empty(index, fid, columns):
     assert columns[fid][index]['empty'] is True
 
 
-class TestTabularExtraction(APITestCase):
+class TestTabularExtraction(TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.files = []
 
     def setUp(self):
+        super().setUp()
         Book.objects.all().delete()
         # geo_choices = ChoicesGenerator(values=areas)
         # NOTE: Using choices created random values, and thus error occured
+        self.project = self.create(Project)
         AutoFixture(
             GeoArea,
             field_values={
@@ -79,6 +85,9 @@ class TestTabularExtraction(APITestCase):
             },
             generate_fk=True
         ).create(1)
+        self.region = Region.objects.first()
+        self.project.regions.add(self.region)
+        self.project.save()
 
     def test_auto_detection_consistent(self):
         """
@@ -350,7 +359,8 @@ class TestTabularExtraction(APITestCase):
         book = AutoFixture(
             Book,
             field_values={
-                'file': csvfile
+                'file': csvfile,
+                'project': self.project,
             }
         ).create_one()
         csv.extract(book)
