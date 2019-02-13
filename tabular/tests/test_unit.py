@@ -118,6 +118,7 @@ class TestTabularExtraction(TestCase):
                 assert field.type == Field.NUMBER, 'id is number'
                 assert 'separator' in field.options
                 assert field.options['separator'] == 'none'
+                self.validate_number_field(columns[fid])
                 # Check invalid values
                 check_invalid(8, fid, columns)
                 check_invalid(9, fid, columns)
@@ -125,6 +126,7 @@ class TestTabularExtraction(TestCase):
                 assert field.type == Field.NUMBER, 'age is number'
                 assert 'separator' in field.options
                 assert field.options['separator'] == 'none'
+                self.validate_number_field(columns[fid])
             elif field.title == 'name':
                 assert field.type == Field.STRING, 'name is string'
             elif field.title == 'date':
@@ -417,6 +419,16 @@ class TestTabularExtraction(TestCase):
                     assert 'invalid' in x
                     assert isinstance(x['invalid'], bool)
         return book
+
+    def validate_number_field(self, items):
+        for i, item in enumerate(items):
+            assert 'value' in item
+            assert item.get('invalid') \
+                or item.get('empty') \
+                or ('processed_value' in item)
+            assert not item.get('processed_value') \
+                or isinstance(item['processed_value'], int)\
+                or isinstance(item['processed_value'], float)
 
     def tearDown(self):
         """Remove temp files"""
