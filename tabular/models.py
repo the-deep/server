@@ -103,15 +103,18 @@ class Sheet(models.Model):
                 value['invalid'] = False
                 continue
             casted = cast_func(val, **field.options)
+
+            value['invalid'] = False
+            value['empty'] = False
+
             if casted is None:
                 value['invalid'] = True
                 value['empty'] = False
-            else:
-                value['invalid'] = False
-                value['empty'] = False
-                if type == Field.GEO:
-                    value['processed_value'] = casted['id']
-                    regions[casted['region']] = casted['region_title']
+            elif type == Field.GEO:
+                value['processed_value'] = casted['id']
+                regions[casted['region']] = casted['region_title']
+            elif type == Field.NUMBER:
+                value['processed_value'] = casted[0]  # (number, separator)
 
         if type == Field.GEO and regions:
             options['regions'] = [
