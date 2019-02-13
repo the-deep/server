@@ -135,6 +135,12 @@ class TestTabularExtraction(TestCase):
             elif field.title == 'place':
                 assert field.type == Field.GEO, 'place is geo'
                 assert field.options is not None
+                assert 'regions' in field.options
+                assert 'admin_level' in field.options
+                for x in field.options['regions']:
+                    assert 'id' in x
+                    assert 'title' in x
+
                 check_invalid(6, fid, columns)
                 check_empty(7, fid, columns)
                 check_invalid(8, fid, columns)
@@ -194,10 +200,13 @@ class TestTabularExtraction(TestCase):
                 assert field.type == Field.GEO,\
                     'place is geo: more than 80% rows are of geo type'
                 assert field.options != {}
-                assert 'region' in field.options
+                assert 'regions' in field.options
+                assert 'admin_level' in field.options
+                for x in field.options['regions']:
+                    assert 'id' in x
+                    assert 'title' in x
                 assert 'geo_type' in field.options
                 assert field.options['geo_type'] == 'name'
-                assert 'admin_level' in field.options
 
         if not geofield:
             return
@@ -235,7 +244,11 @@ class TestTabularExtraction(TestCase):
                 assert field.type == Field.GEO,\
                     'place is geo: more than 80% rows are of geo type'
                 assert field.options != {}
-                assert 'region' in field.options
+                assert 'regions' in field.options
+                assert 'admin_level' in field.options
+                for x in field.options['regions']:
+                    assert 'id' in x
+                    assert 'title' in x
                 assert 'geo_type' in field.options
                 assert field.options['geo_type'] == 'code'
 
@@ -329,9 +342,13 @@ class TestTabularExtraction(TestCase):
 
         # Check if field has region
         field = Field.objects.get(id=fid)
-        assert 'region' in field.options
+        assert 'regions' in field.options
+        regions = field.options['regions']
+        for x in regions:
+            assert 'id' in x
+            assert 'title' in x
         assert field.options['admin_level'] == kat_geo.admin_level.level
-        assert field.options['region'] == kat_geo.admin_level.region.id
+        assert regions[0]['id'] == kat_geo.admin_level.region.id
 
         # Get sheet again, which should be updated
         brand_new_sheet = Sheet.objects.get(id=sheet.id)

@@ -129,15 +129,18 @@ def get_geos_dict(project=None, **kwargs):
     geos = GeoArea.objects.filter(
         admin_level__region__project=project
     ).values(
-        'id', 'code', 'admin_level__level', 'title', 'admin_level__region'
+        'id', 'code', 'admin_level__level', 'title', 'admin_level_id',
+        'admin_level__region', 'admin_level__region__title',
     )
     return {
         x['title'].lower(): {
             "admin_level": x['admin_level__level'],
+            "admin_level_id": x['admin_level_id'],
             "title": x['title'],
             "code": x['code'],
             "id": x['id'],
             "region": x['admin_level__region'],
+            "region_title": x['admin_level__region__title'],
         }
         for x in geos
     }

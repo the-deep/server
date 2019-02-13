@@ -93,6 +93,8 @@ class Sheet(models.Model):
 
         values = self.data.get('columns', {}).get(str(field.id), [])
 
+        regions = {}
+
         # Now iterate through every item to find empty/invalid values
         for i, value in enumerate(values):
             val = value['value']
@@ -109,7 +111,12 @@ class Sheet(models.Model):
                 value['empty'] = False
                 if type == Field.GEO:
                     value['processed_value'] = casted['id']
-                    options['region'] = casted['region']
+                    regions[casted['region']] = casted['region_title']
+
+        if type == Field.GEO and regions:
+            options['regions'] = [
+                {'id': k, 'title': v} for k, v in regions.items()
+            ]
 
         return {
             'values': values,
