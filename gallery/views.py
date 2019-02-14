@@ -182,8 +182,10 @@ class MetaExtractionView(views.APIView):
 
         try:
             return response.Response(extraction_function(file.file))
-        except Exception as e:
+        except Exception:
             logger.warn("Exception while extracting file {}".format(file.id))
             raise exceptions.ValidationError({
-                'nonFieldErrors': 'Error while extracting'
+                'nonFieldErrors': [
+                    "Can't get metadata. Check if the file has correct format."
+                ]
             })
