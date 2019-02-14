@@ -1,3 +1,4 @@
+import logging
 from django.core.files.base import ContentFile
 
 from export.formats.xlsx import WorkBook, RowsBuilder
@@ -6,6 +7,8 @@ from entry.models import Entry, ExportData
 from utils.common import format_date, generate_filename, excel_column_name
 
 from tabular.models import Field
+
+logger = logging.getLogger(__name__)
 
 
 class ExcelExporter:
@@ -241,7 +244,15 @@ class ExcelExporter:
             return entry.image
 
         if entry.entry_type == Entry.DATA_SERIES:
-            return self.get_data_series(entry)
+            try:
+                return self.get_data_series(entry)
+            except Exception:
+                logger.error(
+                    'Data Series EXCEL Export Failed for entry ({})'.format(
+                        entry.pk,
+                    ),
+                    exc_info=1,
+                )
 
         return ''
 

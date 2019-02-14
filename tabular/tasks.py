@@ -114,8 +114,11 @@ def _tabular_meta_extract_geo(geodata):
 @shared_task
 @redis_lock
 def tabular_generate_column_image(sheet_id, field_id):
-    sheet = Sheet.objects.get(pk=sheet_id)
-    return sheet_field_render(sheet, field_id)
+    try:
+        sheet = Sheet.objects.get(pk=sheet_id)
+        return sheet_field_render(sheet, field_id)
+    except Sheet.DoesNotExist:
+        logger.warn('Sheet ({}) doesn\'t exists'.format(sheet_id))
 
 
 @shared_task
