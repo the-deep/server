@@ -23,7 +23,7 @@ class SimpleAdminLevelSerializer(RemoveNullFieldsMixin,
                                  serializers.ModelSerializer):
     class Meta:
         model = AdminLevel
-        fields = ('id', 'title', 'name_prop', 'code_prop',
+        fields = ('id', 'title', 'level', 'name_prop', 'code_prop',
                   'parent_name_prop', 'parent_code_prop',)
 
 

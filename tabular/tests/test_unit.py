@@ -1,13 +1,17 @@
 import os
 from functools import reduce
-from rest_framework.test import APITestCase
 from autofixture.base import AutoFixture
 from tempfile import NamedTemporaryFile
 
 from django.conf import settings
 
+from deep.tests import TestCase
+
 from gallery.models import File
-from geo.models import GeoArea
+from geo.models import GeoArea, Region
+
+from project.models import Project
+from user.models import User
 
 from tabular.tasks import auto_detect_and_update_fields
 from tabular.extractor import csv
@@ -61,16 +65,18 @@ def check_empty(index, fid, columns):
     assert columns[fid][index]['empty'] is True
 
 
-class TestTabularExtraction(APITestCase):
+class TestTabularExtraction(TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.files = []
 
     def setUp(self):
+        super().setUp()
         Book.objects.all().delete()
         # geo_choices = ChoicesGenerator(values=areas)
         # NOTE: Using choices created random values, and thus error occured
+        self.project = self.create(Project)
         AutoFixture(
             GeoArea,
             field_values={
@@ -79,6 +85,9 @@ class TestTabularExtraction(APITestCase):
             },
             generate_fk=True
         ).create(1)
+        self.region = Region.objects.first()
+        self.project.regions.add(self.region)
+        self.project.save()
 
     def test_auto_detection_consistent(self):
         """
@@ -109,6 +118,7 @@ class TestTabularExtraction(APITestCase):
                 assert field.type == Field.NUMBER, 'id is number'
                 assert 'separator' in field.options
                 assert field.options['separator'] == 'none'
+                self.validate_number_field(columns[fid])
                 # Check invalid values
                 check_invalid(8, fid, columns)
                 check_invalid(9, fid, columns)
@@ -116,6 +126,7 @@ class TestTabularExtraction(APITestCase):
                 assert field.type == Field.NUMBER, 'age is number'
                 assert 'separator' in field.options
                 assert field.options['separator'] == 'none'
+                self.validate_number_field(columns[fid])
             elif field.title == 'name':
                 assert field.type == Field.STRING, 'name is string'
             elif field.title == 'date':
@@ -126,6 +137,12 @@ class TestTabularExtraction(APITestCase):
             elif field.title == 'place':
                 assert field.type == Field.GEO, 'place is geo'
                 assert field.options is not None
+                assert 'regions' in field.options
+                assert 'admin_level' in field.options
+                for x in field.options['regions']:
+                    assert 'id' in x
+                    assert 'title' in x
+
                 check_invalid(6, fid, columns)
                 check_empty(7, fid, columns)
                 check_invalid(8, fid, columns)
@@ -185,10 +202,13 @@ class TestTabularExtraction(APITestCase):
                 assert field.type == Field.GEO,\
                     'place is geo: more than 80% rows are of geo type'
                 assert field.options != {}
-                assert 'region' in field.options
+                assert 'regions' in field.options
+                assert 'admin_level' in field.options
+                for x in field.options['regions']:
+                    assert 'id' in x
+                    assert 'title' in x
                 assert 'geo_type' in field.options
                 assert field.options['geo_type'] == 'name'
-                assert 'admin_level' in field.options
 
         if not geofield:
             return
@@ -226,7 +246,11 @@ class TestTabularExtraction(APITestCase):
                 assert field.type == Field.GEO,\
                     'place is geo: more than 80% rows are of geo type'
                 assert field.options != {}
-                assert 'region' in field.options
+                assert 'regions' in field.options
+                assert 'admin_level' in field.options
+                for x in field.options['regions']:
+                    assert 'id' in x
+                    assert 'title' in x
                 assert 'geo_type' in field.options
                 assert field.options['geo_type'] == 'code'
 
@@ -320,9 +344,13 @@ class TestTabularExtraction(APITestCase):
 
         # Check if field has region
         field = Field.objects.get(id=fid)
-        assert 'region' in field.options
+        assert 'regions' in field.options
+        regions = field.options['regions']
+        for x in regions:
+            assert 'id' in x
+            assert 'title' in x
         assert field.options['admin_level'] == kat_geo.admin_level.level
-        assert field.options['region'] == kat_geo.admin_level.region.id
+        assert regions[0]['id'] == kat_geo.admin_level.region.id
 
         # Get sheet again, which should be updated
         brand_new_sheet = Sheet.objects.get(id=sheet.id)
@@ -350,7 +378,8 @@ class TestTabularExtraction(APITestCase):
         book = AutoFixture(
             Book,
             field_values={
-                'file': csvfile
+                'file': csvfile,
+                'project': self.project,
             }
         ).create_one()
         csv.extract(book)
@@ -390,6 +419,16 @@ class TestTabularExtraction(APITestCase):
                     assert 'invalid' in x
                     assert isinstance(x['invalid'], bool)
         return book
+
+    def validate_number_field(self, items):
+        for i, item in enumerate(items):
+            assert 'value' in item
+            assert item.get('invalid') \
+                or item.get('empty') \
+                or ('processed_value' in item)
+            assert not item.get('processed_value') \
+                or isinstance(item['processed_value'], int)\
+                or isinstance(item['processed_value'], float)
 
     def tearDown(self):
         """Remove temp files"""
