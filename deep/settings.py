@@ -295,6 +295,7 @@ def add_username_attribute(record):
     """
     Append username(email) to logs
     """
+    record.username = ''
     if hasattr(record, 'request'):
         if hasattr(record.request, 'user') and\
                 not record.request.user.is_anonymous():
@@ -360,8 +361,9 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
             },
             'profiling': {
                 'handlers': ['ProfilingSysLog'],
+                'level': 'DEBUG',
                 'propagate': True,
-            }
+            },
         },
     }
 
