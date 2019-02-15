@@ -35,6 +35,7 @@ HTTP_PROTOCOL = os.environ.get('DEEP_HTTPS', 'http')
 
 # See if we are inside a test environment
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
+PROFILE = os.environ.get('PROFILE', 'false').lower() == 'true'
 
 
 # Application definition
@@ -320,6 +321,12 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
                           ': %(username)s %(message)s',
                 'datefmt': '%Y-%m-%dT%H:%M:%S',
             },
+            'profiling': {
+                'format': '%(asctime)s ' + os.environ.get('EBS_HOSTNAME', '') +
+                          ' PROFILING-' + os.environ.get('EBS_ENV_TYPE', '') +
+                          ': %(message)s',
+                'datefmt': '%Y-%m-%dT%H:%M:%S',
+            },
         },
         'handlers': {
             'SysLog': {
@@ -327,6 +334,13 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
                 'class': 'logging.handlers.SysLogHandler',
                 'filters': ['add_username_attribute'],
                 'formatter': 'simple',
+                'address': (os.environ.get('PAPERTRAIL_HOST'),
+                            int(os.environ.get('PAPERTRAIL_PORT')))
+            },
+            'ProfilingSysLog': {
+                'level': 'DEBUG',
+                'class': 'logging.handlers.SysLogHandler',
+                'formatter': 'profiling',
                 'address': (os.environ.get('PAPERTRAIL_HOST'),
                             int(os.environ.get('PAPERTRAIL_PORT')))
             },
@@ -344,6 +358,10 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
                 'handlers': ['SysLog'],
                 'propagate': True,
             },
+            'profiling': {
+                'handlers': ['ProfilingSysLog'],
+                'propagate': True,
+            }
         },
     }
 
