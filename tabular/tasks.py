@@ -8,7 +8,7 @@ from django.contrib.postgres import search
 
 from geo.models import models, GeoArea
 
-from utils.common import redis_lock
+from utils.common import redis_lock, LogTime
 
 from .models import Book, Field, Geodata, Sheet
 from .extractor import csv, xlsx
@@ -34,6 +34,7 @@ def _tabular_extract_book(book):
     return True
 
 
+@LogTime()
 def auto_detect_and_update_fields(book):
     # TODO: Find some ways to lazily calculate geos_names, geos_codes
     geos_names = get_geos_dict(book.project)
@@ -132,6 +133,7 @@ def tabular_generate_column_image(sheet_id, field_id):
 
 
 @shared_task
+@LogTime()
 def tabular_extract_book(book_pk):
     key = 'tabular_extract_book_{}'.format(book_pk)
     lock = redis.get_lock(key, 60 * 60 * 24)  # Lock lifetime 24 hours

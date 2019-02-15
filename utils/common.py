@@ -171,20 +171,45 @@ def excel_column_name(column_number):
     return excel_column_name(q) + chr(65 + r)
 
 
-def log_time(logger, debug=False):
-    def wrapped(f):
-        def logged(*args, **kwargs):
+class LogTime:
+    logger = logging.getLogger('profiling')
+
+    def __init__(self, log_file_name=None, block_name='', log_args=True):
+        self.log_file_name = log_file_name
+        self.log_args = log_args
+        self.block_name = block_name
+
+    def __enter__(self):
+        if settings.PROFILE:
+            self.start = time.time()
+
+    def __exit__(self, *args, **kwds):
+        if not settings.PROFILE:
+            return
+        end = time.time()
+        LogTime.logger.info("BLOCK: {} TIME {}ms".format(
+            self.block_name, end - self.start))
+
+    def __call__(self, func_to_be_tracked):
+        def wrapper(*args, **kwargs):
+            if not settings.PROFILE:
+                return func_to_be_tracked(*args, **kwargs)
+
             start = time.time()
-            return_val = f(*args, **kwargs)
+            ret = func_to_be_tracked(*args, **kwargs)
             end = time.time()
 
-            logfunc = print if debug else logger.info
-            logfunc('The function {} took {} seconds'.format(
-                f, end - start
-            ))
-            return return_val
-        return logged
-    return wrapped
+            fname = func_to_be_tracked.__name__
+            args = 'args: {}'.format(args) if self.log_args else ''
+            kwargs = 'kwargs: {}'.format(kwargs)[:75] if self.log_args else ''
+
+            log_message = "FUNCTION: '{}({} {})' : TIME {}ms.".format(
+                fname, args, kwargs, end - start)
+
+            LogTime.logger.info(log_message)
+
+            return ret
+        return wrapper
 
 
 confidence_z_map = {
