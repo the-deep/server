@@ -10,7 +10,7 @@ from geo.models import models, GeoArea
 
 from utils.common import redis_lock, LogTime
 
-from .models import Book, Field, Geodata, Sheet
+from .models import Book, Geodata, Sheet
 from .extractor import csv, xlsx
 from .viz.renderer import sheet_field_render
 from .utils import (
@@ -47,35 +47,23 @@ def auto_detect_and_update_fields(book):
 
     with transaction.atomic():
         for sheet in book.sheet_set.all():
-            data = sheet.data or {}
+            fields = sheet.field_set.all()
 
-            field_ids = [x for x in data['columns'].keys()]
-            fields = Field.objects.filter(id__in=field_ids)
-
-            columns = {}
-
-            for k, v in data['columns'].items():
-                emptyFiltered = list(filter(isValueNotEmpty, v))
+            for field in fields:
+                emptyFiltered = list(filter(isValueNotEmpty, field.data))
                 detected_info = sample_and_detect_type_and_options(
                     emptyFiltered, geos_names, geos_codes
                 )
-                field = next(filter(lambda x: str(x.id) == k, fields), None)
-                if field is None:
-                    continue
                 field.type = detected_info['type']
                 field.options = detected_info['options']
-                field.save()
 
-                cast_info = sheet.cast_data_to(field, geos_names, geos_codes)
-                columns[k] = cast_info['values']
-
+                cast_info = field.cast_data(geos_names, geos_codes)
+                field.data = cast_info['values']
                 field.options = cast_info['options']
                 field.save()
+
                 generate_column_columns.append([sheet.id, field.id])
 
-            sheet.data = {
-                'columns': columns,
-            }
             sheet.save()
 
     # Start chart generation tasks
