@@ -67,8 +67,7 @@ def extract(book):
                 [field for field in fields if field is not None]
             )
 
-            sheet_columns = {}  # { '<field_id>': ['<column values>'...] }
-
+            fields_data = {}
             # Data
             for _row in wb_sheet.iter_rows(min_row=data_index):
                 if is_row_empty(_row, columns):
@@ -82,21 +81,18 @@ def extract(book):
                         if value is not None and not isinstance(value, str):
                             value = _row[index].internal_value
 
-                        fid = str(field.pk)
-
-                        # Insert field value to corresponding column
-                        col_vals = sheet_columns.get(fid, [])
-                        col_vals.append({
+                        field_data = fields_data.get(field.id, [])
+                        field_data.append({
                             'value': value,
                             'empty': False,
                             'invalid': False
                         })
-                        sheet_columns[fid] = col_vals
+                        fields_data[field.id] = field_data
 
-                    # rows.append(row)
                 except Exception:
                     pass
-            sheet.data = {
-                'columns': sheet_columns
-            }
-            sheet.save()
+
+            # Save field
+            for field in sheet.fields:
+                field.data = fields_data.get(field.id, [])
+                field.save()
