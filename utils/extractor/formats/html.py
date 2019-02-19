@@ -2,6 +2,7 @@ from readability.readability import Document
 from urllib.parse import urljoin
 
 import logging
+import base64
 import traceback
 import re
 import requests
@@ -44,9 +45,15 @@ def process(doc, url):
         try:
             fp = tempfile.NamedTemporaryFile(dir=settings.BASE_DIR)
             img_src = urljoin(url, img.get('src'))
-            r = requests.get(img_src, stream=True)
-            write_file(r, fp)
+            if re.search(r'http[s]?://', img_src):
+                r = requests.get(img_src, verify=False, stream=True)
+                write_file(r, fp)
+            else:
+                image = base64.b64decode(img_src.split(',')[1])
+                fp.write(image)
             images.append(fp)
+        except requests.exceptions.ConnectionError:
+            logger.warn(traceback.format_exc())
         except Exception:
             logger.error(traceback.format_exc())
 

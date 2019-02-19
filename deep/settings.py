@@ -39,32 +39,8 @@ TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
 # Application definition
 
-INSTALLED_APPS = [
-    # DJANGO APPS
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.messages',
-    'django.contrib.sessions',
-    'django.contrib.staticfiles',
-    'django.contrib.gis',
-    'django.contrib.postgres',
-
-    # LIBRARIES
-    'autofixture',
-    'channels',
-    'corsheaders',
-    'crispy_forms',
-    'django_filters',
-    'djangorestframework_camel_case',
-    'drf_dynamic_fields',
-    'rest_framework',
-    'reversion',
-    'storages',
-    'django_premailer',
-    'raven.contrib.django.raven_compat',
-
-    # DEEP APPS
+DEEP_APPS = [
+    # DEEP CORE APPS
     'analysis_framework',
     'ary',
     'category_editor',
@@ -92,6 +68,32 @@ INSTALLED_APPS = [
     'commons',
     'redis_store',
 ]
+
+INSTALLED_APPS = [
+    # DJANGO APPS
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.messages',
+    'django.contrib.sessions',
+    'django.contrib.staticfiles',
+    'django.contrib.gis',
+    'django.contrib.postgres',
+
+    # LIBRARIES
+    'autofixture',
+    'channels',
+    'corsheaders',
+    'crispy_forms',
+    'django_filters',
+    'djangorestframework_camel_case',
+    'drf_dynamic_fields',
+    'rest_framework',
+    'reversion',
+    'storages',
+    'django_premailer',
+    'raven.contrib.django.raven_compat',
+] + DEEP_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -294,6 +296,7 @@ def add_username_attribute(record):
     """
     Append username(email) to logs
     """
+    record.username = ''
     if hasattr(record, 'request'):
         if hasattr(record.request, 'user') and\
                 not record.request.user.is_anonymous():
@@ -315,9 +318,11 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
         },
         'formatters': {
             'simple': {
-                'format': '%(asctime)s ' + os.environ.get('EBS_HOSTNAME', '') +
-                          ' DJANGO-' + os.environ.get('EBS_ENV_TYPE', '') +
-                          ': %(username)s %(message)s',
+                'format':
+                '%(asctime)s {} DJANGO-{} : %(username)s %(message)s'.format(
+                    os.environ.get('EBS_HOSTNAME', ''),
+                    os.environ.get('EBS_ENV_TYPE', '')
+                ),
                 'datefmt': '%Y-%m-%dT%H:%M:%S',
             },
         },
@@ -327,8 +332,10 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
                 'class': 'logging.handlers.SysLogHandler',
                 'filters': ['add_username_attribute'],
                 'formatter': 'simple',
-                'address': (os.environ.get('PAPERTRAIL_HOST'),
-                            int(os.environ.get('PAPERTRAIL_PORT')))
+                'address': (
+                    os.environ.get('PAPERTRAIL_HOST'),
+                    int(os.environ.get('PAPERTRAIL_PORT')),
+                )
             },
         },
         'loggers': {
@@ -344,6 +351,16 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
                 'handlers': ['SysLog'],
                 'propagate': True,
             },
+            **{
+                # TODO: move all apps to sub directory deep
+                # and use deep as logger
+                app: {
+                    'level': 'DEBUG',
+                    'handlers': ['SysLog'],
+                    'propagate': True,
+                }
+                for app in DEEP_APPS
+            }
         },
     }
 
