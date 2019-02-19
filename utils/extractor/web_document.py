@@ -31,7 +31,7 @@ class WebDocument(Document):
             r = requests.head(url, headers=DEFAULT_HEADERS)
         except requests.exceptions.RequestException:
             # If we can't get header, assume html and try to continue.
-            r = requests.get(url, headers=DEFAULT_HEADERS)
+            r = requests.get(url, verify=False, headers=DEFAULT_HEADERS)
             doc = r.content
             super().__init__(doc, type, params=params)
             return
