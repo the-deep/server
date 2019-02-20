@@ -73,7 +73,7 @@ def _add_image_to_gallery(image_name, image):
 def sheet_field_render(sheet, field_id):
     field = Field.objects.get(pk=field_id)
     title = field.title
-    series = sheet.data['columns'][str(field_id)]
+    series = field.data
     data_type = field.type
 
     image, chart_type = generate(title, series, data_type)

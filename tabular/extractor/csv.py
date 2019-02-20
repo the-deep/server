@@ -3,7 +3,10 @@ import csv
 from itertools import chain
 from ..models import Sheet, Field
 
+from utils.common import LogTime
 
+
+@LogTime()
 def extract(book):
     options = book.options if book.options else {}
     Sheet.objects.filter(book=book).delete()  # Delete all previous sheets
@@ -56,6 +59,6 @@ def extract(book):
             except Exception:
                 pass
 
-        for field in fields:
+        for field in sheet.field_set.all():
             field.data = fields_data.get(field.id, [])
             field.save()
