@@ -64,8 +64,6 @@ def auto_detect_and_update_fields(book):
 
                 generate_column_columns.append([sheet.id, field.id])
 
-            sheet.save()
-
     # Start chart generation tasks
     for sheet_id, field_id in generate_column_columns:
         tabular_generate_column_image.s(sheet_id, field_id).delay()

@@ -2,6 +2,8 @@ from openpyxl import load_workbook
 
 from ..models import Sheet, Field
 
+from utils.common import LogTime
+
 
 def get_cell_value(row, column):
     try:
@@ -19,6 +21,7 @@ def is_row_empty(row, columns):
     return True
 
 
+@LogTime()
 def extract(book):
     options = book.options if book.options else {}
     Sheet.objects.filter(book=book).delete()  # Delete all previous sheets
@@ -93,6 +96,6 @@ def extract(book):
                     pass
 
             # Save field
-            for field in sheet.fields:
+            for field in sheet.field_set.all():
                 field.data = fields_data.get(field.id, [])
                 field.save()
