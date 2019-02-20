@@ -42,7 +42,7 @@ class EntryViewSet(viewsets.ModelViewSet):
 
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter)
-    filter_class = EntryFilterSet
+    filterset_class = EntryFilterSet
 
     search_fields = ('lead__title', 'excerpt')
 

@@ -68,7 +68,7 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                           ModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.OrderingFilter, filters.SearchFilter)
-    filter_class = AssessmentFilterSet
+    filterset_class = AssessmentFilterSet
     ordering_fields = ('lead__title', 'created_by', 'created_at')
     search_fields = ('lead__title',)
 

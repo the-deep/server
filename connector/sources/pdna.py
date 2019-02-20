@@ -114,7 +114,7 @@ class PDNA(Source):
                         )
                         results.append(data)
                 except Exception as e:
-                    logger.warn(
+                    logger.warning(
                         "Exception parsing {} with params {}: {}".format(
                             self.URL, params, e.args)
                     )

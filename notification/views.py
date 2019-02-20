@@ -1,5 +1,5 @@
 import django_filters
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 
 from .serializers import NotificationSerializer
 from .models import Notification
@@ -16,7 +16,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
-    filter_fields = ('project',)
+    filterset_fields = ('project',)
 
     def get_queryset(self):
         return Notification.get_for(
@@ -32,10 +32,13 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
         return qs
 
-    @list_route(permission_classes=[permissions.IsAuthenticated],
-                methods=['put'],
-                serializer_class=NotificationSerializer,
-                url_path='status')
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
+        methods=['put'],
+        serializer_class=NotificationSerializer,
+        url_path='status',
+    )
     def status_update(self, request, version=None):
         serializer = self.get_serializer(
             data=request.data, many=True, partial=True
@@ -45,7 +48,8 @@ class NotificationViewSet(viewsets.ModelViewSet):
         serializer.save()
         return response.Response()
 
-    @list_route(
+    @action(
+        detail=False,
         permission_classes=[permissions.IsAuthenticated],
         url_path='count',
     )

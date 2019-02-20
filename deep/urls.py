@@ -143,118 +143,118 @@ router = routers.DefaultRouter()
 
 # User routers
 router.register(r'users', UserViewSet,
-                base_name='user')
+                basename='user')
 
 # File routers
 router.register(r'files', FileViewSet,
-                base_name='file')
+                basename='file')
 router.register(r'files-google-drive', GoogleDriveFileViewSet,
-                base_name='file_google_drive')
+                basename='file_google_drive')
 router.register(r'files-dropbox', DropboxFileViewSet,
-                base_name='file_dropbox')
+                basename='file_dropbox')
 router.register(r'file-previews', FilePreviewViewSet,
-                base_name='file_preview')
+                basename='file_preview')
 
 # Tabular routers
 router.register(r'tabular-books', BookViewSet,
-                base_name='tabular_book')
+                basename='tabular_book')
 router.register(r'tabular-sheets', SheetViewSet,
-                base_name='tabular_sheet')
+                basename='tabular_sheet')
 router.register(r'tabular-fields', FieldViewSet,
-                base_name='tabular_field')
+                basename='tabular_field')
 router.register(r'tabular-geodatas', GeodataViewSet,
-                base_name='tabular_geodata')
+                basename='tabular_geodata')
 
 # User group registers
 router.register(r'user-groups', UserGroupViewSet,
-                base_name='user_group')
+                basename='user_group')
 router.register(r'group-memberships', GroupMembershipViewSet,
-                base_name='group_membership')
+                basename='group_membership')
 
 # Project routers
 router.register(r'projects', ProjectViewSet,
-                base_name='project')
+                basename='project')
 router.register(r'projects-stat', ProjectStatViewSet,
-                base_name='project-stat')
+                basename='project-stat')
 router.register(r'project-roles', ProjectRoleViewSet,
-                base_name='project_role')
+                basename='project_role')
 router.register(r'project-memberships', ProjectMembershipViewSet,
-                base_name='project_membership')
+                basename='project_membership')
 router.register(r'project-usergroups', ProjectUserGroupViewSet,
-                base_name='project_usergroup')
+                basename='project_usergroup')
 
 # Geo routers
 router.register(r'regions', RegionViewSet,
-                base_name='region')
+                basename='region')
 router.register(r'admin-levels', AdminLevelViewSet,
-                base_name='admin_level')
+                basename='admin_level')
 
 # Lead routers
 router.register(r'lead-groups', LeadGroupViewSet,
-                base_name='lead_group')
+                basename='lead_group')
 router.register(r'leads', LeadViewSet,
-                base_name='lead')
+                basename='lead')
 router.register(r'lead-previews', LeadPreviewViewSet,
-                base_name='lead_preview')
+                basename='lead_preview')
 
 # Entry routers
 router.register(r'entries', EntryViewSet,
-                base_name='entry_lead')
+                basename='entry_lead')
 router.register(r'entry-attributes', AttributeViewSet,
-                base_name='entry_attribute')
+                basename='entry_attribute')
 router.register(r'entry-filter-data', FilterDataViewSet,
-                base_name='entry_filter_data')
+                basename='entry_filter_data')
 router.register(r'entry-export-data', ExportDataViewSet,
-                base_name='entry_export_data')
+                basename='entry_export_data')
 router.register(r'edit-entries-data', EditEntriesDataViewSet,
-                base_name='edit_entries_data')
+                basename='edit_entries_data')
 
 # Analysis framework routers
 router.register(r'analysis-frameworks', AnalysisFrameworkViewSet,
-                base_name='analysis_framework')
+                basename='analysis_framework')
 router.register(r'analysis-framework-widgets', WidgetViewSet,
-                base_name='analysis_framework_widget')
+                basename='analysis_framework_widget')
 router.register(r'analysis-framework-filters', FilterViewSet,
-                base_name='analysis_framework_filter')
+                basename='analysis_framework_filter')
 router.register(r'analysis-framework-exportables', ExportableViewSet,
-                base_name='analysis_framework_exportable')
+                basename='analysis_framework_exportable')
 
 # Assessment registry
 router.register(r'assessments', AssessmentViewSet,
-                base_name='assessment')
+                basename='assessment')
 router.register(r'lead-assessments', LeadAssessmentViewSet,
-                base_name='lead_assessment')
+                basename='lead_assessment')
 router.register(r'lead-group-assessments', LeadGroupAssessmentViewSet,
-                base_name='lead_group_assessment')
+                basename='lead_group_assessment')
 router.register(r'assessment-templates', AssessmentTemplateViewSet,
-                base_name='assessment_template')
+                basename='assessment_template')
 
 # Category editor routers
 router.register(r'category-editors', CategoryEditorViewSet,
-                base_name='category_editor')
+                basename='category_editor')
 
 # Connector routers
 router.register(r'connector-sources', SourceViewSet,
-                base_name='connector_source')
+                basename='connector_source')
 router.register(r'connectors', ConnectorViewSet,
-                base_name='connector')
+                basename='connector')
 router.register(r'connector-users', ConnectorUserViewSet,
-                base_name='connector_users')
+                basename='connector_users')
 router.register(r'connector-projects', ConnectorProjectViewSet,
-                base_name='connector_projects')
+                basename='connector_projects')
 
 # Export routers
-router.register(r'exports', ExportViewSet, base_name='export')
+router.register(r'exports', ExportViewSet, basename='export')
 
 # Notification routers
 router.register(r'notifications',
-                NotificationViewSet, base_name='notification')
+                NotificationViewSet, basename='notification')
 
 # Language routers
-router.register(r'languages', LanguageViewSet, base_name='language')
+router.register(r'languages', LanguageViewSet, basename='language')
 
 # Page routers
-router.register(r'pages', PageViewSet, base_name='page')
+router.register(r'pages', PageViewSet, basename='page')
 
 
 # Versioning : (v1|v2|v3)

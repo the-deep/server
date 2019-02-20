@@ -53,6 +53,7 @@ WORKDIR /code
 
 COPY ./requirements.txt /code/requirements.txt
 RUN echo 'alias python=python3\nalias pip=pip3' >> ~/.bashrc \
+    && python3 -m pip install --upgrade pip \ 
     && pip3 install uwsgi \
     && pip3 install -r requirements.txt
 

@@ -11,5 +11,4 @@ class DocsApiTests(APITestCase):
         json = response.json()
 
         self.assertGreaterEqual(len(json['apis']), 1)
-        self.assertGreaterEqual(len(json['apis'][0]['endpoints']),
-                                1)
+        self.assertGreaterEqual(len(json['apis'][0]['endpoints']), 1)

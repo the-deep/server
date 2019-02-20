@@ -13,7 +13,7 @@ from rest_framework import (
     views,
     viewsets,
 )
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 
 from utils.db.functions import StrPos
 from deep.views import get_frontend_url
@@ -67,7 +67,8 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             return super().get_object()
 
-    @detail_route(
+    @action(
+        detail=True,
         permission_classes=[permissions.IsAuthenticated],
         url_path='preferences',
         serializer_class=UserPreferencesSerializer,
@@ -80,7 +81,8 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(user)
         return response.Response(serializer.data)
 
-    @detail_route(
+    @action(
+        detail=True,
         permission_classes=[permissions.IsAuthenticated],
         url_path='notifications',
         serializer_class=NotificationSerializer,

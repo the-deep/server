@@ -7,7 +7,7 @@ from rest_framework import (
     viewsets,
 )
 
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from deep.permissions import ModifyPermission
 from project.models import Project
 from .serializers import (
@@ -97,10 +97,13 @@ class ConnectorViewSet(viewsets.ModelViewSet):
             models.Q(connectorproject__in=global_projects),
         )
 
-    @detail_route(permission_classes=[permissions.IsAuthenticated],
-                  methods=['post'],
-                  url_path='leads',
-                  serializer_class=SourceDataSerializer)
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated],
+        methods=['post'],
+        url_path='leads',
+        serializer_class=SourceDataSerializer
+    )
     def get_leads(self, request, pk=None, version=None):
         connector = self.get_object()
         if not connector.can_get(request.user):

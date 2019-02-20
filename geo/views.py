@@ -50,7 +50,7 @@ class RegionViewSet(viewsets.ModelViewSet):
                           ModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter)
-    filter_class = RegionFilterSet
+    filterset_class = RegionFilterSet
     search_fields = ('title', 'code')
 
     def get_queryset(self):
@@ -113,7 +113,7 @@ class AdminLevelViewSet(viewsets.ModelViewSet):
                           ModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter)
-    filter_class = AdminLevelFilterSet
+    filterset_class = AdminLevelFilterSet
     search_fields = ('title')
 
     def get_queryset(self):

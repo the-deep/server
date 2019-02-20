@@ -109,11 +109,12 @@ class EntryTests(TestCase):
         response = self.client.post(url, data)
         self.assert_201(response)
 
+        r_data = response.json()
         self.assertEqual(Entry.objects.count(), entry_count + 1)
-        self.assertEqual(response.data['version_id'], 1)
-        self.assertEqual(response.data['excerpt'], data['excerpt'])
+        self.assertEqual(r_data['versionId'], 1)
+        self.assertEqual(r_data['excerpt'], data['excerpt'])
 
-        attributes = response.data['attributes']
+        attributes = r_data['attributes']
         self.assertEqual(len(attributes.values()), 1)
 
         attribute = Attribute.objects.get(
@@ -124,7 +125,7 @@ class EntryTests(TestCase):
         self.assertEqual(attribute.data['a'], 'b')
 
         # Check if project matches
-        entry = Entry.objects.get(id=response.data['id'])
+        entry = Entry.objects.get(id=r_data['id'])
         self.assertEqual(entry.project, entry.lead.project)
 
     def test_create_entry_no_project(self):
@@ -152,11 +153,12 @@ class EntryTests(TestCase):
         response = self.client.post(url, data)
         self.assert_201(response)
 
+        r_data = response.json()
         self.assertEqual(Entry.objects.count(), entry_count + 1)
-        self.assertEqual(response.data['version_id'], 1)
-        self.assertEqual(response.data['excerpt'], data['excerpt'])
+        self.assertEqual(r_data['versionId'], 1)
+        self.assertEqual(r_data['excerpt'], data['excerpt'])
 
-        attributes = response.data['attributes']
+        attributes = r_data['attributes']
         self.assertEqual(len(attributes.values()), 1)
 
         attribute = Attribute.objects.get(
@@ -167,7 +169,7 @@ class EntryTests(TestCase):
         self.assertEqual(attribute.data['a'], 'b')
 
         # Check if project matches
-        entry = Entry.objects.get(id=response.data['id'])
+        entry = Entry.objects.get(id=r_data['id'])
         self.assertEqual(entry.project, entry.lead.project)
 
     def test_create_entry_no_perm(self):
@@ -241,16 +243,17 @@ class EntryTests(TestCase):
         response = self.client.post(url, data)
         self.assert_201(response)
 
+        r_data = response.json()
         self.assertEqual(Entry.objects.count(), entry_count + 1)
-        self.assertEqual(response.data['client_id'], client_id)
-        id = response.data['id']
+        self.assertEqual(r_data['clientId'], client_id)
+        id = r_data['id']
 
         response = self.client.post(url, data)
         self.assert_201(response)
 
         self.assertEqual(Entry.objects.count(), entry_count + 1)
-        self.assertEqual(response.data['id'], id)
-        self.assertEqual(response.data['client_id'], client_id)
+        self.assertEqual(r_data['id'], id)
+        self.assertEqual(r_data['clientId'], client_id)
 
     def test_patch_attributes(self):
         entry = self.create_entry()
@@ -284,7 +287,8 @@ class EntryTests(TestCase):
         response = self.client.patch(url, data)
         self.assert_200(response)
 
-        attributes = response.data['attributes']
+        r_data = response.json()
+        attributes = r_data['attributes']
         self.assertEqual(len(attributes.values()), 2)
 
         attribute1 = attributes[str(widget1.pk)]
@@ -306,7 +310,8 @@ class EntryTests(TestCase):
         response = self.client.get(url)
         self.assert_200(response)
 
-        self.assertEqual(len(response.data['results']), count)
+        r_data = response.json()
+        self.assertEqual(len(r_data['results']['entries']), count)
 
     def post_filter_test(self, filters, count=1):
         url = '/api/v1/entries/filter/'
@@ -318,7 +323,8 @@ class EntryTests(TestCase):
         response = self.client.post(url, params)
         self.assert_200(response)
 
-        self.assertEqual(len(response.data['results']), count)
+        r_data = response.json()
+        self.assertEqual(len(r_data['results']['entries']), count)
 
     def both_filter_test(self, filters, count=1):
         self.filter_test(filters, count)

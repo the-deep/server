@@ -14,7 +14,7 @@ from rest_framework import (
     views,
     viewsets,
 )
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import action, action
 import django_filters
 
 from docs.utils import mark_as_list, mark_as_delete
@@ -70,7 +70,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                           ModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter)
-    filter_class = ProjectFilterSet
+    filterset_class = ProjectFilterSet
     search_fields = ('title', 'description',)
 
     def get_queryset(self):
@@ -79,7 +79,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     Get list of projects that user is member of
     """
-    @list_route(
+    @action(
+        detail=False,
         permission_classes=[permissions.IsAuthenticated],
         url_path='member-of',
     )
@@ -99,8 +100,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     Get analysis framework for this project
     """
-    @detail_route(permission_classes=[permissions.IsAuthenticated],
-                  url_path='analysis-framework')
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='analysis-framework'
+    )
     def get_framework(self, request, pk=None, version=None):
         from analysis_framework.serializers import AnalysisFrameworkSerializer
 
@@ -118,9 +122,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     Get assessment template for this project
     """
-    @detail_route(permission_classes=[permissions.IsAuthenticated],
-                  serializer_class=arys.AssessmentTemplateSerializer,
-                  url_path='assessment-template')
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated],
+        serializer_class=arys.AssessmentTemplateSerializer,
+        url_path='assessment-template',
+    )
     def get_assessment_template(self, request, pk=None, version=None):
         project = self.get_object()
         if not project.assessment_template:
@@ -136,10 +143,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     Join request to this project
     """
-    @detail_route(permission_classes=[permissions.IsAuthenticated,
-                                      JoinPermission],
-                  methods=['post'],
-                  url_path='join')
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated, JoinPermission],
+        methods=['post'],
+        url_path='join',
+    )
     def join_project(self, request, pk=None, version=None):
         project = self.get_object()
         join_request = ProjectJoinRequest.objects.create(
@@ -210,10 +219,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
     Accept a join request to this project,
     creating the membership while doing so.
     """
-    @detail_route(permission_classes=[permissions.IsAuthenticated,
-                                      AcceptRejectPermission],
-                  methods=['post'],
-                  url_path=r'requests/(?P<request_id>\d+)/accept')
+    @action(
+        detail=True,
+        permission_classes=[
+            permissions.IsAuthenticated, AcceptRejectPermission,
+        ],
+        methods=['post'],
+        url_path=r'requests/(?P<request_id>\d+)/accept',
+    )
     def accept_request(self, request, pk=None, version=None, request_id=None):
         project = self.get_object()
         join_request = get_object_or_404(ProjectJoinRequest,
@@ -237,10 +250,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     Reject a join request to this project
     """
-    @detail_route(permission_classes=[permissions.IsAuthenticated,
-                                      AcceptRejectPermission],
-                  methods=['post'],
-                  url_path=r'requests/(?P<request_id>\d+)/reject')
+    @action(
+        detail=True,
+        permission_classes=[
+            permissions.IsAuthenticated, AcceptRejectPermission,
+        ],
+        methods=['post'],
+        url_path=r'requests/(?P<request_id>\d+)/reject',
+    )
     def reject_request(self, request, pk=None, version=None, request_id=None):
         project = self.get_object()
         join_request = get_object_or_404(ProjectJoinRequest,
@@ -264,9 +281,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
     Cancel a join request to this project
     """
     @mark_as_delete()
-    @detail_route(permission_classes=[permissions.IsAuthenticated],
-                  methods=['post'],
-                  url_path=r'join/cancel')
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated],
+        methods=['post'],
+        url_path=r'join/cancel',
+    )
     def cancel_request(self, request, pk=None, version=None, request_id=None):
         project = self.get_object()
         join_request = get_object_or_404(ProjectJoinRequest,
@@ -286,10 +306,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
     Get list of join requests for this project
     """
     @mark_as_list()
-    @detail_route(permission_classes=[permissions.IsAuthenticated,
-                                      ModifyPermission],
-                  serializer_class=ProjectJoinRequestSerializer,
-                  url_path='requests')
+    @action(
+        detail=True,
+        permission_classes=[
+            permissions.IsAuthenticated, ModifyPermission,
+        ],
+        serializer_class=ProjectJoinRequestSerializer,
+        url_path='requests',
+    )
     def get_requests(self, request, pk=None, version=None):
         project = self.get_object()
         join_requests = project.projectjoinrequest_set.all()
@@ -311,9 +335,12 @@ class ProjectStatViewSet(ProjectViewSet):
     """
     Get dashboard related data for this project
     """
-    @detail_route(permission_classes=[permissions.IsAuthenticated],
-                  serializer_class=ProjectDashboardSerializer,
-                  url_path='dashboard')
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated],
+        serializer_class=ProjectDashboardSerializer,
+        url_path='dashboard',
+    )
     def get_dashboard(self, request, pk=None, version=None):
         project = self.get_object()
         serializer = self.get_serializer(project)
@@ -326,7 +353,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
                           ModifyPermission, MembershipModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter)
-    filter_class = ProjectMembershipFilterSet
+    filterset_class = ProjectMembershipFilterSet
 
     def get_serializer(self, *args, **kwargs):
         data = kwargs.get('data')
@@ -488,4 +515,4 @@ class ProjectUserGroupViewSet(viewsets.ModelViewSet):
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter)
     queryset = ProjectUserGroupMembership.objects.all()
-    filter_class = ProjectUserGroupMembershipFilterSet
+    filterset_class = ProjectUserGroupMembershipFilterSet

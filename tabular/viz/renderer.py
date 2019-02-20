@@ -33,8 +33,8 @@ def generate(title, series, data_type, chart_type='barchart'):
     df = pd.DataFrame(series)
 
     if val_column not in df.columns:
-        logger.warn('{} not present'.format(val_column))
-        return None, chart_type, None
+        logger.warning('{} not present'.format(val_column))
+        return None, chart_type
 
     data = df[~(df['empty'] == True) & ~(df['invalid'] == True)]  # noqa
     data = data.groupby(val_column).count()['empty'].sort_values().to_frame()

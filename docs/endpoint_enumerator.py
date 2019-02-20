@@ -30,7 +30,7 @@ class EndpointEnumerator:
         api_endpoints = []
 
         for pattern in patterns:
-            path_regex = prefix + pattern.regex.pattern
+            path_regex = prefix + pattern.pattern.regex.pattern
 
             if isinstance(pattern, URLPattern):
                 path = self.get_path_from_regex(path_regex)

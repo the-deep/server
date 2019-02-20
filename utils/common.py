@@ -38,7 +38,7 @@ def get_temp_file(dir='/tmp/'):
 
 
 def get_file_from_url(url):
-    file = tempfile.NamedTemporaryFile(dir=settings.BASE_DIR)
+    file = tempfile.NamedTemporaryFile(dir=settings.TEMP_DIR)
     response = requests.get(url, stream=True, headers=DEFAULT_HEADERS)
     response.raise_for_status()
     write_file(response, file)

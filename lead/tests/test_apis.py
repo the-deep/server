@@ -31,8 +31,9 @@ class LeadTests(TestCase):
         self.assert_201(response)
 
         self.assertEqual(Lead.objects.count(), lead_count + 1)
-        self.assertEqual(response.data['title'], data['title'])
-        self.assertEqual(response.data['assignee'], self.user.id)
+        r_data = response.json()
+        self.assertEqual(r_data['title'], data['title'])
+        self.assertEqual(r_data['assignee'], self.user.id)
 
     def test_get_lead_check_no_of_entries(self, assignee=None):
         project = self.create(Project, role=self.admin_role)
@@ -56,7 +57,8 @@ class LeadTests(TestCase):
 
         response = self.client.get(url)
 
-        assert 'noOfEntries' in response.data["results"][0]
+        r_data = response.json()
+        assert 'noOfEntries' in r_data["results"][0]
 
     def test_create_lead_no_create_role(self, assignee=None):
         lead_count = Lead.objects.count()
@@ -126,7 +128,8 @@ class LeadTests(TestCase):
         response = self.client.patch(url, data)
         self.assert_200(response)
 
-        self.assertEqual(response.data['assignee'], user.id)
+        r_data = response.json()
+        self.assertEqual(r_data['assignee'], user.id)
         lead = Lead.objects.get(id=lead.id)
         self.assertEqual(lead.get_assignee().id, user.id)
 
@@ -167,11 +170,12 @@ class LeadTests(TestCase):
         response = self.client.post(url, data)
         self.assert_201(response)
 
+        r_data = response.json()
         self.assertEqual(Lead.objects.count(), lead_count + 2)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(r_data), 2)
 
-        self.assertEqual(response.data[0].get('project'), project1.id)
-        self.assertEqual(response.data[1].get('project'), project2.id)
+        self.assertEqual(r_data[0].get('project'), project1.id)
+        self.assertEqual(r_data[1].get('project'), project2.id)
 
     def test_url_exists(self):
         project = self.create(Project, role=self.admin_role)

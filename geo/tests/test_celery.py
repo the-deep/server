@@ -13,5 +13,5 @@ class CeleryTest(TestCase):
         """
 
         result = add.delay(5, 4)
-        self.assertEquals(result.get(), 9)
+        self.assertEqual(result.get(), 9)
         self.assertTrue(result.successful())

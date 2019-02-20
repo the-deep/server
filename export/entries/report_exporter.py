@@ -292,15 +292,15 @@ class ReportExporter:
         self.doc.add_page_break()
 
         if pdf:
-            temp_doc = tempfile.NamedTemporaryFile(dir=settings.BASE_DIR)
+            temp_doc = tempfile.NamedTemporaryFile(dir=settings.TEMP_DIR)
             self.doc.save_to_file(temp_doc)
 
             filename = temp_doc.name.split('/')[-1]
-            temp_pdf = os.path.join(settings.BASE_DIR,
+            temp_pdf = os.path.join(settings.TEMP_DIR,
                                     '{}.pdf'.format(filename))
 
             call(['libreoffice', '--headless', '--convert-to',
-                  'pdf', temp_doc.name, '--outdir', settings.BASE_DIR])
+                  'pdf', temp_doc.name, '--outdir', settings.TEMP_DIR])
 
             filename = generate_filename('Entries General Export', 'pdf')
             export_entity.file.save(filename, File(open(temp_pdf, 'rb')))

@@ -57,7 +57,7 @@ class LeadGroupViewSet(viewsets.ModelViewSet):
                           ModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter)
-    filter_class = LeadGroupFilterSet
+    filterset_class = LeadGroupFilterSet
     search_fields = ('title',)
 
     def get_queryset(self):
@@ -73,7 +73,7 @@ class LeadViewSet(viewsets.ModelViewSet):
                           ModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter)
-    filter_class = LeadFilterSet
+    filterset_class = LeadFilterSet
     search_fields = ('title', 'source', 'text', 'url', 'website')
     # ordering_fields = omitted to allow ordering by all read-only fields
 
