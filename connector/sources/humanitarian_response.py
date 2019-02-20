@@ -89,7 +89,7 @@ class HumanitarianResponse(Source):
                 )
                 results.append(data)
             except Exception as e:
-                logger.warn(
+                logger.warning(
                     "Exception parsing humanitarian response connector: " +
                     str(e.args)
                 )

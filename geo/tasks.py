@@ -62,7 +62,10 @@ def _save_geo_area(admin_level, parent, feature):
     #     raise Exception('Invalid geometry type for geoarea')
 
     geo_area.polygons = geom
-    feature_names = [f.decode('utf-8') for f in feature.fields]
+    feature_names = [
+        f.decode('utf-8') if isinstance(f, bytes) else f
+        for f in feature.fields
+    ]
 
     if parent:
         if admin_level.parent_name_prop and \
@@ -100,7 +103,7 @@ def _generate_geo_areas(admin_level, parent):
         # Then load data from that file
         filename, extension = os.path.splitext(geo_shape_file.file.name)
         f = tempfile.NamedTemporaryFile(suffix=extension,
-                                        dir=settings.BASE_DIR)
+                                        dir=settings.TEMP_DIR)
         f.write(geo_shape_file.file.read())
 
         # Flush the file before reading it with GDAL
@@ -110,7 +113,7 @@ def _generate_geo_areas(admin_level, parent):
 
         if extension == '.zip':
             with tempfile.TemporaryDirectory(
-                dir=settings.BASE_DIR
+                dir=settings.TEMP_DIR
             ) as tmpdirname:
                 zipfile.ZipFile(f.name, 'r').extractall(tmpdirname)
                 files = os.listdir(tmpdirname)

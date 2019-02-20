@@ -1,8 +1,8 @@
 from celery import shared_task
-from channels import Group
+# from channels import Group
 from django.core.files import File
 from django.db import transaction
-from django.utils import timezone
+# from django.utils import timezone
 from django.conf import settings
 from lead.models import (
     Lead,
@@ -10,13 +10,13 @@ from lead.models import (
     LeadPreviewImage,
 )
 from redis_store import redis
-from rest_framework.renderers import JSONRenderer
+# from rest_framework.renderers import JSONRenderer
 from utils.extractor.file_document import FileDocument
 from utils.extractor.web_document import WebDocument
 from utils.extractor.thumbnailers import DocThumbnailer
-from utils.websocket.subscription import SubscriptionConsumer
+# from utils.websocket.subscription import SubscriptionConsumer
 
-import json
+# import json
 import reversion
 import os
 import re
@@ -161,7 +161,7 @@ def extract_thumbnail(lead_id):
 def send_lead_text_to_deepl(self, lead_id):
     lead = Lead.objects.filter(id=lead_id).first()
     if not lead:
-        logger.warn(
+        logger.warning(
             "Lead(id:{}) does not exist but send_lead_text_to_deepl() called.".
             format(lead_id)
         )
@@ -192,7 +192,7 @@ def send_lead_text_to_deepl(self, lead_id):
         return True
     except Exception as e:
         # Retry with exponential decay
-        logger.warn("Error while sending request to deepl. {}".format(
+        logger.warning("Error while sending request to deepl. {}".format(
             traceback.format_exc()))
         retry_countdown = 2 ** self.request.retries
         self.retry(countdown=retry_countdown)
@@ -226,24 +226,24 @@ def extract_from_lead(lead_id):
         # Send signal to all pending websocket clients
         # that the lead extraction has completed.
 
-        code = SubscriptionConsumer.encode({
-            'channel': 'leads',
-            'event': 'onPreviewExtracted',
-            'leadId': lead_id,
-        })
+        # code = SubscriptionConsumer.encode({
+        #     'channel': 'leads',
+        #     'event': 'onPreviewExtracted',
+        #     'leadId': lead_id,
+        # })
 
         # TODO: Discuss and decide the notification response format
         # Also TODO: Should a handler be added during subscription
         # to immediately reply with already extracted lead?
 
-        Group(code).send(json.loads(
-            JSONRenderer().render({
-                'code': code,
-                'timestamp': timezone.now(),
-                'type': 'notification',
-                'status': return_value,
-            }).decode('utf-8')
-        ))
+        # Group(code).send(json.loads(
+        #     JSONRenderer().render({
+        #         'code': code,
+        #         'timestamp': timezone.now(),
+        #         'type': 'notification',
+        #         'status': return_value,
+        #     }).decode('utf-8')
+        # ))
     except Exception:
         logger.error(traceback.format_exc())
         return_value = False

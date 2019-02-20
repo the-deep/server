@@ -27,7 +27,7 @@ class TestNotificationAPIs(TestCase):
 
         response = self.client.get(url, data)
         self.assert_200(response)
-        data = response.data
+        data = response.json()
         assert data['count'] == 1, "A notification created for join request"
         result = data['results'][0]
         assert 'receiver' in result

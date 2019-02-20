@@ -3,7 +3,7 @@ from rest_framework import (
     permissions,
     viewsets,
 )
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from django.db import models
 
 from deep.permissions import ModifyPermission
@@ -27,9 +27,11 @@ class UserGroupViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return UserGroup.get_for(self.request.user)
 
-    @list_route(permission_classes=[permissions.IsAuthenticated],
-                serializer_class=UserGroupSerializer,
-                url_path='member-of')
+    @action(
+        detail=False, permission_classes=[permissions.IsAuthenticated],
+        serializer_class=UserGroupSerializer,
+        url_path='member-of',
+    )
     def get_for_member(self, request, version=None):
         user = self.request.GET.get('user', self.request.user)
         user_groups = UserGroup.get_for_member(user)

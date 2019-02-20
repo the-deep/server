@@ -157,7 +157,7 @@ class SchemaGenerator:
 
         if is_custom_action(action):
             action_func = getattr(view, action)
-            slash_count = action_func.kwargs.get('url_path').count('/')
+            slash_count = action_func.url_path.count('/')
 
             if len(view.action_map) > 1:
                 action = self.default_mapping[method.lower()]

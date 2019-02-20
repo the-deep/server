@@ -95,7 +95,7 @@ class FileViewSet(viewsets.ModelViewSet):
                           ModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter)
-    filter_class = FileFilterSet
+    filterset_class = FileFilterSet
     search_fields = ('title', 'file')
 
     def get_queryset(self):
@@ -183,7 +183,7 @@ class MetaExtractionView(views.APIView):
         try:
             return response.Response(extraction_function(file.file))
         except Exception:
-            logger.warn("Exception while extracting file {}".format(file.id))
+            logger.warning("Exception while extracting file {}".format(file.id))
             raise exceptions.ValidationError({
                 'nonFieldErrors': [
                     "Can't get metadata. Check if the file has correct format."

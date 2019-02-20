@@ -55,7 +55,7 @@ def plot(*args, **kwargs):
     )
 
     if len(geoareas) == 0:
-        logger.warn('Empty geoareas found')
+        logger.warning('Empty geoareas found')
         return
 
     for geoarea in geoareas:

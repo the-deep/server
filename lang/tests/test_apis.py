@@ -90,5 +90,5 @@ class LangApiTests(TestCase):
         l2 = Link.objects.filter(id=l2.id).first()
         l3 = Link.objects.filter(id=l3.id).first()
         self.assertIsNone(l1)
-        self.assertEquals(l2.string, s3)
-        self.assertEquals(l3.string, s1)
+        self.assertEqual(l2.string, s3)
+        self.assertEqual(l3.string, s1)

@@ -7,6 +7,7 @@ import raven
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TEMP_DIR = '/tmp'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -180,9 +181,13 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PARSER_CLASSES': (
         'djangorestframework_camel_case.parser.CamelCaseJSONParser',
-        'rest_framework.parsers.FormParser',
-        'rest_framework.parsers.MultiPartParser',
+        'djangorestframework_camel_case.parser.CamelCaseFormParser',
+        'djangorestframework_camel_case.parser.CamelCaseMultiPartParser',
     ),
+    'JSON_UNDERSCOREIZE': {
+        'no_underscore_before_number': True,
+    },
+
     'DEFAULT_VERSIONING_CLASS':
         'rest_framework.versioning.URLPathVersioning',
     'DEFAULT_FILTER_BACKENDS': (
@@ -274,7 +279,7 @@ CHANNEL_REDIS_URL = os.environ.get('CHANNEL_REDIS_URL', 'redis://redis:6379')
 # CHANNELS CONFIG
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'BACKEND': 'asgi_redis.core.RedisChannelLayer',
         'CONFIG': {
             'hosts': [CHANNEL_REDIS_URL],
         },
@@ -282,7 +287,7 @@ CHANNEL_LAYERS = {
     },
 }
 
-ASGI_APPLICATION = "deep.routing.application"
+ASGI_APPLICATION = "deep.routing.channel_routing"
 
 TEST_DIR = os.path.join(BASE_DIR, 'deep/test_files')
 
