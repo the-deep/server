@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 class ReportExporter:
     def __init__(self):
         self.doc = Document(
-            os.path.join(settings.BASE_DIR, 'static/doc_export/template.docx')
+            os.path.join(settings.APPS_DIR, 'static/doc_export/template.docx')
         )
         self.lead_ids = []
 
