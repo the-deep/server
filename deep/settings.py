@@ -273,7 +273,7 @@ else:
     MEDIA_ROOT = '/media'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(APPS_DIR, 'static'),
 ]
 
 # CELERY CONFIG "redis://:{password}@{host}:{port}/{db}"

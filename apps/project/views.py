@@ -14,7 +14,7 @@ from rest_framework import (
     views,
     viewsets,
 )
-from rest_framework.decorators import action, action
+from rest_framework.decorators import action
 import django_filters
 
 from docs.utils import mark_as_list, mark_as_delete

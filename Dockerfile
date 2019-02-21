@@ -2,6 +2,8 @@ FROM ubuntu:18.04
 
 MAINTAINER togglecorp info@togglecorp.com
 
+ENV PYTHONUNBUFFERED 1
+
 # Update and install common packages with apt
 RUN apt-get update -y && apt-get install -y \
         # Basic Packages
