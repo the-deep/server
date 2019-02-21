@@ -132,18 +132,18 @@ class Field(models.Model):
         # Now iterate through every item to find empty/invalid values
         for i, value in enumerate(values):
             val = value['value']
+
+            value.pop('invalid', None)
+            value.pop('empty', None)
+            value.pop('processed_value', None)
+
             if val is None or val == '':
                 value['empty'] = True
-                value['invalid'] = False
                 continue
             casted = cast_func(val, **self.options)
 
-            value['invalid'] = False
-            value['empty'] = False
-
             if casted is None:
                 value['invalid'] = True
-                value['empty'] = False
             elif type == Field.GEO:
                 value['processed_value'] = casted['id']
                 regions[casted['region']] = casted['region_title']
