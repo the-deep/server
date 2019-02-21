@@ -46,7 +46,7 @@ class FieldSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Field
-        exclude = ('sheet',)
+        exclude = ('sheet', 'data')
 
     def get_geodata(self, obj):
         if obj.type == Field.GEO and hasattr(obj, 'geodata'):
@@ -62,6 +62,13 @@ class SheetSerializer(
         serializers.ModelSerializer
 ):
     fields = FieldSerializer(many=True, source='field_set', required=False)
+    data = serializers.SerializerMethodField()
+
+    def get_data(self, obj):
+        data = {'columns': {}}
+        for field in obj.field_set.all():
+            data['columns'][str(field.id)] = field.data
+        return data
 
     class Meta:
         model = Sheet
@@ -80,13 +87,14 @@ class BookSerializer(
         fields = '__all__'
 
 
+# TODO: Remove this as field model and serializer can handle this automatically
 class FieldDataSerializer(
         RemoveNullFieldsMixin,
         DynamicFieldsMixin,
         serializers.ModelSerializer
 ):
     field = serializers.SerializerMethodField()
-    field_data = serializers.SerializerMethodField()
+    field_data = serializers.JSONField(source='data')
 
     class Meta:
         model = Field
@@ -94,6 +102,3 @@ class FieldDataSerializer(
 
     def get_field(self, obj):
         return FieldSerializer(obj).data
-
-    def get_field_data(self, obj):
-        return obj.sheet.data.get('columns', {}).get(str(obj.id), [])

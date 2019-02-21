@@ -3,7 +3,10 @@ import csv
 from itertools import chain
 from ..models import Sheet, Field
 
+from utils.common import LogTime
 
+
+@LogTime()
 def extract(book):
     options = book.options if book.options else {}
     Sheet.objects.filter(book=book).delete()  # Delete all previous sheets
@@ -42,24 +45,20 @@ def extract(book):
         rows_iterator = chain(iter([first_row]), reader)\
             if no_headers else reader
 
-        sheet_columns = {}  # { '<field_id>': ['<column values>'...] }
-
+        fields_data = {}
         for _row in rows_iterator:
             try:
                 for index, field in enumerate(fields):
-                    fid = str(field.pk)
-                    # Insert field value to corresponding column
-                    col_vals = sheet_columns.get(fid, [])
-                    col_vals.append({
+                    field_data = fields_data.get(field.id, [])
+                    field_data.append({
                         'value': _row[index],
                         'invalid': False,
                         'empty': False,
                     })
-                    sheet_columns[fid] = col_vals
+                    fields_data[field.id] = field_data
             except Exception:
                 pass
 
-        sheet.data = {
-            'columns': sheet_columns
-        }
-        sheet.save()
+        for field in sheet.field_set.all():
+            field.data = fields_data.get(field.id, [])
+            field.save()

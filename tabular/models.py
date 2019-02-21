@@ -78,53 +78,7 @@ class Sheet(models.Model):
     title = models.CharField(max_length=255)
     book = models.ForeignKey(Book)
     options = JSONField(default=None, blank=True, null=True)
-    data = JSONField(default={})
     hidden = models.BooleanField(default=False)
-
-    def cast_data_to(self, field, geos_names={}, geos_codes={}):
-        """
-        Returns processed, invalid and empty values corresponding to the fields
-        after trying to cast
-        """
-        type = field.type
-        options = field.options
-
-        cast_func = get_cast_function(type, geos_names, geos_codes)
-
-        values = self.data.get('columns', {}).get(str(field.id), [])
-
-        regions = {}
-
-        # Now iterate through every item to find empty/invalid values
-        for i, value in enumerate(values):
-            val = value['value']
-            if val is None or val == '':
-                value['empty'] = True
-                value['invalid'] = False
-                continue
-            casted = cast_func(val, **field.options)
-
-            value['invalid'] = False
-            value['empty'] = False
-
-            if casted is None:
-                value['invalid'] = True
-                value['empty'] = False
-            elif type == Field.GEO:
-                value['processed_value'] = casted['id']
-                regions[casted['region']] = casted['region_title']
-            elif type == Field.NUMBER:
-                value['processed_value'] = casted[0]  # (number, separator)
-
-        if type == Field.GEO and regions:
-            options['regions'] = [
-                {'id': k, 'title': v} for k, v in regions.items()
-            ]
-
-        return {
-            'values': values,
-            'options': options
-        }
 
     def __str__(self):
         return self.title
@@ -153,6 +107,7 @@ class Field(models.Model):
     hidden = models.BooleanField(default=False)
     options = JSONField(default=None, blank=True, null=True)
     ordering = models.IntegerField(default=1)
+    data = JSONField(default=[])
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -160,6 +115,50 @@ class Field(models.Model):
 
     def __str__(self):
         return self.title
+
+    def cast_data(self, geos_names={}, geos_codes={}):
+        """
+        Returns processed, invalid and empty values corresponding to the fields
+        after trying to cast
+        """
+        type = self.type
+        options = self.options
+
+        cast_func = get_cast_function(type, geos_names, geos_codes)
+
+        values = self.data
+        regions = {}
+
+        # Now iterate through every item to find empty/invalid values
+        for i, value in enumerate(values):
+            val = value['value']
+
+            value.pop('invalid', None)
+            value.pop('empty', None)
+            value.pop('processed_value', None)
+
+            if val is None or val == '':
+                value['empty'] = True
+                continue
+            casted = cast_func(val, **self.options)
+
+            if casted is None:
+                value['invalid'] = True
+            elif type == Field.GEO:
+                value['processed_value'] = casted['id']
+                regions[casted['region']] = casted['region_title']
+            elif type == Field.NUMBER:
+                value['processed_value'] = casted[0]  # (number, separator)
+
+        if type == Field.GEO and regions:
+            options['regions'] = [
+                {'id': k, 'title': v} for k, v in regions.items()
+            ]
+
+        return {
+            'values': values,
+            'options': options
+        }
 
     def save(self, *args, **kwargs):
         if hasattr(self, 'geodata'):
