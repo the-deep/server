@@ -11,7 +11,6 @@ from gallery.models import File
 from geo.models import GeoArea, Region
 
 from project.models import Project
-from user.models import User
 
 from tabular.tasks import auto_detect_and_update_fields
 from tabular.extractor import csv
@@ -55,14 +54,14 @@ abc,10,john,14 Dber 29,Kathmandu
 abc,30,doe,10 Nevem 2018,'''
 
 
-def check_invalid(index, fid, columns):
-    assert 'invalid' in columns[fid][index]
-    assert columns[fid][index]['invalid'] is True
+def check_invalid(index, data):
+    assert 'invalid' in data[index]
+    assert data[index]['invalid'] is True
 
 
-def check_empty(index, fid, columns):
-    assert 'empty' in columns[fid][index]
-    assert columns[fid][index]['empty'] is True
+def check_empty(index, data):
+    assert 'empty' in data[index]
+    assert data[index]['empty'] is True
 
 
 class TestTabularExtraction(TestCase):
@@ -99,41 +98,31 @@ class TestTabularExtraction(TestCase):
 
         # Check for sheet invalid/empty values
         sheet = Sheet.objects.last()
-        data = sheet.data
-
-        assert 'columns' in data
-        columns = data['columns']
-
-        for k, v in columns.items():
-            for x in v:
-                assert isinstance(x, dict)
-                assert 'value' in x
 
         # now validate auto detected fields
         for field in Field.objects.filter(sheet=sheet):
-            fid = str(field.pk)
-            assert len(columns[fid]) == 10
+            assert len(field.data) == 10
 
             if field.title == 'id':
                 assert field.type == Field.NUMBER, 'id is number'
                 assert 'separator' in field.options
                 assert field.options['separator'] == 'none'
-                self.validate_number_field(columns[fid])
+                self.validate_number_field(field.data)
                 # Check invalid values
-                check_invalid(8, fid, columns)
-                check_invalid(9, fid, columns)
+                check_invalid(8, field.data)
+                check_invalid(9, field.data)
             elif field.title == 'age':
                 assert field.type == Field.NUMBER, 'age is number'
                 assert 'separator' in field.options
                 assert field.options['separator'] == 'none'
-                self.validate_number_field(columns[fid])
+                self.validate_number_field(field.data)
             elif field.title == 'name':
                 assert field.type == Field.STRING, 'name is string'
             elif field.title == 'date':
                 assert field.type == Field.DATETIME, 'date is datetime'
                 assert field.options is not None
                 assert 'date_format' in field.options
-                check_invalid(9, fid, columns)
+                check_invalid(9, field.data)
             elif field.title == 'place':
                 assert field.type == Field.GEO, 'place is geo'
                 assert field.options is not None
@@ -143,9 +132,9 @@ class TestTabularExtraction(TestCase):
                     assert 'id' in x
                     assert 'title' in x
 
-                check_invalid(6, fid, columns)
-                check_empty(7, fid, columns)
-                check_invalid(8, fid, columns)
+                check_invalid(6, field.data)
+                check_empty(7, field.data)
+                check_invalid(8, field.data)
 
     def test_auto_detection_inconsistent(self):
         """
@@ -156,21 +145,17 @@ class TestTabularExtraction(TestCase):
         auto_detect_and_update_fields(book)
 
         sheet = Sheet.objects.last()
-        data = sheet.data
-
-        assert 'columns' in data
-        columns = data['columns']
 
         # now validate auto detected fields
-        for field in Field.objects.all():
-            for v in columns[str(field.id)]:
+        for field in Field.objects.filter(sheet=sheet):
+            for v in field.data:
                 assert isinstance(v, dict)
 
             if field.title == 'id':
                 assert field.type == Field.STRING,\
                     'id is string as it is inconsistent'
                 # Verify that being string, no value is invalid
-                for v in columns[str(field.id)]:
+                for v in field.data:
                     assert not v.get('invalid'),\
                         "Since string, shouldn't be invalid"
             elif field.title == 'age':
@@ -213,13 +198,9 @@ class TestTabularExtraction(TestCase):
         if not geofield:
             return
 
-        sheet = Sheet.objects.last()
-        columns = sheet.data['columns']
-
         kathmandu_geo = GeoArea.objects.filter(code='KAT')[0]
 
-        fid = str(geofield.id)
-        for v in columns[fid]:
+        for v in geofield.data:
             assert v.get('invalid') or v.get('empty') or 'processed_value' in v
             assert 'value' in v
             assert v.get('empty') \
@@ -257,13 +238,9 @@ class TestTabularExtraction(TestCase):
         if not geofield:
             return
 
-        sheet = Sheet.objects.last()
-        columns = sheet.data['columns']
-
         kathmandu_geo = GeoArea.objects.filter(code='KAT')[0]
 
-        fid = str(geofield.id)
-        for v in columns[fid]:
+        for v in geofield.data:
             assert v.get('invalid') or v.get('empty') or 'processed_value' in v
             assert 'value' in v
             assert v.get('empty') \
@@ -290,12 +267,9 @@ class TestTabularExtraction(TestCase):
         field.type = Field.STRING
         field.save()
 
-        # Get sheet again, which should be updated
-        new_sheet = Sheet.objects.get(id=sheet.id)
-        columns = new_sheet.data['columns']
-
         # no vlaue should be invalid
-        for v in columns[str(field.id)]:
+        for v in field.data:
+            print(field.type, v['value'])
             assert not v.get('invalid', None)
 
     def test_sheet_data_change_on_string_change_to_geo(self):
@@ -322,12 +296,8 @@ class TestTabularExtraction(TestCase):
         field.options = {}
         field.save()
 
-        # Get sheet again, which should be updated
-        new_sheet = Sheet.objects.get(id=sheet.id)
-        columns = new_sheet.data['columns']
-
-        # no vlaue should be invalid
-        for v in columns[fid]:
+        # no value should be invalid
+        for v in field.data:
             assert not v.get('invalid')
         # Now change type to Geo
         field.type = Field.GEO
@@ -353,12 +323,10 @@ class TestTabularExtraction(TestCase):
         assert regions[0]['id'] == kat_geo.admin_level.region.id
 
         # Get sheet again, which should be updated
-        brand_new_sheet = Sheet.objects.get(id=sheet.id)
-        columns = brand_new_sheet.data['columns']
 
-        check_invalid(6, fid, columns)
-        check_empty(7, fid, columns)
-        check_invalid(8, fid, columns)
+        check_invalid(6, field.data)
+        check_empty(7, field.data)
+        check_invalid(8, field.data)
 
     def initialize_data_and_basic_test(self, csv_data):
         file = NamedTemporaryFile('w', dir=settings.MEDIA_ROOT, delete=False)
@@ -397,20 +365,13 @@ class TestTabularExtraction(TestCase):
 
         # check structure of data in sheet
         for sheet in book.sheet_set.all():
-            data = sheet.data
-            assert 'columns' in data
-            columns = data['columns']
-            assert isinstance(columns, dict)
-
-            # check col sizes, whichs should be same
-            colsizes = [len(v) for k, v in columns.items()]
-            if not colsizes:
-                continue
-            size = colsizes[0]
-            assert reduce(lambda a, x: x == size and a, colsizes, True), \
+            fields = sheet.field_set.all()
+            size = len(fields[0].data)
+            assert all([len(x.data) == size for x in fields]), \
                 "All columns should have same size"
 
-            for k, v in columns.items():
+            for field in fields:
+                v = field.data
                 assert isinstance(v, list)
                 for x in v:
                     assert 'value' in x

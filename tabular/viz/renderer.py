@@ -18,6 +18,15 @@ logger = logging.getLogger(__name__)
 
 def generate(title, series, data_type, chart_type='barchart'):
     val_column = 'processed_value' if data_type == 'geo' else 'value'
+
+    # NOTE: The folloing loop adds the keys empty and invalid if not present
+    # TODO: Handle the following case from pandas itself
+    for data in series:
+        if data.get('empty') is None:
+            data['empty'] = False
+        if data.get('invalid') is None:
+            data['invalid'] = False
+
     df = pd.DataFrame(series)
 
     if val_column not in df.columns:
@@ -73,7 +82,7 @@ def _add_image_to_gallery(image_name, image):
 def sheet_field_render(sheet, field_id):
     field = Field.objects.get(pk=field_id)
     title = field.title
-    series = sheet.data['columns'][str(field_id)]
+    series = field.data
     data_type = field.type
 
     image, chart_type = generate(title, series, data_type)

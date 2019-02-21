@@ -174,10 +174,14 @@ def excel_column_name(column_number):
 class LogTime:
     logger = logging.getLogger('profiling')
 
-    def __init__(self, log_file_name=None, block_name='', log_args=True):
-        self.log_file_name = log_file_name
+    def __init__(
+            self, block_name='', log_args=True,
+            args_accessor=identity, kwargs_accessor=identity
+    ):
         self.log_args = log_args
         self.block_name = block_name
+        self.args_accessor = args_accessor
+        self.kwargs_accessor = kwargs_accessor
 
     def __enter__(self):
         if settings.PROFILE:
@@ -187,7 +191,7 @@ class LogTime:
         if not settings.PROFILE:
             return
         end = time.time()
-        LogTime.logger.info("BLOCK: {} TIME {}ms".format(
+        LogTime.logger.info("BLOCK: {} TIME {}s.".format(
             self.block_name, end - self.start))
 
     def __call__(self, func_to_be_tracked):
@@ -200,11 +204,17 @@ class LogTime:
             end = time.time()
 
             fname = func_to_be_tracked.__name__
-            args = 'args: {}'.format(args) if self.log_args else ''
-            kwargs = 'kwargs: {}'.format(kwargs)[:75] if self.log_args else ''
 
-            log_message = "FUNCTION: '{}({} {})' : TIME {}ms.".format(
-                fname, args, kwargs, end - start)
+            str_args = 'args: {}'.format(
+                self.args_accessor(args)
+            )[:100] if self.log_args else ''
+
+            str_kwargs = 'kwargs: {}'.format(
+                self.kwargs_accessor(kwargs)
+            )[:100] if self.log_args else ''
+
+            log_message = "FUNCTION[{}]: '{}({}, {})' : TIME {}s.".format(
+                self.block_name, fname, str_args, str_kwargs, end - start)
 
             LogTime.logger.info(log_message)
 
