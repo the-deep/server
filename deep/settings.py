@@ -7,6 +7,7 @@ import raven
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+APPS_DIR = os.path.join(BASE_DIR, 'apps')
 TEMP_DIR = '/tmp'
 
 # Quick-start development settings - unsuitable for production
@@ -41,32 +42,7 @@ PROFILE = os.environ.get('PROFILE', 'false').lower() == 'true'
 
 # Application definition
 
-INSTALLED_APPS = [
-    # DJANGO APPS
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.messages',
-    'django.contrib.sessions',
-    'django.contrib.staticfiles',
-    'django.contrib.gis',
-    'django.contrib.postgres',
-
-    # LIBRARIES
-    'jsoneditor',
-    'autofixture',
-    'channels',
-    'corsheaders',
-    'crispy_forms',
-    'django_filters',
-    'djangorestframework_camel_case',
-    'drf_dynamic_fields',
-    'rest_framework',
-    'reversion',
-    'storages',
-    'django_premailer',
-    'raven.contrib.django.raven_compat',
-
+LOCAL_APPS = [
     # DEEP APPS
     'analysis_framework',
     'ary',
@@ -81,7 +57,6 @@ INSTALLED_APPS = [
     'lang',
     'lead',
     'organization',
-    'profiling',
     'project',
     'user',
     'user_group',
@@ -92,8 +67,42 @@ INSTALLED_APPS = [
 
     # MISC DEEP APPS
     'bulk_data_migration',
+    'profiling',
     'commons',
     'redis_store',
+    'jwt_auth',
+]
+
+INSTALLED_APPS = [
+    # DJANGO APPS
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.messages',
+    'django.contrib.sessions',
+    'django.contrib.staticfiles',
+    'django.contrib.gis',
+    'django.contrib.postgres',
+
+    # LIBRARIES
+    'autofixture',
+    'channels',
+    'corsheaders',
+    'crispy_forms',
+    'django_filters',
+    'djangorestframework_camel_case',
+    'drf_dynamic_fields',
+    'rest_framework',
+    'reversion',
+    'storages',
+    'django_premailer',
+    'raven.contrib.django.raven_compat',
+] + [
+    '{}.{}.apps.{}Config'.format(
+        APPS_DIR.split('/')[-1],
+        app,
+        ''.join([word.title() for word in app.split('_')]),
+    ) for app in LOCAL_APPS
 ]
 
 MIDDLEWARE = [
@@ -113,7 +122,7 @@ ROOT_URLCONF = 'deep.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': [os.path.join(APPS_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
