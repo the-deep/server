@@ -18,6 +18,15 @@ logger = logging.getLogger(__name__)
 
 def generate(title, series, data_type, chart_type='barchart'):
     val_column = 'processed_value' if data_type == 'geo' else 'value'
+
+    # NOTE: The folloing loop adds the keys empty and invalid if not present
+    # TODO: Handle the following case from pandas itself
+    for data in series:
+        if data.get('empty') is None:
+            data['empty'] = False
+        if data.get('invalid') is None:
+            data['invalid'] = False
+
     df = pd.DataFrame(series)
 
     if val_column not in df.columns:
