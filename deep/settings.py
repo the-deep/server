@@ -361,6 +361,7 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
             },
             'profiling': {
                 'handlers': ['ProfilingSysLog'],
+                'level': 'DEBUG',
                 'propagate': True,
             }
         },
