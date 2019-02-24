@@ -4,11 +4,15 @@ from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
 from utils.common import (
-    get_valid_xml_string as xstr,
+    get_valid_xml_string,
     parse_date,
     parse_time,
     parse_number,
 )
+
+
+def xstr(value):
+    return get_valid_xml_string(value, escape=False)
 
 
 class WorkBook:
