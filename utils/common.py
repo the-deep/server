@@ -271,7 +271,7 @@ def redis_lock(func):
             return_value = func(*args, **kwargs) or True
         except Exception:
             logger.error(
-                '********** {} **********\n{}'.format(
+                '** {} **\n{}'.format(
                     func.__name__,
                     traceback.format_exc(),
                 ),
