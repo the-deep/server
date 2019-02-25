@@ -31,11 +31,15 @@ def generate(title, series, data_type, chart_type='barchart'):
 
     if val_column not in df.columns:
         logger.warn('{} not present'.format(val_column))
-        return
+        return None, chart_type
 
     df = df[~(df['empty'] == True) & ~(df['invalid'] == True)]  # noqa
     data = df.groupby(val_column).count()['empty'].sort_values().to_frame()
     data = data.rename(columns={'empty': 'count', val_column: 'value'})
+
+    if data.emtpy:
+        logger.warn('Empty DataFrame: no numeric data to plot')
+        return None, chart_type
 
     params = {
         'x_label': title,
@@ -86,11 +90,14 @@ def sheet_field_render(sheet, field_id):
     data_type = field.type
 
     image, chart_type = generate(title, series, data_type)
-    file = _add_image_to_gallery(
-        'tabular_{}_{}'.format(sheet.id, field.id),
-        image,
-    )
-    field.options['images'] = [{'id': file.id, 'chart_type': chart_type}]
+    if image:
+        file = _add_image_to_gallery(
+            'tabular_{}_{}'.format(sheet.id, field.id),
+            image,
+        )
+        field.options['images'] = [{'id': file.id, 'chart_type': chart_type}]
+    else:
+        field.options['images'] = [{'id': None, 'chart_type': chart_type}]
     field.save()
     return field.options['images']
 
