@@ -112,6 +112,7 @@ class Field(models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.current_type = self.type
+        self.current_options = self.options
 
     def __str__(self):
         return self.title
@@ -165,6 +166,7 @@ class Field(models.Model):
             self.geodata.delete()
         super().save(*args, **kwargs)
         self.current_type = self.type
+        self.current_options = self.options
 
     def get_option(self, key, default_value=None):
         options = self.options or {}

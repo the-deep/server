@@ -15,7 +15,8 @@ def on_field_saved(sender, **kwargs):
     if not field.id:
         return
 
-    if field.type == field.current_type:
+    if field.type == field.current_type and \
+            field.options == field.current_options:
         return
 
     geos_names = geos_codes = {}

@@ -13,7 +13,6 @@ from .tasks import tabular_extract_book, tabular_extract_geo
 from .serializers import (
     BookSerializer, SheetSerializer,
     FieldSerializer, GeodataSerializer,
-    FieldDataSerializer,
 )
 
 
@@ -92,27 +91,3 @@ class TabularGeoProcessTriggerView(views.APIView):
         geodata.status = geodata.PENDING
         geodata.save()
         return response.Response({'geodata_id': geodata.pk})
-
-
-class TabularFieldUpdateView(views.APIView):
-    """
-    Custom API for updating field and returning data
-    """
-    permission_classes = [permissions.IsAuthenticated]
-
-    def put(self, request, version, field_id):
-        data = request.data
-
-        field = Field.objects.filter(id=field_id).first()
-
-        if field is None:
-            raise exceptions.NotFound()
-
-        serializer = FieldSerializer(data=data)
-        serializer.is_valid()
-
-        updated = serializer.update(field, data)
-        field_data_serializer = FieldDataSerializer(updated, context={
-            'request': request
-        })
-        return response.Response(field_data_serializer.data)
