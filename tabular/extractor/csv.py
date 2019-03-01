@@ -61,4 +61,6 @@ def extract(book):
 
         for field in sheet.field_set.all():
             field.data = fields_data.get(field.id, [])
-            field.save()
+            block_name = 'Field Save csv extract {}'.format(field.title)
+            with LogTime(block_name=block_name):
+                field.save()
