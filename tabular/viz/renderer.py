@@ -37,7 +37,7 @@ def generate(title, series, data_type, chart_type='barchart'):
     data = df.groupby(val_column).count()['empty'].sort_values().to_frame()
     data = data.rename(columns={'empty': 'count', val_column: 'value'})
 
-    if data.emtpy:
+    if data.empty:
         logger.warn('Empty DataFrame: no numeric data to plot')
         return None, chart_type
 
