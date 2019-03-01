@@ -1,8 +1,13 @@
 from openpyxl import load_workbook
 
 from ..models import Sheet, Field
+from datetime import datetime
 
-from utils.common import LogTime
+from utils.common import (
+    LogTime,
+    excel_to_python_date_format,
+    format_date_or_iso,
+)
 
 
 def get_cell_value(row, column):
@@ -81,7 +86,16 @@ def extract(book):
                             continue
                         value = _row[index].value
 
-                        if value is not None and not isinstance(value, str):
+                        if value is not None and isinstance(value, datetime):
+                            dateformat = _row[index].number_format
+                            # try casting to python format
+                            python_format = excel_to_python_date_format(
+                                dateformat
+                            )
+                            value = format_date_or_iso(
+                                _row[index].value, python_format
+                            )
+                        elif value is not None and not isinstance(value, str):
                             value = _row[index].internal_value
 
                         field_data = fields_data.get(field.id, [])
@@ -98,4 +112,6 @@ def extract(book):
             # Save field
             for field in sheet.field_set.all():
                 field.data = fields_data.get(field.id, [])
-                field.save()
+                block_name = 'Field Save xlsx extract {}'.format(field.title)
+                with LogTime(block_name=block_name):
+                    field.save()

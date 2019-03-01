@@ -298,3 +298,19 @@ def make_colormap(seq):
             cdict['green'].append([item, g1, g2])
             cdict['blue'].append([item, b1, b2])
     return mcolors.LinearSegmentedColormap('CustomMap', cdict)
+
+
+def excel_to_python_date_format(excel_format):
+    # TODO: support all formats
+    python_format = excel_format.replace('\\', '').\
+        replace('YYYY', '%Y').\
+        replace('MM', '%m').\
+        replace('DD', '%d')
+    return python_format
+
+
+def format_date_or_iso(date, format):
+    try:
+        return date.strftime(format)
+    except Exception:
+        return date.date().isoformat()
