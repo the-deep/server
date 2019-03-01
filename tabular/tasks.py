@@ -60,7 +60,11 @@ def auto_detect_and_update_fields(book):
                 cast_info = field.cast_data(geos_names, geos_codes)
                 field.data = cast_info['values']
                 field.options = cast_info['options']
-                field.save()
+                with LogTime(
+                        block_name='Field Save, size: {}, type: {}'.format(
+                            len(cast_info['values']), field.type
+                        )):
+                    field.save()
 
                 generate_column_columns.append([sheet.id, field.id])
 
