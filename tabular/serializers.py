@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
 
@@ -12,6 +13,7 @@ from user_resource.serializers import UserResourceSerializer
 from geo.serializers import SimpleRegionSerializer, Region, AdminLevel
 
 from .models import Book, Sheet, Field, Geodata
+from .tasks import tabular_generate_column_image
 
 
 class GeodataSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
@@ -46,12 +48,34 @@ class FieldSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Field
-        exclude = ('sheet',)
+        exclude = ('sheet', 'cache',)
 
     def get_geodata(self, obj):
         if obj.type == Field.GEO and hasattr(obj, 'geodata'):
             return GeodataSerializer(obj.geodata).data
         return None
+
+    def update(self, instance, validated_data):
+        validated_data['cache'] = {'status': Field.CACHE_PENDING}
+        instance = super().update(instance, validated_data)
+        transaction.on_commit(
+            lambda: tabular_generate_column_image.delay(instance.id)
+        )
+        return instance
+
+
+class FieldMetaSerializer(FieldSerializer):
+    geodata = None
+
+    class Meta:
+        model = Field
+        exclude = ('sheet', 'data', 'cache',)
+
+
+class FieldProcessedOnlySerializer(FieldSerializer):
+    class Meta:
+        model = Field
+        exclude = ('sheet', 'data',)
 
 
 class SheetSerializer(
@@ -68,6 +92,16 @@ class SheetSerializer(
         exclude = ('book',)
 
 
+class SheetMetaSerializer(SheetSerializer):
+    fields = FieldMetaSerializer(many=True, source='field_set', required=False)
+
+
+class SheetProcessedOnlySerializer(SheetSerializer):
+    fields = FieldProcessedOnlySerializer(
+        many=True, source='field_set', required=False,
+    )
+
+
 class BookSerializer(
         RemoveNullFieldsMixin,
         DynamicFieldsMixin,
@@ -78,3 +112,13 @@ class BookSerializer(
     class Meta:
         model = Book
         fields = '__all__'
+
+
+class BookMetaSerializer(BookSerializer):
+    sheets = SheetMetaSerializer(many=True, source='sheet_set', required=False)
+
+
+class BookProcessedOnlySerializer(BookSerializer):
+    sheets = SheetProcessedOnlySerializer(
+        many=True, source='sheet_set', required=False,
+    )
