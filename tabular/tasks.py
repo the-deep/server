@@ -10,7 +10,7 @@ from geo.models import models, GeoArea
 
 from utils.common import redis_lock, LogTime
 
-from .models import Book, Geodata, Sheet
+from .models import Book, Geodata, Field
 from .extractor import csv, xlsx
 from .viz.renderer import sheet_field_render
 from .utils import (
@@ -64,13 +64,14 @@ def auto_detect_and_update_fields(book):
                         block_name='Field Save, size: {}, type: {}'.format(
                             len(cast_info['values']), field.type
                         )):
+                    field.cache = {'status': Field.CACHE_PENDING}
                     field.save()
 
-                generate_column_columns.append([sheet.id, field.id])
+                generate_column_columns.append(field.id)
 
     # Start chart generation tasks
-    for sheet_id, field_id in generate_column_columns:
-        tabular_generate_column_image.s(sheet_id, field_id).delay()
+    for field_id in generate_column_columns:
+        tabular_generate_column_image.s(field_id).delay()
 
 
 def _tabular_meta_extract_geo(geodata):
@@ -117,12 +118,12 @@ def _tabular_meta_extract_geo(geodata):
 
 @shared_task
 @redis_lock
-def tabular_generate_column_image(sheet_id, field_id):
+def tabular_generate_column_image(field_id):
     try:
-        sheet = Sheet.objects.get(pk=sheet_id)
-        return sheet_field_render(sheet, field_id)
-    except Sheet.DoesNotExist:
-        logger.warn('Sheet ({}) doesn\'t exists'.format(sheet_id))
+        field = Field.objects.get(pk=field_id)
+        return sheet_field_render(field)
+    except Field.DoesNotExist:
+        logger.warn('Feild ({}) doesn\'t exists'.format(field_id))
 
 
 @shared_task

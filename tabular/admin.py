@@ -28,3 +28,5 @@ class SheetAdmin(VersionAdmin):
 @admin.register(Field)
 class FieldAdmin(VersionAdmin):
     inlines = [GeodataInline]
+    list_display = ('title', 'sheet', 'type',)
+    list_filter = ('type',)

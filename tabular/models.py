@@ -70,6 +70,12 @@ class Book(UserResource):
         elif self.url:
             return get_file_from_url(self.url)
 
+    def get_status(self):
+        return Field.objects.filter(
+            sheet__book=self,
+            cache__status=Field.CACHE_PENDING,
+        ).count() == 0
+
     def __str__(self):
         return self.title
 
@@ -85,6 +91,10 @@ class Sheet(models.Model):
 
 
 class Field(models.Model):
+    CACHE_PENDING = 'pending'
+    CACHE_SUCCESS = 'success'
+    CACHE_ERROR = 'error'
+
     NUMBER = 'number'
     STRING = 'string'
     DATETIME = 'datetime'
@@ -106,6 +116,7 @@ class Field(models.Model):
     )
     hidden = models.BooleanField(default=False)
     options = JSONField(default=None, blank=True, null=True)
+    cache = JSONField(default=dict, blank=True, null=True)
     ordering = models.IntegerField(default=1)
     data = JSONField(default=[])
 

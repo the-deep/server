@@ -18,7 +18,7 @@ from lead.models import Lead
 from lead.serializers import SimpleLeadSerializer
 
 from .models import (
-    Attribute, FilterData, ExportData, Entry
+    Attribute, FilterData, ExportData,
 )
 from .serializers import (
     EntrySerializer, AttributeSerializer,
