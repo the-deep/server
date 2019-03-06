@@ -145,4 +145,4 @@ def get_filtered_entries(user, queries):
                     filterdata__values__overlap=query,
                 )
 
-    return entries.order_by('-lead__created_by', 'lead')
+    return entries.order_by('-lead__created_by', 'lead', 'created_by')

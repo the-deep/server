@@ -77,8 +77,16 @@ class SimpleExportDataSerializer(RemoveNullFieldsMixin,
         fields = ('id', 'exportable', 'data')
 
 
+class EntryLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Lead
+        fields = ('id', 'title', 'created_at',)
+
+
 class EntrySerializer(RemoveNullFieldsMixin,
                       DynamicFieldsMixin, ProjectEntitySerializer):
+    lead = EntryLeadSerializer()
+
     attributes = ListToDictField(
         child=SimpleAttributeSerializer(many=True),
         key='widget',
