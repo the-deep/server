@@ -38,34 +38,48 @@ class EntryTests(TestCase):
 
     def create_entry_with_data_series(self):
         sheet = autofixture.create_one(Sheet, generate_fk=True)
+        series = [  # create some dummy values
+            {
+                'value': 'male', 'processed_value': 'male',
+                'invalid': False, 'empty': False
+            },
+            {
+                'value': 'female', 'processed_value': 'female',
+                'invalid': False, 'empty': False
+            },
+            {
+                'value': 'female', 'processed_value': 'female',
+                'invalid': False, 'empty': False
+            },
+        ]
+        cache_series = [
+            {'value': 'male', 'count': 1},
+            {'value': 'female', 'count': 2},
+        ]
+        health_stats = {
+            'invalid': 10,
+            'total': 20,
+            'empty': 10,
+        }
+
         field = autofixture.create_one(
             Field,
             field_values={
                 'sheet': sheet,
                 'title': 'Abrakadabra',
-                'type': Field.STRING
+                'type': Field.STRING,
+                'data': series,
+                'cache': {
+                    'status': Field.CACHE_SUCCESS,
+                    'series': cache_series,
+                    'health_stats': health_stats,
+                    'images': [],
+                },
             }
         )
-        data_series = {
-            'field_id': field.id,
-            'series': [  # create some dummy values
-                {
-                    'value': 'helo', 'processed_value': 'helo',
-                    'invalid': False, 'empty': False
-                },
-                {
-                    'value': 'namaskar', 'processed_value': 'namaskar',
-                    'invalid': False, 'empty': False
-                },
-                {
-                    'value': 'hola', 'processed_value': 'hola',
-                    'invalid': False, 'empty': False
-                },
-            ]
-        }
 
         entry = self.create_entry(
-            data_series=data_series, entry_type=Entry.DATA_SERIES
+            tabular_field=field, entry_type=Entry.DATA_SERIES
         )
         return entry, field
 
@@ -292,7 +306,7 @@ class EntryTests(TestCase):
         response = self.client.get(url)
         self.assert_200(response)
 
-        self.assertEqual(len(response.data['results']['entries']), count)
+        self.assertEqual(len(response.data['results']), count)
 
     def post_filter_test(self, filters, count=1):
         url = '/api/v1/entries/filter/'
@@ -304,7 +318,7 @@ class EntryTests(TestCase):
         response = self.client.post(url, params)
         self.assert_200(response)
 
-        self.assertEqual(len(response.data['results']['entries']), count)
+        self.assertEqual(len(response.data['results']), count)
 
     def both_filter_test(self, filters, count=1):
         self.filter_test(filters, count)
