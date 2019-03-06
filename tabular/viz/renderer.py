@@ -72,7 +72,7 @@ def generate(title, series, data_type, chart_type='barchart'):
     data['value'] = data.index
     return image, chart_type, {
         'series': data.to_dict(orient='records'),
-        'healthStat': {
+        'health_stats': {
             'empty': int(df[df['empty'] == True]['empty'].count()), # noqa
             'invalid': int(df[df['invalid'] == True]['invalid'].count()), # noqa
             'total': int(df[val_column].count()),
@@ -104,9 +104,9 @@ def sheet_field_render(field):
     try:
         # Move preprocessing to seperate task
         image, chart_type, processed_data = generate(title, series, data_type)
-        field.cache['status'] = Field.CACHE_SUCCESS
+        status = Field.CACHE_SUCCESS
     except Exception:
-        field.cache['status'] = Field.CACHE_ERROR
+        status = Field.CACHE_ERROR
         logger.error(
             'Failed to calculate processed data for field({})'.format(
                 field.id,
@@ -119,41 +119,30 @@ def sheet_field_render(field):
             'tabular_{}_{}'.format(field.sheet.id, field.id),
             image,
         )
-        field.cache['images'] = [{'id': file.id, 'chart_type': chart_type}]
+        images = [{'id': file.id, 'chart_type': chart_type}]
     else:
-        field.cache['images'] = [{'id': None, 'chart_type': chart_type}]
-    field.cache['series'] = processed_data.get('series', [])
-    field.cache['healthStat'] = processed_data.get('healthStat')
+        images = [{'id': None, 'chart_type': chart_type}]
+    field.cache = {
+        'status': status,
+        'series': processed_data.get('series', []),
+        'health_stats': processed_data.get('health_stats'),
+        'images': images,
+    }
     field.save()
     return field.cache['images']
 
 
 def get_entry_image(entry):
     """
-    Render Graph for given entry
+    Use cached Graph for given entry
     """
-    ds = entry.data_series
-    images = ds.get('options', {}).get('images', [])
-    if len(images) > 0:
-        if not images[0].get('id'):
-            return None
-        image = File.objects.get(pk=images[0].get('id')).file
-    else:
-        title = ds.get('title')
-        series = ds.get('data', [])
-        data_type = ds.get('type')
-        image, chart_type, _ = generate(title, series, data_type)
-        if image:
-            file = _add_image_to_gallery(
-                'tabular_entry_{}'.format(entry.id),
-                image,
-            )
-            entry.data_series['options']['images'] = [
-                {'id': file.id, 'chart_type': chart_type},
-            ]
-        else:
-            entry.data_series['options']['image_id'] = [
-                {'id': None, 'chart_type': chart_type},
-            ]
-        entry.save()
-    return image
+    if not entry.tabular_field:
+        return None
+
+    field = entry.tabular_field
+
+    images = field.cache.get('images')
+    if not images or not len(images) > 0 or not images[0].get('id'):
+        return None
+    file_id = images[0].get('id')
+    return File.objects.get(pk=file_id).file

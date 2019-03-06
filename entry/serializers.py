@@ -6,14 +6,16 @@ from deep.serializers import (
     ListToDictField,
 )
 from project.serializers import ProjectEntitySerializer
+from project.models import Project
 from lead.serializers import LeadSerializer
 from lead.models import Lead
 from analysis_framework.serializers import AnalysisFrameworkSerializer
 from geo.serializers import SimpleRegionSerializer
+from tabular.serializers import FieldProcessedOnlySerializer
+
 from .models import (
     Entry, Attribute, FilterData, ExportData
 )
-from project.models import Project
 from .utils import validate_image_for_entry
 
 
@@ -85,8 +87,6 @@ class EntryLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
 
 class EntrySerializer(RemoveNullFieldsMixin,
                       DynamicFieldsMixin, ProjectEntitySerializer):
-    lead = EntryLeadSerializer()
-
     attributes = ListToDictField(
         child=SimpleAttributeSerializer(many=True),
         key='widget',
@@ -102,7 +102,7 @@ class EntrySerializer(RemoveNullFieldsMixin,
     class Meta:
         model = Entry
         fields = ('id', 'lead', 'analysis_framework', 'project',
-                  'entry_type', 'excerpt', 'image', 'data_series',
+                  'entry_type', 'excerpt', 'image', 'tabular_field',
                   'information_date', 'attributes', 'order', 'client_id',
                   'created_at', 'created_by', 'modified_at', 'modified_by',
                   'version_id')
@@ -133,10 +133,20 @@ class EntrySerializer(RemoveNullFieldsMixin,
         return entry
 
 
+class EntryProccesedSerializer(EntrySerializer):
+    tabular_field = FieldProcessedOnlySerializer()
+
+
+class EntryRetriveSerializer(EntrySerializer):
+    lead = EntryLeadSerializer()
+
+
 class EditEntriesDataSerializer(RemoveNullFieldsMixin,
                                 serializers.ModelSerializer):
     lead = LeadSerializer(source='*', read_only=True)
-    entries = EntrySerializer(source='entry_set', many=True, read_only=True)
+    entries = EntrySerializer(
+        source='entry_set', many=True, read_only=True,
+    )
     analysis_framework = AnalysisFrameworkSerializer(
         source='project.analysis_framework',
         read_only=True,

@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models.functions import Cast
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from rest_framework.decorators import list_route
 from rest_framework import (
     filters,
     generics,
@@ -19,8 +18,12 @@ from .models import (
     Attribute, FilterData, ExportData,
 )
 from .serializers import (
-    EntrySerializer, AttributeSerializer,
-    FilterDataSerializer, ExportDataSerializer,
+    EntrySerializer,
+    EntryRetriveSerializer,
+    EntryProccesedSerializer,
+    AttributeSerializer,
+    FilterDataSerializer,
+    ExportDataSerializer,
     EditEntriesDataSerializer,
 )
 from .filter_set import EntryFilterSet, get_filtered_entries
@@ -45,12 +48,27 @@ class EntryViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return get_filtered_entries(self.request.user, self.request.GET)
 
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return EntryRetriveSerializer
+        return super().get_serializer_class()
+
+    @list_route(
+        url_path='processed',
+        serializer_class=EntryProccesedSerializer,
+    )
+    def get_proccessed_entries(self, request, version=None):
+        entries = self.get_queryset()
+        self.page = self.paginate_queryset(entries)
+        serializer = self.get_serializer(self.page, many=True)
+        return self.get_paginated_response(serializer.data)
+
 
 class EntryFilterView(generics.GenericAPIView):
     """
     Entry view for getting entries based filters in POST body
     """
-    serializer_class = EntrySerializer
+    serializer_class = EntryProccesedSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, version=None):
@@ -72,17 +90,12 @@ class EntryFilterView(generics.GenericAPIView):
                 title__icontains=search,
                 **field_filters
             )
-            queryset = queryset.annotate(
-                field_id=Cast(
-                    KeyTextTransform('field_id', 'data_series'),
-                    models.IntegerField()
-                )
-            ).filter(
+            queryset = queryset.filter(
                 models.Q(lead__title__icontains=search) |
                 models.Q(excerpt__icontains=search) |
                 (
                     models.Q(
-                        field_id__in=models.Subquery(
+                        tabular_field__in=models.Subquery(
                             fields.values_list('pk', flat=True))
                     )
                 )

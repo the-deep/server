@@ -24,7 +24,7 @@ class Entry(UserResource, ProjectEntityMixin):
 
     EXCERPT = 'excerpt'
     IMAGE = 'image'
-    DATA_SERIES = 'dataSeries'
+    DATA_SERIES = 'dataSeries'  # NOTE: data saved as tabular_field id
 
     ENTRY_TYPES = (
         (EXCERPT, 'Excerpt'),
@@ -46,8 +46,10 @@ class Entry(UserResource, ProjectEntityMixin):
     )
     excerpt = models.TextField(blank=True)
     image = models.TextField(blank=True)
-    data_series = JSONField(default=None,
-                            blank=True, null=True)
+    tabular_field = models.ForeignKey(
+        'tabular.Field', on_delete=models.CASCADE,
+        null=True, blank=True,
+    )
 
     def __str__(self):
         if self.entry_type == Entry.IMAGE:
