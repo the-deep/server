@@ -12,7 +12,10 @@ from utils.common import redis_lock, LogTime
 
 from .models import Book, Geodata, Field
 from .extractor import csv, xlsx
-from .viz.renderer import sheet_field_render
+from .viz.renderer import (
+    calc_preprocessed_data,
+    render_field_chart,
+)
 from .utils import (
     get_geos_dict,
     sample_and_detect_type_and_options,
@@ -115,26 +118,35 @@ def _tabular_meta_extract_geo(geodata):
     return True
 
 
-def _tabular_generate_column_image(field_id):
+def _tabular_render_field_chart(field):
+    pass
+
+
+def _tabular_calc_preprocessed_data(field_id):
     try:
         field = Field.objects.get(pk=field_id)
-        return sheet_field_render(field)
+        return calc_preprocessed_data(field)
     except Field.DoesNotExist:
-        logger.warn('Feild ({}) doesn\'t exists'.format(field_id))
-
-
-@shared_task
-def tabular_generate_columns_image(fields_id):
-    print('Total Number of Fields: {}'.format(len(fields_id)))
-    for field_id in fields_id:
-        print('Processing for field id {}'.format(field_id))
-        _tabular_generate_column_image(field_id)
+        logger.warn('Field ({}) doesn\'t exists'.format(field_id))
 
 
 @shared_task
 @redis_lock
 def tabular_generate_column_image(field_id):
-    return _tabular_generate_column_image(field_id)
+    try:
+        field = Field.objects.get(pk=field_id)
+        calc_preprocessed_data(field)
+        return render_field_chart(field)
+    except Field.DoesNotExist:
+        logger.warn('Field ({}) doesn\'t exists'.format(field_id))
+
+
+@shared_task
+def tabular_generate_columns_image(fields_id):
+    for field in Field.objects.filter(pk__in=fields_id):
+        calc_preprocessed_data(field)
+    for field in Field.objects.filter(pk__in=fields_id):
+        render_field_chart(field)
 
 
 @shared_task
