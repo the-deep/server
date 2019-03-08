@@ -33,7 +33,6 @@ class RemoveNullFieldsMixin:
     def to_internal_value(self, data):
         # Change None char fields to blanks
         # TODO: Handle list and dict of charfields as well
-        print(data)
         for field, field_type in self.fields.items():
             if isinstance(field_type, serializers.CharField):
                 if field in data and not data.get(field):
