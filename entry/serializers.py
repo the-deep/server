@@ -141,6 +141,11 @@ class EntryRetriveSerializer(EntrySerializer):
     lead = EntryLeadSerializer()
 
 
+class EntryRetriveProccesedSerializer(EntrySerializer):
+    lead = EntryLeadSerializer()
+    tabular_field = FieldProcessedOnlySerializer()
+
+
 class EditEntriesDataSerializer(RemoveNullFieldsMixin,
                                 serializers.ModelSerializer):
     lead = LeadSerializer(source='*', read_only=True)
