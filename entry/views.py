@@ -21,6 +21,7 @@ from .serializers import (
     EntrySerializer,
     EntryRetriveSerializer,
     EntryProccesedSerializer,
+    EntryRetriveProccesedSerializer,
     AttributeSerializer,
     FilterDataSerializer,
     ExportDataSerializer,
@@ -68,7 +69,7 @@ class EntryFilterView(generics.GenericAPIView):
     """
     Entry view for getting entries based filters in POST body
     """
-    serializer_class = EntryProccesedSerializer
+    serializer_class = EntryRetriveProccesedSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, version=None):
