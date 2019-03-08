@@ -1,21 +1,22 @@
 from django.contrib import admin
-from reversion.admin import VersionAdmin
 from analysis_framework.models import (
     AnalysisFramework,
     Widget, Filter,
     Exportable,
 )
 
+from deep.admin import VersionAdmin, StackedInline
 
-class WidgetInline(admin.StackedInline):
+
+class WidgetInline(StackedInline):
     model = Widget
 
 
-class FilterInline(admin.StackedInline):
+class FilterInline(StackedInline):
     model = Filter
 
 
-class ExportableInline(admin.StackedInline):
+class ExportableInline(StackedInline):
     model = Exportable
 
 

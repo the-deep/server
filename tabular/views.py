@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import transaction
+from rest_framework.decorators import detail_route
 from rest_framework import (
     viewsets,
     exceptions,
@@ -11,8 +12,12 @@ from rest_framework import (
 from .models import Book, Sheet, Field, Geodata
 from .tasks import tabular_extract_book, tabular_extract_geo
 from .serializers import (
-    BookSerializer, SheetSerializer,
-    FieldSerializer, GeodataSerializer,
+    BookSerializer,
+    BookMetaSerializer,
+    BookProcessedOnlySerializer,
+    SheetSerializer,
+    FieldSerializer,
+    GeodataSerializer,
 )
 
 
@@ -20,6 +25,24 @@ class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return BookMetaSerializer
+        return super().get_serializer_class()
+
+    @detail_route(
+        url_path='processed',
+        serializer_class=BookProcessedOnlySerializer,
+    )
+    def get_processed_only(self, request, pk=None, version=None):
+        instance = self.get_object()
+        if instance.get_status():
+            serializer = self.get_serializer(instance)
+            return response.Response(serializer.data)
+        return response.Response({
+            'status': Field.CACHE_PENDING,
+        })
 
 
 class SheetViewSet(viewsets.ModelViewSet):

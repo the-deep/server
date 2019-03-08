@@ -21,6 +21,9 @@ class CustomUserAdmin(UserAdmin):
         'get_organization', 'get_language',
     )
     list_select_related = ('profile', )
+    list_filter = UserAdmin.list_filter + (
+        'profile__is_experimental', 'profile__is_early_access',
+    )
 
     def get_organization(self, instance):
         return instance.profile.organization

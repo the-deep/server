@@ -1,5 +1,7 @@
 from django.contrib import admin
-from reversion.admin import VersionAdmin
+
+from deep.admin import VersionAdmin
+
 from .models import Book, Sheet, Field, Geodata
 
 
@@ -28,3 +30,5 @@ class SheetAdmin(VersionAdmin):
 @admin.register(Field)
 class FieldAdmin(VersionAdmin):
     inlines = [GeodataInline]
+    list_display = ('title', 'sheet', 'type',)
+    list_filter = ('type',)
