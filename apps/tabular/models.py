@@ -103,6 +103,11 @@ class Field(models.Model):
     DATETIME = 'datetime'
     GEO = 'geo'
 
+    CACHE_STATUS_TYPES = (
+        (CACHE_PENDING, 'Pending'),
+        (CACHE_SUCCESS, 'Success'),
+        (CACHE_ERROR, 'Error'),
+    )
     FIELD_TYPES = (
         (NUMBER, 'Number'),
         (STRING, 'String'),
@@ -121,7 +126,7 @@ class Field(models.Model):
     options = JSONField(default=None, blank=True, null=True)
     cache = JSONField(default=dict, blank=True, null=True)
     ordering = models.IntegerField(default=1)
-    data = JSONField(default=[])
+    data = JSONField(default=list)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
