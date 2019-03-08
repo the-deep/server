@@ -1,4 +1,5 @@
 import os
+import sys
 import celery
 import raven
 from raven.contrib.celery import register_signal, register_logger_signal
@@ -17,6 +18,7 @@ class Celery(celery.Celery):
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'deep.settings')
+sys.path.append(settings.APPS_DIR)
 
 app = Celery('deep')
 

@@ -43,7 +43,7 @@ def process(doc, url):
 
     for img in html_body.reverse_tags(html_body.html, 'img'):
         try:
-            fp = tempfile.NamedTemporaryFile(dir=settings.BASE_DIR)
+            fp = tempfile.NamedTemporaryFile(dir=settings.TEMP_DIR)
             img_src = urljoin(url, img.get('src'))
             if re.search(r'http[s]?://', img_src):
                 r = requests.get(img_src, stream=True)
