@@ -103,6 +103,11 @@ class Field(models.Model):
     DATETIME = 'datetime'
     GEO = 'geo'
 
+    CACHE_STATUS_TYPES = (
+        (CACHE_PENDING, 'Pending'),
+        (CACHE_SUCCESS, 'Success'),
+        (CACHE_ERROR, 'Error'),
+    )
     FIELD_TYPES = (
         (NUMBER, 'Number'),
         (STRING, 'String'),
