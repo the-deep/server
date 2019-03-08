@@ -311,7 +311,7 @@ class EntryTests(TestCase):
         self.assert_200(response)
 
         r_data = response.json()
-        self.assertEqual(len(r_data['results']['entries']), count)
+        self.assertEqual(len(r_data['results']), count)
 
     def post_filter_test(self, filters, count=1):
         url = '/api/v1/entries/filter/'
@@ -324,7 +324,7 @@ class EntryTests(TestCase):
         self.assert_200(response)
 
         r_data = response.json()
-        self.assertEqual(len(r_data['results']['entries']), count)
+        self.assertEqual(len(r_data['results']), count)
 
     def both_filter_test(self, filters, count=1):
         self.filter_test(filters, count)
