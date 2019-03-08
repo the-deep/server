@@ -14,70 +14,103 @@ from tabular.viz import (
 logger = logging.getLogger(__name__)
 
 
-def generate(title, series, data_type, chart_type='barchart'):
-    val_column = 'processed_value' if data_type == 'geo' else 'value'
+def DEFAULT_CHART_RENDER(*args, **kwargs):
+    return None
 
-    if data_type == 'geo':
-        chart_type = 'map'
-    elif data_type == 'number':
-        chart_type = 'histograms'
+
+CHART_RENDER = {
+    # frequency data required
+    'barchart': barchart.plot,
+    'barcharth': lambda *args, **kwargs: barchart.plot(*args, **kwargs, horizontal=True),
+    'map': mapViz.plot,
+
+    # Frequency data not required
+    'histograms': histograms.plot,
+    'wordcloud': wordcloud.plot,
+}
+
+
+def clean_real_data(data, val_column):
+    """
+    Return clean_dataframe, original_dataframe
+    """
 
     # NOTE: The folloing loop adds the keys empty and invalid if not present
     # TODO: Handle the following case from pandas itself
-    for data in series:
-        if data.get('empty') is None:
-            data['empty'] = False
-        if data.get('invalid') is None:
-            data['invalid'] = False
+    for datum in data:
+        if datum.get('empty') is None:
+            datum['empty'] = False
+        if datum.get('invalid') is None:
+            datum['invalid'] = False
 
-    df = pd.DataFrame(series)
+    df = pd.DataFrame(data)
+    filterd_df = df[~(df['empty'] == True) & ~(df['invalid'] == True)]  # noqa
+    return filterd_df, df
 
-    if val_column not in df.columns:
+
+def calc_data(field):
+    val_column = 'processed_value' if field.type == 'geo' else 'value'
+
+    data, df = clean_real_data(field.data, val_column)
+
+    if val_column not in data.columns:
         logger.warning('{} not present'.format(val_column))
-        return None, chart_type
+        return None, {}
 
-    data = df[~(df['empty'] == True) & ~(df['invalid'] == True)]  # noqa
     data = data.groupby(val_column).count()['empty'].sort_values().to_frame()
     data = data.rename(columns={'empty': 'count', val_column: 'value'})
 
     if data.empty:
-        logger.warn('Empty DataFrame: no numeric data to plot')
-        return None, chart_type, None
+        logger.warn('Empty DataFrame: no numeric data to calculate')
+        return [], {}
+
+    data['value'] = data.index
+    health_stats = {
+        'empty': int(df[df['empty'] == True]['empty'].count()), # noqa
+        'invalid': int(df[df['invalid'] == True]['invalid'].count()), # noqa
+        'total': int(df[val_column].count()),
+    }
+    return data.to_dict(orient='records'), health_stats
+
+
+def generate_chart(field, chart_type='barchart'):
+    val_column = 'processed_value' if field.type == 'geo' else 'value'
+
+    if field.type == 'geo':
+        chart_type = 'map'
+    elif field.type == 'number':
+        chart_type = 'histograms'
 
     params = {
-        'x_label': title,
+        'x_label': field.title,
         'y_label': None,
-        'data': data,
         'chart_size': (8, 4),
     }
 
-    image = None
-    # frequency data required
-    if (chart_type == 'barchart'):
-        image = barchart.plot(**params)
-    elif (chart_type == 'barcharth'):
-        image = barchart.plot(**params, horizontal=True)
-    elif (chart_type == 'map'):
-        image = mapViz.plot(**params)
+    if chart_type not in ['histograms', 'wordcloud']:
+        df = pd.DataFrame(field.cache.get('series'))
+        df.set_index('value', inplace=True)
+        params['data'] = df
+    else:
+        df, _ = clean_real_data(field.data, val_column)
+        if chart_type == 'histograms':
+            params['data'] = pd.to_numeric(df[val_column])
+        elif chart_type == 'wordcloud':
+            params['data'] = ' '.join(df[val_column].values)
 
-    # Frequency data not required
-    elif (chart_type == 'histograms'):
-        df[val_column] = pd.to_numeric(df[val_column])
-        params['data'] = df[val_column]
-        image = histograms.plot(**params)
-    elif (chart_type == 'wordcloud'):
-        params['data'] = ' '.join(df['value'].values)
-        image = wordcloud.plot(**params)
+    if isinstance(params['data'], pd.DataFrame) and params['data'].empty:
+        logger.warn('Empty DataFrame: no numeric data to plot')
+        return None, {}
 
-    data['value'] = data.index
-    return image, chart_type, {
-        'series': data.to_dict(orient='records'),
-        'health_stats': {
-            'empty': int(df[df['empty'] == True]['empty'].count()), # noqa
-            'invalid': int(df[df['invalid'] == True]['invalid'].count()), # noqa
-            'total': int(df[val_column].count()),
-        },
-    }
+    chart_render = CHART_RENDER.get(chart_type)
+    if chart_render:
+        try:
+            image = chart_render(**params)
+        except Exception:
+            logger.error('Tabular Chart Render Error', exc_info=1)
+            return None, chart_type
+        return image, chart_type
+    return None, chart_type
 
 
 def _add_image_to_gallery(image_name, image):
@@ -93,26 +126,36 @@ def _add_image_to_gallery(image_name, image):
     return file
 
 
-def sheet_field_render(field):
+def calc_preprocessed_data(field):
     """
-    Prerender Graphs and save normalized data to field
+    Save normalized data to field
     """
-    title = field.title
-    series = field.data
-    data_type = field.type
-
     try:
-        # Move preprocessing to seperate task
-        image, chart_type, processed_data = generate(title, series, data_type)
-        status = Field.CACHE_SUCCESS
+        series, health_stats = calc_data(field)
+        cache = {
+            'status': Field.CACHE_SUCCESS,
+            'series': series,
+            'health_stats': health_stats,
+        }
     except Exception:
-        status = Field.CACHE_ERROR
+        cache = {'status': Field.CACHE_ERROR}
         logger.error(
             'Failed to calculate processed data for field({})'.format(
                 field.id,
             ),
             exc_info=1,
         )
+
+    field.cache = cache
+    field.save()
+    return field.cache['status']
+
+
+def render_field_chart(field):
+    """
+    Save normalized data to field
+    """
+    image, chart_type = generate_chart(field)
 
     if image:
         file = _add_image_to_gallery(
@@ -122,12 +165,7 @@ def sheet_field_render(field):
         images = [{'id': file.id, 'chart_type': chart_type}]
     else:
         images = [{'id': None, 'chart_type': chart_type}]
-    field.cache = {
-        'status': status,
-        'series': processed_data.get('series', []),
-        'health_stats': processed_data.get('health_stats'),
-        'images': images,
-    }
+    field.cache['images'] = images
     field.save()
     return field.cache['images']
 
