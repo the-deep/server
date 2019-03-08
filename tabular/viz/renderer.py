@@ -36,8 +36,8 @@ def generate(title, series, data_type, chart_type='barchart'):
         logger.warn('{} not present'.format(val_column))
         return None, chart_type, None
 
-    df = df[~(df['empty'] == True) & ~(df['invalid'] == True)]  # noqa
-    data = df.groupby(val_column).count()['empty'].sort_values().to_frame()
+    data = df[~(df['empty'] == True) & ~(df['invalid'] == True)]  # noqa
+    data = data.groupby(val_column).count()['empty'].sort_values().to_frame()
     data = data.rename(columns={'empty': 'count', val_column: 'value'})
 
     if data.empty:

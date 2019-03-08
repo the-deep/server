@@ -101,11 +101,7 @@ class EntrySerializer(RemoveNullFieldsMixin,
 
     class Meta:
         model = Entry
-        fields = ('id', 'lead', 'analysis_framework', 'project',
-                  'entry_type', 'excerpt', 'image', 'tabular_field',
-                  'information_date', 'attributes', 'order', 'client_id',
-                  'created_at', 'created_by', 'modified_at', 'modified_by',
-                  'version_id')
+        fields = '__all__'
 
     def create(self, validated_data):
         if validated_data.get('project') is None:
@@ -134,7 +130,7 @@ class EntrySerializer(RemoveNullFieldsMixin,
 
 
 class EntryProccesedSerializer(EntrySerializer):
-    tabular_field = FieldProcessedOnlySerializer()
+    tabular_field_data = FieldProcessedOnlySerializer(source='tabular_field')
 
 
 class EntryRetriveSerializer(EntrySerializer):
@@ -143,7 +139,7 @@ class EntryRetriveSerializer(EntrySerializer):
 
 class EntryRetriveProccesedSerializer(EntrySerializer):
     lead = EntryLeadSerializer()
-    tabular_field = FieldProcessedOnlySerializer()
+    tabular_field_data = FieldProcessedOnlySerializer(source='tabular_field')
 
 
 class EditEntriesDataSerializer(RemoveNullFieldsMixin,

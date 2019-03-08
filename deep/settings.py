@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
 
     # LIBRARIES
+    'jsoneditor',
     'autofixture',
     'channels',
     'corsheaders',
@@ -119,6 +120,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'deep.context_processor.deep',
             ],
         },
     },
@@ -256,6 +258,9 @@ else:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = '/media'
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
 # CELERY CONFIG "redis://:{password}@{host}:{port}/{db}"
 CELERY_REDIS_URL = os.environ.get('CELERY_REDIS_URL', 'redis://redis:6379')
@@ -489,3 +494,5 @@ DEEPL_API = DEEPL_DOMAIN + '/api'
 # Token timeout days
 TOKEN_DEFAULT_RESET_TIMEOUT_DAYS = 7
 PROJECT_REQUEST_RESET_TIMEOUT_DAYS = 7
+
+JSON_EDITOR_INIT_JS = "js/jsoneditor-init.js"
