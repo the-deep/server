@@ -1,3 +1,4 @@
+import re
 import random
 from datetime import datetime
 from dateparser import parse as dateparse
@@ -23,7 +24,10 @@ DATE_FORMATS = [
     '%d.%b.%Y',
 
     '%Y %b %d',  # 2019 Jan 12
+    '%Y-%b-%d',  # 2019-Jan-12
+    '%Y/%b/%d',  # 2019/Jan/12
     '%Y %B %d',  # 2019 January 12
+    '%Y-%B-%d',  # 2019-January-12
     '%d %B %Y',  # 12 January 2019
 
     '%d-%m-%Y',
@@ -31,6 +35,10 @@ DATE_FORMATS = [
     '%d.%m.%Y',
     '%d %m %Y',
 ]
+
+COMMA_SEPARATED_NUMBER = re.compile(r'^(\d{1,3})(,\d{3})*(\.\d+)?$')
+SPACE_SEPARATED_NUMBER = re.compile(r'^(\d{1,3})( \d{3})*(\.\d+)?$')
+DOT_SEPARATED_NUMBER = re.compile(r'^(\d{1,3})(\.\d{3})*(,\d+)?$')
 
 
 def parse_number(val, **kwargs):
@@ -66,6 +74,8 @@ def parse_none_separated(numstring):
 
 def parse_comma_separated(numstring):
     try:
+        if not COMMA_SEPARATED_NUMBER.match(numstring.strip()):
+            return None
         comma_removed = numstring.replace(',', '')
         return float(comma_removed), 'comma'
     except (ValueError, TypeError, AttributeError):
@@ -75,9 +85,11 @@ def parse_comma_separated(numstring):
 
 def parse_dot_separated(numstring):
     try:
+        if not DOT_SEPARATED_NUMBER.match(numstring.strip()):
+            return None
         # first, remove dot
         dot_removed = numstring.replace('.', '')
-        # now reeplace comma with dot, to make it parseable
+        # now replace comma with dot, to make it parseable
         comma_replaced = dot_removed.replace(',', '.')
         return float(comma_replaced), 'dot'
     except (ValueError, TypeError, AttributeError):
@@ -87,6 +99,8 @@ def parse_dot_separated(numstring):
 
 def parse_space_separated(numstring):
     try:
+        if not SPACE_SEPARATED_NUMBER.match(numstring.strip()):
+            return None
         # first, remove space
         space_removed = numstring.replace(' ', '')
         return float(space_removed), 'space'
@@ -103,9 +117,9 @@ def parse_string(val, **kwargs):
 def parse_datetime(val, date_format=None, **kwargs):
     # Try date parsing for english, french and spanish languages only
     # The following parses numbers as well so if number matches, return None
-    if not format and parse_number(val):
+    if not date_format and parse_number(val):
         return None
-    elif not format:
+    elif not date_format:
         return dateparse(val, languages=['en', 'fr', 'es'])
 
     try:
