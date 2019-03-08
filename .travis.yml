@@ -20,11 +20,10 @@ before_install:
       --tag ${DOCKER_IMAGE_SERVER} --tag ${DOCKER_IMAGE_SERVER_B} .
 
 before_script:
-    - docker-compose up -d
     - /tmp/cc-test-reporter before-build
 
 script:
-    - docker-compose exec server /code/scripts/run_tests.sh
+    - docker-compose run server /code/scripts/run_tests.sh
 
 after_success:
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin

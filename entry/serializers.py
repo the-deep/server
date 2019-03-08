@@ -6,14 +6,16 @@ from deep.serializers import (
     ListToDictField,
 )
 from project.serializers import ProjectEntitySerializer
+from project.models import Project
 from lead.serializers import LeadSerializer
 from lead.models import Lead
 from analysis_framework.serializers import AnalysisFrameworkSerializer
 from geo.serializers import SimpleRegionSerializer
+from tabular.serializers import FieldProcessedOnlySerializer
+
 from .models import (
     Entry, Attribute, FilterData, ExportData
 )
-from project.models import Project
 from .utils import validate_image_for_entry
 
 
@@ -77,6 +79,12 @@ class SimpleExportDataSerializer(RemoveNullFieldsMixin,
         fields = ('id', 'exportable', 'data')
 
 
+class EntryLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Lead
+        fields = ('id', 'title', 'created_at',)
+
+
 class EntrySerializer(RemoveNullFieldsMixin,
                       DynamicFieldsMixin, ProjectEntitySerializer):
     attributes = ListToDictField(
@@ -93,11 +101,7 @@ class EntrySerializer(RemoveNullFieldsMixin,
 
     class Meta:
         model = Entry
-        fields = ('id', 'lead', 'analysis_framework', 'project',
-                  'entry_type', 'excerpt', 'image', 'data_series',
-                  'information_date', 'attributes', 'order', 'client_id',
-                  'created_at', 'created_by', 'modified_at', 'modified_by',
-                  'version_id')
+        fields = '__all__'
 
     def create(self, validated_data):
         if validated_data.get('project') is None:
@@ -125,10 +129,25 @@ class EntrySerializer(RemoveNullFieldsMixin,
         return entry
 
 
+class EntryProccesedSerializer(EntrySerializer):
+    tabular_field_data = FieldProcessedOnlySerializer(source='tabular_field')
+
+
+class EntryRetriveSerializer(EntrySerializer):
+    lead = EntryLeadSerializer()
+
+
+class EntryRetriveProccesedSerializer(EntrySerializer):
+    lead = EntryLeadSerializer()
+    tabular_field_data = FieldProcessedOnlySerializer(source='tabular_field')
+
+
 class EditEntriesDataSerializer(RemoveNullFieldsMixin,
                                 serializers.ModelSerializer):
     lead = LeadSerializer(source='*', read_only=True)
-    entries = EntrySerializer(source='entry_set', many=True, read_only=True)
+    entries = EntrySerializer(
+        source='entry_set', many=True, read_only=True,
+    )
     analysis_framework = AnalysisFrameworkSerializer(
         source='project.analysis_framework',
         read_only=True,

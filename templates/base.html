@@ -4,78 +4,16 @@
 {% block extrastyle %}
     {{ block.super }}
     <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
-    <style>
-        #header {
-            background: #273646;
-        }
-
-        input[type=submit], input[type=button] {
-            background: #273646;
-        }
-
-        #branding h1 {
-            color: white;
-        }
-
-        .breadcrumbs, .selector-chosen h2, .module h2, .module caption, .inline-group h2 {
-            background: #304356 !important;
-        }
-
-        #content-related .module h2 {
-            color: white;
-        }
-
-        .logo {
-            margin: auto;
-            margin-bottom: 24px;
-        }
-
-        .selector .selector-available h2, .help {
-            color: #b7b4b4 !important;
-        }
-
-        .description {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .goto-url {
-            padding: 10px;
-            margin-left: 10px;
-            box-shadow: 0 1px 3px -1px rgba(0, 0, 0, .5);
-            background-color: #1676d3;
-            display: inline-block;
-            color: #ffffff!important;
-            border-radius: 2px;
-            padding: 6px 8px;
-            text-transform: uppercase;
-            font-size: 11px;
-            font-weight: 600;
-            transition: .2s all ease-in-out;
-        }
-
-        .goto-url:active {
-            box-shadow: 0 1px 2px -1px rgba(0, 0, 0, .5);
-            transform: translateY(1px);
-        }
-
-        .goto-url:hover {
-            background-color: #005DBA;
-        }
-
-        .actions-container {
-            display: flex;
-        }
-
-    </style>
+    <link rel="stylesheet" type="text/css" href="{% static "/css/admin_extend.css" %}" />
 {% endblock %}
 
 {% block branding %}
-<h1 id="site-name">{{ nav_title|default:'DEEP' }}</h1>
+<h1 id="site-name">DEEP ({{ DEEP_ENVIRONMENT | title }})</h1>
 {% endblock %}
 {% block breadcrumbs %} {% endblock %}
 
-{% block title %}{{ title|default:'DEEP' }}{% endblock %}
+{% block title %}
+    DEEP ({{ DEEP_ENVIRONMENT | title }})
+{% endblock %}
+
 {% block content_title %}<h1>{{ title }}</h1>{% endblock %}

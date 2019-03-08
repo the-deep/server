@@ -1,11 +1,9 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models.functions import Cast
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from rest_framework.decorators import list_route
 from rest_framework import (
     filters,
     generics,
-    pagination,
     permissions,
     response,
     views,
@@ -15,62 +13,23 @@ from deep.permissions import ModifyPermission
 
 from project.models import Project
 from lead.models import Lead
-from lead.serializers import SimpleLeadSerializer
 
 from .models import (
-    Attribute, FilterData, ExportData, Entry
+    Attribute, FilterData, ExportData,
 )
 from .serializers import (
-    EntrySerializer, AttributeSerializer,
-    FilterDataSerializer, ExportDataSerializer,
+    EntrySerializer,
+    EntryRetriveSerializer,
+    EntryProccesedSerializer,
+    EntryRetriveProccesedSerializer,
+    AttributeSerializer,
+    FilterDataSerializer,
+    ExportDataSerializer,
     EditEntriesDataSerializer,
 )
 from .filter_set import EntryFilterSet, get_filtered_entries
-
 from tabular.models import Field as TabularField
-
-from collections import OrderedDict
 import django_filters
-
-
-class EntryPaginationByLead(pagination.LimitOffsetPagination):
-    def paginate_queryset(self, queryset, request, view=None):
-        self.limit = int(request.query_params.get('limit', self.default_limit))
-        self.leads = None
-        if not self.limit:
-            return None
-
-        self.request = request
-        self.offset = int(request.query_params.get('offset', 0))
-
-        lead_ids = queryset.values_list('lead__id', flat=True).distinct()
-        self.count = lead_ids.count()
-
-        if self.count > self.limit and self.template is not None:
-            self.display_page_controls = True
-
-        if self.count == 0 or self.offset > self.count:
-            return []
-
-        lead_ids = list(lead_ids[self.offset:self.offset + self.limit])
-        self.leads = Lead.objects.filter(pk__in=lead_ids).distinct()
-
-        return list(queryset.filter(lead__pk__in=lead_ids))
-
-    def get_paginated_response(self, data):
-        if self.leads:
-            leads = SimpleLeadSerializer(self.leads, many=True).data
-        else:
-            leads = []
-        return response.Response(OrderedDict([
-            ('count', self.count),
-            ('next', self.get_next_link()),
-            ('previous', self.get_previous_link()),
-            ('results', {
-                'leads': leads,
-                'entries': data,
-            })
-        ]))
 
 
 class EntryViewSet(viewsets.ModelViewSet):
@@ -85,20 +44,33 @@ class EntryViewSet(viewsets.ModelViewSet):
                        filters.SearchFilter)
     filter_class = EntryFilterSet
 
-    pagination_class = EntryPaginationByLead
     search_fields = ('lead__title', 'excerpt')
 
     def get_queryset(self):
         return get_filtered_entries(self.request.user, self.request.GET)
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return EntryRetriveSerializer
+        return super().get_serializer_class()
+
+    @list_route(
+        url_path='processed',
+        serializer_class=EntryProccesedSerializer,
+    )
+    def get_proccessed_entries(self, request, version=None):
+        queryset = self.filter_queryset(self.get_queryset())
+        self.page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(self.page, many=True)
+        return self.get_paginated_response(serializer.data)
 
 
 class EntryFilterView(generics.GenericAPIView):
     """
     Entry view for getting entries based filters in POST body
     """
-    serializer_class = EntrySerializer
+    serializer_class = EntryRetriveProccesedSerializer
     permission_classes = [permissions.IsAuthenticated]
-    pagination_class = EntryPaginationByLead
 
     def post(self, request, version=None):
         filters = request.data.get('filters', [])
@@ -119,17 +91,12 @@ class EntryFilterView(generics.GenericAPIView):
                 title__icontains=search,
                 **field_filters
             )
-            queryset = queryset.annotate(
-                field_id=Cast(
-                    KeyTextTransform('field_id', 'data_series'),
-                    models.IntegerField()
-                )
-            ).filter(
+            queryset = queryset.filter(
                 models.Q(lead__title__icontains=search) |
                 models.Q(excerpt__icontains=search) |
                 (
                     models.Q(
-                        field_id__in=models.Subquery(
+                        tabular_field__in=models.Subquery(
                             fields.values_list('pk', flat=True))
                     )
                 )
