@@ -1,8 +1,7 @@
 from django.contrib import admin
-from django.contrib.postgres import fields
-from jsoneditor.forms import JSONEditor
 
-from reversion.admin import VersionAdmin
+from deep.admin import VersionAdmin
+
 from .models import Book, Sheet, Field, Geodata
 
 
@@ -33,6 +32,3 @@ class FieldAdmin(VersionAdmin):
     inlines = [GeodataInline]
     list_display = ('title', 'sheet', 'type',)
     list_filter = ('type',)
-    formfield_overrides = {
-        fields.JSONField: {'widget': JSONEditor},
-    }
