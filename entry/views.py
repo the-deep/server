@@ -59,8 +59,8 @@ class EntryViewSet(viewsets.ModelViewSet):
         serializer_class=EntryProccesedSerializer,
     )
     def get_proccessed_entries(self, request, version=None):
-        entries = self.get_queryset()
-        self.page = self.paginate_queryset(entries)
+        queryset = self.filter_queryset(self.get_queryset())
+        self.page = self.paginate_queryset(queryset)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
 
