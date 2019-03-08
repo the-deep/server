@@ -1,5 +1,4 @@
 import os
-from functools import reduce
 from autofixture.base import AutoFixture
 from tempfile import NamedTemporaryFile
 
@@ -15,7 +14,12 @@ from project.models import Project
 from tabular.tasks import auto_detect_and_update_fields
 from tabular.extractor import csv
 from tabular.models import Book, Field, Sheet
-from tabular.utils import parse_number
+from tabular.utils import (
+    parse_comma_separated,
+    parse_dot_separated,
+    parse_space_separated,
+    auto_detect_datetime,
+)
 
 consistent_csv_data = '''id,age,name,date,place
 1,10,john,2018 october 28,Kathmandu
@@ -398,28 +402,70 @@ class TestTabularExtraction(TestCase):
 
 
 def test_comma_separated_numbers():
-    assert parse_number('1,200', separator='comma') == (1200.0, 'comma')
-    assert parse_number('1,200.35', separator='comma') == (1200.35, 'comma')
-    assert parse_number('1,200.35.3', separator='comma') is None
-    assert parse_number('', separator='comma') is None
-    assert parse_number(None, separator='comma') is None
-    assert parse_number('abc,123', separator='comma') is None
-    assert parse_number('123,abc,123', separator='comma') is None
+    assert parse_comma_separated('1') == (1.0, 'comma')
+    assert parse_comma_separated('12') == (12.0, 'comma')
+    assert parse_comma_separated('100') == (100.0, 'comma')
+    assert parse_comma_separated('1,200') == (1200.0, 'comma')
+    assert parse_comma_separated('11,200') == (11200.0, 'comma')
+    assert parse_comma_separated('111,200') == (111200.0, 'comma')
+    assert parse_comma_separated('5,111,200') == (5111200.0, 'comma')
+    assert parse_comma_separated('54,111,200') == (54111200.0, 'comma')
+    assert parse_comma_separated('543,111,200') == (543111200.0, 'comma')
+    assert parse_comma_separated('543111,200') is None
+    assert parse_comma_separated('1,200.35') == (1200.35, 'comma')
+    assert parse_comma_separated('1,200.35.3') is None
+    assert parse_comma_separated('') is None
+    assert parse_comma_separated(None) is None
+    assert parse_comma_separated('abc,123') is None
+    assert parse_comma_separated('123,abc,123') is None
 
 
 def test_dot_separated_numbers():
-    assert parse_number('1.200', separator='dot') == (1200.0, 'dot')
-    assert parse_number('1.200,35', separator='dot') == (1200.35, 'dot')
-    assert parse_number('', separator='dot') is None
-    assert parse_number(None, separator='dot') is None
-    assert parse_number('abc.123', separator='dot') is None
-    assert parse_number('123.abc.123', separator='dot') is None
+    assert parse_dot_separated('1') == (1.0, 'dot')
+    assert parse_dot_separated('12') == (12.0, 'dot')
+    assert parse_dot_separated('100') == (100.0, 'dot')
+    assert parse_dot_separated('1.200') == (1200.0, 'dot')
+    assert parse_dot_separated('11.200') == (11200.0, 'dot')
+    assert parse_dot_separated('111.200') == (111200.0, 'dot')
+    assert parse_dot_separated('5.111.200') == (5111200.0, 'dot')
+    assert parse_dot_separated('54.111.200') == (54111200.0, 'dot')
+    assert parse_dot_separated('543.111.200') == (543111200.0, 'dot')
+    assert parse_dot_separated('543111.200') is None
+    assert parse_dot_separated('1.200,35') == (1200.35, 'dot')
+    assert parse_dot_separated('1.200,35,3') is None
+    assert parse_dot_separated('') is None
+    assert parse_dot_separated(None) is None
+    assert parse_dot_separated('abc.123') is None
+    assert parse_dot_separated('123.abc.123') is None
 
 
 def test_space_separated_numbers():
-    assert parse_number('1 200', separator='space') == (1200.0, 'space')
-    assert parse_number('1 200.35', separator='space') == (1200.35, 'space')
-    assert parse_number('', separator='space') is None
-    assert parse_number(None, separator='space') is None
-    assert parse_number('abc 123', separator='space') is None
-    assert parse_number('123 abc 123', separator='space') is None
+    assert parse_space_separated('1') == (1.0, 'space')
+    assert parse_space_separated('12') == (12.0, 'space')
+    assert parse_space_separated('100') == (100.0, 'space')
+    assert parse_space_separated('1 200') == (1200.0, 'space')
+    assert parse_space_separated('11 200') == (11200.0, 'space')
+    assert parse_space_separated('111 200') == (111200.0, 'space')
+    assert parse_space_separated('5 111 200') == (5111200.0, 'space')
+    assert parse_space_separated('54 111 200') == (54111200.0, 'space')
+    assert parse_space_separated('543 111 200') == (543111200.0, 'space')
+    assert parse_space_separated('543111 200') is None
+    assert parse_space_separated('1 200.35') == (1200.35, 'space')
+    assert parse_space_separated('1 200.35.3') is None
+    assert parse_space_separated('') is None
+    assert parse_space_separated(None) is None
+    assert parse_space_separated('abc 123') is None
+    assert parse_space_separated('123 abc 123') is None
+
+
+def test_parse_date():
+    assert auto_detect_datetime('2019-03-15') is not None
+    assert auto_detect_datetime('2019-Dec-15') is not None
+    assert auto_detect_datetime('2019-Oct-15') is not None
+
+    assert auto_detect_datetime('2019-03-15') is not None
+    assert auto_detect_datetime('2019-Dec-15') is not None
+    assert auto_detect_datetime('2019-Oct-15') is not None
+
+    assert auto_detect_datetime('2019-December-15') is not None
+    assert auto_detect_datetime('2019 October 15') is not None
