@@ -219,6 +219,8 @@ class LogTime:
             LogTime.logger.info(log_message)
 
             return ret
+        wrapper.__name__ = func_to_be_tracked.__name__
+        wrapper.__module__ = func_to_be_tracked.__module__
         return wrapper
 
 
@@ -280,6 +282,7 @@ def redis_lock(func):
         lock.release()
         return return_value
     func_wrapper.__name__ = func.__name__
+    func_wrapper.__module__ = func.__module__
     return func_wrapper
 
 

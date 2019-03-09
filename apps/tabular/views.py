@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import transaction
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from rest_framework import (
     viewsets,
     exceptions,
@@ -31,7 +31,8 @@ class BookViewSet(viewsets.ModelViewSet):
             return BookMetaSerializer
         return super().get_serializer_class()
 
-    @detail_route(
+    @action(
+        detail=True,
         url_path='processed',
         serializer_class=BookProcessedOnlySerializer,
     )
