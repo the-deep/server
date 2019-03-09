@@ -50,7 +50,7 @@ class CombinedView(views.APIView):
         for api in apis:
             url = '{}/{}/'.format(api_prefix, api.strip('/'))
             view, args, kwargs = resolve(url)
-            kwargs['request'] = request
+            kwargs['request'] = request._request
             api_response = view(*args, **kwargs)
 
             if api_response.status_code >= 400:

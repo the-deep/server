@@ -19,7 +19,10 @@ from deep.permissions import ModifyPermission
 from project.models import Project
 from user_resource.filters import UserResourceFilterSet
 
-from utils.extractor.formats import xlsx
+from utils.extractor.formats import (
+    xlsx,
+    ods,
+)
 from .serializers import (
     FileSerializer,
     GoogleDriveFileSerializer,
@@ -34,6 +37,7 @@ logger = logging.getLogger(__name__)
 
 META_EXTRACTION_FUNCTIONS = {  # The functions take file as argument
     'xlsx': xlsx.extract_meta,
+    'ods': ods.extract_meta,
 }
 
 
