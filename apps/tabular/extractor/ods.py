@@ -1,4 +1,5 @@
 import pyexcel_ods
+from datetime import datetime
 import logging
 
 from ..models import Sheet, Field
@@ -6,6 +7,8 @@ from ..models import Sheet, Field
 from utils.common import LogTime
 
 logger = logging.getLogger(__name__)
+
+date_type = type(datetime.now().date())
 
 
 @LogTime()
@@ -53,8 +56,11 @@ def extract(book):
                 try:
                     for index, field in enumerate(fields):
                         field_data = fields_data.get(field.id, [])
+                        value = _row[index]
+                        if isinstance(value, (datetime, date_type)):
+                            value = _row[index].isoformat()
                         field_data.append({
-                            'value': _row[index],
+                            'value': value,
                             'empty': False,
                             'invalid': False
                         })
