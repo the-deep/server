@@ -37,13 +37,19 @@ def clean_real_data(data, val_column):
 
     # NOTE: The folloing loop adds the keys empty and invalid if not present
     # TODO: Handle the following case from pandas itself
+    formatted_data = []
     for datum in data:
-        if datum.get('empty') is None:
-            datum['empty'] = False
-        if datum.get('invalid') is None:
-            datum['invalid'] = False
+        formatted_data.append({
+            **datum,
+            'empty': datum.get('empty', False),
+            'invalid': datum.get('invalid', False),
+        })
 
-    df = pd.DataFrame(data)
+    df = pd.DataFrame(formatted_data)
+
+    if df.empty:
+        return df, df
+
     filterd_df = df[~(df['empty'] == True) & ~(df['invalid'] == True)]  # noqa
     return filterd_df, df
 
@@ -53,16 +59,16 @@ def calc_data(field):
 
     data, df = clean_real_data(field.data, val_column)
 
+    if data.empty:
+        logger.warn('Empty DataFrame: no numeric data to calculate')
+        return [], {}
+
     if val_column not in data.columns:
         logger.warning('{} not present'.format(val_column))
         return None, {}
 
     data = data.groupby(val_column).count()['empty'].sort_values().to_frame()
     data = data.rename(columns={'empty': 'count', val_column: 'value'})
-
-    if data.empty:
-        logger.warn('Empty DataFrame: no numeric data to calculate')
-        return [], {}
 
     data['value'] = data.index
     health_stats = {
@@ -89,6 +95,8 @@ def generate_chart(field, chart_type='barchart'):
 
     if chart_type not in ['histograms', 'wordcloud']:
         df = pd.DataFrame(field.cache.get('series'))
+        if df.empty or 'value' not in df.columns:
+            return None, {}
         df.set_index('value', inplace=True)
         params['data'] = df
     else:

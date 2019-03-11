@@ -9,6 +9,8 @@ from rest_framework import (
     views,
 )
 
+from entry.models import Entry
+
 from .models import Book, Sheet, Field, Geodata
 from .tasks import tabular_extract_book, tabular_extract_geo
 from .serializers import (
@@ -43,6 +45,19 @@ class BookViewSet(viewsets.ModelViewSet):
             return response.Response(serializer.data)
         return response.Response({
             'status': Field.CACHE_PENDING,
+        })
+
+    @action(
+        detail=True,
+        url_path='entry-count',
+    )
+    def get_entry_count(self, request, pk=None, version=None):
+        instance = self.get_object()
+        count = Entry.objects.filter(
+            tabular_field__sheet__book=instance.id,
+        ).count()
+        return response.Response({
+            'count': count,
         })
 
 
