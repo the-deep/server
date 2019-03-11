@@ -74,7 +74,7 @@ def calc_data(field):
     health_stats = {
         'empty': int(df[df['empty'] == True]['empty'].count()), # noqa
         'invalid': int(df[df['invalid'] == True]['invalid'].count()), # noqa
-        'total': int(df[val_column].count()),
+        'total': len(df.index),
     }
     return data.to_dict(orient='records'), health_stats
 
