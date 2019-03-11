@@ -226,7 +226,8 @@ class ExcelExporter:
         else:
             sheet_col_name = excel_column_name(col_number)
 
-        return "='{}'!{}1".format(worksheet_title, sheet_col_name)
+        # Worksheet title is limited to 31 as excel's tab length is capped to 31
+        return "='{}'!{}1".format(worksheet_title[:31], sheet_col_name)
 
     def get_entry_data(self, entry):
         if entry.entry_type == Entry.EXCERPT:
