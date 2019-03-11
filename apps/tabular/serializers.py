@@ -12,6 +12,8 @@ from user_resource.serializers import UserResourceSerializer
 
 from geo.serializers import SimpleRegionSerializer, Region, AdminLevel
 
+from entry.models import Entry
+
 from .models import Book, Sheet, Field, Geodata
 from .tasks import tabular_generate_column_image
 
@@ -108,10 +110,16 @@ class BookSerializer(
         UserResourceSerializer
 ):
     sheets = SheetSerializer(many=True, source='sheet_set', required=False)
+    entry_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Book
         fields = '__all__'
+
+    def get_entry_count(self, instance):
+        return Entry.objects.filter(
+            tabular_field__sheet__book=instance.id,
+        ).count()
 
 
 class BookMetaSerializer(BookSerializer):
