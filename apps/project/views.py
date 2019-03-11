@@ -37,6 +37,7 @@ from user.utils import send_project_join_request_emails
 from user.models import User
 from geo.models import Region
 from user_group.models import UserGroup
+from geo.serializers import RegionSerializer
 from .models import (
     ProjectStatus,
     Project,
@@ -118,6 +119,22 @@ class ProjectViewSet(viewsets.ModelViewSet):
         )
 
         return response.Response(serializer.data)
+
+    """
+    Get regions assigned to this project
+    """
+    @action(
+        detail=True,
+        url_path='regions',
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def get_regions(self, request, pk=None, version=None):
+        instance = self.get_object()
+        serializer = RegionSerializer(
+            instance.regions,
+            many=True, context={'request': request},
+        )
+        return response.Response({'regions': serializer.data})
 
     """
     Get assessment template for this project
