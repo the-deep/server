@@ -6,8 +6,6 @@ from export.mime_types import EXCEL_MIME_TYPE
 from entry.models import Entry, ExportData
 from utils.common import format_date, generate_filename, excel_column_name
 
-from tabular.models import Field
-
 logger = logging.getLogger(__name__)
 
 
@@ -185,17 +183,11 @@ class ExcelExporter:
 
     def get_data_series(self, entry):
         lead = entry.lead
-        field_id = entry.data_series['field_id']
+        field = entry.tabular_field
 
-        # Check if field has already been pulled from database
-        field = self.tabular_fields.get(field_id)
         if field is None:
-            field = Field.objects.filter(id=field_id).prefetch_related(
-                'sheet'
-            ).first()
-            if not field:
-                return ''
-            self.tabular_fields[field_id] = field
+            return ''
+        self.tabular_fields[field.id] = field
 
         # Get Sheet title which is Lead title - Sheet title
         worksheet_title = '{}-{}'.format(lead.title, field.sheet.title)
@@ -227,7 +219,7 @@ class ExcelExporter:
                 field.title
 
             # Add field values to corresponding column
-            for i, x in enumerate(entry.data_series['series']):
+            for i, x in enumerate(field.data):
                 tabular_sheet[
                     '{}{}'.format(sheet_col_name, 2 + i)
                 ].value = x['value']
