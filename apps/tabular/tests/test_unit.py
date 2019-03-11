@@ -126,6 +126,10 @@ class TestTabularExtraction(TestCase):
                 assert field.type == Field.DATETIME, 'date is datetime'
                 assert field.options is not None
                 assert 'date_format' in field.options
+                for datum in field.data:
+                    assert datum.get('invalid') is not None or \
+                        datum.get('empty') is not None or \
+                        'processed_value' in datum
                 check_invalid(9, field.data)
             elif field.title == 'place':
                 assert field.type == Field.GEO, 'place is geo'

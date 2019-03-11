@@ -171,6 +171,8 @@ class Field(models.Model):
                 regions[casted['region']] = casted['region_title']
             elif type == Field.NUMBER:
                 value['processed_value'] = casted[0]  # (number, separator)
+            elif type == Field.DATETIME:
+                value['processed_value'] = casted.isoformat()  # (parsed_date)
 
         if type == Field.GEO and regions:
             options['regions'] = [
