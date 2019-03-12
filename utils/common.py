@@ -305,7 +305,7 @@ def make_colormap(seq):
 
 def excel_to_python_date_format(excel_format):
     # TODO: support all formats
-    python_format = excel_format.replace('\\', '').\
+    python_format = excel_format.upper().replace('\\', '').\
         replace('YYYY', '%Y').\
         replace('MM', '%m').\
         replace('DD', '%d')
