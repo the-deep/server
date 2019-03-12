@@ -186,11 +186,18 @@ class ExcelExporter:
         field = entry.tabular_field
 
         if field is None:
+            print('FIELD IS NONE')
             return ''
         self.tabular_fields[field.id] = field
 
         # Get Sheet title which is Lead title - Sheet title
+        # Worksheet title is limited to 31 as excel's tab length is capped to 31
         worksheet_title = '{}-{}'.format(lead.title, field.sheet.title)
+        if len(worksheet_title) > 31:
+            worksheet_title = '{}-{}'.format(
+                worksheet_title[:28],
+                len(self.wb.wb.worksheets)
+            )
 
         if worksheet_title not in self.wb.wb.sheetnames:
             tabular_sheet = self.wb.create_sheet(worksheet_title).ws
@@ -226,8 +233,7 @@ class ExcelExporter:
         else:
             sheet_col_name = excel_column_name(col_number)
 
-        # Worksheet title is limited to 31 as excel's tab length is capped to 31
-        return "='{}'!{}1".format(worksheet_title[:31], sheet_col_name)
+        return "='{}'!{}1".format(worksheet_title, sheet_col_name)
 
     def get_entry_data(self, entry):
         if entry.entry_type == Entry.EXCERPT:
