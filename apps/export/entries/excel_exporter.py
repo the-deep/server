@@ -186,7 +186,6 @@ class ExcelExporter:
         field = entry.tabular_field
 
         if field is None:
-            print('FIELD IS NONE')
             return ''
         self.tabular_fields[field.id] = field
 

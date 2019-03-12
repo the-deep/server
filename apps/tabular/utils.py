@@ -1,7 +1,6 @@
 import re
 import random
 from datetime import datetime
-from dateparser import parse as dateparse
 from geo.models import GeoArea
 
 from utils.common import calculate_sample_size, get_max_occurence_and_count
@@ -119,8 +118,6 @@ def parse_datetime(val, date_format=None, **kwargs):
     # The following parses numbers as well so if number matches, return None
     if not date_format and parse_number(val):
         return None
-    elif not date_format:
-        return dateparse(val, languages=['en', 'fr', 'es'])
 
     try:
         return datetime.strptime(val, date_format)
