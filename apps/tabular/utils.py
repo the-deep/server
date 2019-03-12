@@ -41,6 +41,7 @@ DOT_SEPARATED_NUMBER = re.compile(r'^(\d{1,3})(\.\d{3})*(,\d+)?$')
 
 
 def parse_number(val, **kwargs):
+    val = str(val)
     separator = kwargs.get('separator')
     if separator == 'comma':
         return parse_comma_separated(val)
@@ -116,6 +117,7 @@ def parse_string(val, **kwargs):
 def parse_datetime(val, date_format=None, **kwargs):
     # Try date parsing for english, french and spanish languages only
     # The following parses numbers as well so if number matches, return None
+    val = str(val)
     if not date_format and parse_number(val):
         return None
 
@@ -158,7 +160,7 @@ def get_geos_dict(project=None, **kwargs):
 
 
 def parse_geo(value, geos_names={}, geos_codes={}, **kwargs):
-    val = value.lower()
+    val = str(value).lower()
     name_match = geos_names.get(val)
     code_match = geos_codes.get(val)
     admin_level = kwargs.get('admin_level')
