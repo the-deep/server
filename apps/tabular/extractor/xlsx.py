@@ -1,3 +1,4 @@
+import logging
 from openpyxl import load_workbook
 
 from ..models import Sheet, Field
@@ -8,6 +9,8 @@ from utils.common import (
     excel_to_python_date_format,
     format_date_or_iso,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def get_cell_value(row, column):
@@ -48,11 +51,16 @@ def extract(book):
                 data_index -= 1
 
             # Fields
-            header_row = list(
-                wb_sheet.iter_rows(
-                    min_row=header_index, max_row=header_index + 1,
-                )
-            )[0]
+            header = wb_sheet.iter_rows(
+                min_row=header_index, max_row=header_index + 1
+            )
+            header_row = next(header, None)
+            if header_row is None:
+                # No point in creating sheet when there is no header
+                logger.warning("Can't get header for"
+                               "Sheet({}) {}".format(sheet.id, sheet.title))
+                return
+
             fields = []
             columns = []
             ordering = 1
