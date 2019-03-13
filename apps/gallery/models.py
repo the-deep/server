@@ -1,9 +1,13 @@
 from django.contrib.postgres.fields import JSONField, ArrayField
-from django.db import models
+from django.db import models, transaction
 from user_resource.models import UserResource
+
+from utils.common import random_key
 
 
 class File(UserResource):
+    RANDOM_STRING_LENGTH = 16
+
     title = models.CharField(max_length=255)
 
     file = models.FileField(upload_to='gallery/', max_length=255,
@@ -13,6 +17,12 @@ class File(UserResource):
 
     is_public = models.BooleanField(default=True)
     projects = models.ManyToManyField('project.Project', blank=True)
+
+    random_string = models.CharField(
+        max_length=RANDOM_STRING_LENGTH,
+        null=True,
+        blank=True
+    )
 
     def __str__(self):
         return self.title
@@ -30,6 +40,12 @@ class File(UserResource):
     def can_get(self, user):
         return True
         # return self in File.get_for(user)
+
+    def get_random_string(self):
+        if self.random_string is None:
+            self.random_string = random_key(File.RANDOM_STRING_LENGTH)
+            self.save()
+        return self.random_string
 
     def can_modify(self, user):
         return self.created_by == user
