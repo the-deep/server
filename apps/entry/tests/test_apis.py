@@ -13,6 +13,7 @@ from entry.models import (
     FilterData,
 )
 
+from gallery.models import File
 from tabular.models import Sheet, Field
 
 
@@ -379,3 +380,46 @@ class EntryTests(TestCase):
         self.post_filter_test(filters)  # Should have single result
 
     # TODO: test export data and filter data apis
+
+
+class EntryTest(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.file = File.objects.create(title='test')
+
+    def create_project(self):
+        analysis_framework = self.create(AnalysisFramework)
+        return self.create(
+            Project, analysis_framework=analysis_framework,
+            role=self.admin_role
+        )
+
+    def create_lead(self):
+        project = self.create_project()
+        return self.create(Lead, project=project)
+
+    def create_entry(self, **fields):
+        lead = self.create_lead()
+        return self.create(
+            Entry, lead=lead, project=lead.project,
+            analysis_framework=lead.project.analysis_framework,
+            **fields
+        )
+
+    def test_entry_no_image(self):
+        entry = self.create_entry(image='')
+        assert entry.get_shareable_image_url() is None
+
+    def test_entry_image(self):
+        entry_image_url = '/some/path'
+        entry = self.create_entry(
+            image='{}/{}'.format(entry_image_url, self.file.id)
+        )
+        assert entry.get_shareable_image_url() is not None
+        # Get file again, because it won't have random_string updated
+        file = File.objects.get(id=self.file.id)
+        assert entry.get_shareable_image_url() == '{}/{}/{}'.format(
+            entry_image_url,
+            self.file.id,
+            file.get_random_string()
+        )

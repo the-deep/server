@@ -108,4 +108,49 @@ class GalleryTests(TestCase):
         response = self.client.get(url)
         self.assert_404(response)
 
+    def test_public_file_api_no_post(self):
+        url = '/public-file/'
+        self.authenticate()
+        response = self.client.post(url)
+        self.assert_405(response)
+
+    def test_get_file_public_no_random_string(self):
+        url = '/public-file/1/'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_404(response)
+
+    def test_get_file_public_invalid_random_string(self):
+        url = '/public-file/{}/{}/'
+        file_id = self.save_file_with_api()
+        file = File.objects.get(id=file_id)
+        self.authenticate()
+        response = self.client.get(url.format(file.id, 'randomstr'))
+        self.assert_404(response)
+
+    def test_get_file_public_valid_random_string(self):
+        url = '/public-file/{}/{}/'
+
+        file_id = self.save_file_with_api()
+        file = File.objects.get(id=file_id)
+
+        self.authenticate()
+        formatted_url = url.format(file_id, file.get_random_string())
+        response = self.client.get(formatted_url)
+        assert response.status_code == 302, "Should return 302"
+
+    def save_file_with_api(self):
+        url = '/api/v1/files/'
+
+        data = {
+            'title': 'Test file',
+            'file': open(self.supported_file, 'rb'),
+            'isPublic': True,
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data, format='multipart')
+        self.assert_201(response)
+        return response.data['id']
+
     # NOTE: Test for files
