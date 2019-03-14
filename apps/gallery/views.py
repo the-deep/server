@@ -1,5 +1,6 @@
 import logging
 from django.views.generic import View
+from rest_framework import views
 from django.conf import settings
 from django.db import models, transaction
 from django.shortcuts import redirect, get_object_or_404
@@ -48,6 +49,12 @@ def DEFAULT_EXTRACTION_FUNCTION(file):
 class FileView(View):
     def get(self, request, file_id):
         file = get_object_or_404(File, id=file_id)
+        return redirect(request.build_absolute_uri(file.file.url))
+
+
+class PublicFileView(View):
+    def get(self, request, file_id=None, random_string=None):
+        file = get_object_or_404(File, id=file_id, random_string=random_string)
         return redirect(request.build_absolute_uri(file.file.url))
 
 

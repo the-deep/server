@@ -26,6 +26,7 @@ from gallery.views import (
     FilePreviewViewSet,
     FileExtractionTriggerView,
     MetaExtractionView,
+    PublicFileView,
 )
 from tabular.views import (
     BookViewSet,
@@ -281,6 +282,9 @@ urlpatterns = [
 
     # Gallery
     url(r'^file/(?P<file_id>\d+)/$', FileView.as_view(), name='file'),
+
+    url(r'^public-file/(?P<file_id>\d+)/(?P<random_string>.+)/$',
+        PublicFileView.as_view()),
 
     # Activate User
     url(r'^user/activate/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
