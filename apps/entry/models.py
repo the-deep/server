@@ -3,6 +3,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.dispatch import receiver
 
+from gallery.models import File
 from project.mixins import ProjectEntityMixin
 from user_resource.models import UserResource
 from lead.models import Lead
@@ -53,6 +54,12 @@ class Entry(UserResource, ProjectEntityMixin):
         null=True, blank=True,
     )
 
+    def __init__(self, *args, **kwargs):
+        ret = super().__init__(*args, **kwargs)
+        # Set shareable_image_url as a cache
+        self.shareable_image_url = None
+        return ret
+
     def __str__(self):
         if self.entry_type == Entry.IMAGE:
             return 'Image ({})'.format(self.lead.title)
@@ -61,6 +68,25 @@ class Entry(UserResource, ProjectEntityMixin):
                 self.excerpt[:30],
                 self.lead.title,
             )
+
+    def get_shareable_image_url(self):
+        if self.shareable_image_url:
+            return self.shareable_image_url
+        if not self.image:
+            return None
+
+        splitted = self.image.rstrip('/').split('/')  # remove last slash if present
+        if not splitted:
+            return None
+
+        fileid = splitted[-1]
+        file = File.objects.filter(id=fileid).first()
+        if not file:
+            return None
+
+        rand_str = file.get_random_string()
+        self.shareable_image_url = '/'.join([*splitted[:-1], fileid, rand_str])
+        return self.shareable_image_url
 
     class Meta(UserResource.Meta):
         verbose_name_plural = 'entries'

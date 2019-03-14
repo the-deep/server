@@ -45,7 +45,11 @@ class GeodataSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
         return admin_levels.values_list('id', flat=True)
 
 
-class FieldSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
+class FieldSerializer(
+        RemoveNullFieldsMixin,
+        DynamicFieldsMixin,
+        serializers.ModelSerializer
+):
     geodata = serializers.SerializerMethodField()
 
     class Meta:
