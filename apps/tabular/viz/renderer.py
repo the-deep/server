@@ -20,12 +20,12 @@ def DEFAULT_CHART_RENDER(*args, **kwargs):
 
 CHART_RENDER = {
     # frequency data required
-    'barchart': barchart.plot,
-    'barcharth': lambda *args, **kwargs: barchart.plot(*args, **kwargs, horizontal=True),
+    'barchart': barchart.plotly,
+    'barcharth': lambda *args, **kwargs: barchart.plotly(*args, **kwargs, horizontal=True),
     'map': mapViz.plot,
 
     # Frequency data not required
-    'histograms': histograms.plot,
+    'histograms': histograms.plotly,
     'wordcloud': wordcloud.plot,
 }
 
@@ -79,9 +79,7 @@ def calc_data(field):
     return data.to_dict(orient='records'), health_stats
 
 
-def generate_chart(field, chart_type='barchart'):
-    val_column = 'processed_value' if field.type == 'geo' else 'value'
-
+def generate_chart(field, chart_type='barchart', image_format='svg'):
     if field.type == 'geo':
         chart_type = 'map'
     elif field.type == 'number':
@@ -89,17 +87,19 @@ def generate_chart(field, chart_type='barchart'):
 
     params = {
         'x_label': field.title,
-        'y_label': None,
+        'y_label': 'count',
         'chart_size': (8, 4),
+        'format': image_format,
+        # data will be added according to chart type
     }
 
     if chart_type not in ['histograms', 'wordcloud']:
         df = pd.DataFrame(field.cache.get('series'))
         if df.empty or 'value' not in df.columns:
             return None, {}
-        df.set_index('value', inplace=True)
         params['data'] = df
     else:
+        val_column = 'processed_value' if field.type == 'geo' else 'value'
         df, _ = clean_real_data(field.data, val_column)
         if chart_type == 'histograms':
             params['data'] = pd.to_numeric(df[val_column])
@@ -119,19 +119,6 @@ def generate_chart(field, chart_type='barchart'):
             return None, chart_type
         return image, chart_type
     return None, chart_type
-
-
-def _add_image_to_gallery(image_name, image):
-    file = File.objects.create(
-        title=image_name,
-        mime_type='image/png',
-        metadata={'tabular': True},
-    )
-    file.file.save(image_name, image)
-    logger.info(
-        'Added image to tabular gallery {}(id={})'.format(image_name, file.id),
-    )
-    return file
 
 
 def calc_preprocessed_data(field):
@@ -159,16 +146,32 @@ def calc_preprocessed_data(field):
     return field.cache['status']
 
 
+def _add_image_to_gallery(image_name, image, mime_type):
+    file = File.objects.create(
+        title=image_name,
+        mime_type='image/png',
+        metadata={'tabular': True},
+    )
+    file.file.save(image_name, image)
+    logger.info(
+        'Added image to tabular gallery {}(id={})'.format(image_name, file.id),
+    )
+    return file
+
+
 def render_field_chart(field):
     """
     Save normalized data to field
     """
-    image, chart_type = generate_chart(field)
+    image_format = 'png'
+    image_mime = 'image/png'
+    image, chart_type = generate_chart(field, image_format=image_format)
 
     if image:
         file = _add_image_to_gallery(
-            'tabular_{}_{}'.format(field.sheet.id, field.id),
+            'tabular_{}_{}.{}'.format(field.sheet.id, field.id, image_format),
             image,
+            mime_type=image_mime,
         )
         images = [{'id': file.id, 'chart_type': chart_type}]
     else:

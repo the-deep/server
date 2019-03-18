@@ -1,5 +1,9 @@
 from django.contrib.postgres.fields import JSONField, ArrayField
-from django.db import models, transaction
+from django.db import models
+from django.conf import settings
+from django.urls import reverse
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
 from user_resource.models import UserResource
 
 from utils.common import random_key
@@ -46,6 +50,20 @@ class File(UserResource):
             self.random_string = random_key(File.RANDOM_STRING_LENGTH)
             self.save()
         return self.random_string
+
+    def get_shareable_image_url(self):
+        rand_str = self.get_random_string()
+        fid = urlsafe_base64_encode(force_bytes(self.pk)).decode()
+        return '{protocol}://{domain}{url}'.format(
+            protocol=settings.HTTP_PROTOCOL,
+            domain=settings.DJANGO_API_HOST,
+            url=reverse(
+                'gallery_public_url',
+                kwargs={
+                    'fidb64': fid, 'token': rand_str, 'filename': self.title,
+                }
+            )
+        )
 
     def can_modify(self, user):
         return self.created_by == user

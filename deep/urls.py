@@ -132,6 +132,9 @@ from jwt_auth.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from commons.views import (
+    RenderChart,
+)
 
 from django.conf.urls import (
     handler404
@@ -283,8 +286,11 @@ urlpatterns = [
     # Gallery
     url(r'^file/(?P<file_id>\d+)/$', FileView.as_view(), name='file'),
 
-    url(r'^public-file/(?P<file_id>\d+)/(?P<random_string>.+)/$',
-        PublicFileView.as_view()),
+    url(
+        r'^public-file/(?P<fidb64>[0-9A-Za-z]+)/(?P<token>.+)/(?P<filename>.*)$',
+        PublicFileView.as_view(),
+        name='gallery_public_url',
+    ),
 
     # Activate User
     url(r'^user/activate/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
@@ -399,6 +405,7 @@ urlpatterns = [
     url(r'^pr-email/$', PasswordReset.as_view()),
     url(r'^aa-email/$', AccountActivate.as_view()),
     url(r'^pj-email/$', ProjectJoinRequest.as_view()),
+    url(r'^render-debug/$', RenderChart.as_view()),
 
     url(r'^favicon.ico$',
         RedirectView.as_view(
