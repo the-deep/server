@@ -290,7 +290,7 @@ class LeadWebsiteFetch(views.APIView):
                 })
 
         return response.Response({
-            'headers': r.headers,
+            'headers': dict(r.headers),
             'httpsUrl': https_url,
             'httpUrl': http_url
         })
