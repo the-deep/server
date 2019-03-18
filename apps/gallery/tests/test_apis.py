@@ -1,6 +1,8 @@
 from deep.tests import TestCase
 from gallery.models import File, FilePreview
 from django.conf import settings
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
 
 import os
 import tempfile
@@ -121,21 +123,29 @@ class GalleryTests(TestCase):
         self.assert_404(response)
 
     def test_get_file_public_invalid_random_string(self):
-        url = '/public-file/{}/{}/'
+        url = '/public-file/{}/{}/{}'
         file_id = self.save_file_with_api()
         file = File.objects.get(id=file_id)
         self.authenticate()
-        response = self.client.get(url.format(file.id, 'randomstr'))
+        response = self.client.get(
+            url.format(
+                urlsafe_base64_encode(force_bytes(file.id)).decode(),
+                'randomstr', 'filename',
+            ))
         self.assert_404(response)
 
     def test_get_file_public_valid_random_string(self):
-        url = '/public-file/{}/{}/'
+        url = '/public-file/{}/{}/{}'
 
         file_id = self.save_file_with_api()
         file = File.objects.get(id=file_id)
 
         self.authenticate()
-        formatted_url = url.format(file_id, file.get_random_string())
+        formatted_url = url.format(
+            urlsafe_base64_encode(force_bytes(file_id)).decode(),
+            file.get_random_string(),
+            'filename',
+        )
         response = self.client.get(formatted_url)
         assert response.status_code == 302, "Should return 302"
 
