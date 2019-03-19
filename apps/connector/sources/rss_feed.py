@@ -51,7 +51,7 @@ class RssFeed(Source):
 
     dynamic_fields = [1, 2, 3, 4, 5]
 
-    def fetch(self, params, page=None, limit=None):
+    def fetch(self, params, offset=None, limit=None):
         results = []
         if not params or not params.get('feed-url'):
             return results, 0
@@ -66,7 +66,11 @@ class RssFeed(Source):
         url_field = params.get('url-field')
         website_field = params.get('website-field')
 
-        for item in items:
+        for item in (
+                items[offset:offset + limit] if (
+                    offset is not None and limit is not None
+                ) else items
+        ):
             def get_field(field):
                 if not field:
                     return ''
@@ -90,7 +94,7 @@ class RssFeed(Source):
             )
             results.append(data)
 
-        return results, len(results)
+        return results, len(items)
 
     def query_options(self, params):
         fields = self.query_fields(params)
