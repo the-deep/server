@@ -142,12 +142,20 @@ class ExcelExporter:
             if export_data:
                 if export_data.get('type') == 'lists':
                     rows.add_rows_of_value_lists(
-                        export_data.get('values'),
+                        # Filter if all values are None
+                        [
+                            x for x in export_data.get('values')
+                            if not all(y is None for y in x)
+                        ],
                         col_span,
                     )
                 else:
                     rows.add_value_list(
-                        export_data.get('values'),
+                        # Filter if all values are None
+                        [
+                            x for x in export_data.get('values')
+                            if not all(y is None for y in x)
+                        ],
                     )
             else:
                 rows.add_value_list([''] * col_span)
@@ -175,7 +183,13 @@ class ExcelExporter:
         else:
             if export_data:
                 if export_data.get('type') == 'list':
-                    rows.add_rows_of_values(export_data.get('value'))
+                    rows.add_rows_of_values(
+                        # This is in hope of filtering out non-existent data from excel row
+                        [
+                            x for x in export_data.get('value', [])
+                            if x is not None
+                        ]
+                    )
                 else:
                     rows.add_value(export_data.get('value'))
             else:
