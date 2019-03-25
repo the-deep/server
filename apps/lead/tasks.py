@@ -96,7 +96,9 @@ def _extract_from_lead_core(lead_id):
             page_count=page_count,
         )
 
-        extract_thumbnail.s(lead.id).delay()
+        transaction.on_commit(
+            lambda: extract_thumbnail.s(lead.id).delay()
+        )
         if text:
             # Send background deepl request
             transaction.on_commit(
