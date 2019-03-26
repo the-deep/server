@@ -1,4 +1,5 @@
 import requests
+from django.utils import timezone
 import re
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -285,14 +286,16 @@ class LeadWebsiteFetch(views.APIView):
                 )
             except requests.exceptions.RequestException:
                 # doesn't work
-                return response.Response({
-                    'error': 'can\'t fetch url'
-                })
+                return response.Response(
+                    {'error': 'can\'t fetch url'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         return response.Response({
-            'headers': r.headers,
+            'headers': dict(r.headers),
             'httpsUrl': https_url,
-            'httpUrl': http_url
+            'httpUrl': http_url,
+            'timestamp': timezone.now().timestamp(),
         })
 
 
