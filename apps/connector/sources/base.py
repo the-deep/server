@@ -12,9 +12,10 @@ class Source(ABC):
     def fetch(params, page=None, limit=None):
         pass
 
-    def query_leads(self, params):
+    def query_leads(self, params, limit=None):
         from connector.serializers import SourceDataSerializer
+        data = self.fetch(params)[0]
         return SourceDataSerializer(
-            self.fetch(params)[0],
+            data[:limit] if limit else data,
             many=True,
         ).data
