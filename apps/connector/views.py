@@ -10,6 +10,8 @@ from rest_framework import (
 from rest_framework.decorators import action
 from deep.permissions import ModifyPermission
 from project.models import Project
+from utils.common import parse_number
+
 from .serializers import (
     SourceSerializer,
     SourceDataSerializer,
@@ -45,7 +47,9 @@ class SourceQueryView(views.APIView):
     def query(self, source_type, query, params):
         source = source_store[source_type]()
         method = getattr(source, 'query_{}'.format(query))
-        results = method(params)
+
+        page_limit = parse_number(self.request.query_params.get('limit'))
+        results = method(params, page_limit)
 
         if isinstance(results, list):
             return response.Response({
