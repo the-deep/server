@@ -26,6 +26,7 @@ from .models import (
     ConnectorProject,
 )
 from .sources.store import source_store
+from .sources.base import Source
 
 
 class SourceViewSet(viewsets.ViewSet):
@@ -48,8 +49,12 @@ class SourceQueryView(views.APIView):
         source = source_store[source_type]()
         method = getattr(source, 'query_{}'.format(query))
 
-        page_limit = parse_number(self.request.query_params.get('limit'))
-        results = method(params, page_limit)
+        query_params = self.request.query_params
+
+        limit = parse_number(query_params.get('limit'))
+        offset = parse_number(query_params.get('offset'))
+
+        results = method(params, limit, offset)
 
         if isinstance(results, list):
             return response.Response({
@@ -116,8 +121,8 @@ class ConnectorViewSet(viewsets.ModelViewSet):
         project_id = request.data.pop('project', None)
         project = project_id and Project.objects.get(id=project_id)
 
-        offset = request.data.pop('offset', None)
-        limit = request.data.pop('limit', None)
+        offset = request.data.pop('offset', None) or 0
+        limit = request.data.pop('limit', None) or Source.DEFAULT_PER_PAGE
 
         params = {
             **(connector.params or {}),
@@ -126,6 +131,12 @@ class ConnectorViewSet(viewsets.ModelViewSet):
 
         source = source_store[connector.source]()
         data, count = source.fetch(params, offset, limit)
+
+        # Paginate manually
+        # FIXME: Make this better: probably cache, and also optimize
+        # Because, right now, every data is pulled and then only paginated
+        data = data[offset:offset + limit]
+
         serializer = SourceDataSerializer(
             data,
             many=True,
@@ -135,7 +146,7 @@ class ConnectorViewSet(viewsets.ModelViewSet):
 
         return response.Response({
             'count': count,
-            'count_per_page': getattr(source, 'count_per_page', None),
+            'count_per_page': limit,
             'results': results
         })
 
