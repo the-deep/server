@@ -8,6 +8,10 @@ import zipfile
 import sys
 import re
 import os
+import traceback
+import logging
+
+logger = logging.getLogger(__name__)
 
 """
 Usage:
@@ -151,10 +155,17 @@ def pptx_process(docx, img_dir=None):
 
 def get_pages_in_docx(file):
     with zipfile.ZipFile(file) as zipf:
-        xml = zipf.read('docProps/app.xml')
-        pages = ET.fromstring(xml).find('wP:Pages', nsmap)
-        # pages could be False or None
-        return int(pages.text) if pages is not None else 0
+        try:
+            xml = zipf.read('docProps/app.xml')
+            pages = ET.fromstring(xml).find('wP:Pages', nsmap)
+            # pages could be False or None
+            return int(pages.text) if pages is not None else 0
+        except KeyError:
+            logger.warning('Error reading page from docx {}\n{}'.format(
+                file,
+                traceback.format_exc(),
+            ))
+            return 1
 
 
 if __name__ == '__main__':
