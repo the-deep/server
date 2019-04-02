@@ -2,6 +2,7 @@ from celery import shared_task
 # from channels import Group
 from django.core.files import File
 from django.db import transaction
+from django.db.models import Q
 # from django.utils import timezone
 from django.conf import settings
 from lead.models import (
@@ -16,7 +17,7 @@ from utils.extractor.web_document import WebDocument
 from utils.extractor.thumbnailers import DocThumbnailer
 # from utils.websocket.subscription import SubscriptionConsumer
 
-# import json
+import time
 import reversion
 import os
 import re
@@ -252,3 +253,17 @@ def extract_from_lead(lead_id):
 
     lock.release()
     return return_value
+
+
+@shared_task
+def generate_previews(lead_ids=None):
+    """Generae previews of leads which do not have preview"""
+    print('here in generate_preview')
+    lead_ids = lead_ids or Lead.objects.filter(
+        Q(leadpreview__isnull=True) |
+        Q(leadpreview__text_extract=''),
+    ).values_list('id', flat=True)
+
+    for lead_id in lead_ids:
+        extract_from_lead.s(lead_id).delay()
+        time.sleep(0.5)
