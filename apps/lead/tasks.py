@@ -192,7 +192,7 @@ def send_lead_text_to_deepl(self, lead_id):
         preview.classified_doc_id = classified_doc_id
         preview.save()
         return True
-    except Exception as e:
+    except Exception:
         # Retry with exponential decay
         logger.warning("Error while sending request to deepl. {}".format(
             traceback.format_exc()))
@@ -216,7 +216,7 @@ def extract_from_lead(lead_id):
     # and try to prevent useless parallel extraction of same lead that
     # that might happen.
     key = 'lead_extraction_{}'.format(lead_id)
-    lock = redis.get_lock(key, 60 * 60 * 4)  # Lock lifetime 4 hours
+    lock = redis.get_lock(key, 60 * 60 * 0.5)  # Lock lifetime half hours
     have_lock = lock.acquire(blocking=False)
     if not have_lock:
         return False
