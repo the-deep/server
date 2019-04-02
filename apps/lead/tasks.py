@@ -258,7 +258,6 @@ def extract_from_lead(lead_id):
 @shared_task
 def generate_previews(lead_ids=None):
     """Generae previews of leads which do not have preview"""
-    print('here in generate_preview')
     lead_ids = lead_ids or Lead.objects.filter(
         Q(leadpreview__isnull=True) |
         Q(leadpreview__text_extract=''),
