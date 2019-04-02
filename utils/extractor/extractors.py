@@ -3,7 +3,8 @@ from .formats.html import process as html_extract
 from .formats.pdf import process as pdf_extract
 from .formats.docx import (
     process as docx_extract,
-    pptx_process as pptx_extract
+    pptx_process as pptx_extract,
+    msword_process as msword_extract
 )
 
 
@@ -69,3 +70,11 @@ class PptxExtractor(BaseExtractor):
     """
     ERROR_MSG = "Not a pptx document"
     EXTRACT_METHOD = pptx_extract
+
+
+class MswordExtractor(BaseExtractor):
+    """
+    Extractor class to extract msword documents.
+    """
+    ERROR_MSG = "Not a msword (.doc) document"
+    EXTRACT_METHOD = msword_extract
