@@ -1,7 +1,7 @@
 import os
 from .document import (
     Document,
-    HTML, PDF, DOCX, PPTX,
+    HTML, PDF, DOCX, PPTX, MSWORD,
 )
 
 
@@ -14,6 +14,7 @@ class FileDocument(Document):
     HTML_TYPES = ['.html', '.htm', '.txt']
     PDF_TYPES = ['.pdf', ]
     DOCX_TYPES = ['.docx', ]
+    MSWORD_TYPES = ['.doc', ]
     PPTX_TYPES = ['.pptx', ]
 
     def __init__(self, file, name):
@@ -28,6 +29,8 @@ class FileDocument(Document):
             type = HTML
         elif extension in self.DOCX_TYPES:
             type = DOCX
+        elif extension in self.MSWORD_TYPES:
+            type = MSWORD
         elif extension in self.PPTX_TYPES:
             type = PPTX
 
