@@ -5,12 +5,14 @@ HTML = 'html'
 PDF = 'pdf'
 DOCX = 'docx'
 PPTX = 'pptx'
+MSWORD = 'doc'
 
 EXTRACTORS = {
     HTML: extractors.HtmlExtractor,
     PDF: extractors.PdfExtractor,
     DOCX: extractors.DocxExtractor,
     PPTX: extractors.PptxExtractor,
+    MSWORD: extractors.MswordExtractor,
 }
 
 THUMBNAILERS = {
@@ -18,6 +20,7 @@ THUMBNAILERS = {
     PDF: thumbnailers.DocThumbnailer,
     DOCX: thumbnailers.DocThumbnailer,
     PPTX: thumbnailers.DocThumbnailer,
+    MSWORD: thumbnailers.DocThumbnailer,
 }
 
 

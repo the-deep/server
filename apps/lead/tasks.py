@@ -2,6 +2,7 @@ from celery import shared_task
 # from channels import Group
 from django.core.files import File
 from django.db import transaction
+from django.db.models import Q
 # from django.utils import timezone
 from django.conf import settings
 from lead.models import (
@@ -16,7 +17,7 @@ from utils.extractor.web_document import WebDocument
 from utils.extractor.thumbnailers import DocThumbnailer
 # from utils.websocket.subscription import SubscriptionConsumer
 
-# import json
+import time
 import reversion
 import os
 import re
@@ -192,7 +193,7 @@ def send_lead_text_to_deepl(self, lead_id):
         preview.classified_doc_id = classified_doc_id
         preview.save()
         return True
-    except Exception as e:
+    except Exception:
         # Retry with exponential decay
         logger.warning("Error while sending request to deepl. {}".format(
             traceback.format_exc()))
@@ -216,7 +217,7 @@ def extract_from_lead(lead_id):
     # and try to prevent useless parallel extraction of same lead that
     # that might happen.
     key = 'lead_extraction_{}'.format(lead_id)
-    lock = redis.get_lock(key, 60 * 60 * 4)  # Lock lifetime 4 hours
+    lock = redis.get_lock(key, 60 * 60 * 0.5)  # Lock lifetime half hours
     have_lock = lock.acquire(blocking=False)
     if not have_lock:
         return False
@@ -252,3 +253,16 @@ def extract_from_lead(lead_id):
 
     lock.release()
     return return_value
+
+
+@shared_task
+def generate_previews(lead_ids=None):
+    """Generae previews of leads which do not have preview"""
+    lead_ids = lead_ids or Lead.objects.filter(
+        Q(leadpreview__isnull=True) |
+        Q(leadpreview__text_extract=''),
+    ).values_list('id', flat=True)
+
+    for lead_id in lead_ids:
+        extract_from_lead.s(lead_id).delay()
+        time.sleep(0.5)

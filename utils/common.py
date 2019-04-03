@@ -95,7 +95,9 @@ def parse_time(time_str):
 
 
 def parse_number(num_str):
-    if not num_str:
+    try:
+        num = float(num_str)
+    except (ValueError, TypeError):
         return None
     num = float(num_str)
     if num == round(num):
