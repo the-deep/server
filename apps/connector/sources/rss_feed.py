@@ -71,6 +71,8 @@ class RssFeed(Source):
                 if not field:
                     return ''
                 element = item.find(field)
+                if not element:
+                    return ''
                 return element.text
             title = get_field(title_field)
             date = get_field(date_field)
