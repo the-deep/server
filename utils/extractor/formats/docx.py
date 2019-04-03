@@ -8,6 +8,13 @@ import zipfile
 import sys
 import re
 import os
+import random
+import string
+from subprocess import call
+import traceback
+import logging
+
+logger = logging.getLogger(__name__)
 
 """
 Usage:
@@ -142,6 +149,7 @@ def process(docx, pptx=False, img_dir=None):
                 images.append(dst_f)
 
     zipf.close()
+
     return text.strip(), images, page_count
 
 
@@ -149,12 +157,46 @@ def pptx_process(docx, img_dir=None):
     return process(docx, pptx=True, img_dir=None)
 
 
+def msword_process(doc, img_dir=None):
+    tmp_filepath = '/tmp/{}'.format(
+        ''.join(random.sample(string.ascii_lowercase, 10)) + '.doc'
+    )
+
+    with open(tmp_filepath, 'wb') as tmpdoc:
+        tmpdoc.write(doc.read())
+        tmpdoc.flush()
+
+    call([
+        'libreoffice', '--headless', '--convert-to', 'docx',
+        tmp_filepath, '--outdir', settings.TEMP_DIR,
+    ])
+
+    doc_filename = os.path.join(
+        settings.TEMP_DIR,
+        re.sub(r'doc$', 'docx', os.path.basename(tmp_filepath))
+    )
+    # docx = open(doc_filename)
+
+    response = process(doc_filename)
+
+    # Clean up converted docx file
+    call(['rm', '-f', doc_filename, tmp_filepath])
+    return response
+
+
 def get_pages_in_docx(file):
     with zipfile.ZipFile(file) as zipf:
-        xml = zipf.read('docProps/app.xml')
-        pages = ET.fromstring(xml).find('wP:Pages', nsmap)
-        # pages could be False or None
-        return int(pages.text) if pages is not None else 0
+        try:
+            xml = zipf.read('docProps/app.xml')
+            pages = ET.fromstring(xml).find('wP:Pages', nsmap)
+            # pages could be False or None
+            return int(pages.text) if pages is not None else 0
+        except KeyError:
+            logger.warning('Error reading page from docx {}\n{}'.format(
+                file,
+                traceback.format_exc(),
+            ))
+            return 0
 
 
 if __name__ == '__main__':
