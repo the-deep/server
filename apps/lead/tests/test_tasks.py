@@ -82,6 +82,7 @@ class ExtractFromLeadTaskTest(TestCase):
         )
         success_resp = requests.Response()
         success_resp._content = b'{"clasified_doc_id": 100}'
+        success_resp.status_code = 200
         post_mock.return_value = success_resp
         ret = send_lead_text_to_deepl(self.lead.id)
         assert ret is True

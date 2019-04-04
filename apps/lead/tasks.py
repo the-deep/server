@@ -187,7 +187,7 @@ def send_lead_text_to_deepl(self, lead_id):
         }
         response = requests.post(DEEPL_CLASSIFY_URL,
                                  data=data)
-        if response.status_code < 200 and response.status_code > 299:
+        if response.status_code < 200 or response.status_code > 299:
             raise Exception(
                 "Status code {} from DEEPL Server response {}".format(
                     response.status_code,
