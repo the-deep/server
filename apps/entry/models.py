@@ -3,8 +3,9 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.dispatch import receiver
 
-from gallery.models import File
+from utils.common import parse_number
 from project.mixins import ProjectEntityMixin
+from gallery.models import File
 from user_resource.models import UserResource
 from lead.models import Lead
 from analysis_framework.models import (
@@ -79,7 +80,9 @@ class Entry(UserResource, ProjectEntityMixin):
         if not splitted:
             return None
 
-        fileid = splitted[-1]
+        fileid = parse_number(splitted[-1])
+        if fileid is None:
+            return None
         file = File.objects.filter(id=fileid).first()
         if not file:
             return None
