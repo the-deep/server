@@ -88,7 +88,7 @@ class Entry(UserResource, ProjectEntityMixin):
             return None
 
         rand_str = file.get_random_string()
-        self.shareable_image_url = '/'.join([*splitted[:-1], fileid, rand_str])
+        self.shareable_image_url = '/'.join([*splitted[:-1], str(fileid), rand_str])
         return self.shareable_image_url
 
     class Meta(UserResource.Meta):
