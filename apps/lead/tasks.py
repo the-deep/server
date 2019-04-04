@@ -187,6 +187,12 @@ def send_lead_text_to_deepl(self, lead_id):
         }
         response = requests.post(DEEPL_CLASSIFY_URL,
                                  data=data)
+        if response.status_code < 200 and response.status_code > 299:
+            raise Exception(
+                "Status code {} from DEEPL Server response {}".format(
+                    response.status_code,
+                    response.text[:300]
+                ))
         response_data = response.json()
         classified_doc_id = response_data.get('id')
 
