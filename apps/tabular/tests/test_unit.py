@@ -277,7 +277,6 @@ class TestTabularExtraction(TestCase):
 
         # no vlaue should be invalid
         for v in field.data:
-            print(field.type, v['value'])
             assert not v.get('invalid', None)
 
     def test_sheet_data_change_on_string_change_to_geo(self):
