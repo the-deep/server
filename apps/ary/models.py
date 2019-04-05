@@ -9,6 +9,8 @@ from lead.models import Lead, LeadGroup
 from geo.models import GeoArea
 from project.mixins import ProjectEntityMixin
 
+from .utils import FIELDS_KEYS_VALUE_EXTRACTORS
+
 from utils.common import identity, underscore_to_title
 
 
@@ -336,11 +338,19 @@ class Assessment(UserResource, ProjectEntityMixin):
         if 'id' in schema:
             key = str(schema['id'])
             value = raw_data.get(key, '')
+            value_function = FIELDS_KEYS_VALUE_EXTRACTORS.get(schema['name'], identity)
             if schema['type'] == Field.SELECT:
-                value = schema['options'].get(value, value)
-            if schema['type'] == Field.MULTISELECT:
-                value = [schema['options'].get(x, x) for x in value]
-            return {schema['name']: value}
+                actual_value = schema['options'].get(value, value)
+            elif schema['type'] == Field.MULTISELECT:
+                actual_value = [
+                    value_function(schema['options'].get(x, x))
+                    for x in value
+                ]
+            else:
+                actual_value = value
+            return {
+                schema['name']: actual_value
+            }
         if isinstance(schema, dict):
             data = {
                 k: Assessment.get_data_from_schema(v, raw_data)
@@ -370,15 +380,13 @@ class Assessment(UserResource, ProjectEntityMixin):
             ),
             'sectors': lambda x: Sector.objects.get(id=x).title,
             'focuses': lambda x: Focus.objects.get(id=x).title,
-            'affected_groups':lambda x: AffectedGroup.objects.get(id=x).title,
+            'affected_groups': lambda x: AffectedGroup.objects.get(id=x).title,
             'locations': lambda x: GeoArea.objects.get(id=x).title,
             'objectives': identity,
             'sampling': identity,
             'limitations': identity,
             'data_collection_techniques': identity
         }
-
-        print(methodology_raw)
 
         return {
             underscore_to_title(k):
@@ -446,7 +454,7 @@ class Assessment(UserResource, ProjectEntityMixin):
                             [None] * numrows
                         )
                         rankvalue = int(rank.replace('rank', ''))  # rank<number>
-                        group_col_data[rankvalue] = colval
+                        group_col_data[rankvalue - 1] = colval
 
                         parsed_group_data[col_f] = group_col_data
                         parsed_sector_data[grouping_f] = parsed_group_data

@@ -100,7 +100,7 @@ class ExcelExporter:
             v = flat.get(t)
             if v:
                 v = flat[t]['value']
-                val = ', '.join(v) if isinstance(v, list) else str(v)
+                val = ', '.join([str(x) for x in v]) if isinstance(v, list) else str(v)
                 rows.add_value(val)
                 header = flat[t]['parents'][-1]
                 if not headers_dict.get(header):
