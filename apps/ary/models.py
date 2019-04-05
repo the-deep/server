@@ -370,13 +370,15 @@ class Assessment(UserResource, ProjectEntityMixin):
             ),
             'sectors': lambda x: Sector.objects.get(id=x).title,
             'focuses': lambda x: Focus.objects.get(id=x).title,
-            'affected_groups': lambda x: x['name'],
+            'affected_groups':lambda x: AffectedGroup.objects.get(id=x).title,
             'locations': lambda x: GeoArea.objects.get(id=x).title,
             'objectives': identity,
             'sampling': identity,
             'limitations': identity,
             'data_collection_techniques': identity
         }
+
+        print(methodology_raw)
 
         return {
             underscore_to_title(k):
@@ -388,15 +390,15 @@ class Assessment(UserResource, ProjectEntityMixin):
     def get_summary_json(self):
         # functions to get exact value of an entry in summary group
         value_functions = {
-            'specific_need_group': lambda x: SpecificNeedGroup.objects.get(
+            'specific_need_groups': lambda x: SpecificNeedGroup.objects.get(
                 id=x).title,
-            'affected_group': lambda x: AffectedGroup.objects.get(id=x).title,
-            'underlying_factor': lambda x: UnderlyingFactor
+            'affected_groups': lambda x: AffectedGroup.objects.get(id=x).title,
+            'underlying_factors': lambda x: UnderlyingFactor
             .objects.get(id=x).title,
             'outcomes': identity,
             'affected_location': lambda x: AffectedLocation.objects.get(
                 id=x).title,
-            'priority_sector': lambda x: PrioritySector.objects.get(
+            'priority_sectors': lambda x: PrioritySector.objects.get(
                 id=x).title,
             'priority_issue': lambda x: PriorityIssue.objects.get(id=x).title
         }
@@ -404,7 +406,7 @@ class Assessment(UserResource, ProjectEntityMixin):
         # Formatting of underscored keywords, by default is upper case as given
         # by default_format() function below
         formatting = {
-            'priority_sector': lambda x: 'Most Unmet Needs Sectors',
+            'priority_sectors': lambda x: 'Most Unmet Needs Sectors',
             'affected_location': lambda x: 'Settings Facing Most Humanitarian Issues'  # noqa
         }
 
@@ -419,31 +421,37 @@ class Assessment(UserResource, ProjectEntityMixin):
         # cross_sector = summary_raw.pop('cross_sector', {})
         # humanitarian_access = summary_raw.pop('humanitarian_access', {})
         # Add sectors data first
-        for k, v in summary_raw.items():
+        for sectorname, sector_data in summary_raw.items():
             try:
-                _, sec_id = k.split('-')
+                _, sec_id = sectorname.split('-')
                 sector = Sector.objects.get(id=sec_id).title
             # Exception because, we have cross_sector and humanitarian_access
             # in addition to "sector-<id>" keys
             except ValueError:
-                sector = default_format(k)
+                sector = default_format(sectorname)
 
-            data = {}
-            for kk, vv in v.items():
-                grouping, rowindex, col = kk.split('-')
+            parsed_sector_data = {}
+            for groupname, group_data in sector_data.items():
+                # grouping, rowindex, col = kk.split('-')
                 # format them
-                grouping_f = formatting.get(grouping, default_format)(grouping)
-                col_f = formatting.get(col, default_format)(col)
-                # get exact value
-                value = value_functions[grouping](vv)
+                grouping_f = formatting.get(groupname, default_format)(groupname)
+                numrows = len(group_data.keys())
 
-                group_data = data.get(grouping_f, {})
-                # first time, initialize to list of 3 empty strings
-                coldata = group_data.get(col_f, [''] * 3)
-                coldata[int(rowindex)] = value
-                group_data[col_f] = coldata
-                data[grouping_f] = group_data
-            summary_data[sector] = data
+                parsed_group_data = parsed_sector_data.get(grouping_f, {})
+                for rank, data in group_data.items():
+                    for colname, colval in data.items():
+                        col_f = formatting.get(colname, default_format)(colname)
+                        group_col_data = parsed_group_data.get(
+                            col_f,
+                            [None] * numrows
+                        )
+                        rankvalue = int(rank.replace('rank', ''))  # rank<number>
+                        group_col_data[rankvalue] = colval
+
+                        parsed_group_data[col_f] = group_col_data
+                        parsed_sector_data[grouping_f] = parsed_group_data
+
+            summary_data[sector] = parsed_sector_data
         # add cross_sector
         return summary_data
 
