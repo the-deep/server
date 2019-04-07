@@ -6,7 +6,7 @@ from rest_framework.exceptions import AuthenticationFailed
 
 from utils.hid import HumanitarianId
 from user.utils import send_account_activation
-from .token import AccessToken, RefreshToken
+from .token import AccessToken, RefreshToken, TokenError
 from .recaptcha import validate_recaptcha
 from .errors import (
     InvalidCaptchaError,
@@ -81,13 +81,15 @@ class TokenRefreshSerializer(serializers.Serializer):
     def validate(self, data):
         user = self.context['request'].user
 
-        refresh_token = RefreshToken(data['refresh'])
         try:
+            refresh_token = RefreshToken(data['refresh'])
             user_id = refresh_token['userId']
         except KeyError:
             raise serializers.ValidationError(
                 'Token contains no valid user identification'
             )
+        except TokenError as e:
+            raise serializers.ValidationError(e.message)
 
         if user.id != user_id:
             raise serializers.ValidationError(
