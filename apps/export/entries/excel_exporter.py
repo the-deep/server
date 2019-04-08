@@ -228,7 +228,7 @@ class ExcelExporter:
             for i, x in enumerate(field.data):
                 tabular_sheet[
                     '{}{}'.format(sheet_col_name, 2 + i)
-                ].value = x['value']
+                ].value = x.get('processed_value') or x['value']
         else:
             sheet_col_name = excel_column_name(col_number)
 
