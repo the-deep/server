@@ -1,14 +1,16 @@
 from geo.models import Region
 from organization.models import Organization
 
+from utils.common import parse_number
+
 
 def get_country_name(cid):
-    region = Region.objects.filter(id=cid).first()
+    region = Region.objects.filter(id=parse_number(cid)).first()
     return region and region.title
 
 
 def get_organization_name(did):
-    org = Organization.objects.filter(id=did).first()
+    org = Organization.objects.filter(id=parse_number(did)).first()
     return org and org.title
 
 
