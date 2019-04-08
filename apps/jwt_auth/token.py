@@ -42,12 +42,14 @@ class Token:
         if self.token:
             # Given token, decode it
             try:
-                self.payload = jwt.decode(self.token,
-                                          SECRET,
-                                          algorithms=['HS256'],
-                                          verify=verify)
-            except jwt.ExpiredSignatureError:
-                    raise TokenError('Token is invalid or expired')
+                self.payload = jwt.decode(
+                    self.token,
+                    SECRET,
+                    algorithms=['HS256'],
+                    verify=verify,
+                )
+            except (jwt.ExpiredSignatureError, jwt.InvalidSignatureError):
+                raise TokenError('Token is invalid or expired')
         else:
             # Not token was given, so create a new one
             # Also set proper lifetime starting now
