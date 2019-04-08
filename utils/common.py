@@ -87,11 +87,17 @@ def format_date(date):
 
 
 def parse_date(date_str):
-    return date_str and datetime.strptime(date_str, '%d-%m-%Y')
+    try:
+        return date_str and datetime.strptime(date_str, '%d-%m-%Y')
+    except ValueError:
+        return None
 
 
 def parse_time(time_str):
-    return time_str and datetime.strptime(time_str, '%H:%M').time()
+    try:
+        return time_str and datetime.strptime(time_str, '%H:%M').time()
+    except ValueError:
+        return None
 
 
 def parse_number(num_str):

@@ -39,9 +39,9 @@ COL_TYPES = {
 }
 
 TYPE_CONVERTERS = {
-    'date': parse_date,
-    'time': parse_time,
-    'number': parse_number,
+    'date': lambda x: parse_date(x) or x,
+    'time': lambda x: parse_time(x) or x,
+    'number': lambda x: parse_number(x) or x,
 }
 
 

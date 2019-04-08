@@ -46,12 +46,18 @@ class JsonExporter:
             data['excerpt'] = entry.excerpt
             data['image'] = entry.image
             data['attributes'] = []
+            data['data_series'] = {}
 
             for attribute in entry.attribute_set.all():
                 attribute_data = {}
                 attribute_data['widget_id'] = attribute.widget.key
                 attribute_data['data'] = attribute.data
                 data['attributes'].append(attribute_data)
+            if entry.tabular_field:
+                data['data_series'] = {
+                    'options': entry.tabular_field.options,
+                    'data': entry.tabular_field.data,
+                }
             self.data['entries'].append(data)
         return self
 
