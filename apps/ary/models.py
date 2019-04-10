@@ -341,7 +341,7 @@ class Assessment(UserResource, ProjectEntityMixin):
             value_function = FIELDS_KEYS_VALUE_EXTRACTORS.get(schema['name'], identity)
             if schema['type'] == Field.SELECT:
                 # value should not be list but just in case it is a list
-                value = value[0] if isinstance(value, list) and len(value) > 0 else value or None
+                value = value[0] if isinstance(value, list) and len(value) > 0 else value or ''
                 actual_value = schema['options'].get(value, value)
             elif schema['type'] == Field.MULTISELECT:
                 value = value or []
