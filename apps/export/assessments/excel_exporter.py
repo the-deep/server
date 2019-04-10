@@ -30,18 +30,24 @@ class ExcelExporter:
         # Cells to be merged
         self.merge_cells = {}
         # Initial titles
-        self.titles = [
+        self.lead_titles = [
             'Date of Lead Publication',
             'Imported By',
             'Lead Title',
             'Source',
         ]
+        self.titles = [*self.lead_titles]
         self.col_types = {
             0: 'date',
         }
         self._titles_dict = {k: True for k in self.titles}
 
         self._headers_added = False
+        self._excel_rows = []
+        self._title_headers = []
+        self._headers_dict = {}
+        self._flats = []
+        self._assessments = []
 
     def to_flattened_key_vals(self, dictdata, parents=[]):
         """
@@ -81,55 +87,71 @@ class ExcelExporter:
     def add_assessment(self, assessment):
         jsondata = assessment.to_exportable_json()
         flat = self.to_flattened_key_vals(jsondata)
-        rows = RowsBuilder(self.split, self.group, split=False)
-        rows.add_value_list([
-            format_date(assessment.lead.created_at),
-            assessment.lead.created_by.username,
-            assessment.lead.title,
-            assessment.lead.source
-        ])
+        self._flats.append(flat)
+        self._assessments.append(assessment)
+
         # update the titles
         for k, v in flat.items():
             if not self._titles_dict.get(k):
                 self.titles.append(k)
                 self._titles_dict[k] = True
+        return self
 
-        # create headers
-        self.merge_cells = {}  # to store which cells to merge
-        headers_dict = {}
-        title_headers = []
-        for i, t in enumerate(self.titles):
-            v = flat.get(t)
-            if v:
-                v = flat[t]['value']
-                val = ', '.join([str(x) for x in v]) if isinstance(v, list) else str(v)
-                rows.add_value(val)
-                header = flat[t]['parents'][-1]
-                if not headers_dict.get(header):
-                    self.merge_cells[header] = {'start': i, 'end': i}
-                    title_headers.append(header.upper())
-                    headers_dict[header] = True
+    def assessments_to_rows(self):
+        for index, assessment in enumerate(self._assessments):
+            rows = RowsBuilder(self.split, self.group, split=False)
+            rows.add_value_list([
+                format_date(assessment.lead.created_at),
+                assessment.lead.created_by.username,
+                assessment.lead.title,
+                assessment.lead.source
+            ])
+            flat = self._flats[index]
+            headers_dict = {}
+            for i, t in enumerate(self.titles):
+                v = flat.get(t)
+                if v:
+                    v = flat[t]['value']
+                    val = ', '.join([str(x) for x in v]) if isinstance(v, list) else str(v)
+                    rows.add_value(val)
+                    header = flat[t]['parents'][-1]
+
+                    if not self._headers_dict.get(header):
+                        self._title_headers.append(header.upper())
+                        self._headers_dict[header] = True
+                    else:
+                        self.merge_cells[header]['end'] += 1
+
+                    if not headers_dict.get(header):
+                        self.merge_cells[header] = {'start': i, 'end': i}
+                        headers_dict[header] = True
+                    else:
+                        self._title_headers.append("")
                 else:
-                    self.merge_cells[header]['end'] += 1
-                    title_headers.append("")
-            else:
-                title_headers.append("")
+                    if t not in self.lead_titles:
+                        rows.add_value("")
+                    self._title_headers.append("")
+            self._excel_rows.append(rows)
 
-        if not self._headers_added:
-            headerrows = RowsBuilder(self.split, self.group, split=False)
-            headerrows.add_value_list(title_headers)
-            headerrows.apply()
-            self.group.append([self.titles])
+    def export(self, export_entity):
+        # Generate rows
+        self.assessments_to_rows()
+
+        # add header rows
+        headerrows = RowsBuilder(self.split, self.group, split=False)
+        headerrows.add_value_list(self._title_headers)
+        headerrows.apply()
+
+        self.group.append([self.titles])
 
         if self.decoupled and self.split:
             self.split.auto_fit_cells_in_row(1)
         self.group.auto_fit_cells_in_row(1)
 
-        rows.apply()
-        self._headers_added = True
-        return self
+        # add rows
+        for rows in self._excel_rows:
+            rows.apply()
 
-    def export(self, export_entity):
         # merge cells
         if self.merge_cells:
             sheet = self.wb.wb.active
