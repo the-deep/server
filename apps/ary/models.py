@@ -340,8 +340,11 @@ class Assessment(UserResource, ProjectEntityMixin):
             value = raw_data.get(key, '')
             value_function = FIELDS_KEYS_VALUE_EXTRACTORS.get(schema['name'], identity)
             if schema['type'] == Field.SELECT:
+                # value should not be list but just in case it is a list
+                value = value[0] if isinstance(value, list) and len(value) > 0 else value or None
                 actual_value = schema['options'].get(value, value)
             elif schema['type'] == Field.MULTISELECT:
+                value = value or []
                 actual_value = [
                     value_function(schema['options'].get(x, x))
                     for x in value
@@ -440,7 +443,7 @@ class Assessment(UserResource, ProjectEntityMixin):
 
             parsed_sector_data = {}
             for groupname, group_data in sector_data.items():
-                # grouping, rowindex, col = kk.split('-')
+                # grouping, rowindex, col = groupname.split('-')
                 # format them
                 grouping_f = formatting.get(groupname, default_format)(groupname)
                 numrows = len(group_data.keys())
@@ -467,8 +470,8 @@ class Assessment(UserResource, ProjectEntityMixin):
         if not self.score:
             return {}
 
-        pillars_raw = self.score['pillars']
-        matrix_pillars_raw = self.score['matrix_pillars']
+        pillars_raw = self.score['pillars'] or {}
+        matrix_pillars_raw = self.score['matrix_pillars'] or {}
 
         pillars = {}
         for pid, pdata in pillars_raw.items():
