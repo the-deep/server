@@ -41,6 +41,8 @@ class ExcelExporter:
         }
         self._titles_dict = {k: True for k in self.titles}
 
+        self._headers_added = False
+
     def to_flattened_key_vals(self, dictdata, parents=[]):
         """
         Convert nested dictionary data to flat dict with keys and nondict
@@ -113,16 +115,18 @@ class ExcelExporter:
             else:
                 title_headers.append("")
 
-        headerrows = RowsBuilder(self.split, self.group, split=False)
-        headerrows.add_value_list(title_headers)
-        headerrows.apply()
-        self.group.append([self.titles])
+        if not self._headers_added:
+            headerrows = RowsBuilder(self.split, self.group, split=False)
+            headerrows.add_value_list(title_headers)
+            headerrows.apply()
+            self.group.append([self.titles])
 
         if self.decoupled and self.split:
             self.split.auto_fit_cells_in_row(1)
         self.group.auto_fit_cells_in_row(1)
 
         rows.apply()
+        self._headers_added = True
         return self
 
     def export(self, export_entity):
