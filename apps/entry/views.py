@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from rest_framework import (
     filters,
     generics,
@@ -54,7 +54,8 @@ class EntryViewSet(viewsets.ModelViewSet):
             return EntryRetriveSerializer
         return super().get_serializer_class()
 
-    @list_route(
+    @action(
+        detail=True,
         url_path='processed',
         serializer_class=EntryProccesedSerializer,
     )

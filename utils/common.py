@@ -1,12 +1,14 @@
+# -*- coding: utf-8 -*-
 from xml.sax.saxutils import escape as xml_escape
-import matplotlib.pyplot as plt
+import matplotlib as mp
 from datetime import timedelta, datetime
 from django.conf import settings
 from redis_store import redis
 
+import plotly.io as pio
+import plotly.graph_objs as ploty_go
 from collections import Counter
 from functools import reduce
-import matplotlib.colors as mcolors
 import os
 import time
 import random
@@ -33,7 +35,9 @@ def write_file(r, fp):
     return fp
 
 
-def get_temp_file(dir='/tmp/'):
+def get_temp_file(dir='/tmp/', suffix=None):
+    if suffix:
+        return tempfile.NamedTemporaryFile(dir=dir, suffix=suffix)
     return tempfile.NamedTemporaryFile(dir=dir)
 
 
@@ -255,15 +259,60 @@ def create_plot_image(func):
     def func_wrapper(*args, **kwargs):
         size = kwargs.pop('chart_size', (8, 4))
         func(*args, **kwargs)
-        figure = plt.gcf()
+        figure = mp.pyplot.gcf()
+
         if size:
             figure.set_size_inches(size)
-        plt.draw()
-        fp = get_temp_file()
+        mp.pyplot.draw()
+        mp.pyplot.gca().spines['top'].set_visible(False)
+        mp.pyplot.gca().spines['right'].set_visible(False)
+        fp = get_temp_file(suffix='.svg')
         figure.savefig(fp, bbox_inches='tight', alpha=True, dpi=300)
-        plt.close(figure)
+        mp.pyplot.close(figure)
         return fp
     return func_wrapper
+
+
+def create_plotly_image(func):
+    """
+    Return tmp file image with func render logic
+    """
+    def func_wrapper(*args, **kwargs):
+        width, height = kwargs.pop('chart_size', (5, 4))
+        image_format = kwargs.pop('format', 'png')
+        x_label = kwargs.pop('x_label')
+        y_label = kwargs.pop('y_label')
+        data, layout = func(*args, **kwargs)
+        if layout is None:
+            layout = ploty_go.Layout(**{
+                'title': x_label,
+                'yaxis': {
+                    'title': y_label,
+                    'automargin': True,
+                    'tickfont': dict(size=8),
+                },
+                'xaxis': {
+                    'automargin': True,
+                    'ticks': 'outside',
+                    'tickfont': dict(size=8),
+                },
+            })
+        fig = ploty_go.Figure(data=data, layout=layout)
+        img_bytes = pio.to_image(fig, format=image_format, width=width, height=height, scale=2)
+        fp = get_temp_file(suffix='.{}'.format(image_format))
+        fp.write(img_bytes)
+        fp.seek(0)
+        return fp
+    return func_wrapper
+
+
+create_plotly_image.marker = dict(
+    color='teal',
+    line=dict(
+        color='rgb(8,48,107)',
+        width=0.5,
+    )
+)
 
 
 def redis_lock(func):
@@ -307,7 +356,7 @@ def make_colormap(seq):
             cdict['red'].append([item, r1, r2])
             cdict['green'].append([item, g1, g2])
             cdict['blue'].append([item, b1, b2])
-    return mcolors.LinearSegmentedColormap('CustomMap', cdict)
+    return mp.colors.LinearSegmentedColormap('CustomMap', cdict)
 
 
 def excel_to_python_date_format(excel_format):
