@@ -60,7 +60,7 @@ class WorkSheet:
         row = list(self.ws.rows)[row_id - 1]
         for cell in row:
             self.ws.column_dimensions[cell.column].width =\
-                max(len(cell.value), 15)
+                max(len(str(cell.value)), 15)
 
         return self
 
