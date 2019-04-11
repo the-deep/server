@@ -331,6 +331,23 @@ class Assessment(UserResource, ProjectEntityMixin):
         return schema
 
     @staticmethod
+    def get_actual_value(schema, value):
+        value_function = FIELDS_KEYS_VALUE_EXTRACTORS.get(schema['name'], identity)
+        if schema['type'] == Field.SELECT:
+            # value should not be list but just in case it is a list
+            value = value[0] if isinstance(value, list) and len(value) > 0 else value or ''
+            actual_value = schema['options'].get(value, value)
+        elif schema['type'] == Field.MULTISELECT:
+            value = value or []
+            actual_value = [
+                value_function(schema['options'].get(x, x))
+                for x in value
+            ]
+        else:
+            actual_value = value
+        return actual_value
+
+    @staticmethod
     def get_data_from_schema(schema, raw_data):
         if not raw_data:
             return {}
@@ -338,18 +355,8 @@ class Assessment(UserResource, ProjectEntityMixin):
         if 'id' in schema:
             key = str(schema['id'])
             value = raw_data.get(key, '')
-            value_function = FIELDS_KEYS_VALUE_EXTRACTORS.get(schema['name'], identity)
-            if schema['type'] == Field.SELECT:
-                actual_value = schema['options'].get(value, value)
-            elif schema['type'] == Field.MULTISELECT:
-                actual_value = [
-                    value_function(schema['options'].get(x, x))
-                    for x in value
-                ]
-            else:
-                actual_value = value
             return {
-                schema['name']: actual_value
+                schema['name']: Assessment.get_actual_value(schema, value)
             }
         if isinstance(schema, dict):
             data = {
@@ -440,7 +447,7 @@ class Assessment(UserResource, ProjectEntityMixin):
 
             parsed_sector_data = {}
             for groupname, group_data in sector_data.items():
-                # grouping, rowindex, col = kk.split('-')
+                # grouping, rowindex, col = groupname.split('-')
                 # format them
                 grouping_f = formatting.get(groupname, default_format)(groupname)
                 numrows = len(group_data.keys())
@@ -460,15 +467,25 @@ class Assessment(UserResource, ProjectEntityMixin):
                         parsed_sector_data[grouping_f] = parsed_group_data
 
             summary_data[sector] = parsed_sector_data
+
         # add cross_sector
-        return summary_data
+
+        # NOTE: convert to single columed values
+        # FIXME: later make the excel export highly nestable
+        new_summary_data = {}
+        for sector, data in summary_data.items():
+            for group, groupdata in data.items():
+                for col, coldata in groupdata.items():
+                    key = '{} - {} - {}'.format(sector, group, col)
+                    new_summary_data[key] = coldata
+        return new_summary_data
 
     def get_score_json(self):
         if not self.score:
             return {}
 
-        pillars_raw = self.score['pillars']
-        matrix_pillars_raw = self.score['matrix_pillars']
+        pillars_raw = self.score['pillars'] or {}
+        matrix_pillars_raw = self.score['matrix_pillars'] or {}
 
         pillars = {}
         for pid, pdata in pillars_raw.items():
