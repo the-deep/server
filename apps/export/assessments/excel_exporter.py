@@ -42,6 +42,7 @@ class ExcelExporter:
         }
         self._titles_dict = {k: True for k in self.titles}
 
+        self._headers_titles = OrderedDict()
         self._headers_added = False
         self._excel_rows = []
         self._title_headers = []
@@ -92,10 +93,24 @@ class ExcelExporter:
 
         # update the titles
         for k, v in flat.items():
+            parent = v['parents'][-1]
+            header_titles = self._headers_titles.get(parent, [])
+
+            if k not in header_titles:
+                header_titles.append(k)
+            self._headers_titles[parent] = header_titles
+            '''
             if not self._titles_dict.get(k):
                 self.titles.append(k)
                 self._titles_dict[k] = True
+            '''
         return self
+
+    def get_titles(self):
+        return [
+            *self.lead_titles,
+            *[y for k, v in self._headers_titles.items() for y in v]
+        ]
 
     def assessments_to_rows(self):
         for index, assessment in enumerate(self._assessments):
@@ -106,33 +121,35 @@ class ExcelExporter:
                 assessment.lead.title,
                 assessment.lead.source
             ])
-            flat = self._flats[index]
-            print(flat)
-            print()
             headers_dict = {}
-            for i, t in enumerate(self.titles):
+            flat = self._flats[index]
+            for i, t in enumerate(self.get_titles()):
                 v = flat.get(t)
-                if v:
-                    v = flat[t]['value']
-                    val = ', '.join([str(x) for x in v]) if isinstance(v, list) else str(v)
-                    rows.add_value(val)
-                    header = flat[t]['parents'][-1]
-
-                    if not self._headers_dict.get(header):
-                        self._title_headers.append(header.upper())
-                        self._headers_dict[header] = True
-                    else:
-                        self.merge_cells[header]['end'] += 1
-
-                    if not headers_dict.get(header):
-                        self.merge_cells[header] = {'start': i, 'end': i}
-                        headers_dict[header] = True
-                    else:
-                        self._title_headers.append("")
-                else:
-                    if t not in self.lead_titles:
-                        rows.add_value("")
+                if not v and t not in self.lead_titles:
+                    rows.add_value("")
                     self._title_headers.append("")
+                    continue
+                elif not v:
+                    self._title_headers.append("")
+                    continue
+
+                v = flat[t]['value']
+                val = ', '.join([str(x) for x in v]) if isinstance(v, list) else str(v)
+                rows.add_value(val)
+                header = flat[t]['parents'][-1]
+
+                if not self._headers_dict.get(header):
+                    self._title_headers.append(header.upper())
+                    self._headers_dict[header] = True
+                else:
+                    self.merge_cells[header]['end'] += 1
+
+                if not headers_dict.get(header):
+                    self.merge_cells[header] = {'start': i, 'end': i}
+                    headers_dict[header] = True
+                else:
+                    self._title_headers.append("")
+
             self._excel_rows.append(rows)
 
     def export(self, export_entity):
@@ -144,7 +161,7 @@ class ExcelExporter:
         headerrows.add_value_list(self._title_headers)
         headerrows.apply()
 
-        self.group.append([self.titles])
+        self.group.append([self.get_titles()])
 
         if self.decoupled and self.split:
             self.split.auto_fit_cells_in_row(1)
