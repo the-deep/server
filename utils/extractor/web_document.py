@@ -28,22 +28,22 @@ class WebDocument(Document):
         params = {'url': url}
 
         try:
-            r = requests.head(url, headers=DEFAULT_HEADERS)
+            r = requests.head(url, headers=DEFAULT_HEADERS, verify=False)
         except requests.exceptions.RequestException:
             # If we can't get header, assume html and try to continue.
-            r = requests.get(url, headers=DEFAULT_HEADERS)
+            r = requests.get(url, headers=DEFAULT_HEADERS, verify=False)
             doc = r.content
             super().__init__(doc, type, params=params)
             return
 
         if not r.headers.get('content-type') or \
                 any(x in r.headers["content-type"] for x in self.HTML_TYPES):
-            r = requests.get(url, headers=DEFAULT_HEADERS)
+            r = requests.get(url, headers=DEFAULT_HEADERS, verify=False)
             doc = r.content
         else:
             fp = tempfile.NamedTemporaryFile(
                 dir=settings.TEMP_DIR, delete=False)
-            r = requests.get(url, stream=True, headers=DEFAULT_HEADERS)
+            r = requests.get(url, stream=True, headers=DEFAULT_HEADERS, verify=False)
             write_file(r, fp)
 
             doc = fp

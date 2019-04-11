@@ -62,14 +62,22 @@ class ReportExporter:
         # and run.add_image for actual size image
 
         image = None
+        image_text = None
         if entry.entry_type == Entry.IMAGE:
             image = entry.image
             # para.add_run().add_image(entry.image)
         elif entry.entry_type == Entry.DATA_SERIES:
             image = viz_renderer.get_entry_image(entry)
+            health_stats = entry.tabular_field.cache.get('health_stats', {})
+            image_text = ' Total values: {}, Invalid value: {}, Null value: {}'.format(
+                health_stats.get('total', 'N/A'),
+                health_stats.get('invalid', 'N/A'),
+                health_stats.get('empty', 'N/A'),
+            )
 
         if image:
             self.doc.add_image(image)
+            self.doc.add_paragraph(image_text).justify()
             para = self.doc.add_paragraph().justify()
 
         lead = entry.lead
@@ -77,8 +85,7 @@ class ReportExporter:
 
         source = lead.source or 'Reference'
         url = lead.url or (
-            lead.attachment and lead.attachment.file and
-            lead.attachment.file.url
+            lead.attachment and lead.attachment.get_shareable_image_url()
         )
 
         para.add_run(' (')
@@ -280,8 +287,7 @@ class ReportExporter:
 
             para = self.doc.add_paragraph()
             url = lead.url or (
-                lead.attachment and lead.attachment.file and
-                lead.attachment.file.url
+                lead.attachment and lead.attachment.get_shareable_image_url()
             )
             if url:
                 para.add_hyperlink(url, url)

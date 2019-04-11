@@ -1,6 +1,9 @@
 from deep.tests import TestCase
 import autofixture
 
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.conf import settings
 from project.models import Project
 from user.models import User
 from lead.models import Lead
@@ -418,8 +421,13 @@ class EntryTest(TestCase):
         assert entry.get_shareable_image_url() is not None
         # Get file again, because it won't have random_string updated
         file = File.objects.get(id=self.file.id)
-        assert entry.get_shareable_image_url() == '{}/{}/{}'.format(
-            entry_image_url,
-            self.file.id,
-            file.get_random_string()
+        assert entry.get_shareable_image_url() == '{protocol}://{domain}{url}'.format(
+            protocol=settings.HTTP_PROTOCOL,
+            domain=settings.DJANGO_API_HOST,
+            url='/public-file/{fidb64}/{token}/{filename}'.format(**{
+                'fidb64': urlsafe_base64_encode(force_bytes(file.pk)).decode(),
+                'token': file.get_random_string(),
+                'filename': file.title,
+            }
+            ),
         )

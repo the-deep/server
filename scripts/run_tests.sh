@@ -11,8 +11,8 @@ if [ "$CI" == "true" ]; then
 
     set -e
     coverage run -m py.test
-    coverage report
-    coverage html
+    coverage report -i
+    coverage html -i
     codecov
     set +e
 else

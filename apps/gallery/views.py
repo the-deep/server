@@ -1,8 +1,9 @@
 import logging
 from django.views.generic import View
-from rest_framework import views
 from django.conf import settings
 from django.db import models, transaction
+from django.utils.encoding import force_text
+from django.utils.http import urlsafe_base64_decode
 from django.shortcuts import redirect, get_object_or_404
 
 from rest_framework import (
@@ -53,8 +54,9 @@ class FileView(View):
 
 
 class PublicFileView(View):
-    def get(self, request, file_id=None, random_string=None):
-        file = get_object_or_404(File, id=file_id, random_string=random_string)
+    def get(self, request, fidb64=None, token=None, filename=None):
+        file_id = force_text(urlsafe_base64_decode(fidb64))
+        file = get_object_or_404(File, id=file_id, random_string=token)
         return redirect(request.build_absolute_uri(file.file.url))
 
 

@@ -16,7 +16,7 @@ rvb = make_colormap(
     [c('white'), c('teal')])
 
 
-def get_geoareas(selected_geoareas, admin_levels, regions):
+def get_geoareas(selected_geoareas, admin_levels=None, regions=None):
     if admin_levels or regions:
         if admin_levels:
             geoareas = GeoArea.objects.filter(
