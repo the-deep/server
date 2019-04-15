@@ -99,12 +99,11 @@ def generate_chart(field, chart_type='barchart', image_format='svg'):
             return None, {}
         params['data'] = df
     else:
-        val_column = 'processed_value' if field.type == 'geo' else 'value'
-        df, _ = clean_real_data(field.data, val_column)
+        df, _ = clean_real_data(field.data, 'value')
         if chart_type == 'histograms':
-            params['data'] = pd.to_numeric(df[val_column])
+            params['data'] = pd.to_numeric(df['value'])
         elif chart_type == 'wordcloud':
-            params['data'] = ' '.join(df[val_column].values)
+            params['data'] = ' '.join(df['value'].values)
 
     if isinstance(params['data'], pd.DataFrame) and params['data'].empty:
         logger.warn('Empty DataFrame: no numeric data to plot')
