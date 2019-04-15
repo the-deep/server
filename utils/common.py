@@ -11,6 +11,7 @@ import plotly.graph_objs as ploty_go
 from collections import Counter
 from functools import reduce
 import os
+import re
 import time
 import random
 import string
@@ -373,11 +374,15 @@ def make_colormap(seq):
 
 def excel_to_python_date_format(excel_format):
     # TODO: support all formats
-    python_format = excel_format.upper().replace('\\', '').\
+    # First replace excel's locale identifiers such as [$-409] by empty string
+    python_format = re.sub('(\[\\$-\d+\])', '', excel_format.upper()).\
+        replace('\\', '').\
         replace('YYYY', '%Y').\
         replace('YY', '%y').\
         replace('MM', '%m').\
+        replace('M', '%m').\
         replace('DD', '%d').\
+        replace('D', '%d').\
         replace('HH', '%H').\
         replace('H', '%H').\
         replace('SS', '%S')
