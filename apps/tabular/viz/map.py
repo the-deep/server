@@ -45,11 +45,10 @@ def plot(*args, **kwargs):
     # NOTE: this are region pks/objects
     regions = kwargs.get('regions')
     df = kwargs.get('data').rename(columns={'value': 'geoarea_id'})
-    df.index.names = ['geoarea_id']
 
     shapes = []
     geoareas = get_geoareas(
-        df.index.values.tolist(),
+        df['geoarea_id'].values.tolist(),
         admin_levels,
         regions,
     )
