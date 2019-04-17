@@ -14,7 +14,6 @@ from utils.extractor.formats.pdf import get_pages_in_pdf
 from .models import File, FilePreview
 
 import os
-import traceback
 import logging
 
 logger = logging.getLogger(__name__)
@@ -66,7 +65,7 @@ class FileSerializer(RemoveNullFieldsMixin,
                 validated_data.get('file')
             )
         except Exception:
-            logger.error(traceback.format_exc())
+            logger.error('File create Failed!!', exc_info=True)
         return super().create(validated_data)
 
 

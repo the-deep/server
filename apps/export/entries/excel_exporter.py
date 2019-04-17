@@ -260,10 +260,9 @@ class ExcelExporter:
                 return self.get_data_series(entry)
             except Exception:
                 logger.error(
-                    'Data Series EXCEL Export Failed for entry ({})'.format(
-                        entry.pk,
-                    ),
+                    'Data Series EXCEL Export Failed for entry',
                     exc_info=1,
+                    extra={'entry_id': entry.pk},
                 )
 
         return ''

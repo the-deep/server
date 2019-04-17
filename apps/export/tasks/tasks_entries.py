@@ -10,7 +10,6 @@ from export.entries.report_exporter import ReportExporter
 from export.entries.json_exporter import JsonExporter
 from geo.models import Region
 
-import traceback
 import logging
 
 logger = logging.getLogger(__name__)
@@ -81,7 +80,7 @@ def export_entries(export_type, export_id, user_id, project_id, filters):
         if export:
             export.pending = False
             export.save()
-        logger.error(traceback.format_exc())
+        logger.error('Export Entries Failed', exc_info=True, extra={'export_id': export_id})
         return_value = False
 
     return return_value
