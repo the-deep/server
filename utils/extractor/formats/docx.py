@@ -11,7 +11,6 @@ import os
 import random
 import string
 from subprocess import call
-import traceback
 import logging
 
 logger = logging.getLogger(__name__)
@@ -192,10 +191,9 @@ def get_pages_in_docx(file):
             # pages could be False or None
             return int(pages.text) if pages is not None else 0
         except KeyError:
-            logger.warning('Error reading page from docx {}\n{}'.format(
+            logger.warning('Error reading page from docx {}'.format(
                 file,
-                traceback.format_exc(),
-            ))
+            ), exc_info=True)
             return 0
 
 

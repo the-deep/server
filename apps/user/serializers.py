@@ -9,7 +9,7 @@ from project.models import Project
 from gallery.models import File
 
 from jwt_auth.recaptcha import validate_recaptcha
-from jwt_auth.errors import (UserNotFoundError, InvalidCaptchaValidationError)
+from jwt_auth.errors import (UserNotFoundError, InvalidCaptchaError)
 
 
 class SimpleUserSerializer(RemoveNullFieldsMixin,
@@ -74,7 +74,7 @@ class UserSerializer(RemoveNullFieldsMixin,
 
     def validate_recaptcha_response(self, recaptcha_response):
         if not validate_recaptcha(recaptcha_response):
-            raise InvalidCaptchaValidationError
+            raise InvalidCaptchaError
 
     def validate_last_active_project(self, project):
         if project and not project.is_member(self.context['request'].user):
@@ -159,7 +159,7 @@ class PasswordResetSerializer(RemoveNullFieldsMixin,
 
     def validate_recaptcha_response(self, recaptcha_response):
         if not validate_recaptcha(recaptcha_response):
-            raise InvalidCaptchaValidationError
+            raise InvalidCaptchaError
 
     def save(self):
         email = self.validated_data["email"]

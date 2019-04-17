@@ -11,7 +11,6 @@ from redis_store import redis
 import reversion
 import requests
 
-import traceback
 import logging
 
 logger = logging.getLogger(__name__)
@@ -41,7 +40,7 @@ def _extract_from_file_core(file_preview_id):
                     all_text += '\n\n'
                 all_text += text
             except Exception:
-                logger.error(traceback.format_exc())
+                logger.error('gallery._extract_from_file_core', exc_info=True)
                 continue
 
         if all_text:
@@ -54,7 +53,7 @@ def _extract_from_file_core(file_preview_id):
                                          data=data).json()
                 file_preview.ngrams = response
             except Exception:
-                logger.error(traceback.format_exc())
+                logger.error('gallery.DEEPL_NGRAMS', exc_info=True)
 
         file_preview.extracted = True
         file_preview.save()
@@ -73,7 +72,7 @@ def extract_from_file(file_preview_id):
     try:
         return_value = _extract_from_file_core(file_preview_id)
     except Exception:
-        logger.error(traceback.format_exc())
+        logger.error('gallery.extract_from_file', exc_info=True)
         return_value = False
 
     lock.release()

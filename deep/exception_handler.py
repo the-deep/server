@@ -5,9 +5,8 @@ from rest_framework.views import exception_handler
 from rest_framework.response import Response
 from rest_framework import status
 
-from deep.errors import map_error_codes
+from deep.errors import map_error_codes, WARN_EXCEPTIONS
 
-import traceback
 import logging
 
 logger = logging.getLogger(__name__)
@@ -96,6 +95,13 @@ def custom_exception_handler(exc, context):
         response.data['link'] = exc.link
 
     # Logging
-    logger.error(traceback.format_exc())
+    if any([isinstance(exc, exception) for exception in WARN_EXCEPTIONS]):
+        logger.warning('API Exception Warning!!', exc_info=True)
+    else:
+        logger.error(
+            '{}.{}'.format(type(exc).__module__, type(exc).__name__),
+            exc_info=True,
+            extra={'request': context.get('request')},
+        )
 
     return response

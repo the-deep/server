@@ -1,4 +1,3 @@
-import traceback
 from celery import shared_task
 
 from project.models import Project
@@ -44,6 +43,6 @@ def export_assessment(export_type, export_id, user_id, project_id, filters):
         if export:
             export.pending = False
             export.save()
-        logger.error(traceback.format_exc())
+        logger.error('Export Assessment Failed', exc_info=True, extra={'export_id': export_id})
         return_value = False
     return return_value

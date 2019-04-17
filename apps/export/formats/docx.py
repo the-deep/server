@@ -10,7 +10,6 @@ import requests
 import io
 import re
 import tempfile
-import traceback
 import base64
 import logging
 
@@ -193,7 +192,10 @@ class Document:
             return self
         except Exception:
             self.doc.add_paragraph('Invalid Image')
-            logger.error(traceback.format_exc())
+            logger.error(
+                'export.formats.docx Add Image Error!!',
+                exc_info=True,
+            )
             return self
 
     def add_heading(self, text, level):
