@@ -1,4 +1,5 @@
 from django.db import models
+from user_resource.models import UserResource
 
 
 class OrganizationType(models.Model):
@@ -9,7 +10,7 @@ class OrganizationType(models.Model):
         return self.title
 
 
-class Organization(models.Model):
+class Organization(UserResource):
     title = models.CharField(max_length=255)
     short_name = models.CharField(max_length=255, blank=True)
     long_name = models.CharField(max_length=512, blank=True)
@@ -30,6 +31,8 @@ class Organization(models.Model):
     )
 
     donor = models.BooleanField(default=False)
+    verified = models.BooleanField(default=False)
+    client_id = None
 
     def __str__(self):
         return self.title
