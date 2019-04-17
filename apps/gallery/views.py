@@ -47,12 +47,6 @@ def DEFAULT_EXTRACTION_FUNCTION(file):
     return {}
 
 
-class FileView(View):
-    def get(self, request, file_id):
-        file = get_object_or_404(File, id=file_id)
-        return redirect(request.build_absolute_uri(file.file.url))
-
-
 class PublicFileView(View):
     def get(self, request, fidb64=None, token=None, filename=None):
         file_id = force_text(urlsafe_base64_decode(fidb64))
