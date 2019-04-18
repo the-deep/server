@@ -111,6 +111,6 @@ class HumanitarianId:
                 data = r.json()
                 return access_token, data['_id']
             else:
-                logger.error(r.json())
+                logger.error('HID Get Token Failed!! \n{}'.format(r.json()))
 
         return None, None

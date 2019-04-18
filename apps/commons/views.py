@@ -1,14 +1,45 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
+import random
+import string
 
 from django.views.generic import View
 from django.http import FileResponse, HttpResponse
 
 
+from geo.models import GeoArea
 from tabular.viz import (
     barchart,
+    histograms,
+    map as _map,
 )
+
+
+STRINGS = string.ascii_uppercase + string.digits + 'चैनपुर नगरपालिका à€'
+
+
+def _get_random_string(N):
+    return ''.join(random.choice(STRINGS) for _ in range(N))
+
+
+def _get_random_number(min, max):
+    return random.randint(min, max)
+
+
+def _get_image_response(fp, image_format):
+    if image_format == 'svg':
+        return HttpResponse(
+            '''
+            <!DOCTYPE html>
+            <html>
+            <body>
+            {}
+            </body>
+            </html>
+            '''.format(fp.read().decode('utf-8'))
+        )
+    return FileResponse(fp, content_type='image/png')
 
 
 class RenderChart(View):
@@ -16,27 +47,37 @@ class RenderChart(View):
     Debug chart rendering
     NOTE: Use Only For Debug
     """
+    MAX_VALUE_LEN = 5
+    MAX_VALUE_INTEGER = 100
+    MAX_ROW = 10
+    MAX_COUNT = 100
 
-    data = [
-        {'count': 10, 'value': 'toggle'},
-        {'count': 20, 'value': 'cor€p'},
-        {'count': 30, 'value': 'चैनपुर नगरपालिका '},
-        {'count': 1, 'value': 'funà'},
-        {'count': 10, 'value': 'fमहालक्ष्मि नगरपालिका '},
-        {'count': 10, 'value': 'gमहालक्ष्मि नगरपालिका '},
-        {'count': 30, 'value': 'hचैनपुर नगरपालिका '},
-        {'count': 30, 'value': 'iचैनपुर नगरपालिका '},
-        {'count': 30, 'value': 'jचैनपुर नगरपालिका '},
-        {'count': 30, 'value': 'kचैनपुर नगरपालिका '},
-        {'count': 30000, 'value': 'toggle21  is my name'},
-        {'count': 30, 'value': 'toggle48 is my name'},
-        {'count': 30, 'value': 'toggle49 is my name'},
-    ]
+    def get_geo_data(self):
+        return [
+            {
+                'count': _get_random_number(10, self.MAX_COUNT),
+                'value': geoarea.id,
+            } for geoarea in GeoArea.objects.all()[:10]
+        ]
+
+    def get_data(self, number=False):
+        return [
+            {
+                'count': _get_random_number(10, self.MAX_COUNT),
+                'value': _get_random_number(10, self.MAX_VALUE_INTEGER)
+                if number else _get_random_string(self.MAX_VALUE_LEN),
+            } for row in range(self.MAX_ROW)
+        ]
 
     def get(self, request):
-        df = pd.DataFrame(self.data)
-
         image_format = request.GET.get('format', 'png')
+        chart_type = request.GET.get('chart_type', 'barchart')
+        if chart_type in ['histograms']:
+            df = pd.DataFrame(self.get_data(number=True))
+        elif chart_type in ['map']:
+            df = pd.DataFrame(self.get_geo_data())
+        else:
+            df = pd.DataFrame(self.get_data())
 
         params = {
             'x_label': 'Test Label',
@@ -46,17 +87,17 @@ class RenderChart(View):
             'format': image_format,
         }
 
-        fp = barchart.plotly(**params)
+        if chart_type == 'barchart':
+            fp = barchart.plotly(**params)
+        elif chart_type == 'histograms':
+            new_data = []
+            values = df['value'].tolist()
+            counts = df['count'].tolist()
+            for index, value in enumerate(values):
+                new_data.extend([value for i in range(counts[index])])
+            params['data'] = pd.to_numeric(new_data)
+            fp = histograms.plotly(**params)
+        elif chart_type == 'map':
+            fp = _map.plot(**params)
 
-        if image_format == 'svg':
-            return HttpResponse(
-                '''
-                <!DOCTYPE html>
-                <html>
-                <body>
-                {}
-                </body>
-                </html>
-                '''.format(fp.read().decode('utf-8'))
-            )
-        return FileResponse(fp, content_type='image/png')
+        return _get_image_response(fp[0]['image'], fp[0]['format'])

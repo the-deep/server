@@ -16,7 +16,6 @@ import string
 import tempfile
 import requests
 import logging
-import traceback
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1)' + \
     ' AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
@@ -258,6 +257,10 @@ def create_plot_image(func):
     """
     def func_wrapper(*args, **kwargs):
         size = kwargs.pop('chart_size', (8, 4))
+        if isinstance(kwargs.get('format', 'png'), list):
+            images_format = kwargs.pop('format')
+        else:
+            images_format = [kwargs.pop('format', 'png')]
         func(*args, **kwargs)
         figure = mp.pyplot.gcf()
 
@@ -266,10 +269,14 @@ def create_plot_image(func):
         mp.pyplot.draw()
         mp.pyplot.gca().spines['top'].set_visible(False)
         mp.pyplot.gca().spines['right'].set_visible(False)
-        fp = get_temp_file(suffix='.svg')
-        figure.savefig(fp, bbox_inches='tight', alpha=True, dpi=300)
-        mp.pyplot.close(figure)
-        return fp
+        images = []
+        for image_format in images_format:
+            fp = get_temp_file(suffix='.{}'.format(image_format))
+            figure.savefig(fp, bbox_inches='tight', format=image_format, alpha=True, dpi=300)
+            mp.pyplot.close(figure)
+            fp.seek(0)
+            images.append({'image': fp, 'format': image_format})
+        return images
     return func_wrapper
 
 
@@ -279,7 +286,10 @@ def create_plotly_image(func):
     """
     def func_wrapper(*args, **kwargs):
         width, height = kwargs.pop('chart_size', (5, 4))
-        image_format = kwargs.pop('format', 'png')
+        if isinstance(kwargs.get('format', 'png'), list):
+            images_format = kwargs.pop('format', 'png')
+        else:
+            images_format = [kwargs.pop('format', 'png')]
         x_label = kwargs.pop('x_label')
         y_label = kwargs.pop('y_label')
         data, layout = func(*args, **kwargs)
@@ -287,29 +297,35 @@ def create_plotly_image(func):
             layout = ploty_go.Layout(**{
                 'title': x_label,
                 'yaxis': {
+                    **create_plotly_image.axis_config,
                     'title': y_label,
-                    'automargin': True,
-                    'tickfont': dict(size=8),
                 },
                 'xaxis': {
-                    'automargin': True,
+                    **create_plotly_image.axis_config,
                     'ticks': 'outside',
-                    'tickfont': dict(size=8),
                 },
             })
         fig = ploty_go.Figure(data=data, layout=layout)
-        img_bytes = pio.to_image(fig, format=image_format, width=width, height=height, scale=2)
-        fp = get_temp_file(suffix='.{}'.format(image_format))
-        fp.write(img_bytes)
-        fp.seek(0)
-        return fp
+        images = []
+        for image_format in images_format:
+            img_bytes = pio.to_image(fig, format=image_format, width=width, height=height, scale=2)
+            fp = get_temp_file(suffix='.{}'.format(image_format))
+            fp.write(img_bytes)
+            fp.seek(0)
+            images.append({'image': fp, 'format': image_format})
+        return images
     return func_wrapper
 
 
+create_plotly_image.axis_config = {
+    'automargin': True,
+    'tickfont': dict(size=8),
+    'separatethousands': True,
+}
 create_plotly_image.marker = dict(
     color='teal',
     line=dict(
-        color='rgb(8,48,107)',
+        color='white',
         width=0.5,
     )
 )
@@ -328,12 +344,7 @@ def redis_lock(func):
         try:
             return_value = func(*args, **kwargs) or True
         except Exception:
-            logger.error(
-                '** {} **\n{}'.format(
-                    func.__name__,
-                    traceback.format_exc(),
-                ),
-            )
+            logger.error('{}.{}'.format(func.__module__, func.__name__), exc_info=True)
             return_value = False
         lock.release()
         return return_value

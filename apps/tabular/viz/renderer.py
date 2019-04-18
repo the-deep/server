@@ -79,7 +79,7 @@ def calc_data(field):
     return data.to_dict(orient='records'), health_stats
 
 
-def generate_chart(field, chart_type='barchart', image_format='svg'):
+def generate_chart(field, chart_type='barchart', images_format=['svg']):
     if field.type == 'geo':
         chart_type = 'map'
     elif field.type == 'number':
@@ -89,7 +89,7 @@ def generate_chart(field, chart_type='barchart', image_format='svg'):
         'x_label': field.title,
         'y_label': 'count',
         'chart_size': (8, 4),
-        'format': image_format,
+        'format': images_format,
         # data will be added according to chart type
     }
 
@@ -112,11 +112,11 @@ def generate_chart(field, chart_type='barchart', image_format='svg'):
     chart_render = CHART_RENDER.get(chart_type)
     if chart_render:
         try:
-            image = chart_render(**params)
+            images = chart_render(**params)
         except Exception:
-            logger.error('Tabular Chart Render Error', exc_info=1)
+            logger.error('Tabular Chart Render Error!!', exc_info=1)
             return None, chart_type
-        return image, chart_type
+        return images, chart_type
     return None, chart_type
 
 
@@ -134,10 +134,9 @@ def calc_preprocessed_data(field):
     except Exception:
         cache = {'status': Field.CACHE_ERROR}
         logger.error(
-            'Failed to calculate processed data for field({})'.format(
-                field.id,
-            ),
+            'Failed to calculate processed data for field',
             exc_info=1,
+            extra={'field_id': field.id},
         )
 
     field.cache = cache
@@ -148,7 +147,7 @@ def calc_preprocessed_data(field):
 def _add_image_to_gallery(image_name, image, mime_type):
     file = File.objects.create(
         title=image_name,
-        mime_type='image/png',
+        mime_type=mime_type,
         metadata={'tabular': True},
     )
     file.file.save(image_name, image)
@@ -158,24 +157,39 @@ def _add_image_to_gallery(image_name, image, mime_type):
     return file
 
 
+IMAGE_MIME = {
+    'png': 'image/png',
+    'svg': 'image/svg+xml',
+}
+
+
 def render_field_chart(field):
     """
     Save normalized data to field
     """
-    image_format = 'png'
-    image_mime = 'image/png'
-    image, chart_type = generate_chart(field, image_format=image_format)
+    images_format = ['png', 'svg'] if field.type == 'geo' else ['png']
+    images, chart_type = generate_chart(field, images_format=images_format)
 
-    if image:
-        file = _add_image_to_gallery(
-            'tabular_{}_{}.{}'.format(field.sheet.id, field.id, image_format),
-            image,
-            mime_type=image_mime,
-        )
-        images = [{'id': file.id, 'chart_type': chart_type}]
+    if images and len(images) > 0:
+        field_images = []
+        for image in images:
+            file_format = image['format']
+            file_content = image['image']
+            file_mime = IMAGE_MIME[file_format]
+
+            file = _add_image_to_gallery(
+                'tabular_{}_{}.{}'.format(field.sheet.id, field.id, file_format),
+                file_content,
+                mime_type=file_mime,
+            )
+            field_images.append({
+                'id': file.id, 'chart_type': chart_type, 'format': file_format,
+            })
     else:
-        images = [{'id': None, 'chart_type': chart_type}]
-    field.cache['images'] = images
+        field_images = []
+        for image_format in images_format:
+            field_images.append({'id': None, 'chart_type': chart_type, 'format': image_format})
+    field.cache['images'] = field_images
     field.save()
     return field.cache['images']
 
@@ -190,7 +204,12 @@ def get_entry_image(entry):
     field = entry.tabular_field
 
     images = field.cache.get('images')
-    if not images or not len(images) > 0 or not images[0].get('id'):
+
+    if not images or not len(images) > 0:
         return None
-    file_id = images[0].get('id')
-    return File.objects.get(pk=file_id).file
+
+    for image in images:
+        if image.get('id') is not None and image.get('format') == 'png':
+            file_id = images[0].get('id')
+            return File.objects.get(pk=file_id).file
+    return None
