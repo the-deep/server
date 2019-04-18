@@ -1,4 +1,3 @@
-from rest_framework import serializers
 from django.conf import settings
 
 TOKEN_INVALID = 4001
@@ -39,7 +38,9 @@ class NotAuthenticatedError(Exception):
     message = 'You are not authenticated'
 
 
-class InvalidCaptchaValidationError(serializers.ValidationError):
+class InvalidCaptchaError(Exception):
+    status_code = 401
+    code = INVALID_CAPTCHA
     default_detail = 'Invalid captcha! Please, Try Again'
 
 
@@ -55,3 +56,9 @@ class AuthenticationFailedError(Exception):
                 '. You have {} login attempts remaining'.format(
                     remaining if remaining >= 0 else 0,
                 )
+
+
+WARN_EXCEPTIONS = [
+    UserNotFoundError, UserInactiveError, UnknownTokenError,
+    NotAuthenticatedError, InvalidCaptchaError, AuthenticationFailedError,
+]

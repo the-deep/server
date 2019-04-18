@@ -9,7 +9,7 @@ from user.utils import send_account_activation
 from .token import AccessToken, RefreshToken, TokenError
 from .recaptcha import validate_recaptcha
 from .errors import (
-    InvalidCaptchaValidationError,
+    InvalidCaptchaError,
     AuthenticationFailedError,
     UserInactiveError,
 )
@@ -22,7 +22,7 @@ class TokenObtainPairSerializer(serializers.Serializer):
 
     def validate_recaptcha(self, recaptcha_response):
         if not validate_recaptcha(recaptcha_response):
-            raise InvalidCaptchaValidationError
+            raise InvalidCaptchaError
 
     def deactivate_account(self, user):
         if user.profile.login_attempts == settings.MAX_LOGIN_ATTEMPTS:

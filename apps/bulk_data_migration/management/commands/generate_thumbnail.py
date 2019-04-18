@@ -28,7 +28,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if options['lead_id']:
             for lead_id in options['lead_id']:
-                logger.error('Generating thumbnail for {}'.format(lead_id))
+                logger.warning('Generating thumbnail for {}'.format(lead_id))
                 extract_thumbnail(lead_id)
         elif options['existing']:
             leads = Lead.objects.filter(
@@ -36,5 +36,5 @@ class Command(BaseCommand):
                 Q(leadpreview__thumbnail='')
             ).distinct()
             for lead in leads:
-                logger.error('Generating thumbnail for {}'.format(lead.id))
+                logger.warning('Generating thumbnail for {}'.format(lead.id))
                 extract_thumbnail(lead.id)

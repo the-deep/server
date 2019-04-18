@@ -24,7 +24,6 @@ import re
 import requests
 import tempfile
 
-import traceback
 import logging
 
 logger = logging.getLogger(__name__)
@@ -79,7 +78,7 @@ def _extract_from_lead_core(lead_id):
             text = _preprocess(text)
             word_count = len(re.findall(r'\b\S+\b', text))
         except Exception:
-            logger.error(traceback.format_exc())
+            logger.error('Lead Extraction Failed!!', exc_info=True)
             if images:
                 for image in images:
                     image.close()
@@ -127,8 +126,8 @@ def extract_thumbnail(lead_id):
 
     if not leadPreview:
         logger.error(
-            "Lead(id:{}) preview hasn't been created but extract_thumbnail() called".  # noqa
-            format(lead_id)
+            "Lead preview hasn't been created but extract_thumbnail() called",
+            extra={'lead_id': lead_id},
         )
         return False
 
@@ -151,7 +150,7 @@ def extract_thumbnail(lead_id):
             thumbnail = doc.get_thumbnail()
 
     except Exception:
-        logger.error(traceback.format_exc())
+        logger.error('Lead Extract Thumbnail Failed!!', exc_info=True)
 
     if thumbnail:
         leadPreview.thumbnail.save(os.path.basename(thumbnail.name),
@@ -165,8 +164,8 @@ def send_lead_text_to_deepl(self, lead_id):
     lead = Lead.objects.filter(id=lead_id).first()
     if not lead:
         logger.warning(
-            "Lead(id:{}) does not exist but send_lead_text_to_deepl() called.".
-            format(lead_id)
+            "Lead does not exist but send_lead_text_to_deepl() called.",
+            extra={'lead_id': lead_id},
         )
         return True
 
@@ -174,8 +173,8 @@ def send_lead_text_to_deepl(self, lead_id):
     preview = LeadPreview.objects.filter(lead=lead).first()
     if not preview:
         logger.error(
-            "Lead(id:{}) preview hasn't been created but send_lead_text_to_deepl() called".  # noqa
-            format(lead_id)
+            "Lead preview hasn't been created but send_lead_text_to_deepl() called",
+            extra={'lead_id': lead_id},
         )
         return False
 
@@ -201,8 +200,7 @@ def send_lead_text_to_deepl(self, lead_id):
         return True
     except Exception:
         # Retry with exponential decay
-        logger.warning("Error while sending request to deepl. {}".format(
-            traceback.format_exc()))
+        logger.warning("Error while sending request to deepl", exc_info=True)
         retry_countdown = 2 ** self.request.retries
         self.retry(countdown=retry_countdown)
 
@@ -254,7 +252,7 @@ def extract_from_lead(lead_id):
         #     }).decode('utf-8')
         # ))
     except Exception:
-        logger.error(traceback.format_exc())
+        logger.error('Lead Core Extraction Failed!!', exc_info=True)
         return_value = False
 
     lock.release()

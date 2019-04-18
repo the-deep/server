@@ -2,12 +2,17 @@ from jwt_auth.errors import (
     NOT_AUTHENTICATED,
     AUTHENTICATION_FAILED,
     TOKEN_INVALID,
+
+    WARN_EXCEPTIONS as JWT_WARN_EXCEPTIONS,
 )
 
 error_code_map = {
     'not_authenticated': NOT_AUTHENTICATED,
     'authentication_failed': AUTHENTICATION_FAILED,
 }
+
+
+WARN_EXCEPTIONS = JWT_WARN_EXCEPTIONS
 
 
 def map_error_codes(codes, default=None):

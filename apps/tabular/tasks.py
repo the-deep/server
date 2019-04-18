@@ -1,4 +1,3 @@
-import traceback
 import logging
 
 from celery import shared_task
@@ -166,7 +165,7 @@ def tabular_extract_book(book_pk):
             return_value = _tabular_extract_book(book)
         book.status = Book.SUCCESS
     except Exception:
-        logger.error(traceback.format_exc())
+        logger.error('Tabular Extract Book Failed!!', exc_info=True)
         book.status = Book.FAILED
         book.error = Book.UNKNOWN_ERROR  # TODO: handle all type of error
         return_value = False
@@ -191,7 +190,7 @@ def tabular_extract_geo(geodata_pk):
             return_value = _tabular_meta_extract_geo(geodata)
         geodata.status = Geodata.SUCCESS
     except Exception:
-        logger.error(traceback.format_exc())
+        logger.error('Tabular Extract Geo Failed!!', exc_info=True)
         geodata.status = Geodata.FAILED
         return_value = False
 

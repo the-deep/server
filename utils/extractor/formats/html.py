@@ -2,7 +2,6 @@ from readability.readability import Document
 from urllib.parse import urljoin
 
 import logging
-import traceback
 import re
 import requests
 import tempfile
@@ -53,7 +52,11 @@ def process(doc, url):
                 fp.write(image)
             images.append(fp)
         except Exception:
-            logger.error(traceback.format_exc())
+            logger.error(
+                'extractor.formats.html Image Collector Error!!',
+                exc_info=True,
+                extra={'url': url},
+            )
 
     html = '<h1>' + title + '</h1>' + summary
 
