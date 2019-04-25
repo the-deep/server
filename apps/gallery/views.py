@@ -1,4 +1,5 @@
 import logging
+from django.core.cache import cache
 from django.views.generic import View
 from django.conf import settings
 from django.db import models, transaction
@@ -14,10 +15,12 @@ from rest_framework import (
     filters,
     mixins,
     exceptions,
+    decorators,
 )
 import django_filters
 
 from deep.permissions import ModifyPermission
+from deep.serializers import URLCachedFileField
 from project.models import Project
 from user_resource.filters import UserResourceFilterSet
 
@@ -116,9 +119,27 @@ class FileViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         response = super().retrieve(request, *args, **kwargs)
-        response['Cache-Control'] = 'max-age={}'.format(
-            settings.MAX_FILE_CACHE_AGE)
+        response['Cache-Control'] = 'max-age={}'.format(settings.MAX_FILE_CACHE_AGE)
         return response
+
+    @decorators.action(
+        detail=True,
+        url_path='preview',
+    )
+    def get_preview(self, request, pk=None, version=None):
+        def _response(url, max_age):
+            response = redirect(request.build_absolute_uri(url))
+            response['Cache-Control'] = 'max-age={}'.format(max_age)
+            return response
+
+        obj = self.get_object()
+        key = URLCachedFileField.CACHE_KEY.format(obj.file.name)
+        url = cache.get(key)
+        if url:
+            return _response(url, cache.ttl(key))
+        url = self.get_serializer(obj).get('file')
+        cache.set(key, url, settings.MAX_FILE_CACHE_AGE)
+        return _response(url, settings.MAX_FILE_CACHE_AGE)
 
 
 class GoogleDriveFileViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -190,7 +211,7 @@ class MetaExtractionView(views.APIView):
             raise exceptions.NotFound()
 
         extraction_function = META_EXTRACTION_FUNCTIONS.get(
-            file_type, DEFAULT_EXTRACTION_FUNCTION
+            file_type, DEFAULT_EXTRACTION_FUNCTION,
         )
 
         try:

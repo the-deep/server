@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import JSONField
 
 from project.models import Project
 
@@ -26,9 +27,18 @@ class Export(models.Model):
     ENTRIES = 'entries'
     ASSESSMENTS = 'assessments'
 
-    TYPES = (
+    DATA_TYPES = (
         (ENTRIES, 'Entries'),
         (ASSESSMENTS, 'Assessments'),
+    )
+
+    EXCEL = 'excel'
+    REPORT = 'report'
+
+    EXPORT_TYPES = (
+        (EXCEL, 'Excel'),
+        (REPORT, 'Report'),
+        (JSON, 'Json'),
     )
 
     project = models.ForeignKey(
@@ -39,7 +49,9 @@ class Export(models.Model):
     title = models.CharField(max_length=255, blank=True)
 
     format = models.CharField(max_length=100, choices=FORMATS, blank=True)
-    type = models.CharField(max_length=100, choices=TYPES, blank=True)
+    type = models.CharField(max_length=99, choices=DATA_TYPES, blank=True)
+    export_type = models.CharField(max_length=100, choices=EXPORT_TYPES, blank=True)
+    filters = JSONField(default=dict, blank=True, null=True,)
 
     mime_type = models.CharField(max_length=200, blank=True)
     file = models.FileField(upload_to='export/', max_length=255,

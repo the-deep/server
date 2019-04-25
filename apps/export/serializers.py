@@ -13,4 +13,4 @@ class ExportSerializer(RemoveNullFieldsMixin,
 
     class Meta:
         model = Export
-        fields = ('__all__')
+        exclude = ('filters',)

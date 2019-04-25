@@ -1,3 +1,4 @@
+import logging
 from celery import shared_task
 from django.contrib.auth.models import User
 from django.utils.encoding import force_bytes
@@ -11,6 +12,9 @@ from .token import unsubscribe_email_token_generator
 from project.models import ProjectJoinRequest
 from project.token import project_request_token_generator
 from .models import Profile
+
+
+logger = logging.getLogger(__name__)
 
 
 def _send_mail(subject_template_name, email_template_name,
@@ -38,6 +42,13 @@ def send_mail_to_user(user, context={}, email_type=None, *args, **kwargs):
     Validates email request
     Add common context variable
     """
+    if user.profile.invalid_email:
+        logger.warn(
+            'User flagged as invalid email!!',
+            extra={'user': user.username, 'user_id': user.pk},
+        )
+        return
+
     context.update({
         'client_domain': settings.DEEPER_FRONTEND_HOST,
         'protocol': settings.HTTP_PROTOCOL,

@@ -1,5 +1,3 @@
-from celery import shared_task
-from django.contrib.auth.models import User
 from django.db import models
 
 from analysis_framework.models import Exportable
@@ -10,15 +8,13 @@ from export.entries.report_exporter import ReportExporter
 from export.entries.json_exporter import JsonExporter
 from geo.models import Region
 
-import logging
 
-logger = logging.getLogger(__name__)
+def export_entries(export):
+    user = export.exported_by
+    project_id = export.project.id
+    export_type = export.export_type
 
-
-def _export_entries(export_type, export_id, user_id, project_id, filters):
-    user = User.objects.get(id=user_id)
-    export = Export.objects.get(id=export_id)
-
+    filters = export.filters
     queryset = get_filtered_entries(user, filters)
 
     search = filters.get('search')
@@ -40,14 +36,14 @@ def _export_entries(export_type, export_id, user_id, project_id, filters):
         project__id=project_id
     ).distinct()
 
-    if export_type == 'excel':
+    if export_type == Export.EXCEL:
         decoupled = filters.get('decoupled', True)
         ExcelExporter(decoupled)\
             .load_exportables(exportables, regions)\
             .add_entries(queryset)\
             .export(export)
 
-    elif export_type == 'report':
+    elif export_type == Export.REPORT:
         report_structure = filters.get('report_structure')
         pdf = filters.get('pdf', False)
         ReportExporter()\
@@ -56,31 +52,10 @@ def _export_entries(export_type, export_id, user_id, project_id, filters):
             .add_entries(queryset)\
             .export(export, pdf)
 
-    elif export_type == 'json':
+    elif export_type == Export.JSON:
         JsonExporter()\
             .load_exportables(exportables)\
             .add_entries(queryset)\
             .export(export)
 
     return True
-
-
-@shared_task
-def export_entries(export_type, export_id, user_id, project_id, filters):
-    try:
-        return_value = _export_entries(
-            export_type,
-            export_id,
-            user_id,
-            project_id,
-            filters,
-        )
-    except Exception:
-        export = Export.objects.filter(id=export_id).first()
-        if export:
-            export.pending = False
-            export.save()
-        logger.error('Export Entries Failed', exc_info=True, extra={'export_id': export_id})
-        return_value = False
-
-    return return_value
