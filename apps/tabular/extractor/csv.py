@@ -23,6 +23,7 @@ def extract(book):
         )
 
         no_headers = options.get('no_headers', False)
+        data_index = 0 if no_headers else 1
 
         fields = []
         ordering = 1
@@ -42,8 +43,7 @@ def extract(book):
         Field.objects.bulk_create(fields)
 
         # Create a new iterator with already extracted first row if no_headers
-        rows_iterator = chain(iter([first_row]), reader)\
-            if no_headers else reader
+        rows_iterator = chain(iter([first_row]), reader)
 
         fields_data = {}
         for _row in rows_iterator:
@@ -64,3 +64,7 @@ def extract(book):
             block_name = 'Field Save csv extract {}'.format(field.title)
             with LogTime(block_name=block_name):
                 field.save()
+
+        options = sheet.options or {}
+        sheet.options = {**options, 'data_row_index': data_index}
+        sheet.save()

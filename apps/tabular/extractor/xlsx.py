@@ -29,6 +29,22 @@ def is_row_empty(row, columns):
     return True
 
 
+def get_excel_value(cell):
+    value = cell.value
+    if value is not None and isinstance(value, datetime):
+        dateformat = cell.number_format
+        # try casting to python format
+        python_format = excel_to_python_date_format(
+            dateformat
+        )
+        return format_date_or_iso(
+            cell.value, python_format
+        )
+    elif value is not None and not isinstance(value, str):
+        return cell.internal_value
+    return value
+
+
 @LogTime()
 def extract(book):
     options = book.options if book.options else {}
@@ -73,6 +89,11 @@ def extract(book):
                                    else 'Column ' + str(ordering)),
                             sheet=sheet,
                             ordering=ordering,
+                            data=[{
+                                'value': cell.value,
+                                'empty': False,
+                                'invalid': False
+                            }]
                         )
                     )
                 else:
@@ -88,23 +109,12 @@ def extract(book):
             for _row in wb_sheet.iter_rows(min_row=data_index):
                 if is_row_empty(_row, columns):
                     continue
+                print(_row)
                 try:
                     for index, field in enumerate(fields):
                         if field is None:
                             continue
-                        value = _row[index].value
-
-                        if value is not None and isinstance(value, datetime):
-                            dateformat = _row[index].number_format
-                            # try casting to python format
-                            python_format = excel_to_python_date_format(
-                                dateformat
-                            )
-                            value = format_date_or_iso(
-                                _row[index].value, python_format
-                            )
-                        elif value is not None and not isinstance(value, str):
-                            value = _row[index].internal_value
+                        value = get_excel_value(_row[index])
 
                         field_data = fields_data.get(field.id, [])
                         field_data.append({
@@ -113,13 +123,16 @@ def extract(book):
                             'invalid': False
                         })
                         fields_data[field.id] = field_data
-
                 except Exception:
                     pass
 
             # Save field
             for field in sheet.field_set.all():
-                field.data = fields_data.get(field.id, [])
+                field.data.extend(fields_data.get(field.id, []))
                 block_name = 'Field Save xlsx extract {}'.format(field.title)
                 with LogTime(block_name=block_name):
                     field.save()
+
+            options = sheet.options or {}
+            sheet.options = {**options, 'data_row_index': data_index}
+            sheet.save()
