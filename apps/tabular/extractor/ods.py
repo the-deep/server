@@ -45,6 +45,11 @@ def extract(book):
                                else 'Column ' + str(ordering)),
                         sheet=sheet,
                         ordering=ordering,
+                        data=[{
+                            'value': value,
+                            'empty': False,
+                            'invalid': False
+                        }]
                     )
                 )
                 ordering += 1
@@ -70,7 +75,11 @@ def extract(book):
 
             # Save field
             for field in sheet.field_set.all():
-                field.data = fields_data.get(field.id, [])
+                field.data.extend(fields_data.get(field.id, []))
                 block_name = 'Field Save ods extract {}'.format(field.title)
                 with LogTime(block_name=block_name):
                     field.save()
+
+            options = sheet.options or {}
+            sheet.options = {**options, 'data_row_index': data_index}
+            sheet.save()
