@@ -4,6 +4,7 @@ Django settings for deep project.
 import os
 import sys
 import raven
+from celery.schedules import crontab
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -97,6 +98,7 @@ INSTALLED_APPS = [
     'storages',
     'django_premailer',
     'raven.contrib.django.raven_compat',
+    'django_celery_beat',
 ] + [
     '{}.{}.apps.{}Config'.format(
         APPS_DIR.split('/')[-1],
@@ -281,6 +283,14 @@ CELERY_REDIS_URL = os.environ.get('CELERY_REDIS_URL', 'redis://redis:6379')
 CELERY_BROKER_URL = CELERY_REDIS_URL
 CELERY_RESULT_BACKEND = CELERY_REDIS_URL
 CELERY_TIMEZONE = TIME_ZONE
+
+CELERY_BEAT_SCHEDULE = {
+    'remaining_tabular_generate_columns_image': {
+        'task': 'tabular.tasks.remaining_tabular_generate_columns_image',
+        # Every 6 hour
+        'schedule': crontab(minute=0, hour="*/6"),
+    },
+}
 
 # REDIS STORE CONFIG "redis://:{password}@{host}:{port}/{db}"
 CHANNEL_REDIS_URL = os.environ.get('CHANNEL_REDIS_URL', 'redis://redis:6379')

@@ -87,13 +87,13 @@ class Book(UserResource):
             cache__status=Field.CACHE_PENDING,
         ).count() == 0
 
-    def get_processed_fields(self, skip_fields=[]):
+    def get_processed_fields(self, fields=[]):
         """
         Return success cached fields
         """
         return Field.objects.filter(
-            sheet__book=self, cache__status=Field.CACHE_SUCCESS,
-        ).exclude(id__in=skip_fields).distinct()
+            sheet__book=self, cache__status=Field.CACHE_SUCCESS, id__in=fields,
+        ).distinct()
 
     def __str__(self):
         return self.title
@@ -104,12 +104,6 @@ class Sheet(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     options = JSONField(default=None, blank=True, null=True)
     hidden = models.BooleanField(default=False)
-
-    def get_processed_fields(self):
-        """
-        Return success cached fields
-        """
-        return self.field_set.filter(cache__status=Field.CACHE_SUCCESS).distinct()
 
     def __str__(self):
         return self.title

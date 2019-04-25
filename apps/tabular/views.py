@@ -52,9 +52,9 @@ class BookViewSet(viewsets.ModelViewSet):
     )
     def get_fields(self, request, pk=None, version=None):
         instance = self.get_object()
-        skip_fields = request.data.get('skip_fields', [])
+        fields = request.data.get('fields', [])
         pending_fields = instance.get_pending_fields_id()
-        fields = instance.get_processed_fields(skip_fields)
+        fields = instance.get_processed_fields(fields)
         serializer = self.get_serializer(fields, many=True)
         return response.Response({
             'pending_fields': pending_fields,

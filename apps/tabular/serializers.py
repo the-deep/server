@@ -105,7 +105,7 @@ class SheetMetaSerializer(SheetSerializer):
 
 class SheetProcessedOnlySerializer(SheetSerializer):
     fields = FieldProcessedOnlySerializer(
-        many=True, source='get_processed_fields', required=False,
+        many=True, source='field_set', required=False,
     )
 
 
