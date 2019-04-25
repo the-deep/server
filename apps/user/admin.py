@@ -22,7 +22,7 @@ class CustomUserAdmin(UserAdmin):
     )
     list_select_related = ('profile', )
     list_filter = UserAdmin.list_filter + (
-        'profile__is_experimental', 'profile__is_early_access',
+        'profile__is_experimental', 'profile__is_early_access', 'profile__invalid_email',
     )
 
     def get_organization(self, instance):
