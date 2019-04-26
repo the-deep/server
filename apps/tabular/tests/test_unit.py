@@ -105,7 +105,7 @@ class TestTabularExtraction(TestCase):
 
         # now validate auto detected fields
         for field in Field.objects.filter(sheet=sheet):
-            assert len(field.data) == 10
+            assert len(field.actual_data) == 10
 
             if field.title == 'id':
                 assert field.type == Field.NUMBER, 'id is number'
@@ -113,8 +113,8 @@ class TestTabularExtraction(TestCase):
                 assert field.options['separator'] == 'none'
                 self.validate_number_field(field.data)
                 # Check invalid values
-                check_invalid(8, field.data)
-                check_invalid(9, field.data)
+                check_invalid(8, field.actual_data)
+                check_invalid(9, field.actual_data)
             elif field.title == 'age':
                 assert field.type == Field.NUMBER, 'age is number'
                 assert 'separator' in field.options
@@ -130,7 +130,7 @@ class TestTabularExtraction(TestCase):
                     assert datum.get('invalid') is not None or \
                         datum.get('empty') is not None or \
                         'processed_value' in datum
-                check_invalid(9, field.data)
+                check_invalid(9, field.actual_data)
             elif field.title == 'place':
                 assert field.type == Field.GEO, 'place is geo'
                 assert field.options is not None
@@ -140,9 +140,9 @@ class TestTabularExtraction(TestCase):
                     assert 'id' in x
                     assert 'title' in x
 
-                check_invalid(6, field.data)
-                check_empty(7, field.data)
-                check_invalid(8, field.data)
+                check_invalid(6, field.actual_data)
+                check_empty(7, field.actual_data)
+                check_invalid(8, field.actual_data)
 
     def test_auto_detection_inconsistent(self):
         """
@@ -331,9 +331,35 @@ class TestTabularExtraction(TestCase):
 
         # Get sheet again, which should be updated
 
-        check_invalid(6, field.data)
-        check_empty(7, field.data)
-        check_invalid(8, field.data)
+        check_invalid(6, field.actual_data)
+        check_empty(7, field.actual_data)
+        check_invalid(8, field.actual_data)
+
+    def test_sheet_option_change_data_row_index(self):
+        book = self.initialize_data_and_basic_test(consistent_csv_data)
+        auto_detect_and_update_fields(book)
+
+        sheets = book.sheet_set.all()
+        assert sheets.count() == 1
+
+        sheet = sheets[0]
+        sheet_options = sheet.options
+        assert sheet_options['data_row_index'] == 1
+
+        for field in sheet.field_set.all():
+            assert len(field.data) == 11, "Data includes the column names as well"
+            assert len(field.actual_data) == 10
+
+        # now update sheet option
+        sheet.options['data_row_index'] = 2
+        sheet.save()
+
+        # check if field actual_data changed or not
+        for field in sheet.field_set.all():
+            # check if Re-triggered or not
+            assert field.cache['status'] == Field.CACHE_PENDING
+            assert len(field.data) == 11, "Data includes the column names as well"
+            assert len(field.actual_data) == 9
 
     def initialize_data_and_basic_test(self, csv_data):
         file = NamedTemporaryFile('w', dir=settings.MEDIA_ROOT, delete=False)

@@ -57,7 +57,6 @@ def clean_real_data(data, val_column):
     """
     Return clean_dataframe, original_dataframe
     """
-
     # NOTE: The folloing loop adds the keys empty and invalid if not present
     # TODO: Handle the following case from pandas itself
     formatted_data = []
@@ -80,7 +79,7 @@ def clean_real_data(data, val_column):
 def calc_data(field):
     val_column = get_val_column(field)
 
-    data, df = clean_real_data(field.data, val_column)
+    data, df = clean_real_data(field.actual_data, val_column)
 
     if data.empty:
         logger.warning('Empty DataFrame: no numeric data to calculate for field ({})'.format(field.pk))
@@ -118,7 +117,7 @@ def generate_chart(field, chart_type, images_format=['svg']):
         params['data'] = df
     else:
         val_column = get_val_column(field)
-        df, _ = clean_real_data(field.data, val_column)
+        df, _ = clean_real_data(field.actual_data, val_column)
         if chart_type == HISTOGRAM:
             params['data'] = pd.to_numeric(df[val_column])
         elif chart_type == WORDCLOUD:

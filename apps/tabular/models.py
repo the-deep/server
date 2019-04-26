@@ -1,3 +1,5 @@
+import time
+
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 from user_resource.models import UserResource
@@ -105,8 +107,37 @@ class Sheet(models.Model):
     options = JSONField(default=None, blank=True, null=True)
     hidden = models.BooleanField(default=False)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.current_options = self.options
+
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        curr_index = self.current_options and self.current_options.get('data_row_index')
+        new_index = self.options and self.options.get('data_row_index')
+
+        # Re-Trigger column generation if data_row_index changed
+        if curr_index != new_index:
+            from tabular.tasks import tabular_generate_columns_image  # to prevent circular import
+            # First set cache pending to all fields
+            for field in self.field_set.all():
+                field.cache['status'] = Field.CACHE_PENDING
+                field.cache['time'] = time.time()
+                field.save()
+            field_ids = self.field_set.values_list('id', flat=True)
+            tabular_generate_columns_image.delay(list(field_ids))
+
+        # Update current_options value
+        self.current_options = self.options
+
+    def get_data_row_index(self):
+        options = self.options or {}
+        row_index = options.get('data_row_index')
+        return row_index if row_index is not None else 1
 
 
 class Field(models.Model):
@@ -143,6 +174,11 @@ class Field(models.Model):
     cache = JSONField(default=dict, blank=True, null=True)
     ordering = models.IntegerField(default=1)
     data = JSONField(default=list)
+
+    @property
+    def actual_data(self):
+        row_index = self.sheet.get_data_row_index()
+        return self.data[row_index:]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
