@@ -56,7 +56,7 @@ class JsonExporter:
             if entry.tabular_field:
                 data['data_series'] = {
                     'options': entry.tabular_field.options,
-                    'data': entry.tabular_field.data,
+                    'data': entry.tabular_field.actual_data,
                 }
             self.data['entries'].append(data)
         return self

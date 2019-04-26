@@ -54,8 +54,11 @@ def auto_detect_and_update_fields(book):
         for sheet in book.sheet_set.all():
             fields = sheet.field_set.all()
 
+            row_index = sheet.get_data_row_index()
+
             for field in fields:
-                emptyFiltered = list(filter(isValueNotEmpty, field.data))
+                data = field.data[row_index:]
+                emptyFiltered = list(filter(isValueNotEmpty, data))
                 detected_info = sample_and_detect_type_and_options(
                     emptyFiltered, geos_names, geos_codes
                 )
@@ -65,16 +68,13 @@ def auto_detect_and_update_fields(book):
                 cast_info = field.cast_data(geos_names, geos_codes)
                 field.data = cast_info['values']
                 field.options = cast_info['options']
-                with LogTime(
-                        block_name='Field Save, size: {}, type: {}'.format(
-                            len(cast_info['values']), field.type
-                        )):
-                    field.cache = {
-                        'status': Field.CACHE_PENDING,
-                        'image_status': Field.CACHE_PENDING,
-                        'time': time.time(),
-                    }
-                    field.save()
+
+                field.cache = {
+                    'status': Field.CACHE_PENDING,
+                    'image_status': Field.CACHE_PENDING,
+                    'time': time.time(),
+                }
+                field.save()
 
                 generate_column_columns.append(field.id)
 
