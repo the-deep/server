@@ -44,6 +44,7 @@ class Region(UserResource):
                 'admin_level_title': geo_area.admin_level.title,
                 'region': self.id,
                 'region_title': self.title,
+                'parent': geo_area.parent.id if geo_area.parent else None,
             } for geo_area in GeoArea.objects.prefetch_related(
                 'admin_level',
             ).filter(
