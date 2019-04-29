@@ -181,7 +181,7 @@ class RowsBuilder:
             # Make sure each column only contains unique values
             self.group_rows.append(', '.join(
                 # sorted(list(dict.fromkeys(column)))
-                list(OrderedDict.fromkeys(column))
+                list(OrderedDict.fromkeys(filter(lambda x: x not in [None, ''], column)))
             ))
 
         return self

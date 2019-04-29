@@ -171,7 +171,10 @@ class AdminLevel(models.Model):
         # Titles
         titles = {}
         for geo_area in self.geoarea_set.all():
-            titles[str(geo_area.id)] = geo_area.title
+            titles[str(geo_area.id)] = {
+                'title': geo_area.title,
+                'parent_id': str(geo_area.parent.pk) if geo_area.parent else None,
+            }
         self.geo_area_titles = titles
 
         # Bounds
