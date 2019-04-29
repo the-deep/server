@@ -73,6 +73,7 @@ class ExcelExporter:
 
                 for admin_level in admin_levels:
                     self.titles.append(admin_level.title)
+                    self.titles.append('{} (code)'.format(admin_level.title))
 
                     # Collect geo area names for each admin level
                     if not admin_level.geo_area_titles:
@@ -144,7 +145,7 @@ class ExcelExporter:
                     rows.add_rows_of_value_lists(
                         # Filter if all values are None
                         [
-                            x for x in (export_data.get('values') or [])
+                            x for x in export_data.get('values')
                             if not all(y is None for y in x)
                         ],
                         col_span,
@@ -153,7 +154,7 @@ class ExcelExporter:
                     rows.add_value_list(
                         # Filter if all values are None
                         [
-                            x for x in (export_data.get('values') or [])
+                            x for x in export_data.get('values')
                             if not all(y is None for y in x)
                         ],
                     )
@@ -162,7 +163,6 @@ class ExcelExporter:
 
         elif export_type == 'geo' and self.regions:
             values = []
-            geo_titles = []
             if export_data:
                 values = export_data.get('values', [])
                 values = [str(v) for v in values]
@@ -171,26 +171,29 @@ class ExcelExporter:
                 admin_levels = self.region_data[region.id]
                 max_levels = len(admin_levels)
                 rows_value = []
-                for _level, admin_level in enumerate(admin_levels[::-1]):
+                for rev_level, admin_level in enumerate(admin_levels[::-1]):
                     geo_area_titles = admin_level['geo_area_titles']
-                    level = max_levels - _level
+                    level = max_levels - rev_level
                     for geo_id in values:
                         if geo_id not in geo_area_titles:
                             continue
-                        row_values = ['' for i in range(1, max_levels - level)]
+                        row_values = ['' for i in range(0, max_levels - level)] * 2
 
-                        title = geo_area_titles[geo_id].get('title')
-                        geo_titles.append((geo_id, title))
+                        title = geo_area_titles[geo_id].get('title', '')
+                        code = geo_area_titles[geo_id].get('code', '')
                         parent_id = geo_area_titles[geo_id].get('parent_id')
-                        row_values.append(title)
+
+                        row_values.extend([code, title])
                         for _level in range(0, level - 1)[::-1]:
                             if parent_id:
                                 _geo_area_titles = admin_levels[_level]['geo_area_titles']
-                                _title = _geo_area_titles[parent_id].get('title')
-                                row_values.append(_title)
-                                parent_id = _geo_area_titles[parent_id].get('parent_id')
+                                _geo_area = _geo_area_titles.get(parent_id) or {}
+                                _title = _geo_area.get('title', '')
+                                _code = _geo_area.get('code', '')
+                                parent_id = _geo_area.get('parent_id')
+                                row_values.extend([_code, _title])
                             else:
-                                row_values.append('')
+                                row_values.extend(['', ''])
                         rows_value.append(row_values[::-1])
                 rows.add_rows_of_value_lists(rows_value)
         else:

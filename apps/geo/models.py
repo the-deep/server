@@ -174,6 +174,7 @@ class AdminLevel(models.Model):
             titles[str(geo_area.id)] = {
                 'title': geo_area.title,
                 'parent_id': str(geo_area.parent.pk) if geo_area.parent else None,
+                'code': geo_area.code,
             }
         self.geo_area_titles = titles
 
