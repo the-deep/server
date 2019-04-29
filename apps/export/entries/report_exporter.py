@@ -66,9 +66,9 @@ class ReportExporter:
         if entry.entry_type == Entry.IMAGE:
             image = entry.image
             # para.add_run().add_image(entry.image)
-        elif entry.entry_type == Entry.DATA_SERIES:
+        elif entry.entry_type == Entry.DATA_SERIES and entry.tabular_field:
             image = viz_renderer.get_entry_image(entry)
-            health_stats = entry.tabular_field.cache.get('health_stats', {})
+            health_stats = (entry.tabular_field.cache or {}).get('health_stats', {})
             image_text = ' Total values: {}, Invalid value: {}, Null value: {}'.format(
                 health_stats.get('total', 'N/A'),
                 health_stats.get('invalid', 'N/A'),
