@@ -98,3 +98,8 @@ class GeoOptionsApi(TestCase):
         self.assertEqual(response.data[str(region.id)][1].get('label'),
                          '{} / {}'.format(admin_level2.title,
                                           geo_area2.title))
+
+        # check if parent is present in geo options
+        for k, options in response.data.items():
+            for option in options:
+                assert 'parent' in option
