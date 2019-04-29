@@ -73,6 +73,7 @@ class ExcelExporter:
 
                 for admin_level in admin_levels:
                     self.titles.append(admin_level.title)
+                    self.titles.append('{} (code)'.format(admin_level.title))
 
                     # Collect geo area names for each admin level
                     if not admin_level.geo_area_titles:
@@ -168,18 +169,33 @@ class ExcelExporter:
 
             for region in self.regions:
                 admin_levels = self.region_data[region.id]
-                for admin_level in admin_levels:
+                max_levels = len(admin_levels)
+                rows_value = []
+                for rev_level, admin_level in enumerate(admin_levels[::-1]):
                     geo_area_titles = admin_level['geo_area_titles']
-                    selected_titles = [
-                        geo_area_titles[geo_id]
-                        for geo_id in values
-                        if geo_id in geo_area_titles
-                    ]
-                    if len(selected_titles) > 0:
-                        rows.add_rows_of_values(selected_titles)
-                    else:
-                        rows.add_value('')
+                    level = max_levels - rev_level
+                    for geo_id in values:
+                        if geo_id not in geo_area_titles:
+                            continue
+                        row_values = ['' for i in range(0, max_levels - level)] * 2
 
+                        title = geo_area_titles[geo_id].get('title', '')
+                        code = geo_area_titles[geo_id].get('code', '')
+                        parent_id = geo_area_titles[geo_id].get('parent_id')
+
+                        row_values.extend([code, title])
+                        for _level in range(0, level - 1)[::-1]:
+                            if parent_id:
+                                _geo_area_titles = admin_levels[_level]['geo_area_titles']
+                                _geo_area = _geo_area_titles.get(parent_id) or {}
+                                _title = _geo_area.get('title', '')
+                                _code = _geo_area.get('code', '')
+                                parent_id = _geo_area.get('parent_id')
+                                row_values.extend([_code, _title])
+                            else:
+                                row_values.extend(['', ''])
+                        rows_value.append(row_values[::-1])
+                rows.add_rows_of_value_lists(rows_value)
         else:
             if export_data:
                 if export_data.get('type') == 'list':

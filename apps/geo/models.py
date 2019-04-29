@@ -44,6 +44,7 @@ class Region(UserResource):
                 'admin_level_title': geo_area.admin_level.title,
                 'region': self.id,
                 'region_title': self.title,
+                'parent': geo_area.parent.id if geo_area.parent else None,
             } for geo_area in GeoArea.objects.prefetch_related(
                 'admin_level',
             ).filter(
@@ -170,7 +171,11 @@ class AdminLevel(models.Model):
         # Titles
         titles = {}
         for geo_area in self.geoarea_set.all():
-            titles[str(geo_area.id)] = geo_area.title
+            titles[str(geo_area.id)] = {
+                'title': geo_area.title,
+                'parent_id': str(geo_area.parent.pk) if geo_area.parent else None,
+                'code': geo_area.code,
+            }
         self.geo_area_titles = titles
 
         # Bounds
