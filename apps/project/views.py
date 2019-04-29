@@ -26,6 +26,7 @@ from project.permissions import (
     AcceptRejectPermission,
     MembershipModifyPermission,
 )
+from tabular.models import Field
 from project.filter_set import (
     ProjectFilterSet,
     get_filtered_projects,
@@ -156,6 +157,27 @@ class ProjectViewSet(viewsets.ModelViewSet):
         )
 
         return response.Response(serializer.data)
+
+    """
+    Get status for export:
+    -   tabular chart generation status
+    """
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated],
+        serializer_class=ProjectJoinRequestSerializer,
+        url_path='export-status',
+    )
+    def get_export_status(self, request, pk=None, version=None):
+        project = self.get_object()
+        fields_pending = Field.objects.filter(
+            cache__status=Field.CACHE_PENDING,
+            cache__image_status=Field.CACHE_PENDING,
+            sheet__book__project=project,
+        ).count() != 0
+        return response.Response({
+            'tabular_pending': fields_pending,
+        })
 
     """
     Join request to this project
