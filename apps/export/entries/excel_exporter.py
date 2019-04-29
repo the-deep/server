@@ -162,24 +162,37 @@ class ExcelExporter:
 
         elif export_type == 'geo' and self.regions:
             values = []
+            geo_titles = []
             if export_data:
                 values = export_data.get('values', [])
                 values = [str(v) for v in values]
 
             for region in self.regions:
                 admin_levels = self.region_data[region.id]
-                for admin_level in admin_levels:
+                max_levels = len(admin_levels)
+                rows_value = []
+                for _level, admin_level in enumerate(admin_levels[::-1]):
                     geo_area_titles = admin_level['geo_area_titles']
-                    selected_titles = [
-                        geo_area_titles[geo_id]
-                        for geo_id in values
-                        if geo_id in geo_area_titles
-                    ]
-                    if len(selected_titles) > 0:
-                        rows.add_rows_of_values(selected_titles)
-                    else:
-                        rows.add_value('')
+                    level = max_levels - _level
+                    for geo_id in values:
+                        if geo_id not in geo_area_titles:
+                            continue
+                        row_values = ['' for i in range(1, max_levels - level)]
 
+                        title = geo_area_titles[geo_id].get('title')
+                        geo_titles.append((geo_id, title))
+                        parent_id = geo_area_titles[geo_id].get('parent_id')
+                        row_values.append(title)
+                        for _level in range(0, level - 1)[::-1]:
+                            if parent_id:
+                                _geo_area_titles = admin_levels[_level]['geo_area_titles']
+                                _title = _geo_area_titles[parent_id].get('title')
+                                row_values.append(_title)
+                                parent_id = _geo_area_titles[parent_id].get('parent_id')
+                            else:
+                                row_values.append('')
+                        rows_value.append(row_values[::-1])
+                rows.add_rows_of_value_lists(rows_value)
         else:
             if export_data:
                 if export_data.get('type') == 'list':
