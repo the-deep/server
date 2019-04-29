@@ -69,7 +69,11 @@ def auto_detect_and_update_fields(book):
                         block_name='Field Save, size: {}, type: {}'.format(
                             len(cast_info['values']), field.type
                         )):
-                    field.cache = {'status': Field.CACHE_PENDING, 'time': time.time()}
+                    field.cache = {
+                        'status': Field.CACHE_PENDING,
+                        'image_status': Field.CACHE_PENDING,
+                        'time': time.time(),
+                    }
                     field.save()
 
                 generate_column_columns.append(field.id)
