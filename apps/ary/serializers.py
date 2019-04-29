@@ -14,8 +14,11 @@ from lead.serializers import SimpleLeadSerializer, ProjectEntitySerializer
 from lead.models import Lead, LeadGroup
 from deep.models import Field
 from geo.models import Region
-from organization.models import Organization
-from organization.serializers import ArySourceOrganizationSerializer
+from organization.models import Organization, OrganizationType
+from organization.serializers import (
+    ArySourceOrganizationSerializer,
+    OrganizationTypeSerializer,
+)
 
 from .models import (
     AssessmentTemplate,
@@ -258,6 +261,11 @@ class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
                 Organization.objects.all(),
                 many=True,
                 context=self.context,
+            ).data
+            if have_source(Field.ORGANIZATIONS or Field.DONORS) else [],
+            'organization_type': OrganizationTypeSerializer(
+                OrganizationType.objects.all(),
+                many=True,
             ).data
             if have_source(Field.ORGANIZATIONS or Field.DONORS) else [],
         }
