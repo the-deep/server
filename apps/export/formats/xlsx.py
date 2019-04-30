@@ -12,9 +12,6 @@ from utils.common import (
 
 
 def xstr(value):
-    if isinstance(value, list):
-        # NOTE: Handle sub-sector values
-        return get_valid_xml_string(', '.join([str(x) for x in value]), escape=False)
     return get_valid_xml_string(value, escape=False)
 
 
