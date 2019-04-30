@@ -19,6 +19,7 @@ from user.views import (
     unsubscribe_email,
 )
 from gallery.views import (
+    FileView,
     FileViewSet,
     GoogleDriveFileViewSet,
     DropboxFileViewSet,
@@ -289,6 +290,7 @@ urlpatterns = [
         TokenRefreshView.as_view()),
 
     # Gallery
+    url(r'^file/(?P<file_id>\d+)/$', FileView.as_view(), name='file'),
     url(
         r'^public-file/(?P<fidb64>[0-9A-Za-z]+)/(?P<token>.+)/(?P<filename>.*)$',
         PublicFileView.as_view(),
