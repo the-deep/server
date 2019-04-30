@@ -22,12 +22,13 @@ class OrganizationSerializer(DynamicFieldsMixin, UserResourceSerializer):
     regions_display = SimpleRegionSerializer(
         source='regions', read_only=True, many=True,
     )
+    logo_url = URLCachedFileField(source='logo.file', allow_null=True, required=False)
     client_id = None
 
     class Meta:
         model = Organization
         fields = ('__all__')
-        read_only_fields = ('verified',)
+        read_only_fields = ('verified', 'logo_url',)
 
     def create(self, validated_data):
         organization = super().create(validated_data)
