@@ -12,6 +12,18 @@ class Export(models.Model):
     Represents an exported file along with few other attributes
     """
 
+    PENDING = 'pending'
+    STARTED = 'started'
+    SUCCESS = 'success'
+    FAILURE = 'failure'
+
+    STATUS_CHOICES = (
+        (PENDING, 'Pending'),
+        (STARTED, 'Started'),
+        (SUCCESS, 'Success'),
+        (FAILURE, 'Failure'),
+    )
+
     XLSX = 'xlsx'
     DOCX = 'docx'
     PDF = 'pdf'
@@ -60,6 +72,7 @@ class Export(models.Model):
     exported_at = models.DateTimeField(auto_now_add=True)
 
     pending = models.BooleanField(default=True)
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default=PENDING)
 
     def __str__(self):
         return self.title

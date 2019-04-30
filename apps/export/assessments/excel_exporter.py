@@ -152,7 +152,7 @@ class ExcelExporter:
 
             self._excel_rows.append(rows)
 
-    def export(self, export_entity):
+    def export(self):
         # Generate rows
         self.assessments_to_rows()
 
@@ -188,12 +188,4 @@ class ExcelExporter:
 
         buffer = self.wb.save()
         filename = generate_filename('Assessments Export', 'xlsx')
-
-        export_entity.title = filename
-        export_entity.type = Export.ASSESSMENTS
-        export_entity.format = 'xlsx'
-        export_entity.pending = False
-        export_entity.mime_type = EXCEL_MIME_TYPE
-
-        export_entity.file.save(filename, ContentFile(buffer))
-        export_entity.save()
+        return filename, Export.XLSX, EXCEL_MIME_TYPE, ContentFile(buffer)

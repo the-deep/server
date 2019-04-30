@@ -25,21 +25,14 @@ class JsonExporter(Exporter):
     def __init__(self):
         self.data = {}
 
-    def export(self, export_entity):
+    def export(self, export_type):
         """
         Export and save in export_entity
         """
-        title = '{} JSON EXPORT'.format(export_entity.type.title())
+        title = '{} JSON EXPORT'.format(export_type)
         filename = generate_filename(title, 'json')
 
         json_data = json.dumps(self.data, sort_keys=True, indent=2,
                                cls=DjangoJSONEncoder).encode('utf-8')
-        export_entity.file.save(filename, ContentFile(json_data))
 
-        export_entity.format = Export.JSON
-        export_entity.mime_type = JSON_MIME_TYPE
-
-        export_entity.title = filename
-        export_entity.pending = False
-
-        export_entity.save()
+        return filename, Export.JSON, JSON_MIME_TYPE, ContentFile(json_data)

@@ -38,24 +38,27 @@ def export_entries(export):
 
     if export_type == Export.EXCEL:
         decoupled = filters.get('decoupled', True)
-        ExcelExporter(decoupled)\
+        export_data = ExcelExporter(decoupled)\
             .load_exportables(exportables, regions)\
             .add_entries(queryset)\
-            .export(export)
+            .export()
 
     elif export_type == Export.REPORT:
         report_structure = filters.get('report_structure')
-        pdf = filters.get('pdf', False)
-        ReportExporter()\
+        pdf = export.filters.get('pdf', False)
+        export_data = ReportExporter()\
             .load_exportables(exportables)\
             .load_structure(report_structure)\
             .add_entries(queryset)\
-            .export(export, pdf)
+            .export(pdf=pdf)
 
     elif export_type == Export.JSON:
-        JsonExporter()\
+        export_data = JsonExporter()\
             .load_exportables(exportables)\
             .add_entries(queryset)\
-            .export(export)
+            .export()
 
-    return True
+    else:
+        raise Exception('(Entries Export) Unkown Export Type Provided: {} for Export:'.format(export_type, export.id))
+
+    return export_data
