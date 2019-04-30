@@ -209,17 +209,19 @@ class ExcelExporter:
                             else:
                                 row_values.extend(['', ''])
                         rows_value.append(row_values[::-1])
-                rows.add_rows_of_value_lists(rows_value)
+                if len(rows_value) > 0:
+                    rows.add_rows_of_value_lists(rows_value)
+                else:
+                    rows.add_rows_of_value_lists([['' for i in range(0, max_levels)] * 2])
         else:
             if export_data:
                 if export_data.get('type') == 'list':
-                    rows.add_rows_of_values(
+                    row_values = [
                         # This is in hope of filtering out non-existent data from excel row
-                        [
-                            x for x in export_data.get('value', [])
-                            if x is not None
-                        ]
-                    )
+                        x for x in export_data.get('value', [])
+                        if x is not None
+                    ]
+                    rows.add_rows_of_values(row_values if row_values else [''])
                 else:
                     rows.add_value(export_data.get('value'))
             else:
