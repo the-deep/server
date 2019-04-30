@@ -1,5 +1,8 @@
+import os
 import pandas as pd
 import logging
+
+from django.conf import settings
 
 from gallery.models import File
 from tabular.models import Field
@@ -208,18 +211,19 @@ def get_entry_image(entry):
     """
     Use cached Graph for given entry
     """
+    default_image = open(os.path.join(settings.BASE_DIR, 'apps/static/image/deep_chart_preview.png'), 'rb')
     if not entry.tabular_field:
-        return None
+        return default_image
 
     field = entry.tabular_field
 
     images = field.cache.get('images')
 
     if not images or not len(images) > 0:
-        return None
+        return default_image
 
     for image in images:
         if image.get('id') is not None and image.get('format') == 'png':
             file_id = images[0].get('id')
             return File.objects.get(pk=file_id).file
-    return None
+    return default_image

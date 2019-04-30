@@ -15,9 +15,14 @@ def export_assessments(export):
             ary.lead.project.title: ary.to_exportable_json()
             for ary in arys
         }
-        exporter.export(export)
+        export_data = exporter.export(export, export.type.title())
     elif export_type == Export.EXCEL:
-        ExcelExporter(decoupled=False)\
+        export_data = ExcelExporter(decoupled=False)\
             .add_assessments(arys)\
-            .export(export)
-    return True
+            .export()
+    else:
+        raise Exception(
+            '(Assessments Export) Unkown Export Type Provided: {} for Export:'.format(export_type, export.id),
+        )
+
+    return export_data

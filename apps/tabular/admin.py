@@ -51,4 +51,5 @@ class FieldAdmin(VersionAdmin):
     inlines = [GeodataInline]
     list_display = ('title', 'sheet', 'type',)
     list_filter = ('type', CacheStatusListFilter)
+    search_fields = ['title']
     actions = [trigger_cache_reset]
