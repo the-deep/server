@@ -158,7 +158,7 @@ class ExcelExporter:
                         # Filter if all values are None
                         [
                             x for x in rows_of_value_lists
-                            if not all(y is None for y in x)
+                            if x is not None and not all(y is None for y in x)
                         ],
                         col_span,
                     )
@@ -167,7 +167,7 @@ class ExcelExporter:
                         # Filter if all values are None
                         [
                             x for x in export_data.get('values')
-                            if not all(y is None for y in x)
+                            if x is not None and not all(y is None for y in x)
                         ],
                     )
             else:
