@@ -3,6 +3,8 @@ from user_resource.serializers import UserResourceSerializer
 from drf_dynamic_fields import DynamicFieldsMixin
 
 from geo.serializers import SimpleRegionSerializer
+from lead.serializers import URLCachedFileField
+
 from .models import Organization, OrganizationType
 
 
@@ -31,3 +33,13 @@ class OrganizationSerializer(DynamicFieldsMixin, UserResourceSerializer):
         organization = super().create(validated_data)
         organization.created_by = organization.modified_by = self.context['request'].user
         return organization
+
+
+class ArySourceOrganizationSerializer(DynamicFieldsMixin, UserResourceSerializer):
+    logo = URLCachedFileField(source='logo.file', allow_null=True)
+    key = serializers.IntegerField(source='pk')
+    label = serializers.CharField(source='title')
+
+    class Meta:
+        model = Organization
+        fields = ('key', 'label', 'donor', 'logo')
