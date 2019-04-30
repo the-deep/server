@@ -142,11 +142,23 @@ class ExcelExporter:
             col_span = len(data.get('titles'))
             if export_data:
                 if export_data.get('type') == 'lists':
+                    export_data_values = export_data.get('values')
+                    rows_of_value_lists = []
+                    for export_data_value in export_data_values:
+                        # Handle for Matrix2D subsectors
+                        if len(export_data_value) == 4 and isinstance(export_data_value[3], list):
+                            if len(export_data_value[3]) > 0:
+                                for subsector in export_data_value[3]:
+                                    rows_of_value_lists.append(export_data_value[:3] + [subsector])
+                            else:
+                                rows_of_value_lists.append(export_data_value[:3] + [''])
+                        else:
+                            rows_of_value_lists.append(export_data_value)
                     rows.add_rows_of_value_lists(
                         # Filter if all values are None
                         [
-                            x for x in export_data.get('values')
-                            if not all(y is None for y in x)
+                            x for x in rows_of_value_lists
+                            if x is not None and not all(y is None for y in x)
                         ],
                         col_span,
                     )
@@ -155,7 +167,7 @@ class ExcelExporter:
                         # Filter if all values are None
                         [
                             x for x in export_data.get('values')
-                            if not all(y is None for y in x)
+                            if x is not None and not all(y is None for y in x)
                         ],
                     )
             else:
