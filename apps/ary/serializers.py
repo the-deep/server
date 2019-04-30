@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
@@ -6,14 +7,19 @@ from deep.serializers import (
     RemoveNullFieldsMixin,
     RecursiveSerializer,
 )
-from django.db.models import Q
+
 from project.models import Project
 from user_resource.serializers import UserResourceSerializer
 from lead.serializers import SimpleLeadSerializer, ProjectEntitySerializer
 from lead.models import Lead, LeadGroup
 from deep.models import Field
 from geo.models import Region
-from organization.models import Organization
+from organization.models import Organization, OrganizationType
+from organization.serializers import (
+    ArySourceOrganizationSerializer,
+    OrganizationTypeSerializer,
+)
+
 from .models import (
     AssessmentTemplate,
     Assessment,
@@ -237,14 +243,6 @@ class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
         ]
 
     def get_sources(self, instance):
-        def get_queryset(queryset):
-            return queryset.extra(
-                select={
-                    'key': 'id',
-                    'label': 'title',
-                }
-            ).values('key', 'label')
-
         def have_source(source_type):
             return AssessmentTemplate.objects.filter(
                 Q(metadatagroup__fields__source_type=source_type) |
@@ -253,13 +251,21 @@ class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
             ).exists()
 
         return {
-            'countries': get_queryset(
-                Region.objects.filter(public=True)
-            ) if have_source(Field.COUNTRIES) else [],
-            'organizations': get_queryset(
-                Organization.objects
-            ) if have_source(Field.ORGANIZATIONS) else [],
-            'donors': get_queryset(
-                Organization.objects.filter(donor=True)
-            ) if have_source(Field.DONORS) else [],
+            'countries': Region.objects.filter(public=True).extra(
+                select={
+                    'key': 'id',
+                    'label': 'title',
+                }
+            ).values('key', 'label') if have_source(Field.COUNTRIES) else [],
+            'organizations': ArySourceOrganizationSerializer(
+                Organization.objects.all(),
+                many=True,
+                context=self.context,
+            ).data
+            if have_source(Field.ORGANIZATIONS or Field.DONORS) else [],
+            'organization_type': OrganizationTypeSerializer(
+                OrganizationType.objects.all(),
+                many=True,
+            ).data
+            if have_source(Field.ORGANIZATIONS or Field.DONORS) else [],
         }
