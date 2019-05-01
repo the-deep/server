@@ -255,9 +255,9 @@ class ReportExporter:
 
         return self
 
-    def export(self, export_entity, pdf=False):
+    def export(self, pdf=False):
         """
-        Export and save in export_entity
+        Export and return export data
         """
 
         # Get all leads to generate Bibliography
@@ -309,23 +309,20 @@ class ReportExporter:
                   'pdf', temp_doc.name, '--outdir', settings.TEMP_DIR])
 
             filename = generate_filename('Entries General Export', 'pdf')
-            export_entity.file.save(filename, File(open(temp_pdf, 'rb')))
+            file = File(open(temp_pdf, 'rb'))
+            export_format = Export.PDF
+            export_mime_type = PDF_MIME_TYPE
 
+            # Cleanup
             os.unlink(temp_pdf)
             temp_doc.close()
 
-            export_entity.format = Export.PDF
-            export_entity.mime_type = PDF_MIME_TYPE
         else:
             buffer = self.doc.save()
+
             filename = generate_filename('Entries General Export', 'docx')
-            export_entity.file.save(filename, ContentFile(buffer))
+            file = ContentFile(buffer)
+            export_format = Export.DOCX
+            export_mime_type = DOCX_MIME_TYPE
 
-            export_entity.format = Export.DOCX
-            export_entity.mime_type = DOCX_MIME_TYPE
-
-        export_entity.title = filename
-        export_entity.type = Export.ENTRIES
-        export_entity.pending = False
-
-        export_entity.save()
+        return filename, export_format, export_mime_type, file

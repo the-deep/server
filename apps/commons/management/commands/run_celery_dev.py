@@ -8,7 +8,7 @@ from django.utils import autoreload
 def restart_celery(*args, **kwargs):
     kill_worker_cmd = 'pkill -9 celery'
     subprocess.call(shlex.split(kill_worker_cmd))
-    start_worker_cmd = 'celery -A deep worker --concurrency=1 -l info'
+    start_worker_cmd = 'celery -A deep worker -B --concurrency=1 -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler' # noqa E501
     subprocess.call(shlex.split(start_worker_cmd))
 
 

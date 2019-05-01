@@ -1,3 +1,4 @@
+import time
 from django.db import transaction
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
@@ -62,7 +63,7 @@ class FieldSerializer(
         return None
 
     def update(self, instance, validated_data):
-        validated_data['cache'] = {'status': Field.CACHE_PENDING}
+        validated_data['cache'] = {'status': Field.CACHE_PENDING, 'time': time.time()}
         instance = super().update(instance, validated_data)
         transaction.on_commit(
             lambda: tabular_generate_column_image.delay(instance.id)
@@ -81,7 +82,7 @@ class FieldMetaSerializer(FieldSerializer):
 class FieldProcessedOnlySerializer(FieldSerializer):
     class Meta:
         model = Field
-        exclude = ('sheet', 'data',)
+        exclude = ('data',)
 
 
 class SheetSerializer(
@@ -134,3 +135,7 @@ class BookProcessedOnlySerializer(BookSerializer):
     sheets = SheetProcessedOnlySerializer(
         many=True, source='sheet_set', required=False,
     )
+    pending_fields = serializers.SerializerMethodField()
+
+    def get_pending_fields(self, instance):
+        return instance.get_pending_fields_id()

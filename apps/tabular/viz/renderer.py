@@ -1,5 +1,8 @@
+import os
 import pandas as pd
 import logging
+
+from django.conf import settings
 
 from gallery.models import File
 from tabular.models import Field
@@ -131,8 +134,14 @@ def calc_preprocessed_data(field):
             'series': series,
             'health_stats': health_stats,
         }
+        # NOTE: Geo Field cache success after chart generation
+        if field.type == 'geo':
+            cache['status'] = Field.CACHE_PENDING
     except Exception:
-        cache = {'status': Field.CACHE_ERROR}
+        cache = {
+            'status': Field.CACHE_ERROR,
+            'image_status': Field.CACHE_ERROR,
+        }
         logger.error(
             'Failed to calculate processed data for field',
             exc_info=1,
@@ -185,10 +194,14 @@ def render_field_chart(field):
             field_images.append({
                 'id': file.id, 'chart_type': chart_type, 'format': file_format,
             })
+        field.cache['image_status'] = Field.CACHE_SUCCESS
+        if field.type == 'geo':
+            field.cache['status'] = Field.CACHE_SUCCESS
     else:
         field_images = []
         for image_format in images_format:
             field_images.append({'id': None, 'chart_type': chart_type, 'format': image_format})
+        field.cache['image_status'] = Field.CACHE_ERROR
     field.cache['images'] = field_images
     field.save()
     return field.cache['images']
@@ -198,18 +211,19 @@ def get_entry_image(entry):
     """
     Use cached Graph for given entry
     """
+    default_image = open(os.path.join(settings.BASE_DIR, 'apps/static/image/deep_chart_preview.png'), 'rb')
     if not entry.tabular_field:
-        return None
+        return default_image
 
     field = entry.tabular_field
 
     images = field.cache.get('images')
 
     if not images or not len(images) > 0:
-        return None
+        return default_image
 
     for image in images:
         if image.get('id') is not None and image.get('format') == 'png':
             file_id = images[0].get('id')
             return File.objects.get(pk=file_id).file
-    return None
+    return default_image

@@ -43,6 +43,7 @@ class Profile(models.Model):
     )
 
     login_attempts = models.IntegerField(default=0)
+    invalid_email = models.BooleanField(default=False, help_text='Flagged as bounce email')
     email_opt_outs = ArrayField(
         models.CharField(max_length=128, choices=EMAIL_CONDITIONS),
         default=list,

@@ -12,7 +12,14 @@ from export.serializers import ExportSerializer
 from export.models import Export
 from project.models import Project
 
-from export.tasks import export_entries, export_assessment
+from export.tasks import export_task
+
+
+class MetaExtractionView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, file_id=None, version=None):
+        pass
 
 
 class ExportViewSet(viewsets.ReadOnlyModelViewSet):
@@ -52,10 +59,8 @@ class ExportTriggerView(views.APIView):
             project = None
 
         if export_item == 'entry':
-            export_task = export_entries
             type = Export.ENTRIES
         elif export_item == 'assessment':
-            export_task = export_assessment
             type = Export.ASSESSMENTS
         else:
             return response.Response(
@@ -70,22 +75,18 @@ class ExportTriggerView(views.APIView):
                 return response.Response({}, status=status.HTTP_403_FORBIDDEN)
 
         export = Export.objects.create(
-            title='tmp',
+            title='Generating Export.....',
             exported_by=request.user,
             pending=True,
             project=project,
             type=type,
+            export_type=export_type,
             is_preview=is_preview,
+            filters=filters,
         )
 
         if not settings.TESTING:
-            transaction.on_commit(lambda: export_task.delay(
-                export_type,
-                export.id,
-                request.user.id,
-                project_id,
-                filters,
-            ))
+            transaction.on_commit(lambda: export_task.delay(export.id))
 
         return response.Response({
             'export_triggered': export.id,

@@ -4,6 +4,7 @@ Django settings for deep project.
 import os
 import sys
 import raven
+from celery.schedules import crontab
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -97,6 +98,8 @@ INSTALLED_APPS = [
     'storages',
     'django_premailer',
     'raven.contrib.django.raven_compat',
+    'django_celery_beat',
+    'jsoneditor',
 ] + [
     '{}.{}.apps.{}Config'.format(
         APPS_DIR.split('/')[-1],
@@ -238,7 +241,8 @@ LANGUAGES = (
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 # Gallery files Cache-control max-age in seconds
-GALLERY_FILE_EXPIRE = 60 * 60 * 24
+# NOTE: S3 have max 7 days for signed url (https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html) # noqa
+GALLERY_FILE_EXPIRE = 60 * 60 * 24 * 2
 
 if os.environ.get('DJANGO_USE_S3', 'False').lower() == 'true':
     # AWS S3 Bucket Credentials
@@ -277,13 +281,21 @@ STATICFILES_DIRS = [
 ]
 
 # CELERY CONFIG "redis://:{password}@{host}:{port}/{db}"
-CELERY_REDIS_URL = os.environ.get('CELERY_REDIS_URL', 'redis://redis:6379')
+CELERY_REDIS_URL = os.environ.get('CELERY_REDIS_URL', 'redis://redis:6379/0')
 CELERY_BROKER_URL = CELERY_REDIS_URL
 CELERY_RESULT_BACKEND = CELERY_REDIS_URL
 CELERY_TIMEZONE = TIME_ZONE
 
+CELERY_BEAT_SCHEDULE = {
+    'remaining_tabular_generate_columns_image': {
+        'task': 'tabular.tasks.remaining_tabular_generate_columns_image',
+        # Every 6 hour
+        'schedule': crontab(minute=0, hour="*/6"),
+    },
+}
+
 # REDIS STORE CONFIG "redis://:{password}@{host}:{port}/{db}"
-CHANNEL_REDIS_URL = os.environ.get('CHANNEL_REDIS_URL', 'redis://redis:6379')
+CHANNEL_REDIS_URL = os.environ.get('CHANNEL_REDIS_URL', 'redis://redis:6379/1')
 
 # CHANNELS CONFIG
 CHANNEL_LAYERS = {
@@ -295,6 +307,19 @@ CHANNEL_LAYERS = {
         'ROUTING': 'deep.routing.channel_routing',
     },
 }
+
+DJANGO_CACHE_REDIS_URL = os.environ.get('DJANGO_CACHE_REDIS_URL', 'redis://redis:6379/2')
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": DJANGO_CACHE_REDIS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+        "KEY_PREFIX": "dj_cache-",
+    },
+}
+
 
 ASGI_APPLICATION = "deep.routing.channel_routing"
 
@@ -316,7 +341,7 @@ def add_username_attribute(record):
     """
     Append username(email) to logs
     """
-    record.username = ''
+    record.username = 'UNK_USER'
     if hasattr(record, 'request'):
         if hasattr(record.request, 'user') and\
                 not record.request.user.is_anonymous:
@@ -327,6 +352,11 @@ def add_username_attribute(record):
 
 
 if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
+    format_args = (
+        os.environ.get('EBS_HOSTNAME', 'UNK_HOST'),
+        os.environ.get('EBS_ENV_TYPE', 'UNK_ENV'),
+    )
+    papertrail_address = (os.environ.get('PAPERTRAIL_HOST'), int(os.environ.get('PAPERTRAIL_PORT')))
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
@@ -338,15 +368,13 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
         },
         'formatters': {
             'simple': {
-                'format': '%(asctime)s ' + os.environ.get('EBS_HOSTNAME', '') +
-                          ' DJANGO-' + os.environ.get('EBS_ENV_TYPE', '') +
-                          ': %(username)s %(message)s',
+                'format': '%(asctime)s {} DJANGO-{}: - %(levelname)s - %(name)s - [%(username)s] %(message)s'.format(
+                    *format_args,
+                ),
                 'datefmt': '%Y-%m-%dT%H:%M:%S',
             },
             'profiling': {
-                'format': '%(asctime)s ' + os.environ.get('EBS_HOSTNAME', '') +
-                          ' PROFILING-' + os.environ.get('EBS_ENV_TYPE', '') +
-                          ': %(message)s',
+                'format': '%(asctime)s {} PROFILING-{}: %(message)s'.format(*format_args),
                 'datefmt': '%Y-%m-%dT%H:%M:%S',
             },
         },
@@ -356,36 +384,29 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
                 'class': 'logging.handlers.SysLogHandler',
                 'filters': ['add_username_attribute'],
                 'formatter': 'simple',
-                'address': (os.environ.get('PAPERTRAIL_HOST'),
-                            int(os.environ.get('PAPERTRAIL_PORT')))
+                'address': papertrail_address,
             },
             'ProfilingSysLog': {
                 'level': 'DEBUG',
                 'class': 'logging.handlers.SysLogHandler',
                 'formatter': 'profiling',
-                'address': (os.environ.get('PAPERTRAIL_HOST'),
-                            int(os.environ.get('PAPERTRAIL_PORT')))
+                'address': papertrail_address,
             },
         },
         'loggers': {
-            'celery': {
-                'handlers': ['SysLog'],
-                'propagate': True,
-            },
-            'channels': {
-                'handlers': ['SysLog'],
-                'propagate': True,
-            },
-            'django': {
-                'handlers': ['SysLog'],
-                'propagate': True,
+            **{
+                app: {
+                    'handlers': ['SysLog'],
+                    'propagate': True,
+                }
+                for app in LOCAL_APPS + ['deep', 'utils', 'celery', 'channels', 'django']
             },
             'profiling': {
                 'handlers': ['ProfilingSysLog'],
                 'level': 'DEBUG',
                 'propagate': True,
-            }
-        },
+            },
+        }
     }
 else:
     LOGGING = {
@@ -511,5 +532,5 @@ DEEPL_API = DEEPL_DOMAIN + '/api'
 TOKEN_DEFAULT_RESET_TIMEOUT_DAYS = 7
 PROJECT_REQUEST_RESET_TIMEOUT_DAYS = 7
 
-JSON_EDITOR_INIT_JS = "js/jsoneditor-init.js"
+JSON_EDITOR_INIT_JS = 'js/jsoneditor-init.js'
 LOGIN_URL = '/admin/login'

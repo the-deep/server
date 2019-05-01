@@ -4,6 +4,8 @@ from django.core.files.base import ContentFile
 from export.formats.xlsx import WorkBook, RowsBuilder
 from export.mime_types import EXCEL_MIME_TYPE
 from entry.models import Entry, ExportData
+from export.models import Export
+
 from utils.common import format_date, generate_filename, excel_column_name
 
 logger = logging.getLogger(__name__)
@@ -333,19 +335,14 @@ class ExcelExporter:
             rows.apply()
         return self
 
-    def export(self, export_entity):
+    def export(self):
+        """
+        Export and return export data
+        """
         self.group.set_col_types(self.col_types)
         if self.split:
             self.split.set_col_types(self.col_types)
 
         buffer = self.wb.save()
         filename = generate_filename('Entries Export', 'xlsx')
-
-        export_entity.title = filename
-        export_entity.type = 'entries'
-        export_entity.format = 'xlsx'
-        export_entity.pending = False
-        export_entity.mime_type = EXCEL_MIME_TYPE
-
-        export_entity.file.save(filename, ContentFile(buffer))
-        export_entity.save()
+        return filename, Export.XLSX, EXCEL_MIME_TYPE, ContentFile(buffer)
