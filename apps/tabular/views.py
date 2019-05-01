@@ -19,6 +19,7 @@ from .serializers import (
     BookProcessedOnlySerializer,
     SheetSerializer,
     FieldSerializer,
+    FieldProcessedOnlySerializer,
     GeodataSerializer,
 )
 
@@ -40,11 +41,24 @@ class BookViewSet(viewsets.ModelViewSet):
     )
     def get_processed_only(self, request, pk=None, version=None):
         instance = self.get_object()
-        if instance.get_status():
-            serializer = self.get_serializer(instance)
-            return response.Response(serializer.data)
+        serializer = self.get_serializer(instance)
+        return response.Response(serializer.data)
+
+    @action(
+        detail=True,
+        url_path='fields',
+        methods=['post'],
+        serializer_class=FieldProcessedOnlySerializer,
+    )
+    def get_fields(self, request, pk=None, version=None):
+        instance = self.get_object()
+        fields = request.data.get('fields', [])
+        pending_fields = instance.get_pending_fields_id()
+        fields = instance.get_processed_fields(fields)
+        serializer = self.get_serializer(fields, many=True)
         return response.Response({
-            'status': Field.CACHE_PENDING,
+            'pending_fields': pending_fields,
+            'fields': serializer.data,
         })
 
     @action(

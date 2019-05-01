@@ -233,3 +233,18 @@ def cal_region_cache(regions_id):
         except Exception:
             logger.error('Region Cache Calculation Failed!!', exc_info=True)
     return success_regions
+
+
+@shared_task
+def cal_admin_level_cache(admin_levels_id):
+    """
+    NOTE: Only use this from Admin Panel
+    """
+    success_admin_levels = []
+    for admin_level in AdminLevel.objects.filter(pk__in=admin_levels_id).distinct():
+        try:
+            admin_level.calc_cache()
+            success_admin_levels.append(admin_level.pk)
+        except Exception:
+            logger.error('Admin Level Cache Calculation Failed!!', exc_info=True)
+    return success_admin_levels

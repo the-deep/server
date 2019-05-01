@@ -1,5 +1,7 @@
 from collections import OrderedDict, defaultdict
 
+from django.core.cache import cache
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import ProtectedError, FieldDoesNotExist
@@ -377,3 +379,18 @@ class RecursiveSerializer(serializers.Serializer):
     def to_representation(self, value):
         serializer = self.parent.parent.__class__(value, context=self.context)
         return serializer.data
+
+
+class URLCachedFileField(serializers.FileField):
+    CACHE_KEY = 'url_cache_{}'
+
+    def to_representation(self, obj):
+        if not obj:
+            return None
+        key = self.CACHE_KEY.format(obj.name)
+        url = cache.get(key)
+        if url:
+            return url
+        url = super().to_representation(obj)
+        cache.set(key, url, settings.MAX_FILE_CACHE_AGE)
+        return url

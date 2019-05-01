@@ -4,7 +4,7 @@ from rest_framework.exceptions import APIException
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
-from deep.serializers import RemoveNullFieldsMixin
+from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
 import deep.documents_types as deep_doc_types
 from user_resource.serializers import UserResourceSerializer
 from utils.external_storages.google_drive import download as g_download
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class SimpleFileSerializer(RemoveNullFieldsMixin,
                            serializers.ModelSerializer):
     title = serializers.CharField(required=False, read_only=True)
-    file = serializers.FileField(required=False, read_only=True)
+    file = URLCachedFileField(required=False, read_only=True)
     mime_type = serializers.CharField(required=False, read_only=True)
 
     class Meta:
@@ -32,6 +32,8 @@ class SimpleFileSerializer(RemoveNullFieldsMixin,
 
 class FileSerializer(RemoveNullFieldsMixin,
                      DynamicFieldsMixin, UserResourceSerializer):
+    file = URLCachedFileField(required=True, read_only=False)
+
     class Meta:
         model = File
         fields = ('__all__')

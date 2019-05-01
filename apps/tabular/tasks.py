@@ -1,3 +1,4 @@
+import time
 import logging
 
 from celery import shared_task
@@ -68,7 +69,11 @@ def auto_detect_and_update_fields(book):
                         block_name='Field Save, size: {}, type: {}'.format(
                             len(cast_info['values']), field.type
                         )):
-                    field.cache = {'status': Field.CACHE_PENDING}
+                    field.cache = {
+                        'status': Field.CACHE_PENDING,
+                        'image_status': Field.CACHE_PENDING,
+                        'time': time.time(),
+                    }
                     field.save()
 
                 generate_column_columns.append(field.id)
@@ -198,3 +203,23 @@ def tabular_extract_geo(geodata_pk):
 
     lock.release()
     return return_value
+
+
+@shared_task
+def remaining_tabular_generate_columns_image():
+    """
+    Scheduled task
+    NOTE: Only use it through schedular
+    """
+    key = 'remaining_tabular_generate_columns_image'
+    lock = redis.get_lock(key, 60 * 60 * 2)  # Lock lifetime 2 hours
+    have_lock = lock.acquire(blocking=False)
+    if not have_lock:
+        return '{} Locked'.format(key)
+    tabular_generate_columns_image(
+        Field.objects.filter(
+            cache__status=Field.CACHE_PENDING,
+        ).distinct().order_by('id').values_list('id', flat=True)[:300]
+    )
+    lock.release()
+    return True

@@ -2,6 +2,7 @@
 from xml.sax.saxutils import escape as xml_escape
 import matplotlib as mp
 from datetime import timedelta, datetime
+from django.core.cache import cache
 from django.conf import settings
 from redis_store import redis
 

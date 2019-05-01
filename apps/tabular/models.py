@@ -75,11 +75,25 @@ class Book(UserResource):
         elif self.url:
             return get_file_from_url(self.url)
 
+    def get_pending_fields_id(self):
+        return Field.objects.filter(
+            sheet__book=self,
+            cache__status=Field.CACHE_PENDING,
+        ).distinct().values_list('id', flat=True)
+
     def get_status(self):
         return Field.objects.filter(
             sheet__book=self,
             cache__status=Field.CACHE_PENDING,
         ).count() == 0
+
+    def get_processed_fields(self, fields=[]):
+        """
+        Return success cached fields
+        """
+        return Field.objects.filter(
+            sheet__book=self, cache__status=Field.CACHE_SUCCESS, id__in=fields,
+        ).distinct()
 
     def __str__(self):
         return self.title
