@@ -64,7 +64,7 @@ class PublicFileView(View):
 
 
 def filter_files_by_projects(qs, name, value):
-    if value.count() == 0:
+    if len(value) == 0:
         return qs
 
     return qs.filter(
