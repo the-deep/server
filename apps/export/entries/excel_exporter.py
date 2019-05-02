@@ -165,13 +165,7 @@ class ExcelExporter:
                         col_span,
                     )
                 else:
-                    rows.add_value_list(
-                        # Filter if all values are None
-                        [
-                            x for x in export_data.get('values')
-                            if x is not None and not all(y is None for y in x)
-                        ],
-                    )
+                    rows.add_value_list(export_data.get('values'))
             else:
                 rows.add_value_list([''] * col_span)
 
