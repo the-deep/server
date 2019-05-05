@@ -117,12 +117,13 @@ def parse_string(val, **kwargs):
 def parse_datetime(val, date_format=None, **kwargs):
     # Try date parsing for english, french and spanish languages only
     # The following parses numbers as well so if number matches, return None
-    val = str(val)
+    val = str(val).strip()
     if not date_format and parse_number(val):
         return None
 
     try:
-        return datetime.strptime(val, date_format)
+        parsed = datetime.strptime(val, date_format)
+        return parsed
     except (ValueError, TypeError):
         return None
 
