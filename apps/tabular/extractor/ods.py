@@ -28,7 +28,7 @@ def extract(book):
             )
             header_index = sheet_options.get('header_row', 1) - 1
             no_headers = sheet_options.get('no_headers', False)
-            data_index = sheet_options.get('data_row_index', header_index + 1)
+            data_index = header_index + 1
 
             if no_headers:
                 data_index -= 1
@@ -80,6 +80,5 @@ def extract(book):
                 with LogTime(block_name=block_name):
                     field.save()
 
-            options = sheet.options or {}
-            sheet.options = {**options, 'data_row_index': data_index}
+            sheet.data_row_index = data_index
             sheet.save()

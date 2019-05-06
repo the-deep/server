@@ -66,5 +66,5 @@ def extract(book):
                 field.save()
 
         options = sheet.options or {}
-        sheet.options = {**options, 'data_row_index': data_index}
+        sheet.data_row_index = data_index
         sheet.save()

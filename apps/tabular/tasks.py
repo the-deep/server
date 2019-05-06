@@ -54,7 +54,7 @@ def auto_detect_and_update_fields(book):
         for sheet in book.sheet_set.all():
             fields = sheet.field_set.all()
 
-            row_index = sheet.get_data_row_index()
+            row_index = sheet.data_row_index
 
             for field in fields:
                 data = field.data[row_index:]

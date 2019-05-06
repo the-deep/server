@@ -343,15 +343,14 @@ class TestTabularExtraction(TestCase):
         assert sheets.count() == 1
 
         sheet = sheets[0]
-        sheet_options = sheet.options
-        assert sheet_options['data_row_index'] == 1
+        assert sheet.data_row_index == 1
 
         for field in sheet.field_set.all():
             assert len(field.data) == 11, "Data includes the column names as well"
             assert len(field.actual_data) == 10
 
         # now update sheet option
-        sheet.options['data_row_index'] = 2
+        sheet.data_row_index = 2
         sheet.save()
 
         # check if field actual_data changed or not
