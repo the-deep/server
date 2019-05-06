@@ -124,27 +124,15 @@ def _tabular_meta_extract_geo(geodata):
     return True
 
 
-def _tabular_render_field_chart(field):
-    pass
-
-
-def _tabular_calc_preprocessed_data(field_id):
-    try:
-        field = Field.objects.get(pk=field_id)
-        return calc_preprocessed_data(field)
-    except Field.DoesNotExist:
-        logger.warn('Field ({}) doesn\'t exists'.format(field_id))
-
-
 @shared_task
 @redis_lock
 def tabular_generate_column_image(field_id):
-    try:
-        field = Field.objects.get(pk=field_id)
-        calc_preprocessed_data(field)
-        return render_field_chart(field)
-    except Field.DoesNotExist:
+    field = Field.objects.filter(pk=field_id).first()
+    if field is None:
         logger.warn('Field ({}) doesn\'t exists'.format(field_id))
+
+    calc_preprocessed_data(field)
+    return render_field_chart(field)
 
 
 @shared_task

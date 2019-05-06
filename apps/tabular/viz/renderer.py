@@ -4,6 +4,7 @@ import logging
 
 from django.conf import settings
 
+from deep.documents_types import CHART_IMAGE_MIME
 from gallery.models import File
 from tabular.models import Field
 from tabular.viz import (
@@ -21,16 +22,35 @@ def DEFAULT_CHART_RENDER(*args, **kwargs):
     return None
 
 
+BARCHART = 'barchart'
+BARCHARTH = 'barcharth'
+MAP = 'map'
+HISTOGRAM = 'histogram'
+WORDCLOUD = 'wordcloud'
+
+CHART_TYPE_FIELD_MAP = {
+    Field.GEO: MAP,
+    Field.NUMBER: HISTOGRAM,
+}
+
+DEFAULT_IMAGE_PATH = os.path.join(settings.BASE_DIR, 'apps/static/image/deep_chart_preview.png')
+
 CHART_RENDER = {
     # frequency data required
-    'barchart': barchart.plotly,
-    'barcharth': lambda *args, **kwargs: barchart.plotly(*args, **kwargs, horizontal=True),
-    'map': mapViz.plot,
+    BARCHART: barchart.plotly,
+    BARCHARTH: lambda *args, **kwargs: barchart.plotly(*args, **kwargs, horizontal=True),
+    MAP: mapViz.plot,
 
     # Frequency data not required
-    'histograms': histograms.plotly,
-    'wordcloud': wordcloud.plot,
+    HISTOGRAM: histograms.plotly,
+    WORDCLOUD: wordcloud.plot,
 }
+
+
+def get_val_column(field):
+    if field.type in [Field.GEO, Field.DATETIME, Field.NUMBER]:
+        return 'processed_value'
+    return 'value'
 
 
 def clean_real_data(data, val_column):
@@ -58,16 +78,16 @@ def clean_real_data(data, val_column):
 
 
 def calc_data(field):
-    val_column = 'processed_value' if field.type == 'geo' else 'value'
+    val_column = get_val_column(field)
 
     data, df = clean_real_data(field.data, val_column)
 
     if data.empty:
-        logger.warn('Empty DataFrame: no numeric data to calculate')
+        logger.warning('Empty DataFrame: no numeric data to calculate for field ({})'.format(field.pk))
         return [], {}
 
     if val_column not in data.columns:
-        logger.warning('{} not present'.format(val_column))
+        logger.warning('{} not present in field ({})'.format(val_column, field.pk))
         return None, {}
 
     data = data.groupby(val_column).count()['empty'].sort_values().to_frame()
@@ -82,12 +102,7 @@ def calc_data(field):
     return data.to_dict(orient='records'), health_stats
 
 
-def generate_chart(field, chart_type='barchart', images_format=['svg']):
-    if field.type == 'geo':
-        chart_type = 'map'
-    elif field.type == 'number':
-        chart_type = 'histograms'
-
+def generate_chart(field, chart_type, images_format=['svg']):
     params = {
         'x_label': field.title,
         'y_label': 'count',
@@ -96,31 +111,28 @@ def generate_chart(field, chart_type='barchart', images_format=['svg']):
         # data will be added according to chart type
     }
 
-    if chart_type not in ['histograms', 'wordcloud']:
+    if chart_type not in [HISTOGRAM, WORDCLOUD]:
         df = pd.DataFrame(field.cache.get('series'))
         if df.empty or 'value' not in df.columns:
             return None, {}
         params['data'] = df
     else:
-        df, _ = clean_real_data(field.data, 'value')
-        if chart_type == 'histograms':
-            params['data'] = pd.to_numeric(df['value'])
-        elif chart_type == 'wordcloud':
-            params['data'] = ' '.join(df['value'].values)
+        val_column = get_val_column(field)
+        df, _ = clean_real_data(field.data, val_column)
+        if chart_type == HISTOGRAM:
+            params['data'] = pd.to_numeric(df[val_column])
+        elif chart_type == WORDCLOUD:
+            params['data'] = ' '.join(df[val_column].values)
 
     if isinstance(params['data'], pd.DataFrame) and params['data'].empty:
-        logger.warn('Empty DataFrame: no numeric data to plot')
+        logger.warning('Empty DataFrame: no numeric data to plot for field ({})'.format(field.pk))
         return None, {}
 
     chart_render = CHART_RENDER.get(chart_type)
     if chart_render:
-        try:
-            images = chart_render(**params)
-        except Exception:
-            logger.error('Tabular Chart Render Error!!', exc_info=1)
-            return None, chart_type
-        return images, chart_type
-    return None, chart_type
+        images = chart_render(**params)
+        return images
+    return None
 
 
 def calc_preprocessed_data(field):
@@ -135,7 +147,7 @@ def calc_preprocessed_data(field):
             'health_stats': health_stats,
         }
         # NOTE: Geo Field cache success after chart generation
-        if field.type == 'geo':
+        if field.type == Field.GEO:
             cache['status'] = Field.CACHE_PENDING
     except Exception:
         cache = {
@@ -143,9 +155,9 @@ def calc_preprocessed_data(field):
             'image_status': Field.CACHE_ERROR,
         }
         logger.error(
-            'Failed to calculate processed data for field',
-            exc_info=1,
-            extra={'field_id': field.id},
+            'Tabular Processed Data Calculation Error!!',
+            exc_info=True,
+            extra={'data': {'field_id': field.pk}},
         )
 
     field.cache = cache
@@ -166,25 +178,29 @@ def _add_image_to_gallery(image_name, image, mime_type):
     return file
 
 
-IMAGE_MIME = {
-    'png': 'image/png',
-    'svg': 'image/svg+xml',
-}
-
-
 def render_field_chart(field):
     """
     Save normalized data to field
     """
-    images_format = ['png', 'svg'] if field.type == 'geo' else ['png']
-    images, chart_type = generate_chart(field, images_format=images_format)
+    images_format = ['png', 'svg'] if field.type == Field.GEO else ['png']
+    chart_type = CHART_TYPE_FIELD_MAP.get(field.type, BARCHART)
+
+    try:
+        images = generate_chart(field, chart_type, images_format=images_format)
+    except Exception:
+        logger.error(
+            'Tabular Chart Render Error!!',
+            exc_info=True,
+            extra={'data': {'field_id': field.pk}}
+        )
+        images = []
 
     if images and len(images) > 0:
         field_images = []
         for image in images:
             file_format = image['format']
             file_content = image['image']
-            file_mime = IMAGE_MIME[file_format]
+            file_mime = CHART_IMAGE_MIME[file_format]
 
             file = _add_image_to_gallery(
                 'tabular_{}_{}.{}'.format(field.sheet.id, field.id, file_format),
@@ -195,7 +211,7 @@ def render_field_chart(field):
                 'id': file.id, 'chart_type': chart_type, 'format': file_format,
             })
         field.cache['image_status'] = Field.CACHE_SUCCESS
-        if field.type == 'geo':
+        if field.type == Field.GEO:
             field.cache['status'] = Field.CACHE_SUCCESS
     else:
         field_images = []
@@ -211,7 +227,7 @@ def get_entry_image(entry):
     """
     Use cached Graph for given entry
     """
-    default_image = open(os.path.join(settings.BASE_DIR, 'apps/static/image/deep_chart_preview.png'), 'rb')
+    default_image = open(DEFAULT_IMAGE_PATH, 'rb')
     if not entry.tabular_field:
         return default_image
 
