@@ -55,7 +55,7 @@ def process(doc, url):
             logger.error(
                 'extractor.formats.html Image Collector Error!!',
                 exc_info=True,
-                extra={'url': url},
+                extra={'data': {'url': url}},
             )
 
     html = '<h1>' + title + '</h1>' + summary
