@@ -45,13 +45,6 @@ class AdminLevelInline(admin.StackedInline):
     max_num = 0
 
 
-class GeoAreaInline(admin.StackedInline):
-    model = GeoArea
-    exclude = ('polygons', 'data',)
-    max_num = 0
-    show_change_link = True
-
-
 @admin.register(Region)
 class RegionAdmin(VersionAdmin):
     list_display = ('title', 'project_count')
@@ -67,9 +60,8 @@ class RegionAdmin(VersionAdmin):
 
 @admin.register(AdminLevel)
 class AdminLevelAdmin(VersionAdmin):
-    search_fields = ('title', 'region.title',)
+    search_fields = ('title', 'region__title',)
     list_display = ('title', linkify('region'),)
-    inlines = [GeoAreaInline]
     exclude = ('geojson', 'bounds', 'geo_area_titles',)
     actions = [trigger_admin_level_cache_reset]
     list_per_page = 10
