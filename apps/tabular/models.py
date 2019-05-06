@@ -125,6 +125,9 @@ class Sheet(models.Model):
             for field in self.field_set.all():
                 field.cache['status'] = Field.CACHE_PENDING
                 field.cache['time'] = time.time()
+                # Update the field title
+                if self.data_row_index > 0:
+                    field.title = field.data[self.data_row_index - 1]['value']
                 field.save()
             field_ids = self.field_set.values_list('id', flat=True)
             tabular_generate_columns_image.delay(list(field_ids))

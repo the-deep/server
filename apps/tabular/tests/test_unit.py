@@ -346,6 +346,8 @@ class TestTabularExtraction(TestCase):
         assert sheet.data_row_index == 1
 
         for field in sheet.field_set.all():
+            # Also check field title
+            assert field.title == field.data[sheet.data_row_index - 1]['value']
             assert len(field.data) == 11, "Data includes the column names as well"
             assert len(field.actual_data) == 10
 
@@ -355,6 +357,7 @@ class TestTabularExtraction(TestCase):
 
         # check if field actual_data changed or not
         for field in sheet.field_set.all():
+            assert field.title == field.data[sheet.data_row_index - 1]['value']
             # check if Re-triggered or not
             assert field.cache['status'] == Field.CACHE_PENDING
             assert len(field.data) == 11, "Data includes the column names as well"
