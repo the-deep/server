@@ -104,12 +104,13 @@ class Book(UserResource):
 class Sheet(models.Model):
     title = models.CharField(max_length=255)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    data_row_index = models.IntegerField(default=1)
     options = JSONField(default=None, blank=True, null=True)
     hidden = models.BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.current_options = self.options
+        self.current_data_row_index = self.data_row_index
 
     def __str__(self):
         return self.title
@@ -117,11 +118,8 @@ class Sheet(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
-        curr_index = self.current_options and self.current_options.get('data_row_index')
-        new_index = self.options and self.options.get('data_row_index')
-
         # Re-Trigger column generation if data_row_index changed
-        if curr_index != new_index:
+        if self.data_row_index != self.current_data_row_index:
             from tabular.tasks import tabular_generate_columns_image  # to prevent circular import
             # First set cache pending to all fields
             for field in self.field_set.all():
@@ -132,12 +130,7 @@ class Sheet(models.Model):
             tabular_generate_columns_image.delay(list(field_ids))
 
         # Update current_options value
-        self.current_options = self.options
-
-    def get_data_row_index(self):
-        options = self.options or {}
-        row_index = options.get('data_row_index')
-        return row_index if row_index is not None else 1
+        self.current_data_row_index = self.current_data_row_index
 
 
 class Field(models.Model):
@@ -177,7 +170,7 @@ class Field(models.Model):
 
     @property
     def actual_data(self):
-        row_index = self.sheet.get_data_row_index()
+        row_index = self.sheet.data_row_index
         return self.data[row_index:]
 
     def __init__(self, *args, **kwargs):
