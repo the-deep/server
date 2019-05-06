@@ -3,11 +3,6 @@ from django.db import transaction
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
 
-from deep.serializers import (
-    NestedCreateMixin,
-    NestedUpdateMixin,
-)
-
 from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
 
@@ -87,10 +82,8 @@ class FieldProcessedOnlySerializer(FieldSerializer):
 
 class SheetSerializer(
         RemoveNullFieldsMixin,
-        NestedCreateMixin,
-        NestedUpdateMixin,
         DynamicFieldsMixin,
-        serializers.ModelSerializer
+        serializers.ModelSerializer,
 ):
     fields = FieldSerializer(many=True, source='field_set', required=False)
 

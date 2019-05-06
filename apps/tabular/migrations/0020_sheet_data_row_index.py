@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sheet',
             name='data_row_index',
-            field=models.IntegerField(default=1),
+            field=models.IntegerField(default=0),
         ),
     ]
