@@ -137,7 +137,7 @@ class FileViewSet(viewsets.ModelViewSet):
         url = cache.get(key)
         if url:
             return _response(url, cache.ttl(key))
-        url = self.get_serializer(obj).get('file')
+        url = self.get_serializer(obj).data.get('file')
         cache.set(key, url, settings.MAX_FILE_CACHE_AGE)
         return _response(url, settings.MAX_FILE_CACHE_AGE)
 
