@@ -127,7 +127,7 @@ def extract_thumbnail(lead_id):
     if not leadPreview:
         logger.error(
             "Lead preview hasn't been created but extract_thumbnail() called",
-            extra={'lead_id': lead_id},
+            extra={'data': {'lead_id': lead_id}},
         )
         return False
 
@@ -165,7 +165,7 @@ def send_lead_text_to_deepl(self, lead_id):
     if not lead:
         logger.warning(
             "Lead does not exist but send_lead_text_to_deepl() called.",
-            extra={'lead_id': lead_id},
+            extra={'data': {'lead_id': lead_id}},
         )
         return True
 
@@ -174,7 +174,7 @@ def send_lead_text_to_deepl(self, lead_id):
     if not preview:
         logger.error(
             "Lead preview hasn't been created but send_lead_text_to_deepl() called",
-            extra={'lead_id': lead_id},
+            extra={'data': {'lead_id': lead_id}},
         )
         return False
 

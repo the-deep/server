@@ -45,7 +45,7 @@ def send_mail_to_user(user, context={}, email_type=None, *args, **kwargs):
     if user.profile.invalid_email:
         logger.warn(
             'User flagged as invalid email!!',
-            extra={'user': user.username, 'user_id': user.pk},
+            extra={'data': {'user': user.username, 'user_id': user.pk}},
         )
         return
 
