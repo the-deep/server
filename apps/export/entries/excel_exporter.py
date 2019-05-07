@@ -288,7 +288,7 @@ class ExcelExporter:
                 logger.error(
                     'Data Series EXCEL Export Failed for entry',
                     exc_info=1,
-                    extra={'entry_id': entry.pk},
+                    extra={'data': {'entry_id': entry.pk}},
                 )
 
         return ''

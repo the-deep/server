@@ -21,6 +21,10 @@ SHEET_MIME_TYPES = [
 ODS_MIME_TYPES = ['application/vnd.oasis.opendocument.spreadsheet']
 IMAGE_MIME_TYPES = ['image/png', 'image/jpeg', 'image/fig', 'image/gif']
 
+CHART_IMAGE_MIME = {
+    'png': 'image/png',
+    'svg': 'image/svg+xml',
+}
 
 # Overall Supported Mime Types
 DEEP_SUPPORTED_MIME_TYPES = [
