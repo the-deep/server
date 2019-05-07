@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 from django.db import migrations
 from analysis_framework.utils import update_widgets
-from entry.utils import update_attributes 
+from entry.utils import update_attributes
 
 def update_all(apps, schema_editor):
     update_widgets()
