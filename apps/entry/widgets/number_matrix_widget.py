@@ -1,5 +1,5 @@
-def update_attribute(widget, data, widget_data):
-    data = data or {}
+def update_attribute(widget, _data, widget_data):
+    data = (_data or {}).get('value') or {}
     row_headers = widget_data.get('row_headers', [])
     column_headers = widget_data.get('column_headers', [])
 
