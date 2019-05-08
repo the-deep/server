@@ -265,7 +265,7 @@ class ExcelExporter:
                 field.title
 
             # Add field values to corresponding column
-            for i, x in enumerate(field.data):
+            for i, x in enumerate(field.actual_data):
                 tabular_sheet[
                     '{}{}'.format(sheet_col_name, 2 + i)
                 ].value = x.get('processed_value') or x['value']

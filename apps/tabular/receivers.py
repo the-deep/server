@@ -12,7 +12,7 @@ def on_field_saved(sender, **kwargs):
     in tabular sheet model whenever field type changes
     """
     field = kwargs.get('instance')
-    if not field.id:
+    if field is None or not field.id:
         return
 
     if field.type == field.current_type and \
