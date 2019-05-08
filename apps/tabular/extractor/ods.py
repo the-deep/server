@@ -28,7 +28,7 @@ def extract(book):
             )
             header_index = sheet_options.get('header_row', 1) - 1
             no_headers = sheet_options.get('no_headers', False)
-            data_index = sheet_options.get('data_row_index', header_index + 1)
+            data_index = header_index + 1
 
             if no_headers:
                 data_index -= 1
@@ -45,6 +45,11 @@ def extract(book):
                                else 'Column ' + str(ordering)),
                         sheet=sheet,
                         ordering=ordering,
+                        data=[{
+                            'value': value,
+                            'empty': False,
+                            'invalid': False
+                        }]
                     )
                 )
                 ordering += 1
@@ -70,7 +75,10 @@ def extract(book):
 
             # Save field
             for field in sheet.field_set.all():
-                field.data = fields_data.get(field.id, [])
+                field.data.extend(fields_data.get(field.id, []))
                 block_name = 'Field Save ods extract {}'.format(field.title)
                 with LogTime(block_name=block_name):
                     field.save()
+
+            sheet.data_row_index = data_index
+            sheet.save()
