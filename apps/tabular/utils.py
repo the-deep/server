@@ -175,7 +175,7 @@ def parse_geo(value, geos_names={}, geos_codes={}, **kwargs):
     else:
         return None
 
-    if admin_level and admin_level != parsed['admin_level']:
+    if admin_level is not None and admin_level != parsed['admin_level']:
         return None
     return parsed
 
