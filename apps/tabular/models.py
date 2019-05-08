@@ -1,6 +1,6 @@
 import time
 
-from django.db import models
+from django.db import models, transaction
 from django.contrib.postgres.fields import JSONField
 from user_resource.models import UserResource
 from gallery.models import File
@@ -130,7 +130,9 @@ class Sheet(models.Model):
                     field.title = str(field.data[self.data_row_index - 1]['value'])
                 field.save()
             field_ids = self.field_set.values_list('id', flat=True)
-            tabular_generate_columns_image.delay(list(field_ids))
+            transaction.on_commit(
+                lambda: tabular_generate_columns_image.delay(list(field_ids))
+            )
 
         # Update current_options value
         self.current_data_row_index = self.current_data_row_index

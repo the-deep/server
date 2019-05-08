@@ -90,7 +90,7 @@ def extract(book):
                             sheet=sheet,
                             ordering=ordering,
                             data=[{
-                                'value': cell.value,
+                                'value': get_excel_value(cell),
                                 'empty': False,
                                 'invalid': False
                             }]
@@ -109,7 +109,6 @@ def extract(book):
             for _row in wb_sheet.iter_rows(min_row=data_index + 1):
                 if is_row_empty(_row, columns):
                     continue
-                print(_row)
                 try:
                     for index, field in enumerate(fields):
                         if field is None:
