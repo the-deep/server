@@ -3,10 +3,26 @@ from django.utils.safestring import mark_safe
 from django.urls import reverse
 from django.contrib.postgres import fields
 from django.contrib import admin
+from django.conf import settings
 from urllib.parse import quote
 from reversion.admin import VersionAdmin as _VersionAdmin
 
 from jsoneditor.forms import JSONEditor
+
+
+site = admin.site
+
+
+def get_site_string(title):
+    return '{} ({})'.format(title, settings.DEEP_ENVIRONMENT.title())
+
+
+# Text to put at the end of each page's <title>.
+site.site_title = get_site_string('DEEP site admin')
+# Text to put in each page's <h1> (and above login form).
+site.site_header = get_site_string('DEEP Administration')
+# Text to put at the top of the admin index page.
+site.index_title = get_site_string('DEEP Administration')
 
 
 class JSONFieldMixin():
