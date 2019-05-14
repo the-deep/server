@@ -407,3 +407,8 @@ def combine_dicts(list_dicts):
     for x in list_dicts:
         combined.update(x)
     return combined
+
+
+def daterange(start_date, end_date):
+    for n in range(int((end_date - start_date).days or 1)):
+        yield start_date + timedelta(n)
