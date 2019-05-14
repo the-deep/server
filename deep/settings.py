@@ -3,8 +3,10 @@ Django settings for deep project.
 """
 import os
 import sys
-import raven
+from sentry_sdk.integrations.django import DjangoIntegration
 from celery.schedules import crontab
+
+from utils import sentry
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -97,7 +99,6 @@ INSTALLED_APPS = [
     'reversion',
     'storages',
     'django_premailer',
-    'raven.contrib.django.raven_compat',
     'django_celery_beat',
     'jsoneditor',
 ] + [
@@ -508,15 +509,22 @@ RECAPTCHA_SECRET = os.environ.get(
 SENTRY_DSN = os.environ.get('SENTRY_DSN')
 
 if SENTRY_DSN:
-    RAVEN_CONFIG = {
+    SENTRY_CONFIG = {
         'dsn': SENTRY_DSN,
-        'release': raven.fetch_git_sha(BASE_DIR),
-        'site': DEEPER_BACKEND_HOST,
+        'send_default_pii': True,
+        'release': sentry.fetch_git_sha(BASE_DIR),
         'environment': DEEP_ENVIRONMENT,
+        'debug': DEBUG,
         'tags': {
             'in_cern': os.environ.get('IN_CERN', False),
-        }
+            'site': DEEPER_BACKEND_HOST,
+        },
     }
+    sentry.init_sentry(
+        app_type='API',
+        integrations=[DjangoIntegration()],
+        **SENTRY_CONFIG,
+    )
 
 # DEEPL Config
 DEEPL_DOMAINS = {
