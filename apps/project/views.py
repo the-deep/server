@@ -27,6 +27,7 @@ from project.permissions import (
     AcceptRejectPermission,
     MembershipModifyPermission,
 )
+from entry.stats import get_entries_viz_data
 from tabular.models import Field
 from project.filter_set import (
     ProjectFilterSet,
@@ -179,6 +180,18 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return response.Response({
             'tabular_pending_fields_count': fields_pending_count,
         })
+
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='entries-viz',
+    )
+    def get_entries_viz_data(self, request, pk=None, version=None):
+        """
+        Get viz data for project entries:
+        """
+        project = self.get_object()
+        return response.Response(get_entries_viz_data(project))
 
     """
     Join request to this project
