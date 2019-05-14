@@ -170,13 +170,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
     )
     def get_export_status(self, request, pk=None, version=None):
         project = self.get_object()
-        fields_pending = Field.objects.filter(
-            cache__status=Field.CACHE_PENDING,
+        fields_pending_count = Field.objects.filter(
             cache__image_status=Field.CACHE_PENDING,
             sheet__book__project=project,
-        ).count() != 0
+        ).count()
         return response.Response({
-            'tabular_pending': fields_pending,
+            'tabular_pending_fields_count': fields_pending_count,
         })
 
     """
