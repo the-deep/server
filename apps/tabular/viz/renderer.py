@@ -113,7 +113,7 @@ def generate_chart(field, chart_type, images_format=['svg']):
     if chart_type not in [HISTOGRAM, WORDCLOUD]:
         df = pd.DataFrame(field.cache.get('series'))
         if df.empty or 'value' not in df.columns:
-            return None, {}
+            return None
         params['data'] = df
     else:
         val_column = get_val_column(field)
@@ -125,7 +125,7 @@ def generate_chart(field, chart_type, images_format=['svg']):
 
     if isinstance(params['data'], pd.DataFrame) and params['data'].empty:
         logger.warning('Empty DataFrame: no numeric data to plot for field ({})'.format(field.pk))
-        return None, {}
+        return None
 
     chart_render = CHART_RENDER.get(chart_type)
     if chart_render:
@@ -217,6 +217,8 @@ def render_field_chart(field):
         for image_format in images_format:
             field_images.append({'id': None, 'chart_type': chart_type, 'format': image_format})
         field.cache['image_status'] = Field.CACHE_ERROR
+        if field.type == Field.GEO:
+            field.cache['status'] = Field.CACHE_ERROR
     field.cache['images'] = field_images
     field.save()
     return field.cache['images']
