@@ -394,3 +394,10 @@ def format_date_or_iso(date, format):
         return date.strftime(format)
     except Exception:
         return date.date().isoformat()
+
+
+def combine_dicts(list_dicts):
+    combined = {}
+    for x in list_dicts:
+        combined.update(x)
+    return combined

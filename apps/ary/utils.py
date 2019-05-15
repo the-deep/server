@@ -11,7 +11,11 @@ def get_country_name(cid):
 
 def get_organization_name(did):
     org = Organization.objects.filter(id=parse_number(did)).first()
-    return org and org.title
+    return {
+        'name': org.title,
+        'type': org.organization_type and org.organization_type.title,
+        'key': did,
+    } if org else {}
 
 
 FIELDS_KEYS_VALUE_EXTRACTORS = {
@@ -19,4 +23,5 @@ FIELDS_KEYS_VALUE_EXTRACTORS = {
     'Donor': get_organization_name,
     'Partner': get_organization_name,
     'Partners': get_organization_name,
+    'Lead Organization': get_organization_name,
 }
