@@ -41,8 +41,8 @@ def get_excel_value(cell):
             cell.value, python_format
         )
     elif value is not None and not isinstance(value, str):
-        return cell.internal_value
-    return value
+        return str(cell.internal_value)
+    return str(value)
 
 
 @LogTime()
@@ -59,78 +59,72 @@ def extract(book):
                 title=wb_sheet.title,
                 book=book,
             )
-            header_index = sheet_options.get('header_row', 1)
+
+            sheet_rows = []
+
             no_headers = sheet_options.get('no_headers', False)
-            data_index = header_index
 
-            if no_headers:
-                data_index -= 1
+            max_col_length = 1
+            for row in wb_sheet.iter_rows():
+                row_data = get_row_data(row)
 
-            # Fields
-            header = wb_sheet.iter_rows(
-                min_row=header_index, max_row=header_index + 1
-            )
-            header_row = next(header, None)
-            if header_row is None:
-                # No point in creating sheet when there is no header
-                logger.warning("Can't get header for"
-                               "Sheet({}) {}".format(sheet.id, sheet.title))
+                length = len(row_data)
+                if length > max_col_length:
+                    max_col_length = length
+
+                sheet_rows.append(row_data)
+
+            if not sheet_rows:
                 return
 
-            fields = []
-            columns = []
-            ordering = 1
-            for cell in header_row:
-                if cell.value is not None:
-                    columns.append(cell.column)
-                    fields.append(
-                        Field(
-                            title=(cell.value if not no_headers
-                                   else 'Column ' + str(ordering)),
-                            sheet=sheet,
-                            ordering=ordering,
-                            data=[{
-                                'value': get_excel_value(cell),
-                                'empty': False,
-                                'invalid': False
-                            }]
-                        )
-                    )
-                else:
-                    fields.append(None)
-                ordering += 1
+            if no_headers:
+                fields = [
+                    Field(title=f'Column {x}', sheet=sheet, ordering=x, data=[])
+                    for x in range(max_col_length)
+                ]
+            else:
+                fields = []
+                for x in range(max_col_length):
+                    row_len = len(sheet_rows[0])
+                    title_val = sheet_rows[0][x]['value'] if row_len > x else None
+                    title = title_val or f'Column {x}'
+                    fields.append(Field(title=title, sheet=sheet, ordering=x, data=[]))
 
-            Field.objects.bulk_create(
-                [field for field in fields if field is not None]
-            )
+            empty_value = {
+                'value': None,
+                'invalid': False,
+                'empty': True
+            }
+            # Now append data to fields
+            for row in sheet_rows:
+                row_len = len(row)
+                for x in range(max_col_length):
+                    cell_data = row[x] if x < row_len else {**empty_value}
+                    fields[x].data.append(cell_data)
 
-            fields_data = {}
-            # Data
-            for _row in wb_sheet.iter_rows(min_row=data_index + 1):
-                if is_row_empty(_row, columns):
-                    continue
-                try:
-                    for index, field in enumerate(fields):
-                        if field is None:
-                            continue
-                        value = get_excel_value(_row[index])
+            # Bulk save fields
+            Field.objects.bulk_create(fields)
 
-                        field_data = fields_data.get(field.id, [])
-                        field_data.append({
-                            'value': value,
-                            'empty': False,
-                            'invalid': False
-                        })
-                        fields_data[field.id] = field_data
-                except Exception:
-                    pass
-
-            # Save field
-            for field in sheet.field_set.all():
-                field.data.extend(fields_data.get(field.id, []))
-                block_name = 'Field Save xlsx extract {}'.format(field.title)
-                with LogTime(block_name=block_name):
-                    field.save()
-
-            sheet.data_row_index = data_index
+            sheet.data_row_index = 0 if no_headers else 1
             sheet.save()
+
+
+def get_row_data(row):
+    """
+    Returns cells values for the row.
+    """
+    data = []
+    max_data_col = 0  # max column number containing data
+    curr_col = 0
+    for cell in row:
+        if cell.value is not None:
+            max_data_col = curr_col
+        value = get_excel_value(cell)
+        data.append({
+            'value': value,
+            'empty': value is None,
+            'invalid': False
+        })
+        curr_col += 1
+    # Now clip the data beyond which there is nothing
+    return data[:max_data_col + 1]

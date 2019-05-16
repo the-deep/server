@@ -18,6 +18,7 @@ from .serializers import (
     BookMetaSerializer,
     BookProcessedOnlySerializer,
     SheetSerializer,
+    SheetMetaSerializer,
     FieldSerializer,
     FieldProcessedOnlySerializer,
     GeodataSerializer,
@@ -74,11 +75,68 @@ class BookViewSet(viewsets.ModelViewSet):
             'count': count,
         })
 
+    @action(
+        detail=True,
+        url_path='sheets',
+        methods=['patch'],
+    )
+    def update_sheets(self, request, pk=None, version=None):
+        instance = self.get_object()
+        sheets = request.data.get('sheets', [])
+        sheet_maps = {x['id']: x for x in sheets}
+
+        sheet_objs = Sheet.objects.filter(
+            book=instance,
+            id__in=[x['id'] for x in sheets]
+        )
+        for sheet in sheet_objs:
+            serializer = SheetSerializer(
+                sheet,
+                data=sheet_maps[sheet.id],
+                context={'request': request},
+                partial=True,
+            )
+            serializer.is_valid()
+            serializer.update(sheet, sheet_maps[sheet.id])
+
+        return response.Response(
+            BookMetaSerializer(instance, context={'request': request}).data,
+        )
+
 
 class SheetViewSet(viewsets.ModelViewSet):
     queryset = Sheet.objects.all()
     serializer_class = SheetSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    @action(
+        detail=True,
+        url_path='fields',
+        methods=['patch'],
+    )
+    def update_fields(self, request, pk=None, version=None):
+        instance = self.get_object()
+        fields = request.data.get('fields', [])
+        field_maps = {x['id']: x for x in fields}
+
+        field_objs = Field.objects.filter(
+            sheet=instance,
+            id__in=[x['id'] for x in fields]
+        )
+
+        for field in field_objs:
+            serializer = FieldSerializer(
+                field,
+                data=field_maps[field.id],
+                context={'request': request},
+                partial=True,
+            )
+            serializer.is_valid()
+            serializer.update(field, field_maps[field.id])
+
+        return response.Response(
+            SheetMetaSerializer(instance, context={'request': request}).data,
+        )
 
 
 class FieldViewSet(viewsets.ModelViewSet):

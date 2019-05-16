@@ -49,7 +49,7 @@ trigger_cache_reset.short_description = 'Trigger cache reset for selected Fields
 @admin.register(Field)
 class FieldAdmin(VersionAdmin):
     inlines = [GeodataInline]
-    list_display = ('title', 'sheet', 'type',)
+    list_display = ('pk', 'title', 'sheet', 'type',)
     list_filter = ('type', CacheStatusListFilter)
     search_fields = ['title']
     actions = [trigger_cache_reset]

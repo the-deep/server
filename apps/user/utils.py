@@ -43,9 +43,10 @@ def send_mail_to_user(user, context={}, email_type=None, *args, **kwargs):
     Add common context variable
     """
     if user.profile.invalid_email:
-        logger.warn(
-            'User flagged as invalid email!!',
-            extra={'data': {'user': user.username, 'user_id': user.pk}},
+        logger.warning(
+            '[{}] Email not sent: User <{}>({}) email flagged as invalid email!!'.format(
+                email_type, user.email, user.pk,
+            )
         )
         return
 
@@ -97,6 +98,7 @@ def send_password_reset(user, welcome=False):
     send_mail_to_user(
         user=user,
         context=context,
+        email_type='password_reset',
         subject_template_name='registration/password_reset_subject.txt',
         email_template_name='registration/password_reset_email.html',
     )
@@ -114,6 +116,7 @@ def send_account_activation(user):
     send_mail_to_user(
         user=user,
         context=context,
+        email_type='account_activation',
         subject_template_name='registration/user_activation_subject.txt',
         email_template_name='registration/user_activation_email.html',
     )
