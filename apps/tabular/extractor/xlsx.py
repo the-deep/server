@@ -41,8 +41,8 @@ def get_excel_value(cell):
             cell.value, python_format
         )
     elif value is not None and not isinstance(value, str):
-        return cell.internal_value
-    return value
+        return str(cell.internal_value)
+    return str(value)
 
 
 @LogTime()
