@@ -3,7 +3,12 @@ from django.db import transaction
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
 
-from deep.serializers import RemoveNullFieldsMixin
+from deep.serializers import (
+    RemoveNullFieldsMixin,
+    NestedCreateMixin,
+    NestedUpdateMixin
+)
+
 from user_resource.serializers import UserResourceSerializer
 
 from geo.serializers import SimpleRegionSerializer, Region, AdminLevel
@@ -83,7 +88,8 @@ class FieldProcessedOnlySerializer(FieldSerializer):
 class SheetSerializer(
         RemoveNullFieldsMixin,
         DynamicFieldsMixin,
-        serializers.ModelSerializer,
+        NestedCreateMixin,
+        NestedUpdateMixin,
 ):
     fields = FieldSerializer(many=True, source='field_set', required=False)
 
@@ -105,7 +111,9 @@ class SheetProcessedOnlySerializer(SheetSerializer):
 class BookSerializer(
         RemoveNullFieldsMixin,
         DynamicFieldsMixin,
-        UserResourceSerializer
+        UserResourceSerializer,
+        NestedCreateMixin,
+        NestedUpdateMixin,
 ):
     sheets = SheetSerializer(many=True, source='sheet_set', required=False)
     entry_count = serializers.SerializerMethodField()

@@ -184,7 +184,7 @@ class Field(models.Model):
         self.current_options = self.options
 
     def __str__(self):
-        return self.title
+        return '{}:{}:{} '.format(self.pk, self.title, self.type)
 
     def cast_data(self, geos_names={}, geos_codes={}):
         """

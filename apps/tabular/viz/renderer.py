@@ -28,6 +28,7 @@ MAP = 'map'
 HISTOGRAM = 'histogram'
 WORDCLOUD = 'wordcloud'
 
+DEFAULT_CHART_TYPE_FIELD_MAP = BARCHART
 CHART_TYPE_FIELD_MAP = {
     Field.GEO: MAP,
     Field.NUMBER: HISTOGRAM,
@@ -182,7 +183,7 @@ def render_field_chart(field):
     Save normalized data to field
     """
     images_format = ['png', 'svg'] if field.type == Field.GEO else ['png']
-    chart_type = CHART_TYPE_FIELD_MAP.get(field.type, BARCHART)
+    chart_type = CHART_TYPE_FIELD_MAP.get(field.type, DEFAULT_CHART_TYPE_FIELD_MAP)
 
     try:
         images = generate_chart(field, chart_type, images_format=images_format)
