@@ -11,12 +11,13 @@ MSWORD_MIME_TYPES = [
     'application/msword', 'application/wps-office.doc',
 ]
 POWERPOINT_MIME_TYPES = [
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation', # noqa
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'application/vnd.ms-powerpoint',
 ]
 SHEET_MIME_TYPES = [
     'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/wps-office.xlsx',
 ]
 ODS_MIME_TYPES = ['application/vnd.oasis.opendocument.spreadsheet']
 IMAGE_MIME_TYPES = ['image/png', 'image/jpeg', 'image/fig', 'image/gif']
