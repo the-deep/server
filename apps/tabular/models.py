@@ -135,7 +135,7 @@ class Sheet(models.Model):
             )
 
         # Update current_options value
-        self.current_data_row_index = self.current_data_row_index
+        self.current_data_row_index = self.data_row_index
 
 
 class Field(models.Model):
