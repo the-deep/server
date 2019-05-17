@@ -147,6 +147,32 @@ class AffectedGroup(BasicTemplateEntity):
         default=None, null=True, blank=True,
     )
 
+    def get_children_list(self):
+        """
+        Returns list of nodes
+        Each item is a dict consisting node title and node id
+        Example: self, self - c1, self - c2, self - c1 - c1c1, self - c2c1
+        """
+        # TODO: cache, but very careful
+        nodes_list = [
+            {
+                'title': self.title,
+                'id': self.id
+            }
+        ]
+        children = self.children.all()
+        if not children:
+            return nodes_list
+        for child in children:
+            nodes_list.extend([
+                {
+                    **x,  # Update title: append title to child title
+                    'title': f'{self.title} - {x["title"]}'
+                }
+                for x in child.get_children_list()
+            ])
+        return nodes_list
+
 
 class PrioritySector(BasicTemplateEntity):
     parent = models.ForeignKey(
