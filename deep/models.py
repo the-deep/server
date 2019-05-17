@@ -28,12 +28,10 @@ class Field(models.Model):
     # Sources
     COUNTRIES = 'countries'
     ORGANIZATIONS = 'organizations'
-    DONORS = 'donors'
 
     SOURCE_TYPES = (
         (COUNTRIES, 'Countries'),
         (ORGANIZATIONS, 'Organizations'),
-        (DONORS, 'Donors'),
     )
 
     field_type = models.CharField(
