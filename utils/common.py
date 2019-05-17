@@ -378,6 +378,7 @@ def excel_to_python_date_format(excel_format):
         replace('\\', '').\
         replace('YYYY', '%Y').\
         replace('YY', '%y').\
+        replace('MMMM', '%m').\
         replace('MMM', '%m').\
         replace('MM', '%m').\
         replace('M', '%m').\
