@@ -43,4 +43,4 @@ class ArySourceOrganizationSerializer(DynamicFieldsMixin, UserResourceSerializer
 
     class Meta:
         model = Organization
-        fields = ('key', 'label', 'long_name', 'short_name', 'donor', 'logo')
+        fields = ('key', 'label', 'long_name', 'short_name', 'logo')
