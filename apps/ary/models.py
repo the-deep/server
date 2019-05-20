@@ -150,13 +150,18 @@ class AffectedGroup(BasicTemplateEntity):
     def get_children_list(self):
         """
         Returns list of nodes
-        Each item is a dict consisting node title and node id
-        Example: self, self - c1, self - c2, self - c1 - c1c1, self - c2c1
+        Each item is a dict consisting parents and node id
+        Example return: [
+            {'title': 'All', 'parents': ['All'], 'id': 9},
+            {'title': 'All - Not Affected', 'parents': ['Not Affected', 'All'], 'id': 10},
+            {'title': 'All - Affected', 'parents': ['Affected', 'All'], 'id': 1},
+        ]
         """
         # TODO: cache, but very careful
         nodes_list = [
             {
                 'title': self.title,
+                'parents': [self.title],  # includes self as well
                 'id': self.id
             }
         ]
@@ -166,8 +171,9 @@ class AffectedGroup(BasicTemplateEntity):
         for child in children:
             nodes_list.extend([
                 {
-                    **x,  # Update title: append title to child title
-                    'title': f'{self.title} - {x["title"]}'
+                    'title': f'{self.title} - {x["title"]}',
+                    'parents': [*x['parents'], self.title],
+                    'id': x['id']
                 }
                 for x in child.get_children_list()
             ])
