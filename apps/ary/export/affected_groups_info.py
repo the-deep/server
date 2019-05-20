@@ -1,14 +1,36 @@
-def get_affected_groups_info(assessment):
-    aff_data = assessment.get_methodology_json()['Affected Groups']
-    data = {}
+from ary.models import AffectedGroup
 
-    # TODO: Do hierarchical select similar to entry export for geo regions
-    # NOTE: Should have same logic similar to location for ary export
+
+def get_affected_groups_info(assessment):
+    template = assessment.lead.project.assessment_template
+    aff_data = assessment.get_methodology_json()['Affected Groups']
+
+    root_affected_group = AffectedGroup.objects.filter(
+        template=template, parent=None
+    ).first()
+
+    child_list = root_affected_group.get_children_list() if root_affected_group else []
+
+    all_affected_groups = {
+        x['id']: x
+        for x in child_list
+    }
+
+    # get max order
+    max_level = max([len(v['parents']) for k, v in all_affected_groups.items()])
+
+    data = {
+        f'Level {x+1}': []
+        for x in range(max_level)
+    }
+
     for item in aff_data:
-        if data.get(item['order']):
-            data[item['order']].append(item['title'])
-        else:
-            data[item['order']] = [item['title']]
+        info = all_affected_groups.get(item['key'], {})
+        parents = info.get('parents', [])
+        order = item['order']
+
+        for i, parent in enumerate(parents):
+            data[f'Level {order - i}'].append(parent)
 
     return {
         'affected_groups_info': data,
