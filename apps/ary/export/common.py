@@ -42,32 +42,32 @@ def get_assessment_meta(assessment):
         },
 
         'background': {
-            'country': ','.join(metadata_bg.get('Country', [])),
-            'crisis_type': metadata_bg.get('Crisis Type'),
+            'country': ','.join(metadata_bg.get('Country', {}).get('value', [])),
+            'crisis_type': metadata_bg.get('Crisis Type', {}).get('value'),
             'crisis_start_date': str_to_dmy_date(metadata_bg.get('Crisis Start Date', {}).get('value')),
-            'preparedness': metadata_bg.get('Preparedness'),
-            'external_support': ','.join(metadata_bg.get('External Support', [])),
-            'coordination': ','.join(metadata_bg.get('Coordination', [])),
+            'preparedness': metadata_bg.get('Preparedness', {}).get('value'),
+            'external_support': ','.join(metadata_bg.get('External Support', {}).get('value', [])),
+            'coordination': metadata_bg.get('Coordination', {}).get('value'),
             'cost_estimates_in_USD': metadata_bg.get('Cost Estimates in USD'),
         },
 
         'details': {
-            'type': metadata_details['Type'],
-            'family': metadata_details['Family'],
-            'status': metadata_details['Status'],
-            'frequency': metadata_details['Frequency'],
-            'confidentiality': metadata_details['Confidentiality'],
-            'number_of_pages': metadata_details['Number of Pages'],
+            'type': metadata_details['Type']['value'],
+            'family': metadata_details['Family']['value'],
+            'status': metadata_details['Status']['value'],
+            'frequency': metadata_details['Frequency']['value'],
+            'confidentiality': metadata_details['Confidentiality']['value'],
+            'number_of_pages': metadata_details['Number of Pages']['value'],
         },
 
         'language': {
-            x: 1 for x in metadata_details['Language']
+            x: 1 for x in metadata_details['Language']['value']
         },
 
         'dates': {
-            'data_collection_start_date': metadata_dates['Start Date'],
-            'data_collection_end_date': metadata_dates['End Date'],
-            'publication_start_date': metadata_dates['Publication']['from'],
-            'publication_end_date': metadata_dates['Publication']['to']
+            'data_collection_start_date': metadata_dates['Start Date']['value'],
+            'data_collection_end_date': metadata_dates['End Date']['value'],
+            'publication_start_date': metadata_dates['Publication']['value']['from'],
+            'publication_end_date': metadata_dates['Publication']['value']['to']
         },
     }

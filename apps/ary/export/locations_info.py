@@ -2,15 +2,15 @@ from geo.models import GeoArea
 
 
 def get_locations_info(assessment):
-    locations = assessment.methodology['locations']
+    locations = assessment.methodology['locations'] or []
 
     geo_areas = GeoArea.objects.filter(id__in=locations).prefetch_related('admin_level', 'parent')
-    admin_levels = {f'Admin {x+1}': [] for x in range(6)}
+
+    data = []
 
     if not geo_areas:
-        return {
-            'locations': admin_levels
-        }
+        return {'locations': data}
+
     # Region is the region of the first geo area
     region = geo_areas[0].admin_level.region
     region_geos = {x['key']: x for x in region.geo_options}
@@ -19,8 +19,10 @@ def get_locations_info(assessment):
         geo_info = region_geos[str(area.id)]
         level = geo_info['admin_level']
         key = f'Admin {level}'
-        admin_levels[key] = [*admin_levels.get(key, []), area.title]
-        # now add parents as well
+
+        admin_levels = {f'Admin {x+1}': None for x in range(6)}
+        admin_levels[key] = area.title
+        # Now add parents as well
         while level - 1:
             level -= 1
             parent_id = geo_info['parent']
@@ -33,8 +35,9 @@ def get_locations_info(assessment):
                 break
 
             key = f'Admin {level}'
-            admin_levels[key] = [*admin_levels.get(key, []), geo_info['title']]
+            admin_levels[key] = geo_info['title']
+        data.append(admin_levels)
 
     return {
-        'locations': admin_levels
+        'locations': data,
     }

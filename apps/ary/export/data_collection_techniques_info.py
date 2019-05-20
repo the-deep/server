@@ -10,5 +10,5 @@ def get_data_collection_techniques_info(assessment):
         data.append(_data)
 
     return {
-        'Data Collection Technique': data,
+        'data_collection_technique': data,
     }

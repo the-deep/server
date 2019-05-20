@@ -36,13 +36,13 @@ def get_assessment_export_summary(assessment):
     methodology = assessment.get_methodology_json()
 
     attrs = combine_dicts(methodology['Attributes'])
-    collection_techniques = combine_dicts(attrs['Collection Technique'])
+    collection_techniques = [x['value'] for x in attrs['Collection Technique']]
 
     focuses = [x.title for x in Focus.objects.filter(template=template)]
     selected_focuses = set(methodology['Focuses'])
 
     sectors = [x.title for x in Sector.objects.filter(template=template)]
-    selected_sectors = set(methodology['Sectors'])
+    selected_sectors = set(methodology['Sectors'] or [])
 
     root_affected_group = AffectedGroup.objects.filter(template=template, parent=None).first()
     all_affected_groups = root_affected_group.get_children_list() if root_affected_group else []
@@ -55,9 +55,9 @@ def get_assessment_export_summary(assessment):
         } for x in all_affected_groups
     ]
 
-    selected_affected_groups_ids = {x['key'] for x in methodology['Affected Groups']}
+    selected_affected_groups_ids = {x['key'] for x in (methodology['Affected Groups'] or [])}
 
-    locations = assessment.methodology['locations']
+    locations = assessment.methodology['locations'] or []
 
     geo_areas = GeoArea.objects.filter(id__in=locations).prefetch_related('admin_level')
     admin_levels = {f'Admin {x+1}': 0 for x in range(6)}
