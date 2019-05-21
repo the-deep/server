@@ -11,6 +11,18 @@ from ary.models import (
 )
 
 
+# Default values for column groups
+# Add other default values as required
+default_values = {
+    'location': 0,
+    'additional_documents': 0,
+    'focuses': 0,
+    'sectors': 0,
+    'affected_groups': 0,
+    'methodology_content': 0
+}
+
+
 def get_assessment_export_summary(assessment):
     """
     Returns json summary of all the tabs in the assessment including lead info
