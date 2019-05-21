@@ -22,6 +22,11 @@ def str_to_dmy_date(datestr):
     return datetime.strptime(datestr, ISO_FORMAT).strftime(DATE_FORMAT)
 
 
+default_values = {
+    'language': 0,
+}
+
+
 def get_assessment_meta(assessment):
     lead = assessment.lead
     metadata = assessment.get_metadata_json()

@@ -1,12 +1,29 @@
 from functools import reduce
 
-from .common import get_assessment_meta
-from .stakeholders_info import get_stakeholders_info  # noqa:F401
-from .summary import get_assessment_export_summary  # noqa:F401
-from .locations_info import get_locations_info  # noqa:F401
-from .data_collection_techniques_info import get_data_collection_techniques_info  # noqa:F401
-from .affected_groups_info import get_affected_groups_info  # noqa:F401
-from .scoring import get_scoring  # noqa:F401
+from utils.common import parse_number
+
+from .common import get_assessment_meta, default_values as common_defaults
+from .stakeholders_info import (
+    get_stakeholders_info,
+    default_values as stakeholders_defaults
+)
+from .summary import (
+    get_assessment_export_summary,
+    default_values as summary_defaults
+)
+from .locations_info import (
+    get_locations_info,
+    default_values as locations_defaults
+)
+from .data_collection_techniques_info import (
+    get_data_collection_techniques_info,
+    default_values as collection_defaults
+)
+from .affected_groups_info import (
+    get_affected_groups_info,
+    default_values as affected_defaults
+)
+from .scoring import get_scoring, default_values as scoring_defaults
 
 
 def get_export_data(assessment):
@@ -45,7 +62,7 @@ def replicate_other_col_groups(sheet_data, column_group):
 
     new_sheet_data = {}
     for other_col_group, col_data in sheet_data.items():
-        new_sheet_data[other_col_group] = [col_data] * size
+        new_sheet_data[other_col_group] = [col_data] * (size or 1)  # if size zero, nothing will be present
     new_sheet_data[column_group] = group_data
     return new_sheet_data
 
@@ -84,6 +101,18 @@ def normalize_assessment(assessment_export_data):
     }
 
 
+DEFAULTS = {
+    'scoring': scoring_defaults,
+    'summary': summary_defaults,
+    'stakeholders': stakeholders_defaults,
+    'data_collection_technique': collection_defaults,
+    'locations': locations_defaults,
+    'affected_groups': affected_defaults,
+}
+for k, v in DEFAULTS.items():
+    v.update(common_defaults)
+
+
 def add_assessment_to_rows(sheets, assessment):
     """
     sheets = {
@@ -101,14 +130,14 @@ def add_assessment_to_rows(sheets, assessment):
     NOTE: If assessment has new column name inside grouped cols, the column is
     added to all existing data with None value
     """
-    def add_new_keys(keys, data):
+    def add_new_keys(keys, data, default=None):
         if not keys:
             return data
         if isinstance(data, dict):
-            return {**data, **{x: None for x in keys}}
+            return {**data, **{x: default for x in keys}}
         elif isinstance(data, list):
             return [
-                {**(x or {}), **{k: None for k in keys}}
+                {**(x or {}), **{k: default for k in keys}}
                 for x in data
             ]
         return data
@@ -121,36 +150,49 @@ def add_assessment_to_rows(sheets, assessment):
         new_sheets[sheet] = {}
         assessment_sheet = normalized_assessment[sheet]
 
-        for grouped_col, columns_data in sheet_data.items():
-            assessment_grouped_data = assessment_sheet.get(grouped_col)
-            # If columns data is empty, just append assessment row data
+        for col, columns_data in sheet_data.items():
+            assessment_col_data = assessment_sheet.get(col)
+            # If columns data is empty, add new data to account for empty row
+            # assessment data is then appended
             if not columns_data:
-                columns_data.append(assessment_grouped_data)
-                continue
+                ass_sample = assessment_col_data[0]\
+                    if isinstance(assessment_col_data, list) else assessment_col_data
+                if isinstance(ass_sample, dict):
+                    columns_data = [{}]
+                else:
+                    columns_data = [None]
 
             columns_data = [columns_data] if not isinstance(columns_data, list) else columns_data
 
-            assessment_grouped_data = [assessment_grouped_data]\
-                if not isinstance(assessment_grouped_data, list) else assessment_grouped_data
+            assessment_col_data = [assessment_col_data]\
+                if not isinstance(assessment_col_data, list) else assessment_col_data
 
             if isinstance(columns_data[0], dict):
-                assessment_row_keys = set((assessment_grouped_data[0] or {}).keys())\
-                    if assessment_grouped_data else set()
+                # if assessment data empty, add empty dict
+                if not assessment_col_data:
+                    assessment_col_data = [{}]
+                assessment_row_keys = set((assessment_col_data[0] or {}).keys())\
+                    if assessment_col_data else set()
+
                 sheet_row_keys = set(columns_data[0].keys())
                 new_ass_keys = assessment_row_keys.difference(sheet_row_keys)
                 new_sheet_keys = sheet_row_keys.difference(assessment_row_keys)
 
                 if new_ass_keys:
                     # Add the key to each row in  column data
-                    columns_data = add_new_keys(new_ass_keys, columns_data)
+                    default = DEFAULTS[sheet].get(col, DEFAULTS[sheet].get('*'))
+                    columns_data = add_new_keys(new_ass_keys, columns_data, default)
 
                 if new_sheet_keys:
                     # Add new keys to assessment data
-                    assessment_grouped_data = add_new_keys(new_sheet_keys, assessment_grouped_data)
+                    default = DEFAULTS[sheet].get(col, DEFAULTS[sheet].get('*'))
+                    assessment_col_data = add_new_keys(
+                        new_sheet_keys, assessment_col_data, default
+                    )
             # Now all the data is normalized(have same keys)
             # Append assessment data to col data
-            columns_data.extend(assessment_grouped_data)
-            new_sheets[sheet][grouped_col] = columns_data
+            columns_data.extend(assessment_col_data)
+            new_sheets[sheet][col] = columns_data
     return new_sheets
 
 

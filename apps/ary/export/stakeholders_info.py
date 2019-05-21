@@ -3,6 +3,10 @@ from ary.models import MetadataField
 
 STAKEHOLDERS_SOURCE_TYPES = [MetadataField.ORGANIZATIONS, MetadataField.DONORS]
 
+default_values = {
+    'stakeholders': None,
+}
+
 
 def get_stakeholders_info(assessment):
     # TODO: is meta group dynamic?

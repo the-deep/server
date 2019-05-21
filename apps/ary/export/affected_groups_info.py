@@ -1,6 +1,10 @@
 from ary.models import AffectedGroup
 
 
+default_values = {
+}
+
+
 def get_affected_groups_info(assessment):
     template = assessment.lead.project.assessment_template
     aff_data = assessment.get_methodology_json()['Affected Groups'] or []

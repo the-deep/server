@@ -1,7 +1,8 @@
 from ary.models import Assessment
+from ary.export import get_export_data_for_assessments
 from export.models import Export
 from export.exporters import JsonExporter
-from export.assessments import ExcelExporter
+from export.assessments import ExcelExporter, NewExcelExporter
 
 
 def export_assessments(export):
@@ -17,8 +18,8 @@ def export_assessments(export):
         }
         export_data = exporter.export(export, export.type.title())
     elif export_type == Export.EXCEL:
-        export_data = ExcelExporter(decoupled=False)\
-            .add_assessments(arys)\
+        sheets_data = get_export_data_for_assessments(arys)
+        export_data = NewExcelExporter(sheets_data)\
             .export()
     else:
         raise Exception(

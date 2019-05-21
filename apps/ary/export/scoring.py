@@ -1,3 +1,9 @@
+default_values = {
+    'Final Score': 0,
+    '*': 0,
+}
+
+
 def get_scoring(assessment):
     scoring_data = assessment.get_score_json()
     pillars_final_scores = {
