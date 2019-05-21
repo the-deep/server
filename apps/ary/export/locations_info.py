@@ -1,5 +1,8 @@
 from geo.models import GeoArea
 
+default_values = {
+}
+
 
 def get_locations_info(assessment):
     locations = assessment.methodology['locations'] or []

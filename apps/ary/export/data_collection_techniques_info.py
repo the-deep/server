@@ -1,3 +1,13 @@
+default_values = {
+}
+
+
+def format_value(val):
+    if isinstance(val, list):
+        return ','.join(val)
+    return str(val)
+
+
 def get_data_collection_techniques_info(assessment):
     attributes = assessment.get_methodology_json()['Attributes']
     data = []
@@ -6,7 +16,7 @@ def get_data_collection_techniques_info(assessment):
         _data = {}
         for methodology_fields in attribute.values():
             for field in methodology_fields:
-                _data[field['schema']['name']] = field['value']
+                _data[field['schema']['name']] = format_value(field['value'])
         data.append(_data)
 
     return {
