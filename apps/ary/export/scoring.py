@@ -11,6 +11,14 @@ def get_scoring(assessment):
         for title, score in scoring_data['final_pillars_score'].items()
     }
 
+    pillars = {
+        pillar: {
+            sub_pillar: sp_data['value']
+            for sub_pillar, sp_data in pillar_data.items()
+        }
+        for pillar, pillar_data in scoring_data['pillars'].items()
+    }
+
     matrix_pillars_scores = {}
     for title, pillars_score in scoring_data['matrix_pillars'].items():
         col_key = '{} Score'.format(title)
@@ -19,7 +27,8 @@ def get_scoring(assessment):
             matrix_pillars_scores[col_key][sector] = data['value']
 
     return {
-        'Final Score': scoring_data['final_score'],
-        **pillars_final_scores,
+        **pillars,
         **matrix_pillars_scores,
+        **pillars_final_scores,
+        'Final Score': scoring_data['final_score'],
     }
