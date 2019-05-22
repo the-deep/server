@@ -1,7 +1,5 @@
 from functools import reduce
 
-from utils.common import parse_number
-
 from .common import get_assessment_meta, default_values as common_defaults
 from .stakeholders_info import (
     get_stakeholders_info,
@@ -23,7 +21,6 @@ from .affected_groups_info import (
     get_affected_groups_info,
     default_values as affected_defaults
 )
-from .scoring import get_scoring, default_values as scoring_defaults
 
 
 def get_export_data(assessment):
@@ -40,10 +37,6 @@ def get_export_data(assessment):
         'stakeholders': {
             **meta_data,
             **get_stakeholders_info(assessment),
-        },
-        'scoring': {
-            **meta_data,
-            **get_scoring(assessment),
         },
         'locations': {
             **meta_data,
@@ -97,12 +90,10 @@ def normalize_assessment(assessment_export_data):
         'affected_groups': new_affected_sheet,
         'locations': new_locations_sheet,
         'data_collection_technique': new_techniques_sheet,
-        'scoring': assessment_export_data['scoring'],
     }
 
 
 DEFAULTS = {
-    'scoring': scoring_defaults,
     'summary': summary_defaults,
     'stakeholders': stakeholders_defaults,
     'data_collection_technique': collection_defaults,

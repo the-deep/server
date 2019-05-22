@@ -254,13 +254,13 @@ class NewExcelExporter:
                         end_row=1,
                         end_column=counter + len(info) - 1
                     )
-                    cell = wb_sheet.cell(row=1, column=counter)
-                    cell.alignment = Alignment(horizontal='center')
-
-                    cell.font = Font(bold=True)
                     counter += len(info)
                 else:
                     counter += 1
+                # Styling
+                cell = wb_sheet.cell(row=1, column=counter)
+                cell.alignment = Alignment(horizontal='center')
+                cell.font = Font(bold=True)
             # Style sub headers
             for i, header in enumerate(sub_header_row):
                 cell = wb_sheet.cell(row=2, column=i + 1)
