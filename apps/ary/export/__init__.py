@@ -85,7 +85,7 @@ def normalize_assessment(assessment_export_data):
     new_techniques_sheet = replicate_other_col_groups(techniques_sheet, 'data_collection_technique')
 
     return {
-        'summary': assessment_export_data['summary'],
+        'summary': {k: [v] for k, v in assessment_export_data['summary'].items()},
         'stakeholders': new_stakeholders_sheet,
         'affected_groups': new_affected_sheet,
         'locations': new_locations_sheet,
