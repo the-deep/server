@@ -27,24 +27,35 @@ class VersionAdmin(JSONFieldMixin, _VersionAdmin):
     pass
 
 
-def linkify(field_name):
+def linkify(field_name, field_field=None):
     """
     Converts a foreign key value into clickable links.
 
     If field_name is 'parent', link text will be str(obj.parent)
     Link will be admin url for the admin url for obj.parent.id:change
     """
+    FIELD_SEPERATOR = '__'
+
     def _linkify(obj):
-        app_label = obj._meta.app_label
-        linked_obj = getattr(obj, field_name)
+        if field_name.find(FIELD_SEPERATOR):
+            linked_obj = obj
+            for nested_field_name in field_name.split(FIELD_SEPERATOR):
+                linked_obj = getattr(linked_obj, nested_field_name)
+        else:
+            linked_obj = getattr(obj, field_name)
+        app_label = linked_obj._meta.app_label
         if linked_obj:
             model_name = linked_obj._meta.model_name
             view_name = f"admin:{app_label}_{model_name}_change"
             link_url = reverse(view_name, args=[linked_obj.pk])
-            return format_html('<a href="{}">{}</a>', link_url, linked_obj)
+            return format_html(
+                '<a href="{}">{}</a>',
+                link_url,
+                getattr(linked_obj, field_field) if field_field else linked_obj,
+            )
         return '-'
 
-    _linkify.short_description = field_name
+    _linkify.short_description = field_name.replace(FIELD_SEPERATOR, ' ')
     return _linkify
 
 
