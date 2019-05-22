@@ -23,7 +23,7 @@ def get_locations_info(assessment):
         level = geo_info['admin_level']
         key = f'Admin {level}'
 
-        admin_levels = {f'Admin {x+1}': None for x in range(6)}
+        admin_levels = {f'Admin {x}': None for x in range(7)}
         admin_levels[key] = area.title
         # Now add parents as well
         while level - 1:

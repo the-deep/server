@@ -28,7 +28,7 @@ def get_affected_groups_info(assessment):
     for item in aff_data:
         info = all_affected_groups.get(item['key'], {})
         parents = info.get('parents', [])
-        order = item['order']
+        order = len(parents)
 
         groups = {f'Level {x+1}': None for x in range(max_level)}
 
