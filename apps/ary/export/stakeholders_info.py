@@ -1,7 +1,7 @@
 from ary.models import MetadataField
 
 
-STAKEHOLDERS_SOURCE_TYPES = [MetadataField.ORGANIZATIONS, MetadataField.DONORS]
+STAKEHOLDERS_SOURCE_TYPES = [MetadataField.ORGANIZATIONS]
 
 default_values = {
     'stakeholders': None,
