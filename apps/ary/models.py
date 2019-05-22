@@ -147,6 +147,38 @@ class AffectedGroup(BasicTemplateEntity):
         default=None, null=True, blank=True,
     )
 
+    def get_children_list(self):
+        """
+        Returns list of nodes
+        Each item is a dict consisting parents and node id
+        Example return: [
+            {'title': 'All', 'parents': ['All'], 'id': 9},
+            {'title': 'All - Not Affected', 'parents': ['Not Affected', 'All'], 'id': 10},
+            {'title': 'All - Affected', 'parents': ['Affected', 'All'], 'id': 1},
+        ]
+        """
+        # TODO: cache, but very careful
+        nodes_list = [
+            {
+                'title': self.title,
+                'parents': [self.title],  # includes self as well
+                'id': self.id
+            }
+        ]
+        children = self.children.all()
+        if not children:
+            return nodes_list
+        for child in children:
+            nodes_list.extend([
+                {
+                    'title': f'{self.title} - {x["title"]}',
+                    'parents': [*x['parents'], self.title],
+                    'id': x['id']
+                }
+                for x in child.get_children_list()
+            ])
+        return nodes_list
+
 
 class PrioritySector(BasicTemplateEntity):
     parent = models.ForeignKey(
@@ -321,6 +353,7 @@ class Assessment(UserResource, ProjectEntityMixin):
                     'id': field.id,
                     'name': field.title,
                     'type': field.field_type,
+                    'source_type': field.source_type,
                     'options': {
                         x['key']: x['title'] for x in field.get_options()
                     }
@@ -356,7 +389,9 @@ class Assessment(UserResource, ProjectEntityMixin):
             key = str(schema['id'])
             value = raw_data.get(key, '')
             return {
-                schema['name']: Assessment.get_actual_value(schema, value)
+                'schema': schema,
+                'value': Assessment.get_actual_value(schema, value),
+                'key': value,
             }
         if isinstance(schema, dict):
             data = {
@@ -381,14 +416,22 @@ class Assessment(UserResource, ProjectEntityMixin):
         methodology_sch = self.create_schema_for_group(MethodologyGroup)
         methodology_raw = self.methodology or {}
 
+        def _get_location_title(val):
+            geo = GeoArea.objects.filter(id=val).first()
+            return geo and geo.title
+
         mapping = {
             'attributes': lambda x: self.get_data_from_schema(
                 methodology_sch, x
             ),
             'sectors': lambda x: Sector.objects.get(id=x).title,
             'focuses': lambda x: Focus.objects.get(id=x).title,
-            'affected_groups': lambda x: AffectedGroup.objects.get(id=x).title,
-            'locations': lambda x: GeoArea.objects.get(id=x).title,
+            'affected_groups': lambda x: {
+                'key': x,
+                'title': AffectedGroup.objects.get(id=x).title,
+                'order': AffectedGroup.objects.get(id=x).order,
+            },
+            'locations': _get_location_title,
             'objectives': identity,
             'sampling': identity,
             'limitations': identity,
@@ -403,21 +446,6 @@ class Assessment(UserResource, ProjectEntityMixin):
         }
 
     def get_summary_json(self):
-        # functions to get exact value of an entry in summary group
-        value_functions = {
-            'specific_need_groups': lambda x: SpecificNeedGroup.objects.get(
-                id=x).title,
-            'affected_groups': lambda x: AffectedGroup.objects.get(id=x).title,
-            'underlying_factors': lambda x: UnderlyingFactor
-            .objects.get(id=x).title,
-            'outcomes': identity,
-            'affected_location': lambda x: AffectedLocation.objects.get(
-                id=x).title,
-            'priority_sectors': lambda x: PrioritySector.objects.get(
-                id=x).title,
-            'priority_issue': lambda x: PriorityIssue.objects.get(id=x).title
-        }
-
         # Formatting of underscored keywords, by default is upper case as given
         # by default_format() function below
         formatting = {
@@ -487,6 +515,7 @@ class Assessment(UserResource, ProjectEntityMixin):
         pillars_raw = self.score['pillars'] or {}
         matrix_pillars_raw = self.score['matrix_pillars'] or {}
 
+        final_pillars_score = {}
         pillars = {}
         for pid, pdata in pillars_raw.items():
             pillar = ScorePillar.objects.get(id=pid)
@@ -496,6 +525,7 @@ class Assessment(UserResource, ProjectEntityMixin):
                 scale = ScoreScale.objects.get(id=sid)
                 data[q] = {'title': scale.title, 'value': scale.value}
             pillars[pillar.title] = data
+            final_pillars_score[pillar.title] = self.score.get('{}-score'.format(pid))
 
         matrix_pillars = {}
         for mpid, mpdata in matrix_pillars_raw.items():
@@ -511,8 +541,12 @@ class Assessment(UserResource, ProjectEntityMixin):
                 }
             matrix_pillars[mpillar.title] = data
 
-        pillars.update(matrix_pillars)
-        return pillars
+        return {
+            'final_score': self.score.get('final_score'),
+            'final_pillars_score': final_pillars_score,
+            'pillars': pillars,
+            'matrix_pillars': matrix_pillars,
+        }
 
     def to_exportable_json(self):
         if not self.lead:

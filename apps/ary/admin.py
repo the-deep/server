@@ -49,7 +49,6 @@ admin.site.register(MethodologyGroup)
 admin.site.register(Sector)
 admin.site.register(Focus)
 admin.site.register(UnderlyingFactor)
-admin.site.register(AffectedGroup)
 admin.site.register(PrioritySector)
 admin.site.register(PriorityIssue)
 admin.site.register(SpecificNeedGroup)
@@ -112,3 +111,8 @@ class ScoreMatrixPillarAdmin(admin.ModelAdmin):
 @admin.register(Assessment)
 class AssessmentAdmin(VersionAdmin):
     pass
+
+
+@admin.register(AffectedGroup)
+class AffectedGroupAdmin(admin.ModelAdmin):
+    list_display = ('title', 'order', 'template',)

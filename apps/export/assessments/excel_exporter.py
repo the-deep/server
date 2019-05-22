@@ -4,9 +4,9 @@ from django.core.files.base import ContentFile
 
 from export.models import Export
 from export.formats.xlsx import WorkBook, RowsBuilder
-from openpyxl.styles import Alignment
+from openpyxl.styles import Alignment, Font
 from export.mime_types import EXCEL_MIME_TYPE
-from utils.common import format_date, generate_filename
+from utils.common import format_date, generate_filename, underscore_to_title
 
 import logging
 
@@ -185,6 +185,108 @@ class ExcelExporter:
         self.group.set_col_types(self.col_types)
         if self.split:
             self.split.set_col_types(self.col_types)
+
+        buffer = self.wb.save()
+        filename = generate_filename('Assessments Export', 'xlsx')
+        return filename, Export.XLSX, EXCEL_MIME_TYPE, ContentFile(buffer)
+
+
+class NewExcelExporter:
+    def __init__(self, sheets_data):
+        """
+        sheets_data = {
+            sheet1: {
+                grouped_col: [
+                    { col1: val1, col2: val2, col3: val3 },
+                    { col1: val1, col2: val2, col3: val3 },
+                    ...
+                ],
+                ungrouped_col: [
+                    val1,
+                    val2,
+                    ...
+                ],
+            },
+            sheet2: {
+                ...
+            }
+        }
+        """
+        self.wb = WorkBook()
+        self.sheets_data = sheets_data
+        self.wb_sheets = {}
+        self.sheet_headers = {}
+
+        # TODO: validate all data in each col, to see if each of them have same
+        # structure(keys)
+        for sheet, sheet_data in sheets_data.items():
+            self.wb_sheets[sheet] = self.wb.create_sheet(underscore_to_title(sheet))
+            self.sheet_headers[sheet] = {}
+            for col, data in sheet_data.items():
+                if data and isinstance(data[0], dict):
+                    self.sheet_headers[sheet][col] = data[0].keys()
+                else:
+                    self.sheet_headers[sheet][col] = []
+
+    def add_headers(self):
+        for sheet, headerinfo in self.sheet_headers.items():
+            header_row = []
+            sub_header_row = []
+            for header, info in headerinfo.items():
+                header_row.append(underscore_to_title(str(header)))
+                # Also add empty cells to account for sub headers
+                if info:
+                    header_row.extend([""] * (len(info) - 1))
+                    sub_header_row.extend([underscore_to_title(x) for x in info])
+                else:
+                    sub_header_row.append("")
+
+            # Append header rows to sheet
+            self.wb_sheets[sheet].append([header_row, sub_header_row])
+            # Merge/style Headers
+            counter = 1
+            for header, info in headerinfo.items():
+                wb_sheet = self.wb_sheets[sheet].ws
+                if info:
+                    wb_sheet.merge_cells(
+                        start_row=1,
+                        start_column=counter,
+                        end_row=1,
+                        end_column=counter + len(info) - 1
+                    )
+                    counter += len(info)
+                else:
+                    counter += 1
+                # Styling
+                cell = wb_sheet.cell(row=1, column=counter)
+                cell.alignment = Alignment(horizontal='center')
+                cell.font = Font(bold=True)
+            # Style sub headers
+            for i, header in enumerate(sub_header_row):
+                cell = wb_sheet.cell(row=2, column=i + 1)
+                cell.font = Font(bold=True)
+            self.wb_sheets[sheet].auto_fit_cells_in_row(1)
+            self.wb_sheets[sheet].auto_fit_cells_in_row(2)
+
+    def add_data_rows_to_sheets(self):
+        for sheet, sheet_data in self.sheets_data.items():
+            zipped = zip(*sheet_data.values())
+            for row_data in zipped:
+                row = []
+                for each in row_data:
+                    rowdata = each.values() if isinstance(each, dict) else [each]
+                    row.extend(rowdata)
+                self.wb_sheets[sheet].append([row])
+
+    def export(self):
+        # Write cols header first
+        self.add_headers()
+
+        # Add data rows
+        self.add_data_rows_to_sheets()
+
+        # Remove default sheet
+        self.wb.wb.remove(self.wb.wb.get_sheet_by_name('Sheet'))
 
         buffer = self.wb.save()
         filename = generate_filename('Assessments Export', 'xlsx')
