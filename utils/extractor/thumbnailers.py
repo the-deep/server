@@ -45,9 +45,14 @@ class DocThumbnailer(Thumbnailer):
             settings.TEMP_DIR,
             '{}.png'.format(fileprefix)
         )
-        resize_image(thumbnail, DEFAULT_WIDTH)
         temp_doc.close()
-        return open(thumbnail, 'rb')
+
+        # libreoffice silently fails to generate thumbnails for some files
+        if os.path.exists(thumbnail):
+            resize_image(thumbnail, DEFAULT_WIDTH)
+            return open(thumbnail, 'rb')
+
+        return None
 
 
 class WebThumbnailer(Thumbnailer):
@@ -56,6 +61,7 @@ class WebThumbnailer(Thumbnailer):
     and headless chrome, window size is same as Pixel 2
     to make thumbnail smaller and compact
     """
+
     def get_thumbnail(self):
         if self.doc:
             file_name = os.path.join(
