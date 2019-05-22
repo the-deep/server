@@ -24,4 +24,7 @@ FIELDS_KEYS_VALUE_EXTRACTORS = {
     'Partner': get_organization_name,
     'Partners': get_organization_name,
     'Lead Organization': get_organization_name,
+    'International Partners': get_organization_name,
+    'Government': get_organization_name,
+    'National Partners': get_organization_name,
 }

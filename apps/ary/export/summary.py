@@ -72,7 +72,7 @@ def get_assessment_export_summary(assessment):
     locations = assessment.methodology['locations'] or []
 
     geo_areas = GeoArea.objects.filter(id__in=locations).prefetch_related('admin_level')
-    admin_levels = {f'Admin {x+1}': 0 for x in range(6)}
+    admin_levels = {f'Admin {x}': 0 for x in range(7)}
 
     for geo in geo_areas:
         level = geo.admin_level.level
