@@ -30,7 +30,6 @@ class Organization(UserResource):
         null=True, blank=True, default=None,
     )
 
-    donor = models.BooleanField(default=False)
     verified = models.BooleanField(default=False)
     client_id = None
 
