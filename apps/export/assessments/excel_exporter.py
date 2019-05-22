@@ -223,7 +223,7 @@ class NewExcelExporter:
             self.wb_sheets[sheet] = self.wb.create_sheet(underscore_to_title(sheet))
             self.sheet_headers[sheet] = {}
             for col, data in sheet_data.items():
-                if isinstance(data[0], dict):
+                if data and isinstance(data[0], dict):
                     self.sheet_headers[sheet][col] = data[0].keys()
                 else:
                     self.sheet_headers[sheet][col] = []

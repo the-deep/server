@@ -416,6 +416,10 @@ class Assessment(UserResource, ProjectEntityMixin):
         methodology_sch = self.create_schema_for_group(MethodologyGroup)
         methodology_raw = self.methodology or {}
 
+        def _get_location_title(val):
+            geo = GeoArea.objects.filter(id=val).first()
+            return geo and geo.title
+
         mapping = {
             'attributes': lambda x: self.get_data_from_schema(
                 methodology_sch, x
@@ -427,7 +431,7 @@ class Assessment(UserResource, ProjectEntityMixin):
                 'title': AffectedGroup.objects.get(id=x).title,
                 'order': AffectedGroup.objects.get(id=x).order,
             },
-            'locations': lambda x: GeoArea.objects.get(id=x).title,
+            'locations': _get_location_title,
             'objectives': identity,
             'sampling': identity,
             'limitations': identity,

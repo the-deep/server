@@ -81,9 +81,8 @@ def get_assessment_meta(assessment):
         },
 
         'dates': {
-            'data_collection_start_date': metadata_dates.get('Data Collection Start Date'),
-            'data_collection_end_date': metadata_dates.get('Data Collection End Date'),
-            'publication_start_date': metadata_dates.get('Publication', {}).get('from'),
-            'publication_end_date': metadata_dates.get('Publication', {}).get('to'),
+            'data_collection_start_date': str_to_dmy_date(metadata_dates.get('Data Collection Start Date')),
+            'data_collection_end_date': str_to_dmy_date(metadata_dates.get('Data Collection End Date')),
+            'publication_date': str_to_dmy_date(metadata_dates.get('Publication Date')),
         },
     }
