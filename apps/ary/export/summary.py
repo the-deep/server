@@ -10,6 +10,8 @@ from ary.models import (
     AffectedGroup,
 )
 
+from .scoring import get_scoring
+
 
 # Default values for column groups
 # Add other default values as required
@@ -84,6 +86,13 @@ def get_assessment_export_summary(assessment):
     other_orgs = [x for x in stakeholders[1:]]
 
     data = {
+        'location': admin_levels,
+        'methodology_content': {
+            'objectives': 1 if methodology['Objectives'] else 0,
+            'data_collection_techniques': 1 if methodology['Data Collection Techniques'] else 0,
+            'sampling': 1 if methodology['Sampling'] else 0,
+            'limitations': 1 if methodology['Limitations'] else 0,
+        },
         'stakeholders': {
             lead_org['schema']['name']: lead_org['value'][0]['name'],
             **{
@@ -116,12 +125,7 @@ def get_assessment_export_summary(assessment):
             x['title']: 1 if x['id'] in selected_affected_groups_ids else 0
             for x in processed_affected_groups
         },
-        'location': admin_levels,
-        'methodology_content': {
-            'objectives': 1 if methodology['Objectives'] else 0,
-            'data_collection_techniques': 1 if methodology['Data Collection Techniques'] else 0,
-            'sampling': 1 if methodology['Sampling'] else 0,
-            'limitations': 1 if methodology['Limitations'] else 0,
-        },
+        # scoring
+        **get_scoring(assessment),
     }
     return data
