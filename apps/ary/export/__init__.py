@@ -104,6 +104,7 @@ for k, v in DEFAULTS.items():
     v.update(common_defaults)
 
 
+# NOTE: This is magic function, but make it simpler
 def add_assessment_to_rows(sheets, assessment):
     """
     sheets = {
@@ -146,8 +147,11 @@ def add_assessment_to_rows(sheets, assessment):
             # If columns data is empty, add new data to account for empty row
             # assessment data is then appended
             if not columns_data:
-                ass_sample = assessment_col_data[0]\
-                    if isinstance(assessment_col_data, list) else assessment_col_data
+                if isinstance(assessment_col_data, list):
+                    # TODO: Try to check if it should be dict or None
+                    ass_sample = assessment_col_data[0] if assessment_col_data else {}
+                else:
+                    ass_sample = assessment_col_data
                 if isinstance(ass_sample, dict):
                     columns_data = [{}]
                 else:
@@ -189,6 +193,6 @@ def add_assessment_to_rows(sheets, assessment):
 
 def get_export_data_for_assessments(assessments):
     if not assessments:
-        return None
+        return {}
     data = normalize_assessment(get_export_data(assessments[0]))
     return reduce(add_assessment_to_rows, assessments[1:], data)
