@@ -9,7 +9,11 @@ from lead.models import Lead, LeadGroup
 from geo.models import GeoArea
 from project.mixins import ProjectEntityMixin
 
-from .utils import FIELDS_KEYS_VALUE_EXTRACTORS
+from .utils import (
+    FIELDS_KEYS_VALUE_EXTRACTORS,
+    get_title_or_none,
+    get_model_attrs_or_empty_dict,
+)
 
 from utils.common import identity, underscore_to_title
 
@@ -416,22 +420,17 @@ class Assessment(UserResource, ProjectEntityMixin):
         methodology_sch = self.create_schema_for_group(MethodologyGroup)
         methodology_raw = self.methodology or {}
 
-        def _get_location_title(val):
-            geo = GeoArea.objects.filter(id=val).first()
-            return geo and geo.title
-
         mapping = {
             'attributes': lambda x: self.get_data_from_schema(
                 methodology_sch, x
             ),
-            'sectors': lambda x: Sector.objects.get(id=x).title,
-            'focuses': lambda x: Focus.objects.get(id=x).title,
+            'sectors': get_title_or_none(Sector),
+            'focuses': get_title_or_none(Focus),
             'affected_groups': lambda x: {
                 'key': x,
-                'title': AffectedGroup.objects.get(id=x).title,
-                'order': AffectedGroup.objects.get(id=x).order,
+                **get_model_attrs_or_empty_dict(AffectedGroup, ['title', 'order'])(x)
             },
-            'locations': _get_location_title,
+            'locations': get_title_or_none(GeoArea),
             'objectives': identity,
             'sampling': identity,
             'limitations': identity,
@@ -518,28 +517,27 @@ class Assessment(UserResource, ProjectEntityMixin):
         final_pillars_score = {}
         pillars = {}
         for pid, pdata in pillars_raw.items():
-            pillar = ScorePillar.objects.get(id=pid)
+            pillar_title = get_title_or_none(ScorePillar)(pid)
             data = {}
             for qid, sid in pdata.items():
-                q = ScoreQuestion.objects.get(id=qid).title
-                scale = ScoreScale.objects.get(id=sid)
-                data[q] = {'title': scale.title, 'value': scale.value}
-            pillars[pillar.title] = data
-            final_pillars_score[pillar.title] = self.score.get('{}-score'.format(pid))
+                q = get_title_or_none(ScoreQuestion)(qid)
+                data[q] = get_model_attrs_or_empty_dict(ScoreScale, ['title', 'value'])(sid)
+            pillars[pillar_title] = data
+            final_pillars_score[pillar_title] = self.score.get('{}-score'.format(pid))
 
         matrix_pillars = {}
         for mpid, mpdata in matrix_pillars_raw.items():
-            mpillar = ScoreMatrixPillar.objects.get(id=mpid)
+            mpillar_title = get_title_or_none(ScoreMatrixPillar)(mpid)
             data = {}
             for sid, msid in mpdata.items():
-                sector = Sector.objects.get(id=sid)
-                scale = ScoreMatrixScale.objects.get(id=msid)
-                data[sector.title] = {
-                    'value': scale.value,
+                sector_title = get_title_or_none(Sector)(sid)
+                scale = ScoreMatrixScale.objects.filter(id=msid).first()
+                data[sector_title] = {
+                    'value': scale.value if scale else '',
                     'title': '{} / {}'.format(
-                        scale.row.title, scale.column.title)
+                        scale.row.title, scale.column.title) if scale else ''
                 }
-            matrix_pillars[mpillar.title] = data
+            matrix_pillars[mpillar_title] = data
 
         return {
             'final_score': self.score.get('final_score'),
