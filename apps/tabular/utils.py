@@ -147,38 +147,44 @@ def get_geos_dict(project=None, **kwargs):
         'id', 'code', 'admin_level__level', 'title', 'admin_level_id',
         'admin_level__region', 'admin_level__region__title',
     )
-    return {
-        x['title'].lower(): {
-            "admin_level": x['admin_level__level'],
-            "admin_level_id": x['admin_level_id'],
-            "title": x['title'],
-            "code": x['code'],
-            "id": x['id'],
-            "region": x['admin_level__region'],
-            "region_title": x['admin_level__region__title'],
+    admin_levels_areas = {}
+    for geo in geos:
+        admin_level_data = admin_levels_areas.get(geo['admin_level__level'], {})
+        admin_level_data[geo['title'].lower()] = {
+            "admin_level": geo['admin_level__level'],
+            "admin_level_id": geo['admin_level_id'],
+            "title": geo['title'],
+            "code": geo['code'],
+            "id": geo['id'],
+            "region": geo['admin_level__region'],
+            "region_title": geo['admin_level__region__title'],
         }
-        for x in geos
-    }
+        admin_levels_areas[geo['admin_level__level']] = admin_level_data
+    return admin_levels_areas
 
 
 def parse_geo(value, geos_names={}, geos_codes={}, **kwargs):
     val = str(value).lower()
-    name_match = geos_names.get(val)
-    code_match = geos_codes.get(val)
     admin_level = kwargs.get('admin_level')
-    # If admin_level is present, match admin_level as well
 
-    parsed = None
-    if name_match:
-        parsed = {**name_match, 'geo_type': 'name'}
-    elif code_match:
-        parsed = {**code_match, 'geo_type': 'code'}
-    else:
-        return None
+    name_matched = None
+    for level, geos in geos_names.items():
+        name_matched = geos.get(val)
+        if admin_level is not None and admin_level != level:
+            name_matched = None
+    if name_matched:
+        return {**name_matched, 'geo_type': 'name'}
 
-    if admin_level is not None and admin_level != parsed['admin_level']:
-        return None
-    return parsed
+    code_matched = None
+
+    for level, geos in geos_codes.items():
+        code_matched = geos.get(val)
+        if admin_level is not None and admin_level != level:
+            code_matched = None
+    if code_matched:
+        return {**code_matched, 'geo_type': 'code'}
+
+    return None
 
 
 def sample_and_detect_type_and_options(values, geos_names={}, geos_codes={}):
@@ -280,4 +286,13 @@ def get_geo_options(geo_options):
         'geo_type': max_geo,
         'region': max_region,
         'admin_level': max_admin
+    }
+
+
+def get_geos_codes_from_geos_names(geos_names):
+    return {
+        level: {
+            v['code'].lower(): v for k, v in admin_level_data.items()
+        }
+        for level, admin_level_data in geos_names.items()
     }

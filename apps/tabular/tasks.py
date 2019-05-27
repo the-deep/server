@@ -19,6 +19,7 @@ from .viz.renderer import (
 from .utils import (
     get_geos_dict,
     sample_and_detect_type_and_options,
+    get_geos_codes_from_geos_names,
 )
 
 logger = logging.getLogger(__name__)
@@ -43,7 +44,7 @@ def _tabular_extract_book(book):
 def auto_detect_and_update_fields(book):
     # TODO: Find some ways to lazily calculate geos_names, geos_codes
     geos_names = get_geos_dict(book.project)
-    geos_codes = {v['code'].lower(): v for k, v in geos_names.items()}
+    geos_codes = get_geos_codes_from_geos_names(geos_names)
 
     def isValueNotEmpty(v):
         return v.get('value')
