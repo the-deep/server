@@ -129,11 +129,12 @@ def parse_datetime(val, date_format=None, **kwargs):
 
 
 def auto_detect_datetime(val):
+    formats = []
     for format in DATE_FORMATS:
         parsed = parse_datetime(val, format)
         if parsed:
-            return parsed, format
-    return None
+            formats.append((parsed, format))
+    return formats or None
 
 
 def get_geos_dict(project=None, **kwargs):
@@ -210,10 +211,11 @@ def sample_and_detect_type_and_options(values, geos_names={}, geos_codes={}):
             number_options.append(number_parsed[1])
             continue
 
-        datetime_parsed = auto_detect_datetime(value)
-        if datetime_parsed:
+        formats_parsed = auto_detect_datetime(value)
+        if formats_parsed:
             types.append(Field.DATETIME)
-            date_options.append({'date_format': datetime_parsed[1]})
+            # Append all detected formats
+            date_options.extend([{'date_format': x[1]} for x in formats_parsed])
             continue
 
         geo_parsed = parse_geo(value, geos_names, geos_codes)
