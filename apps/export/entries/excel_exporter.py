@@ -56,6 +56,8 @@ class ExcelExporter:
         self.tabular_fields = {}
 
         self.region_data = {}
+        # mapping of original name vs truncated name
+        self._sheets = {}
 
     def load_exportable_titles(self, data, regions):
         export_type = data.get('type')
@@ -232,11 +234,14 @@ class ExcelExporter:
         # Get Sheet title which is Lead title - Sheet title
         # Worksheet title is limited to 31 as excel's tab length is capped to 31
         worksheet_title = '{}-{}'.format(lead.title, field.sheet.title)
-        if len(worksheet_title) > 31:
-            worksheet_title = '{}-{}'.format(
+        if not self._sheets.get(worksheet_title) and len(worksheet_title) > 31:
+            self._sheets[worksheet_title] = '{}-{}'.format(
                 worksheet_title[:28],
                 len(self.wb.wb.worksheets)
             )
+        elif not self._sheets.get(worksheet_title):
+            self._sheets[worksheet_title] = worksheet_title
+        worksheet_title = self._sheets[worksheet_title]
 
         if worksheet_title not in self.wb.wb.sheetnames:
             tabular_sheet = self.wb.create_sheet(worksheet_title).ws
