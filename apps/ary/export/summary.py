@@ -64,7 +64,7 @@ def get_assessment_export_summary(assessment):
     # All affected groups does not have title, so generate title from parents
     processed_affected_groups = [
         {
-            'title': ' and'.join(x['parents'][::-1]),
+            'title': ' and '.join(x['parents'][::-1]),
             'id': x['id']
         } for x in all_affected_groups
     ]
