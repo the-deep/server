@@ -153,9 +153,11 @@ DATABASES = {
         'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'postgres'),
         'PORT': os.environ.get('DATABASE_PORT', '5432'),
         'HOST': os.environ.get('DATABASE_HOST', 'db'),
+        'OPTIONS': {
+            'sslmode': 'prefer' if DEBUG else 'require',  # Require ssl in Production
+        },
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -246,10 +248,8 @@ GALLERY_FILE_EXPIRE = 60 * 60 * 24 * 2
 
 if os.environ.get('DJANGO_USE_S3', 'False').lower() == 'true':
     # AWS S3 Bucket Credentials
-    AWS_STORAGE_BUCKET_NAME_STATIC = os.environ[
-        'DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC']
-    AWS_STORAGE_BUCKET_NAME_MEDIA = os.environ[
-        'DJANGO_AWS_STORAGE_BUCKET_NAME_MEDIA']
+    AWS_STORAGE_BUCKET_NAME_STATIC = os.environ['DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC']
+    AWS_STORAGE_BUCKET_NAME_MEDIA = os.environ['DJANGO_AWS_STORAGE_BUCKET_NAME_MEDIA']
     AWS_ACCESS_KEY_ID = os.environ['S3_AWS_ACCESS_KEY_ID']
     AWS_SECRET_ACCESS_KEY = os.environ['S3_AWS_SECRET_ACCESS_KEY']
 
@@ -258,11 +258,11 @@ if os.environ.get('DJANGO_USE_S3', 'False').lower() == 'true':
     AWS_QUERYSTRING_AUTH = True
     AWS_S3_CUSTOM_DOMAIN = None
     AWS_QUERYSTRING_EXPIRE = GALLERY_FILE_EXPIRE
+    AWS_S3_SIGNATURE_VERSION = 's3v4'
 
     # Static configuration
     STATICFILES_LOCATION = 'static'
-    STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN,
-                                     STATICFILES_LOCATION)
+    STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
     STATICFILES_STORAGE = 'deep.s3_storages.StaticStorage'
 
     # Media configuration
