@@ -25,6 +25,23 @@ default_values = {
 }
 
 
+def get_methodology_summary(methodology):
+    attributes = {}
+    for attr in methodology['Attributes']:
+        for col, data in attr.items():
+            all_options = {v: 0 for k, v in data[0]['schema']['options'].items()}
+            attr_data = attributes.get(col, {})
+            attr_data = {**all_options, **attr_data}
+            value = data[0]['value']
+
+            if not value:
+                continue
+
+            attr_data[value] = attr_data.get(value, 0) + 1
+            attributes[col] = attr_data
+    return attributes
+
+
 def get_assessment_export_summary(assessment):
     """
     Returns json summary of all the tabs in the assessment including lead info
@@ -34,23 +51,9 @@ def get_assessment_export_summary(assessment):
 
     additional_documents = assessment.metadata['additional_documents']
 
-    all_collection_fields = MethodologyField.objects.filter(
-        group__template=template,
-        title='Data Collection Technique'
-    )
-    if not all_collection_fields:
-        all_collection_techniques = {}
-    else:
-        all_collection_techniques = {
-            x.title: 0
-            for x in all_collection_fields[0].options.all()
-        }
-
     metadata = assessment.get_metadata_json()
     methodology = assessment.get_methodology_json()
-
-    attrs = combine_dicts(methodology['Attributes'])
-    collection_techniques = [x['value'] for x in attrs['Collection Technique']]
+    methodology_summary = get_methodology_summary(assessment.get_methodology_json())
 
     focuses = [x.title for x in Focus.objects.filter(template=template)]
     selected_focuses = set(methodology['Focuses'])
@@ -109,10 +112,7 @@ def get_assessment_export_summary(assessment):
             'Miscellaneous': 1 if additional_documents['misc'] else 0,
         },
 
-        'data_collection_technique': {
-            **all_collection_techniques,
-            **{x: 1 for x in collection_techniques}
-        },
+        **methodology_summary,
         'focuses': {
             x: 1 if x in selected_focuses else 0
             for x in focuses
