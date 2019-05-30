@@ -56,7 +56,7 @@ def get_assessment_export_summary(assessment):
     methodology_summary = get_methodology_summary(assessment.get_methodology_json())
 
     focuses = [x.title for x in Focus.objects.filter(template=template)]
-    selected_focuses = set(methodology['Focuses'])
+    selected_focuses = set(methodology['Focuses'] or [])
 
     sectors = [x.title for x in Sector.objects.filter(template=template)]
     selected_sectors = set(methodology['Sectors'] or [])
