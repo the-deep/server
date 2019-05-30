@@ -277,7 +277,8 @@ class ExcelExporter:
         else:
             sheet_col_name = excel_column_name(col_number)
 
-        return "='{}'!{}1".format(worksheet_title, sheet_col_name)
+        link = f'"#\'{worksheet_title}\'!{sheet_col_name}1"'
+        return f'=HYPERLINK({link}, "{field.title}")'
 
     def get_entry_data(self, entry):
         if entry.entry_type == Entry.EXCERPT:
