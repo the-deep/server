@@ -116,6 +116,11 @@ def generate_chart(field, chart_type, images_format=['svg']):
         if df.empty or 'value' not in df.columns:
             return None
         params['data'] = df
+        if field.type == Field.STRING:
+            params['x_params'] = {
+                'autorange': 'reversed',
+            }
+
     else:
         val_column = get_val_column(field)
         df, _ = clean_real_data(field.actual_data, val_column)
