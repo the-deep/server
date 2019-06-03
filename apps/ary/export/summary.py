@@ -53,7 +53,7 @@ def get_assessment_export_summary(assessment):
     collection_techniques = [x['value'] for x in attrs['Collection Technique']]
 
     focuses = [x.title for x in Focus.objects.filter(template=template)]
-    selected_focuses = set(methodology['Focuses'])
+    selected_focuses = set(methodology['Focuses'] or [])
 
     sectors = [x.title for x in Sector.objects.filter(template=template)]
     selected_sectors = set(methodology['Sectors'] or [])

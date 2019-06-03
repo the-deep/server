@@ -5,6 +5,8 @@ default_values = {
 def format_value(val):
     if isinstance(val, list):
         return ','.join(val)
+    if val is None:
+        val = ''
     return str(val)
 
 
