@@ -293,16 +293,20 @@ def create_plotly_image(func):
             images_format = [kwargs.pop('format', 'png')]
         x_label = kwargs.pop('x_label')
         y_label = kwargs.pop('y_label')
+        x_params = kwargs.pop('x_params', {})
+        y_params = kwargs.pop('y_params', {})
         data, layout = func(*args, **kwargs)
         if layout is None:
             layout = ploty_go.Layout(**{
                 'title': x_label,
                 'yaxis': {
                     **create_plotly_image.axis_config,
+                    **y_params,
                     'title': y_label,
                 },
                 'xaxis': {
                     **create_plotly_image.axis_config,
+                    **x_params,
                     'ticks': 'outside',
                 },
             })

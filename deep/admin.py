@@ -14,7 +14,7 @@ site = admin.site
 
 
 def get_site_string(title):
-    return '{} ({})'.format(title, settings.DEEP_ENVIRONMENT.title())
+    return f'{title} ({settings.DEEP_ENVIRONMENT.title()})'
 
 
 # Text to put at the end of each page's <title>.
@@ -57,11 +57,32 @@ def linkify(field_name):
             model_name = linked_obj._meta.model_name
             view_name = f"admin:{app_label}_{model_name}_change"
             link_url = reverse(view_name, args=[linked_obj.pk])
-            return format_html('<a href="{}">{}</a>', link_url, linked_obj)
+            return format_html(f'<a href="{link_url}">{linked_obj}</a>')
         return '-'
 
     _linkify.short_description = field_name
     return _linkify
+
+
+def query_buttons(description, queries):
+    """
+    Converts a foreign key value into clickable links.
+
+    If field_name is 'parent', link text will be str(obj.parent)
+    Link will be admin url for the admin url for obj.parent.id:change
+    """
+    def _query_buttons(obj):
+        app_label = obj._meta.app_label
+        model_name = obj._meta.model_name
+        view_name = f'admin:{app_label}_{model_name}_change'
+        buttons = []
+        for query in queries:
+            link_url = f'{reverse(view_name, args=[obj.pk])}?show_{query}=true'
+            buttons.append(f'<a class="changelink" href="{link_url}">{query.title()}</a>')
+        return mark_safe(''.join(buttons))
+
+    _query_buttons.short_description = description
+    return _query_buttons
 
 
 def document_preview(field_name):
@@ -74,25 +95,22 @@ def document_preview(field_name):
             try:
                 if file.name.split('?')[0].split('.')[-1] in ['docx', 'xlsx', 'pptx', 'ods', 'doc']:
                     return mark_safe(
+                        f'''
+                        <iframe src="https://docs.google.com/viewer?url={quote(file.url)}&embedded=true"></iframe>
                         '''
-                        <iframe src="https://docs.google.com/viewer?url={url_encode}&embedded=true"></iframe>
-                        '''.format(url_encode=quote(file.url))
                     )
             except Exception:
                 pass
+            height = '600px'
+            width = '800px'
             return mark_safe(
-                '''
-                <object data="{url}" height="{height}" width="{width}">
-                    <img style="max-height:{height};max-width:{width}" src="{url}"/>
-                    <iframe src="https://docs.google.com/viewer?url={url_encode}&embedded=true"></iframe>
+                f'''
+                <object data="{file.url}" height="{height}" width="{width}">
+                    <img style="max-height:{height};max-width:{width}" src="{file.url}"/>
+                    <iframe src="https://docs.google.com/viewer?url={quote(file.url)}&embedded=true"></iframe>
                     </object>
                 </object>
-                '''.format(
-                    url=file.url,
-                    url_encode=quote(file.url),
-                    height='600px',
-                    width='800px',
-                ),
+                '''
             )
         return 'N/A'
     _document_preview.short_description = 'Document Preview'
