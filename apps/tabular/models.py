@@ -27,15 +27,17 @@ class Book(UserResource):
     # FILE TYPES
     CSV = 'csv'
     XLSX = 'xlsx'
+    XLS = 'xls'
     ODS = 'ods'
 
     FILE_TYPES = (
         (CSV, 'CSV'),
         (XLSX, 'XLSX'),
+        (XLS, 'XLS'),
         (ODS, 'ODS'),
     )
 
-    META_REQUIRED_FILE_TYPES = [XLSX]
+    META_REQUIRED_FILE_TYPES = [XLSX, XLS]
 
     # ERROR TYPES
     UNKNOWN_ERROR = 100

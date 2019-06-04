@@ -11,7 +11,7 @@ from geo.models import models, GeoArea
 from utils.common import redis_lock, LogTime
 
 from .models import Book, Geodata, Field
-from .extractor import csv, xlsx, ods
+from .extractor import csv, xls, xlsx, ods
 from .viz.renderer import (
     calc_preprocessed_data,
     render_field_chart,
@@ -34,6 +34,8 @@ def _tabular_extract_book(book):
         csv.extract(book)
     elif book.file_type == Book.XLSX:
         xlsx.extract(book)
+    elif book.file_type == Book.XLS:
+        xls.extract(book)
     elif book.file_type == Book.ODS:
         ods.extract(book)
     auto_detect_and_update_fields(book)
