@@ -49,7 +49,7 @@ CHART_RENDER = {
 
 
 def get_val_column(field):
-    if field.type in [Field.GEO, Field.DATETIME, Field.NUMBER]:
+    if field.type in [Field.GEO, Field.NUMBER]:
         return 'processed_value'
     return 'value'
 
@@ -106,6 +106,7 @@ def generate_chart(field, chart_type, images_format=['svg']):
     params = {
         'x_label': field.title,
         'y_label': 'count',
+        'x_params': {},
         'chart_size': (8, 4),
         'format': images_format,
         # data will be added according to chart type
@@ -116,10 +117,10 @@ def generate_chart(field, chart_type, images_format=['svg']):
         if df.empty or 'value' not in df.columns:
             return None
         params['data'] = df
-        if field.type == Field.STRING:
-            params['x_params'] = {
-                'autorange': 'reversed',
-            }
+        if field.type == Field.STRING:  # NOTE: revered is used for ascending order
+            params['x_params']['autorange'] = 'reversed'
+        if chart_type == BARCHART:  # NOTE: Treat value in barchart as normal string
+            params['x_params']['type'] = 'category'
 
     else:
         val_column = get_val_column(field)
