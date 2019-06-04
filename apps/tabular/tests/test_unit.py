@@ -7,7 +7,7 @@ from django.conf import settings
 from deep.tests import TestCase
 
 from gallery.models import File
-from geo.models import GeoArea, Region
+from geo.models import GeoArea, Region, AdminLevel
 
 from project.models import Project
 
@@ -80,15 +80,24 @@ class TestTabularExtraction(TestCase):
         # geo_choices = ChoicesGenerator(values=areas)
         # NOTE: Using choices created random values, and thus error occured
         self.project = self.create(Project)
-        AutoFixture(
-            GeoArea,
-            field_values={
-                'title': 'Kathmandu',
-                'code': 'KAT'
-            },
-            generate_fk=True
-        ).create(1)
-        self.region = Region.objects.first()
+        # Create region
+        self.region = Region.objects.create(code='RG', title='region')
+        # Create admin levels
+        self.admin1 = AdminLevel.objects.create(region=self.region, level=1, title='level1')
+        self.admin2 = AdminLevel.objects.create(region=self.region, level=2, title='level2')
+
+        # Create GeoArea
+        self.geo = GeoArea.objects.create(
+            admin_level=self.admin1,
+            title='Kathmandu',
+            code='KAT'
+        )
+        # Just create multiple geo in different admin to check detection consistency
+        GeoArea.objects.create(
+            admin_level=self.admin2,
+            title='Central',
+            code='CTR',
+        )
         self.project.regions.add(self.region)
         self.project.save()
 
