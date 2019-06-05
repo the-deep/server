@@ -342,9 +342,10 @@ def redis_lock(func):
             func.__name__,
             '__'.join([str(arg) for arg in args]),
         )
-        lock = redis.get_lock(key, 60 * 60 * 24)  # Lock lifetime 24 hours
+        lock = redis.get_lock(key, 60 * 60 * 4)  # Lock lifetime 4 hours
         have_lock = lock.acquire(blocking=False)
         if not have_lock:
+            logger.warning(f'Unable to get lock for {key}')
             return False
         try:
             return_value = func(*args, **kwargs) or True
