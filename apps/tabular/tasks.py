@@ -132,7 +132,7 @@ def _tabular_meta_extract_geo(geodata):
 def tabular_generate_column_image(field_id):
     field = Field.objects.filter(pk=field_id).first()
     if field is None:
-        logger.warn('Field ({}) doesn\'t exists'.format(field_id))
+        logger.warning('Field ({}) doesn\'t exists'.format(field_id))
 
     calc_preprocessed_data(field)
     return render_field_chart(field)
