@@ -497,7 +497,7 @@ class Assessment(UserResource, ProjectEntityMixin):
 
         # add cross_sector
 
-        # NOTE: convert to single columed values
+        # NOTE: convert to single columned values
         # FIXME: later make the excel export highly nestable
         new_summary_data = {}
         for sector, data in summary_data.items():
@@ -513,6 +513,12 @@ class Assessment(UserResource, ProjectEntityMixin):
 
         pillars_raw = self.score['pillars'] or {}
         matrix_pillars_raw = self.score['matrix_pillars'] or {}
+        matrix_pillars_final_raw = {
+            x: self.score[x]
+            for x in self.score.keys() if 'matrix-score' in x
+        }
+
+        matrix_pillars_final_score = {}
 
         final_pillars_score = {}
         pillars = {}
@@ -529,6 +535,8 @@ class Assessment(UserResource, ProjectEntityMixin):
         for mpid, mpdata in matrix_pillars_raw.items():
             mpillar_title = get_title_or_none(ScoreMatrixPillar)(mpid)
             data = {}
+            matrix_final_data = matrix_pillars_final_raw.get(f'{mpid}-matrix-score') or ''
+            matrix_pillars_final_score[f'{mpillar_title}_final_score'] = matrix_final_data
             for sid, msid in mpdata.items():
                 sector_title = get_title_or_none(Sector)(sid)
                 scale = ScoreMatrixScale.objects.filter(id=msid).first()
@@ -544,6 +552,7 @@ class Assessment(UserResource, ProjectEntityMixin):
             'final_pillars_score': final_pillars_score,
             'pillars': pillars,
             'matrix_pillars': matrix_pillars,
+            'matrix_pillars_final_score': matrix_pillars_final_score,
         }
 
     def to_exportable_json(self):
