@@ -189,6 +189,7 @@ class Document:
                 self.doc.add_picture(fimage)
             else:
                 self.doc.add_picture(fimage, width=width)
+            self.doc.paragraphs[-1].alignment = docx.enum.text.WD_ALIGN_PARAGRAPH.CENTER
             return self
         except Exception:
             self.doc.add_paragraph('Invalid Image')

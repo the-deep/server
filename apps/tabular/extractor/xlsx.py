@@ -46,10 +46,10 @@ def get_excel_value(cell):
 
 
 @LogTime()
-def extract(book):
+def extract(book, filename=None):
     options = book.options if book.options else {}
     Sheet.objects.filter(book=book).delete()  # Delete all previous sheets
-    with book.get_file() as xlsx_file:
+    with open(filename, 'rb') if filename else book.get_file() as xlsx_file:
         workbook = load_workbook(xlsx_file, data_only=True, read_only=True)
         for sheet_key, wb_sheet in enumerate(workbook.worksheets):
             sheet_options = options.get('sheets', {}).get(str(sheet_key), {})

@@ -68,12 +68,12 @@ class ReportExporter:
             # para.add_run().add_image(entry.image)
         elif entry.entry_type == Entry.DATA_SERIES and entry.tabular_field:
             image = viz_renderer.get_entry_image(entry)
-            health_stats = (entry.tabular_field.cache or {}).get('health_stats', {})
-            image_text = ' Total values: {}, Invalid value: {}, Null value: {}'.format(
-                health_stats.get('total', 'N/A'),
-                health_stats.get('invalid', 'N/A'),
-                health_stats.get('empty', 'N/A'),
-            )
+            h_stats = (entry.tabular_field.cache or {}).get('health_stats', {})
+
+            image_text = ' Total values: {}'.format(h_stats.get('total', 'N/A'))
+            for key in ['invalid', 'null']:
+                if h_stats.get(key):
+                    image_text += f', {key.title()} values: {h_stats.get(key)}' if h_stats.get(key) else ''
 
         if image:
             self.doc.add_image(image)

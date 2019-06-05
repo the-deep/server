@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import logging
+from datetime import datetime
 
 from django.conf import settings
 
@@ -106,6 +107,7 @@ def generate_chart(field, chart_type, images_format=['svg']):
     params = {
         'x_label': field.title,
         'y_label': 'count',
+        'x_params': {},
         'chart_size': (8, 4),
         'format': images_format,
         # data will be added according to chart type
@@ -116,6 +118,19 @@ def generate_chart(field, chart_type, images_format=['svg']):
         if df.empty or 'value' not in df.columns:
             return None
         params['data'] = df
+        if field.type == Field.STRING:  # NOTE: revered is used for ascending order
+            params['x_params']['autorange'] = 'reversed'
+        elif field.type == Field.DATETIME:
+            if df['value'].count() > 10:
+                params['x_params']['tickformat'] = '%d-%m-%Y'
+            else:
+                params['x_params']['type'] = 'category'
+                params['x_params']['ticktext'] = [
+                    datetime.strptime(value, '%Y-%m-%dT%H:%M:%S').strftime('%d-%m-%Y')
+                    for value in df['value']
+                ]
+                params['x_params']['tickvals'] = df['value']
+
     else:
         val_column = get_val_column(field)
         df, _ = clean_real_data(field.actual_data, val_column)

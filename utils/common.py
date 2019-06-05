@@ -293,16 +293,20 @@ def create_plotly_image(func):
             images_format = [kwargs.pop('format', 'png')]
         x_label = kwargs.pop('x_label')
         y_label = kwargs.pop('y_label')
+        x_params = kwargs.pop('x_params', {})
+        y_params = kwargs.pop('y_params', {})
         data, layout = func(*args, **kwargs)
         if layout is None:
             layout = ploty_go.Layout(**{
                 'title': x_label,
                 'yaxis': {
                     **create_plotly_image.axis_config,
+                    **y_params,
                     'title': y_label,
                 },
                 'xaxis': {
                     **create_plotly_image.axis_config,
+                    **x_params,
                     'ticks': 'outside',
                 },
             })
@@ -338,9 +342,10 @@ def redis_lock(func):
             func.__name__,
             '__'.join([str(arg) for arg in args]),
         )
-        lock = redis.get_lock(key, 60 * 60 * 24)  # Lock lifetime 24 hours
+        lock = redis.get_lock(key, 60 * 60 * 4)  # Lock lifetime 4 hours
         have_lock = lock.acquire(blocking=False)
         if not have_lock:
+            logger.warning(f'Unable to get lock for {key}')
             return False
         try:
             return_value = func(*args, **kwargs) or True
