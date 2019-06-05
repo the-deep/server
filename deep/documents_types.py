@@ -40,5 +40,5 @@ DEEP_SUPPORTED_MIME_TYPES = [
 DEEP_SUPPORTED_EXTENSIONS = [
     'docx', 'xlsx', 'pdf', 'pptx',
     'json', 'png', 'jpg', 'jpeg', 'csv', 'txt',
-    'geojson', 'zip', 'ods', 'doc',
+    'geojson', 'zip', 'ods', 'doc', 'xls',
 ]
