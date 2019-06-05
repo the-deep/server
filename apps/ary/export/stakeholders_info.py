@@ -24,7 +24,7 @@ def get_stakeholders_info(assessment):
                     added_value.append(key)
                     stakeholders_info.append({
                         'name': value['name'],
-                        'type': value['type'],
+                        'type': data.get('schema', {}).get('name')
                     })
 
     return {
