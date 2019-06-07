@@ -172,19 +172,20 @@ def parse_geo(value, geos_names={}, geos_codes={}, **kwargs):
         name_matched = geos.get(val)
         if admin_level is not None and admin_level != level:
             name_matched = None
+        if name_matched:
+            break
+
     if name_matched:
         return {**name_matched, 'geo_type': 'name'}
 
     code_matched = None
-
     for level, geos in geos_codes.items():
         code_matched = geos.get(val)
         if admin_level is not None and admin_level != level:
             code_matched = None
-    if code_matched:
-        return {**code_matched, 'geo_type': 'code'}
-
-    return None
+        if code_matched:
+            break
+    return code_matched and {**code_matched, 'geo_type': 'code'}
 
 
 def sample_and_detect_type_and_options(values, geos_names={}, geos_codes={}):
