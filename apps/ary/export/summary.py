@@ -1,9 +1,8 @@
-from utils.common import combine_dicts
-
 from geo.models import GeoArea
 
 from ary.models import (
-    MethodologyField,
+    MethodologyGroup,
+    MethodologyOption,
     MetadataField,
     Focus,
     Sector,
@@ -25,20 +24,24 @@ default_values = {
 }
 
 
-def get_methodology_summary(methodology):
+def get_methodology_summary(assessment):
+    methodology = assessment.get_methodology_json()
+    groups = MethodologyGroup.objects.filter(template=assessment.lead.project.assessment_template)
+
     attributes = {}
+    groups_options = {
+        group.title: MethodologyOption.objects.filter(field__in=group.fields.all())
+        for group in groups
+    }
+
     for attr in methodology['Attributes']:
-        for col, data in attr.items():
-            all_options = {v: 0 for k, v in data[0]['schema']['options'].items()}
-            attr_data = attributes.get(col, {})
-            attr_data = {**all_options, **attr_data}
-            value = data[0]['value']
-
-            if not value:
-                continue
-
-            attr_data[value] = attr_data.get(value, 0) + 1
-            attributes[col] = attr_data
+        for group, options in groups_options.items():
+            data = attr.get(group) or [{}]
+            attr_data = attributes.get(group, {})
+            for option in options:
+                attr_data[option.title] = attr_data.get(option.title, 0) +\
+                    (1 if data[0].get('value') == option.title else 0)
+            attributes[group] = attr_data
     return attributes
 
 
@@ -53,7 +56,7 @@ def get_assessment_export_summary(assessment):
 
     metadata = assessment.get_metadata_json()
     methodology = assessment.get_methodology_json()
-    methodology_summary = get_methodology_summary(assessment.get_methodology_json())
+    methodology_summary = get_methodology_summary(assessment)
 
     focuses = [x.title for x in Focus.objects.filter(template=template)]
     selected_focuses = set(methodology['Focuses'] or [])
