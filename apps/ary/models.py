@@ -565,16 +565,19 @@ class Assessment(UserResource, ProjectEntityMixin):
         matrix_pillars = {}
         for mpid, mpdata in matrix_pillars_raw.items():
             mpillar_title = get_title_or_none(ScoreMatrixPillar)(mpid)
+
             data = {}
             matrix_final_data = matrix_pillars_final_raw.get(f'{mpid}-matrix-score') or ''
             matrix_pillars_final_score[f'{mpillar_title}_final_score'] = matrix_final_data
-            for sid, msid in mpdata.items():
-                sector_title = get_title_or_none(Sector)(sid)
-                scale = ScoreMatrixScale.objects.filter(id=msid).first()
-                data[sector_title] = {
+
+            for sector in Sector.objects.filter(template=self.project.assessment_template):
+                scale = None
+                sector_id = str(sector.id)
+                if sector_id in mpdata:
+                    scale = ScoreMatrixScale.objects.filter(id=mpdata[sector_id]).first()
+                data[sector.title] = {
                     'value': scale.value if scale else '',
-                    'title': '{} / {}'.format(
-                        scale.row.title, scale.column.title) if scale else ''
+                    'title': f'{scale.row.title} / {scale.column.title}' if scale else ''
                 }
             matrix_pillars[mpillar_title] = data
 
