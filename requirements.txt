@@ -62,3 +62,5 @@ wordcloud==1.5.0
 
 # django-autofixture
 git+https://github.com/volrath/django-autofixture.git@0472a494485dd597d598e20d9e1c6c47cf0eadb7
+# django-autofixture
+git+https://github.com/davedash/django-fixture-magic.git@466fa35c075009e4a1974f6e588471dd9e720e53#egg=django_fixture_magic

@@ -52,7 +52,9 @@ def linkify(field_name):
     """
     def _linkify(obj):
         app_label = obj._meta.app_label
-        linked_obj = getattr(obj, field_name)
+        linked_obj = obj
+        for _field_name in field_name.split('.'):
+            linked_obj = getattr(linked_obj, _field_name)
         if linked_obj:
             model_name = linked_obj._meta.model_name
             view_name = f"admin:{app_label}_{model_name}_change"
@@ -60,7 +62,8 @@ def linkify(field_name):
             return format_html(f'<a href="{link_url}">{linked_obj}</a>')
         return '-'
 
-    _linkify.short_description = field_name
+    _linkify.short_description = ' '.join(field_name.split('.'))
+    _linkify.admin_order_field = '__'.join(field_name.split('.'))
     return _linkify
 
 

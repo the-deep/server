@@ -308,6 +308,37 @@ class ScoreMatrixScale(models.Model):
         ordering = ['value']
 
 
+class ScoreQuestionnaireSector(BasicTemplateEntity):
+    HNO = 'hno'
+    CNA = 'cna'
+
+    CRITERIA = 'criteria'
+    ETHOS = 'ethos'
+
+    METHOD_CHOICES = (
+        (HNO, 'HNO'),
+        (CNA, 'CNA'),
+    )
+
+    SUB_METHOD_CHOICES = (
+        (CRITERIA, 'Criteria'),
+        (ETHOS, 'Ethos'),
+    )
+    method = models.CharField(max_length=10, choices=METHOD_CHOICES)
+    sub_method = models.CharField(max_length=10, choices=SUB_METHOD_CHOICES)
+
+
+class ScoreQuestionnaireSubSector(BasicEntity):
+    sector = models.ForeignKey(ScoreQuestionnaireSector, on_delete=models.CASCADE)
+
+
+class ScoreQuestionnaire(BasicEntity):
+    title = None  # NOTE: Field from BasicEntity (Not Required Here)
+    text = models.TextField()
+    required = models.BooleanField(default=False)
+    sub_sector = models.ForeignKey(ScoreQuestionnaireSubSector, on_delete=models.CASCADE)
+
+
 class Assessment(UserResource, ProjectEntityMixin):
     """
     Assessment belonging to a lead
