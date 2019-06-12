@@ -1,5 +1,7 @@
 from django.contrib import admin
 from reversion.admin import VersionAdmin
+
+from deep.admin import linkify
 from .models import (
     AssessmentTemplate,
 
@@ -29,6 +31,10 @@ from .models import (
     ScoreMatrixRow,
     ScoreMatrixColumn,
     ScoreMatrixScale,
+
+    ScoreQuestionnaireSector,
+    ScoreQuestionnaireSubSector,
+    ScoreQuestionnaire,
 
     Assessment,
 )
@@ -106,6 +112,28 @@ class ScoreMatrixPillarAdmin(admin.ModelAdmin):
     inlines = [ScoreMatrixRowInline,
                ScoreMatrixColumnInline,
                ScoreMatrixScaleInline]
+
+
+class ScoreQuestionnaireSubSectorInline(admin.TabularInline):
+    model = ScoreQuestionnaireSubSector
+    extra = 0
+
+
+class ScoreQuestionnaireInline(admin.TabularInline):
+    model = ScoreQuestionnaire
+    extra = 0
+
+
+@admin.register(ScoreQuestionnaireSector)
+class ScoreQuestionnaireSectorAdmin(admin.ModelAdmin):
+    list_display = ('title', 'order', 'method', 'sub_method', linkify('template'))
+    inlines = [ScoreQuestionnaireSubSectorInline]
+
+
+@admin.register(ScoreQuestionnaireSubSector)
+class ScoreQuestionnaireSubSectorAdmin(admin.ModelAdmin):
+    list_display = ('title', 'order', linkify('sector'), linkify('sector.template'))
+    inlines = [ScoreQuestionnaireInline]
 
 
 @admin.register(Assessment)

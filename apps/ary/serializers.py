@@ -23,6 +23,9 @@ from organization.serializers import (
 from .models import (
     AssessmentTemplate,
     Assessment,
+    ScoreQuestionnaireSector,
+    ScoreQuestionnaireSubSector,
+    ScoreQuestionnaire,
 )
 
 
@@ -194,6 +197,32 @@ class ScoreMatrixPillarSerializer(serializers.Serializer):
         return data
 
 
+class ScoreQuestionnaireSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ScoreQuestionnaire
+        fields = '__all__'
+
+
+class ScoreQuestionnaireSubSectorSerializer(serializers.ModelSerializer):
+    questions = ScoreQuestionnaireSerializer(
+        source='scorequestionnaire_set', many=True, read_only=True,
+    )
+
+    class Meta:
+        model = ScoreQuestionnaireSubSector
+        fields = '__all__'
+
+
+class ScoreQuestionnaireSectorSerializer(serializers.ModelSerializer):
+    sub_sectors = ScoreQuestionnaireSubSectorSerializer(
+        source='scorequestionnairesubsector_set', many=True, read_only=True,
+    )
+
+    class Meta:
+        model = ScoreQuestionnaireSector
+        fields = '__all__'
+
+
 class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
                                    DynamicFieldsMixin, UserResourceSerializer):
     metadata_groups = GroupSerializer(source='metadatagroup_set',
@@ -230,6 +259,9 @@ class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
 
     score_buckets = serializers.SerializerMethodField()
     sources = serializers.SerializerMethodField()
+    questionnaire_sector = ScoreQuestionnaireSectorSerializer(
+        source='scorequestionnairesector_set', many=True, read_only=True,
+    )
 
     class Meta:
         model = AssessmentTemplate
