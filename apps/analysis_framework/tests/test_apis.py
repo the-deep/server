@@ -70,3 +70,9 @@ class AnalysisFrameworkTests(TestCase):
 
         self.assertEqual(response.data['id'], analysis_framework.id)
         self.assertEqual(response.data['title'], analysis_framework.title)
+
+    def test_filter_analysis_framework(self):
+        url = '/api/v1/analysis-frameworks/'
+        self.authenticate()
+        response = self.client.get(f'{url}?activity=active&relatedToMe=True')
+        self.assert_200(response)
