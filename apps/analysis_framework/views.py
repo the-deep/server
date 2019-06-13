@@ -1,14 +1,20 @@
+from django.utils import timezone
+from datetime import timedelta
+import django_filters
+from django.db import models
 from rest_framework import (
     exceptions,
     permissions,
     response,
     status,
+    filters,
     views,
     viewsets,
 )
 from deep.permissions import ModifyPermission
 
 from project.models import Project
+from entry.models import Entry
 from .models import (
     AnalysisFramework, Widget, Filter, Exportable
 )
@@ -16,15 +22,42 @@ from .serializers import (
     AnalysisFrameworkSerializer, WidgetSerializer,
     FilterSerializer, ExportableSerializer
 )
+from .filter_set import AnalysisFrameworkFilterSet
 
 
 class AnalysisFrameworkViewSet(viewsets.ModelViewSet):
     serializer_class = AnalysisFrameworkSerializer
-    permission_classes = [permissions.IsAuthenticated,
-                          ModifyPermission]
+    permission_classes = [permissions.IsAuthenticated, ModifyPermission]
+    filter_backends = (
+        django_filters.rest_framework.DjangoFilterBackend,
+        filters.SearchFilter, filters.OrderingFilter,
+    )
+    filterset_class = AnalysisFrameworkFilterSet
+    search_fields = ('title', 'description',)
 
     def get_queryset(self):
-        return AnalysisFramework.get_for(self.request.user)
+        query_params = self.request.query_params
+        queryset = AnalysisFramework.get_for(self.request.user)
+        month_ago = timezone.now() - timedelta(days=30)
+        activity_param = query_params.get('activity')
+
+        # Active/Inactive Filter
+        if activity_param in ['active', 'inactive']:
+            queryset = queryset.annotate(
+                recent_entry_exists=models.Exists(
+                    Entry.objects.filter(
+                        analysis_framework_id=models.OuterRef('id'),
+                        modified_at__date__gt=month_ago,
+                    )
+                ),
+            ).filter(
+                recent_entry_exists=activity_param.lower() == 'active',
+            )
+
+        # Owner Filter
+        if query_params.get('relatedToMe', 'false').lower() == 'true':
+            queryset = queryset.filter(created_by=self.request.user)
+        return queryset
 
 
 class AnalysisFrameworkCloneView(views.APIView):
