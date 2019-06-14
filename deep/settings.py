@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
 
     # LIBRARIES
+    'fixture_magic',
     'autofixture',
     'channels',
     'corsheaders',
