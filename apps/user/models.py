@@ -6,6 +6,12 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.conf import settings
 
+from django_otp.plugins import (
+    otp_static,
+    otp_totp,
+    otp_email,
+)
+
 from gallery.models import File
 from project.models import Project, ProjectMembership
 
@@ -147,3 +153,24 @@ def save_user_profile(sender, instance, created, **kwargs):
         assign_to_default_project(instance)
     else:
         instance.profile.save()
+
+
+OPT_MODELS = (
+    ('Static', otp_static.models.StaticDevice),
+    ('TOTP', otp_totp.models.TOTPDevice),
+    ('Email', otp_email.models.EmailDevice),
+)
+
+OPT_PROXY_MODELS = []
+# Create OPT Proxy Model Dynamically
+for label, model in OPT_MODELS:
+    class Meta:
+        app_label = 'auth'
+        proxy = True
+        verbose_name = f'OTP {label}'
+        verbose_name_plural = f'OTP {label}s'
+    model = type(f'otp_{label}', (model,), {
+        '__module__': __name__,
+        'Meta': Meta,
+    })
+    OPT_PROXY_MODELS.append(model)
