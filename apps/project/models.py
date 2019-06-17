@@ -3,6 +3,7 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
 from django.dispatch import receiver
 from django.db.models.functions import TruncDate
+from django.db.models import Q
 
 from user_resource.models import UserResource
 from geo.models import Region
@@ -153,6 +154,10 @@ class Project(UserResource):
 
     is_default = models.BooleanField(default=False)
 
+    # Project visibility
+    # TODO: make this field accessible only for defined users/emails
+    is_private = models.BooleanField(default=False)
+
     # Data for cache purposes
     status = models.ForeignKey(
         ProjectStatus,
@@ -222,9 +227,12 @@ class Project(UserResource):
 
     @staticmethod
     def get_for(user, annotated=False):
+        # Note: `.exclude(Q(is_private=True) & ~Q(members=user)).all()`
+        # excludes the the private projects that the user is not member of
+
         if annotated:
-            return Project.get_annotated().all()
-        return Project.objects.all()
+            return Project.get_annotated().exclude(Q(is_private=True) & ~Q(members=user)).all()
+        return Project.objects.exclude(Q(is_private=True) & ~Q(members=user)).all()
 
     @staticmethod
     def get_for_member(user, annotated=False):
@@ -254,7 +262,7 @@ class Project(UserResource):
         ).distinct()
 
     def can_get(self, user):
-        return True
+        return Project.is_member(user)
 
     def is_member(self, user):
         return self in Project.get_for_member(user)
