@@ -104,6 +104,7 @@ for k, v in DEFAULTS.items():
     v.update(common_defaults)
 
 
+# NOTE: This is magic function, but make it simpler
 def add_assessment_to_rows(sheets, assessment):
     """
     sheets = {
@@ -140,14 +141,19 @@ def add_assessment_to_rows(sheets, assessment):
     for sheet, sheet_data in sheets.items():
         new_sheets[sheet] = {}
         assessment_sheet = normalized_assessment[sheet]
+        sheet_data_len = 0
 
         for col, columns_data in sheet_data.items():
+            sheet_data_len = len(columns_data)  # this is same for every columns data
             assessment_col_data = assessment_sheet.get(col)
             # If columns data is empty, add new data to account for empty row
             # assessment data is then appended
             if not columns_data:
-                ass_sample = assessment_col_data[0]\
-                    if isinstance(assessment_col_data, list) else assessment_col_data
+                if isinstance(assessment_col_data, list):
+                    # TODO: Try to check if it should be dict or None
+                    ass_sample = assessment_col_data[0] if assessment_col_data else {}
+                else:
+                    ass_sample = assessment_col_data
                 if isinstance(ass_sample, dict):
                     columns_data = [{}]
                 else:
@@ -184,11 +190,35 @@ def add_assessment_to_rows(sheets, assessment):
             # Append assessment data to col data
             columns_data.extend(assessment_col_data)
             new_sheets[sheet][col] = columns_data
+
+        # Add columns not present in sheet_data but in assessment
+        sheet_cols = set(sheet_data.keys())
+        assessment_cols = set(assessment_sheet.keys())
+        new_cols = assessment_cols.difference(sheet_cols)
+
+        newcols_data = {}
+        for newcol in new_cols:
+            coldata = assessment_sheet[newcol]
+            # NOTE: if coldata is empty, we assume it contains dict
+            if not coldata:
+                coldata = [{}]
+            if not isinstance(coldata[0], dict):
+                newcols_data[newcol] = [*[None] * (sheet_data_len), *coldata]
+            else:
+                empty_data = {
+                    key: None
+                    for key in coldata[0].keys()
+                }
+                newcols_data[newcol] = [dict(empty_data) for _ in range(sheet_data_len)]
+                newcols_data[newcol].extend(coldata)
+
+        new_sheets[sheet].update(newcols_data)
+
     return new_sheets
 
 
 def get_export_data_for_assessments(assessments):
     if not assessments:
-        return None
+        return {}
     data = normalize_assessment(get_export_data(assessments[0]))
     return reduce(add_assessment_to_rows, assessments[1:], data)

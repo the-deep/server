@@ -19,7 +19,9 @@ def get_locations_info(assessment):
     region_geos = {x['key']: x for x in region.geo_options}
 
     for area in geo_areas:
-        geo_info = region_geos[str(area.id)]
+        geo_info = region_geos.get(str(area.id))
+        if geo_info is None:
+            continue
         level = geo_info['admin_level']
         key = f'Admin {level}'
 

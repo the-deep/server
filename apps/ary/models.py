@@ -9,7 +9,11 @@ from lead.models import Lead, LeadGroup
 from geo.models import GeoArea
 from project.mixins import ProjectEntityMixin
 
-from .utils import FIELDS_KEYS_VALUE_EXTRACTORS
+from .utils import (
+    FIELDS_KEYS_VALUE_EXTRACTORS,
+    get_title_or_none,
+    get_model_attrs_or_empty_dict,
+)
 
 from utils.common import identity, underscore_to_title
 
@@ -447,22 +451,17 @@ class Assessment(UserResource, ProjectEntityMixin):
         methodology_sch = self.create_schema_for_group(MethodologyGroup)
         methodology_raw = self.methodology or {}
 
-        def _get_location_title(val):
-            geo = GeoArea.objects.filter(id=val).first()
-            return geo and geo.title
-
         mapping = {
             'attributes': lambda x: self.get_data_from_schema(
                 methodology_sch, x
             ),
-            'sectors': lambda x: Sector.objects.get(id=x).title,
-            'focuses': lambda x: Focus.objects.get(id=x).title,
+            'sectors': get_title_or_none(Sector),
+            'focuses': get_title_or_none(Focus),
             'affected_groups': lambda x: {
                 'key': x,
-                'title': AffectedGroup.objects.get(id=x).title,
-                'order': AffectedGroup.objects.get(id=x).order,
+                **get_model_attrs_or_empty_dict(AffectedGroup, ['title', 'order'])(x)
             },
-            'locations': _get_location_title,
+            'locations': get_title_or_none(GeoArea),
             'objectives': identity,
             'sampling': identity,
             'limitations': identity,
@@ -529,7 +528,7 @@ class Assessment(UserResource, ProjectEntityMixin):
 
         # add cross_sector
 
-        # NOTE: convert to single columed values
+        # NOTE: convert to single columned values
         # FIXME: later make the excel export highly nestable
         new_summary_data = {}
         for sector, data in summary_data.items():
@@ -545,38 +544,49 @@ class Assessment(UserResource, ProjectEntityMixin):
 
         pillars_raw = self.score['pillars'] or {}
         matrix_pillars_raw = self.score['matrix_pillars'] or {}
+        matrix_pillars_final_raw = {
+            x: self.score[x]
+            for x in self.score.keys() if 'matrix-score' in x
+        }
+
+        matrix_pillars_final_score = {}
 
         final_pillars_score = {}
         pillars = {}
         for pid, pdata in pillars_raw.items():
-            pillar = ScorePillar.objects.get(id=pid)
+            pillar_title = get_title_or_none(ScorePillar)(pid)
             data = {}
             for qid, sid in pdata.items():
-                q = ScoreQuestion.objects.get(id=qid).title
-                scale = ScoreScale.objects.get(id=sid)
-                data[q] = {'title': scale.title, 'value': scale.value}
-            pillars[pillar.title] = data
-            final_pillars_score[pillar.title] = self.score.get('{}-score'.format(pid))
+                q = get_title_or_none(ScoreQuestion)(qid)
+                data[q] = get_model_attrs_or_empty_dict(ScoreScale, ['title', 'value'])(sid)
+            pillars[pillar_title] = data
+            final_pillars_score[pillar_title] = self.score.get('{}-score'.format(pid))
 
         matrix_pillars = {}
         for mpid, mpdata in matrix_pillars_raw.items():
-            mpillar = ScoreMatrixPillar.objects.get(id=mpid)
+            mpillar_title = get_title_or_none(ScoreMatrixPillar)(mpid)
+
             data = {}
-            for sid, msid in mpdata.items():
-                sector = Sector.objects.get(id=sid)
-                scale = ScoreMatrixScale.objects.get(id=msid)
+            matrix_final_data = matrix_pillars_final_raw.get(f'{mpid}-matrix-score') or ''
+            matrix_pillars_final_score[f'{mpillar_title}_final_score'] = matrix_final_data
+
+            for sector in Sector.objects.filter(template=self.project.assessment_template):
+                scale = None
+                sector_id = str(sector.id)
+                if sector_id in mpdata:
+                    scale = ScoreMatrixScale.objects.filter(id=mpdata[sector_id]).first()
                 data[sector.title] = {
-                    'value': scale.value,
-                    'title': '{} / {}'.format(
-                        scale.row.title, scale.column.title)
+                    'value': scale.value if scale else '',
+                    'title': f'{scale.row.title} / {scale.column.title}' if scale else ''
                 }
-            matrix_pillars[mpillar.title] = data
+            matrix_pillars[mpillar_title] = data
 
         return {
             'final_score': self.score.get('final_score'),
             'final_pillars_score': final_pillars_score,
             'pillars': pillars,
             'matrix_pillars': matrix_pillars,
+            'matrix_pillars_final_score': matrix_pillars_final_score,
         }
 
     def to_exportable_json(self):

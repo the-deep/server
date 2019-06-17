@@ -19,12 +19,12 @@ def get_stakeholders_info(assessment):
             data['schema']['type'] == MetadataField.MULTISELECT
         ):
             for value in data['value']:
-                key = value['key']
-                if key not in added_value:
+                key = value.get('key')
+                if key is not None and key not in added_value:
                     added_value.append(key)
                     stakeholders_info.append({
                         'name': value['name'],
-                        'type': value['type'],
+                        'type': data.get('schema', {}).get('name')
                     })
 
     return {

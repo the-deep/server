@@ -213,7 +213,7 @@ class NewExcelExporter:
         }
         """
         self.wb = WorkBook()
-        self.sheets_data = sheets_data
+        self.sheets_data = sheets_data or {}
         self.wb_sheets = {}
         self.sheet_headers = {}
 
@@ -285,8 +285,9 @@ class NewExcelExporter:
         # Add data rows
         self.add_data_rows_to_sheets()
 
-        # Remove default sheet
-        self.wb.wb.remove(self.wb.wb.get_sheet_by_name('Sheet'))
+        # Remove default sheet only if other sheets present
+        if self.wb_sheets:
+            self.wb.wb.remove(self.wb.wb.get_sheet_by_name('Sheet'))
 
         buffer = self.wb.save()
         filename = generate_filename('Assessments Export', 'xlsx')
