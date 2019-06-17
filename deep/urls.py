@@ -9,6 +9,7 @@ from django.contrib.auth import views as auth_views
 from django.contrib import admin
 from django.conf import settings
 from rest_framework import routers
+from django_otp.admin import OTPAdminSite
 
 # import autofixture
 
@@ -275,6 +276,8 @@ API_PREFIX = r'^api/(?P<version>(v1))/'
 def get_api_path(path):
     return '{}{}'.format(API_PREFIX, path)
 
+
+admin.site.__class__ = OTPAdminSite
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
