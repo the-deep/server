@@ -33,6 +33,7 @@ class ProjectAdmin(VersionAdmin):
         'title', 'category_editor', 'analysis_framework',
         'assessment_template', 'members_count', 'associated_regions',
     ]
+    list_filter = ('assessment_template',)
     inlines = [ProjectMembershipInline,
                ProjectUserGroupMembershipInline,
                ProjectJoinRequestInline]
