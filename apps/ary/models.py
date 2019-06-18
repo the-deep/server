@@ -359,6 +359,7 @@ class Assessment(UserResource, ProjectEntityMixin):
     methodology = JSONField(default=None, blank=True, null=True)
     summary = JSONField(default=None, blank=True, null=True)
     score = JSONField(default=None, blank=True, null=True)
+    questionnaire = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
         return str(self.lead)
@@ -588,6 +589,29 @@ class Assessment(UserResource, ProjectEntityMixin):
             'matrix_pillars': matrix_pillars,
             'matrix_pillars_final_score': matrix_pillars_final_score,
         }
+
+    def get_questionnaire_json(self, questionnaire_subsectors=None):
+        # TODO: make questionnaires common, need not be queried for each assessment
+        # TODO: use questionnaire_subusectors
+        template = self.project.assessment_template
+        raw_questionnaire = self.questionnaire or {}
+
+        questionnaire_subsectors = ScoreQuestionnaireSubSector.objects.filter(
+            sector__template=template
+        ).prefetch_related('sector', 'scorequestionnaire_set')
+
+        questionnaire_json = {}
+
+        for subsector in questionnaire_subsectors:
+            method = subsector.sector.method
+
+            questionnaire_json[method] = questionnaire_json.get(method) or {}
+            subsector_data = {}
+            for question in subsector.scorequestionnaire_set.all():
+                subsector_data[question.text] = (raw_questionnaire.get(method) or {}).get(question.id)
+            questionnaire_json[method][subsector.title] = subsector_data
+
+        return questionnaire_json
 
     def to_exportable_json(self):
         if not self.lead:
