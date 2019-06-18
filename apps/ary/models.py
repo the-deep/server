@@ -600,6 +600,10 @@ class Assessment(UserResource, ProjectEntityMixin):
             sector__template=template
         ).prefetch_related('sector', 'scorequestionnaire_set')
 
+        questionnaire_sectors = ScoreQuestionnaireSector.objects.filter(
+            template=template
+        )
+
         questionnaire_json = {}
 
         for subsector in questionnaire_subsectors:
@@ -607,10 +611,26 @@ class Assessment(UserResource, ProjectEntityMixin):
 
             questionnaire_json[method] = questionnaire_json.get(method) or {}
             subsector_data = {}
+            raw_data = raw_questionnaire.get(method) or {}
             for question in subsector.scorequestionnaire_set.all():
-                subsector_data[question.text] = (raw_questionnaire.get(method) or {}).get(question.id)
+                subsector_data[question.text] = raw_data.get(question.id)
             questionnaire_json[method][subsector.title] = subsector_data
 
+        methods = questionnaire_json.keys()
+
+        # Add Method summaries
+        for method in methods:
+            raw_data = raw_questionnaire.get(method) or {}
+            questionnaire_json[method][f'{method}_score'] = {
+                'all_quality_criteria': raw_data.get('all-quality-criteria', {}).get('value'),
+                'minimum_requirement': raw_data.get('minimum-requirements', {}).get('value'),
+                'use': raw_data.get('use-criteria', {}).get('value'),
+            }
+
+            questionnaire_json[method]['breakdown_of_quality_criteria'] = {
+                x.title: raw_data.get(f'sector-{x.id}')
+                for x in questionnaire_sectors
+            }
         return questionnaire_json
 
     def to_exportable_json(self):
