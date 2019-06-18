@@ -50,10 +50,12 @@ def get_export_data(assessment):
         # Add HNO and CNA
         'hno': {
             **meta_data,
+            **get_assessment_export_summary(assessment),
             **questionnaire['hno']
         },
         'cna': {
             **meta_data,
+            **get_assessment_export_summary(assessment),
             **questionnaire['cna']
         }
     }
