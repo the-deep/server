@@ -25,6 +25,7 @@ from .affected_groups_info import (
 
 def get_export_data(assessment):
     meta_data = get_assessment_meta(assessment)
+    questionnaire = assessment.get_questionnaire_json()
     return {
         'summary': {
             **meta_data,
@@ -46,6 +47,17 @@ def get_export_data(assessment):
             **meta_data,
             **get_affected_groups_info(assessment),
         },
+        # Add HNO and CNA
+        'hno': {
+            **meta_data,
+            **get_assessment_export_summary(assessment),
+            **questionnaire['hno']
+        },
+        'cna': {
+            **meta_data,
+            **get_assessment_export_summary(assessment),
+            **questionnaire['cna']
+        }
     }
 
 
@@ -90,6 +102,8 @@ def normalize_assessment(assessment_export_data):
         'affected_groups': new_affected_sheet,
         'locations': new_locations_sheet,
         'data_collection_technique': new_techniques_sheet,
+        'hno': {k: [v] for k, v in assessment_export_data['hno'].items()},
+        'cna': {k: [v] for k, v in assessment_export_data['cna'].items()},
     }
 
 
