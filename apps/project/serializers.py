@@ -293,8 +293,6 @@ class ProjectSerializer(RemoveNullFieldsMixin,
     )
     status_title = serializers.ReadOnlyField(source='status.title')
 
-    is_private = serializers.BooleanField()
-
     class Meta:
         model = Project
         exclude = ('members', )
