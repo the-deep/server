@@ -120,6 +120,7 @@ def generate_chart(field, chart_type, images_format=['svg']):
         params['data'] = df
         if field.type == Field.STRING:  # NOTE: revered is used for ascending order
             params['x_params']['autorange'] = 'reversed'
+            params['data']['value'] = params['data']['value'].str.slice(0, 30) + '...'  # Pre slice with ellipses
         elif field.type == Field.GEO:
             adjust_df = pd.DataFrame([
                 {'value': 0, 'count': 0},   # Count 0 is min's max value
