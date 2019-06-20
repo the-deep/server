@@ -120,6 +120,12 @@ def generate_chart(field, chart_type, images_format=['svg']):
         params['data'] = df
         if field.type == Field.STRING:  # NOTE: revered is used for ascending order
             params['x_params']['autorange'] = 'reversed'
+        elif field.type == Field.GEO:
+            adjust_df = pd.DataFrame([
+                {'value': 0, 'count': 0},   # Count 0 is min's max value
+                {'value': 0, 'count': 5},   # Count 5 is max's min value
+            ])
+            params['data'] = params['data'].append(adjust_df, ignore_index=True)
         elif field.type == Field.DATETIME:
             if df['value'].count() > 10:
                 params['x_params']['tickformat'] = '%d-%m-%Y'
