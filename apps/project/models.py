@@ -231,8 +231,8 @@ class Project(UserResource):
         # excludes the the private projects that the user is not member of
 
         if annotated:
-            return Project.get_annotated().exclude(Q(is_private=True) & ~Q(members=user)).all()
-        return Project.objects.exclude(Q(is_private=True) & ~Q(members=user)).all()
+            return Project.get_annotated().exclude(Q(is_private=True) & ~Q(members=user))
+        return Project.objects.exclude(Q(is_private=True) & ~Q(members=user))
 
     @staticmethod
     def get_for_member(user, annotated=False):
@@ -262,7 +262,7 @@ class Project(UserResource):
         ).distinct()
 
     def can_get(self, user):
-        return Project.is_member(user)
+        return self.is_member(user) or not self.is_private
 
     def is_member(self, user):
         return self in Project.get_for_member(user)
