@@ -113,6 +113,7 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
         fields = ('__all__')
 
     def validate_project(self, project):
+        print('SELF.IS PRIVATE', self.is_private)
         try:
             project = Project.objects.get(id=project)
         except Project.DoesNotExist:
@@ -125,6 +126,8 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
         return project.id
 
     def create(self, validated_data):
+        print(dir(self))
+        raise Exception
         project = validated_data.pop('project', None)
         af = super().create(validated_data)
 

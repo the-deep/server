@@ -2,12 +2,9 @@ from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Q
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.conf import settings
 
 from gallery.models import File
-from project.models import Project, ProjectMembership
 
 
 class Profile(models.Model):
@@ -32,7 +29,7 @@ class Profile(models.Model):
     )
 
     last_active_project = models.ForeignKey(
-        Project, null=True,
+        'project.Project', null=True,
         blank=True, default=None,
         on_delete=models.SET_NULL,
     )
@@ -120,30 +117,4 @@ class Feature(models.Model):
     email_domains = models.ManyToManyField(EmailDomain, blank=True)
 
     def __str__(self):
-        return str(self.title)
-
-
-def assign_to_default_project(user):
-    """
-    Get a default project if any and add the user as its member
-    """
-    default_projects = Project.objects.filter(is_default=True)
-    for default_project in default_projects:
-        ProjectMembership.objects.create(
-            member=user,
-            project=default_project,
-            role='normal',
-        )
-
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, created, **kwargs):
-    """
-    Signal to auto create or save user profile instance whenever
-    the user is saved.
-    """
-    if created or Profile.objects.filter(user=instance).count() == 0:
-        Profile.objects.create(user=instance)
-        assign_to_default_project(instance)
-    else:
-        instance.profile.save()
+        return self.feature.title
