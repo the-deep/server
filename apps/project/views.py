@@ -27,7 +27,7 @@ from project.permissions import (
     AcceptRejectPermission,
     MembershipModifyPermission,
 )
-from entry.stats import get_entries_viz_data
+from entry.stats import get_project_entries_stats
 from tabular.models import Field
 from project.filter_set import (
     ProjectFilterSet,
@@ -191,7 +191,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
         Get viz data for project entries:
         """
         project = self.get_object()
-        return response.Response(get_entries_viz_data(project))
+        if (
+                project.analysis_framework is None or
+                project.analysis_framework.properties is None or
+                project.analysis_framework.properties.get('stats_config') is None
+        ):
+            return response.Response(
+                {'error': f'No configuration provided for current Project: {project.title}, Contact Admin'},
+                status=404,
+            )
+
+        return response.Response(
+            get_project_entries_stats(project)
+        )
 
     """
     Join request to this project
