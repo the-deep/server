@@ -1,8 +1,7 @@
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 from user_resource.models import UserResource
-
-from gallery.models import File
+from user.models import User
 
 
 class AnalysisFramework(UserResource):
@@ -14,16 +13,12 @@ class AnalysisFramework(UserResource):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
-    # FIXME: Remove snapshots
-    snapshot_one = models.ForeignKey(
-        File, on_delete=models.SET_NULL,
-        related_name='page_one_framework',
-        null=True, blank=True, default=None,
-    )
-    snapshot_two = models.ForeignKey(
-        File, on_delete=models.SET_NULL,
-        related_name='page_two_framework',
-        null=True, blank=True, default=None,
+    is_private = models.BooleanField(default=False)
+
+    members = models.ManyToManyField(
+        User, blank=True,
+        through_fields=('framework', 'member'),
+        through='AnalysisFrameworkMembership'
     )
 
     def __str__(self):
@@ -235,3 +230,52 @@ class Exportable(models.Model):
 
     def can_modify(self, user):
         return self.analysis_framework.can_modify(user)
+
+
+class AnalysisFrameworkRole(models.Model):
+    """
+    Roles for AnalysisFramework
+    """
+
+    title = models.CharField(max_length=255, unique=True)
+
+    # The following field allows user to add other users to the framework and
+    # assign appropriate permissions
+    can_add_user = models.BooleanField(default=False)
+
+    can_clone_framework = models.BooleanField(default=False)
+
+    can_make_public = models.BooleanField(default=False)
+
+    can_edit_framework = models.BooleanField(default=False)
+
+    can_use_in_other_projects = models.BooleanField(default=False)
+
+    is_default_role = models.BooleanField(default=False)
+
+    @classmethod
+    def get_default_role(cls):
+        role = cls.objects.filter(is_default_role=True).first()
+        return role and role.id
+
+
+class AnalysisFrameworkMembership(models.Model):
+    member = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='member'
+    )
+    framework = models.ForeignKey(AnalysisFramework, on_delete=models.CASCADE)
+    role = models.ForeignKey(
+        AnalysisFrameworkRole,
+        default=AnalysisFrameworkRole.get_default_role,
+        on_delete=models.CASCADE,
+        null=True,
+    )
+    joined_at = models.DateTimeField(auto_now_add=True)
+    added_by = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        null=True, blank=True, default=None,
+    )
+
+    class Meta:
+        unique_together = ('member', 'framework')
