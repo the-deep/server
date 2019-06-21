@@ -1,12 +1,18 @@
 from django.contrib.gis.db.models import Extent
+from django.utils import timezone
 
 from geo.models import GeoArea
 from analysis_framework.models import Widget, Filter
 
 from .models import Entry
 
+CALC_SUPPORTED_WIDGETS = [
+    'matrix1dWidget', 'matrix2dWidget', 'scaleWidget', 'multiselectWidget', 'organigramWidget', 'geoWidget',
+    'conditionalWidget',
+]
 
-def get_widget_data(config, widget_name, skip_data=False):
+
+def _get_widget_meta(config, widget_name, skip_data=False):
     widget = Widget.objects.get(pk=config[widget_name]['pk'])
 
     def _return(data):
@@ -29,6 +35,7 @@ def get_widget_data(config, widget_name, skip_data=False):
         )
 
     data = widget.properties['data']
+    # TODO: Add validator for this
     selectors = config[widget_name].get('selectors')
     if selectors:
         for selector in selectors + ['properties', 'data']:
@@ -36,63 +43,62 @@ def get_widget_data(config, widget_name, skip_data=False):
     return _return(data)
 
 
-CALC_SUPPORTED_WIDGETS = [
-    'matrix1dWidget', 'matrix2dWidget', 'scaleWidget', 'multiselectWidget', 'organigramWidget', 'geoWidget',
-    'conditionalWidget',
-]
+def _get_attribute_data(collector, attribute, cd_widget_map):
 
+    def _get_widget_value(w_value, widget_type, widget_pk=None):
+        value = None
+        if widget_type in ['scaleWidget', 'multiselectWidget', 'organigramWidget', 'geoWidget']:
+            value = w_value
+        elif widget_type == 'conditionalWidget':
+            cd_config = cd_widget_map.get(widget_pk)
+            if cd_config is not None:
+                selected_widget_key = cd_config['widget_key']
+                selected_widget_type = cd_config['widget_type']
+                selected_widget_pk = cd_config.get('widget_pk')
+                if w_value.get(selected_widget_key):
+                    value = _get_widget_value(
+                        w_value[selected_widget_key]['data']['value'],
+                        selected_widget_type,
+                        selected_widget_pk,
+                    )
+        elif widget_type in ['matrix1dWidget', 'matrix2dWidget']:
+            context_keys = [
+                f'{widget_pk}-{_value}'
+                for _value in (
+                    w_value.keys() if isinstance(w_value, dict) else []
+                )
+            ]
+            sectors_keys = []
+            if widget_type == 'matrix2dWidget':  # Collect sector data from here
+                for pillar_key, pillar in w_value.items():
+                    for subpillar_key, subpillar in pillar.items():
+                        for sector_key in subpillar.keys():
+                            sectors_keys.append([
+                                f'{widget_pk}-{pillar_key}',
+                                subpillar_key, sector_key,
+                            ])
+            value = {
+                'context_keys': context_keys,
+                'sectors_keys': sectors_keys,
+            }
+        return value
 
-def _get_entry_widget_data(counts, widget, options):
-    key = widget['widget'].key
-    if widget['widget'].widget_id == 'conditionalWidget':
-        key = widget['config']['key']
-    return [
-        counts.get('{}-{}'.format(key, element['id']), 0)
-        for element in options
-    ]
+    widget_type = attribute.widget.widget_id
+    widget_pk = attribute.widget.pk
+    data = attribute.data
 
-
-def calc_widget_count(selected_sector, entry_counts, counts, data, widget_type, widget_key):
-    # print('{} ==> {}'.format(widget_type, data.get('value') if data else None))
     if widget_type not in CALC_SUPPORTED_WIDGETS or data is None or data.get('value') is [None, {}, []]:
         return
 
-    value = data['value']
-    keys = []
-    if widget_type in ['matrix1dWidget', 'matrix2dWidget']:
-        keys = value.keys() if isinstance(value, dict) else []
-        if widget_type == 'matrix2dWidget':  # Collect sector data from here
-            for pillar_key, pillar in value.items():
-                for subpillar_key, subpillar in pillar.items():
-                    for sector_key in subpillar.keys():
-                        if sector_key not in selected_sector:
-                            selected_sector.append(sector_key)
-
-            # entry_counts
-    elif widget_type == 'scaleWidget':
-        keys = [value]
-    elif widget_type in ['multiselectWidget', 'organigramWidget', 'geoWidget']:
-        keys = value
-    elif widget_type == 'conditionalWidget':
-        selected_widget_key = value.get('selected_widget_key')
-        widget_key = selected_widget_key
-        if value.get(selected_widget_key):
-            value = value[selected_widget_key]['data']['value']
-            keys = value or [] if isinstance(value, list) else [value]
-
-    for key in keys:
-        count_key = '{}-{}'.format(widget_key, key)
-        entry_counts[count_key] = counts[count_key] = counts.get(count_key, 0) + 1
+    collector[widget_pk] = _get_widget_value(data['value'], widget_type, widget_pk)
 
 
-def get_entries_viz_data(project):
+def get_project_entries_stats(project):
     """
-    NOTE: This is a custom API made for Entries VIz and only works for certain projects.
-    """
-    entries = Entry.objects.filter(project=project)
+    NOTE: This is a custom API made for Entries VIz and only works for certain AF.
 
-    # config = project.analysis_framework.properties.get('stats_config', {})
-    config = {
+    # Sample config
+    default_config = {
         'widget_1d': {
             'pk': 2679,
         },
@@ -104,8 +110,12 @@ def get_entries_viz_data(project):
         },
         'severity_widget': {
             'pk': 2902,
+            'is_conditional_widget': True,
             'selectors': ['widgets', 0, 'widget'],
-            'key': 'scalewidget-ljlk28coxz7sufml',
+            'widget_key': 'scalewidget-ljlk28coxz7sufml',
+            # TODO: Add validation here
+            'widget_type': 'scaleWidget',
+            'widget_pk': None,  # Required if widget_type is matrix
         },
         'reliability_widget': {
             'pk': 2683,
@@ -117,15 +127,22 @@ def get_entries_viz_data(project):
             'pk': 2681,
         },
     }
+    """
+
+    config = project.analysis_framework.properties.get('stats_config')
 
     widgets_pk = [info['pk'] for info in config.values()]
+    cd_widget_map = {
+        w_config['pk']: w_config for w_config in config.values() if w_config.get('is_conditional_widget')
+    }
 
-    w1d = get_widget_data(config, 'widget_1d')
-    w2d = get_widget_data(config, 'widget_2d')
-    specific_needs_groups_w = get_widget_data(config, 'specific_needs_groups_widget')
-    severity_w = get_widget_data(config, 'severity_widget')
-    reliability_w = get_widget_data(config, 'reliability_widget')
-    ag_w = get_widget_data(config, 'affected_groups_widget')
+    w1d = _get_widget_meta(config, 'widget_1d')
+    w2d = _get_widget_meta(config, 'widget_2d')
+    specific_needs_groups_w = _get_widget_meta(config, 'specific_needs_groups_widget')
+    severity_w = _get_widget_meta(config, 'severity_widget')
+    reliability_w = _get_widget_meta(config, 'reliability_widget')
+    ag_w = _get_widget_meta(config, 'affected_groups_widget')
+    geo_w = _get_widget_meta(config, 'geo_widget', skip_data=True)
 
     context_array = [
         {
@@ -195,41 +212,44 @@ def get_entries_viz_data(project):
             'bounds': [geoarea['extent'][:2], geoarea['extent'][2:]],
         })
 
-    """
-    widget_to_support = [
-        widget.widget_id
-        for widget in [
-            w1d, w2d,
-            ag_w, specific_needs_groups_w,
-            severity_w, reliability_w,
-        ]
-    ]
-
-    if set(widget_to_support) != set(CALC_SUPPORTED_WIDGETS):
-        for widget in widget_to_support:
-            if widget not in CALC_SUPPORTED_WIDGETS:
-                print('>> This widget should be supported -> {}'.format(widget))
-    """
+    meta = {
+        'data_calculated': timezone.now(),
+        'context_array': context_array,
+        'framework_groups_array': framework_groups_array,
+        'sector_array': sector_array,
+        'affected_groups_array': affected_groups_array,
+        'specific_needs_groups_array': specific_needs_groups_array,
+        'severity_units': severity_units,
+        'reliability_units': reliability_units,
+        'geo_array': geo_array,
+    }
 
     data = []
+    entries = Entry.objects.filter(project=project)
     for entry in entries.all():
-        for attribute in entry.attributes_set.filter(widget__pk_in=widgets_pk):
-            pass
+        collector = {}
+        for attribute in entry.attribute_set.filter(widget_id__in=widgets_pk).prefetch_related('widget'):
+            _get_attribute_data(collector, attribute, cd_widget_map)
+
         data.append({
+            'pk': entry.pk,
             'date': entry.created_at,
+            'severity': collector.get(severity_w['pk']),
+            'reliability': collector.get(reliability_w['pk']),
+            'geo': collector.get(geo_w['pk'], []),
+            'special_needs': collector.get(specific_needs_groups_w['pk'], []),
+            'affected_groups': collector.get(ag_w['pk'], []),
+            'context': (
+                collector.get(w1d['pk'], {}).get('context_keys', []) +
+                collector.get(w2d['pk'], {}).get('context_keys', [])
+            ),
+            'sector': (
+                collector.get(w1d['pk'], {}).get('sectors_keys', []) +
+                collector.get(w2d['pk'], {}).get('sectors_keys', [])
+            ),
         })
 
     return {
-        'meta_data': {
-            'total_entries': entries.count(),
-            'context_array': context_array,
-            'framework_groups_array': framework_groups_array,
-            'sector_array': sector_array,
-            'geo_array': geo_array,
-            'affected_groups_array': affected_groups_array,
-            'specific_needs_groups_array': specific_needs_groups_array,
-            'severity_units': severity_units,
-            'reliability_units': reliability_units,
-        },
+        'meta': meta,
         'data': data,
     }

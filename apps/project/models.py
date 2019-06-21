@@ -164,6 +164,10 @@ class Project(UserResource):
         on_delete=models.SET_NULL,
     )
 
+    # entry_stats = models.FileField(
+    #     upload_to='entry-stats/', max_length=255, null=True, blank=True, default=None,
+    # )
+
     def __str__(self):
         return self.title
 
