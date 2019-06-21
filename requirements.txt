@@ -34,7 +34,7 @@ geopandas==0.4.0
 geopandas==0.4.0
 google-api-python-client==1.7.8
 ipython==7.2.0
-kombu==4.2.2.post1
+kombu==4.6.3
 lxml==4.3.0
 matplotlib==3.0.2
 mock==2.0.0
@@ -52,7 +52,7 @@ pytest==4.2.0
 python-dateutil==2.8.0
 python-docx==0.8.10
 readability-lxml==0.7
-redis==3.1.0
+redis==3.2.0
 requests==2.21.0
 selenium==3.141.0
 sentry-sdk==0.7.14
