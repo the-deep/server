@@ -75,6 +75,46 @@ class Profile(models.Model):
         # return settings.LANGUAGE_CODE
 
 
+class Feature(models.Model):
+    RELEASED = 'released'
+    EXPERIMENTAL = 'experimental'
+    EARLY_ACCESS = 'early_access'
+
+    FEATURE_TYPES = (
+        (RELEASED, 'Released'),
+        (EXPERIMENTAL, 'Experimental'),
+        (EARLY_ACCESS, 'Early access'),
+    )
+
+    PRIVATE_PROJECT = 'private_project'
+    LEAD_GRID_VIEW = 'lead_grid_view'
+    TABULAR = 'tabular'
+    ZOOMABLE_IMAGE = 'zoomable_image'
+
+    FEATURE_KEYS = (
+        (PRIVATE_PROJECT, 'Private projects'),
+        (LEAD_GRID_VIEW, 'Lead grid view'),
+        (TABULAR, 'Tabular'),
+        (ZOOMABLE_IMAGE, 'Zoomable image'),
+    )
+
+    key = models.CharField(max_length=255, unique=True, choices=FEATURE_KEYS)
+    title = models.CharField(max_length=255)
+    feature_type = models.CharField(max_length=128, choices=FEATURE_TYPES)
+
+
+class EmailDomain(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    domain_name = models.CharField(max_length=255)
+
+
+class FeatureAccess(models.Model):
+    feature = models.OneToOneField(Feature, on_delete=models.CASCADE)
+    users = models.ManyToManyField(User, blank=True)
+    email_domians = models.ManyToManyField(EmailDomain, blank=True)
+
+
 def assign_to_default_project(user):
     """
     Get a default project if any and add the user as its member
