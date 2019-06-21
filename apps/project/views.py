@@ -189,6 +189,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
     )
     def join_project(self, request, pk=None, version=None):
         project = self.get_object()
+
+        # Forbid join requests for private project
+        if (project.is_private):
+            return response.Response(None, status=status.HTTP_403_FORBIDDEN)
+
         join_request = ProjectJoinRequest.objects.create(
             project=project,
             requested_by=request.user,

@@ -63,6 +63,74 @@ class ProjectApiTest(TestCase):
         self.assertEqual(membership.member.pk, self.user.pk)
         self.assertEqual(membership.role, self.admin_role)
 
+    def create_project(self, title, is_private):
+        url = '/api/v1/projects/'
+        data = {
+            'title': title,
+            'is_private': is_private,
+        }
+
+        response = self.client.post(url, data)
+        return response
+
+    def test_get_projects(self):
+        self.authenticate()
+        self.create_project('Project 1', False)
+        self.create_project('Project 2', False)
+        self.create_project('Project 3', False)
+        self.create_project('Project 4', False)
+        self.create_project('Private Project 1', True)
+
+        response = self.client.get('/api/v1/projects/')
+        self.assertEqual(len(response.data['results']), 5)
+
+        other_user = self.create(User)
+        self.authenticate(other_user)
+
+        # self.create_project('Project 5', False)
+        # self.create_project('Private Project 3', True)
+
+        response = self.client.get('/api/v1/projects/')
+        self.assertEqual(len(response.data['results']), 4)
+
+    def test_create_private_project(self):
+        # project_count = Project.objects.count()
+        url = '/api/v1/projects/'
+        data = {
+            'title': 'Test private project',
+            'is_private': 'true',
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        self.assertEqual(response.data['is_private'], True)
+        self.assertEqual(Project.objects.last().is_private, True)
+
+    def test_get_private_project_detail_unauthorized(self):
+        # project_count = Project.objects.count()
+        url = '/api/v1/projects/'
+        data = {
+            'title': 'Test private project',
+            'is_private': 'true',
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        self.assertEqual(response.data['is_private'], True)
+        self.assertEqual(Project.objects.last().is_private, True)
+
+        other_user = self.create(User)
+        self.authenticate(other_user)
+
+        new_private_project_id = response.data['id']
+        response = self.client.get(f'/api/v1/projects/{new_private_project_id}/')
+
+        self.assert_404(response)
+
     def test_project_get_with_user_group_field(self):
         # TODO: can make this more generic for other fields as well
         project = self.create(
