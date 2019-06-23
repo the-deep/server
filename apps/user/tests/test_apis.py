@@ -4,7 +4,12 @@ from project.models import (
     ProjectMembership,
     ProjectJoinRequest,
 )
-from user.models import User
+from user.models import (
+    User,
+    EmailDomain,
+    Feature,
+    FeatureAccess,
+)
 from user.notifications import Notification
 
 
@@ -152,3 +157,26 @@ class UserApiTests(TestCase):
         result = response.data['results'][0]
         self.assertEqual(result['type'], Notification.PROJECT_JOIN_REQUEST)
         self.assertEqual(result['details']['id'], request.id)
+
+    def test_user_preference_feature_access(self):
+        user_fhx = self.create(User, email='fhx@togglecorp.com')
+        user_az273 = self.create(User, email='az273@tc.com')
+        user_dummy = self.create(User, email='dummy@test.com')
+
+        test_domain = self.create(EmailDomain, title='Togglecorp', domain_name='togglecorp.com')
+        test_feature = self.create(Feature, feature_type=Feature.RELEASED,
+                                   key=Feature.PRIVATE_PROJECT, title='Private project')
+        self.create(FeatureAccess, feature=test_feature,
+                    email_domains=[test_domain], users=[user_dummy])
+
+        self.authenticate(user_fhx)
+        response = self.client.get('/api/v1/users/me/preferences/')
+        self.assertEqual(len(response.data['accessible_features']), 1)
+
+        self.authenticate(user_az273)
+        response = self.client.get('/api/v1/users/me/preferences/')
+        self.assertEqual(len(response.data['accessible_features']), 0)
+
+        self.authenticate(user_dummy)
+        response = self.client.get('/api/v1/users/me/preferences/')
+        self.assertEqual(len(response.data['accessible_features']), 1)
