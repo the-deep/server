@@ -59,7 +59,7 @@ class Profile(models.Model):
     def get_accessible_features(self):
         user_domain = self.user.email.split('@')[1]
         user_accessible_features = FeatureAccess.objects.filter(
-            Q(users=self.user) | Q(email_domains__domain_name__endswith=user_domain)
+            Q(users=self.user) | Q(email_domains__domain_name__exact=user_domain)
         )
 
         return user_accessible_features
