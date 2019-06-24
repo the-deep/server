@@ -50,8 +50,6 @@ class Profile(models.Model):
         default=list,
         blank=True,
     )
-    is_experimental = models.BooleanField(default=False)
-    is_early_access = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.user)
