@@ -12,6 +12,7 @@ from lead.models import Lead
 from analysis_framework.serializers import AnalysisFrameworkSerializer
 from geo.serializers import SimpleRegionSerializer
 from tabular.serializers import FieldProcessedOnlySerializer
+from user.models import User
 
 from .models import (
     Entry, Attribute, FilterData, ExportData
@@ -168,3 +169,49 @@ class EditEntriesDataSerializer(RemoveNullFieldsMixin,
                 region.calc_cache()
             options[str(region.id)] = region.geo_options
         return options
+
+
+class ComprehensiveUserSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
+    name = serializers.CharField(
+        source='profile.get_display_name',
+        read_only=True,
+    )
+    organization = serializers.CharField(source='profile.organization')
+
+    class Meta:
+        model = User
+        fields = ('id', 'name', 'email', 'organization',)
+
+
+class ComprehensiveAttributeSerializer(
+        RemoveNullFieldsMixin,
+        DynamicFieldsMixin,
+        serializers.ModelSerializer,
+):
+    type = serializers.CharField(source='widget.widget_id')
+    value = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Attribute
+        fields = ('id', 'type', 'value')
+
+    def get_value(self, instance):
+        return str(instance.data)
+
+
+class ComprehensiveEntriesSerializer(
+        RemoveNullFieldsMixin,
+        DynamicFieldsMixin,
+        serializers.ModelSerializer,
+):
+    tabular_field = serializers.HyperlinkedRelatedField(read_only=True, view_name='tabular_field-detail')
+    widgets = ComprehensiveAttributeSerializer(source='attribute_set', many=True, read_only=True)
+    created_by = ComprehensiveUserSerializer()
+    modified_by = ComprehensiveUserSerializer()
+
+    class Meta:
+        model = Entry
+        fields = (
+            'id', 'created_at', 'modified_at', 'entry_type', 'excerpt', 'image', 'tabular_field',
+            'widgets', 'created_by', 'modified_by',
+        )
