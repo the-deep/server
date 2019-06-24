@@ -134,10 +134,6 @@ class UserPreferencesSerializer(RemoveNullFieldsMixin,
         allow_null=True,
         required=False,
     )
-    is_experimental = serializers.BooleanField(
-        source='profile.is_experimental')
-    is_early_access = serializers.BooleanField(
-        source='profile.is_early_access')
     language = serializers.CharField(source='profile.language',
                                      read_only=True)
     fallback_language = serializers.CharField(
@@ -155,7 +151,7 @@ class UserPreferencesSerializer(RemoveNullFieldsMixin,
         model = User
         fields = ('display_name', 'username', 'email', 'last_active_project',
                   'display_picture', 'is_superuser', 'language', 'accessible_features',
-                  'fallback_language', 'is_experimental', 'is_early_access')
+                  'fallback_language',)
 
 
 class PasswordResetSerializer(RemoveNullFieldsMixin,

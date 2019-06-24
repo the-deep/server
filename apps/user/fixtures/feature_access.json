@@ -11,21 +11,13 @@
         "model": "user.feature",
         "pk": 2,
         "fields": {
-            "key": "lead_grid_view",
-            "title": "Lead grid view"
-        }
-    },
-    {
-        "model": "user.feature",
-        "pk": 3,
-        "fields": {
             "key": "tabular",
             "title": "Tabular"
         }
     },
     {
         "model": "user.feature",
-        "pk": 4,
+        "pk": 3,
         "fields": {
             "key": "zoomable_image",
             "title": "Zoomable image"
@@ -50,13 +42,6 @@
         "pk": 3,
         "fields": {
             "feature": 3
-        }
-    },
-    {
-        "model": "user.featureaccess",
-        "pk": 4,
-        "fields": {
-            "feature": 4
         }
     }
 ]

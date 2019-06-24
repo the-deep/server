@@ -50,8 +50,6 @@ class Profile(models.Model):
         default=list,
         blank=True,
     )
-    is_experimental = models.BooleanField(default=False)
-    is_early_access = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.user)
@@ -96,13 +94,11 @@ class Feature(models.Model):
     )
 
     PRIVATE_PROJECT = 'private_project'
-    LEAD_GRID_VIEW = 'lead_grid_view'
     TABULAR = 'tabular'
     ZOOMABLE_IMAGE = 'zoomable_image'
 
     FEATURE_KEYS = (
         (PRIVATE_PROJECT, 'Private projects'),
-        (LEAD_GRID_VIEW, 'Lead grid view'),
         (TABULAR, 'Tabular'),
         (ZOOMABLE_IMAGE, 'Zoomable image'),
     )
