@@ -1,6 +1,7 @@
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.conf import settings
@@ -55,6 +56,14 @@ class Profile(models.Model):
     def __str__(self):
         return str(self.user)
 
+    def get_accessible_features(self):
+        user_domain = self.user.email.split('@')[1]
+        user_accessible_features = FeatureAccess.objects.filter(
+            Q(users=self.user) | Q(email_domains__domain_name__exact=user_domain)
+        )
+
+        return user_accessible_features
+
     def get_display_name(self):
         return self.user.get_full_name() if self.user.first_name \
             else self.user.username
@@ -73,6 +82,55 @@ class Profile(models.Model):
     def get_fallback_language(self):
         return None
         # return settings.LANGUAGE_CODE
+
+
+class Feature(models.Model):
+    RELEASED = 'released'
+    EXPERIMENTAL = 'experimental'
+    EARLY_ACCESS = 'early_access'
+
+    FEATURE_TYPES = (
+        (RELEASED, 'Released'),
+        (EXPERIMENTAL, 'Experimental'),
+        (EARLY_ACCESS, 'Early access'),
+    )
+
+    PRIVATE_PROJECT = 'private_project'
+    LEAD_GRID_VIEW = 'lead_grid_view'
+    TABULAR = 'tabular'
+    ZOOMABLE_IMAGE = 'zoomable_image'
+
+    FEATURE_KEYS = (
+        (PRIVATE_PROJECT, 'Private projects'),
+        (LEAD_GRID_VIEW, 'Lead grid view'),
+        (TABULAR, 'Tabular'),
+        (ZOOMABLE_IMAGE, 'Zoomable image'),
+    )
+
+    key = models.CharField(max_length=255, unique=True, choices=FEATURE_KEYS)
+    title = models.CharField(max_length=255)
+    feature_type = models.CharField(max_length=128, choices=FEATURE_TYPES)
+
+    def __str__(self):
+        return str(self.title)
+
+
+class EmailDomain(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    domain_name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return str(self.title)
+
+
+class FeatureAccess(models.Model):
+    feature = models.OneToOneField(Feature, on_delete=models.CASCADE)
+    users = models.ManyToManyField(User, blank=True)
+    email_domains = models.ManyToManyField(EmailDomain, blank=True)
+
+    def __str__(self):
+        return self.feature.title
 
 
 def assign_to_default_project(user):

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Profile, User
+from .models import Profile, User, Feature, EmailDomain, FeatureAccess
 
 
 class ProfileInline(admin.StackedInline):
@@ -43,3 +43,6 @@ class CustomUserAdmin(UserAdmin):
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Profile)
+admin.site.register(Feature)
+admin.site.register(EmailDomain)
+admin.site.register(FeatureAccess)
