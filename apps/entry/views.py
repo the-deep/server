@@ -15,9 +15,10 @@ from project.models import Project
 from lead.models import Lead
 
 from .models import (
-    Attribute, FilterData, ExportData,
+    Entry, Attribute, FilterData, ExportData,
 )
 from .serializers import (
+    ComprehensiveEntriesSerializer,
     EntrySerializer,
     EntryRetriveSerializer,
     EntryProccesedSerializer,
@@ -27,6 +28,7 @@ from .serializers import (
     ExportDataSerializer,
     EditEntriesDataSerializer,
 )
+from .pagination import ComprehensiveEntriesSetPagination
 from .filter_set import EntryFilterSet, get_filtered_entries
 from tabular.models import Field as TabularField
 import django_filters
@@ -188,3 +190,15 @@ class EntryOptionsView(views.APIView):
             ]
 
         return response.Response(options)
+
+
+class ComprehensiveEntriesViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Comprehensive API for Entries
+    """
+    serializer_class = ComprehensiveEntriesSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = ComprehensiveEntriesSetPagination
+
+    def get_queryset(self):
+        return Entry.get_for(self.request.user)
