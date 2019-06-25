@@ -10,6 +10,34 @@ class ProfileInline(admin.StackedInline):
     fk_name = 'user'
 
 
+class CustomFeature(admin.ModelAdmin):
+    def get_readonly_fields(self, request, obj=None):
+        # editing an existing object
+        if obj:
+            return self.readonly_fields + ('key', )
+        return self.readonly_fields
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class CustomFeatureAccess(admin.ModelAdmin):
+    def get_readonly_fields(self, request, obj=None):
+        # editing an existing object
+        if obj:
+            return self.readonly_fields + ('feature', )
+        return self.readonly_fields
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 class CustomUserAdmin(UserAdmin):
     inlines = (ProfileInline, )
     search_fields = (
@@ -41,6 +69,7 @@ class CustomUserAdmin(UserAdmin):
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Profile)
-admin.site.register(Feature)
+
 admin.site.register(EmailDomain)
-admin.site.register(FeatureAccess)
+admin.site.register(Feature, CustomFeature)
+admin.site.register(FeatureAccess, CustomFeatureAccess)
