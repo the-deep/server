@@ -123,7 +123,7 @@ class ProjectDashboardSerializer(RemoveNullFieldsMixin,
         fields = ('created_at', 'created_by', 'created_by_id', 'regions',
                   'top_sourcers', 'top_taggers', 'status', 'activity_log',
                   'number_of_users', 'number_of_leads', 'number_of_entries',
-                  'leads_activity', 'entries_activity'
+                  'leads_activity', 'entries_activity', 'is_private',
                   )
 
     def get_top_sourcers(self, project):
