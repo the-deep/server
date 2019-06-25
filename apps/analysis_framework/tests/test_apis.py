@@ -1,76 +1,34 @@
 from deep.tests import TestCase
-from analysis_framework.models import AnalysisFramework
+from analysis_framework.models import (
+    AnalysisFramework,
+    AnalysisFrameworkRole,
+    AnalysisFrameworkMembership,
+)
 from project.models import Project
 
 
 class AnalysisFrameworkTests(TestCase):
+
     def test_create_analysis_framework(self):
         project = self.create(Project, role=self.admin_role)
 
-        af_count = AnalysisFramework.objects.count()
         url = '/api/v1/analysis-frameworks/'
         data = {
             'title': 'Test AnalysisFramework Title',
             'project': project.id,
         }
 
-        self.authenticate()
-        response = self.client.post(url, data)
-        self.assert_201(response)
-
-        self.assertEqual(AnalysisFramework.objects.count(), af_count + 1)
-        self.assertEqual(response.data['title'], data['title'])
+        response = self.post_and_check_201(url, data, AnalysisFramework, ['title'])
 
         project = Project.objects.get(id=project.id)
         self.assertEqual(project.analysis_framework.id, response.data['id'])
 
-    def test_cant_create_private_framework_for_public_project(self):
-        project = self.create(Project, role=self.admin_role)
-
-        af_count = AnalysisFramework.objects.count()
-        url = '/api/v1/analysis-frameworks/'
-        data = {
-            'title': 'Private Framework',
-            'project': project.id,
-            'is_private': True
-        }
-
-        self.authenticate()
-        response = self.client.post(url, data)
-
-        # Can't create private framework for public
-        # project
-        self.assert_400(response)
-
-        self.assertEqual(AnalysisFramework.objects.count(), af_count + 1)
-        self.assertEqual(response.data['title'], data['title'])
-        self.assertEqual(response.data['is_private'], data['is_private'])
-
-        project = Project.objects.get(id=project.id)
-        self.assertEqual(project.analysis_framework.id, response.data['id'])
-
-    def test_create_private_framework_for_private_project(self):
-        project = self.create(Project, role=self.admin_role, is_private=True)
-
-        af_count = AnalysisFramework.objects.count()
-        url = '/api/v1/analysis-frameworks/'
-        data = {
-            'title': 'Private Framework',
-            'project': project.id,
-            'is_private': True
-        }
-
-        self.authenticate()
-        response = self.client.post(url, data)
-
-        self.assert_201(response)
-
-        self.assertEqual(AnalysisFramework.objects.count(), af_count + 1)
-        self.assertEqual(response.data['title'], data['title'])
-        self.assertEqual(response.data['is_private'], data['is_private'])
-
-        project = Project.objects.get(id=project.id)
-        self.assertEqual(project.analysis_framework.id, response.data['id'])
+        # test Group Membership created or not
+        assert AnalysisFrameworkMembership.objects.filter(
+            framework_id=response.data['id'],
+            member=self.user,
+            role=project.analysis_framework.get_or_create_owner_role(),
+        ).first() is not None, "Membership Should be created"
 
     def test_clone_analysis_framework(self):
         analysis_framework = self.create(AnalysisFramework)

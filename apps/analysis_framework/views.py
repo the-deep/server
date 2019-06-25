@@ -72,7 +72,7 @@ class AnalysisFrameworkCloneView(views.APIView):
         analysis_framework = AnalysisFramework.objects.get(
             id=af_id
         )
-        if not analysis_framework.can_get(request.user):
+        if not analysis_framework.can_clone(request.user):
             raise exceptions.PermissionDenied()
 
         new_af = analysis_framework.clone(

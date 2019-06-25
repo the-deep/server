@@ -4,7 +4,10 @@ from rest_framework import serializers
 from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
 from analysis_framework.models import (
-    AnalysisFramework, Widget, Filter, Exportable
+    AnalysisFramework,
+    AnalysisFrameworkRole,
+    AnalysisFrameworkMembership,
+    Widget, Filter, Exportable
 )
 from project.models import Project
 
@@ -113,7 +116,6 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
         fields = ('__all__')
 
     def validate_project(self, project):
-        print('SELF.IS PRIVATE', self.is_private)
         try:
             project = Project.objects.get(id=project)
         except Project.DoesNotExist:
@@ -126,8 +128,6 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
         return project.id
 
     def create(self, validated_data):
-        print(dir(self))
-        raise Exception
         project = validated_data.pop('project', None)
         af = super().create(validated_data)
 
@@ -137,6 +137,8 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
             project.modified_by = self.context['request'].user
             project.save()
 
+        owner_role = af.get_or_create_owner_role()
+        af.add_member(self.context['request'].user, owner_role)
         return af
 
     def get_is_admin(self, analysis_framework):
