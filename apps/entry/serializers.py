@@ -13,6 +13,7 @@ from analysis_framework.serializers import AnalysisFrameworkSerializer
 from geo.serializers import SimpleRegionSerializer
 from tabular.serializers import FieldProcessedOnlySerializer
 from user.models import User
+from .widgets.store import widget_store
 
 from .models import (
     Entry, Attribute, FilterData, ExportData
@@ -171,7 +172,7 @@ class EditEntriesDataSerializer(RemoveNullFieldsMixin,
         return options
 
 
-class ComprehensiveUserSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
+class ComprehensiveUserSerializer(serializers.ModelSerializer):
     name = serializers.CharField(
         source='profile.get_display_name',
         read_only=True,
@@ -184,28 +185,43 @@ class ComprehensiveUserSerializer(RemoveNullFieldsMixin, serializers.ModelSerial
 
 
 class ComprehensiveAttributeSerializer(
-        RemoveNullFieldsMixin,
         DynamicFieldsMixin,
         serializers.ModelSerializer,
 ):
+    widget_id = serializers.IntegerField(source='widget.pk')
     type = serializers.CharField(source='widget.widget_id')
     value = serializers.SerializerMethodField()
 
     class Meta:
         model = Attribute
-        fields = ('id', 'type', 'value')
+        fields = ('id', 'widget_id', 'type', 'value')
+
+    def _get_default_value(self, widget, data, widget_data):
+        return str(data)
 
     def get_value(self, instance):
-        return str(instance.data)
+        widget = instance.widget
+        widget_data = widget.properties and widget.properties.get('data')
+        data = instance.data or {}
+        # TODO: Remove default after all widget are defined
+        # return widget_store.get(
+        #     instance.widget.widget_id
+        # ).get_comprehensive_data(
+        #     widget, data, widget_data,
+        # )
+        return getattr(
+            widget_store.get(instance.widget.widget_id, {}),
+            'get_comprehensive_data',
+            self._get_default_value,
+        )(widget, data, widget_data)
 
 
 class ComprehensiveEntriesSerializer(
-        RemoveNullFieldsMixin,
         DynamicFieldsMixin,
         serializers.ModelSerializer,
 ):
     tabular_field = serializers.HyperlinkedRelatedField(read_only=True, view_name='tabular_field-detail')
-    widgets = ComprehensiveAttributeSerializer(source='attribute_set', many=True, read_only=True)
+    attributes = ComprehensiveAttributeSerializer(source='attribute_set', many=True, read_only=True)
     created_by = ComprehensiveUserSerializer()
     modified_by = ComprehensiveUserSerializer()
 
@@ -213,5 +229,5 @@ class ComprehensiveEntriesSerializer(
         model = Entry
         fields = (
             'id', 'created_at', 'modified_at', 'entry_type', 'excerpt', 'image', 'tabular_field',
-            'widgets', 'created_by', 'modified_by',
+            'attributes', 'created_by', 'modified_by',
         )

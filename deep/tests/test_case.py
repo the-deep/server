@@ -6,8 +6,11 @@ from rest_framework import (
 from jwt_auth.token import AccessToken, RefreshToken
 
 from user.models import User
-from project.models import ProjectRole
+from project.models import ProjectRole, Project
 from project.permissions import get_project_permissions_value
+from lead.models import Lead
+from entry.models import Entry
+from analysis_framework.models import AnalysisFramework
 
 
 class TestCase(test.APITestCase):
@@ -169,3 +172,22 @@ class TestCase(test.APITestCase):
             self.assertEqual(response.data[field], data[field])
 
         return response
+
+    def create_project(self):
+        analysis_framework = self.create(AnalysisFramework)
+        return self.create(
+            Project, analysis_framework=analysis_framework,
+            role=self.admin_role
+        )
+
+    def create_lead(self):
+        project = self.create_project()
+        return self.create(Lead, project=project)
+
+    def create_entry(self, **fields):
+        lead = self.create_lead()
+        return self.create(
+            Entry, lead=lead, project=lead.project,
+            analysis_framework=lead.project.analysis_framework,
+            **fields
+        )
