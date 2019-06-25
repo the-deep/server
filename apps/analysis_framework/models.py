@@ -59,20 +59,91 @@ class AnalysisFramework(UserResource):
         * user is super user, or
         * the framework belongs to a project where the user is admin
         """
-        import project
         return (
             self.created_by == user or
             user.is_superuser or
-            project.models.ProjectMembership.objects.filter(
-                project__in=self.project_set.all(),
+            AnalysisFrameworkMembership.objects.filter(
                 member=user,
-                role__in=project.models.ProjectRole.get_admin_roles(),
+                framework=self,
+                role__can_edit_framework=True
+            ).exists()
+        )
+
+    def can_clone(self, user):
+        print(f'PRIVATE {self.is_private}')
+        memship = AnalysisFrameworkMembership.objects.filter(member=user).first()
+        if memship:
+            print(memship.role.__dict__)
+        return (
+            not self.is_private or
+            AnalysisFrameworkMembership.objects.filter(
+                member=user,
+                framework=self,
+                role__can_clone_framework=True,
             ).exists()
         )
 
     def get_entries_count(self):
         from entry.models import Entry
         return Entry.objects.filter(analysis_framework=self).count()
+
+    def get_or_create_owner_role(self):
+        permission_fields = self.get_owner_permissions()
+        role, created = AnalysisFrameworkRole.objects.get_or_create(
+            **permission_fields,
+            defaults={
+                'title': 'Owner Role(' + ('Private)' if self.is_private else 'Public)'),
+            }
+        )
+        return role
+
+    def get_or_create_editor_role(self):
+        permission_fields = self.get_editor_permissions()
+
+        role, created = AnalysisFrameworkRole.objects.get_or_create(
+            **permission_fields,
+            defaults={
+                'title': 'Editor Role(' + ('Private)' if self.is_private else 'Public)'),
+            }
+        )
+        return role
+
+    def get_or_create_default_role(self):
+        # For now, same for both private and public, change later if needed
+        role, created = AnalysisFrameworkRole.objects.get_or_create(
+            is_default_role=True,
+            defaults={'can_use_in_other_projects': True}
+        )
+        return role
+
+    def add_member(self, user, role=None, added_by=None):
+        role = role or self.get_or_create_default_role()
+        return AnalysisFrameworkMembership.objects.get_or_create(
+            member=user,
+            framework=self,
+            defaults={
+                'added_by': added_by,
+                'role': role,
+            },
+        )
+
+    def get_editor_permissions(self):
+        permission_fields = {x: True for x in AnalysisFrameworkRole.PERMISSION_FIELDS}
+        permission_fields['can_add_user'] = False
+        permission_fields['can_make_public'] = False
+
+        if self.is_private:
+            permission_fields['can_clone_framework'] = False
+
+        return permission_fields
+
+    def get_owner_permissions(self):
+        permission_fields = {x: True for x in AnalysisFrameworkRole.PERMISSION_FIELDS}
+        permission_fields['can_clone_framework'] = False
+
+        if not self.is_private:
+            permission_fields['can_clone_framework'] = True
+        return permission_fields
 
 
 class Widget(models.Model):
@@ -236,6 +307,13 @@ class AnalysisFrameworkRole(models.Model):
     """
     Roles for AnalysisFramework
     """
+    PERMISSION_FIELDS = (
+        'can_add_user',
+        'can_clone_framework',
+        'can_make_public',
+        'can_edit_framework',
+        'can_use_in_other_projects',
+    )
 
     title = models.CharField(max_length=255, unique=True)
 
@@ -253,10 +331,18 @@ class AnalysisFrameworkRole(models.Model):
 
     is_default_role = models.BooleanField(default=False)
 
-    @classmethod
-    def get_default_role(cls):
-        role = cls.objects.filter(is_default_role=True).first()
-        return role and role.id
+    class Meta:
+        unique_together = (
+            'can_add_user',
+            'can_clone_framework',
+            'can_make_public',
+            'can_edit_framework',
+            'can_use_in_other_projects',
+            'is_default_role'
+        )
+
+    def __str__(self):
+        return self.title
 
 
 class AnalysisFrameworkMembership(models.Model):
@@ -267,9 +353,7 @@ class AnalysisFrameworkMembership(models.Model):
     framework = models.ForeignKey(AnalysisFramework, on_delete=models.CASCADE)
     role = models.ForeignKey(
         AnalysisFrameworkRole,
-        default=AnalysisFrameworkRole.get_default_role,
         on_delete=models.CASCADE,
-        null=True,
     )
     joined_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(
