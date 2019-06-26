@@ -1,5 +1,5 @@
 from drf_dynamic_fields import DynamicFieldsMixin
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
 
 from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
@@ -141,5 +141,47 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
         af.add_member(self.context['request'].user, owner_role)
         return af
 
+    def update(self, instance, validated_data):
+        if 'is_private' not in validated_data:
+            return super().update(instance, validated_data)
+
+        if instance.is_private != validated_data['is_private']:
+            raise exceptions.PermissionDenied('Cannot change privacy of project')
+        return super().update(instance, validated_data)
+
     def get_is_admin(self, analysis_framework):
         return analysis_framework.can_modify(self.context['request'].user)
+
+
+class AnalysisFrameworkMembershipSerializer(
+    RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer,
+):
+    class Meta:
+        model = AnalysisFrameworkMembership
+        fields = ('__all__')
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        framework = validated_data.get('framework')
+
+        if framework is None:
+            raise serializers.ValidationError('Analysis Framework does not exist')
+
+        can_create = AnalysisFrameworkMembership.objects.filter(
+            member=user,
+            framework=framework,
+            role__can_add_user=True
+        ).exists()
+
+        if not can_create:
+            raise exceptions.PermissionDenied()
+
+        return super().create(validated_data)
+
+
+class AnalysisFrameworkRoleSerializer(
+    RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer,
+):
+    class Meta:
+        model = AnalysisFrameworkRole
+        fields = ('__all__')

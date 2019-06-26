@@ -59,6 +59,14 @@ class AnalysisFrameworkTests(TestCase):
 
         self.assertEqual(project.analysis_framework.id, response.data['id'])
 
+    def test_get_membersips(self):
+        url = '/api/v1/framework-memberships/'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        for membership in response.data['results']:
+            self.assertEqual(membership['member'], self.user.id)
+
     def test_project_analysis_framework(self):
         analysis_framework = self.create(AnalysisFramework)
         project = self.create(
