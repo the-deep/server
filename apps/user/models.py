@@ -56,7 +56,7 @@ class Profile(models.Model):
 
     def get_accessible_features(self):
         user_domain = self.user.email.split('@')[1]
-        user_accessible_features = FeatureAccess.objects.filter(
+        user_accessible_features = Feature.objects.filter(
             Q(users=self.user) | Q(email_domains__domain_name__exact=user_domain)
         )
 
@@ -82,13 +82,22 @@ class Profile(models.Model):
         # return settings.LANGUAGE_CODE
 
 
+class EmailDomain(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    domain_name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return str(self.title)
+
+
 class Feature(models.Model):
-    RELEASED = 'released'
+    GENERAL_ACCESS = 'general_access'
     EXPERIMENTAL = 'experimental'
     EARLY_ACCESS = 'early_access'
 
     FEATURE_TYPES = (
-        (RELEASED, 'Released'),
+        (GENERAL_ACCESS, 'General access'),
         (EXPERIMENTAL, 'Experimental'),
         (EARLY_ACCESS, 'Early access'),
     )
@@ -105,28 +114,13 @@ class Feature(models.Model):
 
     key = models.CharField(max_length=255, unique=True, choices=FEATURE_KEYS)
     title = models.CharField(max_length=255)
-    feature_type = models.CharField(max_length=128, choices=FEATURE_TYPES)
+    feature_type = models.CharField(max_length=128, choices=FEATURE_TYPES, default=GENERAL_ACCESS)
 
-    def __str__(self):
-        return str(self.title)
-
-
-class EmailDomain(models.Model):
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
-    domain_name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return str(self.title)
-
-
-class FeatureAccess(models.Model):
-    feature = models.OneToOneField(Feature, on_delete=models.CASCADE)
     users = models.ManyToManyField(User, blank=True)
     email_domains = models.ManyToManyField(EmailDomain, blank=True)
 
     def __str__(self):
-        return self.feature.title
+        return str(self.title)
 
 
 def assign_to_default_project(user):

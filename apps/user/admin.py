@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Profile, User, Feature, EmailDomain, FeatureAccess
+from .models import Profile, User, Feature, EmailDomain
 
 
 class ProfileInline(admin.StackedInline):
@@ -15,20 +15,6 @@ class CustomFeature(admin.ModelAdmin):
         # editing an existing object
         if obj:
             return self.readonly_fields + ('key', )
-        return self.readonly_fields
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-
-class CustomFeatureAccess(admin.ModelAdmin):
-    def get_readonly_fields(self, request, obj=None):
-        # editing an existing object
-        if obj:
-            return self.readonly_fields + ('feature', )
         return self.readonly_fields
 
     def has_add_permission(self, request):
@@ -72,4 +58,3 @@ admin.site.register(Profile)
 
 admin.site.register(EmailDomain)
 admin.site.register(Feature, CustomFeature)
-admin.site.register(FeatureAccess, CustomFeatureAccess)
