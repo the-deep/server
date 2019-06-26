@@ -16,13 +16,18 @@ from deep.permissions import ModifyPermission
 from project.models import Project
 from entry.models import Entry
 from .models import (
-    AnalysisFramework, Widget, Filter, Exportable
+    AnalysisFramework, Widget, Filter, Exportable,
+    AnalysisFrameworkMembership,
+    AnalysisFrameworkRole,
 )
 from .serializers import (
     AnalysisFrameworkSerializer, WidgetSerializer,
-    FilterSerializer, ExportableSerializer
+    FilterSerializer, ExportableSerializer,
+    AnalysisFrameworkMembershipSerializer,
+    AnalysisFrameworkRoleSerializer,
 )
 from .filter_set import AnalysisFrameworkFilterSet
+from .permissions import FrameworkMembershipModifyPermission
 
 
 class AnalysisFrameworkViewSet(viewsets.ModelViewSet):
@@ -126,3 +131,20 @@ class ExportableViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Exportable.get_for(self.request.user)
+
+
+class AnalysisFrameworkMembershipViewSet(viewsets.ModelViewSet):
+    serializer_class = AnalysisFrameworkMembershipSerializer
+    permission_classes = [permissions.IsAuthenticated,
+                          FrameworkMembershipModifyPermission]
+
+    def get_queryset(self):
+        return AnalysisFrameworkMembership.get_for(self.request.user)
+
+
+class AnalysisFrameworkRoleViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = AnalysisFrameworkRoleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return AnalysisFrameworkRole.objects.all()

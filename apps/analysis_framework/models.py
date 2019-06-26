@@ -70,10 +70,6 @@ class AnalysisFramework(UserResource):
         )
 
     def can_clone(self, user):
-        print(f'PRIVATE {self.is_private}')
-        memship = AnalysisFrameworkMembership.objects.filter(member=user).first()
-        if memship:
-            print(memship.role.__dict__)
         return (
             not self.is_private or
             AnalysisFrameworkMembership.objects.filter(
@@ -363,3 +359,7 @@ class AnalysisFrameworkMembership(models.Model):
 
     class Meta:
         unique_together = ('member', 'framework')
+
+    @staticmethod
+    def get_for(user):
+        return AnalysisFrameworkMembership.objects.filter(member=user)
