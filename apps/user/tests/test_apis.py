@@ -8,7 +8,6 @@ from user.models import (
     User,
     EmailDomain,
     Feature,
-    FeatureAccess,
 )
 from user.notifications import Notification
 
@@ -164,9 +163,8 @@ class UserApiTests(TestCase):
         user_dummy = self.create(User, email='dummy@test.com')
 
         test_domain = self.create(EmailDomain, title='Togglecorp', domain_name='togglecorp.com')
-        test_feature = self.create(Feature, feature_type=Feature.RELEASED,
-                                   key=Feature.PRIVATE_PROJECT, title='Private project')
-        self.create(FeatureAccess, feature=test_feature,
+        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
+                    key=Feature.PRIVATE_PROJECT, title='Private project',
                     email_domains=[test_domain], users=[user_dummy])
 
         self.authenticate(user_fhx)

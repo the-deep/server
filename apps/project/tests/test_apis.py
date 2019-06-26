@@ -1,8 +1,6 @@
 from user.models import (
     User,
-    EmailDomain,
     Feature,
-    FeatureAccess,
 )
 from deep.tests import TestCase
 from entry.models import Lead, Entry
@@ -79,10 +77,9 @@ class ProjectApiTest(TestCase):
         return response
 
     def test_get_projects(self):
-        user_fhx = self.create(User, email='fhx@togglecorp.com')
-        test_feature = self.create(Feature, feature_type=Feature.RELEASED,
-                                   key=Feature.PRIVATE_PROJECT, title='Private project')
-        self.create(FeatureAccess, feature=test_feature,
+        user_fhx = self.create(User)
+        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
+                    key=Feature.PRIVATE_PROJECT, title='Private project',
                     users=[user_fhx], email_domains=[])
         self.authenticate(user_fhx)
 
@@ -113,9 +110,8 @@ class ProjectApiTest(TestCase):
         }
 
         user_fhx = self.create(User, email='fhx@togglecorp.com')
-        test_feature = self.create(Feature, feature_type=Feature.RELEASED,
-                                   key=Feature.PRIVATE_PROJECT, title='Private project')
-        self.create(FeatureAccess, feature=test_feature,
+        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
+                    key=Feature.PRIVATE_PROJECT, title='Private project',
                     users=[user_fhx], email_domains=[])
 
         self.authenticate(user_fhx)
@@ -129,9 +125,8 @@ class ProjectApiTest(TestCase):
         user_fhx = self.create(User, email='fhx@togglecorp.com')
         user_dummy = self.create(User, email='dummy@test.com')
 
-        test_feature = self.create(Feature, feature_type=Feature.RELEASED,
-                                   key=Feature.PRIVATE_PROJECT, title='Private project')
-        self.create(FeatureAccess, feature=test_feature,
+        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
+                    key=Feature.PRIVATE_PROJECT, title='Private project',
                     users=[user_dummy], email_domains=[])
 
         self.authenticate(user_fhx)
@@ -142,9 +137,8 @@ class ProjectApiTest(TestCase):
 
     def test_get_private_project_detail_unauthorized(self):
         user_fhx = self.create(User, email='fhx@togglecorp.com')
-        test_feature = self.create(Feature, feature_type=Feature.RELEASED,
-                                   key=Feature.PRIVATE_PROJECT, title='Private project')
-        self.create(FeatureAccess, feature=test_feature,
+        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
+                    key=Feature.PRIVATE_PROJECT, title='Private project',
                     users=[user_fhx], email_domains=[])
 
         self.authenticate(user_fhx)

@@ -1,0 +1,18 @@
+[
+    {
+        "model": "user.feature",
+        "pk": 1,
+        "fields": {
+            "key": "private_project",
+            "title": "Private project"
+        }
+    },
+    {
+        "model": "user.feature",
+        "pk": 2,
+        "fields": {
+            "key": "zoomable_image",
+            "title": "Zoomable image"
+        }
+    }
+]

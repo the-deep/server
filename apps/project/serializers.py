@@ -302,7 +302,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         is_private = validated_data.get('is_private', False)
 
         accessible_features = member.profile.get_accessible_features()
-        if not is_private or [x.feature.key == 'private_project' for x in accessible_features]:
+        if not is_private or [x.key == 'private_project' for x in accessible_features]:
             project = super().create(validated_data)
             ProjectMembership.objects.create(
                 project=project,
