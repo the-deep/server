@@ -106,9 +106,13 @@ class AnalysisFramework(UserResource):
 
     def get_or_create_default_role(self):
         # For now, same for both private and public, change later if needed
+        title = 'Default(Private)' if self.is_private else 'Default(Public)'
         role, created = AnalysisFrameworkRole.objects.get_or_create(
             is_default_role=True,
-            defaults={'can_use_in_other_projects': True}
+            defaults={
+                'can_use_in_other_projects': True,
+                'title': title,
+            }
         )
         return role
 
