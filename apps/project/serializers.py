@@ -298,13 +298,22 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         exclude = ('members', )
 
     def create(self, validated_data):
-        project = super().create(validated_data)
-        ProjectMembership.objects.create(
-            project=project,
-            member=self.context['request'].user,
-            role=ProjectRole.get_creator_role(),
+        member = self.context['request'].user
+        is_private = validated_data.get('is_private', False)
+
+        accessible_features = member.profile.get_accessible_features()
+        if not is_private or [x.key == 'private_project' for x in accessible_features]:
+            project = super().create(validated_data)
+            ProjectMembership.objects.create(
+                project=project,
+                member=member,
+                role=ProjectRole.get_creator_role(),
+            )
+            return project
+
+        raise PermissionDenied(
+            {'message': "You don't have permission to create private project"}
         )
-        return project
 
     def get_member_status(self, project):
         request = self.context['request']

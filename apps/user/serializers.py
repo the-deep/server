@@ -3,7 +3,7 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
 from deep.serializers import RemoveNullFieldsMixin
-from user.models import Profile, Feature, FeatureAccess
+from user.models import Profile, Feature
 from user.utils import send_password_reset
 from project.models import Project
 from gallery.models import File
@@ -106,14 +106,11 @@ class UserSerializer(RemoveNullFieldsMixin,
         return profile
 
 
-class FeatureAccessSerializer(RemoveNullFieldsMixin,
-                              DynamicFieldsMixin, serializers.ModelSerializer):
-    key = serializers.CharField(source='feature.key')
-    title = serializers.CharField(source='feature.title')
-
+class FeatureSerializer(RemoveNullFieldsMixin,
+                        DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
-        model = FeatureAccess
-        fields = ('key', 'title')
+        model = Feature
+        fields = ('key', 'title', 'feature_type')
 
 
 class UserPreferencesSerializer(RemoveNullFieldsMixin,
@@ -141,7 +138,7 @@ class UserPreferencesSerializer(RemoveNullFieldsMixin,
         read_only=True,
     )
 
-    accessible_features = FeatureAccessSerializer(
+    accessible_features = FeatureSerializer(
         source='profile.get_accessible_features',
         many=True,
         read_only=True,

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Profile, User, Feature, EmailDomain, FeatureAccess
+from .models import Profile, User, Feature, EmailDomain
 
 
 class ProfileInline(admin.StackedInline):
@@ -8,6 +8,20 @@ class ProfileInline(admin.StackedInline):
     can_delete = False
     verbose_name_plural = 'Profile'
     fk_name = 'user'
+
+
+class CustomFeature(admin.ModelAdmin):
+    def get_readonly_fields(self, request, obj=None):
+        # editing an existing object
+        if obj:
+            return self.readonly_fields + ('key', )
+        return self.readonly_fields
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class CustomUserAdmin(UserAdmin):
@@ -41,6 +55,6 @@ class CustomUserAdmin(UserAdmin):
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Profile)
-admin.site.register(Feature)
+
 admin.site.register(EmailDomain)
-admin.site.register(FeatureAccess)
+admin.site.register(Feature, CustomFeature)

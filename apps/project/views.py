@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_text
 from django.template.response import TemplateResponse
+from rest_framework.exceptions import PermissionDenied
 from rest_framework import (
     exceptions,
     filters,
@@ -192,7 +193,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         # Forbid join requests for private project
         if (project.is_private):
-            return response.Response(None, status=status.HTTP_403_FORBIDDEN)
+            raise PermissionDenied(
+                {'message': "You cannot send join request to the private project"}
+            )
 
         join_request = ProjectJoinRequest.objects.create(
             project=project,

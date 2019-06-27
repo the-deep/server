@@ -1,4 +1,7 @@
-from user.models import User
+from user.models import (
+    User,
+    Feature,
+)
 from deep.tests import TestCase
 from entry.models import Lead, Entry
 from project.models import (
@@ -74,7 +77,12 @@ class ProjectApiTest(TestCase):
         return response
 
     def test_get_projects(self):
-        self.authenticate()
+        user_fhx = self.create(User)
+        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
+                    key=Feature.PRIVATE_PROJECT, title='Private project',
+                    users=[user_fhx], email_domains=[])
+        self.authenticate(user_fhx)
+
         self.create_project('Project 1', False)
         self.create_project('Project 2', False)
         self.create_project('Project 3', False)
@@ -101,23 +109,40 @@ class ProjectApiTest(TestCase):
             'is_private': 'true',
         }
 
-        self.authenticate()
+        user_fhx = self.create(User, email='fhx@togglecorp.com')
+        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
+                    key=Feature.PRIVATE_PROJECT, title='Private project',
+                    users=[user_fhx], email_domains=[])
+
+        self.authenticate(user_fhx)
         response = self.client.post(url, data)
         self.assert_201(response)
 
         self.assertEqual(response.data['is_private'], True)
         self.assertEqual(Project.objects.last().is_private, True)
 
-    def test_get_private_project_detail_unauthorized(self):
-        # project_count = Project.objects.count()
-        url = '/api/v1/projects/'
-        data = {
-            'title': 'Test private project',
-            'is_private': 'true',
-        }
+    def test_create_private_project_unauthorized(self):
+        user_fhx = self.create(User, email='fhx@togglecorp.com')
+        user_dummy = self.create(User, email='dummy@test.com')
 
-        self.authenticate()
-        response = self.client.post(url, data)
+        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
+                    key=Feature.PRIVATE_PROJECT, title='Private project',
+                    users=[user_dummy], email_domains=[])
+
+        self.authenticate(user_fhx)
+        self.assert_403(self.create_project('Private test', True))
+
+        self.authenticate(user_dummy)
+        self.assert_201(self.create_project('Private test', True))
+
+    def test_get_private_project_detail_unauthorized(self):
+        user_fhx = self.create(User, email='fhx@togglecorp.com')
+        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
+                    key=Feature.PRIVATE_PROJECT, title='Private project',
+                    users=[user_fhx], email_domains=[])
+
+        self.authenticate(user_fhx)
+        response = self.create_project('Test private project', True)
         self.assert_201(response)
 
         self.assertEqual(response.data['is_private'], True)
