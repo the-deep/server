@@ -47,7 +47,9 @@ class AnalysisFramework(UserResource):
 
     @staticmethod
     def get_for(user):
-        return AnalysisFramework.objects.all()
+        return AnalysisFramework.objects.all().exclude(
+            models.Q(is_private=True) & ~models.Q(members=user)
+        )
 
     def can_get(self, user):
         return True
@@ -85,33 +87,35 @@ class AnalysisFramework(UserResource):
 
     def get_or_create_owner_role(self):
         permission_fields = self.get_owner_permissions()
+        privacy_label = 'Private' if self.is_private else 'Public'
         role, created = AnalysisFrameworkRole.objects.get_or_create(
             **permission_fields,
             defaults={
-                'title': 'Owner Role(' + ('Private)' if self.is_private else 'Public)'),
+                'title': f'Owner Role({privacy_label})'
             }
         )
         return role
 
     def get_or_create_editor_role(self):
         permission_fields = self.get_editor_permissions()
+        privacy_label = 'Private' if self.is_private else 'Public'
 
         role, created = AnalysisFrameworkRole.objects.get_or_create(
             **permission_fields,
             defaults={
-                'title': 'Editor Role(' + ('Private)' if self.is_private else 'Public)'),
+                'title': f'Editor Role({privacy_label})'
             }
         )
         return role
 
     def get_or_create_default_role(self):
         # For now, same for both private and public, change later if needed
-        title = 'Default(Private)' if self.is_private else 'Default(Public)'
+        privacy_label = 'Private' if self.is_private else 'Public'
         role, created = AnalysisFrameworkRole.objects.get_or_create(
             is_default_role=True,
             defaults={
                 'can_use_in_other_projects': True,
-                'title': title,
+                'title': f'Default({privacy_label})',
             }
         )
         return role

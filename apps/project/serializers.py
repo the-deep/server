@@ -19,6 +19,7 @@ from entry.models import Lead, Entry
 from project.permissions import PROJECT_PERMISSIONS
 from project.activity import project_activity_log
 
+from user.models import Feature
 from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
 from user_group.serializers import SimpleUserGroupSerializer
@@ -301,19 +302,22 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         member = self.context['request'].user
         is_private = validated_data.get('is_private', False)
 
-        accessible_features = member.profile.get_accessible_features()
-        if not is_private or [x.key == 'private_project' for x in accessible_features]:
-            project = super().create(validated_data)
-            ProjectMembership.objects.create(
-                project=project,
-                member=member,
-                role=ProjectRole.get_creator_role(),
-            )
-            return project
+        private_access = member.profile.get_accessible_features().filter(
+            key=Feature.PRIVATE_PROJECT
+        ).exists()
 
-        raise PermissionDenied(
-            {'message': "You don't have permission to create private project"}
+        if is_private and not private_access:
+            raise PermissionDenied(
+                {'message': "You don't have permission to create private project"}
+            )
+
+        project = super().create(validated_data)
+        ProjectMembership.objects.create(
+            project=project,
+            member=member,
+            role=ProjectRole.get_creator_role(),
         )
+        return project
 
     def get_member_status(self, project):
         request = self.context['request']
