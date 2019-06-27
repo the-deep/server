@@ -188,13 +188,14 @@ class ComprehensiveAttributeSerializer(
         DynamicFieldsMixin,
         serializers.ModelSerializer,
 ):
+    title = serializers.CharField(source='widget.title')
     widget_id = serializers.IntegerField(source='widget.pk')
     type = serializers.CharField(source='widget.widget_id')
     value = serializers.SerializerMethodField()
 
     class Meta:
         model = Attribute
-        fields = ('id', 'widget_id', 'type', 'value')
+        fields = ('id', 'title', 'widget_id', 'type', 'value')
 
     def _get_default_value(self, widget, data, widget_data):
         return str(data)

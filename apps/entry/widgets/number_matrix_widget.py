@@ -29,3 +29,28 @@ def update_attribute(widget, _data, widget_data):
             }
         }
     }
+
+
+def get_comprehensive_data(widget, _data, widget_data):
+    data = (_data or {}).get('value') or {}
+    row_headers_map = {
+        row['key']: row
+        for row in widget_data.get('row_headers', [])
+    }
+    column_headers_map = {
+        col['key']: col
+        for col in widget_data.get('column_headers', [])
+    }
+
+    values = []
+    for row_key, row_value in data.items():
+        for col_key, value in row_value.items():
+            row_header = row_headers_map.get(row_key)
+            col_header = column_headers_map.get(col_key)
+            if row_header and col_header:
+                values.append({
+                    'value': value,
+                    'row': {'id': row_key, 'title': row_header['title']},
+                    'column': {'id': col_key, 'title': col_header['title']},
+                })
+    return values

@@ -8,20 +8,29 @@ def parse_time(time_string):
     }
 
 
-def update_attribute(widget, data, widget_data):
+def _get_time(widget, data, widget_data):
     value = data.get('value')
     time = value and parse_time(value)
+    return time and time['time_val'], value and time['time_str']
+
+
+def update_attribute(widget, data, widget_data):
+    time_val, time_str = _get_time(widget, data, widget_data)
 
     return {
         'filter_data': [{
-            'number': time and time['time_val'],
+            'number': time_val
         }],
 
         'export_data': {
             'data': {
                 'excel': {
-                    'value': time and time['time_str'],
+                    'value': time_str
                 },
             },
         },
     }
+
+
+def get_comprehensive_data(*args):
+    return _get_time(*args)[1]

@@ -21,6 +21,7 @@ def update_attribute(widget, data, widget_data):
         'export_data': {
             'data': {
                 'excel': {
+                    # TODO: Add migration for this fix (for using get('label'))
                     'value': scale_label,
                 },
             },
@@ -28,5 +29,15 @@ def update_attribute(widget, data, widget_data):
     }
 
 
-def get_comprehensive_data(*args):
-    return _get_scale_label(*args)[0]
+def get_comprehensive_data(widget, data, widget_data):
+    label, selected_scales = _get_scale_label(widget, data, widget_data)
+    scale_units = widget_data.get('scale_units', [])
+    return {
+        'max': scale_units[0] if scale_units else None,
+        'min': scale_units[len(scale_units) - 1] if scale_units else None,
+        'label': label,
+        'index': ([
+            i for i, v in enumerate(scale_units)
+            if v['key'] == selected_scales[0]
+        ] or [None])[0] if selected_scales else None,
+    }

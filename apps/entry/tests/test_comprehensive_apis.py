@@ -1,3 +1,5 @@
+from parameterized import parameterized
+
 from deep.tests import TestCase
 
 from analysis_framework.models import (
@@ -8,59 +10,18 @@ from entry.models import (
 )
 from entry.widgets.store import widget_store
 
-
-# NOTE: This structure and value are set through https://github.com/the-deep/client
-WIDGET_DATA = {
-    'selectWidget': {
-        'options': [
-            {'key': 'option-1', 'label': 'Option 1'},
-            {'key': 'option-2', 'label': 'Option 2'},
-            {'key': 'option-3', 'label': 'Option 3'}
-        ]
-    },
-    'multiselectWidget': {
-        'options': [
-            {'key': 'option-1', 'label': 'Option 1'},
-            {'key': 'option-2', 'label': 'Option 2'},
-            {'key': 'option-3', 'label': 'Option 3'}
-        ]
-    },
-    'scaleWidget': {
-        'scale_units': [
-            {'key': 'scale-1', 'color': '#470000', 'label': 'Scale 1'},
-            {'key': 'scale-2', 'color': '#a40000', 'label': 'Scale 2'},
-            {'key': 'scale-3', 'color': '#d40000', 'label': 'Scale 3'}
-        ]
-    },
-}
-
-# NOTE: This structure and value are set through https://github.com/the-deep/client
-ATTRIBUTE_DATA = {
-    'selectWidget': [{
-        'data': {'value': 'option-3'},
-        'response': 'Option 3',
-    }, {
-        'data': {'value': 'option-5'},
-        'response': None,
-    }],
-    'multiselectWidget': [{
-        'data': {'value': ['option-3', 'option-1']},
-        'response': ['Option 3', 'Option 1'],
-    }, {
-        'data': {'value': ['option-5', 'option-1']},
-        'response': ['Option 1'],
-    }],
-    'scaleWidget': [{
-        'data': {'value': 'scale-1'},
-        'response': 'Scale 1',
-    }, {
-        'data': {'value': 'scale-5'},
-        'response': None,
-    }],
-}
+from .entry_widget_test_data import WIDGET_DATA, ATTRIBUTE_DATA
 
 
 class ComprehensiveEntryApiTest(TestCase):
+    """
+    Test for comprehensive data lookup functions
+    NOTE: This is a test based on assumption that the widget and attribute data are set same as
+        WIDGET_DATA and ATTRIBUTE_DATA from deep-client.
+    TODO: This test requires further integration test with deep-client.
+    TODO: Add test for normal lookup for exportable and filter data
+    """
+
     def create_widget(self, data):
         project = self.create_project()
         widget = self.create(
@@ -85,33 +46,27 @@ class ComprehensiveEntryApiTest(TestCase):
         """
         return widget_store[widget_id].get_comprehensive_data
 
-    def assertAttributeValue(self, widget_id, widget_data, attr_data, expected_response):
+    def assertAttributeValue(self, widget_id, widget_data, attr_data, expected_c_response):
         widget, attribute = self.create_attribute(widget_data, attr_data)
         widget_data = widget.properties and widget.properties.get('data')
         data = attribute.data or {}
-        self.assertEqual(
-            self.get_data_selector(widget_id)(
-                widget, data, widget_data,
-            ),
-            expected_response,
+        c_resposne = self.get_data_selector(widget_id)(
+            widget, data, widget_data,
         )
+        self.assertEqual(expected_c_response, c_resposne)
 
     def _test_widget(self, widget_id):
         widget_data = WIDGET_DATA[widget_id]
 
         for attribute_data in ATTRIBUTE_DATA[widget_id]:
             attr_data = attribute_data['data']
-            expected_response = attribute_data['response']
-            self.assertAttributeValue(widget_id, widget_data, attr_data, expected_response)
+            expected_c_response = attribute_data['c_response']
+            self.assertAttributeValue(widget_id, widget_data, attr_data, expected_c_response)
 
-    def test_select_widget(self):
-        widget_id = 'selectWidget'
-        self._test_widget(widget_id)
-
-    def test_multiselect_widget(self):
-        widget_id = 'multiselectWidget'
-        self._test_widget(widget_id)
-
-    def test_scale_widget(self):
-        widget_id = 'scaleWidget'
+    @parameterized.expand([
+        [widget_id] for widget_id, widget_meta in widget_store.items()
+        if hasattr(widget_meta, 'get_comprehensive_data')
+    ])
+    def test_comprehensive_(self, widget_id):
+        self.maxDiff = None
         self._test_widget(widget_id)
