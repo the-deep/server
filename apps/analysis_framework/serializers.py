@@ -9,6 +9,7 @@ from analysis_framework.models import (
     AnalysisFrameworkMembership,
     Widget, Filter, Exportable
 )
+from user.models import Feature
 from project.models import Project
 
 
@@ -129,12 +130,25 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
 
     def create(self, validated_data):
         project = validated_data.pop('project', None)
+        private = validated_data.get('is_private', False)
+
+        # Check if user has access to private project feature
+        user = self.context['request'].user
+        private_access = user.profile.get_accessible_features().filter(
+            key=Feature.PRIVATE_PROJECT
+        ).exists()
+
+        if private and not private_access:
+            raise exceptions.PermissionDenied({
+                "message": "You don't have permission to create private framework"
+            })
+
         af = super().create(validated_data)
 
         if project:
             project = Project.objects.get(id=project)
             project.analysis_framework = af
-            project.modified_by = self.context['request'].user
+            project.modified_by = user
             project.save()
 
         owner_role = af.get_or_create_owner_role()
@@ -146,7 +160,9 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
             return super().update(instance, validated_data)
 
         if instance.is_private != validated_data['is_private']:
-            raise exceptions.PermissionDenied('Cannot change privacy of project')
+            raise exceptions.PermissionDenied({
+                "message": "You don't have permission to change framework's privacy"
+            })
         return super().update(instance, validated_data)
 
     def get_is_admin(self, analysis_framework):
@@ -167,13 +183,23 @@ class AnalysisFrameworkMembershipSerializer(
         if framework is None:
             raise serializers.ValidationError('Analysis Framework does not exist')
 
-        can_create = AnalysisFrameworkMembership.objects.filter(
+        membership = AnalysisFrameworkMembership.objects.filter(
             member=user,
             framework=framework,
-            role__can_add_user=True
-        ).exists()
+        ).first()
 
-        if not can_create:
+        print('MEMBERSHIP ', membership)
+        print('FRAMEWORK PRIVATE', framework.is_private)
+        print('FRAMEWORK', framework.__dict__)
+        # If user is not a member of the private framework then return 404
+        if membership is None and framework.is_private:
+            raise exceptions.NotFound()
+        elif membership is None:
+            # Else if user is not member but is a public framework, return 403
+            raise exceptions.PermissionDenied()
+
+        # But if user is member and has no permissions, return 403
+        if not membership.role.can_add_user:
             raise exceptions.PermissionDenied()
 
         return super().create(validated_data)
