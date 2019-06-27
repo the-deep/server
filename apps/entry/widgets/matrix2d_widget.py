@@ -88,3 +88,59 @@ def update_attribute(widget, data, widget_data):
             },
         }
     }
+
+
+def get_comprehensive_data(widget, data, widget_data):
+    data = (data or {}).get('value') or {}
+
+    dimension_header_map = {}
+    subdimension_header_map = {}
+
+    for dimension in widget_data.get('dimensions', []):
+        subdimension_keys = []
+        dimension_header_map[dimension['id']] = dimension
+        for subdimension in dimension['subdimensions']:
+            subdimension_header_map[subdimension['id']] = subdimension
+            subdimension_keys.append(subdimension['id'])
+        dimension_header_map[dimension['id']]['subdimension_keys'] = subdimension_keys
+
+    sector_header_map = {}
+    subsector_header_map = {}
+
+    for sector in widget_data.get('sectors', []):
+        subsector_keys = []
+        sector_header_map[sector['id']] = sector
+        for subsector in sector['subsectors']:
+            subsector_header_map[subsector['id']] = subsector
+            subsector_keys.append(subsector['id'])
+        sector_header_map[sector['id']]['subsector_keys'] = subsector_keys
+
+    values = []
+
+    for dimension_key, dimension_value in data.items():
+        for subdimension_key, subdimension_value in dimension_value.items():
+            for sector_key, selected_subsectors in subdimension_value.items():
+                dimension_header = dimension_header_map.get(dimension_key)
+                subdimension_header = subdimension_header_map.get(subdimension_key)
+                sector_header = sector_header_map.get(sector_key)
+                if (
+                        dimension_header is None or
+                        subdimension_header is None or
+                        sector_header is None or
+                        subdimension_key not in dimension_header['subdimension_keys']
+                ):
+                    continue
+                selected_subsectors_header = []
+                for subsector_key in selected_subsectors:
+                    subsector_header = subsector_header_map.get(subsector_key)
+                    if subsector_header and subsector_key in sector_header['subsector_keys']:
+                        selected_subsectors_header.append(
+                            {'id': subsector_header['id'], 'title': subsector_header['title']}
+                        )
+                values.append({
+                    'dimension': {'id': dimension_header['id'], 'title': dimension_header['title']},
+                    'subdimension': {'id': subdimension_header['id'], 'title': subdimension_header['title']},
+                    'sector': {'id': sector_header['id'], 'title': sector_header['title']},
+                    'subsectors': selected_subsectors_header,
+                })
+    return values
