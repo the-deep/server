@@ -38,6 +38,12 @@ class ProjectAdmin(VersionAdmin):
                ProjectUserGroupMembershipInline,
                ProjectJoinRequestInline]
 
+    def get_readonly_fields(self, request, obj=None):
+        # editing an existing object
+        if obj:
+            return self.readonly_fields + ('is_private', )
+        return self.readonly_fields
+
     def members_count(self, obj):
         return obj.members.count()
 

@@ -155,7 +155,6 @@ class Project(UserResource):
     is_default = models.BooleanField(default=False)
 
     # Project visibility
-    # TODO: make this field accessible only for defined users/emails
     is_private = models.BooleanField(default=False)
 
     # Data for cache purposes
