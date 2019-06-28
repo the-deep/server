@@ -33,11 +33,11 @@ def get_comprehensive_data(widget, data, widget_data):
     label, selected_scales = _get_scale_label(widget, data, widget_data)
     scale_units = widget_data.get('scale_units', [])
     return {
-        'max': scale_units[0] if scale_units else None,
-        'min': scale_units[len(scale_units) - 1] if scale_units else None,
+        'min': scale_units[0] if scale_units else None,
+        'max': scale_units[len(scale_units) - 1] if scale_units else None,
         'label': label,
         'index': ([
-            i for i, v in enumerate(scale_units)
+            (i + 1) for i, v in enumerate(scale_units)
             if v['key'] == selected_scales[0]
         ] or [None])[0] if selected_scales else None,
     }

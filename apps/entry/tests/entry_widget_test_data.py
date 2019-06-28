@@ -192,6 +192,31 @@ WIDGET_DATA = {
         ]
     },
 
+    'conditionalWidget': {
+        'widgets': [{
+            'widget': {
+                'key': 'scalewidget-1',
+                'title': 'Severity',
+                'widget_id': 'scaleWidget',
+                'properties': {
+                    'data': {
+                        'scale_units': [
+                            {'key': 'scale-1', 'color': '#fef0d9', 'label': 'No problem/Minor Problem'},
+                            {'key': 'scale-2', 'color': '#fdcc8a', 'label': 'Of Concern'},
+                            {'key': 'scale-3', 'color': '#fc8d59', 'label': 'Major'},
+                            {'key': 'scale-4', 'color': '#e34a33', 'label': 'Severe'},
+                            {'key': 'scale-5', 'color': '#b30000', 'label': 'Critical'},
+                        ],
+                    }
+                }
+            },
+            'conditions': {
+                'list': [{}],
+                'operator': 'AND',
+            }
+        }]
+    },
+
     'dateWidget': {},
     'dateRangeWidget': {},
     'timeWidget': {},
@@ -209,6 +234,7 @@ ATTRIBUTE_DATA = {
         'data': {'value': 'option-5'},
         'c_response': None,
     }],
+
     'multiselectWidget': [{
         'data': {'value': ['option-3', 'option-1']},
         'c_response': ['Option 3', 'Option 1'],
@@ -216,23 +242,25 @@ ATTRIBUTE_DATA = {
         'data': {'value': ['option-5', 'option-1']},
         'c_response': ['Option 1'],
     }],
+
     'scaleWidget': [{
         'data': {'value': 'scale-1'},
         'c_response': {
-            'max': {'key': 'scale-1', 'color': '#470000', 'label': 'Scale 1'},
-            'min': {'key': 'scale-3', 'color': '#d40000', 'label': 'Scale 3'},
+            'min': {'key': 'scale-1', 'color': '#470000', 'label': 'Scale 1'},
+            'max': {'key': 'scale-3', 'color': '#d40000', 'label': 'Scale 3'},
             'label': 'Scale 1',
-            'index': 0,
+            'index': 1,
         },
     }, {
         'data': {'value': 'scale-5'},
         'c_response': {
-            'max': {'key': 'scale-1', 'color': '#470000', 'label': 'Scale 1'},
-            'min': {'key': 'scale-3', 'color': '#d40000', 'label': 'Scale 3'},
+            'min': {'key': 'scale-1', 'color': '#470000', 'label': 'Scale 1'},
+            'max': {'key': 'scale-3', 'color': '#d40000', 'label': 'Scale 3'},
             'label': None,
             'index': None,
         },
     }],
+
     'dateWidget': [{
         'data': {'value': '2019-06-25'},
         'c_response': '25-06-2019',
@@ -240,6 +268,7 @@ ATTRIBUTE_DATA = {
         'data': {'value': None},
         'c_response': None,
     }],
+
     'dateRangeWidget': [{
         'data': {'value': {'from': '2012-06-25', 'to': '2019-06-22'}},
         'c_response': {
@@ -247,6 +276,7 @@ ATTRIBUTE_DATA = {
             'to': '22-06-2019',
         },
     }],
+
     'timeWidget': [{
         'data': {'value': '22:34:00'},
         'c_response': '22:34',
@@ -254,6 +284,7 @@ ATTRIBUTE_DATA = {
         'data': {'value': None},
         'c_response': None,
     }],
+
     'numberWidget': [{
         'data': {'value': '12'},
         'c_response': '12',
@@ -261,6 +292,7 @@ ATTRIBUTE_DATA = {
         'data': {'value': None},
         'c_response': None,
     }],
+
     'numberMatrixWidget': [{
         'data': {
             'value': {
@@ -304,6 +336,7 @@ ATTRIBUTE_DATA = {
             'column': {'id': 'col-3', 'title': 'Col 3'},
         }],
     }],
+
     'matrix1dWidget': [{
         'data': {
             'value': {
@@ -344,6 +377,7 @@ ATTRIBUTE_DATA = {
             },
         }],
     }],
+
     'matrix2dWidget': [{
         'data': {
             'value': {
@@ -414,6 +448,7 @@ ATTRIBUTE_DATA = {
             'subsectors': []
         }],
     }],
+
     'timeRangeWidget': [{
         'data': {'value': {'from': '18:05:00', 'to': '23:05:00'}},
         'c_response': {
@@ -421,6 +456,7 @@ ATTRIBUTE_DATA = {
             'to': '23:05',
         },
     }],
+
     'organigramWidget': [{
         'data': {'value': ['node-1', 'node-8']},
         'c_response': [{
@@ -449,6 +485,41 @@ ATTRIBUTE_DATA = {
                 {'key': 'base', 'title': 'Base Node'},
             ]
         }],
-    }
-    ],
+    }],
+
+    'conditionalWidget': [{
+        'data': {
+            'value': {
+                'selected_widget_key': 'scalewidget-1',
+                'scalewidget-1': {
+                    'data': {
+                        'value': 'scale-3',
+                    }
+                }
+            }
+        },
+        'c_response': {
+            'id': 'scalewidget-1',
+            'type': 'scaleWidget',
+            'title': 'Severity',
+            'value': {
+                'max': {'key': 'scale-5', 'color': '#b30000', 'label': 'Critical'},
+                'min': {'key': 'scale-1', 'color': '#fef0d9', 'label': 'No problem/Minor Problem'},
+                'label': 'Major',
+                'index': 3,
+            },
+        },
+    }, {
+        'data': {
+            'value': {
+                'selected_widget_key': 'scalewidget-2',
+                'scalewidget-1': {
+                    'data': {
+                        'value': 'scale-3',
+                    }
+                }
+            }
+        },
+        'c_response': None,
+    }],
 }
