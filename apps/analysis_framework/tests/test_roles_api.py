@@ -138,7 +138,3 @@ class TestAnalysisFrameworkRoles(TestCase):
         self.authenticate(user)
         response = self.client.post(add_user_url, add_member_data)
         self.assertEqual(response.status_code, status)
-
-    def _use_framework_in_other_projects_test(self, framework, project):
-        # TODO: implement this
-        pass
