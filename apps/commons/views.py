@@ -47,7 +47,7 @@ class RenderChart(View):
     Debug chart rendering
     NOTE: Use Only For Debug
     """
-    MAX_VALUE_LEN = 5
+    MAX_VALUE_LEN = 1000
     MAX_VALUE_INTEGER = 100
     MAX_ROW = 10
     MAX_COUNT = 100
@@ -55,9 +55,9 @@ class RenderChart(View):
     def get_geo_data(self):
         return [
             {
-                'count': _get_random_number(10, self.MAX_COUNT),
+                'count': _get_random_number(1, self.MAX_COUNT),
                 'value': geoarea.id,
-            } for geoarea in GeoArea.objects.all()[:10]
+            } for geoarea in GeoArea.objects.filter(admin_level_id=2)
         ]
 
     def get_data(self, number=False):
@@ -88,6 +88,7 @@ class RenderChart(View):
         }
 
         if chart_type == 'barchart':
+            params['data']['value'] = params['data']['value'].str.slice(0, 20) + '...'
             fp = barchart.plotly(**params)
         elif chart_type == 'histograms':
             new_data = []
@@ -98,6 +99,11 @@ class RenderChart(View):
             params['data'] = pd.to_numeric(new_data)
             fp = histograms.plotly(**params)
         elif chart_type == 'map':
+            adjust_df = pd.DataFrame([
+                {'value': 0, 'count': 0},   # Count 0 is min's max value
+                {'value': 0, 'count': 5},   # Count 5 is max's min value
+            ])
+            params['data'] = params['data'].append(adjust_df, ignore_index=True)
             fp = _map.plot(**params)
 
         return _get_image_response(fp[0]['image'], fp[0]['format'])
