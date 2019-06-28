@@ -16,6 +16,7 @@ from project.models import (
     ProjectStatus,
 )
 from entry.models import Lead, Entry
+from analysis_framework.models import AnalysisFrameworkMembership
 from project.permissions import PROJECT_PERMISSIONS
 from project.activity import project_activity_log
 
@@ -318,6 +319,34 @@ class ProjectSerializer(RemoveNullFieldsMixin,
             role=ProjectRole.get_creator_role(),
         )
         return project
+
+    def update(self, instance, validated_data):
+        # TODO; might need to check for private project feature access,
+        # But that might be redundant, since checked in creation, I don't know
+        framework = validated_data.get('analysis_framework')
+        user = self.context['request'].user
+
+        if 'is_private' in validated_data and\
+                validated_data['is_private'] != instance.is_private:
+            raise PermissionDenied('Cannot change privacy of project')
+
+        if framework is None or not framework.is_private:
+            return super().update(instance, validated_data)
+
+        memberships = AnalysisFrameworkMembership.objects.filter(
+            framework=framework,
+            member=user,
+        )
+        if not memberships.exists():
+            # Send a bad request, use should not know if the framework exists
+            raise serializers.ValidationError('Invalid Analysis Framework')
+
+        if memberships.filter(role__can_use_in_other_projects=True).exists():
+            return super().update(instance, validated_data)
+
+        raise PermissionDenied(
+            {'message': "You don't have permissions to use the analysis framework in the project"}
+        )
 
     def get_member_status(self, project):
         request = self.context['request']
