@@ -41,8 +41,9 @@ class EntryFilterSet(django_filters.FilterSet):
 
     class Meta:
         model = Entry
-        fields = ['id', 'excerpt', 'lead__title',
-                  'created_at', 'created_by', 'modified_at', 'modified_by']
+        fields = [
+            'id', 'excerpt', 'lead__title', 'created_at', 'created_by', 'modified_at', 'modified_by', 'project',
+        ]
         filter_overrides = {
             models.CharField: {
                 'filter_class': django_filters.CharFilter,

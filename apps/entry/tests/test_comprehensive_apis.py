@@ -68,9 +68,21 @@ class ComprehensiveEntryApiTest(TestCase):
                 attr_data, expected_c_response,
             )
 
+    def test_comprehensive_api(self):
+        self.authenticate()
+
+        url = '/api/v1/comprehensive-entries/'
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        project = self.create_project()
+        url = f'/api/v1/projects/{project.pk}/comprehensive-entries/'
+        response = self.client.get(url)
+        self.assert_200(response)
+
     @parameterized.expand([
         [widget_id] for widget_id, widget_meta in widget_store.items()
-        if hasattr(widget_meta, 'get_comprehensive_data')
+        if hasattr(widget_meta, 'get_comprehensive_data') and widget_id != 'geoWidget'
     ])
     def test_comprehensive_(self, widget_id):
         self.maxDiff = None

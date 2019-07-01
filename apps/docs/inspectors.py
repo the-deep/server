@@ -1,11 +1,13 @@
 from collections import OrderedDict
 
+from django.test.client import RequestFactory
 from django.db import models
 from django.core.exceptions import FieldDoesNotExist
 from rest_framework import exceptions, serializers
 from rest_framework.compat import uritemplate
 
 from deep.serializers import RecursiveSerializer
+from user.models import User
 from .utils import is_list_view, is_custom_action
 from . import schema
 
@@ -202,6 +204,8 @@ class ViewSchema:
             return
 
         try:
+            view.request = RequestFactory()
+            view.request.user = User(username='test')
             serializer = view.get_serializer()
         except exceptions.APIException:
             serializer = None

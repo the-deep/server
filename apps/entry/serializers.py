@@ -10,7 +10,7 @@ from project.models import Project
 from lead.serializers import LeadSerializer
 from lead.models import Lead
 from analysis_framework.serializers import AnalysisFrameworkSerializer
-from geo.models import GeoArea
+from geo.models import GeoArea, Region
 from geo.serializers import SimpleRegionSerializer
 from tabular.serializers import FieldProcessedOnlySerializer
 from user.models import User
@@ -205,9 +205,9 @@ class ComprehensiveAttributeSerializer(
         }
 
     def _get_initial_wigets_meta(self, instance):
-        # NOTE: Project should be same for all entry provided
-        project = instance.entry.project
-        regions_id = project.regions.values_list('pk', flat=True)
+        projects_id = self.context['queryset'].order_by('project_id')\
+            .values_list('project_id', flat=True).distinct()
+        regions_id = Region.objects.filter(project__in=projects_id).values_list('pk', flat=True)
         geo_areas = {}
         admin_levels = {}
 
@@ -264,5 +264,5 @@ class ComprehensiveEntriesSerializer(
         model = Entry
         fields = (
             'id', 'created_at', 'modified_at', 'entry_type', 'excerpt', 'image', 'tabular_field',
-            'attributes', 'created_by', 'modified_by',
+            'attributes', 'created_by', 'modified_by', 'project',
         )
