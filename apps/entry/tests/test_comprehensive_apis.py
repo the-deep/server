@@ -46,22 +46,27 @@ class ComprehensiveEntryApiTest(TestCase):
         """
         return widget_store[widget_id].get_comprehensive_data
 
-    def assertAttributeValue(self, widget_id, widget_data, attr_data, expected_c_response):
+    def assertAttributeValue(self, widgets_meta, widget_id, widget_data, attr_data, expected_c_response):
         widget, attribute = self.create_attribute(widget_data, attr_data)
         widget_data = widget.properties and widget.properties.get('data')
         data = attribute.data or {}
         c_resposne = self.get_data_selector(widget_id)(
-            widget, data, widget_data,
+            widgets_meta, widget, data, widget_data,
         )
         self.assertEqual(expected_c_response, c_resposne)
 
     def _test_widget(self, widget_id):
         widget_data = WIDGET_DATA[widget_id]
+        if not hasattr(self, 'widgets_meta'):
+            self.widgets_meta = {}
 
         for attribute_data in ATTRIBUTE_DATA[widget_id]:
             attr_data = attribute_data['data']
             expected_c_response = attribute_data['c_response']
-            self.assertAttributeValue(widget_id, widget_data, attr_data, expected_c_response)
+            self.assertAttributeValue(
+                self.widgets_meta, widget_id, widget_data,
+                attr_data, expected_c_response,
+            )
 
     @parameterized.expand([
         [widget_id] for widget_id, widget_meta in widget_store.items()

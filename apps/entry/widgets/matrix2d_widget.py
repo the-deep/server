@@ -90,30 +90,37 @@ def update_attribute(widget, data, widget_data):
     }
 
 
-def get_comprehensive_data(widget, data, widget_data):
+def get_comprehensive_data(widgets_meta, widget, data, widget_data):
     data = (data or {}).get('value') or {}
 
-    dimension_header_map = {}
-    subdimension_header_map = {}
+    if widgets_meta.get(widget.pk) is None:
+        dimension_header_map = {}
+        subdimension_header_map = {}
 
-    for dimension in widget_data.get('dimensions', []):
-        subdimension_keys = []
-        dimension_header_map[dimension['id']] = dimension
-        for subdimension in dimension['subdimensions']:
-            subdimension_header_map[subdimension['id']] = subdimension
-            subdimension_keys.append(subdimension['id'])
-        dimension_header_map[dimension['id']]['subdimension_keys'] = subdimension_keys
+        for dimension in widget_data.get('dimensions', []):
+            subdimension_keys = []
+            dimension_header_map[dimension['id']] = dimension
+            for subdimension in dimension['subdimensions']:
+                subdimension_header_map[subdimension['id']] = subdimension
+                subdimension_keys.append(subdimension['id'])
+            dimension_header_map[dimension['id']]['subdimension_keys'] = subdimension_keys
 
-    sector_header_map = {}
-    subsector_header_map = {}
+        sector_header_map = {}
+        subsector_header_map = {}
 
-    for sector in widget_data.get('sectors', []):
-        subsector_keys = []
-        sector_header_map[sector['id']] = sector
-        for subsector in sector['subsectors']:
-            subsector_header_map[subsector['id']] = subsector
-            subsector_keys.append(subsector['id'])
-        sector_header_map[sector['id']]['subsector_keys'] = subsector_keys
+        for sector in widget_data.get('sectors', []):
+            subsector_keys = []
+            sector_header_map[sector['id']] = sector
+            for subsector in sector['subsectors']:
+                subsector_header_map[subsector['id']] = subsector
+                subsector_keys.append(subsector['id'])
+            sector_header_map[sector['id']]['subsector_keys'] = subsector_keys
+    else:
+        widget_meta = widgets_meta[widget.pk]
+        dimension_header_map = widget_meta['dimension_header_map']
+        subdimension_header_map = widget_meta['subdimension_header_map']
+        sector_header_map = widget_meta['sector_header_map']
+        subsector_header_map = widget_meta['subsector_header_map']
 
     values = []
 

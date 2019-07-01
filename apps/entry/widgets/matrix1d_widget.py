@@ -53,19 +53,28 @@ def update_attribute(widget, data, widget_data):
     }
 
 
-def get_comprehensive_data(widget, _data, widget_data):
+def get_comprehensive_data(widgets_meta, widget, _data, widget_data):
     data = (_data or {}).get('value') or {}
 
-    pillar_header_map = {}
-    subpillar_header_map = {}
+    if widgets_meta.get(widget.pk) is None:
+        pillar_header_map = {}
+        subpillar_header_map = {}
 
-    for pillar in widget_data.get('rows', []):
-        subpillar_keys = []
-        pillar_header_map[pillar['key']] = pillar
-        for subpillar in pillar['cells']:
-            subpillar_header_map[subpillar['key']] = subpillar
-            subpillar_keys.append(subpillar['key'])
-        pillar_header_map[pillar['key']]['subpillar_keys'] = subpillar_keys
+        for pillar in widget_data.get('rows', []):
+            subpillar_keys = []
+            pillar_header_map[pillar['key']] = pillar
+            for subpillar in pillar['cells']:
+                subpillar_header_map[subpillar['key']] = subpillar
+                subpillar_keys.append(subpillar['key'])
+            pillar_header_map[pillar['key']]['subpillar_keys'] = subpillar_keys
+        widgets_meta[widget.pk] = {
+            'pillar_header_map': pillar_header_map,
+            'subpillar_header_map': subpillar_header_map,
+        }
+    else:
+        widget_meta = widgets_meta[widget.pk]
+        pillar_header_map = widget_meta['pillar_header_map']
+        subpillar_header_map = widget_meta['subpillar_header_map']
 
     values = []
 

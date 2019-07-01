@@ -71,6 +71,6 @@ def update_attribute(widget, data, widget_data):
     }
 
 
-def get_comprehensive_data(widget, data, widget_data):
+def get_comprehensive_data(_, widget, data, widget_data):
     values = data.get('value', [])
     return _get_selected_nodes_with_parent(widget_data, values)

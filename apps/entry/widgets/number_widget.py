@@ -21,5 +21,5 @@ def update_attribute(*args):
     }
 
 
-def get_comprehensive_data(*args):
+def get_comprehensive_data(_, *args):
     return _get_number(*args)[0]

@@ -52,11 +52,8 @@ def update_attribute(widget, data, widget_data):
     }
 
 
-def get_comprehensive_data(*args):
-    _, (
-        from_time,
-        to_time,
-    ) = _get_time(*args)
+def get_comprehensive_data(_, *args):
+    (from_time, to_time) = _get_time(*args)[1]
     return {
         'from': from_time,
         'to': to_time,

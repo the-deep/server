@@ -10,6 +10,7 @@ from project.models import Project
 from lead.serializers import LeadSerializer
 from lead.models import Lead
 from analysis_framework.serializers import AnalysisFrameworkSerializer
+from geo.models import GeoArea
 from geo.serializers import SimpleRegionSerializer
 from tabular.serializers import FieldProcessedOnlySerializer
 from user.models import User
@@ -197,24 +198,57 @@ class ComprehensiveAttributeSerializer(
         model = Attribute
         fields = ('id', 'title', 'widget_id', 'type', 'value')
 
-    def _get_default_value(self, widget, data, widget_data):
-        return str(data)
+    def _get_default_value(self, _, widget, data, widget_data):
+        return {
+            'error': 'Unsupported Widget Type, Contact Admin',
+            'raw': data,
+        }
+
+    def _get_initial_wigets_meta(self, instance):
+        # NOTE: Project should be same for all entry provided
+        project = instance.entry.project
+        regions_id = project.regions.values_list('pk', flat=True)
+        geo_areas = {}
+        admin_levels = {}
+
+        geo_area_queryset = GeoArea.objects.prefetch_related('admin_level').filter(
+            admin_level__region__in=regions_id,
+        ).distinct()
+
+        for geo_area in geo_area_queryset:
+            geo_areas[geo_area.pk] = {
+                'id': geo_area.pk,
+                'title': geo_area.title,
+                'pcode': geo_area.code,
+                'admin_level': geo_area.admin_level_id,
+                'parent': geo_area.parent_id,
+            }
+            if admin_levels.get(geo_area.admin_level_id) is None:
+                admin_level = geo_area.admin_level
+                admin_levels[geo_area.admin_level_id] = {
+                    'id': admin_level.pk,
+                    'level': admin_level.level,
+                    'title': admin_level.title,
+                }
+
+        return {
+            'geo-widget': {
+                'admin_levels': admin_levels,
+                'geo_areas': geo_areas,
+            },
+        }
 
     def get_value(self, instance):
+        if not hasattr(self, 'widgets_meta'):
+            self.widgets_meta = self._get_initial_wigets_meta(instance)
         widget = instance.widget
         widget_data = widget.properties and widget.properties.get('data')
         data = instance.data or {}
-        # TODO: Remove default after all widget are defined
-        # return widget_store.get(
-        #     instance.widget.widget_id
-        # ).get_comprehensive_data(
-        #     widget, data, widget_data,
-        # )
         return getattr(
             widget_store.get(instance.widget.widget_id, {}),
             'get_comprehensive_data',
             self._get_default_value,
-        )(widget, data, widget_data)
+        )(self.widgets_meta, widget, data, widget_data)
 
 
 class ComprehensiveEntriesSerializer(

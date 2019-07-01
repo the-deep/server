@@ -34,7 +34,7 @@ def update_attribute(widget, data, widget_data):
     }
 
 
-def get_comprehensive_data(*args):
+def get_comprehensive_data(_, *args):
     label_list = _get_label_list(*args)[0]
     if label_list:
         return label_list[0]

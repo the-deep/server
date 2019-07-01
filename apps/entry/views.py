@@ -201,4 +201,9 @@ class ComprehensiveEntriesViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = ComprehensiveEntriesSetPagination
 
     def get_queryset(self):
-        return Entry.get_for(self.request.user)
+        prefetch_related_fields = [
+            'attribute_set', 'attribute_set__widget',
+            'created_by', 'created_by__profile',
+            'modified_by', 'modified_by__profile',
+        ]
+        return Entry.get_for(self.request.user).prefetch_related(*prefetch_related_fields)

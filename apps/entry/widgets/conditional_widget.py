@@ -69,7 +69,7 @@ def update_attribute(widget, data, widget_data):
     }
 
 
-def get_comprehensive_data(widget, data, widget_data):
+def get_comprehensive_data(widgets_meta, widget, data, widget_data):
     from entry.widgets.store import widget_store
 
     value = data.get('value', {})
@@ -97,6 +97,7 @@ def get_comprehensive_data(widget, data, widget_data):
     w_widget_data = selected_widget.get('properties', {}).get('data', {})
 
     w_obj = Dummy()
+    w_obj.pk = f"${w_key}-{selected_widget.get('widget_id')}"
     w_obj.key = w_key
 
     return {
@@ -104,6 +105,7 @@ def get_comprehensive_data(widget, data, widget_data):
         'type': selected_widget.get('widget_id'),
         'title': selected_widget.get('title'),
         'value': widget_module.get_comprehensive_data(
+            widgets_meta,
             w_obj,
             w_data,
             w_widget_data,

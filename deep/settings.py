@@ -554,3 +554,9 @@ JSON_EDITOR_INIT_JS = 'js/jsoneditor-init.js'
 LOGIN_URL = '/admin/login'
 
 OTP_TOTP_ISSUER = f'Deep Admin {DEEP_ENVIRONMENT.title()}'
+
+if DEBUG:
+    INSTALLED_APPS += ['silk']
+    MIDDLEWARE += ['silk.middleware.SilkyMiddleware']
+    SILKY_META = True
+    SILKY_PYTHON_PROFILER = True

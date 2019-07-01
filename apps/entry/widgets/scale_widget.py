@@ -29,12 +29,18 @@ def update_attribute(widget, data, widget_data):
     }
 
 
-def get_comprehensive_data(widget, data, widget_data):
+def get_comprehensive_data(widgets_meta, widget, data, widget_data):
     label, selected_scales = _get_scale_label(widget, data, widget_data)
     scale_units = widget_data.get('scale_units', [])
+
+    if widgets_meta.get(widget.pk) is None:
+        widgets_meta[widget.pk] = {
+            'min': scale_units[0] if scale_units else None,
+            'max': scale_units[len(scale_units) - 1] if scale_units else None,
+        }
+
     return {
-        'min': scale_units[0] if scale_units else None,
-        'max': scale_units[len(scale_units) - 1] if scale_units else None,
+        **widgets_meta[widget.pk],
         'label': label,
         'index': ([
             (i + 1) for i, v in enumerate(scale_units)
