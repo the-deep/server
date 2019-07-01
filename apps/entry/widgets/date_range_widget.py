@@ -43,8 +43,8 @@ def update_attribute(widget, data, widget_data):
     }
 
 
-def get_comprehensive_data(*args):
-    _, (from_date, to_date) = _get_date(*args)
+def get_comprehensive_data(_, *args):
+    (from_date, to_date) = _get_date(*args)[1]
     return {
         'from': from_date,
         'to': to_date,

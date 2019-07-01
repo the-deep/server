@@ -32,5 +32,5 @@ def update_attribute(widget, data, widget_data):
     }
 
 
-def get_comprehensive_data(*args):
+def get_comprehensive_data(_, *args):
     return _get_time(*args)[1]

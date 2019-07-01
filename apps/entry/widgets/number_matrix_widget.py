@@ -31,16 +31,26 @@ def update_attribute(widget, _data, widget_data):
     }
 
 
-def get_comprehensive_data(widget, _data, widget_data):
+def get_comprehensive_data(widgets_meta, widget, _data, widget_data):
     data = (_data or {}).get('value') or {}
-    row_headers_map = {
-        row['key']: row
-        for row in widget_data.get('row_headers', [])
-    }
-    column_headers_map = {
-        col['key']: col
-        for col in widget_data.get('column_headers', [])
-    }
+
+    if widgets_meta.get(widget.pk) is None:
+        row_headers_map = {
+            row['key']: row
+            for row in widget_data.get('row_headers', [])
+        }
+        column_headers_map = {
+            col['key']: col
+            for col in widget_data.get('column_headers', [])
+        }
+        widgets_meta[widget.pk] = {
+            'row_headers_map': row_headers_map,
+            'column_headers_map': column_headers_map,
+        }
+    else:
+        widget_meta = widgets_meta[widget.pk]
+        row_headers_map = widget_meta['row_headers_map']
+        column_headers_map = widget_meta['column_headers_map']
 
     values = []
     for row_key, row_value in data.items():

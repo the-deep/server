@@ -442,6 +442,9 @@ urlpatterns += [
     url(r'^$', FrontendView.as_view()),
 ]
 
+if settings.DEBUG:
+    urlpatterns += [url(r'^silk/', include('silk.urls', namespace='silk'))]
+
 handler404 = Api_404View.as_view()
 
 # TODO Uncomment after fixing custom autofixtures
