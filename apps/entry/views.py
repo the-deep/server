@@ -195,10 +195,13 @@ class EntryOptionsView(views.APIView):
 class ComprehensiveEntriesViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Comprehensive API for Entries
+    TODO: Should we create this view also??
     """
     serializer_class = ComprehensiveEntriesSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = ComprehensiveEntriesSetPagination
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filterset_class = EntryFilterSet
 
     def get_queryset(self):
         prefetch_related_fields = [
@@ -207,3 +210,8 @@ class ComprehensiveEntriesViewSet(viewsets.ReadOnlyModelViewSet):
             'modified_by', 'modified_by__profile',
         ]
         return Entry.get_for(self.request.user).prefetch_related(*prefetch_related_fields)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['queryset'] = self.get_queryset()
+        return context
