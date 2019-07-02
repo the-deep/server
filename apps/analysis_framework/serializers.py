@@ -188,9 +188,6 @@ class AnalysisFrameworkMembershipSerializer(
             framework=framework,
         ).first()
 
-        print('MEMBERSHIP ', membership)
-        print('FRAMEWORK PRIVATE', framework.is_private)
-        print('FRAMEWORK', framework.__dict__)
         # If user is not a member of the private framework then return 404
         if membership is None and framework.is_private:
             raise exceptions.NotFound()

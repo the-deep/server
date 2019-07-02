@@ -132,21 +132,23 @@ class AnalysisFramework(UserResource):
         )
 
     def get_editor_permissions(self):
+        AFRole = AnalysisFrameworkRole
         permission_fields = {x: True for x in AnalysisFrameworkRole.PERMISSION_FIELDS}
-        permission_fields['can_add_user'] = False
-        permission_fields['can_make_public'] = False
+        permission_fields[AFRole.CAN_ADD_USER] = False
+        permission_fields[AFRole.CAN_MAKE_PUBLIC] = False
 
         if self.is_private:
-            permission_fields['can_clone_framework'] = False
+            permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = False
 
         return permission_fields
 
     def get_owner_permissions(self):
+        AFRole = AnalysisFrameworkRole
         permission_fields = {x: True for x in AnalysisFrameworkRole.PERMISSION_FIELDS}
-        permission_fields['can_clone_framework'] = False
+        permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = False
 
         if not self.is_private:
-            permission_fields['can_clone_framework'] = True
+            permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = True
         return permission_fields
 
 
@@ -311,12 +313,18 @@ class AnalysisFrameworkRole(models.Model):
     """
     Roles for AnalysisFramework
     """
+    CAN_ADD_USER = 'can_add_user'
+    CAN_CLONE_FRAMEWORK = 'can_clone_framework'
+    CAN_MAKE_PUBLIC = 'can_make_public'
+    CAN_EDIT_FRAMEWORK = 'can_edit_framework'
+    CAN_USE_IN_OTHER_PROJECTS = 'can_use_in_other_projects'
+
     PERMISSION_FIELDS = (
-        'can_add_user',
-        'can_clone_framework',
-        'can_make_public',
-        'can_edit_framework',
-        'can_use_in_other_projects',
+        CAN_ADD_USER,
+        CAN_CLONE_FRAMEWORK,
+        CAN_MAKE_PUBLIC,
+        CAN_EDIT_FRAMEWORK,
+        CAN_USE_IN_OTHER_PROJECTS,
     )
 
     title = models.CharField(max_length=255, unique=True)
