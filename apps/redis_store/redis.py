@@ -23,7 +23,7 @@ def init():
     if pool:
         return
     kconn = celery_app.connection()
-    url = kconn.as_uri()
+    url = kconn.as_uri(include_password=True)
     ssl = kconn.ssl
     if ssl is not False and 'ssl_cert_reqs' in ssl:
         url += f"?ssl_cert_reqs:{SSL_REQ_MAP.get(ssl['ssl_cert_reqs'].name, 'optional')}"
