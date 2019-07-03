@@ -9,6 +9,7 @@ from lead.tasks import (
     requests,
 )
 from lead.models import Lead, LeadPreview
+from project.models import Project
 
 from utils.common import get_or_write_file, makedirs
 from utils.extractor.tests.test_web_document import HTML_URL
@@ -28,6 +29,9 @@ class ExtractFromLeadTaskTest(TestCase):
 
         # Create the sample lead
         self.lead = self.create(Lead)
+        self.lead.project.is_private = False
+        self.lead.project.save()
+
         self.lead.text = ''
         self.lead.url = HTML_URL
         self.lead.save()
@@ -85,4 +89,37 @@ class ExtractFromLeadTaskTest(TestCase):
         success_resp.status_code = 200
         post_mock.return_value = success_resp
         ret = send_lead_text_to_deepl(self.lead.id)
+        assert ret is True
+
+    @patch('lead.tasks.requests.post')
+    def test_no_nlp_called_for_private_project(self, post_mock):
+        # Create Private Project
+        project = self.create(Project, is_private=True)
+        lead = self.create(Lead, project=project)
+        # Create LeadPreview
+        LeadPreview.objects.create(
+            lead=lead,
+            text_extract="Text not to be sent to DEEPL"
+        )
+        ret = send_lead_text_to_deepl(lead.id)
+        assert ret is True
+        assert not post_mock.called, "Post method should not be called"
+
+    @patch('lead.tasks.requests.post')
+    def test_nlp_called_for_public_project(self, post_mock):
+        # Create Public Project
+        project = self.create(Project, is_private=False)
+        lead = self.create(Lead, project=project)
+        # Create LeadPreview
+        LeadPreview.objects.create(
+            lead=lead,
+            text_extract="Text to be sent to DEEPL"
+        )
+        success_resp = requests.Response()
+        success_resp._content = b'{"clasified_doc_id": 100}'
+        success_resp.status_code = 200
+        post_mock.return_value = success_resp
+
+        ret = send_lead_text_to_deepl(lead.id)
+        assert post_mock.called, "Post method should be called"
         assert ret is True
