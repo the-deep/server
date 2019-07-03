@@ -21,7 +21,6 @@ def update_attribute(widget, data, widget_data):
         'export_data': {
             'data': {
                 'excel': {
-                    # TODO: Add migration for this fix (for using get('label'))
                     'value': scale_label,
                 },
             },

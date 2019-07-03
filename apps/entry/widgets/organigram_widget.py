@@ -63,7 +63,6 @@ def update_attribute(widget, data, widget_data):
             'data': {
                 'excel': {
                     'type': 'list',
-                    # TODO: Add migration for this fix
                     'value': [v.get('title') for v in selected_nodes],
                 },
             },
