@@ -13,7 +13,7 @@ from analysis_framework.serializers import AnalysisFrameworkSerializer
 from geo.models import GeoArea, Region
 from geo.serializers import SimpleRegionSerializer
 from tabular.serializers import FieldProcessedOnlySerializer
-from user.models import User
+from user.serializers import ComprehensiveUserSerializer
 from .widgets.store import widget_store
 
 from .models import (
@@ -171,18 +171,6 @@ class EditEntriesDataSerializer(RemoveNullFieldsMixin,
                 region.calc_cache()
             options[str(region.id)] = region.geo_options
         return options
-
-
-class ComprehensiveUserSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(
-        source='profile.get_display_name',
-        read_only=True,
-    )
-    organization = serializers.CharField(source='profile.organization')
-
-    class Meta:
-        model = User
-        fields = ('id', 'name', 'email', 'organization',)
 
 
 class ComprehensiveAttributeSerializer(
