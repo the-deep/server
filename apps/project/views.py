@@ -1,6 +1,10 @@
+import logging
+
+import django_filters
 from django.conf import settings
+from django.urls import reverse
 from django.db import transaction, models
-from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_text
@@ -16,25 +20,15 @@ from rest_framework import (
     viewsets,
 )
 from rest_framework.decorators import action
-import django_filters
 
 from docs.utils import mark_as_list, mark_as_delete
 import ary.serializers as arys
 
+from deep.views import get_frontend_url
 from deep.permissions import ModifyPermission
-from project.permissions import (
-    JoinPermission,
-    AcceptRejectPermission,
-    MembershipModifyPermission,
-)
-from entry.stats import get_project_entries_stats
+from deep.serializers import URLCachedFileField
+from deep.models import ProcessStatus
 from tabular.models import Field
-from project.filter_set import (
-    ProjectFilterSet,
-    get_filtered_projects,
-    ProjectMembershipFilterSet,
-    ProjectUserGroupMembershipFilterSet,
-)
 
 from user.utils import send_project_join_request_emails
 from user.models import User
@@ -49,6 +43,7 @@ from .models import (
     ProjectMembership,
     ProjectJoinRequest,
     ProjectUserGroupMembership,
+    ProjectEntryStats,
 )
 from .serializers import (
     ProjectSerializer,
@@ -60,12 +55,20 @@ from .serializers import (
     ProjectDashboardSerializer,
     ProjectStatusOptionsSerializer,
 )
+from .permissions import (
+    JoinPermission,
+    AcceptRejectPermission,
+    MembershipModifyPermission,
+)
+from .filter_set import (
+    ProjectFilterSet,
+    get_filtered_projects,
+    ProjectMembershipFilterSet,
+    ProjectUserGroupMembershipFilterSet,
+)
+from .tasks import generate_entry_stats
 
 from .token import project_request_token_generator
-from deep.views import get_frontend_url
-
-import logging
-
 logger = logging.getLogger(__name__)
 
 
@@ -191,6 +194,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         Get viz data for project entries:
         """
         project = self.get_object()
+
         if (
                 project.analysis_framework is None or
                 project.analysis_framework.properties is None or
@@ -198,12 +202,26 @@ class ProjectViewSet(viewsets.ModelViewSet):
         ):
             return response.Response(
                 {'error': f'No configuration provided for current Project: {project.title}, Contact Admin'},
-                status=404,
+                status=status.HTTP_404_NOT_FOUND,
             )
 
-        return response.Response(
-            get_project_entries_stats(project)
+        entry_stats, created = ProjectEntryStats.objects.get_or_create(project=project)
+        file_url = request.build_absolute_uri(
+            URLCachedFileField().to_representation(entry_stats.file)
         )
+        if entry_stats.is_ready():
+            return redirect(file_url)
+        elif entry_stats.status == ProcessStatus.FAILURE:
+            return response.Response(
+                {'error': f'Failed to generate Entry stats, Contact Admin'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        generate_entry_stats.delay(project.pk)
+        return response.Response({
+            'message': 'Processing the request, try again later',
+            'recent_data': file_url,
+            'pending': entry_stats.status,
+        }, status=status.HTTP_202_ACCEPTED)
 
     """
     Join request to this project

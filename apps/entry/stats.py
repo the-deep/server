@@ -1,19 +1,20 @@
 from django.contrib.gis.db.models import Extent
 from django.utils import timezone
+from django.db.models import Prefetch
 
 from geo.models import GeoArea
 from analysis_framework.models import Widget, Filter
 
-from .models import Entry
+from .models import Entry, Attribute
 
-CALC_SUPPORTED_WIDGETS = [
+SUPPORTED_WIDGETS = [
     'matrix1dWidget', 'matrix2dWidget', 'scaleWidget', 'multiselectWidget', 'organigramWidget', 'geoWidget',
     'conditionalWidget',
 ]
 
 
-def _get_widget_meta(config, widget_name, skip_data=False):
-    widget = Widget.objects.get(pk=config[widget_name]['pk'])
+def _get_widget_info(config, widgets, widget_name, skip_data=False):
+    widget = widgets[config[widget_name]['pk']]
 
     def _return(data):
         return {
@@ -30,7 +31,7 @@ def _get_widget_meta(config, widget_name, skip_data=False):
         return _return(
             Filter.objects.filter(
                 widget_key=widget.key,
-                analysis_framework=widget.analysis_framework,
+                analysis_framework_id=widget.analysis_framework_id,
             ).first()
         )
 
@@ -87,7 +88,7 @@ def _get_attribute_data(collector, attribute, cd_widget_map):
     widget_pk = attribute.widget.pk
     data = attribute.data
 
-    if widget_type not in CALC_SUPPORTED_WIDGETS or data is None or data.get('value') is [None, {}, []]:
+    if widget_type not in SUPPORTED_WIDGETS or data is None or data.get('value') is [None, {}, []]:
         return
 
     collector[widget_pk] = _get_widget_value(data['value'], widget_type, widget_pk)
@@ -135,14 +136,18 @@ def get_project_entries_stats(project):
     cd_widget_map = {
         w_config['pk']: w_config for w_config in config.values() if w_config.get('is_conditional_widget')
     }
+    widgets = {
+        widget.pk: widget
+        for widget in Widget.objects.filter(pk__in=widgets_pk)
+    }
 
-    w1d = _get_widget_meta(config, 'widget_1d')
-    w2d = _get_widget_meta(config, 'widget_2d')
-    specific_needs_groups_w = _get_widget_meta(config, 'specific_needs_groups_widget')
-    severity_w = _get_widget_meta(config, 'severity_widget')
-    reliability_w = _get_widget_meta(config, 'reliability_widget')
-    ag_w = _get_widget_meta(config, 'affected_groups_widget')
-    geo_w = _get_widget_meta(config, 'geo_widget', skip_data=True)
+    w1d = _get_widget_info(config, widgets, 'widget_1d')
+    w2d = _get_widget_info(config, widgets, 'widget_2d')
+    w_specific_needs_groups = _get_widget_info(config, widgets, 'specific_needs_groups_widget')
+    w_severity = _get_widget_info(config, widgets, 'severity_widget')
+    w_reliability = _get_widget_info(config, widgets, 'reliability_widget')
+    w_ag = _get_widget_info(config, widgets, 'affected_groups_widget')
+    w_geo = _get_widget_info(config, widgets, 'geo_widget', skip_data=True)
 
     context_array = [
         {
@@ -175,27 +180,27 @@ def get_project_entries_stats(project):
         {
             'id': option['key'],
             'name': option['label'],
-        } for option in ag_w['data'].properties['options']
+        } for option in w_ag['data'].properties['options']
     ]
     specific_needs_groups_array = [
         {
             'id': option['key'],
             'name': option['label'],
-        } for option in specific_needs_groups_w['data']['options']
+        } for option in w_specific_needs_groups['data']['options']
     ]
     severity_units = [
         {
             'id': severity['key'],
             'color': severity['color'],
             'name': severity['label'],
-        } for severity in severity_w['data']['scale_units']
+        } for severity in w_severity['data']['scale_units']
     ]
     reliability_units = [
         {
             'id': reliability['key'],
             'color': reliability['color'],
             'name': reliability['label'],
-        } for reliability in reliability_w['data']['scale_units']
+        } for reliability in w_reliability['data']['scale_units']
     ]
 
     geo_array = []
@@ -225,20 +230,26 @@ def get_project_entries_stats(project):
     }
 
     data = []
-    entries = Entry.objects.filter(project=project)
+    entries = Entry.objects.filter(project=project).prefetch_related(
+        Prefetch(
+            'attribute_set',
+            queryset=Attribute.objects.filter(widget_id__in=widgets_pk),
+        ),
+        'attribute_set__widget',
+    )
     for entry in entries.all():
         collector = {}
-        for attribute in entry.attribute_set.filter(widget_id__in=widgets_pk).prefetch_related('widget'):
+        for attribute in entry.attribute_set.all():
             _get_attribute_data(collector, attribute, cd_widget_map)
 
         data.append({
             'pk': entry.pk,
             'date': entry.created_at,
-            'severity': collector.get(severity_w['pk']),
-            'reliability': collector.get(reliability_w['pk']),
-            'geo': collector.get(geo_w['pk'], []),
-            'special_needs': collector.get(specific_needs_groups_w['pk'], []),
-            'affected_groups': collector.get(ag_w['pk'], []),
+            'severity': collector.get(w_severity['pk']),
+            'reliability': collector.get(w_reliability['pk']),
+            'geo': collector.get(w_geo['pk'], []),
+            'special_needs': collector.get(w_specific_needs_groups['pk'], []),
+            'affected_groups': collector.get(w_ag['pk'], []),
             'context': (
                 collector.get(w1d['pk'], {}).get('context_keys', []) +
                 collector.get(w2d['pk'], {}).get('context_keys', [])
