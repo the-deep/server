@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models.functions import TruncDate
 from django.db.models import Q
 
+from deep.models import ProcessStatus
 from user_resource.models import UserResource
 from geo.models import Region
 from user_group.models import UserGroup
@@ -163,10 +164,6 @@ class Project(UserResource):
         blank=True, default=None, null=True,
         on_delete=models.SET_NULL,
     )
-
-    # entry_stats = models.FileField(
-    #     upload_to='entry-stats/', max_length=255, null=True, blank=True, default=None,
-    # )
 
     def __str__(self):
         return self.title
@@ -576,3 +573,33 @@ class ProjectRole(models.Model):
 
             # can be negative if first bit 1, so check if not zero
             return item_permissions & permission_bit != 0
+
+
+class ProjectEntryStats(models.Model):
+    THRESHOLD_SECONDS = 60 * 20
+
+    project = models.OneToOneField(
+        Project, on_delete=models.CASCADE, related_name='entry_stats',
+    )
+    modified_at = models.DateTimeField(auto_now_add=True)
+    file = models.FileField(upload_to='entry-stats/', max_length=255, null=True, blank=True)
+    status = models.CharField(
+        max_length=30, choices=ProcessStatus.STATUS_CHOICES, default=ProcessStatus.PENDING,
+    )
+
+    @staticmethod
+    def get_for(user):
+        return ProjectEntryStats.objects.filter(
+            models.Q(project__members=user) |
+            models.Q(project__user_groups__members=user)
+        ).distinct()
+
+    def is_ready(self):
+        time_threshold = timezone.now() - timedelta(seconds=self.THRESHOLD_SECONDS)
+        if (
+                self.status == ProcessStatus.SUCCESS and
+                self.modified_at > time_threshold and
+                self.file
+        ):
+            return True
+        return False
