@@ -3,9 +3,16 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
-from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
+from deep.serializers import RemoveNullFieldsMixin
 from geo.models import Region
 from geo.serializers import SimpleRegionSerializer
+from entry.models import Lead, Entry
+from analysis_framework.models import AnalysisFrameworkMembership
+from user.models import Feature
+from user.serializers import SimpleUserSerializer
+from user_group.models import UserGroup
+from user_group.serializers import SimpleUserGroupSerializer
+from user_resource.serializers import UserResourceSerializer
 
 from .models import (
     Project,
@@ -15,19 +22,7 @@ from .models import (
     ProjectUserGroupMembership,
     ProjectStatusCondition,
     ProjectStatus,
-    ProjectEntryStats,
 )
-
-from entry.models import Lead, Entry
-from analysis_framework.models import AnalysisFrameworkMembership
-from project.permissions import PROJECT_PERMISSIONS
-from project.activity import project_activity_log
-
-from user.models import Feature
-from user.serializers import SimpleUserSerializer
-from user_group.models import UserGroup
-from user_group.serializers import SimpleUserGroupSerializer
-from user_resource.serializers import UserResourceSerializer
 
 from .permissions import PROJECT_PERMISSIONS
 from .activity import project_activity_log

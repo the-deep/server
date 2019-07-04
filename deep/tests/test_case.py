@@ -55,8 +55,14 @@ class TestCase(test.APITestCase):
     def assert_201(self, response):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def assert_202(self, response):
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+
     def assert_204(self, response):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def assert_302(self, response):
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
 
     def assert_400(self, response):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -70,6 +76,9 @@ class TestCase(test.APITestCase):
     def assert_405(self, response):
         self.assertEqual(
             response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def assert_500(self, response):
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def create(self, model, **kwargs):
         if not kwargs.get('created_by'):

@@ -216,6 +216,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 {'error': f'Failed to generate Entry stats, Contact Admin'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+        # TODO: Refactor task trigger if all users have access to this API
         generate_entry_stats.delay(project.pk)
         return response.Response({
             'message': 'Processing the request, try again later',
