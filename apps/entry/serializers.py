@@ -230,7 +230,7 @@ class ComprehensiveAttributeSerializer(
         if not hasattr(self, 'widgets_meta'):
             self.widgets_meta = self._get_initial_wigets_meta(instance)
         widget = instance.widget
-        widget_data = widget.properties and widget.properties.get('data')
+        widget_data = widget.properties and widget.properties.get('data') or {}
         data = instance.data or {}
         return getattr(
             widget_store.get(instance.widget.widget_id, {}),
