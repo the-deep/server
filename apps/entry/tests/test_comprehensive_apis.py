@@ -71,10 +71,6 @@ class ComprehensiveEntryApiTest(TestCase):
     def test_comprehensive_api(self):
         self.authenticate()
 
-        url = '/api/v1/comprehensive-entries/'
-        response = self.client.get(url)
-        self.assert_200(response)
-
         project = self.create_project()
         url = f'/api/v1/projects/{project.pk}/comprehensive-entries/'
         response = self.client.get(url)

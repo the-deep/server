@@ -13,6 +13,7 @@ from deep.permissions import ModifyPermission
 
 from project.models import Project
 from lead.models import Lead
+from analysis_framework.models import Widget
 
 from .models import (
     Entry, Attribute, FilterData, ExportData,
@@ -204,8 +205,16 @@ class ComprehensiveEntriesViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = EntryFilterSet
 
     def get_queryset(self):
+        ignore_widget_type = ['excerptWidget']
         prefetch_related_fields = [
-            'attribute_set', 'attribute_set__widget',
+            models.Prefetch(
+                'attribute_set',
+                queryset=Attribute.objects.exclude(widget__widget_id__in=ignore_widget_type),
+            ),
+            models.Prefetch(
+                'attribute_set__widget',
+                queryset=Widget.objects.exclude(widget_id__in=ignore_widget_type),
+            ),
             'created_by', 'created_by__profile',
             'modified_by', 'modified_by__profile',
         ]
