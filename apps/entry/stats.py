@@ -28,12 +28,11 @@ def _get_widget_info(config, widgets, widget_name, skip_data=False):
         return _return(None)
 
     if widget.widget_id == 'organigramWidget':
-        return _return(
-            Filter.objects.filter(
-                widget_key=widget.key,
-                analysis_framework_id=widget.analysis_framework_id,
-            ).first()
-        )
+        w_filter = Filter.objects.filter(
+            widget_key=widget.key,
+            analysis_framework_id=widget.analysis_framework_id,
+        ).first()
+        return _return(w_filter.properties if w_filter else None)
 
     data = widget.properties['data']
     # TODO: Add validator for this
@@ -44,54 +43,52 @@ def _get_widget_info(config, widgets, widget_name, skip_data=False):
     return _return(data)
 
 
-def _get_attribute_data(collector, attribute, cd_widget_map):
-
-    def _get_widget_value(w_value, widget_type, widget_pk=None):
-        value = None
-        if widget_type in ['scaleWidget', 'multiselectWidget', 'organigramWidget', 'geoWidget']:
-            value = w_value
-        elif widget_type == 'conditionalWidget':
-            cd_config = cd_widget_map.get(widget_pk)
-            if cd_config is not None:
-                selected_widget_key = cd_config['widget_key']
-                selected_widget_type = cd_config['widget_type']
-                selected_widget_pk = cd_config.get('widget_pk')
-                if w_value.get(selected_widget_key):
-                    value = _get_widget_value(
-                        w_value[selected_widget_key]['data']['value'],
-                        selected_widget_type,
-                        selected_widget_pk,
-                    )
-        elif widget_type in ['matrix1dWidget', 'matrix2dWidget']:
-            context_keys = [
-                f'{widget_pk}-{_value}'
-                for _value in (
-                    w_value.keys() if isinstance(w_value, dict) else []
-                )
+def _get_attribute_widget_value(cd_widget_map, w_value, widget_type, widget_pk=None):
+    if widget_type in ['scaleWidget', 'multiselectWidget', 'organigramWidget', 'geoWidget']:
+        return w_value
+    elif widget_type == 'conditionalWidget':
+        cd_config = cd_widget_map.get(widget_pk)
+        if cd_config is None:
+            return
+        selected_widget_key = cd_config['widget_key']
+        selected_widget_type = cd_config['widget_type']
+        selected_widget_pk = cd_config.get('widget_pk')
+        return _get_attribute_widget_value(
+            cd_widget_map,
+            w_value[selected_widget_key]['data']['value'],
+            selected_widget_type,
+            selected_widget_pk,
+        ) if w_value.get(selected_widget_key) else None
+    elif widget_type in ['matrix1dWidget', 'matrix2dWidget']:
+        context_keys = [
+            f'{widget_pk}-{_value}'
+            for _value in (
+                w_value.keys() if isinstance(w_value, dict) else []
+            )
+        ]
+        sectors_keys = []
+        if widget_type == 'matrix2dWidget':  # Collect sector data from here
+            sectors_keys = [
+                [f'{widget_pk}-{pillar_key}', subpillar_key, sector_key]
+                for pillar_key, pillar in w_value.items()
+                for subpillar_key, subpillar in pillar.items()
+                for sector_key in subpillar.keys()
             ]
-            sectors_keys = []
-            if widget_type == 'matrix2dWidget':  # Collect sector data from here
-                for pillar_key, pillar in w_value.items():
-                    for subpillar_key, subpillar in pillar.items():
-                        for sector_key in subpillar.keys():
-                            sectors_keys.append([
-                                f'{widget_pk}-{pillar_key}',
-                                subpillar_key, sector_key,
-                            ])
-            value = {
-                'context_keys': context_keys,
-                'sectors_keys': sectors_keys,
-            }
-        return value
+        return {
+            'context_keys': context_keys,
+            'sectors_keys': sectors_keys,
+        }
 
+
+def _get_attribute_data(collector, attribute, cd_widget_map):
     widget_type = attribute.widget.widget_id
     widget_pk = attribute.widget.pk
     data = attribute.data
 
-    if widget_type not in SUPPORTED_WIDGETS or data is None or data.get('value') is [None, {}, []]:
+    if widget_type not in SUPPORTED_WIDGETS or not data or not data.get('value'):
         return
 
-    collector[widget_pk] = _get_widget_value(data['value'], widget_type, widget_pk)
+    collector[widget_pk] = _get_attribute_widget_value(cd_widget_map, data['value'], widget_type, widget_pk)
 
 
 def get_project_entries_stats(project):
@@ -130,7 +127,8 @@ def get_project_entries_stats(project):
     }
     """
 
-    config = project.analysis_framework.properties.get('stats_config')
+    af = project.analysis_framework
+    config = af.properties.get('stats_config')
 
     widgets_pk = [info['pk'] for info in config.values()]
     cd_widget_map = {
@@ -138,7 +136,7 @@ def get_project_entries_stats(project):
     }
     widgets = {
         widget.pk: widget
-        for widget in Widget.objects.filter(pk__in=widgets_pk)
+        for widget in Widget.objects.filter(pk__in=widgets_pk, analysis_framework=af)
     }
 
     w1d = _get_widget_info(config, widgets, 'widget_1d')
@@ -180,7 +178,7 @@ def get_project_entries_stats(project):
         {
             'id': option['key'],
             'name': option['label'],
-        } for option in w_ag['data'].properties['options']
+        } for option in w_ag['data']['options']
     ]
     specific_needs_groups_array = [
         {
