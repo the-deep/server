@@ -11,6 +11,7 @@ from rest_framework import (
     views,
     viewsets,
 )
+from rest_framework.decorators import action
 from deep.permissions import ModifyPermission
 
 from project.models import Project
@@ -63,6 +64,22 @@ class AnalysisFrameworkViewSet(viewsets.ModelViewSet):
         if query_params.get('relatedToMe', 'false').lower() == 'true':
             queryset = queryset.filter(created_by=self.request.user)
         return queryset
+
+    @action(
+        detail=True,
+        url_path='memberships',
+        methods=['get'],
+    )
+    def get_memberships(self, request, pk=None, version=None):
+        framework = self.get_object()
+        memberships = AnalysisFrameworkMembership.objects.filter(framework=framework)
+
+        serializer = AnalysisFrameworkMembershipSerializer(
+            memberships,
+            context={'request': request},
+            many=True
+        )
+        return response.Response(serializer.data)
 
 
 class AnalysisFrameworkCloneView(views.APIView):

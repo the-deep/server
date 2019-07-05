@@ -86,6 +86,39 @@ class SimpleExportableSerializer(RemoveNullFieldsMixin,
         fields = ('id', 'widget_key', 'inline', 'order', 'data')
 
 
+class AnalysisFrameworkMembershipSerializer(
+    RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer,
+):
+    class Meta:
+        model = AnalysisFrameworkMembership
+        fields = ('__all__')
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        framework = validated_data.get('framework')
+
+        if framework is None:
+            raise serializers.ValidationError('Analysis Framework does not exist')
+
+        membership = AnalysisFrameworkMembership.objects.filter(
+            member=user,
+            framework=framework,
+        ).first()
+
+        # If user is not a member of the private framework then return 404
+        if membership is None and framework.is_private:
+            raise exceptions.NotFound()
+        elif membership is None:
+            # Else if user is not member but is a public framework, return 403
+            raise exceptions.PermissionDenied()
+
+        # But if user is member and has no permissions, return 403
+        if not membership.role.can_add_user:
+            raise exceptions.PermissionDenied()
+
+        return super().create(validated_data)
+
+
 class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
                                   DynamicFieldsMixin, UserResourceSerializer):
     """
@@ -112,9 +145,21 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
         required=False,
     )
 
+    role = serializers.SerializerMethodField()
+
     class Meta:
         model = AnalysisFramework
         fields = ('__all__')
+
+    def get_role(self, obj):
+        user = self.context['request'].user
+        membership = AnalysisFrameworkMembership.objects.filter(
+            framework=obj,
+            member=user
+        ).first()
+        if not membership:
+            return {}
+        return AnalysisFrameworkRoleSerializer(membership.role).data
 
     def validate_project(self, project):
         try:
@@ -167,39 +212,6 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
 
     def get_is_admin(self, analysis_framework):
         return analysis_framework.can_modify(self.context['request'].user)
-
-
-class AnalysisFrameworkMembershipSerializer(
-    RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer,
-):
-    class Meta:
-        model = AnalysisFrameworkMembership
-        fields = ('__all__')
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        framework = validated_data.get('framework')
-
-        if framework is None:
-            raise serializers.ValidationError('Analysis Framework does not exist')
-
-        membership = AnalysisFrameworkMembership.objects.filter(
-            member=user,
-            framework=framework,
-        ).first()
-
-        # If user is not a member of the private framework then return 404
-        if membership is None and framework.is_private:
-            raise exceptions.NotFound()
-        elif membership is None:
-            # Else if user is not member but is a public framework, return 403
-            raise exceptions.PermissionDenied()
-
-        # But if user is member and has no permissions, return 403
-        if not membership.role.can_add_user:
-            raise exceptions.PermissionDenied()
-
-        return super().create(validated_data)
 
 
 class AnalysisFrameworkRoleSerializer(

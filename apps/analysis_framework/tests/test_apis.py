@@ -44,18 +44,38 @@ class AnalysisFrameworkTests(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(len(response.data['results']), 2)
+        for framework in response.data['results']:
+            assert 'role' in framework
+            assert isinstance(framework['role'], dict)
 
         # Now get a particular private framework
         url = f'/api/v1/analysis-frameworks/{private_framework.id}/'
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
+        assert 'role' in response.data
+        assert isinstance(response.data['role'], dict)
 
         # Now get a particular public framework, should be 200
         url = f'/api/v1/analysis-frameworks/{public_framework.id}/'
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
+        assert 'role' in response.data
+        assert isinstance(response.data['role'], dict)
+
+    def test_get_memberships(self):
+        framework = self.create(AnalysisFramework)
+        framework.add_member(self.user)
+        url = f'/api/v1/analysis-frameworks/{framework.id}/memberships/'
+
+        self.authenticate()
+        resp = self.client.get(url)
+
+        self.assert_200(resp)
+        assert len(resp.data) == 1
+        assert resp.data[0]['member'] == self.user.id
+        assert resp.data[0]['framework'] == framework.id
 
     def test_create_analysis_framework(self):
         project = self.create(Project, role=self.admin_role)
