@@ -6,9 +6,11 @@ from deep.admin import linkify
 from .models import (
     AssessmentTemplate,
 
+    MetadataField,
     MetadataGroup,
     MetadataOption,
 
+    MethodologyField,
     MethodologyGroup,
     MethodologyOption,
 
@@ -116,6 +118,20 @@ class ScoreQuestionnaireSubSectorAdmin(admin.ModelAdmin):
 @admin.register(AffectedGroup)
 class AffectedGroupAdmin(admin.ModelAdmin):
     list_display = ('title', 'order', linkify('template'),)
+
+
+class FieldAdminMixin():
+    list_display = ('title', 'order', linkify('group'),)
+
+
+@admin.register(MetadataField)
+class MetadataFieldAdmin(FieldAdminMixin, admin.ModelAdmin):
+    pass
+
+
+@admin.register(MethodologyField)
+class MethodologyFieldAdmin(FieldAdminMixin, admin.ModelAdmin):
+    pass
 
 
 class TemplateGroupAdminMixin():

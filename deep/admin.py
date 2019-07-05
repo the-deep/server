@@ -55,7 +55,7 @@ def linkify(field_name, field_field=None):
         app_label = obj._meta.app_label
         linked_obj = obj
         for _field_name in field_name.split('.'):
-            linked_obj = getattr(linked_obj, _field_name)
+            linked_obj = getattr(linked_obj, _field_name, None)
         if linked_obj:
             model_name = linked_obj._meta.model_name
             view_name = f"admin:{app_label}_{model_name}_change"
