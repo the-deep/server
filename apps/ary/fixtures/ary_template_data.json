@@ -29,7 +29,7 @@
       "properties": null,
       "source_type": null,
       "title": "Crisis Type",
-      "tooltip": ""
+      "tooltip": "Primary type of crisis during which the assessment was conducted, e.g. floods, conflict, etc."
     },
     "model": "ary.metadatafield",
     "pk": 1
@@ -62,7 +62,7 @@
       "properties": null,
       "source_type": null,
       "title": "Data Collection Technique",
-      "tooltip": ""
+      "tooltip": "The data collection technique(s) used to collect or collate data, e.g. SDR, direct observation, etc. List all data collection techniques used for the assessment: SDR, Direct observation, etc. Look into the methodology section and the questionnaire to identify what type of question is there. Sometimes direct observation is not mentioned but by looking at the questionnaire we realize that some questions are for direct observation only."
     },
     "model": "ary.methodologyfield",
     "pk": 1
@@ -133,15 +133,6 @@
       "title": "Female Head of Household"
     },
     "model": "ary.specificneedgroup",
-    "pk": 1
-  },
-  {
-    "fields": {
-      "order": 1,
-      "template": 1,
-      "title": "gag"
-    },
-    "model": "ary.affectedlocation",
     "pk": 1
   },
   {
@@ -272,7 +263,7 @@
       "properties": null,
       "source_type": null,
       "title": "Crisis Start Date",
-      "tooltip": ""
+      "tooltip": "Estimated date at which the crisis was declared, in the absence of clear data, use the date of the first report available in GLIDE"
     },
     "model": "ary.metadatafield",
     "pk": 2
@@ -305,7 +296,7 @@
       "properties": null,
       "source_type": null,
       "title": "Sampling Approach",
-      "tooltip": ""
+      "tooltip": "The type of sampling technique used, e.g. convenience, purposive or random, or a mix of those, in order to identify the degree of representativity of the information contained in the report.\r\nIf no mention is made of random selection of participants or representative sampling, then “random sampling” will not apply. If the report mentions a random or comprehensive sampling and is clear with its limitations, we use “Random sampling”. IF random sampling is used, you will see words such as confidence interval, margin of error, random, representative, generalizable, etc.\r\nIf respondents or locations were not chosen randomly but with a purpose in mind, then “purposive sampling” will apply, e.g. a rapid assessment visiting all IDPs in earthquake affected areas. If the assessment teams could only visit accessible areas, then “Convenience sampling” will apply. Both Purposive and convenience belong to the category “Non-random sampling”\r\nIf all the units of interests were visited, then select “full enumeration”, for instance a satellite imagery for damage assessment or a census."
     },
     "model": "ary.methodologyfield",
     "pk": 2
@@ -486,7 +477,7 @@
       "properties": null,
       "source_type": null,
       "title": "Preparedness",
-      "tooltip": ""
+      "tooltip": "Preparedness implies that the assessment teams are using protocols, tools, skills and templates that were discussed and agreed in advance of the disaster in the considered country."
     },
     "model": "ary.metadatafield",
     "pk": 3
@@ -519,7 +510,7 @@
       "properties": null,
       "source_type": null,
       "title": "Sampling Size",
-      "tooltip": ""
+      "tooltip": "The number of samples for this particular data collection technique, e.g. 1200 HHs, 70 KIs, etc."
     },
     "model": "ary.methodologyfield",
     "pk": 3
@@ -701,7 +692,7 @@
       "properties": null,
       "source_type": null,
       "title": "External Support",
-      "tooltip": ""
+      "tooltip": "Support received from an external actor or organization, e.g. OCHA NAAS, ACAPS, Mapaction, etc."
     },
     "model": "ary.metadatafield",
     "pk": 4
@@ -734,7 +725,7 @@
       "properties": null,
       "source_type": null,
       "title": "Proximity",
-      "tooltip": ""
+      "tooltip": "Identify if the assessment was done remotely or face to face or a combination of methods"
     },
     "model": "ary.methodologyfield",
     "pk": 4
@@ -747,15 +738,6 @@
       "title": "Non-Random Selection"
     },
     "model": "ary.methodologyoption",
-    "pk": 4
-  },
-  {
-    "fields": {
-      "order": 4,
-      "template": 1,
-      "title": "NFI"
-    },
-    "model": "ary.sector",
     "pk": 4
   },
   {
@@ -953,7 +935,7 @@
       "properties": null,
       "source_type": null,
       "title": "Unit of Analysis",
-      "tooltip": ""
+      "tooltip": "The lowest level at which the information was captured (e.g. Household, health facility level, markets, etc.)"
     },
     "model": "ary.methodologyfield",
     "pk": 5
@@ -1118,15 +1100,6 @@
   },
   {
     "fields": {
-      "order": 6,
-      "template": 1,
-      "title": "Report Details"
-    },
-    "model": "ary.metadatagroup",
-    "pk": 6
-  },
-  {
-    "fields": {
       "field_type": "select",
       "group": 1,
       "is_required": false,
@@ -1134,7 +1107,7 @@
       "properties": null,
       "source_type": null,
       "title": "Coordination",
-      "tooltip": ""
+      "tooltip": "There are three levels of coordination for needs assessment. By default, if the assessment was implemented by one single agency or organization, then the assessment is uncoordinated. The cover page should have only one logo. If the assessment was implemented by several organizations or partners, then it is categorized as Joint Assessment. It should have several logos on the cover page, there is only one methodology, questionnaire and final report. If the assessment took data from another assessment or is part of a larger constellation of assessments, i.e. a health assessment that is implemented in parallel to a WASH assessment and that take results from the WASH assessment to complement his, then the assessment is Harmonized. There are several assessments, reports and methodologies, but each assessment uses data from another assessment. This is a rather rare case."
     },
     "model": "ary.metadatafield",
     "pk": 6
@@ -1158,7 +1131,7 @@
       "properties": null,
       "source_type": null,
       "title": "Unit of reporting",
-      "tooltip": ""
+      "tooltip": "The level at which the data is being aggregated and is the most commonly reported in the report, e.g. the community, the sub-district, the affected group, etc. For instance, to determine the knowledge level of several school, a questionnaire is being conducted with each student (unit of analysis), but the results are being presented for each school or education area (unit of reporting). IOM data for the Displacement tracking matrix is being collected for each IDP camp (unit of analysis) but in the report, results are being presented for each district or province (unit of reporting)."
     },
     "model": "ary.methodologyfield",
     "pk": 6
@@ -1309,7 +1282,7 @@
       "properties": null,
       "source_type": null,
       "title": "Cost estimates in USD",
-      "tooltip": ""
+      "tooltip": "Total cost estimate of the assessment (rarely available, keep blank if no indication)"
     },
     "model": "ary.metadatafield",
     "pk": 7
@@ -1489,7 +1462,7 @@
       "properties": null,
       "source_type": "organizations",
       "title": "Lead Organization",
-      "tooltip": ""
+      "tooltip": "Main organization(s) e.g. NGO, UN agency, etc. implementing the assessment or facilitating the initiative. There can be more than one."
     },
     "model": "ary.metadatafield",
     "pk": 8
@@ -1641,7 +1614,7 @@
       "properties": null,
       "source_type": "organizations",
       "title": "International Partners",
-      "tooltip": ""
+      "tooltip": "Other international organizations e.g. INGOs, UN agency, etc. participating or contributing to the initiative"
     },
     "model": "ary.metadatafield",
     "pk": 9
@@ -1793,7 +1766,7 @@
       "properties": null,
       "source_type": "organizations",
       "title": "Government",
-      "tooltip": ""
+      "tooltip": "Ministries, e.g. MoH, ministry of education, etc."
     },
     "model": "ary.metadatafield",
     "pk": 10
@@ -1943,9 +1916,9 @@
       "is_required": false,
       "order": 3,
       "properties": null,
-      "source_type": "donors",
+      "source_type": "organizations",
       "title": "Donor",
-      "tooltip": ""
+      "tooltip": "International or local donors contributing funding to the needs assessment, e.g. UKAID, ECHO, USAID, SIDA, CIDA, OFDA"
     },
     "model": "ary.metadatafield",
     "pk": 11
@@ -1986,16 +1959,6 @@
       "title": "Response & Capacities"
     },
     "model": "ary.focus",
-    "pk": 11
-  },
-  {
-    "fields": {
-      "order": 3,
-      "parent": 1,
-      "template": 1,
-      "title": "Stateless"
-    },
-    "model": "ary.affectedgroup",
     "pk": 11
   },
   {
@@ -2087,7 +2050,7 @@
       "properties": null,
       "source_type": null,
       "title": "Data Collection Start Date",
-      "tooltip": ""
+      "tooltip": "The date at which the field data collection or the SDR started"
     },
     "model": "ary.metadatafield",
     "pk": 12
@@ -2220,7 +2183,7 @@
       "properties": null,
       "source_type": null,
       "title": "Data Collection End Date",
-      "tooltip": ""
+      "tooltip": "The date at which the field data collection or the SDR stopped"
     },
     "model": "ary.metadatafield",
     "pk": 13
@@ -2335,7 +2298,7 @@
       "properties": null,
       "source_type": null,
       "title": "Publication Date",
-      "tooltip": ""
+      "tooltip": "The date at which the report was published on web platform, e.g. HR.info, reliefweb, etc."
     },
     "model": "ary.metadatafield",
     "pk": 14
@@ -2440,7 +2403,7 @@
       "properties": null,
       "source_type": null,
       "title": "Status",
-      "tooltip": ""
+      "tooltip": "If the assessment is planned (has not started yet), in progress (currently under design, data collection or analysis started) or completed (finalized and published already)"
     },
     "model": "ary.metadatafield",
     "pk": 15
@@ -2545,7 +2508,7 @@
       "properties": null,
       "source_type": null,
       "title": "Frequency",
-      "tooltip": ""
+      "tooltip": "One off assessment or regular. If you clicked monitoring under Type, then you should use “Regular” for the frequency"
     },
     "model": "ary.metadatafield",
     "pk": 16
@@ -2640,7 +2603,7 @@
       "properties": null,
       "source_type": null,
       "title": "Confidentiality",
-      "tooltip": ""
+      "tooltip": "Identify if the assessment is usable and quotable or if it was privately shared and should be kept confidential by analysts. If the document was posted on internet, then confidentiality level is unprotected by default"
     },
     "model": "ary.metadatafield",
     "pk": 17
@@ -2735,7 +2698,7 @@
       "properties": null,
       "source_type": null,
       "title": "Language",
-      "tooltip": ""
+      "tooltip": "Languages available for the report"
     },
     "model": "ary.metadatafield",
     "pk": 18
@@ -2925,7 +2888,7 @@
       "properties": null,
       "source_type": null,
       "title": "Type",
-      "tooltip": "Type"
+      "tooltip": "Type of assessment, initial, rapid, in-depth or monitoring. Initial include field visits at the beginning of a crisis, generally taking a few hours/days and based on qualitative research method, sampling is convenience/purposive. Rapid include more structured assessments, generally taking a one or two weeks and using qualitative research methods, sampling is purposive. In depth assessment take longer and are generally representative and use quantitative research methods or mixed methods approaches, e.g. HH survey + focus group discussions. Monitoring are repeated assessments, e.g. DTM, protection monitoring, etc."
     },
     "model": "ary.metadatafield",
     "pk": 20
@@ -3020,7 +2983,7 @@
       "properties": null,
       "source_type": null,
       "title": "Family",
-      "tooltip": ""
+      "tooltip": "Family refers to assessments for which guidance and manual exists, e.g. HeRAMS, EFSA, MIRA, DTM, etc."
     },
     "model": "ary.metadatafield",
     "pk": 21
@@ -3105,7 +3068,7 @@
       "properties": null,
       "source_type": "organizations",
       "title": "National Partners",
-      "tooltip": ""
+      "tooltip": "Other national organizations e.g. local LNGOs participating or contributing to the initiative"
     },
     "model": "ary.metadatafield",
     "pk": 22
@@ -3383,7 +3346,7 @@
       "properties": null,
       "source_type": "countries",
       "title": "Country",
-      "tooltip": ""
+      "tooltip": "Country covered by the assessment report"
     },
     "model": "ary.metadatafield",
     "pk": 26
