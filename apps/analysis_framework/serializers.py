@@ -157,9 +157,16 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
             framework=obj,
             member=user
         ).first()
-        if not membership:
+
+        role = None
+        if not membership and not obj.is_private:
+            role = obj.get_or_create_default_role()
+        elif membership:
+            role = membership.role
+        else:
             return {}
-        return AnalysisFrameworkRoleSerializer(membership.role).data
+
+        return AnalysisFrameworkRoleSerializer(role).data
 
     def validate_project(self, project):
         try:

@@ -109,12 +109,12 @@ class AnalysisFramework(UserResource):
         return role
 
     def get_or_create_default_role(self):
-        # For now, same for both private and public, change later if needed
+        permission_fields = self.get_default_permissions()
         privacy_label = 'Private' if self.is_private else 'Public'
         role, created = AnalysisFrameworkRole.objects.get_or_create(
             is_default_role=True,
             defaults={
-                'can_use_in_other_projects': True,
+                **permission_fields,
                 'title': f'Default({privacy_label})',
             }
         )
@@ -131,9 +131,16 @@ class AnalysisFramework(UserResource):
             },
         )
 
+    def get_default_permissions(self):
+        # For now, same for both private and public, change later if needed
+        AFRole = AnalysisFrameworkRole
+        permission_fields = {x: False for x in AFRole.PERMISSION_FIELDS}
+        permission_fields[AFRole.CAN_USE_IN_OTHER_PROJECTS] = True
+        return permission_fields
+
     def get_editor_permissions(self):
         AFRole = AnalysisFrameworkRole
-        permission_fields = {x: True for x in AnalysisFrameworkRole.PERMISSION_FIELDS}
+        permission_fields = {x: True for x in AFRole.PERMISSION_FIELDS}
         permission_fields[AFRole.CAN_ADD_USER] = False
         permission_fields[AFRole.CAN_MAKE_PUBLIC] = False
 
@@ -144,8 +151,9 @@ class AnalysisFramework(UserResource):
 
     def get_owner_permissions(self):
         AFRole = AnalysisFrameworkRole
-        permission_fields = {x: True for x in AnalysisFrameworkRole.PERMISSION_FIELDS}
+        permission_fields = {x: True for x in AFRole.PERMISSION_FIELDS}
         permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = False
+        permission_fields[AFRole.CAN_MAKE_PUBLIC] = False
 
         if not self.is_private:
             permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = True
