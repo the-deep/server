@@ -37,7 +37,11 @@ class AnalysisFrameworkTests(TestCase):
         private_framework = self.create(AnalysisFramework, is_private=True)
         public_framework = self.create(AnalysisFramework, is_private=False)
 
-        private_framework.add_member(self.user)
+        private_framework.add_member(
+            self.user,
+            private_framework.get_or_create_owner_role()
+        )
+        public_framework.add_member(self.user)
 
         url = '/api/v1/analysis-frameworks/'
         self.authenticate()
@@ -55,6 +59,7 @@ class AnalysisFrameworkTests(TestCase):
         self.assert_200(response)
         assert 'role' in response.data
         assert isinstance(response.data['role'], dict)
+        self.check_owner_roles_present(private_framework, response.data['role'])
 
         # Now get a particular public framework, should be 200
         url = f'/api/v1/analysis-frameworks/{public_framework.id}/'
@@ -63,6 +68,20 @@ class AnalysisFrameworkTests(TestCase):
         self.assert_200(response)
         assert 'role' in response.data
         assert isinstance(response.data['role'], dict)
+        print('OWNER ROLES', public_framework.get_default_permissions())
+        print('OBTAINED ROLES', response.data['role'])
+        self.check_default_roles_present(public_framework, response.data['role'])
+
+    def test_get_public_framework_with_roles(self):
+        public_framework = self.create(AnalysisFramework, is_private=False)
+        url = f'/api/v1/analysis-frameworks/{public_framework.id}/'
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        assert 'role' in response.data
+        assert isinstance(response.data['role'], dict)
+        self.check_default_roles_present(public_framework, response.data['role'])
 
     def test_get_memberships(self):
         framework = self.create(AnalysisFramework)
@@ -227,6 +246,16 @@ class AnalysisFrameworkTests(TestCase):
         self.authenticate()
         response = self.client.get(f'{url}?activity=active&relatedToMe=True')
         self.assert_200(response)
+
+    def check_owner_roles_present(self, framework, permissions):
+        owner_permissions = framework.get_owner_permissions()
+        for perm, val in owner_permissions.items():
+            assert val == permissions[perm], f'Should match for {perm}'
+
+    def check_default_roles_present(self, framework, permissions):
+        default_permissions = framework.get_default_permissions()
+        for perm, val in default_permissions.items():
+            assert val == permissions[perm], f'Should match for {perm}'
 
     def _change_framework_privacy(self, framework, status=403, user=None):
         url = f'/api/v1/analysis-frameworks/{framework.id}/'

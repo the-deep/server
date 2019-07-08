@@ -121,7 +121,7 @@ class Feature(models.Model):
     email_domains = models.ManyToManyField(EmailDomain, blank=True)
 
     def __str__(self):
-        return self.feature.title
+        return self.title
 
 
 OPT_MODELS = (
