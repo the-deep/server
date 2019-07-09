@@ -1,6 +1,14 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Profile, User, Feature, EmailDomain
+from .models import (
+    Profile, User, Feature, EmailDomain,
+    OPT_MODELS, OPT_PROXY_MODELS
+)
+
+
+admin.site.unregister(User)
+for _, model in OPT_MODELS:
+    admin.site.unregister(model)
 
 
 class ProfileInline(admin.StackedInline):
@@ -10,22 +18,9 @@ class ProfileInline(admin.StackedInline):
     fk_name = 'user'
 
 
-class CustomFeature(admin.ModelAdmin):
-    def get_readonly_fields(self, request, obj=None):
-        # editing an existing object
-        if obj:
-            return self.readonly_fields + ('key', )
-        return self.readonly_fields
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-
+@admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    inlines = (ProfileInline, )
+    inlines = [ProfileInline]
     search_fields = (
         'username', 'first_name', 'last_name', 'email', 'profile__language',
         'profile__organization',
@@ -52,9 +47,29 @@ class CustomUserAdmin(UserAdmin):
     get_language.short_description = 'Language'
 
 
-admin.site.unregister(User)
-admin.site.register(User, CustomUserAdmin)
-admin.site.register(Profile)
+class DjangoOTPAdmin(admin.ModelAdmin):
+    search_fields = [f'user__{user_prop}' for user_prop in CustomUserAdmin.search_fields]
+    list_display = ('user', 'name', 'confirmed')
+
+
+# Register OPT Proxy Model Dynamically
+for model in OPT_PROXY_MODELS:
+    admin.site.register(model, DjangoOTPAdmin)
+
+
+@admin.register(Feature)
+class CustomFeature(admin.ModelAdmin):
+    def get_readonly_fields(self, request, obj=None):
+        # editing an existing object
+        if obj:
+            return self.readonly_fields + ('key', )
+        return self.readonly_fields
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 admin.site.register(EmailDomain)
-admin.site.register(Feature, CustomFeature)
