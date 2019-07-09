@@ -88,6 +88,13 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
 
     # LIBRARIES
+
+    # -> 2-factor-auth
+    'django_otp',
+    'django_otp.plugins.otp_static',
+    'django_otp.plugins.otp_email',
+    'django_otp.plugins.otp_totp',
+
     'fixture_magic',
     'autofixture',
     'channels',
@@ -117,6 +124,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'deep.middleware.RevisionMiddleware',
@@ -544,3 +552,5 @@ PROJECT_REQUEST_RESET_TIMEOUT_DAYS = 7
 
 JSON_EDITOR_INIT_JS = 'js/jsoneditor-init.js'
 LOGIN_URL = '/admin/login'
+
+OTP_TOTP_ISSUER = f'Deep Admin {DEEP_ENVIRONMENT.title()}'
