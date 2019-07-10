@@ -6,12 +6,14 @@ from deep.tests import TestCase
 from entry.models import Lead, Entry
 from project.models import (
     Project,
+    ProjectRole,
     ProjectMembership,
     ProjectJoinRequest,
     ProjectStatus,
     ProjectStatusCondition,
     ProjectUserGroupMembership,
 )
+from analysis_framework.models import AnalysisFramework, AnalysisFrameworkRole
 
 from user_group.models import UserGroup
 
@@ -121,6 +123,17 @@ class ProjectApiTest(TestCase):
         self.assertEqual(response.data['is_private'], True)
         self.assertEqual(Project.objects.last().is_private, True)
 
+    def test_change_private_project_to_public(self):
+        private_project = self.create(Project, is_private=True)
+        public_project = self.create(Project, is_private=False)
+
+        # Add roles for self.user
+        private_project.add_member(self.user, ProjectRole.get_creator_role())
+        public_project.add_member(self.user, ProjectRole.get_creator_role())
+
+        self._change_project_privacy_test(private_project, 403, self.user)
+        self._change_project_privacy_test(public_project, 403, self.user)
+        
     def test_create_private_project_unauthorized(self):
         user_fhx = self.create(User, email='fhx@togglecorp.com')
         user_dummy = self.create(User, email='dummy@test.com')
@@ -155,6 +168,152 @@ class ProjectApiTest(TestCase):
         response = self.client.get(f'/api/v1/projects/{new_private_project_id}/')
 
         self.assert_404(response)
+
+    def test_private_project_use_public_framework(self):
+        """Can use public framework"""
+        private_project = self.create(Project, is_private=True)
+        public_framework = self.create(AnalysisFramework, is_private=False)
+
+        private_project.add_member(
+            self.user,
+            # Test with role which can modify project
+            ProjectRole.get_creator_role(),
+        )
+
+        url = f'/api/v1/projects/{private_project.id}/'
+        data = {
+            'title': private_project.title,
+            'analysis_framework': public_framework.id,
+            # ... don't care other fields
+        }
+        self.authenticate()
+        response = self.client.put(url, data)
+        self.assert_200(response)
+
+    def test_private_project_use_private_framework_if_framework_member(self):
+        """Can use private framework if member of framework"""
+        private_project = self.create(Project, is_private=True)
+        private_framework = self.create(AnalysisFramework, is_private=False)
+
+        private_framework.add_member(
+            self.user,
+            private_framework.get_or_create_default_role()
+        )
+
+        private_project.add_member(
+            self.user,
+            # Test with role which can modify project
+            ProjectRole.get_creator_role(),
+        )
+
+        url = f'/api/v1/projects/{private_project.id}/'
+        data = {
+            'title': private_project.title,
+            'analysis_framework': private_framework.id,
+            # ... don't care other fields
+        }
+        self.authenticate()
+        response = self.client.put(url, data)
+        self.assert_200(response)
+
+    def test_private_project_use_private_framework_if_not_framework_member(self):
+        """Can't use private framework if not member of framework"""
+        private_project = self.create(Project, is_private=True)
+        private_framework = self.create(AnalysisFramework, is_private=True)
+
+        private_project.add_member(
+            self.user,
+            # Test with role which can modify project
+            ProjectRole.get_creator_role(),
+        )
+
+        url = f'/api/v1/projects/{private_project.id}/'
+        data = {
+            'title': private_project.title,
+            'analysis_framework': private_framework.id,
+            # ... don't care other fields
+        }
+        self.authenticate()
+        response = self.client.put(url, data)
+        # Framework should not be visible if not member,
+        # Just send bad request
+        self.assert_400(response)
+
+    def test_private_project_use_private_framework_if_framework_member_no_can_use(self):
+        """Can't use private framework if member of framework but no can_use permission"""
+        private_project = self.create(Project, is_private=True)
+        private_framework = self.create(AnalysisFramework, is_private=True)
+
+        framework_role_no_permissions = AnalysisFrameworkRole.objects.create()
+        private_framework.add_member(
+            self.user,
+            framework_role_no_permissions
+        )
+
+        private_project.add_member(
+            self.user,
+            # Test with role which can modify project
+            ProjectRole.get_creator_role(),
+        )
+
+        url = f'/api/v1/projects/{private_project.id}/'
+        data = {
+            'title': private_project.title,
+            'analysis_framework': private_framework.id,
+            # ... don't care other fields
+        }
+        self.authenticate()
+        response = self.client.put(url, data)
+        # Framework should be visible if member,
+        # but forbidden if not permission to use in other projects
+        self.assert_403(response)
+
+    def test_public_project_use_public_framework(self):
+        """Can use public framework"""
+        public_project = self.create(Project, is_private=False)
+        public_framework = self.create(AnalysisFramework, is_private=False)
+
+        public_project.add_member(
+            self.user,
+            # Test with role which can modify project
+            ProjectRole.get_creator_role(),
+        )
+
+        url = f'/api/v1/projects/{public_project.id}/'
+        data = {
+            'title': public_project.title,
+            'analysis_framework': public_framework.id,
+            # ... don't care other fields
+        }
+        self.authenticate()
+        response = self.client.put(url, data)
+        self.assert_200(response)
+
+    def test_public_project_use_private_framework(self):
+        """Can't use private framework even if member"""
+        public_project = self.create(Project, is_private=False)
+        private_framework = self.create(AnalysisFramework, is_private=True)
+
+        public_project.add_member(
+            self.user,
+            # Test with role which can modify project
+            ProjectRole.get_creator_role(),
+        )
+        private_framework.add_member(
+            self.user,
+            private_framework.get_or_create_owner_role(),  # Any role will work which
+            # has can_use_in_other_projects True
+        )
+
+        url = f'/api/v1/projects/{public_project.id}/'
+        data = {
+            'title': public_project.title,
+            'analysis_framework': private_framework.id,
+            # ... don't care other fields
+        }
+        self.authenticate()
+        response = self.client.put(url, data)
+        self.assert_200(response)
 
     def test_project_get_with_user_group_field(self):
         # TODO: can make this more generic for other fields as well
@@ -788,3 +947,21 @@ class ProjectApiTest(TestCase):
 
         response = self.client.delete(url2)
         self.assert_204(response)
+
+    def _change_project_privacy_test(self, project, status=403, user=None):
+        url = f'/api/v1/projects/{project.id}/'
+
+        changed_privacy = not project.is_private
+        put_data = {
+            'title': project.title,
+            'is_private': changed_privacy,
+            # Other fields we don't care
+        }
+        self.authenticate(user)
+        response = self.client.put(url, put_data)
+        self.assertEqual(response.status_code, status)
+
+        # Try patching, should give 403 as well
+        patch_data = {'is_private': changed_privacy}
+        response = self.client.patch(url, patch_data)
+        self.assertEqual(response.status_code, status)
