@@ -1,6 +1,7 @@
 # NOTE: This structure and value are set through https://github.com/the-deep/client
 WIDGET_DATA = {
     'selectWidget': {
+        'title': 'My Select',
         'options': [
             {'key': 'option-1', 'label': 'Option 1'},
             {'key': 'option-2', 'label': 'Option 2'},
@@ -8,6 +9,7 @@ WIDGET_DATA = {
         ]
     },
     'multiselectWidget': {
+        'title': 'My Multi Select',
         'options': [
             {'key': 'option-1', 'label': 'Option 1'},
             {'key': 'option-2', 'label': 'Option 2'},
@@ -15,6 +17,8 @@ WIDGET_DATA = {
         ]
     },
     'scaleWidget': {
+        'title': 'My Scale',
+        'default_scale_unit': 'scale-1',
         'scale_units': [
             {'key': 'scale-1', 'color': '#470000', 'label': 'Scale 1'},
             {'key': 'scale-2', 'color': '#a40000', 'label': 'Scale 2'},
@@ -22,6 +26,7 @@ WIDGET_DATA = {
         ]
     },
     'numberMatrixWidget': {
+        'title': 'My Number Matrix',
         'row_headers': [
             {'key': 'row-1', 'title': 'Row 1'},
             {'key': 'row-2', 'title': 'Row 2'},
@@ -63,12 +68,13 @@ WIDGET_DATA = {
     },
 
     'matrix1dWidget': {
+        'title': 'My Matrix1d',
         'rows': [
             {
                 'key': 'pillar-1',
                 'cells': [
-                    {'key': 'subpillar-1', 'value': 'Politics'},
-                    {'key': 'subpillar-2', 'value': 'Security'},
+                    {'key': 'subpillar-1', 'value': 'Politics', 'tooltip': ''},
+                    {'key': 'subpillar-2', 'value': 'Security', 'tooltip': 'Secure is good'},
                     {'key': 'subpillar-3', 'value': 'Legal  & Policy'},
                     {'key': 'subpillar-4', 'value': 'Demography'},
                     {'key': 'subpillar-5', 'value': 'Economy'},
@@ -114,6 +120,7 @@ WIDGET_DATA = {
     },
 
     'matrix2dWidget': {
+        'title': 'My Matrix2d',
         'sectors': [
             {'id': 'sector-9', 'title': 'Cross', 'tooltip': 'Cross sectoral information', 'subsectors': []},
             {'id': 'sector-0', 'title': 'Food', 'tooltip': '...', 'subsectors': []},
@@ -217,11 +224,24 @@ WIDGET_DATA = {
         }]
     },
 
-    'dateWidget': {},
-    'dateRangeWidget': {},
-    'timeWidget': {},
-    'timeRangeWidget': {},
-    'numberWidget': {},
+    'dateWidget': {
+        'title': 'My Date',
+        'information_date_selected': False,
+    },
+    'dateRangeWidget': {
+        'title': 'My Date Range',
+    },
+    'timeWidget': {
+        'title': 'My Time',
+    },
+    'timeRangeWidget': {
+        'title': 'My Time Range',
+    },
+    'numberWidget': {
+        'title': 'My Number',
+        'maxValue': 0,
+        'minvalue': 12,
+    },
 }
 
 # NOTE: This structure and value are set through https://github.com/the-deep/client
