@@ -217,6 +217,57 @@ class LeadTests(TestCase):
         response = self.client.patch(url, data)
         self.assert_200(response)
 
+    def test_lead_copy(self):
+        url = '/api/v1/lead-copy/'
+
+        # Projects [Source]
+        project1s = self.create(Project, title='project1s', role=self.admin_role)
+        project2s = self.create(Project, title='project2s', role=self.admin_role)
+        project3s = self.create(Project, title='project3s')
+
+        # Projects [Destination]
+        project1d = self.create(Project, title='project1d')
+        project2d = self.create(Project, title='project2d', role=self.admin_role)
+        project3d = self.create(Project, title='project2d', role=self.admin_role)
+
+        # Leads
+        lead1 = self.create(Lead, project=project1s)
+        lead2 = self.create(Lead, project=project2s)
+        lead3 = self.create(Lead, project=project3s)
+
+        lead_stats = [
+            # Project, Original Lead Count, Lead Count After lead-copy
+            (project1s, 1, 2),
+            (project2s, 1, 1),
+            (project3s, 1, 1),
+
+            (project1d, 0, 0),
+            (project2d, 0, 2),
+            (project3d, 0, 2),
+        ]
+
+        # Request body data [also contains unauthorized projects and leads]
+        data = {
+            'projects': [project3d.pk, project2d.pk, project1d.pk, project1s.pk],
+            'leads': [lead3.pk, lead2.pk, lead1.pk],
+        }
+        # data [only contains authorized projects and leads]
+        validate_data = {
+            'projects': [project3d.pk, project2d.pk, project1s.pk],
+            'leads': [lead2.pk, lead1.pk],
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        rdata = response.json()
+        self.assert_200(response)
+        self.assertNotEqual(rdata, data)
+        self.assertEqual(rdata, validate_data)
+
+        for project, old_lead_count, new_lead_count in lead_stats:
+            current_lead_count = Lead.objects.filter(project_id=project.pk).count()
+            assert new_lead_count == current_lead_count, f'Project: {project.title} lead count is different'
+
 
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:
