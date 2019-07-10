@@ -11,18 +11,24 @@ from rest_framework import (
     views,
     viewsets,
 )
+from rest_framework.decorators import action
 from deep.permissions import ModifyPermission
 
 from project.models import Project
 from entry.models import Entry
 from .models import (
-    AnalysisFramework, Widget, Filter, Exportable
+    AnalysisFramework, Widget, Filter, Exportable,
+    AnalysisFrameworkMembership,
+    AnalysisFrameworkRole,
 )
 from .serializers import (
     AnalysisFrameworkSerializer, WidgetSerializer,
-    FilterSerializer, ExportableSerializer
+    FilterSerializer, ExportableSerializer,
+    AnalysisFrameworkMembershipSerializer,
+    AnalysisFrameworkRoleSerializer,
 )
 from .filter_set import AnalysisFrameworkFilterSet
+from .permissions import FrameworkMembershipModifyPermission
 
 
 class AnalysisFrameworkViewSet(viewsets.ModelViewSet):
@@ -59,6 +65,22 @@ class AnalysisFrameworkViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(created_by=self.request.user)
         return queryset
 
+    @action(
+        detail=True,
+        url_path='memberships',
+        methods=['get'],
+    )
+    def get_memberships(self, request, pk=None, version=None):
+        framework = self.get_object()
+        memberships = AnalysisFrameworkMembership.objects.filter(framework=framework)
+
+        serializer = AnalysisFrameworkMembershipSerializer(
+            memberships,
+            context={'request': request},
+            many=True
+        )
+        return response.Response(serializer.data)
+
 
 class AnalysisFrameworkCloneView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -72,7 +94,7 @@ class AnalysisFrameworkCloneView(views.APIView):
         analysis_framework = AnalysisFramework.objects.get(
             id=af_id
         )
-        if not analysis_framework.can_get(request.user):
+        if not analysis_framework.can_clone(request.user):
             raise exceptions.PermissionDenied()
 
         new_af = analysis_framework.clone(
@@ -126,3 +148,20 @@ class ExportableViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Exportable.get_for(self.request.user)
+
+
+class AnalysisFrameworkMembershipViewSet(viewsets.ModelViewSet):
+    serializer_class = AnalysisFrameworkMembershipSerializer
+    permission_classes = [permissions.IsAuthenticated,
+                          FrameworkMembershipModifyPermission]
+
+    def get_queryset(self):
+        return AnalysisFrameworkMembership.get_for(self.request.user)
+
+
+class AnalysisFrameworkRoleViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = AnalysisFrameworkRoleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return AnalysisFrameworkRole.objects.all()

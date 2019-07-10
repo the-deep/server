@@ -79,6 +79,8 @@ from entry.views import (
 from analysis_framework.views import (
     AnalysisFrameworkCloneView,
     AnalysisFrameworkViewSet,
+    AnalysisFrameworkRoleViewSet,
+    AnalysisFrameworkMembershipViewSet,
     ExportableViewSet,
     FilterViewSet,
     WidgetViewSet,
@@ -226,6 +228,10 @@ router.register(r'analysis-framework-filters', FilterViewSet,
                 basename='analysis_framework_filter')
 router.register(r'analysis-framework-exportables', ExportableViewSet,
                 basename='analysis_framework_exportable')
+router.register(r'framework-memberships', AnalysisFrameworkMembershipViewSet,
+                basename='framework_memberships')
+router.register(r'framework-roles', AnalysisFrameworkRoleViewSet,
+                basename='framework_roles')
 
 # Assessment registry
 router.register(r'assessments', AssessmentViewSet,

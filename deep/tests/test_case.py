@@ -154,3 +154,18 @@ class TestCase(test.APITestCase):
                 'assessment', ['view']
             ),
         )
+
+    def post_and_check_201(self, url, data, model, fields):
+        model_count = model.objects.count()
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        self.assertEqual(model.objects.count(), model_count + 1),\
+            f'One more {model} should have been created'
+
+        for field in fields:
+            self.assertEqual(response.data[field], data[field])
+
+        return response

@@ -1,8 +1,7 @@
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 from user_resource.models import UserResource
-
-from gallery.models import File
+from user.models import User
 
 
 class AnalysisFramework(UserResource):
@@ -14,16 +13,12 @@ class AnalysisFramework(UserResource):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
-    # FIXME: Remove snapshots
-    snapshot_one = models.ForeignKey(
-        File, on_delete=models.SET_NULL,
-        related_name='page_one_framework',
-        null=True, blank=True, default=None,
-    )
-    snapshot_two = models.ForeignKey(
-        File, on_delete=models.SET_NULL,
-        related_name='page_two_framework',
-        null=True, blank=True, default=None,
+    is_private = models.BooleanField(default=False)
+
+    members = models.ManyToManyField(
+        User, blank=True,
+        through_fields=('framework', 'member'),
+        through='AnalysisFrameworkMembership'
     )
 
     def __str__(self):
@@ -52,7 +47,9 @@ class AnalysisFramework(UserResource):
 
     @staticmethod
     def get_for(user):
-        return AnalysisFramework.objects.all()
+        return AnalysisFramework.objects.all().exclude(
+            models.Q(is_private=True) & ~models.Q(members=user)
+        )
 
     def can_get(self, user):
         return True
@@ -64,20 +61,103 @@ class AnalysisFramework(UserResource):
         * user is super user, or
         * the framework belongs to a project where the user is admin
         """
-        import project
         return (
             self.created_by == user or
             user.is_superuser or
-            project.models.ProjectMembership.objects.filter(
-                project__in=self.project_set.all(),
+            AnalysisFrameworkMembership.objects.filter(
                 member=user,
-                role__in=project.models.ProjectRole.get_admin_roles(),
+                framework=self,
+                role__can_edit_framework=True
+            ).exists()
+        )
+
+    def can_clone(self, user):
+        return (
+            not self.is_private or
+            AnalysisFrameworkMembership.objects.filter(
+                member=user,
+                framework=self,
+                role__can_clone_framework=True,
             ).exists()
         )
 
     def get_entries_count(self):
         from entry.models import Entry
         return Entry.objects.filter(analysis_framework=self).count()
+
+    def get_or_create_owner_role(self):
+        permission_fields = self.get_owner_permissions()
+        privacy_label = 'Private' if self.is_private else 'Public'
+        role, created = AnalysisFrameworkRole.objects.get_or_create(
+            **permission_fields,
+            defaults={
+                'title': f'Owner Role({privacy_label})'
+            }
+        )
+        return role
+
+    def get_or_create_editor_role(self):
+        permission_fields = self.get_editor_permissions()
+        privacy_label = 'Private' if self.is_private else 'Public'
+
+        role, created = AnalysisFrameworkRole.objects.get_or_create(
+            **permission_fields,
+            defaults={
+                'title': f'Editor Role({privacy_label})'
+            }
+        )
+        return role
+
+    def get_or_create_default_role(self):
+        permission_fields = self.get_default_permissions()
+        privacy_label = 'Private' if self.is_private else 'Public'
+        role, created = AnalysisFrameworkRole.objects.get_or_create(
+            is_default_role=True,
+            defaults={
+                **permission_fields,
+                'title': f'Default({privacy_label})',
+            }
+        )
+        return role
+
+    def add_member(self, user, role=None, added_by=None):
+        role = role or self.get_or_create_default_role()
+        return AnalysisFrameworkMembership.objects.get_or_create(
+            member=user,
+            framework=self,
+            defaults={
+                'added_by': added_by,
+                'role': role,
+            },
+        )
+
+    def get_default_permissions(self):
+        # For now, same for both private and public, change later if needed
+        AFRole = AnalysisFrameworkRole
+        permission_fields = {x: False for x in AFRole.PERMISSION_FIELDS}
+        permission_fields[AFRole.CAN_USE_IN_OTHER_PROJECTS] = True
+        return permission_fields
+
+    def get_editor_permissions(self):
+        AFRole = AnalysisFrameworkRole
+        permission_fields = {x: True for x in AFRole.PERMISSION_FIELDS}
+        permission_fields[AFRole.CAN_ADD_USER] = False
+        permission_fields[AFRole.CAN_MAKE_PUBLIC] = False
+
+        if self.is_private:
+            permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = False
+
+        return permission_fields
+
+    def get_owner_permissions(self):
+        AFRole = AnalysisFrameworkRole
+        permission_fields = {x: True for x in AFRole.PERMISSION_FIELDS}
+        permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = False
+        permission_fields[AFRole.CAN_MAKE_PUBLIC] = False
+
+        if not self.is_private:
+            permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = True
+        return permission_fields
 
 
 class Widget(models.Model):
@@ -235,3 +315,75 @@ class Exportable(models.Model):
 
     def can_modify(self, user):
         return self.analysis_framework.can_modify(user)
+
+
+class AnalysisFrameworkRole(models.Model):
+    """
+    Roles for AnalysisFramework
+    """
+    CAN_ADD_USER = 'can_add_user'
+    CAN_CLONE_FRAMEWORK = 'can_clone_framework'
+    CAN_MAKE_PUBLIC = 'can_make_public'
+    CAN_EDIT_FRAMEWORK = 'can_edit_framework'
+    CAN_USE_IN_OTHER_PROJECTS = 'can_use_in_other_projects'
+
+    PERMISSION_FIELDS = (
+        CAN_ADD_USER,
+        CAN_CLONE_FRAMEWORK,
+        CAN_MAKE_PUBLIC,
+        CAN_EDIT_FRAMEWORK,
+        CAN_USE_IN_OTHER_PROJECTS,
+    )
+
+    title = models.CharField(max_length=255, unique=True)
+
+    # The following field allows user to add other users to the framework and
+    # assign appropriate permissions
+    can_add_user = models.BooleanField(default=False)
+
+    can_clone_framework = models.BooleanField(default=False)
+
+    can_make_public = models.BooleanField(default=False)
+
+    can_edit_framework = models.BooleanField(default=False)
+
+    can_use_in_other_projects = models.BooleanField(default=False)
+
+    is_default_role = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (
+            'can_add_user',
+            'can_clone_framework',
+            'can_make_public',
+            'can_edit_framework',
+            'can_use_in_other_projects',
+            'is_default_role'
+        )
+
+    def __str__(self):
+        return self.title
+
+
+class AnalysisFrameworkMembership(models.Model):
+    member = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='member'
+    )
+    framework = models.ForeignKey(AnalysisFramework, on_delete=models.CASCADE)
+    role = models.ForeignKey(
+        AnalysisFrameworkRole,
+        on_delete=models.CASCADE,
+    )
+    joined_at = models.DateTimeField(auto_now_add=True)
+    added_by = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        null=True, blank=True, default=None,
+    )
+
+    class Meta:
+        unique_together = ('member', 'framework')
+
+    @staticmethod
+    def get_for(user):
+        return AnalysisFrameworkMembership.objects.filter(member=user)

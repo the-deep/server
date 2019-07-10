@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
-from django.db import models, transaction
-from django.dispatch import receiver
+
+from django.db import models
 from django.db.models.functions import TruncDate
 from django.db.models import Q
 
@@ -534,7 +534,7 @@ class ProjectRole(models.Model):
     def get_default_admin_role(cls):
         # TODO: This method should not be needed.
         # Fix use cases and remove this method.
-        return cls.get_admin_roles.filter(
+        return cls.get_admin_roles().filter(
             is_creator_role=False
         ).first()
 
@@ -572,69 +572,3 @@ class ProjectRole(models.Model):
 
             # can be negative if first bit 1, so check if not zero
             return item_permissions & permission_bit != 0
-
-
-@receiver(models.signals.post_save, sender=ProjectUserGroupMembership)
-def refresh_project_memberships_usergroup_modified(sender, instance, **kwargs):
-    project = instance.project
-    user_group = instance.usergroup
-
-    existing_members = ProjectMembership.objects.filter(
-        project=project,
-        linked_group=user_group,
-    )
-    existing_members.update(role=instance.role)
-
-    project_ug_members = User.objects.filter(usergroup__project=project)
-    new_users = project_ug_members.difference(project.get_all_members()).\
-        distinct()
-    for user in new_users:
-        project.add_member(user, role=instance.role, linked_group=user_group)
-
-
-@receiver(models.signals.pre_delete, sender=ProjectUserGroupMembership)
-def refresh_project_memberships_usergroup_removed(sender, instance, **kwargs):
-    project = instance.project
-    user_group = instance.usergroup
-
-    remove_memberships = ProjectMembership.objects.filter(
-        project=project,
-        linked_group=user_group,
-    )
-
-    for membership in remove_memberships:
-        other_user_groups = membership.get_user_group_options().exclude(
-            id=user_group.id
-        )
-        if other_user_groups.count() > 0:
-            membership.linked_group = other_user_groups.first()
-            membership.save()
-        else:
-            membership.delete()
-
-
-# Whenever a member is saved, if there is a pending request to join
-# same project by same user, accept that request.
-@receiver(models.signals.post_save, sender=ProjectMembership)
-def on_membership_saved(sender, **kwargs):
-    # if kwargs.get('created'):
-    instance = kwargs.get('instance')
-    ProjectJoinRequest.objects.filter(
-        project=instance.project,
-        requested_by=instance.member,
-        status='pending',
-    ).update(
-        status='accepted',
-        responded_by=instance.added_by,
-        responded_at=instance.joined_at,
-    )
-
-
-# Whenever a project status value is changed, update all projects' statuses
-@receiver(models.signals.post_save, sender=ProjectStatus)
-@receiver(models.signals.post_delete, sender=ProjectStatus)
-@receiver(models.signals.post_save, sender=ProjectStatusCondition)
-def on_status_updated(sender, **kwargs):
-    with transaction.atomic():
-        for project in Project.objects.all():
-            project.update_status()

@@ -99,7 +99,7 @@ def _extract_from_lead_core(lead_id):
         transaction.on_commit(
             lambda: extract_thumbnail.s(lead.id).delay()
         )
-        if text:
+        if text and not lead.project.is_private:
             # Send background deepl request
             transaction.on_commit(
                 lambda: send_lead_text_to_deepl.s(lead.id).delay()
@@ -169,6 +169,8 @@ def send_lead_text_to_deepl(self, lead_id):
         )
         return True
 
+    if lead.project.is_private:
+        return True
     # Get preview
     preview = LeadPreview.objects.filter(lead=lead).first()
     if not preview:

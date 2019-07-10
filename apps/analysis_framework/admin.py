@@ -1,6 +1,7 @@
 from django.contrib import admin
 from analysis_framework.models import (
     AnalysisFramework,
+    AnalysisFrameworkRole,
     Widget, Filter,
     Exportable,
 )
@@ -23,3 +24,6 @@ class ExportableInline(StackedInline):
 @admin.register(AnalysisFramework)
 class AnalysisFrameworkAdmin(VersionAdmin):
     inlines = [WidgetInline, FilterInline, ExportableInline]
+
+
+admin.site.register(AnalysisFrameworkRole)
