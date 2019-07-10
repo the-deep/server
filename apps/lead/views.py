@@ -333,3 +333,39 @@ class WebInfoExtractView(views.APIView):
             'source': source,
             'existing': check_if_url_exists(url, request.user, project),
         })
+
+
+class LeadCopyView(views.APIView):
+    """
+    Copy lead to another project
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        # TODO: @bewakes get_for member who can add leads to the project
+        projects = Project.get_for_member(request.user).filter(
+            pk__in=request.data.get('projects', [])
+        )
+        leads = Lead.get_for(request.user).filter(
+            pk__in=request.data.get('leads', [])
+        )
+
+        processed_projects = projects.values_list('pk', flat=True)
+        processed_lead = []
+        for lead in leads:
+            lead_original_project = lead.project_id
+            processed_lead.append(lead.pk)
+
+            for project_id in processed_projects:
+                if project_id == lead_original_project:
+                    continue
+
+                # NOTE: To clone Lead to another project
+                lead.pk = None
+                lead.project_id = project_id
+                lead.save()
+
+        return response.Response({
+            'projects': projects.values_list('pk', flat=True),
+            'leads': processed_lead,
+        })
