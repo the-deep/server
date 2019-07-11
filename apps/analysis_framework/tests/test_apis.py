@@ -93,6 +93,7 @@ class AnalysisFrameworkTests(TestCase):
 
         self.assert_200(resp)
         assert len(resp.data) == 1
+        assert isinstance(resp.data[0]['member'], dict), "Check if member field is expanded"
         assert resp.data[0]['member'] == self.user.id
         assert resp.data[0]['framework'] == framework.id
 

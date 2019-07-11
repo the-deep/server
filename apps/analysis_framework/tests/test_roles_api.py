@@ -102,7 +102,6 @@ class TestAnalysisFrameworkRoles(TestCase):
         self.assert_201(response)
 
         # EDITING FRAMEWORK
-        print(self.public_framework.__dict__)
         self._edit_framework_test(self.public_framework, normal_user, status=403)
         self._edit_framework_test(self.private_framework, normal_user, status=404)
 

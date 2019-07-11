@@ -10,6 +10,7 @@ from analysis_framework.models import (
     Widget, Filter, Exportable
 )
 from user.models import Feature
+from user.serializers import UserSerializer
 from project.models import Project
 
 
@@ -89,6 +90,8 @@ class SimpleExportableSerializer(RemoveNullFieldsMixin,
 class AnalysisFrameworkMembershipSerializer(
     RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer,
 ):
+    member = UserSerializer(read_only=True)
+
     class Meta:
         model = AnalysisFrameworkMembership
         fields = ('__all__')
