@@ -142,7 +142,6 @@ class AnalysisFramework(UserResource):
         AFRole = AnalysisFrameworkRole
         permission_fields = {x: True for x in AFRole.PERMISSION_FIELDS}
         permission_fields[AFRole.CAN_ADD_USER] = False
-        permission_fields[AFRole.CAN_MAKE_PUBLIC] = False
 
         if self.is_private:
             permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = False
@@ -153,7 +152,6 @@ class AnalysisFramework(UserResource):
         AFRole = AnalysisFrameworkRole
         permission_fields = {x: True for x in AFRole.PERMISSION_FIELDS}
         permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = False
-        permission_fields[AFRole.CAN_MAKE_PUBLIC] = False
 
         if not self.is_private:
             permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = True
@@ -323,14 +321,12 @@ class AnalysisFrameworkRole(models.Model):
     """
     CAN_ADD_USER = 'can_add_user'
     CAN_CLONE_FRAMEWORK = 'can_clone_framework'
-    CAN_MAKE_PUBLIC = 'can_make_public'
     CAN_EDIT_FRAMEWORK = 'can_edit_framework'
     CAN_USE_IN_OTHER_PROJECTS = 'can_use_in_other_projects'
 
     PERMISSION_FIELDS = (
         CAN_ADD_USER,
         CAN_CLONE_FRAMEWORK,
-        CAN_MAKE_PUBLIC,
         CAN_EDIT_FRAMEWORK,
         CAN_USE_IN_OTHER_PROJECTS,
     )
@@ -343,8 +339,6 @@ class AnalysisFrameworkRole(models.Model):
 
     can_clone_framework = models.BooleanField(default=False)
 
-    can_make_public = models.BooleanField(default=False)
-
     can_edit_framework = models.BooleanField(default=False)
 
     can_use_in_other_projects = models.BooleanField(default=False)
@@ -355,7 +349,6 @@ class AnalysisFrameworkRole(models.Model):
         unique_together = (
             'can_add_user',
             'can_clone_framework',
-            'can_make_public',
             'can_edit_framework',
             'can_use_in_other_projects',
             'is_default_role'
