@@ -3,7 +3,7 @@ from lxml import etree
 import requests
 import copy
 
-from utils.common import DEFAULT_HEADERS, parse_number
+from utils.common import DEFAULT_HEADERS
 from lead.models import Lead
 from .base import Source
 
@@ -99,7 +99,7 @@ class RssFeed(Source):
             options[field]['options'] = fields
         return options
 
-    def query_fields(self, params, limit=None, offset=None):
+    def query_fields(self, params):
         if not params or not params.get('feed-url'):
             return []
 
@@ -140,9 +140,4 @@ class RssFeed(Source):
         for field in fields:
             if fields.count(field) == 1:
                 real_fields.append(field)
-
-        if offset is None or offset < 0:
-            offset = 1
-        if not limit or limit < 0:
-            limit = Source.DEFAULT_PER_PAGE
-        return real_fields[offset:offset + limit]
+        return real_fields
