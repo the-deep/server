@@ -49,12 +49,7 @@ class SourceQueryView(views.APIView):
         source = source_store[source_type]()
         method = getattr(source, 'query_{}'.format(query))
 
-        query_params = self.request.query_params
-
-        limit = parse_number(query_params.get('limit'))
-        offset = parse_number(query_params.get('offset'))
-
-        results = method(params, limit, offset)
+        results = method(params)
 
         if isinstance(results, list):
             return response.Response({
