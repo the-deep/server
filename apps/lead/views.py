@@ -22,7 +22,8 @@ from lead.filter_set import (
     LeadGroupFilterSet,
     LeadFilterSet,
 )
-from project.models import Project
+from project.models import Project, ProjectMembership
+from project.permissions import PROJECT_PERMISSIONS
 from lead.models import LeadGroup, Lead
 from lead.serializers import (
     LeadGroupSerializer,
@@ -342,21 +343,25 @@ class LeadCopyView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        # TODO: @bewakes get_for member who can add leads to the project
-        projects = Project.get_for_member(request.user).filter(
-            pk__in=request.data.get('projects', [])
-        )
+        project_ids = ProjectMembership.objects.filter(
+            member=request.user,
+            project_id__in=request.data.get('projects', [])
+        ).annotate(
+            lead_add_permission=models.F('role__lead_permissions')
+            .bitand(PROJECT_PERMISSIONS.lead.create)
+        ).filter(lead_add_permission=PROJECT_PERMISSIONS.lead.create)\
+            .values_list('project_id', flat=True)
+
         leads = Lead.get_for(request.user).filter(
             pk__in=request.data.get('leads', [])
         )
 
-        processed_projects = projects.values_list('pk', flat=True)
         processed_lead = []
         for lead in leads:
             lead_original_project = lead.project_id
             processed_lead.append(lead.pk)
 
-            for project_id in processed_projects:
+            for project_id in project_ids:
                 if project_id == lead_original_project:
                     continue
 
@@ -366,6 +371,6 @@ class LeadCopyView(views.APIView):
                 lead.save()
 
         return response.Response({
-            'projects': projects.values_list('pk', flat=True),
+            'projects': project_ids,
             'leads': processed_lead,
         })
