@@ -6,7 +6,6 @@
             "title": "Owner Role(Public)",
             "can_add_user": true,
             "can_clone_framework": true,
-            "can_make_public": false,
             "can_edit_framework": true,
             "can_use_in_other_projects": true,
             "is_default_role": false
@@ -19,7 +18,6 @@
             "title": "Editor Role(Public)",
             "can_add_user": false,
             "can_clone_framework": true,
-            "can_make_public": false,
             "can_edit_framework": true,
             "can_use_in_other_projects": true,
             "is_default_role": false
@@ -32,7 +30,6 @@
             "title": "Default(Public)",
             "can_add_user": false,
             "can_clone_framework": false,
-            "can_make_public": false,
             "can_edit_framework": false,
             "can_use_in_other_projects": true,
             "is_default_role": true
@@ -45,7 +42,6 @@
             "title": "Editor Role(Private)",
             "can_add_user": false,
             "can_clone_framework": false,
-            "can_make_public": false,
             "can_edit_framework": true,
             "can_use_in_other_projects": true,
             "is_default_role": false
@@ -58,7 +54,6 @@
             "title": "Owner Role(Private)",
             "can_add_user": true,
             "can_clone_framework": false,
-            "can_make_public": false,
             "can_edit_framework": true,
             "can_use_in_other_projects": true,
             "is_default_role": false
