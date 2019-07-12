@@ -90,7 +90,7 @@ class SimpleExportableSerializer(RemoveNullFieldsMixin,
 class AnalysisFrameworkMembershipSerializer(
     RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer,
 ):
-    member = UserSerializer(read_only=True)
+    member_details = UserSerializer(read_only=True, source='member')
 
     class Meta:
         model = AnalysisFrameworkMembership
