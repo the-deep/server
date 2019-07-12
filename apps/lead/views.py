@@ -22,7 +22,8 @@ from lead.filter_set import (
     LeadGroupFilterSet,
     LeadFilterSet,
 )
-from project.models import Project
+from project.models import Project, ProjectMembership
+from project.permissions import PROJECT_PERMISSIONS
 from lead.models import LeadGroup, Lead
 from lead.serializers import (
     LeadGroupSerializer,
@@ -332,4 +333,44 @@ class WebInfoExtractView(views.APIView):
             'url': url,
             'source': source,
             'existing': check_if_url_exists(url, request.user, project),
+        })
+
+
+class LeadCopyView(views.APIView):
+    """
+    Copy lead to another project
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        project_ids = ProjectMembership.objects.filter(
+            member=request.user,
+            project_id__in=request.data.get('projects', [])
+        ).annotate(
+            lead_add_permission=models.F('role__lead_permissions')
+            .bitand(PROJECT_PERMISSIONS.lead.create)
+        ).filter(lead_add_permission=PROJECT_PERMISSIONS.lead.create)\
+            .values_list('project_id', flat=True)
+
+        leads = Lead.get_for(request.user).filter(
+            pk__in=request.data.get('leads', [])
+        )
+
+        processed_lead = []
+        for lead in leads:
+            lead_original_project = lead.project_id
+            processed_lead.append(lead.pk)
+
+            for project_id in project_ids:
+                if project_id == lead_original_project:
+                    continue
+
+                # NOTE: To clone Lead to another project
+                lead.pk = None
+                lead.project_id = project_id
+                lead.save()
+
+        return response.Response({
+            'projects': project_ids,
+            'leads': processed_lead,
         })
