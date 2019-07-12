@@ -5,6 +5,7 @@ from analysis_framework.models import (
 )
 
 from project.models import Project
+from user.models import User
 
 
 class AnalysisFrameworkTests(TestCase):
@@ -196,7 +197,7 @@ class AnalysisFrameworkTests(TestCase):
 
         url = f'/api/v1/analysis-frameworks/{framework.id}/'
         put_data = {
-            'title': framework.title + '(Modified)',
+            'title': framework.title[:-12] + '(Modified)',
             'is_private': framework.is_private,
         }
         self.authenticate()
@@ -246,6 +247,26 @@ class AnalysisFrameworkTests(TestCase):
         self.authenticate()
         response = self.client.get(f'{url}?activity=active&relatedToMe=True')
         self.assert_200(response)
+
+    def test_search_users_excluding_framework_members(self):
+        user1 = self.create(User, email='testuser1@tc.com')
+        user2 = self.create(User, email='testuser2@tc.com')
+        user3 = self.create(User, email='testuser3@tc.com')
+
+        framework = self.create(AnalysisFramework)
+        framework.add_member(user1)
+
+        url = f'/api/v1/users/?members_exclude_framework={framework.id}&search=test'
+
+        self.authenticate()
+        resp = self.client.get(url)
+        self.assert_200(resp)
+
+        data = resp.data
+        ids = [x['id'] for x in data['results']]
+        assert user1.id not in ids
+        assert user2.id in ids
+        assert user3.id in ids
 
     def check_owner_roles_present(self, framework, permissions):
         owner_permissions = framework.get_owner_permissions()

@@ -361,7 +361,7 @@ class AnalysisFrameworkRole(models.Model):
 class AnalysisFrameworkMembership(models.Model):
     member = models.ForeignKey(
         User, on_delete=models.CASCADE,
-        related_name='member'
+        related_name='framework_membership'
     )
     framework = models.ForeignKey(AnalysisFramework, on_delete=models.CASCADE)
     role = models.ForeignKey(

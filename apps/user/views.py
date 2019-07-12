@@ -101,13 +101,21 @@ class UserViewSet(viewsets.ModelViewSet):
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
 
-        # Check if project exclusion query is present
+        # Check if project/framework exclusion query is present
         exclude_project = self.request.query_params.get(
             'members_exclude_project')
+        exclude_framework = self.request.query_params.get(
+            'members_exclude_framework')
+
         if exclude_project:
             queryset = queryset.filter(
                 ~models.Q(projectmembership__project=exclude_project)
             ).distinct()
+
+        if exclude_framework:
+            queryset = queryset.filter(
+                ~models.Q(framework_membership__framework_id=exclude_framework)
+            )
 
         search_str = self.request.query_params.get('search')
         if search_str is None or not search_str.strip():
