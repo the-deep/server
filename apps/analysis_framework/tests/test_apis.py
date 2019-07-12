@@ -68,8 +68,6 @@ class AnalysisFrameworkTests(TestCase):
         self.assert_200(response)
         assert 'role' in response.data
         assert isinstance(response.data['role'], dict)
-        print('OWNER ROLES', public_framework.get_default_permissions())
-        print('OBTAINED ROLES', response.data['role'])
         self.check_default_roles_present(public_framework, response.data['role'])
 
     def test_get_public_framework_with_roles(self):
@@ -93,8 +91,9 @@ class AnalysisFrameworkTests(TestCase):
 
         self.assert_200(resp)
         assert len(resp.data) == 1
-        assert isinstance(resp.data[0]['member'], dict), "Check if member field is expanded"
+        assert isinstance(resp.data[0]['member_details'], dict), "Check if member field is expanded"
         assert resp.data[0]['member'] == self.user.id
+        assert 'member_details' in resp.data[0]
         assert resp.data[0]['framework'] == framework.id
 
     def test_create_analysis_framework(self):
