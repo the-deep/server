@@ -217,6 +217,67 @@ class LeadTests(TestCase):
         response = self.client.patch(url, data)
         self.assert_200(response)
 
+    def test_lead_copy(self):
+        url = '/api/v1/lead-copy/'
+
+        # Projects [Source]
+        project1s = self.create(Project, title='project1s', role=self.admin_role)
+        project2s = self.create(Project, title='project2s', role=self.admin_role)
+        project3s = self.create(Project, title='project3s')
+        project4s = self.create(Project, title='project1s', role=self.view_only_role)
+
+        # Projects [Destination]
+        project1d = self.create(Project, title='project1d')
+        project2d = self.create(Project, title='project2d', role=self.admin_role)
+        project3d = self.create(Project, title='project2d', role=self.admin_role)
+        project4d = self.create(Project, title='project4d', role=self.view_only_role)
+
+        # Leads
+        lead1 = self.create(Lead, project=project1s)
+        lead2 = self.create(Lead, project=project2s)
+        lead3 = self.create(Lead, project=project3s)
+        lead4 = self.create(Lead, project=project4s)
+
+        # Request body data [also contains unauthorized projects and leads]
+        data = {
+            'projects': sorted([project4d.pk, project3d.pk, project2d.pk, project1d.pk, project1s.pk]),
+            'leads': sorted([lead3.pk, lead2.pk, lead1.pk, lead4.pk]),
+        }
+        # data [only contains authorized projects and leads]
+        validate_data = {
+            'projects': sorted([project3d.pk, project2d.pk, project1s.pk]),
+            'leads': sorted([lead4.pk, lead2.pk, lead1.pk]),
+        }
+
+        lead_stats = [
+            # Project, Original Lead Count, Lead Count After lead-copy
+            (project1s, 1, 3),
+            (project2s, 1, 1),
+            (project3s, 1, 1),
+            (project4s, 1, 1),
+
+            (project1d, 0, 0),
+            (project2d, 0, 3),
+            (project3d, 0, 3),
+            (project4d, 0, 0),
+        ]
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        rdata = response.json()
+        # Sort the data since we are comparing lists
+        sorted_rdata = {
+            'projects': sorted(rdata['projects']),
+            'leads': sorted(rdata['leads']),
+        }
+        self.assert_200(response)
+        self.assertNotEqual(sorted_rdata, data)
+        self.assertEqual(sorted_rdata, validate_data)
+
+        for project, old_lead_count, new_lead_count in lead_stats:
+            current_lead_count = Lead.objects.filter(project_id=project.pk).count()
+            assert new_lead_count == current_lead_count, f'Project: {project.title} lead count is different'
+
 
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:
