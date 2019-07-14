@@ -104,17 +104,13 @@ class LeadSerializer(RemoveNullFieldsMixin,
         return None
 
     def validate(self, data):
-        project = data.get('project',
-                           self.instance and self.instance.project)
-        source_type = data.get('source_type',
-                               self.instance and self.instance.source_type)
+        project = data.get('project', self.instance and self.instance.project)
+        source_type = data.get('source_type', self.instance and self.instance.source_type)
 
         # For website types, check if url has already been added
         if source_type == Lead.WEBSITE:
-            url = data.get('url',
-                           self.instance and self.instance.url)
-            if check_if_url_exists(url, None, project,
-                                   self.instance and self.instance.id):
+            url = data.get('url', self.instance and self.instance.url)
+            if check_if_url_exists(url, None, project, self.instance and self.instance.id):
                 raise serializers.ValidationError(
                     'A lead with this URL has already been added to '
                     'this project'
@@ -140,7 +136,6 @@ class LeadSerializer(RemoveNullFieldsMixin,
         assignee = assignee_id and get_object_or_404(User, id=assignee_id)
 
         lead = super().update(instance, validated_data)
-        lead.save()
 
         if assignee_field:
             lead.assignee.clear()
