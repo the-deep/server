@@ -76,6 +76,41 @@ class TestAnalysisFrameworkRoles(TestCase):
         self._add_user_test(self.public_framework, self.user, 201)
         self._add_user_test(self.private_framework, self.user, 201)
 
+    def test_patch_membership(self):
+        self.private_framework.add_member(
+            self.user,
+            self.private_framework.get_or_create_owner_role(),
+        )
+        editor = self.private_framework.get_or_create_editor_role()
+        user = self.create(User)
+        membership, _ = self.private_framework.add_member(user)
+
+        url = f'/api/v1/framework-memberships/{membership.id}/'
+
+        patch_data = {
+            'role': editor.id,
+        }
+
+        self.authenticate()
+        resp = self.client.patch(url, patch_data)
+
+        self.assert_200(resp)
+
+    def test_get_membership(self):
+        self.private_framework.add_member(
+            self.user,
+            self.private_framework.get_or_create_owner_role(),
+        )
+        user = self.create(User)
+        membership, _ = self.private_framework.add_member(user)
+
+        url = f'/api/v1/framework-memberships/{membership.id}/'
+
+        self.authenticate()
+        resp = self.client.get(url)
+
+        self.assert_200(resp)
+
     def test_editor_role(self):
         editor_user = self.create(User)
         self.private_framework.add_member(
