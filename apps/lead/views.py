@@ -342,6 +342,16 @@ class LeadCopyView(views.APIView):
     """
     permission_classes = [permissions.IsAuthenticated]
 
+    def clone_lead(self, lead, project_id, user):
+        if lead.source_type == Lead.WEBSITE:
+            if check_if_url_exists(lead.url, None, project_id, None):
+                return  # SKIP COPY IF URL already exists for project with project_id
+        lead.pk = None
+        lead.project_id = project_id
+        lead.save()
+        lead.assignee.add(user)
+        return lead
+
     def post(self, request, *args, **kwargs):
         project_ids = ProjectMembership.objects.filter(
             member=request.user,
@@ -357,6 +367,7 @@ class LeadCopyView(views.APIView):
         )
 
         processed_lead = []
+        processed_lead_by_project = {}
         for lead in leads:
             lead_original_project = lead.project_id
             processed_lead.append(lead.pk)
@@ -366,11 +377,14 @@ class LeadCopyView(views.APIView):
                     continue
 
                 # NOTE: To clone Lead to another project
-                lead.pk = None
-                lead.project_id = project_id
-                lead.save()
+                p_lead = self.clone_lead(lead, project_id, request.user)
+                if p_lead:
+                    processed_lead_by_project[project_id] = (
+                        processed_lead_by_project.get(project_id) or []
+                    ) + [p_lead.pk]
 
         return response.Response({
             'projects': project_ids,
             'leads': processed_lead,
+            'leads_by_projects': processed_lead_by_project,
         })
