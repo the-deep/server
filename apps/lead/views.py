@@ -350,6 +350,7 @@ class LeadCopyView(views.APIView):
         lead.project_id = project_id
         lead.save()
         lead.assignee.add(user)
+        return lead
 
     def post(self, request, *args, **kwargs):
         project_ids = ProjectMembership.objects.filter(
@@ -366,6 +367,7 @@ class LeadCopyView(views.APIView):
         )
 
         processed_lead = []
+        processed_lead_by_project = {}
         for lead in leads:
             lead_original_project = lead.project_id
             processed_lead.append(lead.pk)
@@ -375,9 +377,14 @@ class LeadCopyView(views.APIView):
                     continue
 
                 # NOTE: To clone Lead to another project
-                self.clone_lead(lead, project_id, request.user)
+                p_lead = self.clone_lead(lead, project_id, request.user)
+                if p_lead:
+                    processed_lead_by_project[project_id] = (
+                        processed_lead_by_project.get(project_id) or []
+                    ) + [p_lead.pk]
 
         return response.Response({
             'projects': project_ids,
             'leads': processed_lead,
+            'leads_by_projects': processed_lead_by_project,
         })
