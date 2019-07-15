@@ -91,6 +91,10 @@ class AnalysisFrameworkMembershipSerializer(
     RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer,
 ):
     member_details = UserSerializer(read_only=True, source='member')
+    role = serializers.PrimaryKeyRelatedField(
+        required=False,
+        queryset=AnalysisFrameworkRole.objects.all(),
+    )
 
     class Meta:
         model = AnalysisFrameworkMembership
@@ -99,6 +103,7 @@ class AnalysisFrameworkMembershipSerializer(
     def create(self, validated_data):
         user = self.context['request'].user
         framework = validated_data.get('framework')
+        role = validated_data.get('role') or framework.get_or_create_default_role()
 
         if framework is None:
             raise serializers.ValidationError('Analysis Framework does not exist')
@@ -119,7 +124,27 @@ class AnalysisFrameworkMembershipSerializer(
         if not membership.role.can_add_user:
             raise exceptions.PermissionDenied()
 
+        if role.is_private_role and not framework.is_private:
+            raise exceptions.PermissionDenied(
+                {'message': 'Public framework cannot have private role'}
+            )
+        if not role.is_private_role and framework.is_private:
+            raise exceptions.PermissionDenied(
+                {'message': 'Private framework cannot have public role'}
+            )
+
+        validated_data['role'] = role  # Just in case role is not provided, add default role
+
         return super().create(validated_data)
+
+    def delete(self, instance):
+        user = self.context['request'].user
+        member = instance.member
+        if user == member:
+            raise exceptions.PermissionDenied(
+                {'message': 'You can not delete yourself'}
+            )
+        return super().delete(instance)
 
 
 class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
