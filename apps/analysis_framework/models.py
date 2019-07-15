@@ -90,6 +90,7 @@ class AnalysisFramework(UserResource):
         privacy_label = 'Private' if self.is_private else 'Public'
         role, created = AnalysisFrameworkRole.objects.get_or_create(
             **permission_fields,
+            is_private_role=self.is_private,
             defaults={
                 'title': f'Owner Role({privacy_label})'
             }
@@ -102,6 +103,7 @@ class AnalysisFramework(UserResource):
 
         role, created = AnalysisFrameworkRole.objects.get_or_create(
             **permission_fields,
+            is_private_role=self.is_private,
             defaults={
                 'title': f'Editor Role({privacy_label})'
             }
@@ -113,6 +115,7 @@ class AnalysisFramework(UserResource):
         privacy_label = 'Private' if self.is_private else 'Public'
         role, created = AnalysisFrameworkRole.objects.get_or_create(
             is_default_role=True,
+            is_private_role=self.is_private,
             defaults={
                 **permission_fields,
                 'title': f'Default({privacy_label})',
@@ -332,6 +335,7 @@ class AnalysisFrameworkRole(models.Model):
     )
 
     title = models.CharField(max_length=255, unique=True)
+    is_private_role = models.BooleanField(default=False)
 
     # The following field allows user to add other users to the framework and
     # assign appropriate permissions
@@ -356,6 +360,13 @@ class AnalysisFrameworkRole(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def permissions(self):
+        return {
+            x: self.__dict__[x]
+            for x in AnalysisFrameworkRole.PERMISSION_FIELDS
+        }
 
 
 class AnalysisFrameworkMembership(models.Model):
