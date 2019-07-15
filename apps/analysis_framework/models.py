@@ -128,9 +128,9 @@ class AnalysisFramework(UserResource):
         return AnalysisFrameworkMembership.objects.get_or_create(
             member=user,
             framework=self,
+            role=role,
             defaults={
                 'added_by': added_by,
-                'role': role,
             },
         )
 
@@ -390,4 +390,7 @@ class AnalysisFrameworkMembership(models.Model):
 
     @staticmethod
     def get_for(user):
-        return AnalysisFrameworkMembership.objects.filter(member=user)
+        return AnalysisFrameworkMembership.objects.all()  # filter(
+#             framework__members=user,
+            # role__can_add_user=True,
+#         )
