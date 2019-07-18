@@ -79,7 +79,7 @@ class AnalysisFrameworkViewSet(viewsets.ModelViewSet):
             context={'request': request},
             many=True
         )
-        return response.Response(serializer.data)
+        return response.Response({'results': serializer.data})
 
 
 class AnalysisFrameworkCloneView(views.APIView):
@@ -158,10 +158,30 @@ class AnalysisFrameworkMembershipViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return AnalysisFrameworkMembership.get_for(self.request.user)
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Don't let user delete him/herself
+        if request.user == instance.member:
+            return response.Response(
+                {'message': 'You cannot remove yourself from framework'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
-class AnalysisFrameworkRoleViewSet(viewsets.ReadOnlyModelViewSet):
+        self.perform_destroy(instance)
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PrivateAnalysisFrameworkRoleViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = AnalysisFrameworkRoleSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return AnalysisFrameworkRole.objects.all()
+        return AnalysisFrameworkRole.objects.filter(is_private_role=True)
+
+
+class PublicAnalysisFrameworkRoleViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = AnalysisFrameworkRoleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return AnalysisFrameworkRole.objects.filter(is_private_role=False)
