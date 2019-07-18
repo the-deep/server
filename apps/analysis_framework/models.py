@@ -354,6 +354,7 @@ class AnalysisFrameworkRole(models.Model):
             'can_add_user',
             'can_clone_framework',
             'can_edit_framework',
+            'is_private_role',
             'can_use_in_other_projects',
             'is_default_role'
         )
