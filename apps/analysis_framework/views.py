@@ -79,7 +79,7 @@ class AnalysisFrameworkViewSet(viewsets.ModelViewSet):
             context={'request': request},
             many=True
         )
-        return response.Response({'memberships': serializer.data})
+        return response.Response({'results': serializer.data})
 
 
 class AnalysisFrameworkCloneView(views.APIView):
