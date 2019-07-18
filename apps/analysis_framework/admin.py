@@ -33,4 +33,9 @@ class AnalysisFrameworkAdmin(VersionAdmin):
                WidgetInline, FilterInline, ExportableInline]
 
 
-admin.site.register(AnalysisFrameworkRole)
+class AnalysisFrameworkRoleAdmin(admin.ModelAdmin):
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+admin.site.register(AnalysisFrameworkRole, AnalysisFrameworkRoleAdmin)
