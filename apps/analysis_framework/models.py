@@ -90,6 +90,7 @@ class AnalysisFramework(UserResource):
         privacy_label = 'Private' if self.is_private else 'Public'
         role, created = AnalysisFrameworkRole.objects.get_or_create(
             **permission_fields,
+            is_private_role=self.is_private,
             defaults={
                 'title': f'Owner Role({privacy_label})'
             }
@@ -102,6 +103,7 @@ class AnalysisFramework(UserResource):
 
         role, created = AnalysisFrameworkRole.objects.get_or_create(
             **permission_fields,
+            is_private_role=self.is_private,
             defaults={
                 'title': f'Editor Role({privacy_label})'
             }
@@ -113,6 +115,7 @@ class AnalysisFramework(UserResource):
         privacy_label = 'Private' if self.is_private else 'Public'
         role, created = AnalysisFrameworkRole.objects.get_or_create(
             is_default_role=True,
+            is_private_role=self.is_private,
             defaults={
                 **permission_fields,
                 'title': f'Default({privacy_label})',
@@ -125,9 +128,9 @@ class AnalysisFramework(UserResource):
         return AnalysisFrameworkMembership.objects.get_or_create(
             member=user,
             framework=self,
+            role=role,
             defaults={
                 'added_by': added_by,
-                'role': role,
             },
         )
 
@@ -142,7 +145,6 @@ class AnalysisFramework(UserResource):
         AFRole = AnalysisFrameworkRole
         permission_fields = {x: True for x in AFRole.PERMISSION_FIELDS}
         permission_fields[AFRole.CAN_ADD_USER] = False
-        permission_fields[AFRole.CAN_MAKE_PUBLIC] = False
 
         if self.is_private:
             permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = False
@@ -153,7 +155,6 @@ class AnalysisFramework(UserResource):
         AFRole = AnalysisFrameworkRole
         permission_fields = {x: True for x in AFRole.PERMISSION_FIELDS}
         permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = False
-        permission_fields[AFRole.CAN_MAKE_PUBLIC] = False
 
         if not self.is_private:
             permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = True
@@ -323,27 +324,24 @@ class AnalysisFrameworkRole(models.Model):
     """
     CAN_ADD_USER = 'can_add_user'
     CAN_CLONE_FRAMEWORK = 'can_clone_framework'
-    CAN_MAKE_PUBLIC = 'can_make_public'
     CAN_EDIT_FRAMEWORK = 'can_edit_framework'
     CAN_USE_IN_OTHER_PROJECTS = 'can_use_in_other_projects'
 
     PERMISSION_FIELDS = (
         CAN_ADD_USER,
         CAN_CLONE_FRAMEWORK,
-        CAN_MAKE_PUBLIC,
         CAN_EDIT_FRAMEWORK,
         CAN_USE_IN_OTHER_PROJECTS,
     )
 
     title = models.CharField(max_length=255, unique=True)
+    is_private_role = models.BooleanField(default=False)
 
     # The following field allows user to add other users to the framework and
     # assign appropriate permissions
     can_add_user = models.BooleanField(default=False)
 
     can_clone_framework = models.BooleanField(default=False)
-
-    can_make_public = models.BooleanField(default=False)
 
     can_edit_framework = models.BooleanField(default=False)
 
@@ -355,8 +353,8 @@ class AnalysisFrameworkRole(models.Model):
         unique_together = (
             'can_add_user',
             'can_clone_framework',
-            'can_make_public',
             'can_edit_framework',
+            'is_private_role',
             'can_use_in_other_projects',
             'is_default_role'
         )
@@ -364,11 +362,18 @@ class AnalysisFrameworkRole(models.Model):
     def __str__(self):
         return self.title
 
+    @property
+    def permissions(self):
+        return {
+            x: self.__dict__[x]
+            for x in AnalysisFrameworkRole.PERMISSION_FIELDS
+        }
+
 
 class AnalysisFrameworkMembership(models.Model):
     member = models.ForeignKey(
         User, on_delete=models.CASCADE,
-        related_name='member'
+        related_name='framework_membership'
     )
     framework = models.ForeignKey(AnalysisFramework, on_delete=models.CASCADE)
     role = models.ForeignKey(
@@ -386,4 +391,7 @@ class AnalysisFrameworkMembership(models.Model):
 
     @staticmethod
     def get_for(user):
-        return AnalysisFrameworkMembership.objects.filter(member=user)
+        return AnalysisFrameworkMembership.objects.all()  # filter(
+#             framework__members=user,
+            # role__can_add_user=True,
+#         )
