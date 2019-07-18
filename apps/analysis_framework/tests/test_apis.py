@@ -91,11 +91,12 @@ class AnalysisFrameworkTests(TestCase):
         resp = self.client.get(url)
 
         self.assert_200(resp)
-        assert len(resp.data) == 1
-        assert isinstance(resp.data[0]['member_details'], dict), "Check if member field is expanded"
-        assert resp.data[0]['member'] == self.user.id
-        assert 'member_details' in resp.data[0]
-        assert resp.data[0]['framework'] == framework.id
+        data = resp.data['results']
+        assert len(data) == 1
+        assert isinstance(data[0]['member_details'], dict), "Check if member field is expanded"
+        assert data[0]['member'] == self.user.id
+        assert 'member_details' in data[0]
+        assert data[0]['framework'] == framework.id
 
     def test_create_analysis_framework(self):
         project = self.create(Project, role=self.admin_role)
