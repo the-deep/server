@@ -119,7 +119,7 @@ class AnalysisFrameworkTests(TestCase):
             role=project.analysis_framework.get_or_create_owner_role(),
         ).first() is not None, "Membership Should be created"
 
-    def test_clone_analysis_framework(self):
+    def test_clone_analysis_framework_without_name(self):
         analysis_framework = self.create(AnalysisFramework)
         project = self.create(
             Project, analysis_framework=analysis_framework,
@@ -140,12 +140,38 @@ class AnalysisFrameworkTests(TestCase):
 
         self.authenticate()
         response = self.client.post(url, data)
+        self.assert_400(response)
+        assert 'title' in response.data['errors']
+
+    def test_clone_analysis_framework(self):
+        analysis_framework = self.create(AnalysisFramework)
+        project = self.create(
+            Project, analysis_framework=analysis_framework,
+            role=self.admin_role
+        )
+
+        # Add members to analysis framework, to check if memberships cloned or not
+        owner_membership, _ = analysis_framework.add_member(self.user, analysis_framework.get_or_create_owner_role())
+        user = self.create(User)
+        default_membership, _ = analysis_framework.add_member(user)
+
+        url = '/api/v1/clone-analysis-framework/{}/'.format(
+            analysis_framework.id
+        )
+        cloned_title = 'Cloned AF'
+        data = {
+            'project': project.id,
+            'title': cloned_title,
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
         self.assert_201(response)
 
         self.assertNotEqual(response.data['id'], analysis_framework.id)
         self.assertEqual(
             response.data['title'],
-            analysis_framework.title[:230] + ' (cloned)')
+            cloned_title)
 
         project = Project.objects.get(id=project.id)
         new_af = project.analysis_framework
