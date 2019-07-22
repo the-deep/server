@@ -97,6 +97,12 @@ class AnalysisFrameworkCloneView(views.APIView):
         if not analysis_framework.can_clone(request.user):
             raise exceptions.PermissionDenied()
 
+        cloned_title = request.data.get('title')
+        if not cloned_title:
+            raise exceptions.ValidationError({
+                'title': 'Title should be present',
+            })
+
         new_af = analysis_framework.clone(
             request.user,
             request.data or {},
