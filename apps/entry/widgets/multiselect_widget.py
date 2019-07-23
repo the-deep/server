@@ -1,9 +1,9 @@
-def update_attribute(widget, data, widget_data):
-    value = data.get('value', [])
-
+def _get_label_list(widget, data, widget_data):
+    values = data.get('value', [])
     options = widget_data.get('options', [])
+
     label_list = []
-    for item in value:
+    for item in values:
         option = next((
             o for o in options
             if o.get('key') == item
@@ -11,9 +11,15 @@ def update_attribute(widget, data, widget_data):
         if option:
             label_list.append(option.get('label') or 'Unknown')
 
+    return label_list, values
+
+
+def update_attribute(widget, data, widget_data):
+    label_list, values = _get_label_list(widget, data, widget_data)
+
     return {
         'filter_data': [{
-            'values': value,
+            'values': values,
         }],
 
         'export_data': {
@@ -25,3 +31,7 @@ def update_attribute(widget, data, widget_data):
             }
         },
     }
+
+
+def get_comprehensive_data(_, *args):
+    return _get_label_list(*args)[0]

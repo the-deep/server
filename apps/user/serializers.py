@@ -180,3 +180,15 @@ class NotificationSerializer(RemoveNullFieldsMixin,
     date = serializers.DateTimeField()
     type = serializers.CharField(source='notification_type')
     details = serializers.ReadOnlyField()
+
+
+class ComprehensiveUserSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(
+        source='profile.get_display_name',
+        read_only=True,
+    )
+    organization = serializers.CharField(source='profile.organization')
+
+    class Meta:
+        model = User
+        fields = ('id', 'name', 'email', 'organization',)
