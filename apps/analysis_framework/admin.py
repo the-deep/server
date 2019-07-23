@@ -32,10 +32,19 @@ class AnalysisFrameworkAdmin(VersionAdmin):
     inlines = [AnalysisFrameworkMemebershipInline,
                WidgetInline, FilterInline, ExportableInline]
 
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def get_readonly_fields(self, request, obj=None):
+        return ['is_private']
+
 
 class AnalysisFrameworkRoleAdmin(admin.ModelAdmin):
     def has_add_permission(self, request, obj=None):
         return False
+
+    def get_readonly_fields(self, request, obj=None):
+        return ['is_private_role']
 
 
 admin.site.register(AnalysisFrameworkRole, AnalysisFrameworkRoleAdmin)
