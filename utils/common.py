@@ -336,27 +336,29 @@ create_plotly_image.marker = dict(
 )
 
 
-def redis_lock(func):
-    def func_wrapper(*args, **kwargs):
-        key = '{}::{}'.format(
-            func.__name__,
-            '__'.join([str(arg) for arg in args]),
-        )
-        lock = redis.get_lock(key, 60 * 60 * 4)  # Lock lifetime 4 hours
-        have_lock = lock.acquire(blocking=False)
-        if not have_lock:
-            logger.warning(f'Unable to get lock for {key}')
-            return False
-        try:
-            return_value = func(*args, **kwargs) or True
-        except Exception:
-            logger.error('{}.{}'.format(func.__module__, func.__name__), exc_info=True)
-            return_value = False
-        lock.release()
-        return return_value
-    func_wrapper.__name__ = func.__name__
-    func_wrapper.__module__ = func.__module__
-    return func_wrapper
+def redis_lock(lock_key, timeout=60 * 60 * 4):
+    """
+    Default Lock lifetime 4 hours
+    """
+    def _dec(func):
+        def _caller(*args, **kwargs):
+            key = lock_key.format(*args, **kwargs)
+            lock = redis.get_lock(key, timeout)
+            have_lock = lock.acquire(blocking=False)
+            if not have_lock:
+                logger.warning(f'Unable to get lock for {key}')
+                return False
+            try:
+                return_value = func(*args, **kwargs) or True
+            except Exception:
+                logger.error('{}.{}'.format(func.__module__, func.__name__), exc_info=True)
+                return_value = False
+            lock.release()
+            return return_value
+        _caller.__name__ = func.__name__
+        _caller.__module__ = func.__module__
+        return _caller
+    return _dec
 
 
 def make_colormap(seq):

@@ -1,9 +1,18 @@
+from django.utils import timezone
+from datetime import timedelta
+
 from user.models import (
     User,
     Feature,
 )
 from deep.tests import TestCase
-from entry.models import Lead, Entry
+from entry.models import Lead, Entry, Attribute
+from analysis_framework.models import (
+    AnalysisFramework,
+    AnalysisFrameworkRole,
+    Widget,
+)
+from project.tasks import _generate_entry_stats
 from project.models import (
     Project,
     ProjectRole,
@@ -13,12 +22,10 @@ from project.models import (
     ProjectStatusCondition,
     ProjectUserGroupMembership,
 )
-from analysis_framework.models import AnalysisFramework, AnalysisFrameworkRole
 
 from user_group.models import UserGroup
 
-from django.utils import timezone
-from datetime import timedelta
+from . import entry_stats_data
 
 
 # TODO Document properly some of the following complex tests
@@ -133,7 +140,7 @@ class ProjectApiTest(TestCase):
 
         self._change_project_privacy_test(private_project, 403, self.user)
         self._change_project_privacy_test(public_project, 403, self.user)
-        
+
     def test_create_private_project_unauthorized(self):
         user_fhx = self.create(User, email='fhx@togglecorp.com')
         user_dummy = self.create(User, email='dummy@test.com')
@@ -965,3 +972,86 @@ class ProjectApiTest(TestCase):
         patch_data = {'is_private': changed_privacy}
         response = self.client.patch(url, patch_data)
         self.assertEqual(response.status_code, status)
+
+    def test_project_entries_stats(self):
+        project_user = self.create(User)
+        non_project_user = self.create(User)
+
+        af = self.create(AnalysisFramework)
+        project = self.create(Project, analysis_framework=af)
+        project.add_member(project_user)
+
+        w_data = entry_stats_data.WIDGET_DATA
+        a_data = entry_stats_data.ATTRIBUTE_DATA
+
+        lead = self.create(Lead, project=project)
+        entry = self.create(
+            Entry,
+            project=project, analysis_framework=af, lead=lead, entry_type=Entry.EXCERPT,
+        )
+
+        # Create widgets, attributes and configs
+        invalid_stat_config = {}
+        valid_stat_config = {}
+
+        for widget_identifier, data_identifier, config_kwargs in [
+            ('widget_1d', 'matrix1dWidget', {}),
+            ('widget_2d', 'matrix2dWidget', {}),
+            ('geo_widget', 'geoWidget', {}),
+            (
+                'severity_widget',
+                'conditionalWidget',
+                {
+                    'is_conditional_widget': True,
+                    'selectors': ['widgets', 0, 'widget'],
+                    'widget_key': 'scalewidget-1',
+                    'widget_type': 'scaleWidget',
+                },
+            ),
+            ('reliability_widget', 'scaleWidget', {}),
+            ('affected_groups_widget', 'multiselectWidget', {}),
+            ('specific_needs_groups_widget', 'multiselectWidget', {}),
+        ]:
+            widget = self.create(
+                Widget, analysis_framework=af,
+                properties={'data': w_data[data_identifier]},
+            )
+            self.create(Attribute, entry=entry, widget=widget, data=a_data[data_identifier])
+            valid_stat_config[widget_identifier] = {
+                'pk': widget.pk,
+                **config_kwargs,
+            }
+            invalid_stat_config[widget_identifier] = {'pk': 0}
+
+        url = f'/api/v1/projects/{project.pk}/entries-viz/'
+
+        # 404 for non project user
+        self.authenticate(non_project_user)
+        response = self.client.get(url)
+        self.assert_404(response)
+
+        self.authenticate(project_user)
+
+        # 404 for project user if config is not set
+        response = self.client.get(url)
+        self.assert_404(response)
+
+        af.properties = {'stats_config': invalid_stat_config}
+        af.save()
+
+        # 202 if config is set
+        response = self.client.get(url)
+        self.assert_202(response)
+
+        # 500 if invalid config is set and stat is generated
+        _generate_entry_stats(project.pk)
+        response = self.client.get(url)
+        self.assert_500(response)
+
+        af.properties = {'stats_config': valid_stat_config}
+        af.save()
+
+        # 302 (Redirect to data file) if valid config is set and stat is generated
+        _generate_entry_stats(project.pk)
+        response = self.client.get(url)
+        self.assert_302(response)
