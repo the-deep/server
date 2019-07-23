@@ -94,7 +94,7 @@ class AnalysisFramework(UserResource):
             **permission_fields,
             is_private_role=self.is_private,
             defaults={
-                'title': f'Owner Role({privacy_label})'
+                'title': f'Owner ({privacy_label})'
             }
         )
         return role
@@ -107,7 +107,7 @@ class AnalysisFramework(UserResource):
             **permission_fields,
             is_private_role=self.is_private,
             defaults={
-                'title': f'Editor Role({privacy_label})'
+                'title': f'Editor ({privacy_label})'
             }
         )
         return role
