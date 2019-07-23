@@ -128,7 +128,7 @@ def _tabular_meta_extract_geo(geodata):
 
 
 @shared_task
-@redis_lock
+@redis_lock('tabular_generate_column_image__{0}')
 def tabular_generate_column_image(field_id):
     field = Field.objects.filter(pk=field_id).first()
     if field is None:

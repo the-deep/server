@@ -21,6 +21,8 @@ class AnalysisFramework(UserResource):
         through='AnalysisFrameworkMembership'
     )
 
+    properties = JSONField(default=dict, blank=True, null=True)
+
     def __str__(self):
         return self.title
 
@@ -179,7 +181,7 @@ class Widget(models.Model):
         update_widget(self)
 
     def __str__(self):
-        return '{} ({})'.format(self.title, self.widget_id)
+        return '{}:{} ({})'.format(self.title, self.pk, self.widget_id)
 
     def clone_to(self, analysis_framework):
         widget = Widget(
