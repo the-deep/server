@@ -264,7 +264,8 @@ class TestAnalysisFrameworkRoles(TestCase):
     def _clone_framework_test(self, framework, user=None):
         clone_url = f'/api/v1/clone-analysis-framework/{framework.id}/'
         self.authenticate(user)
-        return self.client.post(clone_url)
+        data = {'title': 'Cloned'}
+        return self.client.post(clone_url, data=data)
 
     def _add_user_test(self, framework, user, status=201, role=None):
         add_user_url = f'/api/v1/framework-memberships/'

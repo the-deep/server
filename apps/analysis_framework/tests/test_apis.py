@@ -126,11 +126,6 @@ class AnalysisFrameworkTests(TestCase):
             role=self.admin_role
         )
 
-        # Add members to analysis framework, to check if memberships cloned or not
-        owner_membership, _ = analysis_framework.add_member(self.user, analysis_framework.get_or_create_owner_role())
-        user = self.create(User)
-        default_membership, _ = analysis_framework.add_member(user)
-
         url = '/api/v1/clone-analysis-framework/{}/'.format(
             analysis_framework.id
         )
@@ -149,7 +144,6 @@ class AnalysisFrameworkTests(TestCase):
             Project, analysis_framework=analysis_framework,
             role=self.admin_role
         )
-
         # Add members to analysis framework, to check if memberships cloned or not
         owner_membership, _ = analysis_framework.add_member(self.user, analysis_framework.get_or_create_owner_role())
         user = self.create(User)
