@@ -67,3 +67,47 @@ def update_attribute(widget, data, widget_data):
             },
         },
     }
+
+
+def get_comprehensive_data(widgets_meta, widget, data, widget_data):
+    from entry.widgets.store import widget_store
+
+    value = data.get('value', {})
+    selected_widget_key = value.get('selected_widget_key')
+
+    selected_widgets = [
+        w.get('widget')
+        for w in (widget_data.get('widgets') or []) if w.get('widget', {}).get('key') == selected_widget_key
+    ]
+
+    selected_widget = selected_widgets[0] if selected_widgets else None
+    if selected_widget is None:
+        return None
+
+    widget_module = widget_store.get(selected_widget.get('widget_id'))
+    if widget_module is None:
+        return None
+
+    w_key = selected_widget.get('key')
+    if w_key == selected_widget_key:
+        w_data = value.get(w_key, {}).get('data', {})
+    else:
+        w_data = {}
+
+    w_widget_data = selected_widget.get('properties', {}).get('data', {})
+
+    w_obj = Dummy()
+    w_obj.pk = f"${w_key}-{selected_widget.get('widget_id')}"
+    w_obj.key = w_key
+
+    return {
+        'id': selected_widget.get('key'),
+        'type': selected_widget.get('widget_id'),
+        'title': selected_widget.get('title'),
+        'value': widget_module.get_comprehensive_data(
+            widgets_meta,
+            w_obj,
+            w_data,
+            w_widget_data,
+        )
+    }

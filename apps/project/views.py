@@ -40,6 +40,7 @@ from user.models import User
 from geo.models import Region
 from user_group.models import UserGroup
 from geo.serializers import RegionSerializer
+from entry.views import ComprehensiveEntriesViewSet
 from .models import (
     ProjectStatus,
     Project,
@@ -366,6 +367,22 @@ class ProjectViewSet(viewsets.ModelViewSet):
         self.page = self.paginate_queryset(join_requests)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
+
+    """
+    Comprehensive Entries
+    """
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated],
+        methods=['get'],
+        url_path=r'comprehensive-entries',
+    )
+    def comprehensive_entries(self, request, *args, **kwargs):
+        project = self.get_object()
+        viewfn = ComprehensiveEntriesViewSet.as_view({'get': 'list'})
+        request._request.GET = request._request.GET.copy()
+        request._request.GET['project'] = project.pk
+        return viewfn(request._request, *args, **kwargs)
 
 
 # FIXME: user better API

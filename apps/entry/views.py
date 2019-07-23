@@ -13,11 +13,13 @@ from deep.permissions import ModifyPermission
 
 from project.models import Project
 from lead.models import Lead
+from analysis_framework.models import Widget
 
 from .models import (
-    Attribute, FilterData, ExportData,
+    Entry, Attribute, FilterData, ExportData,
 )
 from .serializers import (
+    ComprehensiveEntriesSerializer,
     EntrySerializer,
     EntryRetriveSerializer,
     EntryProccesedSerializer,
@@ -27,6 +29,7 @@ from .serializers import (
     ExportDataSerializer,
     EditEntriesDataSerializer,
 )
+from .pagination import ComprehensiveEntriesSetPagination
 from .filter_set import EntryFilterSet, get_filtered_entries
 from tabular.models import Field as TabularField
 import django_filters
@@ -188,3 +191,36 @@ class EntryOptionsView(views.APIView):
             ]
 
         return response.Response(options)
+
+
+class ComprehensiveEntriesViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Comprehensive API for Entries
+    TODO: Should we create this view also??
+    """
+    serializer_class = ComprehensiveEntriesSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = ComprehensiveEntriesSetPagination
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filterset_class = EntryFilterSet
+
+    def get_queryset(self):
+        ignore_widget_type = ['excerptWidget']
+        prefetch_related_fields = [
+            models.Prefetch(
+                'attribute_set',
+                queryset=Attribute.objects.exclude(widget__widget_id__in=ignore_widget_type),
+            ),
+            models.Prefetch(
+                'attribute_set__widget',
+                queryset=Widget.objects.exclude(widget_id__in=ignore_widget_type),
+            ),
+            'created_by', 'created_by__profile',
+            'modified_by', 'modified_by__profile',
+        ]
+        return Entry.get_for(self.request.user).prefetch_related(*prefetch_related_fields)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['queryset'] = self.get_queryset()
+        return context

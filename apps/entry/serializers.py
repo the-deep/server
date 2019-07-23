@@ -10,8 +10,11 @@ from project.models import Project
 from lead.serializers import LeadSerializer
 from lead.models import Lead
 from analysis_framework.serializers import AnalysisFrameworkSerializer
+from geo.models import GeoArea, Region
 from geo.serializers import SimpleRegionSerializer
 from tabular.serializers import FieldProcessedOnlySerializer
+from user.serializers import ComprehensiveUserSerializer
+from .widgets.store import widget_store
 
 from .models import (
     Entry, Attribute, FilterData, ExportData
@@ -168,3 +171,86 @@ class EditEntriesDataSerializer(RemoveNullFieldsMixin,
                 region.calc_cache()
             options[str(region.id)] = region.geo_options
         return options
+
+
+class ComprehensiveAttributeSerializer(
+        DynamicFieldsMixin,
+        serializers.ModelSerializer,
+):
+    title = serializers.CharField(source='widget.title')
+    widget_id = serializers.IntegerField(source='widget.pk')
+    type = serializers.CharField(source='widget.widget_id')
+    value = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Attribute
+        fields = ('id', 'title', 'widget_id', 'type', 'value')
+
+    def _get_default_value(self, _, widget, data, widget_data):
+        return {
+            'error': 'Unsupported Widget Type, Contact Admin',
+            'raw': data,
+        }
+
+    def _get_initial_wigets_meta(self, instance):
+        projects_id = self.context['queryset'].order_by('project_id')\
+            .values_list('project_id', flat=True).distinct()
+        regions_id = Region.objects.filter(project__in=projects_id).values_list('pk', flat=True)
+        geo_areas = {}
+        admin_levels = {}
+
+        geo_area_queryset = GeoArea.objects.prefetch_related('admin_level').filter(
+            admin_level__region__in=regions_id,
+        ).distinct()
+
+        for geo_area in geo_area_queryset:
+            geo_areas[geo_area.pk] = {
+                'id': geo_area.pk,
+                'title': geo_area.title,
+                'pcode': geo_area.code,
+                'admin_level': geo_area.admin_level_id,
+                'parent': geo_area.parent_id,
+            }
+            if admin_levels.get(geo_area.admin_level_id) is None:
+                admin_level = geo_area.admin_level
+                admin_levels[geo_area.admin_level_id] = {
+                    'id': admin_level.pk,
+                    'level': admin_level.level,
+                    'title': admin_level.title,
+                }
+
+        return {
+            'geo-widget': {
+                'admin_levels': admin_levels,
+                'geo_areas': geo_areas,
+            },
+        }
+
+    def get_value(self, instance):
+        if not hasattr(self, 'widgets_meta'):
+            self.widgets_meta = self._get_initial_wigets_meta(instance)
+        widget = instance.widget
+        widget_data = widget.properties and widget.properties.get('data') or {}
+        data = instance.data or {}
+        return getattr(
+            widget_store.get(instance.widget.widget_id, {}),
+            'get_comprehensive_data',
+            self._get_default_value,
+        )(self.widgets_meta, widget, data, widget_data)
+
+
+class ComprehensiveEntriesSerializer(
+        DynamicFieldsMixin,
+        serializers.ModelSerializer,
+):
+    tabular_field = serializers.HyperlinkedRelatedField(read_only=True, view_name='tabular_field-detail')
+    attributes = ComprehensiveAttributeSerializer(source='attribute_set', many=True, read_only=True)
+    created_by = ComprehensiveUserSerializer()
+    modified_by = ComprehensiveUserSerializer()
+
+    class Meta:
+        model = Entry
+        fields = (
+            'id', 'created_at', 'modified_at', 'entry_type', 'excerpt', 'image', 'tabular_field',
+            'attributes', 'created_by', 'modified_by', 'project',
+        )

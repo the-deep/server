@@ -88,3 +88,92 @@ def update_attribute(widget, data, widget_data):
             },
         }
     }
+
+
+def _get_headers(widgets_meta, widget, widget_data):
+    if widgets_meta.get(widget.pk) is not None:
+        widget_meta = widgets_meta[widget.pk]
+        return (
+            widget_meta['dimension_header_map'],
+            widget_meta['subdimension_header_map'],
+            widget_meta['sector_header_map'],
+            widget_meta['subsector_header_map'],
+        )
+
+    dimension_header_map = {}
+    subdimension_header_map = {}
+
+    for dimension in widget_data.get('dimensions', []):
+        subdimension_keys = []
+        dimension_header_map[dimension['id']] = dimension
+        for subdimension in dimension['subdimensions']:
+            subdimension_header_map[subdimension['id']] = subdimension
+            subdimension_keys.append(subdimension['id'])
+        dimension_header_map[dimension['id']]['subdimension_keys'] = subdimension_keys
+
+    sector_header_map = {}
+    subsector_header_map = {}
+
+    for sector in widget_data.get('sectors', []):
+        subsector_keys = []
+        sector_header_map[sector['id']] = sector
+        for subsector in sector['subsectors']:
+            subsector_header_map[subsector['id']] = subsector
+            subsector_keys.append(subsector['id'])
+        sector_header_map[sector['id']]['subsector_keys'] = subsector_keys
+    widgets_meta[widget.pk] = {
+        'dimension_header_map': dimension_header_map,
+        'subdimension_header_map': subdimension_header_map,
+        'sector_header_map': sector_header_map,
+        'subsector_header_map': subsector_header_map,
+    }
+    return (
+        dimension_header_map,
+        subdimension_header_map,
+        sector_header_map,
+        subsector_header_map,
+    )
+
+
+def _get_subsectors(subsector_header_map, sector_header, subsectors):
+    subsectors_header = []
+    for subsector_key in subsectors:
+        subsector_header = subsector_header_map.get(subsector_key)
+        if subsector_header and subsector_key in sector_header['subsector_keys']:
+            subsectors_header.append(
+                {'id': subsector_header['id'], 'title': subsector_header['title']}
+            )
+    return subsectors_header
+
+
+def get_comprehensive_data(widgets_meta, widget, data, widget_data):
+    data = (data or {}).get('value') or {}
+
+    values = []
+    (
+        dimension_header_map, subdimension_header_map,
+        sector_header_map, subsector_header_map,
+    ) = _get_headers(widgets_meta, widget, widget_data)
+
+    for dimension_key, dimension_value in data.items():
+        for subdimension_key, subdimension_value in dimension_value.items():
+            for sector_key, selected_subsectors in subdimension_value.items():
+                dimension_header = dimension_header_map.get(dimension_key)
+                subdimension_header = subdimension_header_map.get(subdimension_key)
+                sector_header = sector_header_map.get(sector_key)
+                if (
+                        dimension_header is None or
+                        subdimension_header is None or
+                        sector_header is None or
+                        subdimension_key not in dimension_header['subdimension_keys']
+                ):
+                    continue
+                values.append({
+                    'dimension': {'id': dimension_header['id'], 'title': dimension_header['title']},
+                    'subdimension': {'id': subdimension_header['id'], 'title': subdimension_header['title']},
+                    'sector': {'id': sector_header['id'], 'title': sector_header['title']},
+                    'subsectors': _get_subsectors(
+                        subsector_header_map, sector_header, selected_subsectors,
+                    ),
+                })
+    return values

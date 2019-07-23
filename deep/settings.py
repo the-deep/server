@@ -8,6 +8,7 @@ from celery.schedules import crontab
 
 from utils import sentry
 
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APPS_DIR = os.path.join(BASE_DIR, 'apps')
@@ -39,9 +40,15 @@ DEEPER_SITE_NAME = os.environ.get('DEEPER_SITE_NAME', 'DEEPER')
 HTTP_PROTOCOL = os.environ.get('DEEP_HTTPS', 'http')
 
 # See if we are inside a test environment
-TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
+TESTING = any([
+    arg in sys.argv for arg in [
+        'test',
+        'pytest', '/usr/local/bin/pytest',
+        'py.test', '/usr/local/bin/py.test',
+        '/usr/local/lib/python3.6/dist-packages/py/test.py',
+    ]
+])
 PROFILE = os.environ.get('PROFILE', 'false').lower() == 'true'
-
 
 # Application definition
 
@@ -554,3 +561,9 @@ JSON_EDITOR_INIT_JS = 'js/jsoneditor-init.js'
 LOGIN_URL = '/admin/login'
 
 OTP_TOTP_ISSUER = f'Deep Admin {DEEP_ENVIRONMENT.title()}'
+
+if DEBUG and not TESTING:
+    INSTALLED_APPS += ['silk']
+    MIDDLEWARE += ['silk.middleware.SilkyMiddleware']
+    SILKY_META = True
+    SILKY_PYTHON_PROFILER = True
