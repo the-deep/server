@@ -31,6 +31,7 @@ class ExportableInline(StackedInline):
 class AnalysisFrameworkAdmin(VersionAdmin):
     inlines = [AnalysisFrameworkMemebershipInline,
                WidgetInline, FilterInline, ExportableInline]
+    readonly_fields = ['is_private']
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -39,12 +40,9 @@ class AnalysisFrameworkAdmin(VersionAdmin):
         return ['is_private']
 
 
+@admin.register(AnalysisFrameworkRole)
 class AnalysisFrameworkRoleAdmin(admin.ModelAdmin):
+    readonly_fields = ['is_private_role']
+
     def has_add_permission(self, request, obj=None):
         return False
-
-    def get_readonly_fields(self, request, obj=None):
-        return ['is_private_role']
-
-
-admin.site.register(AnalysisFrameworkRole, AnalysisFrameworkRoleAdmin)
