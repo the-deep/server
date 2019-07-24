@@ -64,8 +64,6 @@ class AnalysisFramework(UserResource):
         * the framework belongs to a project where the user is admin
         """
         return (
-            self.created_by == user or
-            user.is_superuser or
             AnalysisFrameworkMembership.objects.filter(
                 member=user,
                 framework=self,
@@ -94,7 +92,7 @@ class AnalysisFramework(UserResource):
             **permission_fields,
             is_private_role=self.is_private,
             defaults={
-                'title': f'Owner Role({privacy_label})'
+                'title': f'Owner ({privacy_label})'
             }
         )
         return role
@@ -107,7 +105,7 @@ class AnalysisFramework(UserResource):
             **permission_fields,
             is_private_role=self.is_private,
             defaults={
-                'title': f'Editor Role({privacy_label})'
+                'title': f'Editor ({privacy_label})'
             }
         )
         return role
