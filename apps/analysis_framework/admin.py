@@ -7,7 +7,7 @@ from analysis_framework.models import (
     Exportable,
 )
 
-from deep.admin import VersionAdmin, StackedInline
+from deep.admin import VersionAdmin, StackedInline, query_buttons
 
 
 class AnalysisFrameworkMemebershipInline(admin.TabularInline):
@@ -29,15 +29,28 @@ class ExportableInline(StackedInline):
 
 @admin.register(AnalysisFramework)
 class AnalysisFrameworkAdmin(VersionAdmin):
-    inlines = [AnalysisFrameworkMemebershipInline,
-               WidgetInline, FilterInline, ExportableInline]
     readonly_fields = ['is_private']
+    inlines = [AnalysisFrameworkMemebershipInline]
+    search_fields = ('title',)
+    custom_inlines = [
+        ('widget', WidgetInline),
+        ('filter', FilterInline),
+        ('exportable', ExportableInline),
+    ]
+    list_display = [
+        'title',  # 'project_count',
+        query_buttons('View', [inline[0] for inline in custom_inlines]),
+    ]
+
+    def get_inline_instances(self, request, obj=None):
+        inlines = super().get_inline_instances(request, obj)
+        for name, inline in self.custom_inlines:
+            if request.GET.get(f'show_{name}', 'False').lower() == 'true':
+                inlines.append(inline(self.model, self.admin_site))
+        return inlines
 
     def has_add_permission(self, request, obj=None):
         return False
-
-    def get_readonly_fields(self, request, obj=None):
-        return ['is_private']
 
 
 @admin.register(AnalysisFrameworkRole)
