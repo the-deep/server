@@ -117,7 +117,9 @@ class AdminLevelViewSet(viewsets.ModelViewSet):
     search_fields = ('title')
 
     def get_queryset(self):
-        return AdminLevel.get_for(self.request.user)
+        return AdminLevel.get_for(self.request.user).defer(
+            *AdminLevelSerializer.Meta.exclude
+        )
 
 
 class GeoAreasLoadTriggerView(views.APIView):
