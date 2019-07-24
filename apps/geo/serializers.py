@@ -78,7 +78,7 @@ class AdminLevelSerializer(RemoveNullFieldsMixin,
 
     class Meta:
         model = AdminLevel
-        exclude = ('geojson', 'bounds')
+        exclude = ('geojson', 'bounds', 'geo_area_titles')
 
     # Validations
     def validate_region(self, region):
