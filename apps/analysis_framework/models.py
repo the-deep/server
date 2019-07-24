@@ -64,8 +64,6 @@ class AnalysisFramework(UserResource):
         * the framework belongs to a project where the user is admin
         """
         return (
-            self.created_by == user or
-            user.is_superuser or
             AnalysisFrameworkMembership.objects.filter(
                 member=user,
                 framework=self,
