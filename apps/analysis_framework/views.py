@@ -97,10 +97,23 @@ class AnalysisFrameworkCloneView(views.APIView):
         if not analysis_framework.can_clone(request.user):
             raise exceptions.PermissionDenied()
 
+        cloned_title = request.data.get('title')
+        if not cloned_title:
+            raise exceptions.ValidationError({
+                'title': 'Title should be present',
+            })
+
         new_af = analysis_framework.clone(
             request.user,
             request.data or {},
         )
+        # Clone the memberships as well
+        for membership in AnalysisFrameworkMembership.objects.filter(
+                framework=analysis_framework):
+            membership.id = None
+            membership.framework = new_af
+            membership.save()
+
         serializer = AnalysisFrameworkSerializer(
             new_af,
             context={'request': request},

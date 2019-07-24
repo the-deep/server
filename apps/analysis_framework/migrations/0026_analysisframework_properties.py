@@ -7,7 +7,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('analysis_framework', '0019_auto_20181031_0600'),
+        ('analysis_framework', '0025_analysisframeworkrole_is_private_role'),
     ]
 
     operations = [
