@@ -1,5 +1,7 @@
-import sentry_sdk
 import os
+import sentry_sdk
+from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.django import DjangoIntegration
 
 
 class InvalidGitRepository(Exception):
@@ -58,7 +60,14 @@ def fetch_git_sha(path, head=None):
 
 
 def init_sentry(app_type, tags={}, **config):
-    sentry_sdk.init(**config)
+    integrations = [
+        CeleryIntegration(),
+        DjangoIntegration(),
+    ]
+    sentry_sdk.init(
+        **config,
+        integrations=integrations,
+    )
     with sentry_sdk.configure_scope() as scope:
         scope.set_tag('app_type', app_type)
         for tag, value in tags.items():
