@@ -26,9 +26,10 @@ def _get_geo_area_parents(geo_areas, admin_levels, geo_area):
         'pcode': parent['pcode'],
         'admin_level': admin_levels.get(parent['admin_level']),
     }]
-    if parent['parent']:
+    p_parent = geo_areas.get(parent.get('parent'))
+    if p_parent:
         parents.extend(
-            _get_geo_area_parents(geo_areas, admin_levels, parent['parent']),
+            _get_geo_area_parents(geo_areas, admin_levels, p_parent)
         )
     return parents
 
