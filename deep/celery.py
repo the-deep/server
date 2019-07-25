@@ -1,7 +1,6 @@
 import os
 import sys
 import celery
-from sentry_sdk.integrations.celery import CeleryIntegration
 
 from django.conf import settings
 
@@ -13,7 +12,6 @@ class Celery(celery.Celery):
         if settings.SENTRY_DSN:
             sentry.init_sentry(
                 app_type='WORKER',
-                integrations=[CeleryIntegration()],
                 **settings.SENTRY_CONFIG
             )
 

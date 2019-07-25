@@ -3,7 +3,6 @@ Django settings for deep project.
 """
 import os
 import sys
-from sentry_sdk.integrations.django import DjangoIntegration
 from celery.schedules import crontab
 
 from utils import sentry
@@ -544,7 +543,6 @@ if SENTRY_DSN:
     }
     sentry.init_sentry(
         app_type='API',
-        integrations=[DjangoIntegration()],
         **SENTRY_CONFIG,
     )
 
@@ -567,6 +565,8 @@ JSON_EDITOR_INIT_JS = 'js/jsoneditor-init.js'
 LOGIN_URL = '/admin/login'
 
 OTP_TOTP_ISSUER = f'Deep Admin {DEEP_ENVIRONMENT.title()}'
+OTP_EMAIL_SENDER = EMAIL_FROM
+OTP_EMAIL_SUBJECT = 'Deep Admin OTP Token'
 
 if DEBUG and not TESTING:
     INSTALLED_APPS += ['silk']
