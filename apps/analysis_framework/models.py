@@ -354,9 +354,9 @@ class AnalysisFrameworkRole(models.Model):
             'can_add_user',
             'can_clone_framework',
             'can_edit_framework',
-            'is_private_role',
             'can_use_in_other_projects',
-            'is_default_role'
+            'is_default_role',
+            'is_private_role',
         )
 
     def __str__(self):
@@ -391,7 +391,6 @@ class AnalysisFrameworkMembership(models.Model):
 
     @staticmethod
     def get_for(user):
-        return AnalysisFrameworkMembership.objects.all()  # filter(
-#             framework__members=user,
-            # role__can_add_user=True,
-#         )
+        # TODO: make this a better query where user can get memberships of all frameworks
+        # in which he/she has access to add roles
+        return AnalysisFrameworkMembership.objects.all()
