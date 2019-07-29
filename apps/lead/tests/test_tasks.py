@@ -1,3 +1,4 @@
+from parameterized import parameterized
 from django.conf import settings
 from deep.tests import TestCase
 from mock import patch
@@ -12,7 +13,7 @@ from lead.models import Lead, LeadPreview
 from project.models import Project
 
 from utils.common import get_or_write_file, makedirs
-from utils.extractor.tests.test_web_document import HTML_URL
+from utils.extractor.tests.test_web_document import HTML_URL, REDHUM_URL
 
 import os
 import logging
@@ -20,6 +21,17 @@ logger = logging.getLogger(__name__)
 
 
 class ExtractFromLeadTaskTest(TestCase):
+    def create_lead_with_url(self, url):
+        # Create the sample lead
+        lead = self.create(Lead)
+        lead.project.is_private = False
+        lead.project.save()
+
+        lead.text = ''
+        lead.url = url
+        lead.save()
+        return lead
+
     def setUp(self):
         super().setUp()
 
@@ -28,39 +40,36 @@ class ExtractFromLeadTaskTest(TestCase):
         makedirs(self.path)
 
         # Create the sample lead
-        self.lead = self.create(Lead)
-        self.lead.project.is_private = False
-        self.lead.project.save()
+        self.lead = self.create_lead_with_url(HTML_URL)
 
-        self.lead.text = ''
-        self.lead.url = HTML_URL
-        self.lead.save()
-
-    def test_extraction(self):
+    @parameterized.expand([
+        ['relief_url', HTML_URL],  # Server Render Page
+        ['redhum_url', REDHUM_URL],  # SPA
+    ])
+    def test_extraction_(self, _, url):
+        # Create the sample lead
+        lead = self.create_lead_with_url(url)
         # Check if extraction works succesfully
         try:
-            result = extract_from_lead(self.lead.id)
+            result = extract_from_lead(lead.id)
             self.assertTrue(result)
 
             # Check if the extraction did create proper lead preview
-            lead_preview = self.lead.leadpreview
+            lead_preview = lead.leadpreview
             self.assertIsNotNone(lead_preview)
 
             # This is similar to test_web_document
             path = os.path.join(
                 self.path,
-                '.'.join(HTML_URL.split('/')[-1:]),
+                '.'.join(url.split('/')[-1:]),
             )
-            extracted = get_or_write_file(path + '.txt',
-                                          lead_preview.text_extract)
+            extracted = get_or_write_file(path + '.txt', lead_preview.text_extract)
             self.assertEqual(
                 ' '.join(lead_preview.text_extract.split()),
                 _preprocess(' '.join(extracted.read().split())),
             )
         except Exception:
-            import traceback
-            logger.warning('LEAD EXTRACTION ERROR:')
-            logger.warning(traceback.format_exc())
+            logger.warning('LEAD EXTRACTION ERROR:', exc_info=True)
             return
 
     @patch('lead.tasks.send_lead_text_to_deepl.retry')
