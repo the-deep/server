@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from readability.readability import Document
 from urllib.parse import urlparse
-from .date_extractor import extract_date
+from utils.date_extractor import extract_date
 
 import requests
 import tldextract
@@ -12,7 +12,7 @@ HEADERS = {
 }
 
 
-class WebInfoExtractor:
+class DefaultWebInfoExtractor:
     def __init__(self, url):
         self.url = url
         self.readable = None

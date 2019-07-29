@@ -33,7 +33,7 @@ from lead.serializers import (
 )
 
 from lead.tasks import extract_from_lead
-from utils.web_info_extractor import WebInfoExtractor
+from utils.web_info_extractor import get_web_info_extractor
 from utils.common import DEFAULT_HEADERS
 
 
@@ -309,7 +309,7 @@ class WebInfoExtractView(views.APIView):
     def post(self, request, version=None):
         url = request.data.get('url')
 
-        extractor = WebInfoExtractor(url)
+        extractor = get_web_info_extractor(url)
         date = extractor.get_date()
         country = extractor.get_country()
         source = extractor.get_source()
