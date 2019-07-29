@@ -34,6 +34,40 @@ class AnalysisFrameworkTests(TestCase):
         response = self.client.get(url)
         self.assert_200(response)
 
+    def test_get_private_analysis_framework_not_member_but_same_project(self):
+        """
+        Any member of the project which uses a private framework must be able to see
+        the framework.
+        """
+        private_framework = self.create(AnalysisFramework, is_private=True)
+        public_framework = self.create(AnalysisFramework, is_private=False)
+
+        project = self.create(Project, analysis_framework=private_framework)
+        # Add self.user to the project, but not to framework
+        project.add_member(self.user)
+
+        url = '/api/v1/analysis-frameworks/'
+        self.authenticate()
+        response = self.client.get(url)
+
+        self.assert_200(response)
+        self.assertEqual(len(response.data['results']), 2)
+        framework_ids = [x['id'] for x in response.data['results']]
+        assert private_framework.id in framework_ids
+        assert public_framework.id in framework_ids
+
+        # Now get a particular private framework
+        url = f'/api/v1/analysis-frameworks/{private_framework.id}/'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        # Now get a particular public framework, should be 200
+        url = f'/api/v1/analysis-frameworks/{public_framework.id}/'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+
     def test_get_private_analysis_framework_by_member(self):
         private_framework = self.create(AnalysisFramework, is_private=True)
         public_framework = self.create(AnalysisFramework, is_private=False)
