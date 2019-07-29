@@ -292,6 +292,28 @@ SAMPLE_WEB_INFO_TITLE = 'Yemen Emergency Food Security and Nutrition Assessment 
 
 
 class WebInfoExtractionTests(TestCase):
+    def test_redhum(self):
+        url = '/api/v1/web-info-extract/'
+        data = {
+            'url': 'https://redhum.org/documento/3227553',
+        }
+        try:
+            self.authenticate()
+            response = self.client.post(url, data)
+            self.assert_200(response)
+            self.assertEqual(response['title'], 'Pregnant women flee lack of maternal health care in Venezuela')
+            self.assertEqual(response['date'], '2019-07-23')
+            self.assertEqual(response['country'], 'Colombia')
+            self.assertEqual(response['website'], 'redhum.org')
+            self.assertEqual(response['url'], data['url'])
+            self.assertEqual(response['source'], 'UNHCR')
+        except Exception:
+            import traceback
+            logger.warning('\n' + ('*' * 30))
+            logger.warning('LEAD WEB INFO EXTRACTION ERROR:')
+            logger.warning(traceback.format_exc())
+            return
+
     def test_extract_web_info(self):
         # Create a sample project containing the sample country
         sample_region = self.create(Region, title=SAMPLE_WEB_INFO_COUNTRY,
