@@ -50,7 +50,8 @@ class AnalysisFramework(UserResource):
     @staticmethod
     def get_for(user):
         return AnalysisFramework.objects.all().exclude(
-            models.Q(is_private=True) & ~models.Q(members=user)
+            models.Q(is_private=True) & ~models.Q(members=user) &
+            ~models.Q(project__members=user)
         )
 
     def can_get(self, user):
@@ -391,6 +392,10 @@ class AnalysisFrameworkMembership(models.Model):
 
     @staticmethod
     def get_for(user):
-        # TODO: make this a better query where user can get memberships of all frameworks
-        # in which he/she has access to add roles
-        return AnalysisFrameworkMembership.objects.all()
+        return AnalysisFrameworkMembership.objects.filter(
+            (
+                models.Q(member=user) &
+                models.Q(role__can_add_user=True)
+            ) |
+            models.Q(framework__members=user),
+        )
