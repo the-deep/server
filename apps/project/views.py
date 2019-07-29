@@ -208,7 +208,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         entry_stats, created = ProjectEntryStats.objects.get_or_create(project=project)
         file_url = request.build_absolute_uri(
             URLCachedFileField().to_representation(entry_stats.file)
-        )
+        ) if entry_stats.file else None
         if entry_stats.is_ready():
             return redirect(file_url)
         elif entry_stats.status == ProcessStatus.FAILURE:
