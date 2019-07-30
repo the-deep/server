@@ -334,6 +334,9 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         if framework is None or not framework.is_private:
             return super().update(instance, validated_data)
 
+        if not instance.is_private and framework.is_private:
+            raise PermissionDenied('Cannot use private framework in public project')
+
         memberships = AnalysisFrameworkMembership.objects.filter(
             framework=framework,
             member=user,
