@@ -92,8 +92,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
         url_path='member-of',
     )
     def get_for_member(self, request, version=None):
-        user = self.request.GET.get('user', request.user)
+        user = self.request.GET.get('user')
         projects = Project.get_for_member(user)
+
+        if user is None or request.user == user:
+            projects = Project.get_for_member(request.user)
+        else:
+            projects = Project.get_for_public(request.user, user)
 
         user_group = request.GET.get('user_group')
         if user_group:
