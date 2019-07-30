@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import transaction
 from drf_dynamic_fields import DynamicFieldsMixin
 
-from deep.serializers import RemoveNullFieldsMixin
+from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
 from geo.models import Region, AdminLevel  # , GeoShape
@@ -75,10 +75,12 @@ class AdminLevelSerializer(RemoveNullFieldsMixin,
     """
     Admin Level Model Serializer
     """
+    geojson_file = URLCachedFileField(required=False, read_only=True)
+    bounds_file = URLCachedFileField(required=False, read_only=True)
 
     class Meta:
         model = AdminLevel
-        exclude = ('geojson', 'bounds', 'geo_area_titles')
+        exclude = ('geo_area_titles',)
 
     # Validations
     def validate_region(self, region):
