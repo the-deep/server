@@ -42,7 +42,7 @@ trigger_admin_level_cache_reset.short_description = 'Trigger cache reset for sel
 class AdminLevelInline(admin.StackedInline):
     model = AdminLevel
     raw_id_fields = ('parent', 'region', 'geo_shape_file',)
-    exclude = ('geojson', 'bounds', 'geo_area_titles',)
+    exclude = ('geo_area_titles',)
     max_num = 0
 
 
@@ -64,7 +64,7 @@ class AdminLevelAdmin(VersionAdmin):
     search_fields = ('title', 'region__title',)
     list_display = ('title', linkify('region'),)
     raw_id_fields = AdminLevelInline.raw_id_fields
-    exclude = ('geojson', 'bounds', 'geo_area_titles',)
+    exclude = ('geo_area_titles',)
     actions = [trigger_admin_level_cache_reset]
     list_per_page = 10
 

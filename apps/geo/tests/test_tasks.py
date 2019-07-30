@@ -1,14 +1,28 @@
+import re
+import os
+import json
+import tempfile
+
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test.utils import override_settings
 
 from deep.tests import TestCase
 from geo.tasks import load_geo_areas
 from geo.models import Region, AdminLevel, GeoArea
 from gallery.models import File
 
-import os
+
+def read_json_from_url(url):
+    file_path = os.path.join(
+        settings.MEDIA_ROOT,
+        re.search('http://testserver/media/(?P<path>.*)$', url).group('path'),
+    )
+    with open(file_path, 'r') as fp:
+        return json.load(fp)
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 class LoadGeoAreasTaskTest(TestCase):
     def setUp(self):
         super().setUp()
@@ -108,11 +122,13 @@ class LoadGeoAreasTaskTest(TestCase):
 
         self.authenticate()
         response = self.client.get(url)
-        self.assert_200(response)
+        self.assert_302(response)
 
-        self.assertEqual(response.data['type'], 'FeatureCollection')
-        self.assertIsNotNone(response.data['features'])
-        self.assertTrue(len(response.data['features']) > 0)
+        # NOTE: response is FileReponse
+        r_data = read_json_from_url(response.url)
+        self.assertEqual(r_data['type'], 'FeatureCollection')
+        self.assertIsNotNone(r_data['features'])
+        self.assertTrue(len(r_data['features']) > 0)
 
         # Test if geobounds also works
         url = '/api/v1/admin-levels/{}/geojson/bounds/'.format(
@@ -120,6 +136,7 @@ class LoadGeoAreasTaskTest(TestCase):
         )
 
         response = self.client.get(url)
-        self.assert_200(response)
+        self.assert_302(response)
 
-        self.assertIsNotNone(response.data['bounds'])
+        r_data = read_json_from_url(response.url)
+        self.assertIsNotNone(r_data['bounds'])
