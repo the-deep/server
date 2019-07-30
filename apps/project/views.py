@@ -2,9 +2,8 @@ import logging
 
 import django_filters
 from django.conf import settings
-from django.urls import reverse
 from django.db import transaction, models
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_text
@@ -210,18 +209,25 @@ class ProjectViewSet(viewsets.ModelViewSet):
             URLCachedFileField().to_representation(entry_stats.file)
         ) if entry_stats.file else None
         if entry_stats.is_ready():
-            return redirect(file_url)
+            return response.Response({
+                'data': file_url,
+                'status': entry_stats.status,
+            })
         elif entry_stats.status == ProcessStatus.FAILURE:
-            return response.Response(
-                {'error': f'Failed to generate Entry stats, Contact Admin'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            return response.Response({
+                'message': 'Failed to generate Entry stats, Contact Admin',
+                'data': file_url,
+                'status': entry_stats.status,
+            })
         # TODO: Refactor task trigger if all users have access to this API
         generate_entry_stats.delay(project.pk)
+        if entry_stats.status != ProcessStatus.PENDING:
+            entry_stats.status = ProcessStatus.PENDING
+            entry_stats.save()
         return response.Response({
             'message': 'Processing the request, try again later',
-            'recent_data': file_url,
-            'pending': entry_stats.status,
+            'data': file_url,
+            'status': entry_stats.status,
         }, status=status.HTTP_202_ACCEPTED)
 
     """
