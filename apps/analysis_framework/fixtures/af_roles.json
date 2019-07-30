@@ -45,7 +45,7 @@
         "title": "Default(Public)",
         "is_private_role": false,
         "can_add_user": false,
-        "can_clone_framework": false,
+        "can_clone_framework": true,
         "can_edit_framework": false,
         "can_use_in_other_projects": true,
         "is_default_role": true

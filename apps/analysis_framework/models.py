@@ -140,6 +140,8 @@ class AnalysisFramework(UserResource):
         AFRole = AnalysisFrameworkRole
         permission_fields = {x: False for x in AFRole.PERMISSION_FIELDS}
         permission_fields[AFRole.CAN_USE_IN_OTHER_PROJECTS] = True
+        if not self.is_private:
+            permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = True
         return permission_fields
 
     def get_editor_permissions(self):
