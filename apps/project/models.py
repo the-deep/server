@@ -235,6 +235,12 @@ class Project(UserResource):
         return Project.objects.exclude(Q(is_private=True) & ~Q(members=user))
 
     @staticmethod
+    def get_for_public(requestUser, user):
+        return Project\
+            .get_for_member(user)\
+            .exclude(models.Q(is_private=True) & ~models.Q(members=requestUser))
+
+    @staticmethod
     def get_for_member(user, annotated=False):
         # FIXME: get viewable projects
         # Also, pick only required fields instead of annotating everytime.
