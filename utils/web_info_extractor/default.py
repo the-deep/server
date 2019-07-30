@@ -17,6 +17,7 @@ class DefaultWebInfoExtractor:
         self.url = url
         self.readable = None
         self.page = None
+        self.content = None
 
         try:
             head = requests.head(url, headers=HEADERS)
@@ -25,7 +26,9 @@ class DefaultWebInfoExtractor:
 
         if 'text/html' in head.headers.get('content-type', ''):
             try:
-                html = requests.get(url, headers=HEADERS).text
+                response = requests.get(url, headers=HEADERS, verify=False)
+                html = response.text
+                self.content = response.content
             except requests.exceptions.RequestException:
                 return
 
@@ -61,3 +64,6 @@ class DefaultWebInfoExtractor:
 
     def get_website(self):
         return urlparse(self.url).netloc
+
+    def get_content(self):
+        return self.content
