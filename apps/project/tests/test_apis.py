@@ -320,7 +320,7 @@ class ProjectApiTest(TestCase):
         }
         self.authenticate()
         response = self.client.put(url, data)
-        self.assert_200(response)
+        self.assert_403(response)
 
     def test_project_get_with_user_group_field(self):
         # TODO: can make this more generic for other fields as well
