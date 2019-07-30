@@ -1046,7 +1046,8 @@ class ProjectApiTest(TestCase):
         # 500 if invalid config is set and stat is generated
         _generate_entry_stats(project.pk)
         response = self.client.get(url)
-        self.assert_500(response)
+        self.assert_200(response)
+        self.assertEqual(response.json()['status'], 'failure')
 
         af.properties = {'stats_config': valid_stat_config}
         af.save()
@@ -1054,4 +1055,5 @@ class ProjectApiTest(TestCase):
         # 302 (Redirect to data file) if valid config is set and stat is generated
         _generate_entry_stats(project.pk)
         response = self.client.get(url)
-        self.assert_302(response)
+        self.assert_200(response)
+        self.assertEqual(response.json()['status'], 'success')
