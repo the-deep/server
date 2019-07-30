@@ -11,6 +11,7 @@ from ..web_document import WebDocument
 logger = logging.getLogger(__name__)
 
 # TODO: Review/Add better urls
+REDHUM_URL = 'https://redhum.org/documento/3227553'
 HTML_URL = 'https://reliefweb.int/report/occupied-palestinian-territory/rehabilitation-services-urgently-needed-prevent-disability'  # noqa
 DOCX_URL = 'https://calibre-ebook.com/downloads/demos/demo.docx'
 PPTX_URL = 'https://www.mhc.ab.ca/-/media/Files/PDF/Services/Online/'\

@@ -3,6 +3,7 @@ import tempfile
 from django.conf import settings
 
 from utils.common import (write_file, DEFAULT_HEADERS)
+from utils.web_info_extractor import get_web_info_extractor
 from .document import (
     Document,
     HTML, PDF, DOCX, PPTX,
@@ -38,8 +39,7 @@ class WebDocument(Document):
 
         if not r.headers.get('content-type') or \
                 any(x in r.headers["content-type"] for x in self.HTML_TYPES):
-            r = requests.get(url, headers=DEFAULT_HEADERS, verify=False)
-            doc = r.content
+            doc = get_web_info_extractor(url).get_content()
         else:
             fp = tempfile.NamedTemporaryFile(
                 dir=settings.TEMP_DIR, delete=False)

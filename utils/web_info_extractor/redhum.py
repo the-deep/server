@@ -19,7 +19,7 @@ class RedhumWebInfoExtractor:
         rw_url = f'https://api.reliefweb.int/v1/reports/{report_id}'
         params = {
             'appname': 'redhum',
-            'fields[include][]': ['title', 'primary_country', 'source', 'date'],
+            'fields[include][]': ['title', 'primary_country', 'source', 'date', 'body-html'],
         }
 
         try:
@@ -42,3 +42,6 @@ class RedhumWebInfoExtractor:
 
     def get_website(self):
         return urlparse(self.url).netloc
+
+    def get_content(self):
+        return self.page.get('body-html', '')
