@@ -289,25 +289,30 @@ class LeadTests(TestCase):
         lead2 = self.create(Lead, project=project)
         self.create(LeadPreview, lead=lead2, page_count=15)
 
+        lead3 = self.create(Lead, project=project)
+        self.create(LeadPreview, lead=lead3, page_count=None)
+
         # Ascending ordering
-        url = '/api/v1/leads/?ordering=page_count'
+        url = '/api/v1/leads/?ordering=,page_count,,'  # this also tests leading/trailing/multiple commas
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
-        assert len(response.data['results']) == 2, "Two leads created"
+        assert len(response.data['results']) == 3, "Three leads created"
         leads = response.data['results']
-        assert leads[0]['id'] == lead2.id, "Preview2 has less pages"
-        assert leads[1]['id'] == lead1.id, "Preview1 has more pages"
+        assert leads[0]['id'] == lead3.id, "Preview3 has no pages"
+        assert leads[1]['id'] == lead2.id, "Preview2 has less pages"
+        assert leads[2]['id'] == lead1.id, "Preview1 has more pages"
 
         # Descending ordering
-        url = '/api/v1/leads/?ordering=-page_count'
+        url = '/api/v1/leads/?ordering=,-page_count,,'  # this also tests leading/trailing/multiple commas
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
-        assert len(response.data['results']) == 2, "Two leads created"
+        assert len(response.data['results']) == 3, "Three leads created"
         leads = response.data['results']
         assert leads[0]['id'] == lead1.id, "Preview1 has more pages"
         assert leads[1]['id'] == lead2.id, "Preview2 has less pages"
+        assert leads[2]['id'] == lead3.id, "Preview3 has no pages"
 
 
 # Data to use for testing web info extractor
