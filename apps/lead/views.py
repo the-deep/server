@@ -85,6 +85,8 @@ class LeadViewSet(viewsets.ModelViewSet):
         qs = super().filter_queryset(queryset)
         ordering = self.request.query_params.get('ordering')
         if ordering:
+            if 'page_count' in ordering:
+                ordering = ordering.replace('page_count', 'leadpreview__page_count')
             return qs.order_by(ordering)
         return qs
 
