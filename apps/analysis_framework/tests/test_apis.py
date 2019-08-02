@@ -173,15 +173,17 @@ class AnalysisFrameworkTests(TestCase):
         assert 'title' in response.data['errors']
 
     def test_clone_analysis_framework(self):
-        analysis_framework = self.create(AnalysisFramework)
+        """This is relevant only to public frameworks"""
+        analysis_framework = self.create(AnalysisFramework, is_private=False)
         project = self.create(
             Project, analysis_framework=analysis_framework,
             role=self.admin_role
         )
-        # Add members to analysis framework, to check if memberships cloned or not
-        owner_membership, _ = analysis_framework.add_member(self.user, analysis_framework.get_or_create_owner_role())
+        # Add self.user as member to analysis framework, to check if owner membership created or not
+        default_membership, _ = analysis_framework.add_member(self.user)
+        # Add owner user, but this should not be in the cloned framework
         user = self.create(User)
-        default_membership, _ = analysis_framework.add_member(user)
+        owner_membership, _ = analysis_framework.add_member(user, analysis_framework.get_or_create_owner_role())
 
         url = '/api/v1/clone-analysis-framework/{}/'.format(
             analysis_framework.id
@@ -190,6 +192,7 @@ class AnalysisFrameworkTests(TestCase):
         data = {
             'project': project.id,
             'title': cloned_title,
+            'description': 'New Description',
         }
 
         self.authenticate()
@@ -207,16 +210,16 @@ class AnalysisFrameworkTests(TestCase):
         self.assertNotEqual(new_af.id, analysis_framework.id)
         self.assertEqual(project.analysis_framework.id, response.data['id'])
 
+        # Check if description updated
+        assert new_af.description == data['description'], "Description should be updated"
+        assert new_af.title == data['title'], "Title should be updated"
+
         # Test permissions cloned
-        assert new_af.members.all().count() == 2, "The cloned framework should have same members"
+        # Only the requester should be the owner of the new framework
+        assert new_af.members.all().count() == 1, "The cloned framework should have only one owner"
         assert AnalysisFrameworkMembership.objects.filter(
             framework=new_af, role=owner_membership.role,
             member=self.user,
-        ).exists()
-
-        assert AnalysisFrameworkMembership.objects.filter(
-            framework=new_af, role=default_membership.role,
-            member=user,
         ).exists()
 
     def test_create_private_framework_unauthorized(self):

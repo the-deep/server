@@ -107,12 +107,8 @@ class AnalysisFrameworkCloneView(views.APIView):
             request.user,
             request.data or {},
         )
-        # Clone the memberships as well
-        for membership in AnalysisFrameworkMembership.objects.filter(
-                framework=analysis_framework):
-            membership.id = None
-            membership.framework = new_af
-            membership.save()
+        # Set the requesting user as owner member, don't create other memberships of old framework
+        new_af.add_member(request.user, new_af.get_or_create_owner_role())
 
         serializer = AnalysisFrameworkSerializer(
             new_af,
