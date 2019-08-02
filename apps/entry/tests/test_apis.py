@@ -392,22 +392,21 @@ class EntryTest(TestCase):
 
     def test_entry_no_image(self):
         entry = self.create_entry(image='')
-        assert entry.get_shareable_image_url() is None
+        assert entry.get_image_url() is None
 
     def test_entry_image(self):
         entry_image_url = '/some/path'
         entry = self.create_entry(
             image='{}/{}'.format(entry_image_url, self.file.id)
         )
-        assert entry.get_shareable_image_url() is not None
+        assert entry.get_image_url() is not None
         # Get file again, because it won't have random_string updated
         file = File.objects.get(id=self.file.id)
-        assert entry.get_shareable_image_url() == '{protocol}://{domain}{url}'.format(
+        assert entry.get_image_url() == '{protocol}://{domain}{url}'.format(
             protocol=settings.HTTP_PROTOCOL,
             domain=settings.DJANGO_API_HOST,
-            url='/public-file/{fidb64}/{token}/{filename}'.format(**{
-                'fidb64': urlsafe_base64_encode(force_bytes(file.pk)).decode(),
-                'token': file.get_random_string(),
+            url='/private-file/{uuid}/{filename}'.format(**{
+                'uuid': file.uuid,
                 'filename': file.title,
             }
             ),
