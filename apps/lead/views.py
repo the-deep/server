@@ -83,9 +83,17 @@ class LeadViewSet(viewsets.ModelViewSet):
         # For some reason, the ordering is not working for `assignee` field
         # so, force ordering with anything passed in the query param
         qs = super().filter_queryset(queryset)
-        ordering = self.request.query_params.get('ordering')
-        if ordering:
-            return qs.order_by(ordering)
+        ordering = self.request.query_params.get('ordering', '')
+        orderings = [x for x in ordering.split(',') if x]
+
+        for ordering in orderings:
+            if ordering == '-page_count':
+                qs = qs.order_by(models.F('leadpreview__page_count').desc(nulls_last=True))
+            elif ordering == 'page_count':
+                qs = qs.order_by(models.F('leadpreview__page_count').asc(nulls_first=True))
+            else:
+                qs = qs.order_by(ordering)
+
         return qs
 
     def get_serializer(self, *args, **kwargs):

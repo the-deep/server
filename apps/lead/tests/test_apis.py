@@ -2,7 +2,7 @@ from deep.tests import TestCase
 from user.models import User
 from project.models import Project, ProjectMembership
 from geo.models import Region
-from lead.models import Lead
+from lead.models import Lead, LeadPreview
 
 import logging
 from datetime import date
@@ -277,6 +277,42 @@ class LeadTests(TestCase):
         for project, old_lead_count, new_lead_count in lead_stats:
             current_lead_count = Lead.objects.filter(project_id=project.pk).count()
             assert new_lead_count == current_lead_count, f'Project: {project.title} lead count is different'
+
+    def test_lead_order_by_page_count(self):
+        # Create lead and lead_previews
+        project = self.create(Project)
+        project.add_member(self.user)
+
+        lead1 = self.create(Lead, project=project)
+        self.create(LeadPreview, lead=lead1, page_count=20)
+
+        lead2 = self.create(Lead, project=project)
+        self.create(LeadPreview, lead=lead2, page_count=15)
+
+        lead3 = self.create(Lead, project=project)
+        self.create(LeadPreview, lead=lead3, page_count=None)
+
+        # Ascending ordering
+        url = '/api/v1/leads/?ordering=,page_count,,'  # this also tests leading/trailing/multiple commas
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        assert len(response.data['results']) == 3, "Three leads created"
+        leads = response.data['results']
+        assert leads[0]['id'] == lead3.id, "Preview3 has no pages"
+        assert leads[1]['id'] == lead2.id, "Preview2 has less pages"
+        assert leads[2]['id'] == lead1.id, "Preview1 has more pages"
+
+        # Descending ordering
+        url = '/api/v1/leads/?ordering=,-page_count,,'  # this also tests leading/trailing/multiple commas
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        assert len(response.data['results']) == 3, "Three leads created"
+        leads = response.data['results']
+        assert leads[0]['id'] == lead1.id, "Preview1 has more pages"
+        assert leads[1]['id'] == lead2.id, "Preview2 has less pages"
+        assert leads[2]['id'] == lead3.id, "Preview3 has no pages"
 
 
 # Data to use for testing web info extractor
