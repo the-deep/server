@@ -1,11 +1,16 @@
-from deep.tests import TestCase
-from gallery.models import File, FilePreview
+import os
+import tempfile
+
+from django.urls import reverse
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
-import os
-import tempfile
+from deep.tests import TestCase
+from gallery.models import File, FilePreview
+from lead.models import Lead
+from project.models import Project
+from entry.models import Entry
 
 
 class GalleryTests(TestCase):
@@ -110,52 +115,86 @@ class GalleryTests(TestCase):
         response = self.client.get(url)
         self.assert_404(response)
 
-    def test_public_file_api_no_post(self):
-        url = '/public-file/'
+    def test_public_private_file_api_no_post(self):
+        public_url = '/public-file/'
+        private_url = '/private-file/'
         self.authenticate()
-        response = self.client.post(url)
-        self.assert_405(response)
+        public_resp = self.client.post(public_url)
+        private_resp = self.client.post(private_url)
+        self.assert_405(public_resp)
+        self.assert_405(private_resp)
 
-    def test_get_file_public_no_random_string(self):
-        url = '/public-file/1/'
+    def test_get_file_private_no_random_string(self):
+        url = '/private-file/1/'
         self.authenticate()
         response = self.client.get(url)
         self.assert_404(response)
 
-    def test_get_file_public_invalid_random_string(self):
-        url = '/public-file/{}/{}/{}'
-        file_id = self.save_file_with_api()
-        file = File.objects.get(id=file_id)
-        self.authenticate()
-        response = self.client.get(
-            url.format(
-                urlsafe_base64_encode(force_bytes(file.id)).decode(),
-                'randomstr', 'filename',
-            ))
-        self.assert_404(response)
-
-    def test_get_file_public_valid_random_string(self):
-        url = '/public-file/{}/{}/{}'
+    def test_public_to_private_file_url(self):
+        urlf_public = '/public-file/{}/{}/{}'
 
         file_id = self.save_file_with_api()
         file = File.objects.get(id=file_id)
 
-        self.authenticate()
-        formatted_url = url.format(
+        url = urlf_public.format(
             urlsafe_base64_encode(force_bytes(file_id)).decode(),
-            file.get_random_string(),
-            'filename',
+            'random-strings-xxyyzz',
+            file.title,
         )
-        response = self.client.get(formatted_url)
+        redirect_url = 'http://testserver' + reverse(
+            'gallery_private_url',
+            kwargs={
+                'uuid': file.uuid, 'filename': file.title,
+            },
+        )
+        response = self.client.get(url)
         assert response.status_code == 302, "Should return 302"
+        assert response.url == redirect_url, f"Should return {redirect_url}"
 
-    def save_file_with_api(self):
+    def test_private_file_url(self):
+        urlf = '/private-file/{}/{}'
+
+        file_id = self.save_file_with_api({'isPublic': False})
+        entry_file_id = self.save_file_with_api({'isPublic': False})
+        file = File.objects.get(id=file_id)
+        entry_file = File.objects.get(id=entry_file_id)
+        file_url = urlf.format(file.uuid, file.title)
+        entry_file_url = urlf.format(file.uuid, file.title)
+
+        # Without authentication
+        response = self.client.get(file_url)
+        assert response.status_code == 403, "Should return 403 forbidden"
+
+        # With authentication but no file access
+        self.authenticate()
+        response = self.client.get(file_url)
+        assert response.status_code == 403, "Should return 403 forbidden"
+        response = self.client.get(entry_file_url)
+        assert response.status_code == 403, "Should return 403 forbidden"
+
+        # With authentication and with file access (LEAD)
+        project = self.create(Project, role=self.admin_role)
+        lead = self.create(Lead, project=project)
+        lead.attachment = file
+        lead.save()
+        response = self.client.get(file_url)
+        assert response.status_code == 302, "Should return 302 redirect"
+
+        # With authentication and with file access (Entry)
+        entry = self.create(Entry, project=project, lead=lead)
+        entry.image = entry_file.get_file_url()
+        entry.save()
+        response = self.client.get(entry_file_url)
+        assert response.status_code == 302, "Should return 302 redirect"
+
+    def save_file_with_api(self, kwargs={}):
         url = '/api/v1/files/'
 
         data = {
             'title': 'Test file',
             'file': open(self.supported_file, 'rb'),
             'isPublic': True,
+            **kwargs,
         }
 
         self.authenticate()

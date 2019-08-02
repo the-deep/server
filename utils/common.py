@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import hashlib
 from xml.sax.saxutils import escape as xml_escape
 import matplotlib as mp
 from datetime import timedelta, datetime
@@ -409,3 +410,14 @@ def combine_dicts(list_dicts):
     for x in list_dicts:
         combined.update(x)
     return combined
+
+
+def calculate_md5(file):
+    file.seek(0)
+    hash_md5 = hashlib.md5()
+    while True:
+        chunk = file.read(4096)
+        if not chunk:
+            break
+        hash_md5.update(chunk)
+    return hash_md5.hexdigest()

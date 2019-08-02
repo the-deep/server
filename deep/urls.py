@@ -8,8 +8,11 @@ from django.views.static import serve
 from django.contrib.auth import views as auth_views
 from django.contrib import admin
 from django.conf import settings
+from django.urls import path, register_converter
 from rest_framework import routers
 from django_otp.admin import OTPAdminSite
+
+from . import converters
 
 # import autofixture
 
@@ -27,6 +30,7 @@ from gallery.views import (
     FilePreviewViewSet,
     FileExtractionTriggerView,
     MetaExtractionView,
+    PrivateFileView,
     PublicFileView,
 )
 from tabular.views import (
@@ -148,6 +152,9 @@ from django.conf.urls import (
     handler404
     # handler403, handler400, handler500
 )
+
+register_converter(converters.FileNameRegex, 'filename')
+
 
 handler404 = Api_404View  # noqa
 
@@ -304,6 +311,11 @@ urlpatterns = [
 
     # Gallery
     url(r'^file/(?P<file_id>\d+)/$', FileView.as_view(), name='file'),
+    path(
+        'private-file/<uuid:uuid>/<filename:filename>',
+        PrivateFileView.as_view(),
+        name='gallery_private_url',
+    ),
     url(
         r'^public-file/(?P<fidb64>[0-9A-Za-z]+)/(?P<token>.+)/(?P<filename>.*)$',
         PublicFileView.as_view(),

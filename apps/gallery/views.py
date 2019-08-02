@@ -1,4 +1,5 @@
 import logging
+from django.urls import reverse
 from django.core.cache import cache
 from django.views.generic import View
 from django.conf import settings
@@ -16,12 +17,15 @@ from rest_framework import (
     mixins,
     exceptions,
     decorators,
+    status,
 )
 import django_filters
 
 from deep.permissions import ModifyPermission
 from deep.serializers import URLCachedFileField
 from project.models import Project
+from lead.models import Lead
+from entry.models import Entry
 from user_resource.filters import UserResourceFilterSet
 
 from utils.extractor.formats import (
@@ -56,11 +60,48 @@ class FileView(View):
         return redirect(request.build_absolute_uri(file.file.url))
 
 
+class PrivateFileView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, uuid=None, filename=None):
+        queryset = File.objects.prefetch_related('lead_set')
+        file = get_object_or_404(queryset, uuid=uuid)
+        user = request.user
+        leads_pk = file.lead_set.values_list('pk', flat=True)
+
+        if (
+                file.is_public or
+                Lead.get_for(user).filter(pk__in=leads_pk).exists() or
+                Entry.get_for(user).filter(
+                    image=request.build_absolute_uri(
+                        reverse('file', kwargs={'file_id': file.pk}),
+                    )
+                ).exists()
+                # TODO: Add Profile
+        ):
+            return redirect(request.build_absolute_uri(file.file.url))
+        return response.Response({
+            'error': 'Access Forbidden, Contact Admin',
+        }, status=status.HTTP_403_FORBIDDEN)
+
+
 class PublicFileView(View):
+    """
+    NOTE: Public File API is deprecated.
+    """
     def get(self, request, fidb64=None, token=None, filename=None):
         file_id = force_text(urlsafe_base64_decode(fidb64))
-        file = get_object_or_404(File, id=file_id, random_string=token)
-        return redirect(request.build_absolute_uri(file.file.url))
+        file = get_object_or_404(File, id=file_id)
+        return redirect(
+            request.build_absolute_uri(
+                reverse(
+                    'gallery_private_url',
+                    kwargs={
+                        'uuid': file.uuid, 'filename': filename,
+                    },
+                )
+            )
+        )
 
 
 def filter_files_by_projects(qs, name, value):

@@ -85,7 +85,7 @@ class ReportExporter:
 
         source = lead.source or 'Reference'
         url = lead.url or (
-            lead.attachment and lead.attachment.get_shareable_image_url()
+            lead.attachment and lead.attachment.get_file_url()
         )
 
         para.add_run(' (')
@@ -287,7 +287,7 @@ class ReportExporter:
 
             para = self.doc.add_paragraph()
             url = lead.url or (
-                lead.attachment and lead.attachment.get_shareable_image_url()
+                lead.attachment and lead.attachment.get_file_url()
             )
             if url:
                 para.add_hyperlink(url, url)
