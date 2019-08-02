@@ -68,6 +68,29 @@ class AnalysisFrameworkTests(TestCase):
         response = self.client.get(url)
         self.assert_200(response)
 
+    def test_get_related_to_me_frameworks(self):
+        private_af = self.create(AnalysisFramework, is_private=True)  # noqa
+        private_af2 = self.create(AnalysisFramework, is_private=True)
+
+        # The owner role is just a role, what matters is if membership exists or not
+        private_af2.add_member(self.user, private_af2.get_or_create_owner_role())
+
+        public_af = self.create(AnalysisFramework, is_private=False)
+        public_af.add_member(self.user)
+        public_af2 = self.create(AnalysisFramework, is_private=False)  # noqa
+
+        url = '/api/v1/analysis-frameworks/?relatedToMe=true'
+        self.authenticate()
+        resp = self.client.get(url)
+        self.assert_200(resp)
+        afs = resp.data['results']
+
+        assert len(afs) == 2, "Two frameworks are related to user"
+        af_ids = [x['id'] for x in afs]
+
+        assert private_af2.id in af_ids
+        assert public_af.id in af_ids
+
     def test_get_private_analysis_framework_by_member(self):
         private_framework = self.create(AnalysisFramework, is_private=True)
         public_framework = self.create(AnalysisFramework, is_private=False)
