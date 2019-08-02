@@ -62,7 +62,7 @@ class AnalysisFrameworkViewSet(viewsets.ModelViewSet):
 
         # Owner Filter
         if query_params.get('relatedToMe', 'false').lower() == 'true':
-            queryset = queryset.filter(created_by=self.request.user)
+            queryset = queryset.filter(members=self.request.user)
         return queryset
 
     @action(
