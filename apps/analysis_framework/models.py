@@ -112,8 +112,12 @@ class AnalysisFramework(UserResource):
         return role
 
     def get_or_create_default_role(self):
+        # Return the editor role for public framework
+        if not self.is_private:
+            return self.get_or_create_editor_role()
+
         permission_fields = self.get_default_permissions()
-        privacy_label = 'Private' if self.is_private else 'Public'
+        privacy_label = 'Private'
         role, created = AnalysisFrameworkRole.objects.get_or_create(
             is_default_role=True,
             is_private_role=self.is_private,
@@ -136,12 +140,13 @@ class AnalysisFramework(UserResource):
         )
 
     def get_default_permissions(self):
-        # For now, same for both private and public, change later if needed
+        # Default role for editor of public role is same as editor role
+        if not self.is_private:
+            return self.get_editor_permissions()
+
         AFRole = AnalysisFrameworkRole
         permission_fields = {x: False for x in AFRole.PERMISSION_FIELDS}
         permission_fields[AFRole.CAN_USE_IN_OTHER_PROJECTS] = True
-        if not self.is_private:
-            permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = True
         return permission_fields
 
     def get_editor_permissions(self):
