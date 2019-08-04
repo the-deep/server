@@ -11,12 +11,15 @@ from utils.external_storages.google_drive import download as g_download
 from utils.external_storages.dropbox import download as d_download
 from utils.extractor.formats.docx import get_pages_in_docx
 from utils.extractor.formats.pdf import get_pages_in_pdf
+from utils.common import calculate_md5
 from .models import File, FilePreview
 
 import os
 import logging
 
 logger = logging.getLogger(__name__)
+
+FILE_READONLY_FIELDS = ('metadata', 'mime_type',)
 
 
 class SimpleFileSerializer(RemoveNullFieldsMixin,
@@ -28,6 +31,7 @@ class SimpleFileSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = File
         fields = ('id', 'title', 'file', 'mime_type')
+        read_only_fields = FILE_READONLY_FIELDS
 
 
 class FileSerializer(RemoveNullFieldsMixin,
@@ -37,6 +41,7 @@ class FileSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = File
         fields = ('__all__')
+        read_only_fields = FILE_READONLY_FIELDS
 
     # Validations
     def validate_file(self, file):
@@ -48,7 +53,7 @@ class FileSerializer(RemoveNullFieldsMixin,
         return file
 
     def _get_metadata(self, file):
-        metadata = {}
+        metadata = {'md5_hash': calculate_md5(file.file)}
         mime_type = file.content_type
         if mime_type in deep_doc_types.PDF_MIME_TYPES:
             metadata.update({

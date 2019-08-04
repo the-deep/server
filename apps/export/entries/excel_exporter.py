@@ -285,7 +285,7 @@ class ExcelExporter:
             return entry.excerpt
 
         if entry.entry_type == Entry.IMAGE:
-            return entry.get_shareable_image_url()
+            return entry.get_image_url()
 
         if entry.entry_type == Entry.DATA_SERIES:
             try:

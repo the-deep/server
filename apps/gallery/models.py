@@ -1,17 +1,13 @@
+import uuid as python_uuid
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 from django.conf import settings
 from django.urls import reverse
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
 from user_resource.models import UserResource
-
-from utils.common import random_key
 
 
 class File(UserResource):
-    RANDOM_STRING_LENGTH = 16
-
+    uuid = models.UUIDField(default=python_uuid.uuid4, editable=False, unique=True)
     title = models.CharField(max_length=255)
 
     file = models.FileField(upload_to='gallery/', max_length=255,
@@ -21,12 +17,6 @@ class File(UserResource):
 
     is_public = models.BooleanField(default=True)
     projects = models.ManyToManyField('project.Project', blank=True)
-
-    random_string = models.CharField(
-        max_length=RANDOM_STRING_LENGTH,
-        null=True,
-        blank=True
-    )
 
     def __str__(self):
         return self.title
@@ -45,23 +35,13 @@ class File(UserResource):
         return True
         # return self in File.get_for(user)
 
-    def get_random_string(self):
-        if self.random_string is None:
-            self.random_string = random_key(File.RANDOM_STRING_LENGTH)
-            self.save()
-        return self.random_string
-
-    def get_shareable_image_url(self):
-        rand_str = self.get_random_string()
-        fid = urlsafe_base64_encode(force_bytes(self.pk)).decode()
+    def get_file_url(self):
         return '{protocol}://{domain}{url}'.format(
             protocol=settings.HTTP_PROTOCOL,
             domain=settings.DJANGO_API_HOST,
             url=reverse(
-                'gallery_public_url',
-                kwargs={
-                    'fidb64': fid, 'token': rand_str, 'filename': self.title,
-                }
+                'gallery_private_url',
+                kwargs={'uuid': self.uuid, 'filename': self.title},
             )
         )
 
