@@ -57,8 +57,6 @@ class Entry(UserResource, ProjectEntityMixin):
 
     def __init__(self, *args, **kwargs):
         ret = super().__init__(*args, **kwargs)
-        # Set shareable_image_url as a cache
-        self.shareable_image_url = None
         return ret
 
     def __str__(self):
@@ -70,25 +68,21 @@ class Entry(UserResource, ProjectEntityMixin):
                 self.lead.title,
             )
 
-    def get_shareable_image_url(self):
-        if self.shareable_image_url:
-            return self.shareable_image_url
+    def get_image_url(self):
+        if hasattr(self, 'image_url'):
+            return self.image_url
         if not self.image:
             return None
 
-        splitted = self.image.rstrip('/').split('/')  # remove last slash if present
-        if not splitted:
-            return None
-
-        fileid = parse_number(splitted[-1])
+        fileid = parse_number(self.image.rstrip('/').split('/')[-1])  # remove last slash if present
         if fileid is None:
             return None
         file = File.objects.filter(id=fileid).first()
         if not file:
             return None
 
-        self.shareable_image_url = file.get_shareable_image_url()
-        return self.shareable_image_url
+        self.image_url = file.get_file_url()
+        return self.image_url
 
     class Meta(UserResource.Meta):
         verbose_name_plural = 'entries'

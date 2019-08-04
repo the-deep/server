@@ -4,6 +4,7 @@ from importlib import import_module
 from rest_framework.compat import (
     URLPattern, URLResolver,
 )
+from django.urls.resolvers import RoutePattern
 
 
 def endpoint_ordering(endpoint):
@@ -31,6 +32,10 @@ class EndpointEnumerator:
 
         for pattern in patterns:
             path_regex = prefix + pattern.pattern.regex.pattern
+
+            if isinstance(pattern.pattern, RoutePattern):
+                # TODO: Add fix for RoutePattern
+                continue
 
             if isinstance(pattern, URLPattern):
                 path = self.get_path_from_regex(path_regex)
