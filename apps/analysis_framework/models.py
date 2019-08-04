@@ -34,6 +34,11 @@ class AnalysisFramework(UserResource):
         title = overrides.get('title', '{} (cloned)'.format(
             self.title[:230]))  # Strip off extra chars from title
         description = overrides.get('description', '')
+
+        # Required
+        if description is None:
+            description = ''
+
         analysis_framework = AnalysisFramework(
             title=title,
             description=description,
