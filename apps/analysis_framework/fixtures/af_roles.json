@@ -3,7 +3,7 @@
     "model": "analysis_framework.analysisframeworkrole",
     "pk": 15,
     "fields": {
-        "title": "Default(Private)",
+        "title": "Private Viewer",
         "is_private_role": true,
         "can_add_user": false,
         "can_clone_framework": false,
@@ -16,7 +16,7 @@
     "model": "analysis_framework.analysisframeworkrole",
     "pk": 16,
     "fields": {
-        "title": "Owner (Private)",
+        "title": "Private Owner",
         "is_private_role": true,
         "can_add_user": true,
         "can_clone_framework": false,
@@ -29,7 +29,7 @@
     "model": "analysis_framework.analysisframeworkrole",
     "pk": 17,
     "fields": {
-        "title": "Editor (Private)",
+        "title": "Private Editor",
         "is_private_role": true,
         "can_add_user": false,
         "can_clone_framework": false,
@@ -42,7 +42,7 @@
     "model": "analysis_framework.analysisframeworkrole",
     "pk": 18,
     "fields": {
-        "title": "Default(Public)",
+        "title": "Default",
         "is_private_role": false,
         "can_add_user": false,
         "can_clone_framework": true,
@@ -55,7 +55,7 @@
     "model": "analysis_framework.analysisframeworkrole",
     "pk": 19,
     "fields": {
-        "title": "Owner (Public)",
+        "title": "Owner",
         "is_private_role": false,
         "can_add_user": true,
         "can_clone_framework": true,
@@ -68,7 +68,7 @@
     "model": "analysis_framework.analysisframeworkrole",
     "pk": 20,
     "fields": {
-        "title": "Editor (Public)",
+        "title": "Editor",
         "is_private_role": false,
         "can_add_user": false,
         "can_clone_framework": true,
