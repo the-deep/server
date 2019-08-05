@@ -11,6 +11,8 @@ from user.models import User
 class TestAnalysisFrameworkRoles(TestCase):
     """Test cases for analysis framework roles"""
 
+    fixtures = ['apps/analysis_framework/fixtures/af_roles.json']
+
     def setUp(self):
         super().setUp()
 
@@ -41,8 +43,8 @@ class TestAnalysisFrameworkRoles(TestCase):
         for role in data['results']:
             assert role['is_private_role'] is True, "Must be a private role"
 
-    def test_get_public_roles(self):
-        url = '/api/v1/private-framework-roles/'
+    def test_get_public_roles_all(self):
+        url = '/api/v1/public-framework-roles/'
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
@@ -50,6 +52,21 @@ class TestAnalysisFrameworkRoles(TestCase):
         data = response.data
         for role in data['results']:
             assert role['is_private_role'] is not True, "Must be a public role"
+
+        assert any(x['is_default_role'] for x in data['results']), "A default role should be present"
+
+    def test_get_public_roles_no_default(self):
+        url = '/api/v1/public-framework-roles/?is_default_role=false'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        data = response.data
+        for role in data['results']:
+            assert role['is_private_role'] is not True, "Must be a public role"
+
+        print([x['is_default_role'] for x in data['results']])
+        assert not any(x['is_default_role'] for x in data['results']), "No default role should be present"
 
     def test_owner_role(self):
         self.private_framework.add_member(
@@ -235,8 +252,8 @@ class TestAnalysisFrameworkRoles(TestCase):
 
         assert memship is not None, "Membership should be created"
         permissions = memship.role.permissions
-        assert permissions == public_framework.get_default_permissions(), \
-            "The permissions should be the default permissions"
+        assert permissions == public_framework.get_editor_permissions(), \
+            "The default member permissions should be the editor permissions"
 
     def test_owner_cannot_delete_himself(self):
         framework = self.create(AnalysisFramework)

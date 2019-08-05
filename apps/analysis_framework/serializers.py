@@ -103,7 +103,14 @@ class AnalysisFrameworkMembershipSerializer(
     def create(self, validated_data):
         user = self.context['request'].user
         framework = validated_data.get('framework')
-        role = validated_data.get('role') or framework.get_or_create_default_role()
+
+        # NOTE: Default role is different for private and public framework
+        # For public, two sorts of default role, one for non members and one while adding
+        # member to af, which is editor role
+        default_role = framework.get_or_create_default_role() if framework.is_private else\
+            framework.get_or_create_editor_role()
+
+        role = validated_data.get('role') or default_role
 
         if framework is None:
             raise serializers.ValidationError('Analysis Framework does not exist')
