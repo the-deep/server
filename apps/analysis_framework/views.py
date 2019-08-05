@@ -193,4 +193,10 @@ class PublicAnalysisFrameworkRoleViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return AnalysisFrameworkRole.objects.filter(is_private_role=False)
+        no_default_role = self.request.query_params.get('is_default_role', 'true') == 'false'
+        extra = {} if not no_default_role else {'is_default_role': False}
+
+        return AnalysisFrameworkRole.objects.filter(
+            is_private_role=False,
+            **extra,
+        )
