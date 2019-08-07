@@ -2,34 +2,44 @@ sudo: required
 language: generic
 
 services:
-    - docker
+  - docker
 
 before_install:
-    - |
-      curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64\
-      > /tmp/cc-test-reporter
-    - chmod +x /tmp/cc-test-reporter
-    - get_image() { [[ "$(docker images -q ${1} 2> /dev/null)" != "" ]] && echo ${1} || echo ${2}; }
+  - |
+    curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64\
+    > /tmp/cc-test-reporter
+  - chmod +x /tmp/cc-test-reporter
+  - get_image() { [[ "$(docker images -q ${1} 2> /dev/null)" != "" ]] && echo ${1} || echo ${2}; }
 
-    - env > .env
-    - mv travis-docker-compose.yml docker-compose.yml
-    - docker-compose pull && docker pull ${DOCKER_IMAGE_SERVER_B} || true
-    - |
-      docker build\
-      --cache-from $(get_image ${DOCKER_IMAGE_SERVER_B} ${DOCKER_IMAGE_SERVER})\
-      --tag ${DOCKER_IMAGE_SERVER} --tag ${DOCKER_IMAGE_SERVER_B} .
+  - env > .env
+  - mv travis-docker-compose.yml docker-compose.yml
+  - docker-compose pull && docker pull ${DOCKER_IMAGE_SERVER_B} || true
+  - |
+    docker build\
+    --cache-from $(get_image ${DOCKER_IMAGE_SERVER_B} ${DOCKER_IMAGE_SERVER})\
+    --tag ${DOCKER_IMAGE_SERVER} --tag ${DOCKER_IMAGE_SERVER_B} .
 
 before_script:
-    - /tmp/cc-test-reporter before-build
+  - /tmp/cc-test-reporter before-build
 
 script:
-    - docker-compose run server /code/scripts/run_tests.sh
+  - docker-compose run server /code/scripts/run_tests.sh
 
 after_success:
-    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-    - /tmp/cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
-    - docker-compose push server
-    - docker push ${DOCKER_IMAGE_SERVER_B}
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - /tmp/cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+  - docker-compose push server
+  - docker push ${DOCKER_IMAGE_SERVER_B}
+  - mv .
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  keep_history: true
+  local_dir: ./htmlcov
+  on:
+    branch: develop
 
 notifications:
   slack:
