@@ -1,4 +1,6 @@
 import json
+from django.core.files.base import ContentFile
+from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.gis.db import models
 from django.core.serializers import serialize
 from django.contrib.gis.gdal import Envelope
@@ -149,8 +151,12 @@ class AdminLevel(models.Model):
     stale_geo_areas = models.BooleanField(default=True)
 
     # cache data
-    geojson = JSONField(default=None, blank=True, null=True)
-    bounds = JSONField(default=None, blank=True, null=True)
+    geojson_file = models.FileField(
+        upload_to='geojson/', max_length=255, null=True, blank=True, default=None,
+    )
+    bounds_file = models.FileField(
+        upload_to='geo-bounds/', max_length=255, null=True, blank=True, default=None,
+    )
     geo_area_titles = JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
@@ -161,7 +167,7 @@ class AdminLevel(models.Model):
 
     def calc_cache(self, save=True):
         # GeoJSON
-        self.geojson = json.loads(serialize(
+        geojson = json.loads(serialize(
             'geojson',
             self.geoarea_set.all(),
             geometry_field='polygons',
@@ -179,22 +185,34 @@ class AdminLevel(models.Model):
         self.geo_area_titles = titles
 
         # Bounds
-        self.bounds = {}
+        bounds = {}
         areas = self.geoarea_set.filter(polygons__isnull=False)
         if areas.count() > 0:
             try:
                 envelope = Envelope(*areas[0].polygons.extent)
                 for area in areas[1:]:
                     envelope.expand_to_include(*area.polygons.extent)
-                self.bounds = {
-                    'min_x': envelope.min_x,
-                    'min_y': envelope.min_y,
-                    'max_x': envelope.max_x,
-                    'max_y': envelope.max_y,
+                bounds = {
+                    'minX': envelope.min_x,
+                    'minY': envelope.min_y,
+                    'maxX': envelope.max_x,
+                    'maxY': envelope.max_y,
                 }
             except ValueError:
                 pass
 
+        self.geojson_file.save(
+            f'admin-level-{self.pk}.geojson',
+            ContentFile(
+                json.dumps(geojson, cls=DjangoJSONEncoder).encode('utf-8'),
+            ),
+        )
+        self.bounds_file.save(
+            f'admin-level-{self.pk}.json',
+            ContentFile(
+                json.dumps({'bounds': bounds}, cls=DjangoJSONEncoder).encode('utf-8'),
+            ),
+        )
         if save:
             self.save()
 
