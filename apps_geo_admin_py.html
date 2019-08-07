@@ -193,7 +193,7 @@
 <p id="t42" class="stm run hide_run"><span class="key">class</span> <span class="nam">AdminLevelInline</span><span class="op">(</span><span class="nam">admin</span><span class="op">.</span><span class="nam">StackedInline</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t43" class="stm run hide_run">    <span class="nam">model</span> <span class="op">=</span> <span class="nam">AdminLevel</span><span class="strut">&nbsp;</span></p>
 <p id="t44" class="stm run hide_run">    <span class="nam">raw_id_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'parent'</span><span class="op">,</span> <span class="str">'region'</span><span class="op">,</span> <span class="str">'geo_shape_file'</span><span class="op">,</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t45" class="stm run hide_run">    <span class="nam">exclude</span> <span class="op">=</span> <span class="op">(</span><span class="str">'geojson'</span><span class="op">,</span> <span class="str">'bounds'</span><span class="op">,</span> <span class="str">'geo_area_titles'</span><span class="op">,</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t45" class="stm run hide_run">    <span class="nam">exclude</span> <span class="op">=</span> <span class="op">(</span><span class="str">'geo_area_titles'</span><span class="op">,</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t46" class="stm run hide_run">    <span class="nam">max_num</span> <span class="op">=</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
 <p id="t47" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t48" class="pln"><span class="strut">&nbsp;</span></p>
@@ -215,7 +215,7 @@
 <p id="t64" class="stm run hide_run">    <span class="nam">search_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'title'</span><span class="op">,</span> <span class="str">'region__title'</span><span class="op">,</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t65" class="stm run hide_run">    <span class="nam">list_display</span> <span class="op">=</span> <span class="op">(</span><span class="str">'title'</span><span class="op">,</span> <span class="nam">linkify</span><span class="op">(</span><span class="str">'region'</span><span class="op">)</span><span class="op">,</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t66" class="stm run hide_run">    <span class="nam">raw_id_fields</span> <span class="op">=</span> <span class="nam">AdminLevelInline</span><span class="op">.</span><span class="nam">raw_id_fields</span><span class="strut">&nbsp;</span></p>
-<p id="t67" class="stm run hide_run">    <span class="nam">exclude</span> <span class="op">=</span> <span class="op">(</span><span class="str">'geojson'</span><span class="op">,</span> <span class="str">'bounds'</span><span class="op">,</span> <span class="str">'geo_area_titles'</span><span class="op">,</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t67" class="stm run hide_run">    <span class="nam">exclude</span> <span class="op">=</span> <span class="op">(</span><span class="str">'geo_area_titles'</span><span class="op">,</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t68" class="stm run hide_run">    <span class="nam">actions</span> <span class="op">=</span> <span class="op">[</span><span class="nam">trigger_admin_level_cache_reset</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
 <p id="t69" class="stm run hide_run">    <span class="nam">list_per_page</span> <span class="op">=</span> <span class="num">10</span><span class="strut">&nbsp;</span></p>
 <p id="t70" class="pln"><span class="strut">&nbsp;</span></p>
@@ -236,7 +236,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-08-07 10:17
+            created at 2019-08-07 10:37
         </p>
     </div>
 </div>
