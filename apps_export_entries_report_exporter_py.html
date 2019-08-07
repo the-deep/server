@@ -487,7 +487,7 @@
 <p id="t85" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t86" class="stm mis">        <span class="nam">source</span> <span class="op">=</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">source</span> <span class="key">or</span> <span class="str">'Reference'</span><span class="strut">&nbsp;</span></p>
 <p id="t87" class="stm mis">        <span class="nam">url</span> <span class="op">=</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">url</span> <span class="key">or</span> <span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t88" class="pln">            <span class="nam">lead</span><span class="op">.</span><span class="nam">attachment</span> <span class="key">and</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">attachment</span><span class="op">.</span><span class="nam">get_shareable_image_url</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t88" class="pln">            <span class="nam">lead</span><span class="op">.</span><span class="nam">attachment</span> <span class="key">and</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">attachment</span><span class="op">.</span><span class="nam">get_file_url</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t89" class="pln">        <span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t90" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t91" class="stm mis">        <span class="nam">para</span><span class="op">.</span><span class="nam">add_run</span><span class="op">(</span><span class="str">' ('</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
@@ -689,7 +689,7 @@
 <p id="t287" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t288" class="stm mis">            <span class="nam">para</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">doc</span><span class="op">.</span><span class="nam">add_paragraph</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t289" class="stm mis">            <span class="nam">url</span> <span class="op">=</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">url</span> <span class="key">or</span> <span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t290" class="pln">                <span class="nam">lead</span><span class="op">.</span><span class="nam">attachment</span> <span class="key">and</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">attachment</span><span class="op">.</span><span class="nam">get_shareable_image_url</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t290" class="pln">                <span class="nam">lead</span><span class="op">.</span><span class="nam">attachment</span> <span class="key">and</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">attachment</span><span class="op">.</span><span class="nam">get_file_url</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t291" class="pln">            <span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t292" class="stm mis">            <span class="key">if</span> <span class="nam">url</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t293" class="stm mis">                <span class="nam">para</span><span class="op">.</span><span class="nam">add_hyperlink</span><span class="op">(</span><span class="nam">url</span><span class="op">,</span> <span class="nam">url</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
@@ -738,7 +738,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-07-29 18:16
+            created at 2019-08-07 10:17
         </p>
     </div>
 </div>
