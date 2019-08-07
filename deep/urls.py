@@ -297,6 +297,7 @@ def get_api_path(path):
 admin.site.__class__ = OTPAdminSite
 
 urlpatterns = [
+    url(r'^$', FrontendView.as_view()),
     url(r'^admin/', admin.site.urls),
 
     # JWT Authentication
@@ -446,10 +447,6 @@ urlpatterns = [
 ] + static.static(
     settings.MEDIA_URL, view=xframe_options_exempt(serve),
     document_root=settings.MEDIA_ROOT)
-
-urlpatterns += [
-    url(r'^$', FrontendView.as_view()),
-]
 
 if 'silk' in settings.INSTALLED_APPS:
     urlpatterns += [

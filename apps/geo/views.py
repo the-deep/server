@@ -1,3 +1,4 @@
+from django.shortcuts import redirect
 from django.conf import settings
 from django.db import models
 from rest_framework import (
@@ -159,10 +160,10 @@ class GeoJsonView(views.APIView):
         if not admin_level.can_get(request.user):
             raise exceptions.PermissionDenied()
 
-        if not admin_level.geojson:
+        if not admin_level.geojson_file:
             admin_level.calc_cache()
 
-        return response.Response(admin_level.geojson)
+        return redirect(request.build_absolute_uri(admin_level.geojson_file.url))
 
 
 class GeoBoundsView(views.APIView):
@@ -179,12 +180,10 @@ class GeoBoundsView(views.APIView):
         if not admin_level.can_get(request.user):
             raise exceptions.PermissionDenied()
 
-        if not admin_level.bounds:
+        if not admin_level.bounds_file:
             admin_level.calc_cache()
 
-        return response.Response({
-            'bounds': admin_level.bounds
-        })
+        return redirect(request.build_absolute_uri(admin_level.bounds_file.url))
 
 
 class GeoOptionsView(views.APIView):
