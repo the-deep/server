@@ -14,16 +14,19 @@ from .models import (
 class ProjectMembershipInline(admin.TabularInline):
     model = ProjectMembership
     extra = 0
+    autocomplete_fields = ('added_by', 'member',)
 
 
 class ProjectUserGroupMembershipInline(admin.TabularInline):
     model = ProjectUserGroupMembership
     extra = 0
+    autocomplete_fields = ('added_by',)
 
 
 class ProjectJoinRequestInline(admin.TabularInline):
     model = ProjectJoinRequest
     extra = 0
+    autocomplete_fields = ('requested_by', 'responded_by',)
 
 
 @admin.register(Project)
@@ -33,6 +36,11 @@ class ProjectAdmin(VersionAdmin):
         'title', 'category_editor', 'analysis_framework',
         'assessment_template', 'members_count', 'associated_regions',
     ]
+    autocomplete_fields = (
+        'analysis_framework', 'assessment_template', 'category_editor',
+        'created_by', 'modified_by',
+    )
+    filter_horizontal = ('regions',)
     list_filter = ('assessment_template',)
     inlines = [ProjectMembershipInline,
                ProjectUserGroupMembershipInline,

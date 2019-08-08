@@ -1,0 +1,6 @@
+{% extends "reversion/change_list.html" %}
+{% block object-tools-items %}
+
+    {{ block.super }}
+    <li><a  href="{% url 'admin:ary_assessmenttemplate_export' %}">Export</a></li>
+{% endblock %}

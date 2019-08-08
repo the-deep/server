@@ -5,4 +5,4 @@ from category_editor.models import CategoryEditor
 
 @admin.register(CategoryEditor)
 class CategoryEditorAdmin(VersionAdmin):
-    pass
+    search_fields = ('title',)

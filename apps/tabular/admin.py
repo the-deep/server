@@ -22,12 +22,16 @@ class GeodataInline(admin.StackedInline):
 
 @admin.register(Book)
 class BookAdmin(VersionAdmin):
+    search_fields = ('title',)
     inlines = [SheetInline]
+    autocomplete_fields = ('project', 'created_by', 'modified_by', 'file',)
 
 
 @admin.register(Sheet)
 class SheetAdmin(VersionAdmin):
+    search_fields = ('title',)
     inlines = [FieldInline]
+    autocomplete_fields = ('book',)
 
 
 def trigger_cache_reset(modeladmin, request, queryset):
@@ -53,3 +57,4 @@ class FieldAdmin(VersionAdmin):
     list_filter = ('type', CacheStatusListFilter)
     search_fields = ['title']
     actions = [trigger_cache_reset]
+    autocomplete_fields = ('sheet',)
