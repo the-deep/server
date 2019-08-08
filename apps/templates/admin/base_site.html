@@ -1,1 +1,26 @@
 {% extends "base.html" %}
+
+{% block extrastyle %}
+    {{block.super}}
+    <style type="text/css">
+        body:before {
+            display: block;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            line-height: 25px;
+            text-align: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: white;
+            content: "{{ DEEP_ENVIRONMENT }}";
+            {% if DEEP_ENVIRONMENT == 'prod' or DEEP_ENVIRONMENT == 'beta' %}
+            background-color: red;
+            {% elif DEEP_ENVIRONMENT == 'alpha' %}
+            background-color: orange;
+            {% else %}
+            background-color: grey;
+            {% endif %}
+        }
+    </style>
+{% endblock %}

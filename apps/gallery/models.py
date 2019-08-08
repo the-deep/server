@@ -21,6 +21,11 @@ class File(UserResource):
     def __str__(self):
         return self.title
 
+    @property
+    def url(self):
+        if self.file:
+            return self.file.url
+
     @staticmethod
     def get_for(user):
         return File.objects.all()

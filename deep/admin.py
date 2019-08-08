@@ -90,7 +90,7 @@ def query_buttons(description, queries):
     return _query_buttons
 
 
-def document_preview(field_name):
+def document_preview(field_name, label=None):
     """
     Show document preview for file fields
     """
@@ -108,16 +108,14 @@ def document_preview(field_name):
                 pass
             height = '600px'
             width = '800px'
-            return mark_safe(
-                f'''
+            return mark_safe(f"""
                 <object data="{file.url}" height="{height}" width="{width}">
                     <img style="max-height:{height};max-width:{width}" src="{file.url}"/>
                     <iframe src="https://docs.google.com/viewer?url={quote(file.url)}&embedded=true"></iframe>
                     </object>
                 </object>
-                '''
-            )
+            """)
         return 'N/A'
-    _document_preview.short_description = 'Document Preview'
+    _document_preview.short_description = label or 'Document Preview'
     _document_preview.allow_tags = True
     return _document_preview

@@ -202,7 +202,7 @@ class AdminLevel(models.Model):
                 pass
 
         self.geojson_file.save(
-            f'admin-level-{self.pk}.geojson',
+            f'admin-level-{self.pk}.json',
             ContentFile(
                 json.dumps(geojson, cls=DjangoJSONEncoder).encode('utf-8'),
             ),

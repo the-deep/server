@@ -34,6 +34,9 @@ class EntryAdmin(VersionAdmin):
         query_buttons('View', [inline[0] for inline in custom_inlines]),
     ]
     list_filter = ('project', 'created_by', 'created_at')
+    autocomplete_fields = (
+        'lead', 'project', 'created_by', 'modified_by', 'analysis_framework', 'tabular_field',
+    )
     ordering = ('project', 'created_by', 'created_at')
 
     def get_inline_instances(self, request, obj=None):
