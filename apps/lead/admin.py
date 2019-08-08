@@ -23,6 +23,10 @@ class LeadAdmin(VersionAdmin):
         'title', 'project', 'created_by', 'created_at',
     ]
     ordering = ('project', 'created_by', 'created_at')
+    filter_horizontal = ('assignee',)
+    autocomplete_fields = (
+        'project', 'created_by', 'modified_by', 'attachment',
+    )
 
 
 @admin.register(LeadGroup)

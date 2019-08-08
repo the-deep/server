@@ -9,7 +9,11 @@ from django_otp.plugins import (
     otp_totp,
     otp_email,
 )
+from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
+from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
+from django_otp.plugins.otp_email.admin import EmailDeviceAdmin
 
+from utils.common import camelcase_to_titlecase
 from gallery.models import File
 
 
@@ -89,7 +93,7 @@ class EmailDomain(models.Model):
     domain_name = models.CharField(max_length=255)
 
     def __str__(self):
-        return str(self.title)
+        return f'{self.title}({self.domain_name})'
 
 
 class Feature(models.Model):
@@ -124,22 +128,31 @@ class Feature(models.Model):
         return self.title
 
 
-OPT_MODELS = (
-    ('Static', otp_static.models.StaticDevice),
-    ('TOTP', otp_totp.models.TOTPDevice),
-    ('Email', otp_email.models.EmailDevice),
-)
+def gen_auth_proxy_model(ModelClass, _label=None):
+    label = _label or ModelClass.__name__
+    t_label = camelcase_to_titlecase(label)
 
-OPT_PROXY_MODELS = []
-# Create OPT Proxy Model Dynamically
-for label, model in OPT_MODELS:
     class Meta:
-        app_label = 'auth'
         proxy = True
-        verbose_name = f'OTP {label}'
-        verbose_name_plural = f'OTP {label}s'
-    model = type(f'otp_{label}', (model,), {
+        app_label = 'auth'
+        verbose_name = f'{t_label}'
+        verbose_name_plural = f'{t_label}s'
+    model = type(f"{label.replace(' ', '_')}", (ModelClass,), {
         '__module__': __name__,
         'Meta': Meta,
     })
-    OPT_PROXY_MODELS.append(model)
+    return model
+
+
+OTP_MODELS = (
+    ('OTP Static', otp_static.models.StaticDevice, StaticDeviceAdmin),
+    ('OTP TOTP', otp_totp.models.TOTPDevice, TOTPDeviceAdmin),
+    ('OTP Email', otp_email.models.EmailDevice, EmailDeviceAdmin),
+)
+
+OTP_PROXY_MODELS = []
+# Create OTP Proxy Model Dynamically
+for label, model, model_admin in OTP_MODELS:
+    OTP_PROXY_MODELS.append([
+        gen_auth_proxy_model(model, label), model_admin,
+    ])

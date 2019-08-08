@@ -34,3 +34,4 @@ class ExportAdmin(ModelAdmin):
     readonly_fields = (document_preview('file'),)
     list_filter = ('type', 'export_type', 'format', 'pending', 'is_preview', 'status',)
     actions = [trigger_retry]
+    autocomplete_fields = ('project', 'exported_by',)
