@@ -1,8 +1,11 @@
 from django.contrib import admin
+from django.urls import path
+from django.http import HttpResponse
 from reversion.admin import VersionAdmin
 
 from deep.admin import linkify
 
+from .management.commands.export_ary_template import export_ary_fixture
 from .models import (
     AssessmentTemplate,
 
@@ -47,8 +50,24 @@ class ScoreBucketInline(admin.TabularInline):
 
 
 @admin.register(AssessmentTemplate)
-class AnalysisFrameworkAdmin(VersionAdmin):
+class AnalysisFrameworkTemplateAdmin(VersionAdmin):
+    change_list_template = 'ary/ary_change_list.html'
+    search_fields = ('title',)
     inlines = [ScoreBucketInline]
+    autocomplete_fields = ('created_by', 'modified_by',)
+
+    def get_urls(self):
+        info = self.model._meta.app_label, self.model._meta.model_name
+        return [
+            path(
+                'export/', self.admin_site.admin_view(self.export_ary),
+                name='{}_{}_export'.format(*info)
+            ),
+        ] + super().get_urls()
+
+    def export_ary(self, request):
+        content = export_ary_fixture()
+        return HttpResponse(content, content_type='application/json')
 
 
 class MetadataOptionInline(admin.StackedInline):

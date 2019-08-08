@@ -421,3 +421,7 @@ def calculate_md5(file):
             break
         hash_md5.update(chunk)
     return hash_md5.hexdigest()
+
+
+def camelcase_to_titlecase(label):
+    return re.sub(r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))', r' \1', label)

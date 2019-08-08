@@ -13,6 +13,7 @@ from deep.admin import VersionAdmin, StackedInline, query_buttons
 class AnalysisFrameworkMemebershipInline(admin.TabularInline):
     model = AnalysisFrameworkMembership
     extra = 0
+    autocomplete_fields = ('added_by', 'member',)
 
 
 class WidgetInline(StackedInline):
@@ -41,6 +42,7 @@ class AnalysisFrameworkAdmin(VersionAdmin):
         'title',  # 'project_count',
         query_buttons('View', [inline[0] for inline in custom_inlines]),
     ]
+    autocomplete_fields = ('created_by', 'modified_by',)
 
     def get_inline_instances(self, request, obj=None):
         inlines = super().get_inline_instances(request, obj)
