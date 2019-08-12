@@ -22,9 +22,15 @@ class LeadFilterSet(UserResourceFilterSet):
     'in' lookup expressions and CSVWidget.
     """
     published_on__lt = django_filters.DateFilter(
-        field_name='published_on', lookup_expr='lte',
+        field_name='published_on', lookup_expr='lt',
     )
     published_on__gt = django_filters.DateFilter(
+        field_name='published_on', lookup_expr='gt',
+    )
+    published_on__lte = django_filters.DateFilter(
+        field_name='published_on', lookup_expr='lte',
+    )
+    published_on__gte = django_filters.DateFilter(
         field_name='published_on', lookup_expr='gte',
     )
 
@@ -56,8 +62,7 @@ class LeadFilterSet(UserResourceFilterSet):
 
     class Meta:
         model = Lead
-        fields = ['id', 'title',
-                  'text', 'url', 'website']
+        fields = ['id', 'title', 'text', 'url', 'website']
 
         filter_overrides = {
             models.CharField: {

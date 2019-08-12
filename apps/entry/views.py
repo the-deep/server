@@ -81,6 +81,7 @@ class EntryFilterView(generics.GenericAPIView):
         filters = {f[0]: f[1] for f in filters}
 
         queryset = get_filtered_entries(request.user, filters)
+        queryset = EntryFilterSet(filters, queryset=queryset).qs
 
         project = filters.get('project')
         search = filters.get('search')
@@ -105,8 +106,6 @@ class EntryFilterView(generics.GenericAPIView):
                     )
                 )
             )
-
-        queryset = EntryFilterSet(filters, queryset=queryset).qs
 
         page = self.paginate_queryset(queryset)
 

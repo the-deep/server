@@ -61,3 +61,8 @@ input[type=submit], input[type=button] {
 .actions-container {
     display: flex;
 }
+
+#changelist-filter select {
+    margin: 5px;
+    width: calc(100% - 10px);
+}
