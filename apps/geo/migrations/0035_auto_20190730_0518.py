@@ -13,7 +13,7 @@ def migrate_data_to_file(apps, schema_editor):
         print(f'\t\t>> {admin_level}:{admin_level.title}')
         if admin_level.geojson:
             admin_level.geojson_file.save(
-                f'admin-level-{admin_level.pk}.geojson',
+                f'admin-level-{admin_level.pk}.json',
                 ContentFile(
                     json.dumps(admin_level.geojson, cls=DjangoJSONEncoder).encode('utf-8'),
                 ),
