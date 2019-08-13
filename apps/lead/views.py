@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models, transaction
 from rest_framework import (
+    serializers,
     exceptions,
     filters,
     permissions,
@@ -351,10 +352,13 @@ class LeadCopyView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def clone_lead(self, lead, project_id, user):
-        if lead.source_type == Lead.WEBSITE:
-            if check_if_url_exists(lead.url, None, project_id, None):
-                return  # SKIP COPY IF URL already exists for project with project_id
         lead.pk = None
+        try:
+            LeadSerializer.add_update__validate({
+                'project': project_id,
+            }, lead)
+        except serializers.ValidationError:
+            return  # SKIP COPY if validation fails
         lead.project_id = project_id
         lead.save()
         lead.assignee.add(user)

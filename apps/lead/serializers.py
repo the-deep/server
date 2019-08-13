@@ -6,7 +6,7 @@ from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
 from user.serializers import SimpleUserSerializer
 from user_resource.serializers import UserResourceSerializer
 from project.serializers import ProjectEntitySerializer
-from gallery.serializers import SimpleFileSerializer
+from gallery.serializers import SimpleFileSerializer, File
 from user.models import User
 from .models import (
     LeadGroup,
@@ -103,19 +103,48 @@ class LeadSerializer(RemoveNullFieldsMixin,
             return file.book.id
         return None
 
-    def validate(self, data):
-        project = data.get('project', self.instance and self.instance.project)
-        source_type = data.get('source_type', self.instance and self.instance.source_type)
+    @staticmethod
+    def add_update__validate(data, instance, _attachment=None):
+        project = data.get('project', instance and instance.project)
+        source_type = data.get('source_type', instance and instance.source_type)
+        attachment = _attachment or instance and instance.attachment
+        text = data.get('text', instance and instance.text)
 
         # For website types, check if url has already been added
         if source_type == Lead.WEBSITE:
-            url = data.get('url', self.instance and self.instance.url)
-            if check_if_url_exists(url, None, project, self.instance and self.instance.id):
+            url = data.get('url', instance and instance.url)
+            if check_if_url_exists(url, None, project, instance and instance.pk):
                 raise serializers.ValidationError(
                     'A lead with this URL has already been added to '
                     'this project'
                 )
+        # For attachment types, check if file already used (using file hash)
+        elif (
+            attachment and attachment.metadata and
+            source_type in [Lead.DISK, Lead.DROPBOX, Lead.GOOGLE_DRIVE]
+        ):
+            if Lead.objects.filter(
+                project=project,
+                attachment__metadata__md5_hash=attachment.metadata.get('md5_hash'),
+            ).exclude(pk=instance and instance.pk).exists():
+                raise serializers.ValidationError(
+                    f'A lead with this file has already been added to this project'
+                )
+        elif source_type == Lead.TEXT:
+            if Lead.objects.filter(
+                project=project,
+                text=text,
+            ).exclude(pk=instance and instance.pk).exists():
+                raise serializers.ValidationError(
+                    f'A lead with this text has already been added to this project'
+                )
 
+    def validate(self, data):
+        attachment_id = self.get_initial().get('attachment', {}).get('id')
+        LeadSerializer.add_update__validate(
+            data, self.instance,
+            File.objects.filter(pk=attachment_id).first()
+        )
         return data
 
     # TODO: Probably also validate assignee to valid list of users

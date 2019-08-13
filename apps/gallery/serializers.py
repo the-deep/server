@@ -76,8 +76,7 @@ class FileSerializer(RemoveNullFieldsMixin,
         return super().create(validated_data)
 
 
-class GoogleDriveFileSerializer(RemoveNullFieldsMixin,
-                                UserResourceSerializer):
+class GoogleDriveFileSerializer(FileSerializer):
     access_token = serializers.CharField(write_only=True)
     file_id = serializers.CharField(write_only=True)
     mime_type = serializers.CharField()
@@ -108,8 +107,7 @@ class GoogleDriveFileSerializer(RemoveNullFieldsMixin,
         return super().create(validated_data)
 
 
-class DropboxFileSerializer(RemoveNullFieldsMixin,
-                            UserResourceSerializer):
+class DropboxFileSerializer(FileSerializer):
     file_url = serializers.CharField(write_only=True)
 
     class Meta:

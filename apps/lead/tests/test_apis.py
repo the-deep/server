@@ -278,6 +278,49 @@ class LeadTests(TestCase):
             current_lead_count = Lead.objects.filter(project_id=project.pk).count()
             assert new_lead_count == current_lead_count, f'Project: {project.title} lead count is different'
 
+    def test_lead_duplicate_validation(self):
+        url = '/api/v1/leads/'
+        project = self.create_project()
+        file = self.create_gallery_file()
+
+        # Test using FILE (HASH)
+        data = {
+            'title': 'test title',
+            'project': project.pk,
+            'source': 'test source',
+            'source_type': Lead.DISK,
+            'confidentiality': Lead.UNPROTECTED,
+            'status': Lead.PENDING,
+            'attachment': {'id': file.pk},
+            'assignee': self.user.id,
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        response = self.client.post(url, data)
+        self.assert_400(response)
+
+        # Test using TEXT
+        data = {
+            'title': 'test title',
+            'project': project.pk,
+            'source': 'test source',
+            'source_type': Lead.TEXT,
+            'confidentiality': Lead.UNPROTECTED,
+            'status': Lead.PENDING,
+            'text': 'duplication test 101',
+            'assignee': self.user.id,
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        response = self.client.post(url, data)
+        self.assert_400(response)
+
     def test_lead_order_by_page_count(self):
         # Create lead and lead_previews
         project = self.create(Project)
