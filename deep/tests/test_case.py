@@ -1,3 +1,4 @@
+import os
 import autofixture
 from rest_framework import (
     test,
@@ -5,11 +6,13 @@ from rest_framework import (
 )
 from jwt_auth.token import AccessToken, RefreshToken
 
+from django.conf import settings
 from user.models import User
 from project.models import ProjectRole, Project
 from project.permissions import get_project_permissions_value
 from lead.models import Lead
 from entry.models import Entry
+from gallery.models import File
 from analysis_framework.models import AnalysisFramework
 
 
@@ -34,6 +37,12 @@ class TestCase(test.APITestCase):
         )
         # This should be called here to access roles later
         self.create_project_roles()
+        self.deep_test_files_path = []
+
+    def tearDown(self):
+        for file_path in self.deep_test_files_path:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
 
     def authenticate(self, user=None):
         user = user or self.user
@@ -188,6 +197,24 @@ class TestCase(test.APITestCase):
             Project, analysis_framework=analysis_framework,
             role=self.admin_role
         )
+
+    def create_gallery_file(self):
+        url = '/api/v1/files/'
+
+        path = os.path.join(settings.TEST_DIR, 'documents')
+        self.supported_file = os.path.join(path, 'doc.docx')
+        data = {
+            'title': 'Test file',
+            'file': open(self.supported_file, 'rb'),
+            'isPublic': True,
+        }
+
+        self.authenticate()
+        self.client.post(url, data, format='multipart')
+
+        file = File.objects.last()
+        self.deep_test_files_path.append(file.file.path)
+        return file
 
     def create_lead(self):
         project = self.create_project()
