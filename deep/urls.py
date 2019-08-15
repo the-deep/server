@@ -75,11 +75,14 @@ from lead.views import (
     WebInfoExtractView,
 )
 from entry.views import (
-    EntryViewSet, AttributeViewSet, FilterDataViewSet,
+    EntryViewSet,
+    AttributeViewSet,
+    FilterDataViewSet,
     EntryFilterView,
     ExportDataViewSet,
     EntryOptionsView,
     EditEntriesDataViewSet,
+    EntryCommentViewSet,
 )
 from analysis_framework.views import (
     AnalysisFrameworkCloneView,
@@ -227,6 +230,8 @@ router.register(r'entry-export-data', ExportDataViewSet,
                 basename='entry_export_data')
 router.register(r'edit-entries-data', EditEntriesDataViewSet,
                 basename='edit_entries_data')
+router.register(r'entry-comments', EntryCommentViewSet,
+                basename='entry-comment')
 
 # Analysis framework routers
 router.register(r'analysis-frameworks', AnalysisFrameworkViewSet,

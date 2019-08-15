@@ -5,4 +5,4 @@ class LeadConfig(AppConfig):
     name = 'lead'
 
     def ready(self):
-        import lead.receivers  # noqa
+        import lead.receivers  # noqa F401
