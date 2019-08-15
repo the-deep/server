@@ -1,11 +1,11 @@
 from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.dispatch import receiver
 
 from utils.common import parse_number
 from project.mixins import ProjectEntityMixin
 from gallery.models import File
+from user.models import User
 from user_resource.models import UserResource
 from lead.models import Lead
 from analysis_framework.models import (
@@ -206,9 +206,42 @@ class ExportData(models.Model):
         )
 
 
-@receiver(models.signals.post_save, sender=Entry)
-def on_entry_saved(sender, **kwargs):
-    lead = kwargs.get('instance').lead
-    # TODO After `project` is added to Entry
-    # this should not use lead
-    lead.project.update_status()
+class EntryComment(models.Model):
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, related_name='%(class)s_created', on_delete=models.CASCADE)
+    assignee = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+    is_resolved = models.BooleanField(null=True, blank=True, default=False)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    parent = models.ForeignKey(
+        'EntryComment',
+        null=True, blank=True, on_delete=models.CASCADE,
+    )
+
+    def __str__(self):
+        return f'{self.entry}: {self.text} (Resolved: {self.is_resolved})'
+
+    def can_delete(self, user):
+        return self.created_by == user
+
+    def can_modify(self, user):
+        return self.entry.can_modify(user)
+
+    @staticmethod
+    def get_for(user):
+        return EntryComment.objects.prefetch_related('entrycommenttext_set')\
+            .filter(
+                models.Q(entry__lead__project__members=user) |
+                models.Q(entry__lead__project__user_groups__members=user))\
+            .distinct()
+
+    @property
+    def text(self):
+        comment_text = self.entrycommenttext_set.last()
+        if comment_text:
+            return comment_text.text
+
+
+class EntryCommentText(models.Model):
+    comment = models.ForeignKey(EntryComment, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    text = models.TextField()

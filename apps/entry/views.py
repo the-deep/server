@@ -8,26 +8,29 @@ from rest_framework import (
     response,
     views,
     viewsets,
+    serializers,
 )
 from deep.permissions import ModifyPermission
 
+from django.utils import timezone
 from project.models import Project
 from lead.models import Lead
 from analysis_framework.models import Widget
 
 from .models import (
-    Entry, Attribute, FilterData, ExportData,
+    Entry, Attribute, FilterData, ExportData, EntryComment,
 )
 from .serializers import (
+    AttributeSerializer,
     ComprehensiveEntriesSerializer,
-    EntrySerializer,
-    EntryRetriveSerializer,
+    EditEntriesDataSerializer,
+    EntryCommentSerializer,
     EntryProccesedSerializer,
     EntryRetriveProccesedSerializer,
-    AttributeSerializer,
-    FilterDataSerializer,
+    EntryRetriveSerializer,
+    EntrySerializer,
     ExportDataSerializer,
-    EditEntriesDataSerializer,
+    FilterDataSerializer,
 )
 from .pagination import ComprehensiveEntriesSetPagination
 from .filter_set import EntryFilterSet, get_filtered_entries
@@ -224,3 +227,30 @@ class ComprehensiveEntriesViewSet(viewsets.ReadOnlyModelViewSet):
         context = super().get_serializer_context()
         context['queryset'] = self.get_queryset()
         return context
+
+
+class EntryCommentViewSet(viewsets.ModelViewSet):
+    serializer_class = EntryCommentSerializer
+    permission_classes = [permissions.IsAuthenticated,
+                          ModifyPermission]
+
+    def get_queryset(self):
+        return EntryComment.get_for(self.request.user)
+
+    @action(
+        detail=True,
+        url_path='resolved',
+        methods=['post'],
+    )
+    def resolve_comment(self, request, pk, version=None):
+        comment = self.get_object()
+        if comment.is_resolved:
+            raise serializers.ValidationError('Already Resolved')
+        if comment.parent:
+            raise serializers.ValidationError('only root comment can be resolved')
+        if comment.created_by != request.user:
+            raise serializers.ValidationError('only comment owner can resolve')
+        comment.is_resolved = True
+        comment.resolved_at = timezone.now()
+        comment.save()
+        return response.Response(self.get_serializer_class()(comment).data)
