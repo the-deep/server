@@ -76,11 +76,11 @@ class FileSerializer(RemoveNullFieldsMixin,
         return super().create(validated_data)
 
 
-class GoogleDriveFileSerializer(RemoveNullFieldsMixin,
-                                UserResourceSerializer):
+class GoogleDriveFileSerializer(FileSerializer):
     access_token = serializers.CharField(write_only=True)
     file_id = serializers.CharField(write_only=True)
     mime_type = serializers.CharField()
+    file = None
 
     class Meta:
         model = File
@@ -97,7 +97,6 @@ class GoogleDriveFileSerializer(RemoveNullFieldsMixin,
             mime_type,
             access_token,
             deep_doc_types.DEEP_SUPPORTED_MIME_TYPES,
-            APIException,
         )
 
         # TODO: is this good?
@@ -108,9 +107,9 @@ class GoogleDriveFileSerializer(RemoveNullFieldsMixin,
         return super().create(validated_data)
 
 
-class DropboxFileSerializer(RemoveNullFieldsMixin,
-                            UserResourceSerializer):
+class DropboxFileSerializer(FileSerializer):
     file_url = serializers.CharField(write_only=True)
+    file = None
 
     class Meta:
         model = File

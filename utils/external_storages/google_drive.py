@@ -36,8 +36,8 @@ def download(
         file_id,
         mime_type,
         access_token,
-        SUPPORTED_MIME_TYPES,
-        exception=None):
+        SUPPORTED_MIME_TYPES
+):
     """
     Download/Export file from google drive
 
@@ -59,22 +59,15 @@ def download(
     else:
         export_mime_type = GOOLE_DRIVE_EXPORT_MAP.get(mime_type)
 
-        if export_mime_type and export_mime_type in SUPPORTED_MIME_TYPES:
-            # Convert the google files to supported file
-            request = service.files().export_media(
-                fileId=file_id,
-                mimeType=export_mime_type
-            )
-        else:
-            if exception:
-                raise exception('Unsupported Mime Type: ' + mime_type)
-            return
+        request = service.files().export_media(
+            fileId=file_id,
+            mimeType=export_mime_type
+        )
 
     outfp = tempfile.TemporaryFile("wb+")
     downloader = MediaIoBaseDownload(outfp, request)
     done = False
     while done is False:
         status, done = downloader.next_chunk()
-        # print('Download %d%%.' % int(status.progress() * 100))
 
     return outfp
