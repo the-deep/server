@@ -38,12 +38,20 @@ class EntryFilterSet(django_filters.FilterSet):
     modified_by = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all(),
     )
+    created_at = django_filters.IsoDateTimeFilter(field_name='created_at')
 
     class Meta:
         model = Entry
-        fields = [
-            'id', 'excerpt', 'lead__title', 'created_at', 'created_by', 'modified_at', 'modified_by', 'project',
-        ]
+        fields = {
+            **{
+                x: ['exact'] for x in [
+                    'id', 'excerpt', 'lead__title', 'created_at',
+                    'created_by', 'modified_at', 'modified_by', 'project',
+                ]
+            },
+            'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            'lead__created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
+        }
         filter_overrides = {
             models.CharField: {
                 'filter_class': django_filters.CharFilter,
@@ -63,28 +71,6 @@ def get_filtered_entries(user, queries):
     filters = Filter.get_for(user)
     if project:
         filters = filters.filter(analysis_framework__project__id=project)
-
-    ONE_DAY = 24 * 60 * 60
-
-    created_at__lt = queries.get('created_at__lt')
-    if created_at__lt:
-        created_at__lt = datetime.fromtimestamp(created_at__lt * ONE_DAY)
-        entries = entries.filter(created_at__lte=created_at__lt)
-
-    created_at__gt = queries.get('created_at__gt')
-    if created_at__gt:
-        created_at__gt = datetime.fromtimestamp(created_at__gt * ONE_DAY)
-        entries = entries.filter(created_at__gte=created_at__gt)
-
-    modified_at__lt = queries.get('modified_at__lt')
-    if modified_at__lt:
-        modified_at__lt = datetime.fromtimestamp(modified_at__lt * ONE_DAY)
-        entries = entries.filter(modified_at__lte=modified_at__lt)
-
-    modified_at__gt = queries.get('modified_at__gt')
-    if modified_at__gt:
-        modified_at__gt = datetime.fromtimestamp(modified_at__gt * ONE_DAY)
-        entries = entries.filter(modified_at__gte=modified_at__gt)
 
     for filter in filters:
         # For each filter, see if there is a query for that filter
