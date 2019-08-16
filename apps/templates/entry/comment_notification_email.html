@@ -1,0 +1,32 @@
+{% extends "base_email.html" %}
+
+{% block head %}
+    <style>
+        .actions {
+            padding-top: 24px;
+        }
+
+        .button-container {
+            padding: 12px 0 24px;
+        }
+
+        .button {
+            margin: 0 6px;
+        }
+
+        .reject {
+            background-color: #d3575e;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% if notification_type == Notification.ENTRY_COMMENT_ADD %}
+    {{comment.created_by.profile.get_display_name}} added a comment in Entry: <{{comment.entry.lead}}>
+        <p>
+            {{comment.text}}
+        </p>
+    {% else %}
+        {{comment.text}}
+    {% endif %}
+{% endblock %}

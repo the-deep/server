@@ -221,10 +221,10 @@ class EntryComment(models.Model):
         return f'{self.entry}: {self.text} (Resolved: {self.is_resolved})'
 
     def can_delete(self, user):
-        return self.created_by == user
+        return self.can_modify(user)
 
     def can_modify(self, user):
-        return self.entry.can_modify(user)
+        return self.created_by == user
 
     @staticmethod
     def get_for(user):
@@ -239,6 +239,17 @@ class EntryComment(models.Model):
         comment_text = self.entrycommenttext_set.last()
         if comment_text:
             return comment_text.text
+
+    def get_related_users(self, skip_owner_user=True):
+        users = list(self.entrycomment_set.values_list('created_by', flat=True).distinct())
+        users.append(self.assignee_id)
+        if self.parent:
+            users.append(self.parent.assignee_id)
+            users.append(self.parent.created_by_id)
+        queryset = User.objects.filter(pk__in=users)
+        if skip_owner_user:
+            queryset = queryset.exclude(pk=self.created_by_id)
+        return queryset
 
 
 class EntryCommentText(models.Model):
