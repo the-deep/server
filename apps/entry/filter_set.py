@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -65,9 +67,11 @@ def get_filtered_entries(user, queries):
         entries = entries.filter(lead__project__id=project)
 
     # Filter by filterset
-    filterset = EntryFilterSet(data=queries)
+    updated_queries = get_created_at_filters(queries)
+    print(queries, updated_queries)
+    filterset = EntryFilterSet(data=updated_queries)
     filterset.is_valid()  # This needs to be called
-    entries = filterset.filter_queryset(entries)
+    entries = filterset.qs
 
     filters = Filter.get_for(user)
     if project:
@@ -134,3 +138,35 @@ def get_filtered_entries(user, queries):
                 )
 
     return entries.order_by('-lead__created_by', 'lead', 'created_by')
+
+
+def parse_date(val):
+    try:
+        val = val.replace(':', '')
+        return datetime.strptime(val, '%Y-%m-%d%z')
+    except Exception:
+        return None
+
+
+QUERY_MAP = {
+    'created_at': parse_date,
+    'created_at__gt': parse_date,
+    'created_at__lt': parse_date,
+    'created_at__gte': parse_date,
+    'created_at__lte': parse_date,
+}
+
+
+def get_created_at_filters(query_params):
+    """
+    Convert created_at related query values to date objects to be later used
+    by the filterset
+    """
+    parsed_query = {}
+    for k, v in query_params.items():
+        parse_func = QUERY_MAP.get(k)
+        if parse_func:
+            parsed_query[k] = parse_func(v)
+        else:
+            parsed_query[k] = v
+    return parsed_query
