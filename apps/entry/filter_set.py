@@ -25,12 +25,6 @@ class EntryFilterSet(django_filters.FilterSet):
         queryset=Lead.objects.all(),
         lookup_expr='in',
     )
-    lead__published_on__lt = django_filters.DateFilter(
-        field_name='lead__published_on', lookup_expr='lte',
-    )
-    lead__published_on__gt = django_filters.DateFilter(
-        field_name='lead__published_on', lookup_expr='gte',
-    )
     created_by = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all(),
     )
@@ -61,6 +55,9 @@ class EntryFilterSet(django_filters.FilterSet):
         lookup_expr='lte',
         input_formats=['%Y-%m-%d%z'],
     )
+    lead__published_on = django_filters.DateFilter(
+        field_name='lead__published_on'
+    )
 
     class Meta:
         model = Entry
@@ -72,6 +69,7 @@ class EntryFilterSet(django_filters.FilterSet):
                 ]
             },
             'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            'lead__published_on': ['exact', 'lt', 'gt', 'lte', 'gte'],
         }
         filter_overrides = {
             models.CharField: {
