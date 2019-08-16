@@ -18,8 +18,7 @@ from datetime import datetime
 # are overridden below
 class EntryFilterSet(django_filters.FilterSet):
     """
-    Entry filter set
-
+    Entry filter set 
     Basic filtering with lead, excerpt, lead title and dates
     """
     lead = django_filters.ModelMultipleChoiceFilter(
@@ -50,7 +49,6 @@ class EntryFilterSet(django_filters.FilterSet):
                 ]
             },
             'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
-            'lead__created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
         }
         filter_overrides = {
             models.CharField: {
@@ -67,6 +65,11 @@ def get_filtered_entries(user, queries):
     project = queries.get('project')
     if project:
         entries = entries.filter(lead__project__id=project)
+
+    # Filter by filterset
+    filterset = EntryFilterSet(data=queries)
+    filterset.is_valid()  # This needs to be called
+    entries = filterset.filter_queryset(entries)
 
     filters = Filter.get_for(user)
     if project:
