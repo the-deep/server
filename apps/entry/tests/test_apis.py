@@ -1,8 +1,6 @@
 from deep.tests import TestCase
 import autofixture
 
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
 from django.conf import settings
 from project.models import Project
 from user.models import User
@@ -359,9 +357,19 @@ class EntryTests(TestCase):
     def test_search_filter(self):
         entry, field = self.create_entry_with_data_series()
         filters = {
-            'search': 'kadabra'
+            'search': 'kadabra',
         }
         self.post_filter_test(filters)  # Should have single result
+
+        filters = {
+            'comment_status': 'resolved',
+            'comment_assignee': self.user.pk,
+            'comment_created_by': self.user.pk,
+        }
+        self.post_filter_test(filters, 0)  # Should have no result
+
+        filters['comment_status'] = 'unresolved'
+        self.post_filter_test(filters, 0)  # Should have no result
 
     # TODO: test export data and filter data apis
 
