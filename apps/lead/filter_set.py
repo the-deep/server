@@ -22,9 +22,15 @@ class LeadFilterSet(django_filters.FilterSet):
     'in' lookup expressions and CSVWidget.
     """
     published_on__lt = django_filters.DateFilter(
-        field_name='published_on', lookup_expr='lte',
+        field_name='published_on', lookup_expr='lt',
     )
     published_on__gt = django_filters.DateFilter(
+        field_name='published_on', lookup_expr='gt',
+    )
+    published_on__lte = django_filters.DateFilter(
+        field_name='published_on', lookup_expr='lte',
+    )
+    published_on__gte = django_filters.DateFilter(
         field_name='published_on', lookup_expr='gte',
     )
     project = django_filters.ModelMultipleChoiceFilter(
@@ -78,7 +84,8 @@ class LeadFilterSet(django_filters.FilterSet):
                 x: ['exact']
                 for x in ['id', 'title', 'text', 'url', 'website']
             },
-            'created_at': ['exact', 'lt', 'gt', 'lte', 'gte']
+            'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            'published_on': ['exact', 'lt', 'gt', 'lte', 'gte']
         }
 
         filter_overrides = {
@@ -89,10 +96,6 @@ class LeadFilterSet(django_filters.FilterSet):
                 },
             },
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        print('FILTERSET', kwargs['data'])
 
 
 class LeadGroupFilterSet(UserResourceFilterSet):
