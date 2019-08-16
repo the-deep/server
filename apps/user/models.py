@@ -27,6 +27,7 @@ class Profile(models.Model):
     EMAIL_CONDITIONS = (
         ('join_requests', 'Project join requests'),
         ('news_and_updates', 'News and updates'),
+        ('email_comment', 'Entry comment updates'),
     )
     EMAIL_CONDITIONS_TYPES = [cond[0] for cond in EMAIL_CONDITIONS]
 

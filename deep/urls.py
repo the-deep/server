@@ -123,6 +123,7 @@ from deep.views import (
     FrontendView,
     PasswordReset,
     ProjectJoinRequest,
+    EntryCommentEmail,
     AccountActivate,
 )
 from organization.views import (
@@ -442,6 +443,7 @@ urlpatterns = [
     url(r'^pr-email/$', PasswordReset.as_view()),
     url(r'^aa-email/$', AccountActivate.as_view()),
     url(r'^pj-email/$', ProjectJoinRequest.as_view()),
+    url(r'^ec-email/$', EntryCommentEmail.as_view()),
     url(r'^render-debug/$', RenderChart.as_view()),
 
     url(r'^favicon.ico$',
