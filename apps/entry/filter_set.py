@@ -7,8 +7,6 @@ from entry.models import Entry
 
 import django_filters
 
-from datetime import datetime
-
 
 # TODO: Find out whether we need to call timezone.make_aware
 # from django.utils module to all datetime objects below
@@ -18,7 +16,7 @@ from datetime import datetime
 # are overridden below
 class EntryFilterSet(django_filters.FilterSet):
     """
-    Entry filter set 
+    Entry filter set
     Basic filtering with lead, excerpt, lead title and dates
     """
     lead = django_filters.ModelMultipleChoiceFilter(

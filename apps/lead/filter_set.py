@@ -12,7 +12,7 @@ class NumberInFilter(django_filters.BaseInFilter,
     pass
 
 
-class LeadFilterSet(UserResourceFilterSet):
+class LeadFilterSet(django_filters.FilterSet):
     """
     Lead filter set
 
@@ -27,7 +27,6 @@ class LeadFilterSet(UserResourceFilterSet):
     published_on__gt = django_filters.DateFilter(
         field_name='published_on', lookup_expr='gte',
     )
-
     project = django_filters.ModelMultipleChoiceFilter(
         queryset=Project.objects.all(),
         lookup_expr='in',
@@ -53,11 +52,17 @@ class LeadFilterSet(UserResourceFilterSet):
         lookup_expr='in',
         widget=django_filters.widgets.CSVWidget,
     )
+    created_at = django_filters.IsoDateTimeFilter(field_name='created_at')
 
     class Meta:
         model = Lead
-        fields = ['id', 'title',
-                  'text', 'url', 'website']
+        fields = {
+            **{
+                x: ['exact']
+                for x in ['id', 'title', 'text', 'url', 'website']
+            },
+            'created_at': ['exact', 'lt', 'gt', 'lte', 'gte']
+        }
 
         filter_overrides = {
             models.CharField: {
