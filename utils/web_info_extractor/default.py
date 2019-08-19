@@ -62,6 +62,9 @@ class DefaultWebInfoExtractor:
 
         return tldextract.extract(self.url).domain
 
+    def get_author(self):
+        return self.get_source()
+
     def get_website(self):
         return urlparse(self.url).netloc
 

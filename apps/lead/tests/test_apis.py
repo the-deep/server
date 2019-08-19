@@ -386,6 +386,7 @@ class WebInfoExtractionTests(TestCase):
             self.assertEqual(response['website'], 'redhum.org')
             self.assertEqual(response['url'], data['url'])
             self.assertEqual(response['source'], 'UNHCR')
+            self.assertEqual(response['author'], 'UNHCR')
         except Exception:
             import traceback
             logger.warning('\n' + ('*' * 30))
@@ -424,6 +425,7 @@ class WebInfoExtractionTests(TestCase):
             'title': SAMPLE_WEB_INFO_TITLE,
             'url': SAMPLE_WEB_INFO_URL,
             'source': SAMPLE_WEB_INFO_SOURCE,
+            'author': SAMPLE_WEB_INFO_SOURCE,
             'existing': False,
         }
         self.assertEqual(response.data, expected)
