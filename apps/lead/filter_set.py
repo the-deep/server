@@ -12,7 +12,7 @@ class NumberInFilter(django_filters.BaseInFilter,
     pass
 
 
-class LeadFilterSet(UserResourceFilterSet):
+class LeadFilterSet(django_filters.FilterSet):
     """
     Lead filter set
 
@@ -22,12 +22,17 @@ class LeadFilterSet(UserResourceFilterSet):
     'in' lookup expressions and CSVWidget.
     """
     published_on__lt = django_filters.DateFilter(
-        field_name='published_on', lookup_expr='lte',
+        field_name='published_on', lookup_expr='lt',
     )
     published_on__gt = django_filters.DateFilter(
+        field_name='published_on', lookup_expr='gt',
+    )
+    published_on__lte = django_filters.DateFilter(
+        field_name='published_on', lookup_expr='lte',
+    )
+    published_on__gte = django_filters.DateFilter(
         field_name='published_on', lookup_expr='gte',
     )
-
     project = django_filters.ModelMultipleChoiceFilter(
         queryset=Project.objects.all(),
         lookup_expr='in',
@@ -53,11 +58,35 @@ class LeadFilterSet(UserResourceFilterSet):
         lookup_expr='in',
         widget=django_filters.widgets.CSVWidget,
     )
+    created_at = django_filters.DateTimeFilter(
+        field_name='created_at',
+        input_formats=['%Y-%m-%d%z'],
+    )
+    created_at__lt = django_filters.DateTimeFilter(
+        field_name='created_at',
+        lookup_expr='lt',
+        input_formats=['%Y-%m-%d%z'],
+    )
+    created_at__gte = django_filters.DateTimeFilter(
+        field_name='created_at', lookup_expr='gte',
+        input_formats=['%Y-%m-%d%z'],
+    )
+    created_at__lte = django_filters.DateTimeFilter(
+        field_name='created_at',
+        lookup_expr='lte',
+        input_formats=['%Y-%m-%d%z'],
+    )
 
     class Meta:
         model = Lead
-        fields = ['id', 'title',
-                  'text', 'url', 'website']
+        fields = {
+            **{
+                x: ['exact']
+                for x in ['id', 'title', 'text', 'url', 'website']
+            },
+            'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            'published_on': ['exact', 'lt', 'gt', 'lte', 'gte']
+        }
 
         filter_overrides = {
             models.CharField: {

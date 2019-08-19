@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -6,8 +8,6 @@ from lead.models import Lead
 from entry.models import Entry
 
 import django_filters
-
-from datetime import datetime
 
 
 # TODO: Find out whether we need to call timezone.make_aware
@@ -19,18 +19,11 @@ from datetime import datetime
 class EntryFilterSet(django_filters.FilterSet):
     """
     Entry filter set
-
     Basic filtering with lead, excerpt, lead title and dates
     """
     lead = django_filters.ModelMultipleChoiceFilter(
         queryset=Lead.objects.all(),
         lookup_expr='in',
-    )
-    lead__published_on__lt = django_filters.DateFilter(
-        field_name='lead__published_on', lookup_expr='lte',
-    )
-    lead__published_on__gt = django_filters.DateFilter(
-        field_name='lead__published_on', lookup_expr='gte',
     )
     created_by = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all(),
@@ -38,12 +31,46 @@ class EntryFilterSet(django_filters.FilterSet):
     modified_by = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all(),
     )
+    created_at = django_filters.DateTimeFilter(
+        field_name='created_at',
+        input_formats=['%Y-%m-%d%z'],
+    )
+    created_at__gt = django_filters.DateTimeFilter(
+        field_name='created_at',
+        lookup_expr='gt',
+        input_formats=['%Y-%m-%d%z'],
+    )
+    created_at__lt = django_filters.DateTimeFilter(
+        field_name='created_at',
+        lookup_expr='lt',
+        input_formats=['%Y-%m-%d%z'],
+    )
+    created_at__gte = django_filters.DateTimeFilter(
+        field_name='created_at',
+        lookup_expr='gte',
+        input_formats=['%Y-%m-%d%z'],
+    )
+    created_at__lte = django_filters.DateTimeFilter(
+        field_name='created_at',
+        lookup_expr='lte',
+        input_formats=['%Y-%m-%d%z'],
+    )
+    lead__published_on = django_filters.DateFilter(
+        field_name='lead__published_on'
+    )
 
     class Meta:
         model = Entry
-        fields = [
-            'id', 'excerpt', 'lead__title', 'created_at', 'created_by', 'modified_at', 'modified_by', 'project',
-        ]
+        fields = {
+            **{
+                x: ['exact'] for x in [
+                    'id', 'excerpt', 'lead__title', 'created_at',
+                    'created_by', 'modified_at', 'modified_by', 'project',
+                ]
+            },
+            'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            'lead__published_on': ['exact', 'lt', 'gt', 'lte', 'gte'],
+        }
         filter_overrides = {
             models.CharField: {
                 'filter_class': django_filters.CharFilter,
@@ -60,31 +87,15 @@ def get_filtered_entries(user, queries):
     if project:
         entries = entries.filter(lead__project__id=project)
 
+    # Filter by filterset
+    updated_queries = get_created_at_filters(queries)
+    filterset = EntryFilterSet(data=updated_queries)
+    filterset.is_valid()  # This needs to be called
+    entries = filterset.qs
+
     filters = Filter.get_for(user)
     if project:
         filters = filters.filter(analysis_framework__project__id=project)
-
-    ONE_DAY = 24 * 60 * 60
-
-    created_at__lt = queries.get('created_at__lt')
-    if created_at__lt:
-        created_at__lt = datetime.fromtimestamp(created_at__lt * ONE_DAY)
-        entries = entries.filter(created_at__lte=created_at__lt)
-
-    created_at__gt = queries.get('created_at__gt')
-    if created_at__gt:
-        created_at__gt = datetime.fromtimestamp(created_at__gt * ONE_DAY)
-        entries = entries.filter(created_at__gte=created_at__gt)
-
-    modified_at__lt = queries.get('modified_at__lt')
-    if modified_at__lt:
-        modified_at__lt = datetime.fromtimestamp(modified_at__lt * ONE_DAY)
-        entries = entries.filter(modified_at__lte=modified_at__lt)
-
-    modified_at__gt = queries.get('modified_at__gt')
-    if modified_at__gt:
-        modified_at__gt = datetime.fromtimestamp(modified_at__gt * ONE_DAY)
-        entries = entries.filter(modified_at__gte=modified_at__gt)
 
     for filter in filters:
         # For each filter, see if there is a query for that filter
@@ -147,3 +158,35 @@ def get_filtered_entries(user, queries):
                 )
 
     return entries.order_by('-lead__created_by', 'lead', 'created_by')
+
+
+def parse_date(val):
+    try:
+        val = val.replace(':', '')
+        return datetime.strptime(val, '%Y-%m-%d%z')
+    except Exception:
+        return None
+
+
+QUERY_MAP = {
+    'created_at': parse_date,
+    'created_at__gt': parse_date,
+    'created_at__lt': parse_date,
+    'created_at__gte': parse_date,
+    'created_at__lte': parse_date,
+}
+
+
+def get_created_at_filters(query_params):
+    """
+    Convert created_at related query values to date objects to be later used
+    by the filterset
+    """
+    parsed_query = {}
+    for k, v in query_params.items():
+        parse_func = QUERY_MAP.get(k)
+        if parse_func:
+            parsed_query[k] = parse_func(v)
+        else:
+            parsed_query[k] = v
+    return parsed_query
