@@ -322,6 +322,7 @@ class WebInfoExtractView(views.APIView):
         date = extractor.get_date()
         country = extractor.get_country()
         source = extractor.get_source()
+        author = extractor.get_author()
         website = extractor.get_website()
         title = extractor.get_title()
 
@@ -341,6 +342,7 @@ class WebInfoExtractView(views.APIView):
             'website': website,
             'url': url,
             'source': source,
+            'author': author,
             'existing': check_if_url_exists(url, request.user, project),
         })
 
