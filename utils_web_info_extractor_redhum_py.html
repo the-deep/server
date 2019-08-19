@@ -8,7 +8,7 @@
     
     
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for utils/web_info_extractor/redhum.py: 88%</title>
+    <title>Coverage for utils/web_info_extractor/redhum.py: 89%</title>
     <link rel="stylesheet" href="style.css" type="text/css">
     
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -24,14 +24,14 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>utils/web_info_extractor/redhum.py</b> :
-            <span class="pc_cov">88%</span>
+            <span class="pc_cov">89%</span>
         </h1>
 
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
 
         <h2 class="stats">
-            31 statements &nbsp;
-            <span class="run hide_run shortkey_r button_toggle_run">28 run</span>
+            33 statements &nbsp;
+            <span class="run hide_run shortkey_r button_toggle_run">30 run</span>
             <span class="mis shortkey_m button_toggle_mis">3 missing</span>
             <span class="exc shortkey_x button_toggle_exc">0 excluded</span>
 
@@ -116,6 +116,9 @@
 <p id="n45" class="pln"><a href="#n45">45</a></p>
 <p id="n46" class="stm run hide_run"><a href="#n46">46</a></p>
 <p id="n47" class="stm run hide_run"><a href="#n47">47</a></p>
+<p id="n48" class="pln"><a href="#n48">48</a></p>
+<p id="n49" class="stm run hide_run"><a href="#n49">49</a></p>
+<p id="n50" class="stm run hide_run"><a href="#n50">50</a></p>
 
             </td>
             <td class="text">
@@ -161,11 +164,14 @@
 <p id="t40" class="stm run hide_run">    <span class="key">def</span> <span class="nam">get_source</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t41" class="stm run hide_run">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">page</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'source'</span><span class="op">,</span> <span class="op">[</span><span class="op">{</span><span class="op">}</span><span class="op">]</span><span class="op">)</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'longname'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t42" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t43" class="stm run hide_run">    <span class="key">def</span> <span class="nam">get_website</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t44" class="stm run hide_run">        <span class="key">return</span> <span class="nam">urlparse</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">url</span><span class="op">)</span><span class="op">.</span><span class="nam">netloc</span><span class="strut">&nbsp;</span></p>
+<p id="t43" class="stm run hide_run">    <span class="key">def</span> <span class="nam">get_author</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t44" class="stm run hide_run">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">get_source</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t45" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t46" class="stm run hide_run">    <span class="key">def</span> <span class="nam">get_content</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t47" class="stm run hide_run">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">page</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'body-html'</span><span class="op">,</span> <span class="str">''</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t46" class="stm run hide_run">    <span class="key">def</span> <span class="nam">get_website</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t47" class="stm run hide_run">        <span class="key">return</span> <span class="nam">urlparse</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">url</span><span class="op">)</span><span class="op">.</span><span class="nam">netloc</span><span class="strut">&nbsp;</span></p>
+<p id="t48" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t49" class="stm run hide_run">    <span class="key">def</span> <span class="nam">get_content</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t50" class="stm run hide_run">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">page</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'body-html'</span><span class="op">,</span> <span class="str">''</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 
             </td>
         </tr>
@@ -176,7 +182,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-08-19 05:58
+            created at 2019-08-19 11:13
         </p>
     </div>
 </div>
