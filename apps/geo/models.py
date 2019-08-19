@@ -235,6 +235,9 @@ class AdminLevel(models.Model):
         for child_level in self.adminlevel_set.all():
             child_level.clone_to(region, admin_level)
 
+        for geoarea in self.geoarea_set.all():
+            geoarea.clone_to(admin_level)
+
         return admin_level
 
     # Admin level permissions are same as region permissions
@@ -272,16 +275,20 @@ class GeoArea(models.Model):
     def __str__(self):
         return self.title
 
-    def clone_to(self, admin_level, parent):
+    def clone_to(self, admin_level, parent=None):
         geo_area = GeoArea(
             admin_level=admin_level,
             parent=parent,
             # Strip off extra chars from title to add ' (cloned)
             title='{} (cloned)'.format(self.title[:230]),
             code=self.code,
-            data=self.data
+            data=self.data,
+            polygons=self.polygons,
         )
         geo_area.save()
+
+        for child_geoarea in self.geoarea_set.all():
+            child_geoarea.clone_to(admin_level, geo_area)
 
         return geo_area
 

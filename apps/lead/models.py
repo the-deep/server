@@ -94,6 +94,7 @@ class Lead(UserResource, ProjectEntityMixin):
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
+    author = models.CharField(max_length=255, blank=True)
     source = models.CharField(max_length=255, blank=True)
     source_type = models.CharField(max_length=30,
                                    choices=SOURCE_TYPES,

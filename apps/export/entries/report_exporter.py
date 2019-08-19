@@ -83,7 +83,7 @@ class ReportExporter:
         lead = entry.lead
         self.lead_ids.append(lead.id)
 
-        source = lead.source or 'Reference'
+        source = lead.author or lead.source or 'Reference'
         url = lead.url or (
             lead.attachment and lead.attachment.get_file_url()
         )
