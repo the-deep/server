@@ -836,7 +836,7 @@
 <p id="t358" class="stm run hide_run">        <span class="key">try</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t359" class="stm run hide_run">            <span class="nam">LeadSerializer</span><span class="op">.</span><span class="nam">add_update__validate</span><span class="op">(</span><span class="op">{</span><span class="strut">&nbsp;</span></p>
 <p id="t360" class="pln">                <span class="str">'project'</span><span class="op">:</span> <span class="nam">project_id</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t361" class="pln">            <span class="op">}</span><span class="op">,</span> <span class="nam">lead</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t361" class="pln">            <span class="op">}</span><span class="op">,</span> <span class="nam">lead</span><span class="op">,</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">attachment</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t362" class="stm mis">        <span class="key">except</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ValidationError</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t363" class="stm mis">            <span class="key">return</span>  <span class="com"># SKIP COPY if validation fails</span><span class="strut">&nbsp;</span></p>
 <p id="t364" class="stm run hide_run">        <span class="nam">lead</span><span class="op">.</span><span class="nam">project_id</span> <span class="op">=</span> <span class="nam">project_id</span><span class="strut">&nbsp;</span></p>
@@ -890,7 +890,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-08-19 11:13
+            created at 2019-08-21 10:11
         </p>
     </div>
 </div>

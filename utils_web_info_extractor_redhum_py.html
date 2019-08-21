@@ -162,10 +162,10 @@
 <p id="t38" class="stm run hide_run">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">page</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'primary_country'</span><span class="op">,</span> <span class="op">{</span><span class="op">}</span><span class="op">)</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'name'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t39" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t40" class="stm run hide_run">    <span class="key">def</span> <span class="nam">get_source</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t41" class="stm run hide_run">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">page</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'source'</span><span class="op">,</span> <span class="op">[</span><span class="op">{</span><span class="op">}</span><span class="op">]</span><span class="op">)</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'longname'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t41" class="stm run hide_run">        <span class="key">return</span> <span class="str">'redhum'</span><span class="strut">&nbsp;</span></p>
 <p id="t42" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t43" class="stm run hide_run">    <span class="key">def</span> <span class="nam">get_author</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t44" class="stm run hide_run">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">get_source</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t44" class="stm run hide_run">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">page</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'source'</span><span class="op">,</span> <span class="op">[</span><span class="op">{</span><span class="op">}</span><span class="op">]</span><span class="op">)</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'longname'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t45" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t46" class="stm run hide_run">    <span class="key">def</span> <span class="nam">get_website</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t47" class="stm run hide_run">        <span class="key">return</span> <span class="nam">urlparse</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">url</span><span class="op">)</span><span class="op">.</span><span class="nam">netloc</span><span class="strut">&nbsp;</span></p>
@@ -182,7 +182,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-08-19 11:13
+            created at 2019-08-21 10:11
         </p>
     </div>
 </div>
