@@ -38,10 +38,10 @@ class RedhumWebInfoExtractor:
         return self.page.get('primary_country', {}).get('name')
 
     def get_source(self):
-        return self.page.get('source', [{}])[0].get('longname')
+        return 'redhum'
 
     def get_author(self):
-        return self.get_source()
+        return self.page.get('source', [{}])[0].get('longname')
 
     def get_website(self):
         return urlparse(self.url).netloc
