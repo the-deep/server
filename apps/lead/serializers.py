@@ -104,10 +104,9 @@ class LeadSerializer(RemoveNullFieldsMixin,
         return None
 
     @staticmethod
-    def add_update__validate(data, instance, _attachment=None):
+    def add_update__validate(data, instance, attachment=None):
         project = data.get('project', instance and instance.project)
         source_type = data.get('source_type', instance and instance.source_type)
-        attachment = _attachment or instance and instance.attachment
         text = data.get('text', instance and instance.text)
 
         # For website types, check if url has already been added

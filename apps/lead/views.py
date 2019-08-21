@@ -358,7 +358,7 @@ class LeadCopyView(views.APIView):
         try:
             LeadSerializer.add_update__validate({
                 'project': project_id,
-            }, lead)
+            }, lead, lead.attachment)
         except serializers.ValidationError:
             return  # SKIP COPY if validation fails
         lead.project_id = project_id

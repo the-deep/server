@@ -385,7 +385,7 @@ class WebInfoExtractionTests(TestCase):
             self.assertEqual(response['country'], 'Colombia')
             self.assertEqual(response['website'], 'redhum.org')
             self.assertEqual(response['url'], data['url'])
-            self.assertEqual(response['source'], 'UNHCR')
+            self.assertEqual(response['source'], 'redhum')
             self.assertEqual(response['author'], 'UNHCR')
         except Exception:
             import traceback
@@ -424,7 +424,7 @@ class WebInfoExtractionTests(TestCase):
             'website': SAMPLE_WEB_INFO_WEBSITE,
             'title': SAMPLE_WEB_INFO_TITLE,
             'url': SAMPLE_WEB_INFO_URL,
-            'source': SAMPLE_WEB_INFO_SOURCE,
+            'source': 'reliefweb',
             'author': SAMPLE_WEB_INFO_SOURCE,
             'existing': False,
         }
