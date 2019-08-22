@@ -151,7 +151,7 @@ def get_project_entries_stats(project):
         {
             'id': f"{w['pk']}-{dimension[id_key]}",
             'name': dimension['title'],
-            'color': dimension['color'],
+            'color': dimension.get('color'),
         } for id_key, w, dimensions in [
             ('key', w1d, w1d['data']['rows']),
             ('id', w2d, w2d['data']['dimensions']),
@@ -162,7 +162,7 @@ def get_project_entries_stats(project):
             'id': subdimension['id'],
             'context_id': f"{w2d['pk']}-{dimension['id']}",
             'name': subdimension['title'],
-            'tooltip': subdimension['tooltip'],
+            'tooltip': subdimension.get('tooltip'),
         } for dimension in w2d['data']['dimensions']
         for subdimension in dimension['subdimensions']
     ]
@@ -171,7 +171,7 @@ def get_project_entries_stats(project):
         {
             'id': sector['id'],
             'name': sector['title'],
-            'tooltip': sector['tooltip'],
+            'tooltip': sector.get('tooltip'),
         } for sector in w2d['data']['sectors']
     ]
     affected_groups_array = [
@@ -234,6 +234,7 @@ def get_project_entries_stats(project):
             queryset=Attribute.objects.filter(widget_id__in=widgets_pk),
         ),
         'attribute_set__widget',
+        'lead',
     )
     for entry in entries.all():
         collector = {}
@@ -242,7 +243,8 @@ def get_project_entries_stats(project):
 
         data.append({
             'pk': entry.pk,
-            'date': entry.created_at,
+            'created_date': entry.created_at,
+            'date': entry.lead.published_on,
             'severity': collector.get(w_severity['pk']),
             'reliability': collector.get(w_reliability['pk']),
             'geo': collector.get(w_geo['pk'], []),
