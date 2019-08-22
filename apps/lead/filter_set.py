@@ -21,6 +21,14 @@ class LeadFilterSet(django_filters.FilterSet):
     Also make most fields filerable by multiple values using
     'in' lookup expressions and CSVWidget.
     """
+
+    ENTRIES_EXISTS = 'entries_exists'
+    ASSESSMENT_EXISTS = 'assessment_exists'
+    EXISTS_CHOICE = (
+        (ENTRIES_EXISTS, 'Entries Exists'),
+        (ASSESSMENT_EXISTS, 'Assessment Exists'),
+    )
+
     published_on__lt = django_filters.DateFilter(
         field_name='published_on', lookup_expr='lt',
     )
@@ -76,6 +84,10 @@ class LeadFilterSet(django_filters.FilterSet):
         lookup_expr='lte',
         input_formats=['%Y-%m-%d%z'],
     )
+    exists = django_filters.ChoiceFilter(
+        label='Exists Choice',
+        choices=EXISTS_CHOICE, method='exists_filter',
+    )
 
     class Meta:
         model = Lead
@@ -96,6 +108,13 @@ class LeadFilterSet(django_filters.FilterSet):
                 },
             },
         }
+
+    def exists_filter(self, qs, name, value):
+        if value == self.ENTRIES_EXISTS:
+            return qs.filter(entry__isnull=False)
+        elif value == self.ASSESSMENT_EXISTS:
+            return qs.filter(assessment__isnull=False)
+        return qs
 
 
 class LeadGroupFilterSet(UserResourceFilterSet):
