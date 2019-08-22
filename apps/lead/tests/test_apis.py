@@ -2,6 +2,8 @@ from deep.tests import TestCase
 from user.models import User
 from project.models import Project, ProjectMembership
 from geo.models import Region
+
+from lead.filter_set import LeadFilterSet
 from lead.models import Lead, LeadPreview
 
 import logging
@@ -356,6 +358,31 @@ class LeadTests(TestCase):
         assert leads[0]['id'] == lead1.id, "Preview1 has more pages"
         assert leads[1]['id'] == lead2.id, "Preview2 has less pages"
         assert leads[2]['id'] == lead3.id, "Preview3 has no pages"
+
+    def test_lead_filter(self):
+        project = self.create_project(create_assessment_template=True)
+        lead1 = self.create_lead(project=project)
+        lead2 = self.create_lead(project=project)
+        lead3 = self.create_lead(project=project)
+        url = f'/api/v1/leads/?project={project.pk}'
+
+        self.authenticate()
+
+        # Project filter test
+        response = self.client.get(url)
+        assert response.json()['count'] == 3, 'Lead count should be 3'
+
+        # Entries exists filter test
+        self.create_entry(lead=lead1)
+        self.create_entry(lead=lead2)
+        response = self.client.get(f'{url}&exists={LeadFilterSet.ENTRIES_EXISTS}')
+        assert response.json()['count'] == 2, 'Lead count should be 2 for lead with entries'
+
+        # Assessment exists filter test
+        self.create_assessment(lead=lead1)
+        self.create_assessment(lead=lead3)
+        response = self.client.get(f'{url}&exists={LeadFilterSet.ASSESSMENT_EXISTS}')
+        assert response.json()['count'] == 2, 'Lead count should be 2 for lead with assessment'
 
 
 # Data to use for testing web info extractor

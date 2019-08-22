@@ -14,6 +14,7 @@ from lead.models import Lead
 from entry.models import Entry
 from gallery.models import File
 from analysis_framework.models import AnalysisFramework
+from ary.models import AssessmentTemplate, Assessment
 
 
 class TestCase(test.APITestCase):
@@ -191,12 +192,15 @@ class TestCase(test.APITestCase):
 
         return response
 
-    def create_project(self):
+    def create_project(self, create_assessment_template=False):
         analysis_framework = self.create(AnalysisFramework)
-        return self.create(
-            Project, analysis_framework=analysis_framework,
-            role=self.admin_role
-        )
+        data = {
+            'analysis_framework': analysis_framework,
+            'role': self.admin_role,
+        }
+        if create_assessment_template:
+            data['assessment_template'] = self.create(AssessmentTemplate)
+        return self.create(Project, **data)
 
     def create_gallery_file(self):
         url = '/api/v1/files/'
@@ -216,14 +220,23 @@ class TestCase(test.APITestCase):
         self.deep_test_files_path.append(file.file.path)
         return file
 
-    def create_lead(self):
-        project = self.create_project()
-        return self.create(Lead, project=project)
+    def create_lead(self, **fields):
+        project = fields.pop('project', None) or self.create_project()
+        return self.create(Lead, project=project, **fields)
 
     def create_entry(self, **fields):
-        lead = self.create_lead()
+        lead = fields.pop('lead', None) or self.create_lead()
         return self.create(
             Entry, lead=lead, project=lead.project,
             analysis_framework=lead.project.analysis_framework,
+            **fields
+        )
+
+    def create_assessment(self, **fields):
+        lead = fields.pop('lead', None) or self.create_lead()
+        return self.create(
+            Assessment,
+            lead=lead,
+            project=lead.project,
             **fields
         )
