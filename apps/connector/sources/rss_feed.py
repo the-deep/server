@@ -1,11 +1,41 @@
 from rest_framework import serializers
 from lxml import etree
 import requests
-import copy
 
-from utils.common import DEFAULT_HEADERS
+from utils.common import DEFAULT_HEADERS, random_key
 from lead.models import Lead
 from .base import Source
+
+
+def _get_field_value(item, field):
+    if not field:
+        return ''
+    element = item.find(field)
+    return '' if element is None else element.text or element.get('href')
+
+
+def _replace_ns(nsmap, tag):
+    for k, v in nsmap.items():
+        k = k or ''
+        tag = tag.replace('{{{}}}'.format(v), '{}:'.format(k))
+    return tag
+
+
+def _get_fields(item, nsmap, parent_tag=None):
+    tag = '{}/{}'.format(parent_tag, item.tag) if parent_tag else item.tag
+    childs = item.getchildren()
+    fields = []
+    if len(childs) > 0:
+        children_fields = []
+        for child in childs:
+            children_fields.extend(_get_fields(child, nsmap, tag))
+        fields.extend(children_fields)
+    else:
+        fields.append({
+            'key': tag,
+            'label': _replace_ns(nsmap, tag),
+        })
+    return fields
 
 
 class RssFeed(Source):
@@ -20,34 +50,51 @@ class RssFeed(Source):
         {
             'key': 'website-field',
             'field_type': 'select',
+            'lead_field': 'website',
             'title': 'Website',
             'options': [],
         },
         {
             'key': 'title-field',
             'field_type': 'select',
+            'lead_field': 'title',
             'title': 'Title field',
             'options': [],
         },
         {
             'key': 'date-field',
             'field_type': 'select',
+            'lead_field': 'published_on',
             'title': 'Published on field',
             'options': [],
         },
         {
             'key': 'source-field',
             'field_type': 'select',
-            'title': 'Source field',
+            'lead_field': 'source',
+            'title': 'Publisher field',
+            'options': [],
+        },
+        {
+            'key': 'author-field',
+            'field_type': 'select',
+            'lead_field': 'author',
+            'title': 'Author field',
             'options': [],
         },
         {
             'key': 'url-field',
             'field_type': 'select',
+            'lead_field': 'url',
             'title': 'URL field',
             'options': [],
         },
     ]
+
+    option_lead_field_map = {
+        option['lead_field']: option['key']
+        for option in options if option.get('lead_field')
+    }
 
     dynamic_fields = [1, 2, 3, 4, 5]
 
@@ -60,44 +107,18 @@ class RssFeed(Source):
         xml = etree.fromstring(r.content)
         items = xml.findall('channel/item')
 
-        title_field = params.get('title-field')
-        date_field = params.get('date-field')
-        source_field = params.get('source-field')
-        url_field = params.get('url-field')
-        website_field = params.get('website-field')
-
         for item in items:
-            def get_field(field):
-                if not field:
-                    return ''
-                element = item.find(field)
-                return '' if element is None else element.text or element.get('href')
-            title = get_field(title_field)
-            date = get_field(date_field)
-            source = get_field(source_field)
-            url = get_field(url_field)
-            website = get_field(website_field)
-
             data = Lead(
-                # FIXME: use proper key
-                id=url,
-                title=title,
-                published_on=date,
-                source=source,
-                url=url,
-                website=website,
+                id=random_key(),
                 source_type=Lead.RSS,
+                **{
+                    lead_field: _get_field_value(item, params.get(param_key))
+                    for lead_field, param_key in self.option_lead_field_map.items()
+                },
             )
             results.append(data)
 
         return results, len(items)
-
-    def query_options(self, params):
-        fields = self.query_fields(params)
-        options = copy.deepcopy(self.options)
-        for field in self.dynamic_fields:
-            options[field]['options'] = fields
-        return options
 
     def query_fields(self, params):
         if not params or not params.get('feed-url'):
@@ -121,31 +142,9 @@ class RssFeed(Source):
 
         nsmap = xml.nsmap
 
-        def replace_ns(tag):
-            for k, v in nsmap.items():
-                k = k or ''
-                tag = tag.replace('{{{}}}'.format(v), '{}:'.format(k))
-            return tag
-
-        def get_fields(item, parent_tag=None):
-            tag = '{}/{}'.format(parent_tag, item.tag) if parent_tag else item.tag
-            childs = item.getchildren()
-            fields = []
-            if len(childs) > 0:
-                children_fields = []
-                for child in childs:
-                    children_fields.extend(get_fields(child, tag))
-                fields.extend(children_fields)
-            else:
-                fields.append({
-                    'key': tag,
-                    'label': replace_ns(tag),
-                })
-            return fields
-
         fields = []
         for field in item.findall('./'):
-            fields.extend(get_fields(field))
+            fields.extend(_get_fields(field, nsmap))
 
         # Remove fields that are present more than once,
         # as we donot have support for list data yet.
