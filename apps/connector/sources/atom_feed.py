@@ -6,19 +6,17 @@ from utils.common import random_key
 from lead.models import Lead
 
 from .rss_feed import RssFeed
-from .base import Source
 
 
-def _get_field(item, field, default=None):
+def _get_field_value(item, field, default=None):
     if item:
         return item.get(field, default)
     return default
 
 
-class AtomFeed(Source):
+class AtomFeed(RssFeed):
     title = 'Atom Feed'
     key = 'atom-feed'
-    options = RssFeed.options
 
     def fetch(self, params, offset=None, limit=None):
         results = []
@@ -29,21 +27,13 @@ class AtomFeed(Source):
         feed = feedparser.parse(feed_url)
         items = feed.entries
 
-        option_lead_field_map = {
-            'title': 'title-field',
-            'published_on': 'date-field',
-            'source': 'source-field',
-            'url': 'url-field',
-            'website': 'website-field',
-        }
-
         for item in items:
             data = Lead(
                 id=random_key(),
                 source_type=Lead.RSS,
                 **{
-                    lead_field: _get_field(item, params.get(param_key))
-                    for lead_field, param_key in option_lead_field_map.items()
+                    lead_field: _get_field_value(item, params.get(param_key))
+                    for lead_field, param_key in self.option_lead_field_map.items()
                 },
             )
             results.append(data)

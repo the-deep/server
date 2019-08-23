@@ -6,13 +6,26 @@ from connector.models import (
     Connector,
     ConnectorUser,
 )
+from connector.sources import store
 
 
 SAMPLE_RSS_PARAMS = {
     'feed-url': 'https://reliefweb.int/country/afg/rss.xml?primary_country=16',
     'website': 'reliefweb',
     'title-field': 'title',
+    'source-field': 'source',
+    'author-field': 'author',
     'date-field': 'pubDate',
+    'url-field': 'link',
+}
+
+SAMPLE_ATOM_PARAMS = {
+    'feed-url': 'https://feedly.com/f/Lmh0gtsFqdkr3hzoDFuOeass.atom?count=10',
+    'website': 'link',
+    'title-field': 'title',
+    'source-field': 'author',
+    'author-field': 'author',
+    'date-field': 'published',
     'url-field': 'link',
 }
 
@@ -149,3 +162,32 @@ class ConnectorApiTest(TestCase):
 
         for result in response.data['results']:
             self.assertTrue('earthquake' in result['title'].lower())
+
+    def test_atom_feed_fields(self):
+        url = '/api/v1/connector-sources/atom-feed/fields/'
+
+        self.authenticate()
+        response = self.client.post(url, data=SAMPLE_ATOM_PARAMS)
+        self.assert_200(response)
+
+    def test_atom_feed_leads(self):
+        connector = self.create(
+            Connector,
+            source=store.atom_feed.AtomFeed.key,
+            params=SAMPLE_ATOM_PARAMS,
+            role='self',
+        )
+
+        data = {
+            'offset': 5,
+            'limit': 15,
+        }
+        url = '/api/v1/connectors/{}/leads/'.format(connector.id)
+
+        self.authenticate()
+        response = self.client.post(url, data=data)
+        self.assert_200(response)
+
+        self.assertIsNotNone(response.data.get('results'))
+        self.assertTrue(response.data['count'], 15)
+        self.assertIsInstance(response.data['results'], list)
