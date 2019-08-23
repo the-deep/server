@@ -10,7 +10,6 @@ from rest_framework import (
 from rest_framework.decorators import action
 from deep.permissions import ModifyPermission
 from project.models import Project
-from utils.common import parse_number
 
 from .serializers import (
     SourceSerializer,

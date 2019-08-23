@@ -1,4 +1,3 @@
-from urllib.parse import urlparse
 from rest_framework import serializers
 from lxml import etree
 import requests
@@ -7,11 +6,6 @@ import copy
 from utils.common import DEFAULT_HEADERS
 from lead.models import Lead
 from .base import Source
-
-DEFAULT_ITEM_XPATH = 'channel/item'
-ITEM_XPATH = {
-    'feedly.com': '{http://www.w3.org/2005/Atom}entry',
-}
 
 
 class RssFeed(Source):
@@ -57,19 +51,14 @@ class RssFeed(Source):
 
     dynamic_fields = [1, 2, 3, 4, 5]
 
-    def get_item_xpath(self, url):
-        super().__init__()
-        return ITEM_XPATH.get(urlparse(url).netloc, DEFAULT_ITEM_XPATH)
-
     def fetch(self, params, offset=None, limit=None):
         results = []
         if not params or not params.get('feed-url'):
             return results, 0
 
-        feed_url = params['feed-url']
         r = requests.get(params['feed-url'])
         xml = etree.fromstring(r.content)
-        items = xml.findall(self.get_item_xpath(feed_url))
+        items = xml.findall('channel/item')
 
         title_field = params.get('title-field')
         date_field = params.get('date-field')
@@ -114,9 +103,8 @@ class RssFeed(Source):
         if not params or not params.get('feed-url'):
             return []
 
-        feed_url = params['feed-url']
         try:
-            r = requests.get(feed_url, headers=DEFAULT_HEADERS)
+            r = requests.get(params['feed-url'], headers=DEFAULT_HEADERS)
             xml = etree.fromstring(r.content)
         except requests.exceptions.RequestException:
             raise serializers.ValidationError({
@@ -127,7 +115,7 @@ class RssFeed(Source):
                 'feed-url': 'Invalid XML'
             })
 
-        item = xml.find(self.get_item_xpath(feed_url))
+        item = xml.find('channel/item')
         if not item:
             return []
 
