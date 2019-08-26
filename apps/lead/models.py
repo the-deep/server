@@ -118,6 +118,8 @@ class Lead(UserResource, ProjectEntityMixin):
         File, on_delete=models.SET_NULL, default=None, null=True, blank=True,
     )
 
+    emm_entities = models.ManyToManyField('connector.EMMEntity', blank=True)
+
     def __str__(self):
         return '{}'.format(self.title)
 
@@ -193,3 +195,16 @@ class LeadPreviewImage(models.Model):
 
     def __str__(self):
         return 'Image extracted for {}'.format(self.lead)
+
+
+class LeadEMMTriggerCount(models.Model):
+    lead = models.ForeignKey(Lead, related_name='emm_triggers', on_delete=models.CASCADE)
+    emm_keyword = models.ForeignKey(
+        'connector.EMMTriggerKeyword',
+        on_delete=models.CASCADE,
+        related_name='tagged_leads')
+    emm_risk_factor = models.ForeignKey(
+        'connector.EMMTriggerRiskFactor',
+        on_delete=models.CASCADE,
+        related_name='tagged_leads')
+    count = models.PositiveIntegerField(default=0)
