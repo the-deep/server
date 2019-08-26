@@ -7,7 +7,7 @@ from django.conf import settings
 from urllib.parse import quote
 from reversion.admin import VersionAdmin as _VersionAdmin
 
-from jsoneditor.forms import JSONEditor
+from jsoneditor.forms import JSONEditor as _JSONEditor
 
 
 site = admin.site
@@ -23,6 +23,15 @@ site.site_title = get_site_string('DEEP site admin')
 site.site_header = get_site_string('DEEP Administration')
 # Text to put at the top of the admin index page.
 site.index_title = get_site_string('DEEP Administration')
+
+
+class JSONEditor(_JSONEditor):
+    class Media:
+        js = [
+            # NOTE: Not using this breaks autocomplete
+            'admin/js/vendor/jquery/jquery%s.js' % ('' if settings.DEBUG else '.min')
+        ] + list(_JSONEditor.Media.js[1:])
+        css = _JSONEditor.Media.css
 
 
 class JSONFieldMixin():

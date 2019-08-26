@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from . import (
+    atom_feed,
     rss_feed,
     acaps_briefing_notes,
     unhcr_portal,
@@ -13,6 +14,7 @@ import random
 
 
 source_store = OrderedDict([
+    (atom_feed.AtomFeed.key, atom_feed.AtomFeed),
     ('rss-feed', rss_feed.RssFeed),
     ('acaps-briefing-notes', acaps_briefing_notes.AcapsBriefingNotes),
     ('unhcr-portal', unhcr_portal.UNHCRPortal),

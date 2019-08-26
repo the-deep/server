@@ -77,7 +77,8 @@ class ReliefWeb(Source):
                 title=fields['title'],
                 published_on=fields['date']['original'],
                 url=fields['url_alias'],
-                source=fields['source'][0]['name'],
+                source='reliefweb',
+                author=fields['source'][0]['name'],
                 website='www.reliefweb.int',
             )
             results.append(lead)
