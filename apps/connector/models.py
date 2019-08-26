@@ -111,3 +111,27 @@ class ConnectorProject(models.Model):
 
     def can_modify(self, user):
         return self.connector.can_modify(user)
+
+
+class EMMBaseModel(models.Model):
+    name = models.CharField(max_length=150, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        abstract = True
+
+
+class EMMTriggerKeyword(EMMBaseModel):
+    pass
+
+
+class EMMTriggerRiskFactor(EMMBaseModel):
+    pass
+
+
+class EMMEntity(EMMBaseModel):
+    pass
