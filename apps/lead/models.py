@@ -76,6 +76,7 @@ class Lead(UserResource, ProjectEntityMixin):
     DROPBOX = 'dropbox'
     GOOGLE_DRIVE = 'google-drive'
     RSS = 'rss'
+    EMM = 'emm'
     WEB_API = 'api'
     UNKNOWN = 'unknown'
 
@@ -87,6 +88,7 @@ class Lead(UserResource, ProjectEntityMixin):
         (GOOGLE_DRIVE, 'Google Drive'),
 
         (RSS, 'RSS Feed'),
+        (EMM, 'EMM'),
         (WEB_API, 'Web API'),
         (UNKNOWN, 'Unknown'),
     )
@@ -214,14 +216,8 @@ class LeadPreviewImage(models.Model):
         return 'Image extracted for {}'.format(self.lead)
 
 
-class LeadEMMTriggerCount(models.Model):
+class LeadEMMTrigger(models.Model):
     lead = models.ForeignKey(Lead, related_name='emm_triggers', on_delete=models.CASCADE)
-    emm_keyword = models.ForeignKey(
-        'connector.EMMTriggerKeyword',
-        on_delete=models.CASCADE,
-        related_name='tagged_leads')
-    emm_risk_factor = models.ForeignKey(
-        'connector.EMMTriggerRiskFactor',
-        on_delete=models.CASCADE,
-        related_name='tagged_leads')
+    emm_keyword = models.CharField(max_length=100)
+    emm_risk_factor = models.CharField(max_length=100)
     count = models.PositiveIntegerField(default=0)

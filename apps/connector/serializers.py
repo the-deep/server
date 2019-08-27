@@ -4,6 +4,7 @@ from rest_framework import serializers
 from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
 from lead.models import Lead
+from lead.serializers import LeadEMMTriggerSerializer
 from lead.views import check_if_url_exists
 
 from .sources.store import source_store
@@ -11,7 +12,14 @@ from .models import (
     Connector,
     ConnectorUser,
     ConnectorProject,
+    EMMEntity,
 )
+
+
+class EMMEntitySerializer(serializers.Serializer, RemoveNullFieldsMixin, DynamicFieldsMixin):
+    class Meta:
+        model = EMMEntity
+        fields = '__all__'
 
 
 class SourceOptionSerializer(RemoveNullFieldsMixin,
@@ -33,15 +41,41 @@ class SourceSerializer(RemoveNullFieldsMixin,
     options = SourceOptionSerializer(many=True)
 
 
+class SourceEMMEntitiesSerializer(serializers.Serializer):
+    provider = serializers.CharField()
+    provider_id = serializers.CharField()
+    name = serializers.CharField()
+
+
+class SourceEMMTriggerSerializer(serializers.Serializer):
+    emm_keyword = serializers.CharField()
+    emm_risk_factor = serializers.CharField()
+    count = serializers.IntegerField()
+
+
 class SourceDataSerializer(RemoveNullFieldsMixin,
                            serializers.ModelSerializer):
     existing = serializers.SerializerMethodField()
     key = serializers.CharField(source='id')
+    emm_entities = serializers.SerializerMethodField()
+    emm_triggers = serializers.SerializerMethodField()
 
     class Meta:
         model = Lead
         fields = ('key', 'title', 'source', 'source_type', 'url',
-                  'website', 'published_on', 'existing')
+                  'website', 'published_on', 'existing',
+                  'emm_entities', 'emm_triggers',
+                  )
+
+    def get_emm_entities(self, lead):
+        if hasattr(lead, '_emm_entities'):
+            return SourceEMMEntitiesSerializer(lead._emm_entities, many=True).data
+        return []
+
+    def get_emm_triggers(self, lead):
+        if hasattr(lead, '_emm_triggers'):
+            return SourceEMMTriggerSerializer(lead._emm_triggers, many=True).data
+        return []
 
     def get_existing(self, lead):
         if not self.context.get('request'):

@@ -113,25 +113,13 @@ class ConnectorProject(models.Model):
         return self.connector.can_modify(user)
 
 
-class EMMBaseModel(models.Model):
+class EMMEntity(models.Model):
     name = models.CharField(max_length=150, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
+    provider = models.CharField(max_length=60)
+    provider_id = models.CharField(max_length=60)
 
     def __str__(self):
-        return self.name
+        return f'{self.provider}: {self.name}'
 
     class Meta:
-        abstract = True
-
-
-class EMMTriggerKeyword(EMMBaseModel):
-    pass
-
-
-class EMMTriggerRiskFactor(EMMBaseModel):
-    pass
-
-
-class EMMEntity(EMMBaseModel):
-    pass
+        unique_together = ('name', 'provider', 'provider_id',)

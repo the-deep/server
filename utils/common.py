@@ -68,6 +68,20 @@ def makedirs(path):
         pass
 
 
+def replace_ns(nsmap, tag):
+    for k, v in nsmap.items():
+        k = k or ''
+        tag = tag.replace('{{{}}}'.format(v), '{}:'.format(k))
+    return tag
+
+
+def get_ns_tag(nsmap, tag):
+    for k, v in nsmap.items():
+        k = k or ''
+        tag = tag.replace('{}:'.format(k), '{{{}}}'.format(v))
+    return tag
+
+
 def is_valid_xml_char_ordinal(c):
     codepoint = ord(c)
     # conditions ordered by presumed frequency
