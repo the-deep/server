@@ -2,7 +2,7 @@ from rest_framework import serializers
 from lxml import etree
 import requests
 
-from utils.common import DEFAULT_HEADERS, random_key
+from utils.common import DEFAULT_HEADERS, random_key, replace_ns
 from lead.models import Lead
 from .base import Source
 
@@ -12,13 +12,6 @@ def _get_field_value(item, field):
         return ''
     element = item.find(field)
     return '' if element is None else element.text or element.get('href')
-
-
-def _replace_ns(nsmap, tag):
-    for k, v in nsmap.items():
-        k = k or ''
-        tag = tag.replace('{{{}}}'.format(v), '{}:'.format(k))
-    return tag
 
 
 def _get_fields(item, nsmap, parent_tag=None):
@@ -33,7 +26,7 @@ def _get_fields(item, nsmap, parent_tag=None):
     else:
         fields.append({
             'key': tag,
-            'label': _replace_ns(nsmap, tag),
+            'label': replace_ns(nsmap, tag),
         })
     return fields
 

@@ -12,6 +12,7 @@ from .models import (
     LeadGroup,
     Lead,
     LeadPreviewImage,
+    LeadEMMTrigger,
 )
 
 
@@ -48,6 +49,12 @@ class SimpleLeadSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = Lead
         fields = ('id', 'title', 'source', 'author', 'created_at', 'created_by')
+
+
+class LeadEMMTriggerSerializer(serializers.Serializer, RemoveNullFieldsMixin, DynamicFieldsMixin):
+    class Meta:
+        model = LeadEMMTrigger
+        fields = '__all__'
 
 
 class LeadSerializer(RemoveNullFieldsMixin,
