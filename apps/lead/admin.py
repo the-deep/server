@@ -3,6 +3,7 @@ from reversion.admin import VersionAdmin
 from .models import (
     Lead, LeadGroup,
     LeadPreview, LeadPreviewImage,
+    EMMEntity,
 )
 
 
@@ -31,4 +32,9 @@ class LeadAdmin(VersionAdmin):
 
 @admin.register(LeadGroup)
 class LeadGroupAdmin(VersionAdmin):
+    pass
+
+
+@admin.register(EMMEntity)
+class EMMEntityAdmin(admin.ModelAdmin):
     pass

@@ -120,7 +120,7 @@ class Lead(UserResource, ProjectEntityMixin):
         File, on_delete=models.SET_NULL, default=None, null=True, blank=True,
     )
 
-    emm_entities = models.ManyToManyField('connector.EMMEntity', blank=True)
+    emm_entities = models.ManyToManyField('EMMEntity', blank=True)
 
     def __str__(self):
         return '{}'.format(self.title)
@@ -204,3 +204,15 @@ class LeadEMMTrigger(models.Model):
     emm_keyword = models.CharField(max_length=100)
     emm_risk_factor = models.CharField(max_length=100)
     count = models.PositiveIntegerField(default=0)
+
+
+class EMMEntity(models.Model):
+    name = models.CharField(max_length=150, unique=True)
+    provider = models.CharField(max_length=60)
+    provider_id = models.CharField(max_length=60)
+
+    def __str__(self):
+        return f'{self.provider}: {self.name}'
+
+    class Meta:
+        unique_together = ('name', 'provider', 'provider_id',)
