@@ -6,7 +6,7 @@ from django.db import transaction
 
 from utils.common import random_key, get_ns_tag
 
-from lead.models import Lead, LeadEMMTrigger
+from lead.models import Lead, LeadEMMTrigger, EMMEntity
 from .rss_feed import RssFeed
 
 import logging
@@ -65,7 +65,6 @@ class EMM(RssFeed):
             })
 
         # Get or create EMM entities
-        from connector.models import EMMEntity
         with transaction.atomic():
             for eid, val in entities.items():
                 obj, _ = EMMEntity.objects.get_or_create(
@@ -78,7 +77,7 @@ class EMM(RssFeed):
         # Now create leads(not in db)
         leads = []
         for leadinfo in leads_infos:
-            leadinfo['emm_entities'] = [entities[eid] for eid, _ in entities.items()]
+            leadinfo['emm_entities'] = [entities[eid] for eid, _ in leadinfo['emm_entities'].items()]
             lead = Lead(*leadinfo)
             lead._emm_entities = leadinfo['emm_entities']
             lead._emm_triggers = leadinfo['emm_triggers']
