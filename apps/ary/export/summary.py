@@ -100,7 +100,7 @@ def get_assessment_export_summary(assessment):
             'limitations': 1 if methodology['Limitations'] else 0,
         },
         'stakeholders': {
-            lead_org['schema']['name']: lead_org['value'][0]['name'],
+            lead_org['schema']['name']: lead_org['value'][0]['name'] if lead_org['value'] else '',
             **{
                 x['schema']['name']: len(x['value'])
                 if x['schema']['type'] == MetadataField.MULTISELECT else 1
