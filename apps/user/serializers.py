@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
-from deep.serializers import RemoveNullFieldsMixin
+from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
 from user.models import Profile, Feature
 from user.utils import send_password_reset
 from project.models import Project
@@ -187,8 +187,14 @@ class ComprehensiveUserSerializer(serializers.ModelSerializer):
         source='profile.get_display_name',
         read_only=True,
     )
+
+    display_picture = URLCachedFileField(
+        source='profile.display_picture.file',
+        read_only=True,
+    )
+
     organization = serializers.CharField(source='profile.organization')
 
     class Meta:
         model = User
-        fields = ('id', 'name', 'email', 'organization',)
+        fields = ('id', 'name', 'email', 'organization', 'display_picture', )
