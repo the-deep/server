@@ -4,6 +4,8 @@ from django.contrib.postgres.fields import JSONField
 from connector.sources.store import get_sources
 from user_resource.models import UserResource
 
+from utils.common import is_valid_regex
+
 from project.models import Project
 from user.models import User
 
@@ -111,6 +113,29 @@ class ConnectorProject(models.Model):
 
     def can_modify(self, user):
         return self.connector.can_modify(user)
+
+
+EMM_SEPARATOR_DEFAULT = ';'
+EMM_TRIGGER_REGEX_DEFAULT = r'(\((?P<risk_factor>[a-zA-Z ]+)\)){0,1}(?P<keyword>[a-zA-Z ]+)\[(?P<count>\d+)]'
+EMM_ENTITY_TAG_DEFAULT = 'emm:entity'
+EMM_TRIGGER_TAG_DEFAULT = 'category'
+EMM_TRIGGER_ATTRIBUTE_DEFAULT = 'emm:trigger'
+
+
+class EMMConfig(models.Model):
+    trigger_separator = models.CharField(max_length=10, default=EMM_SEPARATOR_DEFAULT)
+    trigger_regex = models.CharField(max_length=300, default=EMM_TRIGGER_REGEX_DEFAULT)
+    entity_tag = models.CharField(max_length=100, default=EMM_ENTITY_TAG_DEFAULT)
+    trigger_tag = models.CharField(max_length=50, default=EMM_TRIGGER_TAG_DEFAULT)
+    trigger_attribute = models.CharField(max_length=50, default=EMM_TRIGGER_ATTRIBUTE_DEFAULT)
+
+    # Just Allow to have a single config
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        # Check if valid regex
+        if not is_valid_regex(self.trigger_regex):
+            raise Exception(f'{self.trigger_regex} is not a valid Regular Expression')
+        super().save(*args, **kwargs)
 
 
 class EMMEntity(models.Model):
