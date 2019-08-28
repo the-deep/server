@@ -1,6 +1,5 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
-from rest_framework.exceptions import APIException
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
@@ -122,7 +121,6 @@ class DropboxFileSerializer(FileSerializer):
         file, mime_type = d_download(
             file_url,
             deep_doc_types.DEEP_SUPPORTED_MIME_TYPES,
-            APIException,
         )
 
         # TODO: is this good?
