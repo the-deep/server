@@ -4,7 +4,6 @@ from rest_framework import serializers
 from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
 from lead.models import Lead
-from lead.serializers import LeadEMMTriggerSerializer
 from lead.views import check_if_url_exists
 
 from .sources.store import source_store
@@ -12,14 +11,7 @@ from .models import (
     Connector,
     ConnectorUser,
     ConnectorProject,
-    EMMEntity,
 )
-
-
-class EMMEntitySerializer(serializers.Serializer, RemoveNullFieldsMixin, DynamicFieldsMixin):
-    class Meta:
-        model = EMMEntity
-        fields = '__all__'
 
 
 class SourceOptionSerializer(RemoveNullFieldsMixin,
