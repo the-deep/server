@@ -9,12 +9,25 @@ from utils.common import random_key, get_ns_tag
 from lead.models import Lead, LeadEMMTrigger
 from .rss_feed import RssFeed
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class EMM(RssFeed):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.trigger_separator = ';'  # TODO: maybe get from db
-        self.trigger_regex = re.compile(r'(\((?P<risk_factor>[a-zA-Z ]+)\)){0,1}(?P<keyword>[a-zA-Z ]+)\[(?P<count>\d+)]')  # TODO: maybe get from db
+        # Sets up conf
+        self.initialize()
+
+    def initialize(self):
+        from connector.models import EMMConfig
+        conf = EMMConfig.objects.all().first()
+        if not conf:
+            msg = 'There is no configuration for emm connector'
+            logger.error(msg)
+            raise Exception(msg)
+        self.conf = conf
+        self.conf.trigger_regex = re.compile(self.conf.trigger_regex)
 
     def fetch(self, params, offset=None, limit=None):
         results = []
@@ -62,6 +75,7 @@ class EMM(RssFeed):
                 )
                 entities[eid] = obj
 
+        # Now create leads(not in db)
         leads = []
         for leadinfo in leads_infos:
             leadinfo['emm_entities'] = [entities[eid] for eid, _ in entities.items()]
@@ -78,12 +92,10 @@ class EMM(RssFeed):
             info[lead_field] = '' if element is None else element.text or element.get('href')
 
         # Parse entities
-        entity_tag = 'emm:entity'  # TODO: maybe get from db
-        info['entities'] = self.get_entities(item, entity_tag)
+        info['entities'] = self.get_entities(item, self.conf.entity_tag)
 
         # Parse Triggers
-        trigger_tag = 'category'  # TODO: maybe get from db
-        info['triggers'] = self.get_triggers(item, trigger_tag)
+        info['triggers'] = self.get_triggers(item, self.conf.trigger_tag)
         return info
 
     def get_entities(self, item, entity_tag):
@@ -97,13 +109,12 @@ class EMM(RssFeed):
     def get_triggers(self, item, trigger_tag):
         tag = get_ns_tag(self.nsmap, trigger_tag)
         trigger_elems = item.findall(tag) or []
-        trigger_attr = 'emm:trigger'  # TODO: maybe get from db
         triggers = []
         for trigger_elem in trigger_elems:
-            trigger_value = trigger_elem.get(get_ns_tag(self.nsmap, trigger_attr))
+            trigger_value = trigger_elem.get(get_ns_tag(self.nsmap, self.conf.trigger_attribute))
             if trigger_value is None:
                 continue
-            raw_triggers = trigger_value.split(self.trigger_separator)
+            raw_triggers = trigger_value.split(self.conf.trigger_separator)
             for raw in raw_triggers:
                 trigger = self.parse_trigger(raw)
                 triggers.append(trigger) if trigger is not None else None
@@ -111,7 +122,7 @@ class EMM(RssFeed):
         return triggers
 
     def parse_trigger(self, raw):
-        match = self.trigger_regex.match(raw)
+        match = self.conf.trigger_regex.match(raw)
         if match:
             return {
                 'emm_risk_factor': match['risk_factor'],
@@ -121,7 +132,7 @@ class EMM(RssFeed):
         return None
 
 
-def test_main():
+def test_emm():
     with open('/tmp/rss.xml') as f:
         e = EMM()
         params = {
