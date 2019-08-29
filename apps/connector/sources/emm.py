@@ -14,6 +14,9 @@ logger = logging.getLogger(__name__)
 
 
 class EMM(RssFeed):
+    title = 'European Media Monitor'
+    key = 'emm'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Sets up conf
@@ -30,26 +33,36 @@ class EMM(RssFeed):
         self.conf.trigger_regex = re.compile(self.conf.trigger_regex)
 
     def fetch(self, params, offset=None, limit=None):
-        results = []
         if not params or not params.get('feed-url'):
-            return results, 0
+            return [], 0
+
+        self.offset = offset or 0
+        self.limit = limit
+        self.params = params
 
         r = requests.get(params['feed-url'])
 
-        return self.parse_xml(r.content, offset, limit)
+        return self.parse_xml(r.content)
 
-    def parse_xml(self, content, params, offset, limit):
+    def parse_xml(self, content):
         xml = etree.fromstring(content)
         # SET NSMAP
         self.nsmap = xml.nsmap
+
+        # get attributes and tagnames with ns
+        self.trigger_attr_ns = get_ns_tag(self.nsmap, self.conf.trigger_attribute)
+        self.trigger_tag_ns = get_ns_tag(self.nsmap, self.conf.trigger_tag)
+        self.entity_tag_ns = get_ns_tag(self.nsmap, self.conf.entity_tag)
+
         items = xml.findall('channel/item')
 
-        limited_items = items[(offset or 0):limit] if limit else items
+        limited_items = items[self.offset:self.limit] if self.limit else items[self.offset:]
+
         entities = {}
         leads_infos = []  # Contains kwargs dict
         for item in limited_items:
             # Extract info from item
-            lead_info = self.parse_emm_item(item, params)
+            lead_info = self.parse_emm_item(item)
 
             item_entities = lead_info.pop('entities', {})
             item_triggers = lead_info.pop('triggers', [])
@@ -82,35 +95,33 @@ class EMM(RssFeed):
             lead._emm_entities = leadinfo['emm_entities']
             lead._emm_triggers = leadinfo['emm_triggers']
             leads.append(lead)
-        return leads
+        return leads, len(leads)
 
-    def parse_emm_item(self, item, params):
+    def parse_emm_item(self, item):
         info = {}
         for lead_field, field in self.option_lead_field_map.items():
-            element = item.find(params.get(field, ''))
+            element = item.find(self.params.get(field, ''))
             info[lead_field] = '' if element is None else element.text or element.get('href')
 
         # Parse entities
-        info['entities'] = self.get_entities(item, self.conf.entity_tag)
+        info['entities'] = self.get_entities(item)
 
         # Parse Triggers
-        info['triggers'] = self.get_triggers(item, self.conf.trigger_tag)
+        info['triggers'] = self.get_triggers(item)
         return info
 
-    def get_entities(self, item, entity_tag):
-        tag = get_ns_tag(self.nsmap, entity_tag)
-        entities = item.findall(tag) or []
+    def get_entities(self, item):
+        entities = item.findall(self.entity_tag_ns) or []
         return {
             x.get('id'): x.get('name')
             for x in entities
         }
 
-    def get_triggers(self, item, trigger_tag):
-        tag = get_ns_tag(self.nsmap, trigger_tag)
-        trigger_elems = item.findall(tag) or []
+    def get_triggers(self, item):
+        trigger_elems = item.findall(self.trigger_tag_ns) or []
         triggers = []
         for trigger_elem in trigger_elems:
-            trigger_value = trigger_elem.get(get_ns_tag(self.nsmap, self.conf.trigger_attribute))
+            trigger_value = trigger_elem.get(self.trigger_attr_ns)
             if trigger_value is None:
                 continue
             raw_triggers = trigger_value.split(self.conf.trigger_separator)
