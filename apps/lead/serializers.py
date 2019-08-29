@@ -108,12 +108,13 @@ class LeadSerializer(RemoveNullFieldsMixin,
         required=False,
     )
     tabular_book = serializers.SerializerMethodField()
-    emm_triggers = LeadEMMTriggerSerializer(many=True)
-    emm_entities = EMMEntitySerializer(many=True)
+    emm_triggers = LeadEMMTriggerSerializer(many=True, required=False)
+    emm_entities = EMMEntitySerializer(many=True, required=False)
 
     class Meta:
         model = Lead
         fields = ('__all__')
+        read_only_fields = ('emm_triggers', 'emm_entries',)
 
     def get_tabular_book(self, obj):
         file = obj.attachment
