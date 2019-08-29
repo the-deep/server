@@ -233,6 +233,7 @@ class EntryCommentViewSet(viewsets.ModelViewSet):
     serializer_class = EntryCommentSerializer
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
 
     def get_queryset(self):
         return EntryComment.get_for(self.request.user)
