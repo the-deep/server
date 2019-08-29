@@ -131,14 +131,14 @@ class LeadSerializer(
         required=False,
     )
     tabular_book = serializers.SerializerMethodField()
-    emm_triggers = LeadEMMTriggerSerializer(many=True)
-    emm_entities = EMMEntitySerializer(many=True)
+    emm_triggers = LeadEMMTriggerSerializer(many=True, required=False)
+    emm_entities = EMMEntitySerializer(many=True, required=False)
 
     class Meta:
         model = Lead
         fields = ('__all__')
         # Legacy Fields
-        read_only_fields = ('author_raw', 'source_raw',)
+        read_only_fields = ('author_raw', 'source_raw', 'emm_triggers', 'emm_entries',)
 
     def get_tabular_book(self, obj):
         file = obj.attachment

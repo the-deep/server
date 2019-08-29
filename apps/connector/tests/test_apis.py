@@ -5,6 +5,7 @@ from connector.sources.store import get_random_source
 from connector.models import (
     Connector,
     ConnectorUser,
+    EMMConfig,
 )
 from connector.sources import store
 
@@ -27,6 +28,17 @@ SAMPLE_ATOM_PARAMS = {
     'author-field': 'author',
     'date-field': 'published',
     'url-field': 'link',
+}
+
+SAMPLE_EMM_PARAMS = {
+    'feed-url': 'https://emm.newsbrief.eu/rss/rss?type=category&'
+                'id=filter-FocusedMyanmarEW-Q&language=en&duplicates=false',
+    'website-field': 'link',
+    'url-field': 'link',
+    'date-field': 'pubDate',
+    'source-field': 'source',
+    'author-field': 'source',
+    'title-field': 'title',
 }
 
 
@@ -175,6 +187,32 @@ class ConnectorApiTest(TestCase):
             Connector,
             source=store.atom_feed.AtomFeed.key,
             params=SAMPLE_ATOM_PARAMS,
+            role='self',
+        )
+
+        data = {
+            'offset': 5,
+            'limit': 15,
+        }
+        url = '/api/v1/connectors/{}/leads/'.format(connector.id)
+
+        self.authenticate()
+        response = self.client.post(url, data=data)
+        self.assert_200(response)
+
+        self.assertIsNotNone(response.data.get('results'))
+        self.assertTrue(response.data['count'], 15)
+        self.assertIsInstance(response.data['results'], list)
+
+    def test_emm_leads(self):
+        # NOTE: Emm config should have already been created
+        if not EMMConfig.objects.all().first():
+            EMMConfig.objects.create()  # Created with default values
+
+        connector = self.create(
+            Connector,
+            source=store.emm.EMM.key,
+            params=SAMPLE_EMM_PARAMS,
             role='self',
         )
 
