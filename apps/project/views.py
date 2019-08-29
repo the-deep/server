@@ -30,6 +30,7 @@ from deep.models import ProcessStatus
 from tabular.models import Field
 
 from user.utils import send_project_join_request_emails
+from user.serializers import SimpleUserSerializer
 from user.models import User
 from geo.models import Region
 from user_group.models import UserGroup
@@ -438,6 +439,22 @@ class ProjectViewSet(viewsets.ModelViewSet):
         request._request.GET = request._request.GET.copy()
         request._request.GET['project'] = project.pk
         return viewfn(request._request, *args, **kwargs)
+
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated],
+        serializer_class=SimpleUserSerializer,
+        url_path='members'
+    )
+    def get_members(self, request, pk=None, version=None):
+        project = self.get_object()
+        members = User.objects.filter(
+            models.Q(projectmembership__project=project) |
+            models.Q(usergroup__projectusergroupmembership__project=project)
+        )
+        self.page = self.paginate_queryset(members)
+        serializer = self.get_serializer(self.page, many=True)
+        return self.get_paginated_response(serializer.data)
 
 
 # FIXME: user better API

@@ -110,6 +110,36 @@ class ProjectApiTest(TestCase):
         response = self.client.get('/api/v1/projects/')
         self.assertEqual(len(response.data['results']), 4)
 
+    def test_get_project_members(self):
+        user1 = self.create(User)
+        user2 = self.create(User)
+
+        # Create usergroup and add members
+        usergroup = self.create(UserGroup)
+        userg1 = self.create(User)
+        userg2 = self.create(User)
+
+        usergroup.add_member(userg1)
+        usergroup.add_member(userg2)
+
+        project = self.create(Project)
+
+        project.add_member(user1)
+        ProjectUserGroupMembership.objects.create(project=project, usergroup=usergroup)
+
+        url = f'/api/v1/projects/{project.id}/members/'
+
+        self.authenticate()
+        resp = self.client.get(url)
+        self.assert_200(resp)
+
+        userids = [x['id'] for x in resp.data['results']]
+        assert user1.id in userids
+        assert user2.id not in userids
+        assert userg1.id in userids
+        assert userg2.id in userids
+        assert len(userids) == 3, "Three members"
+
     def test_create_private_project(self):
         # project_count = Project.objects.count()
         url = '/api/v1/projects/'
