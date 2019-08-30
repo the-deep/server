@@ -63,7 +63,7 @@ class HumanitarianResponse(Source):
         }
     ]
 
-    def fetch(self, params, page=None, limit=None):
+    def fetch(self, params, offset, limit):
         results = []
         url = self.URL
         if params.get('country'):
@@ -71,7 +71,10 @@ class HumanitarianResponse(Source):
         resp = requests.get(url, params={})
         soup = Soup(resp.text, 'html.parser')
         contents = soup.find('div', {'id': 'content'}).find('tbody')
-        for row in contents.findAll('tr'):
+
+        items = contents.findAll('tr')
+        total_len = len(items)
+        for row in items[offset: offset + limit]:
             try:
                 tds = row.findAll('td')
                 title = tds[0].find('a').get_text().strip()
@@ -94,4 +97,4 @@ class HumanitarianResponse(Source):
                     str(e.args)
                 )
 
-        return results, len(results)
+        return results, total_len

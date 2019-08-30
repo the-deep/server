@@ -106,8 +106,9 @@ class RssFeed(Source):
         r = requests.get(params['feed-url'])
         xml = etree.fromstring(r.content)
         items = xml.findall('channel/item')
+        total_len = len(items)
 
-        for item in items:
+        for item in items[offset: offset + limit]:
             data = Lead(
                 id=random_key(),
                 source_type=Lead.RSS,
@@ -118,7 +119,7 @@ class RssFeed(Source):
             )
             results.append(data)
 
-        return results, len(items)
+        return results, total_len
 
     def query_fields(self, params):
         if not params or not params.get('feed-url'):

@@ -48,7 +48,13 @@ class SourceQueryView(views.APIView):
         source = source_store[source_type]()
         method = getattr(source, 'query_{}'.format(query))
 
-        results = method(params)
+        offset = self.request.data.pop('offset', None) or 0
+        limit = self.request.data.pop('limit', None) or Source.DEFAULT_PER_PAGE
+
+        if query == 'fields':
+            results = method(params)
+        else:
+            results = method(params, offset, limit)
 
         if isinstance(results, list):
             return response.Response({
@@ -125,11 +131,6 @@ class ConnectorViewSet(viewsets.ModelViewSet):
 
         source = source_store[connector.source]()
         data, count = source.fetch(params, offset, limit)
-
-        # Paginate manually
-        # FIXME: Make this better: probably cache, and also optimize
-        # Because, right now, every data is pulled and then only paginated
-        data = data[offset:offset + limit]
 
         serializer = SourceDataSerializer(
             data,

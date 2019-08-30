@@ -85,7 +85,7 @@ class PDNA(Source):
         }
     ]
 
-    def fetch(self, params, page=None, limit=None):
+    def fetch(self, params, offset, limit):
         country = params.get('country')
         if not country:
             return [], 0
@@ -93,13 +93,20 @@ class PDNA(Source):
         resp = requests.get(self.URL)
         soup = Soup(resp.text, 'html.parser')
         contents = soup.findAll('tbody')
+
         for content in contents:
-            for row in content.findAll('tr'):
+            rows = content.findAll('tr')
+            for row in rows:
                 try:
                     elem = row.find('a')
+                    if not elem:
+                        continue
                     name = elem.get_text()
-                    title = row.findAll('td')[-1].get_text()
-                    if name.strip() == country.strip():
+                    title_elem = row.findAll('td')[-1]
+                    if not title_elem:
+                        continue
+                    title = title_elem.get_text()
+                    if country.strip().lower() in name.strip().lower():
                         # add as lead
                         url = elem['href']
                         if url[0] == '/':  # means relative path
@@ -118,4 +125,5 @@ class PDNA(Source):
                         "Exception parsing {} with params {}: {}".format(
                             self.URL, params, e.args)
                     )
-        return results, len(results)
+        total_len = len(results)
+        return results[offset: offset + limit], total_len

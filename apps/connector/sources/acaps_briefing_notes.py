@@ -102,7 +102,7 @@ COUNTRIES_OPTIONS = [
 ]
 
 
-@handle_connector_parse_error
+# @handle_connector_parse_error
 class AcapsBriefingNotes(Source):
     URL = 'https://www.acaps.org/special-reports'
     title = 'ACAPS Briefing Notes'
@@ -138,16 +138,20 @@ class AcapsBriefingNotes(Source):
         }
     ]
 
-    def fetch(self, params, offset=None, limit=None):
+    def fetch(self, params, offset, limit):
         results = []
         resp = requests.get(self.URL, params=params)
         soup = Soup(resp.text, 'html.parser')
         contents = soup.findAll('div', {'class': 'wrapper-type'})
         if not contents:
             return results, 0
-
         content = contents[0]
-        for item in content.findAll('div', {'class': 'views-row'}):
+
+        offset = offset or 0
+        items = content.findAll('div', {'class': 'views-row'})
+        total_count = len(items)
+        items = items[offset:offset + limit]
+        for item in items:
             try:
                 bottomcontent = item.find('div', {'class': 'content-bottom'})
                 topcontent = item.find('div', {'class': 'content-top'})
@@ -175,4 +179,4 @@ class AcapsBriefingNotes(Source):
                         self.URL, params, e.args)
                 )
 
-        return results, len(results)
+        return results, total_count

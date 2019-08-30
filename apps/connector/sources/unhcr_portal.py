@@ -248,7 +248,7 @@ class UNHCRPortal(Source):
         ]
     }
 
-    def fetch(self, params, offset=None, limit=None):
+    def fetch(self, params, offset, limit):
         results = []
         if params.get('country'):
             params['country_json'] = '{"0":"' + params['country'] + '"}'
@@ -260,7 +260,11 @@ class UNHCRPortal(Source):
             return results, 0
 
         content = contents[0]
-        for item in content.findAll('li', {'class': ['searchResultItem']}):
+        items = content.findAll('li', {'class': ['searchResultItem']})
+
+        total_len = len(items)
+
+        for item in items[offset: limit + offset]:
             itemcontent = item.find(
                 'div',
                 {'class': ['searchResultItem_content', 'media_body']}
@@ -289,4 +293,4 @@ class UNHCRPortal(Source):
             )
             results.append(data)
 
-        return results, len(results)
+        return results, total_len

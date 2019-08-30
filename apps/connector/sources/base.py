@@ -11,10 +11,10 @@ class Source(ABC):
             raise Exception('Source not defined properly')
 
     @abstractmethod
-    def fetch(params, page=None, limit=None):
+    def fetch(params, offset, limit):
         pass
 
-    def query_leads(self, params, limit=None, offset=None):
+    def query_leads(self, params, offset, limit):
         from connector.serializers import SourceDataSerializer
 
         if offset is None or offset < 0:
@@ -22,8 +22,8 @@ class Source(ABC):
         if not limit or limit < 0:
             limit = Source.DEFAULT_PER_PAGE
 
-        data = self.fetch(params)[0]
+        data = self.fetch(params, offset, limit)[0]
         return SourceDataSerializer(
-            data[offset:offset + limit],
+            data,
             many=True,
         ).data
