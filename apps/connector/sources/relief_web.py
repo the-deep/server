@@ -69,6 +69,8 @@ class ReliefWeb(Source):
 
         resp = requests.post(self.URL, json=post_params).json()
         count = resp['totalCount']
+        print('LEN', len(resp['data']))
+        print('FETCH COUNT', count)
 
         for datum in resp['data']:
             fields = datum['fields']
