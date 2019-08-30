@@ -451,7 +451,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         members = User.objects.filter(
             models.Q(projectmembership__project=project) |
             models.Q(usergroup__projectusergroupmembership__project=project)
-        )
+        ).distinct()
         self.page = self.paginate_queryset(members)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)

@@ -8,6 +8,7 @@ from entry.models import (
     Attribute,
     FilterData,
     ExportData,
+    EntryComment,
 )
 
 
@@ -15,6 +16,11 @@ class AttributeInline(admin.StackedInline):
     model = Attribute
     extra = 0
     raw_id_fields = ('widget',)
+
+
+class EntryCommentInline(admin.TabularInline):
+    model = EntryComment
+    extra = 0
 
 
 class FilterDataInline(admin.StackedInline):
@@ -31,7 +37,11 @@ class ExportDataInline(admin.StackedInline):
 
 @admin.register(Entry)
 class EntryAdmin(VersionAdmin):
-    custom_inlines = [('attribute', AttributeInline), ('filter', FilterDataInline), ('exportable', ExportDataInline)]
+    custom_inlines = [('attribute', AttributeInline),
+                      ('filter', FilterDataInline),
+                      ('exportable', ExportDataInline),
+                      ('Entry Comment', EntryCommentInline),
+                      ]
     list_display = [
         'lead', 'project', 'created_by', 'created_at',
         query_buttons('View', [inline[0] for inline in custom_inlines]),
