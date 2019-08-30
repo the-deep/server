@@ -2,10 +2,10 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_save
 from django.db import transaction
 
-from notification.models import Notification
 from entry.models import EntryComment, EntryCommentText
 from entry.serializers import EntryCommentSerializer
-from user.utils import send_mail_to_user
+from notification.models import Notification
+from notification.tasks import send_entry_comment_email
 
 import logging
 
@@ -20,19 +20,9 @@ def send_notifications_for_commit(comment, notification_meta):
             **notification_meta,
             receiver=user,
         )
-        # TODO: Send Email Notification
+        # Send Email Notification
         transaction.on_commit(
-            send_mail_to_user(
-                user=user,
-                context={
-                    'notification_type': Notification.ENTRY_COMMENT_ADD,
-                    'Notification': Notification,
-                    'comment': comment,
-                },
-                email_type='entry_comment',
-                subject_template_name='entry/comment_notification_email.txt',
-                email_template_name='entry/comment_notification_email.html',
-            )
+            lambda: send_entry_comment_email.delay(user.pk, comment.pk)
         )
 
 

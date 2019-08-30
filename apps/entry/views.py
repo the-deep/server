@@ -33,7 +33,11 @@ from .serializers import (
     FilterDataSerializer,
 )
 from .pagination import ComprehensiveEntriesSetPagination
-from .filter_set import EntryFilterSet, get_filtered_entries
+from .filter_set import (
+    EntryFilterSet,
+    EntryCommentFilterSet,
+    get_filtered_entries,
+)
 from tabular.models import Field as TabularField
 import django_filters
 
@@ -234,6 +238,7 @@ class EntryCommentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filterset_class = EntryCommentFilterSet
 
     def get_queryset(self):
         return EntryComment.get_for(self.request.user)
