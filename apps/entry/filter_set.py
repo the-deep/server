@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 from analysis_framework.models import Filter
 from lead.models import Lead
-from entry.models import Entry
+from entry.models import Entry, EntryComment
 
 import django_filters
 
@@ -122,6 +122,12 @@ class EntryFilterSet(django_filters.FilterSet):
                 entrycomment__parent__isnull=True,
             )
         return queryset
+
+
+class EntryCommentFilterSet(django_filters.FilterSet):
+    class Meta:
+        model = EntryComment
+        fields = ('entry',)
 
 
 def get_filtered_entries(user, queries):
