@@ -80,11 +80,7 @@ class EMM(RssFeed):
         # Get or create EMM entities
         with transaction.atomic():
             for eid, val in entities.items():
-                obj, _ = EMMEntity.objects.get_or_create(
-                    provider='emm',
-                    provider_id=eid,
-                    name=val,
-                )
+                obj, _ = EMMEntity.objects.get_or_create(name=val)
                 entities[eid] = obj
 
         # Now create leads(not in db)

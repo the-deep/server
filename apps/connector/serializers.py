@@ -34,8 +34,6 @@ class SourceSerializer(RemoveNullFieldsMixin,
 
 
 class SourceEMMEntitiesSerializer(serializers.Serializer):
-    provider = serializers.CharField()
-    provider_id = serializers.CharField()
     name = serializers.CharField()
 
 

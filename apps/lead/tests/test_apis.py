@@ -8,8 +8,8 @@ from geo.models import Region
 from organization.models import Organization
 from organization.serializers import SimpleOrganizationSerializer
 from lead.filter_set import LeadFilterSet
-from lead.models import Lead, LeadPreview, LeadGroup
 from lead.serializers import SimpleLeadGroupSerializer
+from lead.models import Lead, LeadPreview, EMMEntity, LeadEMMTrigger, LeadGroup
 
 import logging
 from datetime import date
@@ -258,6 +258,70 @@ class LeadTests(TestCase):
         assert rdata['lead_groups'] == SimpleLeadGroupSerializer([lead_group2], many=True).data
         assert rdata['organizations'] == SimpleOrganizationSerializer([unhcr], many=True).data
         check_default_options(rdata)
+
+        assert 'emm_entities' in rdata
+        assert 'emm_keywords' in rdata
+        assert 'emm_risk_factors' in rdata
+
+    def test_emm_options(self):
+        url = '/api/v1/lead-options/'
+
+        project = self.create_project()
+
+        # Create Entities
+        entity1 = self.create(EMMEntity, name='entity1')
+        entity2 = self.create(EMMEntity, name='entity2')
+        entity3 = self.create(EMMEntity, name='enitty3')
+        entity4 = self.create(EMMEntity, name='entity4')  # noqa:F841
+
+        lead1 = self.create_lead(project=project, emm_entities=[entity1])
+        lead2 = self.create_lead(project=project, emm_entities=[entity2, entity3])
+        lead3 = self.create_lead(project=project, emm_entities=[entity2])
+        lead4 = self.create_lead(project=project)
+
+        # Create LeadEMMTrigger objects with
+        self.create(
+            LeadEMMTrigger, lead=lead1, count=5,
+            emm_keyword='keyword1', emm_risk_factor='rf1',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead2, count=3,
+            emm_keyword='keyword1', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead3, count=3,
+            emm_keyword='keyword2', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead4, count=3,
+            emm_keyword='keyword1', emm_risk_factor='rf1',
+        )
+        # NOTE: 3 leads with keyword keyword1, one with keyword2
+        # 2 leads with factor rf1, 2 with factor rf2
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        data = response.data
+
+        # Check emm_entities
+        assert 'emm_entities' in data
+        # TODO: consider provider_id
+        expected_entity_count_set = {(entity1.name, 1), (entity2.name, 2), (entity3.name, 1)}
+        result_entity_count_set = {(x['key'], x['count']) for x in data['emm_entities']}
+        assert expected_entity_count_set == result_entity_count_set
+
+        # Check emm_risk_factors
+        assert 'emm_risk_factors' in data
+        expected_risk_factors_count_set = {('rf1', 8), ('rf2', 6)}
+        result_risk_factors_count_set = {(x['key'], x['total_count']) for x in data['emm_risk_factors']}
+        assert expected_risk_factors_count_set == result_risk_factors_count_set
+
+        # Check emm_keywords
+        assert 'emm_keywords' in data
+        expected_keywords_count_set = {('keyword1', 11), ('keyword2', 3)}
+        result_keywords_count_set = {(x['key'], x['total_count']) for x in data['emm_keywords']}
+        assert expected_keywords_count_set == result_keywords_count_set
 
     def test_trigger_api(self):
         project = self.create(Project, role=self.admin_role)
@@ -554,6 +618,8 @@ class LeadTests(TestCase):
         response = self.client.get(f'{url}&exists={LeadFilterSet.ASSESSMENT_EXISTS}')
         assert response.json()['count'] == 2, 'Lead count should be 2 for lead with assessment'
 
+    def test_lead_filter_emm(self):
+        assert False
 
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:
