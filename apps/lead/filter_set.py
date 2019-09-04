@@ -89,6 +89,18 @@ class LeadFilterSet(django_filters.FilterSet):
         choices=EXISTS_CHOICE, method='exists_filter',
     )
 
+    emm_entities = django_filters.CharFilter(
+        method='emm_entities_filter',
+    )
+
+    emm_keywords = django_filters.CharFilter(
+        method='emm_keywords_filter',
+    )
+
+    emm_risk_factors = django_filters.CharFilter(
+        method='emm_risk_factors_filter',
+    )
+
     class Meta:
         model = Lead
         fields = {
@@ -96,8 +108,11 @@ class LeadFilterSet(django_filters.FilterSet):
                 x: ['exact']
                 for x in ['id', 'title', 'text', 'url', 'website']
             },
+            'emm_entities': ['exact'],
+            'emm_keywords': ['exact'],
+            'emm_risk_factors': ['exact'],
             'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
-            'published_on': ['exact', 'lt', 'gt', 'lte', 'gte']
+            'published_on': ['exact', 'lt', 'gt', 'lte', 'gte'],
         }
 
         filter_overrides = {
@@ -115,6 +130,18 @@ class LeadFilterSet(django_filters.FilterSet):
         elif value == self.ASSESSMENT_EXISTS:
             return qs.filter(assessment__isnull=False)
         return qs
+
+    def emm_entities_filter(self, qs, name, value):
+        splitted = [x for x in value.split(',') if x]
+        return qs.filter(emm_entities__in=splitted)
+
+    def emm_keywords_filter(self, qs, name, value):
+        splitted = [x for x in value.split(',') if x]
+        return qs.filter(emm_triggers__emm_keyword__in=splitted)
+
+    def emm_risk_factors_filter(self, qs, name, value):
+        splitted = [x for x in value.split(',') if x]
+        return qs.filter(emm_triggers__emm_risk_factor__in=splitted)
 
 
 class LeadGroupFilterSet(UserResourceFilterSet):

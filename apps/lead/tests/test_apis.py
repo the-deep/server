@@ -618,8 +618,134 @@ class LeadTests(TestCase):
         response = self.client.get(f'{url}&exists={LeadFilterSet.ASSESSMENT_EXISTS}')
         assert response.json()['count'] == 2, 'Lead count should be 2 for lead with assessment'
 
-    def test_lead_filter_emm(self):
-        assert False
+    def test_lead_filter_emm_entities(self):
+        url = '/api/v1/leads/?emm_entities={}'
+        project = self.create_project()
+
+        # Create Entities
+        entity1 = self.create(EMMEntity, name='entity1')
+        entity2 = self.create(EMMEntity, name='entity2')
+        entity3 = self.create(EMMEntity, name='enitty3')
+        entity4 = self.create(EMMEntity, name='entity4')  # noqa:F841
+
+        lead1 = self.create_lead(project=project, emm_entities=[entity1])
+        lead2 = self.create_lead(project=project, emm_entities=[entity2, entity3])
+        lead3 = self.create_lead(project=project, emm_entities=[entity2])
+        lead4 = self.create_lead(project=project)
+
+        self.authenticate()
+
+        # Get a single lead
+        resp = self.client.get(url.format(entity1.id))
+        self.assert_200(resp)
+        assert len(resp.data['results']) == 1, "There should be one lead"
+        assert resp.data['results'][0]['id'] == lead1.id
+
+        # Get a multiple leads
+        entities_query = ','.join([str(entity1.id), str(entity2.id)])
+        resp = self.client.get(url.format(entities_query))
+        self.assert_200(resp)
+        assert len(resp.data['results']) == 3, "There should be three leads"
+        ids_list = [x['id']for x in resp.data['results']]
+        assert lead1.id in ids_list
+        assert lead2.id in ids_list
+        assert lead3.id in ids_list
+
+    def test_lead_filter_emm_keywords(self):
+        url = '/api/v1/leads/?emm_keywords={}'
+        project = self.create_project()
+
+        lead1 = self.create_lead(project=project)
+        lead2 = self.create_lead(project=project)
+        lead3 = self.create_lead(project=project)
+        lead4 = self.create_lead(project=project)
+
+        # Create LeadEMMTrigger objects with
+        self.create(
+            LeadEMMTrigger, lead=lead1, count=5,
+            emm_keyword='keyword1', emm_risk_factor='rf1',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead2, count=3,
+            emm_keyword='keyword1', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead3, count=3,
+            emm_keyword='keyword3', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead4, count=3,
+            emm_keyword='keyword2', emm_risk_factor='rf1',
+        )
+
+        self.authenticate()
+
+        # Get a single lead
+        resp = self.client.get(url.format('keyword1'))
+        self.assert_200(resp)
+        assert len(resp.data['results']) == 2, "There should be 2 leads"
+        ids_list = [x['id']for x in resp.data['results']]
+        assert lead1.id in ids_list
+        assert lead2.id in ids_list
+
+        # Get multiple leads
+        entities_query = ','.join(['keyword1', 'keyword2'])
+        resp = self.client.get(url.format(entities_query))
+        self.assert_200(resp)
+        assert len(resp.data['results']) == 3, "There should be three leads"
+        ids_list = [x['id']for x in resp.data['results']]
+        assert lead1.id in ids_list
+        assert lead2.id in ids_list
+        assert lead4.id in ids_list
+
+    def test_lead_filter_emm_risk_factors(self):
+        url = '/api/v1/leads/?emm_risk_factors={}'
+        project = self.create_project()
+
+        lead1 = self.create_lead(project=project)
+        lead2 = self.create_lead(project=project)
+        lead3 = self.create_lead(project=project)
+        lead4 = self.create_lead(project=project)
+
+        # Create LeadEMMTrigger objects with
+        self.create(
+            LeadEMMTrigger, lead=lead1, count=5,
+            emm_keyword='keyword1', emm_risk_factor='rf1',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead2, count=3,
+            emm_keyword='keyword1', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead3, count=3,
+            emm_keyword='keyword3', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead4, count=3,
+            emm_keyword='keyword2', emm_risk_factor='rf1',
+        )
+
+        self.authenticate()
+
+        # Get a single lead
+        resp = self.client.get(url.format('rf1'))
+        self.assert_200(resp)
+        assert len(resp.data['results']) == 2, "There should be 2 leads"
+        ids_list = [x['id']for x in resp.data['results']]
+        assert lead1.id in ids_list
+        assert lead4.id in ids_list
+
+        # Get multiple leads
+        entities_query = ','.join(['rf1', 'rf2'])
+        resp = self.client.get(url.format(entities_query))
+        self.assert_200(resp)
+        assert len(resp.data['results']) == 4, "There should be four leads"
+        ids_list = [x['id']for x in resp.data['results']]
+        assert lead1.id in ids_list
+        assert lead2.id in ids_list
+        assert lead3.id in ids_list
+        assert lead4.id in ids_list
+
 
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:
