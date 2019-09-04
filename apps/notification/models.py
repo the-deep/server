@@ -31,6 +31,7 @@ class Notification(models.Model):
         (ENTRY_COMMENT_REPLY_MODIFY, 'Entry Comment Reply Modify'),
         (ENTRY_COMMENT_RESOLVED, 'Entry Comment Resolved'),
     )
+    TYPES = [choice[0] for choice in TYPE_CHOICES]
 
     STATUS_SEEN = 'seen'
     STATUS_UNSEEN = 'unseen'
