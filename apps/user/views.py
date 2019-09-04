@@ -67,37 +67,6 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             return super().get_object()
 
-    @action(
-        detail=True,
-        permission_classes=[permissions.IsAuthenticated],
-        url_path='preferences',
-        serializer_class=UserPreferencesSerializer,
-    )
-    def get_preferences(self, request, pk=None, version=None):
-        user = self.get_object()
-        if user != request.user:
-            raise exceptions.PermissionDenied()
-
-        serializer = self.get_serializer(user)
-        return response.Response(serializer.data)
-
-    @action(
-        detail=True,
-        permission_classes=[permissions.IsAuthenticated],
-        url_path='notifications',
-        serializer_class=NotificationSerializer,
-    )
-    def get_notifications(self, request, pk=None, version=None):
-        from user.notifications import generate_notifications
-        user = self.get_object()
-        if user != request.user:
-            raise exceptions.PermissionDenied()
-
-        notifications = generate_notifications(user)
-        self.page = self.paginate_queryset(notifications)
-        serializer = self.get_serializer(self.page, many=True)
-        return self.get_paginated_response(serializer.data)
-
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
 
@@ -133,6 +102,37 @@ class UserViewSet(viewsets.ModelViewSet):
                 models.Value(search_str.lower(), models.CharField())
             )
         ).filter(strpos__gte=1).order_by('strpos')
+
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='preferences',
+        serializer_class=UserPreferencesSerializer,
+    )
+    def get_preferences(self, request, pk=None, version=None):
+        user = self.get_object()
+        if user != request.user:
+            raise exceptions.PermissionDenied()
+
+        serializer = self.get_serializer(user)
+        return response.Response(serializer.data)
+
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='notifications',
+        serializer_class=NotificationSerializer,
+    )
+    def get_notifications(self, request, pk=None, version=None):
+        from user.notifications import generate_notifications
+        user = self.get_object()
+        if user != request.user:
+            raise exceptions.PermissionDenied()
+
+        notifications = generate_notifications(user)
+        self.page = self.paginate_queryset(notifications)
+        serializer = self.get_serializer(self.page, many=True)
+        return self.get_paginated_response(serializer.data)
 
 
 class PasswordResetView(views.APIView):
