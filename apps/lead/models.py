@@ -225,11 +225,6 @@ class LeadEMMTrigger(models.Model):
 
 class EMMEntity(models.Model):
     name = models.CharField(max_length=150, unique=True)
-    provider = models.CharField(max_length=60)
-    provider_id = models.CharField(max_length=60)
 
     def __str__(self):
-        return f'{self.provider}: {self.name}'
-
-    class Meta:
-        unique_together = ('name', 'provider', 'provider_id',)
+        return self.name
