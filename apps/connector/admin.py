@@ -1,8 +1,9 @@
 from django.contrib import admin
-from reversion.admin import VersionAdmin
+
+from deep.admin import VersionAdmin
 from connector.models import Connector
 
 
 @admin.register(Connector)
 class ConnectorAdmin(VersionAdmin):
-    pass
+    autocomplete_fields = ('created_by', 'modified_by',)

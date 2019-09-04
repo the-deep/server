@@ -1,4 +1,7 @@
 from django.contrib import admin
+from django.db.models import Count
+from django.contrib.postgres.aggregates import StringAgg
+
 from reversion.admin import VersionAdmin
 from .models import (
     Project,
@@ -14,13 +17,13 @@ from .models import (
 class ProjectMembershipInline(admin.TabularInline):
     model = ProjectMembership
     extra = 0
-    autocomplete_fields = ('added_by', 'member',)
+    autocomplete_fields = ('added_by', 'linked_group', 'member',)
 
 
 class ProjectUserGroupMembershipInline(admin.TabularInline):
     model = ProjectUserGroupMembership
     extra = 0
-    autocomplete_fields = ('added_by',)
+    autocomplete_fields = ('added_by', 'usergroup',)
 
 
 class ProjectJoinRequestInline(admin.TabularInline):
@@ -38,13 +41,19 @@ class ProjectAdmin(VersionAdmin):
     ]
     autocomplete_fields = (
         'analysis_framework', 'assessment_template', 'category_editor',
-        'created_by', 'modified_by',
+        'created_by', 'modified_by', 'regions',
     )
-    filter_horizontal = ('regions',)
     list_filter = ('assessment_template',)
     inlines = [ProjectMembershipInline,
                ProjectUserGroupMembershipInline,
                ProjectJoinRequestInline]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(
+            members_count=Count('members', distinct=True),
+            associated_regions_count=Count('regions', distinct=True),
+            associated_regions=StringAgg('regions__title', ',', distinct=True),
+        )
 
     def get_readonly_fields(self, request, obj=None):
         # editing an existing object
@@ -53,12 +62,16 @@ class ProjectAdmin(VersionAdmin):
         return self.readonly_fields
 
     def members_count(self, obj):
-        return obj.members.count()
+        return obj.members_count
 
     def associated_regions(self, obj):
-        if obj.regions.count() == 0:
-            return None
-        return ', '.join(r.title for r in obj.regions.all())
+        count = obj.associated_regions_count
+        regions = obj.associated_regions
+        if count == 0:
+            return ''
+        elif count == 1:
+            return regions
+        return f'{regions[:10]}.... ({count})'
 
 
 class ProjectConditionInline(admin.StackedInline):

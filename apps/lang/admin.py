@@ -1,31 +1,44 @@
 from django.contrib import admin
-from .models import String, Link
+
+from deep.admin import ReadOnlyMixin
+from .models import (
+    String,
+    Link,
+    LinkCollection,
+)
 
 
-admin.site.register(String)
-admin.site.register(Link)
+@admin.register(String)
+class StringAdmin(admin.ModelAdmin):
+    search_fields = ('language', 'value',)
+    list_filter = ('language',)
 
 
-# Uncomment for filtering strings in admin panel
-# based on language
-# @admin.register(String)
-# class StringAdmin(admin.ModelAdmin):
-#     pass
-#
-#
-# @admin.register(Link)
-# class LinkAdmin(admin.ModelAdmin):
-#     def get_form(self, request, obj=None, **kwargs):
-#         form = super().get_form(
-#             request,
-#             obj,
-#             **kwargs,
-#         )
-#         if obj:
-#             form.base_fields['string'].queryset = (
-#                 form.base_fields['string'].queryset.filter(
-#                     language=obj.language
-#                 )
-#             )
-#
-#         return form
+@admin.register(LinkCollection)
+class LinkCollectionAdmin(ReadOnlyMixin, admin.ModelAdmin):
+    search_fields = ('key',)
+
+
+@admin.register(Link)
+class LinkAdmin(admin.ModelAdmin):
+    search_fields = ('key',)
+    autocomplete_fields = ('link_collection', 'string',)
+    list_display = ('key', 'string', 'language', 'link_collection')
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(
+            request,
+            obj,
+            **kwargs,
+        )
+        # Uncomment the following for filtering strings in admin panel
+        # based on language
+
+        # if obj:
+        #     form.base_fields['string'].queryset = (
+        #         form.base_fields['string'].queryset.filter(
+        #             language=obj.language
+        #         )
+        #     )
+
+        return form
