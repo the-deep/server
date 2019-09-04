@@ -33,11 +33,7 @@ class NotificationSerializer(RemoveNullFieldsMixin,
         if not notification.data:
             return {}
 
-        if notification.notification_type in [
-                Notification.PROJECT_JOIN_REQUEST,
-                Notification.PROJECT_JOIN_RESPONSE,
-                Notification.PROJECT_JOIN_REQUEST_ABORT
-        ]:
+        if notification.notification_type in Notification.TYPES:
             return notification.data
 
         return {}
