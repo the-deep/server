@@ -131,8 +131,8 @@ class LeadSerializer(
         required=False,
     )
     tabular_book = serializers.SerializerMethodField()
-    emm_triggers = LeadEMMTriggerSerializer(many=True, required=False)
-    emm_entities = EMMEntitySerializer(many=True, required=False)
+    emm_triggers = LeadEMMTriggerSerializer(many=True, read_only=True)
+    emm_entities = EMMEntitySerializer(many=True, read_only=True)
 
     class Meta:
         model = Lead
