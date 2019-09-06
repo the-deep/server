@@ -271,6 +271,7 @@ class EntryCommentSerializer(serializers.ModelSerializer):
     created_by_detail = ComprehensiveUserSerializer(source='created_by', read_only=True)
     assignee_detail = ComprehensiveUserSerializer(source='assignee', read_only=True)
     text = serializers.CharField()
+    lead = serializers.IntegerField(source='entry.lead_id', read_only=True)
     text_history = EntryCommentTextSerializer(
         source='entrycommenttext_set', many=True, read_only=True,
     )
