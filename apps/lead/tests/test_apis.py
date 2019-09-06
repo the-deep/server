@@ -625,13 +625,14 @@ class LeadTests(TestCase):
         # Create Entities
         entity1 = self.create(EMMEntity, name='entity1')
         entity2 = self.create(EMMEntity, name='entity2')
-        entity3 = self.create(EMMEntity, name='enitty3')
+        entity3 = self.create(EMMEntity, name='entity3')
         entity4 = self.create(EMMEntity, name='entity4')  # noqa:F841
 
         lead1 = self.create_lead(project=project, emm_entities=[entity1])
         lead2 = self.create_lead(project=project, emm_entities=[entity2, entity3])
         lead3 = self.create_lead(project=project, emm_entities=[entity2])
         lead4 = self.create_lead(project=project)
+        print(lead1.id, lead2.id, lead3.id, lead4.id)
 
         self.authenticate()
 
@@ -651,6 +652,17 @@ class LeadTests(TestCase):
         assert lead2.id in ids_list
         assert lead3.id in ids_list
 
+        assert 'extra' in resp.data
+        extra = resp.data['extra']
+        assert 'emm_entities' in extra
+        assert 'emm_keywords' in extra
+        assert 'emm_risk_factors' in extra
+
+        expected_entities_counts = {('entity1', 1), ('entity2', 2), ('entity3', 1)}
+        result_entities_counts = {(x['name'], x['count']) for x in extra['emm_entities']}
+        print(result_entities_counts)
+        assert expected_entities_counts == result_entities_counts
+
     def test_lead_filter_emm_keywords(self):
         url = '/api/v1/leads/?emm_keywords={}'
         project = self.create_project()
@@ -659,6 +671,7 @@ class LeadTests(TestCase):
         lead2 = self.create_lead(project=project)
         lead3 = self.create_lead(project=project)
         lead4 = self.create_lead(project=project)
+        print(lead1.id, lead2.id, lead3.id, lead4.id)
 
         # Create LeadEMMTrigger objects with
         self.create(
@@ -698,6 +711,18 @@ class LeadTests(TestCase):
         assert lead2.id in ids_list
         assert lead4.id in ids_list
 
+        assert 'extra' in resp.data
+        extra = resp.data['extra']
+        assert 'emm_entities' in extra
+        assert 'emm_keywords' in extra
+        assert 'emm_risk_factors' in extra
+
+        expected_keywords_counts = {'keyword1': 8, 'keyword2': 3}
+        result_keywords_counts = {x['name']: x['total_count'] for x in extra['emm_keywords']}
+        print(result_keywords_counts)
+        for k, v in expected_keywords_counts.items():
+            assert expected_keywords_counts[k] == result_keywords_counts[k]
+
     def test_lead_filter_emm_risk_factors(self):
         url = '/api/v1/leads/?emm_risk_factors={}'
         project = self.create_project()
@@ -706,6 +731,7 @@ class LeadTests(TestCase):
         lead2 = self.create_lead(project=project)
         lead3 = self.create_lead(project=project)
         lead4 = self.create_lead(project=project)
+        print(lead1.id, lead2.id, lead3.id, lead4.id)
 
         # Create LeadEMMTrigger objects with
         self.create(
@@ -745,6 +771,18 @@ class LeadTests(TestCase):
         assert lead2.id in ids_list
         assert lead3.id in ids_list
         assert lead4.id in ids_list
+
+        assert 'extra' in resp.data
+        extra = resp.data['extra']
+        assert 'emm_entities' in extra
+        assert 'emm_keywords' in extra
+        assert 'emm_risk_factors' in extra
+
+        expected_risk_factors_counts = {'rf1': 8, 'rf2': 6}
+        result_risk_factors_counts = {x['name']: x['total_count'] for x in extra['emm_risk_factors']}
+        print(result_risk_factors_counts)
+        for k, v in expected_risk_factors_counts.items():
+            assert expected_risk_factors_counts[k] == result_risk_factors_counts[k]
 
 
 # Data to use for testing web info extractor
