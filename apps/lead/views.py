@@ -151,6 +151,34 @@ class LeadViewSet(viewsets.ModelViewSet):
             **kwargs,
         )
 
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        qs = self.filter_queryset(self.get_queryset())
+
+        # Aggregate emm data
+        emm_entities = EMMEntity.objects.filter(lead__in=qs).values('name').\
+            annotate(count=models.Count('name')).values('name', 'count')
+
+        emm_keywords = LeadEMMTrigger.objects.filter(lead__in=qs).values('emm_keyword').\
+            annotate(
+                total_count=models.Sum('count'),
+                name=models.F('emm_keyword')
+        ).values('total_count', 'name')
+
+        emm_risk_factors = LeadEMMTrigger.objects.filter(lead__in=qs).values('emm_risk_factor').\
+            annotate(
+                total_count=models.Sum('count'),
+                name=models.F('emm_risk_factor'),
+        ).values('total_count', 'name')
+
+        extra = {}
+        extra['emm_entities'] = emm_entities
+        extra['emm_keywords'] = emm_keywords
+        extra['emm_risk_factors'] = emm_risk_factors
+
+        response.data['extra'] = extra
+        return response
+
     def get_queryset(self):
         leads = Lead.get_for(self.request.user)
         lead_id = self.request.GET.get('similar')
