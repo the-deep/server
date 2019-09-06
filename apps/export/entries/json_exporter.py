@@ -37,12 +37,14 @@ class JsonExporter:
     def add_entries(self, entries):
         self.data['entries'] = []
         for entry in entries:
+            lead = entry.lead
             data = {}
             data['id'] = entry.id
-            data['lead_id'] = entry.lead.id
-            data['lead'] = entry.lead.title
-            data['source'] = entry.lead.source
-            data['date'] = entry.lead.published_on
+            data['lead_id'] = lead.id
+            data['lead'] = lead.title
+            data['source'] = (lead.source and lead.source.title) or lead.source_raw
+            data['author'] = (lead.author and lead.author.title) or lead.author_raw
+            data['date'] = lead.published_on
             data['excerpt'] = entry.excerpt
             data['image'] = entry.image
             data['attributes'] = []
