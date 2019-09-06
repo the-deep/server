@@ -16,10 +16,14 @@ from rest_framework import (
 from rest_framework.decorators import action
 
 from utils.db.functions import StrPos
+from deep.paginations import AutocompleteSetPagination
 from deep.views import get_frontend_url
+
+from project.models import Project
 from .token import unsubscribe_email_token_generator
 from .serializers import (
     UserSerializer,
+    SimpleUserSerializer,
     UserPreferencesSerializer,
     NotificationSerializer,
     PasswordResetSerializer,
@@ -133,6 +137,18 @@ class UserViewSet(viewsets.ModelViewSet):
         self.page = self.paginate_queryset(notifications)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
+
+
+class ProjectUserViewSet(UserViewSet):
+    """
+    NOTE: Only to be used by Project's action route [DONOT USE DIRECTLY]
+    """
+    pagination_class = AutocompleteSetPagination
+    serializer_class = SimpleUserSerializer
+
+    def get_queryset(self):
+        project = Project.objects.get(pk=self.request.query_params['project'])
+        return User.get_for_project(project)
 
 
 class PasswordResetView(views.APIView):

@@ -2,8 +2,8 @@ import logging
 
 import django_filters
 from django.conf import settings
+from django.http import Http404
 from django.db import transaction, models
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_text
@@ -19,6 +19,7 @@ from rest_framework import (
     viewsets,
 )
 from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 
 from docs.utils import mark_as_list, mark_as_delete
 import ary.serializers as arys
@@ -32,6 +33,7 @@ from tabular.models import Field
 from user.utils import send_project_join_request_emails
 from user.serializers import SimpleUserSerializer
 from user.models import User
+from lead.views import ProjectLeadGroupViewSet, LeadOptionsView
 from geo.models import Region
 from user_group.models import UserGroup
 from geo.serializers import RegionSerializer
@@ -83,6 +85,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return get_filtered_projects(self.request.user, self.request.GET)
+
+    def get_project_object(self):
+        """
+        Return project same as get_object without any other filters
+        """
+        if self.kwargs.get('pk') is not None:
+            return get_object_or_404(self.get_queryset(), pk=self.kwargs['pk'])
+        raise Http404
 
     """
     Get list of projects that user is member of
@@ -434,7 +444,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         url_path=r'comprehensive-entries',
     )
     def comprehensive_entries(self, request, *args, **kwargs):
-        project = self.get_object()
+        project = self.get_project_object()
         viewfn = ComprehensiveEntriesViewSet.as_view({'get': 'list'})
         request._request.GET = request._request.GET.copy()
         request._request.GET['project'] = project.pk
@@ -455,6 +465,36 @@ class ProjectViewSet(viewsets.ModelViewSet):
         self.page = self.paginate_queryset(members)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
+
+    """
+    Lead Options
+    """
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated],
+        methods=['post'],
+        url_path=r'lead-options',
+    )
+    def get_lead_options(self, request, *args, **kwargs):
+        project = self.get_project_object()
+        viewfn = LeadOptionsView.as_view()
+        return viewfn(request._request, project.pk)
+
+    """
+    Project Lead-Groups
+    """
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated],
+        methods=['get'],
+        url_path=r'lead-groups',
+    )
+    def get_lead_groups(self, request, *args, **kwargs):
+        project = self.get_project_object()
+        viewfn = ProjectLeadGroupViewSet.as_view({'get': 'list'})
+        request._request.GET = request._request.GET.copy()
+        request._request.GET['project'] = project.pk
+        return viewfn(request._request)
 
 
 # FIXME: user better API

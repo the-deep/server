@@ -67,7 +67,6 @@ from lead.views import (
     LeadGroupViewSet,
     LeadViewSet,
     LeadPreviewViewSet,
-    LeadOptionsView,
     LeadExtractionTriggerView,
     LeadWebsiteFetch,
     LeadCopyView,
@@ -128,6 +127,7 @@ from deep.views import (
 )
 from organization.views import (
     OrganizationViewSet,
+    OrganizationTypeViewSet,
 )
 from lang.views import (
     LanguageViewSet,
@@ -276,6 +276,7 @@ router.register(r'connector-projects', ConnectorProjectViewSet,
 
 # Organization routers
 router.register(r'organizations', OrganizationViewSet, basename='organization')
+router.register(r'organization-types', OrganizationTypeViewSet, basename='organization-type')
 
 # Export routers
 router.register(r'exports', ExportViewSet, basename='export')
@@ -359,8 +360,6 @@ urlpatterns = [
         name='password_reset_confirm'),
 
     # Attribute options for various models
-    url(get_api_path(r'lead-options/$'),
-        LeadOptionsView.as_view()),
     url(get_api_path(r'assessment-options/$'),
         AssessmentOptionsView.as_view()),
     url(get_api_path(r'entry-options/$'),
