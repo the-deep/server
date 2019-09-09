@@ -332,8 +332,7 @@ class WebInfoExtractView(views.APIView):
     """
     permission_classes = [permissions.IsAuthenticated]
 
-    @staticmethod
-    def get_organition(self, title):
+    def get_organization(self, title):
         org = Organization.objects.filter(
             models.Q(title__iexact=title) |
             models.Q(short_name__iexact=title)
@@ -367,9 +366,9 @@ class WebInfoExtractView(views.APIView):
             'country': country,
             'website': website,
             'url': url,
-            'source': self.get_organition(source_raw),
+            'source': self.get_organization(source_raw),
             'source_raw': source_raw,
-            'author': self.get_organition(author_raw),
+            'author': self.get_organization(author_raw),
             'author_raw': author_raw,
             'existing': check_if_url_exists(url, request.user, project),
         })
