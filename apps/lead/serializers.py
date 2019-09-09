@@ -89,8 +89,8 @@ class LeadSerializer(RemoveNullFieldsMixin,
         read_only=True,
     )
 
-    author_detail = SimpleOrganizationSerializer(source='author')
-    source_detail = SimpleOrganizationSerializer(source='source')
+    author_detail = SimpleOrganizationSerializer(source='author', read_only=True)
+    source_detail = SimpleOrganizationSerializer(source='source', read_only=True)
 
     assignee_details = SimpleUserSerializer(
         source='get_assignee',

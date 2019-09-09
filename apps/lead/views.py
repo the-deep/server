@@ -5,7 +5,6 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models, transaction
-from rest_framework.generics import get_object_or_404
 from rest_framework import (
     serializers,
     exceptions,
@@ -173,6 +172,7 @@ class LeadOptionsView(views.APIView):
     Example:
     ```json
     {
+        "projects": [1, 2],
         "leadGroups": [1, 2],
         "members": [1, 2],
         "organizations": [1, 2]
@@ -181,25 +181,32 @@ class LeadOptionsView(views.APIView):
     """
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request, project_id, version=None):
+    def post(self, request, version=None):
         fields = request.data
+        projects_id = fields.get('projects', [])
+        lead_groups_id = fields.get('lead_groups', [])
+        organizations_id = fields.get('organizations', [])
+        members_id = fields.get('members')
 
-        project = get_object_or_404(
-            Project.get_for_member(request.user),
-            pk=project_id,
+        projects = Project.get_for_member(request.user).filter(
+            id__in=projects_id,
         )
+        if not projects.exists():
+            raise exceptions.NotFound('Provided projects not found')
 
         def _filter_by_project(qs):
-            return qs.filter(project=project).distinct()
+            return qs.filter(project__in=projects).distinct()
 
         def _filter_by_project_and_group(qs):
-            return qs.filter(
-                models.Q(project=project) |
-                models.Q(usergroup__in=project.user_groups.all())
-            ).distinct()
+            for project in projects:
+                qs = qs.filter(
+                    models.Q(project=project) |
+                    models.Q(usergroup__in=project.user_groups.all())
+                )
+            return qs.distinct()
 
         options = {
-            'project': SimpleProjectSerializer(project).data,
+            'projects': SimpleProjectSerializer(projects, many=True).data,
 
             # Static Options
             'confidentiality': [
@@ -217,27 +224,26 @@ class LeadOptionsView(views.APIView):
             ],
 
             # Dynamic Options
-            'lead_groups': fields['lead_groups'] and (
+            'lead_groups': lead_groups_id and (
                 SimpleLeadGroupSerializer(
                     _filter_by_project(
-                        LeadGroup.objects.filter(id__in=fields['lead_groups']),
+                        LeadGroup.objects.filter(id__in=lead_groups_id),
                     ),
                     many=True,
                 ).data
             ),
 
-            'members': fields['members'] and (
-                SimpleUserSerializer(
-                    _filter_by_project_and_group(
-                        User.objects.filter(id__in=fields['members']),
-                    ),
-                    many=True,
-                ).data
-            ),
+            'members': SimpleUserSerializer(
+                _filter_by_project_and_group(
+                    User.objects.filter(id__in=members_id)
+                    if members_id is not None else User.objects,
+                ),
+                many=True,
+            ).data,
 
-            'organizations': fields['organizations'] and (
+            'organizations': organizations_id and (
                 SimpleOrganizationSerializer(
-                    Organization.objects.filter(id__in=fields['organizations']),
+                    Organization.objects.filter(id__in=organizations_id),
                     many=True,
                 ).data
             ),
