@@ -67,6 +67,7 @@ from lead.views import (
     LeadGroupViewSet,
     LeadViewSet,
     LeadPreviewViewSet,
+    LeadOptionsView,
     LeadExtractionTriggerView,
     LeadWebsiteFetch,
     LeadCopyView,
@@ -360,6 +361,8 @@ urlpatterns = [
         name='password_reset_confirm'),
 
     # Attribute options for various models
+    url(get_api_path(r'lead-options/$'),
+        LeadOptionsView.as_view()),
     url(get_api_path(r'assessment-options/$'),
         AssessmentOptionsView.as_view()),
     url(get_api_path(r'entry-options/$'),

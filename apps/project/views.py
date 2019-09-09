@@ -33,7 +33,7 @@ from tabular.models import Field
 from user.utils import send_project_join_request_emails
 from user.serializers import SimpleUserSerializer
 from user.models import User
-from lead.views import ProjectLeadGroupViewSet, LeadOptionsView
+from lead.views import ProjectLeadGroupViewSet
 from geo.models import Region
 from user_group.models import UserGroup
 from geo.serializers import RegionSerializer
@@ -465,20 +465,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
         self.page = self.paginate_queryset(members)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
-
-    """
-    Lead Options
-    """
-    @action(
-        detail=True,
-        permission_classes=[permissions.IsAuthenticated],
-        methods=['post'],
-        url_path=r'lead-options',
-    )
-    def get_lead_options(self, request, *args, **kwargs):
-        project = self.get_project_object()
-        viewfn = LeadOptionsView.as_view()
-        return viewfn(request._request, project.pk)
 
     """
     Project Lead-Groups
