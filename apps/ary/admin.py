@@ -70,12 +70,12 @@ class AnalysisFrameworkTemplateAdmin(VersionAdmin):
         return HttpResponse(content, content_type='application/json')
 
 
-class MetadataOptionInline(admin.StackedInline):
+class MetadataOptionInline(admin.TabularInline):
     model = MetadataOption
     extra = 0
 
 
-class MethodologyOptionInline(admin.StackedInline):
+class MethodologyOptionInline(admin.TabularInline):
     model = MethodologyOption
     extra = 0
 
@@ -145,12 +145,12 @@ class FieldAdminMixin():
 
 @admin.register(MetadataField)
 class MetadataFieldAdmin(FieldAdminMixin, admin.ModelAdmin):
-    pass
+    inlines = [MetadataOptionInline]
 
 
 @admin.register(MethodologyField)
 class MethodologyFieldAdmin(FieldAdminMixin, admin.ModelAdmin):
-    pass
+    inlines = [MethodologyOptionInline]
 
 
 class TemplateGroupAdminMixin():
