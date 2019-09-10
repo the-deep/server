@@ -107,12 +107,12 @@ class EntryFilterSet(django_filters.FilterSet):
             return queryset.filter(
                 entrycomment__is_resolved=False,
                 entrycomment__parent__isnull=True,
-            )
+            ).distinct()
         elif value == self.RESOLVED:
             return queryset.filter(
                 entrycomment__is_resolved=True,
                 entrycomment__parent__isnull=True,
-            )
+            ).distinct()
         return queryset
 
     def comment_created_by_filter(self, queryset, name, value):
@@ -120,7 +120,7 @@ class EntryFilterSet(django_filters.FilterSet):
             return queryset.filter(
                 entrycomment__created_by__in=value,
                 entrycomment__parent__isnull=True,
-            )
+            ).distinct()
         return queryset
 
 
