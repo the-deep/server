@@ -359,12 +359,12 @@
 <p id="t70" class="stm mis">        <span class="key">return</span> <span class="nam">HttpResponse</span><span class="op">(</span><span class="nam">content</span><span class="op">,</span> <span class="nam">content_type</span><span class="op">=</span><span class="str">'application/json'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t71" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t72" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t73" class="stm run hide_run"><span class="key">class</span> <span class="nam">MetadataOptionInline</span><span class="op">(</span><span class="nam">admin</span><span class="op">.</span><span class="nam">StackedInline</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t73" class="stm run hide_run"><span class="key">class</span> <span class="nam">MetadataOptionInline</span><span class="op">(</span><span class="nam">admin</span><span class="op">.</span><span class="nam">TabularInline</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t74" class="stm run hide_run">    <span class="nam">model</span> <span class="op">=</span> <span class="nam">MetadataOption</span><span class="strut">&nbsp;</span></p>
 <p id="t75" class="stm run hide_run">    <span class="nam">extra</span> <span class="op">=</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
 <p id="t76" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t77" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t78" class="stm run hide_run"><span class="key">class</span> <span class="nam">MethodologyOptionInline</span><span class="op">(</span><span class="nam">admin</span><span class="op">.</span><span class="nam">StackedInline</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t78" class="stm run hide_run"><span class="key">class</span> <span class="nam">MethodologyOptionInline</span><span class="op">(</span><span class="nam">admin</span><span class="op">.</span><span class="nam">TabularInline</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t79" class="stm run hide_run">    <span class="nam">model</span> <span class="op">=</span> <span class="nam">MethodologyOption</span><span class="strut">&nbsp;</span></p>
 <p id="t80" class="stm run hide_run">    <span class="nam">extra</span> <span class="op">=</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
 <p id="t81" class="pln"><span class="strut">&nbsp;</span></p>
@@ -434,12 +434,12 @@
 <p id="t145" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t146" class="stm run hide_run"><span class="op">@</span><span class="nam">admin</span><span class="op">.</span><span class="nam">register</span><span class="op">(</span><span class="nam">MetadataField</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t147" class="stm run hide_run"><span class="key">class</span> <span class="nam">MetadataFieldAdmin</span><span class="op">(</span><span class="nam">FieldAdminMixin</span><span class="op">,</span> <span class="nam">admin</span><span class="op">.</span><span class="nam">ModelAdmin</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t148" class="stm run hide_run">    <span class="key">pass</span><span class="strut">&nbsp;</span></p>
+<p id="t148" class="stm run hide_run">    <span class="nam">inlines</span> <span class="op">=</span> <span class="op">[</span><span class="nam">MetadataOptionInline</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
 <p id="t149" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t150" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t151" class="stm run hide_run"><span class="op">@</span><span class="nam">admin</span><span class="op">.</span><span class="nam">register</span><span class="op">(</span><span class="nam">MethodologyField</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t152" class="stm run hide_run"><span class="key">class</span> <span class="nam">MethodologyFieldAdmin</span><span class="op">(</span><span class="nam">FieldAdminMixin</span><span class="op">,</span> <span class="nam">admin</span><span class="op">.</span><span class="nam">ModelAdmin</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t153" class="stm run hide_run">    <span class="key">pass</span><span class="strut">&nbsp;</span></p>
+<p id="t153" class="stm run hide_run">    <span class="nam">inlines</span> <span class="op">=</span> <span class="op">[</span><span class="nam">MethodologyOptionInline</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
 <p id="t154" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t155" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t156" class="stm run hide_run"><span class="key">class</span> <span class="nam">TemplateGroupAdminMixin</span><span class="op">(</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
@@ -512,7 +512,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-10 05:48
+            created at 2019-09-10 05:49
         </p>
     </div>
 </div>
