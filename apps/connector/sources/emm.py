@@ -87,7 +87,15 @@ class EMM(RssFeed):
         leads = []
         for leadinfo in leads_infos:
             leadinfo['emm_entities'] = [entities[eid] for eid, _ in leadinfo['emm_entities'].items()]
-            lead = Lead(*leadinfo)
+            lead = Lead(
+                id=leadinfo.get('id'),
+                published_on=leadinfo.get('published_on'),
+                title=leadinfo.get('title'),
+                source=leadinfo.get('source'),
+                author=leadinfo.get('author'),
+                url=leadinfo.get('url'),
+                website=leadinfo.get('website'),
+            )
             lead._emm_entities = leadinfo['emm_entities']
             lead._emm_triggers = leadinfo['emm_triggers']
             leads.append(lead)
