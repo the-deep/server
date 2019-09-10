@@ -55,6 +55,27 @@ class Entry(UserResource, ProjectEntityMixin):
         null=True, blank=True,
     )
 
+    @staticmethod
+    def annotate_comment_count(qs):
+        return qs.annotate(
+            resolved_comment_count=models.Count(
+                'entrycomment',
+                filter=models.Q(
+                    entrycomment__parent=None,
+                    entrycomment__is_resolved=True,
+                ),
+                distinct=True,
+            ),
+            unresolved_comment_count=models.Count(
+                'entrycomment',
+                filter=models.Q(
+                    entrycomment__parent=None,
+                    entrycomment__is_resolved=False,
+                ),
+                distinct=True,
+            ),
+        )
+
     def __init__(self, *args, **kwargs):
         ret = super().__init__(*args, **kwargs)
         return ret

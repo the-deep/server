@@ -106,10 +106,24 @@ class EntrySerializer(RemoveNullFieldsMixin,
         required=False,
         queryset=Project.objects.all()
     )
+    resolved_comment_count = serializers.SerializerMethodField()
+    unresolved_comment_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Entry
         fields = '__all__'
+
+    def get_resolved_comment_count(self, entry):
+        return getattr(
+            entry, 'resolved_comment_count',
+            entry.entrycomment_set.filter(parent=None, is_resolved=True).count()
+        )
+
+    def get_unresolved_comment_count(self, entry):
+        return getattr(
+            entry, 'unresolved_comment_count',
+            entry.entrycomment_set.filter(parent=None, is_resolved=False).count()
+        )
 
     def create(self, validated_data):
         if validated_data.get('project') is None:
@@ -153,9 +167,7 @@ class EntryRetriveProccesedSerializer(EntrySerializer):
 class EditEntriesDataSerializer(RemoveNullFieldsMixin,
                                 serializers.ModelSerializer):
     lead = LeadSerializer(source='*', read_only=True)
-    entries = EntrySerializer(
-        source='entry_set', many=True, read_only=True,
-    )
+    entries = serializers.SerializerMethodField()
     analysis_framework = AnalysisFrameworkSerializer(
         source='project.analysis_framework',
         read_only=True,
@@ -168,6 +180,12 @@ class EditEntriesDataSerializer(RemoveNullFieldsMixin,
         model = Lead
         fields = ('lead', 'entries', 'analysis_framework', 'geo_options',
                   'regions')
+
+    def get_entries(self, lead):
+        return EntrySerializer(
+            Entry.annotate_comment_count(lead.entry_set), many=True,
+            context=self.context,
+        ).data
 
     def get_geo_options(self, lead):
         options = {}

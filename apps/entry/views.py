@@ -88,6 +88,7 @@ class EntryFilterView(generics.GenericAPIView):
         filters = {f[0]: f[1] for f in filters}
 
         queryset = get_filtered_entries(request.user, filters)
+        queryset = Entry.annotate_comment_count(queryset)
 
         project = filters.get('project')
         search = filters.get('search')
