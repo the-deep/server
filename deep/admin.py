@@ -52,6 +52,17 @@ class VersionAdmin(JSONFieldMixin, _VersionAdmin):
     pass
 
 
+class ReadOnlyMixin():
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 def linkify(field_name, field_field=None):
     """
     Converts a foreign key value into clickable links.

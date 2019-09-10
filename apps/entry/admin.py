@@ -14,16 +14,19 @@ from entry.models import (
 class AttributeInline(admin.StackedInline):
     model = Attribute
     extra = 0
+    raw_id_fields = ('widget',)
 
 
 class FilterDataInline(admin.StackedInline):
     model = FilterData
     extra = 0
+    raw_id_fields = ('filter',)
 
 
 class ExportDataInline(admin.StackedInline):
     model = ExportData
     extra = 0
+    raw_id_fields = ('exportable',)
 
 
 @admin.register(Entry)
