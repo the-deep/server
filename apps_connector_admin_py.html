@@ -70,24 +70,26 @@
         <tr>
             <td class="linenos">
 <p id="n1" class="stm run hide_run"><a href="#n1">1</a></p>
-<p id="n2" class="stm run hide_run"><a href="#n2">2</a></p>
+<p id="n2" class="pln"><a href="#n2">2</a></p>
 <p id="n3" class="stm run hide_run"><a href="#n3">3</a></p>
-<p id="n4" class="pln"><a href="#n4">4</a></p>
+<p id="n4" class="stm run hide_run"><a href="#n4">4</a></p>
 <p id="n5" class="pln"><a href="#n5">5</a></p>
-<p id="n6" class="stm run hide_run"><a href="#n6">6</a></p>
+<p id="n6" class="pln"><a href="#n6">6</a></p>
 <p id="n7" class="stm run hide_run"><a href="#n7">7</a></p>
 <p id="n8" class="stm run hide_run"><a href="#n8">8</a></p>
+<p id="n9" class="stm run hide_run"><a href="#n9">9</a></p>
 
             </td>
             <td class="text">
 <p id="t1" class="stm run hide_run"><span class="key">from</span> <span class="nam">django</span><span class="op">.</span><span class="nam">contrib</span> <span class="key">import</span> <span class="nam">admin</span><span class="strut">&nbsp;</span></p>
-<p id="t2" class="stm run hide_run"><span class="key">from</span> <span class="nam">reversion</span><span class="op">.</span><span class="nam">admin</span> <span class="key">import</span> <span class="nam">VersionAdmin</span><span class="strut">&nbsp;</span></p>
-<p id="t3" class="stm run hide_run"><span class="key">from</span> <span class="nam">connector</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Connector</span><span class="strut">&nbsp;</span></p>
-<p id="t4" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t2" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t3" class="stm run hide_run"><span class="key">from</span> <span class="nam">deep</span><span class="op">.</span><span class="nam">admin</span> <span class="key">import</span> <span class="nam">VersionAdmin</span><span class="strut">&nbsp;</span></p>
+<p id="t4" class="stm run hide_run"><span class="key">from</span> <span class="nam">connector</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Connector</span><span class="strut">&nbsp;</span></p>
 <p id="t5" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t6" class="stm run hide_run"><span class="op">@</span><span class="nam">admin</span><span class="op">.</span><span class="nam">register</span><span class="op">(</span><span class="nam">Connector</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t7" class="stm run hide_run"><span class="key">class</span> <span class="nam">ConnectorAdmin</span><span class="op">(</span><span class="nam">VersionAdmin</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t8" class="stm run hide_run">    <span class="key">pass</span><span class="strut">&nbsp;</span></p>
+<p id="t6" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t7" class="stm run hide_run"><span class="op">@</span><span class="nam">admin</span><span class="op">.</span><span class="nam">register</span><span class="op">(</span><span class="nam">Connector</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t8" class="stm run hide_run"><span class="key">class</span> <span class="nam">ConnectorAdmin</span><span class="op">(</span><span class="nam">VersionAdmin</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t9" class="stm run hide_run">    <span class="nam">autocomplete_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'created_by'</span><span class="op">,</span> <span class="str">'modified_by'</span><span class="op">,</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 
             </td>
         </tr>
@@ -98,7 +100,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-08-28 05:29
+            created at 2019-09-10 05:48
         </p>
     </div>
 </div>
