@@ -24,12 +24,25 @@ class Profile(models.Model):
     Extra attributes for the user besides the django
     provided ones.
     """
+    # Email Conditions
+    E_ACCOUNT_ACTIVATION = 'account_activation'
+    E_PASSWORD_RESET = 'password_reset'
+
+    E_JOIN_REQUESTS = 'join_requests'
+    E_NEWS_AND_UPDATES = 'news_and_updates'
+    E_EMAIL_COMMENT = 'email_comment'
+
     EMAIL_CONDITIONS = (
-        ('join_requests', 'Project join requests'),
-        ('news_and_updates', 'News and updates'),
-        ('email_comment', 'Entry comment updates'),
+        (E_JOIN_REQUESTS, 'Project join requests'),
+        (E_NEWS_AND_UPDATES, 'News and updates'),
+        (E_EMAIL_COMMENT, 'Entry comment updates'),
     )
     EMAIL_CONDITIONS_TYPES = [cond[0] for cond in EMAIL_CONDITIONS]
+
+    ALWAYS_SEND_EMAIL_CONDITIONS = [
+        E_ACCOUNT_ACTIVATION,
+        E_PASSWORD_RESET,
+    ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     organization = models.CharField(max_length=300, blank=True)
@@ -73,13 +86,19 @@ class Profile(models.Model):
             else self.user.username
 
     def unsubscribe_email(self, email_type):
-        if email_type in Profile.EMAIL_CONDITIONS_TYPES and\
-                email_type not in self.email_opt_outs:
+        if (
+            email_type not in self.ALWAYS_SEND_EMAIL_CONDITIONS and
+            self.is_email_subscribed_for(email_type)
+        ):
             self.email_opt_outs.append(email_type)
 
     def is_email_subscribed_for(self, email_type):
-        if email_type in Profile.EMAIL_CONDITIONS_TYPES and\
-                email_type not in self.email_opt_outs:
+        if (
+            email_type in self.ALWAYS_SEND_EMAIL_CONDITIONS or (
+                email_type in Profile.EMAIL_CONDITIONS_TYPES and
+                email_type not in self.email_opt_outs
+            )
+        ):
             return True
         return False
 
