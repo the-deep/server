@@ -24,7 +24,7 @@ from lead.filter_set import (
     LeadFilterSet,
 )
 from project.models import Project, ProjectMembership
-from project.permissions import PROJECT_PERMISSIONS
+from project.permissions import PROJECT_PERMISSIONS as PROJ_PERMS
 from lead.models import LeadGroup, Lead
 from lead.serializers import (
     LeadGroupSerializer,
@@ -366,14 +366,15 @@ class LeadCopyView(views.APIView):
         lead.assignee.add(user)
         return lead
 
+    @transaction.atomic
     def post(self, request, *args, **kwargs):
         project_ids = ProjectMembership.objects.filter(
             member=request.user,
             project_id__in=request.data.get('projects', [])
         ).annotate(
             lead_add_permission=models.F('role__lead_permissions')
-            .bitand(PROJECT_PERMISSIONS.lead.create)
-        ).filter(lead_add_permission=PROJECT_PERMISSIONS.lead.create)\
+            .bitand(PROJ_PERMS.lead.create)
+        ).filter(lead_add_permission=PROJ_PERMS.lead.create)\
             .values_list('project_id', flat=True)
 
         leads = Lead.get_for(request.user).filter(
@@ -385,6 +386,21 @@ class LeadCopyView(views.APIView):
         for lead in leads:
             lead_original_project = lead.project_id
             processed_lead.append(lead.pk)
+
+            edit_or_create_permission = PROJ_PERMS.lead.create | PROJ_PERMS.lead.modify
+            edit_or_create_membership = ProjectMembership.objects.filter(
+                member=request.user,
+                project=lead.project,
+            ).annotate(
+                clone_perm=models.F('role__lead_permissions')
+                .bitand(edit_or_create_permission)
+            ).filter(clone_perm__gt=0).first()
+
+            if not edit_or_create_membership:
+                raise exceptions.PermissionDenied(
+                    'You do not have enough permissions to clone lead from the '
+                    f'project {lead.project.title}'
+                )
 
             for project_id in project_ids:
                 if project_id == lead_original_project:

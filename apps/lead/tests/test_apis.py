@@ -1,6 +1,6 @@
 from deep.tests import TestCase
 from user.models import User
-from project.models import Project, ProjectMembership
+from project.models import Project, ProjectMembership, ProjectRole
 from geo.models import Region
 
 from lead.filter_set import LeadFilterSet
@@ -219,14 +219,61 @@ class LeadTests(TestCase):
         response = self.client.patch(url, data)
         self.assert_200(response)
 
+    def test_lead_copy_from_project_with_only_view(self):
+        url = '/api/v1/lead-copy/'
+
+        source_project = self.create(Project, role=self.view_only_role)
+        dest_project = self.create(Project, role=self.admin_role)
+        lead = self.create(Lead, project=source_project)
+
+        leads_count = Lead.objects.all().count()
+
+        data = {
+            'projects': [dest_project.pk],
+            'leads': [lead.pk],
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_403(response)
+
+        assert leads_count == Lead.objects.all().count(), "No new lead should have been created"
+
+    def test_lead_copy_no_permission(self):
+        lead_not_modify_permission = 15 ^ (1 << 2)  # Unsetting modify bit (1 << 2)
+        lead_not_create_permission = 15 ^ (1 << 1)  # Unsetting create bit (1 << 1)
+        project_role = self.create(
+            ProjectRole,
+            lead_permissions=lead_not_modify_permission & lead_not_create_permission
+        )
+        source_project = self.create(Project, role=project_role)
+        dest_project = self.create(Project)
+
+        lead = self.create(Lead, project=source_project)
+
+        # source_project.add_member(self.user, project_role)
+
+        lead = self.create(Lead, project=source_project)
+
+        data = {
+            'projects': [dest_project.pk],
+            'leads': [lead.pk],
+        }
+        url = '/api/v1/lead-copy/'
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_403(response)
+
     def test_lead_copy(self):
         url = '/api/v1/lead-copy/'
 
         # Projects [Source]
+        # NOTE: make sure the source projects have create/edit permissions
         project1s = self.create(Project, title='project1s', role=self.admin_role)
         project2s = self.create(Project, title='project2s', role=self.admin_role)
         project3s = self.create(Project, title='project3s')
-        project4s = self.create(Project, title='project1s', role=self.view_only_role)
+        project4s = self.create(Project, title='project4s', role=self.normal_role)
 
         # Projects [Destination]
         project1d = self.create(Project, title='project1d')
@@ -266,6 +313,8 @@ class LeadTests(TestCase):
 
         self.authenticate()
         response = self.client.post(url, data)
+        self.assert_200(response)
+
         rdata = response.json()
         # Sort the data since we are comparing lists
         sorted_rdata = {
