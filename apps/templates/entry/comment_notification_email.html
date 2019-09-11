@@ -1,0 +1,99 @@
+{% extends "base_email.html" %}
+
+{% block head %}
+    <style>
+        .email-label {
+            color: #000;
+            font-size: 14px;
+        }
+        .comment {
+            padding: 6px 0;
+        }
+
+        .arrow {
+            border: solid black;
+            border-width: 0 3px 3px 0;
+            display: inline-block;
+            transform: rotate(45deg);
+            padding: 3px;
+        }
+        .arrow:last-child {
+            display: none;
+        }
+
+        .comment-link {
+            display: block;
+            margin-top: 24px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% if notification_type == Notification.ENTRY_COMMENT_ADD %}
+        <p class="email-label">
+            {{comment.created_by.profile.get_display_name}} added a comment in Entry: <{{comment.entry.lead}}>
+        </p>
+        <p>
+            {{comment.text}}
+        </p>
+    {% elif notification_type == Notification.ENTRY_COMMENT_REPLY_ADD %}
+        <p class="email-label">
+            {{comment.created_by.profile.get_display_name}} replied:
+        </p>
+        <p>
+            {{comment.text}}
+        </p>
+        <p class="email-label">
+            to the comment:
+        </p>
+        <p>
+            {{comment.parent.text}}
+        </p>
+    {% elif notification_type == Notification.ENTRY_COMMENT_MODIFY %}
+        <p class="email-label">
+            {{comment.created_by.profile.get_display_name}} modified the comment you are following:
+        </p>
+        <div class="comment-edit-container">
+            {% for comment_text in comment.entrycommenttext_set.all %}
+            <p class="comment">
+                {{comment_text.text}}
+            </p>
+            <p class="arrow"></p>
+            {% endfor %}
+        </div>
+    {% elif notification_type == Notification.ENTRY_COMMENT_REPLY_MODIFY %}
+        <p class="email-label">
+            {{comment.created_by.profile.get_display_name}} modified the comment you are following:
+        </p>
+        <div class="comment-edit-container">
+            {% for comment_text in comment.entrycommenttext_set.all %}
+            <p class="comment">
+                {{comment_text.text}}
+            </p>
+            <p class="arrow"></p>
+            {% endfor %}
+        </div>
+    {% elif notification_type == Notification.ENTRY_COMMENT_RESOLVED %}
+        <p class="email-label">
+            {{comment.created_by.profile.get_display_name}} resolved the comment thread:
+        </p>
+        <p>
+            {{comment.text}}
+        </p>
+    {% elif notification_type == Notification.ENTRY_COMMENT_ASSIGNEE_CHANGE %}
+        <p class="email-label">
+            {{comment.created_by.profile.get_display_name}} assigned {{comment.assignee.profile.get_display_name}} to the comment:
+        </p>
+        <p>
+            {{comment.text}}
+        </p>
+    {% else %}
+        {{comment.text}}
+    {% endif %}
+    <a
+        class="comment-link"
+        href="{{client_domain}}/projects/{{comment.entry.project_id}}/leads/{{comment.entry.lead_id}}/edit-entries/?entry_id={{comment.entry_id}}"
+    >
+        Click here to go to the comment
+    </a>
+{% endblock %}

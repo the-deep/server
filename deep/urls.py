@@ -75,11 +75,14 @@ from lead.views import (
     WebInfoExtractView,
 )
 from entry.views import (
-    EntryViewSet, AttributeViewSet, FilterDataViewSet,
+    EntryViewSet,
+    AttributeViewSet,
+    FilterDataViewSet,
     EntryFilterView,
     ExportDataViewSet,
     EntryOptionsView,
     EditEntriesDataViewSet,
+    EntryCommentViewSet,
 )
 from analysis_framework.views import (
     AnalysisFrameworkCloneView,
@@ -120,6 +123,7 @@ from deep.views import (
     FrontendView,
     PasswordReset,
     ProjectJoinRequest,
+    EntryCommentEmail,
     AccountActivate,
 )
 from organization.views import (
@@ -227,6 +231,8 @@ router.register(r'entry-export-data', ExportDataViewSet,
                 basename='entry_export_data')
 router.register(r'edit-entries-data', EditEntriesDataViewSet,
                 basename='edit_entries_data')
+router.register(r'entry-comments', EntryCommentViewSet,
+                basename='entry-comment')
 
 # Analysis framework routers
 router.register(r'analysis-frameworks', AnalysisFrameworkViewSet,
@@ -437,6 +443,7 @@ urlpatterns = [
     url(r'^pr-email/$', PasswordReset.as_view()),
     url(r'^aa-email/$', AccountActivate.as_view()),
     url(r'^pj-email/$', ProjectJoinRequest.as_view()),
+    url(r'^ec-email/$', EntryCommentEmail.as_view()),
     url(r'^render-debug/$', RenderChart.as_view()),
 
     url(r'^favicon.ico$',

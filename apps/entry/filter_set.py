@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 from analysis_framework.models import Filter
 from lead.models import Lead
-from entry.models import Entry
+from entry.models import Entry, EntryComment
 
 import django_filters
 
@@ -21,6 +21,13 @@ class EntryFilterSet(django_filters.FilterSet):
     Entry filter set
     Basic filtering with lead, excerpt, lead title and dates
     """
+    RESOLVED = 'resolved'
+    UNRESOLVED = 'unresolved'
+    COMMENT_STATUS = (
+        (RESOLVED, 'Resolved'),
+        (UNRESOLVED, 'Unresolved'),
+    )
+
     lead = django_filters.ModelMultipleChoiceFilter(
         queryset=Lead.objects.all(),
         lookup_expr='in',
@@ -31,6 +38,7 @@ class EntryFilterSet(django_filters.FilterSet):
     modified_by = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all(),
     )
+
     created_at = django_filters.DateTimeFilter(
         field_name='created_at',
         input_formats=['%Y-%m-%d%z'],
@@ -59,6 +67,20 @@ class EntryFilterSet(django_filters.FilterSet):
         field_name='lead__published_on'
     )
 
+    comment_status = django_filters.ChoiceFilter(
+        label='Comment Status',
+        choices=COMMENT_STATUS, method='comment_status_filter',
+    )
+    comment_assignee = django_filters.ModelMultipleChoiceFilter(
+        label='Comment Assignee',
+        queryset=User.objects.all(),
+        field_name='entrycomment__assignee', lookup_expr='in',
+    )
+    comment_created_by = django_filters.ModelMultipleChoiceFilter(
+        label='Comment Created by',
+        queryset=User.objects.all(), method='comment_created_by_filter',
+    )
+
     class Meta:
         model = Entry
         fields = {
@@ -79,6 +101,33 @@ class EntryFilterSet(django_filters.FilterSet):
                 },
             },
         }
+
+    def comment_status_filter(self, queryset, name, value):
+        if value == self.UNRESOLVED:
+            return queryset.filter(
+                entrycomment__is_resolved=False,
+                entrycomment__parent__isnull=True,
+            ).distinct()
+        elif value == self.RESOLVED:
+            return queryset.filter(
+                entrycomment__is_resolved=True,
+                entrycomment__parent__isnull=True,
+            ).distinct()
+        return queryset
+
+    def comment_created_by_filter(self, queryset, name, value):
+        if value:
+            return queryset.filter(
+                entrycomment__created_by__in=value,
+                entrycomment__parent__isnull=True,
+            ).distinct()
+        return queryset
+
+
+class EntryCommentFilterSet(django_filters.FilterSet):
+    class Meta:
+        model = EntryComment
+        fields = ('entry',)
 
 
 def get_filtered_entries(user, queries):

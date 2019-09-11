@@ -127,4 +127,3 @@ def create_notifications_for_new_project_admin(
                     data=ProjectJoinRequestSerializer(
                         old_project_join_request).data,
                 )
-

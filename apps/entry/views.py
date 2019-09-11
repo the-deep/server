@@ -8,29 +8,36 @@ from rest_framework import (
     response,
     views,
     viewsets,
+    serializers,
 )
 from deep.permissions import ModifyPermission
 
+from django.utils import timezone
 from project.models import Project
 from lead.models import Lead
 from analysis_framework.models import Widget
 
 from .models import (
-    Entry, Attribute, FilterData, ExportData,
+    Entry, Attribute, FilterData, ExportData, EntryComment,
 )
 from .serializers import (
+    AttributeSerializer,
     ComprehensiveEntriesSerializer,
-    EntrySerializer,
-    EntryRetriveSerializer,
+    EditEntriesDataSerializer,
+    EntryCommentSerializer,
     EntryProccesedSerializer,
     EntryRetriveProccesedSerializer,
-    AttributeSerializer,
-    FilterDataSerializer,
+    EntryRetriveSerializer,
+    EntrySerializer,
     ExportDataSerializer,
-    EditEntriesDataSerializer,
+    FilterDataSerializer,
 )
 from .pagination import ComprehensiveEntriesSetPagination
-from .filter_set import EntryFilterSet, get_filtered_entries
+from .filter_set import (
+    EntryFilterSet,
+    EntryCommentFilterSet,
+    get_filtered_entries,
+)
 from tabular.models import Field as TabularField
 import django_filters
 
@@ -81,6 +88,7 @@ class EntryFilterView(generics.GenericAPIView):
         filters = {f[0]: f[1] for f in filters}
 
         queryset = get_filtered_entries(request.user, filters)
+        queryset = Entry.annotate_comment_count(queryset)
 
         project = filters.get('project')
         search = filters.get('search')
@@ -224,3 +232,32 @@ class ComprehensiveEntriesViewSet(viewsets.ReadOnlyModelViewSet):
         context = super().get_serializer_context()
         context['queryset'] = self.get_queryset()
         return context
+
+
+class EntryCommentViewSet(viewsets.ModelViewSet):
+    serializer_class = EntryCommentSerializer
+    permission_classes = [permissions.IsAuthenticated,
+                          ModifyPermission]
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filterset_class = EntryCommentFilterSet
+
+    def get_queryset(self):
+        return EntryComment.get_for(self.request.user)
+
+    @action(
+        detail=True,
+        url_path='resolve',
+        methods=['post'],
+    )
+    def resolve_comment(self, request, pk, version=None):
+        comment = self.get_object()
+        if comment.is_resolved:
+            raise serializers.ValidationError('Already Resolved')
+        if comment.parent:
+            raise serializers.ValidationError('only root comment can be resolved')
+        if comment.created_by != request.user:
+            raise serializers.ValidationError('only comment owner can resolve')
+        comment.is_resolved = True
+        comment.resolved_at = timezone.now()
+        comment.save()
+        return response.Response(self.get_serializer_class()(comment).data)

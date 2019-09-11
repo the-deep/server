@@ -17,7 +17,12 @@ from user.serializers import ComprehensiveUserSerializer
 from .widgets.store import widget_store
 
 from .models import (
-    Entry, Attribute, FilterData, ExportData
+    Attribute,
+    Entry,
+    EntryComment,
+    EntryCommentText,
+    ExportData,
+    FilterData,
 )
 from .utils import validate_image_for_entry
 
@@ -26,7 +31,7 @@ class AttributeSerializer(RemoveNullFieldsMixin,
                           DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Attribute
-        fields = ('__all__')
+        fields = '__all__'
 
     # Validations
     def validate_entry(self, entry):
@@ -39,7 +44,7 @@ class FilterDataSerializer(RemoveNullFieldsMixin,
                            DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = FilterData
-        fields = ('__all__')
+        fields = '__all__'
 
     # Validations
     def validate_entry(self, entry):
@@ -52,7 +57,7 @@ class ExportDataSerializer(RemoveNullFieldsMixin,
                            DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ExportData
-        fields = ('__all__')
+        fields = '__all__'
 
     # Validations
     def validate_entry(self, entry):
@@ -65,21 +70,21 @@ class SimpleAttributeSerializer(RemoveNullFieldsMixin,
                                 serializers.ModelSerializer):
     class Meta:
         model = Attribute
-        fields = ('id', 'data', 'widget')
+        fields = ('id', 'data', 'widget',)
 
 
 class SimpleFilterDataSerializer(RemoveNullFieldsMixin,
                                  serializers.ModelSerializer):
     class Meta:
         model = FilterData
-        fields = ('id', 'filter', 'values', 'number')
+        fields = ('id', 'filter', 'values', 'number',)
 
 
 class SimpleExportDataSerializer(RemoveNullFieldsMixin,
                                  serializers.ModelSerializer):
     class Meta:
         model = ExportData
-        fields = ('id', 'exportable', 'data')
+        fields = ('id', 'exportable', 'data',)
 
 
 class EntryLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
@@ -101,10 +106,24 @@ class EntrySerializer(RemoveNullFieldsMixin,
         required=False,
         queryset=Project.objects.all()
     )
+    resolved_comment_count = serializers.SerializerMethodField()
+    unresolved_comment_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Entry
         fields = '__all__'
+
+    def get_resolved_comment_count(self, entry):
+        return getattr(
+            entry, 'resolved_comment_count',
+            entry.entrycomment_set.filter(parent=None, is_resolved=True).count()
+        )
+
+    def get_unresolved_comment_count(self, entry):
+        return getattr(
+            entry, 'unresolved_comment_count',
+            entry.entrycomment_set.filter(parent=None, is_resolved=False).count()
+        )
 
     def create(self, validated_data):
         if validated_data.get('project') is None:
@@ -148,9 +167,7 @@ class EntryRetriveProccesedSerializer(EntrySerializer):
 class EditEntriesDataSerializer(RemoveNullFieldsMixin,
                                 serializers.ModelSerializer):
     lead = LeadSerializer(source='*', read_only=True)
-    entries = EntrySerializer(
-        source='entry_set', many=True, read_only=True,
-    )
+    entries = serializers.SerializerMethodField()
     analysis_framework = AnalysisFrameworkSerializer(
         source='project.analysis_framework',
         read_only=True,
@@ -163,6 +180,12 @@ class EditEntriesDataSerializer(RemoveNullFieldsMixin,
         model = Lead
         fields = ('lead', 'entries', 'analysis_framework', 'geo_options',
                   'regions')
+
+    def get_entries(self, lead):
+        return EntrySerializer(
+            Entry.annotate_comment_count(lead.entry_set), many=True,
+            context=self.context,
+        ).data
 
     def get_geo_options(self, lead):
         options = {}
@@ -254,3 +277,70 @@ class ComprehensiveEntriesSerializer(
             'id', 'created_at', 'modified_at', 'entry_type', 'excerpt', 'image', 'tabular_field',
             'attributes', 'created_by', 'modified_by', 'project',
         )
+
+
+class EntryCommentTextSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EntryCommentText
+        exclude = ('comment',)
+
+
+class EntryCommentSerializer(serializers.ModelSerializer):
+    created_by_detail = ComprehensiveUserSerializer(source='created_by', read_only=True)
+    assignee_detail = ComprehensiveUserSerializer(source='assignee', read_only=True)
+    text = serializers.CharField()
+    lead = serializers.IntegerField(source='entry.lead_id', read_only=True)
+    text_history = EntryCommentTextSerializer(
+        source='entrycommenttext_set', many=True, read_only=True,
+    )
+
+    class Meta:
+        model = EntryComment
+        fields = '__all__'
+        read_only_fields = ('is_resolved', 'created_by', 'resolved_at')
+
+    def add_comment_text(self, comment, text):
+        return EntryCommentText.objects.create(
+            comment=comment,
+            text=text,
+        )
+
+    def validate(self, data):
+        is_patch = self.context['request'].method == 'PATCH'
+        if self.instance and self.instance.is_resolved:
+            raise serializers.ValidationError('Comment is resolved, no changes allowed')
+        parent_comment = data.get('parent')
+        if parent_comment:  # Reply comment
+            if parent_comment.is_resolved:
+                raise serializers.ValidationError('Parent comment is resolved, no addition allowed')
+            if parent_comment.parent is not None:
+                raise serializers.ValidationError('2-level of comment only allowed')
+            data['entry'] = parent_comment.entry
+            data['assignee'] = None
+        else:  # Root comment
+            if data.get('assignee') is None and not is_patch:
+                raise serializers.ValidationError('Root comment should have assignee')
+        data['created_by'] = self.context['request'].user
+        return data
+
+    def comment_save(self, validated_data, instance=None):
+        """
+        Comment Middleware save logic
+        """
+        text = validated_data.pop('text', '').strip()
+        text_change = True
+        if instance is None:  # Create
+            instance = super().create(validated_data)
+        else:  # Update
+            text_change = instance.text != text
+            instance = super().update(instance, validated_data)
+            instance.save()
+        if text and text_change:
+            self.add_comment_text(instance, text)
+        return instance
+
+    def create(self, validated_data):
+        return self.comment_save(validated_data)
+
+    def update(self, instance, validated_data):
+        return self.comment_save(validated_data, instance)
