@@ -78,15 +78,15 @@ class HumanitarianResponse(Source):
                 datestr = tds[3].get_text().strip()
                 date = datetime.strptime(datestr, '%m/%d/%Y')
                 url = tds[4].find('a')['href']
-                data = Lead(
-                    id=url,
-                    title=title,
-                    published_on=date.date(),
-                    url=url,
-                    source='Humanitarian Response',
-                    website=self.URL,
-                    source_type=Lead.WEBSITE
-                )
+                data = {
+                    'id': url,
+                    'title': title,
+                    'published_on': date.date(),
+                    'url': url,
+                    'source': 'Humanitarian Response',
+                    'website': self.URL,
+                    'source_type': Lead.WEBSITE
+                }
                 results.append(data)
             except Exception as e:
                 logger.warning(
@@ -94,4 +94,4 @@ class HumanitarianResponse(Source):
                     str(e.args)
                 )
 
-        return results, len(results)
+        return results

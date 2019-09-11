@@ -1092,17 +1092,6 @@ class ProjectApiTest(TestCase):
         self.assert_200(response)
         self.assertEqual(response.json()['status'], 'success')
 
-    def test_project_users_api(self):
-        project = self.create_project(role=self.normal_role, use_api=False)
-        url = f'/api/v1/projects/{project.pk}/users/'
-
-        self.authenticate()
-        response = self.client.get(url)
-        self.assert_200(response)
-        # Only provide projects user [Pagination is done for larger dataset]
-        assert set([member['id'] for member in response.json()['results']]),\
-            set([self.user.pk])
-
     def test_project_lead_groups_api(self):
         project = self.create_project(role=self.normal_role, use_api=False)
         lead_group1 = self.create(LeadGroup, project=project)
