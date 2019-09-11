@@ -2,7 +2,7 @@ from rest_framework import serializers
 from lxml import etree
 import requests
 
-from utils.common import DEFAULT_HEADERS, random_key
+from utils.common import DEFAULT_HEADERS
 from lead.models import Lead
 from .base import Source
 
@@ -108,17 +108,16 @@ class RssFeed(Source):
         items = xml.findall('channel/item')
 
         for item in items:
-            data = Lead(
-                id=random_key(),
-                source_type=Lead.RSS,
+            data = {
+                'source_type': Lead.RSS,
                 **{
                     lead_field: _get_field_value(item, params.get(param_key))
                     for lead_field, param_key in self.option_lead_field_map.items()
                 },
-            )
+            }
             results.append(data)
 
-        return results, len(items)
+        return results
 
     def query_fields(self, params):
         if not params or not params.get('feed-url'):

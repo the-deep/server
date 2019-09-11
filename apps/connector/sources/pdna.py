@@ -1,7 +1,6 @@
 import logging
 from bs4 import BeautifulSoup as Soup
 import requests
-import re
 
 from .base import Source
 from connector.utils import handle_connector_parse_error
@@ -104,18 +103,17 @@ class PDNA(Source):
                         url = elem['href']
                         if url[0] == '/':  # means relative path
                             url = self.website + url
-                        data = Lead(
-                            id=str(url),
-                            title=title.strip(),
-                            url=url,
-                            source='PDNA portal',
-                            source_type=Lead.WEBSITE,
-                            website=self.website
-                        )
+                        data = {
+                            'title': title.strip(),
+                            'url': url,
+                            'source': 'PDNA portal',
+                            'source_type': Lead.WEBSITE,
+                            'website': self.website
+                        }
                         results.append(data)
                 except Exception as e:
                     logger.warning(
                         "Exception parsing {} with params {}: {}".format(
                             self.URL, params, e.args)
                     )
-        return results, len(results)
+        return results

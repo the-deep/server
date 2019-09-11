@@ -2,7 +2,6 @@ import time
 import feedparser
 from rest_framework import serializers
 
-from utils.common import random_key
 from lead.models import Lead
 
 from .rss_feed import RssFeed
@@ -28,17 +27,16 @@ class AtomFeed(RssFeed):
         items = feed.entries
 
         for item in items:
-            data = Lead(
-                id=random_key(),
-                source_type=Lead.RSS,
+            data = {
+                'source_type': Lead.RSS,
                 **{
                     lead_field: _get_field_value(item, params.get(param_key))
                     for lead_field, param_key in self.option_lead_field_map.items()
                 },
-            )
+            }
             results.append(data)
 
-        return results, len(items)
+        return results
 
     def query_fields(self, params):
         if not params or not params.get('feed-url'):

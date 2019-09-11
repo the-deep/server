@@ -158,16 +158,14 @@ class AcapsBriefingNotes(Source):
                     'div', {'class': 'field-item'}
                 )
                 link = link_elem.find('a')
-                data = Lead(
-                    # FIXME: use proper key
-                    id=link['href'],
-                    title=title.strip(),
-                    published_on=date.date(),
-                    url=link['href'],
-                    source='Briefing Notes',
-                    source_type=Lead.WEBSITE,
-                    website='www.acaps.org/special-reports'
-                )
+                data = {
+                    'title': title.strip(),
+                    'published_on': date.date(),
+                    'url': link['href'],
+                    'source': 'Briefing Notes',
+                    'source_type': Lead.WEBSITE,
+                    'website': 'www.acaps.org/special-reports'
+                }
                 results.append(data)
             except Exception as e:
                 logger.warning(
@@ -175,4 +173,4 @@ class AcapsBriefingNotes(Source):
                         self.URL, params, e.args)
                 )
 
-        return results, len(results)
+        return results

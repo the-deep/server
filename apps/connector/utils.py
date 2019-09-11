@@ -1,12 +1,12 @@
 def handle_connector_parse_error(ConnectorClass):
-    class NewClass(ConnectorClass):
-        def fetch(self, *args, **kwargs):
+    class Handler(ConnectorClass):
+        def get_leads(self, *args, **kwargs):
             try:
-                ret = super().fetch(*args, **kwargs)
+                ret = super().get_leads(*args, **kwargs)
             except Exception:
                 raise Exception(
                     "Parsing Connector Source data for {} failed. Maybe the source HTML structure has changed".format(self.title)  # noqa
                 )
             else:
                 return ret
-    return NewClass
+    return Handler
