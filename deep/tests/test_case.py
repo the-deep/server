@@ -192,9 +192,14 @@ class TestCase(test.APITestCase):
 
         return response
 
-    def create_project(self, create_assessment_template=False):
+    def create_user(self, **fields):
+        return self.create(User, **fields)
+
+    def create_project(self, **fields):
+        create_assessment_template = fields.pop('create_assessment_template', False)
         analysis_framework = self.create(AnalysisFramework)
         data = {
+            **fields,
             'analysis_framework': analysis_framework,
             'role': self.admin_role,
         }

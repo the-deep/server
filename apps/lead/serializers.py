@@ -54,7 +54,7 @@ class SimpleLeadSerializer(RemoveNullFieldsMixin,
             'source', 'author',
         )
         # Legacy Fields
-        read_only_fields = ('source_raw', 'source_raw',)
+        read_only_fields = ('author_raw', 'source_raw',)
 
 
 class LeadSerializer(RemoveNullFieldsMixin,
@@ -107,7 +107,7 @@ class LeadSerializer(RemoveNullFieldsMixin,
         model = Lead
         fields = ('__all__')
         # Legacy Fields
-        read_only_fields = ('source_raw', 'source_raw',)
+        read_only_fields = ('author_raw', 'source_raw',)
 
     def get_tabular_book(self, obj):
         file = obj.attachment
