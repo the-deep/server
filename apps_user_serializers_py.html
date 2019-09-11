@@ -30,8 +30,8 @@
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
 
         <h2 class="stats">
-            95 statements &nbsp;
-            <span class="run hide_run shortkey_r button_toggle_run">81 run</span>
+            96 statements &nbsp;
+            <span class="run hide_run shortkey_r button_toggle_run">82 run</span>
             <span class="mis shortkey_m button_toggle_mis">14 missing</span>
             <span class="exc shortkey_x button_toggle_exc">0 excluded</span>
 
@@ -258,11 +258,17 @@
 <p id="n187" class="pln"><a href="#n187">187</a></p>
 <p id="n188" class="pln"><a href="#n188">188</a></p>
 <p id="n189" class="pln"><a href="#n189">189</a></p>
-<p id="n190" class="stm run hide_run"><a href="#n190">190</a></p>
-<p id="n191" class="pln"><a href="#n191">191</a></p>
-<p id="n192" class="stm run hide_run"><a href="#n192">192</a></p>
-<p id="n193" class="stm run hide_run"><a href="#n193">193</a></p>
-<p id="n194" class="stm run hide_run"><a href="#n194">194</a></p>
+<p id="n190" class="pln"><a href="#n190">190</a></p>
+<p id="n191" class="stm run hide_run"><a href="#n191">191</a></p>
+<p id="n192" class="pln"><a href="#n192">192</a></p>
+<p id="n193" class="pln"><a href="#n193">193</a></p>
+<p id="n194" class="pln"><a href="#n194">194</a></p>
+<p id="n195" class="pln"><a href="#n195">195</a></p>
+<p id="n196" class="stm run hide_run"><a href="#n196">196</a></p>
+<p id="n197" class="pln"><a href="#n197">197</a></p>
+<p id="n198" class="stm run hide_run"><a href="#n198">198</a></p>
+<p id="n199" class="stm run hide_run"><a href="#n199">199</a></p>
+<p id="n200" class="stm run hide_run"><a href="#n200">200</a></p>
 
             </td>
             <td class="text">
@@ -270,7 +276,7 @@
 <p id="t2" class="stm run hide_run"><span class="key">from</span> <span class="nam">drf_dynamic_fields</span> <span class="key">import</span> <span class="nam">DynamicFieldsMixin</span><span class="strut">&nbsp;</span></p>
 <p id="t3" class="stm run hide_run"><span class="key">from</span> <span class="nam">rest_framework</span> <span class="key">import</span> <span class="nam">serializers</span><span class="strut">&nbsp;</span></p>
 <p id="t4" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t5" class="stm run hide_run"><span class="key">from</span> <span class="nam">deep</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="nam">RemoveNullFieldsMixin</span><span class="strut">&nbsp;</span></p>
+<p id="t5" class="stm run hide_run"><span class="key">from</span> <span class="nam">deep</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="nam">RemoveNullFieldsMixin</span><span class="op">,</span> <span class="nam">URLCachedFileField</span><span class="strut">&nbsp;</span></p>
 <p id="t6" class="stm run hide_run"><span class="key">from</span> <span class="nam">user</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Profile</span><span class="op">,</span> <span class="nam">Feature</span><span class="strut">&nbsp;</span></p>
 <p id="t7" class="stm run hide_run"><span class="key">from</span> <span class="nam">user</span><span class="op">.</span><span class="nam">utils</span> <span class="key">import</span> <span class="nam">send_password_reset</span><span class="strut">&nbsp;</span></p>
 <p id="t8" class="stm run hide_run"><span class="key">from</span> <span class="nam">project</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Project</span><span class="strut">&nbsp;</span></p>
@@ -455,11 +461,17 @@
 <p id="t187" class="pln">        <span class="nam">source</span><span class="op">=</span><span class="str">'profile.get_display_name'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
 <p id="t188" class="pln">        <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
 <p id="t189" class="pln">    <span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t190" class="stm run hide_run">    <span class="nam">organization</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'profile.organization'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t191" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t192" class="stm run hide_run">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t193" class="stm run hide_run">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">User</span><span class="strut">&nbsp;</span></p>
-<p id="t194" class="stm run hide_run">        <span class="nam">fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'id'</span><span class="op">,</span> <span class="str">'name'</span><span class="op">,</span> <span class="str">'email'</span><span class="op">,</span> <span class="str">'organization'</span><span class="op">,</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t190" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t191" class="stm run hide_run">    <span class="nam">display_picture</span> <span class="op">=</span> <span class="nam">URLCachedFileField</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
+<p id="t192" class="pln">        <span class="nam">source</span><span class="op">=</span><span class="str">'profile.display_picture.file'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t193" class="pln">        <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t194" class="pln">    <span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t195" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t196" class="stm run hide_run">    <span class="nam">organization</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'profile.organization'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t197" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t198" class="stm run hide_run">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t199" class="stm run hide_run">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">User</span><span class="strut">&nbsp;</span></p>
+<p id="t200" class="stm run hide_run">        <span class="nam">fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'id'</span><span class="op">,</span> <span class="str">'name'</span><span class="op">,</span> <span class="str">'email'</span><span class="op">,</span> <span class="str">'organization'</span><span class="op">,</span> <span class="str">'display_picture'</span><span class="op">,</span> <span class="op">)</span><span class="strut">&nbsp;</span></p>
 
             </td>
         </tr>
@@ -470,7 +482,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-10 06:18
+            created at 2019-09-11 08:03
         </p>
     </div>
 </div>

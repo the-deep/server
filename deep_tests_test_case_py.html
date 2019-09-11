@@ -30,8 +30,8 @@
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
 
         <h2 class="stats">
-            101 statements &nbsp;
-            <span class="run hide_run shortkey_r button_toggle_run">99 run</span>
+            103 statements &nbsp;
+            <span class="run hide_run shortkey_r button_toggle_run">101 run</span>
             <span class="mis shortkey_m button_toggle_mis">2 missing</span>
             <span class="exc shortkey_x button_toggle_exc">0 excluded</span>
 
@@ -297,20 +297,23 @@
 <p id="n226" class="pln"><a href="#n226">226</a></p>
 <p id="n227" class="stm run hide_run"><a href="#n227">227</a></p>
 <p id="n228" class="stm run hide_run"><a href="#n228">228</a></p>
-<p id="n229" class="stm run hide_run"><a href="#n229">229</a></p>
-<p id="n230" class="pln"><a href="#n230">230</a></p>
-<p id="n231" class="pln"><a href="#n231">231</a></p>
-<p id="n232" class="pln"><a href="#n232">232</a></p>
+<p id="n229" class="pln"><a href="#n229">229</a></p>
+<p id="n230" class="stm run hide_run"><a href="#n230">230</a></p>
+<p id="n231" class="stm run hide_run"><a href="#n231">231</a></p>
+<p id="n232" class="stm run hide_run"><a href="#n232">232</a></p>
 <p id="n233" class="pln"><a href="#n233">233</a></p>
 <p id="n234" class="pln"><a href="#n234">234</a></p>
-<p id="n235" class="stm run hide_run"><a href="#n235">235</a></p>
-<p id="n236" class="stm run hide_run"><a href="#n236">236</a></p>
-<p id="n237" class="stm run hide_run"><a href="#n237">237</a></p>
-<p id="n238" class="pln"><a href="#n238">238</a></p>
-<p id="n239" class="pln"><a href="#n239">239</a></p>
-<p id="n240" class="pln"><a href="#n240">240</a></p>
+<p id="n235" class="pln"><a href="#n235">235</a></p>
+<p id="n236" class="pln"><a href="#n236">236</a></p>
+<p id="n237" class="pln"><a href="#n237">237</a></p>
+<p id="n238" class="stm run hide_run"><a href="#n238">238</a></p>
+<p id="n239" class="stm run hide_run"><a href="#n239">239</a></p>
+<p id="n240" class="stm run hide_run"><a href="#n240">240</a></p>
 <p id="n241" class="pln"><a href="#n241">241</a></p>
 <p id="n242" class="pln"><a href="#n242">242</a></p>
+<p id="n243" class="pln"><a href="#n243">243</a></p>
+<p id="n244" class="pln"><a href="#n244">244</a></p>
+<p id="n245" class="pln"><a href="#n245">245</a></p>
 
             </td>
             <td class="text">
@@ -540,22 +543,25 @@
 <p id="t224" class="stm run hide_run">        <span class="nam">project</span> <span class="op">=</span> <span class="nam">fields</span><span class="op">.</span><span class="nam">pop</span><span class="op">(</span><span class="str">'project'</span><span class="op">,</span> <span class="key">None</span><span class="op">)</span> <span class="key">or</span> <span class="nam">self</span><span class="op">.</span><span class="nam">create_project</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t225" class="stm run hide_run">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="nam">Lead</span><span class="op">,</span> <span class="nam">project</span><span class="op">=</span><span class="nam">project</span><span class="op">,</span> <span class="op">**</span><span class="nam">fields</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t226" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t227" class="stm run hide_run">    <span class="key">def</span> <span class="nam">create_entry</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="op">**</span><span class="nam">fields</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t228" class="stm run hide_run">        <span class="nam">lead</span> <span class="op">=</span> <span class="nam">fields</span><span class="op">.</span><span class="nam">pop</span><span class="op">(</span><span class="str">'lead'</span><span class="op">,</span> <span class="key">None</span><span class="op">)</span> <span class="key">or</span> <span class="nam">self</span><span class="op">.</span><span class="nam">create_lead</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t229" class="stm run hide_run">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t230" class="pln">            <span class="nam">Entry</span><span class="op">,</span> <span class="nam">lead</span><span class="op">=</span><span class="nam">lead</span><span class="op">,</span> <span class="nam">project</span><span class="op">=</span><span class="nam">lead</span><span class="op">.</span><span class="nam">project</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t231" class="pln">            <span class="nam">analysis_framework</span><span class="op">=</span><span class="nam">lead</span><span class="op">.</span><span class="nam">project</span><span class="op">.</span><span class="nam">analysis_framework</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t232" class="pln">            <span class="op">**</span><span class="nam">fields</span><span class="strut">&nbsp;</span></p>
-<p id="t233" class="pln">        <span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t234" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t235" class="stm run hide_run">    <span class="key">def</span> <span class="nam">create_assessment</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="op">**</span><span class="nam">fields</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t236" class="stm run hide_run">        <span class="nam">lead</span> <span class="op">=</span> <span class="nam">fields</span><span class="op">.</span><span class="nam">pop</span><span class="op">(</span><span class="str">'lead'</span><span class="op">,</span> <span class="key">None</span><span class="op">)</span> <span class="key">or</span> <span class="nam">self</span><span class="op">.</span><span class="nam">create_lead</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t237" class="stm run hide_run">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t238" class="pln">            <span class="nam">Assessment</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t239" class="pln">            <span class="nam">lead</span><span class="op">=</span><span class="nam">lead</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t240" class="pln">            <span class="nam">project</span><span class="op">=</span><span class="nam">lead</span><span class="op">.</span><span class="nam">project</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t241" class="pln">            <span class="op">**</span><span class="nam">fields</span><span class="strut">&nbsp;</span></p>
-<p id="t242" class="pln">        <span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t227" class="stm run hide_run">    <span class="key">def</span> <span class="nam">create_user</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t228" class="stm run hide_run">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="nam">User</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t229" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t230" class="stm run hide_run">    <span class="key">def</span> <span class="nam">create_entry</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="op">**</span><span class="nam">fields</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t231" class="stm run hide_run">        <span class="nam">lead</span> <span class="op">=</span> <span class="nam">fields</span><span class="op">.</span><span class="nam">pop</span><span class="op">(</span><span class="str">'lead'</span><span class="op">,</span> <span class="key">None</span><span class="op">)</span> <span class="key">or</span> <span class="nam">self</span><span class="op">.</span><span class="nam">create_lead</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t232" class="stm run hide_run">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
+<p id="t233" class="pln">            <span class="nam">Entry</span><span class="op">,</span> <span class="nam">lead</span><span class="op">=</span><span class="nam">lead</span><span class="op">,</span> <span class="nam">project</span><span class="op">=</span><span class="nam">lead</span><span class="op">.</span><span class="nam">project</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t234" class="pln">            <span class="nam">analysis_framework</span><span class="op">=</span><span class="nam">lead</span><span class="op">.</span><span class="nam">project</span><span class="op">.</span><span class="nam">analysis_framework</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t235" class="pln">            <span class="op">**</span><span class="nam">fields</span><span class="strut">&nbsp;</span></p>
+<p id="t236" class="pln">        <span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t237" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t238" class="stm run hide_run">    <span class="key">def</span> <span class="nam">create_assessment</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="op">**</span><span class="nam">fields</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t239" class="stm run hide_run">        <span class="nam">lead</span> <span class="op">=</span> <span class="nam">fields</span><span class="op">.</span><span class="nam">pop</span><span class="op">(</span><span class="str">'lead'</span><span class="op">,</span> <span class="key">None</span><span class="op">)</span> <span class="key">or</span> <span class="nam">self</span><span class="op">.</span><span class="nam">create_lead</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t240" class="stm run hide_run">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
+<p id="t241" class="pln">            <span class="nam">Assessment</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t242" class="pln">            <span class="nam">lead</span><span class="op">=</span><span class="nam">lead</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t243" class="pln">            <span class="nam">project</span><span class="op">=</span><span class="nam">lead</span><span class="op">.</span><span class="nam">project</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t244" class="pln">            <span class="op">**</span><span class="nam">fields</span><span class="strut">&nbsp;</span></p>
+<p id="t245" class="pln">        <span class="op">)</span><span class="strut">&nbsp;</span></p>
 
             </td>
         </tr>
@@ -566,7 +572,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-10 06:18
+            created at 2019-09-11 08:03
         </p>
     </div>
 </div>
