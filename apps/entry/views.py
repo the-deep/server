@@ -65,7 +65,7 @@ class EntryViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
     @action(
-        detail=True,
+        detail=False,
         url_path='processed',
         serializer_class=EntryProccesedSerializer,
     )
