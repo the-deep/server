@@ -246,7 +246,7 @@ class EntryCommentViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        url_path='resolved',
+        url_path='resolve',
         methods=['post'],
     )
     def resolve_comment(self, request, pk, version=None):
