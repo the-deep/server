@@ -12,6 +12,7 @@ from analysis_framework.models import (
     AnalysisFrameworkRole,
     Widget,
 )
+from lead.models import LeadGroup
 from project.tasks import _generate_entry_stats
 from project.models import (
     Project,
@@ -75,11 +76,14 @@ class ProjectApiTest(TestCase):
         self.assertEqual(membership.member.pk, self.user.pk)
         self.assertEqual(membership.role, self.admin_role)
 
-    def create_project(self, title, is_private):
+    def create_project(self, **kwargs):
+        use_api = kwargs.pop('use_api', True)
+        if not use_api:
+            return super().create_project(**kwargs)
         url = '/api/v1/projects/'
         data = {
-            'title': title,
-            'is_private': is_private,
+            'title': kwargs.get('title'),
+            'is_private': kwargs.get('is_private'),
         }
 
         response = self.client.post(url, data)
@@ -92,11 +96,11 @@ class ProjectApiTest(TestCase):
                     users=[user_fhx], email_domains=[])
         self.authenticate(user_fhx)
 
-        self.create_project('Project 1', False)
-        self.create_project('Project 2', False)
-        self.create_project('Project 3', False)
-        self.create_project('Project 4', False)
-        self.create_project('Private Project 1', True)
+        self.create_project(title='Project 1', is_private=False)
+        self.create_project(title='Project 2', is_private=False)
+        self.create_project(title='Project 3', is_private=False)
+        self.create_project(title='Project 4', is_private=False)
+        self.create_project(title='Private Project 1', is_private=True)
 
         response = self.client.get('/api/v1/projects/')
         self.assertEqual(len(response.data['results']), 5)
@@ -104,8 +108,8 @@ class ProjectApiTest(TestCase):
         other_user = self.create(User)
         self.authenticate(other_user)
 
-        # self.create_project('Project 5', False)
-        # self.create_project('Private Project 3', True)
+        # self.create_project(title='Project 5', is_private=False)
+        # self.create_project(title='Private Project 3', is_private=True)
 
         response = self.client.get('/api/v1/projects/')
         self.assertEqual(len(response.data['results']), 4)
@@ -180,10 +184,10 @@ class ProjectApiTest(TestCase):
                     users=[user_dummy], email_domains=[])
 
         self.authenticate(user_fhx)
-        self.assert_403(self.create_project('Private test', True))
+        self.assert_403(self.create_project(title='Private test', is_private=True))
 
         self.authenticate(user_dummy)
-        self.assert_201(self.create_project('Private test', True))
+        self.assert_201(self.create_project(title='Private test', is_private=True))
 
     def test_get_private_project_detail_unauthorized(self):
         user_fhx = self.create(User, email='fhx@togglecorp.com')
@@ -192,7 +196,7 @@ class ProjectApiTest(TestCase):
                     users=[user_fhx], email_domains=[])
 
         self.authenticate(user_fhx)
-        response = self.create_project('Test private project', True)
+        response = self.create_project(title='Test private project', is_private=True)
         self.assert_201(response)
 
         self.assertEqual(response.data['is_private'], True)
@@ -1087,3 +1091,28 @@ class ProjectApiTest(TestCase):
         response = self.client.get(url)
         self.assert_200(response)
         self.assertEqual(response.json()['status'], 'success')
+
+    def test_project_users_api(self):
+        project = self.create_project(role=self.normal_role, use_api=False)
+        url = f'/api/v1/projects/{project.pk}/users/'
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        # Only provide projects user [Pagination is done for larger dataset]
+        assert set([member['id'] for member in response.json()['results']]),\
+            set([self.user.pk])
+
+    def test_project_lead_groups_api(self):
+        project = self.create_project(role=self.normal_role, use_api=False)
+        lead_group1 = self.create(LeadGroup, project=project)
+        lead_group2 = self.create(LeadGroup, project=project)
+
+        url = f'/api/v1/projects/{project.pk}/lead-groups/'
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        # Only provide projects leads-group [Pagination is done for larger dataset]
+        assert set([lg['id'] for lg in response.json()['results']]),\
+            set([lead_group1.pk, lead_group2.pk])

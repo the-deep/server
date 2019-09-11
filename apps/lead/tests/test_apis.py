@@ -1,18 +1,50 @@
 from deep.tests import TestCase
 from user.models import User
+from user.serializers import SimpleUserSerializer
 from project.models import Project, ProjectMembership, ProjectRole
+from project.serializers import SimpleProjectSerializer
 from geo.models import Region
 
+from organization.models import Organization
+from organization.serializers import SimpleOrganizationSerializer
 from lead.filter_set import LeadFilterSet
-from lead.models import Lead, LeadPreview
+from lead.models import Lead, LeadPreview, LeadGroup
+from lead.serializers import SimpleLeadGroupSerializer
 
 import logging
 from datetime import date
 
 logger = logging.getLogger(__name__)
 
+# Organization data
+RELIEFWEB_DATA = {
+    'title': 'Reliefweb',
+    'short_name': 'reliefweb',
+    'long_name': 'reliefweb.int',
+    'url': 'https://reliefweb.int',
+}
+REDHUM_DATA = {
+    'title': 'Redhum',
+    'short_name': 'redhum',
+    'long_name': 'redhum.org',
+    'url': 'https://redhum.org',
+}
+UNHCR_DATA = {
+    'title': 'UNHCR',
+    'short_name': 'unhcr',
+    'long_name': 'United Nations High Commissioner for Refugees',
+    'url': 'https://www.unhcr.org',
+}
+
 
 class LeadTests(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.author = self.source = self.create_organization()
+
+    def create_organization(self, **kwargs):
+        return self.create(Organization, **kwargs)
+
     def test_create_lead(self, assignee=None):
         lead_count = Lead.objects.count()
         project = self.create(Project, role=self.admin_role)
@@ -21,7 +53,8 @@ class LeadTests(TestCase):
         data = {
             'title': 'Spaceship spotted in sky',
             'project': project.id,
-            'source': 'MCU',
+            'source': self.source.pk,
+            'author': self.author.pk,
             'confidentiality': Lead.UNPROTECTED,
             'status': Lead.PENDING,
             'text': 'Alien shapeship has been spotted in the sky',
@@ -44,7 +77,8 @@ class LeadTests(TestCase):
         data = {
             'title': 'Spaceship spotted in sky',
             'project': project.id,
-            'source': 'MCU',
+            'source': self.source.pk,
+            'author': self.author.pk,
             'confidentiality': Lead.UNPROTECTED,
             'status': Lead.PENDING,
             'text': 'Alien shapeship has been spotted in the sky',
@@ -73,7 +107,8 @@ class LeadTests(TestCase):
         data = {
             'title': 'Spaceship spotted in sky',
             'project': project.id,
-            'source': 'MCU',
+            'source': self.source.pk,
+            'author': self.author.pk,
             'confidentiality': Lead.UNPROTECTED,
             'status': Lead.PENDING,
             'text': 'Alien shapeship has been spotted in the sky',
@@ -138,9 +173,71 @@ class LeadTests(TestCase):
     def test_options(self):
         url = '/api/v1/lead-options/'
 
-        self.authenticate()
-        response = self.client.get(url)
+        # Project
+        project = self.create(Project, role=self.admin_role)
+
+        # Sample Organizations
+        reliefweb = self.create(Organization, **RELIEFWEB_DATA)
+        unhcr = self.create(Organization, **UNHCR_DATA)
+
+        # Sample Lead Groups
+        lead_group1 = self.create(LeadGroup, project=project)
+        lead_group2 = self.create(LeadGroup, project=project)
+
+        # Sample Members
+        user = self.create_user()
+        user1 = self.create_user()
+        user2 = self.create_user()
+        project.add_member(user, role=self.normal_role)
+        project.add_member(user1, role=self.normal_role)
+        project.add_member(user2, role=self.normal_role)
+
+        self.authenticate(user)
+
+        # 404 if user is not member of any one of the projects
+        data = {
+            'projects': [project.pk + 1],
+        }
+        response = self.client.post(url, data)
+        self.assert_404(response)
+
+        # 200 if user is member of one of the project [Also other data are filtered by those projects]
+        data = {
+            'projects': [project.pk + 1, project.pk],
+            'leadGroups': [lead_group1.pk, lead_group2.pk],
+            'members': [user1.pk, user2.pk],
+            'organizations': [reliefweb.pk, unhcr.pk]
+        }
+
+        response = self.client.post(url, data)
         self.assert_200(response)
+
+        # Only members are returned when requested is None
+        data = {
+            'projects': [project.pk],
+        }
+        response = self.client.post(url, data)
+        assert response.json(), {
+            'projects': SimpleProjectSerializer([project], many=True).data,
+            'members': SimpleUserSerializer([user, user1, user2], many=True).data,
+            'leadGroups': [],
+            'organizations': [],
+        }
+
+        # If value are provided respective data are provided (filtered by permission)
+        data = {
+            'projects': [project.pk],
+            'leadGroups': [lead_group2.pk],
+            'members': [user1.pk, user2.pk, self.user.pk],
+            'organizations': [unhcr.pk]
+        }
+        response = self.client.post(url, data)
+        assert response.json(), {
+            'projects': SimpleProjectSerializer([project], many=True).data,
+            'members': SimpleUserSerializer([user1, user2], many=True).data,
+            'leadGroups': SimpleLeadGroupSerializer([lead_group2.pk], many=True).data,
+            'organizations': SimpleOrganizationSerializer([unhcr.pk], many=True).data,
+        }
 
     def test_trigger_api(self):
         project = self.create(Project, role=self.admin_role)
@@ -161,7 +258,8 @@ class LeadTests(TestCase):
         data = {
             'title': 'test title',
             'project': [project1.id, project2.id],
-            'source': 'test source',
+            'source': self.source.pk,
+            'author': self.author.pk,
             'confidentiality': Lead.UNPROTECTED,
             'status': Lead.PENDING,
             'text': 'this is some random text',
@@ -193,7 +291,8 @@ class LeadTests(TestCase):
         data = {
             'title': 'Spaceship spotted in sky',
             'project': project.id,
-            'source': 'MCU',
+            'source': self.source.pk,
+            'author': self.author.pk,
             'source_type': 'website',
             'url': common_url,
         }
@@ -338,7 +437,8 @@ class LeadTests(TestCase):
         data = {
             'title': 'test title',
             'project': project.pk,
-            'source': 'test source',
+            'source': self.source.pk,
+            'author': self.author.pk,
             'source_type': Lead.DISK,
             'confidentiality': Lead.UNPROTECTED,
             'status': Lead.PENDING,
@@ -357,7 +457,8 @@ class LeadTests(TestCase):
         data = {
             'title': 'test title',
             'project': project.pk,
-            'source': 'test source',
+            'source': self.source.pk,
+            'author': self.author.pk,
             'source_type': Lead.TEXT,
             'confidentiality': Lead.UNPROTECTED,
             'status': Lead.PENDING,
@@ -441,12 +542,19 @@ class LeadTests(TestCase):
 SAMPLE_WEB_INFO_URL = 'https://reliefweb.int/report/yemen/yemen-emergency-food-security-and-nutrition-assessment-efsna-2016-preliminary-results' # noqa
 SAMPLE_WEB_INFO_SOURCE = 'World Food Programme, UN Children\'s Fund, Food and Agriculture Organization of the United Nations' # noqa
 SAMPLE_WEB_INFO_COUNTRY = 'Yemen'
-SAMPLE_WEB_INFO_DATE = date(2017, 1, 26)
+SAMPLE_WEB_INFO_DATE = str(date(2017, 1, 26))
 SAMPLE_WEB_INFO_WEBSITE = 'reliefweb.int'
 SAMPLE_WEB_INFO_TITLE = 'Yemen Emergency Food Security and Nutrition Assessment (EFSNA) 2016 - Preliminary Results' # noqa
 
 
 class WebInfoExtractionTests(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.maxDiff = None
+        self.reliefweb = self.create(Organization, **RELIEFWEB_DATA)
+        self.redhum = self.create(Organization, **REDHUM_DATA)
+        self.unhcr = self.create(Organization, **UNHCR_DATA)
+
     def test_redhum(self):
         url = '/api/v1/web-info-extract/'
         data = {
@@ -461,8 +569,10 @@ class WebInfoExtractionTests(TestCase):
             self.assertEqual(response['country'], 'Colombia')
             self.assertEqual(response['website'], 'redhum.org')
             self.assertEqual(response['url'], data['url'])
-            self.assertEqual(response['source'], 'redhum')
-            self.assertEqual(response['author'], 'UNHCR')
+            self.assertEqual(response['source'], self.redhum.pk)
+            self.assertEqual(response['author'], self.author.pk)
+            self.assertEqual(response['sourceRaw'], 'redhum')
+            self.assertEqual(response['authorRaw'], 'UNHCR')
         except Exception:
             import traceback
             logger.warning('\n' + ('*' * 30))
@@ -500,8 +610,10 @@ class WebInfoExtractionTests(TestCase):
             'website': SAMPLE_WEB_INFO_WEBSITE,
             'title': SAMPLE_WEB_INFO_TITLE,
             'url': SAMPLE_WEB_INFO_URL,
-            'source': 'reliefweb',
-            'author': SAMPLE_WEB_INFO_SOURCE,
+            'source': SimpleOrganizationSerializer(self.reliefweb).data,
+            'sourceRaw': 'reliefweb',
+            'author': None,
+            'authorRaw': SAMPLE_WEB_INFO_SOURCE,
             'existing': False,
         }
-        self.assertEqual(response.data, expected)
+        self.assertEqual(response.json(), expected)
