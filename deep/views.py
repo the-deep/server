@@ -12,6 +12,8 @@ from django.template.response import TemplateResponse
 
 from user.models import User, Profile
 from project.models import Project
+from entry.models import EntryComment
+from notification.models import Notification
 
 
 def get_frontend_url(path=''):
@@ -65,6 +67,10 @@ class CombinedView(views.APIView):
 def get_basic_email_context():
     user = User.objects.get(pk=1)
     context = {
+        'client_domain': settings.DEEPER_FRONTEND_HOST,
+        'protocol': settings.HTTP_PROTOCOL,
+        'site_name': settings.DEEPER_SITE_NAME,
+        'domain': settings.DJANGO_API_HOST,
         'uid': 'fakeuid',
         'user': user,
         'unsubscribe_email_types': Profile.EMAIL_CONDITIONS_TYPES,
@@ -115,3 +121,29 @@ class AccountActivate(View):
         context = get_basic_email_context()
         return TemplateResponse(
             request, 'registration/user_activation_email.html', context)
+
+
+class EntryCommentEmail(View):
+    """
+    Template view for entry commit email
+    NOTE: Use Only For Debug
+    """
+    def get(self, request):
+        comment_id = request.GET.get('comment_id')
+        comment = (
+            EntryComment.objects.get(pk=comment_id)
+            if comment_id else EntryComment
+            .objects
+            .filter(parent=None)
+            .first()
+        )
+        context = get_basic_email_context()
+        context.update({
+            'email_type': 'entry_comment',
+
+            'notification_type': Notification.ENTRY_COMMENT_ASSIGNEE_CHANGE,
+            'Notification': Notification,
+            'comment': comment,
+        })
+        return TemplateResponse(
+            request, 'entry/comment_notification_email.html', context)

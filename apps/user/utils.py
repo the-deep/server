@@ -37,7 +37,7 @@ def _send_mail(subject_template_name, email_template_name,
     email_message.send()
 
 
-def send_mail_to_user(user, context={}, email_type=None, *args, **kwargs):
+def send_mail_to_user(user, email_type, context={}, *args, **kwargs):
     """
     Validates email request
     Add common context variable
@@ -45,6 +45,13 @@ def send_mail_to_user(user, context={}, email_type=None, *args, **kwargs):
     if user.profile.invalid_email:
         logger.warning(
             '[{}] Email not sent: User <{}>({}) email flagged as invalid email!!'.format(
+                email_type, user.email, user.pk,
+            )
+        )
+        return
+    elif not user.profile.is_email_subscribed_for(email_type):
+        logger.warning(
+            '[{}] Email not sent: User <{}>({}) has not subscribed!!'.format(
                 email_type, user.email, user.pk,
             )
         )
@@ -96,9 +103,8 @@ def send_password_reset(user, welcome=False):
         'welcome': welcome,
     }
     send_mail_to_user(
-        user=user,
+        user, Profile.E_PASSWORD_RESET,
         context=context,
-        email_type='password_reset',
         subject_template_name='registration/password_reset_subject.txt',
         email_template_name='registration/password_reset_email.html',
     )
@@ -114,9 +120,8 @@ def send_account_activation(user):
         'token': default_token_generator.make_token(user),
     }
     send_mail_to_user(
-        user=user,
+        user, Profile.E_ACCOUNT_ACTIVATION,
         context=context,
-        email_type='account_activation',
         subject_template_name='registration/user_activation_subject.txt',
         email_template_name='registration/user_activation_email.html',
     )
@@ -131,7 +136,7 @@ def send_project_join_request_emails(join_request_id):
     project = join_request.project
     request_by = join_request.requested_by
     request_data = {'join_request': join_request}
-    email_type = 'join_requests'
+    email_type = Profile.E_JOIN_REQUESTS
 
     context = {
         'request_by': request_by,
@@ -140,18 +145,16 @@ def send_project_join_request_emails(join_request_id):
     }
 
     for user in project.get_admins():
-        if user.profile.is_email_subscribed_for(email_type):
-            request_data.update({'will_responded_by': user})
-            context.update({
-                'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
-                'token':
-                    project_request_token_generator.make_token(request_data)
-            })
+        request_data.update({'will_responded_by': user})
+        context.update({
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+            'token':
+                project_request_token_generator.make_token(request_data)
+        })
 
-            send_mail_to_user(
-                user=user,
-                context=context,
-                email_type=email_type,
-                subject_template_name='project/project_join_request.txt',
-                email_template_name='project/project_join_request_email.html',
-            )
+        send_mail_to_user(
+            user, email_type,
+            context=context,
+            subject_template_name='project/project_join_request.txt',
+            email_template_name='project/project_join_request_email.html',
+        )

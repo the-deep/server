@@ -205,10 +205,9 @@ REST_FRAMEWORK = {
         'jwt_auth.authentication.JwtAuthentication',
     ),
     'EXCEPTION_HANDLER': 'deep.exception_handler.custom_exception_handler',
-    'DEFAULT_RENDERER_CLASSES': (
+    'DEFAULT_RENDERER_CLASSES': [
         'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
-    ),
+    ],
     'DEFAULT_PARSER_CLASSES': (
         'djangorestframework_camel_case.parser.CamelCaseJSONParser',
         'djangorestframework_camel_case.parser.CamelCaseFormParser',
@@ -230,6 +229,10 @@ REST_FRAMEWORK = {
 
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
+if DEBUG:
+    REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'].append(
+        'rest_framework.renderers.BrowsableAPIRenderer'
+    )
 
 # Crispy forms for better django filters rendering
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
