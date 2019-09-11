@@ -118,11 +118,11 @@ class EntryCommentTests(TestCase):
         comment_id = r_data['id']
 
         # Throw error if resolved request is send for reply
-        response = self.client.post(f'{url}{comment_id}/resolved/')
+        response = self.client.post(f'{url}{comment_id}/resolve/')
         self.assert_400(response)
 
-        # Send resolved request to comment
-        response = self.client.post(f'{url}{parent_comment_id}/resolved/')
+        # Send resolve request to comment
+        response = self.client.post(f'{url}{parent_comment_id}/resolve/')
         r_data = response.json()
         assert r_data['isResolved'] is True
 
@@ -132,7 +132,7 @@ class EntryCommentTests(TestCase):
         self.assert_400(response)
 
         # Throw error if request send to resolved other user's comment
-        response = self.client.post(f'{url}{parent_comment_id_1}/resolved/')
+        response = self.client.post(f'{url}{parent_comment_id_1}/resolve/')
         r_data = response.json()
         self.assert_403(response)
 
@@ -280,7 +280,7 @@ class EntryCommentTests(TestCase):
         # Resolve comment
         _clear_notifications()
         self.authenticate(reviewer)
-        self.client.post(f'{url}{comment1_id}/resolved/')
+        self.client.post(f'{url}{comment1_id}/resolve/')
         assert _get_notifications_receivers() == (
             set([tagger1.pk, tagger2.pk]),
             set([Notification.ENTRY_COMMENT_RESOLVED]),
