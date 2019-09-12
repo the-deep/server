@@ -171,10 +171,18 @@ class LeadTests(TestCase):
         self.assertEqual(lead.get_assignee().id, user.id)
 
     def test_options(self):
+        def check_default_options(rdata):
+            for option, value in DEFAULT_OPTIONS.items():
+                assert rdata[option] == value, f'value should be same for <{option}> DEFAULT_OPTIONS'
+
+        def assert_id(returned_obj, excepted_obj):
+            assert set([obj['id'] for obj in returned_obj]) ==\
+                set([obj['id'] for obj in excepted_obj])
+
         url = '/api/v1/lead-options/'
 
         # Project
-        project = self.create(Project, role=self.admin_role)
+        project = self.create(Project)
 
         # Sample Organizations
         reliefweb = self.create(Organization, **RELIEFWEB_DATA)
@@ -185,12 +193,23 @@ class LeadTests(TestCase):
         lead_group2 = self.create(LeadGroup, project=project)
 
         # Sample Members
+        out_user = self.create_user()
         user = self.create_user()
         user1 = self.create_user()
         user2 = self.create_user()
         project.add_member(user, role=self.normal_role)
         project.add_member(user1, role=self.normal_role)
         project.add_member(user2, role=self.normal_role)
+
+        # Default options
+        DEFAULT_OPTIONS = {
+            'confidentiality': [
+                {'key': c[0], 'value': c[1]} for c in Lead.CONFIDENTIALITIES
+            ],
+            'status': [
+                {'key': s[0], 'value': s[1]} for s in Lead.STATUSES
+            ],
+        }
 
         self.authenticate(user)
 
@@ -212,32 +231,33 @@ class LeadTests(TestCase):
         response = self.client.post(url, data)
         self.assert_200(response)
 
-        # Only members are returned when requested is None
+        self.maxDiff = None
+        # Only members(all) are returned when requested is None
         data = {
             'projects': [project.pk],
         }
         response = self.client.post(url, data)
-        assert response.json(), {
-            'projects': SimpleProjectSerializer([project], many=True).data,
-            'members': SimpleUserSerializer([user, user1, user2], many=True).data,
-            'leadGroups': [],
-            'organizations': [],
-        }
+        rdata = response.json()
+        assert_id(rdata['members'], SimpleUserSerializer([user1, user2, user], many=True).data)
+        assert rdata['projects'] == SimpleProjectSerializer([project], many=True).data
+        assert rdata['leadGroups'] == []
+        assert rdata['organizations'] == []
+        check_default_options(rdata)
 
         # If value are provided respective data are provided (filtered by permission)
         data = {
             'projects': [project.pk],
             'leadGroups': [lead_group2.pk],
-            'members': [user1.pk, user2.pk, self.user.pk],
+            'members': [user1.pk, user2.pk, out_user.pk],
             'organizations': [unhcr.pk]
         }
         response = self.client.post(url, data)
-        assert response.json(), {
-            'projects': SimpleProjectSerializer([project], many=True).data,
-            'members': SimpleUserSerializer([user1, user2], many=True).data,
-            'leadGroups': SimpleLeadGroupSerializer([lead_group2.pk], many=True).data,
-            'organizations': SimpleOrganizationSerializer([unhcr.pk], many=True).data,
-        }
+        rdata = response.json()
+        assert_id(rdata['members'], SimpleUserSerializer([user1, user2], many=True).data)
+        assert rdata['projects'] == SimpleProjectSerializer([project], many=True).data
+        assert rdata['leadGroups'] == SimpleLeadGroupSerializer([lead_group2], many=True).data
+        assert rdata['organizations'] == SimpleOrganizationSerializer([unhcr], many=True).data
+        check_default_options(rdata)
 
     def test_trigger_api(self):
         project = self.create(Project, role=self.admin_role)
