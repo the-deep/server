@@ -250,9 +250,8 @@
 <p id="n179" class="pln"><a href="#n179">179</a></p>
 <p id="n180" class="pln"><a href="#n180">180</a></p>
 <p id="n181" class="pln"><a href="#n181">181</a></p>
-<p id="n182" class="pln"><a href="#n182">182</a></p>
+<p id="n182" class="stm mis"><a href="#n182">182</a></p>
 <p id="n183" class="stm mis"><a href="#n183">183</a></p>
-<p id="n184" class="stm mis"><a href="#n184">184</a></p>
 
             </td>
             <td class="text">
@@ -430,16 +429,15 @@
 <p id="t172" class="stm mis">            <span class="nam">content</span> <span class="op">=</span> <span class="nam">row</span><span class="op">.</span><span class="nam">find</span><span class="op">(</span><span class="str">'h3'</span><span class="op">)</span><span class="op">.</span><span class="nam">find</span><span class="op">(</span><span class="str">'a'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t173" class="stm mis">            <span class="nam">title</span> <span class="op">=</span> <span class="nam">content</span><span class="op">.</span><span class="nam">get_text</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t174" class="stm mis">            <span class="nam">url</span> <span class="op">=</span> <span class="nam">content</span><span class="op">[</span><span class="str">'href'</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
-<p id="t175" class="stm mis">            <span class="nam">data</span> <span class="op">=</span> <span class="nam">Lead</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t176" class="pln">                <span class="nam">id</span><span class="op">=</span><span class="nam">url</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t177" class="pln">                <span class="nam">title</span><span class="op">=</span><span class="nam">title</span><span class="op">.</span><span class="nam">strip</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t178" class="pln">                <span class="nam">url</span><span class="op">=</span><span class="nam">url</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t179" class="pln">                <span class="nam">source</span><span class="op">=</span><span class="str">'WFP Assessments'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t180" class="pln">                <span class="nam">source_type</span><span class="op">=</span><span class="nam">Lead</span><span class="op">.</span><span class="nam">WEBSITE</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t181" class="pln">                <span class="nam">website</span><span class="op">=</span><span class="str">'www.wfp.org'</span><span class="strut">&nbsp;</span></p>
-<p id="t182" class="pln">            <span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t183" class="stm mis">            <span class="nam">results</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">data</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t184" class="stm mis">        <span class="key">return</span> <span class="nam">results</span><span class="op">,</span> <span class="nam">len</span><span class="op">(</span><span class="nam">results</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t175" class="stm mis">            <span class="nam">data</span> <span class="op">=</span> <span class="op">{</span><span class="strut">&nbsp;</span></p>
+<p id="t176" class="pln">                <span class="str">'title'</span><span class="op">:</span> <span class="nam">title</span><span class="op">.</span><span class="nam">strip</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t177" class="pln">                <span class="str">'url'</span><span class="op">:</span> <span class="nam">url</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t178" class="pln">                <span class="str">'source'</span><span class="op">:</span> <span class="str">'WFP Assessments'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t179" class="pln">                <span class="str">'source_type'</span><span class="op">:</span> <span class="nam">Lead</span><span class="op">.</span><span class="nam">WEBSITE</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t180" class="pln">                <span class="str">'website'</span><span class="op">:</span> <span class="str">'www.wfp.org'</span><span class="strut">&nbsp;</span></p>
+<p id="t181" class="pln">            <span class="op">}</span><span class="strut">&nbsp;</span></p>
+<p id="t182" class="stm mis">            <span class="nam">results</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">data</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t183" class="stm mis">        <span class="key">return</span> <span class="nam">results</span><span class="op">,</span> <span class="nam">len</span><span class="op">(</span><span class="nam">results</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 
             </td>
         </tr>
@@ -450,7 +448,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-11 08:03
+            created at 2019-09-12 05:46
         </p>
     </div>
 </div>

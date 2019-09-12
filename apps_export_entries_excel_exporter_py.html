@@ -30,9 +30,9 @@
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
 
         <h2 class="stats">
-            191 statements &nbsp;
+            192 statements &nbsp;
             <span class="run hide_run shortkey_r button_toggle_run">17 run</span>
-            <span class="mis shortkey_m button_toggle_mis">174 missing</span>
+            <span class="mis shortkey_m button_toggle_mis">175 missing</span>
             <span class="exc shortkey_x button_toggle_exc">0 excluded</span>
 
             
@@ -382,7 +382,7 @@
 <p id="n311" class="stm mis"><a href="#n311">311</a></p>
 <p id="n312" class="stm mis"><a href="#n312">312</a></p>
 <p id="n313" class="pln"><a href="#n313">313</a></p>
-<p id="n314" class="pln"><a href="#n314">314</a></p>
+<p id="n314" class="stm mis"><a href="#n314">314</a></p>
 <p id="n315" class="pln"><a href="#n315">315</a></p>
 <p id="n316" class="pln"><a href="#n316">316</a></p>
 <p id="n317" class="pln"><a href="#n317">317</a></p>
@@ -390,37 +390,39 @@
 <p id="n319" class="pln"><a href="#n319">319</a></p>
 <p id="n320" class="pln"><a href="#n320">320</a></p>
 <p id="n321" class="pln"><a href="#n321">321</a></p>
-<p id="n322" class="stm mis"><a href="#n322">322</a></p>
+<p id="n322" class="pln"><a href="#n322">322</a></p>
 <p id="n323" class="pln"><a href="#n323">323</a></p>
-<p id="n324" class="pln"><a href="#n324">324</a></p>
+<p id="n324" class="stm mis"><a href="#n324">324</a></p>
 <p id="n325" class="pln"><a href="#n325">325</a></p>
 <p id="n326" class="pln"><a href="#n326">326</a></p>
 <p id="n327" class="pln"><a href="#n327">327</a></p>
 <p id="n328" class="pln"><a href="#n328">328</a></p>
-<p id="n329" class="stm mis"><a href="#n329">329</a></p>
-<p id="n330" class="stm mis"><a href="#n330">330</a></p>
-<p id="n331" class="pln"><a href="#n331">331</a></p>
-<p id="n332" class="pln"><a href="#n332">332</a></p>
+<p id="n329" class="pln"><a href="#n329">329</a></p>
+<p id="n330" class="pln"><a href="#n330">330</a></p>
+<p id="n331" class="stm mis"><a href="#n331">331</a></p>
+<p id="n332" class="stm mis"><a href="#n332">332</a></p>
 <p id="n333" class="pln"><a href="#n333">333</a></p>
 <p id="n334" class="pln"><a href="#n334">334</a></p>
 <p id="n335" class="pln"><a href="#n335">335</a></p>
-<p id="n336" class="stm mis"><a href="#n336">336</a></p>
-<p id="n337" class="stm mis"><a href="#n337">337</a></p>
-<p id="n338" class="pln"><a href="#n338">338</a></p>
+<p id="n336" class="pln"><a href="#n336">336</a></p>
+<p id="n337" class="pln"><a href="#n337">337</a></p>
+<p id="n338" class="stm mis"><a href="#n338">338</a></p>
 <p id="n339" class="stm mis"><a href="#n339">339</a></p>
-<p id="n340" class="stm mis"><a href="#n340">340</a></p>
-<p id="n341" class="pln"><a href="#n341">341</a></p>
-<p id="n342" class="stm run hide_run"><a href="#n342">342</a></p>
+<p id="n340" class="pln"><a href="#n340">340</a></p>
+<p id="n341" class="stm mis"><a href="#n341">341</a></p>
+<p id="n342" class="stm mis"><a href="#n342">342</a></p>
 <p id="n343" class="pln"><a href="#n343">343</a></p>
-<p id="n344" class="pln"><a href="#n344">344</a></p>
+<p id="n344" class="stm run hide_run"><a href="#n344">344</a></p>
 <p id="n345" class="pln"><a href="#n345">345</a></p>
-<p id="n346" class="stm mis"><a href="#n346">346</a></p>
-<p id="n347" class="stm mis"><a href="#n347">347</a></p>
+<p id="n346" class="pln"><a href="#n346">346</a></p>
+<p id="n347" class="pln"><a href="#n347">347</a></p>
 <p id="n348" class="stm mis"><a href="#n348">348</a></p>
-<p id="n349" class="pln"><a href="#n349">349</a></p>
+<p id="n349" class="stm mis"><a href="#n349">349</a></p>
 <p id="n350" class="stm mis"><a href="#n350">350</a></p>
-<p id="n351" class="stm mis"><a href="#n351">351</a></p>
+<p id="n351" class="pln"><a href="#n351">351</a></p>
 <p id="n352" class="stm mis"><a href="#n352">352</a></p>
+<p id="n353" class="stm mis"><a href="#n353">353</a></p>
+<p id="n354" class="stm mis"><a href="#n354">354</a></p>
 
             </td>
             <td class="text">
@@ -731,51 +733,53 @@
 <p id="t305" class="pln">            <span class="com"># Export each entry</span><span class="strut">&nbsp;</span></p>
 <p id="t306" class="pln">            <span class="com"># Start building rows and export data for each exportable</span><span class="strut">&nbsp;</span></p>
 <p id="t307" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t308" class="stm mis">            <span class="nam">rows</span> <span class="op">=</span> <span class="nam">RowsBuilder</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">split</span><span class="op">,</span> <span class="nam">self</span><span class="op">.</span><span class="nam">group</span><span class="op">,</span> <span class="nam">self</span><span class="op">.</span><span class="nam">decoupled</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t309" class="stm mis">            <span class="nam">rows</span><span class="op">.</span><span class="nam">add_value</span><span class="op">(</span><span class="nam">format_date</span><span class="op">(</span><span class="nam">entry</span><span class="op">.</span><span class="nam">lead</span><span class="op">.</span><span class="nam">published_on</span><span class="op">)</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t308" class="stm mis">            <span class="nam">lead</span> <span class="op">=</span> <span class="nam">entry</span><span class="op">.</span><span class="nam">lead</span><span class="strut">&nbsp;</span></p>
+<p id="t309" class="stm mis">            <span class="nam">assignee</span> <span class="op">=</span> <span class="nam">entry</span><span class="op">.</span><span class="nam">lead</span><span class="op">.</span><span class="nam">get_assignee</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t310" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t311" class="stm mis">            <span class="nam">assignee</span> <span class="op">=</span> <span class="nam">entry</span><span class="op">.</span><span class="nam">lead</span><span class="op">.</span><span class="nam">get_assignee</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t312" class="stm mis">            <span class="nam">rows</span><span class="op">.</span><span class="nam">add_value_list</span><span class="op">(</span><span class="op">[</span><span class="strut">&nbsp;</span></p>
-<p id="t313" class="pln">                <span class="nam">entry</span><span class="op">.</span><span class="nam">created_by</span><span class="op">.</span><span class="nam">profile</span><span class="op">.</span><span class="nam">get_display_name</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t314" class="pln">                <span class="nam">format_date</span><span class="op">(</span><span class="nam">entry</span><span class="op">.</span><span class="nam">created_at</span><span class="op">.</span><span class="nam">date</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t315" class="pln">                <span class="nam">entry</span><span class="op">.</span><span class="nam">lead</span><span class="op">.</span><span class="nam">title</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t316" class="pln">                <span class="nam">entry</span><span class="op">.</span><span class="nam">lead</span><span class="op">.</span><span class="nam">author</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t317" class="pln">                <span class="nam">entry</span><span class="op">.</span><span class="nam">lead</span><span class="op">.</span><span class="nam">source</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t318" class="pln">                <span class="nam">assignee</span> <span class="key">and</span> <span class="nam">assignee</span><span class="op">.</span><span class="nam">profile</span><span class="op">.</span><span class="nam">get_display_name</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t319" class="pln">                <span class="nam">self</span><span class="op">.</span><span class="nam">get_entry_data</span><span class="op">(</span><span class="nam">entry</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t320" class="pln">            <span class="op">]</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t321" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t322" class="stm mis">            <span class="key">for</span> <span class="nam">exportable</span> <span class="key">in</span> <span class="nam">self</span><span class="op">.</span><span class="nam">exportables</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t323" class="pln">                <span class="com"># Get export data for this entry corresponding to this</span><span class="strut">&nbsp;</span></p>
-<p id="t324" class="pln">                <span class="com"># exportable.</span><span class="strut">&nbsp;</span></p>
-<p id="t325" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t326" class="pln">                <span class="com"># And write some value based on type and data</span><span class="strut">&nbsp;</span></p>
-<p id="t327" class="pln">                <span class="com"># or empty strings if no data.</span><span class="strut">&nbsp;</span></p>
-<p id="t328" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t329" class="stm mis">                <span class="nam">data</span> <span class="op">=</span> <span class="nam">exportable</span><span class="op">.</span><span class="nam">data</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'excel'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t330" class="stm mis">                <span class="nam">export_data</span> <span class="op">=</span> <span class="nam">ExportData</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t331" class="pln">                    <span class="nam">exportable</span><span class="op">=</span><span class="nam">exportable</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t332" class="pln">                    <span class="nam">entry</span><span class="op">=</span><span class="nam">entry</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t333" class="pln">                    <span class="nam">data__excel__isnull</span><span class="op">=</span><span class="key">False</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t334" class="pln">                <span class="op">)</span><span class="op">.</span><span class="nam">first</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t335" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t336" class="stm mis">                <span class="nam">export_data</span> <span class="op">=</span> <span class="nam">export_data</span> <span class="key">and</span> <span class="nam">export_data</span><span class="op">.</span><span class="nam">data</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'excel'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t337" class="stm mis">                <span class="nam">self</span><span class="op">.</span><span class="nam">add_entries_from_excel_data</span><span class="op">(</span><span class="nam">rows</span><span class="op">,</span> <span class="nam">data</span><span class="op">,</span> <span class="nam">export_data</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t338" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t339" class="stm mis">            <span class="nam">rows</span><span class="op">.</span><span class="nam">apply</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t340" class="stm mis">        <span class="key">return</span> <span class="nam">self</span><span class="strut">&nbsp;</span></p>
-<p id="t341" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t342" class="stm run hide_run">    <span class="key">def</span> <span class="nam">export</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t343" class="pln">        <span class="str">"""</span><span class="strut">&nbsp;</span></p>
-<p id="t344" class="pln"><span class="str">        Export and return export data</span><span class="strut">&nbsp;</span></p>
-<p id="t345" class="pln"><span class="str">        """</span><span class="strut">&nbsp;</span></p>
-<p id="t346" class="stm mis">        <span class="nam">self</span><span class="op">.</span><span class="nam">group</span><span class="op">.</span><span class="nam">set_col_types</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">col_types</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t347" class="stm mis">        <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">split</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t348" class="stm mis">            <span class="nam">self</span><span class="op">.</span><span class="nam">split</span><span class="op">.</span><span class="nam">set_col_types</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">col_types</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t349" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t350" class="stm mis">        <span class="nam">buffer</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">wb</span><span class="op">.</span><span class="nam">save</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t351" class="stm mis">        <span class="nam">filename</span> <span class="op">=</span> <span class="nam">generate_filename</span><span class="op">(</span><span class="str">'Entries Export'</span><span class="op">,</span> <span class="str">'xlsx'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t352" class="stm mis">        <span class="key">return</span> <span class="nam">filename</span><span class="op">,</span> <span class="nam">Export</span><span class="op">.</span><span class="nam">XLSX</span><span class="op">,</span> <span class="nam">EXCEL_MIME_TYPE</span><span class="op">,</span> <span class="nam">ContentFile</span><span class="op">(</span><span class="nam">buffer</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t311" class="stm mis">            <span class="nam">rows</span> <span class="op">=</span> <span class="nam">RowsBuilder</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">split</span><span class="op">,</span> <span class="nam">self</span><span class="op">.</span><span class="nam">group</span><span class="op">,</span> <span class="nam">self</span><span class="op">.</span><span class="nam">decoupled</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t312" class="stm mis">            <span class="nam">rows</span><span class="op">.</span><span class="nam">add_value</span><span class="op">(</span><span class="nam">format_date</span><span class="op">(</span><span class="nam">lead</span><span class="op">.</span><span class="nam">published_on</span><span class="op">)</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t313" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t314" class="stm mis">            <span class="nam">rows</span><span class="op">.</span><span class="nam">add_value_list</span><span class="op">(</span><span class="op">[</span><span class="strut">&nbsp;</span></p>
+<p id="t315" class="pln">                <span class="nam">entry</span><span class="op">.</span><span class="nam">created_by</span><span class="op">.</span><span class="nam">profile</span><span class="op">.</span><span class="nam">get_display_name</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t316" class="pln">                <span class="nam">format_date</span><span class="op">(</span><span class="nam">entry</span><span class="op">.</span><span class="nam">created_at</span><span class="op">.</span><span class="nam">date</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t317" class="pln">                <span class="nam">lead</span><span class="op">.</span><span class="nam">title</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t318" class="pln">                <span class="op">(</span><span class="nam">lead</span><span class="op">.</span><span class="nam">author</span> <span class="key">and</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">author</span><span class="op">.</span><span class="nam">title</span><span class="op">)</span> <span class="key">or</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">author_raw</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t319" class="pln">                <span class="op">(</span><span class="nam">lead</span><span class="op">.</span><span class="nam">source</span> <span class="key">and</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">source</span><span class="op">.</span><span class="nam">title</span><span class="op">)</span> <span class="key">or</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">source_raw</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t320" class="pln">                <span class="nam">assignee</span> <span class="key">and</span> <span class="nam">assignee</span><span class="op">.</span><span class="nam">profile</span><span class="op">.</span><span class="nam">get_display_name</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t321" class="pln">                <span class="nam">self</span><span class="op">.</span><span class="nam">get_entry_data</span><span class="op">(</span><span class="nam">entry</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t322" class="pln">            <span class="op">]</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t323" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t324" class="stm mis">            <span class="key">for</span> <span class="nam">exportable</span> <span class="key">in</span> <span class="nam">self</span><span class="op">.</span><span class="nam">exportables</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t325" class="pln">                <span class="com"># Get export data for this entry corresponding to this</span><span class="strut">&nbsp;</span></p>
+<p id="t326" class="pln">                <span class="com"># exportable.</span><span class="strut">&nbsp;</span></p>
+<p id="t327" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t328" class="pln">                <span class="com"># And write some value based on type and data</span><span class="strut">&nbsp;</span></p>
+<p id="t329" class="pln">                <span class="com"># or empty strings if no data.</span><span class="strut">&nbsp;</span></p>
+<p id="t330" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t331" class="stm mis">                <span class="nam">data</span> <span class="op">=</span> <span class="nam">exportable</span><span class="op">.</span><span class="nam">data</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'excel'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t332" class="stm mis">                <span class="nam">export_data</span> <span class="op">=</span> <span class="nam">ExportData</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
+<p id="t333" class="pln">                    <span class="nam">exportable</span><span class="op">=</span><span class="nam">exportable</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t334" class="pln">                    <span class="nam">entry</span><span class="op">=</span><span class="nam">entry</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t335" class="pln">                    <span class="nam">data__excel__isnull</span><span class="op">=</span><span class="key">False</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t336" class="pln">                <span class="op">)</span><span class="op">.</span><span class="nam">first</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t337" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t338" class="stm mis">                <span class="nam">export_data</span> <span class="op">=</span> <span class="nam">export_data</span> <span class="key">and</span> <span class="nam">export_data</span><span class="op">.</span><span class="nam">data</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'excel'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t339" class="stm mis">                <span class="nam">self</span><span class="op">.</span><span class="nam">add_entries_from_excel_data</span><span class="op">(</span><span class="nam">rows</span><span class="op">,</span> <span class="nam">data</span><span class="op">,</span> <span class="nam">export_data</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t340" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t341" class="stm mis">            <span class="nam">rows</span><span class="op">.</span><span class="nam">apply</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t342" class="stm mis">        <span class="key">return</span> <span class="nam">self</span><span class="strut">&nbsp;</span></p>
+<p id="t343" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t344" class="stm run hide_run">    <span class="key">def</span> <span class="nam">export</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t345" class="pln">        <span class="str">"""</span><span class="strut">&nbsp;</span></p>
+<p id="t346" class="pln"><span class="str">        Export and return export data</span><span class="strut">&nbsp;</span></p>
+<p id="t347" class="pln"><span class="str">        """</span><span class="strut">&nbsp;</span></p>
+<p id="t348" class="stm mis">        <span class="nam">self</span><span class="op">.</span><span class="nam">group</span><span class="op">.</span><span class="nam">set_col_types</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">col_types</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t349" class="stm mis">        <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">split</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t350" class="stm mis">            <span class="nam">self</span><span class="op">.</span><span class="nam">split</span><span class="op">.</span><span class="nam">set_col_types</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">col_types</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t351" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t352" class="stm mis">        <span class="nam">buffer</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">wb</span><span class="op">.</span><span class="nam">save</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t353" class="stm mis">        <span class="nam">filename</span> <span class="op">=</span> <span class="nam">generate_filename</span><span class="op">(</span><span class="str">'Entries Export'</span><span class="op">,</span> <span class="str">'xlsx'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t354" class="stm mis">        <span class="key">return</span> <span class="nam">filename</span><span class="op">,</span> <span class="nam">Export</span><span class="op">.</span><span class="nam">XLSX</span><span class="op">,</span> <span class="nam">EXCEL_MIME_TYPE</span><span class="op">,</span> <span class="nam">ContentFile</span><span class="op">(</span><span class="nam">buffer</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 
             </td>
         </tr>
@@ -786,7 +790,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-11 08:03
+            created at 2019-09-12 05:46
         </p>
     </div>
 </div>

@@ -237,16 +237,14 @@
 <p id="n166" class="pln"><a href="#n166">166</a></p>
 <p id="n167" class="pln"><a href="#n167">167</a></p>
 <p id="n168" class="pln"><a href="#n168">168</a></p>
-<p id="n169" class="pln"><a href="#n169">169</a></p>
-<p id="n170" class="pln"><a href="#n170">170</a></p>
+<p id="n169" class="stm mis"><a href="#n169">169</a></p>
+<p id="n170" class="stm mis"><a href="#n170">170</a></p>
 <p id="n171" class="stm mis"><a href="#n171">171</a></p>
-<p id="n172" class="stm mis"><a href="#n172">172</a></p>
-<p id="n173" class="stm mis"><a href="#n173">173</a></p>
+<p id="n172" class="pln"><a href="#n172">172</a></p>
+<p id="n173" class="pln"><a href="#n173">173</a></p>
 <p id="n174" class="pln"><a href="#n174">174</a></p>
 <p id="n175" class="pln"><a href="#n175">175</a></p>
-<p id="n176" class="pln"><a href="#n176">176</a></p>
-<p id="n177" class="pln"><a href="#n177">177</a></p>
-<p id="n178" class="stm mis"><a href="#n178">178</a></p>
+<p id="n176" class="stm mis"><a href="#n176">176</a></p>
 
             </td>
             <td class="text">
@@ -410,24 +408,22 @@
 <p id="t158" class="pln">                    <span class="str">'div'</span><span class="op">,</span> <span class="op">{</span><span class="str">'class'</span><span class="op">:</span> <span class="str">'field-item'</span><span class="op">}</span><span class="strut">&nbsp;</span></p>
 <p id="t159" class="pln">                <span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t160" class="stm mis">                <span class="nam">link</span> <span class="op">=</span> <span class="nam">link_elem</span><span class="op">.</span><span class="nam">find</span><span class="op">(</span><span class="str">'a'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t161" class="stm mis">                <span class="nam">data</span> <span class="op">=</span> <span class="nam">Lead</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t162" class="pln">                    <span class="com"># FIXME: use proper key</span><span class="strut">&nbsp;</span></p>
-<p id="t163" class="pln">                    <span class="nam">id</span><span class="op">=</span><span class="nam">link</span><span class="op">[</span><span class="str">'href'</span><span class="op">]</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t164" class="pln">                    <span class="nam">title</span><span class="op">=</span><span class="nam">title</span><span class="op">.</span><span class="nam">strip</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t165" class="pln">                    <span class="nam">published_on</span><span class="op">=</span><span class="nam">date</span><span class="op">.</span><span class="nam">date</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t166" class="pln">                    <span class="nam">url</span><span class="op">=</span><span class="nam">link</span><span class="op">[</span><span class="str">'href'</span><span class="op">]</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t167" class="pln">                    <span class="nam">source</span><span class="op">=</span><span class="str">'Briefing Notes'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t168" class="pln">                    <span class="nam">source_type</span><span class="op">=</span><span class="nam">Lead</span><span class="op">.</span><span class="nam">WEBSITE</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t169" class="pln">                    <span class="nam">website</span><span class="op">=</span><span class="str">'www.acaps.org/special-reports'</span><span class="strut">&nbsp;</span></p>
-<p id="t170" class="pln">                <span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t171" class="stm mis">                <span class="nam">results</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">data</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t172" class="stm mis">            <span class="key">except</span> <span class="nam">Exception</span> <span class="key">as</span> <span class="nam">e</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t173" class="stm mis">                <span class="nam">logger</span><span class="op">.</span><span class="nam">warning</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t174" class="pln">                    <span class="str">"Exception parsing {} with params {}: {}"</span><span class="op">.</span><span class="nam">format</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t175" class="pln">                        <span class="nam">self</span><span class="op">.</span><span class="nam">URL</span><span class="op">,</span> <span class="nam">params</span><span class="op">,</span> <span class="nam">e</span><span class="op">.</span><span class="nam">args</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t176" class="pln">                <span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t177" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t178" class="stm mis">        <span class="key">return</span> <span class="nam">results</span><span class="op">,</span> <span class="nam">len</span><span class="op">(</span><span class="nam">results</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t161" class="stm mis">                <span class="nam">data</span> <span class="op">=</span> <span class="op">{</span><span class="strut">&nbsp;</span></p>
+<p id="t162" class="pln">                    <span class="str">'title'</span><span class="op">:</span> <span class="nam">title</span><span class="op">.</span><span class="nam">strip</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t163" class="pln">                    <span class="str">'published_on'</span><span class="op">:</span> <span class="nam">date</span><span class="op">.</span><span class="nam">date</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t164" class="pln">                    <span class="str">'url'</span><span class="op">:</span> <span class="nam">link</span><span class="op">[</span><span class="str">'href'</span><span class="op">]</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t165" class="pln">                    <span class="str">'source'</span><span class="op">:</span> <span class="str">'Briefing Notes'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t166" class="pln">                    <span class="str">'source_type'</span><span class="op">:</span> <span class="nam">Lead</span><span class="op">.</span><span class="nam">WEBSITE</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t167" class="pln">                    <span class="str">'website'</span><span class="op">:</span> <span class="str">'www.acaps.org/special-reports'</span><span class="strut">&nbsp;</span></p>
+<p id="t168" class="pln">                <span class="op">}</span><span class="strut">&nbsp;</span></p>
+<p id="t169" class="stm mis">                <span class="nam">results</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">data</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t170" class="stm mis">            <span class="key">except</span> <span class="nam">Exception</span> <span class="key">as</span> <span class="nam">e</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t171" class="stm mis">                <span class="nam">logger</span><span class="op">.</span><span class="nam">warning</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
+<p id="t172" class="pln">                    <span class="str">"Exception parsing {} with params {}: {}"</span><span class="op">.</span><span class="nam">format</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
+<p id="t173" class="pln">                        <span class="nam">self</span><span class="op">.</span><span class="nam">URL</span><span class="op">,</span> <span class="nam">params</span><span class="op">,</span> <span class="nam">e</span><span class="op">.</span><span class="nam">args</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t174" class="pln">                <span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t175" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t176" class="stm mis">        <span class="key">return</span> <span class="nam">results</span><span class="strut">&nbsp;</span></p>
 
             </td>
         </tr>
@@ -438,7 +434,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-11 08:03
+            created at 2019-09-12 05:46
         </p>
     </div>
 </div>

@@ -249,15 +249,15 @@
 <p id="t78" class="stm mis">                <span class="nam">datestr</span> <span class="op">=</span> <span class="nam">tds</span><span class="op">[</span><span class="num">3</span><span class="op">]</span><span class="op">.</span><span class="nam">get_text</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">strip</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t79" class="stm mis">                <span class="nam">date</span> <span class="op">=</span> <span class="nam">datetime</span><span class="op">.</span><span class="nam">strptime</span><span class="op">(</span><span class="nam">datestr</span><span class="op">,</span> <span class="str">'%m/%d/%Y'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t80" class="stm mis">                <span class="nam">url</span> <span class="op">=</span> <span class="nam">tds</span><span class="op">[</span><span class="num">4</span><span class="op">]</span><span class="op">.</span><span class="nam">find</span><span class="op">(</span><span class="str">'a'</span><span class="op">)</span><span class="op">[</span><span class="str">'href'</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
-<p id="t81" class="stm mis">                <span class="nam">data</span> <span class="op">=</span> <span class="nam">Lead</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t82" class="pln">                    <span class="nam">id</span><span class="op">=</span><span class="nam">url</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t83" class="pln">                    <span class="nam">title</span><span class="op">=</span><span class="nam">title</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t84" class="pln">                    <span class="nam">published_on</span><span class="op">=</span><span class="nam">date</span><span class="op">.</span><span class="nam">date</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t85" class="pln">                    <span class="nam">url</span><span class="op">=</span><span class="nam">url</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t86" class="pln">                    <span class="nam">source</span><span class="op">=</span><span class="str">'Humanitarian Response'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t87" class="pln">                    <span class="nam">website</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">URL</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t88" class="pln">                    <span class="nam">source_type</span><span class="op">=</span><span class="nam">Lead</span><span class="op">.</span><span class="nam">WEBSITE</span><span class="strut">&nbsp;</span></p>
-<p id="t89" class="pln">                <span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t81" class="stm mis">                <span class="nam">data</span> <span class="op">=</span> <span class="op">{</span><span class="strut">&nbsp;</span></p>
+<p id="t82" class="pln">                    <span class="str">'id'</span><span class="op">:</span> <span class="nam">url</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t83" class="pln">                    <span class="str">'title'</span><span class="op">:</span> <span class="nam">title</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t84" class="pln">                    <span class="str">'published_on'</span><span class="op">:</span> <span class="nam">date</span><span class="op">.</span><span class="nam">date</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t85" class="pln">                    <span class="str">'url'</span><span class="op">:</span> <span class="nam">url</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t86" class="pln">                    <span class="str">'source'</span><span class="op">:</span> <span class="str">'Humanitarian Response'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t87" class="pln">                    <span class="str">'website'</span><span class="op">:</span> <span class="nam">self</span><span class="op">.</span><span class="nam">URL</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t88" class="pln">                    <span class="str">'source_type'</span><span class="op">:</span> <span class="nam">Lead</span><span class="op">.</span><span class="nam">WEBSITE</span><span class="strut">&nbsp;</span></p>
+<p id="t89" class="pln">                <span class="op">}</span><span class="strut">&nbsp;</span></p>
 <p id="t90" class="stm mis">                <span class="nam">results</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">data</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t91" class="stm mis">            <span class="key">except</span> <span class="nam">Exception</span> <span class="key">as</span> <span class="nam">e</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t92" class="stm mis">                <span class="nam">logger</span><span class="op">.</span><span class="nam">warning</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
@@ -265,7 +265,7 @@
 <p id="t94" class="pln">                    <span class="nam">str</span><span class="op">(</span><span class="nam">e</span><span class="op">.</span><span class="nam">args</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t95" class="pln">                <span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t96" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t97" class="stm mis">        <span class="key">return</span> <span class="nam">results</span><span class="op">,</span> <span class="nam">len</span><span class="op">(</span><span class="nam">results</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t97" class="stm mis">        <span class="key">return</span> <span class="nam">results</span><span class="strut">&nbsp;</span></p>
 
             </td>
         </tr>
@@ -276,7 +276,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-11 08:03
+            created at 2019-09-12 05:46
         </p>
     </div>
 </div>

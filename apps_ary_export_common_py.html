@@ -274,7 +274,7 @@
 <p id="t84" class="pln">            <span class="str">'imported_by'</span><span class="op">:</span> <span class="str">', '</span><span class="op">.</span><span class="nam">join</span><span class="op">(</span><span class="op">[</span><span class="nam">user</span><span class="op">.</span><span class="nam">username</span> <span class="key">for</span> <span class="nam">user</span> <span class="key">in</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">assignee</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span><span class="op">]</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
 <p id="t85" class="pln">            <span class="str">'lead_title'</span><span class="op">:</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">title</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
 <p id="t86" class="pln">            <span class="str">'url'</span><span class="op">:</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">url</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t87" class="pln">            <span class="str">'source'</span><span class="op">:</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">source</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t87" class="pln">            <span class="str">'source'</span><span class="op">:</span> <span class="op">(</span><span class="nam">lead</span><span class="op">.</span><span class="nam">source</span> <span class="key">and</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">source</span><span class="op">.</span><span class="nam">title</span><span class="op">)</span> <span class="key">or</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">source_raw</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
 <p id="t88" class="pln">        <span class="op">}</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
 <p id="t89" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t90" class="pln">        <span class="str">'background'</span><span class="op">:</span> <span class="op">{</span><span class="strut">&nbsp;</span></p>
@@ -314,7 +314,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-11 08:03
+            created at 2019-09-12 05:46
         </p>
     </div>
 </div>

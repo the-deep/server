@@ -158,9 +158,8 @@
 <p id="n87" class="pln"><a href="#n87">87</a></p>
 <p id="n88" class="pln"><a href="#n88">88</a></p>
 <p id="n89" class="pln"><a href="#n89">89</a></p>
-<p id="n90" class="pln"><a href="#n90">90</a></p>
+<p id="n90" class="stm mis"><a href="#n90">90</a></p>
 <p id="n91" class="stm mis"><a href="#n91">91</a></p>
-<p id="n92" class="stm mis"><a href="#n92">92</a></p>
 
             </td>
             <td class="text">
@@ -245,17 +244,16 @@
 <p id="t79" class="stm mis">            <span class="nam">date</span> <span class="op">=</span> <span class="nam">tds</span><span class="op">[</span><span class="num">1</span><span class="op">]</span><span class="op">.</span><span class="nam">find</span><span class="op">(</span><span class="str">'span'</span><span class="op">)</span><span class="op">.</span><span class="nam">attrs</span><span class="op">[</span><span class="str">'content'</span><span class="op">]</span><span class="op">[</span><span class="op">:</span><span class="num">10</span><span class="op">]</span>  <span class="com"># just date str  # noqa</span><span class="strut">&nbsp;</span></p>
 <p id="t80" class="stm mis">            <span class="nam">date</span> <span class="op">=</span> <span class="nam">datetime</span><span class="op">.</span><span class="nam">datetime</span><span class="op">.</span><span class="nam">strptime</span><span class="op">(</span><span class="nam">date</span><span class="op">,</span> <span class="str">'%Y-%m-%d'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t81" class="stm mis">            <span class="nam">url</span> <span class="op">=</span> <span class="nam">tds</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="op">.</span><span class="nam">find</span><span class="op">(</span><span class="str">'a'</span><span class="op">)</span><span class="op">.</span><span class="nam">attrs</span><span class="op">[</span><span class="str">'href'</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
-<p id="t82" class="stm mis">            <span class="nam">data</span> <span class="op">=</span> <span class="nam">Lead</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t83" class="pln">                <span class="nam">id</span><span class="op">=</span><span class="nam">url</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t84" class="pln">                <span class="nam">title</span><span class="op">=</span><span class="nam">title</span><span class="op">.</span><span class="nam">strip</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t85" class="pln">                <span class="nam">published_on</span><span class="op">=</span><span class="nam">date</span><span class="op">.</span><span class="nam">date</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t86" class="pln">                <span class="nam">url</span><span class="op">=</span><span class="nam">url</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t87" class="pln">                <span class="nam">source</span><span class="op">=</span><span class="str">"Research Resource Center"</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t88" class="pln">                <span class="nam">source_type</span><span class="op">=</span><span class="nam">Lead</span><span class="op">.</span><span class="nam">WEBSITE</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t89" class="pln">                <span class="nam">website</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">URL</span><span class="strut">&nbsp;</span></p>
-<p id="t90" class="pln">            <span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t91" class="stm mis">            <span class="nam">results</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">data</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t92" class="stm mis">        <span class="key">return</span> <span class="nam">results</span><span class="op">,</span> <span class="nam">len</span><span class="op">(</span><span class="nam">results</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t82" class="stm mis">            <span class="nam">data</span> <span class="op">=</span> <span class="op">{</span><span class="strut">&nbsp;</span></p>
+<p id="t83" class="pln">                <span class="str">'title'</span><span class="op">:</span> <span class="nam">title</span><span class="op">.</span><span class="nam">strip</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t84" class="pln">                <span class="str">'published_on'</span><span class="op">:</span> <span class="nam">date</span><span class="op">.</span><span class="nam">date</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t85" class="pln">                <span class="str">'url'</span><span class="op">:</span> <span class="nam">url</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t86" class="pln">                <span class="str">'source'</span><span class="op">:</span> <span class="str">"Research Resource Center"</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t87" class="pln">                <span class="str">'source_type'</span><span class="op">:</span> <span class="nam">Lead</span><span class="op">.</span><span class="nam">WEBSITE</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t88" class="pln">                <span class="str">'website'</span><span class="op">:</span> <span class="nam">self</span><span class="op">.</span><span class="nam">URL</span><span class="strut">&nbsp;</span></p>
+<p id="t89" class="pln">            <span class="op">}</span><span class="strut">&nbsp;</span></p>
+<p id="t90" class="stm mis">            <span class="nam">results</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">data</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t91" class="stm mis">        <span class="key">return</span> <span class="nam">results</span><span class="strut">&nbsp;</span></p>
 
             </td>
         </tr>
@@ -266,7 +264,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-11 08:03
+            created at 2019-09-12 05:46
         </p>
     </div>
 </div>

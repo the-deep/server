@@ -395,7 +395,7 @@
 <p id="t124" class="pln">        <span class="op">}</span><span class="strut">&nbsp;</span></p>
 <p id="t125" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t126" class="stm run hide_run">        <span class="nam">source</span> <span class="op">=</span> <span class="nam">source_store</span><span class="op">[</span><span class="nam">connector</span><span class="op">.</span><span class="nam">source</span><span class="op">]</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t127" class="stm run hide_run">        <span class="nam">data</span><span class="op">,</span> <span class="nam">count</span> <span class="op">=</span> <span class="nam">source</span><span class="op">.</span><span class="nam">fetch</span><span class="op">(</span><span class="nam">params</span><span class="op">,</span> <span class="nam">offset</span><span class="op">,</span> <span class="nam">limit</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t127" class="stm run hide_run">        <span class="nam">data</span><span class="op">,</span> <span class="nam">count</span> <span class="op">=</span> <span class="nam">source</span><span class="op">.</span><span class="nam">get_leads</span><span class="op">(</span><span class="nam">params</span><span class="op">,</span> <span class="nam">offset</span><span class="op">,</span> <span class="nam">limit</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t128" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t129" class="pln">        <span class="com"># Paginate manually</span><span class="strut">&nbsp;</span></p>
 <p id="t130" class="pln">        <span class="com"># FIXME: Make this better: probably cache, and also optimize</span><span class="strut">&nbsp;</span></p>
@@ -476,7 +476,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-11 08:03
+            created at 2019-09-12 05:46
         </p>
     </div>
 </div>
