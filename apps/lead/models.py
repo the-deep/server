@@ -49,14 +49,10 @@ class Lead(UserResource, ProjectEntityMixin):
 
     # Confidentiality choices
     UNPROTECTED = 'unprotected'
-    PROTECTED = 'protected'
-    RESTRICTED = 'restricted'
     CONFIDENTIAL = 'confidential'
 
     CONFIDENTIALITIES = (
         (UNPROTECTED, 'Unprotected'),
-        (PROTECTED, 'Protected'),
-        (RESTRICTED, 'Restricted'),
         (CONFIDENTIAL, 'Confidential'),
     )
 
