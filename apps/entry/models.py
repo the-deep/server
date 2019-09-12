@@ -4,6 +4,7 @@ from django.db import models
 
 from utils.common import parse_number
 from project.mixins import ProjectEntityMixin
+from project.permissions import PROJECT_PERMISSIONS
 from gallery.models import File
 from user.models import User
 from user_resource.models import UserResource
@@ -104,6 +105,39 @@ class Entry(UserResource, ProjectEntityMixin):
 
         self.image_url = file.get_file_url()
         return self.image_url
+
+    @classmethod
+    def get_for(cls, user):
+        """Entry can be only accessed by users who have access to it's
+        project along with required permissions
+        """
+        view_unprotected_perm_value = PROJECT_PERMISSIONS.lead.view_only_unprotected
+        view_perm_value = PROJECT_PERMISSIONS.entry.view
+
+        # NOTE: This is quite complicated because user can have two view roles:
+        # view entry or lead view_only_unprotected, both of which return different results
+        qs = cls.objects.filter(
+            project__projectmembership__member=user,
+        ).annotate(
+            # Get permission value for LEAD view_only_unprotected permission
+            view_unprotected=models.F(
+                'project__projectmembership__role__lead_permissions'
+            ).bitand(view_unprotected_perm_value),
+            # Get permission value for view permission
+            view_all=models.F(
+                'project__projectmembership__role__entry_permissions'
+            ).bitand(view_perm_value)
+        ).filter(
+            # If lead is view only unprotected, filter entries with
+            # lead confidentiality not confidential
+            (
+                models.Q(view_unprotected=view_unprotected_perm_value) &
+                ~models.Q(lead__confidentiality=Lead.CONFIDENTIAL)
+            ) |
+            # Or, return nothing if view_all is not present
+            models.Q(view_all=view_perm_value)
+        )
+        return qs
 
     class Meta(UserResource.Meta):
         verbose_name_plural = 'entries'

@@ -3,6 +3,7 @@ from user.models import User
 from user.serializers import SimpleUserSerializer
 from project.models import Project, ProjectMembership, ProjectRole
 from project.serializers import SimpleProjectSerializer
+from project.permissions import PROJECT_PERMISSIONS
 from geo.models import Region
 
 from organization.models import Organization
@@ -455,7 +456,6 @@ class LeadTests(TestCase):
 
         assert 'has_emm_leads' in data
         assert data['has_emm_leads'], "There are emm leads"
-
 
     def test_trigger_api(self):
         project = self.create(Project, role=self.admin_role)
@@ -986,9 +986,9 @@ class LeadTests(TestCase):
         }
         assert expected_triggers == result_triggers
 
-    def test_fail_lead_view_confidential_without_permissions(self):
+    def test_cannot_view_confidential_lead_without_permissions(self):
         view_unprotected_role = ProjectRole.objects.create(
-            lead_permissions=1 << 4,  # This is the value for view_only_unprotected
+            lead_permissions=PROJECT_PERMISSIONS.lead.view_only_unprotected,
         )
         project = self.create(Project, role=view_unprotected_role)
 
