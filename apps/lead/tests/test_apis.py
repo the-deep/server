@@ -986,6 +986,37 @@ class LeadTests(TestCase):
         }
         assert expected_triggers == result_triggers
 
+    def test_fail_lead_view_confidential_without_permissions(self):
+        view_unprotected_role = ProjectRole.objects.create(
+            lead_permissions=1 << 4,  # This is the value for view_only_unprotected
+        )
+        project = self.create(Project, role=view_unprotected_role)
+
+        lead1 = self.create_lead(project=project, confidentiality=Lead.UNPROTECTED)
+        lead_confidential = self.create_lead(project=project, confidentiality=Lead.CONFIDENTIAL)
+
+        url = '/api/v1/leads/'
+        self.authenticate()
+
+        resp = self.client.get(url)
+        self.assert_200(resp)
+
+        leads_ids = set([x['id'] for x in resp.data['results']])
+        assert leads_ids == {lead1.id}, "Only confidential should be present"
+
+        # Check get particuar non-confidential lead, should return 200
+        url = f'/api/v1/leads/{lead1.id}/'
+        self.authenticate()
+
+        resp = self.client.get(url)
+        self.assert_200(resp)
+
+        # Check get particuar confidential lead, should return 404
+        url = f'/api/v1/leads/{lead_confidential.id}/'
+        self.authenticate()
+
+        resp = self.client.get(url)
+        self.assert_404(resp)
 
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:
