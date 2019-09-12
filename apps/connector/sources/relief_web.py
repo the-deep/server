@@ -1,7 +1,7 @@
 import requests
 
-from .base import Source
 from lead.models import Lead
+from .base import Source
 
 
 class ReliefWeb(Source):
@@ -68,19 +68,19 @@ class ReliefWeb(Source):
         post_params['sort'] = ['date.original:desc', 'title:asc']
 
         resp = requests.post(self.URL, json=post_params).json()
-        count = resp['totalCount']
 
         for datum in resp['data']:
             fields = datum['fields']
-            lead = Lead(
-                id=str(datum['id']),
-                title=fields['title'],
-                published_on=fields['date']['original'],
-                url=fields['url_alias'],
-                source='reliefweb',
-                author=fields['source'][0]['name'],
-                website='www.reliefweb.int',
-            )
+            lead = {
+                'id': str(datum['id']),
+                'title': fields['title'],
+                'published_on': fields['date']['original'],
+                'url': fields['url_alias'],
+                'source': 'reliefweb',
+                'source_type': Lead.WEBSITE,
+                'author': fields['source'][0]['name'],
+                'website': 'www.reliefweb.int',
+            }
             results.append(lead)
 
-        return results, count
+        return results

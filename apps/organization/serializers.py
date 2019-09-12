@@ -3,7 +3,7 @@ from user_resource.serializers import UserResourceSerializer
 from drf_dynamic_fields import DynamicFieldsMixin
 
 from geo.serializers import SimpleRegionSerializer
-from lead.serializers import URLCachedFileField
+from deep.serializers import URLCachedFileField
 
 from .models import Organization, OrganizationType
 
@@ -13,6 +13,12 @@ class OrganizationTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrganizationType
         fields = ('__all__')
+
+
+class SimpleOrganizationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = ('id', 'title')
 
 
 class OrganizationSerializer(DynamicFieldsMixin, UserResourceSerializer):

@@ -107,6 +107,16 @@ class Profile(models.Model):
         # return settings.LANGUAGE_CODE
 
 
+def get_for_project(project):
+    return User.objects.prefetch_related('profile').filter(
+        models.Q(projectmembership__project=project) |
+        models.Q(usergroup__in=project.user_groups.all())
+    )
+
+
+User.get_for_project = get_for_project
+
+
 class EmailDomain(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)

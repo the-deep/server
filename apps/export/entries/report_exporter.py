@@ -83,7 +83,11 @@ class ReportExporter:
         lead = entry.lead
         self.lead_ids.append(lead.id)
 
-        source = lead.author or lead.source or 'Reference'
+        source = (
+            (lead.author and lead.author.title) or lead.author_raw or
+            (lead.source and lead.source.title) or lead.source_raw or
+            'Reference'
+        )
         url = lead.url or (
             lead.attachment and lead.attachment.get_file_url()
         )
@@ -274,8 +278,11 @@ class ReportExporter:
             # Source. Title. Date. Url
 
             para = self.doc.add_paragraph()
-            if lead.source and lead.source != '':
-                para.add_run('{}.'.format(lead.source.title()))
+            if lead.source:
+                para.add_run('{}.'.format(lead.source.title))
+            elif lead.source_raw and lead.source_raw != '':
+                # Legacy Data
+                para.add_run('{}.'.format(lead.source_raw.title()))
             else:
                 para.add_run('Missing source.')
 

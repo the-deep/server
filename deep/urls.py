@@ -128,6 +128,7 @@ from deep.views import (
 )
 from organization.views import (
     OrganizationViewSet,
+    OrganizationTypeViewSet,
 )
 from lang.views import (
     LanguageViewSet,
@@ -276,6 +277,7 @@ router.register(r'connector-projects', ConnectorProjectViewSet,
 
 # Organization routers
 router.register(r'organizations', OrganizationViewSet, basename='organization')
+router.register(r'organization-types', OrganizationTypeViewSet, basename='organization-type')
 
 # Export routers
 router.register(r'exports', ExportViewSet, basename='export')

@@ -3,6 +3,7 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
 from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
+from organization.serializers import SimpleOrganizationSerializer
 from user.serializers import SimpleUserSerializer
 from user_resource.serializers import UserResourceSerializer
 from project.serializers import ProjectEntitySerializer
@@ -47,7 +48,13 @@ class SimpleLeadSerializer(RemoveNullFieldsMixin,
                            serializers.ModelSerializer):
     class Meta:
         model = Lead
-        fields = ('id', 'title', 'source', 'author', 'created_at', 'created_by')
+        fields = (
+            'id', 'title', 'created_at', 'created_by',
+            'source_raw', 'author_raw',
+            'source', 'author',
+        )
+        # Legacy Fields
+        read_only_fields = ('author_raw', 'source_raw',)
 
 
 class LeadSerializer(RemoveNullFieldsMixin,
@@ -82,6 +89,9 @@ class LeadSerializer(RemoveNullFieldsMixin,
         read_only=True,
     )
 
+    author_detail = SimpleOrganizationSerializer(source='author', read_only=True)
+    source_detail = SimpleOrganizationSerializer(source='source', read_only=True)
+
     assignee_details = SimpleUserSerializer(
         source='get_assignee',
         # many=True,
@@ -96,6 +106,8 @@ class LeadSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = Lead
         fields = ('__all__')
+        # Legacy Fields
+        read_only_fields = ('author_raw', 'source_raw',)
 
     def get_tabular_book(self, obj):
         file = obj.attachment
@@ -224,3 +236,9 @@ class LeadGroupSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = LeadGroup
         fields = ('__all__')
+
+
+class SimpleLeadGroupSerializer(UserResourceSerializer):
+    class Meta:
+        model = LeadGroup
+        fields = ('id', 'title',)
