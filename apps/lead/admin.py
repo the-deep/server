@@ -25,6 +25,7 @@ class LeadAdmin(VersionAdmin):
     ordering = ('project', 'created_by', 'created_at')
     autocomplete_fields = (
         'project', 'created_by', 'modified_by', 'attachment', 'assignee',
+        'source', 'author',
     )
 
 

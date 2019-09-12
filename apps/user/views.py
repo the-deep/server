@@ -17,6 +17,7 @@ from rest_framework.decorators import action
 
 from utils.db.functions import StrPos
 from deep.views import get_frontend_url
+
 from .token import unsubscribe_email_token_generator
 from .serializers import (
     UserSerializer,

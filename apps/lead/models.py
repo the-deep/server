@@ -4,6 +4,7 @@ from django.db import models, transaction
 
 from project.models import Project
 from project.mixins import ProjectEntityMixin
+from organization.models import Organization
 from user_resource.models import UserResource
 from gallery.models import File
 
@@ -14,6 +15,10 @@ class LeadGroup(UserResource):
 
     def __str__(self):
         return self.title
+
+    @staticmethod
+    def get_for_project(project):
+        return LeadGroup.objects.filter(project=project)
 
     @staticmethod
     def get_for(user):
@@ -94,8 +99,20 @@ class Lead(UserResource, ProjectEntityMixin):
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
-    author = models.CharField(max_length=255, blank=True)
-    source = models.CharField(max_length=255, blank=True)
+
+    author = models.ForeignKey(
+        Organization, related_name='leads_by_author',
+        on_delete=models.SET_NULL, null=True, blank=True, default=None,
+    )
+    source = models.ForeignKey(
+        Organization, related_name='leads_by_source',
+        on_delete=models.SET_NULL, null=True, blank=True, default=None,
+    )
+
+    # Legacy Data
+    author_raw = models.CharField(max_length=255, blank=True)
+    source_raw = models.CharField(max_length=255, blank=True)
+
     source_type = models.CharField(max_length=30,
                                    choices=SOURCE_TYPES,
                                    default=UNKNOWN)

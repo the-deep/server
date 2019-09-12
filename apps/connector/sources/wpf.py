@@ -172,13 +172,12 @@ class WorldFoodProgramme(Source):
             content = row.find('h3').find('a')
             title = content.get_text()
             url = content['href']
-            data = Lead(
-                id=url,
-                title=title.strip(),
-                url=url,
-                source='WFP Assessments',
-                source_type=Lead.WEBSITE,
-                website='www.wfp.org'
-            )
+            data = {
+                'title': title.strip(),
+                'url': url,
+                'source': 'WFP Assessments',
+                'source_type': Lead.WEBSITE,
+                'website': 'www.wfp.org'
+            }
             results.append(data)
         return results, len(results)

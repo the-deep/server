@@ -79,14 +79,13 @@ class ResearchResourceCenter(Source):
             date = tds[1].find('span').attrs['content'][:10]  # just date str  # noqa
             date = datetime.datetime.strptime(date, '%Y-%m-%d')
             url = tds[0].find('a').attrs['href']
-            data = Lead(
-                id=url,
-                title=title.strip(),
-                published_on=date.date(),
-                url=url,
-                source="Research Resource Center",
-                source_type=Lead.WEBSITE,
-                website=self.URL
-            )
+            data = {
+                'title': title.strip(),
+                'published_on': date.date(),
+                'url': url,
+                'source': "Research Resource Center",
+                'source_type': Lead.WEBSITE,
+                'website': self.URL
+            }
             results.append(data)
-        return results, len(results)
+        return results

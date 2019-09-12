@@ -15,9 +15,11 @@ from rest_framework import (
     views,
     viewsets,
 )
+
 import django_filters
 
 from deep.permissions import ModifyPermission
+from deep.paginations import AutocompleteSetPagination
 
 from lead.filter_set import (
     LeadGroupFilterSet,
@@ -25,9 +27,14 @@ from lead.filter_set import (
 )
 from project.models import Project, ProjectMembership
 from project.permissions import PROJECT_PERMISSIONS as PROJ_PERMS
+from project.serializers import SimpleProjectSerializer
+from user.serializers import SimpleUserSerializer
+from organization.models import Organization
+from organization.serializers import SimpleOrganizationSerializer
 from lead.models import LeadGroup, Lead
 from lead.serializers import (
     LeadGroupSerializer,
+    SimpleLeadGroupSerializer,
     LeadSerializer,
     LeadPreviewSerializer,
     check_if_url_exists,
@@ -65,6 +72,19 @@ class LeadGroupViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return LeadGroup.get_for(self.request.user)
+
+
+class ProjectLeadGroupViewSet(LeadGroupViewSet):
+    """
+    NOTE: Only to be used by Project's action route [DONOT USE DIRECTLY]
+    """
+    pagination_class = AutocompleteSetPagination
+    serializer_class = SimpleLeadGroupSerializer
+    filter_backends = (filters.SearchFilter,)
+
+    def get_queryset(self):
+        project = Project.objects.get(pk=self.request.query_params['project'])
+        return LeadGroup.get_for_project(project)
 
 
 class LeadViewSet(viewsets.ModelViewSet):
@@ -148,83 +168,86 @@ class LeadPreviewViewSet(viewsets.ReadOnlyModelViewSet):
 class LeadOptionsView(views.APIView):
     """
     Options for various attributes related to lead
+
+    Example:
+    ```json
+    {
+        "projects": [1, 2],
+        "leadGroups": [1, 2],
+        "members": [1, 2],
+        "organizations": [1, 2]
+    }
+    ```
     """
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, version=None):
-        project_query = request.GET.get('project')
-        fields_query = request.GET.get('fields')
+    def post(self, request, version=None):
+        fields = request.data
+        projects_id = fields.get('projects', [])
+        lead_groups_id = fields.get('lead_groups', [])
+        organizations_id = fields.get('organizations', [])
+        members_id = fields.get('members')
 
-        projects = Project.get_for_member(request.user)
-        if project_query:
-            projects = projects.filter(id__in=project_query.split(','))
+        projects = Project.get_for_member(request.user).filter(
+            id__in=projects_id,
+        )
+        if not projects.exists():
+            raise exceptions.NotFound('Provided projects not found')
 
-        fields = None
-        if fields_query:
-            fields = fields_query.split(',')
+        def _filter_by_project(qs):
+            return qs.filter(project__in=projects).distinct()
 
-        options = {}
-
-        def _filter_by_projects(qs, projects):
-            for p in projects:
-                qs = qs.filter(project=p)
-            return qs
-
-        def _filter_by_projects_and_groups(qs, projects):
-            for p in projects:
+        def _filter_by_project_and_group(qs):
+            for project in projects:
                 qs = qs.filter(
-                    models.Q(project=p) |
-                    models.Q(usergroup__in=p.user_groups.all())
+                    models.Q(project=project) |
+                    models.Q(usergroup__in=project.user_groups.all())
                 )
-            return qs
+            return qs.distinct()
 
-        if (fields is None or 'lead_group' in fields):
-            lead_groups = _filter_by_projects(
-                LeadGroup.objects,
-                projects,
-            )
-            options['lead_group'] = [
-                {
-                    'key': group.id,
-                    'value': group.title,
-                } for group in lead_groups.distinct()
-            ]
+        options = {
+            'projects': SimpleProjectSerializer(projects, many=True).data,
 
-        if (fields is None or 'assignee' in fields):
-            assignee = _filter_by_projects_and_groups(User.objects, projects)
-            options['assignee'] = [
-                {
-                    'key': user.id,
-                    'value': user.profile.get_display_name(),
-                } for user in assignee.distinct()
-            ]
-
-        if (fields is None or 'confidentiality' in fields):
-            confidentiality = [
+            # Static Options
+            'confidentiality': [
                 {
                     'key': c[0],
                     'value': c[1],
                 } for c in Lead.CONFIDENTIALITIES
-            ]
-            options['confidentiality'] = confidentiality
+            ],
 
-        if (fields is None or 'status' in fields):
-            status = [
+            'status': [
                 {
                     'key': s[0],
                     'value': s[1],
                 } for s in Lead.STATUSES
-            ]
-            options['status'] = status
+            ],
 
-        if (fields is None or 'project' in fields):
-            projects = Project.get_for_member(request.user)
-            options['project'] = [
-                {
-                    'key': project.id,
-                    'value': project.title,
-                } for project in projects.distinct()
-            ]
+            # Dynamic Options
+            'lead_groups': lead_groups_id and (
+                SimpleLeadGroupSerializer(
+                    _filter_by_project(
+                        LeadGroup.objects.filter(id__in=lead_groups_id),
+                    ),
+                    many=True,
+                ).data
+            ),
+
+            'members': SimpleUserSerializer(
+                _filter_by_project_and_group(
+                    User.objects.filter(id__in=members_id)
+                    if members_id is not None else User.objects,
+                ),
+                many=True,
+            ).data,
+
+            'organizations': organizations_id and (
+                SimpleOrganizationSerializer(
+                    Organization.objects.filter(id__in=organizations_id),
+                    many=True,
+                ).data
+            ),
+        }
 
         return response.Response(options)
 
@@ -315,14 +338,22 @@ class WebInfoExtractView(views.APIView):
     """
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_organization(self, title):
+        org = Organization.objects.filter(
+            models.Q(title__iexact=title) |
+            models.Q(short_name__iexact=title)
+        ).first()
+        if org:
+            return SimpleOrganizationSerializer(org).data
+
     def post(self, request, version=None):
         url = request.data.get('url')
 
         extractor = get_web_info_extractor(url)
         date = extractor.get_date()
         country = extractor.get_country()
-        source = extractor.get_source()
-        author = extractor.get_author()
+        source_raw = extractor.get_source()
+        author_raw = extractor.get_author()
         website = extractor.get_website()
         title = extractor.get_title()
 
@@ -341,8 +372,10 @@ class WebInfoExtractView(views.APIView):
             'country': country,
             'website': website,
             'url': url,
-            'source': source,
-            'author': author,
+            'source': self.get_organization(source_raw),
+            'source_raw': source_raw,
+            'author': self.get_organization(author_raw),
+            'author_raw': author_raw,
             'existing': check_if_url_exists(url, request.user, project),
         })
 

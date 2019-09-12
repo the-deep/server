@@ -115,11 +115,12 @@ class ExcelExporter:
     def assessments_to_rows(self):
         for index, assessment in enumerate(self._assessments):
             rows = RowsBuilder(self.split, self.group, split=False)
+            lead = assessment.lead
             rows.add_value_list([
-                format_date(assessment.lead.created_at),
-                assessment.lead.created_by.username,
-                assessment.lead.title,
-                assessment.lead.source
+                format_date(lead.created_at),
+                lead.created_by.username,
+                lead.title,
+                (lead.source and lead.source.title) or lead.source_raw,
             ])
             headers_dict = {}
             flat = self._flats[index]
