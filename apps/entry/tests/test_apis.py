@@ -374,9 +374,8 @@ class EntryTests(TestCase):
 
     def test_cannot_view_confidential_entry_without_permissions(self):
         view_unprotected_role = ProjectRole.objects.create(
-            lead_permissions=PROJECT_PERMISSIONS.lead.view_only_unprotected,
-            # 15 for all: can CRUD normal entries, xow with view to set it zero
-            entry_permissions=15 ^ PROJECT_PERMISSIONS.entry.view,
+            lead_permissions=15,
+            entry_permissions=PROJECT_PERMISSIONS.entry.view_only_unprotected,
         )
         project = self.create(Project, role=view_unprotected_role)
 
