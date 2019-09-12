@@ -1103,5 +1103,5 @@ class ProjectApiTest(TestCase):
         response = self.client.get(url)
         self.assert_200(response)
         # Only provide projects leads-group [Pagination is done for larger dataset]
-        assert set([lg['id'] for lg in response.json()['results']]),\
+        assert set([lg['id'] for lg in response.json()['results']]) ==\
             set([lead_group1.pk, lead_group2.pk])
