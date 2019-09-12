@@ -193,7 +193,7 @@ class Lead(UserResource, ProjectEntityMixin):
                 'project__projectmembership__role__lead_permissions'
             ).bitand(view_perm_value)
         ).filter(
-            # if view only unprotected, filter projects with confidentiality not confidential
+            # If view only unprotected, filter leads with confidentiality not confidential
             (
                 models.Q(view_unprotected=view_unprotected_perm_value) &
                 ~models.Q(confidentiality=Lead.CONFIDENTIAL)
