@@ -8,7 +8,7 @@
     
     
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/organization/views.py: 100%</title>
+    <title>Coverage for apps/organization/views.py: 79%</title>
     <link rel="stylesheet" href="style.css" type="text/css">
     
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -24,15 +24,15 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>apps/organization/views.py</b> :
-            <span class="pc_cov">100%</span>
+            <span class="pc_cov">79%</span>
         </h1>
 
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
 
         <h2 class="stats">
-            19 statements &nbsp;
+            22 statements &nbsp;
             <span class="run hide_run shortkey_r button_toggle_run">19 run</span>
-            <span class="mis shortkey_m button_toggle_mis">0 missing</span>
+            <span class="mis shortkey_m button_toggle_mis">3 missing</span>
             <span class="exc shortkey_x button_toggle_exc">0 excluded</span>
 
             
@@ -104,10 +104,14 @@
 <p id="n33" class="stm run hide_run"><a href="#n33">33</a></p>
 <p id="n34" class="stm run hide_run"><a href="#n34">34</a></p>
 <p id="n35" class="stm run hide_run"><a href="#n35">35</a></p>
-<p id="n36" class="stm run hide_run"><a href="#n36">36</a></p>
-<p id="n37" class="pln"><a href="#n37">37</a></p>
+<p id="n36" class="pln"><a href="#n36">36</a></p>
+<p id="n37" class="stm run hide_run"><a href="#n37">37</a></p>
 <p id="n38" class="stm run hide_run"><a href="#n38">38</a></p>
-<p id="n39" class="stm run hide_run"><a href="#n39">39</a></p>
+<p id="n39" class="pln"><a href="#n39">39</a></p>
+<p id="n40" class="stm run hide_run"><a href="#n40">40</a></p>
+<p id="n41" class="stm mis"><a href="#n41">41</a></p>
+<p id="n42" class="stm mis"><a href="#n42">42</a></p>
+<p id="n43" class="stm mis"><a href="#n43">43</a></p>
 
             </td>
             <td class="text">
@@ -144,12 +148,16 @@
 <p id="t31" class="pln"><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t32" class="stm run hide_run">    <span class="nam">serializer_class</span> <span class="op">=</span> <span class="nam">OrganizationSerializer</span><span class="strut">&nbsp;</span></p>
 <p id="t33" class="stm run hide_run">    <span class="nam">permission_classes</span> <span class="op">=</span> <span class="op">[</span><span class="nam">permissions</span><span class="op">.</span><span class="nam">IsAuthenticated</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
-<p id="t34" class="stm run hide_run">    <span class="nam">queryset</span> <span class="op">=</span> <span class="nam">Organization</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t35" class="stm run hide_run">    <span class="nam">pagination_class</span> <span class="op">=</span> <span class="nam">AutocompleteSetPagination</span><span class="strut">&nbsp;</span></p>
-<p id="t36" class="stm run hide_run">    <span class="nam">filter_backends</span> <span class="op">=</span> <span class="op">(</span><span class="nam">django_filters</span><span class="op">.</span><span class="nam">rest_framework</span><span class="op">.</span><span class="nam">DjangoFilterBackend</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t37" class="pln">                       <span class="nam">filters</span><span class="op">.</span><span class="nam">SearchFilter</span><span class="op">,</span> <span class="nam">filters</span><span class="op">.</span><span class="nam">OrderingFilter</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t38" class="stm run hide_run">    <span class="nam">search_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'title'</span><span class="op">,</span> <span class="str">'short_name'</span><span class="op">,</span> <span class="str">'long_name'</span><span class="op">,</span> <span class="str">'url'</span><span class="op">,</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t39" class="stm run hide_run">    <span class="nam">filterset_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'verified'</span><span class="op">,</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t34" class="stm run hide_run">    <span class="nam">pagination_class</span> <span class="op">=</span> <span class="nam">AutocompleteSetPagination</span><span class="strut">&nbsp;</span></p>
+<p id="t35" class="stm run hide_run">    <span class="nam">filter_backends</span> <span class="op">=</span> <span class="op">(</span><span class="nam">django_filters</span><span class="op">.</span><span class="nam">rest_framework</span><span class="op">.</span><span class="nam">DjangoFilterBackend</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t36" class="pln">                       <span class="nam">filters</span><span class="op">.</span><span class="nam">SearchFilter</span><span class="op">,</span> <span class="nam">filters</span><span class="op">.</span><span class="nam">OrderingFilter</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t37" class="stm run hide_run">    <span class="nam">search_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'title'</span><span class="op">,</span> <span class="str">'short_name'</span><span class="op">,</span> <span class="str">'long_name'</span><span class="op">,</span> <span class="str">'url'</span><span class="op">,</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t38" class="stm run hide_run">    <span class="nam">filterset_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'verified'</span><span class="op">,</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t39" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t40" class="stm run hide_run">    <span class="key">def</span> <span class="nam">get_queryset</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t41" class="stm mis">        <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">kwargs</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'pk'</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t42" class="stm mis">            <span class="key">return</span> <span class="nam">Organization</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">prefetch_related</span><span class="op">(</span><span class="str">'parent'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t43" class="stm mis">        <span class="key">return</span> <span class="nam">Organization</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">parent</span><span class="op">=</span><span class="key">None</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 
             </td>
         </tr>
@@ -160,7 +168,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-13 06:00
+            created at 2019-09-13 09:10
         </p>
     </div>
 </div>
