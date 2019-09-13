@@ -299,8 +299,9 @@ class LeadTests(TestCase):
         # NOTE: 3 leads with keyword keyword1, one with keyword2
         # 2 leads with factor rf1, 2 with factor rf2
 
+        data = {'projects': [project.id]}
         self.authenticate()
-        response = self.client.get(url)
+        response = self.client.post(url, data)
         self.assert_200(response)
         data = response.data
 

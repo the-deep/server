@@ -360,39 +360,28 @@ class LeadOptionsView(views.APIView):
                 ).data
             ),
         }
-        if (fields is None or 'project' in fields):
-            user_projects = Project.get_for_member(request.user)
-            options['project'] = [
-                {
-                    'key': project.id,
-                    'value': project.title,
-                } for project in user_projects.distinct()
-            ]
 
         # Create Emm specific options
-        if (fields is None or 'emm_entities' in fields):
-            options['emm_entities'] = EMMEntity.objects.filter(
-                lead__project__in=projects
-            ).distinct().values('name').annotate(
-                count=models.Count('lead'),
-                key=models.F('name'),
-            ).values('key', 'count').order_by('name')
+        options['emm_entities'] = EMMEntity.objects.filter(
+            lead__project__in=projects
+        ).distinct().values('name').annotate(
+            count=models.Count('lead'),
+            key=models.F('name'),
+        ).values('key', 'count').order_by('name')
 
-        if (fields is None or 'emm_keywords' in fields):
-            options['emm_keywords'] = LeadEMMTrigger.objects.filter(
-                lead__project__in=projects
-            ).values('emm_keyword').annotate(
-                total_count=models.Sum('count'),
-                key=models.F('emm_keyword')
-            ).order_by('emm_keyword')
+        options['emm_keywords'] = LeadEMMTrigger.objects.filter(
+            lead__project__in=projects
+        ).values('emm_keyword').annotate(
+            total_count=models.Sum('count'),
+            key=models.F('emm_keyword')
+        ).order_by('emm_keyword')
 
-        if (fields is None or 'emm_risk_factors' in fields):
-            options['emm_risk_factors'] = LeadEMMTrigger.objects.filter(
-                lead__project__in=projects
-            ).values('emm_risk_factor').annotate(
-                total_count=models.Sum('count'),
-                key=models.F('emm_risk_factor'),
-            ).order_by('emm_risk_factor')
+        options['emm_risk_factors'] = LeadEMMTrigger.objects.filter(
+            lead__project__in=projects
+        ).values('emm_risk_factor').annotate(
+            total_count=models.Sum('count'),
+            key=models.F('emm_risk_factor'),
+        ).order_by('emm_risk_factor')
 
         return response.Response(options)
 
