@@ -9,9 +9,9 @@ omit = */migrations/*
         */wsgi.py
         manage.py
         .tox/*
-        */apps.py
-        */urls.py
-        */tests.py
+        **/apps.py
+        **/urls.py
+        **/tests.py
         export/*
 
 [report]

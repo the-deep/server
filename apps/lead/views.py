@@ -341,7 +341,8 @@ class WebInfoExtractView(views.APIView):
     def get_organization(self, title):
         org = Organization.objects.filter(
             models.Q(title__iexact=title) |
-            models.Q(short_name__iexact=title)
+            models.Q(short_name__iexact=title) |
+            models.Q(long_name__iexact=title)
         ).first()
         if org:
             return SimpleOrganizationSerializer(org).data

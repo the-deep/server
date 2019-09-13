@@ -31,9 +31,13 @@ class OrganizationViewSet(
 ):
     serializer_class = OrganizationSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = Organization.objects.all()
     pagination_class = AutocompleteSetPagination
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter)
     search_fields = ('title', 'short_name', 'long_name', 'url',)
     filterset_fields = ('verified',)
+
+    def get_queryset(self):
+        if self.kwargs.get('pk'):
+            return Organization.objects.prefetch_related('parent')
+        return Organization.objects.filter(parent=None)
