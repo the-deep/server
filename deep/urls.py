@@ -295,7 +295,7 @@ router.register(r'pages', PageViewSet, basename='page')
 
 # Versioning : (v1|v2|v3)
 
-API_PREFIX = r'^api/(?P<version>(v1))/'
+API_PREFIX = r'^api/(?P<version>(v1|v2))/'
 
 
 def get_api_path(path):

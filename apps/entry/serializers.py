@@ -7,7 +7,7 @@ from deep.serializers import (
 )
 from project.serializers import ProjectEntitySerializer
 from project.models import Project
-from lead.serializers import LeadSerializer
+from lead.serializers import LeadSerializer, LegacyLeadSerializer
 from lead.models import Lead
 from analysis_framework.serializers import AnalysisFrameworkSerializer
 from geo.models import GeoArea, Region
@@ -194,6 +194,10 @@ class EditEntriesDataSerializer(RemoveNullFieldsMixin,
                 region.calc_cache()
             options[str(region.id)] = region.geo_options
         return options
+
+
+class LegacyEditEntriesDataSerializer(EditEntriesDataSerializer):
+    lead = LegacyLeadSerializer(source='*', read_only=True)
 
 
 class ComprehensiveAttributeSerializer(
