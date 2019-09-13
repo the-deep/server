@@ -57,8 +57,21 @@ class SimpleLeadSerializer(RemoveNullFieldsMixin,
         read_only_fields = ('author_raw', 'source_raw',)
 
 
-class LeadSerializer(RemoveNullFieldsMixin,
-                     DynamicFieldsMixin, ProjectEntitySerializer):
+class LegacySimpleLeadSerializer(SimpleLeadSerializer):
+    source = serializers.CharField(source='source_raw')
+    author = serializers.CharField(source='author_raw')
+
+    class Meta:
+        model = Lead
+        fields = (
+            'id', 'title', 'created_at', 'created_by',
+            'source', 'author',
+        )
+
+
+class LeadSerializer(
+    RemoveNullFieldsMixin, DynamicFieldsMixin, ProjectEntitySerializer
+):
     """
     Lead Model Serializer
     """
@@ -182,6 +195,19 @@ class LeadSerializer(RemoveNullFieldsMixin,
             if assignee:
                 lead.assignee.add(assignee)
         return lead
+
+
+# Legacy
+class LegacyLeadSerializer(LeadSerializer):
+    author_detail = None
+    source_detail = None
+
+    source = serializers.CharField(source='source_raw')
+    author = serializers.CharField(source='author_raw')
+
+    class Meta:
+        model = Lead
+        exclude = ('source_raw', 'author_raw',)
 
 
 class LeadPreviewImageSerializer(RemoveNullFieldsMixin,

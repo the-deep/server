@@ -576,7 +576,7 @@ class WebInfoExtractionTests(TestCase):
         self.unhcr = self.create(Organization, **UNHCR_DATA)
 
     def test_redhum(self):
-        url = '/api/v1/web-info-extract/'
+        url = '/api/v2/web-info-extract/'
         data = {
             'url': 'https://redhum.org/documento/3227553',
         }
@@ -608,7 +608,7 @@ class WebInfoExtractionTests(TestCase):
         sample_project = self.create(Project, role=self.admin_role)
         sample_project.regions.add(sample_region)
 
-        url = '/api/v1/web-info-extract/'
+        url = '/api/v2/web-info-extract/'
         data = {
             'url': SAMPLE_WEB_INFO_URL
         }
