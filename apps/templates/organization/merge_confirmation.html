@@ -1,0 +1,56 @@
+{% extends "admin/delete_selected_confirmation.html" %}
+{% load i18n l10n admin_urls static %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+&rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+&rsaquo; {% trans 'Merge multiple organizations' %}
+</div>
+{% endblock %}
+
+{% block content %}
+{% if perms_lacking %}
+    <p>{% blocktrans %}Merging the selected {{ objects_name }} would result in merged related objects, but your account doesn't have permission to merge the following types of objects:{% endblocktrans %}</p>
+    <ul>
+    {% for obj in perms_lacking %}
+        <li>{{ obj }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>{% blocktrans %}Are you sure you want to merge the selected {{ objects_name }}? All of the following objects and their related items will be merged:{% endblocktrans %}</p>
+
+    <h2>{% trans "Summary" %}</h2>
+    <ul>
+        {% for model_name, object_count in model_count %}
+        <li>{{ model_name|capfirst }}: {{ object_count }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>{% trans "Organizations" %}</h2>
+    <ul>
+    {%for obj in mergable_objects %}
+        {%include "organization/merge_tree_view.html" %}
+    {%endfor%}
+    </ul>
+
+    <form method="post">
+        {% csrf_token %}
+        <div>
+            {% for fieldset in adminform %}
+            {% include "admin/includes/fieldset.html" %}
+            {% endfor %}
+        </div>
+        <div class="submit-row">
+            {% for obj in queryset %}
+                <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}">
+            {% endfor %}
+            <input type="hidden" name="action" value="merge_organizations">
+            <input type="hidden" name="post" value="yes">
+            <input type="submit" value="{% trans 'Yes, I’m sure' %}">
+            <a href="#" class="button cancel-link">{% trans "No, take me back" %}</a>
+        </div>
+    </form>
+{% endif %}
+{% endblock %}

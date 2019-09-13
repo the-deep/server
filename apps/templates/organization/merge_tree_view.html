@@ -1,0 +1,12 @@
+{% load admin_urls %}
+
+<li>
+    <a href="{% url opts|admin_urlname:'change' obj.pk|admin_urlquote %}">{{obj}}</a>
+    <ul>
+     {%for ch in obj.related_childs.all %}
+          {%with obj=ch template_name="organization/merge_tree_view.html" %}
+          {%include template_name%}
+          {%endwith%}
+     {%endfor%}
+     </ul>
+</li>

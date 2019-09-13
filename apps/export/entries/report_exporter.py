@@ -84,8 +84,8 @@ class ReportExporter:
         self.lead_ids.append(lead.id)
 
         source = (
-            (lead.author and lead.author.title) or lead.author_raw or
-            (lead.source and lead.source.title) or lead.source_raw or
+            (lead.author and lead.author.data.title) or lead.author_raw or
+            (lead.source and lead.source.data.title) or lead.source_raw or
             'Reference'
         )
         url = lead.url or (
@@ -279,7 +279,7 @@ class ReportExporter:
 
             para = self.doc.add_paragraph()
             if lead.source:
-                para.add_run('{}.'.format(lead.source.title))
+                para.add_run('{}.'.format(lead.source.data.title))
             elif lead.source_raw and lead.source_raw != '':
                 # Legacy Data
                 para.add_run('{}.'.format(lead.source_raw.title()))
