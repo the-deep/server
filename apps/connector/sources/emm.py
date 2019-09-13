@@ -104,8 +104,12 @@ class EMM(RssFeed):
     def parse_emm_item(self, item):
         info = {}
         for lead_field, field in self.option_lead_field_map.items():
-            element = item.find(self.params.get(field, ''))
-            info[lead_field] = '' if element is None else element.text or element.get('href')
+            if not self.params.get(field):
+                field_value = None
+            else:
+                element = item.find(self.params.get(field, ''))
+                field_value = element.text or element.get('href')
+            info[lead_field] = field_value
 
         # Parse entities
         info['entities'] = self.get_entities(item)
