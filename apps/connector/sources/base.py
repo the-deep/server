@@ -51,20 +51,27 @@ class Source(ABC):
         })
         leads = []
         for ldata in leads_data:
-            leads.append(
-                Lead(
-                    id=ldata.get('id', random_key()),
-                    title=ldata['title'],
-                    published_on=ldata['published_on'],
-                    url=ldata['url'],
-                    source_raw=ldata['source'],
-                    author_raw=ldata['author'],
-                    source=organization_map.get(ldata['source']),
-                    author=organization_map.get(ldata['author']),
-                    source_type=ldata['source_type'],
-                    website=ldata['website'],
-                )
+            lead = Lead(
+                id=ldata.get('id', random_key()),
+                title=ldata['title'],
+                published_on=ldata['published_on'],
+                url=ldata['url'],
+                source_raw=ldata['source'],
+                author_raw=ldata['author'],
+                source=organization_map.get(ldata['source']),
+                author=organization_map.get(ldata['author']),
+                source_type=ldata['source_type'],
+                website=ldata['website'],
             )
+
+            # Add emm info
+            if ldata.get('emm_triggers') is not None:
+                lead._emm_triggers = ldata['emm_triggers']
+            if ldata.get('emm_entities') is not None:
+                lead._emm_triggers = ldata['emm_entities']
+
+            leads.append(lead)
+
         return leads, len(leads)
 
     def query_leads(self, params, limit=None, offset=None):

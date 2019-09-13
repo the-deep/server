@@ -229,3 +229,7 @@ class ConnectorApiTest(TestCase):
         self.assertIsNotNone(response.data.get('results'))
         self.assertTrue(response.data['count'], 15)
         self.assertIsInstance(response.data['results'], list)
+
+        for x in response.data['results']:
+            assert 'emm_entities' in x
+            assert 'emm_triggers' in x
