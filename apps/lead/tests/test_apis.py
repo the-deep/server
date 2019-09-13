@@ -70,6 +70,52 @@ class LeadTests(TestCase):
         self.assertEqual(r_data['title'], data['title'])
         self.assertEqual(r_data['assignee'], self.user.id)
 
+    def test_create_lead_with_emm(self):
+        entity1 = self.create(EMMEntity, name='entity1')
+        entity2 = self.create(EMMEntity, name='entity2')
+
+        lead_count = Lead.objects.count()
+        project = self.create(Project, role=self.admin_role)
+
+        url = '/api/v1/leads/'
+        data = {
+            'title': 'Spaceship spotted in sky',
+            'project': project.id,
+            'source': self.source.pk,
+            'author': self.author.pk,
+            'confidentiality': Lead.UNPROTECTED,
+            'status': Lead.PENDING,
+            'text': 'Alien shapeship has been spotted in the sky',
+            'assignee': self.user.id,
+            'emm_entities': [
+                {'name': entity1.name},
+                {'name': entity2.name},
+            ],
+            'emm_triggers': [
+                {'emm_keyword': 'kw', 'emm_risk_factor': 'rf', 'count': 3},
+                {'emm_keyword': 'kw1', 'emm_risk_factor': 'rf1', 'count': 6},
+            ]}
+
+        self.authenticate()
+        response = self.client.post(url, data, format='json')
+        self.assert_201(response)
+
+        self.assertEqual(Lead.objects.count(), lead_count + 1)
+        r_data = response.data
+        self.assertEqual(r_data['title'], data['title'])
+        self.assertEqual(r_data['assignee'], self.user.id)
+
+        print(r_data)
+        assert 'emm_entities' in r_data
+        assert 'emm_triggers' in r_data
+        # assert len(r_data['emm_entities']) == 2
+        assert len(r_data['emm_triggers']) == 2
+
+        lead_id = r_data['id']
+
+        # Check emm triggers created
+        assert LeadEMMTrigger.objects.filter(lead_id=lead_id).count() == 2
+
     def test_get_lead_check_no_of_entries(self, assignee=None):
         project = self.create(Project, role=self.admin_role)
 

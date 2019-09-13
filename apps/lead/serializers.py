@@ -131,14 +131,14 @@ class LeadSerializer(
         required=False,
     )
     tabular_book = serializers.SerializerMethodField()
-    emm_triggers = LeadEMMTriggerSerializer(many=True, read_only=True)
-    emm_entities = EMMEntitySerializer(many=True, read_only=True)
+    emm_triggers = LeadEMMTriggerSerializer(many=True, required=False)
+    emm_entities = EMMEntitySerializer(many=True, required=False)
 
     class Meta:
         model = Lead
         fields = ('__all__')
         # Legacy Fields
-        read_only_fields = ('author_raw', 'source_raw', 'emm_triggers', 'emm_entries',)
+        read_only_fields = ('author_raw', 'source_raw',)
 
     def get_tabular_book(self, obj):
         file = obj.attachment
@@ -197,8 +197,18 @@ class LeadSerializer(
         assignee = assignee_id and get_object_or_404(User, id=assignee_id)
 
         emm_triggers = validated_data.pop('emm_triggers', [])
+        emm_entities = validated_data.pop('emm_entities', [])
+        print(emm_triggers)
+        print(emm_entities)
 
         lead = super().create(validated_data)
+
+        for entity in emm_entities:
+            entity = EMMEntity.objects.filter(name=entity['name']).first()
+            if entity is None:
+                continue
+            lead.emm_entities.add(entity)
+        lead.save()
 
         with transaction.atomic():
             for trigger in emm_triggers:
