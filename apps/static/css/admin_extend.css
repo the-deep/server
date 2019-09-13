@@ -66,3 +66,21 @@ input[type=submit], input[type=button] {
     margin: 5px;
     width: calc(100% - 10px);
 }
+
+/* Custom button */
+.submit-row a.unmergelink {
+    display: block;
+    background-image: initial;
+    background: #ffcc00;
+    border-radius: 4px;
+    padding: 10px 15px;
+    height: 15px;
+    line-height: 15px;
+    color: #fff;
+}
+
+.submit-row p.unmergelink-box {
+    float: left;
+    margin: 0;
+    padding-left: 10px;
+}

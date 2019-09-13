@@ -33,7 +33,9 @@ class Source(ABC):
                     Q(title__iexact=d['source']) |
                     Q(title__iexact=d['author']) |
                     Q(short_name__iexact=d['source']) |
-                    Q(short_name__iexact=d['author'])
+                    Q(short_name__iexact=d['author']) |
+                    Q(long_name__iexact=d['source']) |
+                    Q(long_name__iexact=d['author'])
                 ),
                 leads_data,
             )

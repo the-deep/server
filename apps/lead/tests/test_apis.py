@@ -237,10 +237,10 @@ class LeadTests(TestCase):
             'projects': [project.pk],
         }
         response = self.client.post(url, data)
-        rdata = response.json()
+        rdata = response.data
         assert_id(rdata['members'], SimpleUserSerializer([user1, user2, user], many=True).data)
         assert rdata['projects'] == SimpleProjectSerializer([project], many=True).data
-        assert rdata['leadGroups'] == []
+        assert rdata['lead_groups'] == []
         assert rdata['organizations'] == []
         check_default_options(rdata)
 
@@ -252,10 +252,10 @@ class LeadTests(TestCase):
             'organizations': [unhcr.pk]
         }
         response = self.client.post(url, data)
-        rdata = response.json()
+        rdata = response.data
         assert_id(rdata['members'], SimpleUserSerializer([user1, user2], many=True).data)
         assert rdata['projects'] == SimpleProjectSerializer([project], many=True).data
-        assert rdata['leadGroups'] == SimpleLeadGroupSerializer([lead_group2], many=True).data
+        assert rdata['lead_groups'] == SimpleLeadGroupSerializer([lead_group2], many=True).data
         assert rdata['organizations'] == SimpleOrganizationSerializer([unhcr], many=True).data
         check_default_options(rdata)
 
@@ -562,7 +562,7 @@ class LeadTests(TestCase):
 SAMPLE_WEB_INFO_URL = 'https://reliefweb.int/report/yemen/yemen-emergency-food-security-and-nutrition-assessment-efsna-2016-preliminary-results' # noqa
 SAMPLE_WEB_INFO_SOURCE = 'World Food Programme, UN Children\'s Fund, Food and Agriculture Organization of the United Nations' # noqa
 SAMPLE_WEB_INFO_COUNTRY = 'Yemen'
-SAMPLE_WEB_INFO_DATE = str(date(2017, 1, 26))
+SAMPLE_WEB_INFO_DATE = date(2017, 1, 26)
 SAMPLE_WEB_INFO_WEBSITE = 'reliefweb.int'
 SAMPLE_WEB_INFO_TITLE = 'Yemen Emergency Food Security and Nutrition Assessment (EFSNA) 2016 - Preliminary Results' # noqa
 
@@ -583,16 +583,17 @@ class WebInfoExtractionTests(TestCase):
         try:
             self.authenticate()
             response = self.client.post(url, data)
+            rdata = self.client.post(url, data).data
             self.assert_200(response)
-            self.assertEqual(response['title'], 'Pregnant women flee lack of maternal health care in Venezuela')
-            self.assertEqual(response['date'], '2019-07-23')
-            self.assertEqual(response['country'], 'Colombia')
-            self.assertEqual(response['website'], 'redhum.org')
-            self.assertEqual(response['url'], data['url'])
-            self.assertEqual(response['source'], self.redhum.pk)
-            self.assertEqual(response['author'], self.author.pk)
-            self.assertEqual(response['sourceRaw'], 'redhum')
-            self.assertEqual(response['authorRaw'], 'UNHCR')
+            self.assertEqual(rdata['title'], 'Pregnant women flee lack of maternal health care in Venezuela')
+            self.assertEqual(rdata['date'], '2019-07-23')
+            self.assertEqual(rdata['country'], 'Colombia')
+            self.assertEqual(rdata['website'], 'redhum.org')
+            self.assertEqual(rdata['url'], data['url'])
+            self.assertEqual(rdata['source_raw'], 'redhum')
+            self.assertEqual(rdata['author_raw'], 'United Nations High Commissioner for Refugees')
+            self.assertEqual(rdata['source'], SimpleOrganizationSerializer(self.redhum).data)
+            self.assertEqual(rdata['author'], SimpleOrganizationSerializer(self.unhcr).data)
         except Exception:
             import traceback
             logger.warning('\n' + ('*' * 30))
@@ -631,9 +632,9 @@ class WebInfoExtractionTests(TestCase):
             'title': SAMPLE_WEB_INFO_TITLE,
             'url': SAMPLE_WEB_INFO_URL,
             'source': SimpleOrganizationSerializer(self.reliefweb).data,
-            'sourceRaw': 'reliefweb',
+            'source_raw': 'reliefweb',
             'author': None,
-            'authorRaw': SAMPLE_WEB_INFO_SOURCE,
+            'author_raw': SAMPLE_WEB_INFO_SOURCE,
             'existing': False,
         }
-        self.assertEqual(response.json(), expected)
+        self.assertEqual(response.data, expected)
