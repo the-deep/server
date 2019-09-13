@@ -11,6 +11,14 @@ class OrganizationType(models.Model):
 
 
 class Organization(UserResource):
+    parent = models.ForeignKey(
+        # TODO: should we do this ? on_delete=models.CASCADE
+        'Organization', on_delete=models.CASCADE,
+        null=True, blank=True,
+        help_text='Deep will use the parent organization data instead of current',
+        related_name='related_childs',
+    )
+
     title = models.CharField(max_length=255)
     short_name = models.CharField(max_length=255, blank=True)
     long_name = models.CharField(max_length=512, blank=True)
@@ -33,5 +41,22 @@ class Organization(UserResource):
     verified = models.BooleanField(default=False)
     client_id = None
 
+    class Meta:
+        # Admin panel permissions
+        permissions = (
+            ("can_merge", "Can Merge organizations"),
+        )
+
+    @property
+    def data(self):
+        """
+        Get merged organization if merged
+        """
+        if self.parent_id:
+            return self.parent
+        return self
+
     def __str__(self):
-        return self.title
+        return f'{self.pk} : ({self.short_name}) {self.title} ' + (
+            '(MERGED)' if self.parent else ''
+        )

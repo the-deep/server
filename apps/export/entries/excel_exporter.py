@@ -315,8 +315,8 @@ class ExcelExporter:
                 entry.created_by.profile.get_display_name(),
                 format_date(entry.created_at.date()),
                 lead.title,
-                (lead.author and lead.author.title) or lead.author_raw,
-                (lead.source and lead.source.title) or lead.source_raw,
+                (lead.author and lead.author.data.title) or lead.author_raw,
+                (lead.source and lead.source.data.title) or lead.source_raw,
                 assignee and assignee.profile.get_display_name(),
                 self.get_entry_data(entry),
             ])
