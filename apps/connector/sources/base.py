@@ -68,7 +68,7 @@ class Source(ABC):
             if ldata.get('emm_triggers') is not None:
                 lead._emm_triggers = ldata['emm_triggers']
             if ldata.get('emm_entities') is not None:
-                lead._emm_triggers = ldata['emm_entities']
+                lead._emm_entities = ldata['emm_entities']
 
             leads.append(lead)
 

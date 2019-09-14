@@ -7,6 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('lead', '0024_lead_author'),
+        ('lead', '0025_auto_20190828_0949'),
     ]
 
     operations = [
