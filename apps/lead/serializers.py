@@ -48,8 +48,9 @@ class SingleValueThayMayBeListField(serializers.Field):
 
 
 class EMMEntitySerializer(serializers.Serializer, RemoveNullFieldsMixin, DynamicFieldsMixin):
+    name = serializers.CharField()
+
     class Meta:
-        model = EMMEntity
         fields = '__all__'
 
 
@@ -78,7 +79,7 @@ class LegacySimpleLeadSerializer(SimpleLeadSerializer):
         )
 
 
-class LeadEMMTriggerSerializer(serializers.Serializer, RemoveNullFieldsMixin, DynamicFieldsMixin):
+class LeadEMMTriggerSerializer(serializers.ModelSerializer, RemoveNullFieldsMixin, DynamicFieldsMixin):
     class Meta:
         model = LeadEMMTrigger
         fields = '__all__'
@@ -198,8 +199,6 @@ class LeadSerializer(
 
         emm_triggers = validated_data.pop('emm_triggers', [])
         emm_entities = validated_data.pop('emm_entities', [])
-        print(emm_triggers)
-        print(emm_entities)
 
         lead = super().create(validated_data)
 

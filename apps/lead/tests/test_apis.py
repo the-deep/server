@@ -94,7 +94,8 @@ class LeadTests(TestCase):
             'emm_triggers': [
                 {'emm_keyword': 'kw', 'emm_risk_factor': 'rf', 'count': 3},
                 {'emm_keyword': 'kw1', 'emm_risk_factor': 'rf1', 'count': 6},
-            ]}
+            ]
+        }
 
         self.authenticate()
         response = self.client.post(url, data, format='json')
