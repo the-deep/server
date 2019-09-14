@@ -355,20 +355,23 @@ class LeadTests(TestCase):
         # Check emm_entities
         assert 'emm_entities' in data
         # TODO: consider provider_id
-        expected_entity_count_set = {(entity1.name, 1), (entity2.name, 2), (entity3.name, 1)}
-        result_entity_count_set = {(x['key'], x['count']) for x in data['emm_entities']}
+        expected_entity_count_set = {
+            (entity1.id, entity1.name, 1),
+            (entity2.id, entity2.name, 2),
+            (entity3.id, entity3.name, 1)}
+        result_entity_count_set = {(x['key'], x['label'], x['total_count']) for x in data['emm_entities']}
         assert expected_entity_count_set == result_entity_count_set
 
         # Check emm_risk_factors
         assert 'emm_risk_factors' in data
-        expected_risk_factors_count_set = {('rf1', 8), ('rf2', 6)}
-        result_risk_factors_count_set = {(x['key'], x['total_count']) for x in data['emm_risk_factors']}
+        expected_risk_factors_count_set = {('rf1', 'rf1', 8), ('rf2', 'rf2', 6)}
+        result_risk_factors_count_set = {(x['key'], x['label'], x['total_count']) for x in data['emm_risk_factors']}
         assert expected_risk_factors_count_set == result_risk_factors_count_set
 
         # Check emm_keywords
         assert 'emm_keywords' in data
-        expected_keywords_count_set = {('keyword1', 11), ('keyword2', 3)}
-        result_keywords_count_set = {(x['key'], x['total_count']) for x in data['emm_keywords']}
+        expected_keywords_count_set = {('keyword1', 'keyword1', 11), ('keyword2', 'keyword2', 3)}
+        result_keywords_count_set = {(x['key'], x['label'], x['total_count']) for x in data['emm_keywords']}
         assert expected_keywords_count_set == result_keywords_count_set
 
     def test_trigger_api(self):
@@ -707,8 +710,7 @@ class LeadTests(TestCase):
         assert 'emm_risk_factors' in extra
 
         expected_entities_counts = {('entity1', 1), ('entity2', 2), ('entity3', 1)}
-        result_entities_counts = {(x['name'], x['count']) for x in extra['emm_entities']}
-        print(result_entities_counts)
+        result_entities_counts = {(x['name'], x['total_count']) for x in extra['emm_entities']}
         assert expected_entities_counts == result_entities_counts
 
     def test_lead_filter_emm_keywords(self):

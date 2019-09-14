@@ -157,7 +157,7 @@ class LeadViewSet(viewsets.ModelViewSet):
 
         # Aggregate emm data
         emm_entities = EMMEntity.objects.filter(lead__in=qs).values('name').\
-            annotate(count=models.Count('name')).values('name', 'count')
+            annotate(total_count=models.Count('name')).values('name', 'total_count')
 
         emm_keywords = LeadEMMTrigger.objects.filter(lead__in=qs).values('emm_keyword').\
             annotate(
@@ -365,15 +365,17 @@ class LeadOptionsView(views.APIView):
         options['emm_entities'] = EMMEntity.objects.filter(
             lead__project__in=projects
         ).distinct().values('name').annotate(
-            count=models.Count('lead'),
-            key=models.F('name'),
-        ).values('key', 'count').order_by('name')
+            total_count=models.Count('lead'),
+            label=models.F('name'),
+            key=models.F('id'),
+        ).values('key', 'label', 'total_count').order_by('name')
 
         options['emm_keywords'] = LeadEMMTrigger.objects.filter(
             lead__project__in=projects
         ).values('emm_keyword').annotate(
             total_count=models.Sum('count'),
-            key=models.F('emm_keyword')
+            key=models.F('emm_keyword'),
+            label=models.F('emm_keyword')
         ).order_by('emm_keyword')
 
         options['emm_risk_factors'] = LeadEMMTrigger.objects.filter(
@@ -381,6 +383,7 @@ class LeadOptionsView(views.APIView):
         ).values('emm_risk_factor').annotate(
             total_count=models.Sum('count'),
             key=models.F('emm_risk_factor'),
+            label=models.F('emm_risk_factor'),
         ).order_by('emm_risk_factor')
 
         return response.Response(options)

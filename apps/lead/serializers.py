@@ -85,8 +85,7 @@ class LeadEMMTriggerSerializer(serializers.ModelSerializer, RemoveNullFieldsMixi
 
     class Meta:
         model = LeadEMMTrigger
-        fields = '__all__'
-        read_only_fields = ('id', 'lead',)
+        fields = ('emm_risk_factor', 'emm_keyword', 'count',)
 
 
 class LeadSerializer(
