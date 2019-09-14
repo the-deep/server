@@ -25,6 +25,7 @@ from .serializers import (
     AssessmentTemplateSerializer,
     LeadAssessmentSerializer,
     LeadGroupAssessmentSerializer,
+    LegacyLeadGroupAssessmentSerializer,
 )
 
 
@@ -138,6 +139,11 @@ class LeadGroupAssessmentViewSet(mixins.RetrieveModelMixin,
                           ModifyPermission]
     lookup_field = 'lead_group'
     lookup_url_kwarg = 'pk'
+
+    def get_serializer_class(self):
+        if self.kwargs.get('version') == 'v1':
+            return LegacyLeadGroupAssessmentSerializer
+        return super().get_serializer_class()
 
     def get_queryset(self):
         return Assessment.get_for(self.request.user)

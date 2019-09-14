@@ -10,7 +10,11 @@ from deep.serializers import (
 
 from project.models import Project
 from user_resource.serializers import UserResourceSerializer
-from lead.serializers import SimpleLeadSerializer, ProjectEntitySerializer
+from lead.serializers import (
+    SimpleLeadSerializer,
+    LegacySimpleLeadSerializer,
+    ProjectEntitySerializer,
+)
 from lead.models import Lead, LeadGroup
 from deep.models import Field
 from geo.models import Region
@@ -103,6 +107,12 @@ class LeadGroupAssessmentSerializer(RemoveNullFieldsMixin,
         })
         assessment.save()
         return assessment
+
+
+class LegacyLeadGroupAssessmentSerializer(LeadGroupAssessmentSerializer):
+    leads = LegacySimpleLeadSerializer(
+        source='lead_group.lead_set', many=True, read_only=True,
+    )
 
 
 class ItemSerializer(serializers.Serializer):
