@@ -36,6 +36,7 @@ from lead.serializers import (
     LeadGroupSerializer,
     SimpleLeadGroupSerializer,
     LeadSerializer,
+    LegacyLeadSerializer,
     LeadPreviewSerializer,
     check_if_url_exists,
 )
@@ -117,6 +118,11 @@ class LeadViewSet(viewsets.ModelViewSet):
 
         return qs
 
+    def get_serializer_class(self):
+        if self.kwargs.get('version') == 'v1':
+            return LegacyLeadSerializer
+        return super().get_serializer_class()
+
     def get_serializer(self, *args, **kwargs):
         data = kwargs.get('data')
         project_list = data and data.get('project')
@@ -180,6 +186,84 @@ class LeadOptionsView(views.APIView):
     ```
     """
     permission_classes = [permissions.IsAuthenticated]
+
+    # LEGACY SUPPORT
+    def get(self, request, version=None):
+        project_query = request.GET.get('project')
+        fields_query = request.GET.get('fields')
+
+        projects = Project.get_for_member(request.user)
+        if project_query:
+            projects = projects.filter(id__in=project_query.split(','))
+
+        fields = None
+        if fields_query:
+            fields = fields_query.split(',')
+
+        options = {}
+
+        def _filter_by_projects(qs, projects):
+            for p in projects:
+                qs = qs.filter(project=p)
+            return qs
+
+        def _filter_by_projects_and_groups(qs, projects):
+            for p in projects:
+                qs = qs.filter(
+                    models.Q(project=p) |
+                    models.Q(usergroup__in=p.user_groups.all())
+                )
+            return qs
+
+        if (fields is None or 'lead_group' in fields):
+            lead_groups = _filter_by_projects(
+                LeadGroup.objects,
+                projects,
+            )
+            options['lead_group'] = [
+                {
+                    'key': group.id,
+                    'value': group.title,
+                } for group in lead_groups.distinct()
+            ]
+
+        if (fields is None or 'assignee' in fields):
+            assignee = _filter_by_projects_and_groups(User.objects, projects)
+            options['assignee'] = [
+                {
+                    'key': user.id,
+                    'value': user.profile.get_display_name(),
+                } for user in assignee.distinct()
+            ]
+
+        if (fields is None or 'confidentiality' in fields):
+            confidentiality = [
+                {
+                    'key': c[0],
+                    'value': c[1],
+                } for c in Lead.CONFIDENTIALITIES
+            ]
+            options['confidentiality'] = confidentiality
+
+        if (fields is None or 'status' in fields):
+            status = [
+                {
+                    'key': s[0],
+                    'value': s[1],
+                } for s in Lead.STATUSES
+            ]
+            options['status'] = status
+
+        if (fields is None or 'project' in fields):
+            projects = Project.get_for_member(request.user)
+            options['project'] = [
+                {
+                    'key': project.id,
+                    'value': project.title,
+                } for project in projects.distinct()
+            ]
+
+        return response.Response(options)
 
     def post(self, request, version=None):
         fields = request.data
@@ -366,19 +450,31 @@ class WebInfoExtractView(views.APIView):
 
         project = project or request.user.profile.last_active_project
 
-        return response.Response({
+        # LEGACY
+        organization_context = {
+            'source': source_raw,
+            'author': author_raw,
+        }
+        if version != 'v1':
+            organization_context = {
+                'source': self.get_organization(source_raw),
+                'author': self.get_organization(author_raw),
+                'source_raw': source_raw,
+                'author_raw': author_raw,
+            }
+
+        context = {
+            **organization_context,
             'project': project and project.id,
             'title': title,
             'date': date,
             'country': country,
             'website': website,
             'url': url,
-            'source': self.get_organization(source_raw),
-            'source_raw': source_raw,
-            'author': self.get_organization(author_raw),
-            'author_raw': author_raw,
             'existing': check_if_url_exists(url, request.user, project),
-        })
+        }
+
+        return response.Response(context)
 
 
 class LeadCopyView(views.APIView):
