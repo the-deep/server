@@ -828,7 +828,6 @@ class LeadTests(TestCase):
 
         expected_risk_factors_counts = {'rf1': 8, 'rf2': 6}
         result_risk_factors_counts = {x['name']: x['total_count'] for x in extra['emm_risk_factors']}
-        print(result_risk_factors_counts)
         for k, v in expected_risk_factors_counts.items():
             assert expected_risk_factors_counts[k] == result_risk_factors_counts[k]
 
