@@ -80,6 +80,9 @@ class LegacySimpleLeadSerializer(SimpleLeadSerializer):
 
 
 class LeadEMMTriggerSerializer(serializers.ModelSerializer, RemoveNullFieldsMixin, DynamicFieldsMixin):
+    emm_risk_factor = serializers.CharField(required=False)
+    count = serializers.IntegerField(required=False)
+
     class Meta:
         model = LeadEMMTrigger
         fields = '__all__'
