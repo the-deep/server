@@ -683,10 +683,27 @@ class LeadTests(TestCase):
         lead2 = self.create_lead(project=project, emm_entities=[entity2, entity3])
         lead3 = self.create_lead(project=project, emm_entities=[entity2])
         lead4 = self.create_lead(project=project)
-        print(lead1.id, lead2.id, lead3.id, lead4.id)
 
+        def _test_response(resp):
+            self.assert_200(resp)
+            assert len(resp.data['results']) == 3, "There should be three leads"
+            ids_list = [x['id']for x in resp.data['results']]
+            assert lead1.id in ids_list
+            assert lead2.id in ids_list
+            assert lead3.id in ids_list
+
+            assert 'extra' in resp.data
+            extra = resp.data['extra']
+            assert 'emm_entities' in extra
+            assert 'emm_keywords' in extra
+            assert 'emm_risk_factors' in extra
+
+            expected_entities_counts = {('entity1', 1), ('entity2', 2), ('entity3', 1)}
+            result_entities_counts = {(x['name'], x['total_count']) for x in extra['emm_entities']}
+            assert expected_entities_counts == result_entities_counts
+
+        # Test get filter
         self.authenticate()
-
         # Get a single lead
         resp = self.client.get(url.format(entity1.id))
         self.assert_200(resp)
@@ -696,22 +713,21 @@ class LeadTests(TestCase):
         # Get a multiple leads
         entities_query = ','.join([str(entity1.id), str(entity2.id)])
         resp = self.client.get(url.format(entities_query))
-        self.assert_200(resp)
-        assert len(resp.data['results']) == 3, "There should be three leads"
-        ids_list = [x['id']for x in resp.data['results']]
-        assert lead1.id in ids_list
-        assert lead2.id in ids_list
-        assert lead3.id in ids_list
+        _test_response(resp)
 
-        assert 'extra' in resp.data
-        extra = resp.data['extra']
-        assert 'emm_entities' in extra
-        assert 'emm_keywords' in extra
-        assert 'emm_risk_factors' in extra
+        # test post filter
+        url = '/api/v1/leads/filter/'
+        filter_data = {'emm_entities': [entity1.id]}
+        self.authenticate()
+        resp = self.client.post(url, filter_data, format='json')
+        assert len(resp.data['results']) == 1, "There should be one lead"
+        assert resp.data['results'][0]['id'] == lead1.id
 
-        expected_entities_counts = {('entity1', 1), ('entity2', 2), ('entity3', 1)}
-        result_entities_counts = {(x['name'], x['total_count']) for x in extra['emm_entities']}
-        assert expected_entities_counts == result_entities_counts
+        filter_data = {'emm_entities': [entity1.id, entity2.id]}
+        self.authenticate()
+        resp = self.client.post(url, filter_data, format='json')
+
+        _test_response(resp)
 
     def test_lead_filter_emm_keywords(self):
         url = '/api/v1/leads/?emm_keywords={}'
@@ -832,7 +848,6 @@ class LeadTests(TestCase):
         result_risk_factors_counts = {x['name']: x['total_count'] for x in extra['emm_risk_factors']}
         for k, v in expected_risk_factors_counts.items():
             assert expected_risk_factors_counts[k] == result_risk_factors_counts[k]
-
 
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:
