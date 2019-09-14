@@ -5,6 +5,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models, transaction
+
+from rest_framework.decorators import action
 from rest_framework import (
     serializers,
     exceptions,
@@ -14,6 +16,7 @@ from rest_framework import (
     status,
     views,
     viewsets,
+    generics,
 )
 
 import django_filters
@@ -153,7 +156,24 @@ class LeadViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
-        qs = self.filter_queryset(self.get_queryset())
+        extra = self._get_extra_emm_info()
+
+        response.data['extra'] = extra
+        return response
+
+    def get_queryset(self):
+        leads = Lead.get_for(self.request.user)
+        lead_id = self.request.GET.get('similar')
+        if lead_id:
+            similar_lead = Lead.objects.get(id=lead_id)
+            leads = leads.filter(project=similar_lead.project).annotate(
+                similarity=TrigramSimilarity('title', similar_lead.title)
+            ).filter(similarity__gt=0.3).order_by('-similarity')
+        return leads
+
+    def _get_extra_emm_info(self, qs=None):
+        if qs is None:
+            qs = self.filter_queryset(self.get_queryset())
 
         # Aggregate emm data
         emm_entities = EMMEntity.objects.filter(lead__in=qs).values('name').\
@@ -175,19 +195,39 @@ class LeadViewSet(viewsets.ModelViewSet):
         extra['emm_entities'] = emm_entities
         extra['emm_keywords'] = emm_keywords
         extra['emm_risk_factors'] = emm_risk_factors
+        return extra
 
-        response.data['extra'] = extra
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
+        methods=['post'],
+        serializer_class=LeadSerializer,
+        url_path='filter',
+    )
+    def leads_filter(self, request, version=None):
+        raw_filter_data = request.data
+        filter_data = {**raw_filter_data}
+
+        # Make the filter data edible by LeadFilter
+        entities_filter = filter_data.pop('emm_entities', [])
+        keywords_filter = filter_data.pop('emm_keywords', [])
+        risk_factors_filter = filter_data.pop('emm_risk_factors', [])
+
+        filter_data['emm_entities'] = ','.join([str(x) for x in entities_filter])
+        filter_data['emm_keywords'] = ','.join(keywords_filter)
+        filter_data['emm_risk_factors'] = ','.join(risk_factors_filter)
+
+        qs = LeadFilterSet(data=filter_data, queryset=self.get_queryset()).qs
+        page = self.paginate_queryset(qs)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+        else:
+            serializer = self.get_serializer(qs, many=True)
+        response = self.get_paginated_response(serializer.data)
+
+        response.data['extra'] = self._get_extra_emm_info()
         return response
-
-    def get_queryset(self):
-        leads = Lead.get_for(self.request.user)
-        lead_id = self.request.GET.get('similar')
-        if lead_id:
-            similar_lead = Lead.objects.get(id=lead_id)
-            leads = leads.filter(project=similar_lead.project).annotate(
-                similarity=TrigramSimilarity('title', similar_lead.title)
-            ).filter(similarity__gt=0.3).order_by('-similarity')
-        return leads
 
 
 class LeadPreviewViewSet(viewsets.ReadOnlyModelViewSet):
