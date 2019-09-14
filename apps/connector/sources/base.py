@@ -46,7 +46,7 @@ class Source(ABC):
             for organization in organizations
         }
         organization_map.update({
-            organization.short_title: organization
+            organization.short_name: organization
             for organization in organizations
         })
         leads = []
