@@ -154,13 +154,6 @@ class LeadViewSet(viewsets.ModelViewSet):
             **kwargs,
         )
 
-    def list(self, request, *args, **kwargs):
-        response = super().list(request, *args, **kwargs)
-        extra = self._get_extra_emm_info()
-
-        response.data['extra'] = extra
-        return response
-
     def get_queryset(self):
         leads = Lead.get_for(self.request.user)
         lead_id = self.request.GET.get('similar')
@@ -200,6 +193,33 @@ class LeadViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         permission_classes=[permissions.IsAuthenticated],
+        methods=['get', 'post'],
+        url_path='emm-summary'
+    )
+    def emm_summary(self, request, version=None):
+        emm_info = {}
+        if request.method == 'GET':
+            emm_info = self._get_extra_emm_info()
+        elif request.method == 'POST':
+            raw_filter_data = request.data
+            filter_data = {**raw_filter_data}
+
+            # Make the filter data edible by LeadFilter
+            entities_filter = filter_data.pop('emm_entities', [])
+            keywords_filter = filter_data.pop('emm_keywords', [])
+            risk_factors_filter = filter_data.pop('emm_risk_factors', [])
+
+            filter_data['emm_entities'] = ','.join([str(x) for x in entities_filter])
+            filter_data['emm_keywords'] = ','.join(keywords_filter)
+            filter_data['emm_risk_factors'] = ','.join(risk_factors_filter)
+
+            qs = LeadFilterSet(data=filter_data, queryset=self.get_queryset()).qs
+            emm_info = self._get_extra_emm_info(qs)
+        return response.Response(emm_info)
+
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
         methods=['post'],
         serializer_class=LeadSerializer,
         url_path='filter',
@@ -226,7 +246,7 @@ class LeadViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(qs, many=True)
         response = self.get_paginated_response(serializer.data)
 
-        response.data['extra'] = self._get_extra_emm_info()
+        # response.data['extra'] = self._get_extra_emm_info(qs)
         return response
 
 
