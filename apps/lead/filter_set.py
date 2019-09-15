@@ -41,10 +41,8 @@ class LeadFilterSet(django_filters.FilterSet):
     published_on__gte = django_filters.DateFilter(
         field_name='published_on', lookup_expr='gte',
     )
-    project = django_filters.ModelMultipleChoiceFilter(
-        queryset=Project.objects.all(),
-        lookup_expr='in',
-        widget=django_filters.widgets.CSVWidget,
+    project = django_filters.CharFilter(
+        method='project_filter',
     )
     confidentiality = django_filters.MultipleChoiceFilter(
         choices=Lead.CONFIDENTIALITIES,
@@ -101,6 +99,10 @@ class LeadFilterSet(django_filters.FilterSet):
         method='emm_risk_factors_filter',
     )
 
+    ordering = django_filters.CharFilter(
+        method='ordering_filter',
+    )
+
     class Meta:
         model = Lead
         fields = {
@@ -124,6 +126,12 @@ class LeadFilterSet(django_filters.FilterSet):
             },
         }
 
+    def project_filter(self, qs, name, value):
+        # NOTE: @bewakes used this because normal project filter
+        # was giving problem with post filter
+        project_ids = value.split(',')
+        return qs.filter(project_id__in=project_ids)
+
     def exists_filter(self, qs, name, value):
         if value == self.ENTRIES_EXISTS:
             return qs.filter(entry__isnull=False)
@@ -142,6 +150,13 @@ class LeadFilterSet(django_filters.FilterSet):
     def emm_risk_factors_filter(self, qs, name, value):
         splitted = [x for x in value.split(',') if x]
         return qs.filter(emm_triggers__emm_risk_factor__in=splitted)
+
+    def ordering_filter(self, qs, name, value):
+        # NOTE: @bewakes used this because normal ordering filter
+        # was giving problem with post filter
+        # Just clean the order_by fields
+        order_by = ','.join([x.strip() for x in value.split(',') if x.strip()])
+        return qs.order_by(order_by)
 
 
 class LeadGroupFilterSet(UserResourceFilterSet):

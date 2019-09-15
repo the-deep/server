@@ -16,7 +16,6 @@ from rest_framework import (
     status,
     views,
     viewsets,
-    generics,
 )
 
 import django_filters
@@ -108,18 +107,7 @@ class LeadViewSet(viewsets.ModelViewSet):
         # For some reason, the ordering is not working for `assignee` field
         # so, force ordering with anything passed in the query param
         qs = super().filter_queryset(queryset)
-        ordering = self.request.query_params.get('ordering', '')
-        orderings = [x for x in ordering.split(',') if x]
-
-        for ordering in orderings:
-            if ordering == '-page_count':
-                qs = qs.order_by(models.F('leadpreview__page_count').desc(nulls_last=True))
-            elif ordering == 'page_count':
-                qs = qs.order_by(models.F('leadpreview__page_count').asc(nulls_first=True))
-            else:
-                qs = qs.order_by(ordering)
-
-        return qs
+        return self._ordered_queryset(qs)
 
     def get_serializer_class(self):
         if self.kwargs.get('version') == 'v1':
@@ -164,6 +152,22 @@ class LeadViewSet(viewsets.ModelViewSet):
             ).filter(similarity__gt=0.3).order_by('-similarity')
         return leads
 
+    def _ordered_queryset(self, qs=None):
+        if qs is None:
+            qs = super().filter_queryset(qs)
+
+        ordering = self.request.query_params.get('ordering', '')
+        orderings = [x for x in ordering.split(',') if x]
+
+        for ordering in orderings:
+            if ordering == '-page_count':
+                qs = qs.order_by(models.F('leadpreview__page_count').desc(nulls_last=True))
+            elif ordering == 'page_count':
+                qs = qs.order_by(models.F('leadpreview__page_count').asc(nulls_first=True))
+            else:
+                qs = qs.order_by(ordering)
+        return qs
+
     def _get_extra_emm_info(self, qs=None):
         if qs is None:
             qs = self.filter_queryset(self.get_queryset())
@@ -202,16 +206,7 @@ class LeadViewSet(viewsets.ModelViewSet):
             emm_info = self._get_extra_emm_info()
         elif request.method == 'POST':
             raw_filter_data = request.data
-            filter_data = {**raw_filter_data}
-
-            # Make the filter data edible by LeadFilter
-            entities_filter = filter_data.pop('emm_entities', [])
-            keywords_filter = filter_data.pop('emm_keywords', [])
-            risk_factors_filter = filter_data.pop('emm_risk_factors', [])
-
-            filter_data['emm_entities'] = ','.join([str(x) for x in entities_filter])
-            filter_data['emm_keywords'] = ','.join(keywords_filter)
-            filter_data['emm_risk_factors'] = ','.join(risk_factors_filter)
+            filter_data = self._get_processed_filter_data(raw_filter_data)
 
             qs = LeadFilterSet(data=filter_data, queryset=self.get_queryset()).qs
             emm_info = self._get_extra_emm_info(qs)
@@ -226,16 +221,7 @@ class LeadViewSet(viewsets.ModelViewSet):
     )
     def leads_filter(self, request, version=None):
         raw_filter_data = request.data
-        filter_data = {**raw_filter_data}
-
-        # Make the filter data edible by LeadFilter
-        entities_filter = filter_data.pop('emm_entities', [])
-        keywords_filter = filter_data.pop('emm_keywords', [])
-        risk_factors_filter = filter_data.pop('emm_risk_factors', [])
-
-        filter_data['emm_entities'] = ','.join([str(x) for x in entities_filter])
-        filter_data['emm_keywords'] = ','.join(keywords_filter)
-        filter_data['emm_risk_factors'] = ','.join(risk_factors_filter)
+        filter_data = self._get_processed_filter_data(raw_filter_data)
 
         qs = LeadFilterSet(data=filter_data, queryset=self.get_queryset()).qs
         page = self.paginate_queryset(qs)
@@ -246,8 +232,24 @@ class LeadViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(qs, many=True)
         response = self.get_paginated_response(serializer.data)
 
-        # response.data['extra'] = self._get_extra_emm_info(qs)
         return response
+
+    def _get_processed_filter_data(self, raw_filter_data):
+        """Make json data usable by filterset class.
+        This basically processes list data and joins them to comma separated string.
+        """
+        filter_data = {**raw_filter_data}
+        # Make the filter data edible by LeadFilter
+        project = filter_data.pop('project', None) or []  # In case null
+        entities_filter = filter_data.pop('emm_entities', None) or []
+        keywords_filter = filter_data.pop('emm_keywords', None) or []
+        risk_factors_filter = filter_data.pop('emm_risk_factors', None) or []
+
+        filter_data['emm_entities'] = ','.join([str(x) for x in entities_filter])
+        filter_data['emm_keywords'] = ','.join(keywords_filter)
+        filter_data['emm_risk_factors'] = ','.join(risk_factors_filter)
+        filter_data['project'] = ','.join([str(x) for x in project])
+        return filter_data
 
 
 class LeadPreviewViewSet(viewsets.ReadOnlyModelViewSet):
