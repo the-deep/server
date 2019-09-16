@@ -323,6 +323,31 @@ class LeadOptionsView(views.APIView):
                 } for project in projects.distinct()
             ]
 
+        # Create Emm specific options
+        options['emm_entities'] = EMMEntity.objects.filter(
+            lead__project__in=projects
+        ).distinct().values('name').annotate(
+            total_count=models.Count('lead'),
+            label=models.F('name'),
+            key=models.F('id'),
+        ).values('key', 'label', 'total_count').order_by('name')
+
+        options['emm_keywords'] = LeadEMMTrigger.objects.filter(
+            lead__project__in=projects
+        ).values('emm_keyword').annotate(
+            total_count=models.Sum('count'),
+            key=models.F('emm_keyword'),
+            label=models.F('emm_keyword')
+        ).order_by('emm_keyword')
+
+        options['emm_risk_factors'] = LeadEMMTrigger.objects.filter(
+            lead__project__in=projects
+        ).values('emm_risk_factor').annotate(
+            total_count=models.Sum('count'),
+            key=models.F('emm_risk_factor'),
+            label=models.F('emm_risk_factor'),
+        ).order_by('emm_risk_factor')
+
         return response.Response(options)
 
     def post(self, request, version=None):
@@ -394,15 +419,17 @@ class LeadOptionsView(views.APIView):
         }
 
         # Create Emm specific options
-        options['emm_entities'] = EMMEntity.objects.filter(
-            lead__project__in=projects
+        options['emm_entities'] = fields.get('emm_entities', []) and EMMEntity.objects.filter(
+            lead__project__in=projects,
+            name__in=fields['emm_entities'],
         ).distinct().values('name').annotate(
             total_count=models.Count('lead'),
             label=models.F('name'),
             key=models.F('id'),
         ).values('key', 'label', 'total_count').order_by('name')
 
-        options['emm_keywords'] = LeadEMMTrigger.objects.filter(
+        options['emm_keywords'] = fields.get('emm_keywords', []) and LeadEMMTrigger.objects.filter(
+            emm_keyword__in=fields['emm_keywords'],
             lead__project__in=projects
         ).values('emm_keyword').annotate(
             total_count=models.Sum('count'),
@@ -410,8 +437,9 @@ class LeadOptionsView(views.APIView):
             label=models.F('emm_keyword')
         ).order_by('emm_keyword')
 
-        options['emm_risk_factors'] = LeadEMMTrigger.objects.filter(
-            lead__project__in=projects
+        options['emm_risk_factors'] = fields.get('emm_risk_factors', []) and LeadEMMTrigger.objects.filter(
+            emm_risk_factor__in=fields['emm_risk_factors'],
+            lead__project__in=projects,
         ).values('emm_risk_factor').annotate(
             total_count=models.Sum('count'),
             key=models.F('emm_risk_factor'),
