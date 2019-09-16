@@ -71,4 +71,5 @@ git+https://github.com/davedash/django-fixture-magic.git@466fa35c075009e4a1974f6
 
 # DEV deps, later remove
 django-stubs==1.1.0
+djangorestframework-stubs==1.0.0
 mypy==0.720
