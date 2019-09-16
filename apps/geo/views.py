@@ -55,7 +55,7 @@ class RegionViewSet(viewsets.ModelViewSet):
     search_fields = ('title', 'code')
 
     def get_queryset(self):
-        return Region.get_for(self.request.user)
+        return Region.get_for(self.request.user).defer('geo_options')
 
 
 class RegionCloneView(views.APIView):
