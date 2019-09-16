@@ -807,7 +807,7 @@ class LeadTests(TestCase):
         resp = self.client.get(url.format(entities_query))
         self.assert_200(resp)
         assert len(resp.data['results']) == 4, "There should be four leads"
-        ids_list = [x['id']for x in resp.data['results']]
+        ids_list = [x['id'] for x in resp.data['results']]
         assert lead1.id in ids_list
         assert lead2.id in ids_list
         assert lead3.id in ids_list
@@ -837,8 +837,7 @@ class LeadTests(TestCase):
 
         extra = resp.data
         assert 'emm_entities' in extra
-        assert 'emm_keywords' in extra
-        assert 'emm_risk_factors' in extra
+        assert 'emm_triggers' in extra
 
         expected_entities_counts = {('entity1', 1), ('entity2', 2), ('entity3', 1)}
         result_entities_counts = {(x['name'], x['total_count']) for x in extra['emm_entities']}
@@ -854,8 +853,7 @@ class LeadTests(TestCase):
 
         extra = resp.data
         assert 'emm_entities' in extra
-        assert 'emm_keywords' in extra
-        assert 'emm_risk_factors' in extra
+        assert 'emm_triggers' in extra
 
         expected_entities_counts = {('entity1', 1), ('entity2', 2), ('entity3', 1)}
         result_entities_counts = {(x['name'], x['total_count']) for x in extra['emm_entities']}
@@ -876,7 +874,7 @@ class LeadTests(TestCase):
         )
         self.create(
             LeadEMMTrigger, lead=lead2, count=3,
-            emm_keyword='keyword1', emm_risk_factor='rf2',
+            emm_keyword='keyword1', emm_risk_factor='rf1',
         )
         self.create(
             LeadEMMTrigger, lead=lead3, count=3,
@@ -884,7 +882,7 @@ class LeadTests(TestCase):
         )
         self.create(
             LeadEMMTrigger, lead=lead4, count=3,
-            emm_keyword='keyword2', emm_risk_factor='rf1',
+            emm_keyword='keyword2', emm_risk_factor='rf2',
         )
 
         # Test GET
@@ -895,57 +893,15 @@ class LeadTests(TestCase):
 
         data = resp.data
         assert 'emm_entities' in data
-        assert 'emm_keywords' in data
-        assert 'emm_risk_factors' in data
+        assert 'emm_triggers' in data
 
-        expected_keywords_counts = {'keyword1': 8, 'keyword2': 3}
-        result_keywords_counts = {x['name']: x['total_count'] for x in data['emm_keywords']}
-        for k, v in expected_keywords_counts.items():
-            assert expected_keywords_counts[k] == result_keywords_counts[k]
+        expected_triggers = {('keyword1', 'rf1', 8), ('keyword2', 'rf2', 3)}
+        result_triggers = {
+            (x['emm_keyword'], x['emm_risk_factor'], x['total_count'])
+            for x in data['emm_triggers']
+        }
+        assert expected_triggers == result_triggers
 
-    def test_get_emm_extra_with_risk_factors_filter(self):
-        project = self.create_project()
-
-        lead1 = self.create_lead(project=project)
-        lead2 = self.create_lead(project=project)
-        lead3 = self.create_lead(project=project)
-        lead4 = self.create_lead(project=project)
-
-        # Create LeadEMMTrigger objects with
-        self.create(
-            LeadEMMTrigger, lead=lead1, count=5,
-            emm_keyword='keyword1', emm_risk_factor='rf1',
-        )
-        self.create(
-            LeadEMMTrigger, lead=lead2, count=3,
-            emm_keyword='keyword1', emm_risk_factor='rf2',
-        )
-        self.create(
-            LeadEMMTrigger, lead=lead3, count=3,
-            emm_keyword='keyword3', emm_risk_factor='rf2',
-        )
-        self.create(
-            LeadEMMTrigger, lead=lead4, count=3,
-            emm_keyword='keyword2', emm_risk_factor='rf1',
-        )
-
-        self.authenticate()
-
-        # Test GET
-        url = '/api/v1/leads/emm-summary/?emm_risk_factors=rf1,rf2'
-        self.authenticate()
-        resp = self.client.get(url)
-        self.assert_200(resp)
-
-        data = resp.data
-        assert 'emm_entities' in data
-        assert 'emm_keywords' in data
-        assert 'emm_risk_factors' in data
-
-        expected_risk_factors_counts = {'rf1': 8, 'rf2': 6}
-        result_risk_factors_counts = {x['name']: x['total_count'] for x in data['emm_risk_factors']}
-        for k, v in expected_risk_factors_counts.items():
-            assert expected_risk_factors_counts[k] == result_risk_factors_counts[k]
 
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:
