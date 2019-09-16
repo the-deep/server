@@ -138,7 +138,7 @@ class AcapsBriefingNotes(Source):
         }
     ]
 
-    def fetch(self, params, offset=None, limit=None):
+    def fetch(self, params, offset, limit):
         results = []
         resp = requests.get(self.URL, params=params)
         soup = Soup(resp.text, 'html.parser')
@@ -173,4 +173,5 @@ class AcapsBriefingNotes(Source):
                         self.URL, params, e.args)
                 )
 
-        return results
+        final_results = results[offset: offset + limit]
+        return final_results, len(results)

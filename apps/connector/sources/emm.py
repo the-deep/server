@@ -56,7 +56,8 @@ class EMM(RssFeed):
 
         items = xml.findall('channel/item')
 
-        limited_items = items[self.offset:self.limit] if self.limit else items[self.offset:]
+        total_count = len(items)
+        limited_items = items[self.offset:self.offset + self.limit] if self.limit else items[self.offset:]
 
         entities = {}
         leads_infos = []  # Contains kwargs dict
@@ -86,7 +87,7 @@ class EMM(RssFeed):
         for leadinfo in leads_infos:
             leadinfo['emm_entities'] = [entities[eid] for eid, _ in leadinfo['emm_entities'].items()]
 
-        return leads_infos
+        return leads_infos, total_count
 
     def parse_emm_item(self, item):
         info = {}
