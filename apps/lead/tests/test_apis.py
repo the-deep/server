@@ -309,9 +309,82 @@ class LeadTests(TestCase):
         assert 'emm_keywords' in rdata
         assert 'emm_risk_factors' in rdata
 
-    def test_emm_options(self):
+    def test_emm_options_post(self):
         url = '/api/v1/lead-options/'
 
+        project = self.create_project()
+
+        # Create Entities
+        entity1 = self.create(EMMEntity, name='entity1')
+        entity2 = self.create(EMMEntity, name='entity2')
+        entity3 = self.create(EMMEntity, name='enitty3')
+        entity4 = self.create(EMMEntity, name='entity4')  # noqa:F841
+
+        lead1 = self.create_lead(project=project, emm_entities=[entity1])
+        lead2 = self.create_lead(project=project, emm_entities=[entity2, entity3])
+        lead3 = self.create_lead(project=project, emm_entities=[entity2])
+        lead4 = self.create_lead(project=project)
+
+        # Create LeadEMMTrigger objects with
+        self.create(
+            LeadEMMTrigger, lead=lead1, count=5,
+            emm_keyword='keyword1', emm_risk_factor='rf1',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead2, count=3,
+            emm_keyword='keyword1', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead3, count=3,
+            emm_keyword='keyword2', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead4, count=3,
+            emm_keyword='keyword1', emm_risk_factor='rf1',
+        )
+
+        data = {
+            "projects": [project.id],
+        }
+        self.authenticate()
+        response = self.client.post(url, data, format='json')
+        self.assert_200(response)
+        data = response.data
+
+        # No data should be present when not specified in the query
+        assert 'emm_entities' in data
+        assert data['emm_entities'] == []
+
+        assert 'emm_keywords' in data
+        assert data['emm_keywords'] == []
+
+        assert 'emm_risk_factors' in data
+        assert data['emm_risk_factors'] == []
+
+        data = {
+            'projects': [project.id],
+            'emm_risk_factors': ['rf1'],  # Only risk factors present
+        }
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_200(response)
+        data = response.data
+
+        # Check emm_entities
+        assert 'emm_entities' in data
+        assert not data['emm_entities'], "Entities not specified."
+
+        # Check emm_risk_factors
+        assert 'emm_risk_factors' in data
+        expected_risk_factors_count_set = {('rf1', 'rf1', 8)}
+        result_risk_factors_count_set = {(x['key'], x['label'], x['total_count']) for x in data['emm_risk_factors']}
+        assert expected_risk_factors_count_set == result_risk_factors_count_set
+
+        # Check emm_keywords
+        assert 'emm_keywords' in data
+        assert not data['emm_entities'], "Keywords not specified."
+
+    def test_emm_options_get(self):
         project = self.create_project()
 
         # Create Entities
@@ -345,9 +418,9 @@ class LeadTests(TestCase):
         # NOTE: 3 leads with keyword keyword1, one with keyword2
         # 2 leads with factor rf1, 2 with factor rf2
 
-        data = {'projects': [project.id]}
+        url = f'/api/v1/lead-options/?project={project.id}'
         self.authenticate()
-        response = self.client.post(url, data)
+        response = self.client.get(url)
         self.assert_200(response)
         data = response.data
 
