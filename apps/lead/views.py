@@ -348,6 +348,9 @@ class LeadOptionsView(views.APIView):
             label=models.F('emm_risk_factor'),
         ).order_by('emm_risk_factor')
 
+        # Add info about if the project has emm leads, just check if entities or keywords present
+        options['has_emm_leads'] = (not not options['emm_entities']) or (not not options['emm_keywords'])
+
         return response.Response(options)
 
     def post(self, request, version=None):
@@ -445,6 +448,9 @@ class LeadOptionsView(views.APIView):
             key=models.F('emm_risk_factor'),
             label=models.F('emm_risk_factor'),
         ).order_by('emm_risk_factor')
+
+        options['has_emm_leads'] = EMMEntity.objects.filter(lead__project__in=projects).exists() or \
+            LeadEMMTrigger.objects.filter(lead__project__in=projects).exists()
 
         return response.Response(options)
 
