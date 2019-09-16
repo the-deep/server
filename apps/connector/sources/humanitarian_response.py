@@ -63,7 +63,7 @@ class HumanitarianResponse(Source):
         }
     ]
 
-    def fetch(self, params, page=None, limit=None):
+    def fetch(self, params, offset=None, limit=None):
         results = []
         url = self.URL
         if params.get('country'):
@@ -84,6 +84,7 @@ class HumanitarianResponse(Source):
                     'published_on': date.date(),
                     'url': url,
                     'source': 'Humanitarian Response',
+                    'author': 'Humanitarian Response',
                     'website': self.URL,
                     'source_type': Lead.WEBSITE
                 }
@@ -94,4 +95,5 @@ class HumanitarianResponse(Source):
                     str(e.args)
                 )
 
-        return results
+        final_results = results[offset: offset + limit]
+        return final_results, len(results)

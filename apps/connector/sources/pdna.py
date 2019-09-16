@@ -84,7 +84,7 @@ class PDNA(Source):
         }
     ]
 
-    def fetch(self, params, page=None, limit=None):
+    def fetch(self, params, offset=None, limit=None):
         country = params.get('country')
         if not country:
             return [], 0
@@ -98,6 +98,7 @@ class PDNA(Source):
                     elem = row.find('a')
                     name = elem.get_text()
                     title = row.findAll('td')[-1].get_text()
+                    published_on = row.findAll('td')[1].get_text()
                     if name.strip() == country.strip():
                         # add as lead
                         url = elem['href']
@@ -107,6 +108,8 @@ class PDNA(Source):
                             'title': title.strip(),
                             'url': url,
                             'source': 'PDNA portal',
+                            'author': 'PDNA portal',
+                            'published_on': published_on,
                             'source_type': Lead.WEBSITE,
                             'website': self.website
                         }
@@ -116,4 +119,5 @@ class PDNA(Source):
                         "Exception parsing {} with params {}: {}".format(
                             self.URL, params, e.args)
                     )
-        return results
+        final_results = results[offset: offset + limit]
+        return final_results, len(results)

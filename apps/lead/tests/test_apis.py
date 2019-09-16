@@ -810,7 +810,6 @@ class LeadTests(TestCase):
         lead2 = self.create_lead(project=project)
         lead3 = self.create_lead(project=project)
         lead4 = self.create_lead(project=project)
-        print(lead1.id, lead2.id, lead3.id, lead4.id)
 
         # Create LeadEMMTrigger objects with
         self.create(

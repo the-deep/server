@@ -18,27 +18,34 @@ class Source(ABC):
             raise Exception('Source not defined properly')
 
     @abstractmethod
-    def fetch(self, params, page=None, limit=None):
+    def fetch(self, params, offset=None, limit=None):
         pass
 
     def get_leads(self, *args, **kwargs):
-        # TODO: If leads_data is empty
-        leads_data = self.fetch(*args, **kwargs) or []
-        # TODO: LOOK INTO THIS PROCESS
-        organization_query = reduce(
-            lambda a, b: a | b,
-            map(
-                lambda d: (
-                    # TODO: if value are None
-                    Q(title__iexact=d['source']) |
-                    Q(title__iexact=d['author']) |
-                    Q(short_name__iexact=d['source']) |
-                    Q(short_name__iexact=d['author']) |
-                    Q(long_name__iexact=d['source']) |
-                    Q(long_name__iexact=d['author'])
-                ),
-                leads_data,
+        leads_data, total_count = self.fetch(*args, **kwargs)
+        if not leads_data:
+            return [], total_count
+
+        def _construct_query(data):
+            source = data['source']
+            author = data['author']
+            return (
+                Q(title__iexact=source) |
+                Q(title__iexact=author) |
+                Q(short_name__iexact=source) |
+                Q(short_name__iexact=author) |
+                Q(long_name__iexact=source) |
+                Q(long_name__iexact=author)
             )
+        queries = [
+            # TODO: if value are None
+            _construct_query(d)
+            for d in leads_data
+        ]
+
+        organization_query = reduce(
+            lambda acc, item: acc | item,
+            queries,
         )
         organizations = Organization.objects.filter(organization_query).all()
         organization_map = {
@@ -72,9 +79,9 @@ class Source(ABC):
 
             leads.append(lead)
 
-        return leads, len(leads)
+        return leads, total_count
 
-    def query_leads(self, params, limit=None, offset=None):
+    def query_leads(self, params, offset, limit):
         from connector.serializers import SourceDataSerializer
 
         if offset is None or offset < 0:
@@ -82,8 +89,8 @@ class Source(ABC):
         if not limit or limit < 0:
             limit = Source.DEFAULT_PER_PAGE
 
-        data = self.get_leads(params)[0]
+        data, total_count = self.get_leads(params, offset, limit)
         return SourceDataSerializer(
-            data[offset:offset + limit],
+            data,
             many=True,
         ).data
