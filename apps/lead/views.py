@@ -176,22 +176,14 @@ class LeadViewSet(viewsets.ModelViewSet):
         emm_entities = EMMEntity.objects.filter(lead__in=qs).values('name').\
             annotate(total_count=models.Count('name')).values('name', 'total_count')
 
-        emm_keywords = LeadEMMTrigger.objects.filter(lead__in=qs).values('emm_keyword').\
+        emm_triggers = LeadEMMTrigger.objects.filter(lead__in=qs).values('emm_keyword', 'emm_risk_factor').\
             annotate(
                 total_count=models.Sum('count'),
-                name=models.F('emm_keyword')
-        ).values('total_count', 'name')
-
-        emm_risk_factors = LeadEMMTrigger.objects.filter(lead__in=qs).values('emm_risk_factor').\
-            annotate(
-                total_count=models.Sum('count'),
-                name=models.F('emm_risk_factor'),
-        ).values('total_count', 'name')
+        ).values('emm_keyword', 'emm_risk_factor', 'total_count')
 
         extra = {}
         extra['emm_entities'] = emm_entities
-        extra['emm_keywords'] = emm_keywords
-        extra['emm_risk_factors'] = emm_risk_factors
+        extra['emm_triggers'] = emm_triggers
         return extra
 
     @action(
