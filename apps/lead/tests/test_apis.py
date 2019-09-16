@@ -284,6 +284,8 @@ class LeadTests(TestCase):
         }
         response = self.client.post(url, data)
         rdata = response.data
+        assert 'has_emm_leads' in rdata
+        assert not rdata['has_emm_leads'], "There should be no emm leads in the project"
         assert_id(rdata['members'], SimpleUserSerializer([user1, user2, user], many=True).data)
         assert rdata['projects'] == SimpleProjectSerializer([project], many=True).data
         assert rdata['lead_groups'] == []
@@ -361,6 +363,9 @@ class LeadTests(TestCase):
         assert 'emm_risk_factors' in data
         assert data['emm_risk_factors'] == []
 
+        assert 'has_emm_leads' in data
+        assert data['has_emm_leads'], "There are emm leads"
+
         data = {
             'projects': [project.id],
             'emm_risk_factors': ['rf1'],  # Only risk factors present
@@ -383,6 +388,9 @@ class LeadTests(TestCase):
         # Check emm_keywords
         assert 'emm_keywords' in data
         assert not data['emm_entities'], "Keywords not specified."
+
+        assert 'has_emm_leads' in data
+        assert data['has_emm_leads'], "There are emm leads"
 
     def test_emm_options_get(self):
         project = self.create_project()
@@ -444,6 +452,10 @@ class LeadTests(TestCase):
         expected_keywords_count_set = {('keyword1', 'keyword1', 11), ('keyword2', 'keyword2', 3)}
         result_keywords_count_set = {(x['key'], x['label'], x['total_count']) for x in data['emm_keywords']}
         assert expected_keywords_count_set == result_keywords_count_set
+
+        assert 'has_emm_leads' in data
+        assert data['has_emm_leads'], "There are emm leads"
+
 
     def test_trigger_api(self):
         project = self.create(Project, role=self.admin_role)
