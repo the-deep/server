@@ -155,8 +155,16 @@ class LeadFilterSet(django_filters.FilterSet):
         # NOTE: @bewakes used this because normal ordering filter
         # was giving problem with post filter
         # Just clean the order_by fields
-        order_by = ','.join([x.strip() for x in value.split(',') if x.strip()])
-        return qs.order_by(order_by)
+        orderings = [x.strip() for x in value.split(',') if x.strip()]
+
+        for ordering in orderings:
+            if ordering == '-page_count':
+                qs = qs.order_by(models.F('leadpreview__page_count').desc(nulls_last=True))
+            elif ordering == 'page_count':
+                qs = qs.order_by(models.F('leadpreview__page_count').asc(nulls_first=True))
+            else:
+                qs = qs.order_by(ordering)
+        return qs
 
 
 class LeadGroupFilterSet(UserResourceFilterSet):

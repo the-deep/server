@@ -103,12 +103,6 @@ class LeadViewSet(viewsets.ModelViewSet):
     search_fields = ('title', 'source', 'text', 'url', 'website')
     # ordering_fields = omitted to allow ordering by all read-only fields
 
-    def filter_queryset(self, queryset):
-        # For some reason, the ordering is not working for `assignee` field
-        # so, force ordering with anything passed in the query param
-        qs = super().filter_queryset(queryset)
-        return self._ordered_queryset(qs)
-
     def get_serializer_class(self):
         if self.kwargs.get('version') == 'v1':
             return LegacyLeadSerializer
@@ -151,22 +145,6 @@ class LeadViewSet(viewsets.ModelViewSet):
                 similarity=TrigramSimilarity('title', similar_lead.title)
             ).filter(similarity__gt=0.3).order_by('-similarity')
         return leads
-
-    def _ordered_queryset(self, qs=None):
-        if qs is None:
-            qs = super().filter_queryset(qs)
-
-        ordering = self.request.query_params.get('ordering', '')
-        orderings = [x for x in ordering.split(',') if x]
-
-        for ordering in orderings:
-            if ordering == '-page_count':
-                qs = qs.order_by(models.F('leadpreview__page_count').desc(nulls_last=True))
-            elif ordering == 'page_count':
-                qs = qs.order_by(models.F('leadpreview__page_count').asc(nulls_first=True))
-            else:
-                qs = qs.order_by(ordering)
-        return qs
 
     def _get_extra_emm_info(self, qs=None):
         if qs is None:
