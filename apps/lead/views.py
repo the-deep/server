@@ -206,19 +206,14 @@ class LeadViewSet(viewsets.ModelViewSet):
 
     def _get_processed_filter_data(self, raw_filter_data):
         """Make json data usable by filterset class.
-        This basically processes list data and joins them to comma separated string.
+        This basically processes list query_params and joins them to comma separated string.
         """
-        filter_data = {**raw_filter_data}
-        # Make the filter data edible by LeadFilter
-        project = filter_data.pop('project', None) or []  # In case null
-        entities_filter = filter_data.pop('emm_entities', None) or []
-        keywords_filter = filter_data.pop('emm_keywords', None) or []
-        risk_factors_filter = filter_data.pop('emm_risk_factors', None) or []
-
-        filter_data['emm_entities'] = ','.join([str(x) for x in entities_filter])
-        filter_data['emm_keywords'] = ','.join(keywords_filter)
-        filter_data['emm_risk_factors'] = ','.join(risk_factors_filter)
-        filter_data['project'] = ','.join([str(x) for x in project])
+        filter_data = {}
+        for key, value in raw_filter_data.items():
+            if value and isinstance(value, list):
+                filter_data[key] = ','.join([str(x) for x in value])
+            else:
+                filter_data[key] = value
         return filter_data
 
 
