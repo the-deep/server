@@ -17,7 +17,7 @@ class AtomFeed(RssFeed):
     title = 'Atom Feed'
     key = 'atom-feed'
 
-    def fetch(self, params, offset=None, limit=None):
+    def fetch(self, params, offset, limit):
         results = []
         if not params or not params.get('feed-url'):
             return results, 0
@@ -25,8 +25,11 @@ class AtomFeed(RssFeed):
         feed_url = params['feed-url']
         feed = feedparser.parse(feed_url)
         items = feed.entries
+        total_count = len(items)
 
-        for item in items:
+        limited_items = items[offset: offset + limit]
+
+        for item in limited_items:
             data = {
                 'source_type': Lead.RSS,
                 **{
@@ -36,7 +39,7 @@ class AtomFeed(RssFeed):
             }
             results.append(data)
 
-        return results
+        return results, total_count
 
     def query_fields(self, params):
         if not params or not params.get('feed-url'):

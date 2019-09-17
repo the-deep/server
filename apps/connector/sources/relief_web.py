@@ -36,7 +36,7 @@ class ReliefWeb(Source):
             Region.objects.filter(public=True)
         ]
 
-    def fetch(self, params, offset=None, limit=None):
+    def fetch(self, params, offset, limit):
         results = []
 
         # Example: http://apidoc.rwlabs.org/#filter
@@ -69,7 +69,10 @@ class ReliefWeb(Source):
 
         resp = requests.post(self.URL, json=post_params).json()
 
-        for datum in resp['data']:
+        total_count = len(resp['data'])
+        limited_data = resp['data'][offset: offset + limit]
+
+        for datum in limited_data:
             fields = datum['fields']
             lead = {
                 'id': str(datum['id']),
@@ -83,4 +86,4 @@ class ReliefWeb(Source):
             }
             results.append(lead)
 
-        return results
+        return results, total_count

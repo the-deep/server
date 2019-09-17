@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.db import transaction
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
@@ -13,6 +14,8 @@ from .models import (
     LeadGroup,
     Lead,
     LeadPreviewImage,
+    LeadEMMTrigger,
+    EMMEntity,
 )
 
 
@@ -44,6 +47,13 @@ class SingleValueThayMayBeListField(serializers.Field):
         return data
 
 
+class EMMEntitySerializer(serializers.Serializer, RemoveNullFieldsMixin, DynamicFieldsMixin):
+    name = serializers.CharField()
+
+    class Meta:
+        fields = '__all__'
+
+
 class SimpleLeadSerializer(RemoveNullFieldsMixin,
                            serializers.ModelSerializer):
     class Meta:
@@ -67,6 +77,15 @@ class LegacySimpleLeadSerializer(SimpleLeadSerializer):
             'id', 'title', 'created_at', 'created_by',
             'source', 'author',
         )
+
+
+class LeadEMMTriggerSerializer(serializers.ModelSerializer, RemoveNullFieldsMixin, DynamicFieldsMixin):
+    emm_risk_factor = serializers.CharField(required=False)
+    count = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = LeadEMMTrigger
+        fields = ('emm_risk_factor', 'emm_keyword', 'count',)
 
 
 class LeadSerializer(
@@ -115,6 +134,8 @@ class LeadSerializer(
         required=False,
     )
     tabular_book = serializers.SerializerMethodField()
+    emm_triggers = LeadEMMTriggerSerializer(many=True, required=False)
+    emm_entities = EMMEntitySerializer(many=True, required=False)
 
     class Meta:
         model = Lead
@@ -178,7 +199,22 @@ class LeadSerializer(
         assignee_id = assignee_field and assignee_field.get('id', None)
         assignee = assignee_id and get_object_or_404(User, id=assignee_id)
 
+        emm_triggers = validated_data.pop('emm_triggers', [])
+        emm_entities = validated_data.pop('emm_entities', [])
+
         lead = super().create(validated_data)
+
+        for entity in emm_entities:
+            entity = EMMEntity.objects.filter(name=entity['name']).first()
+            if entity is None:
+                continue
+            lead.emm_entities.add(entity)
+        lead.save()
+
+        with transaction.atomic():
+            for trigger in emm_triggers:
+                LeadEMMTrigger.objects.create(**trigger, lead=lead)
+
         if assignee:
             lead.assignee.add(assignee)
         return lead

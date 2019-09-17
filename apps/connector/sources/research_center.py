@@ -68,12 +68,15 @@ class ResearchResourceCenter(Source):
         }
     ]
 
-    def fetch(self, params, page=None, limit=None):
+    def fetch(self, params, offset, limit):
         results = []
         resp = requests.get(self.URL, params=params)
         soup = Soup(resp.text, 'html.parser')
         contents = soup.find('table').find('tbody').findAll('tr')
-        for row in contents:
+
+        total_count = len(contents)
+        limited_contents = contents[offset: offset + limit]
+        for row in limited_contents:
             tds = row.findAll('td')
             title = tds[0].get_text().replace('_', ' ')
             date = tds[1].find('span').attrs['content'][:10]  # just date str  # noqa
@@ -84,8 +87,9 @@ class ResearchResourceCenter(Source):
                 'published_on': date.date(),
                 'url': url,
                 'source': "Research Resource Center",
+                'author': "Research Resource Center",
                 'source_type': Lead.WEBSITE,
                 'website': self.URL
             }
             results.append(data)
-        return results
+        return results, total_count

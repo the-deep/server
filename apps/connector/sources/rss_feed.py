@@ -5,6 +5,7 @@ import requests
 from utils.common import DEFAULT_HEADERS
 from lead.models import Lead
 from .base import Source
+from connector.utils import get_rss_fields
 
 
 def _get_field_value(item, field):
@@ -12,30 +13,6 @@ def _get_field_value(item, field):
         return ''
     element = item.find(field)
     return '' if element is None else element.text or element.get('href')
-
-
-def _replace_ns(nsmap, tag):
-    for k, v in nsmap.items():
-        k = k or ''
-        tag = tag.replace('{{{}}}'.format(v), '{}:'.format(k))
-    return tag
-
-
-def _get_fields(item, nsmap, parent_tag=None):
-    tag = '{}/{}'.format(parent_tag, item.tag) if parent_tag else item.tag
-    childs = item.getchildren()
-    fields = []
-    if len(childs) > 0:
-        children_fields = []
-        for child in childs:
-            children_fields.extend(_get_fields(child, nsmap, tag))
-        fields.extend(children_fields)
-    else:
-        fields.append({
-            'key': tag,
-            'label': _replace_ns(nsmap, tag),
-        })
-    return fields
 
 
 class RssFeed(Source):
@@ -98,7 +75,7 @@ class RssFeed(Source):
 
     dynamic_fields = [1, 2, 3, 4, 5]
 
-    def fetch(self, params, offset=None, limit=None):
+    def fetch(self, params, offset, limit):
         results = []
         if not params or not params.get('feed-url'):
             return results, 0
@@ -107,7 +84,10 @@ class RssFeed(Source):
         xml = etree.fromstring(r.content)
         items = xml.findall('channel/item')
 
-        for item in items:
+        total_count = len(items)
+        limited_items = items[offset: offset + limit]
+
+        for item in limited_items:
             data = {
                 'source_type': Lead.RSS,
                 **{
@@ -117,7 +97,7 @@ class RssFeed(Source):
             }
             results.append(data)
 
-        return results
+        return results, total_count
 
     def query_fields(self, params):
         if not params or not params.get('feed-url'):
@@ -143,7 +123,7 @@ class RssFeed(Source):
 
         fields = []
         for field in item.findall('./'):
-            fields.extend(_get_fields(field, nsmap))
+            fields.extend(get_rss_fields(field, nsmap))
 
         # Remove fields that are present more than once,
         # as we donot have support for list data yet.

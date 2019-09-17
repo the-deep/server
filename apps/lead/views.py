@@ -5,6 +5,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models, transaction
+
+from rest_framework.decorators import action
 from rest_framework import (
     serializers,
     exceptions,
@@ -31,7 +33,7 @@ from project.serializers import SimpleProjectSerializer
 from user.serializers import SimpleUserSerializer
 from organization.models import Organization
 from organization.serializers import SimpleOrganizationSerializer
-from lead.models import LeadGroup, Lead
+from lead.models import LeadGroup, Lead, EMMEntity, LeadEMMTrigger
 from lead.serializers import (
     LeadGroupSerializer,
     SimpleLeadGroupSerializer,
@@ -101,23 +103,6 @@ class LeadViewSet(viewsets.ModelViewSet):
     search_fields = ('title', 'source', 'text', 'url', 'website')
     # ordering_fields = omitted to allow ordering by all read-only fields
 
-    def filter_queryset(self, queryset):
-        # For some reason, the ordering is not working for `assignee` field
-        # so, force ordering with anything passed in the query param
-        qs = super().filter_queryset(queryset)
-        ordering = self.request.query_params.get('ordering', '')
-        orderings = [x for x in ordering.split(',') if x]
-
-        for ordering in orderings:
-            if ordering == '-page_count':
-                qs = qs.order_by(models.F('leadpreview__page_count').desc(nulls_last=True))
-            elif ordering == 'page_count':
-                qs = qs.order_by(models.F('leadpreview__page_count').asc(nulls_first=True))
-            else:
-                qs = qs.order_by(ordering)
-
-        return qs
-
     def get_serializer_class(self):
         if self.kwargs.get('version') == 'v1':
             return LegacyLeadSerializer
@@ -160,6 +145,76 @@ class LeadViewSet(viewsets.ModelViewSet):
                 similarity=TrigramSimilarity('title', similar_lead.title)
             ).filter(similarity__gt=0.3).order_by('-similarity')
         return leads
+
+    def _get_extra_emm_info(self, qs=None):
+        if qs is None:
+            qs = self.filter_queryset(self.get_queryset())
+
+        # Aggregate emm data
+        emm_entities = EMMEntity.objects.filter(lead__in=qs).values('name').\
+            annotate(total_count=models.Count('name')).values('name', 'total_count')
+
+        emm_triggers = LeadEMMTrigger.objects.filter(lead__in=qs).values('emm_keyword', 'emm_risk_factor').\
+            annotate(
+                total_count=models.Sum('count'),
+        ).values('emm_keyword', 'emm_risk_factor', 'total_count')
+
+        extra = {}
+        extra['emm_entities'] = emm_entities
+        extra['emm_triggers'] = emm_triggers
+        return extra
+
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
+        methods=['get', 'post'],
+        url_path='emm-summary'
+    )
+    def emm_summary(self, request, version=None):
+        emm_info = {}
+        if request.method == 'GET':
+            emm_info = self._get_extra_emm_info()
+        elif request.method == 'POST':
+            raw_filter_data = request.data
+            filter_data = self._get_processed_filter_data(raw_filter_data)
+
+            qs = LeadFilterSet(data=filter_data, queryset=self.get_queryset()).qs
+            emm_info = self._get_extra_emm_info(qs)
+        return response.Response(emm_info)
+
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
+        methods=['post'],
+        serializer_class=LeadSerializer,
+        url_path='filter',
+    )
+    def leads_filter(self, request, version=None):
+        raw_filter_data = request.data
+        filter_data = self._get_processed_filter_data(raw_filter_data)
+
+        qs = LeadFilterSet(data=filter_data, queryset=self.get_queryset()).qs
+        page = self.paginate_queryset(qs)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+        else:
+            serializer = self.get_serializer(qs, many=True)
+        response = self.get_paginated_response(serializer.data)
+
+        return response
+
+    def _get_processed_filter_data(self, raw_filter_data):
+        """Make json data usable by filterset class.
+        This basically processes list query_params and joins them to comma separated string.
+        """
+        filter_data = {}
+        for key, value in raw_filter_data.items():
+            if value and isinstance(value, list):
+                filter_data[key] = ','.join([str(x) for x in value])
+            else:
+                filter_data[key] = value
+        return filter_data
 
 
 class LeadPreviewViewSet(viewsets.ReadOnlyModelViewSet):
@@ -263,6 +318,34 @@ class LeadOptionsView(views.APIView):
                 } for project in projects.distinct()
             ]
 
+        # Create Emm specific options
+        options['emm_entities'] = EMMEntity.objects.filter(
+            lead__project__in=projects
+        ).distinct().values('name').annotate(
+            total_count=models.Count('lead'),
+            label=models.F('name'),
+            key=models.F('id'),
+        ).values('key', 'label', 'total_count').order_by('name')
+
+        options['emm_keywords'] = LeadEMMTrigger.objects.filter(
+            lead__project__in=projects
+        ).values('emm_keyword').annotate(
+            total_count=models.Sum('count'),
+            key=models.F('emm_keyword'),
+            label=models.F('emm_keyword')
+        ).order_by('emm_keyword')
+
+        options['emm_risk_factors'] = LeadEMMTrigger.objects.filter(
+            lead__project__in=projects
+        ).values('emm_risk_factor').annotate(
+            total_count=models.Sum('count'),
+            key=models.F('emm_risk_factor'),
+            label=models.F('emm_risk_factor'),
+        ).order_by('emm_risk_factor')
+
+        # Add info about if the project has emm leads, just check if entities or keywords present
+        options['has_emm_leads'] = (not not options['emm_entities']) or (not not options['emm_keywords'])
+
         return response.Response(options)
 
     def post(self, request, version=None):
@@ -332,6 +415,37 @@ class LeadOptionsView(views.APIView):
                 ).data
             ),
         }
+
+        # Create Emm specific options
+        options['emm_entities'] = fields.get('emm_entities', []) and EMMEntity.objects.filter(
+            lead__project__in=projects,
+            name__in=fields['emm_entities'],
+        ).distinct().values('name').annotate(
+            total_count=models.Count('lead'),
+            label=models.F('name'),
+            key=models.F('id'),
+        ).values('key', 'label', 'total_count').order_by('name')
+
+        options['emm_keywords'] = fields.get('emm_keywords', []) and LeadEMMTrigger.objects.filter(
+            emm_keyword__in=fields['emm_keywords'],
+            lead__project__in=projects
+        ).values('emm_keyword').annotate(
+            total_count=models.Sum('count'),
+            key=models.F('emm_keyword'),
+            label=models.F('emm_keyword')
+        ).order_by('emm_keyword')
+
+        options['emm_risk_factors'] = fields.get('emm_risk_factors', []) and LeadEMMTrigger.objects.filter(
+            emm_risk_factor__in=fields['emm_risk_factors'],
+            lead__project__in=projects,
+        ).values('emm_risk_factor').annotate(
+            total_count=models.Sum('count'),
+            key=models.F('emm_risk_factor'),
+            label=models.F('emm_risk_factor'),
+        ).order_by('emm_risk_factor')
+
+        options['has_emm_leads'] = EMMEntity.objects.filter(lead__project__in=projects).exists() or \
+            LeadEMMTrigger.objects.filter(lead__project__in=projects).exists()
 
         return response.Response(options)
 

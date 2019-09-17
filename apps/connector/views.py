@@ -10,6 +10,7 @@ from rest_framework import (
 from rest_framework.decorators import action
 from deep.permissions import ModifyPermission
 from project.models import Project
+from utils.common import parse_number
 
 from .serializers import (
     SourceSerializer,
@@ -48,12 +49,22 @@ class SourceQueryView(views.APIView):
         source = source_store[source_type]()
         method = getattr(source, 'query_{}'.format(query))
 
-        results = method(params)
+        query_params = self.request.query_params
+
+        offset = parse_number(query_params.get('offset')) or 0
+        limit = parse_number(query_params.get('limit')) or Source.DEFAULT_PER_PAGE
+
+        args = ()
+        if query == 'leads':
+            args = (offset, limit)
+
+        results = method(params, *args)
 
         if isinstance(results, list):
             return response.Response({
                 'count': len(results),
                 'results': results,
+                'has_emm': getattr(source, 'has_emm', False),
             })
 
         return response.Response(results)
@@ -129,7 +140,6 @@ class ConnectorViewSet(viewsets.ModelViewSet):
         # Paginate manually
         # FIXME: Make this better: probably cache, and also optimize
         # Because, right now, every data is pulled and then only paginated
-        data = data[offset:offset + limit]
 
         serializer = SourceDataSerializer(
             data,
@@ -140,8 +150,9 @@ class ConnectorViewSet(viewsets.ModelViewSet):
 
         return response.Response({
             'count': count,
+            'has_emm': getattr(connector, 'has_emm', False),
             'count_per_page': limit,
-            'results': results
+            'results': results,
         })
 
 

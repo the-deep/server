@@ -76,6 +76,7 @@ class Lead(UserResource, ProjectEntityMixin):
     DROPBOX = 'dropbox'
     GOOGLE_DRIVE = 'google-drive'
     RSS = 'rss'
+    EMM = 'emm'
     WEB_API = 'api'
     UNKNOWN = 'unknown'
 
@@ -87,6 +88,7 @@ class Lead(UserResource, ProjectEntityMixin):
         (GOOGLE_DRIVE, 'Google Drive'),
 
         (RSS, 'RSS Feed'),
+        (EMM, 'EMM'),
         (WEB_API, 'Web API'),
         (UNKNOWN, 'Unknown'),
     )
@@ -134,6 +136,8 @@ class Lead(UserResource, ProjectEntityMixin):
     attachment = models.ForeignKey(
         File, on_delete=models.SET_NULL, default=None, null=True, blank=True,
     )
+
+    emm_entities = models.ManyToManyField('EMMEntity', blank=True)
 
     def __str__(self):
         return '{}'.format(self.title)
@@ -210,3 +214,17 @@ class LeadPreviewImage(models.Model):
 
     def __str__(self):
         return 'Image extracted for {}'.format(self.lead)
+
+
+class LeadEMMTrigger(models.Model):
+    lead = models.ForeignKey(Lead, related_name='emm_triggers', on_delete=models.CASCADE)
+    emm_keyword = models.CharField(max_length=100)
+    emm_risk_factor = models.CharField(max_length=100)
+    count = models.PositiveIntegerField(default=0)
+
+
+class EMMEntity(models.Model):
+    name = models.CharField(max_length=150, unique=True)
+
+    def __str__(self):
+        return self.name
