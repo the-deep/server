@@ -161,7 +161,7 @@ class WorldFoodProgramme(Source):
         results = []
 
         # NOTE: No calculation of offset, the api supports pagination
-        # FIXME: This is not consistent with other pagination
+        # NOTE: This is not consistent with other pagination
         resp = requests.get(self.URL, params=params)
 
         soup = Soup(resp.text, 'html.parser')
