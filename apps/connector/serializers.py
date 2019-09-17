@@ -2,6 +2,7 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
 from deep.serializers import RemoveNullFieldsMixin
+from organization.serializers import SimpleOrganizationSerializer
 from user_resource.serializers import UserResourceSerializer
 from lead.models import Lead
 from lead.views import check_if_url_exists
@@ -33,15 +34,43 @@ class SourceSerializer(RemoveNullFieldsMixin,
     options = SourceOptionSerializer(many=True)
 
 
+class SourceEMMEntitiesSerializer(serializers.Serializer):
+    name = serializers.CharField()
+
+
+class SourceEMMTriggerSerializer(serializers.Serializer):
+    emm_keyword = serializers.CharField()
+    emm_risk_factor = serializers.CharField()
+    count = serializers.IntegerField()
+
+
 class SourceDataSerializer(RemoveNullFieldsMixin,
                            serializers.ModelSerializer):
     existing = serializers.SerializerMethodField()
     key = serializers.CharField(source='id')
+    emm_entities = serializers.SerializerMethodField()
+    emm_triggers = serializers.SerializerMethodField()
+
+    author_detail = SimpleOrganizationSerializer(source='author', read_only=True)
+    source_detail = SimpleOrganizationSerializer(source='source', read_only=True)
 
     class Meta:
         model = Lead
         fields = ('key', 'title', 'source', 'source_type', 'url',
-                  'website', 'published_on', 'existing')
+                  'website', 'published_on', 'existing',
+                  'emm_entities', 'emm_triggers', 'source_detail',
+                  'author_detail', 'source_raw', 'author_raw',
+                  )
+
+    def get_emm_entities(self, lead):
+        if hasattr(lead, '_emm_entities'):
+            return SourceEMMEntitiesSerializer(lead._emm_entities, many=True).data
+        return []
+
+    def get_emm_triggers(self, lead):
+        if hasattr(lead, '_emm_triggers'):
+            return SourceEMMTriggerSerializer(lead._emm_triggers, many=True).data
+        return []
 
     def get_existing(self, lead):
         if not self.context.get('request'):

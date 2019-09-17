@@ -3,6 +3,7 @@ from reversion.admin import VersionAdmin
 from .models import (
     Lead, LeadGroup,
     LeadPreview, LeadPreviewImage,
+    EMMEntity,
 )
 
 
@@ -32,3 +33,8 @@ class LeadAdmin(VersionAdmin):
 @admin.register(LeadGroup)
 class LeadGroupAdmin(VersionAdmin):
     autocomplete_fields = ('project', 'created_by', 'modified_by',)
+
+
+@admin.register(EMMEntity)
+class EMMEntityAdmin(admin.ModelAdmin):
+    pass

@@ -8,8 +8,8 @@ from geo.models import Region
 from organization.models import Organization
 from organization.serializers import SimpleOrganizationSerializer
 from lead.filter_set import LeadFilterSet
-from lead.models import Lead, LeadPreview, LeadGroup
 from lead.serializers import SimpleLeadGroupSerializer
+from lead.models import Lead, LeadPreview, EMMEntity, LeadEMMTrigger, LeadGroup
 
 import logging
 from datetime import date
@@ -69,6 +69,52 @@ class LeadTests(TestCase):
         r_data = response.json()
         self.assertEqual(r_data['title'], data['title'])
         self.assertEqual(r_data['assignee'], self.user.id)
+
+    def test_create_lead_with_emm(self):
+        entity1 = self.create(EMMEntity, name='entity1')
+        entity2 = self.create(EMMEntity, name='entity2')
+
+        lead_count = Lead.objects.count()
+        project = self.create(Project, role=self.admin_role)
+
+        url = '/api/v1/leads/'
+        data = {
+            'title': 'Spaceship spotted in sky',
+            'project': project.id,
+            'source': self.source.pk,
+            'author': self.author.pk,
+            'confidentiality': Lead.UNPROTECTED,
+            'status': Lead.PENDING,
+            'text': 'Alien shapeship has been spotted in the sky',
+            'assignee': self.user.id,
+            'emm_entities': [
+                {'name': entity1.name},
+                {'name': entity2.name},
+            ],
+            'emm_triggers': [
+                {'emm_keyword': 'kw', 'emm_risk_factor': 'rf', 'count': 3},
+                {'emm_keyword': 'kw1', 'emm_risk_factor': 'rf1', 'count': 6},
+            ]
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data, format='json')
+        self.assert_201(response)
+
+        self.assertEqual(Lead.objects.count(), lead_count + 1)
+        r_data = response.data
+        self.assertEqual(r_data['title'], data['title'])
+        self.assertEqual(r_data['assignee'], self.user.id)
+
+        assert 'emm_entities' in r_data
+        assert 'emm_triggers' in r_data
+        assert len(r_data['emm_entities']) == 2
+        assert len(r_data['emm_triggers']) == 2
+
+        lead_id = r_data['id']
+
+        # Check emm triggers created
+        assert LeadEMMTrigger.objects.filter(lead_id=lead_id).count() == 2
 
     def test_get_lead_check_no_of_entries(self, assignee=None):
         project = self.create(Project, role=self.admin_role)
@@ -238,6 +284,8 @@ class LeadTests(TestCase):
         }
         response = self.client.post(url, data)
         rdata = response.data
+        assert 'has_emm_leads' in rdata
+        assert not rdata['has_emm_leads'], "There should be no emm leads in the project"
         assert_id(rdata['members'], SimpleUserSerializer([user1, user2, user], many=True).data)
         assert rdata['projects'] == SimpleProjectSerializer([project], many=True).data
         assert rdata['lead_groups'] == []
@@ -258,6 +306,156 @@ class LeadTests(TestCase):
         assert rdata['lead_groups'] == SimpleLeadGroupSerializer([lead_group2], many=True).data
         assert rdata['organizations'] == SimpleOrganizationSerializer([unhcr], many=True).data
         check_default_options(rdata)
+
+        assert 'emm_entities' in rdata
+        assert 'emm_keywords' in rdata
+        assert 'emm_risk_factors' in rdata
+
+    def test_emm_options_post(self):
+        url = '/api/v1/lead-options/'
+
+        project = self.create_project()
+
+        # Create Entities
+        entity1 = self.create(EMMEntity, name='entity1')
+        entity2 = self.create(EMMEntity, name='entity2')
+        entity3 = self.create(EMMEntity, name='enitty3')
+        entity4 = self.create(EMMEntity, name='entity4')  # noqa:F841
+
+        lead1 = self.create_lead(project=project, emm_entities=[entity1])
+        lead2 = self.create_lead(project=project, emm_entities=[entity2, entity3])
+        lead3 = self.create_lead(project=project, emm_entities=[entity2])
+        lead4 = self.create_lead(project=project)
+
+        # Create LeadEMMTrigger objects with
+        self.create(
+            LeadEMMTrigger, lead=lead1, count=5,
+            emm_keyword='keyword1', emm_risk_factor='rf1',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead2, count=3,
+            emm_keyword='keyword1', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead3, count=3,
+            emm_keyword='keyword2', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead4, count=3,
+            emm_keyword='keyword1', emm_risk_factor='rf1',
+        )
+
+        data = {
+            "projects": [project.id],
+        }
+        self.authenticate()
+        response = self.client.post(url, data, format='json')
+        self.assert_200(response)
+        data = response.data
+
+        # No data should be present when not specified in the query
+        assert 'emm_entities' in data
+        assert data['emm_entities'] == []
+
+        assert 'emm_keywords' in data
+        assert data['emm_keywords'] == []
+
+        assert 'emm_risk_factors' in data
+        assert data['emm_risk_factors'] == []
+
+        assert 'has_emm_leads' in data
+        assert data['has_emm_leads'], "There are emm leads"
+
+        data = {
+            'projects': [project.id],
+            'emm_risk_factors': ['rf1'],  # Only risk factors present
+        }
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_200(response)
+        data = response.data
+
+        # Check emm_entities
+        assert 'emm_entities' in data
+        assert not data['emm_entities'], "Entities not specified."
+
+        # Check emm_risk_factors
+        assert 'emm_risk_factors' in data
+        expected_risk_factors_count_set = {('rf1', 'rf1', 8)}
+        result_risk_factors_count_set = {(x['key'], x['label'], x['total_count']) for x in data['emm_risk_factors']}
+        assert expected_risk_factors_count_set == result_risk_factors_count_set
+
+        # Check emm_keywords
+        assert 'emm_keywords' in data
+        assert not data['emm_entities'], "Keywords not specified."
+
+        assert 'has_emm_leads' in data
+        assert data['has_emm_leads'], "There are emm leads"
+
+    def test_emm_options_get(self):
+        project = self.create_project()
+
+        # Create Entities
+        entity1 = self.create(EMMEntity, name='entity1')
+        entity2 = self.create(EMMEntity, name='entity2')
+        entity3 = self.create(EMMEntity, name='enitty3')
+        entity4 = self.create(EMMEntity, name='entity4')  # noqa:F841
+
+        lead1 = self.create_lead(project=project, emm_entities=[entity1])
+        lead2 = self.create_lead(project=project, emm_entities=[entity2, entity3])
+        lead3 = self.create_lead(project=project, emm_entities=[entity2])
+        lead4 = self.create_lead(project=project)
+
+        # Create LeadEMMTrigger objects with
+        self.create(
+            LeadEMMTrigger, lead=lead1, count=5,
+            emm_keyword='keyword1', emm_risk_factor='rf1',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead2, count=3,
+            emm_keyword='keyword1', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead3, count=3,
+            emm_keyword='keyword2', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead4, count=3,
+            emm_keyword='keyword1', emm_risk_factor='rf1',
+        )
+        # NOTE: 3 leads with keyword keyword1, one with keyword2
+        # 2 leads with factor rf1, 2 with factor rf2
+
+        url = f'/api/v1/lead-options/?project={project.id}'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        data = response.data
+
+        # Check emm_entities
+        assert 'emm_entities' in data
+        expected_entity_count_set = {
+            (entity1.id, entity1.name, 1),
+            (entity2.id, entity2.name, 2),
+            (entity3.id, entity3.name, 1)}
+        result_entity_count_set = {(x['key'], x['label'], x['total_count']) for x in data['emm_entities']}
+        assert expected_entity_count_set == result_entity_count_set
+
+        # Check emm_risk_factors
+        assert 'emm_risk_factors' in data
+        expected_risk_factors_count_set = {('rf1', 'rf1', 8), ('rf2', 'rf2', 6)}
+        result_risk_factors_count_set = {(x['key'], x['label'], x['total_count']) for x in data['emm_risk_factors']}
+        assert expected_risk_factors_count_set == result_risk_factors_count_set
+
+        # Check emm_keywords
+        assert 'emm_keywords' in data
+        expected_keywords_count_set = {('keyword1', 'keyword1', 11), ('keyword2', 'keyword2', 3)}
+        result_keywords_count_set = {(x['key'], x['label'], x['total_count']) for x in data['emm_keywords']}
+        assert expected_keywords_count_set == result_keywords_count_set
+
+        assert 'has_emm_leads' in data
+        assert data['has_emm_leads'], "There are emm leads"
+
 
     def test_trigger_api(self):
         project = self.create(Project, role=self.admin_role)
@@ -553,6 +751,240 @@ class LeadTests(TestCase):
         self.create_assessment(lead=lead3)
         response = self.client.get(f'{url}&exists={LeadFilterSet.ASSESSMENT_EXISTS}')
         assert response.json()['count'] == 2, 'Lead count should be 2 for lead with assessment'
+
+    def test_lead_filter_emm_entities(self):
+        url = '/api/v1/leads/?emm_entities={}'
+        project = self.create_project()
+
+        # Create Entities
+        entity1 = self.create(EMMEntity, name='entity1')
+        entity2 = self.create(EMMEntity, name='entity2')
+        entity3 = self.create(EMMEntity, name='entity3')
+        entity4 = self.create(EMMEntity, name='entity4')  # noqa:F841
+
+        lead1 = self.create_lead(project=project, emm_entities=[entity1])
+        lead2 = self.create_lead(project=project, emm_entities=[entity2, entity3])
+        lead3 = self.create_lead(project=project, emm_entities=[entity2])
+        lead4 = self.create_lead(project=project)
+
+        def _test_response(resp):
+            self.assert_200(resp)
+            assert len(resp.data['results']) == 3, "There should be three leads"
+            ids_list = [x['id']for x in resp.data['results']]
+            assert lead1.id in ids_list
+            assert lead2.id in ids_list
+            assert lead3.id in ids_list
+
+        # Test get filter
+        self.authenticate()
+        # Get a single lead
+        resp = self.client.get(url.format(entity1.id))
+        self.assert_200(resp)
+        assert len(resp.data['results']) == 1, "There should be one lead"
+        assert resp.data['results'][0]['id'] == lead1.id
+
+        # Get a multiple leads
+        entities_query = ','.join([str(entity1.id), str(entity2.id)])
+        resp = self.client.get(url.format(entities_query))
+        _test_response(resp)
+
+        # test post filter
+        url = '/api/v1/leads/filter/'
+        filter_data = {'emm_entities': [entity1.id]}
+        self.authenticate()
+        resp = self.client.post(url, filter_data, format='json')
+        assert len(resp.data['results']) == 1, "There should be one lead"
+        assert resp.data['results'][0]['id'] == lead1.id
+
+        filter_data = {'emm_entities': [entity1.id, entity2.id]}
+        self.authenticate()
+        resp = self.client.post(url, filter_data, format='json')
+
+        _test_response(resp)
+
+    def test_lead_filter_emm_keywords(self):
+        url = '/api/v1/leads/?emm_keywords={}'
+        project = self.create_project()
+
+        lead1 = self.create_lead(project=project)
+        lead2 = self.create_lead(project=project)
+        lead3 = self.create_lead(project=project)
+        lead4 = self.create_lead(project=project)
+
+        # Create LeadEMMTrigger objects with
+        self.create(
+            LeadEMMTrigger, lead=lead1, count=5,
+            emm_keyword='keyword1', emm_risk_factor='rf1',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead2, count=3,
+            emm_keyword='keyword1', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead3, count=3,
+            emm_keyword='keyword3', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead4, count=3,
+            emm_keyword='keyword2', emm_risk_factor='rf1',
+        )
+
+        self.authenticate()
+
+        # Get a single lead
+        resp = self.client.get(url.format('keyword1'))
+        self.assert_200(resp)
+        assert len(resp.data['results']) == 2, "There should be 2 leads"
+        ids_list = [x['id']for x in resp.data['results']]
+        assert lead1.id in ids_list
+        assert lead2.id in ids_list
+
+        # Get multiple leads
+        entities_query = ','.join(['keyword1', 'keyword2'])
+        resp = self.client.get(url.format(entities_query))
+        self.assert_200(resp)
+        assert len(resp.data['results']) == 3, "There should be three leads"
+        ids_list = [x['id']for x in resp.data['results']]
+        assert lead1.id in ids_list
+        assert lead2.id in ids_list
+        assert lead4.id in ids_list
+
+    def test_lead_filter_emm_risk_factors(self):
+        url = '/api/v1/leads/?emm_risk_factors={}'
+        project = self.create_project()
+
+        lead1 = self.create_lead(project=project)
+        lead2 = self.create_lead(project=project)
+        lead3 = self.create_lead(project=project)
+        lead4 = self.create_lead(project=project)
+
+        # Create LeadEMMTrigger objects with
+        self.create(
+            LeadEMMTrigger, lead=lead1, count=5,
+            emm_keyword='keyword1', emm_risk_factor='rf1',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead2, count=3,
+            emm_keyword='keyword1', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead3, count=3,
+            emm_keyword='keyword3', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead4, count=3,
+            emm_keyword='keyword2', emm_risk_factor='rf1',
+        )
+
+        self.authenticate()
+
+        # Get a single lead
+        resp = self.client.get(url.format('rf1'))
+        self.assert_200(resp)
+        assert len(resp.data['results']) == 2, "There should be 2 leads"
+        ids_list = [x['id']for x in resp.data['results']]
+        assert lead1.id in ids_list
+        assert lead4.id in ids_list
+
+        # Get multiple leads
+        entities_query = ','.join(['rf1', 'rf2'])
+        resp = self.client.get(url.format(entities_query))
+        self.assert_200(resp)
+        assert len(resp.data['results']) == 4, "There should be four leads"
+        ids_list = [x['id'] for x in resp.data['results']]
+        assert lead1.id in ids_list
+        assert lead2.id in ids_list
+        assert lead3.id in ids_list
+        assert lead4.id in ids_list
+
+    def test_get_emm_extra_with_emm_entities_filter(self):
+        url = '/api/v1/leads/emm-summary/?emm_entities={}'
+        project = self.create_project()
+
+        # Create Entities
+        entity1 = self.create(EMMEntity, name='entity1')
+        entity2 = self.create(EMMEntity, name='entity2')
+        entity3 = self.create(EMMEntity, name='entity3')
+        entity4 = self.create(EMMEntity, name='entity4')  # noqa:F841
+
+        lead1 = self.create_lead(project=project, emm_entities=[entity1])
+        lead2 = self.create_lead(project=project, emm_entities=[entity2, entity3])
+        lead3 = self.create_lead(project=project, emm_entities=[entity2])
+        lead4 = self.create_lead(project=project)
+
+        # Test get filter
+        self.authenticate()
+        # Get a single lead
+        entities_query = ','.join([str(entity1.id), str(entity2.id)])
+        resp = self.client.get(url.format(entities_query))
+        self.assert_200(resp)
+
+        extra = resp.data
+        assert 'emm_entities' in extra
+        assert 'emm_triggers' in extra
+
+        expected_entities_counts = {('entity1', 1), ('entity2', 2), ('entity3', 1)}
+        result_entities_counts = {(x['name'], x['total_count']) for x in extra['emm_entities']}
+        assert expected_entities_counts == result_entities_counts
+
+        # TODO: test post
+        filter_data = {'emm_entities': [entity1.id, entity2.id]}
+        url = '/api/v1/leads/emm-summary/'
+
+        self.authenticate()
+        self.client.post(url, data=filter_data, format='json')
+        self.assert_200(resp)
+
+        extra = resp.data
+        assert 'emm_entities' in extra
+        assert 'emm_triggers' in extra
+
+        expected_entities_counts = {('entity1', 1), ('entity2', 2), ('entity3', 1)}
+        result_entities_counts = {(x['name'], x['total_count']) for x in extra['emm_entities']}
+        assert expected_entities_counts == result_entities_counts
+
+    def test_get_emm_extra_with_emm_keywords_filter(self):
+        project = self.create_project()
+
+        lead1 = self.create_lead(project=project)
+        lead2 = self.create_lead(project=project)
+        lead3 = self.create_lead(project=project)
+        lead4 = self.create_lead(project=project)
+
+        # Create LeadEMMTrigger objects with
+        self.create(
+            LeadEMMTrigger, lead=lead1, count=5,
+            emm_keyword='keyword1', emm_risk_factor='rf1',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead2, count=3,
+            emm_keyword='keyword1', emm_risk_factor='rf1',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead3, count=3,
+            emm_keyword='keyword3', emm_risk_factor='rf2',
+        )
+        self.create(
+            LeadEMMTrigger, lead=lead4, count=3,
+            emm_keyword='keyword2', emm_risk_factor='rf2',
+        )
+
+        # Test GET
+        url = '/api/v1/leads/emm-summary/?emm_keywords=keyword1,keyword2'
+        self.authenticate()
+        resp = self.client.get(url)
+        self.assert_200(resp)
+
+        data = resp.data
+        assert 'emm_entities' in data
+        assert 'emm_triggers' in data
+
+        expected_triggers = {('keyword1', 'rf1', 8), ('keyword2', 'rf2', 3)}
+        result_triggers = {
+            (x['emm_keyword'], x['emm_risk_factor'], x['total_count'])
+            for x in data['emm_triggers']
+        }
+        assert expected_triggers == result_triggers
 
 
 # Data to use for testing web info extractor

@@ -9,6 +9,7 @@ from . import (
     research_center,
     wpf,
     humanitarian_response,
+    emm,
 )
 import random
 
@@ -16,6 +17,7 @@ import random
 source_store = OrderedDict([
     (atom_feed.AtomFeed.key, atom_feed.AtomFeed),
     ('rss-feed', rss_feed.RssFeed),
+    ('emm', emm.EMM),
     ('acaps-briefing-notes', acaps_briefing_notes.AcapsBriefingNotes),
     ('unhcr-portal', unhcr_portal.UNHCRPortal),
     ('relief-web', relief_web.ReliefWeb),

@@ -29,6 +29,14 @@ DEFAULT_HEADERS = {
 logger = logging.getLogger(__name__)
 
 
+def is_valid_regex(string):
+    try:
+        re.compile(string)
+        return True
+    except re.error:
+        return False
+
+
 def write_file(r, fp):
     for chunk in r.iter_content(chunk_size=1024):
         if chunk:
@@ -66,6 +74,20 @@ def makedirs(path):
         os.makedirs(path)
     except FileExistsError:
         pass
+
+
+def replace_ns(nsmap, tag):
+    for k, v in nsmap.items():
+        k = k or ''
+        tag = tag.replace('{{{}}}'.format(v), '{}:'.format(k))
+    return tag
+
+
+def get_ns_tag(nsmap, tag):
+    for k, v in nsmap.items():
+        k = k or ''
+        tag = tag.replace('{}:'.format(k), '{{{}}}'.format(v))
+    return tag
 
 
 def is_valid_xml_char_ordinal(c):
