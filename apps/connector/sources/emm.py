@@ -5,9 +5,11 @@ from lxml import etree
 from django.db import transaction
 
 from utils.common import random_key, get_ns_tag
+from rest_framework import serializers
 
 from lead.models import Lead, LeadEMMTrigger, EMMEntity
 from .rss_feed import RssFeed
+from connector.utils import get_rss_fields
 
 import logging
 logger = logging.getLogger(__name__)
@@ -20,6 +22,7 @@ class EMM(RssFeed):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Sets up conf
+        self.has_emm = False
         self.initialize()
 
     def initialize(self):
@@ -31,6 +34,40 @@ class EMM(RssFeed):
             raise Exception(msg)
         self.conf = conf
         self.conf.trigger_regex = re.compile(self.conf.trigger_regex)
+
+    def query_fields(self, params):
+        if not params or not params.get('feed-url'):
+            return []
+
+        try:
+            r = requests.get(params['feed-url'])
+            xml = etree.fromstring(r.content)
+        except requests.exceptions.RequestException:
+            raise serializers.ValidationError({
+                'feed-url': 'Could not fetch rss feed'
+            })
+        except etree.XMLSyntaxError:
+            raise serializers.ValidationError({
+                'feed-url': 'Invalid XML'
+            })
+
+        items = xml.find('channel/item')
+
+        nsmap = xml.nsmap
+
+        fields = []
+        for field in items.findall('./'):
+            fields.extend(get_rss_fields(field, nsmap))
+
+        # Remove fields that are present more than once,
+        # as we donot have support for list data yet.
+        real_fields = []
+        for field in fields:
+            if 'emm:' in field['label']:
+                self.has_emm = True
+            if fields.count(field) == 1:
+                real_fields.append(field)
+        return real_fields
 
     def fetch(self, params, offset=None, limit=None):
         if not params or not params.get('feed-url'):
@@ -104,6 +141,9 @@ class EMM(RssFeed):
 
         # Parse Triggers
         info['triggers'] = self.get_triggers(item)
+        if info['entities'] or info['triggers']:
+            self.has_emm = True
+
         return info
 
     def get_entities(self, item):
