@@ -339,7 +339,7 @@
 <p id="t55" class="stm run hide_run">    <span class="nam">search_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'title'</span><span class="op">,</span> <span class="str">'code'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t56" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t57" class="stm run hide_run">    <span class="key">def</span> <span class="nam">get_queryset</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t58" class="stm mis">        <span class="key">return</span> <span class="nam">Region</span><span class="op">.</span><span class="nam">get_for</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t58" class="stm mis">        <span class="key">return</span> <span class="nam">Region</span><span class="op">.</span><span class="nam">get_for</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">)</span><span class="op">.</span><span class="nam">defer</span><span class="op">(</span><span class="str">'geo_options'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t59" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t60" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t61" class="stm run hide_run"><span class="key">class</span> <span class="nam">RegionCloneView</span><span class="op">(</span><span class="nam">views</span><span class="op">.</span><span class="nam">APIView</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
@@ -502,7 +502,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-14 10:59
+            created at 2019-09-17 10:06
         </p>
     </div>
 </div>
