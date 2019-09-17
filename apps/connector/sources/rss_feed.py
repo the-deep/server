@@ -2,9 +2,10 @@ from rest_framework import serializers
 from lxml import etree
 import requests
 
-from utils.common import DEFAULT_HEADERS, random_key, replace_ns
+from utils.common import DEFAULT_HEADERS
 from lead.models import Lead
 from .base import Source
+from connector.utils import get_rss_fields
 
 
 def _get_field_value(item, field):
@@ -12,23 +13,6 @@ def _get_field_value(item, field):
         return ''
     element = item.find(field)
     return '' if element is None else element.text or element.get('href')
-
-
-def _get_fields(item, nsmap, parent_tag=None):
-    tag = '{}/{}'.format(parent_tag, item.tag) if parent_tag else item.tag
-    childs = item.getchildren()
-    fields = []
-    if len(childs) > 0:
-        children_fields = []
-        for child in childs:
-            children_fields.extend(_get_fields(child, nsmap, tag))
-        fields.extend(children_fields)
-    else:
-        fields.append({
-            'key': tag,
-            'label': replace_ns(nsmap, tag),
-        })
-    return fields
 
 
 class RssFeed(Source):
@@ -139,7 +123,7 @@ class RssFeed(Source):
 
         fields = []
         for field in item.findall('./'):
-            fields.extend(_get_fields(field, nsmap))
+            fields.extend(get_rss_fields(field, nsmap))
 
         # Remove fields that are present more than once,
         # as we donot have support for list data yet.

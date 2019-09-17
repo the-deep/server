@@ -64,6 +64,7 @@ class SourceQueryView(views.APIView):
             return response.Response({
                 'count': len(results),
                 'results': results,
+                'has_emm': getattr(source, 'has_emm', False),
             })
 
         return response.Response(results)
@@ -149,8 +150,9 @@ class ConnectorViewSet(viewsets.ModelViewSet):
 
         return response.Response({
             'count': count,
+            'has_emm': getattr(connector, 'has_emm', False),
             'count_per_page': limit,
-            'results': results
+            'results': results,
         })
 
 
