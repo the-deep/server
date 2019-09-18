@@ -1,6 +1,8 @@
 import requests
-from django.utils import timezone
 import re
+from functools import reduce
+
+from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.postgres.search import TrigramSimilarity
@@ -152,12 +154,14 @@ class LeadViewSet(viewsets.ModelViewSet):
 
         # Aggregate emm data
         emm_entities = EMMEntity.objects.filter(lead__in=qs).values('name').\
-            annotate(total_count=models.Count('name')).values('name', 'total_count')
+            annotate(
+                total_count=models.Count('name')
+        ).order_by('-total_count').values('name', 'total_count')
 
         emm_triggers = LeadEMMTrigger.objects.filter(lead__in=qs).values('emm_keyword', 'emm_risk_factor').\
             annotate(
                 total_count=models.Sum('count'),
-        ).values('emm_keyword', 'emm_risk_factor', 'total_count')
+        ).order_by('-total_count').values('emm_keyword', 'emm_risk_factor', 'total_count')
 
         extra = {}
         extra['emm_entities'] = emm_entities
@@ -244,7 +248,7 @@ class LeadOptionsView(views.APIView):
 
     # LEGACY SUPPORT
     def get(self, request, version=None):
-        project_query = request.GET.get('project')
+        project_query = request.GET.get('projects')
         fields_query = request.GET.get('fields')
 
         projects = Project.get_for_member(request.user)
@@ -263,12 +267,17 @@ class LeadOptionsView(views.APIView):
             return qs
 
         def _filter_by_projects_and_groups(qs, projects):
-            for p in projects:
-                qs = qs.filter(
-                    models.Q(project=p) |
-                    models.Q(usergroup__in=p.user_groups.all())
+            def _individual_project_query(project):
+                return (
+                    models.Q(project=project) |
+                    models.Q(usergroup__in=project.user_groups.all())
                 )
-            return qs
+
+            query = reduce(
+                lambda acc, q: acc & q,
+                [_individual_project_query(p) for p in projects]
+            )
+            return qs.filter(query)
 
         if (fields is None or 'lead_group' in fields):
             lead_groups = _filter_by_projects(
