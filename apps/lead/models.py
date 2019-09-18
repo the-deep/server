@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db import models, transaction
 
 from project.models import Project
+from project.permissions import PROJECT_PERMISSIONS
 from project.mixins import ProjectEntityMixin
 from organization.models import Organization
 from user_resource.models import UserResource
@@ -49,14 +50,10 @@ class Lead(UserResource, ProjectEntityMixin):
 
     # Confidentiality choices
     UNPROTECTED = 'unprotected'
-    PROTECTED = 'protected'
-    RESTRICTED = 'restricted'
     CONFIDENTIAL = 'confidential'
 
     CONFIDENTIALITIES = (
         (UNPROTECTED, 'Unprotected'),
-        (PROTECTED, 'Protected'),
-        (RESTRICTED, 'Restricted'),
         (CONFIDENTIAL, 'Confidential'),
     )
 
@@ -175,9 +172,35 @@ class Lead(UserResource, ProjectEntityMixin):
     def get_for(cls, user):
         """
         Lead can only be accessed by users who have access to
-        it's project
+        it's project along with required permissions
         """
-        qs = super().get_for(user)
+        view_unprotected_perm_value = PROJECT_PERMISSIONS.lead.view_only_unprotected
+        view_perm_value = PROJECT_PERMISSIONS.lead.view
+
+        # NOTE: This is quite complicated because user can have two view roles:
+        # view all or view only unprotected, both of which return different results
+
+        qs = cls.objects.filter(
+            # First filter if user is member
+            project__projectmembership__member=user,
+        ).annotate(
+            # Get permission value for view_only_unprotected permission
+            view_unprotected=models.F(
+                'project__projectmembership__role__lead_permissions'
+            ).bitand(view_unprotected_perm_value),
+            # Get permission value for view permission
+            view_all=models.F(
+                'project__projectmembership__role__lead_permissions'
+            ).bitand(view_perm_value)
+        ).filter(
+            # If view only unprotected, filter leads with confidentiality not confidential
+            (
+                models.Q(view_unprotected=view_unprotected_perm_value) &
+                ~models.Q(confidentiality=Lead.CONFIDENTIAL)
+            ) |
+            # Or, return nothing if view_all is not present
+            models.Q(view_all=view_perm_value)
+        )
         return qs.annotate(
             no_of_entries=models.Count('entry', distinct=True)
         )

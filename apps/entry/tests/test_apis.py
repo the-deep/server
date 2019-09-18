@@ -2,7 +2,8 @@ from deep.tests import TestCase
 import autofixture
 
 from django.conf import settings
-from project.models import Project
+from project.models import Project, ProjectRole
+from project.permissions import PROJECT_PERMISSIONS
 from user.models import User
 from lead.models import Lead
 from analysis_framework.models import (
@@ -370,6 +371,42 @@ class EntryTests(TestCase):
 
         filters['comment_status'] = 'unresolved'
         self.post_filter_test(filters, 0)  # Should have no result
+
+    def test_cannot_view_confidential_entry_without_permissions(self):
+        view_unprotected_role = ProjectRole.objects.create(
+            lead_permissions=15,
+            entry_permissions=PROJECT_PERMISSIONS.entry.view_only_unprotected,
+        )
+        project = self.create(Project, role=view_unprotected_role)
+
+        lead1 = self.create_lead(project=project, confidentiality=Lead.UNPROTECTED)
+        lead_confidential = self.create_lead(project=project, confidentiality=Lead.CONFIDENTIAL)
+
+        entry1 = self.create(Entry, lead=lead1, project=project)
+        entry_confidential = self.create(Entry, lead=lead_confidential, project=project)
+
+        url = '/api/v1/entries/'
+        self.authenticate()
+
+        resp = self.client.get(url)
+        self.assert_200(resp)
+
+        entries_ids = set([x['id'] for x in resp.data['results']])
+        assert entries_ids == {entry1.id}
+
+        # Check particular non-confidential entry, should return 200
+        url = f'/api/v1/entries/{entry1.id}/'
+        self.authenticate()
+
+        resp = self.client.get(url)
+        self.assert_200(resp)
+
+        # Check particular confidential entry, should return 404
+        url = f'/api/v1/entries/{entry_confidential.id}/'
+        self.authenticate()
+
+        resp = self.client.get(url)
+        self.assert_404(resp)
 
     # TODO: test export data and filter data apis
 
