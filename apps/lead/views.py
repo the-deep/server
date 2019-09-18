@@ -43,6 +43,7 @@ from .serializers import (
     LeadPreviewSerializer,
     check_if_url_exists,
     LeadOptionsSerializer,
+    LeadOptionsBodySerializer,
     LegacyLeadOptionsSerializer,
 )
 
@@ -359,16 +360,21 @@ class LeadOptionsView(views.APIView):
 
         return response.Response(LegacyLeadOptionsSerializer(options).data)
 
-    @swagger_auto_schema(responses={200: LeadOptionsSerializer()})
+    @swagger_auto_schema(
+        request_body=LeadOptionsBodySerializer(),
+        responses={200: LeadOptionsSerializer()}
+    )
     def post(self, request, version=None):
-        fields = request.data
-        projects_id = fields.get('projects') or []
-        lead_groups_id = fields.get('lead_groups') or []
-        organizations_id = fields.get('organizations') or []
-        members_id = fields.get('members')
-        emm_entities = fields.get('emm_entities') or []
-        emm_keywords = fields.get('emm_keywords') or []
-        emm_risk_factors = fields.get('emm_risk_factors') or []
+        serializer = LeadOptionsBodySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        fields = serializer.data
+        projects_id = fields['projects']
+        lead_groups_id = fields['lead_groups']
+        organizations_id = fields['organizations']
+        members_id = fields['members']
+        emm_entities = fields['emm_entities']
+        emm_keywords = fields['emm_keywords']
+        emm_risk_factors = fields['emm_risk_factors']
 
         projects = Project.get_for_member(request.user).filter(
             id__in=projects_id,
@@ -411,7 +417,7 @@ class LeadOptionsView(views.APIView):
             ),
             'members': _filter_by_project_and_group(
                 User.objects.filter(id__in=members_id)
-                if members_id is not None else User.objects,
+                if len(members_id) else User.objects,
             ),
             'organizations': Organization.objects.filter(id__in=organizations_id).distinct(),
 
