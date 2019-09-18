@@ -1,6 +1,8 @@
 import requests
-from django.utils import timezone
 import re
+from functools import reduce
+
+from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.postgres.search import TrigramSimilarity
@@ -265,12 +267,17 @@ class LeadOptionsView(views.APIView):
             return qs
 
         def _filter_by_projects_and_groups(qs, projects):
-            for p in projects:
-                qs = qs.filter(
-                    models.Q(project=p) |
-                    models.Q(usergroup__in=p.user_groups.all())
+            def _individual_project_query(project):
+                return (
+                    models.Q(project=project) |
+                    models.Q(usergroup__projectusergroupmembership__project=project)
                 )
-            return qs
+
+            query = reduce(
+                lambda acc, q: acc & q,
+                [_individual_project_query(p) for p in projects]
+            )
+            return qs.filter(query)
 
         if (fields is None or 'lead_group' in fields):
             lead_groups = _filter_by_projects(

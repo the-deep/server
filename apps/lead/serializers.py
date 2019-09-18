@@ -224,6 +224,10 @@ class LeadSerializer(
         assignee_id = assignee_field and assignee_field.get('id', None)
         assignee = assignee_id and get_object_or_404(User, id=assignee_id)
 
+        # We do not update triggers and entities
+        validated_data.pop('emm_entities', [])
+        validated_data.pop('emm_triggers', [])
+
         lead = super().update(instance, validated_data)
 
         if assignee_field:
