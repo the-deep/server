@@ -394,3 +394,21 @@ class URLCachedFileField(serializers.FileField):
         url = super().to_representation(obj)
         cache.set(key, url, settings.MAX_FILE_CACHE_AGE)
         return url
+
+
+# required=False List Integer Field
+def IdListField():
+    return serializers.ListField(
+        child=serializers.IntegerField(),
+        default=list,
+        allow_empty=True,
+    )
+
+
+# required=False List String Field
+def StringListField():
+    return serializers.ListField(
+        child=serializers.CharField(),
+        default=list,
+        allow_empty=True,
+    )

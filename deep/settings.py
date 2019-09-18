@@ -583,4 +583,5 @@ REDOC_SETTINGS = {
     'LAZY_RENDERING': True,
     'HIDE_HOSTNAME': True,
     'NATIVE_SCROLLBARS': True,
+    'EXPAND_RESPONSES': [],
 }
