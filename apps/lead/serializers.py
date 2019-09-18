@@ -7,7 +7,7 @@ from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
 from organization.serializers import SimpleOrganizationSerializer
 from user.serializers import SimpleUserSerializer
 from user_resource.serializers import UserResourceSerializer
-from project.serializers import ProjectEntitySerializer
+from project.serializers import ProjectEntitySerializer, SimpleProjectSerializer
 from gallery.serializers import SimpleFileSerializer, File
 from user.models import User
 from .models import (
@@ -308,3 +308,39 @@ class SimpleLeadGroupSerializer(UserResourceSerializer):
     class Meta:
         model = LeadGroup
         fields = ('id', 'title',)
+
+
+class KeyValueSerializer(serializers.Serializer):
+    key = serializers.CharField()
+    value = serializers.CharField()
+
+
+class EmmTagSerializer(serializers.Serializer):
+    key = serializers.IntegerField()
+    label = serializers.CharField()
+    total_count = serializers.IntegerField()
+
+
+class LegacyLeadOptionsSerializer(serializers.Serializer):
+    lead_group = KeyValueSerializer(many=True)
+    assignee = KeyValueSerializer(many=True)
+    confidentiality = KeyValueSerializer(many=True)
+    status = KeyValueSerializer(many=True)
+    project = KeyValueSerializer(many=True)
+    emm_entities = EmmTagSerializer(many=True)
+    emm_keywords = EmmTagSerializer(many=True)
+    emm_risk_factors = EmmTagSerializer(many=True)
+    has_emm_leads = serializers.BooleanField(many=True)
+
+
+class LeadOptionsSerializer(serializers.Serializer):
+    projects = SimpleProjectSerializer(many=True)
+    confidentiality = KeyValueSerializer(many=True)
+    status = KeyValueSerializer(many=True)
+    lead_groups = SimpleLeadGroupSerializer(many=True)
+    members = SimpleUserSerializer(many=True)
+    organizations = SimpleOrganizationSerializer(many=True)
+    emm_entities = EmmTagSerializer(many=True)
+    emm_keywords = EmmTagSerializer(many=True)
+    emm_risk_factors = EmmTagSerializer(many=True)
+    has_emm_leads = serializers.BooleanField(many=True)

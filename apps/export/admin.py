@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 from django.contrib import messages
 
 from deep.admin import ModelAdmin, document_preview
@@ -15,10 +16,11 @@ def trigger_retry(modeladmin, request, queryset):
         export_task.delay(export_id)
     messages.add_message(
         request, messages.INFO,
-        'Successfully triggerd retry for exports: {}'.format(
-            ','.join(
-                '{}({})'.format(value[0], value[1])
-                for value in queryset.values_list('title', 'id').distinct()[:TRIGGER_LIMIT]
+        mark_safe(
+            'Successfully triggerd retry for exports: <br><hr>' +
+            '<br>'.join(
+                '& {} : {}'.format(*value)
+                for value in queryset.values_list('id', 'title').distinct()[:TRIGGER_LIMIT]
             )
         )
     )

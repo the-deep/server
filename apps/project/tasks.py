@@ -8,14 +8,14 @@ from django.utils import timezone
 
 from redis_store import redis
 from deep.models import ProcessStatus
-from utils.common import redis_lock
 from entry.stats import get_project_entries_stats
 
 from .models import Project, ProjectEntryStats
 
 logger = logging.getLogger(__name__)
 
-GES_WAIT_LOCK_KEY = 'generate_entry_stats__wait_lock__{0}'
+STATS_WAIT_LOCK_KEY = 'generate_entry_stats__wait_lock__{0}'
+STATS_WAIT_TIMEOUT = ProjectEntryStats.THRESHOLD_SECONDS
 
 
 def _generate_entry_stats(project_id):
@@ -41,14 +41,15 @@ def _generate_entry_stats(project_id):
 
 
 @shared_task
-@redis_lock('generate_entry_stats__{0}', 5 * 60)
-def generate_entry_stats(project_id):
-    ges_wait_lock_key = GES_WAIT_LOCK_KEY.format(project_id)
-    if not redis.get_lock(ges_wait_lock_key, ProjectEntryStats.THRESHOLD_SECONDS).acquire(blocking=False):
-        # logger.warning(f'GENERATE_ENTRY_STATS:: Waiting for timeout {ges_wait_lock_key}')
+def generate_entry_stats(project_id, force=False):
+    key = STATS_WAIT_LOCK_KEY.format(project_id)
+    lock = redis.get_lock(key, STATS_WAIT_TIMEOUT)
+    have_lock = lock.acquire(blocking=False)
+    if not have_lock and not force:
+        logger.warning(f'GENERATE_ENTRY_STATS:: Waiting for timeout {key}')
         return False
 
+    logger.info(f'GENERATE_ENTRY_STATS:: Processing for {key}')
     _generate_entry_stats(project_id)
-
-    # Lock for another THRESHOLD_SECONDS
-    redis.get_lock(ges_wait_lock_key, ProjectEntryStats.THRESHOLD_SECONDS).acquire(blocking=False)
+    # NOTE: lock.release() is not called so that another process waits for timeout
+    return True

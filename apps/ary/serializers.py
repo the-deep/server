@@ -141,6 +141,9 @@ class FieldSerializer(serializers.Serializer):
     options = OptionSerializer(source='get_options',
                                many=True, read_only=True)
 
+    class Meta:
+        ref_name = 'AryFieldSerializer'
+
 
 class GroupSerializer(serializers.Serializer):
     id = serializers.IntegerField()
