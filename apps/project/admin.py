@@ -1,20 +1,42 @@
-from django import forms
 from django.contrib import admin
+from django.utils.safestring import mark_safe
+from django.contrib import messages
 from django.db.models import Count
 from django.contrib.postgres.aggregates import StringAgg
 
 from reversion.admin import VersionAdmin
+from .tasks import generate_entry_stats
+from .forms import ProjectRoleForm
 from .models import (
     Project,
     ProjectRole,
     ProjectMembership,
     ProjectUserGroupMembership,
+    ProjectEntryStats,
     ProjectStatus,
     ProjectStatusCondition,
     ProjectJoinRequest,
 )
-from .permissions import PROJECT_PERMISSIONS
-from .widgets import PermissionsWidget
+
+TRIGGER_LIMIT = 5
+
+
+def trigger_project_stat_calc(modeladmin, request, queryset):
+    for project_id in queryset.values_list('project_id', flat=True).distinct()[:TRIGGER_LIMIT]:
+        generate_entry_stats.delay(project_id, force=True)
+    messages.add_message(
+        request, messages.INFO,
+        mark_safe(
+            'Successfully triggered Project Stats Calculation for projects: <br><hr>' +
+            '<br>'.join(
+                '* {0} : {1}'.format(*value)
+                for value in queryset.values_list('project_id', 'project__title').distinct()[:TRIGGER_LIMIT]
+            )
+        )
+    )
+
+
+trigger_project_stat_calc.short_description = 'Trigger project stat calculation'
 
 
 class ProjectMembershipInline(admin.TabularInline):
@@ -87,47 +109,14 @@ class ProjectStatusAdmin(admin.ModelAdmin):
     inlines = [ProjectConditionInline]
 
 
-class ProjectRoleForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['lead_permissions'].widget = PermissionsWidget(
-            'lead_permissions',  # NOTE: this needs to besent to uniquely identify the checkboxes
-            PROJECT_PERMISSIONS.lead,
-        )
-        self.fields['entry_permissions'].widget = PermissionsWidget(
-            'entry_permissions',
-            PROJECT_PERMISSIONS.entry,
-        )
-        self.fields['setup_permissions'].widget = PermissionsWidget(
-            'setup_permissions',
-            PROJECT_PERMISSIONS.setup,
-        )
-        self.fields['export_permissions'].widget = PermissionsWidget(
-            'export_permissions',
-            PROJECT_PERMISSIONS.export,
-        )
-        self.fields['assessment_permissions'].widget = PermissionsWidget(
-            'assessment_permissions',
-            PROJECT_PERMISSIONS.assessment,
-        )
-
-    def save(self, commit=True):
-        obj = super().save(commit=False)
-        obj.lead_permissions = self.cleaned_data['lead_permissions']
-        obj.entry_permissions = self.cleaned_data['entry_permissions']
-        obj.setup_permissions = self.cleaned_data['setup_permissions']
-        obj.export_permissions = self.cleaned_data['export_permissions']
-        obj.assessment_permissions = self.cleaned_data['assessment_permissions']
-
-        obj.save()
-        self.save_m2m()
-        return obj
-
-    class Meta:
-        model = ProjectRole
-        fields = '__all__'
-
-
 @admin.register(ProjectRole)
 class ProjectRoleAdmin(admin.ModelAdmin):
     form = ProjectRoleForm
+
+
+@admin.register(ProjectEntryStats)
+class ProjectEntryStatsAdmin(admin.ModelAdmin):
+    search_fields = ('project__title',)
+    list_filter = ('status',)
+    list_display = ('project', 'modified_at', 'status',)
+    actions = [trigger_project_stat_calc]

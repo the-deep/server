@@ -19,6 +19,7 @@ from rest_framework import (
     views,
     viewsets,
 )
+from drf_yasg.utils import swagger_auto_schema
 
 import django_filters
 
@@ -31,18 +32,18 @@ from lead.filter_set import (
 )
 from project.models import Project, ProjectMembership
 from project.permissions import PROJECT_PERMISSIONS as PROJ_PERMS
-from project.serializers import SimpleProjectSerializer
-from user.serializers import SimpleUserSerializer
 from organization.models import Organization
 from organization.serializers import SimpleOrganizationSerializer
-from lead.models import LeadGroup, Lead, EMMEntity, LeadEMMTrigger
-from lead.serializers import (
+from .models import LeadGroup, Lead, EMMEntity, LeadEMMTrigger
+from .serializers import (
     LeadGroupSerializer,
     SimpleLeadGroupSerializer,
     LeadSerializer,
     LegacyLeadSerializer,
     LeadPreviewSerializer,
     check_if_url_exists,
+    LeadOptionsSerializer,
+    LegacyLeadOptionsSerializer,
 )
 
 from lead.tasks import extract_from_lead
@@ -247,6 +248,7 @@ class LeadOptionsView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     # LEGACY SUPPORT
+    @swagger_auto_schema(responses={200: LegacyLeadOptionsSerializer()})
     def get(self, request, version=None):
         project_query = request.GET.get('projects')
         fields_query = request.GET.get('fields')
@@ -355,14 +357,18 @@ class LeadOptionsView(views.APIView):
         # Add info about if the project has emm leads, just check if entities or keywords present
         options['has_emm_leads'] = (not not options['emm_entities']) or (not not options['emm_keywords'])
 
-        return response.Response(options)
+        return response.Response(LegacyLeadOptionsSerializer(options).data)
 
+    @swagger_auto_schema(responses={200: LeadOptionsSerializer()})
     def post(self, request, version=None):
         fields = request.data
-        projects_id = fields.get('projects', [])
-        lead_groups_id = fields.get('lead_groups', [])
-        organizations_id = fields.get('organizations', [])
+        projects_id = fields.get('projects') or []
+        lead_groups_id = fields.get('lead_groups') or []
+        organizations_id = fields.get('organizations') or []
         members_id = fields.get('members')
+        emm_entities = fields.get('emm_entities') or []
+        emm_keywords = fields.get('emm_keywords') or []
+        emm_risk_factors = fields.get('emm_risk_factors') or []
 
         projects = Project.get_for_member(request.user).filter(
             id__in=projects_id,
@@ -382,7 +388,7 @@ class LeadOptionsView(views.APIView):
             return qs.distinct()
 
         options = {
-            'projects': SimpleProjectSerializer(projects, many=True).data,
+            'projects': projects,
 
             # Static Options
             'confidentiality': [
@@ -391,7 +397,6 @@ class LeadOptionsView(views.APIView):
                     'value': c[1],
                 } for c in Lead.CONFIDENTIALITIES
             ],
-
             'status': [
                 {
                     'key': s[0],
@@ -400,63 +405,51 @@ class LeadOptionsView(views.APIView):
             ],
 
             # Dynamic Options
-            'lead_groups': lead_groups_id and (
-                SimpleLeadGroupSerializer(
-                    _filter_by_project(
-                        LeadGroup.objects.filter(id__in=lead_groups_id),
-                    ),
-                    many=True,
-                ).data
-            ),
 
-            'members': SimpleUserSerializer(
-                _filter_by_project_and_group(
-                    User.objects.filter(id__in=members_id)
-                    if members_id is not None else User.objects,
-                ),
-                many=True,
-            ).data,
-
-            'organizations': organizations_id and (
-                SimpleOrganizationSerializer(
-                    Organization.objects.filter(id__in=organizations_id),
-                    many=True,
-                ).data
+            'lead_groups': _filter_by_project(
+                LeadGroup.objects.filter(id__in=lead_groups_id),
             ),
+            'members': _filter_by_project_and_group(
+                User.objects.filter(id__in=members_id)
+                if members_id is not None else User.objects,
+            ),
+            'organizations': Organization.objects.filter(id__in=organizations_id).distinct(),
+
+            # Create Emm specific options
+            'emm_entities': EMMEntity.objects.filter(
+                lead__project__in=projects,
+                name__in=emm_entities,
+            ).distinct().values('name').annotate(
+                total_count=models.Count('lead'),
+                label=models.F('name'),
+                key=models.F('id'),
+            ).values('key', 'label', 'total_count').order_by('name'),
+
+            'emm_keywords': LeadEMMTrigger.objects.filter(
+                emm_keyword__in=emm_keywords,
+                lead__project__in=projects
+            ).values('emm_keyword').annotate(
+                total_count=models.Sum('count'),
+                key=models.F('emm_keyword'),
+                label=models.F('emm_keyword')
+            ).values('key', 'label', 'total_count').order_by('emm_keyword'),
+
+            'emm_risk_factors': LeadEMMTrigger.objects.filter(
+                emm_risk_factor__in=emm_risk_factors,
+                lead__project__in=projects,
+            ).values('emm_risk_factor').annotate(
+                total_count=models.Sum('count'),
+                key=models.F('emm_risk_factor'),
+                label=models.F('emm_risk_factor'),
+            ).order_by('emm_risk_factor'),
+
+            'has_emm_leads': (
+                EMMEntity.objects.filter(lead__project__in=projects).exists() or
+                LeadEMMTrigger.objects.filter(lead__project__in=projects).exists()
+            )
         }
 
-        # Create Emm specific options
-        options['emm_entities'] = fields.get('emm_entities', []) and EMMEntity.objects.filter(
-            lead__project__in=projects,
-            name__in=fields['emm_entities'],
-        ).distinct().values('name').annotate(
-            total_count=models.Count('lead'),
-            label=models.F('name'),
-            key=models.F('id'),
-        ).values('key', 'label', 'total_count').order_by('name')
-
-        options['emm_keywords'] = fields.get('emm_keywords', []) and LeadEMMTrigger.objects.filter(
-            emm_keyword__in=fields['emm_keywords'],
-            lead__project__in=projects
-        ).values('emm_keyword').annotate(
-            total_count=models.Sum('count'),
-            key=models.F('emm_keyword'),
-            label=models.F('emm_keyword')
-        ).order_by('emm_keyword')
-
-        options['emm_risk_factors'] = fields.get('emm_risk_factors', []) and LeadEMMTrigger.objects.filter(
-            emm_risk_factor__in=fields['emm_risk_factors'],
-            lead__project__in=projects,
-        ).values('emm_risk_factor').annotate(
-            total_count=models.Sum('count'),
-            key=models.F('emm_risk_factor'),
-            label=models.F('emm_risk_factor'),
-        ).order_by('emm_risk_factor')
-
-        options['has_emm_leads'] = EMMEntity.objects.filter(lead__project__in=projects).exists() or \
-            LeadEMMTrigger.objects.filter(lead__project__in=projects).exists()
-
-        return response.Response(options)
+        return response.Response(LeadOptionsSerializer(options).data)
 
 
 class LeadExtractionTriggerView(views.APIView):
