@@ -113,7 +113,6 @@ class ProjectRoleForm(forms.ModelForm):
 
     def save(self, commit=True):
         obj = super().save(commit=False)
-        print(self.cleaned_data)
         obj.lead_permissions = self.cleaned_data['lead_permissions']
         obj.entry_permissions = self.cleaned_data['entry_permissions']
         obj.setup_permissions = self.cleaned_data['setup_permissions']
