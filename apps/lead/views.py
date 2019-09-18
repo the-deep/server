@@ -248,7 +248,7 @@ class LeadOptionsView(views.APIView):
 
     # LEGACY SUPPORT
     def get(self, request, version=None):
-        project_query = request.GET.get('project')
+        project_query = request.GET.get('projects')
         fields_query = request.GET.get('fields')
 
         projects = Project.get_for_member(request.user)
@@ -270,7 +270,7 @@ class LeadOptionsView(views.APIView):
             def _individual_project_query(project):
                 return (
                     models.Q(project=project) |
-                    models.Q(usergroup__projectusergroupmembership__project=project)
+                    models.Q(usergroup__in=project.user_groups.all())
                 )
 
             query = reduce(
