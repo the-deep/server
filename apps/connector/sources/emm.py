@@ -22,7 +22,8 @@ class EMM(RssFeed):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Sets up conf
-        self.has_emm = False
+        self.has_emm_entities = False
+        self.has_emm_triggers = False
         self.initialize()
 
     def initialize(self):
@@ -34,6 +35,24 @@ class EMM(RssFeed):
             raise Exception(msg)
         self.conf = conf
         self.conf.trigger_regex = re.compile(self.conf.trigger_regex)
+
+    def update_emm_items_present(self, xml):
+        trigger_query = './/category[@emm:trigger]'
+        try:
+            items = xml.xpath(trigger_query, namespaces=self.nsmap)
+            if len(items) > 0:
+                self.has_emm_triggers = True
+        except etree.XPathEvalError:
+            # Means no such tag
+            pass
+
+        entity_query = './/emm:entity'
+        try:
+            items = xml.xpath(entity_query, namespaces=self.nsmap)
+            if len(items) > 0:
+                self.has_emm_entities = True
+        except etree.XPathEvalError:
+            # Means no such tag
 
     def query_fields(self, params):
         if not params or not params.get('feed-url'):
@@ -53,18 +72,19 @@ class EMM(RssFeed):
 
         items = xml.find('channel/item')
 
-        nsmap = xml.nsmap
+        self.nsmap = xml.nsmap
+
+        # Check if trigger and entities exist
+        self.update_emm_items_present(xml)
 
         fields = []
         for field in items.findall('./'):
-            fields.extend(get_rss_fields(field, nsmap))
+            fields.extend(get_rss_fields(field, self.nsmap))
 
         # Remove fields that are present more than once,
         # as we donot have support for list data yet.
         real_fields = []
         for field in fields:
-            if 'emm:' in field['label']:
-                self.has_emm = True
             if fields.count(field) == 1:
                 real_fields.append(field)
         return real_fields
@@ -90,6 +110,9 @@ class EMM(RssFeed):
         self.trigger_attr_ns = get_ns_tag(self.nsmap, self.conf.trigger_attribute)
         self.trigger_tag_ns = get_ns_tag(self.nsmap, self.conf.trigger_tag)
         self.entity_tag_ns = get_ns_tag(self.nsmap, self.conf.entity_tag)
+
+        # Check if trigger and entities exist
+        self.update_emm_items_present(xml)
 
         items = xml.findall('channel/item')
 
@@ -141,8 +164,10 @@ class EMM(RssFeed):
 
         # Parse Triggers
         info['triggers'] = self.get_triggers(item)
-        if info['entities'] or info['triggers']:
-            self.has_emm = True
+        if info['entities']:
+            self.has_emm_entities = True
+        if info['triggers']:
+            self.has_emm_triggers = True
 
         return info
 
