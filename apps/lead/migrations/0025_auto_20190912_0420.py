@@ -11,13 +11,6 @@ def forward_merge_restricted_and_protected(apps, schema_editor):
     ).update(confidentiality='confidential')
 
 
-def backward_do_nothing_just_for_compatibility(apps, schema_editor):
-    # Since the forward migration merges two values into one,
-    # and they are not stored in other fields, data is lost.
-    # In this case, while reverting do nothing
-    pass
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -27,6 +20,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(
             forward_merge_restricted_and_protected,
-            backward_do_nothing_just_for_compatibility,
+            reverse_code=migrations.RunPython.noop,
         ),
     ]

@@ -5,7 +5,6 @@ from django import forms
 
 class PermissionsWidget(forms.Widget):
     def __init__(self, name, permission_values, *args, **kwargs):
-        print(args, kwargs)
         super().__init__(*args, **kwargs)
         self.widget_name = name
         self.permission_values = permission_values
@@ -25,7 +24,6 @@ class PermissionsWidget(forms.Widget):
 
     def render(self, name, value, attrs=None, renderer=None):
         html = ''
-        print(name, value)
         for k, v in self.permission_values.items():
             checked = value & v == v
             html += f'''
