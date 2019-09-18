@@ -53,6 +53,7 @@ class EMM(RssFeed):
                 self.has_emm_entities = True
         except etree.XPathEvalError:
             # Means no such tag
+            pass
 
     def query_fields(self, params):
         if not params or not params.get('feed-url'):

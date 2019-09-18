@@ -152,12 +152,14 @@ class LeadViewSet(viewsets.ModelViewSet):
 
         # Aggregate emm data
         emm_entities = EMMEntity.objects.filter(lead__in=qs).values('name').\
-            annotate(total_count=models.Count('name')).values('name', 'total_count')
+            annotate(
+                total_count=models.Count('name')
+        ).order_by('-total_count').values('name', 'total_count')
 
         emm_triggers = LeadEMMTrigger.objects.filter(lead__in=qs).values('emm_keyword', 'emm_risk_factor').\
             annotate(
                 total_count=models.Sum('count'),
-        ).values('emm_keyword', 'emm_risk_factor', 'total_count')
+        ).order_by('-total_count').values('emm_keyword', 'emm_risk_factor', 'total_count')
 
         extra = {}
         extra['emm_entities'] = emm_entities
