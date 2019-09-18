@@ -9,13 +9,15 @@ PROJECT_PERMISSIONS = Dict(
         view=1 << 0,
         create=1 << 1,
         modify=1 << 2,
-        delete=1 << 3
+        delete=1 << 3,
+        view_only_unprotected=1 << 4,
     ),
     entry=Dict({
         'view': 1 << 0,
         'create': 1 << 1,
         'modify': 1 << 2,
-        'delete': 1 << 3
+        'delete': 1 << 3,
+        'view_only_unprotected': 1 << 4,
     }),
     setup=Dict({
         'modify': 1 << 0,

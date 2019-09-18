@@ -138,7 +138,7 @@ def get_filtered_entries(user, queries):
 
     # Filter by filterset
     updated_queries = get_created_at_filters(queries)
-    filterset = EntryFilterSet(data=updated_queries)
+    filterset = EntryFilterSet(data=updated_queries, queryset=entries)
     filterset.is_valid()  # This needs to be called
     entries = filterset.qs
 
