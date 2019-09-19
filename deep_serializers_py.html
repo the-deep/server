@@ -8,7 +8,7 @@
     
     
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for deep/serializers.py: 86%</title>
+    <title>Coverage for deep/serializers.py: 87%</title>
     <link rel="stylesheet" href="style.css" type="text/css">
     
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -24,14 +24,14 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>deep/serializers.py</b> :
-            <span class="pc_cov">86%</span>
+            <span class="pc_cov">87%</span>
         </h1>
 
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
 
         <h2 class="stats">
-            208 statements &nbsp;
-            <span class="run hide_run shortkey_r button_toggle_run">187 run</span>
+            212 statements &nbsp;
+            <span class="run hide_run shortkey_r button_toggle_run">191 run</span>
             <span class="mis shortkey_m button_toggle_mis">21 missing</span>
             <span class="exc shortkey_x button_toggle_exc">0 excluded</span>
 
@@ -465,6 +465,24 @@
 <p id="n394" class="stm run hide_run"><a href="#n394">394</a></p>
 <p id="n395" class="stm run hide_run"><a href="#n395">395</a></p>
 <p id="n396" class="stm run hide_run"><a href="#n396">396</a></p>
+<p id="n397" class="pln"><a href="#n397">397</a></p>
+<p id="n398" class="pln"><a href="#n398">398</a></p>
+<p id="n399" class="pln"><a href="#n399">399</a></p>
+<p id="n400" class="stm run hide_run"><a href="#n400">400</a></p>
+<p id="n401" class="stm run hide_run"><a href="#n401">401</a></p>
+<p id="n402" class="pln"><a href="#n402">402</a></p>
+<p id="n403" class="pln"><a href="#n403">403</a></p>
+<p id="n404" class="pln"><a href="#n404">404</a></p>
+<p id="n405" class="pln"><a href="#n405">405</a></p>
+<p id="n406" class="pln"><a href="#n406">406</a></p>
+<p id="n407" class="pln"><a href="#n407">407</a></p>
+<p id="n408" class="pln"><a href="#n408">408</a></p>
+<p id="n409" class="stm run hide_run"><a href="#n409">409</a></p>
+<p id="n410" class="stm run hide_run"><a href="#n410">410</a></p>
+<p id="n411" class="pln"><a href="#n411">411</a></p>
+<p id="n412" class="pln"><a href="#n412">412</a></p>
+<p id="n413" class="pln"><a href="#n413">413</a></p>
+<p id="n414" class="pln"><a href="#n414">414</a></p>
 
             </td>
             <td class="text">
@@ -864,6 +882,24 @@
 <p id="t394" class="stm run hide_run">        <span class="nam">url</span> <span class="op">=</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">to_representation</span><span class="op">(</span><span class="nam">obj</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t395" class="stm run hide_run">        <span class="nam">cache</span><span class="op">.</span><span class="nam">set</span><span class="op">(</span><span class="nam">key</span><span class="op">,</span> <span class="nam">url</span><span class="op">,</span> <span class="nam">settings</span><span class="op">.</span><span class="nam">MAX_FILE_CACHE_AGE</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t396" class="stm run hide_run">        <span class="key">return</span> <span class="nam">url</span><span class="strut">&nbsp;</span></p>
+<p id="t397" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t398" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t399" class="pln"><span class="com"># required=False List Integer Field</span><span class="strut">&nbsp;</span></p>
+<p id="t400" class="stm run hide_run"><span class="key">def</span> <span class="nam">IdListField</span><span class="op">(</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t401" class="stm run hide_run">    <span class="key">return</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ListField</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
+<p id="t402" class="pln">        <span class="nam">child</span><span class="op">=</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t403" class="pln">        <span class="nam">default</span><span class="op">=</span><span class="nam">list</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t404" class="pln">        <span class="nam">allow_empty</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t405" class="pln">    <span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t406" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t407" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t408" class="pln"><span class="com"># required=False List String Field</span><span class="strut">&nbsp;</span></p>
+<p id="t409" class="stm run hide_run"><span class="key">def</span> <span class="nam">StringListField</span><span class="op">(</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t410" class="stm run hide_run">    <span class="key">return</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ListField</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
+<p id="t411" class="pln">        <span class="nam">child</span><span class="op">=</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t412" class="pln">        <span class="nam">default</span><span class="op">=</span><span class="nam">list</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t413" class="pln">        <span class="nam">allow_empty</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t414" class="pln">    <span class="op">)</span><span class="strut">&nbsp;</span></p>
 
             </td>
         </tr>
@@ -874,7 +910,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-18 11:12
+            created at 2019-09-19 07:12
         </p>
     </div>
 </div>

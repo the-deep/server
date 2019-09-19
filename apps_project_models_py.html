@@ -30,9 +30,9 @@
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
 
         <h2 class="stats">
-            254 statements &nbsp;
-            <span class="run hide_run shortkey_r button_toggle_run">215 run</span>
-            <span class="mis shortkey_m button_toggle_mis">39 missing</span>
+            256 statements &nbsp;
+            <span class="run hide_run shortkey_r button_toggle_run">216 run</span>
+            <span class="mis shortkey_m button_toggle_mis">40 missing</span>
             <span class="exc shortkey_x button_toggle_exc">0 excluded</span>
 
             
@@ -665,21 +665,24 @@
 <p id="n594" class="pln"><a href="#n594">594</a></p>
 <p id="n595" class="pln"><a href="#n595">595</a></p>
 <p id="n596" class="stm run hide_run"><a href="#n596">596</a></p>
-<p id="n597" class="pln"><a href="#n597">597</a></p>
-<p id="n598" class="stm mis"><a href="#n598">598</a></p>
-<p id="n599" class="pln"><a href="#n599">599</a></p>
+<p id="n597" class="stm mis"><a href="#n597">597</a></p>
+<p id="n598" class="pln"><a href="#n598">598</a></p>
+<p id="n599" class="stm run hide_run"><a href="#n599">599</a></p>
 <p id="n600" class="pln"><a href="#n600">600</a></p>
-<p id="n601" class="pln"><a href="#n601">601</a></p>
+<p id="n601" class="stm mis"><a href="#n601">601</a></p>
 <p id="n602" class="pln"><a href="#n602">602</a></p>
-<p id="n603" class="stm run hide_run"><a href="#n603">603</a></p>
-<p id="n604" class="stm run hide_run"><a href="#n604">604</a></p>
-<p id="n605" class="stm run hide_run"><a href="#n605">605</a></p>
-<p id="n606" class="pln"><a href="#n606">606</a></p>
-<p id="n607" class="pln"><a href="#n607">607</a></p>
-<p id="n608" class="pln"><a href="#n608">608</a></p>
+<p id="n603" class="pln"><a href="#n603">603</a></p>
+<p id="n604" class="pln"><a href="#n604">604</a></p>
+<p id="n605" class="pln"><a href="#n605">605</a></p>
+<p id="n606" class="stm run hide_run"><a href="#n606">606</a></p>
+<p id="n607" class="stm run hide_run"><a href="#n607">607</a></p>
+<p id="n608" class="stm run hide_run"><a href="#n608">608</a></p>
 <p id="n609" class="pln"><a href="#n609">609</a></p>
-<p id="n610" class="stm run hide_run"><a href="#n610">610</a></p>
-<p id="n611" class="stm run hide_run"><a href="#n611">611</a></p>
+<p id="n610" class="pln"><a href="#n610">610</a></p>
+<p id="n611" class="pln"><a href="#n611">611</a></p>
+<p id="n612" class="pln"><a href="#n612">612</a></p>
+<p id="n613" class="stm run hide_run"><a href="#n613">613</a></p>
+<p id="n614" class="stm run hide_run"><a href="#n614">614</a></p>
 
             </td>
             <td class="text">
@@ -1278,22 +1281,25 @@
 <p id="t593" class="pln">        <span class="nam">max_length</span><span class="op">=</span><span class="num">30</span><span class="op">,</span> <span class="nam">choices</span><span class="op">=</span><span class="nam">ProcessStatus</span><span class="op">.</span><span class="nam">STATUS_CHOICES</span><span class="op">,</span> <span class="nam">default</span><span class="op">=</span><span class="nam">ProcessStatus</span><span class="op">.</span><span class="nam">PENDING</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
 <p id="t594" class="pln">    <span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t595" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t596" class="stm run hide_run">    <span class="op">@</span><span class="nam">staticmethod</span><span class="strut">&nbsp;</span></p>
-<p id="t597" class="pln">    <span class="key">def</span> <span class="nam">get_for</span><span class="op">(</span><span class="nam">user</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t598" class="stm mis">        <span class="key">return</span> <span class="nam">ProjectEntryStats</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t599" class="pln">            <span class="nam">models</span><span class="op">.</span><span class="nam">Q</span><span class="op">(</span><span class="nam">project__members</span><span class="op">=</span><span class="nam">user</span><span class="op">)</span> <span class="op">|</span><span class="strut">&nbsp;</span></p>
-<p id="t600" class="pln">            <span class="nam">models</span><span class="op">.</span><span class="nam">Q</span><span class="op">(</span><span class="nam">project__user_groups__members</span><span class="op">=</span><span class="nam">user</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t601" class="pln">        <span class="op">)</span><span class="op">.</span><span class="nam">distinct</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t602" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t603" class="stm run hide_run">    <span class="key">def</span> <span class="nam">is_ready</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t604" class="stm run hide_run">        <span class="nam">time_threshold</span> <span class="op">=</span> <span class="nam">timezone</span><span class="op">.</span><span class="nam">now</span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="nam">timedelta</span><span class="op">(</span><span class="nam">seconds</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">THRESHOLD_SECONDS</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t605" class="stm run hide_run">        <span class="key">if</span> <span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t606" class="pln">                <span class="nam">self</span><span class="op">.</span><span class="nam">status</span> <span class="op">==</span> <span class="nam">ProcessStatus</span><span class="op">.</span><span class="nam">SUCCESS</span> <span class="key">and</span><span class="strut">&nbsp;</span></p>
-<p id="t607" class="pln">                <span class="nam">self</span><span class="op">.</span><span class="nam">modified_at</span> <span class="op">></span> <span class="nam">time_threshold</span> <span class="key">and</span><span class="strut">&nbsp;</span></p>
-<p id="t608" class="pln">                <span class="nam">self</span><span class="op">.</span><span class="nam">file</span><span class="strut">&nbsp;</span></p>
-<p id="t609" class="pln">        <span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t610" class="stm run hide_run">            <span class="key">return</span> <span class="key">True</span><span class="strut">&nbsp;</span></p>
-<p id="t611" class="stm run hide_run">        <span class="key">return</span> <span class="key">False</span><span class="strut">&nbsp;</span></p>
+<p id="t596" class="stm run hide_run">    <span class="key">def</span> <span class="nam">__str__</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t597" class="stm mis">        <span class="key">return</span> <span class="nam">str</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">project</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t598" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t599" class="stm run hide_run">    <span class="op">@</span><span class="nam">staticmethod</span><span class="strut">&nbsp;</span></p>
+<p id="t600" class="pln">    <span class="key">def</span> <span class="nam">get_for</span><span class="op">(</span><span class="nam">user</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t601" class="stm mis">        <span class="key">return</span> <span class="nam">ProjectEntryStats</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
+<p id="t602" class="pln">            <span class="nam">models</span><span class="op">.</span><span class="nam">Q</span><span class="op">(</span><span class="nam">project__members</span><span class="op">=</span><span class="nam">user</span><span class="op">)</span> <span class="op">|</span><span class="strut">&nbsp;</span></p>
+<p id="t603" class="pln">            <span class="nam">models</span><span class="op">.</span><span class="nam">Q</span><span class="op">(</span><span class="nam">project__user_groups__members</span><span class="op">=</span><span class="nam">user</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t604" class="pln">        <span class="op">)</span><span class="op">.</span><span class="nam">distinct</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t605" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t606" class="stm run hide_run">    <span class="key">def</span> <span class="nam">is_ready</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t607" class="stm run hide_run">        <span class="nam">time_threshold</span> <span class="op">=</span> <span class="nam">timezone</span><span class="op">.</span><span class="nam">now</span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="nam">timedelta</span><span class="op">(</span><span class="nam">seconds</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">THRESHOLD_SECONDS</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t608" class="stm run hide_run">        <span class="key">if</span> <span class="op">(</span><span class="strut">&nbsp;</span></p>
+<p id="t609" class="pln">                <span class="nam">self</span><span class="op">.</span><span class="nam">status</span> <span class="op">==</span> <span class="nam">ProcessStatus</span><span class="op">.</span><span class="nam">SUCCESS</span> <span class="key">and</span><span class="strut">&nbsp;</span></p>
+<p id="t610" class="pln">                <span class="nam">self</span><span class="op">.</span><span class="nam">modified_at</span> <span class="op">></span> <span class="nam">time_threshold</span> <span class="key">and</span><span class="strut">&nbsp;</span></p>
+<p id="t611" class="pln">                <span class="nam">self</span><span class="op">.</span><span class="nam">file</span><span class="strut">&nbsp;</span></p>
+<p id="t612" class="pln">        <span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t613" class="stm run hide_run">            <span class="key">return</span> <span class="key">True</span><span class="strut">&nbsp;</span></p>
+<p id="t614" class="stm run hide_run">        <span class="key">return</span> <span class="key">False</span><span class="strut">&nbsp;</span></p>
 
             </td>
         </tr>
@@ -1304,7 +1310,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-18 11:12
+            created at 2019-09-19 07:12
         </p>
     </div>
 </div>
