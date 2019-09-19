@@ -24,7 +24,8 @@ PROJECT_PERMISSIONS = Dict(
         'delete': 1 << 1,
     }),
     export=Dict({
-        'create': 1 << 0
+        'create': 1 << 0,
+        'create_only_unprotected': 1 << 1,
     }),
     assessment=Dict({
         'view': 1 << 0,

@@ -2,6 +2,7 @@ from django.db import models
 
 from analysis_framework.models import Exportable
 from entry.filter_set import EntryFilterSet, get_filtered_entries
+from entry.models import Entry
 from export.models import Export
 from export.entries.excel_exporter import ExcelExporter
 from export.entries.report_exporter import ReportExporter
@@ -16,6 +17,7 @@ def export_entries(export):
 
     filters = export.filters
     queryset = get_filtered_entries(user, filters)
+    queryset = Entry.get_exportable_queryset(queryset)
 
     search = filters.get('search')
     if search:
