@@ -395,6 +395,7 @@ class LeadTests(TestCase):
 
     def test_emm_options_get(self):
         project = self.create_project()
+        project1 = self.create_project()
 
         # Create Entities
         entity1 = self.create(EMMEntity, name='entity1')
@@ -406,6 +407,10 @@ class LeadTests(TestCase):
         lead2 = self.create_lead(project=project, emm_entities=[entity2, entity3])
         lead3 = self.create_lead(project=project, emm_entities=[entity2])
         lead4 = self.create_lead(project=project)
+
+        # Create leads for project1 as well
+        leadp11 = self.create_lead(project=project1, emm_entities=[])
+        leadp12 = self.create_lead(project=project1, emm_entities=[])
 
         # Create LeadEMMTrigger objects with
         self.create(
@@ -427,7 +432,7 @@ class LeadTests(TestCase):
         # NOTE: 3 leads with keyword keyword1, one with keyword2
         # 2 leads with factor rf1, 2 with factor rf2
 
-        url = f'/api/v1/lead-options/?project={project.id}'
+        url = f'/api/v1/lead-options/?projects={project.id}'
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
@@ -456,6 +461,22 @@ class LeadTests(TestCase):
 
         assert 'has_emm_leads' in data
         assert data['has_emm_leads'], "There are emm leads"
+
+        # Now check options for project1, there should be no emm related data
+        url = f'/api/v1/lead-options/?projects={project1.id}'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        data = response.data
+
+        assert 'has_emm_leads' in data
+        assert not data['has_emm_leads'], "this Project should not have emm"
+        assert 'emm_risk_factors' in data
+        assert not data['emm_risk_factors']
+        assert 'emm_keywords' in data
+        assert not data['emm_keywords']
+        assert 'emm_entities' in data
+        assert not data['emm_entities']
 
     def test_trigger_api(self):
         project = self.create(Project, role=self.admin_role)
