@@ -115,6 +115,7 @@ INSTALLED_APPS = [
     'django_premailer',
     'django_celery_beat',
     'jsoneditor',
+    'drf_yasg',  # API Documentation
 ] + [
     '{}.{}.apps.{}Config'.format(
         APPS_DIR.split('/')[-1],
@@ -577,3 +578,10 @@ if DEBUG and not TESTING:
         MIDDLEWARE += ['silk.middleware.SilkyMiddleware']
         SILKY_META = True
         SILKY_PYTHON_PROFILER = True
+
+REDOC_SETTINGS = {
+    'LAZY_RENDERING': True,
+    'HIDE_HOSTNAME': True,
+    'NATIVE_SCROLLBARS': True,
+    'EXPAND_RESPONSES': [],
+}

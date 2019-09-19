@@ -55,6 +55,7 @@ class FieldSerializer(
 
     class Meta:
         model = Field
+        ref_name = 'TabularFieldSerializer'
         exclude = ('sheet', 'cache',)
 
     def get_geodata(self, obj):

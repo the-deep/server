@@ -10,6 +10,9 @@ from django.contrib import admin
 from django.conf import settings
 from django.urls import path, register_converter
 from rest_framework import routers
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 from django_otp.admin import OTPAdminSite
 
 from . import converters
@@ -165,6 +168,18 @@ handler404 = Api_404View  # noqa
 
 router = routers.DefaultRouter()
 
+api_schema_view = get_schema_view(
+    openapi.Info(
+        title="DEEP API",
+        default_version='v1',
+        description="DEEP API",
+        contact=openapi.Contact(email="admin@thedeep.io"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
+
+
 # User routers
 router.register(r'users', UserViewSet,
                 basename='user')
@@ -304,9 +319,19 @@ def get_api_path(path):
 
 admin.site.__class__ = OTPAdminSite
 
+api_docs_urlpatterns = [
+    url(
+        r'^api-docs(?P<format>\.json|\.yaml)$',
+        api_schema_view.without_ui(cache_timeout=0), name='schema-json'
+    ),
+    url(r'^api-docs/$', api_schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    url(r'^redoc/$', api_schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+]
+
 urlpatterns = [
     url(r'^$', FrontendView.as_view()),
     url(r'^admin/', admin.site.urls),
+    *(api_docs_urlpatterns if settings.DEBUG else []),
 
     # JWT Authentication
     url(get_api_path(r'token/$'),

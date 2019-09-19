@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 from django.contrib import messages
 
 from deep.admin import VersionAdmin, linkify
@@ -13,9 +14,12 @@ def trigger_region_cache_reset(modeladmin, request, queryset):
     )
     messages.add_message(
         request, messages.INFO,
-        'Successfully triggered regions: ' + ', '.join(
-            '{}({}):pk={}'.format(*value)
-            for value in queryset.values_list('title', 'code', 'id').distinct()
+        mark_safe(
+            'Successfully triggered regions: <br><hr>' +
+            '<br>'.join(
+                '* {0} : ({1}) {2}'.format(*value)
+                for value in queryset.values_list('id', 'code', 'title').distinct()
+            )
         )
     )
 
@@ -29,9 +33,12 @@ def trigger_admin_level_cache_reset(modeladmin, request, queryset):
     )
     messages.add_message(
         request, messages.INFO,
-        'Successfully triggered Admin Levels: ' + ', '.join(
-            '{}(level={}):pk={}'.format(*value)
-            for value in queryset.values_list('title', 'level', 'id').distinct()
+        mark_safe(
+            'Successfully triggered Admin Levels: <br><hr>' +
+            '<br>'.join(
+                '* {0} : (level={1}) {2}'.format(*value)
+                for value in queryset.values_list('id', 'level', 'title').distinct()
+            )
         )
     )
 

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 from django.contrib import messages
 
 from deep.admin import VersionAdmin
@@ -37,9 +38,11 @@ class SheetAdmin(VersionAdmin):
 def trigger_cache_reset(modeladmin, request, queryset):
     messages.add_message(
         request, messages.INFO,
-        'Successfully triggerd fields: ' + ', '.join(
-            '{}({})'.format(value[0], value[1])
-            for value in queryset.values_list('title', 'id').distinct()
+        mark_safe(
+            'Successfully triggerd fields: <br><hr>' + '<br>'.join(
+                '* {} : {}'.format(value[0], value[1])
+                for value in queryset.values_list('id', 'title').distinct()
+            )
         )
     )
     tabular_generate_columns_image.delay(
