@@ -399,7 +399,7 @@ class LeadTests(TestCase):
         # Create Entities
         entity1 = self.create(EMMEntity, name='entity1')
         entity2 = self.create(EMMEntity, name='entity2')
-        entity3 = self.create(EMMEntity, name='enitty3')
+        entity3 = self.create(EMMEntity, name='entity3')
         entity4 = self.create(EMMEntity, name='entity4')  # noqa:F841
 
         lead1 = self.create_lead(project=project, emm_entities=[entity1])
@@ -706,7 +706,7 @@ class LeadTests(TestCase):
         self.create(LeadPreview, lead=lead3, page_count=None)
 
         # Ascending ordering
-        url = '/api/v1/leads/?ordering=,page_count,,'  # this also tests leading/trailing/multiple commas
+        url = '/api/v1/leads/?order_by=,page_count,,'  # this also tests leading/trailing/multiple commas
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
@@ -717,7 +717,7 @@ class LeadTests(TestCase):
         assert leads[2]['id'] == lead1.id, "Preview1 has more pages"
 
         # Descending ordering
-        url = '/api/v1/leads/?ordering=,-page_count,,'  # this also tests leading/trailing/multiple commas
+        url = '/api/v1/leads/?order_by=,-page_count,,'  # this also tests leading/trailing/multiple commas
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)

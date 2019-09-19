@@ -3,11 +3,16 @@ from django.db import transaction
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
-from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
+from deep.serializers import (
+    RemoveNullFieldsMixin,
+    URLCachedFileField,
+    IdListField,
+    StringListField,
+)
 from organization.serializers import SimpleOrganizationSerializer
 from user.serializers import SimpleUserSerializer
 from user_resource.serializers import UserResourceSerializer
-from project.serializers import ProjectEntitySerializer
+from project.serializers import ProjectEntitySerializer, SimpleProjectSerializer
 from gallery.serializers import SimpleFileSerializer, File
 from user.models import User
 from .models import (
@@ -308,3 +313,55 @@ class SimpleLeadGroupSerializer(UserResourceSerializer):
     class Meta:
         model = LeadGroup
         fields = ('id', 'title',)
+
+
+class KeyValueSerializer(serializers.Serializer):
+    key = serializers.CharField()
+    value = serializers.CharField()
+
+
+class EmmTagSerializer(serializers.Serializer):
+    key = serializers.CharField()
+    label = serializers.CharField()
+    total_count = serializers.IntegerField()
+
+
+class EmmEntitySerializer(serializers.Serializer):
+    key = serializers.IntegerField()
+    label = serializers.CharField()
+    total_count = serializers.IntegerField()
+
+
+class LegacyLeadOptionsSerializer(serializers.Serializer):
+    project = KeyValueSerializer(many=True)
+    lead_group = KeyValueSerializer(many=True)
+    assignee = KeyValueSerializer(many=True)
+    confidentiality = KeyValueSerializer(many=True)
+    status = KeyValueSerializer(many=True)
+    emm_entities = EmmEntitySerializer(many=True)
+    emm_keywords = EmmTagSerializer(many=True)
+    emm_risk_factors = EmmTagSerializer(many=True)
+    has_emm_leads = serializers.BooleanField()
+
+
+class LeadOptionsBodySerializer(serializers.Serializer):
+    projects = IdListField()
+    lead_groups = IdListField()
+    organizations = IdListField()
+    members = IdListField()
+    emm_entities = IdListField()
+    emm_keywords = StringListField()
+    emm_risk_factors = StringListField()
+
+
+class LeadOptionsSerializer(serializers.Serializer):
+    projects = SimpleProjectSerializer(many=True)
+    confidentiality = KeyValueSerializer(many=True)
+    status = KeyValueSerializer(many=True)
+    lead_groups = SimpleLeadGroupSerializer(many=True)
+    members = SimpleUserSerializer(many=True)
+    organizations = SimpleOrganizationSerializer(many=True)
+    emm_entities = EmmEntitySerializer(many=True)
+    emm_keywords = EmmTagSerializer(many=True)
+    emm_risk_factors = EmmTagSerializer(many=True)
+    has_emm_leads = serializers.BooleanField()

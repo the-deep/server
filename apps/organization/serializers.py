@@ -9,20 +9,19 @@ from .models import Organization, OrganizationType
 
 
 class OrganizationTypeSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = OrganizationType
         fields = ('__all__')
 
 
-class MergedOrganizationMixin():
-    def get_merged_as(self, obj):
-        if obj and obj.parent_id:
-            return OrganizationSerializer(obj.parent, context=self.context).data
+class MergedAsOrganizationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = ('id', 'title',)
 
 
-class SimpleOrganizationSerializer(MergedOrganizationMixin, serializers.ModelSerializer):
-    merged_as = serializers.SerializerMethodField()
+class SimpleOrganizationSerializer(serializers.ModelSerializer):
+    merged_as = MergedAsOrganizationSerializer(source='parent', read_only=True)
 
     class Meta:
         model = Organization
@@ -30,8 +29,7 @@ class SimpleOrganizationSerializer(MergedOrganizationMixin, serializers.ModelSer
 
 
 class OrganizationSerializer(
-    DynamicFieldsMixin, RemoveNullFieldsMixin,
-    UserResourceSerializer, MergedOrganizationMixin
+    DynamicFieldsMixin, RemoveNullFieldsMixin, UserResourceSerializer,
 ):
     organization_type_display = OrganizationTypeSerializer(
         source='organization_type', read_only=True,
@@ -40,7 +38,7 @@ class OrganizationSerializer(
         source='regions', read_only=True, many=True,
     )
     logo_url = URLCachedFileField(source='logo.file', allow_null=True, required=False)
-    merged_as = serializers.SerializerMethodField()
+    merged_as = MergedAsOrganizationSerializer(source='parent', read_only=True)
     client_id = None
 
     class Meta:
@@ -52,6 +50,11 @@ class OrganizationSerializer(
         organization = super().create(validated_data)
         organization.created_by = organization.modified_by = self.context['request'].user
         return organization
+
+
+def get_merged_as(self, obj):
+    if obj and obj.parent_id:
+        return OrganizationSerializer(obj.parent, context=self.context).data
 
 
 class ArySourceOrganizationSerializer(DynamicFieldsMixin, UserResourceSerializer):

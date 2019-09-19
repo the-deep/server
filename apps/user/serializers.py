@@ -181,6 +181,9 @@ class NotificationSerializer(RemoveNullFieldsMixin,
     type = serializers.CharField(source='notification_type')
     details = serializers.ReadOnlyField()
 
+    class Meta:
+        ref_name = 'UserNotificationSerializer'
+
 
 class ComprehensiveUserSerializer(serializers.ModelSerializer):
     name = serializers.CharField(

@@ -99,7 +99,8 @@ class LeadFilterSet(django_filters.FilterSet):
         method='emm_risk_factors_filter',
     )
 
-    ordering = django_filters.CharFilter(
+    # NOTE: using `ordering` label conflits with normal ordering
+    order_by = django_filters.CharFilter(
         method='ordering_filter',
     )
 

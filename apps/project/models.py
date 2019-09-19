@@ -593,6 +593,9 @@ class ProjectEntryStats(models.Model):
         max_length=30, choices=ProcessStatus.STATUS_CHOICES, default=ProcessStatus.PENDING,
     )
 
+    def __str__(self):
+        return str(self.project)
+
     @staticmethod
     def get_for(user):
         return ProjectEntryStats.objects.filter(

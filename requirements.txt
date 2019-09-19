@@ -28,6 +28,7 @@ django>=2.1,<2.2
 djangorestframework-camel-case==1.0.3
 djangorestframework==3.9.1
 drf-dynamic-fields==0.3.0
+drf-yasg[validation]
 feedparser==5.2.1
 feedparser==5.2.1
 flower==0.9.2
