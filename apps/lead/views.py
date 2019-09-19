@@ -321,8 +321,7 @@ class LeadOptionsView(views.APIView):
             ]
             options['status'] = status
 
-        if (fields is None or 'project' in fields):
-            projects = Project.get_for_member(request.user)
+        if (fields is None or 'projects' in fields):
             options['project'] = [
                 {
                     'key': project.id,
@@ -385,13 +384,18 @@ class LeadOptionsView(views.APIView):
         def _filter_by_project(qs):
             return qs.filter(project__in=projects).distinct()
 
-        def _filter_by_project_and_group(qs):
-            for project in projects:
-                qs = qs.filter(
+        def _filter_by_projects_and_groups(qs, projects):
+            def _individual_project_query(project):
+                return (
                     models.Q(project=project) |
                     models.Q(usergroup__in=project.user_groups.all())
                 )
-            return qs.distinct()
+
+            query = reduce(
+                lambda acc, q: acc & q,
+                [_individual_project_query(p) for p in projects]
+            )
+            return qs.filter(query)
 
         options = {
             'projects': projects,
@@ -415,9 +419,10 @@ class LeadOptionsView(views.APIView):
             'lead_groups': _filter_by_project(
                 LeadGroup.objects.filter(id__in=lead_groups_id),
             ),
-            'members': _filter_by_project_and_group(
+            'members': _filter_by_projects_and_groups(
                 User.objects.filter(id__in=members_id)
                 if len(members_id) else User.objects,
+                projects,
             ),
             'organizations': Organization.objects.filter(id__in=organizations_id).distinct(),
 
