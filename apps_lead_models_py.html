@@ -30,8 +30,8 @@
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
 
         <h2 class="stats">
-            105 statements &nbsp;
-            <span class="run hide_run shortkey_r button_toggle_run">96 run</span>
+            109 statements &nbsp;
+            <span class="run hide_run shortkey_r button_toggle_run">100 run</span>
             <span class="mis shortkey_m button_toggle_mis">9 missing</span>
             <span class="exc shortkey_x button_toggle_exc">0 excluded</span>
 
@@ -316,12 +316,18 @@
 <p id="n245" class="stm run hide_run"><a href="#n245">245</a></p>
 <p id="n246" class="stm run hide_run"><a href="#n246">246</a></p>
 <p id="n247" class="pln"><a href="#n247">247</a></p>
-<p id="n248" class="pln"><a href="#n248">248</a></p>
+<p id="n248" class="stm run hide_run"><a href="#n248">248</a></p>
 <p id="n249" class="stm run hide_run"><a href="#n249">249</a></p>
-<p id="n250" class="stm run hide_run"><a href="#n250">250</a></p>
+<p id="n250" class="pln"><a href="#n250">250</a></p>
 <p id="n251" class="pln"><a href="#n251">251</a></p>
 <p id="n252" class="stm run hide_run"><a href="#n252">252</a></p>
-<p id="n253" class="stm mis"><a href="#n253">253</a></p>
+<p id="n253" class="stm run hide_run"><a href="#n253">253</a></p>
+<p id="n254" class="pln"><a href="#n254">254</a></p>
+<p id="n255" class="stm run hide_run"><a href="#n255">255</a></p>
+<p id="n256" class="stm run hide_run"><a href="#n256">256</a></p>
+<p id="n257" class="pln"><a href="#n257">257</a></p>
+<p id="n258" class="stm run hide_run"><a href="#n258">258</a></p>
+<p id="n259" class="stm mis"><a href="#n259">259</a></p>
 
             </td>
             <td class="text">
@@ -572,12 +578,18 @@
 <p id="t245" class="stm run hide_run">    <span class="nam">emm_risk_factor</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="nam">max_length</span><span class="op">=</span><span class="num">100</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t246" class="stm run hide_run">    <span class="nam">count</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">PositiveIntegerField</span><span class="op">(</span><span class="nam">default</span><span class="op">=</span><span class="num">0</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t247" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t248" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t249" class="stm run hide_run"><span class="key">class</span> <span class="nam">EMMEntity</span><span class="op">(</span><span class="nam">models</span><span class="op">.</span><span class="nam">Model</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t250" class="stm run hide_run">    <span class="nam">name</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="nam">max_length</span><span class="op">=</span><span class="num">150</span><span class="op">,</span> <span class="nam">unique</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t248" class="stm run hide_run">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t249" class="stm run hide_run">        <span class="nam">ordering</span> <span class="op">=</span> <span class="op">(</span><span class="str">'-count'</span><span class="op">,</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t250" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t251" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t252" class="stm run hide_run">    <span class="key">def</span> <span class="nam">__str__</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t253" class="stm mis">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">name</span><span class="strut">&nbsp;</span></p>
+<p id="t252" class="stm run hide_run"><span class="key">class</span> <span class="nam">EMMEntity</span><span class="op">(</span><span class="nam">models</span><span class="op">.</span><span class="nam">Model</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t253" class="stm run hide_run">    <span class="nam">name</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="nam">max_length</span><span class="op">=</span><span class="num">150</span><span class="op">,</span> <span class="nam">unique</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t254" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t255" class="stm run hide_run">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t256" class="stm run hide_run">        <span class="nam">ordering</span> <span class="op">=</span> <span class="op">(</span><span class="str">'name'</span><span class="op">,</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t257" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t258" class="stm run hide_run">    <span class="key">def</span> <span class="nam">__str__</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t259" class="stm mis">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">name</span><span class="strut">&nbsp;</span></p>
 
             </td>
         </tr>
@@ -588,7 +600,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-19 09:59
+            created at 2019-09-20 11:20
         </p>
     </div>
 </div>

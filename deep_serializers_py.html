@@ -455,7 +455,7 @@
 <p id="n384" class="stm run hide_run"><a href="#n384">384</a></p>
 <p id="n385" class="stm run hide_run"><a href="#n385">385</a></p>
 <p id="n386" class="pln"><a href="#n386">386</a></p>
-<p id="n387" class="stm run hide_run"><a href="#n387">387</a></p>
+<p id="n387" class="pln"><a href="#n387">387</a></p>
 <p id="n388" class="stm run hide_run"><a href="#n388">388</a></p>
 <p id="n389" class="stm run hide_run"><a href="#n389">389</a></p>
 <p id="n390" class="stm run hide_run"><a href="#n390">390</a></p>
@@ -465,24 +465,25 @@
 <p id="n394" class="stm run hide_run"><a href="#n394">394</a></p>
 <p id="n395" class="stm run hide_run"><a href="#n395">395</a></p>
 <p id="n396" class="stm run hide_run"><a href="#n396">396</a></p>
-<p id="n397" class="pln"><a href="#n397">397</a></p>
+<p id="n397" class="stm run hide_run"><a href="#n397">397</a></p>
 <p id="n398" class="pln"><a href="#n398">398</a></p>
 <p id="n399" class="pln"><a href="#n399">399</a></p>
-<p id="n400" class="stm run hide_run"><a href="#n400">400</a></p>
+<p id="n400" class="pln"><a href="#n400">400</a></p>
 <p id="n401" class="stm run hide_run"><a href="#n401">401</a></p>
-<p id="n402" class="pln"><a href="#n402">402</a></p>
+<p id="n402" class="stm run hide_run"><a href="#n402">402</a></p>
 <p id="n403" class="pln"><a href="#n403">403</a></p>
 <p id="n404" class="pln"><a href="#n404">404</a></p>
 <p id="n405" class="pln"><a href="#n405">405</a></p>
 <p id="n406" class="pln"><a href="#n406">406</a></p>
 <p id="n407" class="pln"><a href="#n407">407</a></p>
 <p id="n408" class="pln"><a href="#n408">408</a></p>
-<p id="n409" class="stm run hide_run"><a href="#n409">409</a></p>
+<p id="n409" class="pln"><a href="#n409">409</a></p>
 <p id="n410" class="stm run hide_run"><a href="#n410">410</a></p>
-<p id="n411" class="pln"><a href="#n411">411</a></p>
+<p id="n411" class="stm run hide_run"><a href="#n411">411</a></p>
 <p id="n412" class="pln"><a href="#n412">412</a></p>
 <p id="n413" class="pln"><a href="#n413">413</a></p>
 <p id="n414" class="pln"><a href="#n414">414</a></p>
+<p id="n415" class="pln"><a href="#n415">415</a></p>
 
             </td>
             <td class="text">
@@ -872,34 +873,35 @@
 <p id="t384" class="stm run hide_run"><span class="key">class</span> <span class="nam">URLCachedFileField</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">FileField</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t385" class="stm run hide_run">    <span class="nam">CACHE_KEY</span> <span class="op">=</span> <span class="str">'url_cache_{}'</span><span class="strut">&nbsp;</span></p>
 <p id="t386" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t387" class="stm run hide_run">    <span class="key">def</span> <span class="nam">to_representation</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">obj</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t388" class="stm run hide_run">        <span class="key">if</span> <span class="key">not</span> <span class="nam">obj</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t389" class="stm run hide_run">            <span class="key">return</span> <span class="key">None</span><span class="strut">&nbsp;</span></p>
-<p id="t390" class="stm run hide_run">        <span class="nam">key</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">CACHE_KEY</span><span class="op">.</span><span class="nam">format</span><span class="op">(</span><span class="nam">obj</span><span class="op">.</span><span class="nam">name</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t391" class="stm run hide_run">        <span class="nam">url</span> <span class="op">=</span> <span class="nam">cache</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">key</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t392" class="stm run hide_run">        <span class="key">if</span> <span class="nam">url</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t393" class="stm run hide_run">            <span class="key">return</span> <span class="nam">url</span><span class="strut">&nbsp;</span></p>
-<p id="t394" class="stm run hide_run">        <span class="nam">url</span> <span class="op">=</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">to_representation</span><span class="op">(</span><span class="nam">obj</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t395" class="stm run hide_run">        <span class="nam">cache</span><span class="op">.</span><span class="nam">set</span><span class="op">(</span><span class="nam">key</span><span class="op">,</span> <span class="nam">url</span><span class="op">,</span> <span class="nam">settings</span><span class="op">.</span><span class="nam">MAX_FILE_CACHE_AGE</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t396" class="stm run hide_run">        <span class="key">return</span> <span class="nam">url</span><span class="strut">&nbsp;</span></p>
-<p id="t397" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t387" class="pln">    <span class="com"># obj is django models.FileField</span><span class="strut">&nbsp;</span></p>
+<p id="t388" class="stm run hide_run">    <span class="key">def</span> <span class="nam">to_representation</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">obj</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t389" class="stm run hide_run">        <span class="key">if</span> <span class="key">not</span> <span class="nam">obj</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t390" class="stm run hide_run">            <span class="key">return</span> <span class="key">None</span><span class="strut">&nbsp;</span></p>
+<p id="t391" class="stm run hide_run">        <span class="nam">key</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">CACHE_KEY</span><span class="op">.</span><span class="nam">format</span><span class="op">(</span><span class="nam">hash</span><span class="op">(</span><span class="nam">obj</span><span class="op">.</span><span class="nam">name</span><span class="op">)</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t392" class="stm run hide_run">        <span class="nam">url</span> <span class="op">=</span> <span class="nam">cache</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">key</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t393" class="stm run hide_run">        <span class="key">if</span> <span class="nam">url</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t394" class="stm run hide_run">            <span class="key">return</span> <span class="nam">url</span><span class="strut">&nbsp;</span></p>
+<p id="t395" class="stm run hide_run">        <span class="nam">url</span> <span class="op">=</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">to_representation</span><span class="op">(</span><span class="nam">obj</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t396" class="stm run hide_run">        <span class="nam">cache</span><span class="op">.</span><span class="nam">set</span><span class="op">(</span><span class="nam">key</span><span class="op">,</span> <span class="nam">url</span><span class="op">,</span> <span class="nam">settings</span><span class="op">.</span><span class="nam">MAX_FILE_CACHE_AGE</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t397" class="stm run hide_run">        <span class="key">return</span> <span class="nam">url</span><span class="strut">&nbsp;</span></p>
 <p id="t398" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t399" class="pln"><span class="com"># required=False List Integer Field</span><span class="strut">&nbsp;</span></p>
-<p id="t400" class="stm run hide_run"><span class="key">def</span> <span class="nam">IdListField</span><span class="op">(</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t401" class="stm run hide_run">    <span class="key">return</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ListField</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t402" class="pln">        <span class="nam">child</span><span class="op">=</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t403" class="pln">        <span class="nam">default</span><span class="op">=</span><span class="nam">list</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t404" class="pln">        <span class="nam">allow_empty</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t405" class="pln">    <span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t406" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t399" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t400" class="pln"><span class="com"># required=False List Integer Field</span><span class="strut">&nbsp;</span></p>
+<p id="t401" class="stm run hide_run"><span class="key">def</span> <span class="nam">IdListField</span><span class="op">(</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t402" class="stm run hide_run">    <span class="key">return</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ListField</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
+<p id="t403" class="pln">        <span class="nam">child</span><span class="op">=</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t404" class="pln">        <span class="nam">default</span><span class="op">=</span><span class="nam">list</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t405" class="pln">        <span class="nam">allow_empty</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t406" class="pln">    <span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t407" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t408" class="pln"><span class="com"># required=False List String Field</span><span class="strut">&nbsp;</span></p>
-<p id="t409" class="stm run hide_run"><span class="key">def</span> <span class="nam">StringListField</span><span class="op">(</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t410" class="stm run hide_run">    <span class="key">return</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ListField</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t411" class="pln">        <span class="nam">child</span><span class="op">=</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t412" class="pln">        <span class="nam">default</span><span class="op">=</span><span class="nam">list</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t413" class="pln">        <span class="nam">allow_empty</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t414" class="pln">    <span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t408" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t409" class="pln"><span class="com"># required=False List String Field</span><span class="strut">&nbsp;</span></p>
+<p id="t410" class="stm run hide_run"><span class="key">def</span> <span class="nam">StringListField</span><span class="op">(</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t411" class="stm run hide_run">    <span class="key">return</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ListField</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
+<p id="t412" class="pln">        <span class="nam">child</span><span class="op">=</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t413" class="pln">        <span class="nam">default</span><span class="op">=</span><span class="nam">list</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t414" class="pln">        <span class="nam">allow_empty</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t415" class="pln">    <span class="op">)</span><span class="strut">&nbsp;</span></p>
 
             </td>
         </tr>
@@ -910,7 +912,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-19 09:59
+            created at 2019-09-20 11:20
         </p>
     </div>
 </div>
