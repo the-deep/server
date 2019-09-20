@@ -101,8 +101,7 @@ class LeadFilterSet(django_filters.FilterSet):
         method='emm_risk_factors_filter',
     )
 
-    # NOTE: using `ordering` label conflits with normal ordering
-    order_by = django_filters.CharFilter(
+    ordering = django_filters.CharFilter(
         method='ordering_filter',
     )
 
@@ -134,6 +133,7 @@ class LeadFilterSet(django_filters.FilterSet):
         return qs.filter(
             models.Q(title__icontains=value) |
             models.Q(source_raw__icontains=value) |
+            models.Q(source__title__icontains=value) |
             models.Q(url__icontains=value) |
             models.Q(website__icontains=value)
         )
