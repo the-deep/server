@@ -98,6 +98,9 @@ class ReportExporter:
         else:
             para.add_run(source)
 
+        if lead.confidentiality == Lead.CONFIDENTIAL:
+            para.add_run(' (confidential)')
+
         date = entry.lead.published_on
         if date:
             # TODO: use utils.common.format_date
@@ -300,6 +303,9 @@ class ReportExporter:
                 para.add_hyperlink(url, url)
             else:
                 para.add_run('Missing url.')
+
+            if lead.confidentiality == Lead.CONFIDENTIAL:
+                para.add_run(' (confidential)')
 
             self.doc.add_paragraph()
         self.doc.add_page_break()
