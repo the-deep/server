@@ -11,6 +11,7 @@ from rest_framework import (
 from export.serializers import ExportSerializer
 from export.models import Export
 from project.models import Project
+from project.permissions import PROJECT_PERMISSIONS
 
 from export.tasks import export_task
 
@@ -68,10 +69,17 @@ class ExportTriggerView(views.APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Check permission
         if project:
+            # Check permission
+            create_permission = PROJECT_PERMISSIONS.export.create
+            create_only_unprotected_permission = PROJECT_PERMISSIONS.export.create_only_unprotected
+
             role = project.get_role(request.user)
-            if not role.can_create_export:
+
+            can_create = role.export_permissions & create_permission
+            can_create_unprotected = role.export_permissions & create_only_unprotected_permission
+
+            if not can_create and not can_create_unprotected:
                 return response.Response({}, status=status.HTTP_403_FORBIDDEN)
 
         export = Export.objects.create(
