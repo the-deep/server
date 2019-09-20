@@ -1,4 +1,7 @@
-from utils.common import replace_ns, LogTime
+from django.core.cache import cache
+from django.conf import settings
+
+from utils.common import replace_ns
 
 
 def ConnectorWrapper(ConnectorClass):
@@ -17,13 +20,22 @@ def ConnectorWrapper(ConnectorClass):
             else:
                 return ret
 
-        @LogTime(log_args=False)
         def get_content(self, url, params):
-            return super().get_content(url, params)
+            """
+            This will get the cached content if present else fetch
+            from respective source
+            """
+            url_params = f'{url}:{str(params)}'
+            cache_key = f'connector_{hash(url_params)}'
 
-        @LogTime(log_args=False)
-        def fetch(self, *args, **kwargs):
-            return super().fetch(*args, **kwargs)
+            data = cache.get(cache_key)
+
+            if not data:
+                data = super().get_content(url, params)
+                cache.set(cache_key, data, settings.CONNECTOR_CACHE_AGE)
+                return data
+
+            return data
 
     return WrappedClass
 
