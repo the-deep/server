@@ -247,13 +247,18 @@ class UNHCRPortal(Source):
         ]
     }
 
+    def get_content(self, url, params):
+        resp = requests.get(self.URL, params=params)
+        return resp.text
+
     def fetch(self, params, offset, limit):
         results = []
         if params.get('country'):
             params['country_json'] = '{"0":"' + params['country'] + '"}'
         params.update(self.params)  # type is default
-        resp = requests.get(self.URL, params=params)
-        soup = Soup(resp.text, 'html.parser')
+
+        content = self.get_content(self.URL, params)
+        soup = Soup(content, 'html.parser')
         contents = soup.findAll('ul', {'class': 'searchResults'})
         if not contents:
             return results, 0

@@ -1,4 +1,5 @@
 import requests
+import json
 
 from lead.models import Lead
 from .base import Source
@@ -36,6 +37,10 @@ class ReliefWeb(Source):
             Region.objects.filter(public=True)
         ]
 
+    def get_content(self, url, params):
+        resp = requests.post(url, json=params)
+        return resp.text
+
     def fetch(self, params, offset, limit):
         results = []
 
@@ -67,7 +72,8 @@ class ReliefWeb(Source):
 
         post_params['sort'] = ['date.original:desc', 'title:asc']
 
-        resp = requests.post(self.URL, json=post_params).json()
+        content = self.get_content(self.URL, post_params)
+        resp = json.loads(content)
 
         total_count = len(resp['data'])
         limited_data = resp['data'][offset: offset + limit]

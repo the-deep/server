@@ -75,13 +75,17 @@ class RssFeed(Source):
 
     dynamic_fields = [1, 2, 3, 4, 5]
 
+    def get_content(self, url, params=None):
+        resp = requests.get(url)
+        return resp.content
+
     def fetch(self, params, offset, limit):
         results = []
         if not params or not params.get('feed-url'):
             return results, 0
 
-        r = requests.get(params['feed-url'])
-        xml = etree.fromstring(r.content)
+        content = self.get_content(params['feed-url'])
+        xml = etree.fromstring(content)
         items = xml.findall('channel/item')
 
         total_count = len(items)

@@ -84,13 +84,19 @@ class PDNA(Source):
         }
     ]
 
+    def get_content(self, url, params):
+        resp = requests.get(url)
+        return resp.text
+
     def fetch(self, params, offset=None, limit=None):
         country = params.get('country')
         if not country:
             return [], 0
         results = []
-        resp = requests.get(self.URL)
-        soup = Soup(resp.text, 'html.parser')
+
+        content = self.get_content(self.URL, {})
+        soup = Soup(content, 'html.parser')
+
         contents = soup.findAll('tbody')
         for content in contents:
             for row in content.findAll('tr'):
