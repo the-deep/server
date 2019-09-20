@@ -4,7 +4,7 @@ from lxml import etree
 
 from django.db import transaction
 
-from utils.common import random_key, get_ns_tag
+from utils.common import random_key, get_ns_tag, LogTime
 from rest_framework import serializers
 
 from lead.models import Lead, LeadEMMTrigger, EMMEntity
@@ -90,6 +90,10 @@ class EMM(RssFeed):
                 real_fields.append(field)
         return real_fields
 
+    def get_content(self, url, params):
+        resp = requests.get(url)
+        return resp.content
+
     def fetch(self, params, offset=None, limit=None):
         if not params or not params.get('feed-url'):
             return [], 0
@@ -98,11 +102,13 @@ class EMM(RssFeed):
         self.limit = limit
         self.params = params
 
-        r = requests.get(params['feed-url'])
+        with LogTime(block_name='EMM fetching'):
+            content = self.get_content(self.params['feed-url'], {})
 
-        return self.parse_xml(r.content)
+        with LogTime(block_name='EMM parsing'):
+            return self.parse(content)
 
-    def parse_xml(self, content):
+    def parse(self, content):
         xml = etree.fromstring(content)
         # SET NSMAP
         self.nsmap = xml.nsmap

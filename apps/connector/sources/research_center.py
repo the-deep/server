@@ -68,10 +68,14 @@ class ResearchResourceCenter(Source):
         }
     ]
 
+    def get_content(self, url, params):
+        resp = requests.get(self.URL, params=params)
+        return resp.text
+
     def fetch(self, params, offset, limit):
         results = []
-        resp = requests.get(self.URL, params=params)
-        soup = Soup(resp.text, 'html.parser')
+        content = self.get_content(self.URL, params)
+        soup = Soup(content, 'html.parser')
         contents = soup.find('table').find('tbody').findAll('tr')
 
         total_count = len(contents)

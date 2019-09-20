@@ -63,13 +63,17 @@ class HumanitarianResponse(Source):
         }
     ]
 
+    def get_content(self, url, params):
+        resp = requests.get(url, params={})
+        return resp.text
+
     def fetch(self, params, offset=None, limit=None):
         results = []
         url = self.URL
         if params.get('country'):
             url = self.URL + '/loc/' + params['country']
-        resp = requests.get(url, params={})
-        soup = Soup(resp.text, 'html.parser')
+        content = self.get_content(url, {})
+        soup = Soup(content, 'html.parser')
         contents = soup.find('div', {'id': 'content'}).find('tbody')
         for row in contents.findAll('tr'):
             try:
