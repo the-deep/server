@@ -11,4 +11,4 @@ class ConnectorAdmin(VersionAdmin):
 
 @admin.register(EMMConfig)
 class EMMConfigAdmin(VersionAdmin):
-    pass
+    list_display = ('entity_tag', 'trigger_tag', 'trigger_attribute',)

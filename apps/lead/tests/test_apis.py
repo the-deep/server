@@ -727,7 +727,7 @@ class LeadTests(TestCase):
         self.create(LeadPreview, lead=lead3, page_count=None)
 
         # Ascending ordering
-        url = '/api/v1/leads/?order_by=,page_count,,'  # this also tests leading/trailing/multiple commas
+        url = '/api/v1/leads/?ordering=,page_count,,'  # this also tests leading/trailing/multiple commas
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
@@ -738,7 +738,7 @@ class LeadTests(TestCase):
         assert leads[2]['id'] == lead1.id, "Preview1 has more pages"
 
         # Descending ordering
-        url = '/api/v1/leads/?order_by=,-page_count,,'  # this also tests leading/trailing/multiple commas
+        url = '/api/v1/leads/?ordering=,-page_count,,'  # this also tests leading/trailing/multiple commas
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
