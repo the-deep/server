@@ -3,8 +3,9 @@ import requests
 from bs4 import BeautifulSoup as Soup
 from datetime import datetime
 
+from utils.common import LogTime
 from .base import Source
-from connector.utils import handle_connector_parse_error
+from connector.utils import ConnectorWrapper
 from lead.models import Lead
 
 logger = logging.getLogger(__name__)
@@ -48,7 +49,7 @@ COUNTRIES_OPTIONS = [
 ]
 
 
-@handle_connector_parse_error
+@ConnectorWrapper
 class HumanitarianResponse(Source):
     URL = 'https://www.humanitarianresponse.info/en/documents/table'
     title = 'Humanitarian Response'

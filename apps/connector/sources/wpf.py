@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup as Soup
 
 from .base import Source
-from connector.utils import handle_connector_parse_error
+from connector.utils import ConnectorWrapper
 from lead.models import Lead
 
 COUNTRIES_OPTIONS = [
@@ -137,7 +137,7 @@ YEAR_OPTIONS = [
 ]
 
 
-@handle_connector_parse_error
+@ConnectorWrapper
 class WorldFoodProgramme(Source):
     URL = 'https://www.wfp.org/food-security/assessment-bank'
     title = 'WFP Assessments'

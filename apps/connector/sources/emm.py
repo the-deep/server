@@ -9,12 +9,13 @@ from rest_framework import serializers
 
 from lead.models import Lead, LeadEMMTrigger, EMMEntity
 from .rss_feed import RssFeed
-from connector.utils import get_rss_fields
+from connector.utils import get_rss_fields, ConnectorWrapper
 
 import logging
 logger = logging.getLogger(__name__)
 
 
+@ConnectorWrapper
 class EMM(RssFeed):
     title = 'European Media Monitor'
     key = 'emm'
@@ -102,11 +103,9 @@ class EMM(RssFeed):
         self.limit = limit
         self.params = params
 
-        with LogTime(block_name='EMM fetching'):
-            content = self.get_content(self.params['feed-url'], {})
+        content = self.get_content(self.params['feed-url'], {})
 
-        with LogTime(block_name='EMM parsing'):
-            return self.parse(content)
+        return self.parse(content)
 
     def parse(self, content):
         xml = etree.fromstring(content)
