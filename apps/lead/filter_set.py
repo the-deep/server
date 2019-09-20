@@ -29,6 +29,8 @@ class LeadFilterSet(django_filters.FilterSet):
         (ASSESSMENT_EXISTS, 'Assessment Exists'),
     )
 
+    search = django_filters.CharFilter(method='search_filter')
+
     published_on__lt = django_filters.DateFilter(
         field_name='published_on', lookup_expr='lt',
     )
@@ -126,6 +128,15 @@ class LeadFilterSet(django_filters.FilterSet):
                 },
             },
         }
+
+    def search_filter(self, qs, name, value):
+        # NOTE: This exists to make it compatible with post filter
+        return qs.filter(
+            models.Q(title__icontains=value) |
+            models.Q(source_raw__icontains=value) |
+            models.Q(url__icontains=value) |
+            models.Q(website__icontains=value)
+        )
 
     def project_filter(self, qs, name, value):
         # NOTE: @bewakes used this because normal project filter

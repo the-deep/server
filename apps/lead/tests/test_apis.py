@@ -773,6 +773,31 @@ class LeadTests(TestCase):
         response = self.client.get(f'{url}&exists={LeadFilterSet.ASSESSMENT_EXISTS}')
         assert response.json()['count'] == 2, 'Lead count should be 2 for lead with assessment'
 
+    def test_lead_filter_search(self):
+        url = '/api/v1/leads/?emm_entities={}'
+        project = self.create_project()
+        lead1 = self.create(Lead, project=project, title='mytext')
+        lead2 = self.create(Lead, project=project, source_raw='thisis_mytext')
+        lead3 = self.create(Lead, project=project, website='http://thisis-mytext.com')
+        lead4 = self.create(Lead, project=project, title='nothing_here')
+
+        url = '/api/v1/leads/?search={}'
+        self.authenticate()
+        resp = self.client.get(url.format('mytext'))
+        self.assert_200(resp)
+
+        expected_ids = {lead1.id, lead2.id, lead3.id}
+        obtained_ids = {x['id'] for x in resp.data['results']}
+        assert expected_ids == obtained_ids
+
+        url = '/api/v1/leads/filter/'
+        post_data = {'search': 'mytext'}
+        self.authenticate()
+        resp = self.client.post(url, post_data)
+        self.assert_200(resp)
+        obtained_ids = {x['id'] for x in resp.data['results']}
+        assert expected_ids == obtained_ids
+
     def test_lead_filter_emm_entities(self):
         url = '/api/v1/leads/?emm_entities={}'
         project = self.create_project()
