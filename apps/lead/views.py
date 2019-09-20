@@ -216,7 +216,7 @@ class LeadViewSet(viewsets.ModelViewSet):
         """
         filter_data = {}
         for key, value in raw_filter_data.items():
-            if value and isinstance(value, list):
+            if isinstance(value, list):
                 filter_data[key] = ','.join([str(x) for x in value])
             else:
                 filter_data[key] = value
