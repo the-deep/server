@@ -143,8 +143,8 @@ def _generate_geo_areas(admin_level, parent):
             ).exclude(id__in=added_areas).delete()
 
     admin_level.stale_geo_areas = False
-    admin_level.geojson = None
-    admin_level.bounds = None
+    admin_level.geojson_file = None
+    admin_level.bounds_file = None
     # The following cache calculation is too much memory consuming.
     # So instead of doing it with lot of other intesive tasks in this
     # process, leave it to be done for the first time when the

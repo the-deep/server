@@ -233,16 +233,6 @@ class LeadPreviewViewSet(viewsets.ReadOnlyModelViewSet):
 class LeadOptionsView(views.APIView):
     """
     Options for various attributes related to lead
-
-    Example:
-    ```json
-    {
-        "projects": [1, 2],
-        "leadGroups": [1, 2],
-        "members": [1, 2],
-        "organizations": [1, 2]
-    }
-    ```
     """
     permission_classes = [permissions.IsAuthenticated]
 
@@ -262,70 +252,53 @@ class LeadOptionsView(views.APIView):
 
         options = {}
 
-        def _filter_by_projects(qs, projects):
-            for p in projects:
-                qs = qs.filter(project=p)
-            return qs
-
-        def _filter_by_projects_and_groups(qs, projects):
-            def _individual_project_query(project):
-                return (
+        project_filter = models.Q(project__in=projects)
+        project_usergroup_filter = reduce(
+            lambda acc, q: acc & q,
+            [
+                (
                     models.Q(project=project) |
                     models.Q(usergroup__in=project.user_groups.all())
-                )
-
-            query = reduce(
-                lambda acc, q: acc & q,
-                [_individual_project_query(p) for p in projects]
-            )
-            return qs.filter(query)
-
-        if (fields is None or 'lead_group' in fields):
-            lead_groups = _filter_by_projects(
-                LeadGroup.objects,
-                projects,
-            )
-            options['lead_group'] = [
-                {
-                    'key': group.id,
-                    'value': group.title,
-                } for group in lead_groups.distinct()
+                ) for project in projects
             ]
+        )
 
-        if (fields is None or 'assignee' in fields):
-            assignee = _filter_by_projects_and_groups(User.objects, projects)
-            options['assignee'] = [
-                {
-                    'key': user.id,
-                    'value': user.profile.get_display_name(),
-                } for user in assignee.distinct()
-            ]
+        options['lead_group'] = [
+            {
+                'key': group.id,
+                'value': group.title,
+            } for group in LeadGroup.objects.filter(project_filter).distinct()
+        ] if (fields is None or 'lead_group' in fields) else []
 
-        if (fields is None or 'confidentiality' in fields):
-            confidentiality = [
-                {
-                    'key': c[0],
-                    'value': c[1],
-                } for c in Lead.CONFIDENTIALITIES
-            ]
-            options['confidentiality'] = confidentiality
+        options['assignee'] = [
+            {
+                'key': user.id,
+                'value': user.profile.get_display_name(),
+            } for user in User.objects.prefetch_related('profile').filter(
+                project_usergroup_filter
+            ).distinct()
+        ] if (fields is None or 'assignee' in fields) else []
 
-        if (fields is None or 'status' in fields):
-            status = [
-                {
-                    'key': s[0],
-                    'value': s[1],
-                } for s in Lead.STATUSES
-            ]
-            options['status'] = status
+        options['confidentiality'] = [
+            {
+                'key': c[0],
+                'value': c[1],
+            } for c in Lead.CONFIDENTIALITIES
+        ]
 
-        if (fields is None or 'projects' in fields):
-            options['project'] = [
-                {
-                    'key': project.id,
-                    'value': project.title,
-                } for project in projects.distinct()
-            ]
+        options['status'] = [
+            {
+                'key': s[0],
+                'value': s[1],
+            } for s in Lead.STATUSES
+        ]
+
+        options['project'] = [
+            {
+                'key': project.id,
+                'value': project.title,
+            } for project in projects.distinct()
+        ] if (fields is None or 'projects' in fields) else []
 
         # Create Emm specific options
         options['emm_entities'] = EMMEntity.objects.filter(
@@ -379,21 +352,16 @@ class LeadOptionsView(views.APIView):
         if not projects.exists():
             raise exceptions.NotFound('Provided projects not found')
 
-        def _filter_by_project(qs):
-            return qs.filter(project__in=projects).distinct()
-
-        def _filter_by_projects_and_groups(qs, projects):
-            def _individual_project_query(project):
-                return (
+        project_filter = models.Q(project__in=projects)
+        project_usergroup_filter = reduce(
+            lambda acc, q: acc & q,
+            [
+                (
                     models.Q(project=project) |
                     models.Q(usergroup__in=project.user_groups.all())
-                )
-
-            query = reduce(
-                lambda acc, q: acc & q,
-                [_individual_project_query(p) for p in projects]
-            )
-            return qs.filter(query)
+                ) for project in projects
+            ]
+        )
 
         options = {
             'projects': projects,
@@ -414,17 +382,13 @@ class LeadOptionsView(views.APIView):
 
             # Dynamic Options
 
-            'lead_groups': _filter_by_project(
-                LeadGroup.objects.filter(id__in=lead_groups_id),
-            ),
-            'members': _filter_by_projects_and_groups(
-                User.objects.filter(id__in=members_id)
-                if len(members_id) else User.objects,
-                projects,
-            ),
+            'lead_groups': LeadGroup.objects.filter(project_filter, id__in=lead_groups_id),
+            'members': (
+                User.objects.filter(id__in=members_id) if len(members_id) else User.objects
+            ).filter(project_usergroup_filter).prefetch_related('profile'),
             'organizations': Organization.objects.filter(id__in=organizations_id).distinct(),
 
-            # Create Emm specific options
+            # EMM specific options
             'emm_entities': EMMEntity.objects.filter(
                 lead__project__in=projects,
                 name__in=emm_entities,

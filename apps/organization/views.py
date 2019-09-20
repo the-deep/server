@@ -36,6 +36,7 @@ class OrganizationViewSet(
                        filters.SearchFilter, filters.OrderingFilter)
     search_fields = ('title', 'short_name', 'long_name', 'url',)
     filterset_fields = ('verified',)
+    ordering = ('title',)
 
     def get_queryset(self):
         if self.kwargs.get('pk'):
