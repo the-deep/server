@@ -1095,10 +1095,10 @@
 <p id="t382" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t383" class="pln">            <span class="com"># Dynamic Options</span><span class="strut">&nbsp;</span></p>
 <p id="t384" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t385" class="pln">            <span class="str">'lead_groups'</span><span class="op">:</span> <span class="nam">LeadGroup</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">project_filter</span><span class="op">,</span> <span class="nam">id__in</span><span class="op">=</span><span class="nam">lead_groups_id</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t385" class="pln">            <span class="str">'lead_groups'</span><span class="op">:</span> <span class="nam">LeadGroup</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">project_filter</span><span class="op">,</span> <span class="nam">id__in</span><span class="op">=</span><span class="nam">lead_groups_id</span><span class="op">)</span><span class="op">.</span><span class="nam">distinct</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
 <p id="t386" class="pln">            <span class="str">'members'</span><span class="op">:</span> <span class="op">(</span><span class="strut">&nbsp;</span></p>
 <p id="t387" class="pln">                <span class="nam">User</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">id__in</span><span class="op">=</span><span class="nam">members_id</span><span class="op">)</span> <span class="key">if</span> <span class="nam">len</span><span class="op">(</span><span class="nam">members_id</span><span class="op">)</span> <span class="key">else</span> <span class="nam">User</span><span class="op">.</span><span class="nam">objects</span><span class="strut">&nbsp;</span></p>
-<p id="t388" class="pln">            <span class="op">)</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">project_usergroup_filter</span><span class="op">)</span><span class="op">.</span><span class="nam">prefetch_related</span><span class="op">(</span><span class="str">'profile'</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t388" class="pln">            <span class="op">)</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">project_usergroup_filter</span><span class="op">)</span><span class="op">.</span><span class="nam">prefetch_related</span><span class="op">(</span><span class="str">'profile'</span><span class="op">)</span><span class="op">.</span><span class="nam">distinct</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
 <p id="t389" class="pln">            <span class="str">'organizations'</span><span class="op">:</span> <span class="nam">Organization</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">id__in</span><span class="op">=</span><span class="nam">organizations_id</span><span class="op">)</span><span class="op">.</span><span class="nam">distinct</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
 <p id="t390" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t391" class="pln">            <span class="com"># EMM specific options</span><span class="strut">&nbsp;</span></p>
@@ -1360,7 +1360,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-20 11:56
+            created at 2019-09-20 13:48
         </p>
     </div>
 </div>
