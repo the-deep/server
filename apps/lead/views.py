@@ -101,11 +101,9 @@ class LeadViewSet(viewsets.ModelViewSet):
     serializer_class = LeadSerializer
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
-                       filters.SearchFilter, filters.OrderingFilter)
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    # NOTE: Using LeadFilterSet for both search and ordering
     filterset_class = LeadFilterSet
-    search_fields = ('title', 'source', 'text', 'url', 'website')
-    # ordering_fields = omitted to allow ordering by all read-only fields
 
     def get_serializer_class(self):
         if self.kwargs.get('version') == 'v1':
@@ -216,7 +214,7 @@ class LeadViewSet(viewsets.ModelViewSet):
         """
         filter_data = {}
         for key, value in raw_filter_data.items():
-            if value and isinstance(value, list):
+            if isinstance(value, list):
                 filter_data[key] = ','.join([str(x) for x in value])
             else:
                 filter_data[key] = value

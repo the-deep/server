@@ -518,6 +518,9 @@ else:
 # Gallery files Cache-control max-age - 1hr from s3
 MAX_FILE_CACHE_AGE = GALLERY_FILE_EXPIRE - (60 * 60)
 
+# Connector cache age
+CONNECTOR_CACHE_AGE = 12 * 60 * 60  # 12 Hours
+
 # Lead website fetch timeout
 LEAD_WEBSITE_FETCH_TIMEOUT = 15
 

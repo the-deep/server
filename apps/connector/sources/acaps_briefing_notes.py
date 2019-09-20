@@ -4,7 +4,7 @@ import requests
 import datetime
 
 from .base import Source
-from connector.utils import handle_connector_parse_error
+from connector.utils import ConnectorWrapper
 from lead.models import Lead
 
 logger = logging.getLogger(__name__)
@@ -102,7 +102,7 @@ COUNTRIES_OPTIONS = [
 ]
 
 
-@handle_connector_parse_error
+@ConnectorWrapper
 class AcapsBriefingNotes(Source):
     URL = 'https://www.acaps.org/special-reports'
     title = 'ACAPS Briefing Notes'
@@ -138,10 +138,14 @@ class AcapsBriefingNotes(Source):
         }
     ]
 
+    def get_content(self, url, params):
+        resp = requests.get(url, params=params)
+        return resp.text
+
     def fetch(self, params, offset, limit):
         results = []
-        resp = requests.get(self.URL, params=params)
-        soup = Soup(resp.text, 'html.parser')
+        content = self.get_content(self.URL, params)
+        soup = Soup(content, 'html.parser')
         contents = soup.findAll('div', {'class': 'wrapper-type'})
         if not contents:
             return results, 0

@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup as Soup
 
 from .base import Source
-from connector.utils import handle_connector_parse_error
+from connector.utils import ConnectorWrapper
 from lead.models import Lead
 
 COUNTRIES_OPTIONS = [
@@ -137,7 +137,7 @@ YEAR_OPTIONS = [
 ]
 
 
-@handle_connector_parse_error
+@ConnectorWrapper
 class WorldFoodProgramme(Source):
     URL = 'https://www.wfp.org/food-security/assessment-bank'
     title = 'WFP Assessments'
@@ -157,14 +157,18 @@ class WorldFoodProgramme(Source):
         },
     ]
 
+    def get_content(self, url, params):
+        resp = requests.get(self.URL, params=params)
+        return resp.text
+
     def fetch(self, params, offset, limit):
         results = []
 
         # NOTE: No calculation of offset, the api supports pagination
         # NOTE: This is not consistent with other pagination
-        resp = requests.get(self.URL, params=params)
+        content = self.get_content(self.URL, params)
+        soup = Soup(content, 'html.parser')
 
-        soup = Soup(resp.text, 'html.parser')
         contents = soup.find('div', {'class': 'view-content'})
         if not contents:
             return results, len(results)

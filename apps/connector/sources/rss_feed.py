@@ -5,7 +5,7 @@ import requests
 from utils.common import DEFAULT_HEADERS
 from lead.models import Lead
 from .base import Source
-from connector.utils import get_rss_fields
+from connector.utils import get_rss_fields, ConnectorWrapper
 
 
 def _get_field_value(item, field):
@@ -15,6 +15,7 @@ def _get_field_value(item, field):
     return '' if element is None else element.text or element.get('href')
 
 
+@ConnectorWrapper
 class RssFeed(Source):
     title = 'RSS Feed'
     key = 'rss-feed'
@@ -75,13 +76,17 @@ class RssFeed(Source):
 
     dynamic_fields = [1, 2, 3, 4, 5]
 
+    def get_content(self, url, params):
+        resp = requests.get(url)
+        return resp.content
+
     def fetch(self, params, offset, limit):
         results = []
         if not params or not params.get('feed-url'):
             return results, 0
 
-        r = requests.get(params['feed-url'])
-        xml = etree.fromstring(r.content)
+        content = self.get_content(params['feed-url'], {})
+        xml = etree.fromstring(content)
         items = xml.findall('channel/item')
 
         total_count = len(items)
