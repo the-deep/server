@@ -3,7 +3,7 @@ import datetime
 from bs4 import BeautifulSoup as Soup
 
 from .base import Source
-from connector.utils import handle_connector_parse_error
+from connector.utils import ConnectorWrapper
 from lead.models import Lead
 
 
@@ -53,7 +53,7 @@ COUNTRIES_OPTIONS = [
 ]
 
 
-@handle_connector_parse_error
+@ConnectorWrapper
 class ResearchResourceCenter(Source):
     URL = 'http://www.reachresourcecentre.info/advanced-search'
     title = 'Research Resource Center'
@@ -68,10 +68,14 @@ class ResearchResourceCenter(Source):
         }
     ]
 
+    def get_content(self, url, params):
+        resp = requests.get(self.URL, params=params)
+        return resp.text
+
     def fetch(self, params, offset, limit):
         results = []
-        resp = requests.get(self.URL, params=params)
-        soup = Soup(resp.text, 'html.parser')
+        content = self.get_content(self.URL, params)
+        soup = Soup(content, 'html.parser')
         contents = soup.find('table').find('tbody').findAll('tr')
 
         total_count = len(contents)

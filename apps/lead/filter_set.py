@@ -29,6 +29,8 @@ class LeadFilterSet(django_filters.FilterSet):
         (ASSESSMENT_EXISTS, 'Assessment Exists'),
     )
 
+    search = django_filters.CharFilter(method='search_filter')
+
     published_on__lt = django_filters.DateFilter(
         field_name='published_on', lookup_expr='lt',
     )
@@ -99,8 +101,7 @@ class LeadFilterSet(django_filters.FilterSet):
         method='emm_risk_factors_filter',
     )
 
-    # NOTE: using `ordering` label conflits with normal ordering
-    order_by = django_filters.CharFilter(
+    ordering = django_filters.CharFilter(
         method='ordering_filter',
     )
 
@@ -126,6 +127,16 @@ class LeadFilterSet(django_filters.FilterSet):
                 },
             },
         }
+
+    def search_filter(self, qs, name, value):
+        # NOTE: This exists to make it compatible with post filter
+        return qs.filter(
+            models.Q(title__icontains=value) |
+            models.Q(source_raw__icontains=value) |
+            models.Q(source__title__icontains=value) |
+            models.Q(url__icontains=value) |
+            models.Q(website__icontains=value)
+        )
 
     def project_filter(self, qs, name, value):
         # NOTE: @bewakes used this because normal project filter

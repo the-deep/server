@@ -245,9 +245,15 @@ class LeadEMMTrigger(models.Model):
     emm_risk_factor = models.CharField(max_length=100)
     count = models.PositiveIntegerField(default=0)
 
+    class Meta:
+        ordering = ('-count',)
+
 
 class EMMEntity(models.Model):
     name = models.CharField(max_length=150, unique=True)
+
+    class Meta:
+        ordering = ('name',)
 
     def __str__(self):
         return self.name

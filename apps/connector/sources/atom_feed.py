@@ -1,8 +1,10 @@
 import time
 import feedparser
+import requests
 from rest_framework import serializers
 
 from lead.models import Lead
+from connector.utils import ConnectorWrapper
 
 from .rss_feed import RssFeed
 
@@ -13,9 +15,14 @@ def _get_field_value(item, field, default=None):
     return default
 
 
+@ConnectorWrapper
 class AtomFeed(RssFeed):
     title = 'Atom Feed'
     key = 'atom-feed'
+
+    def get_content(self, url, params):
+        resp = requests.get(url)
+        return resp.content
 
     def fetch(self, params, offset, limit):
         results = []
@@ -23,7 +30,9 @@ class AtomFeed(RssFeed):
             return results, 0
 
         feed_url = params['feed-url']
-        feed = feedparser.parse(feed_url)
+        content = self.get_content(feed_url, {})
+
+        feed = feedparser.parse(content)
         items = feed.entries
         total_count = len(items)
 

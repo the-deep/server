@@ -129,6 +129,9 @@ class EMMConfig(models.Model):
     trigger_tag = models.CharField(max_length=50, default=EMM_TRIGGER_TAG_DEFAULT)
     trigger_attribute = models.CharField(max_length=50, default=EMM_TRIGGER_ATTRIBUTE_DEFAULT)
 
+    def __str__(self):
+        return f'{self.entity_tag}:{self.trigger_tag}:{self.trigger_attribute}'
+
     # Just Allow to have a single config
     def save(self, *args, **kwargs):
         self.pk = 1

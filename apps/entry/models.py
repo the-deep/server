@@ -139,6 +139,30 @@ class Entry(UserResource, ProjectEntityMixin):
         )
         return qs
 
+    @classmethod
+    def get_exportable_queryset(cls, qs):
+        export_unprotected_perm_value = PROJECT_PERMISSIONS.export.create_only_unprotected
+        export_perm_value = PROJECT_PERMISSIONS.export.create
+
+        return qs.annotate(
+            # Get permission value for create_only_unprotected export
+            create_only_unprotected=models.F(
+                'project__projectmembership__role__export_permissions'
+            ).bitand(export_unprotected_perm_value),
+            # Get permission value for create permission
+            create_all=models.F(
+                'project__projectmembership__role__export_permissions'
+            ).bitand(export_perm_value)
+        ).filter(
+            # Priority given to create_only_unprotected export permission i.e.
+            # if create_only_unprotected is true, then fetch non confidential entries
+            (
+                models.Q(create_only_unprotected=export_unprotected_perm_value) &
+                ~models.Q(lead__confidentiality=Lead.CONFIDENTIAL)
+            ) |
+            models.Q(create_all=export_perm_value)
+        )
+
     class Meta(UserResource.Meta):
         verbose_name_plural = 'entries'
         ordering = ['order', '-created_at']

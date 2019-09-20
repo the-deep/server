@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup as Soup
 import requests
 
 from .base import Source
-from connector.utils import handle_connector_parse_error
+from connector.utils import ConnectorWrapper
 from lead.models import Lead
 
 logger = logging.getLogger(__name__)
@@ -68,7 +68,7 @@ COUNTRIES_OPTIONS = [
 ]
 
 
-@handle_connector_parse_error
+@ConnectorWrapper
 class PDNA(Source):
     URL = 'https://www.gfdrr.org/post-disaster-needs-assessments'
     title = 'Post Disaster Needs Assessment'
@@ -84,13 +84,19 @@ class PDNA(Source):
         }
     ]
 
+    def get_content(self, url, params):
+        resp = requests.get(url)
+        return resp.text
+
     def fetch(self, params, offset=None, limit=None):
         country = params.get('country')
         if not country:
             return [], 0
         results = []
-        resp = requests.get(self.URL)
-        soup = Soup(resp.text, 'html.parser')
+
+        content = self.get_content(self.URL, {})
+        soup = Soup(content, 'html.parser')
+
         contents = soup.findAll('tbody')
         for content in contents:
             for row in content.findAll('tr'):
