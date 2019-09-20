@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup as Soup
 import requests
 
 from .base import Source
-from connector.utils import handle_connector_parse_error
+from connector.utils import ConnectorWrapper
 from lead.models import Lead
 
 logger = logging.getLogger(__name__)
@@ -68,7 +68,7 @@ COUNTRIES_OPTIONS = [
 ]
 
 
-@handle_connector_parse_error
+@ConnectorWrapper
 class PDNA(Source):
     URL = 'https://www.gfdrr.org/post-disaster-needs-assessments'
     title = 'Post Disaster Needs Assessment'

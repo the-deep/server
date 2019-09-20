@@ -4,7 +4,7 @@ import requests
 import datetime
 
 from .base import Source
-from connector.utils import handle_connector_parse_error
+from connector.utils import ConnectorWrapper
 from lead.models import Lead
 
 logger = logging.getLogger(__name__)
@@ -102,7 +102,7 @@ COUNTRIES_OPTIONS = [
 ]
 
 
-@handle_connector_parse_error
+@ConnectorWrapper
 class AcapsBriefingNotes(Source):
     URL = 'https://www.acaps.org/special-reports'
     title = 'ACAPS Briefing Notes'

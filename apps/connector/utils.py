@@ -1,8 +1,12 @@
-from utils.common import replace_ns
+from utils.common import replace_ns, LogTime
 
 
-def handle_connector_parse_error(ConnectorClass):
-    class Handler(ConnectorClass):
+def ConnectorWrapper(ConnectorClass):
+    class WrappedClass(ConnectorClass):
+        """
+        This wraps the basic connector class and provides functionalities like
+        profiling on fetch and caching on get_content
+        """
         def get_leads(self, *args, **kwargs):
             try:
                 ret = super().get_leads(*args, **kwargs)
@@ -12,7 +16,16 @@ def handle_connector_parse_error(ConnectorClass):
                 )
             else:
                 return ret
-    return Handler
+
+        @LogTime(log_args=False)
+        def get_content(self, url, params):
+            return super().get_content(url, params)
+
+        @LogTime(log_args=False)
+        def fetch(self, *args, **kwargs):
+            return super().fetch(*args, **kwargs)
+
+    return WrappedClass
 
 
 def get_rss_fields(item, nsmap, parent_tag=None):

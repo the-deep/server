@@ -3,7 +3,7 @@ import datetime
 from bs4 import BeautifulSoup as Soup
 
 from .base import Source
-from connector.utils import handle_connector_parse_error
+from connector.utils import ConnectorWrapper
 from lead.models import Lead
 
 
@@ -53,7 +53,7 @@ COUNTRIES_OPTIONS = [
 ]
 
 
-@handle_connector_parse_error
+@ConnectorWrapper
 class ResearchResourceCenter(Source):
     URL = 'http://www.reachresourcecentre.info/advanced-search'
     title = 'Research Resource Center'

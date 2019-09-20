@@ -3,8 +3,10 @@ import json
 
 from lead.models import Lead
 from .base import Source
+from connector.utils import ConnectorWrapper
 
 
+@ConnectorWrapper
 class ReliefWeb(Source):
     URL = 'https://api.reliefweb.int/v1/reports?appname=thedeep.io'
     title = 'ReliefWeb Reports'
