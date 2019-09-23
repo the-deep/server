@@ -427,7 +427,7 @@ class LeadTests(TestCase):
         )
         self.create(
             LeadEMMTrigger, lead=lead4, count=3,
-            emm_keyword='keyword1', emm_risk_factor='rf1',
+            emm_keyword='keyword1', emm_risk_factor='',  # This should not be present as risk factor
         )
         # NOTE: 3 leads with keyword keyword1, one with keyword2
         # 2 leads with factor rf1, 2 with factor rf2
@@ -449,7 +449,7 @@ class LeadTests(TestCase):
 
         # Check emm_risk_factors
         assert 'emm_risk_factors' in data
-        expected_risk_factors_count_set = {('rf1', 'rf1', 8), ('rf2', 'rf2', 6)}
+        expected_risk_factors_count_set = {('rf1', 'rf1', 5), ('rf2', 'rf2', 6)}
         result_risk_factors_count_set = {(x['key'], x['label'], x['total_count']) for x in data['emm_risk_factors']}
         assert expected_risk_factors_count_set == result_risk_factors_count_set
 
