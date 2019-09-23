@@ -138,6 +138,7 @@ class ConnectorSerializer(RemoveNullFieldsMixin,
         many=True,
         required=False,
     )
+    source_title = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
     filters = serializers.SerializerMethodField()
 
@@ -172,3 +173,8 @@ class ConnectorSerializer(RemoveNullFieldsMixin,
         if not hasattr(source, 'filters'):
             return []
         return source.filters
+
+    def get_source_title(self, connector):
+        source_key = connector.source
+        source = source_store.get(source_key)
+        return source and source.title
