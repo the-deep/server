@@ -318,7 +318,9 @@ class LeadOptionsView(views.APIView):
         ).order_by('emm_keyword')
 
         options['emm_risk_factors'] = LeadEMMTrigger.objects.filter(
-            lead__project__in=projects
+            ~models.Q(emm_risk_factor=''),
+            ~models.Q(emm_risk_factor=None),
+            lead__project__in=projects,
         ).values('emm_risk_factor').annotate(
             total_count=models.Sum('count'),
             key=models.F('emm_risk_factor'),
@@ -421,7 +423,6 @@ class LeadOptionsView(views.APIView):
                 LeadEMMTrigger.objects.filter(lead__project__in=projects).exists()
             )
         }
-
         return response.Response(LeadOptionsSerializer(options).data)
 
 

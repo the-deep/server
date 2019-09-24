@@ -233,3 +233,24 @@ class ConnectorApiTest(TestCase):
         for x in response.data['results']:
             assert 'emm_entities' in x
             assert 'emm_triggers' in x
+
+    def test_get_connector_fields(self):
+        """Check if source and source title are present"""
+        connector = self.create(
+            Connector,
+            source=store.atom_feed.AtomFeed.key,
+            params=SAMPLE_ATOM_PARAMS,
+            role='self',
+        )
+        url = '/api/v1/connectors/'
+
+        self.authenticate()
+        resp = self.client.get(url)
+
+        self.assert_200(resp)
+        data = resp.data['results']
+        assert len(data) == 1
+
+        assert data[0]['id'] == connector.id
+        assert 'source' in data[0]
+        assert 'source_title' in data[0]
