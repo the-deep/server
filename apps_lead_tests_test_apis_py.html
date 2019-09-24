@@ -1650,7 +1650,7 @@
 <p id="t427" class="pln">        <span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t428" class="stm run hide_run">        <span class="nam">self</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
 <p id="t429" class="pln">            <span class="nam">LeadEMMTrigger</span><span class="op">,</span> <span class="nam">lead</span><span class="op">=</span><span class="nam">lead4</span><span class="op">,</span> <span class="nam">count</span><span class="op">=</span><span class="num">3</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t430" class="pln">            <span class="nam">emm_keyword</span><span class="op">=</span><span class="str">'keyword1'</span><span class="op">,</span> <span class="nam">emm_risk_factor</span><span class="op">=</span><span class="str">'rf1'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t430" class="pln">            <span class="nam">emm_keyword</span><span class="op">=</span><span class="str">'keyword1'</span><span class="op">,</span> <span class="nam">emm_risk_factor</span><span class="op">=</span><span class="str">''</span><span class="op">,</span>  <span class="com"># This should not be present as risk factor</span><span class="strut">&nbsp;</span></p>
 <p id="t431" class="pln">        <span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t432" class="pln">        <span class="com"># NOTE: 3 leads with keyword keyword1, one with keyword2</span><span class="strut">&nbsp;</span></p>
 <p id="t433" class="pln">        <span class="com"># 2 leads with factor rf1, 2 with factor rf2</span><span class="strut">&nbsp;</span></p>
@@ -1672,7 +1672,7 @@
 <p id="t449" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t450" class="pln">        <span class="com"># Check emm_risk_factors</span><span class="strut">&nbsp;</span></p>
 <p id="t451" class="stm run hide_run">        <span class="key">assert</span> <span class="str">'emm_risk_factors'</span> <span class="key">in</span> <span class="nam">data</span><span class="strut">&nbsp;</span></p>
-<p id="t452" class="stm run hide_run">        <span class="nam">expected_risk_factors_count_set</span> <span class="op">=</span> <span class="op">{</span><span class="op">(</span><span class="str">'rf1'</span><span class="op">,</span> <span class="str">'rf1'</span><span class="op">,</span> <span class="num">8</span><span class="op">)</span><span class="op">,</span> <span class="op">(</span><span class="str">'rf2'</span><span class="op">,</span> <span class="str">'rf2'</span><span class="op">,</span> <span class="num">6</span><span class="op">)</span><span class="op">}</span><span class="strut">&nbsp;</span></p>
+<p id="t452" class="stm run hide_run">        <span class="nam">expected_risk_factors_count_set</span> <span class="op">=</span> <span class="op">{</span><span class="op">(</span><span class="str">'rf1'</span><span class="op">,</span> <span class="str">'rf1'</span><span class="op">,</span> <span class="num">5</span><span class="op">)</span><span class="op">,</span> <span class="op">(</span><span class="str">'rf2'</span><span class="op">,</span> <span class="str">'rf2'</span><span class="op">,</span> <span class="num">6</span><span class="op">)</span><span class="op">}</span><span class="strut">&nbsp;</span></p>
 <p id="t453" class="stm run hide_run">        <span class="nam">result_risk_factors_count_set</span> <span class="op">=</span> <span class="op">{</span><span class="op">(</span><span class="nam">x</span><span class="op">[</span><span class="str">'key'</span><span class="op">]</span><span class="op">,</span> <span class="nam">x</span><span class="op">[</span><span class="str">'label'</span><span class="op">]</span><span class="op">,</span> <span class="nam">x</span><span class="op">[</span><span class="str">'total_count'</span><span class="op">]</span><span class="op">)</span> <span class="key">for</span> <span class="nam">x</span> <span class="key">in</span> <span class="nam">data</span><span class="op">[</span><span class="str">'emm_risk_factors'</span><span class="op">]</span><span class="op">}</span><span class="strut">&nbsp;</span></p>
 <p id="t454" class="stm run hide_run">        <span class="key">assert</span> <span class="nam">expected_risk_factors_count_set</span> <span class="op">==</span> <span class="nam">result_risk_factors_count_set</span><span class="strut">&nbsp;</span></p>
 <p id="t455" class="pln"><span class="strut">&nbsp;</span></p>
@@ -2380,7 +2380,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-20 13:48
+            created at 2019-09-24 06:37
         </p>
     </div>
 </div>

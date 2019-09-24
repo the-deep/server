@@ -8,7 +8,7 @@
     
     
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/connector/tests/test_apis.py: 98%</title>
+    <title>Coverage for apps/connector/tests/test_apis.py: 99%</title>
     <link rel="stylesheet" href="style.css" type="text/css">
     
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -24,14 +24,14 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>apps/connector/tests/test_apis.py</b> :
-            <span class="pc_cov">98%</span>
+            <span class="pc_cov">99%</span>
         </h1>
 
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
 
         <h2 class="stats">
-            118 statements &nbsp;
-            <span class="run hide_run shortkey_r button_toggle_run">117 run</span>
+            129 statements &nbsp;
+            <span class="run hide_run shortkey_r button_toggle_run">128 run</span>
             <span class="mis shortkey_m button_toggle_mis">1 missing</span>
             <span class="exc shortkey_x button_toggle_exc">0 excluded</span>
 
@@ -304,6 +304,27 @@
 <p id="n233" class="stm run hide_run"><a href="#n233">233</a></p>
 <p id="n234" class="stm run hide_run"><a href="#n234">234</a></p>
 <p id="n235" class="stm run hide_run"><a href="#n235">235</a></p>
+<p id="n236" class="pln"><a href="#n236">236</a></p>
+<p id="n237" class="stm run hide_run"><a href="#n237">237</a></p>
+<p id="n238" class="pln"><a href="#n238">238</a></p>
+<p id="n239" class="stm run hide_run"><a href="#n239">239</a></p>
+<p id="n240" class="pln"><a href="#n240">240</a></p>
+<p id="n241" class="pln"><a href="#n241">241</a></p>
+<p id="n242" class="pln"><a href="#n242">242</a></p>
+<p id="n243" class="pln"><a href="#n243">243</a></p>
+<p id="n244" class="pln"><a href="#n244">244</a></p>
+<p id="n245" class="stm run hide_run"><a href="#n245">245</a></p>
+<p id="n246" class="pln"><a href="#n246">246</a></p>
+<p id="n247" class="stm run hide_run"><a href="#n247">247</a></p>
+<p id="n248" class="stm run hide_run"><a href="#n248">248</a></p>
+<p id="n249" class="pln"><a href="#n249">249</a></p>
+<p id="n250" class="stm run hide_run"><a href="#n250">250</a></p>
+<p id="n251" class="stm run hide_run"><a href="#n251">251</a></p>
+<p id="n252" class="stm run hide_run"><a href="#n252">252</a></p>
+<p id="n253" class="pln"><a href="#n253">253</a></p>
+<p id="n254" class="stm run hide_run"><a href="#n254">254</a></p>
+<p id="n255" class="stm run hide_run"><a href="#n255">255</a></p>
+<p id="n256" class="stm run hide_run"><a href="#n256">256</a></p>
 
             </td>
             <td class="text">
@@ -542,6 +563,27 @@
 <p id="t233" class="stm run hide_run">        <span class="key">for</span> <span class="nam">x</span> <span class="key">in</span> <span class="nam">response</span><span class="op">.</span><span class="nam">data</span><span class="op">[</span><span class="str">'results'</span><span class="op">]</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t234" class="stm run hide_run">            <span class="key">assert</span> <span class="str">'emm_entities'</span> <span class="key">in</span> <span class="nam">x</span><span class="strut">&nbsp;</span></p>
 <p id="t235" class="stm run hide_run">            <span class="key">assert</span> <span class="str">'emm_triggers'</span> <span class="key">in</span> <span class="nam">x</span><span class="strut">&nbsp;</span></p>
+<p id="t236" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t237" class="stm run hide_run">    <span class="key">def</span> <span class="nam">test_get_connector_fields</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t238" class="pln">        <span class="str">"""Check if source and source title are present"""</span><span class="strut">&nbsp;</span></p>
+<p id="t239" class="stm run hide_run">        <span class="nam">connector</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
+<p id="t240" class="pln">            <span class="nam">Connector</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t241" class="pln">            <span class="nam">source</span><span class="op">=</span><span class="nam">store</span><span class="op">.</span><span class="nam">atom_feed</span><span class="op">.</span><span class="nam">AtomFeed</span><span class="op">.</span><span class="nam">key</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t242" class="pln">            <span class="nam">params</span><span class="op">=</span><span class="nam">SAMPLE_ATOM_PARAMS</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t243" class="pln">            <span class="nam">role</span><span class="op">=</span><span class="str">'self'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t244" class="pln">        <span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t245" class="stm run hide_run">        <span class="nam">url</span> <span class="op">=</span> <span class="str">'/api/v1/connectors/'</span><span class="strut">&nbsp;</span></p>
+<p id="t246" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t247" class="stm run hide_run">        <span class="nam">self</span><span class="op">.</span><span class="nam">authenticate</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t248" class="stm run hide_run">        <span class="nam">resp</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">client</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">url</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t249" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t250" class="stm run hide_run">        <span class="nam">self</span><span class="op">.</span><span class="nam">assert_200</span><span class="op">(</span><span class="nam">resp</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t251" class="stm run hide_run">        <span class="nam">data</span> <span class="op">=</span> <span class="nam">resp</span><span class="op">.</span><span class="nam">data</span><span class="op">[</span><span class="str">'results'</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
+<p id="t252" class="stm run hide_run">        <span class="key">assert</span> <span class="nam">len</span><span class="op">(</span><span class="nam">data</span><span class="op">)</span> <span class="op">==</span> <span class="num">1</span><span class="strut">&nbsp;</span></p>
+<p id="t253" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t254" class="stm run hide_run">        <span class="key">assert</span> <span class="nam">data</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="op">[</span><span class="str">'id'</span><span class="op">]</span> <span class="op">==</span> <span class="nam">connector</span><span class="op">.</span><span class="nam">id</span><span class="strut">&nbsp;</span></p>
+<p id="t255" class="stm run hide_run">        <span class="key">assert</span> <span class="str">'source'</span> <span class="key">in</span> <span class="nam">data</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
+<p id="t256" class="stm run hide_run">        <span class="key">assert</span> <span class="str">'source_title'</span> <span class="key">in</span> <span class="nam">data</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
 
             </td>
         </tr>
@@ -552,7 +594,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-09-20 13:48
+            created at 2019-09-24 06:37
         </p>
     </div>
 </div>
