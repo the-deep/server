@@ -2,6 +2,7 @@ import os
 import sentry_sdk
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
 
 
 class InvalidGitRepository(Exception):
@@ -63,6 +64,8 @@ def init_sentry(app_type, tags={}, **config):
     integrations = [
         CeleryIntegration(),
         DjangoIntegration(),
+        RedisIntegration(),
+
     ]
     sentry_sdk.init(
         **config,
