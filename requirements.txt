@@ -58,7 +58,7 @@ readability-lxml==0.7
 redis==3.2.0
 requests==2.21.0
 selenium==3.141.0
-sentry-sdk==0.10.2
+sentry-sdk>=0.12,<0.13
 tldextract==2.2.0
 tornado>=4.2.0,<6.0.0
 wordcloud==1.5.0
