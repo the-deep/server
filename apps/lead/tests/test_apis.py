@@ -1,7 +1,10 @@
 from deep.tests import TestCase
 from user.models import User
 from user.serializers import SimpleUserSerializer
-from project.models import Project, ProjectMembership, ProjectRole
+from project.models import (
+    Project, ProjectMembership,
+    ProjectRole, ProjectUserGroupMembership,
+)
 from project.serializers import SimpleProjectSerializer
 from project.permissions import PROJECT_PERMISSIONS
 from geo.models import Region
@@ -11,6 +14,7 @@ from organization.serializers import SimpleOrganizationSerializer
 from lead.filter_set import LeadFilterSet
 from lead.serializers import SimpleLeadGroupSerializer
 from lead.models import Lead, LeadPreview, EMMEntity, LeadEMMTrigger, LeadGroup
+from user_group.models import UserGroup, GroupMembership
 
 import logging
 from datetime import date
@@ -392,6 +396,54 @@ class LeadTests(TestCase):
 
         assert 'has_emm_leads' in data
         assert data['has_emm_leads'], "There are emm leads"
+
+    def test_options_assignees_get(self):
+        url = '/api/v1/lead-options/?projects={}'
+        user = self.create(User)
+        project = self.create(Project, title='p1')  # self.user is member
+        project.add_member(user)  # Add user to project
+        project.add_member(self.user)
+        project1 = self.create(Project, title='p2')
+        project1.add_member(self.user)
+
+        # Add usergroup as well
+        usergroup = self.create(UserGroup)
+        ugmember = self.create(User)
+        GroupMembership.objects.create(group=usergroup, member=ugmember)
+        non_member = self.create(User)
+
+        ProjectUserGroupMembership.objects.create(project=project, usergroup=usergroup)
+
+        projects = f'{project.id}'
+        self.authenticate()
+        resp = self.client.get(url.format(projects))
+
+        self.assert_200(resp)
+
+        data = resp.data
+        assignee_ids = [int(x['key']) for x in data['assignee']]
+
+        assert 'assignee' in data
+        # BOTH users should be in assignee since only one project is requested
+        assert self.user.id in assignee_ids
+        assert user.id in assignee_ids
+        assert ugmember.id in assignee_ids
+        assert non_member.id not in assignee_ids
+
+        projects = f'{project.id},{project1.id}'
+
+        self.authenticate()
+        resp = self.client.get(url.format(projects))
+
+        self.assert_200(resp)
+
+        data = resp.data
+
+        assert 'assignee' in data
+        assignee_ids = [int(x['key']) for x in data['assignee']]
+        assert self.user.id in assignee_ids
+        assert user.id not in assignee_ids
+        assert non_member.id not in assignee_ids
 
     def test_emm_options_get(self):
         project = self.create_project()
