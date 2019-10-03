@@ -68,6 +68,13 @@ valid_lead_url_regex = re.compile(
     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
+def _filter_users_by_projects_memberships(user_qs, projects):
+    # NOTE: No need to filter by usergroups as membership is automatically created
+    for project in projects:
+        user_qs = user_qs.filter(project=project)
+    return user_qs
+
+
 class LeadGroupViewSet(viewsets.ModelViewSet):
     serializer_class = LeadGroupSerializer
     permission_classes = [permissions.IsAuthenticated,
@@ -253,15 +260,6 @@ class LeadOptionsView(views.APIView):
         options = {}
 
         project_filter = models.Q(project__in=projects)
-        project_usergroup_filter = reduce(
-            lambda acc, q: acc & q,
-            [
-                (
-                    models.Q(project=project) |
-                    models.Q(usergroup__in=project.user_groups.all())
-                ) for project in projects
-            ]
-        )
 
         options['lead_group'] = [
             {
@@ -274,9 +272,9 @@ class LeadOptionsView(views.APIView):
             {
                 'key': user.id,
                 'value': user.profile.get_display_name(),
-            } for user in User.objects.prefetch_related('profile').filter(
-                project_usergroup_filter
-            ).distinct()
+            } for user in _filter_users_by_projects_memberships(
+                User.objects.all(), projects,
+            ).prefetch_related('profile').distinct()
         ] if (fields is None or 'assignee' in fields) else []
 
         options['confidentiality'] = [
@@ -355,15 +353,8 @@ class LeadOptionsView(views.APIView):
             raise exceptions.NotFound('Provided projects not found')
 
         project_filter = models.Q(project__in=projects)
-        project_usergroup_filter = reduce(
-            lambda acc, q: acc & q,
-            [
-                (
-                    models.Q(project=project) |
-                    models.Q(usergroup__in=project.user_groups.all())
-                ) for project in projects
-            ]
-        )
+
+        members_qs = User.objects.filter(id__in=members_id) if len(members_id) else User.objects
 
         options = {
             'projects': projects,
@@ -385,9 +376,7 @@ class LeadOptionsView(views.APIView):
             # Dynamic Options
 
             'lead_groups': LeadGroup.objects.filter(project_filter, id__in=lead_groups_id).distinct(),
-            'members': (
-                User.objects.filter(id__in=members_id) if len(members_id) else User.objects
-            ).filter(project_usergroup_filter).prefetch_related('profile').distinct(),
+            'members': _filter_users_by_projects_memberships(members_qs, projects).prefetch_related('profile').distinct(),
             'organizations': Organization.objects.filter(id__in=organizations_id).distinct(),
 
             # EMM specific options
