@@ -574,7 +574,7 @@ class Assessment(UserResource, ProjectEntityMixin):
             for sector in Sector.objects.filter(template=self.project.assessment_template):
                 scale = None
                 sector_id = str(sector.id)
-                if sector_id in mpdata:
+                if mpdata is not None and sector_id in mpdata:
                     scale = ScoreMatrixScale.objects.filter(id=mpdata[sector_id]).first()
                 data[sector.title] = {
                     'value': scale.value if scale else '',
