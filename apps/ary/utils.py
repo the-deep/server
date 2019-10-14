@@ -34,11 +34,18 @@ def get_country_name(cid):
 
 def get_organization_name(did):
     org = Organization.objects.filter(id=parse_number(did)).first()
+    if org:
+        m_org = org.data
+        return {
+            'name': m_org.title,
+            'type': m_org.organization_type and m_org.organization_type.title,
+            'key': did,
+        }
     return {
-        'name': org.title,
-        'type': org.organization_type and org.organization_type.title,
+        'name': '',
+        'type': '',
         'key': did,
-    } if org else {}
+    }
 
 
 FIELDS_KEYS_VALUE_EXTRACTORS = {
