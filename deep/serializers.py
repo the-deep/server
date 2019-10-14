@@ -384,11 +384,15 @@ class RecursiveSerializer(serializers.Serializer):
 class URLCachedFileField(serializers.FileField):
     CACHE_KEY = 'url_cache_{}'
 
+    @classmethod
+    def get_cache_key(cls, filename):
+        return cls.CACHE_KEY.format(hash(filename))
+
     # obj is django models.FileField
     def to_representation(self, obj):
         if not obj:
             return None
-        key = self.CACHE_KEY.format(hash(obj.name))
+        key = URLCachedFileField.get_cache_key(obj.name)
         url = cache.get(key)
         if url:
             return url

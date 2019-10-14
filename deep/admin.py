@@ -63,7 +63,7 @@ class ReadOnlyMixin():
         return False
 
 
-def linkify(field_name, field_field=None):
+def linkify(field_name, label=None):
     """
     Converts a foreign key value into clickable links.
 
@@ -84,7 +84,7 @@ def linkify(field_name, field_field=None):
 
         return '-'
 
-    _linkify.short_description = ' '.join(field_name.split('.'))
+    _linkify.short_description = label or ' '.join(field_name.split('.'))
     _linkify.admin_order_field = '__'.join(field_name.split('.'))
     return _linkify
 

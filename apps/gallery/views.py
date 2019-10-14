@@ -162,11 +162,8 @@ class FileViewSet(viewsets.ModelViewSet):
         obj = self.get_object()
         response = super().retrieve(request, *args, **kwargs)
 
-        key = URLCachedFileField.CACHE_KEY.format(obj.file.name)
-        url = cache.get(key)
-        response['Cache-Control'] = 'max-age={}'.format(
-            cache.ttl(key) if url else settings.MAX_FILE_CACHE_AGE,
-        )
+        key = URLCachedFileField.get_cache_key(obj.file.name)
+        response['Cache-Control'] = 'max-age={}'.format(cache.ttl(key))
         return response
 
     @decorators.action(
@@ -180,7 +177,7 @@ class FileViewSet(viewsets.ModelViewSet):
             return response
 
         obj = self.get_object()
-        key = URLCachedFileField.CACHE_KEY.format(obj.file.name)
+        key = URLCachedFileField.get_cache_key(obj.file.name)
         url = cache.get(key)
         if url:
             return _response(url, cache.ttl(key))

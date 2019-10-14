@@ -26,15 +26,16 @@ class LeadAdmin(VersionAdmin):
     ordering = ('project', 'created_by', 'created_at')
     autocomplete_fields = (
         'project', 'created_by', 'modified_by', 'attachment', 'assignee',
-        'source', 'author',
+        'source', 'author', 'emm_entities', 'lead_group',
     )
 
 
 @admin.register(LeadGroup)
 class LeadGroupAdmin(VersionAdmin):
+    search_fields = ('title',)
     autocomplete_fields = ('project', 'created_by', 'modified_by',)
 
 
 @admin.register(EMMEntity)
 class EMMEntityAdmin(admin.ModelAdmin):
-    pass
+    search_fields = ('name',)
