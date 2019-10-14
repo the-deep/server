@@ -5,6 +5,9 @@ from django.db.models import Count
 from django.contrib.postgres.aggregates import StringAgg
 
 from reversion.admin import VersionAdmin
+
+from deep.admin import linkify
+
 from .tasks import generate_entry_stats
 from .forms import ProjectRoleForm
 from .models import (
@@ -61,8 +64,11 @@ class ProjectJoinRequestInline(admin.TabularInline):
 class ProjectAdmin(VersionAdmin):
     search_fields = ['title']
     list_display = [
-        'title', 'category_editor', 'analysis_framework',
-        'assessment_template', 'members_count', 'associated_regions',
+        'title',
+        linkify('category_editor', 'Category Editor'),
+        linkify('analysis_framework', 'Assessment Framework'),
+        linkify('assessment_template', 'Assessment Template'),
+        'members_count', 'associated_regions',
     ]
     autocomplete_fields = (
         'analysis_framework', 'assessment_template', 'category_editor',
@@ -74,7 +80,9 @@ class ProjectAdmin(VersionAdmin):
                ProjectJoinRequestInline]
 
     def get_queryset(self, request):
-        return super().get_queryset(request).annotate(
+        return super().get_queryset(request).prefetch_related(
+            'category_editor', 'analysis_framework', 'assessment_template',
+        ).annotate(
             members_count=Count('members', distinct=True),
             associated_regions_count=Count('regions', distinct=True),
             associated_regions=StringAgg('regions__title', ',', distinct=True),
@@ -116,7 +124,14 @@ class ProjectRoleAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectEntryStats)
 class ProjectEntryStatsAdmin(admin.ModelAdmin):
+    AF = linkify('project.analysis_framework', 'AF')
+
     search_fields = ('project__title',)
     list_filter = ('status',)
-    list_display = ('project', 'modified_at', 'status',)
+    list_display = ('project', 'modified_at', AF, 'status', 'file',)
     actions = [trigger_project_stat_calc]
+    autocomplete_fields = ('project',)
+    readonly_fields = (AF,)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('project', 'project__analysis_framework')
