@@ -14,9 +14,12 @@ def _get_parent_nodes(node_mapping, node_key):
 
 def _get_selected_nodes_with_parent(node, selected_ids, node_mapping=None):
     node_mapping = node_mapping or {}
-    selected = []
     organs = node.get('organs', [])
 
+    if 'key' not in node:
+        return []
+
+    selected = []
     if node['key'] in selected_ids:
         selected.append({
             'key': node['key'],
@@ -25,6 +28,9 @@ def _get_selected_nodes_with_parent(node, selected_ids, node_mapping=None):
         })
 
     for organ in organs:
+        if 'key' not in organ:
+            continue
+
         node_mapping[organ['key']] = {
             'key': organ['key'],
             'title': organ['title'],

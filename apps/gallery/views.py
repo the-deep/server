@@ -156,17 +156,19 @@ class FileViewSet(viewsets.ModelViewSet):
     search_fields = ('title', 'file')
 
     def get_queryset(self):
+        if self.action == 'list':
+            return File.objects.filter(
+                models.Q(created_by=self.request.user) |
+                models.Q(is_public=True)
+            ).distinct()
         return File.get_for(self.request.user)
 
     def retrieve(self, request, *args, **kwargs):
         obj = self.get_object()
         response = super().retrieve(request, *args, **kwargs)
 
-        key = URLCachedFileField.CACHE_KEY.format(obj.file.name)
-        url = cache.get(key)
-        response['Cache-Control'] = 'max-age={}'.format(
-            cache.ttl(key) if url else settings.MAX_FILE_CACHE_AGE,
-        )
+        key = URLCachedFileField.get_cache_key(obj.file.name)
+        response['Cache-Control'] = 'max-age={}'.format(cache.ttl(key))
         return response
 
     @decorators.action(
@@ -180,7 +182,7 @@ class FileViewSet(viewsets.ModelViewSet):
             return response
 
         obj = self.get_object()
-        key = URLCachedFileField.CACHE_KEY.format(obj.file.name)
+        key = URLCachedFileField.get_cache_key(obj.file.name)
         url = cache.get(key)
         if url:
             return _response(url, cache.ttl(key))
