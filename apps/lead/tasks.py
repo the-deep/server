@@ -32,6 +32,8 @@ DEEPL_CLASSIFY_URL = settings.DEEPL_API + '/v2/classify/'
 
 
 def _preprocess(text):
+    # Remove NUL (0x00) characters
+    text = text.replace('\x00', '')
     # Tabs to space
     text = re.sub(r'\t', ' ', text)
     # Single line breaks to spaces
