@@ -1300,7 +1300,7 @@
 <p id="t574" class="stm mis">            <span class="key">for</span> <span class="nam">sector</span> <span class="key">in</span> <span class="nam">Sector</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">template</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">project</span><span class="op">.</span><span class="nam">assessment_template</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t575" class="stm mis">                <span class="nam">scale</span> <span class="op">=</span> <span class="key">None</span><span class="strut">&nbsp;</span></p>
 <p id="t576" class="stm mis">                <span class="nam">sector_id</span> <span class="op">=</span> <span class="nam">str</span><span class="op">(</span><span class="nam">sector</span><span class="op">.</span><span class="nam">id</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t577" class="stm mis">                <span class="key">if</span> <span class="nam">sector_id</span> <span class="key">in</span> <span class="nam">mpdata</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t577" class="stm mis">                <span class="key">if</span> <span class="nam">mpdata</span> <span class="key">is</span> <span class="key">not</span> <span class="key">None</span> <span class="key">and</span> <span class="nam">sector_id</span> <span class="key">in</span> <span class="nam">mpdata</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t578" class="stm mis">                    <span class="nam">scale</span> <span class="op">=</span> <span class="nam">ScoreMatrixScale</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">id</span><span class="op">=</span><span class="nam">mpdata</span><span class="op">[</span><span class="nam">sector_id</span><span class="op">]</span><span class="op">)</span><span class="op">.</span><span class="nam">first</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t579" class="stm mis">                <span class="nam">data</span><span class="op">[</span><span class="nam">sector</span><span class="op">.</span><span class="nam">title</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span><span class="strut">&nbsp;</span></p>
 <p id="t580" class="pln">                    <span class="str">'value'</span><span class="op">:</span> <span class="nam">scale</span><span class="op">.</span><span class="nam">value</span> <span class="key">if</span> <span class="nam">scale</span> <span class="key">else</span> <span class="str">''</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
@@ -1386,7 +1386,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-10-04 09:02
+            created at 2019-10-18 05:51
         </p>
     </div>
 </div>
