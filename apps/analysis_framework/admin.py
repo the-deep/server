@@ -1,4 +1,5 @@
 from django.contrib import admin
+from deep.admin import linkify
 from analysis_framework.models import (
     AnalysisFramework,
     AnalysisFrameworkRole,
@@ -7,7 +8,12 @@ from analysis_framework.models import (
     Exportable,
 )
 
-from deep.admin import VersionAdmin, StackedInline, query_buttons
+from deep.admin import (
+    VersionAdmin,
+    StackedInline,
+    query_buttons,
+    ModelAdmin as JFModelAdmin,
+)
 
 
 class AnalysisFrameworkMemebershipInline(admin.TabularInline):
@@ -26,6 +32,24 @@ class FilterInline(StackedInline):
 
 class ExportableInline(StackedInline):
     model = Exportable
+
+
+class AFRelatedAdmin(JFModelAdmin):
+    search_fields = ('title',)
+    list_display = (
+        '__str__', linkify('analysis_framework'),
+    )
+    autocomplete_fields = ('analysis_framework',)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('analysis_framework')
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+for model in [Widget, Filter, Exportable]:
+    admin.site.register(model, AFRelatedAdmin)
 
 
 @admin.register(AnalysisFramework)
