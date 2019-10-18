@@ -1,3 +1,5 @@
+import logging
+
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
@@ -13,7 +15,7 @@ from analysis_framework.serializers import AnalysisFrameworkSerializer
 from geo.models import GeoArea, Region
 from geo.serializers import SimpleRegionSerializer
 from tabular.serializers import FieldProcessedOnlySerializer
-from user.serializers import ComprehensiveUserSerializer
+from user.serializers import EntryCommentUserSerializer, ComprehensiveUserSerializer
 from .widgets.store import widget_store
 
 from .models import (
@@ -25,6 +27,8 @@ from .models import (
     FilterData,
 )
 from .utils import validate_image_for_entry
+
+logger = logging.getLogger(__name__)
 
 
 class AttributeSerializer(RemoveNullFieldsMixin,
@@ -253,7 +257,7 @@ class ComprehensiveAttributeSerializer(
             },
         }
 
-    def get_value(self, instance):
+    def _get_value(self, instance):
         if not hasattr(self, 'widgets_meta'):
             self.widgets_meta = self._get_initial_wigets_meta(instance)
         widget = instance.widget
@@ -265,6 +269,12 @@ class ComprehensiveAttributeSerializer(
             self._get_default_value,
         )(self.widgets_meta, widget, data, widget_data)
 
+    def get_value(self, instance):
+        try:
+            return self._get_value(instance)
+        except Exception:
+            logger.warning('Comprehensive Error!! (Widget:{instance})', exc_info=True)
+
 
 class ComprehensiveEntriesSerializer(
         DynamicFieldsMixin,
@@ -272,8 +282,8 @@ class ComprehensiveEntriesSerializer(
 ):
     tabular_field = serializers.HyperlinkedRelatedField(read_only=True, view_name='tabular_field-detail')
     attributes = ComprehensiveAttributeSerializer(source='attribute_set', many=True, read_only=True)
-    created_by = ComprehensiveUserSerializer()
-    modified_by = ComprehensiveUserSerializer()
+    created_by = ComprehensiveUserSerializer(read_only=True)
+    modified_by = ComprehensiveUserSerializer(read_only=True)
 
     class Meta:
         model = Entry
@@ -290,8 +300,8 @@ class EntryCommentTextSerializer(serializers.ModelSerializer):
 
 
 class EntryCommentSerializer(serializers.ModelSerializer):
-    created_by_detail = ComprehensiveUserSerializer(source='created_by', read_only=True)
-    assignee_detail = ComprehensiveUserSerializer(source='assignee', read_only=True)
+    created_by_detail = EntryCommentUserSerializer(source='created_by', read_only=True)
+    assignee_detail = EntryCommentUserSerializer(source='assignee', read_only=True)
     text = serializers.CharField()
     lead = serializers.IntegerField(source='entry.lead_id', read_only=True)
     text_history = EntryCommentTextSerializer(

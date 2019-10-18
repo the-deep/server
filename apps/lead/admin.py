@@ -13,6 +13,7 @@ class LeadPreviewInline(admin.StackedInline):
 
 class LeadPreviewImageInline(admin.TabularInline):
     model = LeadPreviewImage
+    extra = 0
 
 
 @admin.register(Lead)
