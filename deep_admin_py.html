@@ -278,7 +278,7 @@
 <p id="t63" class="stm mis">        <span class="key">return</span> <span class="key">False</span><span class="strut">&nbsp;</span></p>
 <p id="t64" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t65" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t66" class="stm run hide_run"><span class="key">def</span> <span class="nam">linkify</span><span class="op">(</span><span class="nam">field_name</span><span class="op">,</span> <span class="nam">field_field</span><span class="op">=</span><span class="key">None</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t66" class="stm run hide_run"><span class="key">def</span> <span class="nam">linkify</span><span class="op">(</span><span class="nam">field_name</span><span class="op">,</span> <span class="nam">label</span><span class="op">=</span><span class="key">None</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t67" class="pln">    <span class="str">"""</span><span class="strut">&nbsp;</span></p>
 <p id="t68" class="pln"><span class="str">    Converts a foreign key value into clickable links.</span><span class="strut">&nbsp;</span></p>
 <p id="t69" class="pln"><span class="strut">&nbsp;</span></p>
@@ -299,7 +299,7 @@
 <p id="t84" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t85" class="stm mis">        <span class="key">return</span> <span class="str">'-'</span><span class="strut">&nbsp;</span></p>
 <p id="t86" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t87" class="stm run hide_run">    <span class="nam">_linkify</span><span class="op">.</span><span class="nam">short_description</span> <span class="op">=</span> <span class="str">' '</span><span class="op">.</span><span class="nam">join</span><span class="op">(</span><span class="nam">field_name</span><span class="op">.</span><span class="nam">split</span><span class="op">(</span><span class="str">'.'</span><span class="op">)</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t87" class="stm run hide_run">    <span class="nam">_linkify</span><span class="op">.</span><span class="nam">short_description</span> <span class="op">=</span> <span class="nam">label</span> <span class="key">or</span> <span class="str">' '</span><span class="op">.</span><span class="nam">join</span><span class="op">(</span><span class="nam">field_name</span><span class="op">.</span><span class="nam">split</span><span class="op">(</span><span class="str">'.'</span><span class="op">)</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t88" class="stm run hide_run">    <span class="nam">_linkify</span><span class="op">.</span><span class="nam">admin_order_field</span> <span class="op">=</span> <span class="str">'__'</span><span class="op">.</span><span class="nam">join</span><span class="op">(</span><span class="nam">field_name</span><span class="op">.</span><span class="nam">split</span><span class="op">(</span><span class="str">'.'</span><span class="op">)</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t89" class="stm run hide_run">    <span class="key">return</span> <span class="nam">_linkify</span><span class="strut">&nbsp;</span></p>
 <p id="t90" class="pln"><span class="strut">&nbsp;</span></p>
@@ -364,7 +364,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-10-18 05:51
+            created at 2019-10-18 10:50
         </p>
     </div>
 </div>
