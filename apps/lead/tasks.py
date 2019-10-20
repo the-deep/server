@@ -3,7 +3,7 @@ from celery import shared_task
 from django.core.files import File
 from django.db import transaction
 from django.db.models import Q
-# from django.utils import timezone
+from django.db.models.functions import Length
 from django.conf import settings
 from lead.models import (
     Lead,
@@ -295,8 +295,13 @@ def classify_remaining_lead_previews():
     unclassified_leads = Lead.objects.filter(
         ~Q(leadpreview=None),
         ~Q(leadpreview__text_extract=None),
+        ~Q(leadpreview__text_extract__regex=r'^\W*$'),
         leadpreview__classified_doc_id=None,
-    )
+    ).annotate(
+        text_len=Length('leadpreview__text_extract')
+    ).filter(
+        text_len__lte=5000  # Texts of length 5000 do not pose huge computation in DEEPL
+    ).prefetch_related('leadpreview')[:50]  # LIMIT 50 leads only
 
     for lead in unclassified_leads:
         classify_lead(lead)

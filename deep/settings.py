@@ -321,8 +321,8 @@ CELERY_BEAT_SCHEDULE = {
     },
     'classify_remaining_lead_previews': {
         'task': 'lead.tasks.classify_remaining_lead_previews',
-        # Every 6 hour
-        'schedule': crontab(minute=0, hour="*/6"),
+        # Every 3 hours
+        'schedule': crontab(minute=0, hour="*/3"),
     },
 }
 
