@@ -3,7 +3,7 @@ from celery import shared_task
 from django.core.files import File
 from django.db import transaction
 from django.db.models import Q
-# from django.utils import timezone
+from django.db.models.functions import Length
 from django.conf import settings
 from lead.models import (
     Lead,
@@ -161,8 +161,8 @@ def extract_thumbnail(lead_id):
         os.unlink(thumbnail.name)
 
 
-@shared_task(bind=True, max_retries=10)
-def send_lead_text_to_deepl(self, lead_id):
+@shared_task
+def send_lead_text_to_deepl(lead_id):
     lead = Lead.objects.filter(id=lead_id).first()
     if not lead:
         logger.warning(
@@ -171,6 +171,14 @@ def send_lead_text_to_deepl(self, lead_id):
         )
         return True
 
+    try:
+        return classify_lead(lead)
+    except Exception:
+        # Do not retry
+        logger.warning("Error while sending request to deepl", exc_info=True)
+
+
+def classify_lead(lead):
     if lead.project.is_private:
         return True
     # Get preview
@@ -178,35 +186,29 @@ def send_lead_text_to_deepl(self, lead_id):
     if not preview:
         logger.error(
             "Lead preview hasn't been created but send_lead_text_to_deepl() called",
-            extra={'data': {'lead_id': lead_id}},
+            extra={'data': {'lead_id': lead.id}},
         )
         return False
 
-    try:
-        data = {
-            'deeper': 1,
-            'group_id': lead.project.id,
-            'text': preview.text_extract,
-        }
-        response = requests.post(DEEPL_CLASSIFY_URL,
-                                 data=data)
-        if response.status_code < 200 or response.status_code > 299:
-            raise Exception(
-                "Status code {} from DEEPL Server response {}".format(
-                    response.status_code,
-                    response.text[:300]
-                ))
-        response_data = response.json()
-        classified_doc_id = response_data.get('id')
+    data = {
+        'deeper': 1,
+        'group_id': lead.project.id,
+        'text': preview.text_extract,
+    }
+    response = requests.post(DEEPL_CLASSIFY_URL,
+                                data=data)
+    if response.status_code < 200 or response.status_code > 299:
+        raise Exception(
+            "Status code {} from DEEPL Server response {}".format(
+                response.status_code,
+                response.text[:300]
+            ))
+    response_data = response.json()
+    classified_doc_id = response_data.get('id')
 
-        preview.classified_doc_id = classified_doc_id
-        preview.save()
-        return True
-    except Exception:
-        # Retry with exponential decay
-        logger.warning("Error while sending request to deepl", exc_info=True)
-        retry_countdown = 2 ** self.request.retries
-        self.retry(countdown=retry_countdown)
+    preview.classified_doc_id = classified_doc_id
+    preview.save()
+    return True
 
 
 @shared_task
@@ -265,7 +267,7 @@ def extract_from_lead(lead_id):
 
 @shared_task
 def generate_previews(lead_ids=None):
-    """Generae previews of leads which do not have preview"""
+    """Generate previews of leads which do not have preview"""
     lead_ids = lead_ids or Lead.objects.filter(
         Q(leadpreview__isnull=True) |
         Q(leadpreview__text_extract=''),
@@ -274,3 +276,31 @@ def generate_previews(lead_ids=None):
     for lead_id in lead_ids:
         extract_from_lead.s(lead_id).delay()
         time.sleep(0.5)
+
+
+@shared_task
+def classify_remaining_lead_previews():
+    """
+    Scheduled task(celery beat)
+    NOTE: Only use it through schedular
+    This looks for previews which do not have classisified doc id
+    """
+    key = 'classify_remaining_lead_previews'
+    lock = redis.get_lock(key, 60 * 60 * 2)  # Lock lifetime 2 hours
+    have_lock = lock.acquire(blocking=False)
+    if not have_lock:
+        return '{} Locked'.format(key)
+    unclassified_leads = Lead.objects.filter(
+        ~Q(leadpreview=None),
+        ~Q(leadpreview__text_extract=None),
+        ~Q(leadpreview__text_extract__regex=r'^\W*$'),
+        leadpreview__classified_doc_id=None,
+    ).annotate(
+        text_len=Length('leadpreview__text_extract')
+    ).filter(
+        text_len__lte=5000  # Texts of length 5000 do not pose huge computation in DEEPL
+    ).prefetch_related('leadpreview')[:50]  # LIMIT 50 leads only
+
+    for lead in unclassified_leads:
+        classify_lead(lead)
+    return True
