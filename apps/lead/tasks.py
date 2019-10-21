@@ -161,8 +161,8 @@ def extract_thumbnail(lead_id):
         os.unlink(thumbnail.name)
 
 
-@shared_task(bind=True, max_retries=10)
-def send_lead_text_to_deepl(self, lead_id):
+@shared_task
+def send_lead_text_to_deepl(lead_id):
     lead = Lead.objects.filter(id=lead_id).first()
     if not lead:
         logger.warning(
@@ -174,10 +174,8 @@ def send_lead_text_to_deepl(self, lead_id):
     try:
         return classify_lead(lead)
     except Exception:
-        # Retry with exponential decay
+        # Do not retry
         logger.warning("Error while sending request to deepl", exc_info=True)
-        retry_countdown = 2 ** self.request.retries
-        self.retry(countdown=retry_countdown)
 
 
 def classify_lead(lead):
