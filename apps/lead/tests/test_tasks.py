@@ -72,22 +72,8 @@ class ExtractFromLeadTaskTest(TestCase):
             logger.warning('LEAD EXTRACTION ERROR:', exc_info=True)
             return
 
-    @patch('lead.tasks.send_lead_text_to_deepl.retry')
     @patch('lead.tasks.requests.post')
-    def test_deepl_request_failure(self, post_mock, send_retry_mock):
-        # Create lead preview
-        LeadPreview.objects.create(
-            lead=self.lead,
-            text_extract="This is test text"
-        )
-        post_mock.side_effect = Exception()
-        send_lead_text_to_deepl(self.lead.id)
-        # First retry has countdown 1
-        send_retry_mock.assert_called_with(countdown=1)
-
-    @patch('lead.tasks.send_lead_text_to_deepl.retry')
-    @patch('lead.tasks.requests.post')
-    def test_deepl_request_success(self, post_mock, send_retry_mock):
+    def test_deepl_request_success(self, post_mock):
         # Create lead preview
         LeadPreview.objects.create(
             lead=self.lead,
