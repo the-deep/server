@@ -13,10 +13,11 @@ class DocsView(View):
         endpoints = []
 
         for key, endpoint in SchemaGenerator().links.items():
-            endpoints.append((key, [
-                (key, e) for (key, e) in endpoint.items()
-                if isinstance(e, dict)
-            ]))
+            if callable(getattr(endpoint, 'items', None)):
+                endpoints.append((key, [
+                    (key, e) for (key, e) in endpoint.items()
+                    if isinstance(e, dict)
+                ]))
 
         context['endpoints'] = endpoints
         return JsonResponse(
