@@ -22,6 +22,26 @@
             align-items: center;
             height: 100%;
         }
+
+        .list-item {
+            display: block;
+        }
+
+        .list-item:before {
+            content: '•';
+            padding-right: 8px;
+        }
+
+        .doc {
+            display: flex;
+            align-items: center;
+        }
+
+        .icon {
+            padding: 0 4px;
+            width: 16px;
+            height: 16px;
+        }
     </style>
 {% endblock %}
 {% block content %}
@@ -30,8 +50,23 @@
     <h1>THIS IS DEEP API ENDPOINT</h1>
     <p>Useful links:</p>
     <ul>
-    <li>Goto Deep Website: <a href="{{frontend_url}}">{{frontend_url}}</a></li>
-    <li>Goto Deep Admin: <a href="/admin">Admin Panel</a></li>
+    <li class="list-item">Go to Deep Website: <a href="{{frontend_url}}">{{frontend_url}}</a></li>
+    <li class="list-item">Go to Deep Admin: <a href="/admin">Admin Panel</a></li>
+    <li class="doc list-item">
+        Go to Deep API Documentation:
+        <a
+            class="icon"
+            href="/api-docs/"
+        >
+            <image class="icon" alt="Swagger" src="{% static 'drf-yasg/swagger-ui-dist/favicon-32x32.png' %}"/>
+        </a>
+        <a
+            class="icon"
+            href="/redoc/"
+        >
+            <image class="icon" alt="ReDoc" src="{% static 'drf-yasg/redoc/redoc-logo.png' %}"/>
+        </a>
+    </li>
     </ul>
 </div>
 

@@ -319,19 +319,16 @@ def get_api_path(path):
 
 admin.site.__class__ = OTPAdminSite
 
-api_docs_urlpatterns = [
-    url(
-        r'^api-docs(?P<format>\.json|\.yaml)$',
-        api_schema_view.without_ui(cache_timeout=0), name='schema-json'
-    ),
-    url(r'^api-docs/$', api_schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    url(r'^redoc/$', api_schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-]
-
 urlpatterns = [
     url(r'^$', FrontendView.as_view()),
     url(r'^admin/', admin.site.urls),
-    *(api_docs_urlpatterns if settings.DEBUG else []),
+
+    url(r'^api-docs(?P<format>\.json|\.yaml)$',
+        api_schema_view.without_ui(cache_timeout=settings.OPEN_API_DOCS_TIMEOUT), name='schema-json'),
+    url(r'^api-docs/$', api_schema_view.with_ui('swagger', cache_timeout=settings.OPEN_API_DOCS_TIMEOUT),
+        name='schema-swagger-ui'),
+    url(r'^redoc/$', api_schema_view.with_ui('redoc', cache_timeout=settings.OPEN_API_DOCS_TIMEOUT),
+        name='schema-redoc'),
 
     # JWT Authentication
     url(get_api_path(r'token/$'),
