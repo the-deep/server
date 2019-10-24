@@ -162,7 +162,7 @@ class EMM(RssFeed):
                 field_value = None
             else:
                 element = item.find(self.params.get(field, ''))
-                field_value = element.text or element.get('href')
+                field_value = (element.text or element.get('href')) if element is not None else None
             info[lead_field] = field_value
 
         # Parse entities
