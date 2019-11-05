@@ -1,9 +1,10 @@
 from deep.tests import TestCase
 from user.models import User
 from project.models import Project
-from connector.sources.store import get_random_source
+from connector.sources.store import get_random_source, acaps_briefing_notes
 from connector.models import (
     Connector,
+    ConnectorSource,
     ConnectorUser,
     EMMConfig,
 )
@@ -254,3 +255,94 @@ class ConnectorApiTest(TestCase):
         assert data[0]['id'] == connector.id
         assert 'source' in data[0]
         assert 'source_title' in data[0]
+
+
+class ConnectorSourcesApiTest(TestCase):
+    """
+    NOTE: The basic connector sources are added from the migration.
+    """
+    statuses = [ConnectorSource.STATUS_BROKEN, ConnectorSource.STATUS_WORKING]
+
+    def setUp(self):
+        super().setUp()
+        # Set acaps status working, since might be set broken by other test functions
+        acaps_source = ConnectorSource.objects.get(key='acaps-briefing-notes')
+        acaps_source.status = ConnectorSource.STATUS_WORKING
+        acaps_source.save()
+
+    def test_get_connector_sources_has_status_key(self):
+        url = '/api/v1/connector-sources/'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        data = response.data['results']
+        for each in data:
+            assert 'status' in each
+            assert each['status'] in self.statuses
+
+    def test_get_connector_acaps_status_broken(self):
+        acaps_source = ConnectorSource.objects.get(key='acaps-briefing-notes')
+        acaps_source.status = ConnectorSource.STATUS_BROKEN
+        acaps_source.save()
+
+        url = '/api/v1/connector-sources/'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        data = response.data['results']
+        for each in data:
+            assert 'status' in each
+            if each['key'] == 'acaps-briefing-notes':
+                assert each['status'] == ConnectorSource.STATUS_BROKEN
+            else:
+                assert each['status'] == ConnectorSource.STATUS_WORKING
+
+    def test_get_connectors_have_status_key(self):
+        url = '/api/v1/connectors/'
+        data = {
+            'title': 'Test Acaps connector',
+            'source': acaps_briefing_notes.AcapsBriefingNotes.key
+        }
+
+        connector_count = Connector.objects.count()
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        response = self.client.get(url)
+        self.assert_200(response)
+        data = response.data['results']
+
+        for each in data:
+            assert 'status' in each
+            assert each['status'] in self.statuses
+
+    def test_get_acaps_connector_broken(self):
+        acaps_source = ConnectorSource.objects.get(key='acaps-briefing-notes')
+        acaps_source.status = ConnectorSource.STATUS_BROKEN
+        acaps_source.save()
+
+        url = '/api/v1/connectors/'
+        data = {
+            'title': 'Test Acaps connector',
+            'source': acaps_briefing_notes.AcapsBriefingNotes.key
+        }
+
+        connector_count = Connector.objects.count()
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        response = self.client.get(url)
+        self.assert_200(response)
+        data = response.data['results']
+
+        for each in data:
+            print(each)
+            assert 'status' in each
+            if each['source'] == 'acaps-briefing-notes':
+                assert each['status'] == ConnectorSource.STATUS_BROKEN
+            else:
+                assert each['status'] == ConnectorSource.STATUS_BROKEN
