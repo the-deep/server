@@ -10,6 +10,7 @@ from lead.views import check_if_url_exists
 from .sources.store import source_store
 from .models import (
     Connector,
+    ConnectorSource,
     ConnectorUser,
     ConnectorProject,
 )
@@ -32,6 +33,15 @@ class SourceSerializer(RemoveNullFieldsMixin,
     title = serializers.CharField()
     key = serializers.CharField()
     options = SourceOptionSerializer(many=True)
+    status = serializers.SerializerMethodField()
+
+    def get_status(self, obj):
+        key = obj.key
+        source_obj = ConnectorSource.objects.filter(key=key).first()
+        # By default status is working if not added in the db
+        if source_obj is None:
+            return ConnectorSource.STATUS_WORKING
+        return source_obj.status
 
 
 class SourceEMMEntitiesSerializer(serializers.Serializer):
@@ -141,6 +151,7 @@ class ConnectorSerializer(RemoveNullFieldsMixin,
     source_title = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
     filters = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
 
     class Meta:
         model = Connector
@@ -154,6 +165,14 @@ class ConnectorSerializer(RemoveNullFieldsMixin,
             role='admin',
         )
         return connector
+
+    def get_status(self, connector):
+        key = connector.source
+        source_obj = ConnectorSource.objects.filter(key=key).first()
+        # By default status is working if not added in the db
+        if source_obj is None:
+            return ConnectorSource.STATUS_WORKING
+        return source_obj.status
 
     def get_role(self, connector):
         request = self.context['request']
