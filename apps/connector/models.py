@@ -26,7 +26,7 @@ class ConnectorSource(models.Model):
         choices=STATUS_CHOICES,
         default=STATUS_WORKING,
     )
-    description = models.TextField()
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return self.name
