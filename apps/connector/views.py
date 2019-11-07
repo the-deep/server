@@ -135,7 +135,7 @@ class ConnectorViewSet(viewsets.ModelViewSet):
             **(request.data or {}),
         }
 
-        source = source_store[connector.source]()
+        source = source_store[connector.source.key]()
         data, count = source.get_leads(params, offset, limit)
 
         # Paginate manually
