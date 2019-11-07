@@ -19,8 +19,8 @@ class ConnectorSource(models.Model):
         (STATUS_WORKING, 'Working'),
     )
 
-    name = models.CharField(max_length=100)
-    key = models.CharField(max_length=100, unique=True)
+    key = models.CharField(max_length=100, primary_key=True)
+    title = models.CharField(max_length=100)
     status = models.CharField(
         max_length=50,
         choices=STATUS_CHOICES,
@@ -29,12 +29,16 @@ class ConnectorSource(models.Model):
     description = models.TextField(blank=True)
 
     def __str__(self):
-        return self.name
+        return self.title
 
 
 class Connector(UserResource):
     title = models.CharField(max_length=255)
-    source = models.CharField(max_length=96, choices=get_sources())
+    source = models.ForeignKey(
+        ConnectorSource,
+        null=True,
+        on_delete=models.CASCADE,
+    )
     params = JSONField(default=None, blank=True, null=True)
 
     users = models.ManyToManyField(User, blank=True,

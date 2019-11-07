@@ -11,6 +11,10 @@ from connector.models import (
 from connector.sources import store
 
 
+def get_source_object(key):
+    return ConnectorSource.objects.filter(key=key).first()
+
+
 SAMPLE_RSS_PARAMS = {
     'feed-url': 'https://reliefweb.int/country/afg/rss.xml?primary_country=16',
     'website': 'reliefweb',
@@ -117,7 +121,7 @@ class ConnectorApiTest(TestCase):
         # TODO Check existing status of leads
 
         connector = self.create(Connector,
-                                source='rss-feed',
+                                source=get_source_object('rss-feed'),
                                 params=SAMPLE_RSS_PARAMS,
                                 role='self')
         url = '/api/v1/connectors/{}/leads/'.format(connector.id)
@@ -154,7 +158,7 @@ class ConnectorApiTest(TestCase):
 
     def test_relief_web(self):
         connector = self.create(Connector,
-                                source='relief-web',
+                                source=get_source_object('relief-web'),
                                 params={'country': 'NPL'},
                                 role='self')
 
@@ -186,7 +190,7 @@ class ConnectorApiTest(TestCase):
     def test_atom_feed_leads(self):
         connector = self.create(
             Connector,
-            source=store.atom_feed.AtomFeed.key,
+            source=get_source_object(store.atom_feed.AtomFeed.key),
             params=SAMPLE_ATOM_PARAMS,
             role='self',
         )
@@ -212,7 +216,7 @@ class ConnectorApiTest(TestCase):
 
         connector = self.create(
             Connector,
-            source=store.emm.EMM.key,
+            source=get_source_object(store.emm.EMM.key),
             params=SAMPLE_EMM_PARAMS,
             role='self',
         )
@@ -239,7 +243,7 @@ class ConnectorApiTest(TestCase):
         """Check if source and source title are present"""
         connector = self.create(
             Connector,
-            source=store.atom_feed.AtomFeed.key,
+            source=get_source_object(store.atom_feed.AtomFeed.key),
             params=SAMPLE_ATOM_PARAMS,
             role='self',
         )
