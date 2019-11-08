@@ -10,9 +10,35 @@ from project.models import Project
 from user.models import User
 
 
+class ConnectorSource(models.Model):
+    STATUS_BROKEN = 'broken'
+    STATUS_WORKING = 'working'
+
+    STATUS_CHOICES = (
+        (STATUS_BROKEN, 'Broken'),
+        (STATUS_WORKING, 'Working'),
+    )
+
+    key = models.CharField(max_length=100, primary_key=True)
+    title = models.CharField(max_length=100)
+    status = models.CharField(
+        max_length=50,
+        choices=STATUS_CHOICES,
+        default=STATUS_WORKING,
+    )
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.title
+
+
 class Connector(UserResource):
     title = models.CharField(max_length=255)
-    source = models.CharField(max_length=96, choices=get_sources())
+    source = models.ForeignKey(
+        ConnectorSource,
+        null=True,
+        on_delete=models.CASCADE,
+    )
     params = JSONField(default=None, blank=True, null=True)
 
     users = models.ManyToManyField(User, blank=True,

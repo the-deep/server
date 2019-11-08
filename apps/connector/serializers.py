@@ -10,6 +10,7 @@ from lead.views import check_if_url_exists
 from .sources.store import source_store
 from .models import (
     Connector,
+    ConnectorSource,
     ConnectorUser,
     ConnectorProject,
 )
@@ -32,6 +33,15 @@ class SourceSerializer(RemoveNullFieldsMixin,
     title = serializers.CharField()
     key = serializers.CharField()
     options = SourceOptionSerializer(many=True)
+    status = serializers.SerializerMethodField()
+
+    def get_status(self, obj):
+        key = obj.key
+        source_obj = ConnectorSource.objects.filter(key=key).first()
+        # By default status is working if not added in the db
+        if source_obj is None:
+            return ConnectorSource.STATUS_WORKING
+        return source_obj.status
 
 
 class SourceEMMEntitiesSerializer(serializers.Serializer):
@@ -138,9 +148,11 @@ class ConnectorSerializer(RemoveNullFieldsMixin,
         many=True,
         required=False,
     )
-    source_title = serializers.SerializerMethodField()
+    source = serializers.PrimaryKeyRelatedField(queryset=ConnectorSource.objects.all())
+    source_title = serializers.CharField(source='source.title', read_only=True)
     role = serializers.SerializerMethodField()
     filters = serializers.SerializerMethodField()
+    status = serializers.CharField(source='source.status', read_only=True)
 
     class Meta:
         model = Connector
@@ -169,12 +181,7 @@ class ConnectorSerializer(RemoveNullFieldsMixin,
         return None
 
     def get_filters(self, connector):
-        source = source_store[connector.source]()
+        source = source_store[connector.source.key]()
         if not hasattr(source, 'filters'):
             return []
         return source.filters
-
-    def get_source_title(self, connector):
-        source_key = connector.source
-        source = source_store.get(source_key)
-        return source and source.title
