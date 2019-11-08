@@ -447,3 +447,7 @@ def calculate_md5(file):
 
 def camelcase_to_titlecase(label):
     return re.sub(r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))', r' \1', label)
+
+
+def kebabcase_to_titlecase(kebab_str):
+    return ' '.join([x.title() for x in kebab_str.split('-')])
