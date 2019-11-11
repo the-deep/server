@@ -17,7 +17,6 @@ class ProfileInline(admin.StackedInline):
     can_delete = False
     verbose_name_plural = 'Profile'
     fk_name = 'user'
-    autocomplete_fields = ('display_picture', 'last_active_project',)
 
 
 @admin.register(User)
@@ -58,7 +57,7 @@ for model, model_admin in OTP_PROXY_MODELS:
     admin.site.register(model, DjangoOTPAdmin)
 
 
-@admin.register(gen_auth_proxy_model(Feature))
+@admin.register(Feature)
 class CustomFeature(admin.ModelAdmin):
     search_fields = ('title',)
     list_display = ('title', 'feature_type', 'user_count',)
@@ -90,7 +89,7 @@ class CustomFeature(admin.ModelAdmin):
     user_count.short_description = 'User Count'
 
 
-@admin.register(gen_auth_proxy_model(EmailDomain))
+@admin.register(EmailDomain)
 class EmailDoaminAdmin(admin.ModelAdmin):
     search_fields = ('title', 'domain_name')
     list_display = ('title', 'domain_name', 'user_count')

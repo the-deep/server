@@ -359,6 +359,13 @@ create_plotly_image.marker = dict(
 )
 
 
+def get_redis_lock_ttl(lock):
+    try:
+        return timedelta(seconds=redis.get_connection().ttl(lock.name))
+    except Exception:
+        pass
+
+
 def redis_lock(lock_key, timeout=60 * 60 * 4):
     """
     Default Lock lifetime 4 hours
@@ -369,7 +376,7 @@ def redis_lock(lock_key, timeout=60 * 60 * 4):
             lock = redis.get_lock(key, timeout)
             have_lock = lock.acquire(blocking=False)
             if not have_lock:
-                logger.warning(f'Unable to get lock for {key}')
+                logger.warning(f'Unable to get lock for {key}(ttl: {get_redis_lock_ttl(lock)})')
                 return False
             try:
                 return_value = func(*args, **kwargs) or True
