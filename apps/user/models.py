@@ -164,9 +164,10 @@ def gen_auth_proxy_model(ModelClass, _label=None):
 
     class Meta:
         proxy = True
-        app_label = 'auth'
+        app_label = 'user'
         verbose_name = f'{t_label}'
         verbose_name_plural = f'{t_label}s'
+
     model = type(f"{label.replace(' ', '_')}", (ModelClass,), {
         '__module__': __name__,
         'Meta': Meta,

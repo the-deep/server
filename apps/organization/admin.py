@@ -1,5 +1,9 @@
+from django.utils.html import format_html
+from django.contrib import messages
+from django.utils.safestring import mark_safe
 from django.db import models
 from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
 from django.urls import path, reverse
 from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib import admin
@@ -7,15 +11,18 @@ from django.contrib import admin
 from deep.admin import document_preview, linkify, ReadOnlyMixin
 
 from .actions import merge_organizations
+from .filters import IsFromReliefWeb
 from .models import (
     OrganizationType,
     Organization,
 )
+from .tasks import sync_organization_with_relief_web
 
 
 @admin.register(OrganizationType)
 class OrganizationTypeAdmin(admin.ModelAdmin):
-    list_display = ('title', 'get_organization_count',)
+    list_display = ('title', 'get_organization_count', 'get_relief_web_id')
+    readonly_fields = ('relief_web_id',)
     search_fields = ('title',)
 
     def get_queryset(self, request):
@@ -28,6 +35,20 @@ class OrganizationTypeAdmin(admin.ModelAdmin):
             return instance.organization_count
     get_organization_count.short_description = 'Organization Count'
 
+    def get_relief_web_id(self, obj):
+        id = obj.relief_web_id
+        if id:
+            return format_html(
+                f'<a target="_blank" href="https://api.reliefweb.int/v1/references/organization-types/{id}">{id}</a>'
+            )
+    get_relief_web_id.short_description = 'ReliefWeb'
+    get_relief_web_id.admin_order_field = 'relief_web_id'
+
+    def has_change_permission(self, request, obj=None):
+        if obj:
+            return obj.relief_web_id is None
+        return True
+
 
 class OrganizationInline(ReadOnlyMixin, admin.TabularInline):
     model = Organization
@@ -39,9 +60,9 @@ class OrganizationInline(ReadOnlyMixin, admin.TabularInline):
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
     search_fields = ('title', 'short_name', 'long_name')
-    list_display = ('title', 'short_name', linkify('organization_type'),)
-    readonly_fields = (document_preview('logo', 'Logo Preview'),)
-    list_filter = ('organization_type', 'verified',)
+    list_display = ('title', 'short_name', linkify('organization_type'), 'get_relief_web_id', 'verified', 'modified_at')
+    readonly_fields = (document_preview('logo', 'Logo Preview'), 'relief_web_id')
+    list_filter = ('organization_type', 'verified', IsFromReliefWeb,)
     actions = (merge_organizations,)
     exclude = ('parent',)
     inlines = [OrganizationInline]
@@ -49,6 +70,22 @@ class OrganizationAdmin(admin.ModelAdmin):
         'created_by', 'modified_by', 'logo',
         'organization_type', 'regions', 'parent',
     )
+    change_list_template = 'admin/organization_change_list.html'
+
+    def get_relief_web_id(self, obj):
+        id = obj.relief_web_id
+        if id:
+            return format_html(f'<a target="_blank" href="https://api.reliefweb.int/v1/sources/{id}/">{id} </a>')
+    get_relief_web_id.short_description = 'ReliefWeb'
+    get_relief_web_id.admin_order_field = 'relief_web_id'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('organization_type')
+
+    def has_change_permission(self, request, obj=None):
+        if obj:
+            return obj.relief_web_id is None
+        return True
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
@@ -75,7 +112,16 @@ class OrganizationAdmin(admin.ModelAdmin):
                 self.admin_site.admin_view(self.merge_view),
                 name='%s_%s_unmerge' % info
             ),
+            path(
+                'trigger-relief-web-sync/', self.admin_site.admin_view(self.trigger_relief_web_sync),
+                name='organization_relief_web_sync'
+            ),
         ] + super().get_urls()
+
+    def trigger_relief_web_sync(self, request):
+        sync_organization_with_relief_web.s().delay()
+        messages.add_message(request, messages.INFO, mark_safe('Successfully triggered organizations re-sync'))
+        return redirect('admin:organization_organization_changelist')
 
     def get_inline_instances(self, request, obj=None):
         if obj and obj.related_childs.exists():

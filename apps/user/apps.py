@@ -15,6 +15,7 @@ def device_classes():
 
 class UserConfig(AppConfig):
     name = 'user'
+    verbose_name = '[DEEP] Authentication and Authorization'
 
     def ready(self):
         import user.receivers  # noqa
