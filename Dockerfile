@@ -41,12 +41,6 @@ RUN apt-get update -y && apt-get install -y \
         && apt-get update -y && apt-get install -y \
             fonts-freefont-ttf \
             google-chrome-stable \
-        # Install chromedriver
-        && curl -sS -o /tmp/chromedriver_linux64.zip \
-            http://chromedriver.storage.googleapis.com/2.46/chromedriver_linux64.zip \
-        && unzip -qq /tmp/chromedriver_linux64.zip -d /usr/bin/ \
-        && chmod 755 /usr/bin/chromedriver \
-        && rm /tmp/chromedriver_linux64.zip \
         # Install orca for plotly
         && curl https://github.com/plotly/orca/releases/download/v${ORCA_VERSION}/orca-${ORCA_VERSION}-x86_64.AppImage \
             -L --output /tmp/orca-x86_64.AppImage \
@@ -58,6 +52,15 @@ RUN apt-get update -y && apt-get install -y \
         # Clean apt
         && rm -rf /var/lib/apt/lists/* \
         && apt-get autoremove
+
+# Chrome webdriver
+RUN CHROME_MAJOR_VERSION=$(google-chrome --version | sed -E "s/.* ([0-9]+)(\.[0-9]+){3}.*/\1/") \
+        && CHROME_DRIVER_VERSION=$(curl "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_MAJOR_VERSION}") \
+        && curl -sS -o /tmp/chromedriver_linux64.zip \
+            http://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
+        && unzip -qq /tmp/chromedriver_linux64.zip -d /usr/bin/ \
+        && chmod 755 /usr/bin/chromedriver \
+        && rm /tmp/chromedriver_linux64.zip
 
 # Support utf-8
 RUN locale-gen en_US.UTF-8
