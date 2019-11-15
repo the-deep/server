@@ -13,6 +13,23 @@ SUPPORTED_WIDGETS = [
 ]
 
 
+def _get_project_geoareas(project):
+    geo_array = []
+    for geoarea in GeoArea.objects.filter(
+            admin_level__region__in=project.regions.values_list('id'),
+    ).annotate(extent=Extent('polygons')).values('pk', 'admin_level__level', 'title', 'polygons', 'extent'):
+        polygons = geoarea['polygons']
+        centroid = polygons.centroid
+        geo_array.append({
+            'id': geoarea['pk'],
+            'admin_level': geoarea['admin_level__level'],
+            'name': geoarea['title'],
+            'centroid': [centroid.x, centroid.y],
+            'bounds': [geoarea['extent'][:2], geoarea['extent'][2:]],
+        })
+    return geo_array
+
+
 def _get_widget_info(config, widgets, widget_name, skip_data=False):
     widget = widgets[config[widget_name]['pk']]
 
@@ -35,11 +52,12 @@ def _get_widget_info(config, widgets, widget_name, skip_data=False):
         return _return(w_filter.properties if w_filter else None)
 
     data = widget.properties['data']
-    # TODO: Add validator for this
-    selectors = config[widget_name].get('selectors')
-    if selectors:
-        for selector in selectors + ['properties', 'data']:
-            data = data[selector]
+    is_conditional_widget = config[widget_name].get('is_conditional_widget')
+    if is_conditional_widget:
+        for c_widget in data.get('widgets', []):
+            _widget = c_widget['widget']
+            if _widget['key'] == config[widget_name]['widget_key']:
+                data = _widget['properties']['data']
     return _return(data)
 
 
@@ -109,7 +127,6 @@ def get_project_entries_stats(project):
         'severity_widget': {
             'pk': 2902,
             'is_conditional_widget': True,
-            'selectors': ['widgets', 0, 'widget'],
             'widget_key': 'scalewidget-ljlk28coxz7sufml',
             # TODO: Add validation here
             'widget_type': 'scaleWidget',
@@ -201,19 +218,7 @@ def get_project_entries_stats(project):
         } for reliability in w_reliability['data']['scale_units']
     ]
 
-    geo_array = []
-    for geoarea in GeoArea.objects.filter(
-            admin_level__region__in=project.regions.values_list('id'),
-    ).annotate(extent=Extent('polygons')).values('pk', 'admin_level__level', 'title', 'polygons', 'extent'):
-        polygons = geoarea['polygons']
-        centroid = polygons.centroid
-        geo_array.append({
-            'id': geoarea['pk'],
-            'admin_level': geoarea['admin_level__level'],
-            'name': geoarea['title'],
-            'centroid': [centroid.x, centroid.y],
-            'bounds': [geoarea['extent'][:2], geoarea['extent'][2:]],
-        })
+    geo_array = _get_project_geoareas(project)
 
     meta = {
         'data_calculated': timezone.now(),

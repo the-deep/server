@@ -8,7 +8,7 @@ from reversion.admin import VersionAdmin
 
 from deep.admin import linkify
 
-from .tasks import generate_entry_stats
+from .tasks import generate_entry_stats, generate_ary_stats
 from .forms import ProjectRoleForm
 from .models import (
     Project,
@@ -16,6 +16,7 @@ from .models import (
     ProjectMembership,
     ProjectUserGroupMembership,
     ProjectEntryStats,
+    ProjectAryStats,
     ProjectStatus,
     ProjectStatusCondition,
     ProjectJoinRequest,
@@ -25,12 +26,14 @@ TRIGGER_LIMIT = 5
 
 
 def trigger_project_stat_calc(modeladmin, request, queryset):
+    print(modeladmin)
+    generator = generate_entry_stats if modeladmin == ProjectEntryStatsAdmin else generate_ary_stats
     for project_id in queryset.values_list('project_id', flat=True).distinct()[:TRIGGER_LIMIT]:
-        generate_entry_stats.delay(project_id, force=True)
+        generator.delay(project_id, force=True)
     messages.add_message(
         request, messages.INFO,
         mark_safe(
-            'Successfully triggered Project Stats Calculation for projects: <br><hr>' +
+            f'Successfully triggered Project Stats Calculation ({generator.__name__}) for projects: <br><hr>' +
             '<br>'.join(
                 '* {0} : {1}'.format(*value)
                 for value in queryset.values_list('project_id', 'project__title').distinct()[:TRIGGER_LIMIT]
@@ -135,3 +138,12 @@ class ProjectEntryStatsAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('project', 'project__analysis_framework')
+
+
+@admin.register(ProjectAryStats)
+class ProjectAryStatsAdmin(ProjectEntryStatsAdmin):
+    list_display = ('project', 'modified_at', 'status', 'file',)
+    readonly_fields = []
+
+    def get_queryset(self, request):
+        return super().get_queryset(request)
