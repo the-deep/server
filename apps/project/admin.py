@@ -26,7 +26,6 @@ TRIGGER_LIMIT = 5
 
 
 def trigger_project_stat_calc(modeladmin, request, queryset):
-    print(modeladmin)
     generator = generate_entry_stats if modeladmin == ProjectEntryStatsAdmin else generate_ary_stats
     for project_id in queryset.values_list('project_id', flat=True).distinct()[:TRIGGER_LIMIT]:
         generator.delay(project_id, force=True)
