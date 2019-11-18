@@ -210,6 +210,20 @@ class Lead(UserResource, ProjectEntityMixin):
 
 
 class LeadPreview(models.Model):
+    STATUS_CLASSIFICATION_NONE = 'none'  # For leads which are not texts
+    STATUS_CLASSIFICATION_INITIATED = 'initiated'
+    STATUS_CLASSIFICATION_COMPLETED = 'completed'
+    STATUS_CLASSIFICATION_FAILED = 'failed'  # Somehow Failed due to connection error
+    STATUS_CLASSIFICATION_ERRORED = 'errored'  # If errored, no point in retrying
+
+    CHOICES_CLASSIFICATION = (
+        (STATUS_CLASSIFICATION_NONE, 'None'),
+        (STATUS_CLASSIFICATION_INITIATED, 'Initiated'),
+        (STATUS_CLASSIFICATION_COMPLETED, 'Completed'),
+        (STATUS_CLASSIFICATION_FAILED, 'Failed'),
+        (STATUS_CLASSIFICATION_ERRORED, 'Errored'),
+    )
+
     lead = models.OneToOneField(Lead, on_delete=models.CASCADE)
     text_extract = models.TextField(blank=True)
 
@@ -224,6 +238,11 @@ class LeadPreview(models.Model):
 
     classified_doc_id = models.IntegerField(default=None,
                                             null=True, blank=True)
+    classification_status = models.CharField(
+        max_length=20,
+        choices=CHOICES_CLASSIFICATION,
+        default=STATUS_CLASSIFICATION_NONE,
+    )
 
     def __str__(self):
         return 'Text extracted for {}'.format(self.lead)
