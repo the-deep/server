@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.core.management.base import BaseCommand
 from django.core import files
 from io import BytesIO
@@ -13,7 +14,15 @@ import requests
 
 
 class Command(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--sync-by-name',
+            action='store_true',
+            help='Sync using short name ( Used for existing organization without relief web id)',
+        )
+
     def handle(self, *args, **kwargs):
+        self.sync_by_name = kwargs['sync_by_name']
         self.fetch_org_types()
         self.fetch_organizations()
 
@@ -32,6 +41,7 @@ class Command(BaseCommand):
         fields = type_data['fields']
         values = {
             'description': fields.get('description', ''),
+            'relief_web_id': fields.get('id'),
         }
 
         OrganizationType.objects.update_or_create(
@@ -39,9 +49,10 @@ class Command(BaseCommand):
             defaults=values
         )
 
+    @transaction.atomic
     def fetch_organizations(self, offset=0, limit=1000):
         print('Fetching organizations starting from: {}'.format(offset))
-        URL = 'https://api.reliefweb.int/v1/sources?fields[include][]=logo&fields[include][]=country.iso3&fields[include][]=shortname&fields[include][]=longname&fields[include][]=homepage&offset={}&limit={}'.format( # noqa
+        URL = 'https://api.reliefweb.int/v1/sources?fields[include][]=logo&fields[include][]=country.iso3&fields[include][]=shortname&fields[include][]=longname&fields[include][]=homepage&fields[include][]=type&offset={}&limit={}'.format( # noqa
             offset,
             limit,
         )
@@ -56,16 +67,36 @@ class Command(BaseCommand):
         if len(response['data']) > 0:
             self.fetch_organizations(offset + limit, limit)
 
+    def _get_organization_type_by_relief_web_id(self, relief_web_id):
+        if not hasattr(self, '_organization_types'):
+            self._organization_types = {
+                org.relief_web_id or 'n/a': org
+                for org in OrganizationType.objects.all()
+            }
+        return self._organization_types.get(relief_web_id)
+
     def load_organization(self, org_data):
         fields = org_data['fields']
         values = {
+            'title': fields['name'],
             'short_name': fields.get('shortname', ''),
             'long_name': fields.get('longname', ''),
             'url': fields.get('homepage', ''),
+            'relief_web_id': org_data['id'],
+            'verified': True,
+            'organization_type': self._get_organization_type_by_relief_web_id(
+                fields.get('type', {}).get('id')
+            ),
         }
 
         organization, created = Organization.objects.update_or_create(
-            title=fields['name'],
+            **(
+                # Use short_name to sync (Should only be used once) --sync-by-name
+                {'title': values['title'], 'created_by': None}
+                if self.sync_by_name
+                # Using relief_web_id to sync
+                else {'relief_web_id': values['relief_web_id']}
+            ),
             defaults=values,
         )
 
