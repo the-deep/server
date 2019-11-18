@@ -5,6 +5,7 @@ from user_resource.models import UserResource
 class OrganizationType(models.Model):
     title = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
+    relief_web_id = models.IntegerField(unique=True, blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -23,6 +24,8 @@ class Organization(UserResource):
     short_name = models.CharField(max_length=255, blank=True)
     long_name = models.CharField(max_length=512, blank=True)
     url = models.CharField(max_length=255, blank=True)
+    # Organizations pulled from reliefweb
+    relief_web_id = models.IntegerField(unique=True, blank=True, null=True)
 
     logo = models.ForeignKey(
         'gallery.File',
