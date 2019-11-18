@@ -123,7 +123,7 @@ def get_project_ary_stats(project):
             'score_matrix_pillar': list(ScoreMatrixPillar.objects.values('id', name=F('title'))),
         },
 
-        # XXX: Is defined in client
+        # NOTE: Is defined in client
         'additional_documentation_array': [
             {'id': 1, 'name': 'Executive Summary'},
             {'id': 2, 'name': 'Assessment Database'},
