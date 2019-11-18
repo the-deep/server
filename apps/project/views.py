@@ -38,6 +38,7 @@ from geo.models import Region
 from user_group.models import UserGroup
 from geo.serializers import RegionSerializer
 from entry.views import ComprehensiveEntriesViewSet
+
 from .models import (
     ProjectStatus,
     Project,
@@ -46,6 +47,7 @@ from .models import (
     ProjectJoinRequest,
     ProjectUserGroupMembership,
     ProjectEntryStats,
+    ProjectAryStats,
 )
 from .serializers import (
     ProjectSerializer,
@@ -68,10 +70,41 @@ from .filter_set import (
     ProjectMembershipFilterSet,
     ProjectUserGroupMembershipFilterSet,
 )
-from .tasks import generate_entry_stats
+from .tasks import generate_entry_stats, generate_ary_stats
 
 from .token import project_request_token_generator
 logger = logging.getLogger(__name__)
+
+
+def _get_viz_data(request, StatModel, stat_generator, project):
+    """
+    Util function to trigger and serve Project entry/ary viz data
+    """
+    stats, created = StatModel.objects.get_or_create(project=project)
+    file_url = request.build_absolute_uri(
+        URLCachedFileField().to_representation(stats.file)
+    ) if stats.file else None
+    if stats.is_ready():
+        return response.Response({
+            'data': file_url,
+            'status': stats.status,
+        })
+    elif stats.status == ProcessStatus.FAILURE:
+        return response.Response({
+            'message': f'Failed to generate stats ({StatModel.__name__}), Contact Admin',
+            'data': file_url,
+            'status': stats.status,
+        })
+    # TODO: Refactor task trigger if all users have access to this API
+    stat_generator.delay(project.pk)
+    if stats.status != ProcessStatus.PENDING:
+        stats.status = ProcessStatus.PENDING
+        stats.save()
+    return response.Response({
+        'message': 'Processing the request, try again later',
+        'data': file_url,
+        'status': stats.status,
+    }, status=status.HTTP_202_ACCEPTED)
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -220,31 +253,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        entry_stats, created = ProjectEntryStats.objects.get_or_create(project=project)
-        file_url = request.build_absolute_uri(
-            URLCachedFileField().to_representation(entry_stats.file)
-        ) if entry_stats.file else None
-        if entry_stats.is_ready():
-            return response.Response({
-                'data': file_url,
-                'status': entry_stats.status,
-            })
-        elif entry_stats.status == ProcessStatus.FAILURE:
-            return response.Response({
-                'message': 'Failed to generate Entry stats, Contact Admin',
-                'data': file_url,
-                'status': entry_stats.status,
-            })
-        # TODO: Refactor task trigger if all users have access to this API
-        generate_entry_stats.delay(project.pk)
-        if entry_stats.status != ProcessStatus.PENDING:
-            entry_stats.status = ProcessStatus.PENDING
-            entry_stats.save()
-        return response.Response({
-            'message': 'Processing the request, try again later',
-            'data': file_url,
-            'status': entry_stats.status,
-        }, status=status.HTTP_202_ACCEPTED)
+        return _get_viz_data(request, ProjectEntryStats, generate_entry_stats, project)
+
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='ary-viz',
+    )
+    def get_ary_viz_data(self, request, pk=None, version=None):
+        """
+        Get viz data for project ary:
+        """
+        project = self.get_object()
+        return _get_viz_data(request, ProjectAryStats, generate_ary_stats, project)
 
     """
     Join request to this project

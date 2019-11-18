@@ -581,24 +581,23 @@ class ProjectRole(models.Model):
             return item_permissions & permission_bit != 0
 
 
-class ProjectEntryStats(models.Model):
+class ProjectBaseStats(models.Model):
     THRESHOLD_SECONDS = 60 * 20
 
-    project = models.OneToOneField(
-        Project, on_delete=models.CASCADE, related_name='entry_stats',
-    )
     modified_at = models.DateTimeField(auto_now_add=True)
-    file = models.FileField(upload_to='entry-stats/', max_length=255, null=True, blank=True)
     status = models.CharField(
         max_length=30, choices=ProcessStatus.STATUS_CHOICES, default=ProcessStatus.PENDING,
     )
 
+    class Meta:
+        abstract = True
+
     def __str__(self):
         return str(self.project)
 
-    @staticmethod
-    def get_for(user):
-        return ProjectEntryStats.objects.filter(
+    @classmethod
+    def get_for(cls, user):
+        return cls.objects.filter(
             models.Q(project__members=user) |
             models.Q(project__user_groups__members=user)
         ).distinct()
@@ -612,3 +611,13 @@ class ProjectEntryStats(models.Model):
         ):
             return True
         return False
+
+
+class ProjectEntryStats(ProjectBaseStats):
+    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name='entry_stats')
+    file = models.FileField(upload_to='entry-stats/', max_length=255, null=True, blank=True)
+
+
+class ProjectAryStats(ProjectBaseStats):
+    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name='ary_stats')
+    file = models.FileField(upload_to='ary-stats/', max_length=255, null=True, blank=True)

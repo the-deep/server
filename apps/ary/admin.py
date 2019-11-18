@@ -1,9 +1,8 @@
 from django.contrib import admin
 from django.urls import path
 from django.http import HttpResponse
-from reversion.admin import VersionAdmin
 
-from deep.admin import linkify
+from deep.admin import linkify, ModelAdmin, VersionAdmin
 
 from .management.commands.export_ary_template import export_ary_fixture
 from .models import (
@@ -101,13 +100,13 @@ class ScoreMatrixScaleInline(admin.TabularInline):
 
 
 @admin.register(ScorePillar)
-class ScorePillarAdmin(admin.ModelAdmin):
+class ScorePillarAdmin(ModelAdmin):
     inlines = [ScoreQuestionInline]
     list_display = ('title', linkify('template'), 'order', 'weight')
 
 
 @admin.register(ScoreMatrixPillar)
-class ScoreMatrixPillarAdmin(admin.ModelAdmin):
+class ScoreMatrixPillarAdmin(ModelAdmin):
     inlines = [ScoreMatrixRowInline, ScoreMatrixColumnInline, ScoreMatrixScaleInline]
     list_display = ('title', linkify('template'), 'order', 'weight')
 
@@ -123,33 +122,33 @@ class ScoreQuestionnaireInline(admin.TabularInline):
 
 
 @admin.register(ScoreQuestionnaireSector)
-class ScoreQuestionnaireSectorAdmin(admin.ModelAdmin):
+class ScoreQuestionnaireSectorAdmin(ModelAdmin):
     list_display = ('title', 'order', 'method', 'sub_method', linkify('template'))
     inlines = [ScoreQuestionnaireSubSectorInline]
 
 
 @admin.register(ScoreQuestionnaireSubSector)
-class ScoreQuestionnaireSubSectorAdmin(admin.ModelAdmin):
+class ScoreQuestionnaireSubSectorAdmin(ModelAdmin):
     list_display = ('title', 'order', linkify('sector'), linkify('sector.template'))
     inlines = [ScoreQuestionnaireInline]
 
 
 @admin.register(AffectedGroup)
-class AffectedGroupAdmin(admin.ModelAdmin):
+class AffectedGroupAdmin(ModelAdmin):
     list_display = ('title', 'order', linkify('template'),)
 
 
 class FieldAdminMixin():
-    list_display = ('title', 'order', linkify('group'),)
+    list_display = ('title', 'id', 'order', linkify('group'),)
 
 
 @admin.register(MetadataField)
-class MetadataFieldAdmin(FieldAdminMixin, admin.ModelAdmin):
+class MetadataFieldAdmin(FieldAdminMixin, ModelAdmin):
     inlines = [MetadataOptionInline]
 
 
 @admin.register(MethodologyField)
-class MethodologyFieldAdmin(FieldAdminMixin, admin.ModelAdmin):
+class MethodologyFieldAdmin(FieldAdminMixin, ModelAdmin):
     inlines = [MethodologyOptionInline]
 
 
@@ -160,52 +159,52 @@ class TemplateGroupAdminMixin():
 
 
 @admin.register(Focus)
-class FocusAdmin(TemplateGroupAdminMixin, admin.ModelAdmin):
+class FocusAdmin(TemplateGroupAdminMixin, ModelAdmin):
     pass
 
 
 @admin.register(UnderlyingFactor)
-class UnderlyingFactorAdmin(TemplateGroupAdminMixin, admin.ModelAdmin):
+class UnderlyingFactorAdmin(TemplateGroupAdminMixin, ModelAdmin):
     pass
 
 
 @admin.register(MetadataGroup)
-class MetadataGroupAdmin(TemplateGroupAdminMixin, admin.ModelAdmin):
+class MetadataGroupAdmin(TemplateGroupAdminMixin, ModelAdmin):
     pass
 
 
 @admin.register(MethodologyGroup)
-class MethodologyGroupAdmin(TemplateGroupAdminMixin, admin.ModelAdmin):
+class MethodologyGroupAdmin(TemplateGroupAdminMixin, ModelAdmin):
     pass
 
 
 @admin.register(Sector)
-class SectorAdmin(TemplateGroupAdminMixin, admin.ModelAdmin):
+class SectorAdmin(TemplateGroupAdminMixin, ModelAdmin):
     pass
 
 
 @admin.register(PrioritySector)
-class PrioritySectorAdmin(TemplateGroupAdminMixin, admin.ModelAdmin):
+class PrioritySectorAdmin(TemplateGroupAdminMixin, ModelAdmin):
     pass
 
 
 @admin.register(PriorityIssue)
-class PriorityIssueAdmin(TemplateGroupAdminMixin, admin.ModelAdmin):
+class PriorityIssueAdmin(TemplateGroupAdminMixin, ModelAdmin):
     pass
 
 
 @admin.register(SpecificNeedGroup)
-class SpecificNeedGroupAdmin(TemplateGroupAdminMixin, admin.ModelAdmin):
+class SpecificNeedGroupAdmin(TemplateGroupAdminMixin, ModelAdmin):
     pass
 
 
 @admin.register(AffectedLocation)
-class AffectedLocationAdmin(TemplateGroupAdminMixin, admin.ModelAdmin):
+class AffectedLocationAdmin(TemplateGroupAdminMixin, ModelAdmin):
     pass
 
 
 @admin.register(ScoreScale)
-class ScoreScaleAdmin(TemplateGroupAdminMixin, admin.ModelAdmin):
+class ScoreScaleAdmin(TemplateGroupAdminMixin, ModelAdmin):
     pass
 
 
@@ -213,3 +212,4 @@ class ScoreScaleAdmin(TemplateGroupAdminMixin, admin.ModelAdmin):
 class AssessmentAdmin(VersionAdmin):
     search_fields = ('lead__title',)
     list_display = ('lead', linkify('project'),)
+    autocomplete_fields = ('lead', 'project', 'created_by', 'modified_by', 'lead_group')
