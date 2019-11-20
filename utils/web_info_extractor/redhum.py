@@ -1,6 +1,7 @@
 import re
 from urllib.parse import urlparse
 import requests
+from organization.models import Organization
 
 
 HEADERS = {
@@ -38,10 +39,16 @@ class RedhumWebInfoExtractor:
         return self.page.get('primary_country', {}).get('name')
 
     def get_source(self):
-        return 'redhum'
+        return {
+            'text': 'redhum',
+        }
 
     def get_author(self):
-        return self.page.get('source', [{}])[0].get('longname')
+        source = (self.page.get('source') or [{}])[0]
+        return {
+            'relief_web_id': source.get('id'),
+            'text': source.get('longname'),
+        }
 
     def get_website(self):
         return urlparse(self.url).netloc

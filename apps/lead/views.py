@@ -1,11 +1,15 @@
 import requests
 import re
-from functools import reduce
 
 from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.postgres.search import TrigramSimilarity
+from django.contrib.postgres.search import (
+    TrigramSimilarity,
+    SearchQuery,
+    SearchRank,
+    SearchVector,
+)
 from django.db import models, transaction
 
 from rest_framework.decorators import action
@@ -376,7 +380,8 @@ class LeadOptionsView(views.APIView):
             # Dynamic Options
 
             'lead_groups': LeadGroup.objects.filter(project_filter, id__in=lead_groups_id).distinct(),
-            'members': _filter_users_by_projects_memberships(members_qs, projects).prefetch_related('profile').distinct(),
+            'members': _filter_users_by_projects_memberships(
+                members_qs, projects).prefetch_related('profile').distinct(),
             'organizations': Organization.objects.filter(id__in=organizations_id).distinct(),
 
             # EMM specific options
@@ -502,11 +507,23 @@ class WebInfoExtractView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_organization(self, title):
-        org = Organization.objects.filter(
-            models.Q(title__iexact=title) |
-            models.Q(short_name__iexact=title) |
-            models.Q(long_name__iexact=title)
-        ).first()
+        org = (
+            Organization.objects.filter(
+                models.Q(title__iexact=title) |
+                models.Q(short_name__iexact=title) |
+                models.Q(long_name__iexact=title)
+            ).first() or
+            Organization.objects.annotate(
+                rank=SearchRank(
+                    (
+                        SearchVector('title') +
+                        SearchVector('short_name') +
+                        SearchVector('long_name')
+                    ),
+                    SearchQuery(title),
+                )
+            ).filter(rank__gte=0.3).order_by('-rank').first()
+        )
         if org:
             return SimpleOrganizationSerializer(org).data
 
@@ -516,10 +533,11 @@ class WebInfoExtractView(views.APIView):
         extractor = get_web_info_extractor(url)
         date = extractor.get_date()
         country = extractor.get_country()
-        source_raw = extractor.get_source()
-        author_raw = extractor.get_author()
         website = extractor.get_website()
         title = extractor.get_title()
+
+        source_raw = extractor.get_source() or {}
+        author_raw = extractor.get_author() or {}
 
         project = None
         if country:
@@ -531,8 +549,8 @@ class WebInfoExtractView(views.APIView):
 
         # LEGACY
         organization_context = {
-            'source': source_raw,
-            'author': author_raw,
+            'source': source_raw.get('text'),
+            'author': author_raw.get('text'),
         }
         if version != 'v1':
             organization_context = {

@@ -55,13 +55,19 @@ class DefaultWebInfoExtractor:
         return None
 
     def get_source(self):
-        return tldextract.extract(self.url).domain
+        return {
+            'text': tldextract.extract(self.url).domain,
+        }
 
     def get_author(self):
+        text = None
         if self.page:
             source = self.page.select('.field-source')
             if source:
-                return source[0].text.strip()
+                text = source[0].text.strip()
+        return {
+            'text': text,
+        }
 
     def get_website(self):
         return urlparse(self.url).netloc
