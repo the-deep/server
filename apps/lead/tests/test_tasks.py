@@ -8,6 +8,7 @@ from lead.tasks import (
     _preprocess,
     send_lead_text_to_deepl,
     requests,
+    get_unclassified_leads,
 )
 from lead.models import Lead, LeadPreview
 from project.models import Project
@@ -118,3 +119,63 @@ class ExtractFromLeadTaskTest(TestCase):
         ret = send_lead_text_to_deepl(lead.id)
         assert post_mock.called, "Post method should be called"
         assert ret is True
+
+
+class TestLeadClassification(TestCase):
+    def setUp(self):
+        super().setUp()
+        # Just in case, delete all the leads
+        Lead.objects.all().delete()
+
+    def test_get_unclassified_leads(self):
+        preview_init = self.create(
+            LeadPreview,
+            classification_status=LeadPreview.STATUS_CLASSIFICATION_INITIATED,
+            classified_doc_id=None,
+            text_extract='initiated',
+            lead=self.create(Lead),
+        )
+        preview_none = self.create(
+            LeadPreview,
+            classification_status=LeadPreview.STATUS_CLASSIFICATION_NONE,
+            classified_doc_id=None,
+            text_extract='none',
+            lead=self.create(Lead),
+        )
+        preview_completed = self.create(
+            LeadPreview,
+            classification_status=LeadPreview.STATUS_CLASSIFICATION_COMPLETED,
+            classified_doc_id=None,
+            text_extract='completed',
+            lead=self.create(Lead),
+        )
+        preview_failed = self.create(
+            LeadPreview,
+            classification_status=LeadPreview.STATUS_CLASSIFICATION_FAILED,
+            classified_doc_id=None,
+            text_extract='failed',
+            lead=self.create(Lead),
+        )
+        preview_errorred = self.create(
+            LeadPreview,
+            classification_status=LeadPreview.STATUS_CLASSIFICATION_ERRORED,
+            classified_doc_id=None,
+            text_extract='errored',
+            lead=self.create(Lead),
+        )
+        preview_classified = self.create(  # Just care for classified_doc_id
+            LeadPreview,
+            classified_doc_id=10,
+            text_extract='with classified doc id',
+            lead=self.create(Lead),
+        )
+
+        all_leads = Lead.objects.all()
+        assert all_leads.count() == 6, "6 previews created"
+
+        unclassified_leads = get_unclassified_leads(50)
+        assert unclassified_leads.count() == 3, "Total 6, preview_classified and preview completed and preview error not included"
+        unclassified_lead_ids = [x.id for x in unclassified_leads]
+        assert preview_init.lead.id in unclassified_lead_ids
+        assert preview_none.lead.id in unclassified_lead_ids
+        assert preview_failed.lead.id in unclassified_lead_ids

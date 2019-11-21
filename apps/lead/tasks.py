@@ -190,25 +190,37 @@ def classify_lead(lead):
         )
         return False
 
+    preview.classification_status = LeadPreview.STATUS_CLASSIFICATION_INITIATED
+    preview.save()
     data = {
         'deeper': 1,
         'group_id': lead.project.id,
         'text': preview.text_extract,
     }
-    response = requests.post(DEEPL_CLASSIFY_URL,
-                                data=data)
-    if response.status_code < 200 or response.status_code > 299:
+    try:
+        response = requests.post(DEEPL_CLASSIFY_URL,
+                                    data=data)
+    except requests.exceptions.ConnectionError:
+        preview.classification_status = LeadPreview.STATUS_CLASSIFICATION_FAILED
+        preview.save()
+        return False
+    if response.status_code != 200 and response.status_code != 201:
+        preview.classification_status = LeadPreview.STATUS_CLASSIFICATION_ERRORED
+        preview.save()
         raise Exception(
             "Status code {} from DEEPL Server response {}".format(
                 response.status_code,
                 response.text[:300]
             ))
-    response_data = response.json()
-    classified_doc_id = response_data.get('id')
+    else:
+        response_data = response.json()
+        classified_doc_id = response_data.get('id')
 
-    preview.classified_doc_id = classified_doc_id
-    preview.save()
-    return True
+        preview.classification_status = LeadPreview.STATUS_CLASSIFICATION_COMPLETED
+
+        preview.classified_doc_id = classified_doc_id
+        preview.save()
+        return True
 
 
 @shared_task
@@ -278,6 +290,23 @@ def generate_previews(lead_ids=None):
         time.sleep(0.5)
 
 
+def get_unclassified_leads(limit=10):
+    return Lead.objects.filter(
+        ~Q(leadpreview=None),
+        ~Q(leadpreview__text_extract=None),
+        ~Q(leadpreview__text_extract__regex=r'^\W*$'),
+        leadpreview__classified_doc_id=None,
+        leadpreview__classification_status__in=[
+            LeadPreview.STATUS_CLASSIFICATION_FAILED,
+            LeadPreview.STATUS_CLASSIFICATION_NONE,
+            LeadPreview.STATUS_CLASSIFICATION_INITIATED,
+        ],
+    ).annotate(
+        text_len=Length('leadpreview__text_extract')
+    ).filter(
+        text_len__lte=5000  # Texts of length 5000 do not pose huge computation in DEEPL
+    ).prefetch_related('leadpreview')[:limit]  # Do not get all the previews, do it in a chunk
+
 @shared_task
 def classify_remaining_lead_previews():
     """
@@ -290,16 +319,8 @@ def classify_remaining_lead_previews():
     have_lock = lock.acquire(blocking=False)
     if not have_lock:
         return '{} Locked'.format(key)
-    unclassified_leads = Lead.objects.filter(
-        ~Q(leadpreview=None),
-        ~Q(leadpreview__text_extract=None),
-        ~Q(leadpreview__text_extract__regex=r'^\W*$'),
-        leadpreview__classified_doc_id=None,
-    ).annotate(
-        text_len=Length('leadpreview__text_extract')
-    ).filter(
-        text_len__lte=5000  # Texts of length 5000 do not pose huge computation in DEEPL
-    ).prefetch_related('leadpreview')[:50]  # LIMIT 50 leads only
+
+    unclassified_leads = get_unclassified_leads(limit=50)
 
     for lead in unclassified_leads:
         classify_lead(lead)
