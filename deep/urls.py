@@ -99,6 +99,7 @@ from analysis_framework.views import (
 )
 from ary.views import (
     AssessmentViewSet,
+    PlannedAssessmentViewSet,
     AssessmentOptionsView,
     AssessmentTemplateViewSet,
     LeadAssessmentViewSet,
@@ -269,6 +270,9 @@ router.register(r'public-framework-roles', PublicAnalysisFrameworkRoleViewSet,
 # Assessment registry
 router.register(r'assessments', AssessmentViewSet,
                 basename='assessment')
+router.register(r'planned-assessments', PlannedAssessmentViewSet,
+                basename='planned-assessment')
+
 router.register(r'lead-assessments', LeadAssessmentViewSet,
                 basename='lead_assessment')
 router.register(r'lead-group-assessments', LeadGroupAssessmentViewSet,

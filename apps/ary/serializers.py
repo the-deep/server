@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from rest_framework.exceptions import PermissionDenied
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
@@ -10,10 +11,10 @@ from deep.serializers import (
 
 from project.models import Project
 from user_resource.serializers import UserResourceSerializer
+from project.serializers import ProjectEntitySerializer
 from lead.serializers import (
     SimpleLeadSerializer,
     LegacySimpleLeadSerializer,
-    ProjectEntitySerializer,
 )
 from lead.models import Lead, LeadGroup
 from deep.models import Field
@@ -27,6 +28,7 @@ from organization.serializers import (
 from .models import (
     AssessmentTemplate,
     Assessment,
+    PlannedAssessment,
     ScoreQuestionnaireSector,
     ScoreQuestionnaireSubSector,
     ScoreQuestionnaire,
@@ -55,6 +57,14 @@ class AssessmentSerializer(RemoveNullFieldsMixin,
             else:
                 data['project'] = data['lead'].project
         return super().create(data)
+
+
+class PlannedAssessmentSerializer(
+        RemoveNullFieldsMixin, DynamicFieldsMixin, ProjectEntitySerializer):
+
+    class Meta:
+        model = PlannedAssessment
+        fields = '__all__'
 
 
 class LeadAssessmentSerializer(RemoveNullFieldsMixin,
@@ -140,6 +150,7 @@ class FieldSerializer(serializers.Serializer):
     source_type = serializers.CharField()
     options = OptionSerializer(source='get_options',
                                many=True, read_only=True)
+    show_in_planned_assessment = serializers.BooleanField()
 
     class Meta:
         ref_name = 'AryFieldSerializer'
