@@ -47,9 +47,11 @@ def export_entries(export):
 
     elif export_type == Export.REPORT:
         report_structure = filters.get('report_structure')
+        report_levels = filters.get('report_levels')
         pdf = export.filters.get('pdf', False)
         export_data = ReportExporter()\
             .load_exportables(exportables)\
+            .load_levels(report_levels)\
             .load_structure(report_structure)\
             .add_entries(queryset)\
             .export(pdf=pdf)
