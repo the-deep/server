@@ -11,7 +11,7 @@ from geo.models import Region
 from user_group.models import UserGroup
 from analysis_framework.models import AnalysisFramework
 from category_editor.models import CategoryEditor
-from project.permissions import PROJECT_PERMISSIONS
+from project.permissions import PROJECT_PERMISSIONS, PROJECT_PERMISSION_MODEL_MAP
 
 from utils.common import generate_timeseries
 
@@ -225,6 +225,15 @@ class Project(UserResource):
                 .annotate(c=models.Count('*')).values('c')[:1],
                 output_field=models.IntegerField(),
             ), 0),
+
+            number_of_users=models.functions.Coalesce(models.Subquery(
+                User.objects.filter(
+                    lead__project=pk,
+                    date_joined__gt=threshold,
+                ).order_by().values('project')
+                .annotate(c=models.Count('*')).values('c')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
         )
 
     @staticmethod
@@ -361,12 +370,6 @@ class Project(UserResource):
             projectmembership__project=self,
             projectmembership__role__in=ProjectRole.get_admin_roles(),
         ).distinct()
-
-    def get_number_of_users(self):
-        return User.objects.filter(
-            models.Q(project=self) |
-            models.Q(usergroup__project=self)
-        ).distinct().count()
 
 
 def get_default_role_id():
@@ -563,7 +566,9 @@ class ProjectRole(models.Model):
             return super().__getattribute__(name)
         else:
             try:
-                _, action, item = name.split('_')  # Example: can_create_lead
+                _, action, _item = name.split('_')  # Example: can_create_lead
+                # TODO: Better approach
+                item = PROJECT_PERMISSION_MODEL_MAP[_item]
             except ValueError:
                 return super().__getattribute__(name)
 
