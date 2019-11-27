@@ -84,28 +84,22 @@ class ReportExporter:
         self.lead_ids.append(lead.id)
 
         source = (
-            (lead.author and lead.author.data.title) or lead.author_raw or
             (lead.source and lead.source.data.title) or lead.source_raw or
             'Reference'
         )
+        author = (lead.author and lead.author.data.title) or lead.author_raw
         url = lead.url or (
             lead.attachment and lead.attachment.get_file_url()
         )
+        date = entry.lead.published_on
 
         para.add_run(' (')
-        if url:
-            para.add_hyperlink(url, source)
-        else:
-            para.add_run(source)
 
-        if lead.confidentiality == Lead.CONFIDENTIAL:
-            para.add_run(' (confidential)')
-
-        date = entry.lead.published_on
-        if date:
-            # TODO: use utils.common.format_date
-            # and perhaps use information date
-            para.add_run(', {}'.format(date.strftime('%d/%m/%Y')))
+        (author and author.lower() != (source or '').lower()) and para.add_run(f'{author}, ')
+        para.add_hyperlink(url, source) if url else para.add_run(source)
+        lead.confidentiality == Lead.CONFIDENTIAL and para.add_run(' (confidential)')
+        # TODO: use utils.common.format_date and perhaps use information date
+        date and para.add_run(f", {date.strftime('%d/%m/%Y')}")
 
         para.add_run(')')
 
@@ -281,19 +275,16 @@ class ReportExporter:
             # Source. Title. Date. Url
 
             para = self.doc.add_paragraph()
-            if lead.source:
-                para.add_run('{}.'.format(lead.source.data.title))
-            elif lead.source_raw and lead.source_raw != '':
-                # Legacy Data
-                para.add_run('{}.'.format(lead.source_raw.title()))
-            else:
-                para.add_run('Missing source.')
+            author = (lead.author and lead.author.data.title) or lead.author_raw
+            source = (
+                (lead.source and lead.source.data.title) or lead.source_raw or
+                'Missing source'
+            )
 
-            para.add_run(' {}.'.format(lead.title.title()))
-            if lead.published_on:
-                para.add_run(' {}.'.format(
-                    lead.published_on.strftime('%m/%d/%y')
-                ))
+            author and para.add_run(f'{author}.')
+            para.add_run(f' {source}.')
+            para.add_run(f' {lead.title}.')
+            lead.published_on and para.add_run(f" {lead.published_on.strftime('%m/%d/%y')}. ")
 
             para = self.doc.add_paragraph()
             url = lead.url or (
