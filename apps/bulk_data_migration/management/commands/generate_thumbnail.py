@@ -1,3 +1,4 @@
+import signal
 import logging
 from django.core.management.base import BaseCommand
 from lead.tasks import extract_thumbnail
@@ -6,6 +7,29 @@ from django.db.models import Q
 
 
 logger = logging.getLogger(__name__)
+
+
+logger = logging.getLogger(__name__)
+
+
+class timeout:
+    def __init__(self, seconds):
+        self._seconds = seconds
+
+    def __enter__(self):
+        # Register and schedule the signal with the specified time
+        signal.signal(signal.SIGALRM, timeout._raise_timeout)
+        signal.alarm(self._seconds)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        # Unregister the signal so it won't be triggered if there is
+        # no timeout
+        signal.signal(signal.SIGALRM, signal.SIG_IGN)
+
+    @staticmethod
+    def _raise_timeout(signum, frame):
+        raise TimeoutError
 
 
 class Command(BaseCommand):
@@ -35,6 +59,15 @@ class Command(BaseCommand):
                 Q(leadpreview__thumbnail__isnull=True) |
                 Q(leadpreview__thumbnail='')
             ).distinct()
-            for lead in leads:
-                logger.warning('Generating thumbnail for {}'.format(lead.id))
-                extract_thumbnail(lead.id)
+            count = leads.count()
+            index = 1
+            for lead in leads.iterator(chunk_size=500):
+                try:
+                    print(f'({index}/{count}) Generating thumbnail for {lead.id}')
+                    with timeout(seconds=60):
+                        extract_thumbnail(lead.id)
+                except TimeoutError:
+                    logger.error('Thumbnail Extraction Timeout!!', exc_info=True)
+                except Exception:
+                    logger.error('Thumbnail Extraction Failed!!', exc_info=True)
+                index += 1
