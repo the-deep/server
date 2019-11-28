@@ -156,8 +156,12 @@ def get_project_entries_stats(project):
         for widget in Widget.objects.filter(pk__in=widgets_pk, analysis_framework=af)
     }
 
-    w1d = _get_widget_info(config, widgets, 'widget_1d')
-    w2d = _get_widget_info(config, widgets, 'widget_2d')
+    # TODO: Remove this later after all data are updated.
+    config['widget1d'] = config.get('widget1d') or config['widget_1d']
+    config['widget2d'] = config.get('widget2d') or config['widget_2d']
+
+    w1d = _get_widget_info(config, widgets, 'widget1d')
+    w2d = _get_widget_info(config, widgets, 'widget2d')
     w_specific_needs_groups = _get_widget_info(config, widgets, 'specific_needs_groups_widget')
     w_severity = _get_widget_info(config, widgets, 'severity_widget')
     w_reliability = _get_widget_info(config, widgets, 'reliability_widget')
@@ -206,14 +210,14 @@ def get_project_entries_stats(project):
     severity_units = [
         {
             'id': severity['key'],
-            'color': severity['color'],
+            'color': severity.get('color'),
             'name': severity['label'],
         } for severity in w_severity['data']['scale_units']
     ]
     reliability_units = [
         {
             'id': reliability['key'],
-            'color': reliability['color'],
+            'color': reliability.get('color'),
             'name': reliability['label'],
         } for reliability in w_reliability['data']['scale_units']
     ]
