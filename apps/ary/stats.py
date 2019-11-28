@@ -1,5 +1,5 @@
 from django.utils import timezone
-from django.db.models import F
+from django.db.models import F, Count
 from entry.stats import _get_project_geoareas
 
 from organization.models import OrganizationType, Organization
@@ -15,8 +15,8 @@ from ary.models import (
     ScoreScale,
 
     ScoreMatrixPillar,
-    ScoreMatrixRow,
-    ScoreMatrixColumn,
+    # ScoreMatrixRow,
+    # ScoreMatrixColumn,
     ScoreMatrixScale,
 )
 
@@ -31,16 +31,22 @@ def _get_ary_field_options(config):
     pk = config['pk']
     field_type = config['type']
     if field_type == 'metadatafield':
-        return MetadataField.objects.get(pk=pk).options.values('key', 'title').values(id=F('key'), name=F('title'))
+        return list(
+            MetadataField.objects.get(pk=pk).options.values('key', 'title').values(id=F('key'), name=F('title'))
+        )
     elif field_type == 'methodologyfield':
-        return MethodologyField.objects.get(pk=pk).options.values('key', 'title').values(id=F('key'), name=F('title'))
+        return list(
+            MethodologyField.objects.get(pk=pk).options.values('key', 'title').values(id=F('key'), name=F('title'))
+        )
     elif field_type == 'scorepillar':
-        return ScorePillar.objects.get(pk=pk).questions.values('id', name=F('title'))
+        return list(
+            ScorePillar.objects.get(pk=pk).questions.values('id', name=F('title'))
+        )
     elif field_type == 'scorematrixpillar':
         return {
-            'row': ScoreMatrixRow.objects.filter(pillar=pk).values('id', name=F('title')),
-            'column': ScoreMatrixColumn.objects.filter(pillar=pk).values('id', name=F('title')),
-            'scale': ScoreMatrixScale.objects.filter(pillar=pk).values('id', 'row', 'column', 'value'),
+            # 'row': list(ScoreMatrixRow.objects.filter(pillar=pk).values('id', name=F('title'))),
+            # 'column': list(ScoreMatrixColumn.objects.filter(pillar=pk).values('id', name=F('title'))),
+            'scale': list(ScoreMatrixScale.objects.filter(pillar=pk).values('id', 'row', 'column', 'value')),
         }
     raise Exception(f'Unknown field type provided {field_type}')
 
@@ -55,6 +61,19 @@ def get_project_ary_stats(project):
             'pk': 20,
             'type': 'metadatafield',
         },
+        'language': {
+            'pk': 18,
+            'type': 'metadatafield',
+        },
+        'coordination': {
+            'pk': 6,
+            'type': 'metadatafield',
+        },
+        'frequency': {
+            'pk': 16,
+            'type': 'metadatafield',
+        },
+
         'units': {
             'pk': 6,  # Unit of reporting
             'type': 'methodologyfield',
@@ -71,10 +90,7 @@ def get_project_ary_stats(project):
             'pk': 1,  # data collection technique
             'type': 'methodologyfield',
         },
-        'language': {
-            'pk': 18,
-            'type': 'metadatafield',
-        },
+
         'fit_for_purpose_array': {
             'pk': 1,
             'type': 'scorepillar',
@@ -109,12 +125,36 @@ def get_project_ary_stats(project):
         'individuals': 12,
     }
 
+    dynamic_meta = {
+        key: _get_ary_field_options(value)
+        for key, value in dynamic_fields.items() if value.get('pk')
+    }
+
+    analytical_density_scale = {
+        scale['id']: scale['value']
+        for scale in dynamic_meta['analytical_density']['scale']
+    }
+
     static_meta = {
-        'organisation_type': list(OrganizationType.objects.values('id', name=F('title'))),
         'focus_array': list(Focus.objects.values('id', name=F('title'))),
         'sector_array': list(Sector.objects.values('id', name=F('title'))),
         'affected_groups_array': list(AffectedGroup.objects.values('id', name=F('title'))),
-        'organization': list(Organization.objects.values('id', 'organization_type_id', name=F('title'))),
+        'organisation_type': list(
+            OrganizationType.objects.annotate(
+                organization_count=Count('organization', distinct=True),
+            ).values(
+                'id',
+                'organization_count',
+                name=F('title')
+            )
+        ),
+        'organization': list(
+            Organization.objects.values(
+                'id', 'short_name', 'long_name',
+                'organization_type_id',
+                name=F('title')
+            )
+        ),
         'geo_array': _get_project_geoareas(project),
         # scale used by score_pillar
         'scorepillar_scale': list(ScoreScale.objects.values('id', 'color', 'value', name=F('title'))),
@@ -145,11 +185,6 @@ def get_project_ary_stats(project):
         for org in static_meta['organization']
     }
 
-    dynamic_meta = {
-        key: list(_get_ary_field_options(value))
-        for key, value in dynamic_fields.items() if value.get('pk')
-    }
-
     meta = {
         'data_calculated': timezone.now(),
         **static_meta,
@@ -166,7 +201,7 @@ def get_project_ary_stats(project):
         methodology_attributes = methodology_raw.get('attributes') or []
         score_raw = ary.score or {}
         pillars = score_raw.get('pillars') or {}
-        matrix_pillars = score_raw.get('pillars') or {}
+        matrix_pillars = score_raw.get('matrix_pillars') or {}
 
         scores = {
             'final_scores': {
@@ -184,9 +219,14 @@ def get_project_ary_stats(project):
             **{
                 # key: Sector id (Food, Livelihood, Education (Selected Sectors)
                 # value: Cell id
-                score_matrix_pillar_key: matrix_pillars.get(
-                    str(dynamic_fields[score_matrix_pillar_key]['pk'])
-                ) or {}
+                score_matrix_pillar_key: {
+                    sector_id: analytical_density_scale.get(scale_id)
+                    for sector_id, scale_id in (
+                        matrix_pillars.get(
+                            str(dynamic_fields[score_matrix_pillar_key]['pk'])
+                        ) or {}
+                    ).items()
+                }
                 for score_matrix_pillar_key in ['analytical_density']
             },
 
@@ -210,6 +250,7 @@ def get_project_ary_stats(project):
             'pk': ary.pk,
             'created_at': ary.created_at,
             'date': ary.lead.created_at,
+            'lead': ary.lead.title,
 
             'focus': _get_integer_array(methodology_raw.get('focuses')),
             'sector': _get_integer_array(methodology_raw.get('sectors')),
@@ -231,6 +272,8 @@ def get_project_ary_stats(project):
                     # NOTE: Make sure the keys are not conflicting with outer keys
                     ('assessment_type', 'assessment_type'),
                     ('language', 'language'),
+                    ('coordination', 'coordination'),
+                    ('frequency', 'frequency'),
                 )
             },
 
