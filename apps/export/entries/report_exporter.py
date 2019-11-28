@@ -38,6 +38,10 @@ class ReportExporter:
         self.exportables = exportables
         return self
 
+    def load_levels(self, levels):
+        self.levels = levels
+        return self
+
     def load_structure(self, structure):
         self.structure = structure
         return self
@@ -214,6 +218,7 @@ class ReportExporter:
         Add entries and generate parapgraphs for all entries
         """
         exportables = self.exportables
+        af_levels_map = dict((str(level.get('id')), level.get('levels')) for level in self.levels)
         uncategorized = False
 
         if self.structure:
@@ -229,7 +234,12 @@ class ReportExporter:
             exportables = exportables.filter(pk__in=ids).order_by(order)
 
         for exportable in exportables:
-            levels = exportable.data.get('report').get('levels')
+            levels = (
+                # Custom levels provided by client
+                af_levels_map.get(str(exportable.pk)) or
+                # Predefined levels available in server
+                exportable.data.get('report').get('levels')
+            )
 
             level_entries_map = {}
             valid_levels = []
