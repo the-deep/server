@@ -17,6 +17,7 @@ class ProfileInline(admin.StackedInline):
     can_delete = False
     verbose_name_plural = 'Profile'
     fk_name = 'user'
+    autocomplete_fields = ('display_picture', 'last_active_project',)
 
 
 @admin.register(User)
