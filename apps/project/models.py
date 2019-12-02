@@ -584,7 +584,7 @@ class ProjectRole(models.Model):
 class ProjectBaseStats(models.Model):
     THRESHOLD_SECONDS = 60 * 20
 
-    modified_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
     status = models.CharField(
         max_length=30, choices=ProcessStatus.STATUS_CHOICES, default=ProcessStatus.PENDING,
     )
