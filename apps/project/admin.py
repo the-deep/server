@@ -25,23 +25,22 @@ from .models import (
 TRIGGER_LIMIT = 5
 
 
-def trigger_project_stat_calc(modeladmin, request, queryset):
-    generator = generate_entry_stats if modeladmin == ProjectEntryStatsAdmin else generate_ary_stats
-    for project_id in queryset.values_list('project_id', flat=True).distinct()[:TRIGGER_LIMIT]:
-        generator.delay(project_id, force=True)
-    messages.add_message(
-        request, messages.INFO,
-        mark_safe(
-            f'Successfully triggered Project Stats Calculation ({generator.__name__}) for projects: <br><hr>' +
-            '<br>'.join(
-                '* {0} : {1}'.format(*value)
-                for value in queryset.values_list('project_id', 'project__title').distinct()[:TRIGGER_LIMIT]
+def trigger_project_stat_calc(generator):
+    def action(modeladmin, request, queryset):
+        for project_id in queryset.values_list('project_id', flat=True).distinct()[:TRIGGER_LIMIT]:
+            generator.delay(project_id, force=True)
+        messages.add_message(
+            request, messages.INFO,
+            mark_safe(
+                f'Successfully triggered Project Stats Calculation ({generator.__name__}) for projects: <br><hr>' +
+                '<br>'.join(
+                    '* {0} : {1}'.format(*value)
+                    for value in queryset.values_list('project_id', 'project__title').distinct()[:TRIGGER_LIMIT]
+                )
             )
         )
-    )
-
-
-trigger_project_stat_calc.short_description = 'Trigger project stat calculation'
+    action.short_description = 'Trigger project stat calculation'
+    return action
 
 
 class ProjectMembershipInline(admin.TabularInline):
@@ -131,7 +130,7 @@ class ProjectEntryStatsAdmin(admin.ModelAdmin):
     search_fields = ('project__title',)
     list_filter = ('status',)
     list_display = ('project', 'modified_at', AF, 'status', 'file',)
-    actions = [trigger_project_stat_calc]
+    actions = [trigger_project_stat_calc(generate_entry_stats)]
     autocomplete_fields = ('project',)
     readonly_fields = (AF,)
 
@@ -142,6 +141,7 @@ class ProjectEntryStatsAdmin(admin.ModelAdmin):
 @admin.register(ProjectAryStats)
 class ProjectAryStatsAdmin(ProjectEntryStatsAdmin):
     list_display = ('project', 'modified_at', 'status', 'file',)
+    actions = [trigger_project_stat_calc(generate_ary_stats)]
     readonly_fields = []
 
     def get_queryset(self, request):
