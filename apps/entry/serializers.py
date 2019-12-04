@@ -8,6 +8,7 @@ from deep.serializers import (
     ListToDictField,
 )
 from project.serializers import ProjectEntitySerializer
+from gallery.serializers import FileSerializer
 from project.models import Project
 from lead.serializers import LeadSerializer, LegacyLeadSerializer
 from lead.models import Lead
@@ -92,9 +93,18 @@ class SimpleExportDataSerializer(RemoveNullFieldsMixin,
 
 
 class EntryLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
+    attachment = FileSerializer(read_only=True)
+    tabular_book = serializers.SerializerMethodField()
+
     class Meta:
         model = Lead
-        fields = ('id', 'title', 'created_at',)
+        fields = ('id', 'title', 'created_at', 'url', 'attachment', 'tabular_book')
+
+    def get_tabular_book(self, obj):
+        file = obj.attachment
+        if file and hasattr(file, 'book'):
+            return file.book.id
+        return None
 
 
 class EntrySerializer(RemoveNullFieldsMixin,
