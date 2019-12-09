@@ -1281,7 +1281,7 @@
 <p id="t584" class="stm run hide_run"><span class="key">class</span> <span class="nam">ProjectBaseStats</span><span class="op">(</span><span class="nam">models</span><span class="op">.</span><span class="nam">Model</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t585" class="stm run hide_run">    <span class="nam">THRESHOLD_SECONDS</span> <span class="op">=</span> <span class="num">60</span> <span class="op">*</span> <span class="num">20</span><span class="strut">&nbsp;</span></p>
 <p id="t586" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t587" class="stm run hide_run">    <span class="nam">modified_at</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">DateTimeField</span><span class="op">(</span><span class="nam">auto_now_add</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t587" class="stm run hide_run">    <span class="nam">modified_at</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">DateTimeField</span><span class="op">(</span><span class="nam">auto_now</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t588" class="stm run hide_run">    <span class="nam">status</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
 <p id="t589" class="pln">        <span class="nam">max_length</span><span class="op">=</span><span class="num">30</span><span class="op">,</span> <span class="nam">choices</span><span class="op">=</span><span class="nam">ProcessStatus</span><span class="op">.</span><span class="nam">STATUS_CHOICES</span><span class="op">,</span> <span class="nam">default</span><span class="op">=</span><span class="nam">ProcessStatus</span><span class="op">.</span><span class="nam">PENDING</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
 <p id="t590" class="pln">    <span class="op">)</span><span class="strut">&nbsp;</span></p>
@@ -1328,7 +1328,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-12-09 06:46
+            created at 2019-12-09 10:17
         </p>
     </div>
 </div>
