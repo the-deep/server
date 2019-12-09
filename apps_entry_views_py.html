@@ -431,7 +431,7 @@
 <p id="t88" class="stm run hide_run">        <span class="nam">filters</span> <span class="op">=</span> <span class="nam">request</span><span class="op">.</span><span class="nam">data</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'filters'</span><span class="op">,</span> <span class="op">[</span><span class="op">]</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t89" class="stm run hide_run">        <span class="nam">filters</span> <span class="op">=</span> <span class="op">{</span><span class="nam">f</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="op">:</span> <span class="nam">f</span><span class="op">[</span><span class="num">1</span><span class="op">]</span> <span class="key">for</span> <span class="nam">f</span> <span class="key">in</span> <span class="nam">filters</span><span class="op">}</span><span class="strut">&nbsp;</span></p>
 <p id="t90" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t91" class="stm run hide_run">        <span class="nam">queryset</span> <span class="op">=</span> <span class="nam">get_filtered_entries</span><span class="op">(</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">,</span> <span class="nam">filters</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t91" class="stm run hide_run">        <span class="nam">queryset</span> <span class="op">=</span> <span class="nam">get_filtered_entries</span><span class="op">(</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">,</span> <span class="nam">filters</span><span class="op">)</span><span class="op">.</span><span class="nam">prefetch_related</span><span class="op">(</span><span class="str">'lead'</span><span class="op">,</span> <span class="str">'lead__attachment'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t92" class="stm run hide_run">        <span class="nam">queryset</span> <span class="op">=</span> <span class="nam">Entry</span><span class="op">.</span><span class="nam">annotate_comment_count</span><span class="op">(</span><span class="nam">queryset</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t93" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t94" class="stm run hide_run">        <span class="nam">project</span> <span class="op">=</span> <span class="nam">filters</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'project'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
@@ -620,7 +620,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-12-09 06:02
+            created at 2019-12-09 06:46
         </p>
     </div>
 </div>
