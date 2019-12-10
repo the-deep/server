@@ -242,6 +242,9 @@ WIDGET_DATA = {
         'maxValue': 0,
         'minvalue': 12,
     },
+    'textWidget': {
+        'title': 'My Text',
+    },
 }
 
 # NOTE: This structure and value are set through https://github.com/the-deep/client
@@ -311,6 +314,14 @@ ATTRIBUTE_DATA = {
     }, {
         'data': {'value': None},
         'c_response': None,
+    }],
+
+    'textWidget': [{
+        'data': {'value': 'This is a sample text'},
+        'c_response': 'This is a sample text',
+    }, {
+        'data': {'value': None},
+        'c_response': '',
     }],
 
     'numberMatrixWidget': [{

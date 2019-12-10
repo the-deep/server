@@ -8,7 +8,8 @@ from export.mime_types import (
     PDF_MIME_TYPE,
 )
 
-from entry.models import Entry, ExportData
+from analysis_framework.models import Widget
+from entry.models import Entry, ExportData, Attribute
 from lead.models import Lead
 from utils.common import generate_filename
 from tabular.viz import renderer as viz_renderer
@@ -46,13 +47,38 @@ class ReportExporter:
         self.structure = structure
         return self
 
+    def load_text_from_text_widgets(self, entries):
+        """
+        Prefetch entry texts from text_Widgets
+        """
+        text_widget_keys = Widget.objects.filter(
+            analysis_framework__in=entries.order_by().values_list('analysis_framework_id', flat=True).distinct(),
+            widget_id='textWidget',
+        ).values_list('key', flat=True)
+
+        text_widgets_text = {}
+        for attribute_d in Attribute.objects.filter(
+            entry__in=entries,
+            widget__key__in=text_widget_keys,
+            data__value__isnull=False,
+        ).values('entry_id', 'data__value', 'widget__title'):
+            entry_id = attribute_d['entry_id']
+            text_widgets_text[entry_id] = text_widgets_text.get(entry_id, [])
+            text_widgets_text[entry_id].append([
+                attribute_d['widget__title'],  # Widget Title
+                attribute_d['data__value'],  # Widget Text Value
+            ])
+
+        self.text_widgets_text = text_widgets_text
+        return self
+
     def _generate_for_entry(self, entry):
         """
         Generate paragraphs for an entry
         """
 
         # Format is
-        # excerpt (source)
+        # excerpt (source) OR excerpt \n text from widgets \n (source)
         # where source is hyperlinked to appropriate url
 
         # Excerpt can also be image
@@ -61,6 +87,16 @@ class ReportExporter:
             else ''
         )
         para = self.doc.add_paragraph(excerpt).justify()
+
+        widget_texts_exists = len(self.text_widgets_text.get(entry.id, [])) > 0
+
+        for title, text in self.text_widgets_text.get(entry.id, []):
+            self.doc.add_paragraph()
+            self.doc.add_heading(title, 1)
+            self.doc.add_paragraph(text).justify()
+
+        if widget_texts_exists:
+            para = self.doc.add_paragraph()
 
         # NOTE: Use doc.add_image for limiting image size to page width
         # and run.add_image for actual size image
@@ -97,7 +133,7 @@ class ReportExporter:
         )
         date = entry.lead.published_on
 
-        para.add_run(' (')
+        para.add_run('(' if widget_texts_exists else ' (')
 
         (author and author.lower() != (source or '').lower()) and para.add_run(f'{author}, ')
         para.add_hyperlink(url, source) if url else para.add_run(source)
