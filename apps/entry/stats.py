@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.gis.db.models import Extent
 from django.utils import timezone
 from django.db.models import Prefetch
@@ -13,20 +15,25 @@ SUPPORTED_WIDGETS = [
 ]
 
 
-def _get_project_geoareas(project):
+def _get_project_geoareas(project, collect_polygons=False):
+    qs = GeoArea.objects.filter(
+        admin_level__region__in=project.regions.values_list('id'),
+    ).annotate(extent=Extent('polygons')).values('pk', 'admin_level__level', 'title', 'polygons', 'extent')
     geo_array = []
-    for geoarea in GeoArea.objects.filter(
-            admin_level__region__in=project.regions.values_list('id'),
-    ).annotate(extent=Extent('polygons')).values('pk', 'admin_level__level', 'title', 'polygons', 'extent'):
+
+    for geoarea in qs:
         polygons = geoarea['polygons']
         centroid = polygons.centroid
-        geo_array.append({
+        geo = {
             'id': geoarea['pk'],
             'admin_level': geoarea['admin_level__level'],
             'name': geoarea['title'],
             'centroid': [centroid.x, centroid.y],
             'bounds': [geoarea['extent'][:2], geoarea['extent'][2:]],
-        })
+        }
+        if collect_polygons:
+            geo['polygons'] = json.loads(polygons.geojson)   # TODO:
+        geo_array.append(geo)
     return geo_array
 
 

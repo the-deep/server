@@ -139,7 +139,7 @@ def get_project_ary_stats(project):
         'focus_array': list(Focus.objects.values('id', name=F('title'))),
         'sector_array': list(Sector.objects.values('id', name=F('title'))),
         'affected_groups_array': list(AffectedGroup.objects.values('id', name=F('title'))),
-        'organisation_type': list(
+        'organization_type': list(
             OrganizationType.objects.annotate(
                 organization_count=Count('organization', distinct=True),
             ).values(
@@ -155,7 +155,7 @@ def get_project_ary_stats(project):
                 name=F('title')
             )
         ),
-        'geo_array': _get_project_geoareas(project),
+        'geo_array': _get_project_geoareas(project, collect_polygons=True),
         # scale used by score_pillar
         'scorepillar_scale': list(ScoreScale.objects.values('id', 'color', 'value', name=F('title'))),
         'final_scores_array': {
@@ -258,7 +258,7 @@ def get_project_ary_stats(project):
             'geo': _get_integer_array(methodology_raw.get('locations')),
             'affected_groups': _get_integer_array(methodology_raw.get('affected_groups')),
 
-            'organisation_and_stakeholder_type': [
+            'organization_and_stakeholder_type': [
                 # Organization Type ID, Organization ID
                 [organization_type_map.get(organization_id), organization_id]
                 for field_id in stakeholder_fields_id
