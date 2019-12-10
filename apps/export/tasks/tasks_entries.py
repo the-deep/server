@@ -53,6 +53,7 @@ def export_entries(export):
             .load_exportables(exportables)\
             .load_levels(report_levels)\
             .load_structure(report_structure)\
+            .load_text_from_text_widgets(queryset)\
             .add_entries(queryset)\
             .export(pdf=pdf)
 
