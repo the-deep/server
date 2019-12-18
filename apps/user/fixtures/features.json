@@ -14,5 +14,13 @@
             "key": "zoomable_image",
             "title": "Zoomable image"
         }
+    },
+    {
+        "model": "user.feature",
+        "pk": 3,
+        "fields": {
+            "key": "entry_visualization_configuration",
+            "title": "Entry visualization configuration"
+        }
     }
 ]
