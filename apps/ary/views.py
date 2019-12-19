@@ -1,4 +1,3 @@
-from django.db import models
 from django.contrib.auth.models import User
 from django.http import Http404
 from rest_framework import (
@@ -12,55 +11,22 @@ from rest_framework import (
 import django_filters
 
 from deep.permissions import ModifyPermission
-from user_resource.filters import UserResourceFilterSet
 from project.models import Project
-from lead.models import Lead, LeadGroup
 
+from .filters import AssessmentFilterSet, PlannedAssessmentFilterSet
 from .models import (
     Assessment,
+    PlannedAssessment,
     AssessmentTemplate,
 )
 from .serializers import (
     AssessmentSerializer,
+    PlannedAssessmentSerializer,
     AssessmentTemplateSerializer,
     LeadAssessmentSerializer,
     LeadGroupAssessmentSerializer,
     LegacyLeadGroupAssessmentSerializer,
 )
-
-
-class AssessmentFilterSet(UserResourceFilterSet):
-    project = django_filters.ModelMultipleChoiceFilter(
-        queryset=Project.objects.all(),
-        field_name='lead__project',
-        lookup_expr='in',
-    )
-    lead = django_filters.ModelMultipleChoiceFilter(
-        queryset=Lead.objects.all(),
-        lookup_expr='in',
-    )
-    lead_group = django_filters.ModelMultipleChoiceFilter(
-        queryset=LeadGroup.objects.all(),
-        lookup_expr='in',
-    )
-    created_by = django_filters.ModelMultipleChoiceFilter(
-        queryset=User.objects.all(),
-        lookup_expr='in',
-        widget=django_filters.widgets.CSVWidget,
-    )
-
-    class Meta:
-        model = Assessment
-        fields = ['id', 'lead__title', 'lead_group__title']
-
-        filter_overrides = {
-            models.CharField: {
-                'filter_class': django_filters.CharFilter,
-                'extra': lambda f: {
-                    'lookup_expr': 'icontains',
-                },
-            },
-        }
 
 
 class AssessmentViewSet(viewsets.ModelViewSet):
@@ -75,6 +41,19 @@ class AssessmentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Assessment.get_for(self.request.user)
+
+
+class PlannedAssessmentViewSet(viewsets.ModelViewSet):
+    serializer_class = PlannedAssessmentSerializer
+    permission_classes = [permissions.IsAuthenticated, ModifyPermission]
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
+                       filters.OrderingFilter, filters.SearchFilter)
+    filterset_class = PlannedAssessmentFilterSet
+    ordering_fields = ('title', 'created_by', 'created_at')
+    search_fields = ('title',)
+
+    def get_queryset(self):
+        return PlannedAssessment.get_for(self.request.user)
 
 
 class LeadAssessmentViewSet(mixins.RetrieveModelMixin,

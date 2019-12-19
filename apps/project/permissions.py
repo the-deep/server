@@ -4,6 +4,17 @@ from rest_framework import permissions
 
 from utils.data_structures import Dict
 
+# NOTE: Defined such that two model can share same permission model
+PROJECT_PERMISSION_MODEL_MAP = {
+    'lead': 'lead',
+    'entry': 'entry',
+    'setup': 'setup',
+    'export': 'export',
+    'assessment': 'assessment',
+    'plannedassessment': 'assessment',
+}
+
+
 PROJECT_PERMISSIONS = Dict(
     lead=Dict(  # Dict is same as dict, can acccess elements by dot
         view=1 << 0,
@@ -36,12 +47,13 @@ PROJECT_PERMISSIONS = Dict(
 )
 
 
-def get_project_permissions_value(item, actions=[]):
+def get_project_permissions_value(_item, actions=[]):
     """
     Return the numeric value of permission for actions related to the item
     E.g: get_permissions_value('lead', ['view', 'delete']) will return
     1 << 0 | 1 << 3
     """
+    item = PROJECT_PERMISSION_MODEL_MAP[_item]
     if actions == '__all__':
         # set all bits to 1
         return reduce(lambda a, e: a | e, PROJECT_PERMISSIONS[item].values())
@@ -121,7 +133,7 @@ def get_project_entities(Entity, user, action=None):
     @action: could be view, create, edit, delete, etc.
     """
     # TODO: camelcase to snakecase instead of just lower()
-    item = Entity.__name__.lower()
+    item = PROJECT_PERMISSION_MODEL_MAP[Entity.__name__.lower()]
 
     item_permissions = item + '_permissions'
     permission = PROJECT_PERMISSIONS.get(item, {}).get(action)
