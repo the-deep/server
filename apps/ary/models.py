@@ -83,6 +83,7 @@ class MetadataField(Field):
     )
     tooltip = models.TextField(blank=True)
     order = models.IntegerField(default=1)
+    show_in_planned_assessment = models.BooleanField(default=False)
 
     def __str__(self):
         return '{} ({})'.format(self.title, self.group.template)
@@ -114,6 +115,7 @@ class MethodologyField(Field):
     )
     tooltip = models.TextField(blank=True)
     order = models.IntegerField(default=1)
+    show_in_planned_assessment = models.BooleanField(default=False)
 
     def __str__(self):
         return '{} ({})'.format(self.title, self.group.template)
@@ -382,7 +384,7 @@ class Assessment(UserResource, ProjectEntityMixin):
     def create_schema_for_group(self, GroupClass):
         schema = {}
         assessment_template = self.lead.project.assessment_template
-        groups = GroupClass.objects.filter(template=assessment_template)
+        groups = GroupClass.objects.filter(template=assessment_template).prefetch_related('fields')
         schema = {
             group.title: [
                 {
@@ -649,4 +651,62 @@ class Assessment(UserResource, ProjectEntityMixin):
             ('methodology', methodology),
             ('summary', summary),
             ('score', score)
+        ))
+
+
+class PlannedAssessment(UserResource, ProjectEntityMixin):
+    """
+    Planned Assessment belonging to a lead
+    """
+    project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    metadata = JSONField(default=None, blank=True, null=True)
+    methodology = JSONField(default=None, blank=True, null=True)
+
+    def __str__(self):
+        return self.title
+
+    def create_schema_for_group(self, GroupClass):
+        schema = {}
+        assessment_template = self.project.assessment_template
+        groups = GroupClass.objects.filter(
+            template=assessment_template,
+            fields__show_in_planned_assessment=True,
+        ).prefetch_related(
+            models.Prefetch(
+                'fields',
+                queryset=MetadataGroup.fields.rel.related_model.objects.filter(show_in_planned_assessment=True),
+                to_attr='planned_assessment_fields'
+            ),
+        ).distint()
+        schema = {
+            group.title: [
+                {
+                    'id': field.id,
+                    'name': field.title,
+                    'type': field.field_type,
+                    'source_type': field.source_type,
+                    'options': {
+                        x['key']: x['title'] for x in field.get_options()
+                    }
+                }
+                for field in group.planned_assessment_fields.all()
+            ] for group in groups
+        }
+        return schema
+
+    get_metadata_json = Assessment.get_metadata_json
+    get_methodology_json = Assessment.get_methodology_json
+
+    def to_exportable_json(self):
+        if not self.lead:
+            return {}
+        # for meta data
+        metadata = self.get_metadata_json()
+        # for methodology
+        methodology = self.get_methodology_json()
+        return OrderedDict((
+            ('title', self.title),
+            ('metadata', metadata),
+            ('methodology', methodology),
         ))
