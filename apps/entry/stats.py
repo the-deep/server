@@ -4,6 +4,7 @@ from django.db.models import Prefetch
 
 from geo.models import GeoArea
 from analysis_framework.models import Widget, Filter
+from apps.entry.widgets.geo_widget import get_valid_geo_ids
 
 from .models import Entry, Attribute
 
@@ -62,8 +63,10 @@ def _get_widget_info(config, widgets, widget_name, skip_data=False):
 
 
 def _get_attribute_widget_value(cd_widget_map, w_value, widget_type, widget_pk=None):
-    if widget_type in ['scaleWidget', 'multiselectWidget', 'organigramWidget', 'geoWidget']:
+    if widget_type in ['scaleWidget', 'multiselectWidget', 'organigramWidget']:
         return w_value
+    elif widget_type == 'geoWidget':
+        return get_valid_geo_ids(w_value)
     elif widget_type == 'conditionalWidget':
         cd_config = cd_widget_map.get(widget_pk)
         if cd_config is None:

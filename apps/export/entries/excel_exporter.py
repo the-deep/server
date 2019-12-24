@@ -77,6 +77,7 @@ class ExcelExporter:
                 admin_levels = region.adminlevel_set.all()
                 admin_level_data = []
 
+                self.titles.append(f'{region.title} Polygons')
                 for admin_level in admin_levels:
                     self.titles.append(admin_level.title)
                     self.titles.append('{} (code)'.format(admin_level.title))
@@ -174,19 +175,27 @@ class ExcelExporter:
                 rows.add_value_list([''] * col_span)
 
         elif export_type == 'geo' and self.regions:
-            values = []
+            geo_id_values = []
+            region_geo_polygons = {}
             if export_data:
-                values = export_data.get('values', [])
-                values = [str(v) for v in values]
+                geo_id_values = [str(v) for v in export_data.get('values') or []]
+                for geo_polygon in export_data.get('polygons') or []:
+                    region_id = geo_polygon['region_id']
+                    region_geo_polygons[region_id] = region_geo_polygons.get(region_id) or []
+                    region_geo_polygons[region_id].append(geo_polygon['title'])
 
             for region in self.regions:
                 admin_levels = self.region_data[region.id]
+                geo_polygons = region_geo_polygons.get(region.id, [])
                 max_levels = len(admin_levels)
                 rows_value = []
+
+                rows.add_rows_of_values(geo_polygons)
+
                 for rev_level, admin_level in enumerate(admin_levels[::-1]):
                     geo_area_titles = admin_level['geo_area_titles']
                     level = max_levels - rev_level
-                    for geo_id in values:
+                    for geo_id in geo_id_values:
                         if geo_id not in geo_area_titles:
                             continue
                         row_values = ['' for i in range(0, max_levels - level)] * 2
@@ -207,10 +216,12 @@ class ExcelExporter:
                             else:
                                 row_values.extend(['', ''])
                         rows_value.append(row_values[::-1])
+
                 if len(rows_value) > 0:
                     rows.add_rows_of_value_lists(rows_value)
                 else:
                     rows.add_rows_of_value_lists([['' for i in range(0, max_levels)] * 2])
+
         else:
             if export_data:
                 if export_data.get('type') == 'list':
