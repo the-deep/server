@@ -1,6 +1,7 @@
 from django.utils import timezone
 from django.db.models import F, Count
 from entry.stats import _get_project_geoareas
+from apps.entry.widgets.geo_widget import get_valid_geo_ids
 
 from organization.models import OrganizationType, Organization
 from ary.models import (
@@ -255,7 +256,7 @@ def get_project_ary_stats(project):
             'focus': _get_integer_array(methodology_raw.get('focuses')),
             'sector': _get_integer_array(methodology_raw.get('sectors')),
             'scores': scores,
-            'geo': _get_integer_array(methodology_raw.get('locations')),
+            'geo': get_valid_geo_ids(_get_integer_array(methodology_raw.get('locations'))),
             'affected_groups': _get_integer_array(methodology_raw.get('affected_groups')),
 
             'organisation_and_stakeholder_type': [

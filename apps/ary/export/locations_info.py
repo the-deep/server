@@ -1,3 +1,4 @@
+from apps.entry.widgets.geo_widget import get_valid_geo_ids
 from geo.models import GeoArea
 
 default_values = {
@@ -5,7 +6,7 @@ default_values = {
 
 
 def get_locations_info(assessment):
-    locations = assessment.methodology['locations'] or []
+    locations = get_valid_geo_ids(assessment.methodology['locations']) or []
 
     geo_areas = GeoArea.objects.filter(id__in=locations).prefetch_related('admin_level', 'parent')
 
