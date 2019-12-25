@@ -7,11 +7,19 @@ from analysis_framework.models import (
     AnalysisFramework,
     AnalysisFrameworkRole,
     AnalysisFrameworkMembership,
-    Widget, Filter, Exportable
+    Widget, Filter, Exportable,
+    FrameworkQuestion,
 )
 from user.models import Feature
 from user.serializers import UserSerializer
 from project.models import Project
+
+
+class FrameworkQuestionSerializer(RemoveNullFieldsMixin,
+                                  DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = FrameworkQuestion
+        fields = ('__all__')
 
 
 class WidgetSerializer(RemoveNullFieldsMixin,
@@ -63,6 +71,13 @@ class ExportableSerializer(RemoveNullFieldsMixin,
         if not analysis_framework.can_modify(self.context['request'].user):
             raise serializers.ValidationError('Invalid Analysis Framework')
         return analysis_framework
+
+
+class SimpleFrameworkQuestionSerializer(RemoveNullFieldsMixin,
+                                        serializers.ModelSerializer):
+    class Meta:
+        model = FrameworkQuestion
+        fields = ('__all__')
 
 
 class SimpleWidgetSerializer(RemoveNullFieldsMixin,
@@ -168,6 +183,9 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
     exportables = SimpleExportableSerializer(source='exportable_set',
                                              many=True,
                                              read_only=True)
+    questions = SimpleFrameworkQuestionSerializer(source='frameworkquestion_set',
+                                                  many=True,
+                                                  required=False)
     entries_count = serializers.IntegerField(
         source='get_entries_count',
         read_only=True,
