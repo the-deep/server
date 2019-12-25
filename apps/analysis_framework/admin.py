@@ -6,6 +6,7 @@ from analysis_framework.models import (
     AnalysisFrameworkMembership,
     Widget, Filter,
     Exportable,
+    FrameworkQuestion,
 )
 
 from deep.admin import (
@@ -34,6 +35,10 @@ class ExportableInline(StackedInline):
     model = Exportable
 
 
+class FrameworkQuestionInline(StackedInline):
+    model = FrameworkQuestion
+
+
 class AFRelatedAdmin(JFModelAdmin):
     search_fields = ('title',)
     list_display = (
@@ -48,7 +53,7 @@ class AFRelatedAdmin(JFModelAdmin):
         return False
 
 
-for model in [Widget, Filter, Exportable]:
+for model in [Widget, Filter, Exportable, FrameworkQuestion]:
     admin.site.register(model, AFRelatedAdmin)
 
 
@@ -61,6 +66,7 @@ class AnalysisFrameworkAdmin(VersionAdmin):
         ('widget', WidgetInline),
         ('filter', FilterInline),
         ('exportable', ExportableInline),
+        ('framework_question', FrameworkQuestionInline),
     ]
     list_display = [
         'title',  # 'project_count',
