@@ -255,6 +255,7 @@ USE_TZ = True
 
 LANGUAGES = (
     ('en-us', 'English (US)'),
+    ('es-ES', 'Spanish'),
     ('np', 'Nepali'),
 )
 
