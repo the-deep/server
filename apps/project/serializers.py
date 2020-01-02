@@ -289,6 +289,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
 
     number_of_users = serializers.IntegerField(read_only=True)
     status_title = serializers.ReadOnlyField(source='status.title')
+    is_visualization_enabled = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Project
@@ -345,6 +346,22 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         raise PermissionDenied(
             {'message': "You don't have permissions to use the analysis framework in the project"}
         )
+
+    def get_is_visualization_enabled(self, project):
+        af = project.analysis_framework
+        is_viz_enabled = project.is_visualization_enabled
+        entry_viz_enabled = (
+            is_viz_enabled and
+            af.properties is not None and
+            af.properties.get('stats_config') is not None
+        )
+        # Entry viz data is required by ARY VIZ
+        ary_viz_enabled = entry_viz_enabled
+
+        return {
+            'entry': entry_viz_enabled,
+            'assessment': ary_viz_enabled,
+        }
 
     def get_member_status(self, project):
         request = self.context['request']
