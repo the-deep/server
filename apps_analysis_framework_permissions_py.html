@@ -1,16 +1,10 @@
-
-
-
 <!DOCTYPE html>
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    
-    
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
     <title>Coverage for apps/analysis_framework/permissions.py: 88%</title>
     <link rel="stylesheet" href="style.css" type="text/css">
-    
     <script type="text/javascript" src="jquery.min.js"></script>
     <script type="text/javascript" src="jquery.hotkeys.js"></script>
     <script type="text/javascript" src="jquery.isonscreen.js"></script>
@@ -20,28 +14,21 @@
     </script>
 </head>
 <body class="pyfile">
-
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>apps/analysis_framework/permissions.py</b> :
             <span class="pc_cov">88%</span>
         </h1>
-
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
-
         <h2 class="stats">
             12 statements &nbsp;
-            <span class="run hide_run shortkey_r button_toggle_run">11 run</span>
-            <span class="mis shortkey_m button_toggle_mis">1 missing</span>
-            <span class="exc shortkey_x button_toggle_exc">0 excluded</span>
-
-            
-                <span class="par run hide_run shortkey_p button_toggle_par">1 partial</span>
-            
+            <span class="run shortkey_r button_toggle_run">11 run</span>
+            <span class="mis show_mis shortkey_m button_toggle_mis">1 missing</span>
+            <span class="exc show_exc shortkey_x button_toggle_exc">0 excluded</span>
+                <span class="par run show_par shortkey_p button_toggle_par">1 partial</span>
         </h2>
     </div>
 </div>
-
 <div class="help_panel">
     <img id="panel_icon" src="keybd_open.png" alt="Hide keyboard shortcuts" />
     <p class="legend">Hot-keys on this page</p>
@@ -64,68 +51,35 @@
     </p>
     </div>
 </div>
-
 <div id="source">
-    <table>
-        <tr>
-            <td class="linenos">
-<p id="n1" class="stm run hide_run"><a href="#n1">1</a></p>
-<p id="n2" class="pln"><a href="#n2">2</a></p>
-<p id="n3" class="pln"><a href="#n3">3</a></p>
-<p id="n4" class="stm run hide_run"><a href="#n4">4</a></p>
-<p id="n5" class="stm run hide_run"><a href="#n5">5</a></p>
-<p id="n6" class="stm run hide_run"><a href="#n6">6</a></p>
-<p id="n7" class="stm run hide_run"><a href="#n7">7</a></p>
-<p id="n8" class="stm run hide_run"><a href="#n8">8</a></p>
-<p id="n9" class="pln"><a href="#n9">9</a></p>
-<p id="n10" class="stm run hide_run"><a href="#n10">10</a></p>
-<p id="n11" class="stm run hide_run"><a href="#n11">11</a></p>
-<p id="n12" class="pln"><a href="#n12">12</a></p>
-<p id="n13" class="pln"><a href="#n13">13</a></p>
-<p id="n14" class="pln"><a href="#n14">14</a></p>
-<p id="n15" class="stm run hide_run"><a href="#n15">15</a></p>
-<p id="n16" class="pln"><a href="#n16">16</a></p>
-<p id="n17" class="stm par run hide_run"><a href="#n17">17</a></p>
-<p id="n18" class="stm mis"><a href="#n18">18</a></p>
-<p id="n19" class="pln"><a href="#n19">19</a></p>
-<p id="n20" class="stm run hide_run"><a href="#n20">20</a></p>
-
-            </td>
-            <td class="text">
-<p id="t1" class="stm run hide_run"><span class="key">from</span> <span class="nam">rest_framework</span> <span class="key">import</span> <span class="nam">permissions</span><span class="strut">&nbsp;</span></p>
-<p id="t2" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t3" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t4" class="stm run hide_run"><span class="key">class</span> <span class="nam">FrameworkMembershipModifyPermission</span><span class="op">(</span><span class="nam">permissions</span><span class="op">.</span><span class="nam">BasePermission</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t5" class="stm run hide_run">    <span class="key">def</span> <span class="nam">has_object_permission</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">request</span><span class="op">,</span> <span class="nam">view</span><span class="op">,</span> <span class="nam">obj</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t6" class="stm run hide_run">        <span class="key">from</span> <span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">AnalysisFrameworkMembership</span><span class="strut">&nbsp;</span></p>
-<p id="t7" class="stm run hide_run">        <span class="key">if</span> <span class="nam">request</span><span class="op">.</span><span class="nam">method</span> <span class="key">in</span> <span class="nam">permissions</span><span class="op">.</span><span class="nam">SAFE_METHODS</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t8" class="stm run hide_run">            <span class="key">return</span> <span class="key">True</span><span class="strut">&nbsp;</span></p>
-<p id="t9" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t10" class="stm run hide_run">        <span class="nam">framework</span> <span class="op">=</span> <span class="nam">obj</span><span class="op">.</span><span class="nam">framework</span><span class="strut">&nbsp;</span></p>
-<p id="t11" class="stm run hide_run">        <span class="nam">membership</span> <span class="op">=</span> <span class="nam">AnalysisFrameworkMembership</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t12" class="pln">            <span class="nam">framework</span><span class="op">=</span><span class="nam">framework</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t13" class="pln">            <span class="nam">member</span><span class="op">=</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="strut">&nbsp;</span></p>
-<p id="t14" class="pln">        <span class="op">)</span><span class="op">.</span><span class="nam">first</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t15" class="stm run hide_run">        <span class="nam">user_role</span> <span class="op">=</span> <span class="nam">membership</span> <span class="key">and</span> <span class="nam">membership</span><span class="op">.</span><span class="nam">role</span><span class="strut">&nbsp;</span></p>
-<p id="t16" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t17" class="stm par run hide_run"><span class="annotate short">17&#x202F;&#x219B;&#x202F;18</span><span class="annotate long">line 17 didn't jump to line 18, because the condition on line 17 was never true</span>        <span class="key">if</span> <span class="key">not</span> <span class="nam">user_role</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t18" class="stm mis">            <span class="key">return</span> <span class="key">False</span><span class="strut">&nbsp;</span></p>
-<p id="t19" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t20" class="stm run hide_run">        <span class="key">return</span> <span class="nam">user_role</span><span class="op">.</span><span class="nam">can_add_user</span><span class="strut">&nbsp;</span></p>
-
-            </td>
-        </tr>
-    </table>
+    <p id="t1" class="run"><span class="n"><a href="#t1">1</a></span><span class="t"><span class="key">from</span> <span class="nam">rest_framework</span> <span class="key">import</span> <span class="nam">permissions</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t2" class="pln"><span class="n"><a href="#t2">2</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t3" class="pln"><span class="n"><a href="#t3">3</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t4" class="run"><span class="n"><a href="#t4">4</a></span><span class="t"><span class="key">class</span> <span class="nam">FrameworkMembershipModifyPermission</span><span class="op">(</span><span class="nam">permissions</span><span class="op">.</span><span class="nam">BasePermission</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t5" class="run"><span class="n"><a href="#t5">5</a></span><span class="t">    <span class="key">def</span> <span class="nam">has_object_permission</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">request</span><span class="op">,</span> <span class="nam">view</span><span class="op">,</span> <span class="nam">obj</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t6" class="run"><span class="n"><a href="#t6">6</a></span><span class="t">        <span class="key">from</span> <span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">AnalysisFrameworkMembership</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t7" class="run"><span class="n"><a href="#t7">7</a></span><span class="t">        <span class="key">if</span> <span class="nam">request</span><span class="op">.</span><span class="nam">method</span> <span class="key">in</span> <span class="nam">permissions</span><span class="op">.</span><span class="nam">SAFE_METHODS</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t8" class="run"><span class="n"><a href="#t8">8</a></span><span class="t">            <span class="key">return</span> <span class="key">True</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t9" class="pln"><span class="n"><a href="#t9">9</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t10" class="run"><span class="n"><a href="#t10">10</a></span><span class="t">        <span class="nam">framework</span> <span class="op">=</span> <span class="nam">obj</span><span class="op">.</span><span class="nam">framework</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t11" class="run"><span class="n"><a href="#t11">11</a></span><span class="t">        <span class="nam">membership</span> <span class="op">=</span> <span class="nam">AnalysisFrameworkMembership</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t12" class="pln"><span class="n"><a href="#t12">12</a></span><span class="t">            <span class="nam">framework</span><span class="op">=</span><span class="nam">framework</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t13" class="pln"><span class="n"><a href="#t13">13</a></span><span class="t">            <span class="nam">member</span><span class="op">=</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t14" class="pln"><span class="n"><a href="#t14">14</a></span><span class="t">        <span class="op">)</span><span class="op">.</span><span class="nam">first</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t15" class="run"><span class="n"><a href="#t15">15</a></span><span class="t">        <span class="nam">user_role</span> <span class="op">=</span> <span class="nam">membership</span> <span class="key">and</span> <span class="nam">membership</span><span class="op">.</span><span class="nam">role</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t16" class="pln"><span class="n"><a href="#t16">16</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t17" class="par run show_par"><span class="n"><a href="#t17">17</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">user_role</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">17&#x202F;&#x219B;&#x202F;18</span><span class="annotate long">line 17 didn't jump to line 18, because the condition on line 17 was never true</span></span></p>
+    <p id="t18" class="mis show_mis"><span class="n"><a href="#t18">18</a></span><span class="t">            <span class="key">return</span> <span class="key">False</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t19" class="pln"><span class="n"><a href="#t19">19</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t20" class="run"><span class="n"><a href="#t20">20</a></span><span class="t">        <span class="key">return</span> <span class="nam">user_role</span><span class="op">.</span><span class="nam">can_add_user</span>&nbsp;</span><span class="r"></span></p>
 </div>
-
 <div id="footer">
     <div class="content">
         <p>
-            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-12-09 10:17
+            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.0.1</a>,
+            created at 2020-01-03 04:32
         </p>
     </div>
 </div>
-
 </body>
 </html>

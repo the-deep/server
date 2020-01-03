@@ -1,16 +1,10 @@
-
-
-
 <!DOCTYPE html>
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    
-    
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/ary/serializers.py: 87%</title>
+    <title>Coverage for apps/ary/serializers.py: 88%</title>
     <link rel="stylesheet" href="style.css" type="text/css">
-    
     <script type="text/javascript" src="jquery.min.js"></script>
     <script type="text/javascript" src="jquery.hotkeys.js"></script>
     <script type="text/javascript" src="jquery.isonscreen.js"></script>
@@ -20,28 +14,21 @@
     </script>
 </head>
 <body class="pyfile">
-
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>apps/ary/serializers.py</b> :
-            <span class="pc_cov">87%</span>
+            <span class="pc_cov">88%</span>
         </h1>
-
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
-
         <h2 class="stats">
-            160 statements &nbsp;
-            <span class="run hide_run shortkey_r button_toggle_run">145 run</span>
-            <span class="mis shortkey_m button_toggle_mis">15 missing</span>
-            <span class="exc shortkey_x button_toggle_exc">0 excluded</span>
-
-            
-                <span class="par run hide_run shortkey_p button_toggle_par">1 partial</span>
-            
+            167 statements &nbsp;
+            <span class="run shortkey_r button_toggle_run">152 run</span>
+            <span class="mis show_mis shortkey_m button_toggle_mis">15 missing</span>
+            <span class="exc show_exc shortkey_x button_toggle_exc">0 excluded</span>
+                <span class="par run show_par shortkey_p button_toggle_par">1 partial</span>
         </h2>
     </div>
 </div>
-
 <div class="help_panel">
     <img id="panel_icon" src="keybd_open.png" alt="Hide keyboard shortcuts" />
     <p class="legend">Hot-keys on this page</p>
@@ -64,660 +51,342 @@
     </p>
     </div>
 </div>
-
 <div id="source">
-    <table>
-        <tr>
-            <td class="linenos">
-<p id="n1" class="stm run hide_run"><a href="#n1">1</a></p>
-<p id="n2" class="stm run hide_run"><a href="#n2">2</a></p>
-<p id="n3" class="stm run hide_run"><a href="#n3">3</a></p>
-<p id="n4" class="stm run hide_run"><a href="#n4">4</a></p>
-<p id="n5" class="pln"><a href="#n5">5</a></p>
-<p id="n6" class="stm run hide_run"><a href="#n6">6</a></p>
-<p id="n7" class="pln"><a href="#n7">7</a></p>
-<p id="n8" class="pln"><a href="#n8">8</a></p>
-<p id="n9" class="pln"><a href="#n9">9</a></p>
-<p id="n10" class="pln"><a href="#n10">10</a></p>
-<p id="n11" class="stm run hide_run"><a href="#n11">11</a></p>
-<p id="n12" class="stm run hide_run"><a href="#n12">12</a></p>
-<p id="n13" class="stm run hide_run"><a href="#n13">13</a></p>
-<p id="n14" class="pln"><a href="#n14">14</a></p>
-<p id="n15" class="pln"><a href="#n15">15</a></p>
-<p id="n16" class="pln"><a href="#n16">16</a></p>
-<p id="n17" class="pln"><a href="#n17">17</a></p>
-<p id="n18" class="stm run hide_run"><a href="#n18">18</a></p>
-<p id="n19" class="stm run hide_run"><a href="#n19">19</a></p>
-<p id="n20" class="stm run hide_run"><a href="#n20">20</a></p>
-<p id="n21" class="stm run hide_run"><a href="#n21">21</a></p>
-<p id="n22" class="stm run hide_run"><a href="#n22">22</a></p>
-<p id="n23" class="pln"><a href="#n23">23</a></p>
-<p id="n24" class="pln"><a href="#n24">24</a></p>
-<p id="n25" class="pln"><a href="#n25">25</a></p>
-<p id="n26" class="pln"><a href="#n26">26</a></p>
-<p id="n27" class="stm run hide_run"><a href="#n27">27</a></p>
-<p id="n28" class="pln"><a href="#n28">28</a></p>
-<p id="n29" class="pln"><a href="#n29">29</a></p>
-<p id="n30" class="pln"><a href="#n30">30</a></p>
-<p id="n31" class="pln"><a href="#n31">31</a></p>
-<p id="n32" class="pln"><a href="#n32">32</a></p>
-<p id="n33" class="pln"><a href="#n33">33</a></p>
-<p id="n34" class="pln"><a href="#n34">34</a></p>
-<p id="n35" class="pln"><a href="#n35">35</a></p>
-<p id="n36" class="stm run hide_run"><a href="#n36">36</a></p>
-<p id="n37" class="pln"><a href="#n37">37</a></p>
-<p id="n38" class="stm run hide_run"><a href="#n38">38</a></p>
-<p id="n39" class="pln"><a href="#n39">39</a></p>
-<p id="n40" class="stm run hide_run"><a href="#n40">40</a></p>
-<p id="n41" class="pln"><a href="#n41">41</a></p>
-<p id="n42" class="stm run hide_run"><a href="#n42">42</a></p>
-<p id="n43" class="pln"><a href="#n43">43</a></p>
-<p id="n44" class="pln"><a href="#n44">44</a></p>
-<p id="n45" class="pln"><a href="#n45">45</a></p>
-<p id="n46" class="pln"><a href="#n46">46</a></p>
-<p id="n47" class="stm run hide_run"><a href="#n47">47</a></p>
-<p id="n48" class="stm run hide_run"><a href="#n48">48</a></p>
-<p id="n49" class="stm run hide_run"><a href="#n49">49</a></p>
-<p id="n50" class="pln"><a href="#n50">50</a></p>
-<p id="n51" class="stm run hide_run"><a href="#n51">51</a></p>
-<p id="n52" class="stm run hide_run"><a href="#n52">52</a></p>
-<p id="n53" class="stm par run hide_run"><a href="#n53">53</a></p>
-<p id="n54" class="stm mis"><a href="#n54">54</a></p>
-<p id="n55" class="pln"><a href="#n55">55</a></p>
-<p id="n56" class="stm run hide_run"><a href="#n56">56</a></p>
-<p id="n57" class="stm run hide_run"><a href="#n57">57</a></p>
-<p id="n58" class="pln"><a href="#n58">58</a></p>
-<p id="n59" class="pln"><a href="#n59">59</a></p>
-<p id="n60" class="stm run hide_run"><a href="#n60">60</a></p>
-<p id="n61" class="pln"><a href="#n61">61</a></p>
-<p id="n62" class="pln"><a href="#n62">62</a></p>
-<p id="n63" class="stm run hide_run"><a href="#n63">63</a></p>
-<p id="n64" class="pln"><a href="#n64">64</a></p>
-<p id="n65" class="pln"><a href="#n65">65</a></p>
-<p id="n66" class="stm run hide_run"><a href="#n66">66</a></p>
-<p id="n67" class="stm run hide_run"><a href="#n67">67</a></p>
-<p id="n68" class="stm run hide_run"><a href="#n68">68</a></p>
-<p id="n69" class="stm run hide_run"><a href="#n69">69</a></p>
-<p id="n70" class="pln"><a href="#n70">70</a></p>
-<p id="n71" class="stm run hide_run"><a href="#n71">71</a></p>
-<p id="n72" class="pln"><a href="#n72">72</a></p>
-<p id="n73" class="pln"><a href="#n73">73</a></p>
-<p id="n74" class="stm run hide_run"><a href="#n74">74</a></p>
-<p id="n75" class="stm run hide_run"><a href="#n75">75</a></p>
-<p id="n76" class="pln"><a href="#n76">76</a></p>
-<p id="n77" class="pln"><a href="#n77">77</a></p>
-<p id="n78" class="pln"><a href="#n78">78</a></p>
-<p id="n79" class="pln"><a href="#n79">79</a></p>
-<p id="n80" class="stm run hide_run"><a href="#n80">80</a></p>
-<p id="n81" class="stm run hide_run"><a href="#n81">81</a></p>
-<p id="n82" class="pln"><a href="#n82">82</a></p>
-<p id="n83" class="pln"><a href="#n83">83</a></p>
-<p id="n84" class="stm run hide_run"><a href="#n84">84</a></p>
-<p id="n85" class="pln"><a href="#n85">85</a></p>
-<p id="n86" class="pln"><a href="#n86">86</a></p>
-<p id="n87" class="stm run hide_run"><a href="#n87">87</a></p>
-<p id="n88" class="pln"><a href="#n88">88</a></p>
-<p id="n89" class="stm run hide_run"><a href="#n89">89</a></p>
-<p id="n90" class="pln"><a href="#n90">90</a></p>
-<p id="n91" class="pln"><a href="#n91">91</a></p>
-<p id="n92" class="pln"><a href="#n92">92</a></p>
-<p id="n93" class="stm run hide_run"><a href="#n93">93</a></p>
-<p id="n94" class="stm run hide_run"><a href="#n94">94</a></p>
-<p id="n95" class="stm run hide_run"><a href="#n95">95</a></p>
-<p id="n96" class="stm run hide_run"><a href="#n96">96</a></p>
-<p id="n97" class="pln"><a href="#n97">97</a></p>
-<p id="n98" class="stm run hide_run"><a href="#n98">98</a></p>
-<p id="n99" class="pln"><a href="#n99">99</a></p>
-<p id="n100" class="pln"><a href="#n100">100</a></p>
-<p id="n101" class="stm mis"><a href="#n101">101</a></p>
-<p id="n102" class="pln"><a href="#n102">102</a></p>
-<p id="n103" class="pln"><a href="#n103">103</a></p>
-<p id="n104" class="pln"><a href="#n104">104</a></p>
-<p id="n105" class="pln"><a href="#n105">105</a></p>
-<p id="n106" class="pln"><a href="#n106">106</a></p>
-<p id="n107" class="pln"><a href="#n107">107</a></p>
-<p id="n108" class="stm mis"><a href="#n108">108</a></p>
-<p id="n109" class="stm mis"><a href="#n109">109</a></p>
-<p id="n110" class="pln"><a href="#n110">110</a></p>
-<p id="n111" class="pln"><a href="#n111">111</a></p>
-<p id="n112" class="stm run hide_run"><a href="#n112">112</a></p>
-<p id="n113" class="stm run hide_run"><a href="#n113">113</a></p>
-<p id="n114" class="pln"><a href="#n114">114</a></p>
-<p id="n115" class="pln"><a href="#n115">115</a></p>
-<p id="n116" class="pln"><a href="#n116">116</a></p>
-<p id="n117" class="pln"><a href="#n117">117</a></p>
-<p id="n118" class="stm run hide_run"><a href="#n118">118</a></p>
-<p id="n119" class="stm run hide_run"><a href="#n119">119</a></p>
-<p id="n120" class="stm run hide_run"><a href="#n120">120</a></p>
-<p id="n121" class="pln"><a href="#n121">121</a></p>
-<p id="n122" class="pln"><a href="#n122">122</a></p>
-<p id="n123" class="stm run hide_run"><a href="#n123">123</a></p>
-<p id="n124" class="stm run hide_run"><a href="#n124">124</a></p>
-<p id="n125" class="stm run hide_run"><a href="#n125">125</a></p>
-<p id="n126" class="stm run hide_run"><a href="#n126">126</a></p>
-<p id="n127" class="pln"><a href="#n127">127</a></p>
-<p id="n128" class="pln"><a href="#n128">128</a></p>
-<p id="n129" class="stm run hide_run"><a href="#n129">129</a></p>
-<p id="n130" class="stm run hide_run"><a href="#n130">130</a></p>
-<p id="n131" class="stm run hide_run"><a href="#n131">131</a></p>
-<p id="n132" class="pln"><a href="#n132">132</a></p>
-<p id="n133" class="pln"><a href="#n133">133</a></p>
-<p id="n134" class="stm run hide_run"><a href="#n134">134</a></p>
-<p id="n135" class="stm run hide_run"><a href="#n135">135</a></p>
-<p id="n136" class="stm run hide_run"><a href="#n136">136</a></p>
-<p id="n137" class="stm run hide_run"><a href="#n137">137</a></p>
-<p id="n138" class="stm run hide_run"><a href="#n138">138</a></p>
-<p id="n139" class="stm run hide_run"><a href="#n139">139</a></p>
-<p id="n140" class="stm run hide_run"><a href="#n140">140</a></p>
-<p id="n141" class="stm run hide_run"><a href="#n141">141</a></p>
-<p id="n142" class="pln"><a href="#n142">142</a></p>
-<p id="n143" class="pln"><a href="#n143">143</a></p>
-<p id="n144" class="stm run hide_run"><a href="#n144">144</a></p>
-<p id="n145" class="stm run hide_run"><a href="#n145">145</a></p>
-<p id="n146" class="pln"><a href="#n146">146</a></p>
-<p id="n147" class="pln"><a href="#n147">147</a></p>
-<p id="n148" class="stm run hide_run"><a href="#n148">148</a></p>
-<p id="n149" class="stm run hide_run"><a href="#n149">149</a></p>
-<p id="n150" class="stm run hide_run"><a href="#n150">150</a></p>
-<p id="n151" class="stm run hide_run"><a href="#n151">151</a></p>
-<p id="n152" class="pln"><a href="#n152">152</a></p>
-<p id="n153" class="pln"><a href="#n153">153</a></p>
-<p id="n154" class="stm run hide_run"><a href="#n154">154</a></p>
-<p id="n155" class="stm run hide_run"><a href="#n155">155</a></p>
-<p id="n156" class="stm run hide_run"><a href="#n156">156</a></p>
-<p id="n157" class="stm run hide_run"><a href="#n157">157</a></p>
-<p id="n158" class="stm run hide_run"><a href="#n158">158</a></p>
-<p id="n159" class="stm run hide_run"><a href="#n159">159</a></p>
-<p id="n160" class="pln"><a href="#n160">160</a></p>
-<p id="n161" class="pln"><a href="#n161">161</a></p>
-<p id="n162" class="stm run hide_run"><a href="#n162">162</a></p>
-<p id="n163" class="stm run hide_run"><a href="#n163">163</a></p>
-<p id="n164" class="stm run hide_run"><a href="#n164">164</a></p>
-<p id="n165" class="stm run hide_run"><a href="#n165">165</a></p>
-<p id="n166" class="pln"><a href="#n166">166</a></p>
-<p id="n167" class="pln"><a href="#n167">167</a></p>
-<p id="n168" class="stm run hide_run"><a href="#n168">168</a></p>
-<p id="n169" class="stm run hide_run"><a href="#n169">169</a></p>
-<p id="n170" class="stm run hide_run"><a href="#n170">170</a></p>
-<p id="n171" class="stm run hide_run"><a href="#n171">171</a></p>
-<p id="n172" class="stm run hide_run"><a href="#n172">172</a></p>
-<p id="n173" class="pln"><a href="#n173">173</a></p>
-<p id="n174" class="pln"><a href="#n174">174</a></p>
-<p id="n175" class="stm run hide_run"><a href="#n175">175</a></p>
-<p id="n176" class="stm run hide_run"><a href="#n176">176</a></p>
-<p id="n177" class="stm run hide_run"><a href="#n177">177</a></p>
-<p id="n178" class="stm run hide_run"><a href="#n178">178</a></p>
-<p id="n179" class="pln"><a href="#n179">179</a></p>
-<p id="n180" class="pln"><a href="#n180">180</a></p>
-<p id="n181" class="stm run hide_run"><a href="#n181">181</a></p>
-<p id="n182" class="stm run hide_run"><a href="#n182">182</a></p>
-<p id="n183" class="stm run hide_run"><a href="#n183">183</a></p>
-<p id="n184" class="pln"><a href="#n184">184</a></p>
-<p id="n185" class="pln"><a href="#n185">185</a></p>
-<p id="n186" class="stm run hide_run"><a href="#n186">186</a></p>
-<p id="n187" class="stm run hide_run"><a href="#n187">187</a></p>
-<p id="n188" class="stm run hide_run"><a href="#n188">188</a></p>
-<p id="n189" class="pln"><a href="#n189">189</a></p>
-<p id="n190" class="pln"><a href="#n190">190</a></p>
-<p id="n191" class="stm run hide_run"><a href="#n191">191</a></p>
-<p id="n192" class="stm run hide_run"><a href="#n192">192</a></p>
-<p id="n193" class="stm run hide_run"><a href="#n193">193</a></p>
-<p id="n194" class="stm run hide_run"><a href="#n194">194</a></p>
-<p id="n195" class="stm run hide_run"><a href="#n195">195</a></p>
-<p id="n196" class="stm run hide_run"><a href="#n196">196</a></p>
-<p id="n197" class="stm run hide_run"><a href="#n197">197</a></p>
-<p id="n198" class="pln"><a href="#n198">198</a></p>
-<p id="n199" class="stm run hide_run"><a href="#n199">199</a></p>
-<p id="n200" class="stm mis"><a href="#n200">200</a></p>
-<p id="n201" class="stm mis"><a href="#n201">201</a></p>
-<p id="n202" class="stm mis"><a href="#n202">202</a></p>
-<p id="n203" class="stm mis"><a href="#n203">203</a></p>
-<p id="n204" class="stm mis"><a href="#n204">204</a></p>
-<p id="n205" class="stm mis"><a href="#n205">205</a></p>
-<p id="n206" class="stm mis"><a href="#n206">206</a></p>
-<p id="n207" class="stm mis"><a href="#n207">207</a></p>
-<p id="n208" class="stm mis"><a href="#n208">208</a></p>
-<p id="n209" class="stm mis"><a href="#n209">209</a></p>
-<p id="n210" class="stm mis"><a href="#n210">210</a></p>
-<p id="n211" class="pln"><a href="#n211">211</a></p>
-<p id="n212" class="pln"><a href="#n212">212</a></p>
-<p id="n213" class="stm run hide_run"><a href="#n213">213</a></p>
-<p id="n214" class="stm run hide_run"><a href="#n214">214</a></p>
-<p id="n215" class="stm run hide_run"><a href="#n215">215</a></p>
-<p id="n216" class="stm run hide_run"><a href="#n216">216</a></p>
-<p id="n217" class="pln"><a href="#n217">217</a></p>
-<p id="n218" class="pln"><a href="#n218">218</a></p>
-<p id="n219" class="stm run hide_run"><a href="#n219">219</a></p>
-<p id="n220" class="stm run hide_run"><a href="#n220">220</a></p>
-<p id="n221" class="pln"><a href="#n221">221</a></p>
-<p id="n222" class="pln"><a href="#n222">222</a></p>
-<p id="n223" class="pln"><a href="#n223">223</a></p>
-<p id="n224" class="stm run hide_run"><a href="#n224">224</a></p>
-<p id="n225" class="stm run hide_run"><a href="#n225">225</a></p>
-<p id="n226" class="stm run hide_run"><a href="#n226">226</a></p>
-<p id="n227" class="pln"><a href="#n227">227</a></p>
-<p id="n228" class="pln"><a href="#n228">228</a></p>
-<p id="n229" class="stm run hide_run"><a href="#n229">229</a></p>
-<p id="n230" class="stm run hide_run"><a href="#n230">230</a></p>
-<p id="n231" class="pln"><a href="#n231">231</a></p>
-<p id="n232" class="pln"><a href="#n232">232</a></p>
-<p id="n233" class="pln"><a href="#n233">233</a></p>
-<p id="n234" class="stm run hide_run"><a href="#n234">234</a></p>
-<p id="n235" class="stm run hide_run"><a href="#n235">235</a></p>
-<p id="n236" class="stm run hide_run"><a href="#n236">236</a></p>
-<p id="n237" class="pln"><a href="#n237">237</a></p>
-<p id="n238" class="pln"><a href="#n238">238</a></p>
-<p id="n239" class="stm run hide_run"><a href="#n239">239</a></p>
-<p id="n240" class="pln"><a href="#n240">240</a></p>
-<p id="n241" class="stm run hide_run"><a href="#n241">241</a></p>
-<p id="n242" class="pln"><a href="#n242">242</a></p>
-<p id="n243" class="stm run hide_run"><a href="#n243">243</a></p>
-<p id="n244" class="pln"><a href="#n244">244</a></p>
-<p id="n245" class="stm run hide_run"><a href="#n245">245</a></p>
-<p id="n246" class="pln"><a href="#n246">246</a></p>
-<p id="n247" class="stm run hide_run"><a href="#n247">247</a></p>
-<p id="n248" class="pln"><a href="#n248">248</a></p>
-<p id="n249" class="stm run hide_run"><a href="#n249">249</a></p>
-<p id="n250" class="pln"><a href="#n250">250</a></p>
-<p id="n251" class="stm run hide_run"><a href="#n251">251</a></p>
-<p id="n252" class="pln"><a href="#n252">252</a></p>
-<p id="n253" class="pln"><a href="#n253">253</a></p>
-<p id="n254" class="stm run hide_run"><a href="#n254">254</a></p>
-<p id="n255" class="pln"><a href="#n255">255</a></p>
-<p id="n256" class="stm run hide_run"><a href="#n256">256</a></p>
-<p id="n257" class="pln"><a href="#n257">257</a></p>
-<p id="n258" class="stm run hide_run"><a href="#n258">258</a></p>
-<p id="n259" class="pln"><a href="#n259">259</a></p>
-<p id="n260" class="stm run hide_run"><a href="#n260">260</a></p>
-<p id="n261" class="pln"><a href="#n261">261</a></p>
-<p id="n262" class="pln"><a href="#n262">262</a></p>
-<p id="n263" class="stm run hide_run"><a href="#n263">263</a></p>
-<p id="n264" class="pln"><a href="#n264">264</a></p>
-<p id="n265" class="stm run hide_run"><a href="#n265">265</a></p>
-<p id="n266" class="pln"><a href="#n266">266</a></p>
-<p id="n267" class="stm run hide_run"><a href="#n267">267</a></p>
-<p id="n268" class="pln"><a href="#n268">268</a></p>
-<p id="n269" class="pln"><a href="#n269">269</a></p>
-<p id="n270" class="pln"><a href="#n270">270</a></p>
-<p id="n271" class="pln"><a href="#n271">271</a></p>
-<p id="n272" class="pln"><a href="#n272">272</a></p>
-<p id="n273" class="stm run hide_run"><a href="#n273">273</a></p>
-<p id="n274" class="stm run hide_run"><a href="#n274">274</a></p>
-<p id="n275" class="stm run hide_run"><a href="#n275">275</a></p>
-<p id="n276" class="pln"><a href="#n276">276</a></p>
-<p id="n277" class="pln"><a href="#n277">277</a></p>
-<p id="n278" class="pln"><a href="#n278">278</a></p>
-<p id="n279" class="stm run hide_run"><a href="#n279">279</a></p>
-<p id="n280" class="stm run hide_run"><a href="#n280">280</a></p>
-<p id="n281" class="stm run hide_run"><a href="#n281">281</a></p>
-<p id="n282" class="pln"><a href="#n282">282</a></p>
-<p id="n283" class="stm run hide_run"><a href="#n283">283</a></p>
-<p id="n284" class="stm run hide_run"><a href="#n284">284</a></p>
-<p id="n285" class="stm run hide_run"><a href="#n285">285</a></p>
-<p id="n286" class="pln"><a href="#n286">286</a></p>
-<p id="n287" class="pln"><a href="#n287">287</a></p>
-<p id="n288" class="pln"><a href="#n288">288</a></p>
-<p id="n289" class="pln"><a href="#n289">289</a></p>
-<p id="n290" class="stm run hide_run"><a href="#n290">290</a></p>
-<p id="n291" class="stm run hide_run"><a href="#n291">291</a></p>
-<p id="n292" class="stm run hide_run"><a href="#n292">292</a></p>
-<p id="n293" class="pln"><a href="#n293">293</a></p>
-<p id="n294" class="pln"><a href="#n294">294</a></p>
-<p id="n295" class="pln"><a href="#n295">295</a></p>
-<p id="n296" class="pln"><a href="#n296">296</a></p>
-<p id="n297" class="pln"><a href="#n297">297</a></p>
-<p id="n298" class="stm run hide_run"><a href="#n298">298</a></p>
-<p id="n299" class="pln"><a href="#n299">299</a></p>
-<p id="n300" class="pln"><a href="#n300">300</a></p>
-<p id="n301" class="pln"><a href="#n301">301</a></p>
-<p id="n302" class="pln"><a href="#n302">302</a></p>
-<p id="n303" class="pln"><a href="#n303">303</a></p>
-<p id="n304" class="pln"><a href="#n304">304</a></p>
-<p id="n305" class="pln"><a href="#n305">305</a></p>
-<p id="n306" class="pln"><a href="#n306">306</a></p>
-<p id="n307" class="pln"><a href="#n307">307</a></p>
-<p id="n308" class="pln"><a href="#n308">308</a></p>
-<p id="n309" class="pln"><a href="#n309">309</a></p>
-<p id="n310" class="pln"><a href="#n310">310</a></p>
-<p id="n311" class="pln"><a href="#n311">311</a></p>
-<p id="n312" class="pln"><a href="#n312">312</a></p>
-<p id="n313" class="pln"><a href="#n313">313</a></p>
-<p id="n314" class="pln"><a href="#n314">314</a></p>
-<p id="n315" class="pln"><a href="#n315">315</a></p>
-<p id="n316" class="pln"><a href="#n316">316</a></p>
-
-            </td>
-            <td class="text">
-<p id="t1" class="stm run hide_run"><span class="key">from</span> <span class="nam">django</span><span class="op">.</span><span class="nam">shortcuts</span> <span class="key">import</span> <span class="nam">get_object_or_404</span><span class="strut">&nbsp;</span></p>
-<p id="t2" class="stm run hide_run"><span class="key">from</span> <span class="nam">django</span><span class="op">.</span><span class="nam">db</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Q</span><span class="strut">&nbsp;</span></p>
-<p id="t3" class="stm run hide_run"><span class="key">from</span> <span class="nam">drf_dynamic_fields</span> <span class="key">import</span> <span class="nam">DynamicFieldsMixin</span><span class="strut">&nbsp;</span></p>
-<p id="t4" class="stm run hide_run"><span class="key">from</span> <span class="nam">rest_framework</span> <span class="key">import</span> <span class="nam">serializers</span><span class="strut">&nbsp;</span></p>
-<p id="t5" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t6" class="stm run hide_run"><span class="key">from</span> <span class="nam">deep</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t7" class="pln">    <span class="nam">RemoveNullFieldsMixin</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t8" class="pln">    <span class="nam">RecursiveSerializer</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t9" class="pln"><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t10" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t11" class="stm run hide_run"><span class="key">from</span> <span class="nam">project</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Project</span><span class="strut">&nbsp;</span></p>
-<p id="t12" class="stm run hide_run"><span class="key">from</span> <span class="nam">user_resource</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="nam">UserResourceSerializer</span><span class="strut">&nbsp;</span></p>
-<p id="t13" class="stm run hide_run"><span class="key">from</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t14" class="pln">    <span class="nam">SimpleLeadSerializer</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t15" class="pln">    <span class="nam">LegacySimpleLeadSerializer</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t16" class="pln">    <span class="nam">ProjectEntitySerializer</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t17" class="pln"><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t18" class="stm run hide_run"><span class="key">from</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Lead</span><span class="op">,</span> <span class="nam">LeadGroup</span><span class="strut">&nbsp;</span></p>
-<p id="t19" class="stm run hide_run"><span class="key">from</span> <span class="nam">deep</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Field</span><span class="strut">&nbsp;</span></p>
-<p id="t20" class="stm run hide_run"><span class="key">from</span> <span class="nam">geo</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Region</span><span class="strut">&nbsp;</span></p>
-<p id="t21" class="stm run hide_run"><span class="key">from</span> <span class="nam">organization</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Organization</span><span class="op">,</span> <span class="nam">OrganizationType</span><span class="strut">&nbsp;</span></p>
-<p id="t22" class="stm run hide_run"><span class="key">from</span> <span class="nam">organization</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t23" class="pln">    <span class="nam">ArySourceOrganizationSerializer</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t24" class="pln">    <span class="nam">OrganizationTypeSerializer</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t25" class="pln"><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t26" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t27" class="stm run hide_run"><span class="key">from</span> <span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t28" class="pln">    <span class="nam">AssessmentTemplate</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t29" class="pln">    <span class="nam">Assessment</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t30" class="pln">    <span class="nam">ScoreQuestionnaireSector</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t31" class="pln">    <span class="nam">ScoreQuestionnaireSubSector</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t32" class="pln">    <span class="nam">ScoreQuestionnaire</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t33" class="pln"><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t34" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t35" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t36" class="stm run hide_run"><span class="key">class</span> <span class="nam">AssessmentSerializer</span><span class="op">(</span><span class="nam">RemoveNullFieldsMixin</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t37" class="pln">                           <span class="nam">DynamicFieldsMixin</span><span class="op">,</span> <span class="nam">ProjectEntitySerializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t38" class="stm run hide_run">    <span class="nam">lead_title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'lead.title'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t39" class="pln">                                       <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t40" class="stm run hide_run">    <span class="nam">lead_group_title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'lead_group.title'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t41" class="pln">                                             <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t42" class="stm run hide_run">    <span class="nam">project</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">PrimaryKeyRelatedField</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t43" class="pln">        <span class="nam">required</span><span class="op">=</span><span class="key">False</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t44" class="pln">        <span class="nam">queryset</span><span class="op">=</span><span class="nam">Project</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t45" class="pln">    <span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t46" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t47" class="stm run hide_run">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t48" class="stm run hide_run">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">Assessment</span><span class="strut">&nbsp;</span></p>
-<p id="t49" class="stm run hide_run">        <span class="nam">fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'__all__'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t50" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t51" class="stm run hide_run">    <span class="key">def</span> <span class="nam">create</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">data</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t52" class="stm run hide_run">        <span class="key">if</span> <span class="nam">data</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'project'</span><span class="op">)</span> <span class="key">is</span> <span class="key">None</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t53" class="stm par run hide_run"><span class="annotate short">53&#x202F;&#x219B;&#x202F;54</span><span class="annotate long">line 53 didn't jump to line 54, because the condition on line 53 was never true</span>            <span class="key">if</span> <span class="nam">data</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'lead'</span><span class="op">)</span> <span class="key">is</span> <span class="key">None</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t54" class="stm mis">                <span class="nam">data</span><span class="op">[</span><span class="str">'project'</span><span class="op">]</span> <span class="op">=</span> <span class="nam">data</span><span class="op">[</span><span class="str">'lead_group'</span><span class="op">]</span><span class="op">.</span><span class="nam">project</span><span class="strut">&nbsp;</span></p>
-<p id="t55" class="pln">            <span class="key">else</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t56" class="stm run hide_run">                <span class="nam">data</span><span class="op">[</span><span class="str">'project'</span><span class="op">]</span> <span class="op">=</span> <span class="nam">data</span><span class="op">[</span><span class="str">'lead'</span><span class="op">]</span><span class="op">.</span><span class="nam">project</span><span class="strut">&nbsp;</span></p>
-<p id="t57" class="stm run hide_run">        <span class="key">return</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="nam">data</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t58" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t59" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t60" class="stm run hide_run"><span class="key">class</span> <span class="nam">LeadAssessmentSerializer</span><span class="op">(</span><span class="nam">RemoveNullFieldsMixin</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t61" class="pln">                               <span class="nam">DynamicFieldsMixin</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t62" class="pln">                               <span class="nam">UserResourceSerializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t63" class="stm run hide_run">    <span class="nam">lead_title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'lead.title'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t64" class="pln">                                       <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t65" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t66" class="stm run hide_run">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t67" class="stm run hide_run">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">Assessment</span><span class="strut">&nbsp;</span></p>
-<p id="t68" class="stm run hide_run">        <span class="nam">fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'__all__'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t69" class="stm run hide_run">        <span class="nam">read_only_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'lead'</span><span class="op">,</span> <span class="str">'lead_group'</span><span class="op">,</span> <span class="str">'project'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t70" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t71" class="stm run hide_run">    <span class="key">def</span> <span class="nam">create</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">validated_data</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t72" class="pln">        <span class="com"># If this assessment is being created for the first time,</span><span class="strut">&nbsp;</span></p>
-<p id="t73" class="pln">        <span class="com"># we want to set lead to the one which has its id in the url</span><span class="strut">&nbsp;</span></p>
-<p id="t74" class="stm run hide_run">        <span class="nam">lead</span> <span class="op">=</span> <span class="nam">get_object_or_404</span><span class="op">(</span><span class="nam">Lead</span><span class="op">,</span> <span class="nam">pk</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">initial_data</span><span class="op">[</span><span class="str">'lead'</span><span class="op">]</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t75" class="stm run hide_run">        <span class="nam">assessment</span> <span class="op">=</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="op">{</span><span class="strut">&nbsp;</span></p>
-<p id="t76" class="pln">            <span class="op">**</span><span class="nam">validated_data</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t77" class="pln">            <span class="str">'lead'</span><span class="op">:</span> <span class="nam">lead</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t78" class="pln">            <span class="str">'project'</span><span class="op">:</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">project</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t79" class="pln">        <span class="op">}</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t80" class="stm run hide_run">        <span class="nam">assessment</span><span class="op">.</span><span class="nam">save</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t81" class="stm run hide_run">        <span class="key">return</span> <span class="nam">assessment</span><span class="strut">&nbsp;</span></p>
-<p id="t82" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t83" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t84" class="stm run hide_run"><span class="key">class</span> <span class="nam">LeadGroupAssessmentSerializer</span><span class="op">(</span><span class="nam">RemoveNullFieldsMixin</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t85" class="pln">                                    <span class="nam">DynamicFieldsMixin</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t86" class="pln">                                    <span class="nam">UserResourceSerializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t87" class="stm run hide_run">    <span class="nam">lead_group_title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'lead_group.title'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t88" class="pln">                                             <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t89" class="stm run hide_run">    <span class="nam">leads</span> <span class="op">=</span> <span class="nam">SimpleLeadSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'lead_group.lead_set'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t90" class="pln">                                 <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t91" class="pln">                                 <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t92" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t93" class="stm run hide_run">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t94" class="stm run hide_run">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">Assessment</span><span class="strut">&nbsp;</span></p>
-<p id="t95" class="stm run hide_run">        <span class="nam">fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'__all__'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t96" class="stm run hide_run">        <span class="nam">read_only_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'lead'</span><span class="op">,</span> <span class="str">'lead_group'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t97" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t98" class="stm run hide_run">    <span class="key">def</span> <span class="nam">create</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">validated_data</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t99" class="pln">        <span class="com"># If this assessment is being created for the first time,</span><span class="strut">&nbsp;</span></p>
-<p id="t100" class="pln">        <span class="com"># we want to set lead group to the one which has its id in the url</span><span class="strut">&nbsp;</span></p>
-<p id="t101" class="stm mis">        <span class="nam">assessment</span> <span class="op">=</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="op">{</span><span class="strut">&nbsp;</span></p>
-<p id="t102" class="pln">            <span class="op">**</span><span class="nam">validated_data</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t103" class="pln">            <span class="str">'lead_group'</span><span class="op">:</span> <span class="nam">get_object_or_404</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t104" class="pln">                <span class="nam">LeadGroup</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t105" class="pln">                <span class="nam">pk</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">initial_data</span><span class="op">[</span><span class="str">'lead_group'</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
-<p id="t106" class="pln">            <span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t107" class="pln">        <span class="op">}</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t108" class="stm mis">        <span class="nam">assessment</span><span class="op">.</span><span class="nam">save</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t109" class="stm mis">        <span class="key">return</span> <span class="nam">assessment</span><span class="strut">&nbsp;</span></p>
-<p id="t110" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t111" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t112" class="stm run hide_run"><span class="key">class</span> <span class="nam">LegacyLeadGroupAssessmentSerializer</span><span class="op">(</span><span class="nam">LeadGroupAssessmentSerializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t113" class="stm run hide_run">    <span class="nam">leads</span> <span class="op">=</span> <span class="nam">LegacySimpleLeadSerializer</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t114" class="pln">        <span class="nam">source</span><span class="op">=</span><span class="str">'lead_group.lead_set'</span><span class="op">,</span> <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t115" class="pln">    <span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t116" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t117" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t118" class="stm run hide_run"><span class="key">class</span> <span class="nam">ItemSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t119" class="stm run hide_run">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t120" class="stm run hide_run">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t121" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t122" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t123" class="stm run hide_run"><span class="key">class</span> <span class="nam">TreeSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t124" class="stm run hide_run">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t125" class="stm run hide_run">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t126" class="stm run hide_run">    <span class="nam">children</span> <span class="op">=</span> <span class="nam">RecursiveSerializer</span><span class="op">(</span><span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t127" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t128" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t129" class="stm run hide_run"><span class="key">class</span> <span class="nam">OptionSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t130" class="stm run hide_run">    <span class="nam">key</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t131" class="stm run hide_run">    <span class="nam">label</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'title'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t132" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t133" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t134" class="stm run hide_run"><span class="key">class</span> <span class="nam">FieldSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t135" class="stm run hide_run">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t136" class="stm run hide_run">    <span class="nam">is_required</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">BooleanField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t137" class="stm run hide_run">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t138" class="stm run hide_run">    <span class="nam">tooltip</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t139" class="stm run hide_run">    <span class="nam">field_type</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t140" class="stm run hide_run">    <span class="nam">source_type</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t141" class="stm run hide_run">    <span class="nam">options</span> <span class="op">=</span> <span class="nam">OptionSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'get_options'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t142" class="pln">                               <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t143" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t144" class="stm run hide_run">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t145" class="stm run hide_run">        <span class="nam">ref_name</span> <span class="op">=</span> <span class="str">'AryFieldSerializer'</span><span class="strut">&nbsp;</span></p>
-<p id="t146" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t147" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t148" class="stm run hide_run"><span class="key">class</span> <span class="nam">GroupSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t149" class="stm run hide_run">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t150" class="stm run hide_run">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t151" class="stm run hide_run">    <span class="nam">fields</span> <span class="op">=</span> <span class="nam">FieldSerializer</span><span class="op">(</span><span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t152" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t153" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t154" class="stm run hide_run"><span class="key">class</span> <span class="nam">ScoreScaleSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t155" class="stm run hide_run">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t156" class="stm run hide_run">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t157" class="stm run hide_run">    <span class="nam">color</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t158" class="stm run hide_run">    <span class="nam">value</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t159" class="stm run hide_run">    <span class="nam">default</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">BooleanField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t160" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t161" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t162" class="stm run hide_run"><span class="key">class</span> <span class="nam">ScoreQuestionSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t163" class="stm run hide_run">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t164" class="stm run hide_run">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t165" class="stm run hide_run">    <span class="nam">description</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t166" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t167" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t168" class="stm run hide_run"><span class="key">class</span> <span class="nam">ScorePillarSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t169" class="stm run hide_run">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t170" class="stm run hide_run">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t171" class="stm run hide_run">    <span class="nam">weight</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">FloatField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t172" class="stm run hide_run">    <span class="nam">questions</span> <span class="op">=</span> <span class="nam">ScoreQuestionSerializer</span><span class="op">(</span><span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t173" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t174" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t175" class="stm run hide_run"><span class="key">class</span> <span class="nam">ScoreMatrixScaleSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t176" class="stm run hide_run">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t177" class="stm run hide_run">    <span class="nam">value</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t178" class="stm run hide_run">    <span class="nam">default</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">BooleanField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t179" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t180" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t181" class="stm run hide_run"><span class="key">class</span> <span class="nam">ScoreMatrixRowSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t182" class="stm run hide_run">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t183" class="stm run hide_run">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t184" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t185" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t186" class="stm run hide_run"><span class="key">class</span> <span class="nam">ScoreMatrixColumnSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t187" class="stm run hide_run">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t188" class="stm run hide_run">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t189" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t190" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t191" class="stm run hide_run"><span class="key">class</span> <span class="nam">ScoreMatrixPillarSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t192" class="stm run hide_run">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t193" class="stm run hide_run">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t194" class="stm run hide_run">    <span class="nam">weight</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">FloatField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t195" class="stm run hide_run">    <span class="nam">rows</span> <span class="op">=</span> <span class="nam">ScoreMatrixRowSerializer</span><span class="op">(</span><span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t196" class="stm run hide_run">    <span class="nam">columns</span> <span class="op">=</span> <span class="nam">ScoreMatrixColumnSerializer</span><span class="op">(</span><span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t197" class="stm run hide_run">    <span class="nam">scales</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">SerializerMethodField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t198" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t199" class="stm run hide_run">    <span class="key">def</span> <span class="nam">get_scales</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">pillar</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t200" class="stm mis">        <span class="nam">data</span> <span class="op">=</span> <span class="op">{</span><span class="op">}</span><span class="strut">&nbsp;</span></p>
-<p id="t201" class="stm mis">        <span class="key">for</span> <span class="nam">row</span> <span class="key">in</span> <span class="nam">pillar</span><span class="op">.</span><span class="nam">rows</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t202" class="stm mis">            <span class="nam">row_data</span> <span class="op">=</span> <span class="op">{</span><span class="op">}</span><span class="strut">&nbsp;</span></p>
-<p id="t203" class="stm mis">            <span class="key">for</span> <span class="nam">column</span> <span class="key">in</span> <span class="nam">pillar</span><span class="op">.</span><span class="nam">columns</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t204" class="stm mis">                <span class="nam">scale</span> <span class="op">=</span> <span class="nam">pillar</span><span class="op">.</span><span class="nam">scales</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">row</span><span class="op">=</span><span class="nam">row</span><span class="op">,</span> <span class="nam">column</span><span class="op">=</span><span class="nam">column</span><span class="op">)</span><span class="op">.</span><span class="nam">first</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t205" class="stm mis">                <span class="key">if</span> <span class="key">not</span> <span class="nam">scale</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t206" class="stm mis">                    <span class="key">continue</span><span class="strut">&nbsp;</span></p>
-<p id="t207" class="stm mis">                <span class="nam">serializer</span> <span class="op">=</span> <span class="nam">ScoreMatrixScaleSerializer</span><span class="op">(</span><span class="nam">instance</span><span class="op">=</span><span class="nam">scale</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t208" class="stm mis">                <span class="nam">row_data</span><span class="op">[</span><span class="nam">str</span><span class="op">(</span><span class="nam">column</span><span class="op">.</span><span class="nam">id</span><span class="op">)</span><span class="op">]</span> <span class="op">=</span> <span class="nam">serializer</span><span class="op">.</span><span class="nam">data</span><span class="strut">&nbsp;</span></p>
-<p id="t209" class="stm mis">            <span class="nam">data</span><span class="op">[</span><span class="nam">str</span><span class="op">(</span><span class="nam">row</span><span class="op">.</span><span class="nam">id</span><span class="op">)</span><span class="op">]</span> <span class="op">=</span> <span class="nam">row_data</span><span class="strut">&nbsp;</span></p>
-<p id="t210" class="stm mis">        <span class="key">return</span> <span class="nam">data</span><span class="strut">&nbsp;</span></p>
-<p id="t211" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t212" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t213" class="stm run hide_run"><span class="key">class</span> <span class="nam">ScoreQuestionnaireSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">ModelSerializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t214" class="stm run hide_run">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t215" class="stm run hide_run">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">ScoreQuestionnaire</span><span class="strut">&nbsp;</span></p>
-<p id="t216" class="stm run hide_run">        <span class="nam">fields</span> <span class="op">=</span> <span class="str">'__all__'</span><span class="strut">&nbsp;</span></p>
-<p id="t217" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t218" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t219" class="stm run hide_run"><span class="key">class</span> <span class="nam">ScoreQuestionnaireSubSectorSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">ModelSerializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t220" class="stm run hide_run">    <span class="nam">questions</span> <span class="op">=</span> <span class="nam">ScoreQuestionnaireSerializer</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t221" class="pln">        <span class="nam">source</span><span class="op">=</span><span class="str">'scorequestionnaire_set'</span><span class="op">,</span> <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t222" class="pln">    <span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t223" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t224" class="stm run hide_run">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t225" class="stm run hide_run">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">ScoreQuestionnaireSubSector</span><span class="strut">&nbsp;</span></p>
-<p id="t226" class="stm run hide_run">        <span class="nam">fields</span> <span class="op">=</span> <span class="str">'__all__'</span><span class="strut">&nbsp;</span></p>
-<p id="t227" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t228" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t229" class="stm run hide_run"><span class="key">class</span> <span class="nam">ScoreQuestionnaireSectorSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">ModelSerializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t230" class="stm run hide_run">    <span class="nam">sub_sectors</span> <span class="op">=</span> <span class="nam">ScoreQuestionnaireSubSectorSerializer</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t231" class="pln">        <span class="nam">source</span><span class="op">=</span><span class="str">'scorequestionnairesubsector_set'</span><span class="op">,</span> <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t232" class="pln">    <span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t233" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t234" class="stm run hide_run">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t235" class="stm run hide_run">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">ScoreQuestionnaireSector</span><span class="strut">&nbsp;</span></p>
-<p id="t236" class="stm run hide_run">        <span class="nam">fields</span> <span class="op">=</span> <span class="str">'__all__'</span><span class="strut">&nbsp;</span></p>
-<p id="t237" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t238" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t239" class="stm run hide_run"><span class="key">class</span> <span class="nam">AssessmentTemplateSerializer</span><span class="op">(</span><span class="nam">RemoveNullFieldsMixin</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t240" class="pln">                                   <span class="nam">DynamicFieldsMixin</span><span class="op">,</span> <span class="nam">UserResourceSerializer</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t241" class="stm run hide_run">    <span class="nam">metadata_groups</span> <span class="op">=</span> <span class="nam">GroupSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'metadatagroup_set'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t242" class="pln">                                      <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t243" class="stm run hide_run">    <span class="nam">methodology_groups</span> <span class="op">=</span> <span class="nam">GroupSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'methodologygroup_set'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t244" class="pln">                                         <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t245" class="stm run hide_run">    <span class="nam">sectors</span> <span class="op">=</span> <span class="nam">ItemSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'sector_set'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t246" class="pln">                             <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t247" class="stm run hide_run">    <span class="nam">focuses</span> <span class="op">=</span> <span class="nam">ItemSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'focus_set'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t248" class="pln">                             <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t249" class="stm run hide_run">    <span class="nam">underlying_factors</span> <span class="op">=</span> <span class="nam">TreeSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'get_parent_underlying_factors'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t250" class="pln">                                        <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t251" class="stm run hide_run">    <span class="nam">affected_groups</span> <span class="op">=</span> <span class="nam">TreeSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'get_parent_affected_groups'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t252" class="pln">                                     <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t253" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t254" class="stm run hide_run">    <span class="nam">priority_sectors</span> <span class="op">=</span> <span class="nam">TreeSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'get_parent_priority_sectors'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t255" class="pln">                                      <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t256" class="stm run hide_run">    <span class="nam">priority_issues</span> <span class="op">=</span> <span class="nam">TreeSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'get_parent_priority_issues'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t257" class="pln">                                     <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t258" class="stm run hide_run">    <span class="nam">specific_need_groups</span> <span class="op">=</span> <span class="nam">ItemSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'specificneedgroup_set'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t259" class="pln">                                          <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t260" class="stm run hide_run">    <span class="nam">affected_locations</span> <span class="op">=</span> <span class="nam">ItemSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'affectedlocation_set'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t261" class="pln">                                        <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t262" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t263" class="stm run hide_run">    <span class="nam">score_scales</span> <span class="op">=</span> <span class="nam">ScoreScaleSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'scorescale_set'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t264" class="pln">                                        <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t265" class="stm run hide_run">    <span class="nam">score_pillars</span> <span class="op">=</span> <span class="nam">ScorePillarSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'scorepillar_set'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t266" class="pln">                                          <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t267" class="stm run hide_run">    <span class="nam">score_matrix_pillars</span> <span class="op">=</span> <span class="nam">ScoreMatrixPillarSerializer</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t268" class="pln">        <span class="nam">source</span><span class="op">=</span><span class="str">'scorematrixpillar_set'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t269" class="pln">        <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t270" class="pln">        <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t271" class="pln">    <span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t272" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t273" class="stm run hide_run">    <span class="nam">score_buckets</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">SerializerMethodField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t274" class="stm run hide_run">    <span class="nam">sources</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">SerializerMethodField</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t275" class="stm run hide_run">    <span class="nam">questionnaire_sector</span> <span class="op">=</span> <span class="nam">ScoreQuestionnaireSectorSerializer</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t276" class="pln">        <span class="nam">source</span><span class="op">=</span><span class="str">'scorequestionnairesector_set'</span><span class="op">,</span> <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t277" class="pln">    <span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t278" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t279" class="stm run hide_run">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t280" class="stm run hide_run">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">AssessmentTemplate</span><span class="strut">&nbsp;</span></p>
-<p id="t281" class="stm run hide_run">        <span class="nam">fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'__all__'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t282" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t283" class="stm run hide_run">    <span class="key">def</span> <span class="nam">get_score_buckets</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">template</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t284" class="stm run hide_run">        <span class="nam">buckets</span> <span class="op">=</span> <span class="nam">template</span><span class="op">.</span><span class="nam">scorebucket_set</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t285" class="stm run hide_run">        <span class="key">return</span> <span class="op">[</span><span class="strut">&nbsp;</span></p>
-<p id="t286" class="pln">            <span class="op">[</span><span class="nam">b</span><span class="op">.</span><span class="nam">min_value</span><span class="op">,</span> <span class="nam">b</span><span class="op">.</span><span class="nam">max_value</span><span class="op">,</span> <span class="nam">b</span><span class="op">.</span><span class="nam">score</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
-<p id="t287" class="pln">            <span class="key">for</span> <span class="nam">b</span> <span class="key">in</span> <span class="nam">buckets</span><span class="strut">&nbsp;</span></p>
-<p id="t288" class="pln">        <span class="op">]</span><span class="strut">&nbsp;</span></p>
-<p id="t289" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t290" class="stm run hide_run">    <span class="key">def</span> <span class="nam">get_sources</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">instance</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t291" class="stm run hide_run">        <span class="key">def</span> <span class="nam">have_source</span><span class="op">(</span><span class="nam">source_type</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t292" class="stm run hide_run">            <span class="key">return</span> <span class="nam">AssessmentTemplate</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t293" class="pln">                <span class="nam">Q</span><span class="op">(</span><span class="nam">metadatagroup__fields__source_type</span><span class="op">=</span><span class="nam">source_type</span><span class="op">)</span> <span class="op">|</span><span class="strut">&nbsp;</span></p>
-<p id="t294" class="pln">                <span class="nam">Q</span><span class="op">(</span><span class="nam">methodologygroup__fields__source_type</span><span class="op">=</span><span class="nam">source_type</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t295" class="pln">                <span class="nam">pk</span><span class="op">=</span><span class="nam">instance</span><span class="op">.</span><span class="nam">pk</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t296" class="pln">            <span class="op">)</span><span class="op">.</span><span class="nam">exists</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t297" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t298" class="stm run hide_run">        <span class="key">return</span> <span class="op">{</span><span class="strut">&nbsp;</span></p>
-<p id="t299" class="pln">            <span class="str">'countries'</span><span class="op">:</span> <span class="nam">Region</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">public</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="op">.</span><span class="nam">extra</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t300" class="pln">                <span class="nam">select</span><span class="op">=</span><span class="op">{</span><span class="strut">&nbsp;</span></p>
-<p id="t301" class="pln">                    <span class="str">'key'</span><span class="op">:</span> <span class="str">'id'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t302" class="pln">                    <span class="str">'label'</span><span class="op">:</span> <span class="str">'title'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t303" class="pln">                <span class="op">}</span><span class="strut">&nbsp;</span></p>
-<p id="t304" class="pln">            <span class="op">)</span><span class="op">.</span><span class="nam">values</span><span class="op">(</span><span class="str">'key'</span><span class="op">,</span> <span class="str">'label'</span><span class="op">)</span> <span class="key">if</span> <span class="nam">have_source</span><span class="op">(</span><span class="nam">Field</span><span class="op">.</span><span class="nam">COUNTRIES</span><span class="op">)</span> <span class="key">else</span> <span class="op">[</span><span class="op">]</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t305" class="pln">            <span class="str">'organizations'</span><span class="op">:</span> <span class="nam">ArySourceOrganizationSerializer</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t306" class="pln">                <span class="nam">Organization</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t307" class="pln">                <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t308" class="pln">                <span class="nam">context</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">context</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t309" class="pln">            <span class="op">)</span><span class="op">.</span><span class="nam">data</span><span class="strut">&nbsp;</span></p>
-<p id="t310" class="pln">            <span class="key">if</span> <span class="nam">have_source</span><span class="op">(</span><span class="nam">Field</span><span class="op">.</span><span class="nam">ORGANIZATIONS</span> <span class="key">or</span> <span class="nam">Field</span><span class="op">.</span><span class="nam">DONORS</span><span class="op">)</span> <span class="key">else</span> <span class="op">[</span><span class="op">]</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t311" class="pln">            <span class="str">'organization_type'</span><span class="op">:</span> <span class="nam">OrganizationTypeSerializer</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t312" class="pln">                <span class="nam">OrganizationType</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t313" class="pln">                <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t314" class="pln">            <span class="op">)</span><span class="op">.</span><span class="nam">data</span><span class="strut">&nbsp;</span></p>
-<p id="t315" class="pln">            <span class="key">if</span> <span class="nam">have_source</span><span class="op">(</span><span class="nam">Field</span><span class="op">.</span><span class="nam">ORGANIZATIONS</span> <span class="key">or</span> <span class="nam">Field</span><span class="op">.</span><span class="nam">DONORS</span><span class="op">)</span> <span class="key">else</span> <span class="op">[</span><span class="op">]</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t316" class="pln">        <span class="op">}</span><span class="strut">&nbsp;</span></p>
-
-            </td>
-        </tr>
-    </table>
+    <p id="t1" class="run"><span class="n"><a href="#t1">1</a></span><span class="t"><span class="key">from</span> <span class="nam">django</span><span class="op">.</span><span class="nam">shortcuts</span> <span class="key">import</span> <span class="nam">get_object_or_404</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t2" class="run"><span class="n"><a href="#t2">2</a></span><span class="t"><span class="key">from</span> <span class="nam">django</span><span class="op">.</span><span class="nam">db</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Q</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t3" class="run"><span class="n"><a href="#t3">3</a></span><span class="t"><span class="key">from</span> <span class="nam">rest_framework</span><span class="op">.</span><span class="nam">exceptions</span> <span class="key">import</span> <span class="nam">PermissionDenied</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t4" class="run"><span class="n"><a href="#t4">4</a></span><span class="t"><span class="key">from</span> <span class="nam">drf_dynamic_fields</span> <span class="key">import</span> <span class="nam">DynamicFieldsMixin</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t5" class="run"><span class="n"><a href="#t5">5</a></span><span class="t"><span class="key">from</span> <span class="nam">rest_framework</span> <span class="key">import</span> <span class="nam">serializers</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t6" class="pln"><span class="n"><a href="#t6">6</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t7" class="run"><span class="n"><a href="#t7">7</a></span><span class="t"><span class="key">from</span> <span class="nam">deep</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t8" class="pln"><span class="n"><a href="#t8">8</a></span><span class="t">    <span class="nam">RemoveNullFieldsMixin</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t9" class="pln"><span class="n"><a href="#t9">9</a></span><span class="t">    <span class="nam">RecursiveSerializer</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t10" class="pln"><span class="n"><a href="#t10">10</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t11" class="pln"><span class="n"><a href="#t11">11</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t12" class="run"><span class="n"><a href="#t12">12</a></span><span class="t"><span class="key">from</span> <span class="nam">project</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Project</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t13" class="run"><span class="n"><a href="#t13">13</a></span><span class="t"><span class="key">from</span> <span class="nam">user_resource</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="nam">UserResourceSerializer</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t14" class="run"><span class="n"><a href="#t14">14</a></span><span class="t"><span class="key">from</span> <span class="nam">project</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="nam">ProjectEntitySerializer</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t15" class="run"><span class="n"><a href="#t15">15</a></span><span class="t"><span class="key">from</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t16" class="pln"><span class="n"><a href="#t16">16</a></span><span class="t">    <span class="nam">SimpleLeadSerializer</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t17" class="pln"><span class="n"><a href="#t17">17</a></span><span class="t">    <span class="nam">LegacySimpleLeadSerializer</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t18" class="pln"><span class="n"><a href="#t18">18</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t19" class="run"><span class="n"><a href="#t19">19</a></span><span class="t"><span class="key">from</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Lead</span><span class="op">,</span> <span class="nam">LeadGroup</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t20" class="run"><span class="n"><a href="#t20">20</a></span><span class="t"><span class="key">from</span> <span class="nam">deep</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Field</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t21" class="run"><span class="n"><a href="#t21">21</a></span><span class="t"><span class="key">from</span> <span class="nam">geo</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Region</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t22" class="run"><span class="n"><a href="#t22">22</a></span><span class="t"><span class="key">from</span> <span class="nam">organization</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Organization</span><span class="op">,</span> <span class="nam">OrganizationType</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t23" class="run"><span class="n"><a href="#t23">23</a></span><span class="t"><span class="key">from</span> <span class="nam">organization</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t24" class="pln"><span class="n"><a href="#t24">24</a></span><span class="t">    <span class="nam">ArySourceOrganizationSerializer</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t25" class="pln"><span class="n"><a href="#t25">25</a></span><span class="t">    <span class="nam">OrganizationTypeSerializer</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t26" class="pln"><span class="n"><a href="#t26">26</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t27" class="pln"><span class="n"><a href="#t27">27</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t28" class="run"><span class="n"><a href="#t28">28</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t29" class="pln"><span class="n"><a href="#t29">29</a></span><span class="t">    <span class="nam">AssessmentTemplate</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t30" class="pln"><span class="n"><a href="#t30">30</a></span><span class="t">    <span class="nam">Assessment</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t31" class="pln"><span class="n"><a href="#t31">31</a></span><span class="t">    <span class="nam">PlannedAssessment</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t32" class="pln"><span class="n"><a href="#t32">32</a></span><span class="t">    <span class="nam">ScoreQuestionnaireSector</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t33" class="pln"><span class="n"><a href="#t33">33</a></span><span class="t">    <span class="nam">ScoreQuestionnaireSubSector</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t34" class="pln"><span class="n"><a href="#t34">34</a></span><span class="t">    <span class="nam">ScoreQuestionnaire</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t35" class="pln"><span class="n"><a href="#t35">35</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t36" class="pln"><span class="n"><a href="#t36">36</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t37" class="pln"><span class="n"><a href="#t37">37</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t38" class="run"><span class="n"><a href="#t38">38</a></span><span class="t"><span class="key">class</span> <span class="nam">AssessmentSerializer</span><span class="op">(</span><span class="nam">RemoveNullFieldsMixin</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t39" class="pln"><span class="n"><a href="#t39">39</a></span><span class="t">                           <span class="nam">DynamicFieldsMixin</span><span class="op">,</span> <span class="nam">ProjectEntitySerializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t40" class="run"><span class="n"><a href="#t40">40</a></span><span class="t">    <span class="nam">lead_title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'lead.title'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t41" class="pln"><span class="n"><a href="#t41">41</a></span><span class="t">                                       <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t42" class="run"><span class="n"><a href="#t42">42</a></span><span class="t">    <span class="nam">lead_group_title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'lead_group.title'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t43" class="pln"><span class="n"><a href="#t43">43</a></span><span class="t">                                             <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t44" class="run"><span class="n"><a href="#t44">44</a></span><span class="t">    <span class="nam">project</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">PrimaryKeyRelatedField</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t45" class="pln"><span class="n"><a href="#t45">45</a></span><span class="t">        <span class="nam">required</span><span class="op">=</span><span class="key">False</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t46" class="pln"><span class="n"><a href="#t46">46</a></span><span class="t">        <span class="nam">queryset</span><span class="op">=</span><span class="nam">Project</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t47" class="pln"><span class="n"><a href="#t47">47</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t48" class="pln"><span class="n"><a href="#t48">48</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t49" class="run"><span class="n"><a href="#t49">49</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t50" class="run"><span class="n"><a href="#t50">50</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">Assessment</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t51" class="run"><span class="n"><a href="#t51">51</a></span><span class="t">        <span class="nam">fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'__all__'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t52" class="pln"><span class="n"><a href="#t52">52</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t53" class="run"><span class="n"><a href="#t53">53</a></span><span class="t">    <span class="key">def</span> <span class="nam">create</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t54" class="run"><span class="n"><a href="#t54">54</a></span><span class="t">        <span class="key">if</span> <span class="nam">data</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'project'</span><span class="op">)</span> <span class="key">is</span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t55" class="par run show_par"><span class="n"><a href="#t55">55</a></span><span class="t">            <span class="key">if</span> <span class="nam">data</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'lead'</span><span class="op">)</span> <span class="key">is</span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">55&#x202F;&#x219B;&#x202F;56</span><span class="annotate long">line 55 didn't jump to line 56, because the condition on line 55 was never true</span></span></p>
+    <p id="t56" class="mis show_mis"><span class="n"><a href="#t56">56</a></span><span class="t">                <span class="nam">data</span><span class="op">[</span><span class="str">'project'</span><span class="op">]</span> <span class="op">=</span> <span class="nam">data</span><span class="op">[</span><span class="str">'lead_group'</span><span class="op">]</span><span class="op">.</span><span class="nam">project</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t57" class="pln"><span class="n"><a href="#t57">57</a></span><span class="t">            <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t58" class="run"><span class="n"><a href="#t58">58</a></span><span class="t">                <span class="nam">data</span><span class="op">[</span><span class="str">'project'</span><span class="op">]</span> <span class="op">=</span> <span class="nam">data</span><span class="op">[</span><span class="str">'lead'</span><span class="op">]</span><span class="op">.</span><span class="nam">project</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t59" class="run"><span class="n"><a href="#t59">59</a></span><span class="t">        <span class="key">return</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="nam">data</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t60" class="pln"><span class="n"><a href="#t60">60</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t61" class="pln"><span class="n"><a href="#t61">61</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t62" class="run"><span class="n"><a href="#t62">62</a></span><span class="t"><span class="key">class</span> <span class="nam">PlannedAssessmentSerializer</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t63" class="pln"><span class="n"><a href="#t63">63</a></span><span class="t">        <span class="nam">RemoveNullFieldsMixin</span><span class="op">,</span> <span class="nam">DynamicFieldsMixin</span><span class="op">,</span> <span class="nam">ProjectEntitySerializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t64" class="pln"><span class="n"><a href="#t64">64</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t65" class="run"><span class="n"><a href="#t65">65</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t66" class="run"><span class="n"><a href="#t66">66</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">PlannedAssessment</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t67" class="run"><span class="n"><a href="#t67">67</a></span><span class="t">        <span class="nam">fields</span> <span class="op">=</span> <span class="str">'__all__'</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t68" class="pln"><span class="n"><a href="#t68">68</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t69" class="pln"><span class="n"><a href="#t69">69</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t70" class="run"><span class="n"><a href="#t70">70</a></span><span class="t"><span class="key">class</span> <span class="nam">LeadAssessmentSerializer</span><span class="op">(</span><span class="nam">RemoveNullFieldsMixin</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t71" class="pln"><span class="n"><a href="#t71">71</a></span><span class="t">                               <span class="nam">DynamicFieldsMixin</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t72" class="pln"><span class="n"><a href="#t72">72</a></span><span class="t">                               <span class="nam">UserResourceSerializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t73" class="run"><span class="n"><a href="#t73">73</a></span><span class="t">    <span class="nam">lead_title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'lead.title'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t74" class="pln"><span class="n"><a href="#t74">74</a></span><span class="t">                                       <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t75" class="pln"><span class="n"><a href="#t75">75</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t76" class="run"><span class="n"><a href="#t76">76</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t77" class="run"><span class="n"><a href="#t77">77</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">Assessment</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t78" class="run"><span class="n"><a href="#t78">78</a></span><span class="t">        <span class="nam">fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'__all__'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t79" class="run"><span class="n"><a href="#t79">79</a></span><span class="t">        <span class="nam">read_only_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'lead'</span><span class="op">,</span> <span class="str">'lead_group'</span><span class="op">,</span> <span class="str">'project'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t80" class="pln"><span class="n"><a href="#t80">80</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t81" class="run"><span class="n"><a href="#t81">81</a></span><span class="t">    <span class="key">def</span> <span class="nam">create</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">validated_data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t82" class="pln"><span class="n"><a href="#t82">82</a></span><span class="t">        <span class="com"># If this assessment is being created for the first time,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t83" class="pln"><span class="n"><a href="#t83">83</a></span><span class="t">        <span class="com"># we want to set lead to the one which has its id in the url</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t84" class="run"><span class="n"><a href="#t84">84</a></span><span class="t">        <span class="nam">lead</span> <span class="op">=</span> <span class="nam">get_object_or_404</span><span class="op">(</span><span class="nam">Lead</span><span class="op">,</span> <span class="nam">pk</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">initial_data</span><span class="op">[</span><span class="str">'lead'</span><span class="op">]</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t85" class="run"><span class="n"><a href="#t85">85</a></span><span class="t">        <span class="nam">assessment</span> <span class="op">=</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t86" class="pln"><span class="n"><a href="#t86">86</a></span><span class="t">            <span class="op">**</span><span class="nam">validated_data</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t87" class="pln"><span class="n"><a href="#t87">87</a></span><span class="t">            <span class="str">'lead'</span><span class="op">:</span> <span class="nam">lead</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t88" class="pln"><span class="n"><a href="#t88">88</a></span><span class="t">            <span class="str">'project'</span><span class="op">:</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">project</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t89" class="pln"><span class="n"><a href="#t89">89</a></span><span class="t">        <span class="op">}</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t90" class="run"><span class="n"><a href="#t90">90</a></span><span class="t">        <span class="nam">assessment</span><span class="op">.</span><span class="nam">save</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t91" class="run"><span class="n"><a href="#t91">91</a></span><span class="t">        <span class="key">return</span> <span class="nam">assessment</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t92" class="pln"><span class="n"><a href="#t92">92</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t93" class="pln"><span class="n"><a href="#t93">93</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t94" class="run"><span class="n"><a href="#t94">94</a></span><span class="t"><span class="key">class</span> <span class="nam">LeadGroupAssessmentSerializer</span><span class="op">(</span><span class="nam">RemoveNullFieldsMixin</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t95" class="pln"><span class="n"><a href="#t95">95</a></span><span class="t">                                    <span class="nam">DynamicFieldsMixin</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t96" class="pln"><span class="n"><a href="#t96">96</a></span><span class="t">                                    <span class="nam">UserResourceSerializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t97" class="run"><span class="n"><a href="#t97">97</a></span><span class="t">    <span class="nam">lead_group_title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'lead_group.title'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t98" class="pln"><span class="n"><a href="#t98">98</a></span><span class="t">                                             <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t99" class="run"><span class="n"><a href="#t99">99</a></span><span class="t">    <span class="nam">leads</span> <span class="op">=</span> <span class="nam">SimpleLeadSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'lead_group.lead_set'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t100" class="pln"><span class="n"><a href="#t100">100</a></span><span class="t">                                 <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t101" class="pln"><span class="n"><a href="#t101">101</a></span><span class="t">                                 <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t102" class="pln"><span class="n"><a href="#t102">102</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t103" class="run"><span class="n"><a href="#t103">103</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t104" class="run"><span class="n"><a href="#t104">104</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">Assessment</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t105" class="run"><span class="n"><a href="#t105">105</a></span><span class="t">        <span class="nam">fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'__all__'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t106" class="run"><span class="n"><a href="#t106">106</a></span><span class="t">        <span class="nam">read_only_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'lead'</span><span class="op">,</span> <span class="str">'lead_group'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t107" class="pln"><span class="n"><a href="#t107">107</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t108" class="run"><span class="n"><a href="#t108">108</a></span><span class="t">    <span class="key">def</span> <span class="nam">create</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">validated_data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t109" class="pln"><span class="n"><a href="#t109">109</a></span><span class="t">        <span class="com"># If this assessment is being created for the first time,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t110" class="pln"><span class="n"><a href="#t110">110</a></span><span class="t">        <span class="com"># we want to set lead group to the one which has its id in the url</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t111" class="mis show_mis"><span class="n"><a href="#t111">111</a></span><span class="t">        <span class="nam">assessment</span> <span class="op">=</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t112" class="pln"><span class="n"><a href="#t112">112</a></span><span class="t">            <span class="op">**</span><span class="nam">validated_data</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t113" class="pln"><span class="n"><a href="#t113">113</a></span><span class="t">            <span class="str">'lead_group'</span><span class="op">:</span> <span class="nam">get_object_or_404</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t114" class="pln"><span class="n"><a href="#t114">114</a></span><span class="t">                <span class="nam">LeadGroup</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t115" class="pln"><span class="n"><a href="#t115">115</a></span><span class="t">                <span class="nam">pk</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">initial_data</span><span class="op">[</span><span class="str">'lead_group'</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t116" class="pln"><span class="n"><a href="#t116">116</a></span><span class="t">            <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t117" class="pln"><span class="n"><a href="#t117">117</a></span><span class="t">        <span class="op">}</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t118" class="mis show_mis"><span class="n"><a href="#t118">118</a></span><span class="t">        <span class="nam">assessment</span><span class="op">.</span><span class="nam">save</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t119" class="mis show_mis"><span class="n"><a href="#t119">119</a></span><span class="t">        <span class="key">return</span> <span class="nam">assessment</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t120" class="pln"><span class="n"><a href="#t120">120</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t121" class="pln"><span class="n"><a href="#t121">121</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t122" class="run"><span class="n"><a href="#t122">122</a></span><span class="t"><span class="key">class</span> <span class="nam">LegacyLeadGroupAssessmentSerializer</span><span class="op">(</span><span class="nam">LeadGroupAssessmentSerializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t123" class="run"><span class="n"><a href="#t123">123</a></span><span class="t">    <span class="nam">leads</span> <span class="op">=</span> <span class="nam">LegacySimpleLeadSerializer</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t124" class="pln"><span class="n"><a href="#t124">124</a></span><span class="t">        <span class="nam">source</span><span class="op">=</span><span class="str">'lead_group.lead_set'</span><span class="op">,</span> <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t125" class="pln"><span class="n"><a href="#t125">125</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t126" class="pln"><span class="n"><a href="#t126">126</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t127" class="pln"><span class="n"><a href="#t127">127</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t128" class="run"><span class="n"><a href="#t128">128</a></span><span class="t"><span class="key">class</span> <span class="nam">ItemSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t129" class="run"><span class="n"><a href="#t129">129</a></span><span class="t">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t130" class="run"><span class="n"><a href="#t130">130</a></span><span class="t">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t131" class="pln"><span class="n"><a href="#t131">131</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t132" class="pln"><span class="n"><a href="#t132">132</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t133" class="run"><span class="n"><a href="#t133">133</a></span><span class="t"><span class="key">class</span> <span class="nam">TreeSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t134" class="run"><span class="n"><a href="#t134">134</a></span><span class="t">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t135" class="run"><span class="n"><a href="#t135">135</a></span><span class="t">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t136" class="run"><span class="n"><a href="#t136">136</a></span><span class="t">    <span class="nam">children</span> <span class="op">=</span> <span class="nam">RecursiveSerializer</span><span class="op">(</span><span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t137" class="pln"><span class="n"><a href="#t137">137</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t138" class="pln"><span class="n"><a href="#t138">138</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t139" class="run"><span class="n"><a href="#t139">139</a></span><span class="t"><span class="key">class</span> <span class="nam">OptionSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t140" class="run"><span class="n"><a href="#t140">140</a></span><span class="t">    <span class="nam">key</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t141" class="run"><span class="n"><a href="#t141">141</a></span><span class="t">    <span class="nam">label</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'title'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t142" class="pln"><span class="n"><a href="#t142">142</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t143" class="pln"><span class="n"><a href="#t143">143</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t144" class="run"><span class="n"><a href="#t144">144</a></span><span class="t"><span class="key">class</span> <span class="nam">FieldSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t145" class="run"><span class="n"><a href="#t145">145</a></span><span class="t">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t146" class="run"><span class="n"><a href="#t146">146</a></span><span class="t">    <span class="nam">is_required</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">BooleanField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t147" class="run"><span class="n"><a href="#t147">147</a></span><span class="t">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t148" class="run"><span class="n"><a href="#t148">148</a></span><span class="t">    <span class="nam">tooltip</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t149" class="run"><span class="n"><a href="#t149">149</a></span><span class="t">    <span class="nam">field_type</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t150" class="run"><span class="n"><a href="#t150">150</a></span><span class="t">    <span class="nam">source_type</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t151" class="run"><span class="n"><a href="#t151">151</a></span><span class="t">    <span class="nam">options</span> <span class="op">=</span> <span class="nam">OptionSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'get_options'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t152" class="pln"><span class="n"><a href="#t152">152</a></span><span class="t">                               <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t153" class="run"><span class="n"><a href="#t153">153</a></span><span class="t">    <span class="nam">show_in_planned_assessment</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">BooleanField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t154" class="pln"><span class="n"><a href="#t154">154</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t155" class="run"><span class="n"><a href="#t155">155</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t156" class="run"><span class="n"><a href="#t156">156</a></span><span class="t">        <span class="nam">ref_name</span> <span class="op">=</span> <span class="str">'AryFieldSerializer'</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t157" class="pln"><span class="n"><a href="#t157">157</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t158" class="pln"><span class="n"><a href="#t158">158</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t159" class="run"><span class="n"><a href="#t159">159</a></span><span class="t"><span class="key">class</span> <span class="nam">GroupSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t160" class="run"><span class="n"><a href="#t160">160</a></span><span class="t">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t161" class="run"><span class="n"><a href="#t161">161</a></span><span class="t">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t162" class="run"><span class="n"><a href="#t162">162</a></span><span class="t">    <span class="nam">fields</span> <span class="op">=</span> <span class="nam">FieldSerializer</span><span class="op">(</span><span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t163" class="pln"><span class="n"><a href="#t163">163</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t164" class="pln"><span class="n"><a href="#t164">164</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t165" class="run"><span class="n"><a href="#t165">165</a></span><span class="t"><span class="key">class</span> <span class="nam">ScoreScaleSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t166" class="run"><span class="n"><a href="#t166">166</a></span><span class="t">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t167" class="run"><span class="n"><a href="#t167">167</a></span><span class="t">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t168" class="run"><span class="n"><a href="#t168">168</a></span><span class="t">    <span class="nam">color</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t169" class="run"><span class="n"><a href="#t169">169</a></span><span class="t">    <span class="nam">value</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t170" class="run"><span class="n"><a href="#t170">170</a></span><span class="t">    <span class="nam">default</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">BooleanField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t171" class="pln"><span class="n"><a href="#t171">171</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t172" class="pln"><span class="n"><a href="#t172">172</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t173" class="run"><span class="n"><a href="#t173">173</a></span><span class="t"><span class="key">class</span> <span class="nam">ScoreQuestionSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t174" class="run"><span class="n"><a href="#t174">174</a></span><span class="t">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t175" class="run"><span class="n"><a href="#t175">175</a></span><span class="t">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t176" class="run"><span class="n"><a href="#t176">176</a></span><span class="t">    <span class="nam">description</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t177" class="pln"><span class="n"><a href="#t177">177</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t178" class="pln"><span class="n"><a href="#t178">178</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t179" class="run"><span class="n"><a href="#t179">179</a></span><span class="t"><span class="key">class</span> <span class="nam">ScorePillarSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t180" class="run"><span class="n"><a href="#t180">180</a></span><span class="t">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t181" class="run"><span class="n"><a href="#t181">181</a></span><span class="t">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t182" class="run"><span class="n"><a href="#t182">182</a></span><span class="t">    <span class="nam">weight</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">FloatField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t183" class="run"><span class="n"><a href="#t183">183</a></span><span class="t">    <span class="nam">questions</span> <span class="op">=</span> <span class="nam">ScoreQuestionSerializer</span><span class="op">(</span><span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t184" class="pln"><span class="n"><a href="#t184">184</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t185" class="pln"><span class="n"><a href="#t185">185</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t186" class="run"><span class="n"><a href="#t186">186</a></span><span class="t"><span class="key">class</span> <span class="nam">ScoreMatrixScaleSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t187" class="run"><span class="n"><a href="#t187">187</a></span><span class="t">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t188" class="run"><span class="n"><a href="#t188">188</a></span><span class="t">    <span class="nam">value</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t189" class="run"><span class="n"><a href="#t189">189</a></span><span class="t">    <span class="nam">default</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">BooleanField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t190" class="pln"><span class="n"><a href="#t190">190</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t191" class="pln"><span class="n"><a href="#t191">191</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t192" class="run"><span class="n"><a href="#t192">192</a></span><span class="t"><span class="key">class</span> <span class="nam">ScoreMatrixRowSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t193" class="run"><span class="n"><a href="#t193">193</a></span><span class="t">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t194" class="run"><span class="n"><a href="#t194">194</a></span><span class="t">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t195" class="pln"><span class="n"><a href="#t195">195</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t196" class="pln"><span class="n"><a href="#t196">196</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t197" class="run"><span class="n"><a href="#t197">197</a></span><span class="t"><span class="key">class</span> <span class="nam">ScoreMatrixColumnSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t198" class="run"><span class="n"><a href="#t198">198</a></span><span class="t">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t199" class="run"><span class="n"><a href="#t199">199</a></span><span class="t">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t200" class="pln"><span class="n"><a href="#t200">200</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t201" class="pln"><span class="n"><a href="#t201">201</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t202" class="run"><span class="n"><a href="#t202">202</a></span><span class="t"><span class="key">class</span> <span class="nam">ScoreMatrixPillarSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t203" class="run"><span class="n"><a href="#t203">203</a></span><span class="t">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t204" class="run"><span class="n"><a href="#t204">204</a></span><span class="t">    <span class="nam">title</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t205" class="run"><span class="n"><a href="#t205">205</a></span><span class="t">    <span class="nam">weight</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">FloatField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t206" class="run"><span class="n"><a href="#t206">206</a></span><span class="t">    <span class="nam">rows</span> <span class="op">=</span> <span class="nam">ScoreMatrixRowSerializer</span><span class="op">(</span><span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t207" class="run"><span class="n"><a href="#t207">207</a></span><span class="t">    <span class="nam">columns</span> <span class="op">=</span> <span class="nam">ScoreMatrixColumnSerializer</span><span class="op">(</span><span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t208" class="run"><span class="n"><a href="#t208">208</a></span><span class="t">    <span class="nam">scales</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">SerializerMethodField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t209" class="pln"><span class="n"><a href="#t209">209</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t210" class="run"><span class="n"><a href="#t210">210</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_scales</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">pillar</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t211" class="mis show_mis"><span class="n"><a href="#t211">211</a></span><span class="t">        <span class="nam">data</span> <span class="op">=</span> <span class="op">{</span><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t212" class="mis show_mis"><span class="n"><a href="#t212">212</a></span><span class="t">        <span class="key">for</span> <span class="nam">row</span> <span class="key">in</span> <span class="nam">pillar</span><span class="op">.</span><span class="nam">rows</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t213" class="mis show_mis"><span class="n"><a href="#t213">213</a></span><span class="t">            <span class="nam">row_data</span> <span class="op">=</span> <span class="op">{</span><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t214" class="mis show_mis"><span class="n"><a href="#t214">214</a></span><span class="t">            <span class="key">for</span> <span class="nam">column</span> <span class="key">in</span> <span class="nam">pillar</span><span class="op">.</span><span class="nam">columns</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t215" class="mis show_mis"><span class="n"><a href="#t215">215</a></span><span class="t">                <span class="nam">scale</span> <span class="op">=</span> <span class="nam">pillar</span><span class="op">.</span><span class="nam">scales</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">row</span><span class="op">=</span><span class="nam">row</span><span class="op">,</span> <span class="nam">column</span><span class="op">=</span><span class="nam">column</span><span class="op">)</span><span class="op">.</span><span class="nam">first</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t216" class="mis show_mis"><span class="n"><a href="#t216">216</a></span><span class="t">                <span class="key">if</span> <span class="key">not</span> <span class="nam">scale</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t217" class="mis show_mis"><span class="n"><a href="#t217">217</a></span><span class="t">                    <span class="key">continue</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t218" class="mis show_mis"><span class="n"><a href="#t218">218</a></span><span class="t">                <span class="nam">serializer</span> <span class="op">=</span> <span class="nam">ScoreMatrixScaleSerializer</span><span class="op">(</span><span class="nam">instance</span><span class="op">=</span><span class="nam">scale</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t219" class="mis show_mis"><span class="n"><a href="#t219">219</a></span><span class="t">                <span class="nam">row_data</span><span class="op">[</span><span class="nam">str</span><span class="op">(</span><span class="nam">column</span><span class="op">.</span><span class="nam">id</span><span class="op">)</span><span class="op">]</span> <span class="op">=</span> <span class="nam">serializer</span><span class="op">.</span><span class="nam">data</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t220" class="mis show_mis"><span class="n"><a href="#t220">220</a></span><span class="t">            <span class="nam">data</span><span class="op">[</span><span class="nam">str</span><span class="op">(</span><span class="nam">row</span><span class="op">.</span><span class="nam">id</span><span class="op">)</span><span class="op">]</span> <span class="op">=</span> <span class="nam">row_data</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t221" class="mis show_mis"><span class="n"><a href="#t221">221</a></span><span class="t">        <span class="key">return</span> <span class="nam">data</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t222" class="pln"><span class="n"><a href="#t222">222</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t223" class="pln"><span class="n"><a href="#t223">223</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t224" class="run"><span class="n"><a href="#t224">224</a></span><span class="t"><span class="key">class</span> <span class="nam">ScoreQuestionnaireSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">ModelSerializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t225" class="run"><span class="n"><a href="#t225">225</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t226" class="run"><span class="n"><a href="#t226">226</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">ScoreQuestionnaire</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t227" class="run"><span class="n"><a href="#t227">227</a></span><span class="t">        <span class="nam">fields</span> <span class="op">=</span> <span class="str">'__all__'</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t228" class="pln"><span class="n"><a href="#t228">228</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t229" class="pln"><span class="n"><a href="#t229">229</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t230" class="run"><span class="n"><a href="#t230">230</a></span><span class="t"><span class="key">class</span> <span class="nam">ScoreQuestionnaireSubSectorSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">ModelSerializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t231" class="run"><span class="n"><a href="#t231">231</a></span><span class="t">    <span class="nam">questions</span> <span class="op">=</span> <span class="nam">ScoreQuestionnaireSerializer</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t232" class="pln"><span class="n"><a href="#t232">232</a></span><span class="t">        <span class="nam">source</span><span class="op">=</span><span class="str">'scorequestionnaire_set'</span><span class="op">,</span> <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t233" class="pln"><span class="n"><a href="#t233">233</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t234" class="pln"><span class="n"><a href="#t234">234</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t235" class="run"><span class="n"><a href="#t235">235</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t236" class="run"><span class="n"><a href="#t236">236</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">ScoreQuestionnaireSubSector</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t237" class="run"><span class="n"><a href="#t237">237</a></span><span class="t">        <span class="nam">fields</span> <span class="op">=</span> <span class="str">'__all__'</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t238" class="pln"><span class="n"><a href="#t238">238</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t239" class="pln"><span class="n"><a href="#t239">239</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t240" class="run"><span class="n"><a href="#t240">240</a></span><span class="t"><span class="key">class</span> <span class="nam">ScoreQuestionnaireSectorSerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">ModelSerializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t241" class="run"><span class="n"><a href="#t241">241</a></span><span class="t">    <span class="nam">sub_sectors</span> <span class="op">=</span> <span class="nam">ScoreQuestionnaireSubSectorSerializer</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t242" class="pln"><span class="n"><a href="#t242">242</a></span><span class="t">        <span class="nam">source</span><span class="op">=</span><span class="str">'scorequestionnairesubsector_set'</span><span class="op">,</span> <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t243" class="pln"><span class="n"><a href="#t243">243</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t244" class="pln"><span class="n"><a href="#t244">244</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t245" class="run"><span class="n"><a href="#t245">245</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t246" class="run"><span class="n"><a href="#t246">246</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">ScoreQuestionnaireSector</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t247" class="run"><span class="n"><a href="#t247">247</a></span><span class="t">        <span class="nam">fields</span> <span class="op">=</span> <span class="str">'__all__'</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t248" class="pln"><span class="n"><a href="#t248">248</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t249" class="pln"><span class="n"><a href="#t249">249</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t250" class="run"><span class="n"><a href="#t250">250</a></span><span class="t"><span class="key">class</span> <span class="nam">AssessmentTemplateSerializer</span><span class="op">(</span><span class="nam">RemoveNullFieldsMixin</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t251" class="pln"><span class="n"><a href="#t251">251</a></span><span class="t">                                   <span class="nam">DynamicFieldsMixin</span><span class="op">,</span> <span class="nam">UserResourceSerializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t252" class="run"><span class="n"><a href="#t252">252</a></span><span class="t">    <span class="nam">metadata_groups</span> <span class="op">=</span> <span class="nam">GroupSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'metadatagroup_set'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t253" class="pln"><span class="n"><a href="#t253">253</a></span><span class="t">                                      <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t254" class="run"><span class="n"><a href="#t254">254</a></span><span class="t">    <span class="nam">methodology_groups</span> <span class="op">=</span> <span class="nam">GroupSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'methodologygroup_set'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t255" class="pln"><span class="n"><a href="#t255">255</a></span><span class="t">                                         <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t256" class="run"><span class="n"><a href="#t256">256</a></span><span class="t">    <span class="nam">sectors</span> <span class="op">=</span> <span class="nam">ItemSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'sector_set'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t257" class="pln"><span class="n"><a href="#t257">257</a></span><span class="t">                             <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t258" class="run"><span class="n"><a href="#t258">258</a></span><span class="t">    <span class="nam">focuses</span> <span class="op">=</span> <span class="nam">ItemSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'focus_set'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t259" class="pln"><span class="n"><a href="#t259">259</a></span><span class="t">                             <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t260" class="run"><span class="n"><a href="#t260">260</a></span><span class="t">    <span class="nam">underlying_factors</span> <span class="op">=</span> <span class="nam">TreeSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'get_parent_underlying_factors'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t261" class="pln"><span class="n"><a href="#t261">261</a></span><span class="t">                                        <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t262" class="run"><span class="n"><a href="#t262">262</a></span><span class="t">    <span class="nam">affected_groups</span> <span class="op">=</span> <span class="nam">TreeSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'get_parent_affected_groups'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t263" class="pln"><span class="n"><a href="#t263">263</a></span><span class="t">                                     <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t264" class="pln"><span class="n"><a href="#t264">264</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t265" class="run"><span class="n"><a href="#t265">265</a></span><span class="t">    <span class="nam">priority_sectors</span> <span class="op">=</span> <span class="nam">TreeSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'get_parent_priority_sectors'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t266" class="pln"><span class="n"><a href="#t266">266</a></span><span class="t">                                      <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t267" class="run"><span class="n"><a href="#t267">267</a></span><span class="t">    <span class="nam">priority_issues</span> <span class="op">=</span> <span class="nam">TreeSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'get_parent_priority_issues'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t268" class="pln"><span class="n"><a href="#t268">268</a></span><span class="t">                                     <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t269" class="run"><span class="n"><a href="#t269">269</a></span><span class="t">    <span class="nam">specific_need_groups</span> <span class="op">=</span> <span class="nam">ItemSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'specificneedgroup_set'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t270" class="pln"><span class="n"><a href="#t270">270</a></span><span class="t">                                          <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t271" class="run"><span class="n"><a href="#t271">271</a></span><span class="t">    <span class="nam">affected_locations</span> <span class="op">=</span> <span class="nam">ItemSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'affectedlocation_set'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t272" class="pln"><span class="n"><a href="#t272">272</a></span><span class="t">                                        <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t273" class="pln"><span class="n"><a href="#t273">273</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t274" class="run"><span class="n"><a href="#t274">274</a></span><span class="t">    <span class="nam">score_scales</span> <span class="op">=</span> <span class="nam">ScoreScaleSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'scorescale_set'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t275" class="pln"><span class="n"><a href="#t275">275</a></span><span class="t">                                        <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t276" class="run"><span class="n"><a href="#t276">276</a></span><span class="t">    <span class="nam">score_pillars</span> <span class="op">=</span> <span class="nam">ScorePillarSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'scorepillar_set'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t277" class="pln"><span class="n"><a href="#t277">277</a></span><span class="t">                                          <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t278" class="run"><span class="n"><a href="#t278">278</a></span><span class="t">    <span class="nam">score_matrix_pillars</span> <span class="op">=</span> <span class="nam">ScoreMatrixPillarSerializer</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t279" class="pln"><span class="n"><a href="#t279">279</a></span><span class="t">        <span class="nam">source</span><span class="op">=</span><span class="str">'scorematrixpillar_set'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t280" class="pln"><span class="n"><a href="#t280">280</a></span><span class="t">        <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t281" class="pln"><span class="n"><a href="#t281">281</a></span><span class="t">        <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t282" class="pln"><span class="n"><a href="#t282">282</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t283" class="pln"><span class="n"><a href="#t283">283</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t284" class="run"><span class="n"><a href="#t284">284</a></span><span class="t">    <span class="nam">score_buckets</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">SerializerMethodField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t285" class="run"><span class="n"><a href="#t285">285</a></span><span class="t">    <span class="nam">sources</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">SerializerMethodField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t286" class="run"><span class="n"><a href="#t286">286</a></span><span class="t">    <span class="nam">questionnaire_sector</span> <span class="op">=</span> <span class="nam">ScoreQuestionnaireSectorSerializer</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t287" class="pln"><span class="n"><a href="#t287">287</a></span><span class="t">        <span class="nam">source</span><span class="op">=</span><span class="str">'scorequestionnairesector_set'</span><span class="op">,</span> <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t288" class="pln"><span class="n"><a href="#t288">288</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t289" class="pln"><span class="n"><a href="#t289">289</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t290" class="run"><span class="n"><a href="#t290">290</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t291" class="run"><span class="n"><a href="#t291">291</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">AssessmentTemplate</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t292" class="run"><span class="n"><a href="#t292">292</a></span><span class="t">        <span class="nam">fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'__all__'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t293" class="pln"><span class="n"><a href="#t293">293</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t294" class="run"><span class="n"><a href="#t294">294</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_score_buckets</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">template</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t295" class="run"><span class="n"><a href="#t295">295</a></span><span class="t">        <span class="nam">buckets</span> <span class="op">=</span> <span class="nam">template</span><span class="op">.</span><span class="nam">scorebucket_set</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t296" class="run"><span class="n"><a href="#t296">296</a></span><span class="t">        <span class="key">return</span> <span class="op">[</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t297" class="pln"><span class="n"><a href="#t297">297</a></span><span class="t">            <span class="op">[</span><span class="nam">b</span><span class="op">.</span><span class="nam">min_value</span><span class="op">,</span> <span class="nam">b</span><span class="op">.</span><span class="nam">max_value</span><span class="op">,</span> <span class="nam">b</span><span class="op">.</span><span class="nam">score</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t298" class="pln"><span class="n"><a href="#t298">298</a></span><span class="t">            <span class="key">for</span> <span class="nam">b</span> <span class="key">in</span> <span class="nam">buckets</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t299" class="pln"><span class="n"><a href="#t299">299</a></span><span class="t">        <span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t300" class="pln"><span class="n"><a href="#t300">300</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t301" class="run"><span class="n"><a href="#t301">301</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_sources</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">instance</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t302" class="run"><span class="n"><a href="#t302">302</a></span><span class="t">        <span class="key">def</span> <span class="nam">have_source</span><span class="op">(</span><span class="nam">source_type</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t303" class="run"><span class="n"><a href="#t303">303</a></span><span class="t">            <span class="key">return</span> <span class="nam">AssessmentTemplate</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t304" class="pln"><span class="n"><a href="#t304">304</a></span><span class="t">                <span class="nam">Q</span><span class="op">(</span><span class="nam">metadatagroup__fields__source_type</span><span class="op">=</span><span class="nam">source_type</span><span class="op">)</span> <span class="op">|</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t305" class="pln"><span class="n"><a href="#t305">305</a></span><span class="t">                <span class="nam">Q</span><span class="op">(</span><span class="nam">methodologygroup__fields__source_type</span><span class="op">=</span><span class="nam">source_type</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t306" class="pln"><span class="n"><a href="#t306">306</a></span><span class="t">                <span class="nam">pk</span><span class="op">=</span><span class="nam">instance</span><span class="op">.</span><span class="nam">pk</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t307" class="pln"><span class="n"><a href="#t307">307</a></span><span class="t">            <span class="op">)</span><span class="op">.</span><span class="nam">exists</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t308" class="pln"><span class="n"><a href="#t308">308</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t309" class="run"><span class="n"><a href="#t309">309</a></span><span class="t">        <span class="key">return</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t310" class="pln"><span class="n"><a href="#t310">310</a></span><span class="t">            <span class="str">'countries'</span><span class="op">:</span> <span class="nam">Region</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">public</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="op">.</span><span class="nam">extra</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t311" class="pln"><span class="n"><a href="#t311">311</a></span><span class="t">                <span class="nam">select</span><span class="op">=</span><span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t312" class="pln"><span class="n"><a href="#t312">312</a></span><span class="t">                    <span class="str">'key'</span><span class="op">:</span> <span class="str">'id'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t313" class="pln"><span class="n"><a href="#t313">313</a></span><span class="t">                    <span class="str">'label'</span><span class="op">:</span> <span class="str">'title'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t314" class="pln"><span class="n"><a href="#t314">314</a></span><span class="t">                <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t315" class="pln"><span class="n"><a href="#t315">315</a></span><span class="t">            <span class="op">)</span><span class="op">.</span><span class="nam">values</span><span class="op">(</span><span class="str">'key'</span><span class="op">,</span> <span class="str">'label'</span><span class="op">)</span> <span class="key">if</span> <span class="nam">have_source</span><span class="op">(</span><span class="nam">Field</span><span class="op">.</span><span class="nam">COUNTRIES</span><span class="op">)</span> <span class="key">else</span> <span class="op">[</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t316" class="pln"><span class="n"><a href="#t316">316</a></span><span class="t">            <span class="str">'organizations'</span><span class="op">:</span> <span class="nam">ArySourceOrganizationSerializer</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t317" class="pln"><span class="n"><a href="#t317">317</a></span><span class="t">                <span class="nam">Organization</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t318" class="pln"><span class="n"><a href="#t318">318</a></span><span class="t">                <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t319" class="pln"><span class="n"><a href="#t319">319</a></span><span class="t">                <span class="nam">context</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">context</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t320" class="pln"><span class="n"><a href="#t320">320</a></span><span class="t">            <span class="op">)</span><span class="op">.</span><span class="nam">data</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t321" class="pln"><span class="n"><a href="#t321">321</a></span><span class="t">            <span class="key">if</span> <span class="nam">have_source</span><span class="op">(</span><span class="nam">Field</span><span class="op">.</span><span class="nam">ORGANIZATIONS</span> <span class="key">or</span> <span class="nam">Field</span><span class="op">.</span><span class="nam">DONORS</span><span class="op">)</span> <span class="key">else</span> <span class="op">[</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t322" class="pln"><span class="n"><a href="#t322">322</a></span><span class="t">            <span class="str">'organization_type'</span><span class="op">:</span> <span class="nam">OrganizationTypeSerializer</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t323" class="pln"><span class="n"><a href="#t323">323</a></span><span class="t">                <span class="nam">OrganizationType</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t324" class="pln"><span class="n"><a href="#t324">324</a></span><span class="t">                <span class="nam">many</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t325" class="pln"><span class="n"><a href="#t325">325</a></span><span class="t">            <span class="op">)</span><span class="op">.</span><span class="nam">data</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t326" class="pln"><span class="n"><a href="#t326">326</a></span><span class="t">            <span class="key">if</span> <span class="nam">have_source</span><span class="op">(</span><span class="nam">Field</span><span class="op">.</span><span class="nam">ORGANIZATIONS</span> <span class="key">or</span> <span class="nam">Field</span><span class="op">.</span><span class="nam">DONORS</span><span class="op">)</span> <span class="key">else</span> <span class="op">[</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t327" class="pln"><span class="n"><a href="#t327">327</a></span><span class="t">        <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
 </div>
-
 <div id="footer">
     <div class="content">
         <p>
-            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.4</a>,
-            created at 2019-12-09 10:17
+            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.0.1</a>,
+            created at 2020-01-03 04:32
         </p>
     </div>
 </div>
-
 </body>
 </html>
