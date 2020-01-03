@@ -56,6 +56,9 @@ class Entry(UserResource, ProjectEntityMixin):
         null=True, blank=True,
     )
 
+    dropped_excerpt = models.TextField(blank=True)
+    highlight_hidden = models.BooleanField(default=False)
+
     @staticmethod
     def annotate_comment_count(qs):
         return qs.annotate(
