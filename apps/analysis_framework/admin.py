@@ -6,6 +6,9 @@ from analysis_framework.models import (
     AnalysisFrameworkMembership,
     Widget, Filter,
     Exportable,
+)
+
+from questionnaire.models import (
     FrameworkQuestion,
 )
 

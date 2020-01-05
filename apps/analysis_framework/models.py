@@ -168,18 +168,6 @@ class AnalysisFramework(UserResource):
         return self.filter_set.filter(widget_key__in=current_widgets_key).all()
 
 
-class FrameworkQuestion(models.Model):
-    analysis_framework = models.ForeignKey(
-        AnalysisFramework, on_delete=models.CASCADE,
-    )
-    title = models.TextField(blank=True)
-    enumerator_instruction = models.TextField(blank=True)
-    respondent_instruction = models.TextField(blank=True)
-    type = models.CharField(max_length=56, blank=True)
-    importance = models.CharField(max_length=56, blank=True)
-    framework_attribute = JSONField(default=None, blank=True, null=True)
-
-
 class Widget(models.Model):
     """
     Widget inserted into a framework

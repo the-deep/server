@@ -9,6 +9,6 @@ python3 manage.py migrate --no-input
 if [ "${NO_CELERY}" == 'true' ]; then
     python3 manage.py runserver 0.0.0.0:8000
 else
-    python3 manage.py runserver 0.0.0.0:8000 &
-    python3 manage.py run_celery_dev
+    python3 manage.py run_celery_dev &
+    python3 manage.py runserver 0.0.0.0:8000
 fi

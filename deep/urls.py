@@ -66,6 +66,10 @@ from geo.views import (
     GeoBoundsView,
     GeoOptionsView,
 )
+from questionnaire.views import (
+    QuestionnaireViewSet,
+    CrisisTypeViewSet,
+)
 from lead.views import (
     LeadGroupViewSet,
     LeadViewSet,
@@ -239,6 +243,12 @@ router.register(r'leads', LeadViewSet,
                 basename='lead')
 router.register(r'lead-previews', LeadPreviewViewSet,
                 basename='lead_preview')
+
+# Questionnaire routers
+router.register(r'questionnaires', QuestionnaireViewSet,
+                basename='questionnaire')
+router.register(r'crisis-types', CrisisTypeViewSet,
+                basename='crisis_type')
 
 # Entry routers
 router.register(r'entries', EntryViewSet,
