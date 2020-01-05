@@ -8,18 +8,14 @@ from analysis_framework.models import (
     AnalysisFrameworkRole,
     AnalysisFrameworkMembership,
     Widget, Filter, Exportable,
+)
+from questionnaire.models import (
     FrameworkQuestion,
+    CrisisType,
 )
 from user.models import Feature
 from user.serializers import UserSerializer
 from project.models import Project
-
-
-class FrameworkQuestionSerializer(RemoveNullFieldsMixin,
-                                  DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = FrameworkQuestion
-        fields = ('__all__')
 
 
 class WidgetSerializer(RemoveNullFieldsMixin,
@@ -73,11 +69,49 @@ class ExportableSerializer(RemoveNullFieldsMixin,
         return analysis_framework
 
 
-class SimpleFrameworkQuestionSerializer(RemoveNullFieldsMixin,
-                                        serializers.ModelSerializer):
+class CrisisTypeSerializer(
+    UserResourceSerializer,
+    RemoveNullFieldsMixin,
+):
+    class Meta:
+        fields = '__all__'
+        model = CrisisType
+
+
+class FrameworkQuestionSerializer(RemoveNullFieldsMixin,
+                                  serializers.ModelSerializer):
+    enumerator_skill_detail = serializers.SerializerMethodField()
+    data_collection_technique_detail = serializers.SerializerMethodField()
+    importance_detail = serializers.SerializerMethodField()
+    crisis_type_detail = CrisisTypeSerializer(source='crisis_type', read_only=True)
+
     class Meta:
         model = FrameworkQuestion
         fields = ('__all__')
+
+    def get_enumerator_skill_detail(self, obj):
+        enumerator_skill_map = dict(obj.ENUMERATOR_SKILL_OPTIONS)
+
+        return {
+            'key': obj.enumerator_skill,
+            'value': enumerator_skill_map.get(obj.enumerator_skill)
+        }
+
+    def get_data_collection_technique_detail(self, obj):
+        data_collection_technique_map = dict(obj.DATA_COLLECTION_TECHNIQUE_OPTIONS)
+
+        return {
+            'key': obj.data_collection_technique,
+            'value': data_collection_technique_map.get(obj.data_collection_technique),
+        }
+
+    def get_importance_detail(self, obj):
+        importance_map = dict(obj.IMPORTANCE_OPTIONS)
+
+        return {
+            'key': obj.importance,
+            'value': importance_map.get(obj.importance)
+        }
 
 
 class SimpleWidgetSerializer(RemoveNullFieldsMixin,
@@ -183,7 +217,7 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
     exportables = SimpleExportableSerializer(source='exportable_set',
                                              many=True,
                                              read_only=True)
-    questions = SimpleFrameworkQuestionSerializer(source='frameworkquestion_set',
+    questions = FrameworkQuestionSerializer(source='frameworkquestion_set',
                                                   many=True,
                                                   required=False)
     entries_count = serializers.IntegerField(
