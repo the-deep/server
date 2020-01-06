@@ -3,7 +3,7 @@ from celery import shared_task
 from export.models import Export
 
 from .tasks_entries import export_entries
-from .tasks_assessment import export_assessments
+from .tasks_assessment import export_assessments, export_planned_assessments
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 EXPORTER_TYPE = {
     Export.ENTRIES: export_entries,
     Export.ASSESSMENTS: export_assessments,
+    Export.PLANNED_ASSESSMENTS: export_planned_assessments,
 }
 
 

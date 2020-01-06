@@ -38,10 +38,12 @@ class Export(models.Model):
 
     ENTRIES = 'entries'
     ASSESSMENTS = 'assessments'
+    PLANNED_ASSESSMENTS = 'planned_assessments'
 
     DATA_TYPES = (
         (ENTRIES, 'Entries'),
         (ASSESSMENTS, 'Assessments'),
+        (PLANNED_ASSESSMENTS, 'Planned Assessments'),
     )
 
     EXCEL = 'excel'

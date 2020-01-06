@@ -23,14 +23,27 @@ from .affected_groups_info import (
 )
 
 
-def get_export_data(assessment):
-    meta_data = get_assessment_meta(assessment)
-    questionnaire = assessment.get_questionnaire_json()
-    return {
+def get_export_data(assessment, planned_assessment=False):
+    planned_assessment_data = {
         'summary': {
-            **meta_data,
-            **get_assessment_export_summary(assessment),
+            **get_assessment_export_summary(assessment, planned_assessment),
         },
+    }
+
+    if planned_assessment:
+        return planned_assessment_data
+
+
+    meta_data = get_assessment_meta(assessment)
+
+    # Planned assessment does not have metadata in summary, so add it now
+    # which will be reused for normal assessment export data
+    planned_assessment['summary'].update(meta_data)
+
+    questionnaire = assessment.get_questionnaire_json()
+
+    return {
+        **planned_assessment_data,
         'data_collection_technique': {
             **meta_data,
             **get_data_collection_techniques_info(assessment),
@@ -72,11 +85,16 @@ def replicate_other_col_groups(sheet_data, column_group):
     return new_sheet_data
 
 
-def normalize_assessment(assessment_export_data):
+def normalize_assessment(assessment_export_data, planned_assessment=False):
     """
     Normally each field has single value, but when there are multiple values,
     each of the values are replicated that many times
     """
+
+    if planned_assessment:
+        return {
+            'summary': {k: [v] for k, v in assessment_export_data['summary'].items()},
+        }
     # Normalize each of the sheets
     # Summary need not be normalized
 
@@ -236,3 +254,10 @@ def get_export_data_for_assessments(assessments):
         return {}
     data = normalize_assessment(get_export_data(assessments[0]))
     return reduce(add_assessment_to_rows, assessments[1:], data)
+
+
+def get_export_data_for_planned_assessments(planned_assessments):
+    if not planned_assessments:
+        return {}
+    data = normalize_assessment(get_export_data(planned_assessments[0], True), True)
+    return reduce(add_assessment_to_rows, planned_assessments[1:], data)
