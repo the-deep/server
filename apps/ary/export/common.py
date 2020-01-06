@@ -114,3 +114,20 @@ def get_assessment_meta(assessment):
             'publication_date': str_to_dmy_date(metadata_dates.get('Publication Date')),
         },
     }
+
+
+def get_planned_assessment_meta(assessment):
+    metadata = assessment.get_metadata_json()
+    metadata_bg = get_name_values(metadata, 'Background')
+
+    return {
+        'assessment': {
+            'created_date': assessment.created_at.strftime('%Y-%b-%d'),
+            'title': assessment.title,
+            'project': assessment.project.title,
+
+        },
+        'background': {
+            'country': ','.join(metadata_bg.get('Country', [])),
+        }
+    }

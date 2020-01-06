@@ -51,6 +51,7 @@ class ExportTriggerView(views.APIView):
         project_id = filters.get('project')
         export_type = filters.get('export_type', 'excel')
         export_item = filters.get('export_item', 'entry')
+        print(export_type, export_item)
 
         is_preview = filters.get('is_preview', False)
 
@@ -64,7 +65,7 @@ class ExportTriggerView(views.APIView):
         elif export_item == 'assessment':
             type = Export.ASSESSMENTS
         elif export_item == 'planned_assessment':
-            type = Export.ASSESSMENTS
+            type = Export.PLANNED_ASSESSMENTS
         else:
             return response.Response(
                 {'export_item': 'Invalid export item name'},
@@ -95,7 +96,7 @@ class ExportTriggerView(views.APIView):
             filters=filters,
         )
 
-        if not settings.TESTING:
+        if True or not settings.TESTING:
             transaction.on_commit(lambda: export_task.delay(export.id))
 
         return response.Response({
