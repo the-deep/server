@@ -63,6 +63,8 @@ class ExportTriggerView(views.APIView):
             type = Export.ENTRIES
         elif export_item == 'assessment':
             type = Export.ASSESSMENTS
+        elif export_item == 'planned_assessment':
+            type = Export.ASSESSMENTS
         else:
             return response.Response(
                 {'export_item': 'Invalid export item name'},
