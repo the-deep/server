@@ -672,13 +672,7 @@ class PlannedAssessment(UserResource, ProjectEntityMixin):
         groups = GroupClass.objects.filter(
             template=assessment_template,
             fields__show_in_planned_assessment=True,
-        ).prefetch_related(
-            models.Prefetch(
-                'fields',
-                queryset=MetadataGroup.fields.rel.related_model.objects.filter(show_in_planned_assessment=True),
-                to_attr='planned_assessment_fields'
-            ),
-        ).distinct()
+        ).prefetch_related('fields').distinct()
         schema = {
             group.title: [
                 {
@@ -690,7 +684,7 @@ class PlannedAssessment(UserResource, ProjectEntityMixin):
                         x['key']: x['title'] for x in field.get_options()
                     }
                 }
-                for field in group.planned_assessment_fields.all()
+                for field in group.fields.all()
             ] for group in groups
         }
         return schema
@@ -736,6 +730,7 @@ class PlannedAssessment(UserResource, ProjectEntityMixin):
         else:
             raise Exception("Something that could not be parsed from schema")
         return data
+
     get_metadata_json = Assessment.get_metadata_json
     get_methodology_json = Assessment.get_methodology_json
 

@@ -106,16 +106,16 @@ def get_assessment_export_summary(assessment, planned_assessment=False):
     if planned_assessment:
         return { 'title': assessment.title, **planned_assessment_info}
 
-    stakeholders = metadata['Stakeholders']
-    lead_org = stakeholders[0]
+    stakeholders = metadata.get('Stakeholders') or []
+    lead_org = stakeholders and stakeholders[0]
     other_orgs = [x for x in stakeholders[1:]]
 
     data = {
         'methodology_content': {
-            'objectives': 1 if methodology['Objectives'] else 0,
-            'data_collection_techniques': 1 if methodology['Data Collection Techniques'] else 0,
-            'sampling': 1 if methodology['Sampling'] else 0,
-            'limitations': 1 if methodology['Limitations'] else 0,
+            'objectives': 1 if methodology.get('Objectives') else 0,
+            'data_collection_techniques': 1 if methodology.get('Data Collection Techniques') else 0,
+            'sampling': 1 if methodology.get('Sampling') else 0,
+            'limitations': 1 if methodology.get('Limitations') else 0,
         },
         'stakeholders': {
             lead_org['schema']['name']: lead_org['value'][0]['name'] if lead_org['value'] else '',
@@ -124,7 +124,7 @@ def get_assessment_export_summary(assessment, planned_assessment=False):
                 if x['schema']['type'] == MetadataField.MULTISELECT else 1
                 for x in other_orgs
             }
-        },
+        } if stakeholders else {},
 
         'additional_documents': {
             'Executive Summary': 1 if additional_documents.get('executive_summary') else 0,
@@ -134,7 +134,9 @@ def get_assessment_export_summary(assessment, planned_assessment=False):
         },
 
         **planned_assessment_info,
-        # scoring
-        **get_scoring(assessment),
     }
+
+    # Scoring
+    if not planned_assessment:
+        data.update(get_scoring(assessment))
     return data
