@@ -5,10 +5,35 @@ default_values = {
 }
 
 
+def is_point_data(x):
+    return isinstance(x, dict) and x['geo_json']['geometry']['type'] == 'Point'
+
+
+def is_polygon_data(x):
+    return isinstance(x, dict) and x['geo_json']['geometry']['type'] == 'Polygon'
+
+
+def get_title_from_geo_json_data(x):
+    return x.get('geo_json') and \
+            x['geo_json'].get('properties') and \
+            x['geo_json']['properties'].get('title')
+
+
 def get_locations_info(assessment):
-    locations = get_valid_geo_ids(assessment.methodology['locations']) or []
+    all_locations = assessment.methodology.get('locations') or []
+    locations = get_valid_geo_ids(all_locations)
+
+    # Custom locations include custom added points and polygons
+    custom_points = ','.join([get_title_from_geo_json_data(x) for x in all_locations if is_point_data(x)])
+    custom_polygons = ','.join([get_title_from_geo_json_data(x) for x in all_locations if is_polygon_data(x)])
 
     geo_areas = GeoArea.objects.filter(id__in=locations).prefetch_related('admin_level', 'parent')
+
+    custom_data = []
+    custom_datum = {
+        'custom_polygons': custom_polygons,
+        'custom_points': custom_points,
+    }
 
     data = []
 
@@ -42,8 +67,14 @@ def get_locations_info(assessment):
 
             key = f'Admin {level}'
             admin_levels[key] = geo_info['title']
+
+        # Add custom data for each row
+        admin_levels['custom_polygons'] = custom_polygons
+        admin_levels['custom_points'] = custom_points
+
         data.append(admin_levels)
 
     return {
         'locations': data,
+        # 'custom_locations': custom_data,
     }

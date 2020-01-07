@@ -51,7 +51,6 @@ class ExportTriggerView(views.APIView):
         project_id = filters.get('project')
         export_type = filters.get('export_type', 'excel')
         export_item = filters.get('export_item', 'entry')
-        print(export_type, export_item)
 
         is_preview = filters.get('is_preview', False)
 
