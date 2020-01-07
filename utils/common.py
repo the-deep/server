@@ -466,3 +466,4 @@ def is_valid_number(value):
         int(value)
     except (TypeError, ValueError):
         return False
+    return True

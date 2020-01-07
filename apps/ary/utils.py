@@ -1,4 +1,4 @@
-from geo.models import Region
+from geo.models import Region, GeoArea
 from organization.models import Organization
 
 from utils.common import parse_number
@@ -10,6 +10,14 @@ def get_title_or_none(Model):
         return instance and instance.title
     return _get_title
 
+
+def get_location_title(val):
+    if isinstance(val, dict):
+        return val.get('geo_json') and \
+            val['geo_json'].get('properties') and \
+            val['geo_json']['properties'].get('title')
+    instance = GeoArea.objects.filter(id=val).first()
+    return instance and instance.title
 
 def get_model_attr_or_none(Model, attr):
     def _get_attr(val):

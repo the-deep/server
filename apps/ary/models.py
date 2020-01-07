@@ -12,6 +12,7 @@ from project.mixins import ProjectEntityMixin
 from .utils import (
     FIELDS_KEYS_VALUE_EXTRACTORS,
     get_title_or_none,
+    get_location_title,
     get_model_attrs_or_empty_dict,
 )
 
@@ -464,7 +465,7 @@ class Assessment(UserResource, ProjectEntityMixin):
                 'key': x,
                 **get_model_attrs_or_empty_dict(AffectedGroup, ['title', 'order'])(x)
             },
-            'locations': get_title_or_none(GeoArea),
+            'locations': get_location_title,
             'objectives': identity,
             'sampling': identity,
             'limitations': identity,

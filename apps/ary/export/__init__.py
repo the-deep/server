@@ -30,6 +30,9 @@ from .affected_groups_info import (
 def get_export_data(assessment, planned_assessment=False):
     if planned_assessment:
         meta_data = get_planned_assessment_meta(assessment)
+    else:
+        meta_data = get_assessment_meta(assessment)
+
     planned_assessment_data = {
         'summary': {
             **meta_data,
@@ -52,11 +55,9 @@ def get_export_data(assessment, planned_assessment=False):
     if planned_assessment:
         return planned_assessment_data
 
-    meta_data = get_assessment_meta(assessment)
-
     # Planned assessment does not have metadata in summary, so add it now
     # which will be reused for normal assessment export data
-    planned_assessment['summary'].update(meta_data)
+    planned_assessment_data['summary'].update(meta_data)
 
     questionnaire = assessment.get_questionnaire_json()
 
@@ -82,12 +83,12 @@ def get_export_data(assessment, planned_assessment=False):
         'hno': {
             **meta_data,
             **get_assessment_export_summary(assessment),
-            **questionnaire['hno']
+            **(questionnaire.get('hno') or {})
         },
         'cna': {
             **meta_data,
             **get_assessment_export_summary(assessment),
-            **questionnaire['cna']
+            **(questionnaire.get('cna') or {})
         }
     }
 
