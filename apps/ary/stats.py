@@ -3,7 +3,6 @@ from django.db.models import F, Count
 from entry.stats import _get_project_geoareas
 from apps.entry.widgets.geo_widget import get_valid_geo_ids
 
-from deep.serializers import URLCachedFileField
 from organization.models import OrganizationType, Organization
 from lead.models import Lead
 from ary.models import (
