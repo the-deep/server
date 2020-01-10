@@ -64,7 +64,7 @@
     <p id="t10" class="pln"><span class="n"><a href="#t10">10</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t11" class="run"><span class="n"><a href="#t11">11</a></span><span class="t"><span class="key">def</span> <span class="nam">get_stakeholders_info</span><span class="op">(</span><span class="nam">assessment</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t12" class="pln"><span class="n"><a href="#t12">12</a></span><span class="t">    <span class="com"># TODO: is meta group dynamic?</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t13" class="mis show_mis"><span class="n"><a href="#t13">13</a></span><span class="t">    <span class="nam">stakeholders_data_group</span> <span class="op">=</span> <span class="nam">assessment</span><span class="op">.</span><span class="nam">get_metadata_json</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'Stakeholders'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t13" class="mis show_mis"><span class="n"><a href="#t13">13</a></span><span class="t">    <span class="nam">stakeholders_data_group</span> <span class="op">=</span> <span class="nam">assessment</span><span class="op">.</span><span class="nam">get_metadata_json</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'Stakeholders'</span><span class="op">)</span> <span class="key">or</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p id="t14" class="mis show_mis"><span class="n"><a href="#t14">14</a></span><span class="t">    <span class="nam">added_value</span> <span class="op">=</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p id="t15" class="mis show_mis"><span class="n"><a href="#t15">15</a></span><span class="t">    <span class="nam">stakeholders_info</span> <span class="op">=</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p id="t16" class="mis show_mis"><span class="n"><a href="#t16">16</a></span><span class="t">    <span class="key">for</span> <span class="nam">data</span> <span class="key">in</span> <span class="nam">stakeholders_data_group</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -88,8 +88,8 @@
 <div id="footer">
     <div class="content">
         <p>
-            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.0.1</a>,
-            created at 2020-01-03 04:32
+            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.0.2</a>,
+            created at 2020-01-10 09:59
         </p>
     </div>
 </div>

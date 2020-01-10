@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/ary/export/common.py: 24%</title>
+    <title>Coverage for apps/ary/export/common.py: 25%</title>
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
     <script type="text/javascript" src="jquery.hotkeys.js"></script>
@@ -17,13 +17,13 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>apps/ary/export/common.py</b> :
-            <span class="pc_cov">24%</span>
+            <span class="pc_cov">25%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            31 statements &nbsp;
-            <span class="run shortkey_r button_toggle_run">12 run</span>
-            <span class="mis show_mis shortkey_m button_toggle_mis">19 missing</span>
+            35 statements &nbsp;
+            <span class="run shortkey_r button_toggle_run">13 run</span>
+            <span class="mis show_mis shortkey_m button_toggle_mis">22 missing</span>
             <span class="exc show_exc shortkey_x button_toggle_exc">0 excluded</span>
                 <span class="par run show_par shortkey_p button_toggle_par">0 partial</span>
         </h2>
@@ -168,12 +168,29 @@
     <p id="t114" class="pln"><span class="n"><a href="#t114">114</a></span><span class="t">            <span class="str">'publication_date'</span><span class="op">:</span> <span class="nam">str_to_dmy_date</span><span class="op">(</span><span class="nam">metadata_dates</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'Publication Date'</span><span class="op">)</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t115" class="pln"><span class="n"><a href="#t115">115</a></span><span class="t">        <span class="op">}</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t116" class="pln"><span class="n"><a href="#t116">116</a></span><span class="t">    <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t117" class="pln"><span class="n"><a href="#t117">117</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t118" class="pln"><span class="n"><a href="#t118">118</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t119" class="run"><span class="n"><a href="#t119">119</a></span><span class="t"><span class="key">def</span> <span class="nam">get_planned_assessment_meta</span><span class="op">(</span><span class="nam">assessment</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t120" class="mis show_mis"><span class="n"><a href="#t120">120</a></span><span class="t">    <span class="nam">metadata</span> <span class="op">=</span> <span class="nam">assessment</span><span class="op">.</span><span class="nam">get_metadata_json</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t121" class="mis show_mis"><span class="n"><a href="#t121">121</a></span><span class="t">    <span class="nam">metadata_bg</span> <span class="op">=</span> <span class="nam">get_name_values</span><span class="op">(</span><span class="nam">metadata</span><span class="op">,</span> <span class="str">'Background'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t122" class="pln"><span class="n"><a href="#t122">122</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t123" class="mis show_mis"><span class="n"><a href="#t123">123</a></span><span class="t">    <span class="key">return</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t124" class="pln"><span class="n"><a href="#t124">124</a></span><span class="t">        <span class="str">'assessment'</span><span class="op">:</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t125" class="pln"><span class="n"><a href="#t125">125</a></span><span class="t">            <span class="str">'created_date'</span><span class="op">:</span> <span class="nam">assessment</span><span class="op">.</span><span class="nam">created_at</span><span class="op">.</span><span class="nam">strftime</span><span class="op">(</span><span class="str">'%Y-%b-%d'</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t126" class="pln"><span class="n"><a href="#t126">126</a></span><span class="t">            <span class="str">'title'</span><span class="op">:</span> <span class="nam">assessment</span><span class="op">.</span><span class="nam">title</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t127" class="pln"><span class="n"><a href="#t127">127</a></span><span class="t">            <span class="str">'project'</span><span class="op">:</span> <span class="nam">assessment</span><span class="op">.</span><span class="nam">project</span><span class="op">.</span><span class="nam">title</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t128" class="pln"><span class="n"><a href="#t128">128</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t129" class="pln"><span class="n"><a href="#t129">129</a></span><span class="t">        <span class="op">}</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t130" class="pln"><span class="n"><a href="#t130">130</a></span><span class="t">        <span class="str">'background'</span><span class="op">:</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t131" class="pln"><span class="n"><a href="#t131">131</a></span><span class="t">            <span class="str">'country'</span><span class="op">:</span> <span class="str">','</span><span class="op">.</span><span class="nam">join</span><span class="op">(</span><span class="nam">metadata_bg</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'Country'</span><span class="op">,</span> <span class="op">[</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t132" class="pln"><span class="n"><a href="#t132">132</a></span><span class="t">        <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t133" class="pln"><span class="n"><a href="#t133">133</a></span><span class="t">    <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
 </div>
 <div id="footer">
     <div class="content">
         <p>
-            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.0.1</a>,
-            created at 2020-01-03 04:32
+            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.0.2</a>,
+            created at 2020-01-10 09:59
         </p>
     </div>
 </div>
