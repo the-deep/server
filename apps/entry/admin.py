@@ -1,5 +1,6 @@
 from django.contrib import admin
 from reversion.admin import VersionAdmin
+import reversion
 
 from deep.admin import query_buttons
 
@@ -9,6 +10,11 @@ from entry.models import (
     FilterData,
     ExportData,
     EntryComment,
+
+    # Entry Group
+    ProjectEntryLabel,
+    LeadEntryGroup,
+    EntryGroupLabel,
 )
 
 
@@ -58,3 +64,14 @@ class EntryAdmin(VersionAdmin):
             if request.GET.get(f'show_{name}', 'False').lower() == 'true':
                 inlines.append(inline(self.model, self.admin_site))
         return inlines
+
+
+@admin.register(ProjectEntryLabel)
+class ProjectEntryLabelAdmin(VersionAdmin):
+    search_fields = ('title',)
+    autocomplete_fields = ('created_by', 'modified_by', 'project')
+    list_filter = ('project',)
+    list_display = ('__str__', 'color')
+
+
+reversion.register(LeadEntryGroup)

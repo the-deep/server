@@ -6,7 +6,9 @@ from rest_framework import serializers
 from deep.serializers import (
     RemoveNullFieldsMixin,
     ListToDictField,
+    UniqueFieldsMixin,
 )
+from user_resource.serializers import UserResourceSerializer
 from project.serializers import ProjectEntitySerializer
 from gallery.serializers import FileSerializer
 from project.models import Project
@@ -26,6 +28,11 @@ from .models import (
     EntryCommentText,
     ExportData,
     FilterData,
+
+    # Entry Grouping
+    ProjectEntryLabel,
+    LeadEntryGroup,
+    EntryGroupLabel,
 )
 from .utils import validate_image_for_entry
 
@@ -92,13 +99,62 @@ class SimpleExportDataSerializer(RemoveNullFieldsMixin,
         fields = ('id', 'exportable', 'data',)
 
 
+class ProjectEntryLabelSerializer(UserResourceSerializer):
+    class Meta:
+        model = ProjectEntryLabel
+        fields = '__all__'
+        read_only_fields = ('project',)
+
+    def validate(self, data):
+        data['project_id'] = int(self.context['view'].kwargs['project_id'])
+        return data
+
+
+class EntryGroupLabelSerializer(UniqueFieldsMixin, UserResourceSerializer):
+    group_id = serializers.PrimaryKeyRelatedField(read_only=True)
+    label_id = serializers.PrimaryKeyRelatedField(queryset=ProjectEntryLabel.objects.all())
+    entry_id = serializers.PrimaryKeyRelatedField(queryset=Entry.objects.all())
+    entry_client_id = serializers.CharField(source='entry.client_id', read_only=True)
+
+    def validate(self, data):
+        data['label'] = data.pop('label_id')
+        data['entry'] = data.pop('entry_id')
+        return data
+
+    class Meta:
+        model = EntryGroupLabel
+        fields = ('id', 'label_id', 'group_id', 'entry_id', 'entry_client_id')
+
+
+class LeadEntryGroupSerializer(UserResourceSerializer):
+    selections = EntryGroupLabelSerializer(source='entrygrouplabel_set', many=True)
+
+    class Meta:
+        model = LeadEntryGroup
+        fields = '__all__'
+        read_only_fields = ('lead',)
+
+    def validate(self, data):
+        data['lead_id'] = int(self.context['view'].kwargs['lead_id'])
+
+        # Custom validation check (It is disabled in EntryGroupLabelSerializer because of nested serializer issue)
+        selections_labels = []
+        for selection in self.initial_data['selections']:
+            selections_label = selection['label_id']
+            if selections_label in selections_labels:
+                raise serializers.ValidationError('Only one entry is allowed for [Group, Label] set')
+            selections_labels.append(selections_label)
+
+        return data
+
+
 class EntryLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     attachment = FileSerializer(read_only=True)
     tabular_book = serializers.SerializerMethodField()
 
     class Meta:
         model = Lead
-        fields = ('id', 'title', 'created_at', 'url', 'attachment', 'tabular_book')
+        fields = ('id', 'title', 'created_at', 'url', 'attachment', 'tabular_book', 'client_id')
 
     def get_tabular_book(self, obj):
         file = obj.attachment
@@ -187,13 +243,18 @@ class EditEntriesDataSerializer(RemoveNullFieldsMixin,
         read_only=True,
     )
     geo_options = serializers.SerializerMethodField()
-    regions = SimpleRegionSerializer(source='project.regions', many=True,
-                                     read_only=True)
+    regions = SimpleRegionSerializer(
+        source='project.regions', many=True, read_only=True)
+
+    entry_labels = serializers.SerializerMethodField()
+    entry_groups = serializers.SerializerMethodField()
 
     class Meta:
         model = Lead
-        fields = ('lead', 'entries', 'analysis_framework', 'geo_options',
-                  'regions')
+        fields = (
+            'lead', 'entries', 'analysis_framework', 'geo_options', 'regions',
+            'entry_labels', 'entry_groups'
+        )
 
     def get_entries(self, lead):
         return EntrySerializer(
@@ -208,6 +269,20 @@ class EditEntriesDataSerializer(RemoveNullFieldsMixin,
                 region.calc_cache()
             options[str(region.id)] = region.geo_options
         return options
+
+    def get_entry_labels(self, lead):
+        return ProjectEntryLabelSerializer(
+            ProjectEntryLabel.objects.filter(project=lead.project_id),
+            many=True,
+            context=self.context,
+        ).data
+
+    def get_entry_groups(self, lead):
+        return LeadEntryGroupSerializer(
+            LeadEntryGroup.objects.filter(lead=lead),
+            many=True,
+            context=self.context,
+        ).data
 
 
 class LegacyEditEntriesDataSerializer(EditEntriesDataSerializer):

@@ -338,3 +338,55 @@ class EntryCommentText(models.Model):
     comment = models.ForeignKey(EntryComment, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     text = models.TextField()
+
+
+# For Entry Grouping Feature
+class ProjectEntryLabel(UserResource):
+    """
+    Labels defined for entries in Project Scope
+    """
+    project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
+    title = models.CharField(max_length=225)
+    order = models.IntegerField(default=1)
+    color = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.project}: {self.title}'
+
+    def can_modify(self, user):
+        return self.project.can_modify(user)
+
+
+class LeadEntryGroup(UserResource):
+    """
+    Groups defined for entries in Lead Scope
+    """
+    lead = models.ForeignKey(Lead, on_delete=models.CASCADE)
+    title = models.CharField(max_length=225)
+    order = models.IntegerField(default=1)
+
+    def __str__(self):
+        return f'{self.lead}: {self.title}'
+
+    def can_modify(self, user):
+        return self.lead.can_modify(user)
+
+
+class EntryGroupLabel(UserResource):
+    """
+    Relation between Groups, Labels and Entries
+    """
+    label = models.ForeignKey(ProjectEntryLabel, on_delete=models.CASCADE)
+    group = models.ForeignKey(LeadEntryGroup, on_delete=models.CASCADE)
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+    client_id = None
+
+    class Meta:
+        # Only single entry allowd in label:group pair
+        unique_together = ('label', 'group',)
+
+    def __str__(self):
+        return f'[{self.label}]:{self.group} -> {self.entry}'
+
+    def can_modify(self, user):
+        return self.entry.can_modify(user)

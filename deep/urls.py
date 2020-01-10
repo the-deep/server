@@ -86,6 +86,9 @@ from entry.views import (
     EntryOptionsView,
     EditEntriesDataViewSet,
     EntryCommentViewSet,
+    # Entry Grouping
+    ProjectEntryLabelViewSet,
+    LeadEntryGroupViewSet,
 )
 from analysis_framework.views import (
     AnalysisFrameworkCloneView,
@@ -250,6 +253,8 @@ router.register(r'edit-entries-data', EditEntriesDataViewSet,
                 basename='edit_entries_data')
 router.register(r'entry-comments', EntryCommentViewSet,
                 basename='entry-comment')
+router.register(r'projects/(?P<project_id>\d+)/entry-labels', ProjectEntryLabelViewSet, basename='entry-labels')
+router.register(r'leads/(?P<lead_id>\d+)/entry-groups', LeadEntryGroupViewSet, basename='entry-groups')
 
 # Analysis framework routers
 router.register(r'analysis-frameworks', AnalysisFrameworkViewSet,
@@ -321,7 +326,9 @@ def get_api_path(path):
     return '{}{}'.format(API_PREFIX, path)
 
 
-admin.site.__class__ = OTPAdminSite
+# Enable OTP in Production
+if not settings.DEBUG:
+    admin.site.__class__ = OTPAdminSite
 
 urlpatterns = [
     url(r'^$', FrontendView.as_view()),
