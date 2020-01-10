@@ -1,3 +1,4 @@
+from apps.entry.widgets.geo_widget import get_valid_geo_ids
 from geo.models import GeoArea
 
 from ary.models import (
@@ -26,7 +27,7 @@ default_values = {
 
 def get_methodology_summary(assessment):
     methodology = assessment.get_methodology_json()
-    groups = MethodologyGroup.objects.filter(template=assessment.lead.project.assessment_template)
+    groups = MethodologyGroup.objects.filter(template=assessment.project.assessment_template)
 
     attributes = {}
     groups_options = {
@@ -34,7 +35,7 @@ def get_methodology_summary(assessment):
         for group in groups
     }
 
-    for attr in methodology['Attributes']:
+    for attr in methodology.get('Attributes', []):
         for group, options in groups_options.items():
             data = attr.get(group) or [{}]
             attr_data = attributes.get(group, {})
@@ -45,27 +46,27 @@ def get_methodology_summary(assessment):
     return attributes
 
 
-def get_assessment_export_summary(assessment):
+def get_assessment_export_summary(assessment, planned_assessment=False):
     """
     Returns json summary of all the tabs in the assessment including lead info
     """
-    lead = assessment.lead
-    template = lead.project.assessment_template
+    template = assessment.project.assessment_template
 
-    additional_documents = assessment.metadata['additional_documents']
+    additional_documents = assessment.metadata.get('additional_documents') or {}
 
     metadata = assessment.get_metadata_json()
     methodology = assessment.get_methodology_json()
-    methodology_summary = get_methodology_summary(assessment)
 
     focuses = [x.title for x in Focus.objects.filter(template=template)]
-    selected_focuses = set(methodology['Focuses'] or [])
+    selected_focuses = set(methodology.get('Focuses') or [])
 
     sectors = [x.title for x in Sector.objects.filter(template=template)]
     selected_sectors = set(methodology['Sectors'] or [])
 
     root_affected_group = AffectedGroup.objects.filter(template=template, parent=None).first()
     all_affected_groups = root_affected_group.get_children_list() if root_affected_group else []
+
+    methodology_summary = get_methodology_summary(assessment)
 
     # All affected groups does not have title, so generate title from parents
     processed_affected_groups = [
@@ -77,7 +78,7 @@ def get_assessment_export_summary(assessment):
 
     selected_affected_groups_ids = {x['key'] for x in (methodology['Affected Groups'] or [])}
 
-    locations = assessment.methodology['locations'] or []
+    locations = get_valid_geo_ids(assessment.methodology['locations']) or []
 
     geo_areas = GeoArea.objects.filter(id__in=locations).prefetch_related('admin_level')
     admin_levels = {f'Admin {x}': 0 for x in range(7)}
@@ -87,35 +88,9 @@ def get_assessment_export_summary(assessment):
         key = f'Admin {level}'
         admin_levels[key] = admin_levels.get(key, 0) + 1
 
-    stakeholders = metadata['Stakeholders']
-    lead_org = stakeholders[0]
-    other_orgs = [x for x in stakeholders[1:]]
-
-    data = {
-        'location': admin_levels,
-        'methodology_content': {
-            'objectives': 1 if methodology['Objectives'] else 0,
-            'data_collection_techniques': 1 if methodology['Data Collection Techniques'] else 0,
-            'sampling': 1 if methodology['Sampling'] else 0,
-            'limitations': 1 if methodology['Limitations'] else 0,
-        },
-        'stakeholders': {
-            lead_org['schema']['name']: lead_org['value'][0]['name'] if lead_org['value'] else '',
-            **{
-                x['schema']['name']: len(x['value'])
-                if x['schema']['type'] == MetadataField.MULTISELECT else 1
-                for x in other_orgs
-            }
-        },
-
-        'additional_documents': {
-            'Executive Summary': 1 if additional_documents['executive_summary'] else 0,
-            'Assessment Database': 1 if additional_documents['assessment_data'] else 0,
-            'Questionnaire': 1 if additional_documents['questionnaire'] else 0,
-            'Miscellaneous': 1 if additional_documents['misc'] else 0,
-        },
-
+    planned_assessment_info = {
         **methodology_summary,
+        'location': admin_levels,
         'focuses': {
             x: 1 if x in selected_focuses else 0
             for x in focuses
@@ -128,7 +103,41 @@ def get_assessment_export_summary(assessment):
             x['title']: 1 if x['id'] in selected_affected_groups_ids else 0
             for x in processed_affected_groups
         },
-        # scoring
-        **get_scoring(assessment),
     }
+    if planned_assessment:
+        return { 'title': assessment.title, **planned_assessment_info}
+
+    stakeholders = metadata.get('Stakeholders') or []
+    lead_org = stakeholders and stakeholders[0]
+    other_orgs = [x for x in stakeholders[1:]]
+
+    data = {
+        'methodology_content': {
+            'objectives': 1 if methodology.get('Objectives') else 0,
+            'data_collection_techniques': 1 if methodology.get('Data Collection Techniques') else 0,
+            'sampling': 1 if methodology.get('Sampling') else 0,
+            'limitations': 1 if methodology.get('Limitations') else 0,
+        },
+        'stakeholders': {
+            lead_org['schema']['name']: lead_org['value'][0]['name'] if lead_org['value'] else '',
+            **{
+                x['schema']['name']: len(x['value'])
+                if x['schema']['type'] == MetadataField.MULTISELECT else 1
+                for x in other_orgs
+            }
+        } if stakeholders else {},
+
+        'additional_documents': {
+            'Executive Summary': 1 if additional_documents.get('executive_summary') else 0,
+            'Assessment Database': 1 if additional_documents.get('assessment_data') else 0,
+            'Questionnaire': 1 if additional_documents.get('questionnaire') else 0,
+            'Miscellaneous': 1 if additional_documents.get('misc') else 0,
+        },
+
+        **planned_assessment_info,
+    }
+
+    # Scoring
+    if not planned_assessment:
+        data.update(get_scoring(assessment))
     return data

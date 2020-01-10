@@ -10,7 +10,7 @@ default_values = {
 
 def get_stakeholders_info(assessment):
     # TODO: is meta group dynamic?
-    stakeholders_data_group = assessment.get_metadata_json().get('Stakeholders')
+    stakeholders_data_group = assessment.get_metadata_json().get('Stakeholders') or []
     added_value = []
     stakeholders_info = []
     for data in stakeholders_data_group:
