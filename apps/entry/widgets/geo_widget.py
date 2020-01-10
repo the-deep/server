@@ -1,5 +1,38 @@
+from utils.common import is_valid_number
+
+
+def get_valid_geo_ids(geo_areas_id):
+    """
+    Geo values can have {}, Number, String values
+    Only Number, String(convertable to integer) values are valid
+    """
+    return [
+        geo_area_id for geo_area_id in geo_areas_id
+        if is_valid_number(geo_area_id)
+    ]
+
+
 def update_attribute(widget, data, widget_data):
-    values = data.get('value', [])
+    values = []
+    polygons = []
+
+    for geo_value in data.get('value') or []:
+        if is_valid_number(geo_value):
+            values.append(geo_value)
+        elif (
+            isinstance(geo_value, dict) and
+            geo_value.get('region') and
+            geo_value.get('geo_json') and
+            geo_value['geo_json'].get('properties') and
+            geo_value['geo_json']['properties'].get('title')
+        ):
+            region_id = geo_value['region']
+            title = geo_value['geo_json']['properties'].get('title')
+            polygons.append({
+                'region_id': region_id,
+                'title': title,
+            })
+
     return {
         'filter_data': [{
             'values': values,
@@ -8,7 +41,8 @@ def update_attribute(widget, data, widget_data):
         'export_data': {
             'data': {
                 'excel': {
-                    'values': values,
+                    'values': values,  # GEOAREA IDs
+                    'polygons': polygons,  # Polygons
                 },
             }
         },
@@ -38,7 +72,8 @@ def get_comprehensive_data(widgets_meta, widget, data, widget_data):
     geo_areas = widgets_meta['geo-widget']['geo_areas']
     admin_levels = widgets_meta['geo-widget']['admin_levels']
 
-    geo_areas_id = (data or {}).get('value') or []
+    # Ignore invalid ids
+    geo_areas_id = get_valid_geo_ids((data or {}).get('value') or [])
 
     values = []
 

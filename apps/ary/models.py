@@ -12,6 +12,7 @@ from project.mixins import ProjectEntityMixin
 from .utils import (
     FIELDS_KEYS_VALUE_EXTRACTORS,
     get_title_or_none,
+    get_location_title,
     get_model_attrs_or_empty_dict,
 )
 
@@ -464,7 +465,7 @@ class Assessment(UserResource, ProjectEntityMixin):
                 'key': x,
                 **get_model_attrs_or_empty_dict(AffectedGroup, ['title', 'order'])(x)
             },
-            'locations': get_title_or_none(GeoArea),
+            'locations': get_location_title,
             'objectives': identity,
             'sampling': identity,
             'limitations': identity,
@@ -672,13 +673,7 @@ class PlannedAssessment(UserResource, ProjectEntityMixin):
         groups = GroupClass.objects.filter(
             template=assessment_template,
             fields__show_in_planned_assessment=True,
-        ).prefetch_related(
-            models.Prefetch(
-                'fields',
-                queryset=MetadataGroup.fields.rel.related_model.objects.filter(show_in_planned_assessment=True),
-                to_attr='planned_assessment_fields'
-            ),
-        ).distint()
+        ).prefetch_related('fields').distinct()
         schema = {
             group.title: [
                 {
@@ -690,10 +685,52 @@ class PlannedAssessment(UserResource, ProjectEntityMixin):
                         x['key']: x['title'] for x in field.get_options()
                     }
                 }
-                for field in group.planned_assessment_fields.all()
+                for field in group.fields.all()
             ] for group in groups
         }
         return schema
+
+    @staticmethod
+    def get_actual_value(schema, value):
+        value_function = FIELDS_KEYS_VALUE_EXTRACTORS.get(schema['name'], identity)
+        if schema['type'] == Field.SELECT:
+            # value should not be list but just in case it is a list
+            value = value[0] if isinstance(value, list) and len(value) > 0 else value or ''
+            actual_value = schema['options'].get(value, value)
+        elif schema['type'] == Field.MULTISELECT:
+            value = value or []
+            actual_value = [
+                value_function(schema['options'].get(x, x))
+                for x in value
+            ]
+        else:
+            actual_value = value
+        return actual_value
+
+    @staticmethod
+    def get_data_from_schema(schema, raw_data):
+        if not raw_data:
+            return {}
+
+        if 'id' in schema:
+            key = str(schema['id'])
+            value = raw_data.get(key, '')
+            return {
+                'schema': schema,
+                'value': Assessment.get_actual_value(schema, value),
+                'key': value,
+            }
+        if isinstance(schema, dict):
+            data = {
+                k: Assessment.get_data_from_schema(v, raw_data)
+                for k, v in schema.items()
+            }
+        elif isinstance(schema, list):
+            data = [Assessment.get_data_from_schema(x, raw_data)
+                    for x in schema]
+        else:
+            raise Exception("Something that could not be parsed from schema")
+        return data
 
     get_metadata_json = Assessment.get_metadata_json
     get_methodology_json = Assessment.get_methodology_json

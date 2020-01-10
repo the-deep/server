@@ -458,3 +458,12 @@ def camelcase_to_titlecase(label):
 
 def kebabcase_to_titlecase(kebab_str):
     return ' '.join([x.title() for x in kebab_str.split('-')])
+
+
+def is_valid_number(value):
+    # Value can be string/number. Check if value represents a number
+    try:
+        int(value)
+    except (TypeError, ValueError):
+        return False
+    return True

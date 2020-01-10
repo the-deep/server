@@ -63,6 +63,8 @@ class ExportTriggerView(views.APIView):
             type = Export.ENTRIES
         elif export_item == 'assessment':
             type = Export.ASSESSMENTS
+        elif export_item == 'planned_assessment':
+            type = Export.PLANNED_ASSESSMENTS
         else:
             return response.Response(
                 {'export_item': 'Invalid export item name'},
@@ -93,7 +95,7 @@ class ExportTriggerView(views.APIView):
             filters=filters,
         )
 
-        if not settings.TESTING:
+        if True or not settings.TESTING:
             transaction.on_commit(lambda: export_task.delay(export.id))
 
         return response.Response({
