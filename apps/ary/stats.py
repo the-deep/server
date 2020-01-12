@@ -4,6 +4,7 @@ from entry.stats import _get_project_geoareas
 from apps.entry.widgets.geo_widget import get_valid_geo_ids
 
 from organization.models import OrganizationType, Organization
+from lead.models import Lead
 from ary.models import (
     Assessment,
     MetadataField,
@@ -16,8 +17,6 @@ from ary.models import (
     ScoreScale,
 
     ScoreMatrixPillar,
-    # ScoreMatrixRow,
-    # ScoreMatrixColumn,
     ScoreMatrixScale,
 )
 
@@ -45,8 +44,6 @@ def _get_ary_field_options(config):
         )
     elif field_type == 'scorematrixpillar':
         return {
-            # 'row': list(ScoreMatrixRow.objects.filter(pillar=pk).values('id', name=F('title'))),
-            # 'column': list(ScoreMatrixColumn.objects.filter(pillar=pk).values('id', name=F('title'))),
             'scale': list(ScoreMatrixScale.objects.filter(pillar=pk).values('id', 'row', 'column', 'value')),
         }
     raise Exception(f'Unknown field type provided {field_type}')
@@ -140,7 +137,7 @@ def get_project_ary_stats(project):
         'focus_array': list(Focus.objects.values('id', name=F('title'))),
         'sector_array': list(Sector.objects.values('id', name=F('title'))),
         'affected_groups_array': list(AffectedGroup.objects.values('id', name=F('title'))),
-        'organisation_type': list(
+        'organization_type': list(
             OrganizationType.objects.annotate(
                 organization_count=Count('organization', distinct=True),
             ).values(
@@ -156,7 +153,7 @@ def get_project_ary_stats(project):
                 name=F('title')
             )
         ),
-        'geo_array': _get_project_geoareas(project),
+        'geo_array': _get_project_geoareas(project, collect_polygons=True),
         # scale used by score_pillar
         'scorepillar_scale': list(ScoreScale.objects.values('id', 'color', 'value', name=F('title'))),
         'final_scores_array': {
@@ -193,7 +190,7 @@ def get_project_ary_stats(project):
     }
     data = []
 
-    for ary in Assessment.objects.prefetch_related('lead').filter(project=project).all():
+    for ary in Assessment.objects.prefetch_related('lead', 'lead__attachment').filter(project=project).all():
         metadata_raw = ary.metadata or {}
         basic_information = metadata_raw.get('basic_information') or {}
         additional_documents = metadata_raw.get('additional_documents') or {}
@@ -247,11 +244,27 @@ def get_project_ary_stats(project):
             }
         }
 
+        lead = ary.lead
+        lead_data = {
+            'id': lead.id,
+            'title': lead.title,
+            'source_type': lead.source_type,
+        }
+        if (
+            lead.source_type in [Lead.DISK, Lead.DROPBOX, Lead.GOOGLE_DRIVE] and
+            lead.attachment and lead.attachment.file
+        ):
+            lead_data['attachment'] = lead.attachment.file.url
+        elif lead.source_type == Lead.WEBSITE:
+            lead_data['url'] = lead.url
+        elif lead.source_type == Lead.TEXT:
+            lead_data['text'] = lead.text
+
         data.append({
             'pk': ary.pk,
             'created_at': ary.created_at,
             'date': ary.lead.created_at,
-            'lead': ary.lead.title,
+            'lead': lead_data,
 
             'focus': _get_integer_array(methodology_raw.get('focuses')),
             'sector': _get_integer_array(methodology_raw.get('sectors')),
@@ -259,7 +272,7 @@ def get_project_ary_stats(project):
             'geo': get_valid_geo_ids(_get_integer_array(methodology_raw.get('locations'))),
             'affected_groups': _get_integer_array(methodology_raw.get('affected_groups')),
 
-            'organisation_and_stakeholder_type': [
+            'organization_and_stakeholder_type': [
                 # Organization Type ID, Organization ID
                 [organization_type_map.get(organization_id), organization_id]
                 for field_id in stakeholder_fields_id
