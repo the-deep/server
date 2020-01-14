@@ -1,3 +1,4 @@
+from functools import reduce
 from datetime import datetime
 
 from django.db import models
@@ -81,6 +82,11 @@ class EntryFilterSet(django_filters.FilterSet):
         queryset=User.objects.all(), method='comment_created_by_filter',
     )
 
+    geo_custom_shape = django_filters.CharFilter(
+        label='GEO Custom Shapes',
+        method='geo_custom_shape_filter',
+    )
+
     class Meta:
         model = Entry
         fields = {
@@ -121,6 +127,21 @@ class EntryFilterSet(django_filters.FilterSet):
                 entrycomment__created_by__in=value,
                 entrycomment__parent__isnull=True,
             ).distinct()
+        return queryset
+
+    def geo_custom_shape_filter(self, queryset, name, value):
+        def _get_query(v):
+            return models.Q(
+                attribute__widget__widget_id='geoWidget',
+                attribute__data__value__contains=[{'type': v}],
+            )
+
+        if value:
+            values = value.split(',')
+            query_params = _get_query(values[0])
+            for v in values[0:]:
+                query_params = query_params | _get_query(v)
+            return queryset.filter(query_params).distinct()
         return queryset
 
 
