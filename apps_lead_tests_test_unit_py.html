@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/redis_store/models.py: 100%</title>
+    <title>Coverage for apps/lead/tests/test_unit.py: 100%</title>
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
     <script type="text/javascript" src="jquery.hotkeys.js"></script>
@@ -16,13 +16,13 @@
 <body class="pyfile">
 <div id="header">
     <div class="content">
-        <h1>Coverage for <b>apps/redis_store/models.py</b> :
+        <h1>Coverage for <b>apps/lead/tests/test_unit.py</b> :
             <span class="pc_cov">100%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            0 statements &nbsp;
-            <span class="run shortkey_r button_toggle_run">0 run</span>
+            5 statements &nbsp;
+            <span class="run shortkey_r button_toggle_run">5 run</span>
             <span class="mis show_mis shortkey_m button_toggle_mis">0 missing</span>
             <span class="exc show_exc shortkey_x button_toggle_exc">0 excluded</span>
                 <span class="par run show_par shortkey_p button_toggle_par">0 partial</span>
@@ -52,9 +52,14 @@
     </div>
 </div>
 <div id="source">
-    <p id="t1" class="pln"><span class="n"><a href="#t1">1</a></span><span class="t"><span class="com"># from django.db import models</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t1" class="run"><span class="n"><a href="#t1">1</a></span><span class="t"><span class="key">from</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">tasks</span> <span class="key">import</span> <span class="nam">_preprocess</span>&nbsp;</span><span class="r"></span></p>
     <p id="t2" class="pln"><span class="n"><a href="#t2">2</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t3" class="pln"><span class="n"><a href="#t3">3</a></span><span class="t"><span class="com"># Create your models here.</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t3" class="pln"><span class="n"><a href="#t3">3</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t4" class="run"><span class="n"><a href="#t4">4</a></span><span class="t"><span class="key">def</span> <span class="nam">test_lead_text_extract_transform_tab_and_nbsp</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t5" class="pln"><span class="n"><a href="#t5">5</a></span><span class="t">    <span class="str">"""Test fitler and tansform extracted word"""</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t6" class="run"><span class="n"><a href="#t6">6</a></span><span class="t">    <span class="nam">extracted_text</span> <span class="op">=</span> <span class="str">'Hello, this is extracted\t text that contains &amp;nbsp;.'</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t7" class="run"><span class="n"><a href="#t7">7</a></span><span class="t">    <span class="nam">expected_text</span> <span class="op">=</span> <span class="str">'Hello, this is extracted txt that contains .'</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t8" class="run"><span class="n"><a href="#t8">8</a></span><span class="t">    <span class="key">assert</span> <span class="nam">_preprocess</span><span class="op">(</span><span class="nam">expected_text</span><span class="op">)</span> <span class="op">==</span> <span class="nam">expected_text</span>&nbsp;</span><span class="r"></span></p>
 </div>
 <div id="footer">
     <div class="content">
