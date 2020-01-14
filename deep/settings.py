@@ -38,15 +38,9 @@ DJANGO_WEBSOCKET_HOST =\
 DEEPER_SITE_NAME = os.environ.get('DEEPER_SITE_NAME', 'DEEPER')
 HTTP_PROTOCOL = os.environ.get('DEEP_HTTPS', 'http')
 
-# See if we are inside a test environment
-TESTING = any([
-    arg in sys.argv for arg in [
-        'test',
-        'pytest', '/usr/local/bin/pytest',
-        'py.test', '/usr/local/bin/py.test',
-        '/usr/local/lib/python3.6/dist-packages/py/test.py',
-    ]
-])
+# See if we are inside a test environment (pytest)
+TESTING = 'pytest' in sys.modules and DEBUG
+
 PROFILE = os.environ.get('PROFILE', 'false').lower() == 'true'
 
 # Application definition
