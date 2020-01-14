@@ -67,6 +67,44 @@ class EntryTests(TestCase):
         )
         return entry, field
 
+    def test_search_filter_polygon(self):
+        lead = self.create_lead()
+        geo_widget = self.create(
+            Widget,
+            analysis_framework=lead.project.analysis_framework,
+            widget_id='geoWidget',
+            key='geoWidget-1312321321',
+        )
+
+        url = '/api/v1/entries/'
+        data = {
+            'lead': lead.pk,
+            'project': lead.project.pk,
+            'analysis_framework': geo_widget.analysis_framework.pk,
+            'excerpt': 'This is test excerpt',
+            'attributes': {
+                geo_widget.pk: {
+                    'data': {
+                        'value': [1, 2, {'type': 'Point'}]
+                    },
+                },
+            },
+        }
+
+        self.authenticate()
+        self.client.post(url, data).get('id')
+        data['attributes'][geo_widget.pk]['data']['value'] = [{'type': 'Polygon'}]
+        self.client.post(url, data).get('id')
+        data['attributes'][geo_widget.pk]['data']['value'] = [{'type': 'Line'}, {'type': 'Polygon'}]
+        self.client.post(url, data).get('id')
+
+        filters = {'geo_custom_shape': 'Point'}
+        self.post_filter_test(filters, 1)
+        filters['geo_custom_shape'] = 'Polygon'
+        self.post_filter_test(filters, 2)
+        filters['geo_custom_shape'] = 'Point,Line,Polygon'
+        self.post_filter_test(filters, 3)
+
     def test_create_entry(self):
         entry_count = Entry.objects.count()
 
