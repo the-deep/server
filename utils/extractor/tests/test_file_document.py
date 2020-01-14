@@ -15,6 +15,7 @@ PDF_FILE = 'doc.pdf'
 
 logger = logging.getLogger(__name__)
 
+
 class FileDocumentTest(TestCase):
     """
     Import Test using files
