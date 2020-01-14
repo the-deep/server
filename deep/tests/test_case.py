@@ -59,6 +59,14 @@ class TestCase(test.APITestCase):
     def authenticate_root(self):
         self.authenticate(self.root_user)
 
+    def assertEqualWithWarning(self, expected, real):
+        try:
+            self.assertEqual(expected, real)
+        except AssertionError:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning('', exc_info=True)
+
     def assert_200(self, response):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
