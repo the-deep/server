@@ -99,7 +99,9 @@ class SimpleExportDataSerializer(RemoveNullFieldsMixin,
         fields = ('id', 'exportable', 'data',)
 
 
-class ProjectEntryLabelSerializer(UserResourceSerializer):
+class ProjectEntryLabelSerializer(DynamicFieldsMixin, UserResourceSerializer):
+    entry_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = ProjectEntryLabel
         fields = '__all__'

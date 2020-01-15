@@ -282,7 +282,9 @@ class ProjectEntryLabelViewSet(viewsets.ModelViewSet):
     ]
 
     def get_queryset(self):
-        return ProjectEntryLabel.objects.filter(project=self.kwargs['project_id'])
+        return ProjectEntryLabel.objects.filter(project=self.kwargs['project_id']).annotate(
+            entry_count=models.Count('entrygrouplabel__entry', distinct=True),
+        )
 
 
 class LeadEntryGroupViewSet(viewsets.ModelViewSet):
