@@ -100,7 +100,6 @@ class SimpleExportDataSerializer(RemoveNullFieldsMixin,
 
 
 class ProjectEntryLabelSerializer(DynamicFieldsMixin, UserResourceSerializer):
-    entry_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = ProjectEntryLabel
@@ -110,6 +109,10 @@ class ProjectEntryLabelSerializer(DynamicFieldsMixin, UserResourceSerializer):
     def validate(self, data):
         data['project_id'] = int(self.context['view'].kwargs['project_id'])
         return data
+
+
+class ProjectEntryLabelDetailSerializer(ProjectEntryLabelSerializer):
+    entry_count = serializers.IntegerField(read_only=True)  # Provided by ProjectEntryLabelViewSet queryset
 
 
 class EntryGroupLabelSerializer(UniqueFieldsMixin, UserResourceSerializer):
