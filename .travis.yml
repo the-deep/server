@@ -30,7 +30,6 @@ after_success:
   - /tmp/cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
   - docker-compose push server
   - docker push ${DOCKER_IMAGE_SERVER_B}
-  - mv .
 
 deploy:
   provider: pages
