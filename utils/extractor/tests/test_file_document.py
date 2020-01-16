@@ -15,6 +15,7 @@ PDF_FILE = 'doc.pdf'
 
 logger = logging.getLogger(__name__)
 
+
 class FileDocumentTest(TestCase):
     """
     Import Test using files
@@ -55,10 +56,8 @@ class FileDocumentTest(TestCase):
                 doc.name.split('/')[-1]
             ).get_thumbnail()
         except Exception:
-            import traceback
             logger.warning('\n' + ('*' * 30))
-            logger.warning('{}: FILEDOCUMENT: {}'.format(ERROR_TYPE, doc.name))
-            logger.warning(traceback.format_exc())
+            logger.warning('{}: FILEDOCUMENT: {}'.format(ERROR_TYPE, doc.name), exc_info=True)
             return
 
         self.assertTrue(isfile(thumbnail.name))

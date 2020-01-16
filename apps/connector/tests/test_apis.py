@@ -6,7 +6,7 @@ from connector.models import (
     Connector,
     ConnectorSource,
     ConnectorUser,
-    EMMConfig,
+    # EMMConfig,
 )
 from connector.sources import store
 
@@ -119,126 +119,126 @@ class ConnectorApiTest(TestCase):
 
     # FIXME: Fix the broken tests by mocking
     # def test_get_leads_from_connector(self):
-        # # TODO Check existing status of leads
+    #     # TODO Check existing status of leads
 
-        # connector = self.create(Connector,
-                                # source=get_source_object('rss-feed'),
-                                # params=SAMPLE_RSS_PARAMS,
-                                # role='self')
-        # url = '/api/v1/connectors/{}/leads/'.format(connector.id)
+    #     connector = self.create(Connector,
+    #                             source=get_source_object('rss-feed'),
+    #                             params=SAMPLE_RSS_PARAMS,
+    #                             role='self')
+    #     url = '/api/v1/connectors/{}/leads/'.format(connector.id)
 
-        # self.authenticate()
-        # response = self.client.post(url)
-        # self.assert_200(response)
+    #     self.authenticate()
+    #     response = self.client.post(url)
+    #     self.assert_200(response)
 
-        # self.assertIsNotNone(response.data.get('results'))
-        # self.assertTrue(response.data['count'] >= 0)
-        # self.assertIsInstance(response.data['results'], list)
+    #     self.assertIsNotNone(response.data.get('results'))
+    #     self.assertTrue(response.data['count'] >= 0)
+    #     self.assertIsInstance(response.data['results'], list)
 
     # def test_get_leads_from_source(self):
-        # url = '/api/v1/connector-sources/{}/leads/'.format('rss-feed')
+    #     url = '/api/v1/connector-sources/{}/leads/'.format('rss-feed')
 
-        # self.authenticate()
-        # response = self.client.post(url, data=SAMPLE_RSS_PARAMS)
-        # self.assert_200(response)
+    #     self.authenticate()
+    #     response = self.client.post(url, data=SAMPLE_RSS_PARAMS)
+    #     self.assert_200(response)
 
-        # self.assertIsNotNone(response.data.get('results'))
-        # self.assertTrue(response.data['count'] > 0)
+    #     self.assertIsNotNone(response.data.get('results'))
+    #     self.assertTrue(response.data['count'] > 0)
     #     self.assertIsInstance(response.data['results'], list)
 
     # def test_get_fields_from_rss(self):
-        # url = '/api/v1/connector-sources/rss-feed/fields/'
+    #     url = '/api/v1/connector-sources/rss-feed/fields/'
 
-        # self.authenticate()
-        # response = self.client.post(url, data=SAMPLE_RSS_PARAMS)
-        # self.assert_200(response)
+    #     self.authenticate()
+    #     response = self.client.post(url, data=SAMPLE_RSS_PARAMS)
+    #     self.assert_200(response)
 
-        # self.assertIsNotNone(response.data.get('results'))
-        # self.assertTrue(response.data['count'] > 0)
+    #     self.assertIsNotNone(response.data.get('results'))
+    #     self.assertTrue(response.data['count'] > 0)
     #     self.assertIsInstance(response.data['results'], list)
 
     # def test_relief_web(self):
-        # connector = self.create(Connector,
-                                # source=get_source_object('relief-web'),
-                                # params={'country': 'NPL'},
-                                # role='self')
+    #     connector = self.create(Connector,
+    #                             source=get_source_object('relief-web'),
+    #                             params={'country': 'NPL'},
+    #                             role='self')
 
-        # data = {
-            # 'offset': 5,
-            # 'limit': 15,
-            # 'search': 'Earthquake',
-        # }
-        # url = '/api/v1/connectors/{}/leads/'.format(connector.id)
+    #     data = {
+    #         'offset': 5,
+    #         'limit': 15,
+    #         'search': 'Earthquake',
+    #     }
+    #     url = '/api/v1/connectors/{}/leads/'.format(connector.id)
 
-        # self.authenticate()
-        # response = self.client.post(url, data=data)
-        # self.assert_200(response)
+    #     self.authenticate()
+    #     response = self.client.post(url, data=data)
+    #     self.assert_200(response)
 
-        # self.assertIsNotNone(response.data.get('results'))
-        # self.assertTrue(response.data['count'], 15)
-        # self.assertIsInstance(response.data['results'], list)
+    #     self.assertIsNotNone(response.data.get('results'))
+    #     self.assertTrue(response.data['count'], 15)
+    #     self.assertIsInstance(response.data['results'], list)
 
-        # for result in response.data['results']:
+    #     for result in response.data['results']:
     #         self.assertTrue('earthquake' in result['title'].lower())
 
-#     def test_atom_feed_fields(self):
-        # url = '/api/v1/connector-sources/atom-feed/fields/'
+    # def test_atom_feed_fields(self):
+    #     url = '/api/v1/connector-sources/atom-feed/fields/'
 
-        # self.authenticate()
-        # response = self.client.post(url, data=SAMPLE_ATOM_PARAMS)
-        # self.assert_200(response)
+    #     self.authenticate()
+    #     response = self.client.post(url, data=SAMPLE_ATOM_PARAMS)
+    #     self.assert_200(response)
 
-  #   def test_atom_feed_leads(self):
-        # connector = self.create(
-            # Connector,
-            # source=get_source_object(store.atom_feed.AtomFeed.key),
-            # params=SAMPLE_ATOM_PARAMS,
-            # role='self',
-        # )
+    # def test_atom_feed_leads(self):
+    #     connector = self.create(
+    #         Connector,
+    #         source=get_source_object(store.atom_feed.AtomFeed.key),
+    #         params=SAMPLE_ATOM_PARAMS,
+    #         role='self',
+    #     )
 
-        # data = {
-            # 'offset': 5,
-            # 'limit': 15,
-        # }
-        # url = '/api/v1/connectors/{}/leads/'.format(connector.id)
+    #     data = {
+    #         'offset': 5,
+    #         'limit': 15,
+    #     }
+    #     url = '/api/v1/connectors/{}/leads/'.format(connector.id)
 
-        # self.authenticate()
-        # response = self.client.post(url, data=data)
-        # self.assert_200(response)
+    #     self.authenticate()
+    #     response = self.client.post(url, data=data)
+    #     self.assert_200(response)
 
-        # self.assertIsNotNone(response.data.get('results'))
-        # self.assertTrue(response.data['count'], 15)
-        # self.assertIsInstance(response.data['results'], list)
+    #     self.assertIsNotNone(response.data.get('results'))
+    #     self.assertTrue(response.data['count'], 15)
+    #     self.assertIsInstance(response.data['results'], list)
 
     # def test_emm_leads(self):
-        # # NOTE: Emm config should have already been created
-        # if not EMMConfig.objects.all().first():
-            # EMMConfig.objects.create()  # Created with default values
+    #     # NOTE: Emm config should have already been created
+    #     if not EMMConfig.objects.all().first():
+    #         EMMConfig.objects.create()  # Created with default values
 
-        # connector = self.create(
-            # Connector,
-            # source=get_source_object(store.emm.EMM.key),
-            # params=SAMPLE_EMM_PARAMS,
-            # role='self',
-        # )
+    #     connector = self.create(
+    #         Connector,
+    #         source=get_source_object(store.emm.EMM.key),
+    #         params=SAMPLE_EMM_PARAMS,
+    #         role='self',
+    #     )
 
-        # data = {
-            # 'offset': 5,
-            # 'limit': 15,
-        # }
-        # url = '/api/v1/connectors/{}/leads/'.format(connector.id)
+    #     data = {
+    #         'offset': 5,
+    #         'limit': 15,
+    #     }
+    #     url = '/api/v1/connectors/{}/leads/'.format(connector.id)
 
-        # self.authenticate()
-        # response = self.client.post(url, data=data)
-        # self.assert_200(response)
+    #     self.authenticate()
+    #     response = self.client.post(url, data=data)
+    #     self.assert_200(response)
 
-        # self.assertIsNotNone(response.data.get('results'))
-        # self.assertTrue(response.data['count'], 15)
-        # self.assertIsInstance(response.data['results'], list)
+    #     self.assertIsNotNone(response.data.get('results'))
+    #     self.assertTrue(response.data['count'], 15)
+    #     self.assertIsInstance(response.data['results'], list)
 
-        # for x in response.data['results']:
-            # assert 'emm_entities' in x
-            # assert 'emm_triggers' in x
+    #     for x in response.data['results']:
+    #         assert 'emm_entities' in x
+    #         assert 'emm_triggers' in x
 
     def test_get_connector_fields(self):
         """Check if source and source title are present"""
@@ -309,8 +309,6 @@ class ConnectorSourcesApiTest(TestCase):
             'source': acaps_briefing_notes.AcapsBriefingNotes.key
         }
 
-        connector_count = Connector.objects.count()
-
         self.authenticate()
         response = self.client.post(url, data)
         self.assert_201(response)
@@ -333,8 +331,6 @@ class ConnectorSourcesApiTest(TestCase):
             'title': 'Test Acaps connector',
             'source': acaps_briefing_notes.AcapsBriefingNotes.key
         }
-
-        connector_count = Connector.objects.count()
 
         self.authenticate()
         response = self.client.post(url, data)
