@@ -36,7 +36,7 @@ from .serializers import (
     ExportDataSerializer,
     FilterDataSerializer,
     # Entry Grouping
-    ProjectEntryLabelSerializer,
+    ProjectEntryLabelDetailSerializer,
     LeadEntryGroupSerializer,
 )
 from .pagination import ComprehensiveEntriesSetPagination
@@ -276,7 +276,7 @@ class EntryCommentViewSet(viewsets.ModelViewSet):
 
 
 class ProjectEntryLabelViewSet(viewsets.ModelViewSet):
-    serializer_class = ProjectEntryLabelSerializer
+    serializer_class = ProjectEntryLabelDetailSerializer
     permission_classes = [
         permissions.IsAuthenticated, IsProjectMember, ModifyPermission,
     ]
