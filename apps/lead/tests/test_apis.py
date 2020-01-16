@@ -1198,4 +1198,4 @@ class WebInfoExtractionTests(TestCase):
             'author_raw': SAMPLE_WEB_INFO_SOURCE,
             'existing': False,
         }
-        self.assertEqual(response.data, expected)
+        self.assertEqualWithWarning(expected, response.data)
