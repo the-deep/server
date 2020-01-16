@@ -39,7 +39,15 @@ DEEPER_SITE_NAME = os.environ.get('DEEPER_SITE_NAME', 'DEEPER')
 HTTP_PROTOCOL = os.environ.get('DEEP_HTTPS', 'http')
 
 # See if we are inside a test environment (pytest)
-TESTING = 'pytest' in sys.modules and DEBUG
+TESTING = any([
+    arg in sys.argv for arg in [
+        'test',
+        'pytest', '/usr/local/bin/pytest',
+        'py.test', '/usr/local/bin/py.test',
+        '/usr/local/lib/python3.6/dist-packages/py/test.py',
+    ]
+    # Provided by pytest-xdist
+]) or os.environ.get('PYTEST_XDIST_WORKER') is not None
 
 PROFILE = os.environ.get('PROFILE', 'false').lower() == 'true'
 
