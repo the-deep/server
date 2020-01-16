@@ -9,8 +9,9 @@ from rest_framework import (
     views,
     viewsets,
     serializers,
+    mixins,
 )
-from deep.permissions import ModifyPermission
+from deep.permissions import ModifyPermission, IsProjectMember
 
 from django.utils import timezone
 from project.models import Project
@@ -19,6 +20,8 @@ from analysis_framework.models import Widget
 
 from .models import (
     Entry, Attribute, FilterData, ExportData, EntryComment,
+    # Entry Grouping
+    ProjectEntryLabel, LeadEntryGroup,
 )
 from .serializers import (
     AttributeSerializer,
@@ -32,6 +35,9 @@ from .serializers import (
     EntrySerializer,
     ExportDataSerializer,
     FilterDataSerializer,
+    # Entry Grouping
+    ProjectEntryLabelDetailSerializer,
+    LeadEntryGroupSerializer,
 )
 from .pagination import ComprehensiveEntriesSetPagination
 from .filter_set import (
@@ -127,7 +133,7 @@ class EntryFilterView(generics.GenericAPIView):
         return response.Response(serializer.data)
 
 
-class EditEntriesDataViewSet(viewsets.ReadOnlyModelViewSet):
+class EditEntriesDataViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     """
     Page API for Edit Entries
     """
@@ -267,3 +273,25 @@ class EntryCommentViewSet(viewsets.ModelViewSet):
         comment.resolved_at = timezone.now()
         comment.save()
         return response.Response(self.get_serializer_class()(comment).data)
+
+
+class ProjectEntryLabelViewSet(viewsets.ModelViewSet):
+    serializer_class = ProjectEntryLabelDetailSerializer
+    permission_classes = [
+        permissions.IsAuthenticated, IsProjectMember, ModifyPermission,
+    ]
+
+    def get_queryset(self):
+        return ProjectEntryLabel.objects.filter(project=self.kwargs['project_id']).annotate(
+            entry_count=models.Count('entrygrouplabel__entry', distinct=True),
+        )
+
+
+class LeadEntryGroupViewSet(viewsets.ModelViewSet):
+    serializer_class = LeadEntryGroupSerializer
+    permission_classes = [
+        permissions.IsAuthenticated, IsProjectMember, ModifyPermission,
+    ]
+
+    def get_queryset(self):
+        return LeadEntryGroup.objects.filter(lead=self.kwargs['lead_id'])
