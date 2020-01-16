@@ -16,7 +16,7 @@ SUPPORTED_WIDGETS = [
 ]
 
 
-def _get_project_geoareas(project, collect_polygons=False):
+def _get_project_geoareas(project):
     qs = GeoArea.objects.filter(
         admin_level__region__in=project.regions.values_list('id'),
     ).annotate(extent=Extent('polygons')).values('pk', 'admin_level__level', 'title', 'polygons', 'extent', 'parent')
@@ -33,8 +33,7 @@ def _get_project_geoareas(project, collect_polygons=False):
             'centroid': [centroid.x, centroid.y],
             'bounds': [geoarea['extent'][:2], geoarea['extent'][2:]],
         }
-        if collect_polygons:
-            geo['polygons'] = json.loads(polygons.geojson)   # TODO:
+        geo['polygons'] = json.loads(polygons.geojson)   # TODO:
         geo_array.append(geo)
     return geo_array
 
