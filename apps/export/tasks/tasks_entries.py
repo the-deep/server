@@ -28,7 +28,9 @@ def export_entries(export):
 
     filters['project'] = project_id
 
-    queryset = EntryFilterSet(filters, queryset=queryset).qs
+    queryset = EntryFilterSet(filters, queryset=queryset).qs.prefetch_related(
+        'entrygrouplabel_set'
+    )
 
     exportables = Exportable.objects.filter(
         analysis_framework__project__id=project_id,
@@ -40,7 +42,7 @@ def export_entries(export):
 
     if export_type == Export.EXCEL:
         decoupled = filters.get('decoupled', True)
-        export_data = ExcelExporter(decoupled)\
+        export_data = ExcelExporter(decoupled, project_id)\
             .load_exportables(exportables, regions)\
             .add_entries(queryset)\
             .export()
