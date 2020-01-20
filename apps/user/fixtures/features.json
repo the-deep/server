@@ -22,5 +22,13 @@
             "key": "entry_visualization_configuration",
             "title": "Entry visualization configuration"
         }
+    },
+    {
+        "model": "user.feature",
+        "pk": 4,
+        "fields": {
+            "key": "polygon_support_geo",
+            "title": "Polygon support geo"
+        }
     }
 ]
