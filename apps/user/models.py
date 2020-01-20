@@ -140,12 +140,14 @@ class Feature(models.Model):
     PRIVATE_PROJECT = 'private_project'
     TABULAR = 'tabular'
     ZOOMABLE_IMAGE = 'zoomable_image'
+    POLYGON_SUPPORT_GEO = 'polygon_support_geo'
     ENTRY_VISUALIZATION_CONFIGURATION = 'entry_visualization_configuration'
 
     FEATURE_KEYS = (
         (PRIVATE_PROJECT, 'Private projects'),
         (TABULAR, 'Tabular'),
         (ZOOMABLE_IMAGE, 'Zoomable image'),
+        (POLYGON_SUPPORT_GEO, 'Polygon support geo'),
         (ENTRY_VISUALIZATION_CONFIGURATION, 'Entry visualization configuration'),
     )
 
