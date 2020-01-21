@@ -230,6 +230,7 @@ class FilterData(models.Model):
     # For intersection between two numbers
     from_number = models.IntegerField(default=None, blank=True, null=True)
     to_number = models.IntegerField(default=None, blank=True, null=True)
+    text = models.TextField(default=None, blank=True, null=True)
 
     @staticmethod
     def get_for(user):

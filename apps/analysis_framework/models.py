@@ -218,11 +218,13 @@ class Filter(models.Model):
     """
     A filter for a widget in an analysis framework
     """
+    TEXT = 'text'
     NUMBER = 'number'
     LIST = 'list'
     INTERSECTS = 'intersects'
 
     FILTER_TYPES = (
+        (TEXT, 'Text'),
         (NUMBER, 'Number'),
         (LIST, 'List'),
         (INTERSECTS, 'Intersection between two numbers'),
