@@ -195,7 +195,14 @@ def get_filtered_entries(user, queries):
                     filterdata__number__gte=query_gt,
                 )
 
-        if filter.filter_type == Filter.INTERSECTS:
+        elif filter.filter_type == Filter.TEXT:
+            if query:
+                entries = entries.filter(
+                    filterdata__filter=filter,
+                    filterdata__text__icontains=query,
+                )
+
+        elif filter.filter_type == Filter.INTERSECTS:
             if query:
                 entries = entries.filter(
                     filterdata__filter=filter,
@@ -216,7 +223,7 @@ def get_filtered_entries(user, queries):
                 )
                 entries = entries.filter(q, filterdata__filter=filter)
 
-        if filter.filter_type == Filter.LIST and query:
+        elif filter.filter_type == Filter.LIST and query:
             if not isinstance(query, list):
                 query = query.split(',')
 

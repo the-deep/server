@@ -7,6 +7,7 @@ def set_filter_data(
         number=None,
         from_number=None, to_number=None,
         values=None,
+        text=None,
 ):
     key = key or widget.key
     filter = Filter.objects.filter(
@@ -22,6 +23,7 @@ def set_filter_data(
             'values': values,
             'from_number': from_number,
             'to_number': to_number,
+            'text': text,
         },
     )
     return f
