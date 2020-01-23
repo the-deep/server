@@ -13,7 +13,14 @@ from organization.models import Organization
 from organization.serializers import SimpleOrganizationSerializer
 from lead.filter_set import LeadFilterSet
 from lead.serializers import SimpleLeadGroupSerializer
-from lead.models import Lead, LeadPreview, EMMEntity, LeadEMMTrigger, LeadGroup
+from lead.models import (
+    Lead,
+    LeadPreview,
+    LeadPreviewImage,
+    EMMEntity,
+    LeadEMMTrigger,
+    LeadGroup,
+)
 from user_group.models import UserGroup, GroupMembership
 
 import logging
@@ -671,11 +678,27 @@ class LeadTests(TestCase):
         project3d = self.create(Project, title='project2d', role=self.admin_role)
         project4d = self.create(Project, title='project4d', role=self.view_only_role)
 
-        # Leads
-        lead1 = self.create(Lead, project=project1s)
+        # Lead1 Info (Will be used later for testing)
+        lead1_title = 'Lead 1 2019--222-'
+        lead1_text_extract = 'This is a test text extract'
+        lead1_preview_file = 'invalid_test_file'
+        emm_keyword = 'emm1'
+        emm_risk_factor = 'risk1'
+        emm_count = 22
+        emm_entity_name = 'emm_entity_11'
+
+        # Generate Leads
+        lead1 = self.create(Lead, title=lead1_title, project=project1s)
         lead2 = self.create(Lead, project=project2s)
         lead3 = self.create(Lead, project=project3s)
         lead4 = self.create(Lead, project=project4s)
+
+        # Generating Foreign elements for lead1
+        self.create(LeadPreview, lead=lead1, text_extract=lead1_text_extract)
+        self.create(LeadPreviewImage, lead=lead1, file=lead1_preview_file)
+        emm_trigger = self.create(
+            LeadEMMTrigger, lead=lead1, emm_keyword=emm_keyword, emm_risk_factor=emm_risk_factor, count=emm_count)
+        lead1.emm_entities.set([self.create(EMMEntity, name=emm_entity_name)])
 
         # Request body data [also contains unauthorized projects and leads]
         data = {
@@ -718,6 +741,15 @@ class LeadTests(TestCase):
         for project, old_lead_count, new_lead_count in lead_stats:
             current_lead_count = Lead.objects.filter(project_id=project.pk).count()
             assert new_lead_count == current_lead_count, f'Project: {project.title} lead count is different'
+
+        # Test Foreign Fields
+        lead1_copy = Lead.objects.filter(title=lead1_title).exclude(pk=lead1.pk).first()
+        emm_trigger = lead1_copy.emm_triggers.filter(emm_risk_factor=emm_risk_factor, emm_keyword=emm_keyword)[0]
+        assert lead1_copy.pk != lead1.pk
+        assert lead1_copy.leadpreview.text_extract == lead1_text_extract
+        assert lead1_copy.images.all()[0].file == lead1_preview_file
+        assert emm_trigger.count == emm_count
+        assert lead1_copy.emm_entities.all()[0].name == emm_entity_name
 
     def test_lead_duplicate_validation(self):
         url = '/api/v1/leads/'

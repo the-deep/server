@@ -228,6 +228,9 @@ class AdminLevel(models.Model):
             parent_code_prop=self.parent_code_prop,
             geo_shape_file=self.geo_shape_file,
             tolerance=self.tolerance,
+            geojson_file=self.geojson_file,
+            bounds_file=self.bounds_file,
+            geo_area_titles=self.geo_area_titles,
         )
         admin_level.stale_geo_areas = True
         admin_level.save()
