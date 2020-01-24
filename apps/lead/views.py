@@ -34,7 +34,13 @@ from project.models import Project, ProjectMembership
 from project.permissions import PROJECT_PERMISSIONS as PROJ_PERMS
 from organization.models import Organization
 from organization.serializers import SimpleOrganizationSerializer
-from .models import LeadGroup, Lead, EMMEntity, LeadEMMTrigger
+from .models import (
+    LeadGroup,
+    Lead,
+    EMMEntity,
+    LeadEMMTrigger,
+    LeadPreviewImage,
+)
 from .serializers import (
     LeadGroupSerializer,
     SimpleLeadGroupSerializer,
@@ -563,6 +569,16 @@ class LeadCopyView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def clone_lead(self, lead, project_id, user):
+        def _get_clone_ready(obj, lead):
+            obj.pk = None
+            obj.lead = lead
+            return obj
+
+        preview = lead.leadpreview if hasattr(lead, 'leadpreview') else None
+        preview_images = lead.images.all()
+        emm_triggers = lead.emm_triggers.all()
+        emm_entities = lead.emm_entities.all()
+
         lead.pk = None
         try:
             LeadSerializer.add_update__validate({
@@ -572,7 +588,25 @@ class LeadCopyView(views.APIView):
             return  # SKIP COPY if validation fails
         lead.project_id = project_id
         lead.save()
-        lead.assignee.add(user)
+
+        # Clone Lead Preview (One-to-one fields)
+        if preview:
+            preview.pk = None
+            preview.lead = lead
+            preview.save()
+
+        # Clone Many to many Fields
+        lead.assignee.add(user)  # Assign requesting user
+        lead.emm_entities.set(emm_entities)
+
+        # Clone Many to one Fields
+        LeadPreviewImage.objects.bulk_create([
+            _get_clone_ready(image, lead) for image in preview_images
+        ])
+        LeadEMMTrigger.objects.bulk_create([
+            _get_clone_ready(emm_trigger, lead) for emm_trigger in emm_triggers
+        ])
+
         return lead
 
     @transaction.atomic

@@ -1,6 +1,8 @@
 [run]
 branch = true
 source = .
+parallel = true
+concurrency = multiprocessing
 omit = */migrations/*
         */management/*
         analysis_framework/widgets/*

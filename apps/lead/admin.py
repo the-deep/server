@@ -1,5 +1,9 @@
 from django.contrib import admin
 from reversion.admin import VersionAdmin
+from django.utils.safestring import mark_safe
+from django.contrib import messages
+
+from .tasks import extract_from_lead
 from .models import (
     Lead, LeadGroup,
     LeadPreview, LeadPreviewImage,
@@ -16,6 +20,25 @@ class LeadPreviewImageInline(admin.TabularInline):
     extra = 0
 
 
+def trigger_lead_extract(modeladmin, request, queryset):
+    extract_from_lead.delay(
+        list(queryset.values_list('id', flat=True).distinct()[:10])
+    )
+    messages.add_message(
+        request, messages.INFO,
+        mark_safe(
+            'Successfully triggered leads: <br><hr>' +
+            '<br>'.join(
+                '* {0} : ({1}) {2}'.format(*value)
+                for value in queryset.values_list('id', 'project_id', 'title').distinct()
+            )
+        )
+    )
+
+
+trigger_lead_extract.short_description = 'Trigger lead extraction'
+
+
 @admin.register(Lead)
 class LeadAdmin(VersionAdmin):
     inlines = [LeadPreviewInline, LeadPreviewImageInline]
@@ -29,6 +52,7 @@ class LeadAdmin(VersionAdmin):
         'project', 'created_by', 'modified_by', 'attachment', 'assignee',
         'source', 'author', 'emm_entities', 'lead_group',
     )
+    actions = [trigger_lead_extract]
 
 
 @admin.register(LeadGroup)
