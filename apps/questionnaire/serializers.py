@@ -76,6 +76,7 @@ class QuestionnaireSerializer(
 ):
     enumerator_skill_detail = serializers.SerializerMethodField()
     data_collection_technique_detail = serializers.SerializerMethodField()
+
     project_framework_detail = AnalysisFrameworkSerializer(
         source='project.analysis_framework', read_only=True)
 

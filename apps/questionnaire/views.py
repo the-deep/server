@@ -1,4 +1,5 @@
 from django.shortcuts import render
+import django_filters
 from rest_framework.decorators import action
 from rest_framework import (
     viewsets,
@@ -16,9 +17,14 @@ from .serializers import (
     CrisisTypeSerializer,
 )
 
+from .filter_set import QuestionnaireFilterSet
+
 
 class QuestionnaireViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionnaireSerializer
+
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filterset_class = QuestionnaireFilterSet
 
     def get_queryset(self):
         return Questionnaire.objects.all()
