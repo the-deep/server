@@ -503,6 +503,28 @@ class ProjectViewSet(viewsets.ModelViewSet):
         request._request.GET['project'] = project.pk
         return viewfn(request._request)
 
+    """
+    Project Questionnaire Meta
+    """
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated],
+        methods=['get'],
+        url_path=r'questionnaire-meta',
+    )
+    def get_questionnaire_meta(self, request, *args, **kwargs):
+        project = self.get_project_object()
+        af = project.analysis_framework
+        meta = {
+            'active_count': project.questionnaire_set.filter(is_archived=False).count(),
+            'archived_count': project.questionnaire_set.filter(is_archived=True).count(),
+            'analysis_framework': af and {
+                'id': af.id,
+                'title': af.title,
+            },
+        }
+        return response.Response(meta)
+
 
 # FIXME: user better API
 class ProjectStatViewSet(ProjectViewSet):
