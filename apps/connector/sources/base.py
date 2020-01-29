@@ -8,6 +8,52 @@ from utils.common import random_key
 from lead.models import Lead
 
 
+class OrganizationSearch():
+    def __init__(self, texts):
+        self.fetch(texts)
+
+    def create_organization(self, text):
+        return Organization.objects.create(
+            title=text,
+            short_name=text,
+            long_name=text,
+        )
+
+    def fetch(self, texts):
+        text_queries = [
+            (text, text.lower())
+            for text in set(texts) if text
+        ]
+        exact_query = reduce(
+            lambda acc, item: acc | item,
+            [
+                Q(title__iexact=d) |
+                Q(short_name__iexact=d) |
+                Q(long_name__iexact=d)
+                for _, d in text_queries
+            ],
+        )
+        exact_organizations = Organization.objects.filter(exact_query).all()
+        organization_map = {
+            key.lower(): organization
+            for organization in exact_organizations
+            for key in [organization.title, organization.short_name, organization.long_name]
+        }
+
+        # For remaining organizations
+        for label, org_text in text_queries:
+            if org_text in organization_map:
+                continue
+            organization_map[org_text] = self.create_organization(label)
+
+        self.organization_map = organization_map
+        return self.organization_map
+
+    def get(self, text):
+        if text:
+            return self.organization_map.get(text.lower())
+
+
 class Source(ABC):
     DEFAULT_PER_PAGE = 25
 
@@ -26,36 +72,12 @@ class Source(ABC):
         if not leads_data:
             return [], total_count
 
-        def _construct_query(data):
-            source = data['source']
-            author = data['author']
-            return (
-                Q(title__iexact=source) |
-                Q(title__iexact=author) |
-                Q(short_name__iexact=source) |
-                Q(short_name__iexact=author) |
-                Q(long_name__iexact=source) |
-                Q(long_name__iexact=author)
-            )
-        queries = [
-            # TODO: if value are None
-            _construct_query(d)
+        organization_search = OrganizationSearch([
+            label
             for d in leads_data
-        ]
+            for label in [d['source'], d['author']]
+        ])
 
-        organization_query = reduce(
-            lambda acc, item: acc | item,
-            queries,
-        )
-        organizations = Organization.objects.filter(organization_query).all()
-        organization_map = {
-            organization.title: organization
-            for organization in organizations
-        }
-        organization_map.update({
-            organization.short_name: organization
-            for organization in organizations
-        })
         leads = []
         for ldata in leads_data:
             lead = Lead(
@@ -65,8 +87,8 @@ class Source(ABC):
                 url=ldata['url'],
                 source_raw=ldata['source'],
                 author_raw=ldata['author'],
-                source=organization_map.get(ldata['source']),
-                author=organization_map.get(ldata['author']),
+                source=organization_search.get(ldata['source']),
+                author=organization_search.get(ldata['author']),
                 source_type=ldata['source_type'],
                 website=ldata['website'],
             )
