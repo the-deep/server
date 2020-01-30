@@ -1,3 +1,4 @@
+from functools import reduce
 from datetime import datetime
 
 from django.db import models
@@ -5,7 +6,11 @@ from django.contrib.auth.models import User
 
 from analysis_framework.models import Filter
 from lead.models import Lead
-from entry.models import Entry, EntryComment
+from entry.models import (
+    Entry,
+    EntryComment,
+    ProjectEntryLabel,
+)
 
 import django_filters
 
@@ -86,6 +91,16 @@ class EntryFilterSet(django_filters.FilterSet):
         method='geo_custom_shape_filter',
     )
 
+    # Entry Group Label Filters
+    project_entry_labels = django_filters.ModelMultipleChoiceFilter(
+        label='Project Entry Labels',
+        queryset=ProjectEntryLabel.objects.all(), method='project_entry_labels_filter',
+    )
+    lead_group_labels = django_filters.CharFilter(
+        label='Lead Group Labels',
+        method='lead_group_labels_filter',
+    )
+
     class Meta:
         model = Entry
         fields = {
@@ -129,18 +144,29 @@ class EntryFilterSet(django_filters.FilterSet):
         return queryset
 
     def geo_custom_shape_filter(self, queryset, name, value):
-        def _get_query(v):
-            return models.Q(
-                attribute__widget__widget_id='geoWidget',
-                attribute__data__value__contains=[{'type': v}],
-            )
-
         if value:
-            values = value.split(',')
-            query_params = _get_query(values[0])
-            for v in values[0:]:
-                query_params = query_params | _get_query(v)
+            query_params = reduce(
+                lambda acc, item: acc | item,
+                [
+                    models.Q(
+                        attribute__widget__widget_id='geoWidget',
+                        attribute__data__value__contains=[{'type': v}],
+                    ) for v in value.split(',')
+                ],
+            )
             return queryset.filter(query_params).distinct()
+        return queryset
+
+    def project_entry_labels_filter(self, queryset, name, value):
+        if value:
+            return queryset.filter(
+                entrygrouplabel__label__in=value,
+            ).distinct()
+        return queryset
+
+    def lead_group_labels_filter(self, queryset, name, value):
+        if value:
+            return queryset.filter(entrygrouplabel__group__title__in=value.split(',')).distinct()
         return queryset
 
 

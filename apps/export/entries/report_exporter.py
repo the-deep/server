@@ -8,7 +8,6 @@ from export.mime_types import (
     PDF_MIME_TYPE,
 )
 
-from analysis_framework.models import Widget
 from entry.models import Entry, ExportData, Attribute
 from lead.models import Lead
 from utils.common import generate_filename
@@ -47,29 +46,60 @@ class ReportExporter:
         self.structure = structure
         return self
 
-    def load_text_from_text_widgets(self, entries):
+    def load_text_from_text_widgets(self, entries, text_widget_ids):
         """
         Prefetch entry texts from text_Widgets
+        text_widget_ids: [id1, id2, [id1, 'widget-key', 'widget-label']]
         """
-        text_widget_keys = Widget.objects.filter(
-            analysis_framework__in=entries.order_by().values_list('analysis_framework_id', flat=True).distinct(),
-            widget_id='textWidget',
-        ).values_list('key', flat=True)
+        # User defined widget order (Generate order map)
+        widget_map = {
+            id: index
+            for index, id in enumerate(text_widget_ids) if isinstance(id, int)
+        }
+        conditional_widget_map = {
+            f'{array[0]}-{array[1]}': (index, array[2])
+            for index, array in enumerate(text_widget_ids) if isinstance(array, list) and len(array) == 3
+        }
 
-        text_widgets_text = {}
+        # Collect text from textWidgets for given entries using user defined widget data
+        collected_widget_text = {}
         for attribute_d in Attribute.objects.filter(
             entry__in=entries,
-            widget__key__in=text_widget_keys,
             data__value__isnull=False,
-        ).values('entry_id', 'data__value', 'widget__title'):
+            widget__id__in=[(id if isinstance(id, int) else id[0]) for id in text_widget_ids],
+        ).values(
+            'entry_id', 'data__value', 'widget__title', 'widget__id', 'widget__widget_id'
+        ):
             entry_id = attribute_d['entry_id']
-            text_widgets_text[entry_id] = text_widgets_text.get(entry_id, [])
-            text_widgets_text[entry_id].append([
-                attribute_d['widget__title'],  # Widget Title
-                attribute_d['data__value'],  # Widget Text Value
-            ])
+            widget_id = attribute_d['widget__id']
+            widget_type = attribute_d['widget__widget_id']
 
-        self.text_widgets_text = text_widgets_text
+            if widget_type == 'conditionalWidget':
+                selected_widget_key = attribute_d['data__value'].get('selected_widget_key')
+                widget_order, widget_title = (
+                    conditional_widget_map.get(f'{widget_id}-{selected_widget_key}', (None, None))
+                )
+                text = (
+                    (
+                        attribute_d['data__value'].get(selected_widget_key) or {}
+                    ).get('data') or {}
+                ).get('value')
+            else:
+                widget_order = widget_map[widget_id]
+                widget_title = attribute_d['widget__title']
+                text = attribute_d['data__value']
+
+            if widget_order is None:
+                continue
+
+            # Map text to entry->order->text
+            collected_widget_text[entry_id] = collected_widget_text.get(entry_id, {})
+            collected_widget_text[entry_id][widget_order] = [
+                widget_title,
+                text,  # Widget Text Value
+            ]
+
+        self.collected_widget_text = collected_widget_text
         return self
 
     def _generate_for_entry(self, entry):
@@ -88,9 +118,11 @@ class ReportExporter:
         )
         para = self.doc.add_paragraph(excerpt).justify()
 
-        widget_texts_exists = len(self.text_widgets_text.get(entry.id, [])) > 0
+        widget_texts_exists = len(self.collected_widget_text.get(entry.id, [])) > 0
 
-        for title, text in self.text_widgets_text.get(entry.id, []):
+        entry_texts = self.collected_widget_text.get(entry.id, {})
+        for order in sorted(entry_texts.keys()):
+            title, text = entry_texts[order]
             self.doc.add_paragraph()
             self.doc.add_heading(title, 1)
             self.doc.add_paragraph(text).justify()
@@ -135,9 +167,15 @@ class ReportExporter:
 
         para.add_run('(' if widget_texts_exists else ' (')
 
+        # Add author is available
         (author and author.lower() != (source or '').lower()) and para.add_run(f'{author}, ')
+        # Add source (with url if available)
         para.add_hyperlink(url, source) if url else para.add_run(source)
+        # Add (confidential) to source without ,
         lead.confidentiality == Lead.CONFIDENTIAL and para.add_run(' (confidential)')
+        # Add lead title if available
+        lead.title and para.add_run(f", {lead.title}")
+        # Finally add date
         # TODO: use utils.common.format_date and perhaps use information date
         date and para.add_run(f", {date.strftime('%d/%m/%Y')}")
 
