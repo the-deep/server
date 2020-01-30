@@ -1,6 +1,5 @@
 import requests
 import re
-from functools import reduce
 
 from django.utils import timezone
 from django.conf import settings
@@ -56,6 +55,7 @@ from .serializers import (
 from lead.tasks import extract_from_lead
 from utils.web_info_extractor import get_web_info_extractor
 from utils.common import DEFAULT_HEADERS
+from connector.sources.base import OrganizationSearch
 
 
 valid_lead_url_regex = re.compile(
@@ -507,12 +507,8 @@ class WebInfoExtractView(views.APIView):
     """
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_organization(self, title):
-        org = Organization.objects.filter(
-            models.Q(title__iexact=title) |
-            models.Q(short_name__iexact=title) |
-            models.Q(long_name__iexact=title)
-        ).first()
+    def get_organization(self, title, search):
+        org = search.get(title)
         if org:
             return SimpleOrganizationSerializer(org).data
 
@@ -534,6 +530,7 @@ class WebInfoExtractView(views.APIView):
             ).first()
 
         project = project or request.user.profile.last_active_project
+        organization_search = OrganizationSearch([source_raw, author_raw])
 
         # LEGACY
         organization_context = {
@@ -542,8 +539,8 @@ class WebInfoExtractView(views.APIView):
         }
         if version != 'v1':
             organization_context = {
-                'source': self.get_organization(source_raw),
-                'author': self.get_organization(author_raw),
+                'source': self.get_organization(source_raw, organization_search),
+                'author': self.get_organization(author_raw, organization_search),
                 'source_raw': source_raw,
                 'author_raw': author_raw,
             }
