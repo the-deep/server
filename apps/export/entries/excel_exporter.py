@@ -3,7 +3,8 @@ from django.core.files.base import ContentFile
 
 from export.formats.xlsx import WorkBook, RowsBuilder
 from export.mime_types import EXCEL_MIME_TYPE
-from entry.models import Entry, ExportData
+from entry.models import Entry, ExportData, ProjectEntryLabel, LeadEntryGroup
+from lead.models import Lead
 from export.models import Export
 
 from utils.common import format_date, generate_filename, excel_column_name
@@ -12,10 +13,10 @@ logger = logging.getLogger(__name__)
 
 
 class ExcelExporter:
-    def __init__(self, decoupled=True):
+    def __init__(self, decoupled=True, project_id=None):
         self.wb = WorkBook()
 
-        # Create two worksheets
+        # Create worksheets(Main, Grouped, Entry Groups)
         if decoupled:
             self.split = self.wb.get_active_sheet()\
                 .set_title('Split Entries')
@@ -23,6 +24,8 @@ class ExcelExporter:
         else:
             self.split = None
             self.group = self.wb.get_active_sheet().set_title('Entries')
+
+        self.entry_groups_sheet = self.wb.create_sheet('Entry Groups')
         self.decoupled = decoupled
 
         # Initial titles
@@ -38,6 +41,30 @@ class ExcelExporter:
             'Excerpt',
             'Original Excerpt',
         ]
+
+        self.lead_id_titles_map = {x.id: x.title for  x in Lead.objects.filter(project_id=project_id)}
+
+        project_entry_labels = ProjectEntryLabel.objects.filter(
+            project_id=project_id
+        ).order_by('order')
+
+        self.label_id_title_map = {x.id: x.title for x in project_entry_labels}
+
+        lead_groups = LeadEntryGroup.objects.filter(lead__project_id=project_id).order_by('order')
+        self.group_id_title_map = {x.id: x.title for x in lead_groups}
+        # Create matrix of labels and groups
+
+        self.group_label_matrix = {
+            (group.lead_id, group.id): {x.id: None for x in project_entry_labels}
+            for group in lead_groups
+        }
+
+        self.entry_group_titles = [
+            'Lead',
+            'Group',
+            *self.label_id_title_map.values(),
+        ]
+        self.entry_groups_sheet.append([self.entry_group_titles])
 
         self.col_types = {
             0: 'date',
@@ -314,9 +341,16 @@ class ExcelExporter:
         return ''
 
     def add_entries(self, entries):
-        for entry in entries:
+        for i, entry in enumerate(entries):
             # Export each entry
             # Start building rows and export data for each exportable
+
+            # ENTRY GROUP
+            # Add it to appropriate row/column in self.group_label_matrix
+            for group_label in entry.entrygrouplabel_set.all():
+                key = (group_label.group.lead_id, group_label.group_id)
+                link = f'"#\'Grouped Entries\'!A{i+2}"'
+                self.group_label_matrix[key][group_label.label_id] = f'=HYPERLINK({link}, "{entry.excerpt[:50]}")'
 
             lead = entry.lead
             assignee = entry.lead.get_assignee()
@@ -354,6 +388,14 @@ class ExcelExporter:
                 self.add_entries_from_excel_data(rows, data, export_data)
 
             rows.apply()
+
+        # Now add data to entry group sheet
+        for (leadid, gid), labeldata in self.group_label_matrix.items():
+            row_data = [
+                self.lead_id_titles_map.get(leadid), self.group_id_title_map.get(gid),
+                *labeldata.values()
+            ]
+            self.entry_groups_sheet.append([row_data])
         return self
 
     def export(self):
