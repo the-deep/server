@@ -210,6 +210,14 @@ class EntryOptionsView(views.APIView):
                 } for user in created_by.distinct()
             ]
 
+        if fields is None or 'project_entry_labels' in fields:
+            options['project_entry_label'] = ProjectEntryLabel.objects.filter(
+                project__in=projects).values('id', 'title', 'color')
+
+        if fields is None or 'lead_group_labels' in fields:
+            options['lead_entry_group'] = LeadEntryGroup.objects.filter(
+                lead__project__in=projects).order_by().values_list('title', flat=True).distinct()
+
         return response.Response(options)
 
 
