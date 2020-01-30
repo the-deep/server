@@ -29,6 +29,7 @@ class ReportExporter:
             os.path.join(settings.APPS_DIR, 'static/doc_export/template.docx')
         )
         self.lead_ids = []
+        self.entry_group_labels = {}
 
     def load_exportables(self, exportables):
         exportables = exportables.filter(
@@ -180,6 +181,18 @@ class ReportExporter:
         date and para.add_run(f", {date.strftime('%d/%m/%Y')}")
 
         para.add_run(')')
+
+        # Adding Entry Group Labels
+        if entry.pk not in self.entry_group_labels:
+            group_labels = self.entry_group_labels[entry.pk] = (
+                entry.entrygrouplabel_set.values_list('group__title', 'label__title')
+            )
+        else:
+            group_labels = self.entry_group_labels[entry.pk]
+        if len(group_labels) > 0:
+            para.add_run(' (')
+            para.add_run(', '.join([f'{group} : {label}' for group, label in group_labels]))
+            para.add_run(')')
 
         self.doc.add_paragraph()
 

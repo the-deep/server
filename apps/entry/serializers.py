@@ -183,10 +183,14 @@ class EntrySerializer(RemoveNullFieldsMixin,
     )
     resolved_comment_count = serializers.SerializerMethodField()
     unresolved_comment_count = serializers.SerializerMethodField()
+    project_labels = serializers.SerializerMethodField()
 
     class Meta:
         model = Entry
         fields = '__all__'
+
+    def get_project_labels(self):
+        pass
 
     def get_resolved_comment_count(self, entry):
         return getattr(
@@ -374,12 +378,13 @@ class ComprehensiveEntriesSerializer(
     attributes = ComprehensiveAttributeSerializer(source='attribute_set', many=True, read_only=True)
     created_by = ComprehensiveUserSerializer(read_only=True)
     modified_by = ComprehensiveUserSerializer(read_only=True)
+    original_excerpt = serializers.CharField(source='dropped_excerpt', read_only=True)
 
     class Meta:
         model = Entry
         fields = (
             'id', 'created_at', 'modified_at', 'entry_type', 'excerpt', 'image', 'tabular_field',
-            'attributes', 'created_by', 'modified_by', 'project',
+            'attributes', 'created_by', 'modified_by', 'project', 'original_excerpt',
         )
 
 
