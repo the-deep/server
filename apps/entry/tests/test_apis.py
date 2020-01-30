@@ -139,9 +139,9 @@ class EntryTests(TestCase):
         self.post_filter_test({**default_filter, 'project_entry_labels': [label1.pk]}, 2)
         self.post_filter_test({**default_filter, 'project_entry_labels': [label2.pk]}, 1)
 
-        self.post_filter_test({**default_filter, 'lead_group_labels': group1.title}, 2)
-        self.post_filter_test({**default_filter, 'lead_group_labels': ','.join([group2.title, group1.title])}, 2)
-        self.post_filter_test({**default_filter, 'lead_group_labels': group3.title}, 0)
+        self.post_filter_test({**default_filter, 'lead_group_label': group1.title}, 2)
+        self.post_filter_test({**default_filter, 'lead_group_label': 'Group'}, 2)
+        self.post_filter_test({**default_filter, 'lead_group_label': group3.title}, 0)
 
     def test_create_entry(self):
         entry_count = Entry.objects.count()
