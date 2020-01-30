@@ -96,9 +96,9 @@ class EntryFilterSet(django_filters.FilterSet):
         label='Project Entry Labels',
         queryset=ProjectEntryLabel.objects.all(), method='project_entry_labels_filter',
     )
-    lead_group_labels = django_filters.CharFilter(
-        label='Lead Group Labels',
-        method='lead_group_labels_filter',
+    lead_group_label = django_filters.CharFilter(
+        label='Lead Group Label',
+        method='lead_group_label_filter',
     )
 
     class Meta:
@@ -164,9 +164,9 @@ class EntryFilterSet(django_filters.FilterSet):
             ).distinct()
         return queryset
 
-    def lead_group_labels_filter(self, queryset, name, value):
+    def lead_group_label_filter(self, queryset, name, value):
         if value:
-            return queryset.filter(entrygrouplabel__group__title__in=value.split(',')).distinct()
+            return queryset.filter(entrygrouplabel__group__title__icontains=value).distinct()
         return queryset
 
 

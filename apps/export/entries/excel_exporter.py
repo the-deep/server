@@ -36,6 +36,7 @@ class ExcelExporter:
             'Source',
             'Assignee',
             'Excerpt',
+            'Original Excerpt',
         ]
 
         self.col_types = {
@@ -332,6 +333,7 @@ class ExcelExporter:
                 (lead.source and lead.source.data.title) or lead.source_raw,
                 assignee and assignee.profile.get_display_name(),
                 self.get_entry_data(entry),
+                entry.dropped_excerpt or '',
             ])
 
             for exportable in self.exportables:
