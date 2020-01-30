@@ -78,7 +78,7 @@ def get_assessment_export_summary(assessment, planned_assessment=False):
 
     selected_affected_groups_ids = {x['key'] for x in (methodology['Affected Groups'] or [])}
 
-    locations = get_valid_geo_ids(assessment.methodology['locations']) or []
+    locations = get_valid_geo_ids(assessment.methodology['locations'] or [])
 
     geo_areas = GeoArea.objects.filter(id__in=locations).prefetch_related('admin_level')
     admin_levels = {f'Admin {x}': 0 for x in range(7)}
@@ -105,7 +105,7 @@ def get_assessment_export_summary(assessment, planned_assessment=False):
         },
     }
     if planned_assessment:
-        return { 'title': assessment.title, **planned_assessment_info}
+        return {'title': assessment.title, **planned_assessment_info}
 
     stakeholders = metadata.get('Stakeholders') or []
     lead_org = stakeholders and stakeholders[0]

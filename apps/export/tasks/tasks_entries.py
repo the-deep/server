@@ -48,12 +48,13 @@ def export_entries(export):
     elif export_type == Export.REPORT:
         report_structure = filters.get('report_structure')
         report_levels = filters.get('report_levels')
+        text_widget_ids = filters.get('text_widget_ids') or []
         pdf = export.filters.get('pdf', False)
         export_data = ReportExporter()\
             .load_exportables(exportables)\
             .load_levels(report_levels)\
             .load_structure(report_structure)\
-            .load_text_from_text_widgets(queryset)\
+            .load_text_from_text_widgets(queryset, text_widget_ids)\
             .add_entries(queryset)\
             .export(pdf=pdf)
 

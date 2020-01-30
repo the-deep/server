@@ -2,6 +2,7 @@ import logging
 
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
+from django.db import models
 
 from deep.serializers import (
     RemoveNullFieldsMixin,
@@ -183,22 +184,35 @@ class EntrySerializer(RemoveNullFieldsMixin,
     )
     resolved_comment_count = serializers.SerializerMethodField()
     unresolved_comment_count = serializers.SerializerMethodField()
+    project_labels = serializers.SerializerMethodField()
 
     class Meta:
         model = Entry
         fields = '__all__'
 
-    def get_resolved_comment_count(self, entry):
-        return getattr(
-            entry, 'resolved_comment_count',
-            entry.entrycomment_set.filter(parent=None, is_resolved=True).count()
+    def get_project_labels(self, entry):
+        label_count = self.context.get('entry_group_label_count')
+        if label_count:  # NOTE: Provided by EntryFilterView
+            return label_count.get(entry.pk) or []
+        # Fallback (NOTE: Also update in view context)
+        return entry.entrygrouplabel_set.order_by().values('label').annotate(
+            count=models.Count('id')
+        ).values(
+            'count',
+            label_id=models.F('label__id'),
+            label_color=models.F('label__color'),
+            label_title=models.F('label__title')
         )
 
+    def get_resolved_comment_count(self, entry):
+        if hasattr(entry, 'resolved_comment_count'):
+            return entry.resolved_comment_count
+        return entry.entrycomment_set.filter(parent=None, is_resolved=True).count()
+
     def get_unresolved_comment_count(self, entry):
-        return getattr(
-            entry, 'unresolved_comment_count',
-            entry.entrycomment_set.filter(parent=None, is_resolved=False).count()
-        )
+        if hasattr(entry, 'unresolved_comment_count'):
+            return entry.unresolved_comment_count
+        return entry.entrycomment_set.filter(parent=None, is_resolved=False).count()
 
     def create(self, validated_data):
         if validated_data.get('project') is None:
@@ -374,12 +388,13 @@ class ComprehensiveEntriesSerializer(
     attributes = ComprehensiveAttributeSerializer(source='attribute_set', many=True, read_only=True)
     created_by = ComprehensiveUserSerializer(read_only=True)
     modified_by = ComprehensiveUserSerializer(read_only=True)
+    original_excerpt = serializers.CharField(source='dropped_excerpt', read_only=True)
 
     class Meta:
         model = Entry
         fields = (
             'id', 'created_at', 'modified_at', 'entry_type', 'excerpt', 'image', 'tabular_field',
-            'attributes', 'created_by', 'modified_by', 'project',
+            'attributes', 'created_by', 'modified_by', 'project', 'original_excerpt',
         )
 
 

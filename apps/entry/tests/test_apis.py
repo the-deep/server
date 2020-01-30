@@ -13,6 +13,10 @@ from entry.models import (
     Entry,
     Attribute,
     FilterData,
+
+    ProjectEntryLabel,
+    LeadEntryGroup,
+    EntryGroupLabel,
 )
 
 from gallery.models import File
@@ -92,11 +96,11 @@ class EntryTests(TestCase):
         }
 
         self.authenticate()
-        self.client.post(url, data).get('id')
+        self.client.post(url, data)
         data['attributes'][geo_widget.pk]['data']['value'] = [{'type': 'Polygon'}]
-        self.client.post(url, data).get('id')
+        self.client.post(url, data)
         data['attributes'][geo_widget.pk]['data']['value'] = [{'type': 'Line'}, {'type': 'Polygon'}]
-        self.client.post(url, data).get('id')
+        self.client.post(url, data)
 
         filters = {'geo_custom_shape': 'Point'}
         self.post_filter_test(filters, 1)
@@ -104,6 +108,40 @@ class EntryTests(TestCase):
         self.post_filter_test(filters, 2)
         filters['geo_custom_shape'] = 'Point,Line,Polygon'
         self.post_filter_test(filters, 3)
+
+    def test_search_filter_entry_group_label(self):
+        lead = self.create_lead()
+        project = lead.project
+
+        # Entries
+        entry1 = self.create_entry(lead=lead)
+        entry2 = self.create_entry(lead=lead)
+
+        # Labels
+        label1 = self.create(ProjectEntryLabel, project=project, title='Label 1', order=1, color='#23f23a')
+        label2 = self.create(ProjectEntryLabel, project=project, title='Label 2', order=2, color='#23f23a')
+
+        # Groups
+        group1 = self.create(LeadEntryGroup, lead=lead, title='Group 1', order=1)
+        group2 = self.create(LeadEntryGroup, lead=lead, title='Group 2', order=2)
+        group3 = self.create(LeadEntryGroup, lead=lead, title='Group 3', order=3)
+
+        [
+            self.create(EntryGroupLabel, group=group, label=label, entry=entry)
+            for group, label, entry in [
+                (group1, label1, entry1),
+                (group1, label2, entry2),
+                (group2, label1, entry2),
+            ]
+        ]
+
+        default_filter = {'project': project.id}
+        self.post_filter_test({**default_filter, 'project_entry_labels': [label1.pk]}, 2)
+        self.post_filter_test({**default_filter, 'project_entry_labels': [label2.pk]}, 1)
+
+        self.post_filter_test({**default_filter, 'lead_group_label': group1.title}, 2)
+        self.post_filter_test({**default_filter, 'lead_group_label': 'Group'}, 2)
+        self.post_filter_test({**default_filter, 'lead_group_label': group3.title}, 0)
 
     def test_create_entry(self):
         entry_count = Entry.objects.count()
@@ -346,7 +384,7 @@ class EntryTests(TestCase):
         self.assert_200(response)
 
         r_data = response.json()
-        self.assertEqual(len(r_data['results']), count)
+        self.assertEqual(len(r_data['results']), count, f'Filters: {filters}')
 
     def both_filter_test(self, filters, count=1):
         self.filter_test(filters, count)
