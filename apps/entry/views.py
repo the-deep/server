@@ -21,7 +21,7 @@ from analysis_framework.models import Widget
 from .models import (
     Entry, Attribute, FilterData, ExportData, EntryComment,
     # Entry Grouping
-    ProjectEntryLabel, LeadEntryGroup,
+    ProjectEntryLabel, LeadEntryGroup, EntryGroupLabel,
 )
 from .serializers import (
     AttributeSerializer,
@@ -122,14 +122,35 @@ class EntryFilterView(generics.GenericAPIView):
             )
 
         queryset = EntryFilterSet(filters, queryset=queryset).qs
-
         page = self.paginate_queryset(queryset)
 
+        # Precalculate entry group label count (Used by EntrySerializer, NOTE: Also update the fallback)
+        entry_group_label_count = {}
+        entry_group_label_qs = EntryGroupLabel.objects.filter(entry__in=page).order_by().values(
+            'entry', 'label'
+        ).annotate(count=models.Count('id')).values(
+            'entry', 'count',
+            label_id=models.F('label__id'),
+            label_title=models.F('label__title'),
+            label_color=models.F('label__color'),
+        )
+        for count_data in entry_group_label_qs:
+            entry_id = count_data.pop('entry')
+            if entry_id not in entry_group_label_count:
+                entry_group_label_count[entry_id] = [count_data]
+            else:
+                entry_group_label_count[entry_id].append(count_data)
+
+        # Custom Context
+        serializer_class = self.get_serializer_class()
+        context = self.get_serializer_context()
+        context['entry_group_label_count'] = entry_group_label_count
+
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
+            serializer = serializer_class(page, many=True, context=context)
             return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = serializer_class(queryset, many=True, context=context)
         return response.Response(serializer.data)
 
 
@@ -209,6 +230,10 @@ class EntryOptionsView(views.APIView):
                     'value': user.profile.get_display_name(),
                 } for user in created_by.distinct()
             ]
+
+        if fields is None or 'project_entry_labels' in fields:
+            options['project_entry_label'] = ProjectEntryLabel.objects.filter(
+                project__in=projects).values('id', 'title', 'color')
 
         return response.Response(options)
 
