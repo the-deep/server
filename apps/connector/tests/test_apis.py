@@ -1,7 +1,9 @@
 from deep.tests import TestCase
 from user.models import User
 from project.models import Project
+from organization.models import Organization
 from connector.sources.store import get_random_source, acaps_briefing_notes
+from connector.sources.base import OrganizationSearch
 from connector.models import (
     Connector,
     ConnectorSource,
@@ -347,3 +349,19 @@ class ConnectorSourcesApiTest(TestCase):
                 assert each['status'] == ConnectorSource.STATUS_BROKEN
             else:
                 assert each['status'] == ConnectorSource.STATUS_BROKEN
+
+    def test_organization_search_util(self):
+        organization_titles = [
+            'Deep',
+            'New Deep',
+            'Old Deep',
+        ]
+        Organization.objects.filter(title__in=organization_titles).all().delete()
+        assert Organization.objects.filter(title__in=organization_titles).count() == 0
+
+        organization_search = OrganizationSearch(organization_titles)
+        organization_search.get('Deep')
+        organization_search.get('New Deep')
+        organization_search.get('Old Deep')
+
+        assert Organization.objects.filter(title__in=organization_titles).count() == 3
