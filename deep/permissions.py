@@ -43,7 +43,7 @@ class IsProjectMember(permissions.BasePermission):
         project_id = view.kwargs.get('project_id')
         lead_id = view.kwargs.get('lead_id')
 
-        if project_id and Project.get_for(request.user).filter(id=project_id).exists():
+        if project_id and Project.get_for_member(request.user).filter(id=project_id).exists():
             return True
         elif lead_id and Lead.get_for(request.user).filter(id=lead_id).exists():
             return True
