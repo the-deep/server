@@ -237,9 +237,6 @@ class TestCase(test.APITestCase):
         project = fields.pop('project', None) or self.create_project()
         return self.create(Lead, project=project, **fields)
 
-    def create_user(self):
-        return self.create(User)
-
     def create_entry(self, **fields):
         lead = fields.pop('lead', None) or self.create_lead()
         return self.create(
