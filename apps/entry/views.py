@@ -301,6 +301,7 @@ class EntryCommentViewSet(viewsets.ModelViewSet):
 
 
 class ProjectEntryLabelViewSet(viewsets.ModelViewSet):
+    # TODO: Restrict non-admin for update/create
     serializer_class = ProjectEntryLabelDetailSerializer
     permission_classes = [
         permissions.IsAuthenticated, IsProjectMember, ModifyPermission,
@@ -310,6 +311,30 @@ class ProjectEntryLabelViewSet(viewsets.ModelViewSet):
         return ProjectEntryLabel.objects.filter(project=self.kwargs['project_id']).annotate(
             entry_count=models.Count('entrygrouplabel__entry', distinct=True),
         )
+
+    @action(
+        detail=False,
+        url_path='bulk-update-order',
+        methods=['post'],
+    )
+    def bulk_update_order(self, request, *args, **kwargs):
+        # TODO: Restrict non-admin
+        # TODO: Use bulk_update after django upgrade to 2.2
+        """
+        Custom API to update order in bulk
+        ```json
+        [{"id": 1, "order": 2}, {"id": 2, "order": 1}]
+        ```
+        """
+        labels_order = {
+            label['id']: label['order'] for label in request.data if label.get('id')
+        }
+        labels = []
+        for label in self.get_queryset().filter(id__in=labels_order.keys()).all():
+            label.order = labels_order[label.pk]
+            label.save(update_fields=['order'])
+            labels.append(label)
+        return response.Response(self.get_serializer(labels, many=True).data)
 
 
 class LeadEntryGroupViewSet(viewsets.ModelViewSet):

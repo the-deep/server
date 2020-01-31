@@ -13,7 +13,6 @@ from entry.models import (
     Entry,
     Attribute,
     FilterData,
-
     ProjectEntryLabel,
     LeadEntryGroup,
     EntryGroupLabel,
@@ -483,6 +482,38 @@ class EntryTests(TestCase):
 
         resp = self.client.get(url)
         self.assert_404(resp)
+
+    def test_project_label_api(self):
+        project = self.create_project(is_private=True)
+
+        label1 = self.create(ProjectEntryLabel, project=project, title='Label 1', color='color', order=1)
+        label2 = self.create(ProjectEntryLabel, project=project, title='Label 2', color='color', order=2)
+        label3 = self.create(ProjectEntryLabel, project=project, title='Label 3', color='color', order=3)
+
+        # Non member user
+        self.authenticate(self.create_user())
+        url = f'/api/v1/projects/{project.pk}/entry-labels/'
+        response = self.client.get(url)
+        self.assert_403(response)
+
+        # List API
+        self.authenticate()
+        url = f'/api/v1/projects/{project.pk}/entry-labels/'
+        response = self.client.get(url)
+        assert len(response.json()['results']) == 3
+
+        # Bulk update API
+        url = f'/api/v1/projects/{project.pk}/entry-labels/bulk-update-order/'
+        order_data = [
+            {'id': label1.pk, 'order': 3},
+            {'id': label2.pk, 'order': 2},
+            {'id': label3.pk, 'order': 1},
+        ]
+        response = self.client.post(url, order_data)
+        self.assertEqual(
+            {d['id']: d['order'] for d in order_data},
+            {d['id']: d['order'] for d in response.json()}
+        )
 
     # TODO: test export data and filter data apis
 
