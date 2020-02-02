@@ -42,7 +42,7 @@ def export_entries(export):
 
     if export_type == Export.EXCEL:
         decoupled = filters.get('decoupled', True)
-        export_data = ExcelExporter(decoupled, project_id)\
+        export_data = ExcelExporter(queryset, decoupled, project_id)\
             .load_exportables(exportables, regions)\
             .add_entries(queryset)\
             .export()
