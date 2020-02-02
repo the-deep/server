@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class ExcelExporter:
-    def __init__(self, decoupled=True, project_id=None):
+    def __init__(self, entries, decoupled=True, project_id=None):
         self.wb = WorkBook()
 
         # Create worksheets(Main, Grouped, Entry Groups)
@@ -28,6 +28,9 @@ class ExcelExporter:
         self.entry_groups_sheet = self.wb.create_sheet('Entry Groups')
         self.decoupled = decoupled
 
+        self.modified_exceprt_exists = entries.filter(
+            dropped_excerpt__isnull=False).exclude(dropped_excerpt__exact='').exists()
+
         # Initial titles
         self.titles = [
             'Date of Lead Publication',
@@ -38,11 +41,16 @@ class ExcelExporter:
             'Author',
             'Source',
             'Assignee',
-            'Excerpt',
-            'Original Excerpt',
+            *(
+                [
+                    'Modified Excerpt',
+                    'Original Excerpt',
+                ] if self.modified_exceprt_exists else
+                ['Excerpt']
+            )
         ]
 
-        self.lead_id_titles_map = {x.id: x.title for  x in Lead.objects.filter(project_id=project_id)}
+        self.lead_id_titles_map = {x.id: x.title for x in Lead.objects.filter(project_id=project_id)}
 
         project_entry_labels = ProjectEntryLabel.objects.filter(
             project_id=project_id
@@ -349,7 +357,8 @@ class ExcelExporter:
             # Add it to appropriate row/column in self.group_label_matrix
             for group_label in entry.entrygrouplabel_set.all():
                 key = (group_label.group.lead_id, group_label.group_id)
-                link = f'"#\'Grouped Entries\'!A{i+2}"'
+                entries_sheet_name = 'Grouped Entries' if self.decoupled else 'Entries'
+                link = f'"#\'{entries_sheet_name}\'!A{i+2}"'
                 self.group_label_matrix[key][group_label.label_id] = f'=HYPERLINK({link}, "{entry.excerpt[:50]}")'
 
             lead = entry.lead
@@ -366,8 +375,13 @@ class ExcelExporter:
                 (lead.author and lead.author.data.title) or lead.author_raw,
                 (lead.source and lead.source.data.title) or lead.source_raw,
                 assignee and assignee.profile.get_display_name(),
-                self.get_entry_data(entry),
-                entry.dropped_excerpt or '',
+                *(
+                    [
+                        self.get_entry_data(entry),
+                        entry.dropped_excerpt or '',
+                    ] if self.modified_exceprt_exists else
+                    [self.get_entry_data(entry)]
+                )
             ])
 
             for exportable in self.exportables:
