@@ -96,7 +96,7 @@
     <p id="t42" class="pln"><span class="n"><a href="#t42">42</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t43" class="mis show_mis"><span class="n"><a href="#t43">43</a></span><span class="t">    <span class="key">if</span> <span class="nam">export_type</span> <span class="op">==</span> <span class="nam">Export</span><span class="op">.</span><span class="nam">EXCEL</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t44" class="mis show_mis"><span class="n"><a href="#t44">44</a></span><span class="t">        <span class="nam">decoupled</span> <span class="op">=</span> <span class="nam">filters</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'decoupled'</span><span class="op">,</span> <span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t45" class="mis show_mis"><span class="n"><a href="#t45">45</a></span><span class="t">        <span class="nam">export_data</span> <span class="op">=</span> <span class="nam">ExcelExporter</span><span class="op">(</span><span class="nam">decoupled</span><span class="op">,</span> <span class="nam">project_id</span><span class="op">)</span><span class="xx">\</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t45" class="mis show_mis"><span class="n"><a href="#t45">45</a></span><span class="t">        <span class="nam">export_data</span> <span class="op">=</span> <span class="nam">ExcelExporter</span><span class="op">(</span><span class="nam">queryset</span><span class="op">,</span> <span class="nam">decoupled</span><span class="op">,</span> <span class="nam">project_id</span><span class="op">)</span><span class="xx">\</span>&nbsp;</span><span class="r"></span></p>
     <p id="t46" class="pln"><span class="n"><a href="#t46">46</a></span><span class="t">            <span class="op">.</span><span class="nam">load_exportables</span><span class="op">(</span><span class="nam">exportables</span><span class="op">,</span> <span class="nam">regions</span><span class="op">)</span><span class="xx">\</span>&nbsp;</span><span class="r"></span></p>
     <p id="t47" class="pln"><span class="n"><a href="#t47">47</a></span><span class="t">            <span class="op">.</span><span class="nam">add_entries</span><span class="op">(</span><span class="nam">queryset</span><span class="op">)</span><span class="xx">\</span>&nbsp;</span><span class="r"></span></p>
     <p id="t48" class="pln"><span class="n"><a href="#t48">48</a></span><span class="t">            <span class="op">.</span><span class="nam">export</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -129,7 +129,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.0.3</a>,
-            created at 2020-02-03 06:09
+            created at 2020-02-03 10:59
         </p>
     </div>
 </div>
