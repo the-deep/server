@@ -153,7 +153,7 @@ def get_project_ary_stats(project):
                 name=F('title')
             )
         ),
-        'geo_array': _get_project_geoareas(project, collect_polygons=True),
+        'geo_array': _get_project_geoareas(project),
         # scale used by score_pillar
         'scorepillar_scale': list(ScoreScale.objects.values('id', 'color', 'value', name=F('title'))),
         'final_scores_array': {
