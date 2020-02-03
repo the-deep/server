@@ -97,7 +97,7 @@ class ReportExporter:
             collected_widget_text[entry_id] = collected_widget_text.get(entry_id, {})
             collected_widget_text[entry_id][widget_order] = [
                 widget_title,
-                text,  # Widget Text Value
+                text and text.strip(),  # Widget Text Value
             ]
 
         self.collected_widget_text = collected_widget_text
@@ -119,15 +119,13 @@ class ReportExporter:
         )
         para = self.doc.add_paragraph(excerpt).justify()
 
+        # Add texts from TextWidget
         widget_texts_exists = len(self.collected_widget_text.get(entry.id, [])) > 0
-
         entry_texts = self.collected_widget_text.get(entry.id, {})
+        widget_texts_exists and self.doc.add_paragraph()  # Blank line
         for order in sorted(entry_texts.keys()):
             title, text = entry_texts[order]
-            self.doc.add_paragraph()
-            self.doc.add_heading(title, 1)
-            self.doc.add_paragraph(text).justify()
-
+            self.doc.add_heading(f'{title}: ', 1).add_run(text).bold = False
         if widget_texts_exists:
             para = self.doc.add_paragraph()
 
