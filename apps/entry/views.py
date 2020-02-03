@@ -1,3 +1,4 @@
+from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.contrib.auth.models import User
 from django.db import models
 from rest_framework.decorators import action
@@ -124,16 +125,9 @@ class EntryFilterView(generics.GenericAPIView):
         queryset = EntryFilterSet(filters, queryset=queryset).qs
         page = self.paginate_queryset(queryset)
 
-        # Precalculate entry group label count (Used by EntrySerializer, NOTE: Also update the fallback)
+        # Precalculate entry group label count (Used by EntrySerializer)
         entry_group_label_count = {}
-        entry_group_label_qs = EntryGroupLabel.objects.filter(entry__in=page).order_by().values(
-            'entry', 'label'
-        ).annotate(count=models.Count('id')).values(
-            'entry', 'count',
-            label_id=models.F('label__id'),
-            label_title=models.F('label__title'),
-            label_color=models.F('label__color'),
-        )
+        entry_group_label_qs = EntryGroupLabel.get_stat_for_entry(EntryGroupLabel.objects.filter(entry__in=page))
         for count_data in entry_group_label_qs:
             entry_id = count_data.pop('entry')
             if entry_id not in entry_group_label_count:

@@ -200,8 +200,7 @@ class Document:
             return self
 
     def add_heading(self, text, level):
-        self.doc.add_heading(text, level=level)
-        return self
+        return self.doc.add_heading(text, level=level)
 
     def add_page_break(self):
         self.doc.add_page_break()
