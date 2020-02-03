@@ -1,3 +1,4 @@
+from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -385,6 +386,18 @@ class EntryGroupLabel(UserResource):
     class Meta:
         # Only single entry allowd in label:group pair
         unique_together = ('label', 'group',)
+
+    @staticmethod
+    def get_stat_for_entry(qs):
+        return qs.order_by().values('entry', 'label').annotate(
+            count=models.Count('id'),
+            groups=ArrayAgg('group__title'),
+        ).values(
+            'entry', 'count', 'groups',
+            label_id=models.F('label__id'),
+            label_color=models.F('label__color'),
+            label_title=models.F('label__title')
+        )
 
     def __str__(self):
         return f'[{self.label}]:{self.group} -> {self.entry}'
