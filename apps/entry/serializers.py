@@ -2,7 +2,6 @@ import logging
 
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
-from django.db import models
 
 from deep.serializers import (
     RemoveNullFieldsMixin,
@@ -191,18 +190,12 @@ class EntrySerializer(RemoveNullFieldsMixin,
         fields = '__all__'
 
     def get_project_labels(self, entry):
+        # Should be provided from view
         label_count = self.context.get('entry_group_label_count')
-        if label_count:  # NOTE: Provided by EntryFilterView
+        if label_count:
             return label_count.get(entry.pk) or []
-        # Fallback (NOTE: Also update in view context)
-        return entry.entrygrouplabel_set.order_by().values('label').annotate(
-            count=models.Count('id')
-        ).values(
-            'count',
-            label_id=models.F('label__id'),
-            label_color=models.F('label__color'),
-            label_title=models.F('label__title')
-        )
+        # Fallback
+        return EntryGroupLabel.get_stat_for_entry(entry.entrygrouplabel_set)
 
     def get_resolved_comment_count(self, entry):
         if hasattr(entry, 'resolved_comment_count'):
