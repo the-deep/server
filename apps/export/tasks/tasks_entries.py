@@ -51,11 +51,13 @@ def export_entries(export):
         report_structure = filters.get('report_structure')
         report_levels = filters.get('report_levels')
         text_widget_ids = filters.get('text_widget_ids') or []
+        show_groups = filters.get('show_groups')
         pdf = export.filters.get('pdf', False)
         export_data = ReportExporter()\
             .load_exportables(exportables)\
             .load_levels(report_levels)\
             .load_structure(report_structure)\
+            .load_group_lables(queryset, show_groups)\
             .load_text_from_text_widgets(queryset, text_widget_ids)\
             .add_entries(queryset)\
             .export(pdf=pdf)
