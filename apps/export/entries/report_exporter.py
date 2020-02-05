@@ -8,7 +8,7 @@ from export.mime_types import (
     PDF_MIME_TYPE,
 )
 
-from entry.models import Entry, ExportData, Attribute
+from entry.models import Entry, ExportData, Attribute, EntryGroupLabel
 from lead.models import Lead
 from utils.common import generate_filename
 from tabular.viz import renderer as viz_renderer
@@ -29,7 +29,6 @@ class ReportExporter:
             os.path.join(settings.APPS_DIR, 'static/doc_export/template.docx')
         )
         self.lead_ids = []
-        self.entry_group_labels = {}
 
     def load_exportables(self, exportables):
         exportables = exportables.filter(
@@ -45,6 +44,16 @@ class ReportExporter:
 
     def load_structure(self, structure):
         self.structure = structure
+        return self
+
+    def load_group_lables(self, entries, show_groups=False):
+        self.entry_group_labels = {}
+        if not show_groups:
+            return self
+        for entry, group, label in EntryGroupLabel.objects.filter(entry__in=entries).order_by().values_list(
+                'entry_id', 'group__title', 'label__title'):
+            entry_d = self.entry_group_labels[entry] = self.entry_group_labels.get(entry, [])
+            entry_d.append([group, label])
         return self
 
     def load_text_from_text_widgets(self, entries, text_widget_ids):
@@ -181,12 +190,7 @@ class ReportExporter:
         para.add_run(')')
 
         # Adding Entry Group Labels
-        if entry.pk not in self.entry_group_labels:
-            group_labels = self.entry_group_labels[entry.pk] = (
-                entry.entrygrouplabel_set.values_list('group__title', 'label__title')
-            )
-        else:
-            group_labels = self.entry_group_labels[entry.pk]
+        group_labels = self.entry_group_labels.get(entry.pk) or []
         if len(group_labels) > 0:
             para.add_run(' (')
             para.add_run(', '.join([f'{group} : {label}' for group, label in group_labels]))
