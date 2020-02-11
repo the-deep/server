@@ -45,6 +45,10 @@ def get_filtered_projects(user, queries, annotate=False):
         if involvement == 'not_my_projects':
             projects = projects.exclude(Project.get_query_for_member(user))
 
+    regions = queries.get('regions') or ''
+    if regions:
+        projects = projects.filter(regions__in=regions.split(','))
+
     ordering = queries.get('ordering')
     if ordering:
         projects = projects.order_by(ordering)
