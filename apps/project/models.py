@@ -226,14 +226,7 @@ class Project(UserResource):
                 output_field=models.IntegerField(),
             ), 0),
 
-            number_of_users=models.functions.Coalesce(models.Subquery(
-                User.objects.filter(
-                    lead__project=pk,
-                    date_joined__gt=threshold,
-                ).order_by().values('project')
-                .annotate(c=models.Count('*')).values('c')[:1],
-                output_field=models.IntegerField(),
-            ), 0),
+            number_of_users=models.Count('members', distinct=True),
         )
 
     @staticmethod
