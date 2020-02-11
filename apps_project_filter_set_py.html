@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/project/filter_set.py: 95%</title>
+    <title>Coverage for apps/project/filter_set.py: 91%</title>
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
     <script type="text/javascript" src="jquery.hotkeys.js"></script>
@@ -17,15 +17,15 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>apps/project/filter_set.py</b> :
-            <span class="pc_cov">95%</span>
+            <span class="pc_cov">91%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            29 statements &nbsp;
-            <span class="run shortkey_r button_toggle_run">28 run</span>
-            <span class="mis show_mis shortkey_m button_toggle_mis">1 missing</span>
+            32 statements &nbsp;
+            <span class="run shortkey_r button_toggle_run">30 run</span>
+            <span class="mis show_mis shortkey_m button_toggle_mis">2 missing</span>
             <span class="exc show_exc shortkey_x button_toggle_exc">0 excluded</span>
-                <span class="par run show_par shortkey_p button_toggle_par">1 partial</span>
+                <span class="par run show_par shortkey_p button_toggle_par">2 partial</span>
         </h2>
     </div>
 </div>
@@ -99,17 +99,21 @@
     <p id="t45" class="run"><span class="n"><a href="#t45">45</a></span><span class="t">        <span class="key">if</span> <span class="nam">involvement</span> <span class="op">==</span> <span class="str">'not_my_projects'</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t46" class="run"><span class="n"><a href="#t46">46</a></span><span class="t">            <span class="nam">projects</span> <span class="op">=</span> <span class="nam">projects</span><span class="op">.</span><span class="nam">exclude</span><span class="op">(</span><span class="nam">Project</span><span class="op">.</span><span class="nam">get_query_for_member</span><span class="op">(</span><span class="nam">user</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t47" class="pln"><span class="n"><a href="#t47">47</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t48" class="run"><span class="n"><a href="#t48">48</a></span><span class="t">    <span class="nam">ordering</span> <span class="op">=</span> <span class="nam">queries</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'ordering'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t49" class="par run show_par"><span class="n"><a href="#t49">49</a></span><span class="t">    <span class="key">if</span> <span class="nam">ordering</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">49&#x202F;&#x219B;&#x202F;50</span><span class="annotate long">line 49 didn't jump to line 50, because the condition on line 49 was never true</span></span></p>
-    <p id="t50" class="mis show_mis"><span class="n"><a href="#t50">50</a></span><span class="t">        <span class="nam">projects</span> <span class="op">=</span> <span class="nam">projects</span><span class="op">.</span><span class="nam">order_by</span><span class="op">(</span><span class="nam">ordering</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t48" class="run"><span class="n"><a href="#t48">48</a></span><span class="t">    <span class="nam">regions</span> <span class="op">=</span> <span class="nam">queries</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'regions'</span><span class="op">)</span> <span class="key">or</span> <span class="str">''</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t49" class="par run show_par"><span class="n"><a href="#t49">49</a></span><span class="t">    <span class="key">if</span> <span class="nam">regions</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">49&#x202F;&#x219B;&#x202F;50</span><span class="annotate long">line 49 didn't jump to line 50, because the condition on line 49 was never true</span></span></p>
+    <p id="t50" class="mis show_mis"><span class="n"><a href="#t50">50</a></span><span class="t">        <span class="nam">projects</span> <span class="op">=</span> <span class="nam">projects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">regions__in</span><span class="op">=</span><span class="nam">regions</span><span class="op">.</span><span class="nam">split</span><span class="op">(</span><span class="str">','</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t51" class="pln"><span class="n"><a href="#t51">51</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t52" class="run"><span class="n"><a href="#t52">52</a></span><span class="t">    <span class="key">return</span> <span class="nam">projects</span><span class="op">.</span><span class="nam">distinct</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t52" class="run"><span class="n"><a href="#t52">52</a></span><span class="t">    <span class="nam">ordering</span> <span class="op">=</span> <span class="nam">queries</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'ordering'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t53" class="par run show_par"><span class="n"><a href="#t53">53</a></span><span class="t">    <span class="key">if</span> <span class="nam">ordering</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">53&#x202F;&#x219B;&#x202F;54</span><span class="annotate long">line 53 didn't jump to line 54, because the condition on line 53 was never true</span></span></p>
+    <p id="t54" class="mis show_mis"><span class="n"><a href="#t54">54</a></span><span class="t">        <span class="nam">projects</span> <span class="op">=</span> <span class="nam">projects</span><span class="op">.</span><span class="nam">order_by</span><span class="op">(</span><span class="nam">ordering</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t55" class="pln"><span class="n"><a href="#t55">55</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t56" class="run"><span class="n"><a href="#t56">56</a></span><span class="t">    <span class="key">return</span> <span class="nam">projects</span><span class="op">.</span><span class="nam">distinct</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </div>
 <div id="footer">
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.0.3</a>,
-            created at 2020-02-05 05:06
+            created at 2020-02-11 09:41
         </p>
     </div>
 </div>
