@@ -162,7 +162,7 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
     widgets = SimpleWidgetSerializer(source='widget_set',
                                      many=True,
                                      required=False)
-    filters = SimpleFilterSerializer(source='filter_set',
+    filters = SimpleFilterSerializer(source='get_active_filters',
                                      many=True,
                                      read_only=True)
     exportables = SimpleExportableSerializer(source='exportable_set',
