@@ -163,6 +163,10 @@ class AnalysisFramework(UserResource):
             permission_fields[AFRole.CAN_CLONE_FRAMEWORK] = True
         return permission_fields
 
+    def get_active_filters(self):
+        current_widgets_key = self.widget_set.values_list('key', flat=True)
+        return self.filter_set.filter(widget_key__in=current_widgets_key).all()
+
 
 class Widget(models.Model):
     """
