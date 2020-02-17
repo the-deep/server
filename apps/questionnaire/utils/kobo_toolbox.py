@@ -14,6 +14,9 @@ class KoboToolbox():
         self.access_token = None
 
         if access_code:
+            if self.CLIENT_ID is None or self.CLIENT_SECRET is None or self.REDIRECT_URI is None:
+                raise Exception('KoboToolbox is not configured for Oauth, Contact Admin')
+
             res = requests.post(
                 'https://kf.kobotoolbox.org/o/token/',
                 data={
@@ -37,7 +40,7 @@ class KoboToolbox():
 
     def getEncodedFile(self, file):
         file.seek(0)
-        # 'base64,' required by kobo-api https://github.com/kobotoolbox/kpi/blob/master/kpi/views.py#L502
+        # 'base64,' required by kobo-api https://github.com/kobotoolbox/kpi/blob/3b8a9bb/kpi/views.py#L502
         return b"base64," + base64.b64encode(file.read())
 
     def export(self, file):

@@ -32,15 +32,25 @@ class QuestionBaseSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer)
 
 
 class QuestionSerializer(QuestionBaseSerializer):
+    def validate(self, data):
+        data['questionnaire_id'] = int(self.context['view'].kwargs['questionnaire_id'])
+        return data
+
     class Meta:
         model = Question
         fields = '__all__'
+        read_only_fields = ('questionnaire',)
 
 
 class FrameworkQuestionSerializer(QuestionBaseSerializer):
+    def validate(self, data):
+        data['analysis_framework_id'] = int(self.context['view'].kwargs['af_id'])
+        return data
+
     class Meta:
         model = FrameworkQuestion
         fields = ('__all__')
+        read_only_fields = ('analysis_framework',)
 
 
 class MiniQuestionnaireSerializer(
