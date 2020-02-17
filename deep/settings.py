@@ -104,6 +104,7 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_email',
     'django_otp.plugins.otp_totp',
 
+    'ordered_model',
     'fixture_magic',
     'autofixture',
     'channels',
@@ -600,3 +601,8 @@ REDOC_SETTINGS = {
 
 
 OPEN_API_DOCS_TIMEOUT = 86400  # 24 Hours
+
+# Kobo Toolbox Configs
+KOBO_TOOLBOX_CLIENT_ID = os.environ.get('KOBO_TOOLBOX_CLIENT_ID')
+KOBO_TOOLBOX_CLIENT_SECRET = os.environ.get('KOBO_TOOLBOX_CLIENT_SECRET')
+KOBO_TOOLBOX_REDIRECT_URI = os.environ.get('KOBO_TOOLBOX_REDIRECT_URI')
