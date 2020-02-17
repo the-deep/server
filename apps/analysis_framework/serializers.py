@@ -160,16 +160,10 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
     """
     Analysis Framework Model Serializer
     """
-    widgets = SimpleWidgetSerializer(source='widget_set',
-                                     many=True,
-                                     required=False)
-    filters = SimpleFilterSerializer(source='get_active_filters',
-                                     many=True,
-                                     read_only=True)
-    exportables = SimpleExportableSerializer(source='exportable_set',
-                                             many=True,
-                                             read_only=True)
-    questions = FrameworkQuestionSerializer(source='frameworkquestion_set', many=True, required=False)
+    widgets = SimpleWidgetSerializer(source='widget_set', many=True, required=False)
+    filters = SimpleFilterSerializer(source='get_active_filters', many=True, read_only=True)
+    exportables = SimpleExportableSerializer(source='exportable_set', many=True, read_only=True)
+    questions = FrameworkQuestionSerializer(source='frameworkquestion_set', many=True, required=False, read_only=True)
     entries_count = serializers.IntegerField(
         source='get_entries_count',
         read_only=True,

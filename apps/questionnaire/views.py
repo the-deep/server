@@ -192,12 +192,12 @@ class QuestionViewSet(QuestionBaseViewMixin, viewsets.ModelViewSet):
         """
         Copy from framework question to Questionnaire question
         ```json
-        {"framework_question_id": <numberid>, "questionnaire_id": <numberid>, "new_order": <number>}
+        {"framework_question_id": <numberid>, "new_order": <number>}
         ```
         """
         try:
             fq = FrameworkQuestion.objects.get(id=request.data['framework_question_id'])
-            questionnaire = Questionnaire.objects.get(id=request.data['questionnaire_id'])
+            questionnaire = Questionnaire.objects.get(id=self.kwargs['questionnaire_id'])
             new_order = request.data['new_order']
         except (TypeError, KeyError):
             raise exceptions.ValidationError('Invalid request. Check and try again!!')
@@ -245,12 +245,13 @@ class KoboToolboxExport(views.APIView):
         serializer.is_valid(raise_exception=True)
         xlsform_file = serializer.validated_data['file']
         req_vd = serializer.validated_data
+
+        kt = kobo_toolbox.KoboToolbox(
+            access_code=req_vd.get('access_code'),
+            username=req_vd.get('username'),
+            password=req_vd.get('password'),
+        )
         try:
-            kt = kobo_toolbox.KoboToolbox(
-                access_code=req_vd.get('access_code'),
-                username=req_vd.get('username'),
-                password=req_vd.get('password'),
-            )
             return response.Response(kt.export(xlsform_file))
         except Exception:
             raise exceptions.ValidationError(
