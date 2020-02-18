@@ -196,7 +196,7 @@ class QuestionViewSet(QuestionBaseViewMixin, viewsets.ModelViewSet):
     def get_serializer_context(self):
         return {
             **super().get_serializer_context(),
-            'questionnaire_id': self.kwargs['questionnaire_id'],
+            'questionnaire_id': self.kwargs.get('questionnaire_id'),
         }
 
     @action(detail=False, methods=['post'], url_path=r'af-question-copy')
@@ -238,7 +238,7 @@ class FrameworkQuestionViewSet(QuestionBaseViewMixin, viewsets.ModelViewSet):
     def get_serializer_context(self):
         return {
             **super().get_serializer_context(),
-            'af_id': self.kwargs['af_id'],
+            'af_id': self.kwargs.get('af_id'),
         }
 
     def get_queryset(self):
