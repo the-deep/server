@@ -470,7 +470,13 @@ else:
     }
 
 # CORS CONFIGS
-CORS_ORIGIN_ALLOW_ALL = True
+if DEBUG:
+    CORS_ORIGIN_ALLOW_ALL = True
+else:
+    # Restrict to thedeep.io 1 level subdomains only in Production
+    CORS_ORIGIN_REGEX_WHITELIST = [
+        r"^https://\w+\.thedeep\.io$",
+    ]
 
 CORS_URLS_REGEX = r'(^/api/.*$)|(^/media/.*$)'
 
