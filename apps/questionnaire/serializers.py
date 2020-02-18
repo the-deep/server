@@ -33,7 +33,7 @@ class QuestionBaseSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer)
 
 class QuestionSerializer(QuestionBaseSerializer):
     def validate(self, data):
-        data['questionnaire_id'] = int(self.context['view'].kwargs['questionnaire_id'])
+        data['questionnaire_id'] = int(self.context['questionnaire_id'])
         return data
 
     class Meta:
@@ -44,7 +44,7 @@ class QuestionSerializer(QuestionBaseSerializer):
 
 class FrameworkQuestionSerializer(QuestionBaseSerializer):
     def validate(self, data):
-        data['analysis_framework_id'] = int(self.context['view'].kwargs['af_id'])
+        data['analysis_framework_id'] = int(self.context['af_id'])
         return data
 
     class Meta:
