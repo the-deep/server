@@ -48,6 +48,12 @@ class QuestionnaireViewSet(viewsets.ModelViewSet):
             )
         ).all()
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if 'pk' in self.kwargs:
+            context['questionnaire_id'] = self.kwargs['pk']
+        return context
+
     def get_serializer_class(self):
         if self.action == 'list':
             return MiniQuestionnaireSerializer
@@ -187,6 +193,12 @@ class QuestionViewSet(QuestionBaseViewMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         return Question.objects.filter(questionnaire=self.kwargs['questionnaire_id']).all()
 
+    def get_serializer_context(self):
+        return {
+            **super().get_serializer_context(),
+            'questionnaire_id': self.kwargs['questionnaire_id'],
+        }
+
     @action(detail=False, methods=['post'], url_path=r'af-question-copy')
     def copy_from_af_question(self, request, *args, **kwargs):
         """
@@ -222,6 +234,12 @@ class FrameworkQuestionViewSet(QuestionBaseViewMixin, viewsets.ModelViewSet):
     serializer_class = FrameworkQuestionSerializer
     # TODO: Create Permission
     permission_classes = (permissions.IsAuthenticated, ModifyPermission)
+
+    def get_serializer_context(self):
+        return {
+            **super().get_serializer_context(),
+            'af_id': self.kwargs['af_id'],
+        }
 
     def get_queryset(self):
         return FrameworkQuestion.objects.filter(analysis_framework=self.kwargs['af_id']).all()
