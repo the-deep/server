@@ -27,6 +27,7 @@ from .serializers import (
     QuestionnaireSerializer,
     QuestionSerializer,
     FrameworkQuestionSerializer,
+    XFormSerializer,
     KoboToolboxExportSerializer,
 )
 
@@ -89,7 +90,7 @@ class QuestionnaireViewSet(viewsets.ModelViewSet):
 
         Available override fields
         ```python
-        ['title', 'crisisTypeId', 'projectId', 'dataCollectionTechnique', 'enumeratorSkill']
+        ['title', 'crisisTypeId', 'projectId', 'requiredDuration', 'dataCollectionTechnique', 'enumeratorSkill']
         ```
         """
         obj = self.get_object()
@@ -101,7 +102,7 @@ class QuestionnaireViewSet(viewsets.ModelViewSet):
         [
             setattr(obj, field, value)
             for field in [
-                'title', 'crisis_type_id', 'project_id',
+                'title', 'crisis_type_id', 'project_id', 'required_duration',
                 'data_collection_technique', 'enumerator_skill'
             ]
             for value in [request.data.get(field)]
@@ -246,8 +247,13 @@ class FrameworkQuestionViewSet(QuestionBaseViewMixin, viewsets.ModelViewSet):
 
 
 class XFormView(views.APIView):
+    def get_serializer(self, *args, **kwargs):
+        return XFormSerializer(*args, **kwargs)
+
     def post(self, request, *args, **kwargs):
-        xlsform_file = request.FILES.get('file')
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        xlsform_file = serializer.validated_data['file']
         try:
             return response.Response(xls_form.XLSForm.create_enketo_form(xlsform_file))
         except Exception:
@@ -264,11 +270,7 @@ class KoboToolboxExport(views.APIView):
         xlsform_file = serializer.validated_data['file']
         req_vd = serializer.validated_data
 
-        kt = kobo_toolbox.KoboToolbox(
-            access_code=req_vd.get('access_code'),
-            username=req_vd.get('username'),
-            password=req_vd.get('password'),
-        )
+        kt = kobo_toolbox.KoboToolbox(username=req_vd['username'], password=req_vd['password'])
         try:
             return response.Response(kt.export(xlsform_file))
         except Exception:
