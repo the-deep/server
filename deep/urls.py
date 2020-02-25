@@ -271,7 +271,7 @@ router.register(r'leads/(?P<lead_id>\d+)/entry-groups', LeadEntryGroupViewSet, b
 
 # Analysis framework routers
 router.register(r'analysis-frameworks/(?P<af_id>\d+)/questions',
-                FrameworkQuestionViewSet, basename='question')
+                FrameworkQuestionViewSet, basename='framework-question')
 router.register(r'analysis-frameworks', AnalysisFrameworkViewSet,
                 basename='analysis_framework')
 router.register(r'analysis-framework-widgets', WidgetViewSet,

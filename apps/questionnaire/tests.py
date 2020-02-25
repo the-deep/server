@@ -16,16 +16,23 @@ class QuestionnaireTests(TestCase):
         self.create(Questionnaire, project=project)
 
         self.authenticate()
-        response = self.client.get('/api/v1/questionnaires/')
+        response = self.client.get(f'/api/v1/questionnaires/?project={project.pk}')
         self.assert_200(response)
+        assert len(response.json()['results']) == 3
 
     def test_questionnaire_post_api(self):
+        project = self.create_project()
+        title = 'Test Questionnaire'
+
         self.authenticate()
         response = self.client.post('/api/v1/questionnaires/', data={
-            'title': 'Test Questionnaire',
-            'project': self.create_project().pk,
+            'title': title,
+            'project': project.pk,
         })
         self.assert_201(response)
+        created_questionnaire = Questionnaire.objects.get(pk=response.json()['id'])
+        assert created_questionnaire.title == title
+        assert created_questionnaire.project == project
 
     def test_questionnaire_options_api(self):
         self.create(CrisisType, title='Crisis 1')
@@ -35,6 +42,7 @@ class QuestionnaireTests(TestCase):
         self.authenticate()
         response = self.client.get(f'/api/v1/questionnaires/options/')
         self.assert_200(response)
+        assert len(response.json()['crisisTypeOptions']) == 3
 
     def test_questionnaire_clone_api(self):
         questionnaire = self.create(Questionnaire, title='Test Questionnaire', project=self.create_project())
@@ -59,15 +67,19 @@ class QuestionnaireTests(TestCase):
         self.authenticate()
         response = self.client.get(f'/api/v1/questionnaires/{questionnaire.pk}/questions/')
         self.assert_200(response)
+        assert len(response.json()['results']) == 3
 
     def test_question_post_api(self):
         questionnaire = self.create(Questionnaire, project=self.create_project())
+        title = 'Test Question'
 
         self.authenticate()
         response = self.client.post(f'/api/v1/questionnaires/{questionnaire.pk}/questions/', data={
-            'title': 'Test Question',
+            'title': title,
         })
         self.assert_201(response)
+        new_question = Question.objects.get(pk=response.json()['id'])
+        assert new_question.title == title
 
     def test_question_clone_api(self):
         question = self.create(

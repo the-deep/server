@@ -1,4 +1,4 @@
-from rest_framework import serializers, exceptions
+from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
 from user_resource.serializers import UserResourceSerializer
 
@@ -78,15 +78,11 @@ class QuestionnaireSerializer(MiniQuestionnaireSerializer):
     questions = QuestionSerializer(source='question_set', many=True, required=False)
 
 
+class XFormSerializer(serializers.Serializer):
+    file = serializers.FileField()
+
+
 class KoboToolboxExportSerializer(serializers.Serializer):
     file = serializers.FileField()
-    access_code = serializers.CharField(required=False)
-    username = serializers.CharField(required=False)
-    password = serializers.CharField(required=False)
-
-    def validate(self, data):
-        if data.get('access_code') is None and (
-                data.get('username') is None or data.get('password') is None
-        ):
-            raise exceptions.ValidationError('Requires access_code or [username, password]')
-        return data
+    username = serializers.CharField()
+    password = serializers.CharField()
