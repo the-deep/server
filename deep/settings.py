@@ -75,6 +75,7 @@ LOCAL_APPS = [
     'tabular',
     'notification',
     'client_page_meta',
+    'questionnaire',
 
     # MISC DEEP APPS
     'bulk_data_migration',
@@ -103,6 +104,7 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_email',
     'django_otp.plugins.otp_totp',
 
+    'ordered_model',
     'fixture_magic',
     'autofixture',
     'channels',
@@ -468,7 +470,13 @@ else:
     }
 
 # CORS CONFIGS
-CORS_ORIGIN_ALLOW_ALL = True
+if DEBUG:
+    CORS_ORIGIN_ALLOW_ALL = True
+else:
+    # Restrict to thedeep.io 1 level subdomains only in Production
+    CORS_ORIGIN_REGEX_WHITELIST = [
+        r"^https://\w+\.thedeep\.io$",
+    ]
 
 CORS_URLS_REGEX = r'(^/api/.*$)|(^/media/.*$)'
 

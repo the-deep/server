@@ -66,6 +66,13 @@ from geo.views import (
     GeoBoundsView,
     GeoOptionsView,
 )
+from questionnaire.views import (
+    QuestionnaireViewSet,
+    QuestionViewSet,
+    FrameworkQuestionViewSet,
+    XFormView,
+    KoboToolboxExport,
+)
 from lead.views import (
     LeadGroupViewSet,
     LeadViewSet,
@@ -240,6 +247,12 @@ router.register(r'leads', LeadViewSet,
 router.register(r'lead-previews', LeadPreviewViewSet,
                 basename='lead_preview')
 
+# Questionnaire routers
+router.register(r'questionnaires/(?P<questionnaire_id>\d+)/questions',
+                QuestionViewSet, basename='question')
+router.register(r'questionnaires', QuestionnaireViewSet,
+                basename='questionnaire')
+
 # Entry routers
 router.register(r'entries', EntryViewSet,
                 basename='entry_lead')
@@ -257,6 +270,8 @@ router.register(r'projects/(?P<project_id>\d+)/entry-labels', ProjectEntryLabelV
 router.register(r'leads/(?P<lead_id>\d+)/entry-groups', LeadEntryGroupViewSet, basename='entry-groups')
 
 # Analysis framework routers
+router.register(r'analysis-frameworks/(?P<af_id>\d+)/questions',
+                FrameworkQuestionViewSet, basename='framework-question')
 router.register(r'analysis-frameworks', AnalysisFrameworkViewSet,
                 basename='analysis_framework')
 router.register(r'analysis-framework-widgets', WidgetViewSet,
@@ -429,6 +444,10 @@ urlpatterns = [
     url(get_api_path(r'lead-website-fetch/$'), LeadWebsiteFetch.as_view()),
 
     url(get_api_path(r'web-info-extract/$'), WebInfoExtractView.as_view()),
+
+    # Questionnaire utils api
+    url(get_api_path(r'xlsform-to-xform/$'), XFormView.as_view()),
+    url(get_api_path(r'import-to-kobotoolbox/$'), KoboToolboxExport.as_view()),
 
     # Lead copy
     url(get_api_path(r'lead-copy/$'), LeadCopyView.as_view()),
