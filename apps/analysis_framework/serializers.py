@@ -3,11 +3,12 @@ from rest_framework import serializers, exceptions
 
 from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
+from questionnaire.serializers import FrameworkQuestionSerializer
 from analysis_framework.models import (
     AnalysisFramework,
     AnalysisFrameworkRole,
     AnalysisFrameworkMembership,
-    Widget, Filter, Exportable
+    Widget, Filter, Exportable,
 )
 from user.models import Feature
 from user.serializers import UserSerializer
@@ -159,15 +160,10 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
     """
     Analysis Framework Model Serializer
     """
-    widgets = SimpleWidgetSerializer(source='widget_set',
-                                     many=True,
-                                     required=False)
-    filters = SimpleFilterSerializer(source='get_active_filters',
-                                     many=True,
-                                     read_only=True)
-    exportables = SimpleExportableSerializer(source='exportable_set',
-                                             many=True,
-                                             read_only=True)
+    widgets = SimpleWidgetSerializer(source='widget_set', many=True, required=False)
+    filters = SimpleFilterSerializer(source='get_active_filters', many=True, read_only=True)
+    exportables = SimpleExportableSerializer(source='exportable_set', many=True, read_only=True)
+    questions = FrameworkQuestionSerializer(source='frameworkquestion_set', many=True, required=False, read_only=True)
     entries_count = serializers.IntegerField(
         source='get_entries_count',
         read_only=True,
