@@ -134,14 +134,6 @@ class QuestionBaseViewMixin():
         """{"id": number}"""
         return self.bulk_action()
 
-    @action(detail=True, methods=['post'], url_path='order')
-    def order(self, request, *args, **kwargs):
-        """{"to": number}"""
-        # TODO: Permission
-        question = self.get_object()
-        request.data.get('to') and question.to(request.data.get('to'))
-        return response.Response(self.get_serializer_class()(question).data)
-
     def bulk_action(self):
         # TODO: Permission
         try:
@@ -149,7 +141,7 @@ class QuestionBaseViewMixin():
         except (TypeError, KeyError):
             raise exceptions.ValidationError('Invalid request. Check and try again!!')
         questions = self.get_queryset().filter(id__in=question_body.keys())
-        response_body = questions.values_list('id', flat=True)
+        response_body = list(questions.values_list('id', flat=True))
 
         if self.action == 'bulk_delete':
             questions.all().delete()
@@ -169,20 +161,36 @@ class QuestionBaseViewMixin():
             response_body = updated_questions
         return response.Response(response_body)
 
+    @action(detail=True, methods=['post'], url_path='order')
+    def order(self, request, *args, **kwargs):
+        """
+        ```json
+        {
+          "action": "below|above|top|bottom",
+          "value": "Numeric value required for below|above"
+        }
+        ```
+        """
+        # TODO: Permission
+        question = self.get_object()
+        QuestionSerializer.apply_order_action(question, request.data)
+        return response.Response({
+            'new_order': question.questionnaire.question_set.order_by('order').values_list('pk', flat=True),
+        })
+
     @action(detail=True, methods=['post'], url_path='clone')
     def create_clone(self, request, *args, **kwargs):
         """
         Clone Question
         ```json
-        {"new_order": <number>}
+        {"order_action": {'action' and 'value'}}
         ```
         """
-        new_order = self.request.data.get('new_order')
         obj = self.get_object()
         obj.pk = None
-        if new_order is not None:
-            obj.order = new_order
-        obj.save()
+        obj.order = None
+        new_question = obj.save()
+        QuestionSerializer.apply_order_action(new_question, request.data.get('order_action', {}), 'bottom')
         return response.Response(self.get_serializer_class()(obj).data)
 
 
@@ -205,13 +213,12 @@ class QuestionViewSet(QuestionBaseViewMixin, viewsets.ModelViewSet):
         """
         Copy from framework question to Questionnaire question
         ```json
-        {"framework_question_id": <numberid>, "new_order": <number>}
+        {"framework_question_id": <numberid>, "order_action": {'action': and 'value'}}
         ```
         """
         try:
             fq = FrameworkQuestion.objects.get(id=request.data['framework_question_id'])
             questionnaire = Questionnaire.objects.get(id=self.kwargs['questionnaire_id'])
-            new_order = request.data['new_order']
         except (TypeError, KeyError):
             raise exceptions.ValidationError('Invalid request. Check and try again!!')
 
@@ -219,15 +226,16 @@ class QuestionViewSet(QuestionBaseViewMixin, viewsets.ModelViewSet):
             return exceptions.PermissionDenied()
 
         # Permissions
-        fq.order = new_order
         new_question = Question.objects.create(
             cloned_from=fq,
             questionnaire=questionnaire,
+            order=None,
             **{
                 field.name: getattr(fq, field.name)
-                for field in fq._meta.fields if field.name != 'id'
+                for field in fq._meta.fields if field.name not in ['id', 'order']
             },
         )
+        QuestionSerializer.apply_order_action(new_question, request.data.get('order_action', {}), 'bottom')
         return response.Response(self.get_serializer_class()(new_question).data)
 
 
