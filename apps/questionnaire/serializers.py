@@ -41,7 +41,7 @@ class QuestionBaseSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, serializ
         elif action in ['below', 'above']:
             if value is None:
                 raise exceptions.ValidationError('Value is required for below|above actions')
-            related_question = get_object_or_404(Question, pk=value)
+            related_question = get_object_or_404(question._meta.model, pk=value)
             getattr(question, action)(related_question)
 
     def validate(self, data):
