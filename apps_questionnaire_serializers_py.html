@@ -95,7 +95,7 @@
     <p id="t41" class="mis show_mis"><span class="n"><a href="#t41">41</a></span><span class="t">        <span class="key">elif</span> <span class="nam">action</span> <span class="key">in</span> <span class="op">[</span><span class="str">'below'</span><span class="op">,</span> <span class="str">'above'</span><span class="op">]</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t42" class="mis show_mis"><span class="n"><a href="#t42">42</a></span><span class="t">            <span class="key">if</span> <span class="nam">value</span> <span class="key">is</span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t43" class="mis show_mis"><span class="n"><a href="#t43">43</a></span><span class="t">                <span class="key">raise</span> <span class="nam">exceptions</span><span class="op">.</span><span class="nam">ValidationError</span><span class="op">(</span><span class="str">'Value is required for below|above actions'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t44" class="mis show_mis"><span class="n"><a href="#t44">44</a></span><span class="t">            <span class="nam">related_question</span> <span class="op">=</span> <span class="nam">get_object_or_404</span><span class="op">(</span><span class="nam">Question</span><span class="op">,</span> <span class="nam">pk</span><span class="op">=</span><span class="nam">value</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t44" class="mis show_mis"><span class="n"><a href="#t44">44</a></span><span class="t">            <span class="nam">related_question</span> <span class="op">=</span> <span class="nam">get_object_or_404</span><span class="op">(</span><span class="nam">question</span><span class="op">.</span><span class="nam">_meta</span><span class="op">.</span><span class="nam">model</span><span class="op">,</span> <span class="nam">pk</span><span class="op">=</span><span class="nam">value</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t45" class="mis show_mis"><span class="n"><a href="#t45">45</a></span><span class="t">            <span class="nam">getattr</span><span class="op">(</span><span class="nam">question</span><span class="op">,</span> <span class="nam">action</span><span class="op">)</span><span class="op">(</span><span class="nam">related_question</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t46" class="pln"><span class="n"><a href="#t46">46</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t47" class="run"><span class="n"><a href="#t47">47</a></span><span class="t">    <span class="key">def</span> <span class="nam">validate</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -169,7 +169,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.0.3</a>,
-            created at 2020-02-28 11:05
+            created at 2020-03-02 08:40
         </p>
     </div>
 </div>
