@@ -189,8 +189,8 @@ class QuestionBaseViewMixin():
         obj = self.get_object()
         obj.pk = None
         obj.order = None
-        new_question = obj.save()
-        QuestionSerializer.apply_order_action(new_question, request.data.get('order_action', {}), 'bottom')
+        obj.save()
+        QuestionSerializer.apply_order_action(obj, request.data.get('order_action', {}), 'bottom')
         return response.Response(self.get_serializer_class()(obj).data)
 
 
