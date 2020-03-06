@@ -72,6 +72,27 @@ class CreateEntryPermission(permissions.BasePermission):
         ).exists()
 
 
+class CreateAssessmentPermission(permissions.BasePermission):
+    """Permission class to check if user can create Lead"""
+    def has_permission(self, request, view):
+        if request.method != 'POST':
+            return True
+        # Check project and all
+        project_id = request.data['project']
+        # If there is no project id, the serializers will give 400 error, no need to forbid here
+        if project_id is None:
+            return True
+
+        create_assmt_perm_value = PROJECT_PERMISSIONS.assessment.create
+        return ProjectRole.objects.annotate(
+            create_entry=F('assessment_permissions').bitand(create_assmt_perm_value)
+        ).filter(
+            projectmembership__project_id=project_id,
+            projectmembership__member=request.user,
+            create_entry__gt=0,
+        ).exists()
+
+
 class IsSuperAdmin(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:

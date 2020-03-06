@@ -11,7 +11,6 @@ from deep.serializers import (
 
 from project.models import Project
 from user_resource.serializers import UserResourceSerializer
-from project.serializers import ProjectEntitySerializer
 from lead.serializers import (
     SimpleLeadSerializer,
     LegacySimpleLeadSerializer,
@@ -36,7 +35,7 @@ from .models import (
 
 
 class AssessmentSerializer(RemoveNullFieldsMixin,
-                           DynamicFieldsMixin, ProjectEntitySerializer):
+                           DynamicFieldsMixin, UserResourceSerializer):
     lead_title = serializers.CharField(source='lead.title',
                                        read_only=True)
     lead_group_title = serializers.CharField(source='lead_group.title',
@@ -60,7 +59,7 @@ class AssessmentSerializer(RemoveNullFieldsMixin,
 
 
 class PlannedAssessmentSerializer(
-        RemoveNullFieldsMixin, DynamicFieldsMixin, ProjectEntitySerializer):
+        RemoveNullFieldsMixin, DynamicFieldsMixin):
 
     class Meta:
         model = PlannedAssessment
