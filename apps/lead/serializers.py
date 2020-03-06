@@ -12,7 +12,7 @@ from deep.serializers import (
 from organization.serializers import SimpleOrganizationSerializer
 from user.serializers import SimpleUserSerializer
 from user_resource.serializers import UserResourceSerializer
-from project.serializers import ProjectEntitySerializer, SimpleProjectSerializer
+from project.serializers import SimpleProjectSerializer
 from gallery.serializers import SimpleFileSerializer, File
 from user.models import User
 from .models import (
@@ -94,7 +94,7 @@ class LeadEMMTriggerSerializer(serializers.ModelSerializer, RemoveNullFieldsMixi
 
 
 class LeadSerializer(
-    RemoveNullFieldsMixin, DynamicFieldsMixin, ProjectEntitySerializer
+    RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceSerializer,
 ):
     """
     Lead Model Serializer

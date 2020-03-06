@@ -1,7 +1,9 @@
 import logging
+from django.db.models import F
 from rest_framework import permissions
 
-from project.models import Project
+from project.models import Project, ProjectRole
+from project.permissions import PROJECT_PERMISSIONS
 from lead.models import Lead
 
 logger = logging.getLogger(__name__)
@@ -26,6 +28,48 @@ class ModifyPermission(permissions.BasePermission):
             return getattr(obj, objmethod)(request.user)
 
         return obj.can_modify(request.user)
+
+
+class CreateLeadPermission(permissions.BasePermission):
+    """Permission class to check if user can create Lead"""
+    def has_permission(self, request, view):
+        if request.method != 'POST':
+            return True
+        # Check project and all
+        project_id = request.data['project']
+        # If there is no project id, the serializers will give 400 error, no need to forbid here
+        if project_id is None:
+            return True
+
+        create_lead_perm_value = PROJECT_PERMISSIONS.lead.create
+        return ProjectRole.objects.annotate(
+            create_lead=F('lead_permissions').bitand(create_lead_perm_value)
+        ).filter(
+            projectmembership__project_id=project_id,
+            projectmembership__member=request.user,
+            create_lead__gt=0,
+        ).exists()
+
+
+class CreateEntryPermission(permissions.BasePermission):
+    """Permission class to check if user can create Lead"""
+    def has_permission(self, request, view):
+        if request.method != 'POST':
+            return True
+        # Check project and all
+        project_id = request.data['project']
+        # If there is no project id, the serializers will give 400 error, no need to forbid here
+        if project_id is None:
+            return True
+
+        create_entry_perm_value = PROJECT_PERMISSIONS.entry.create
+        return ProjectRole.objects.annotate(
+            create_entry=F('entry_permissions').bitand(create_entry_perm_value)
+        ).filter(
+            projectmembership__project_id=project_id,
+            projectmembership__member=request.user,
+            create_entry__gt=0,
+        ).exists()
 
 
 class IsSuperAdmin(permissions.BasePermission):

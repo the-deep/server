@@ -22,7 +22,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 import django_filters
 
-from deep.permissions import ModifyPermission
+from deep.permissions import ModifyPermission, CreateLeadPermission
 from deep.paginations import AutocompleteSetPagination
 
 from lead.filter_set import (
@@ -112,7 +112,7 @@ class LeadViewSet(viewsets.ModelViewSet):
     Lead View
     """
     serializer_class = LeadSerializer
-    permission_classes = [permissions.IsAuthenticated,
+    permission_classes = [permissions.IsAuthenticated, CreateLeadPermission,
                           ModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     # NOTE: Using LeadFilterSet for both search and ordering

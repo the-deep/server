@@ -636,32 +636,6 @@ class LeadTests(TestCase):
 
         assert leads_count == Lead.objects.all().count(), "No new lead should have been created"
 
-    def test_lead_copy_no_permission(self):
-        lead_not_modify_permission = 15 ^ (1 << 2)  # Unsetting modify bit (1 << 2)
-        lead_not_create_permission = 15 ^ (1 << 1)  # Unsetting create bit (1 << 1)
-        project_role = self.create(
-            ProjectRole,
-            lead_permissions=lead_not_modify_permission & lead_not_create_permission
-        )
-        source_project = self.create(Project, role=project_role)
-        dest_project = self.create(Project)
-
-        lead = self.create(Lead, project=source_project)
-
-        # source_project.add_member(self.user, project_role)
-
-        lead = self.create(Lead, project=source_project)
-
-        data = {
-            'projects': [dest_project.pk],
-            'leads': [lead.pk],
-        }
-        url = '/api/v1/lead-copy/'
-
-        self.authenticate()
-        response = self.client.post(url, data)
-        self.assert_403(response)
-
     def test_lead_copy(self):
         url = '/api/v1/lead-copy/'
 
@@ -1115,38 +1089,6 @@ class LeadTests(TestCase):
             for x in data['emm_triggers']
         }
         assert expected_triggers == result_triggers
-
-    def test_cannot_view_confidential_lead_without_permissions(self):
-        view_unprotected_role = ProjectRole.objects.create(
-            lead_permissions=PROJECT_PERMISSIONS.lead.view_only_unprotected,
-        )
-        project = self.create(Project, role=view_unprotected_role)
-
-        lead1 = self.create_lead(project=project, confidentiality=Lead.UNPROTECTED)
-        lead_confidential = self.create_lead(project=project, confidentiality=Lead.CONFIDENTIAL)
-
-        url = '/api/v1/leads/'
-        self.authenticate()
-
-        resp = self.client.get(url)
-        self.assert_200(resp)
-
-        leads_ids = set([x['id'] for x in resp.data['results']])
-        assert leads_ids == {lead1.id}, "Only confidential should be present"
-
-        # Check get particuar non-confidential lead, should return 200
-        url = f'/api/v1/leads/{lead1.id}/'
-        self.authenticate()
-
-        resp = self.client.get(url)
-        self.assert_200(resp)
-
-        # Check get particuar confidential lead, should return 404
-        url = f'/api/v1/leads/{lead_confidential.id}/'
-        self.authenticate()
-
-        resp = self.client.get(url)
-        self.assert_404(resp)
 
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:
