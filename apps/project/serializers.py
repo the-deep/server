@@ -447,20 +447,6 @@ class ProjectJoinRequestSerializer(RemoveNullFieldsMixin,
         fields = '__all__'
 
 
-class ProjectEntitySerializer(UserResourceSerializer):
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        project = validated_data['project']
-        role = project.get_role(user)
-
-        if not role or not role.can_create_lead:
-            raise PermissionDenied(
-                {'message': "You don't have permission to create lead"}
-            )
-        return super().create(validated_data)
-
-
 class ProjectUserGroupSerializer(serializers.ModelSerializer):
     title = serializers.CharField(source='usergroup.title', read_only=True)
 
