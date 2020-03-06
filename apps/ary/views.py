@@ -10,7 +10,7 @@ from rest_framework import (
 )
 import django_filters
 
-from deep.permissions import ModifyPermission
+from deep.permissions import ModifyPermission, CreateAssessmentPermission
 from project.models import Project
 
 from .filters import AssessmentFilterSet, PlannedAssessmentFilterSet
@@ -31,7 +31,7 @@ from .serializers import (
 
 class AssessmentViewSet(viewsets.ModelViewSet):
     serializer_class = AssessmentSerializer
-    permission_classes = [permissions.IsAuthenticated,
+    permission_classes = [permissions.IsAuthenticated, CreateAssessmentPermission,
                           ModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.OrderingFilter, filters.SearchFilter)
