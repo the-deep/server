@@ -59,7 +59,7 @@ class AssessmentSerializer(RemoveNullFieldsMixin,
 
 
 class PlannedAssessmentSerializer(
-        RemoveNullFieldsMixin, DynamicFieldsMixin):
+        RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceSerializer):
 
     class Meta:
         model = PlannedAssessment

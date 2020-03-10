@@ -45,7 +45,8 @@ class AssessmentViewSet(viewsets.ModelViewSet):
 
 class PlannedAssessmentViewSet(viewsets.ModelViewSet):
     serializer_class = PlannedAssessmentSerializer
-    permission_classes = [permissions.IsAuthenticated, ModifyPermission]
+    permission_classes = [permissions.IsAuthenticated, CreateAssessmentPermission,
+                          ModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.OrderingFilter, filters.SearchFilter)
     filterset_class = PlannedAssessmentFilterSet
