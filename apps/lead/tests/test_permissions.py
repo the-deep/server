@@ -9,21 +9,26 @@ from project.models import Project, ProjectRole
 class TestLeadPermissions(TestCase):
     def setUp(self):
         super().setUp()
+        common_role_attrs = {
+            'entry_permissions': get_project_permissions_value('entry', '__all__'),
+            'setup_permissions': get_project_permissions_value('setup', '__all__'),
+            'export_permissions': get_project_permissions_value('export', '__all__'),
+            'assessment_permissions': get_project_permissions_value('assessment', '__all__'),
+        }
         self.no_lead_creation_role = ProjectRole.objects.create(
             title='No Lead Creation Role',
             lead_permissions=0,
-            entry_permissions=get_project_permissions_value('entry', '__all__'),
-            setup_permissions=get_project_permissions_value('setup', '__all__'),
-            export_permissions=get_project_permissions_value('export', '__all__'),
-            assessment_permissions=get_project_permissions_value('assessment', '__all__'),
+            **common_role_attrs
         )
         self.lead_creation_role = ProjectRole.objects.create(
             title='Lead Creation Role',
             lead_permissions=get_project_permissions_value('lead', ['create']),
-            entry_permissions=get_project_permissions_value('entry', '__all__'),
-            setup_permissions=get_project_permissions_value('setup', '__all__'),
-            export_permissions=get_project_permissions_value('export', '__all__'),
-            assessment_permissions=get_project_permissions_value('assessment', '__all__'),
+            **common_role_attrs
+        )
+        self.lead_view_clone_role = ProjectRole.objects.create(
+            title='Lead View Role',
+            lead_permissions=get_project_permissions_value('lead', ['view', 'create']),
+            **common_role_attrs
         )
         self.author = self.source = self.create_organization()
 
@@ -31,18 +36,8 @@ class TestLeadPermissions(TestCase):
         return self.create(Organization, **kwargs)
 
     def test_lead_copy_no_permission(self):
-        lead_not_modify_permission = 15 ^ (1 << 2)  # Unsetting modify bit (1 << 2)
-        lead_not_create_permission = 15 ^ (1 << 1)  # Unsetting create bit (1 << 1)
-        project_role = self.create(
-            ProjectRole,
-            lead_permissions=lead_not_modify_permission & lead_not_create_permission
-        )
-        source_project = self.create(Project, role=project_role)
+        source_project = self.create(Project, role=self.no_lead_creation_role)
         dest_project = self.create(Project)
-
-        lead = self.create(Lead, project=source_project)
-
-        # source_project.add_member(self.user, project_role)
 
         lead = self.create(Lead, project=source_project)
 
@@ -55,6 +50,28 @@ class TestLeadPermissions(TestCase):
         self.authenticate()
         response = self.client.post(url, data)
         self.assert_403(response)
+
+    def test_lead_copy_with_permission(self):
+        # User should have view and create permission in source project in order to clone
+        source_project = self.create(Project, role=self.lead_view_clone_role)
+        dest_project = self.create(Project, role=self.lead_creation_role)
+
+        lead = self.create(Lead, project=source_project)
+        initial_lead_count = Lead.objects.count()
+
+        data = {
+            'projects': [dest_project.pk],
+            'leads': [lead.pk],
+        }
+        url = '/api/v1/lead-copy/'
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        assert Lead.objects.count() == initial_lead_count + 1, "One more lead should be created"
+        assert Lead.objects.filter(title=lead.title, project=dest_project).exists(),\
+            "Exact same lead should be created"
 
     def test_cannot_view_confidential_lead_without_permissions(self):
         view_unprotected_role = ProjectRole.objects.create(
