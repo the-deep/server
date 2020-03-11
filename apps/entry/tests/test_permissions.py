@@ -6,7 +6,7 @@ from project.permissions import PROJECT_PERMISSIONS, get_project_permissions_val
 from analysis_framework.models import AnalysisFramework
 
 
-class TestEntryPermisions(TestCase):
+class TestEntryPermissions(TestCase):
     def setUp(self):
         super().setUp()
         self.no_entry_creation_role = ProjectRole.objects.create(

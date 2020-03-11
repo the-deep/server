@@ -608,23 +608,14 @@ class LeadCopyView(views.APIView):
 
     @transaction.atomic
     def post(self, request, *args, **kwargs):
-        requested_project_ids = {int(x) for x in (request.data.get('projects') or [])}
-
         project_ids = ProjectMembership.objects.filter(
+            project_id__in=request.data.get('projects', []),
             member=request.user,
-            project_id__in=requested_project_ids,
         ).annotate(
             lead_add_permission=models.F('role__lead_permissions')
             .bitand(PROJ_PERMS.lead.create)
         ).filter(lead_add_permission=PROJ_PERMS.lead.create)\
             .values_list('project_id', flat=True)
-        project_ids = set(project_ids)
-
-        if project_ids != requested_project_ids:
-            raise exceptions.PermissionDenied(
-                f'No permission to create leads in projects'
-                f' {requested_project_ids.difference(project_ids)}'
-            )
 
         leads = Lead.get_for(request.user).filter(
             pk__in=request.data.get('leads', [])
@@ -636,16 +627,16 @@ class LeadCopyView(views.APIView):
             lead_original_project = lead.project_id
             processed_lead.append(lead.pk)
 
-            create_permission = PROJ_PERMS.lead.create
-            create_membership = ProjectMembership.objects.filter(
+            edit_or_create_permission = PROJ_PERMS.lead.create | PROJ_PERMS.lead.modify
+            edit_or_create_membership = ProjectMembership.objects.filter(
                 member=request.user,
                 project=lead.project,
             ).annotate(
                 clone_perm=models.F('role__lead_permissions')
-                .bitand(create_permission)
+                .bitand(edit_or_create_permission)
             ).filter(clone_perm__gt=0).first()
 
-            if not create_membership:
+            if not edit_or_create_membership:
                 raise exceptions.PermissionDenied(
                     'You do not have enough permissions to clone lead from the '
                     f'project {lead.project.title}'

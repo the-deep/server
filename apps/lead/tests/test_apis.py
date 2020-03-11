@@ -700,7 +700,7 @@ class LeadTests(TestCase):
 
         self.authenticate()
         response = self.client.post(url, data)
-        self.assert_200(response)
+        self.assert_201(response)
 
         rdata = response.json()
         # Sort the data since we are comparing lists
@@ -708,7 +708,7 @@ class LeadTests(TestCase):
             'projects': sorted(rdata['projects']),
             'leads': sorted(rdata['leads']),
         }
-        self.assert_200(response)
+        self.assert_201(response)
         self.assertNotEqual(sorted_rdata, data)
         self.assertEqual(sorted_rdata, validate_data)
 
