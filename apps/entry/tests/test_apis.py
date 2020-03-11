@@ -188,6 +188,8 @@ class EntryTests(TestCase):
         self.assertEqual(entry.project, entry.lead.project)
 
     def test_create_entry_no_project(self):
+        """Even without project parameter, entry should be created(using project from lead)
+        """
         entry_count = Entry.objects.count()
         lead = self.create_lead()
 

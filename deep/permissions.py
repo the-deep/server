@@ -37,30 +37,57 @@ class CreateLeadPermission(permissions.BasePermission):
             return True
         # Check project and all
         project_id = request.data['project']
+
         # If there is no project id, the serializers will give 400 error, no need to forbid here
         if project_id is None:
             return True
 
+        # Since this supports list value for project
+        if isinstance(project_id, list):
+            project_ids = set(project_id)
+        else:
+            project_ids = {project_id}
+
         create_lead_perm_value = PROJECT_PERMISSIONS.lead.create
-        return ProjectRole.objects.annotate(
-            create_lead=F('lead_permissions').bitand(create_lead_perm_value)
+
+        # Check if the user has create permissions on all projects
+        # To do this, filter projects in which user has permissions and check if
+        # the returned result length equals the queried projects length
+        projects_count = Project.objects.filter(
+            id__in=project_ids,
+            projectmembership__member=request.user
+        ).annotate(
+            create_lead=F('projectmembership__role__lead_permissions').bitand(create_lead_perm_value)
         ).filter(
-            projectmembership__project_id=project_id,
-            projectmembership__member=request.user,
             create_lead__gt=0,
-        ).exists()
+        ).count()
+
+        return projects_count == len(project_ids)
 
 
 class CreateEntryPermission(permissions.BasePermission):
     """Permission class to check if user can create Lead"""
+    def get_project_id(self, request):
+        """Try getting project id first from the data itself, if not try to
+        get it from lead
+        """
+        project_id = request.data.get('project')
+        if project_id:
+            return project_id
+        # Else, get it from lead
+        lead = Lead.objects.filter(id=request.data.get('lead')).first()
+        return lead and lead.project.id
+
     def has_permission(self, request, view):
         if request.method != 'POST':
             return True
-        # Check project and all
-        project_id = request.data['project']
-        # If there is no project id, the serializers will give 400 error, no need to forbid here
+
+        # Get project id from request
+        project_id = self.get_project_id(request)
+
+        # If there is no project id, probably lead does not exist
         if project_id is None:
-            return True
+            return False
 
         create_entry_perm_value = PROJECT_PERMISSIONS.entry.create
         return ProjectRole.objects.annotate(

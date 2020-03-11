@@ -35,7 +35,12 @@ class TestLeadPermissions(TestCase):
     def create_organization(self, **kwargs):
         return self.create(Organization, **kwargs)
 
-    def test_lead_copy_no_permission(self):
+    def _test_lead_copy_no_permission(self):
+        """
+        This has already been included in test_lead_copy because currently, if user
+        does not have permissions in destionation project, the request goes okay without
+        lead being copied.
+        """
         source_project = self.create(Project, role=self.no_lead_creation_role)
         dest_project = self.create(Project)
 
