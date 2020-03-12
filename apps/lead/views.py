@@ -22,7 +22,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 import django_filters
 
-from deep.permissions import ModifyPermission
+from deep.permissions import ModifyPermission, CreateLeadPermission
 from deep.paginations import AutocompleteSetPagination
 
 from lead.filter_set import (
@@ -112,7 +112,7 @@ class LeadViewSet(viewsets.ModelViewSet):
     Lead View
     """
     serializer_class = LeadSerializer
-    permission_classes = [permissions.IsAuthenticated,
+    permission_classes = [permissions.IsAuthenticated, CreateLeadPermission,
                           ModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     # NOTE: Using LeadFilterSet for both search and ordering
@@ -609,8 +609,8 @@ class LeadCopyView(views.APIView):
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         project_ids = ProjectMembership.objects.filter(
+            project_id__in=request.data.get('projects', []),
             member=request.user,
-            project_id__in=request.data.get('projects', [])
         ).annotate(
             lead_add_permission=models.F('role__lead_permissions')
             .bitand(PROJ_PERMS.lead.create)
@@ -657,4 +657,4 @@ class LeadCopyView(views.APIView):
             'projects': project_ids,
             'leads': processed_lead,
             'leads_by_projects': processed_lead_by_project,
-        })
+        }, status=201)

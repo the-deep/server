@@ -9,7 +9,6 @@ from deep.serializers import (
     UniqueFieldsMixin,
 )
 from user_resource.serializers import UserResourceSerializer
-from project.serializers import ProjectEntitySerializer
 from gallery.serializers import FileSerializer
 from project.models import Project
 from lead.serializers import LeadSerializer, LegacyLeadSerializer
@@ -169,7 +168,7 @@ class EntryLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
 
 
 class EntrySerializer(RemoveNullFieldsMixin,
-                      DynamicFieldsMixin, ProjectEntitySerializer):
+                      DynamicFieldsMixin, UserResourceSerializer):
     attributes = ListToDictField(
         child=SimpleAttributeSerializer(many=True),
         key='widget',

@@ -1,4 +1,3 @@
-from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.contrib.auth.models import User
 from django.db import models
 from rest_framework.decorators import action
@@ -12,7 +11,7 @@ from rest_framework import (
     serializers,
     mixins,
 )
-from deep.permissions import ModifyPermission, IsProjectMember
+from deep.permissions import ModifyPermission, IsProjectMember, CreateEntryPermission
 
 from django.utils import timezone
 from project.models import Project
@@ -55,7 +54,7 @@ class EntryViewSet(viewsets.ModelViewSet):
     Entry view set
     """
     serializer_class = EntrySerializer
-    permission_classes = [permissions.IsAuthenticated,
+    permission_classes = [permissions.IsAuthenticated, CreateEntryPermission,
                           ModifyPermission]
 
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
