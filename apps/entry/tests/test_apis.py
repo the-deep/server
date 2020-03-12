@@ -188,6 +188,8 @@ class EntryTests(TestCase):
         self.assertEqual(entry.project, entry.lead.project)
 
     def test_create_entry_no_project(self):
+        """Even without project parameter, entry should be created(using project from lead)
+        """
         entry_count = Entry.objects.count()
         lead = self.create_lead()
 
@@ -446,42 +448,6 @@ class EntryTests(TestCase):
 
         filters['comment_status'] = 'unresolved'
         self.post_filter_test(filters, 0)  # Should have no result
-
-    def test_cannot_view_confidential_entry_without_permissions(self):
-        view_unprotected_role = ProjectRole.objects.create(
-            lead_permissions=15,
-            entry_permissions=PROJECT_PERMISSIONS.entry.view_only_unprotected,
-        )
-        project = self.create(Project, role=view_unprotected_role)
-
-        lead1 = self.create_lead(project=project, confidentiality=Lead.UNPROTECTED)
-        lead_confidential = self.create_lead(project=project, confidentiality=Lead.CONFIDENTIAL)
-
-        entry1 = self.create(Entry, lead=lead1, project=project)
-        entry_confidential = self.create(Entry, lead=lead_confidential, project=project)
-
-        url = '/api/v1/entries/'
-        self.authenticate()
-
-        resp = self.client.get(url)
-        self.assert_200(resp)
-
-        entries_ids = set([x['id'] for x in resp.data['results']])
-        assert entries_ids == {entry1.id}
-
-        # Check particular non-confidential entry, should return 200
-        url = f'/api/v1/entries/{entry1.id}/'
-        self.authenticate()
-
-        resp = self.client.get(url)
-        self.assert_200(resp)
-
-        # Check particular confidential entry, should return 404
-        url = f'/api/v1/entries/{entry_confidential.id}/'
-        self.authenticate()
-
-        resp = self.client.get(url)
-        self.assert_404(resp)
 
     def test_project_label_api(self):
         project = self.create_project(is_private=True)

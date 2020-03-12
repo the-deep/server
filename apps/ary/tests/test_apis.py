@@ -47,6 +47,7 @@ class AssessmentTests(TestCase):
         url = '/api/v1/assessments/'
         data = {
             'lead': lead.pk,
+            'project': lead.project.pk,
             'metadata': {'test_meta': 'Test'},
             'methodology': {'test_methodology': 'Test'},
         }
