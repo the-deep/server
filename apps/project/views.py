@@ -63,6 +63,7 @@ from .permissions import (
     JoinPermission,
     AcceptRejectPermission,
     MembershipModifyPermission,
+    PROJECT_PERMISSIONS,
 )
 from .filter_set import (
     ProjectFilterSet,
@@ -81,8 +82,18 @@ def _get_viz_data(request, StatModel, stat_generator, project):
     Util function to trigger and serve Project entry/ary viz data
     """
     stats, created = StatModel.objects.get_or_create(project=project)
+
+    # Check only for ARY (Can view confidential data)
+    if stat_generator == generate_ary_stats:
+        can_view_confidential = ProjectMembership.objects.filter(member=request.user, project=project).annotate(
+            view_all=models.F('role__lead_permissions').bitand(PROJECT_PERMISSIONS.lead.view)
+        ).filter(view_all=PROJECT_PERMISSIONS.lead.view).exists()
+        stat_file = stats.confidential_file if can_view_confidential else stats.file
+    else:
+        stat_file = stats.file
+
     file_url = request.build_absolute_uri(
-        URLCachedFileField().to_representation(stats.file)
+        URLCachedFileField().to_representation(stat_file)
     ) if stats.file else None
     if stats.is_ready():
         return response.Response({

@@ -140,7 +140,7 @@ class ProjectEntryStatsAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectAryStats)
 class ProjectAryStatsAdmin(ProjectEntryStatsAdmin):
-    list_display = ('project', 'modified_at', 'status', 'file',)
+    list_display = ('project', 'modified_at', 'status', 'file', 'confidential_file')
     actions = [trigger_project_stat_calc(generate_ary_stats)]
     readonly_fields = []
 

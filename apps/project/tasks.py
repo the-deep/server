@@ -52,13 +52,19 @@ def _generate_ary_stats(project_id):
     project_ary_stats.status = ProcessStatus.STARTED
     project_ary_stats.save()
     try:
-        ary_stats = get_project_ary_stats(project)
+        ary_stats, ary_stats_confidential = get_project_ary_stats(project)
         project_ary_stats.status = ProcessStatus.SUCCESS
         project_ary_stats.modified_at = timezone.now()
         project_ary_stats.file.save(
             f'project-ary-stats-{project_id}.json',
             ContentFile(
                 json.dumps(ary_stats, cls=DjangoJSONEncoder).encode('utf-8'),
+            ),
+        )
+        project_ary_stats.confidential_file.save(
+            f'project-ary-stats-confidential-{project_id}.json',
+            ContentFile(
+                json.dumps(ary_stats_confidential, cls=DjangoJSONEncoder).encode('utf-8'),
             ),
         )
         project_ary_stats.save()
