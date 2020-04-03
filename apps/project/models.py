@@ -621,3 +621,4 @@ class ProjectEntryStats(ProjectBaseStats):
 class ProjectAryStats(ProjectBaseStats):
     project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name='ary_stats')
     file = models.FileField(upload_to='ary-stats/', max_length=255, null=True, blank=True)
+    confidential_file = models.FileField(upload_to='entry-stats/', max_length=255, null=True, blank=True)
