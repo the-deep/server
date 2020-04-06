@@ -188,7 +188,8 @@ def get_project_ary_stats(project):
         **static_meta,
         **dynamic_meta,
     }
-    data = []
+    public_data = []
+    confidential_data = []
 
     for ary in Assessment.objects.prefetch_related('lead', 'lead__attachment').filter(project=project).all():
         metadata_raw = ary.metadata or {}
@@ -249,22 +250,27 @@ def get_project_ary_stats(project):
             'id': lead.id,
             'title': lead.title,
             'source_type': lead.source_type,
+            'confidentiality': lead.confidentiality,
         }
+        lead_source_data = {}
         if (
             lead.source_type in [Lead.DISK, Lead.DROPBOX, Lead.GOOGLE_DRIVE] and
             lead.attachment and lead.attachment.file
         ):
-            lead_data['attachment'] = lead.attachment.file.url
+            lead_source_data['attachment'] = lead.attachment.file.url
         elif lead.source_type == Lead.WEBSITE:
-            lead_data['url'] = lead.url
+            lead_source_data['url'] = lead.url
         elif lead.source_type == Lead.TEXT:
-            lead_data['text'] = lead.text
+            lead_source_data['text'] = lead.text
 
-        data.append({
+        ary_data = {
             'pk': ary.pk,
             'created_at': ary.created_at,
             'date': ary.lead.created_at,
-            'lead': lead_data,
+            'lead': {
+                **lead_data,
+                **lead_source_data,
+            },
 
             'focus': _get_integer_array(methodology_raw.get('focuses')),
             'sector': _get_integer_array(methodology_raw.get('sectors')),
@@ -325,9 +331,22 @@ def get_project_ary_stats(project):
                 len(additional_documents.get(doc_type) or [])
                 for doc_type in ['executive_summary', 'assessment_data', 'questionnaire', 'misc']
             ],
-        })
+        }
+        confidential_data.append(ary_data)
+
+        # Hide source data from confidential leads for unrestricted users
+        if ary.lead.confidentiality == Lead.CONFIDENTIAL:
+            public_data.append({
+                **ary_data,
+                'lead': lead_data,  # No source data
+            })
+        else:
+            public_data.append(ary_data)
 
     return {
         'meta': meta,
-        'data': data,
+        'data': public_data,
+    }, {
+        'meta': meta,
+        'data': confidential_data,
     }
