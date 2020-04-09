@@ -1,0 +1,234 @@
+[
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 1,
+        "fields": {
+            "title": "Earthquake",
+            "description": "Earthquake"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 2,
+        "fields": {
+            "title": "Ground Shaking",
+            "description": "Ground Shaking"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 3,
+        "fields": {
+            "title": "Tsunami",
+            "description": "Tsunami"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 4,
+        "fields": {
+            "title": "Volcano",
+            "description": "Volcano"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 5,
+        "fields": {
+            "title": "Volcanic Eruption",
+            "description": "Volcanic Eruption"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 6,
+        "fields": {
+            "title": "Mass Movement (Dry)",
+            "description": "Mass Movement (Dry)"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 7,
+        "fields": {
+            "title": "Rockfall",
+            "description": "Rockfall"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 8,
+        "fields": {
+            "title": "Avalance",
+            "description": "Avalance"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 9,
+        "fields": {
+            "title": "Landslide",
+            "description": "Landslide"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 10,
+        "fields": {
+            "title": "Subsidence",
+            "description": "Subsidence"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 11,
+        "fields": {
+            "title": "Extra Tropical Cyclone",
+            "description": "Extra Tropical Cyclone"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 12,
+        "fields": {
+            "title": "Tropical Cyclone",
+            "description": "Tropical Cyclone"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 13,
+        "fields": {
+            "title": "Local/Convective Strom",
+            "description": "Local/Convective Strom"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 14,
+        "fields": {
+            "title": "Extra Tropical Cyclone",
+            "description": "Extra Tropical Cyclone"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 15,
+        "fields": {
+            "title": "Flood/Rain",
+            "description": "Flood/Rain"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 16,
+        "fields": {
+            "title": "General River Flood",
+            "description": "General River Flood"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 17,
+        "fields": {
+            "title": "Flash Flood",
+            "description": "Flash Flood"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 18,
+        "fields": {
+            "title": "Storm surge/Coastal Flood",
+            "description": "Storm surge/Coastal Flood"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 19,
+        "fields": {
+            "title": "Mass Movement (wet)",
+            "description": "Mass Movement (wet)"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 20,
+        "fields": {
+            "title": "Extreme Temperature",
+            "description": "Extreme Temperature"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 21,
+        "fields": {
+            "title": "Heat Wave",
+            "description": "Heat Wave"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 22,
+        "fields": {
+            "title": "Cold Wave",
+            "description": "Cold Wave"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 23,
+        "fields": {
+            "title": "Extreme Weather Conditions",
+            "description": "Extreme Weather Conditions"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 24,
+        "fields": {
+            "title": "Drought",
+            "description": "Drought"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 25,
+        "fields": {
+            "title": "Wildfire",
+            "description": "Wildfire"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 26,
+        "fields": {
+            "title": "Conflict",
+            "description": "Conflict"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 27,
+        "fields": {
+            "title": "Population displacement",
+            "description": "Population displacement"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 28,
+        "fields": {
+            "title": "Economic",
+            "description": "Economic"
+        }
+    },
+    {
+        "model": "questionnaire.crisistype",
+        "pk": 29,
+        "fields": {
+            "title": "Epidemic",
+            "description": "Epidemic"
+        }
+    }
+]
