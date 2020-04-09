@@ -36,7 +36,7 @@ class CreateLeadPermission(permissions.BasePermission):
         if request.method != 'POST':
             return True
         # Check project and all
-        project_id = request.data['project']
+        project_id = request.data.get('project')
 
         # If there is no project id, the serializers will give 400 error, no need to forbid here
         if project_id is None:
@@ -105,7 +105,7 @@ class CreateAssessmentPermission(permissions.BasePermission):
         if request.method != 'POST':
             return True
         # Check project and all
-        project_id = request.data['project']
+        project_id = request.data.get('project')
         # If there is no project id, the serializers will give 400 error, no need to forbid here
         if project_id is None:
             return True
