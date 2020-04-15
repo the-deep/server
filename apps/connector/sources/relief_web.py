@@ -274,7 +274,7 @@ class ReliefWeb(Source):
         content = self.get_content(self.URL, post_params)
         resp = json.loads(content)
 
-        total_count = len(resp['data'])
+        total_count = resp['totalCount']
         limited_data = resp['data'][offset: offset + limit]
 
         for datum in limited_data:
