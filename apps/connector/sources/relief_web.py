@@ -199,6 +199,12 @@ class ReliefWeb(Source):
     key = 'relief-web'
     options = [
         {
+            'key': 'primary-country',
+            'field_type': 'select',
+            'title': 'Primary Country',
+            'options': COUNTRIES,
+        },
+        {
             'key': 'country',
             'field_type': 'select',
             'title': 'Country',
@@ -229,8 +235,11 @@ class ReliefWeb(Source):
 
     def parse_filter_params(self, params):
         filters = []
+
         if params.get('country'):
             filters.append({'field': 'country.iso3', 'value': params['country']})
+        if params.get('primary-country'):
+            filters.append({'field': 'primary_country.iso3', 'value': params['primary-country']})
 
         date_filter = {}
         # If date is obtained, it must be formatted to the ISO string with timezone info
@@ -275,7 +284,7 @@ class ReliefWeb(Source):
         resp = json.loads(content)
 
         total_count = resp['totalCount']
-        limited_data = resp['data'][offset: offset + limit]
+        limited_data = resp['data']  # The offset limit is handled by the api itself
 
         for datum in limited_data:
             fields = datum['fields']
