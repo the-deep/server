@@ -362,6 +362,9 @@ ASGI_APPLICATION = "deep.routing.channel_routing"
 
 TEST_DIR = os.path.join(BASE_DIR, 'deep/test_files')
 
+# RELIEF WEB
+RELIEFWEB_APPNAME = 'thedeep.io'
+
 # HID CONFIGS [NOTE: Update config in React too]
 HID_CLIENT_ID = os.environ.get('HID_CLIENT_ID', 'deep-local')
 HID_CLIENT_NAME = os.environ.get('HID_CLIENT_NAME', 'Deep Local')
