@@ -260,7 +260,7 @@ class ReliefWeb(Source):
 
         post_params = {}
         post_params['fields'] = {
-            'include': ['url_alias', 'title', 'date.original',
+            'include': ['url_alias', 'title', 'date.original', 'file',
                         'source', 'source.homepage']
         }
 
@@ -288,11 +288,12 @@ class ReliefWeb(Source):
 
         for datum in limited_data:
             fields = datum['fields']
+            url = fields['file'][0]['url'] if fields.get('file') else fields['url_alias']
             lead = {
                 'id': str(datum['id']),
                 'title': fields['title'],
                 'published_on': fields['date']['original'],
-                'url': fields['url_alias'],
+                'url': url,
                 'source': 'reliefweb',
                 'source_type': Lead.WEBSITE,
                 'author': fields['source'][0]['name'],
