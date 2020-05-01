@@ -6,19 +6,15 @@ from utils.date_extractor import extract_date
 import requests
 import tldextract
 
+from .base import ExtractorMixin
+
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36', # noqa
 }
 
 
-class DefaultWebInfoExtractor:
-    # fields are accessed by get_{fielname}. If fieldname is to be reanamed, mention
-    # it as 'source_field:rename_to'. For example: 'date_str:date' will have date_str value
-    # in 'date' field of serialized_data
-
-    fields = ['title', 'date_str:date', 'country', 'source', 'website', 'author']
-
+class DefaultWebInfoExtractor(ExtractorMixin):
     def __init__(self, url):
         self.url = url
         self.readable = None
