@@ -76,10 +76,13 @@ class Profile(models.Model):
         return str(self.user)
 
     def get_accessible_features(self):
-        user_domain = self.user.email.split('@')[1]
-        return Feature.objects.filter(
-            Q(users=self.user) | Q(email_domains__domain_name__exact=user_domain)
-        )
+        try:
+            user_domain = (self.user.email or self.user.username).split('@')[1]
+            return Feature.objects.filter(
+                Q(users=self.user) | Q(email_domains__domain_name__exact=user_domain)
+            )
+        except IndexError:
+            return []
 
     def get_display_name(self):
         return self.user.get_full_name() if self.user.first_name \
