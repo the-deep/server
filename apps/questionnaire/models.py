@@ -1,5 +1,7 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.fields import JSONField, ArrayField, HStoreField
+from django.utils.hashable import make_hashable
+from django.utils.encoding import force_str
 
 from ordered_model.models import OrderedModel
 
@@ -115,6 +117,7 @@ class QuestionBase(OrderedModel):
     )
 
     title = models.TextField(blank=True)
+    more_titles = HStoreField(default=dict, blank=True, null=True)  # Titles in other languages
     enumerator_instruction = models.TextField(blank=True)
     respondent_instruction = models.TextField(blank=True)
     framework_attribute = JSONField(default=None, blank=True, null=True)
@@ -140,8 +143,10 @@ class Questionnaire(UserResource):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     is_archived = models.BooleanField(default=False)
     crisis_type = models.ForeignKey(CrisisType, on_delete=models.SET_NULL, null=True)
-    data_collection_technique = models.CharField(
-        max_length=56, blank=True, choices=QuestionBase.DATA_COLLECTION_TECHNIQUE_OPTIONS)
+    data_collection_techniques = ArrayField(
+        models.CharField(max_length=56, choices=QuestionBase.DATA_COLLECTION_TECHNIQUE_OPTIONS),
+        default=list,
+    )
     enumerator_skill = models.CharField(
         max_length=56, blank=True, choices=QuestionBase.ENUMERATOR_SKILL_OPTIONS)
 
@@ -150,6 +155,13 @@ class Questionnaire(UserResource):
 
     def __str__(self):
         return self.title
+
+    def get_data_collection_techniques_display(self):
+        choices_dict = dict(make_hashable(QuestionBase.DATA_COLLECTION_TECHNIQUE_OPTIONS))
+        return [
+            force_str(choices_dict.get(make_hashable(value), value), strings_only=True)
+            for value in self.data_collection_techniques or []
+        ]
 
     def can_modify(self, user):
         return self.project.can_modify(user)
