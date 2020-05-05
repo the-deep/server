@@ -47,7 +47,7 @@ class QuestionnaireViewSet(viewsets.ModelViewSet):
             active_questions_count=models.Count(
                 'question', filter=models.Q(question__is_archived=False), distinct=True
             )
-        ).all()
+        ).prefetch_related('crisis_types')
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

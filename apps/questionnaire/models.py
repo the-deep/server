@@ -127,7 +127,7 @@ class QuestionBase(OrderedModel):
     importance = models.CharField(max_length=56, blank=True, choices=IMPORTANCE_OPTIONS)
     data_collection_technique = models.CharField(max_length=56, blank=True, choices=DATA_COLLECTION_TECHNIQUE_OPTIONS)
     enumerator_skill = models.CharField(max_length=56, blank=True, choices=ENUMERATOR_SKILL_OPTIONS)
-    # required duration in ms
+    # required duration in seconds
     required_duration = models.PositiveIntegerField(blank=True, null=True)
 
     order = models.IntegerField(default=1)
@@ -142,7 +142,7 @@ class Questionnaire(UserResource):
     title = models.CharField(max_length=255, blank=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     is_archived = models.BooleanField(default=False)
-    crisis_type = models.ForeignKey(CrisisType, on_delete=models.SET_NULL, null=True)
+    crisis_types = models.ManyToManyField(CrisisType, blank=True)
     data_collection_techniques = ArrayField(
         models.CharField(max_length=56, choices=QuestionBase.DATA_COLLECTION_TECHNIQUE_OPTIONS),
         default=list,
@@ -150,7 +150,7 @@ class Questionnaire(UserResource):
     enumerator_skill = models.CharField(
         max_length=56, blank=True, choices=QuestionBase.ENUMERATOR_SKILL_OPTIONS)
 
-    # required duration in ms
+    # required duration in seconds
     required_duration = models.PositiveIntegerField(blank=True, null=True)
 
     def __str__(self):
