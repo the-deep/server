@@ -83,10 +83,9 @@ class MiniQuestionnaireSerializer(
     UserResourceSerializer,
 ):
     enumerator_skill_display = serializers.CharField(source='get_enumerator_skill_display', read_only=True)
-    data_collection_technique_display = serializers.CharField(
-        source='get_data_collection_technique_display', read_only=True)
-
-    crisis_type_detail = CrisisTypeSerializer(source='crisis_type', read_only=True)
+    data_collection_techniques_display = serializers.ListField(
+        source='get_data_collection_techniques_display', read_only=True)
+    crisis_types_detail = CrisisTypeSerializer(source='crisis_types', many=True, read_only=True)
     active_questions_count = serializers.IntegerField(read_only=True)
 
     class Meta:
