@@ -90,11 +90,12 @@ class QuestionnaireViewSet(viewsets.ModelViewSet):
 
         Available override fields
         ```python
-        ['title', 'crisisTypeId', 'projectId', 'requiredDuration', 'dataCollectionTechnique', 'enumeratorSkill']
+        ['title', 'crisisTypesId', 'projectId', 'requiredDuration', 'dataCollectionTechnique', 'enumeratorSkill']
         ```
         """
         obj = self.get_object()
         questions = obj.question_set.all()
+        old_crisis_types = obj.crisis_types.all()
         new_questions = []
         obj.pk = None
 
@@ -102,13 +103,19 @@ class QuestionnaireViewSet(viewsets.ModelViewSet):
         [
             setattr(obj, field, value)
             for field in [
-                'title', 'crisis_type_id', 'project_id', 'required_duration',
+                'title', 'project_id', 'required_duration',
                 'data_collection_technique', 'enumerator_skill'
             ]
             for value in [request.data.get(field)]
             if value is not None
         ]
         obj.save()
+
+        # Override crisis types
+        override_crisis_types_id = request.data.get('crisis_types_id')
+        if override_crisis_types_id is not None:
+            old_crisis_types = CrisisType.objects.filter(pk__in=override_crisis_types_id)
+        obj.crisis_types.set(old_crisis_types, clear=True)
 
         for question in questions:
             question.pk = None
