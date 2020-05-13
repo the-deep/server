@@ -24,6 +24,12 @@ class OrganizationSearch():
             (text, text.lower())
             for text in set(texts) if text
         ]
+
+        if len(text_queries) == 0:
+            # Nothing to do here
+            self.organization_map = {}
+            return
+
         exact_query = reduce(
             lambda acc, item: acc | item,
             [
