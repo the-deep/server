@@ -9,6 +9,8 @@ from questionnaire.models import (
 )
 
 
+# TODO: This tests will fail with --reuse-db. Make sure HStoreExtension is loaded for --reuse-db
+# This might be helpfull https://pytest-django.readthedocs.io/en/latest/configuring_django.html
 class QuestionnaireTests(TestCase):
     def test_questionnaire_get_api(self):
         project = self.create_project()
@@ -81,14 +83,20 @@ class QuestionnaireTests(TestCase):
     def test_question_post_api(self):
         questionnaire = self.create(Questionnaire, project=self.create_project())
         title = 'Test Question'
+        more_titles = {
+            'en': title,
+            'np': 'Test Question in Nepali',
+        }
 
         self.authenticate()
         response = self.client.post(f'/api/v1/questionnaires/{questionnaire.pk}/questions/', data={
             'title': title,
+            'more_titles': more_titles,
         })
         self.assert_201(response)
         new_question = Question.objects.get(pk=response.json()['id'])
         assert new_question.title == title
+        assert new_question.more_titles == more_titles
 
     def test_question_clone_api(self):
         question = self.create(
@@ -165,12 +173,20 @@ class QuestionnaireTests(TestCase):
 
     def test_framework_question_post_api(self):
         af = self.create(AnalysisFramework)
+        af.add_member(self.user, af.get_or_create_owner_role())
+        q1 = self.create(FrameworkQuestion, analysis_framework=af)
 
         self.authenticate()
         response = self.client.post(f'/api/v1/analysis-frameworks/{af.pk}/questions/', data={
             'title': 'Test Framework Questions',
         })
         self.assert_201(response)
+        q2_id = response.json()['id']
+
+        response = self.client.post(f'/api/v1/analysis-frameworks/{af.pk}/questions/{q2_id}/order/', data={
+            'action': 'above', 'value': q1.pk,
+        })
+        self.assert_200(response)
 
     def test_framework_question_copy_api(self):
         af = self.create(AnalysisFramework)
