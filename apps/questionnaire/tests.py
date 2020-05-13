@@ -1,6 +1,7 @@
 from deep.tests import TestCase
 from analysis_framework.models import AnalysisFramework
 from questionnaire.models import (
+    QuestionBase,
     Questionnaire,
     Question,
     FrameworkQuestion,
@@ -11,14 +12,22 @@ from questionnaire.models import (
 class QuestionnaireTests(TestCase):
     def test_questionnaire_get_api(self):
         project = self.create_project()
-        self.create(Questionnaire, project=project)
-        self.create(Questionnaire, project=project)
+        self.create(Questionnaire, project=project, data_collection_techniques=[QuestionBase.DIRECT])
+        self.create(Questionnaire, project=project, data_collection_techniques=[QuestionBase.FOCUS_GROUP])
         self.create(Questionnaire, project=project)
 
         self.authenticate()
         response = self.client.get(f'/api/v1/questionnaires/?project={project.pk}')
         self.assert_200(response)
         assert len(response.json()['results']) == 3
+
+        # Custom filter test
+        response = self.client.get(
+            f"/api/v1/questionnaires/?project={project.pk}"
+            f"&data_collection_techniques={','.join([QuestionBase.DIRECT, QuestionBase.FOCUS_GROUP])}"
+        )
+        self.assert_200(response)
+        assert len(response.json()['results']) == 2
 
     def test_questionnaire_post_api(self):
         project = self.create_project()
@@ -40,7 +49,7 @@ class QuestionnaireTests(TestCase):
         self.create(CrisisType, title='Crisis 3')
 
         self.authenticate()
-        response = self.client.get(f'/api/v1/questionnaires/options/')
+        response = self.client.get('/api/v1/questionnaires/options/')
         self.assert_200(response)
         assert len(response.json()['crisisTypeOptions']) == 3
 
@@ -135,7 +144,9 @@ class QuestionnaireTests(TestCase):
 
         self.authenticate()
         response = self.client.post(
-            f'/api/v1/questionnaires/{questionnaire.pk}/questions/{q3.pk}/order/', data={'to': 2})
+            f'/api/v1/questionnaires/{questionnaire.pk}/questions/{q3.pk}/order/',
+            data={'action': 'below', 'value': q1.pk}
+        )
         self.assert_200(response)
 
         # Check new generated orders
@@ -165,11 +176,14 @@ class QuestionnaireTests(TestCase):
         af = self.create(AnalysisFramework)
         fq = self.create(FrameworkQuestion, analysis_framework=af)
         questionnaire = self.create(Questionnaire, project=self.create_project())
+        self.create(Question, questionnaire=questionnaire)
 
         self.authenticate()
         response = self.client.post(f'/api/v1/questionnaires/{questionnaire.pk}/questions/af-question-copy/', data={
             'framework_question_id': fq.pk,
-            'new_order': 2,
+            'order_action': {
+                'action': 'bottom',
+            },
         })
         self.assert_200(response)
         assert response.json()['questionnaire'] == questionnaire.pk
@@ -178,11 +192,11 @@ class QuestionnaireTests(TestCase):
     def test_xform_view(self):
         # Just checking API Endpoint. Requires xform file for test
         self.authenticate()
-        response = self.client.post(f'/api/v1/xlsform-to-xform/')
+        response = self.client.post('/api/v1/xlsform-to-xform/')
         self.assert_400(response)
 
     def test_kobo_toolbox_export(self):
         # Just checking API Endpoint. Requires oauth for test
         self.authenticate()
-        response = self.client.post(f'/api/v1/import-to-kobotoolbox/')
+        response = self.client.post('/api/v1/import-to-kobotoolbox/')
         self.assert_400(response)

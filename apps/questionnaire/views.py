@@ -174,7 +174,7 @@ class QuestionBaseViewMixin():
         ```json
         {
           "action": "below|above|top|bottom",
-          "value": "Numeric value required for below|above"
+          "value": "Question id required for below|above"
         }
         ```
         """
