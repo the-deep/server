@@ -181,6 +181,10 @@ class QuestionBaseViewMixin():
         # TODO: Permission
         question = self.get_object()
         QuestionSerializer.apply_order_action(question, request.data)
+        if isinstance(question, FrameworkQuestion):
+            return response.Response({
+                'new_order': question.analysis_framework.question_set.order_by('order').values_list('pk', flat=True)
+            })
         return response.Response({
             'new_order': question.questionnaire.question_set.order_by('order').values_list('pk', flat=True),
         })
