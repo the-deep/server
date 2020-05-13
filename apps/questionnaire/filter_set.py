@@ -19,5 +19,5 @@ class QuestionnaireFilterSet(django_filters.rest_framework.FilterSet):
 
     def filter_data_collection_techniques(self, queryset, name, value):
         if len(value):
-            return queryset.filter(secondary_sectors__overlap=value)
+            return queryset.filter(data_collection_techniques__overlap=value)
         return queryset
