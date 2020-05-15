@@ -68,18 +68,28 @@ class RegionViewSet(viewsets.ModelViewSet):
     def get_intersects(self, request, pk=None, version=None):
         region = self.get_object()
         try:
-            geom = GEOSGeometry(str(request.data['geometry']))
+            geoms = []
+            features = request.data['features']
+            for feature in features:
+                geoms.append([feature.get('id'), GEOSGeometry(str(feature['geometry']))])
         except (GDALException, KeyError) as e:
             raise exceptions.ValidationError(
                 f"Geometry parsed failed, Error: {getattr(e, 'message', repr(e))}"
             )
-        return response.Response({
-            # https://docs.djangoproject.com/en/2.1/ref/contrib/gis/geoquerysets/
-            'geoareas': GeoArea.objects.filter(
-                admin_level__region=region,
-                polygons__intersects=geom,
-            ).values_list('id', flat=True),
-        })
+        return response.Response([
+            {
+                'id': id,
+                'region_id': region.pk,
+                'geoareas': (
+                    # https://docs.djangoproject.com/en/2.1/ref/contrib/gis/geoquerysets/
+                    GeoArea.objects.filter(
+                        admin_level__region=region,
+                        polygons__intersects=geom,
+                    ).values_list('id', flat=True)
+                ),
+            }
+            for id, geom in geoms
+        ])
 
 
 class RegionCloneView(views.APIView):
