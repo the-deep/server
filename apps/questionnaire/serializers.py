@@ -1,4 +1,6 @@
+import re
 from django.shortcuts import get_object_or_404
+from rest_framework.validators import UniqueTogetherValidator
 from rest_framework import serializers, exceptions
 from drf_dynamic_fields import DynamicFieldsMixin
 from user_resource.serializers import UserResourceSerializer
@@ -44,6 +46,14 @@ class QuestionBaseSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, serializ
             related_question = get_object_or_404(question._meta.model, pk=value)
             getattr(question, action)(related_question)
 
+    def validate_name(self, value):
+        if re.match("^[a-zA-Z_][A-Za-z0-9._-]*$", value) is None:
+            raise exceptions.ValidationError(
+                'Names have to start with a letter or an underscore'
+                ' and can only contain letters, digits, hyphens, underscores, and periods'
+            )
+        return value
+
     def validate(self, data):
         data['questionnaire_id'] = int(self.context['questionnaire_id'])
         return data
@@ -64,6 +74,13 @@ class QuestionSerializer(QuestionBaseSerializer):
         model = Question
         fields = '__all__'
         read_only_fields = ('questionnaire',)
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Question.objects.all(),
+                fields=['questionnaire', 'name'],
+                message='Name should be unique',
+            )
+        ]
 
 
 class FrameworkQuestionSerializer(QuestionBaseSerializer):

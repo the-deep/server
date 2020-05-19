@@ -192,7 +192,7 @@ class QuestionBaseViewMixin():
     @action(detail=True, methods=['post'], url_path='clone')
     def create_clone(self, request, *args, **kwargs):
         """
-        Clone Question
+        Clone Question (Deprecated)
         ```json
         {"order_action": {'action' and 'value'}}
         ```
