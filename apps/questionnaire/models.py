@@ -116,6 +116,7 @@ class QuestionBase(OrderedModel):
         (MEDIUM, 'Medium'),
     )
 
+    name = models.CharField(max_length=255)
     title = models.TextField(blank=True)
     more_titles = HStoreField(default=dict, blank=True, null=True)  # Titles in other languages
     enumerator_instruction = models.TextField(blank=True)
@@ -185,6 +186,9 @@ class Question(QuestionBase):
     cloned_from = models.ForeignKey(FrameworkQuestion, on_delete=models.SET_NULL, null=True)
     questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE)
     order_with_respect_to = 'questionnaire'
+
+    class Meta:
+        unique_together = ('questionnaire', 'name')
 
     def can_modify(self, user):
         return self.questionnaire.project.can_modify(user)
