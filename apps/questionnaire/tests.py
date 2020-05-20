@@ -91,12 +91,21 @@ class QuestionnaireTests(TestCase):
         self.authenticate()
         response = self.client.post(f'/api/v1/questionnaires/{questionnaire.pk}/questions/', data={
             'title': title,
+            'name': 'question-1',
             'more_titles': more_titles,
         })
         self.assert_201(response)
         new_question = Question.objects.get(pk=response.json()['id'])
         assert new_question.title == title
         assert new_question.more_titles == more_titles
+
+        response = self.client.post(f'/api/v1/questionnaires/{questionnaire.pk}/questions/', data={
+            'title': title,
+            'name': 'question-1',
+            'more_titles': more_titles,
+        })
+        # Duplicate name
+        self.assert_400(response)
 
     def test_question_clone_api(self):
         question = self.create(
@@ -179,6 +188,7 @@ class QuestionnaireTests(TestCase):
         self.authenticate()
         response = self.client.post(f'/api/v1/analysis-frameworks/{af.pk}/questions/', data={
             'title': 'Test Framework Questions',
+            'name': 'framework-question-1',
         })
         self.assert_201(response)
         q2_id = response.json()['id']
