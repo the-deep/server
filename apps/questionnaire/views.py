@@ -183,22 +183,24 @@ class QuestionBaseViewMixin():
         QuestionSerializer.apply_order_action(question, request.data)
         if isinstance(question, FrameworkQuestion):
             return response.Response({
-                'new_order': question.analysis_framework.question_set.order_by('order').values_list('pk', flat=True)
+                'new_order': question.analysis_framework.question_set.order_by('order').values('pk', 'order')
             })
         return response.Response({
-            'new_order': question.questionnaire.question_set.order_by('order').values_list('pk', flat=True),
+            'new_order': question.questionnaire.question_set.order_by('order').values('pk', 'order'),
         })
 
     @action(detail=True, methods=['post'], url_path='clone')
     def create_clone(self, request, *args, **kwargs):
         """
-        Clone Question
+        TODO: Remove this
+        Clone Question (Deprecated)
         ```json
         {"order_action": {'action' and 'value'}}
         ```
         """
         obj = self.get_object()
         obj.pk = None
+        obj.name += 'prefix'
         obj.order = None
         obj.save()
         QuestionSerializer.apply_order_action(obj, request.data.get('order_action', {}), 'bottom')
@@ -275,8 +277,9 @@ class XFormView(views.APIView):
         xlsform_file = serializer.validated_data['file']
         try:
             return response.Response(xls_form.XLSForm.create_enketo_form(xlsform_file))
-        except Exception:
-            raise exceptions.ValidationError('Invalid request. Please provide valid XLSForm file!!')
+        except Exception as e:
+            # TODO: Define and use global validation for non_field_errors for deep client
+            raise exceptions.ValidationError({'non_field_errors': [e]})
 
 
 class KoboToolboxExport(views.APIView):

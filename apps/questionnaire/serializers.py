@@ -1,4 +1,6 @@
+import re
 from django.shortcuts import get_object_or_404
+from django.db import models
 from rest_framework import serializers, exceptions
 from drf_dynamic_fields import DynamicFieldsMixin
 from user_resource.serializers import UserResourceSerializer
@@ -44,8 +46,21 @@ class QuestionBaseSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, serializ
             related_question = get_object_or_404(question._meta.model, pk=value)
             getattr(question, action)(related_question)
 
+    def validate_name(self, value):
+        if re.match("^[a-zA-Z_][A-Za-z0-9._-]*$", value) is None:
+            raise exceptions.ValidationError(
+                'Names have to start with a letter or an underscore'
+                ' and can only contain letters, digits, hyphens, underscores, and periods'
+            )
+        return value
+
     def validate(self, data):
         data['questionnaire_id'] = int(self.context['questionnaire_id'])
+        # The order will not work properly if order is same for multiple questions within questionnare
+        if self.instance is None:
+            data['order'] = self.Meta.model.objects.filter(questionnaire=data['questionnaire_id']).aggregate(
+                order=models.functions.Coalesce(models.Max('order'), 0)
+            )['order'] + 1
         return data
 
     def create(self, data):
@@ -53,13 +68,23 @@ class QuestionBaseSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, serializ
         # For handling order actions
         QuestionSerializer.apply_order_action(
             question,
-            data.get('order_action') or {},
+            self.initial_data.get('order_action') or {},
             'bottom',
         )
         return question
 
 
 class QuestionSerializer(QuestionBaseSerializer):
+    def validate(self, data):
+        data = super().validate(data)
+        # Duplicate questions
+        d_qs = Question.objects.filter(questionnaire=data['questionnaire_id'], name=data['name'])
+        if self.instance is not None:
+            d_qs = d_qs.exclude(pk=self.instance.pk)
+        if d_qs.exists():
+            raise exceptions.ValidationError('Name should be unique')
+        return data
+
     class Meta:
         model = Question
         fields = '__all__'
