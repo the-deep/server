@@ -1,4 +1,6 @@
 from django.shortcuts import redirect
+from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.gdal.error import GDALException
 from django.conf import settings
 from django.db import models
 from rest_framework import (
@@ -10,13 +12,14 @@ from rest_framework import (
     views,
     viewsets,
 )
+from rest_framework.decorators import action
 import django_filters
 
 from deep.permissions import ModifyPermission
 from user_resource.filters import UserResourceFilterSet
 
 from project.models import Project
-from .models import Region, AdminLevel
+from .models import Region, AdminLevel, GeoArea
 from .serializers import (
     AdminLevelSerializer,
     RegionSerializer,
@@ -56,6 +59,37 @@ class RegionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Region.get_for(self.request.user).defer('geo_options')
+
+    @action(
+        detail=True,
+        url_path='intersects',
+        methods=('post',),
+    )
+    def get_intersects(self, request, pk=None, version=None):
+        region = self.get_object()
+        try:
+            geoms = []
+            features = request.data['features']
+            for feature in features:
+                geoms.append([feature.get('id'), GEOSGeometry(str(feature['geometry']))])
+        except (GDALException, KeyError) as e:
+            raise exceptions.ValidationError(
+                f"Geometry parsed failed, Error: {getattr(e, 'message', repr(e))}"
+            )
+        return response.Response([
+            {
+                'id': id,
+                'region_id': region.pk,
+                'geoareas': (
+                    # https://docs.djangoproject.com/en/2.1/ref/contrib/gis/geoquerysets/
+                    GeoArea.objects.filter(
+                        admin_level__region=region,
+                        polygons__intersects=geom,
+                    ).values_list('id', flat=True)
+                ),
+            }
+            for id, geom in geoms
+        ])
 
 
 class RegionCloneView(views.APIView):
