@@ -66,7 +66,7 @@ def add_function_file(args):
 
 
 def run_all(args):
-    # install_requirements(args)
+    install_requirements(args)
     zip_requirements(args)
     add_extra_modules(args)
     add_function_file(args)
@@ -87,10 +87,10 @@ def main():
     validate_config(args)
 
     if args.update_function:
-        add_function_file(config)
+        add_function_file(args)
         print("Function file has been updated in the zip.")
     if args.update_extra_modules:
-        add_extra_modules(config)
+        add_extra_modules(args)
 
     if not args.update_function and not args.update_extra_modules:
         print("Running all steps")
