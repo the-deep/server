@@ -1,37 +1,47 @@
 from utils.common import is_valid_number
 
 
-def get_valid_geo_ids(geo_areas_id):
+def _get_geoareas_from_polygon(geo_value):
+    try:
+        properties = geo_value['geo_json']['properties']
+        return properties['geoareas'], properties.get('title'), geo_value['region']
+    except (AttributeError, KeyError):
+        return [], None, None
+
+
+def get_valid_geo_ids(raw_values, extract_polygon_title=False):
     """
     Geo values can have {}, Number, String values
     Only Number, String(convertable to integer) values are valid
+    Also extract from polygons
     """
-    return [
-        geo_area_id for geo_area_id in geo_areas_id
-        if is_valid_number(geo_area_id)
-    ]
+    geo_areas = []
+    polygons = []
+
+    for raw_value in raw_values:
+        if is_valid_number(raw_value):
+            geo_areas.append(raw_value)
+        else:
+            # This will be a polygon
+            pgeo_areas, ptitle, pregion_id = _get_geoareas_from_polygon(raw_value)
+            geo_areas.extend(pgeo_areas)
+            if extract_polygon_title and ptitle and pregion_id:
+                polygons.append({
+                    'region_id': pregion_id,
+                    'title': ptitle,
+                })
+
+    geo_areas = list(set(geo_areas))
+    if extract_polygon_title:
+        return geo_areas, polygons
+    return geo_areas
 
 
 def update_attribute(widget, data, widget_data):
-    values = []
-    polygons = []
-
-    for geo_value in data.get('value') or []:
-        if is_valid_number(geo_value):
-            values.append(geo_value)
-        elif (
-            isinstance(geo_value, dict) and
-            geo_value.get('region') and
-            geo_value.get('geo_json') and
-            geo_value['geo_json'].get('properties') and
-            geo_value['geo_json']['properties'].get('title')
-        ):
-            region_id = geo_value['region']
-            title = geo_value['geo_json']['properties'].get('title')
-            polygons.append({
-                'region_id': region_id,
-                'title': title,
-            })
+    values, polygons = get_valid_geo_ids(
+        data.get('value') or [],
+        extract_polygon_title=True,
+    )
 
     return {
         'filter_data': [{
