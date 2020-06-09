@@ -83,6 +83,7 @@ from lead.views import (
     LeadCopyView,
 
     WebInfoExtractView,
+    WebInfoDataView,
 )
 from entry.views import (
     EntryViewSet,
@@ -443,6 +444,7 @@ urlpatterns = [
     # Website fetch api
     url(get_api_path(r'lead-website-fetch/$'), LeadWebsiteFetch.as_view()),
 
+    url(get_api_path(r'web-info-data/$'), WebInfoDataView.as_view()),
     url(get_api_path(r'web-info-extract/$'), WebInfoExtractView.as_view()),
 
     # Questionnaire utils api
