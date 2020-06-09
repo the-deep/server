@@ -6,13 +6,15 @@ from utils.date_extractor import extract_date
 import requests
 import tldextract
 
+from .base import ExtractorMixin
+
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36', # noqa
 }
 
 
-class DefaultWebInfoExtractor:
+class DefaultWebInfoExtractor(ExtractorMixin):
     def __init__(self, url):
         self.url = url
         self.readable = None
@@ -41,6 +43,10 @@ class DefaultWebInfoExtractor:
     def get_date(self):
         return extract_date(self.url, self.page)
 
+    def get_date_str(self):
+        parsed = self.get_date()
+        return parsed and parsed.isoformat()
+
     def get_country(self):
         if not self.page:
             return None
@@ -68,3 +74,14 @@ class DefaultWebInfoExtractor:
 
     def get_content(self):
         return self.content
+
+    def serialized_data(self):
+        data = {}
+        for fieldname in self.fields:
+            if ':' in fieldname:
+                source_field, rename_as = fieldname.split(':')[:2]
+            else:
+                source_field, rename_as = fieldname, fieldname
+            getter = getattr(self, f'get_{source_field}')
+            data[rename_as] = getter and getter()
+        return data

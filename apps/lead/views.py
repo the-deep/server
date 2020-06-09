@@ -559,6 +559,52 @@ class WebInfoExtractView(views.APIView):
         return response.Response(context)
 
 
+class WebInfoDataView(views.APIView):
+    """
+    API for Web info Extra data after country, source and author extraction from
+    the web info extraction service
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_organization(self, title, search):
+        org = search.get(title)
+        if org:
+            return SimpleOrganizationSerializer(org).data
+
+    def post(self, request, version=None):
+        source_raw = request.data.get('source_raw')
+        author_raw = request.data.get('author_raw')
+        url = request.data.get('url')
+        country = request.data.get('country')
+
+        project = None
+        if country:
+            project = Project.get_for_member(request.user).filter(
+                regions__title__icontains=country
+            ).first()
+
+        project = project or request.user.profile.last_active_project
+        organization_search = OrganizationSearch([source_raw, author_raw])
+
+        # LEGACY
+        organization_context = {
+            'source': source_raw,
+            'author': author_raw,
+        }
+        if version != 'v1':
+            organization_context = {
+                'source': self.get_organization(source_raw, organization_search),
+                'author': self.get_organization(author_raw, organization_search),
+                'source_raw': source_raw,
+                'author_raw': author_raw,
+            }
+        return response.Response({
+            **organization_context,
+            'project': project and project.id,
+            'existing': check_if_url_exists(url, request.user, project),
+        })
+
+
 class LeadCopyView(views.APIView):
     """
     Copy lead to another project
