@@ -180,6 +180,9 @@ def send_lead_text_to_deepl(lead_id):
 
 
 def classify_lead(lead):
+    # NOTE: Just return without making call to DEEPL Server
+    logger.info("classify_lead: Returning without making an API call to DEEPL")
+    return True
     if lead.project.is_private:
         return True
     # Get preview
