@@ -117,7 +117,7 @@ class ExtractFromLeadTaskTest(TestCase):
         post_mock.return_value = success_resp
 
         ret = send_lead_text_to_deepl(lead.id)
-        assert post_mock.called, "Post method should be called"
+        assert not post_mock.called, "Post method should not be called"
         assert ret is True
 
 
