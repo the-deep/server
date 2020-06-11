@@ -3,10 +3,9 @@ from user.models import User
 from user.serializers import SimpleUserSerializer
 from project.models import (
     Project, ProjectMembership,
-    ProjectRole, ProjectUserGroupMembership,
+    ProjectUserGroupMembership,
 )
 from project.serializers import SimpleProjectSerializer
-from project.permissions import PROJECT_PERMISSIONS
 from geo.models import Region
 
 from organization.models import Organization
@@ -468,8 +467,8 @@ class LeadTests(TestCase):
         lead4 = self.create_lead(project=project)
 
         # Create leads for project1 as well
-        leadp11 = self.create_lead(project=project1, emm_entities=[])
-        leadp12 = self.create_lead(project=project1, emm_entities=[])
+        self.create_lead(project=project1, emm_entities=[])
+        self.create_lead(project=project1, emm_entities=[])
 
         # Create LeadEMMTrigger objects with
         self.create(
@@ -662,10 +661,14 @@ class LeadTests(TestCase):
         emm_entity_name = 'emm_entity_11'
 
         # Generate Leads
-        lead1 = self.create(Lead, title=lead1_title, project=project1s)
+        lead1 = self.create(
+            Lead, title=lead1_title, project=project1s, source_type=Lead.WEBSITE, url='http://example.com')
         lead2 = self.create(Lead, project=project2s)
         lead3 = self.create(Lead, project=project3s)
         lead4 = self.create(Lead, project=project4s)
+
+        # For duplicate url validation check
+        self.create(Lead, title=lead1_title, project=project2d, source_type=Lead.WEBSITE, url='http://example.com')
 
         # Generating Foreign elements for lead1
         self.create(LeadPreview, lead=lead1, text_extract=lead1_text_extract)
@@ -837,7 +840,7 @@ class LeadTests(TestCase):
         lead1 = self.create(Lead, project=project, title='mytext')
         lead2 = self.create(Lead, project=project, source_raw='thisis_mytext')
         lead3 = self.create(Lead, project=project, website='http://thisis-mytext.com')
-        lead4 = self.create(Lead, project=project, title='nothing_here')
+        self.create(Lead, project=project, title='nothing_here')
 
         url = '/api/v1/leads/?search={}'
         self.authenticate()
@@ -869,7 +872,7 @@ class LeadTests(TestCase):
         lead1 = self.create_lead(project=project, emm_entities=[entity1])
         lead2 = self.create_lead(project=project, emm_entities=[entity2, entity3])
         lead3 = self.create_lead(project=project, emm_entities=[entity2])
-        lead4 = self.create_lead(project=project)
+        self.create_lead(project=project)
 
         def _test_response(resp):
             self.assert_200(resp)
@@ -1011,10 +1014,10 @@ class LeadTests(TestCase):
         entity3 = self.create(EMMEntity, name='entity3')
         entity4 = self.create(EMMEntity, name='entity4')  # noqa:F841
 
-        lead1 = self.create_lead(project=project, emm_entities=[entity1])
-        lead2 = self.create_lead(project=project, emm_entities=[entity2, entity3])
-        lead3 = self.create_lead(project=project, emm_entities=[entity2])
-        lead4 = self.create_lead(project=project)
+        self.create_lead(project=project, emm_entities=[entity1])
+        self.create_lead(project=project, emm_entities=[entity2, entity3])
+        self.create_lead(project=project, emm_entities=[entity2])
+        self.create_lead(project=project)
 
         # Test get filter
         self.authenticate()
