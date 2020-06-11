@@ -1,3 +1,4 @@
+import copy
 import requests
 import re
 
@@ -693,7 +694,7 @@ class LeadCopyView(views.APIView):
                     continue
 
                 # NOTE: To clone Lead to another project
-                p_lead = self.clone_lead(lead, project_id, request.user)
+                p_lead = self.clone_lead(copy.deepcopy(lead), project_id, request.user)
                 if p_lead:
                     processed_lead_by_project[project_id] = (
                         processed_lead_by_project.get(project_id) or []
