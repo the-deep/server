@@ -1,5 +1,7 @@
 {% extends "base_email.html" %}
 
+{% load deep_notification_tags %}
+
 {% block head %}
     <style>
         .email-label {
@@ -7,6 +9,7 @@
             font-size: 14px;
         }
         .comment {
+            text-align: start;
             padding: 6px 0;
         }
 
@@ -33,31 +36,31 @@
         <p class="email-label">
             {{comment.created_by.profile.get_display_name}} added a comment in Entry: <{{comment.entry.lead}}>
         </p>
-        <p>
-            {{comment.text}}
-        </p>
+        <div class="comment">
+            {{comment.text | markdown_render }}
+        </div>
     {% elif notification_type == Notification.ENTRY_COMMENT_REPLY_ADD %}
         <p class="email-label">
             {{comment.created_by.profile.get_display_name}} replied:
         </p>
-        <p>
-            {{comment.text}}
-        </p>
+        <div class="comment">
+            {{comment.text | markdown_render}}
+        </div>
         <p class="email-label">
             to the comment:
         </p>
-        <p>
-            {{comment.parent.text}}
-        </p>
+        <div class="comment">
+            {{comment.parent.text | markdown_render}}
+        </div>
     {% elif notification_type == Notification.ENTRY_COMMENT_MODIFY %}
         <p class="email-label">
             {{comment.created_by.profile.get_display_name}} modified the comment you are following:
         </p>
         <div class="comment-edit-container">
             {% for comment_text in comment.entrycommenttext_set.all %}
-            <p class="comment">
-                {{comment_text.text}}
-            </p>
+            <div class="comment">
+                {{comment_text.text | markdown_render}}
+            </div>
             <p class="arrow"></p>
             {% endfor %}
         </div>
@@ -67,9 +70,9 @@
         </p>
         <div class="comment-edit-container">
             {% for comment_text in comment.entrycommenttext_set.all %}
-            <p class="comment">
-                {{comment_text.text}}
-            </p>
+            <div class="comment">
+                {{comment_text.text | markdown_render}}
+            </div>
             <p class="arrow"></p>
             {% endfor %}
         </div>
@@ -77,18 +80,20 @@
         <p class="email-label">
             {{comment.created_by.profile.get_display_name}} resolved the comment thread:
         </p>
-        <p>
-            {{comment.text}}
-        </p>
+        <div class="comment">
+            {{comment.text | markdown_render}}
+        </div>
     {% elif notification_type == Notification.ENTRY_COMMENT_ASSIGNEE_CHANGE %}
         <p class="email-label">
             {{comment.created_by.profile.get_display_name}} assigned {{comment.assignee.profile.get_display_name}} to the comment:
         </p>
-        <p>
-            {{comment.text}}
-        </p>
+        <div class="comment">
+            {{comment.text | markdown_render}}
+        </div>
     {% else %}
-        {{comment.text}}
+        <div class="comment">
+            {{comment.text | markdown_render}}
+        </div>
     {% endif %}
     <a
         class="comment-link"
