@@ -1,5 +1,6 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers, exceptions
+from django.db.models import Q
 
 from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
@@ -13,6 +14,7 @@ from analysis_framework.models import (
 from user.models import User, Feature
 from user.serializers import SimpleUserSerializer
 from project.models import Project
+from project.serializers import SimpleProjectSerializer
 
 
 class WidgetSerializer(RemoveNullFieldsMixin,
@@ -171,6 +173,8 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
 
     is_admin = serializers.SerializerMethodField()
     can_add_users = serializers.SerializerMethodField()
+    projects = serializers.SerializerMethodField()
+    projects_count = serializers.IntegerField(source='project_set.count', read_only=True)
 
     project = serializers.IntegerField(
         write_only=True,
@@ -182,6 +186,13 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = AnalysisFramework
         fields = ('__all__')
+
+    def get_projects(self, obj):
+        user = None
+        if 'request' in self.context:
+            user = self.context['request'].user
+        projects = obj.project_set.exclude(Q(is_private=True) & ~Q(members=user))
+        return SimpleProjectSerializer(projects, many=True, read_only=True).data
 
     def get_can_add_users(self, obj):
         """
