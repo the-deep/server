@@ -32,7 +32,7 @@ class SimpleProjectSerializer(RemoveNullFieldsMixin,
                               serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ('id', 'title')
+        fields = ('id', 'title', 'is_private')
 
 
 class ProjectRoleSerializer(RemoveNullFieldsMixin,
