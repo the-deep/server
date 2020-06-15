@@ -10,8 +10,8 @@ from analysis_framework.models import (
     AnalysisFrameworkMembership,
     Widget, Filter, Exportable,
 )
-from user.models import Feature
-from user.serializers import UserSerializer
+from user.models import User, Feature
+from user.serializers import SimpleUserSerializer
 from project.models import Project
 
 
@@ -91,7 +91,7 @@ class SimpleExportableSerializer(RemoveNullFieldsMixin,
 class AnalysisFrameworkMembershipSerializer(
     RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer,
 ):
-    member_details = UserSerializer(read_only=True, source='member')
+    member_details = SimpleUserSerializer(read_only=True, source='member')
     role = serializers.PrimaryKeyRelatedField(
         required=False,
         queryset=AnalysisFrameworkRole.objects.all(),
@@ -170,6 +170,7 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
     )
 
     is_admin = serializers.SerializerMethodField()
+    can_add_users = serializers.SerializerMethodField()
 
     project = serializers.IntegerField(
         write_only=True,
@@ -181,6 +182,17 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = AnalysisFramework
         fields = ('__all__')
+
+    def get_can_add_users(self, obj):
+        """
+        AF members with access to add other users to AF
+        """
+        return SimpleUserSerializer(
+            User.objects.filter(
+                id__in=obj.analysisframeworkmembership_set.filter(role__can_add_user=True).values('member'),
+            ).all(),
+            many=True,
+        ).data
 
     def get_role(self, obj):
         user = self.context['request'].user

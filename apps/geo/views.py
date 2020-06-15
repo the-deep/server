@@ -50,8 +50,7 @@ class RegionFilterSet(UserResourceFilterSet):
 
 class RegionViewSet(viewsets.ModelViewSet):
     serializer_class = RegionSerializer
-    permission_classes = [permissions.IsAuthenticated,
-                          ModifyPermission]
+    permission_classes = [permissions.IsAuthenticated, ModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter)
     filterset_class = RegionFilterSet
@@ -64,6 +63,8 @@ class RegionViewSet(viewsets.ModelViewSet):
         detail=True,
         url_path='intersects',
         methods=('post',),
+        # TODO: Better permissions
+        permission_classes=[permissions.IsAuthenticated],
     )
     def get_intersects(self, request, pk=None, version=None):
         region = self.get_object()
