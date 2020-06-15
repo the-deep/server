@@ -182,6 +182,10 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
     member_email = serializers.CharField(source='member.email', read_only=True)
     member_name = serializers.CharField(
         source='member.profile.get_display_name', read_only=True)
+    added_by_name = serializers.CharField(
+        source='added_by.profile.get_display_name',
+        read_only=True,
+    )
     member_status = serializers.SerializerMethodField()
     member_organization = serializers.CharField(
         source='member.profile.organization',
