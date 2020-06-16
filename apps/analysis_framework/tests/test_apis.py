@@ -372,14 +372,14 @@ class AnalysisFrameworkTests(TestCase):
         self.create_project(is_private=False, analysis_framework=framework, role=None)
         private_project = self.create_project(is_private=True, analysis_framework=framework, role=None)
 
-        url = f'/api/v1/analysis-frameworks/{framework.id}/?fields=projects_count,projects'
+        url = f'/api/v1/analysis-frameworks/{framework.id}/?fields=all_projects_count,visible_projects'
         self.authenticate(self.user)
 
         response = self.client.get(url)
         rjson = response.json()
         self.assert_200(response)
-        self.assertEqual(rjson['projectsCount'], 2)
-        self.assertEqual(len(rjson['projects']), 1)
+        self.assertEqual(rjson['allProjectsCount'], 2)
+        self.assertEqual(len(rjson['visibleProjects']), 1)
 
         # Now add user to the private project
         private_project.add_member(self.user)
@@ -387,8 +387,8 @@ class AnalysisFrameworkTests(TestCase):
         response = self.client.get(url)
         rjson = response.json()
         self.assert_200(response)
-        self.assertEqual(rjson['projectsCount'], 2)
-        self.assertEqual(len(rjson['projects']), 2)
+        self.assertEqual(rjson['allProjectsCount'], 2)
+        self.assertEqual(len(rjson['visibleProjects']), 2)
 
     def check_owner_roles_present(self, framework, permissions):
         owner_permissions = framework.get_owner_permissions()
