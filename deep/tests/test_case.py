@@ -204,14 +204,12 @@ class TestCase(test.APITestCase):
         return self.create(User, **fields)
 
     def create_project(self, **fields):
-        create_assessment_template = fields.pop('create_assessment_template', False)
-        analysis_framework = self.create(AnalysisFramework)
         data = {
             **fields,
-            'analysis_framework': analysis_framework,
-            'role': self.admin_role,
+            'analysis_framework': fields.pop('analysis_framework', None) or self.create(AnalysisFramework),
+            'role': fields.pop('role', self.admin_role),
         }
-        if create_assessment_template:
+        if fields.pop('create_assessment_template', False):
             data['assessment_template'] = self.create(AssessmentTemplate)
         return self.create(Project, **data)
 

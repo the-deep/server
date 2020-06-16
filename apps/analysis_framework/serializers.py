@@ -1,5 +1,6 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers, exceptions
+from django.db.models import Q
 
 from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
@@ -10,9 +11,10 @@ from analysis_framework.models import (
     AnalysisFrameworkMembership,
     Widget, Filter, Exportable,
 )
-from user.models import Feature
-from user.serializers import UserSerializer
+from user.models import User, Feature
+from user.serializers import SimpleUserSerializer
 from project.models import Project
+from project.serializers import SimpleProjectSerializer
 
 
 class WidgetSerializer(RemoveNullFieldsMixin,
@@ -91,7 +93,7 @@ class SimpleExportableSerializer(RemoveNullFieldsMixin,
 class AnalysisFrameworkMembershipSerializer(
     RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer,
 ):
-    member_details = UserSerializer(read_only=True, source='member')
+    member_details = SimpleUserSerializer(read_only=True, source='member')
     role = serializers.PrimaryKeyRelatedField(
         required=False,
         queryset=AnalysisFrameworkRole.objects.all(),
@@ -170,6 +172,9 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
     )
 
     is_admin = serializers.SerializerMethodField()
+    users_with_add_permission = serializers.SerializerMethodField()
+    visible_projects = serializers.SerializerMethodField()
+    all_projects_count = serializers.IntegerField(source='project_set.count', read_only=True)
 
     project = serializers.IntegerField(
         write_only=True,
@@ -181,6 +186,24 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = AnalysisFramework
         fields = ('__all__')
+
+    def get_visible_projects(self, obj):
+        user = None
+        if 'request' in self.context:
+            user = self.context['request'].user
+        projects = obj.project_set.exclude(Q(is_private=True) & ~Q(members=user))
+        return SimpleProjectSerializer(projects, many=True, read_only=True).data
+
+    def get_users_with_add_permission(self, obj):
+        """
+        AF members with access to add other users to AF
+        """
+        return SimpleUserSerializer(
+            User.objects.filter(
+                id__in=obj.analysisframeworkmembership_set.filter(role__can_add_user=True).values('member'),
+            ).all(),
+            many=True,
+        ).data
 
     def get_role(self, obj):
         user = self.context['request'].user
