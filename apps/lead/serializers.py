@@ -165,8 +165,7 @@ class LeadSerializer(
             url = data.get('url', instance and instance.url)
             if check_if_url_exists(url, None, project, instance and instance.pk):
                 raise serializers.ValidationError(
-                    'A lead with this URL has already been added to '
-                    'this project'
+                    f'A lead with this URL has already been added to Project: {project}'
                 )
         # For attachment types, check if file already used (using file hash)
         elif (
@@ -178,7 +177,7 @@ class LeadSerializer(
                 attachment__metadata__md5_hash=attachment.metadata.get('md5_hash'),
             ).exclude(pk=instance and instance.pk).exists():
                 raise serializers.ValidationError(
-                    f'A lead with this file has already been added to this project'
+                    f'A lead with this file has already been added to Project: {project}'
                 )
         elif source_type == Lead.TEXT:
             if Lead.objects.filter(
@@ -186,7 +185,7 @@ class LeadSerializer(
                 text=text,
             ).exclude(pk=instance and instance.pk).exists():
                 raise serializers.ValidationError(
-                    f'A lead with this text has already been added to this project'
+                    f'A lead with this text has already been added to Project: {project}'
                 )
 
     def validate(self, data):
