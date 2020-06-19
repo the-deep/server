@@ -82,11 +82,6 @@ class OrganizationAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('organization_type')
 
-    def has_change_permission(self, request, obj=None):
-        if obj:
-            return obj.relief_web_id is None
-        return True
-
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
         extra_context['has_merge_permission'] = self.has_merge_permission(request)
