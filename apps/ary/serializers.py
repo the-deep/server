@@ -1,6 +1,5 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-from rest_framework.exceptions import PermissionDenied
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
@@ -11,10 +10,7 @@ from deep.serializers import (
 
 from project.models import Project
 from user_resource.serializers import UserResourceSerializer
-from lead.serializers import (
-    SimpleLeadSerializer,
-    LegacySimpleLeadSerializer,
-)
+from lead.serializers import SimpleLeadSerializer
 from lead.models import Lead, LeadGroup
 from deep.models import Field
 from geo.models import Region
@@ -116,12 +112,6 @@ class LeadGroupAssessmentSerializer(RemoveNullFieldsMixin,
         })
         assessment.save()
         return assessment
-
-
-class LegacyLeadGroupAssessmentSerializer(LeadGroupAssessmentSerializer):
-    leads = LegacySimpleLeadSerializer(
-        source='lead_group.lead_set', many=True, read_only=True,
-    )
 
 
 class ItemSerializer(serializers.Serializer):

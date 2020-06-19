@@ -50,7 +50,7 @@ class LeadAdmin(VersionAdmin):
     ordering = ('project', 'created_by', 'created_at')
     autocomplete_fields = (
         'project', 'created_by', 'modified_by', 'attachment', 'assignee',
-        'source', 'author', 'emm_entities', 'lead_group',
+        'source', 'authors', 'author', 'emm_entities', 'lead_group',
     )
     actions = [trigger_lead_extract]
 
