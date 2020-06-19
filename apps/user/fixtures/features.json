@@ -30,5 +30,13 @@
             "key": "polygon_support_geo",
             "title": "Polygon support geo"
         }
+    },
+    {
+        "model": "user.feature",
+        "pk": 5,
+        "fields": {
+            "key": "questionnaire",
+            "title": "Questionnaire Builder"
+        }
     }
 ]
