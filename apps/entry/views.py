@@ -94,7 +94,9 @@ class EntryFilterView(generics.GenericAPIView):
         filters = request.data.get('filters', [])
         filters = {f[0]: f[1] for f in filters}
 
-        queryset = get_filtered_entries(request.user, filters).prefetch_related('lead', 'lead__attachment')
+        queryset = get_filtered_entries(request.user, filters).prefetch_related(
+            'lead', 'lead__attachment', 'lead__assignee',
+        )
         queryset = Entry.annotate_comment_count(queryset)
 
         project = filters.get('project')
