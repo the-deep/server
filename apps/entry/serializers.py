@@ -17,7 +17,7 @@ from analysis_framework.serializers import AnalysisFrameworkSerializer
 from geo.models import GeoArea, Region
 from geo.serializers import SimpleRegionSerializer
 from tabular.serializers import FieldProcessedOnlySerializer
-from user.serializers import EntryCommentUserSerializer, ComprehensiveUserSerializer
+from user.serializers import EntryCommentUserSerializer, ComprehensiveUserSerializer, SimpleUserSerializer
 from .widgets.store import widget_store
 
 from .models import (
@@ -156,9 +156,12 @@ class EntryLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     attachment = FileSerializer(read_only=True)
     tabular_book = serializers.SerializerMethodField()
 
+    assignee_details = SimpleUserSerializer(source='get_assignee', read_only=True)
+
     class Meta:
         model = Lead
-        fields = ('id', 'title', 'created_at', 'url', 'attachment', 'tabular_book', 'client_id')
+        fields = ('id', 'title', 'created_at', 'url', 'attachment',
+                  'tabular_book', 'client_id', 'assignee', 'assignee_details')
 
     def get_tabular_book(self, obj):
         file = obj.attachment
