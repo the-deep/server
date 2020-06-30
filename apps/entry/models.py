@@ -42,8 +42,7 @@ class Entry(UserResource, ProjectEntityMixin):
     analysis_framework = models.ForeignKey(
         AnalysisFramework, on_delete=models.CASCADE,
     )
-    information_date = models.DateField(default=None,
-                                        null=True, blank=True)
+    information_date = models.DateField(default=None, null=True, blank=True)
 
     entry_type = models.CharField(
         max_length=10,
@@ -293,7 +292,7 @@ class ExportData(models.Model):
 class EntryComment(models.Model):
     entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
     created_by = models.ForeignKey(User, related_name='%(class)s_created', on_delete=models.CASCADE)
-    assignee = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+    assignees = models.ManyToManyField(User, blank=True)
     is_resolved = models.BooleanField(null=True, blank=True, default=False)
     resolved_at = models.DateTimeField(null=True, blank=True)
     parent = models.ForeignKey(
@@ -326,9 +325,9 @@ class EntryComment(models.Model):
 
     def get_related_users(self, skip_owner_user=True):
         users = list(self.entrycomment_set.values_list('created_by', flat=True).distinct())
-        users.append(self.assignee_id)
+        users.extend(self.assignees.values_list('id', flat=True))
         if self.parent:
-            users.append(self.parent.assignee_id)
+            users.append(self.parent.assignees.values_list('id', flat=True))
             users.append(self.parent.created_by_id)
         queryset = User.objects.filter(pk__in=users)
         if skip_owner_user:

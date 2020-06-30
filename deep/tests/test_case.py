@@ -236,7 +236,8 @@ class TestCase(test.APITestCase):
         return self.create(Lead, project=project, **fields)
 
     def create_entry(self, **fields):
-        lead = fields.pop('lead', None) or self.create_lead()
+        project = fields.pop('project', None) or self.create_project()
+        lead = fields.pop('lead', None) or self.create_lead(project=project)
         return self.create(
             Entry, lead=lead, project=lead.project,
             analysis_framework=lead.project.analysis_framework,

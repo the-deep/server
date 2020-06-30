@@ -522,7 +522,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 ADMINS = [('Ewan', 'ewanogle@gmail.com'),
           ('Togglecorp', 'info@togglecorp.com')]
 
-if not USE_EMAIL_CONFIG:
+if TESTING or not USE_EMAIL_CONFIG:
     """
     DUMP THE EMAIL TO CONSOLE
     """

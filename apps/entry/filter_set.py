@@ -77,9 +77,9 @@ class EntryFilterSet(django_filters.FilterSet):
         choices=COMMENT_STATUS, method='comment_status_filter',
     )
     comment_assignee = django_filters.ModelMultipleChoiceFilter(
-        label='Comment Assignee',
+        label='Comment Assignees',
         queryset=User.objects.all(),
-        field_name='entrycomment__assignee', lookup_expr='in',
+        field_name='entrycomment__assignees', lookup_expr='in',
     )
     comment_created_by = django_filters.ModelMultipleChoiceFilter(
         label='Comment Created by',
