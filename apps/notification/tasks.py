@@ -17,6 +17,9 @@ def send_entry_comment_email(user_id, comment_id):
             'notification_type': Notification.ENTRY_COMMENT_ADD,
             'Notification': Notification,
             'comment': comment,
+            'assignees_display': ', '.join(
+                assignee.profile.get_display_name() for assignee in comment.assignees.all()
+            ),
         },
         subject_template_name='entry/comment_notification_email.txt',
         email_template_name='entry/comment_notification_email.html',
