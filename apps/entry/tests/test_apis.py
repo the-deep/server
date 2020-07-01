@@ -448,36 +448,6 @@ class EntryTests(TestCase):
         filters['comment_status'] = 'unresolved'
         self.post_filter_test(filters, 0)  # Should have no result
 
-    def test_entry_comment(self):
-        user = self.create_user()
-        user1 = self.create_user()
-        user2 = self.create_user()
-
-        project = self.create_project()
-        lead = self.create_lead(created_by=user, project=project)
-        entry = self.create_entry(created_by=user, project=project, lead=lead)
-        [project.add_member(u) for u in [user, user1, user2]]
-
-        # Non member user
-        data = {
-            'entry': entry.pk,
-            'text': 'Test comment',
-            'assignees': [user1.pk, user2.pk],
-        }
-
-        self.authenticate(user)
-
-        url = '/api/v1/entry-comments/'
-        response = self.client.post(url, data)
-        self.assert_201(response)
-        comment_id = response.json()['id']
-
-        url = f'/api/v1/entry-comments/{comment_id}/'
-        data['text'] = 'updated test comment'
-        data['assignees'] = [user1.pk]
-        response = self.client.put(url, data)
-        self.assert_200(response)
-
     def test_project_label_api(self):
         project = self.create_project(is_private=True)
 

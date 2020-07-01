@@ -324,12 +324,12 @@ class EntryComment(models.Model):
             return comment_text.text
 
     def get_related_users(self, skip_owner_user=True):
-        users = list(self.entrycomment_set.values_list('created_by', flat=True).distinct())
+        users = list(self.entrycomment_set.values_list('created_by', flat=True))
         users.extend(self.assignees.values_list('id', flat=True))
         if self.parent:
-            users.append(self.parent.assignees.values_list('id', flat=True))
+            users.extend(self.parent.assignees.values_list('id', flat=True))
             users.append(self.parent.created_by_id)
-        queryset = User.objects.filter(pk__in=users)
+        queryset = User.objects.filter(pk__in=set(users))
         if skip_owner_user:
             queryset = queryset.exclude(pk=self.created_by_id)
         return queryset
