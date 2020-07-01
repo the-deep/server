@@ -1,5 +1,5 @@
 from django.dispatch import receiver
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save, pre_save, m2m_changed
 from django.db import transaction
 from django.conf import settings
 
@@ -21,6 +21,7 @@ def send_notifications_for_commit(comment, notification_meta):
             **notification_meta,
             receiver=user,
         )
+
         # Send Email Notification
         if settings.TESTING:
             send_entry_comment_email(user.pk, comment.pk)
@@ -31,13 +32,9 @@ def send_notifications_for_commit(comment, notification_meta):
 
 
 @receiver(pre_save, sender=EntryComment)
-def create_entry_commit_notification_pre(sender, instance, **kwargs):
-    # To share old comment instance to post_save
-    instance.old_comment = instance.pk and EntryComment.objects.get(pk=instance.pk)
-
-
-@receiver(post_save, sender=EntryComment)
-def create_entry_commit_notification_post(sender, instance, created, **kwargs):
+def create_entry_commit_notification(sender, instance, **kwargs):
+    created = instance.pk is None
+    instance.receiver_created = created
     if created or instance.parent:  # Notification is handled from commit text creation
         return
 
@@ -46,16 +43,32 @@ def create_entry_commit_notification_post(sender, instance, created, **kwargs):
         'data': EntryCommentSerializer(instance).data,
     }
 
-    old_comment = instance.old_comment
+    old_comment = instance.pk and EntryComment.objects.get(pk=instance.pk)
+
     if instance.is_resolved and old_comment.is_resolved != instance.is_resolved:  # Comment is Resolved
         meta['notification_type'] = Notification.ENTRY_COMMENT_RESOLVED
-    elif (
-        set(old_comment.assignees.values_list('id', flat=True)) != set(instance.assignees.values_list('id', flat=True))
-    ):  # Assignee is changed
-        meta['notification_type'] = Notification.ENTRY_COMMENT_ASSIGNEE_CHANGE
+        transaction.on_commit(lambda: send_notifications_for_commit(instance, meta))
+        instance.receiver_notification_already_send = True
 
-    if meta.get('notification_type'):
-        send_notifications_for_commit(instance, meta)
+
+@receiver(m2m_changed, sender=EntryComment.assignees.through)
+def create_entry_commit_notification_post(sender, instance, action, **kwargs):
+    receiver_notification_already_send = getattr(instance, 'receiver_notification_already_send', False)
+    # Default:False Because when it's patch request with only m2m change, create_entry_commit_notification is not triggered
+    created = getattr(instance, 'receiver_created', False)
+    if (
+        created or action not in ['post_add', 'post_remove'] or instance.parent or receiver_notification_already_send
+    ):  # Notification is handled from commit text creation
+        return
+
+    meta = {
+        'project': instance.entry.project,
+        'data': EntryCommentSerializer(instance).data,
+    }
+
+    meta['notification_type'] = Notification.ENTRY_COMMENT_ASSIGNEE_CHANGE
+    instance.receiver_notification_already_send = True
+    transaction.on_commit(lambda: send_notifications_for_commit(instance, meta))
 
 
 @receiver(post_save, sender=EntryCommentText)
@@ -68,10 +81,12 @@ def create_entry_commit_text_notification(sender, instance, created, **kwargs):
         'project': comment.entry.project,
         'data': EntryCommentSerializer(comment).data,
     }
-    meta['notification_type'] = Notification.ENTRY_COMMENT_REPLY_ADD\
-        if comment.parent else Notification.ENTRY_COMMENT_ADD
+    meta['notification_type'] = (
+        Notification.ENTRY_COMMENT_REPLY_ADD if comment.parent else Notification.ENTRY_COMMENT_ADD
+    )
     if EntryCommentText.objects.filter(comment=comment).count() > 1:
-        meta['notification_type'] = Notification.ENTRY_COMMENT_REPLY_MODIFY\
-            if comment.parent else Notification.ENTRY_COMMENT_MODIFY
+        meta['notification_type'] = (
+            Notification.ENTRY_COMMENT_REPLY_MODIFY if comment.parent else Notification.ENTRY_COMMENT_MODIFY
+        )
 
-    send_notifications_for_commit(comment, meta)
+    transaction.on_commit(lambda: send_notifications_for_commit(comment, meta))
