@@ -42,6 +42,7 @@ from .models import (
     LeadPreviewImage,
 )
 from .serializers import (
+    raise_or_return_existing_lead,
     LeadGroupSerializer,
     SimpleLeadGroupSerializer,
     LeadSerializer,
@@ -588,18 +589,116 @@ class WebInfoDataView(views.APIView):
         })
 
 
-class LeadCopyView(views.APIView):
+class BaseCopyView(views.APIView):
     """
-    Copy lead to another project
+    Copy object to another project
+
+    Needs this attribute:
+        - CLONE_PERMISSION
+        - CLONE_ROLE
+        - CLONE_ENTITY_NAME
+        - CLONE_ENTITY
     """
     permission_classes = [permissions.IsAuthenticated]
 
-    def clone_lead(self, lead, project_id, user):
+    def __init__(self):
+        try:
+            self.CLONE_PERMISSION
+            self.CLONE_ROLE
+            self.CLONE_ENTITY_NAME
+            self.CLONE_ENTITY
+        except AttributeError as e:
+            raise Exception(f'{self.__class__.__name__} attributes are not defined properly', str(e))
+
+    def get_clone_context(self, request):
+        return {}
+
+    # Clone Lead
+    @classmethod
+    def clone_entity(cls, original_lead, project_id, user, context):
+        raise Exception('This method should be defined')
+
+    @classmethod
+    def get_project_ids_with_create_access(cls, request):
+        """
+        Project ids with create access for given entity
+        """
+        project_ids = ProjectMembership.objects.filter(
+            project_id__in=request.data.get('projects', []),
+            member=request.user,
+        ).annotate(
+            add_permission=models.F(cls.CLONE_ROLE).bitand(cls.CLONE_PERMISSION.create),
+        ).filter(add_permission=cls.CLONE_PERMISSION.create).values_list('project_id', flat=True)
+        return project_ids
+
+    @transaction.atomic
+    def post(self, request, *args, **kwargs):
+        context = self.get_clone_context(request)
+        project_ids = self.get_project_ids_with_create_access(request)
+
+        entities = self.CLONE_ENTITY.get_for(request.user).filter(pk__in=request.data.get(f'{self.CLONE_ENTITY_NAME}s', []))
+
+        processed_entity = []
+        processed_entity_by_project = {}
+        for entity in entities:
+            entity_original_project = entity.project_id
+            processed_entity.append(entity.pk)
+
+            edit_or_create_permission = self.CLONE_PERMISSION.create | self.CLONE_PERMISSION.modify
+            edit_or_create_membership = ProjectMembership.objects.filter(
+                member=request.user,
+                project=entity.project,
+            ).annotate(
+                clone_perm=models.F(self.CLONE_ROLE).bitand(edit_or_create_permission)
+            ).filter(clone_perm__gt=0).first()
+
+            if not edit_or_create_membership:
+                raise exceptions.PermissionDenied(
+                    'You do not have enough permissions to'
+                    f'clone {self.CLONE_ENTITY_NAME} from the project {entity.project.title}'
+                )
+
+            for project_id in project_ids:
+                if project_id == entity_original_project:
+                    continue
+
+                # NOTE: To clone entity to another project
+                p_entity = self.clone_entity(entity, project_id, request.user, context)
+                if p_entity:
+                    processed_entity_by_project[project_id] = (
+                        processed_entity_by_project.get(project_id) or []
+                    ) + [p_entity.pk]
+
+        return response.Response({
+            'projects': project_ids,
+            f'{self.CLONE_ENTITY_NAME}s': processed_entity,
+            f'{self.CLONE_ENTITY_NAME}s_by_projects': processed_entity_by_project,
+        }, status=201)
+
+
+class LeadCopyView(BaseCopyView):
+    """
+    Copy lead to another project
+    """
+    CLONE_PERMISSION = PROJ_PERMS.lead
+    CLONE_ROLE = 'role__lead_permissions'
+    CLONE_ENTITY_NAME = 'lead'
+    CLONE_ENTITY = Lead
+
+    # Clone Lead
+    @classmethod
+    def clone_entity(
+        cls, original_lead, project_id, user, context,
+        return_existing_lead=False, create_access_project_ids=None
+    ):
+        lead = copy.deepcopy(original_lead)
+
         def _get_clone_ready(obj, lead):
             obj.pk = None
             obj.lead = lead
             return obj
 
+        # LeadGroup?
         preview = lead.leadpreview if hasattr(lead, 'leadpreview') else None
         preview_images = lead.images.all()
         emm_triggers = lead.emm_triggers.all()
@@ -607,11 +706,22 @@ class LeadCopyView(views.APIView):
 
         lead.pk = None
         try:
-            LeadSerializer.add_update__validate({
-                'project': project_id,
-            }, lead, lead.attachment)
+            existing_lead = raise_or_return_existing_lead(
+                project_id, lead, lead.source_type, lead.url, lead.text, lead.attachment,
+                return_lead=return_existing_lead,
+            )
+            # return existing lead
+            if existing_lead:
+                return existing_lead, False
         except serializers.ValidationError:
             return  # SKIP COPY if validation fails
+
+        # Skip if project_id not in create_access_project_ids(and it is defined). Used by other entity
+        if create_access_project_ids is not None and project_id not in create_access_project_ids:
+            if return_existing_lead:
+                return None, False
+            return
+
         lead.project_id = project_id
         lead.save()
 
@@ -633,57 +743,6 @@ class LeadCopyView(views.APIView):
             _get_clone_ready(emm_trigger, lead) for emm_trigger in emm_triggers
         ])
 
+        if return_existing_lead:
+            return lead, True
         return lead
-
-    @transaction.atomic
-    def post(self, request, *args, **kwargs):
-        project_ids = ProjectMembership.objects.filter(
-            project_id__in=request.data.get('projects', []),
-            member=request.user,
-        ).annotate(
-            lead_add_permission=models.F('role__lead_permissions')
-            .bitand(PROJ_PERMS.lead.create)
-        ).filter(lead_add_permission=PROJ_PERMS.lead.create)\
-            .values_list('project_id', flat=True)
-
-        leads = Lead.get_for(request.user).filter(
-            pk__in=request.data.get('leads', [])
-        )
-
-        processed_lead = []
-        processed_lead_by_project = {}
-        for lead in leads:
-            lead_original_project = lead.project_id
-            processed_lead.append(lead.pk)
-
-            edit_or_create_permission = PROJ_PERMS.lead.create | PROJ_PERMS.lead.modify
-            edit_or_create_membership = ProjectMembership.objects.filter(
-                member=request.user,
-                project=lead.project,
-            ).annotate(
-                clone_perm=models.F('role__lead_permissions')
-                .bitand(edit_or_create_permission)
-            ).filter(clone_perm__gt=0).first()
-
-            if not edit_or_create_membership:
-                raise exceptions.PermissionDenied(
-                    'You do not have enough permissions to clone lead from the '
-                    f'project {lead.project.title}'
-                )
-
-            for project_id in project_ids:
-                if project_id == lead_original_project:
-                    continue
-
-                # NOTE: To clone Lead to another project
-                p_lead = self.clone_lead(copy.deepcopy(lead), project_id, request.user)
-                if p_lead:
-                    processed_lead_by_project[project_id] = (
-                        processed_lead_by_project.get(project_id) or []
-                    ) + [p_lead.pk]
-
-        return response.Response({
-            'projects': project_ids,
-            'leads': processed_lead,
-            'leads_by_projects': processed_lead_by_project,
-        }, status=201)

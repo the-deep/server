@@ -115,6 +115,7 @@ from ary.views import (
     AssessmentTemplateViewSet,
     LeadAssessmentViewSet,
     LeadGroupAssessmentViewSet,
+    AssessmentCopyView,
 )
 from category_editor.views import (
     CategoryEditorViewSet,
@@ -453,6 +454,8 @@ urlpatterns = [
 
     # Lead copy
     url(get_api_path(r'lead-copy/$'), LeadCopyView.as_view()),
+    # Assessment copy
+    url(get_api_path(r'assessment-copy/$'), AssessmentCopyView.as_view()),
 
     # Filter apis
     url(get_api_path(r'entries/filter/'), EntryFilterView.as_view()),
