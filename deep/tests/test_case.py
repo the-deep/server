@@ -185,6 +185,25 @@ class TestCase(test.APITestCase):
                 'assessment', ['view']
             ),
         )
+        # ARY full-access role
+        self.ary_create_role = ProjectRole.objects.create(
+            title='AryViewOnly',
+            lead_permissions=get_project_permissions_value(
+                'lead', ['view']
+            ),
+            entry_permissions=get_project_permissions_value(
+                'entry', ['view']
+            ),
+            setup_permissions=get_project_permissions_value(
+                'setup', []
+            ),
+            export_permissions=get_project_permissions_value(
+                'export', []
+            ),
+            assessment_permissions=get_project_permissions_value(
+                'assessment', '__all__'
+            ),
+        )
 
     def post_and_check_201(self, url, data, model, fields):
         model_count = model.objects.count()

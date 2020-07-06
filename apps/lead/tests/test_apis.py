@@ -648,7 +648,7 @@ class LeadTests(TestCase):
         # Projects [Destination]
         project1d = self.create(Project, title='project1d')
         project2d = self.create(Project, title='project2d', role=self.admin_role)
-        project3d = self.create(Project, title='project2d', role=self.admin_role)
+        project3d = self.create(Project, title='project3d', role=self.admin_role)
         project4d = self.create(Project, title='project4d', role=self.view_only_role)
 
         # Lead1 Info (Will be used later for testing)
