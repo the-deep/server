@@ -189,12 +189,24 @@ class ExcelExporter:
                     rows_of_value_lists = []
                     for export_data_value in export_data_values:
                         # Handle for Matrix2D subsectors
+                        # eg: ['dimension', 'subdimension', 'sector', ['sub-sector1', 'sub-sector2']]
+                        #       -> ['dimension', 'subdimension', 'sector', 'sub-sector1']
+                        #       -> ['dimension', 'subdimension', 'sector', 'sub-sector2']
                         if len(export_data_value) == 4 and isinstance(export_data_value[3], list):
                             if len(export_data_value[3]) > 0:
                                 for subsector in export_data_value[3]:
                                     rows_of_value_lists.append(export_data_value[:3] + [subsector])
                             else:
                                 rows_of_value_lists.append(export_data_value[:3] + [''])
+                        elif len(export_data_value) != len(data.get('titles')):
+                            titles_len = len(data.get('titles'))
+                            values_len = len(export_data_value)
+                            if titles_len > values_len:
+                                # Add additional empty cells
+                                rows_of_value_lists.append(export_data_value + [''] * (titles_len - values_len))
+                            else:
+                                # Remove extra cells
+                                rows_of_value_lists.append(export_data_value[:titles_len])
                         else:
                             rows_of_value_lists.append(export_data_value)
                     rows.add_rows_of_value_lists(

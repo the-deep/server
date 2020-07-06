@@ -493,9 +493,7 @@ ATTRIBUTE_DATA = {
         'c_response': [{
             'key': 'node-1',
             'title': 'Node 1',
-            'parents': [
-                {'key': 'base', 'title': 'Base Node'},
-            ]
+            'parents': [{'key': 'base', 'title': 'Base Node'}],
         }, {
             'key': 'node-8',
             'title': 'Node 8',
@@ -508,13 +506,15 @@ ATTRIBUTE_DATA = {
             ]
         }],
     }, {
-        'data': {'value': ['node-1', 'node-9']},
+        'data': {'value': ['node-1', 'node-9', 'base']},
         'c_response': [{
+            'key': 'base',
+            'title': 'Base Node',
+            'parents': [],
+        }, {
             'key': 'node-1',
             'title': 'Node 1',
-            'parents': [
-                {'key': 'base', 'title': 'Base Node'},
-            ]
+            'parents': [{'key': 'base', 'title': 'Base Node'}],
         }],
     }],
 
