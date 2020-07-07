@@ -13,7 +13,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def send_notifications_for_commit(comment, notification_meta):
+def send_notifications_for_commit(comment_pk, notification_meta):
+    comment = EntryComment.objects.get(pk=comment_pk)
+    notification_meta = {
+        **notification_meta,
+        'project': comment.entry.project,
+        'data': EntryCommentSerializer(comment).data,
+    }
     related_users = comment.get_related_users()
     for user in related_users:
         # Create DEEP Notification Objects
@@ -38,16 +44,13 @@ def create_entry_commit_notification(sender, instance, **kwargs):
     if created or instance.parent:  # Notification is handled from commit text creation
         return
 
-    meta = {
-        'project': instance.entry.project,
-        'data': EntryCommentSerializer(instance).data,
-    }
+    meta = {}
 
-    old_comment = instance.pk and EntryComment.objects.get(pk=instance.pk)
+    old_comment = EntryComment.objects.get(pk=instance.pk)
 
     if instance.is_resolved and old_comment.is_resolved != instance.is_resolved:  # Comment is Resolved
         meta['notification_type'] = Notification.ENTRY_COMMENT_RESOLVED
-        transaction.on_commit(lambda: send_notifications_for_commit(instance, meta))
+        transaction.on_commit(lambda: send_notifications_for_commit(instance.pk, meta))
         instance.receiver_notification_already_send = True
 
 
@@ -61,14 +64,11 @@ def create_entry_commit_notification_post(sender, instance, action, **kwargs):
     ):  # Notification is handled from commit text creation
         return
 
-    meta = {
-        'project': instance.entry.project,
-        'data': EntryCommentSerializer(instance).data,
-    }
+    meta = {}
 
     meta['notification_type'] = Notification.ENTRY_COMMENT_ASSIGNEE_CHANGE
     instance.receiver_notification_already_send = True
-    transaction.on_commit(lambda: send_notifications_for_commit(instance, meta))
+    transaction.on_commit(lambda: send_notifications_for_commit(instance.pk, meta))
 
 
 @receiver(post_save, sender=EntryCommentText)
@@ -77,10 +77,7 @@ def create_entry_commit_text_notification(sender, instance, created, **kwargs):
         return
 
     comment = instance.comment
-    meta = {
-        'project': comment.entry.project,
-        'data': EntryCommentSerializer(comment).data,
-    }
+    meta = {}
     meta['notification_type'] = (
         Notification.ENTRY_COMMENT_REPLY_ADD if comment.parent else Notification.ENTRY_COMMENT_ADD
     )
@@ -89,4 +86,4 @@ def create_entry_commit_text_notification(sender, instance, created, **kwargs):
             Notification.ENTRY_COMMENT_REPLY_MODIFY if comment.parent else Notification.ENTRY_COMMENT_MODIFY
         )
 
-    transaction.on_commit(lambda: send_notifications_for_commit(comment, meta))
+    transaction.on_commit(lambda: send_notifications_for_commit(comment.pk, meta))
