@@ -79,7 +79,7 @@ def update_attribute(widget, data, widget_data):
             'data': {
                 'excel': {
                     'type': 'lists',
-                    'value': selected_nodes_with_parents,
+                    'values': selected_nodes_with_parents,
                 },
             },
         },
