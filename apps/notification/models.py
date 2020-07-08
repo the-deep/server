@@ -27,6 +27,7 @@ class Notification(models.Model):
 
         (ENTRY_COMMENT_ADD, 'Entry Comment Add'),
         (ENTRY_COMMENT_MODIFY, 'Entry Comment Modify'),
+        (ENTRY_COMMENT_ASSIGNEE_CHANGE, 'entry_comment_assignee_change'),
         (ENTRY_COMMENT_REPLY_ADD, 'Entry Comment Reply Add'),
         (ENTRY_COMMENT_REPLY_MODIFY, 'Entry Comment Reply Modify'),
         (ENTRY_COMMENT_RESOLVED, 'Entry Comment Resolved'),

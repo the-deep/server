@@ -15,12 +15,14 @@ logger = logging.getLogger(__name__)
 
 def send_notifications_for_commit(comment_pk, notification_meta):
     comment = EntryComment.objects.get(pk=comment_pk)
+
     notification_meta = {
         **notification_meta,
         'project': comment.entry.project,
         'data': EntryCommentSerializer(comment).data,
     }
     related_users = comment.get_related_users()
+
     for user in related_users:
         # Create DEEP Notification Objects
         Notification.objects.create(
