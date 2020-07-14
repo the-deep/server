@@ -210,6 +210,20 @@ class Lead(UserResource, ProjectEntityMixin):
     def get_assignee(self):
         return self.assignee.first()
 
+    def get_source_display(self):
+        if self.source:
+            return self.source.data.title
+        return self.source_raw
+
+    def get_authors_display(self):
+        if self.authors.exists():
+            # TODO: Optimize query
+            return ', '.join([author.data.title for author in self.authors.all()])
+        elif self.author:
+            # TODO: Remove (Legacy)
+            return self.author and self.author.data.title
+        return self.author_raw
+
 
 class LeadPreview(models.Model):
     STATUS_CLASSIFICATION_NONE = 'none'  # For leads which are not texts

@@ -42,8 +42,8 @@ class JsonExporter:
             data['id'] = entry.id
             data['lead_id'] = lead.id
             data['lead'] = lead.title
-            data['source'] = (lead.source and lead.source.data.title) or lead.source_raw
-            data['author'] = (lead.author and lead.author.data.title) or lead.author_raw
+            data['source'] = lead.get_source_display()
+            data['author'] = lead.get_authors_display()
             data['date'] = lead.published_on
             data['excerpt'] = entry.excerpt
             data['image'] = entry.image

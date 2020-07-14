@@ -84,7 +84,7 @@ def get_assessment_meta(assessment):
             'imported_by': ', '.join([user.username for user in lead.assignee.all()]),
             'lead_title': lead.title,
             'url': lead.url,
-            'source': (lead.source and lead.source.data.title) or lead.source_raw,
+            'source': lead.get_source_display(),
         },
 
         'background': {
