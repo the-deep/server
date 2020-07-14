@@ -163,11 +163,8 @@ class ReportExporter:
         lead = entry.lead
         self.lead_ids.append(lead.id)
 
-        source = (
-            (lead.source and lead.source.data.title) or lead.source_raw or
-            'Reference'
-        )
-        author = (lead.author and lead.author.data.title) or lead.author_raw
+        source = lead.get_source_display() or 'Reference'
+        author = lead.get_authors_display()
         url = lead.url or (
             lead.attachment and lead.attachment.get_file_url()
         )
@@ -374,11 +371,8 @@ class ReportExporter:
             # Source. Title. Date. Url
 
             para = self.doc.add_paragraph()
-            author = (lead.author and lead.author.data.title) or lead.author_raw
-            source = (
-                (lead.source and lead.source.data.title) or lead.source_raw or
-                'Missing source'
-            )
+            author = lead.get_authors_display()
+            source = lead.get_source_display() or 'Missing source'
 
             author and para.add_run(f'{author}.')
             para.add_run(f' {source}.')
