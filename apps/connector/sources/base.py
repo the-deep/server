@@ -101,6 +101,8 @@ class Source(ABC):
 
             # Add emm info
             if ldata.get('emm_triggers') is not None:
+                lead._authors = [organization_search.get(ldata['author'])]
+            if ldata.get('emm_triggers') is not None:
                 lead._emm_triggers = ldata['emm_triggers']
             if ldata.get('emm_entities') is not None:
                 lead._emm_entities = ldata['emm_entities']
