@@ -12,6 +12,7 @@ from user_group.models import UserGroup
 from analysis_framework.models import AnalysisFramework
 from category_editor.models import CategoryEditor
 from project.permissions import PROJECT_PERMISSIONS, PROJECT_PERMISSION_MODEL_MAP
+from organization.models import Organization
 
 from utils.common import generate_timeseries
 
@@ -165,6 +166,13 @@ class Project(UserResource):
         ProjectStatus,
         blank=True, default=None, null=True,
         on_delete=models.SET_NULL,
+    )
+
+    organizations = models.ManyToManyField(
+        Organization,
+        through='ProjectOrganization',
+        through_fields=('project', 'organization'),
+        blank=True,
     )
 
     def __str__(self):
@@ -370,6 +378,29 @@ def get_default_role_id():
     return ProjectRole.objects.filter(
         is_default_role=True
     ).values('id').first()['id']
+
+
+class ProjectOrganization(models.Model):
+    LEAD_ORGANIZATION = 'lead_organization'
+    INTERNATIONAL_PARTNER = 'international_partner'
+    NATIONAL_PARTNER = 'national_partner'
+    DONOR = 'donor'
+    GOVERNMENT = 'government'
+
+    ORGANIZATION_TYPES = (
+        (LEAD_ORGANIZATION, 'Lead Organization'),
+        (INTERNATIONAL_PARTNER, 'International Partner'),
+        (NATIONAL_PARTNER, 'National Partner'),
+        (DONOR, 'Donor'),
+        (GOVERNMENT, 'Government'),
+    )
+
+    organization_type = models.CharField(max_length=30, choices=ORGANIZATION_TYPES)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('project', 'organization_type', 'organization')
 
 
 class ProjectMembership(models.Model):

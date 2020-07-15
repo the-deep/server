@@ -19,6 +19,7 @@ from .models import (
     ProjectStatus,
     ProjectStatusCondition,
     ProjectJoinRequest,
+    ProjectOrganization,
 )
 
 TRIGGER_LIMIT = 5
@@ -54,6 +55,10 @@ class ProjectUserGroupMembershipInline(admin.TabularInline):
     autocomplete_fields = ('added_by', 'usergroup',)
 
 
+class ProjectOrganizationInline(admin.TabularInline):
+    model = ProjectOrganization
+
+
 class ProjectJoinRequestInline(admin.TabularInline):
     model = ProjectJoinRequest
     extra = 0
@@ -77,7 +82,8 @@ class ProjectAdmin(VersionAdmin):
     list_filter = ('assessment_template',)
     inlines = [ProjectMembershipInline,
                ProjectUserGroupMembershipInline,
-               ProjectJoinRequestInline]
+               ProjectJoinRequestInline,
+               ProjectOrganizationInline]
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related(

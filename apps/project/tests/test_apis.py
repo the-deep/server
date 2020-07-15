@@ -22,6 +22,11 @@ from project.models import (
     ProjectStatus,
     ProjectStatusCondition,
     ProjectUserGroupMembership,
+    ProjectOrganization,
+)
+
+from organization.models import (
+    Organization
 )
 
 from user_group.models import UserGroup
@@ -48,6 +53,7 @@ class ProjectApiTest(TestCase):
         self.ug2 = self.create(UserGroup, role='admin')
         self.ug2.add_member(self.user2)
         self.ug2.add_member(self.user3)
+        self.org1 = self.create(Organization, title='Test Organization')
 
     def test_create_project(self):
         project_count = Project.objects.count()
@@ -56,6 +62,9 @@ class ProjectApiTest(TestCase):
         data = {
             'title': 'Test project',
             'data': {'testKey': 'testValue'},
+            'organizations': [
+                {'organization': Organization.objects.all()[0].id, 'type': ProjectOrganization.DONOR},
+            ],
         }
 
         self.authenticate()
@@ -72,6 +81,7 @@ class ProjectApiTest(TestCase):
 
         # assert single membership
         self.assertEqual(len(response.data['memberships']), 1)
+        self.assertEqual(len(response.data['organizations']), 1)
         membership = ProjectMembership.objects.get(
             pk=response.data['memberships'][0]['id'])
         self.assertEqual(membership.member.pk, self.user.pk)
