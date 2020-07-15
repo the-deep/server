@@ -40,6 +40,7 @@ class ExcelExporter:
             'Lead URL',
             'Author',
             'Source',
+            'Lead Priority',
             'Assignee',
             *(
                 [
@@ -386,6 +387,7 @@ class ExcelExporter:
                 lead.url or (lead.attachment and lead.attachment.get_file_url()),
                 lead.get_authors_display(),
                 lead.get_source_display(),
+                lead.get_priority_display(),
                 assignee and assignee.profile.get_display_name(),
                 *(
                     [
