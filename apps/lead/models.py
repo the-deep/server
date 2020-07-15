@@ -217,7 +217,8 @@ class Lead(UserResource, ProjectEntityMixin):
             models.Q(view_all=view_perm_value)
         )
         return qs.annotate(
-            no_of_entries=models.Count('entry', distinct=True)
+            no_of_entries=models.Count('entry', distinct=True),
+            assessment_id=models.F('assessment')
         )
 
     def get_assignee(self):
