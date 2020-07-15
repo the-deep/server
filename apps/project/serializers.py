@@ -22,6 +22,11 @@ from .models import (
     ProjectUserGroupMembership,
     ProjectStatusCondition,
     ProjectStatus,
+    ProjectOrganization,
+)
+
+from organization.models import (
+    Organization
 )
 
 from .permissions import PROJECT_PERMISSIONS
@@ -176,6 +181,19 @@ class ProjectDashboardSerializer(RemoveNullFieldsMixin,
         return list(project_activity_log(project))
 
 
+class ProjectOrganizationSerializer(RemoveNullFieldsMixin,
+                                    DynamicFieldsMixin,
+                                    serializers.ModelSerializer):
+    organization = serializers.IntegerField(source='organization.id')
+    type = serializers.CharField(source='organization_type')
+    title = serializers.CharField(source='organization.title', read_only=True)
+    type_display = serializers.CharField(source='get_organization_type_display', read_only=True)
+
+    class Meta:
+        model = ProjectOrganization
+        fields = ('organization', 'title', 'type', 'type_display')
+
+
 class ProjectMembershipSerializer(RemoveNullFieldsMixin,
                                   DynamicFieldsMixin,
                                   serializers.ModelSerializer):
@@ -271,6 +289,12 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         read_only=True,
     )
 
+    organizations = ProjectOrganizationSerializer(
+        source='projectorganization_set',
+        many=True,
+        read_only=True,
+    )
+
     regions = SimpleRegionSerializer(many=True, required=False)
     role = serializers.SerializerMethodField()
 
@@ -318,6 +342,15 @@ class ProjectSerializer(RemoveNullFieldsMixin,
             member=member,
             role=ProjectRole.get_creator_role(),
         )
+
+        organizations = self.context['request'].data.get('organizations')
+        if organizations:
+            for org in organizations:
+                ProjectOrganization.objects.create(
+                    project=project,
+                    organization=Organization.objects.filter(id=org['organization']).first(),
+                    organization_type=org['type'],
+                )
         return project
 
     def update(self, instance, validated_data):
