@@ -47,6 +47,9 @@ from .models import (
     ProjectJoinRequest,
     ProjectUserGroupMembership,
     ProjectStats,
+    ProjectEntryStats,
+    ProjectAryStats,
+    ProjectOrganization
 )
 from .serializers import (
     ProjectSerializer,
@@ -606,7 +609,14 @@ class ProjectOptionsView(views.APIView):
         if fields_query:
             fields = fields_query.split(',')
 
-        options = {}
+        options = {
+            'organizations': [
+                {
+                    'key': s[0],
+                    'value': s[1],
+                } for s in ProjectOrganization.ORGANIZATION_TYPES
+            ],
+        }
 
         def _filter_by_projects(qs, projects):
             for p in projects:
