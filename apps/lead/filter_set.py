@@ -56,6 +56,11 @@ class LeadFilterSet(django_filters.FilterSet):
         lookup_expr='in',
         widget=django_filters.widgets.CSVWidget,
     )
+    priority = django_filters.MultipleChoiceFilter(
+        choices=Lead.PRIORITIES,
+        lookup_expr='in',
+        widget=django_filters.widgets.CSVWidget,
+    )
     assignee = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all(),
         lookup_expr='in',

@@ -81,6 +81,38 @@ class LeadTests(TestCase):
         self.assertEqual(r_data['title'], data['title'])
         self.assertEqual(r_data['assignee'], self.user.id)
 
+        # low is default priority
+        self.assertEqual(r_data['priority'], Lead.LOW)
+
+    def test_create_high_priority_lead(self, assignee=None):
+        lead_count = Lead.objects.count()
+        project = self.create(Project, role=self.admin_role)
+
+        url = '/api/v1/leads/'
+        data = {
+            'title': 'Spaceship spotted in sky',
+            'project': project.id,
+            'source': self.source.pk,
+            'author': self.author.pk,
+            'confidentiality': Lead.UNPROTECTED,
+            'status': Lead.PENDING,
+            'text': 'Alien shapeship has been spotted in the sky',
+            'assignee': assignee or self.user.id,
+            'priority': Lead.HIGH,
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        self.assertEqual(Lead.objects.count(), lead_count + 1)
+        r_data = response.json()
+        self.assertEqual(r_data['title'], data['title'])
+        self.assertEqual(r_data['assignee'], self.user.id)
+
+        # low is default priority
+        self.assertEqual(r_data['priority'], Lead.HIGH)
+
     def test_create_lead_with_emm(self):
         entity1 = self.create(EMMEntity, name='entity1')
         entity2 = self.create(EMMEntity, name='entity2')
@@ -265,6 +297,9 @@ class LeadTests(TestCase):
             ],
             'status': [
                 {'key': s[0], 'value': s[1]} for s in Lead.STATUSES
+            ],
+            'priority': [
+                {'key': s[0], 'value': s[1]} for s in Lead.PRIORITIES
             ],
         }
 
