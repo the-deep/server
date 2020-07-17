@@ -685,12 +685,24 @@ class LeadCopyView(BaseCopyView):
     CLONE_ENTITY_NAME = 'lead'
     CLONE_ENTITY = Lead
 
+    @classmethod
+    def clone_or_get_lead(cls, lead, project_id, user, context, create_access_project_ids):
+        """Clone or return existing cloned Lead"""
+        existing_lead = raise_or_return_existing_lead(
+            project_id, lead, lead.source_type, lead.url, lead.text, lead.attachment, return_lead=True,
+        )
+        if existing_lead:
+            return existing_lead, False
+
+        # Skip if project_id not in create_access_project_ids
+        if project_id not in create_access_project_ids:
+            return None, False
+        # Already checked for existing lead above
+        return cls.clone_entity(lead, project_id, user, context, skip_existing_check=True), True
+
     # Clone Lead
     @classmethod
-    def clone_entity(
-        cls, original_lead, project_id, user, context,
-        return_existing_lead=False, create_access_project_ids=None
-    ):
+    def clone_entity(cls, original_lead, project_id, user, context, skip_existing_check=False):
         lead = copy.deepcopy(original_lead)
 
         def _get_clone_ready(obj, lead):
@@ -706,21 +718,14 @@ class LeadCopyView(BaseCopyView):
 
         lead.pk = None
         try:
-            existing_lead = raise_or_return_existing_lead(
-                project_id, lead, lead.source_type, lead.url, lead.text, lead.attachment,
-                return_lead=return_existing_lead,
-            )
+            # By default it raises error
+            if not skip_existing_check:
+                raise_or_return_existing_lead(
+                    project_id, lead, lead.source_type, lead.url, lead.text, lead.attachment,
+                )
             # return existing lead
-            if existing_lead:
-                return existing_lead, False
         except serializers.ValidationError:
             return  # SKIP COPY if validation fails
-
-        # Skip if project_id not in create_access_project_ids(and it is defined). Used by other entity
-        if create_access_project_ids is not None and project_id not in create_access_project_ids:
-            if return_existing_lead:
-                return None, False
-            return
 
         lead.project_id = project_id
         lead.save()
@@ -743,6 +748,4 @@ class LeadCopyView(BaseCopyView):
             _get_clone_ready(emm_trigger, lead) for emm_trigger in emm_triggers
         ])
 
-        if return_existing_lead:
-            return lead, True
         return lead

@@ -218,13 +218,12 @@ class AssessmentCopyView(BaseCopyView):
 
     @classmethod
     def clone_entity(cls, original_ary, project_id, user, context):
-        lead, cloned = LeadCopyView.clone_entity(
+        lead, is_new = LeadCopyView.clone_or_get_lead(
             original_ary.lead, project_id, user, context,
-            return_existing_lead=True,
-            create_access_project_ids=context['lead_create_access_project_ids'],
+            context['lead_create_access_project_ids'],
         )
         # Skip assessment creation if lead already has a assessment (or use lead.refresh_from_db())
-        if lead is None or (not cloned and getattr(lead, 'assessment', None)):
+        if lead is None or (not is_new and getattr(lead, 'assessment', None)):
             return
 
         ary = copy.deepcopy(original_ary)
