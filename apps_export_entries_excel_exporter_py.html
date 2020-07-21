@@ -22,10 +22,10 @@
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
             218 statements &nbsp;
-            <span class="run shortkey_r button_toggle_run">18 run</span>
-            <span class="mis show_mis shortkey_m button_toggle_mis">200 missing</span>
-            <span class="exc show_exc shortkey_x button_toggle_exc">0 excluded</span>
-                <span class="par run show_par shortkey_p button_toggle_par">0 partial</span>
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">18 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">200 missing</button>
+            <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
+            <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">0 partial</button>
         </h2>
     </div>
 </div>
@@ -426,8 +426,8 @@
     <p id="t372" class="pln"><span class="n"><a href="#t372">372</a></span><span class="t">                <span class="nam">format_date</span><span class="op">(</span><span class="nam">entry</span><span class="op">.</span><span class="nam">created_at</span><span class="op">.</span><span class="nam">date</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t373" class="pln"><span class="n"><a href="#t373">373</a></span><span class="t">                <span class="nam">lead</span><span class="op">.</span><span class="nam">title</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t374" class="pln"><span class="n"><a href="#t374">374</a></span><span class="t">                <span class="nam">lead</span><span class="op">.</span><span class="nam">url</span> <span class="key">or</span> <span class="op">(</span><span class="nam">lead</span><span class="op">.</span><span class="nam">attachment</span> <span class="key">and</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">attachment</span><span class="op">.</span><span class="nam">get_file_url</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t375" class="pln"><span class="n"><a href="#t375">375</a></span><span class="t">                <span class="op">(</span><span class="nam">lead</span><span class="op">.</span><span class="nam">author</span> <span class="key">and</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">author</span><span class="op">.</span><span class="nam">data</span><span class="op">.</span><span class="nam">title</span><span class="op">)</span> <span class="key">or</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">author_raw</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t376" class="pln"><span class="n"><a href="#t376">376</a></span><span class="t">                <span class="op">(</span><span class="nam">lead</span><span class="op">.</span><span class="nam">source</span> <span class="key">and</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">source</span><span class="op">.</span><span class="nam">data</span><span class="op">.</span><span class="nam">title</span><span class="op">)</span> <span class="key">or</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">source_raw</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t375" class="pln"><span class="n"><a href="#t375">375</a></span><span class="t">                <span class="nam">lead</span><span class="op">.</span><span class="nam">get_authors_display</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t376" class="pln"><span class="n"><a href="#t376">376</a></span><span class="t">                <span class="nam">lead</span><span class="op">.</span><span class="nam">get_source_display</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t377" class="pln"><span class="n"><a href="#t377">377</a></span><span class="t">                <span class="nam">assignee</span> <span class="key">and</span> <span class="nam">assignee</span><span class="op">.</span><span class="nam">profile</span><span class="op">.</span><span class="nam">get_display_name</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t378" class="pln"><span class="n"><a href="#t378">378</a></span><span class="t">                <span class="op">*</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t379" class="pln"><span class="n"><a href="#t379">379</a></span><span class="t">                    <span class="op">[</span>&nbsp;</span><span class="r"></span></p>
@@ -481,8 +481,8 @@
 <div id="footer">
     <div class="content">
         <p>
-            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.1</a>,
-            created at 2020-06-26 05:58
+            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.2</a>,
+            created at 2020-07-21 04:20
         </p>
     </div>
 </div>

@@ -22,10 +22,10 @@
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
             658 statements &nbsp;
-            <span class="run shortkey_r button_toggle_run">646 run</span>
-            <span class="mis show_mis shortkey_m button_toggle_mis">12 missing</span>
-            <span class="exc show_exc shortkey_x button_toggle_exc">0 excluded</span>
-                <span class="par run show_par shortkey_p button_toggle_par">0 partial</span>
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">646 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">12 missing</button>
+            <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
+            <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">0 partial</button>
         </h2>
     </div>
 </div>
@@ -1168,7 +1168,7 @@
     <p id="t1114" class="run"><span class="n"><a href="#t1114">1114</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">unhcr</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="nam">Organization</span><span class="op">,</span> <span class="op">**</span><span class="nam">UNHCR_DATA</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t1115" class="pln"><span class="n"><a href="#t1115">1115</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t1116" class="run"><span class="n"><a href="#t1116">1116</a></span><span class="t">    <span class="key">def</span> <span class="nam">test_redhum</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t1117" class="run"><span class="n"><a href="#t1117">1117</a></span><span class="t">        <span class="nam">url</span> <span class="op">=</span> <span class="str">'/api/v2/web-info-extract/'</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t1117" class="run"><span class="n"><a href="#t1117">1117</a></span><span class="t">        <span class="nam">url</span> <span class="op">=</span> <span class="str">'/api/v1/web-info-extract/'</span>&nbsp;</span><span class="r"></span></p>
     <p id="t1118" class="run"><span class="n"><a href="#t1118">1118</a></span><span class="t">        <span class="nam">data</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
     <p id="t1119" class="pln"><span class="n"><a href="#t1119">1119</a></span><span class="t">            <span class="str">'url'</span><span class="op">:</span> <span class="str">'https://redhum.org/documento/3227553'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t1120" class="pln"><span class="n"><a href="#t1120">1120</a></span><span class="t">        <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
@@ -1200,7 +1200,7 @@
     <p id="t1146" class="run"><span class="n"><a href="#t1146">1146</a></span><span class="t">        <span class="nam">sample_project</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="nam">Project</span><span class="op">,</span> <span class="nam">role</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">admin_role</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t1147" class="run"><span class="n"><a href="#t1147">1147</a></span><span class="t">        <span class="nam">sample_project</span><span class="op">.</span><span class="nam">regions</span><span class="op">.</span><span class="nam">add</span><span class="op">(</span><span class="nam">sample_region</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t1148" class="pln"><span class="n"><a href="#t1148">1148</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t1149" class="run"><span class="n"><a href="#t1149">1149</a></span><span class="t">        <span class="nam">url</span> <span class="op">=</span> <span class="str">'/api/v2/web-info-extract/'</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t1149" class="run"><span class="n"><a href="#t1149">1149</a></span><span class="t">        <span class="nam">url</span> <span class="op">=</span> <span class="str">'/api/v1/web-info-extract/'</span>&nbsp;</span><span class="r"></span></p>
     <p id="t1150" class="run"><span class="n"><a href="#t1150">1150</a></span><span class="t">        <span class="nam">data</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
     <p id="t1151" class="pln"><span class="n"><a href="#t1151">1151</a></span><span class="t">            <span class="str">'url'</span><span class="op">:</span> <span class="nam">SAMPLE_WEB_INFO_URL</span>&nbsp;</span><span class="r"></span></p>
     <p id="t1152" class="pln"><span class="n"><a href="#t1152">1152</a></span><span class="t">        <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
@@ -1234,8 +1234,8 @@
 <div id="footer">
     <div class="content">
         <p>
-            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.1</a>,
-            created at 2020-06-26 05:58
+            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.2</a>,
+            created at 2020-07-21 04:20
         </p>
     </div>
 </div>
