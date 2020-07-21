@@ -6,7 +6,6 @@ from django.core.exceptions import ValidationError
 from user_resource.models import UserResource
 from deep.models import Field, FieldOption
 from lead.models import Lead, LeadGroup
-from geo.models import GeoArea
 from project.mixins import ProjectEntityMixin
 
 from .utils import (

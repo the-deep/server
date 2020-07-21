@@ -25,8 +25,21 @@ def get_filters(widget, data):
 
 
 def get_exportable(widget, data):
+    def _get_depth(organ, level=1):
+        child_organs = organ.get('organs') or []
+        if len(child_organs) == 0:
+            return level
+        depths = []
+        for c_organ in child_organs:
+            depths.append(_get_depth(c_organ, level=level + 1))
+        return max(depths)
+
     return {
         'excel': {
-            'title': widget.title,
+            'type': 'multiple',
+            'titles': [
+                f'{widget.title} - Level {level}'
+                for level in range(_get_depth(data))
+            ],
         },
     }

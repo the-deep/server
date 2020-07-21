@@ -1,6 +1,7 @@
 from django.dispatch import receiver
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save, pre_save, m2m_changed
 from django.db import transaction
+from django.conf import settings
 
 from entry.models import EntryComment, EntryCommentText
 from entry.serializers import EntryCommentSerializer
@@ -12,39 +13,64 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def send_notifications_for_commit(comment, notification_meta):
+def send_notifications_for_commit(comment_pk, notification_meta):
+    comment = EntryComment.objects.get(pk=comment_pk)
+
+    notification_meta = {
+        **notification_meta,
+        'project': comment.entry.project,
+        'data': EntryCommentSerializer(comment).data,
+    }
     related_users = comment.get_related_users()
+
     for user in related_users:
         # Create DEEP Notification Objects
         Notification.objects.create(
             **notification_meta,
             receiver=user,
         )
+
         # Send Email Notification
-        transaction.on_commit(
-            lambda: send_entry_comment_email.delay(user.pk, comment.pk)
-        )
+        if settings.TESTING:
+            send_entry_comment_email(user.pk, comment.pk)
+        else:
+            transaction.on_commit(
+                lambda: send_entry_comment_email.delay(user.pk, comment.pk)
+            )
 
 
 @receiver(pre_save, sender=EntryComment)
 def create_entry_commit_notification(sender, instance, **kwargs):
-    meta = {
-        'project': instance.entry.project,
-        'data': EntryCommentSerializer(instance).data,
-    }
-
     created = instance.pk is None
+    instance.receiver_created = created
     if created or instance.parent:  # Notification is handled from commit text creation
         return
 
+    meta = {}
+
     old_comment = EntryComment.objects.get(pk=instance.pk)
+
     if instance.is_resolved and old_comment.is_resolved != instance.is_resolved:  # Comment is Resolved
         meta['notification_type'] = Notification.ENTRY_COMMENT_RESOLVED
-    elif old_comment.assignee != instance.assignee:  # Assignee is changed
-        meta['notification_type'] = Notification.ENTRY_COMMENT_ASSIGNEE_CHANGE
+        transaction.on_commit(lambda: send_notifications_for_commit(instance.pk, meta))
+        instance.receiver_notification_already_send = True
 
-    if meta.get('notification_type'):
-        send_notifications_for_commit(instance, meta)
+
+@receiver(m2m_changed, sender=EntryComment.assignees.through)
+def create_entry_commit_notification_post(sender, instance, action, **kwargs):
+    receiver_notification_already_send = getattr(instance, 'receiver_notification_already_send', False)
+    # Default:False Because when it's patch request with only m2m change, create_entry_commit_notification is not triggered
+    created = getattr(instance, 'receiver_created', False)
+    if (
+        created or action not in ['post_add', 'post_remove'] or instance.parent or receiver_notification_already_send
+    ):  # Notification is handled from commit text creation
+        return
+
+    meta = {}
+
+    meta['notification_type'] = Notification.ENTRY_COMMENT_ASSIGNEE_CHANGE
+    instance.receiver_notification_already_send = True
+    transaction.on_commit(lambda: send_notifications_for_commit(instance.pk, meta))
 
 
 @receiver(post_save, sender=EntryCommentText)
@@ -53,14 +79,13 @@ def create_entry_commit_text_notification(sender, instance, created, **kwargs):
         return
 
     comment = instance.comment
-    meta = {
-        'project': comment.entry.project,
-        'data': EntryCommentSerializer(comment).data,
-    }
-    meta['notification_type'] = Notification.ENTRY_COMMENT_REPLY_ADD\
-        if comment.parent else Notification.ENTRY_COMMENT_ADD
+    meta = {}
+    meta['notification_type'] = (
+        Notification.ENTRY_COMMENT_REPLY_ADD if comment.parent else Notification.ENTRY_COMMENT_ADD
+    )
     if EntryCommentText.objects.filter(comment=comment).count() > 1:
-        meta['notification_type'] = Notification.ENTRY_COMMENT_REPLY_MODIFY\
-            if comment.parent else Notification.ENTRY_COMMENT_MODIFY
+        meta['notification_type'] = (
+            Notification.ENTRY_COMMENT_REPLY_MODIFY if comment.parent else Notification.ENTRY_COMMENT_MODIFY
+        )
 
-    send_notifications_for_commit(comment, meta)
+    transaction.on_commit(lambda: send_notifications_for_commit(comment.pk, meta))

@@ -2,8 +2,7 @@ from deep.tests import TestCase
 import autofixture
 
 from django.conf import settings
-from project.models import Project, ProjectRole
-from project.permissions import PROJECT_PERMISSIONS
+from project.models import Project
 from user.models import User
 from lead.models import Lead
 from analysis_framework.models import (
