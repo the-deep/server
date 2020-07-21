@@ -99,8 +99,10 @@ class Lead(UserResource, ProjectEntityMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
 
+    authors = models.ManyToManyField(Organization, blank=True)
+    # TODO: Remove (Legacy), Make sure to copy author to authors if authors is empty
     author = models.ForeignKey(
-        Organization, related_name='leads_by_author',
+        Organization, verbose_name='author (legacy)', related_name='leads_by_author',
         on_delete=models.SET_NULL, null=True, blank=True, default=None,
     )
     source = models.ForeignKey(
@@ -108,7 +110,7 @@ class Lead(UserResource, ProjectEntityMixin):
         on_delete=models.SET_NULL, null=True, blank=True, default=None,
     )
 
-    # Legacy Data
+    # Legacy Data (Remove after migrating all data)
     author_raw = models.CharField(max_length=255, blank=True)
     source_raw = models.CharField(max_length=255, blank=True)
 
@@ -207,6 +209,20 @@ class Lead(UserResource, ProjectEntityMixin):
 
     def get_assignee(self):
         return self.assignee.first()
+
+    def get_source_display(self):
+        if self.source:
+            return self.source.data.title
+        return self.source_raw
+
+    def get_authors_display(self):
+        if self.authors.exists():
+            # TODO: Optimize query
+            return ', '.join([author.data.title for author in self.authors.all()])
+        elif self.author:
+            # TODO: Remove (Legacy)
+            return self.author and self.author.data.title
+        return self.author_raw
 
 
 class LeadPreview(models.Model):

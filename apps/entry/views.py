@@ -27,7 +27,6 @@ from .serializers import (
     AttributeSerializer,
     ComprehensiveEntriesSerializer,
     EditEntriesDataSerializer,
-    LegacyEditEntriesDataSerializer,
     EntryCommentSerializer,
     EntryProccesedSerializer,
     EntryRetriveProccesedSerializer,
@@ -155,11 +154,6 @@ class EditEntriesDataViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet)
     """
     serializer_class = EditEntriesDataSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-    def get_serializer_class(self):
-        if self.kwargs.get('version') == 'v1':
-            return LegacyEditEntriesDataSerializer
-        return super().get_serializer_class()
 
     def get_queryset(self):
         return Lead.get_for(self.request.user)

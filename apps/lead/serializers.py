@@ -72,18 +72,6 @@ class SimpleLeadSerializer(RemoveNullFieldsMixin,
         read_only_fields = ('author_raw', 'source_raw',)
 
 
-class LegacySimpleLeadSerializer(SimpleLeadSerializer):
-    source = serializers.CharField(source='source_raw')
-    author = serializers.CharField(source='author_raw')
-
-    class Meta:
-        model = Lead
-        fields = (
-            'id', 'title', 'created_at', 'created_by',
-            'source', 'author',
-        )
-
-
 class LeadEMMTriggerSerializer(serializers.ModelSerializer, RemoveNullFieldsMixin, DynamicFieldsMixin):
     emm_risk_factor = serializers.CharField(required=False)
     count = serializers.IntegerField(required=False)
@@ -126,7 +114,10 @@ class LeadSerializer(
         read_only=True,
     )
 
+    # TODO: Remove (Legacy)
     author_detail = SimpleOrganizationSerializer(source='author', read_only=True)
+
+    authors_detail = SimpleOrganizationSerializer(source='authors', many=True, read_only=True)
     source_detail = SimpleOrganizationSerializer(source='source', read_only=True)
 
     assignee_details = SimpleUserSerializer(
@@ -239,19 +230,6 @@ class LeadSerializer(
             if assignee:
                 lead.assignee.add(assignee)
         return lead
-
-
-# Legacy
-class LegacyLeadSerializer(LeadSerializer):
-    author_detail = None
-    source_detail = None
-
-    source = serializers.CharField(source='source_raw')
-    author = serializers.CharField(source='author_raw')
-
-    class Meta:
-        model = Lead
-        exclude = ('source_raw', 'author_raw',)
 
 
 class LeadPreviewImageSerializer(RemoveNullFieldsMixin,

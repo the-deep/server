@@ -45,7 +45,6 @@ from .serializers import (
     LeadGroupSerializer,
     SimpleLeadGroupSerializer,
     LeadSerializer,
-    LegacyLeadSerializer,
     LeadPreviewSerializer,
     check_if_url_exists,
     LeadOptionsSerializer,
@@ -118,11 +117,6 @@ class LeadViewSet(viewsets.ModelViewSet):
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     # NOTE: Using LeadFilterSet for both search and ordering
     filterset_class = LeadFilterSet
-
-    def get_serializer_class(self):
-        if self.kwargs.get('version') == 'v1':
-            return LegacyLeadSerializer
-        return super().get_serializer_class()
 
     def get_serializer(self, *args, **kwargs):
         data = kwargs.get('data')
@@ -533,18 +527,12 @@ class WebInfoExtractView(views.APIView):
         project = project or request.user.profile.last_active_project
         organization_search = OrganizationSearch([source_raw, author_raw])
 
-        # LEGACY
         organization_context = {
-            'source': source_raw,
-            'author': author_raw,
+            'source': self.get_organization(source_raw, organization_search),
+            'author': self.get_organization(author_raw, organization_search),
+            'source_raw': source_raw,
+            'author_raw': author_raw,
         }
-        if version != 'v1':
-            organization_context = {
-                'source': self.get_organization(source_raw, organization_search),
-                'author': self.get_organization(author_raw, organization_search),
-                'source_raw': source_raw,
-                'author_raw': author_raw,
-            }
 
         context = {
             **organization_context,
@@ -587,18 +575,12 @@ class WebInfoDataView(views.APIView):
         project = project or request.user.profile.last_active_project
         organization_search = OrganizationSearch([source_raw, author_raw])
 
-        # LEGACY
         organization_context = {
-            'source': source_raw,
-            'author': author_raw,
+            'source': self.get_organization(source_raw, organization_search),
+            'author': self.get_organization(author_raw, organization_search),
+            'source_raw': source_raw,
+            'author_raw': author_raw,
         }
-        if version != 'v1':
-            organization_context = {
-                'source': self.get_organization(source_raw, organization_search),
-                'author': self.get_organization(author_raw, organization_search),
-                'source_raw': source_raw,
-                'author_raw': author_raw,
-            }
         return response.Response({
             **organization_context,
             'project': project and project.id,

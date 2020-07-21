@@ -11,7 +11,7 @@ from deep.serializers import (
 from user_resource.serializers import UserResourceSerializer
 from gallery.serializers import FileSerializer
 from project.models import Project
-from lead.serializers import LeadSerializer, LegacyLeadSerializer
+from lead.serializers import LeadSerializer
 from lead.models import Lead
 from analysis_framework.serializers import AnalysisFrameworkSerializer
 from geo.models import GeoArea, Region
@@ -297,10 +297,6 @@ class EditEntriesDataSerializer(RemoveNullFieldsMixin,
             many=True,
             context=self.context,
         ).data
-
-
-class LegacyEditEntriesDataSerializer(EditEntriesDataSerializer):
-    lead = LegacyLeadSerializer(source='*', read_only=True)
 
 
 class ComprehensiveAttributeSerializer(

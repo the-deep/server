@@ -99,6 +99,9 @@ class Source(ABC):
                 website=ldata['website'],
             )
 
+            if ldata.get('author') is not None:
+                lead._authors = [organization_search.get(ldata['author'])]
+
             # Add emm info
             if ldata.get('emm_triggers') is not None:
                 lead._emm_triggers = ldata['emm_triggers']
