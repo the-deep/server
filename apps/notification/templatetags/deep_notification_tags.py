@@ -8,5 +8,7 @@ register = template.Library()
 
 @register.filter(is_safe=True)
 def markdown_render(value):
-    content = EmailContent(value)
-    return content.html
+    if value:
+        content = EmailContent(value)
+        return content.html
+    return '-'

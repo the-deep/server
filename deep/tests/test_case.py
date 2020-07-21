@@ -6,6 +6,7 @@ from rest_framework import (
 )
 from jwt_auth.token import AccessToken, RefreshToken
 
+from django.db import DEFAULT_DB_ALIAS, connections
 from django.conf import settings
 from user.models import User
 from project.models import ProjectRole, Project
@@ -184,6 +185,25 @@ class TestCase(test.APITestCase):
                 'assessment', ['view']
             ),
         )
+        # ARY full-access role
+        self.ary_create_role = ProjectRole.objects.create(
+            title='AryViewOnly',
+            lead_permissions=get_project_permissions_value(
+                'lead', ['view']
+            ),
+            entry_permissions=get_project_permissions_value(
+                'entry', ['view']
+            ),
+            setup_permissions=get_project_permissions_value(
+                'setup', []
+            ),
+            export_permissions=get_project_permissions_value(
+                'export', []
+            ),
+            assessment_permissions=get_project_permissions_value(
+                'assessment', '__all__'
+            ),
+        )
 
     def post_and_check_201(self, url, data, model, fields):
         model_count = model.objects.count()
@@ -236,7 +256,8 @@ class TestCase(test.APITestCase):
         return self.create(Lead, project=project, **fields)
 
     def create_entry(self, **fields):
-        lead = fields.pop('lead', None) or self.create_lead()
+        project = fields.pop('project', None) or self.create_project()
+        lead = fields.pop('lead', None) or self.create_lead(project=project)
         return self.create(
             Entry, lead=lead, project=lead.project,
             analysis_framework=lead.project.analysis_framework,
@@ -251,3 +272,28 @@ class TestCase(test.APITestCase):
             project=lead.project,
             **fields
         )
+
+    @classmethod
+    def captureOnCommitCallbacks(cls, *, using=DEFAULT_DB_ALIAS, execute=False):
+        return _CaptureOnCommitCallbacksContext(using=using, execute=execute)
+
+
+class _CaptureOnCommitCallbacksContext:
+    def __init__(self, *, using=DEFAULT_DB_ALIAS, execute=False):
+        self.using = using
+        self.execute = execute
+        self.callbacks = None
+
+    def __enter__(self):
+        if self.callbacks is not None:
+            raise RuntimeError("Cannot re-enter captureOnCommitCallbacks()")
+        self.start_count = len(connections[self.using].run_on_commit)
+        self.callbacks = []
+        return self.callbacks
+
+    def __exit__(self, exc_type, exc_valuei, exc_traceback):
+        run_on_commit = connections[self.using].run_on_commit[self.start_count:]
+        self.callbacks[:] = [func for sids, func in run_on_commit]
+        if exc_type is None and self.execute:
+            for callback in self.callbacks:
+                callback()

@@ -160,8 +160,10 @@ class EntryLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Lead
-        fields = ('id', 'title', 'created_at', 'url', 'attachment',
-                  'tabular_book', 'client_id', 'assignee', 'assignee_details')
+        fields = (
+            'id', 'title', 'created_at', 'url', 'attachment', 'tabular_book',
+            'client_id', 'assignee', 'assignee_details',
+        )
 
     def get_tabular_book(self, obj):
         file = obj.attachment
@@ -397,7 +399,7 @@ class EntryCommentTextSerializer(serializers.ModelSerializer):
 
 class EntryCommentSerializer(serializers.ModelSerializer):
     created_by_detail = EntryCommentUserSerializer(source='created_by', read_only=True)
-    assignee_detail = EntryCommentUserSerializer(source='assignee', read_only=True)
+    assignees_detail = EntryCommentUserSerializer(source='assignees', read_only=True, many=True)
     text = serializers.CharField()
     lead = serializers.IntegerField(source='entry.lead_id', read_only=True)
     text_history = EntryCommentTextSerializer(
@@ -426,10 +428,10 @@ class EntryCommentSerializer(serializers.ModelSerializer):
             if parent_comment.parent is not None:
                 raise serializers.ValidationError('2-level of comment only allowed')
             data['entry'] = parent_comment.entry
-            data['assignee'] = None
+            data['assignees'] = []
         else:  # Root comment
-            if data.get('assignee') is None and not is_patch:
-                raise serializers.ValidationError('Root comment should have assignee')
+            if not data.get('assignees') and not is_patch:
+                raise serializers.ValidationError('Root comment should have at least one assignee')
         data['created_by'] = self.context['request'].user
         return data
 

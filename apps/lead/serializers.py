@@ -24,17 +24,53 @@ from .models import (
 )
 
 
-def check_if_url_exists(url, user=None, project=None, exception_id=None):
+def check_if_url_exists(url, user=None, project=None, exception_id=None, return_lead=False):
+    existing_lead = None
     if not project and user:
-        return url and Lead.get_for(user).filter(
+        existing_lead = url and Lead.get_for(user).filter(
             url__icontains=url,
-        ).exclude(id=exception_id).exists()
+        ).exclude(id=exception_id).first()
     elif project:
-        return url and Lead.objects.filter(
+        existing_lead = url and Lead.objects.filter(
             url__icontains=url,
             project=project,
-        ).exclude(id=exception_id).exists()
+        ).exclude(id=exception_id).first()
+    if existing_lead:
+        if return_lead:
+            return existing_lead
+        return True
     return False
+
+
+def raise_or_return_existing_lead(project, lead, source_type, url, text, attachment, return_lead=False):
+    # For website types, check if url has already been added
+    existing_lead = None
+    error_message = None
+
+    if source_type == Lead.WEBSITE:
+        existing_lead = check_if_url_exists(url, None, project, lead and lead.pk, return_lead=return_lead)
+        error_message = f'A lead with this URL has already been added to Project: {project}'
+    elif (
+        attachment and attachment.metadata and
+        source_type in [Lead.DISK, Lead.DROPBOX, Lead.GOOGLE_DRIVE]
+    ):
+        # For attachment types, check if file already used (using file hash)
+        existing_lead = Lead.objects.filter(
+            project=project,
+            attachment__metadata__md5_hash=attachment.metadata.get('md5_hash'),
+        ).exclude(pk=lead and lead.pk).first()
+        error_message = f'A lead with this file has already been added to Project: {project}'
+    elif source_type == Lead.TEXT:
+        existing_lead = Lead.objects.filter(
+            project=project,
+            text=text,
+        ).exclude(pk=lead and lead.pk).first()
+        error_message = f'A lead with this text has already been added to Project: {project}'
+
+    if existing_lead:
+        if return_lead:
+            return existing_lead
+        raise serializers.ValidationError(error_message)
 
 
 # TODO: Remove this once assignee is working in browser
@@ -150,34 +186,16 @@ class LeadSerializer(
         project = data.get('project', instance and instance.project)
         source_type = data.get('source_type', instance and instance.source_type)
         text = data.get('text', instance and instance.text)
+        url = data.get('url', instance and instance.url)
 
-        # For website types, check if url has already been added
-        if source_type == Lead.WEBSITE:
-            url = data.get('url', instance and instance.url)
-            if check_if_url_exists(url, None, project, instance and instance.pk):
-                raise serializers.ValidationError(
-                    f'A lead with this URL has already been added to Project: {project}'
-                )
-        # For attachment types, check if file already used (using file hash)
-        elif (
-            attachment and attachment.metadata and
-            source_type in [Lead.DISK, Lead.DROPBOX, Lead.GOOGLE_DRIVE]
-        ):
-            if Lead.objects.filter(
-                project=project,
-                attachment__metadata__md5_hash=attachment.metadata.get('md5_hash'),
-            ).exclude(pk=instance and instance.pk).exists():
-                raise serializers.ValidationError(
-                    f'A lead with this file has already been added to Project: {project}'
-                )
-        elif source_type == Lead.TEXT:
-            if Lead.objects.filter(
-                project=project,
-                text=text,
-            ).exclude(pk=instance and instance.pk).exists():
-                raise serializers.ValidationError(
-                    f'A lead with this text has already been added to Project: {project}'
-                )
+        return raise_or_return_existing_lead(
+            project,
+            instance,
+            source_type,
+            url,
+            text,
+            attachment,
+        )
 
     def validate(self, data):
         attachment_id = self.get_initial().get('attachment', {}).get('id')

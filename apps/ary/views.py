@@ -1,3 +1,4 @@
+import copy
 from django.contrib.auth.models import User
 from django.http import Http404
 from rest_framework import (
@@ -12,6 +13,8 @@ import django_filters
 
 from deep.permissions import ModifyPermission, CreateAssessmentPermission
 from project.models import Project
+from project.permissions import PROJECT_PERMISSIONS as PROJ_PERMS
+from lead.views import BaseCopyView, LeadCopyView
 
 from .filters import AssessmentFilterSet, PlannedAssessmentFilterSet
 from .models import (
@@ -196,3 +199,39 @@ class AssessmentTemplateViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return AssessmentTemplate.get_for(self.request.user)
+
+
+class AssessmentCopyView(BaseCopyView):
+    """
+    Copy assesment to another project
+    """
+
+    CLONE_PERMISSION = PROJ_PERMS.assessment
+    CLONE_ROLE = 'role__assessment_permissions'
+    CLONE_ENTITY_NAME = 'assessment'
+    CLONE_ENTITY = Assessment
+
+    def get_clone_context(self, request):
+        return {
+            'lead_create_access_project_ids': set(LeadCopyView.get_project_ids_with_create_access(request))
+        }
+
+    @classmethod
+    def clone_entity(cls, original_ary, project_id, user, context):
+        lead, is_new = LeadCopyView.clone_or_get_lead(
+            original_ary.lead, project_id, user, context,
+            context['lead_create_access_project_ids'],
+        )
+        # Skip assessment creation if lead already has a assessment (or use lead.refresh_from_db())
+        if lead is None or (not is_new and getattr(lead, 'assessment', None)):
+            return
+
+        ary = copy.deepcopy(original_ary)
+
+        # LeadGroup?
+        ary.pk = None
+        ary.project_id = project_id
+        ary.lead = lead
+        ary.save()
+
+        return ary

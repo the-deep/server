@@ -85,7 +85,7 @@
         </div>
     {% elif notification_type == Notification.ENTRY_COMMENT_ASSIGNEE_CHANGE %}
         <p class="email-label">
-            {{comment.created_by.profile.get_display_name}} assigned {{comment.assignee.profile.get_display_name}} to the comment:
+            {{comment.created_by.profile.get_display_name}} assigned {{assignees_display}} to the comment:
         </p>
         <div class="comment">
             {{comment.text | markdown_render}}
