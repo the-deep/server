@@ -61,16 +61,34 @@ class SourceDataSerializer(RemoveNullFieldsMixin,
     emm_entities = serializers.SerializerMethodField()
     emm_triggers = serializers.SerializerMethodField()
 
+    # M2M authors field
+    authors = serializers.SerializerMethodField()
+    authors_detail = serializers.SerializerMethodField()
+
+    # TODO: Remove (Legacy)
     author_detail = SimpleOrganizationSerializer(source='author', read_only=True)
+
     source_detail = SimpleOrganizationSerializer(source='source', read_only=True)
 
     class Meta:
         model = Lead
-        fields = ('key', 'title', 'source', 'source_type', 'url',
-                  'website', 'published_on', 'existing',
-                  'emm_entities', 'emm_triggers', 'source_detail',
-                  'author_detail', 'source_raw', 'author_raw',
-                  )
+        fields = (
+            'key', 'title', 'source', 'source_type', 'url',
+            'website', 'published_on', 'existing',
+            'emm_entities', 'emm_triggers', 'source_detail',
+            'author_detail', 'authors', 'authors_detail',
+            'source_raw', 'author_raw',
+        )
+
+    def get_authors(self, lead):
+        if hasattr(lead, '_authors'):
+            return [author.pk for author in lead._authors]
+        return []
+
+    def get_authors_detail(self, lead):
+        if hasattr(lead, '_authors'):
+            return SimpleOrganizationSerializer(lead._authors, many=True).data
+        return []
 
     def get_emm_entities(self, lead):
         if hasattr(lead, '_emm_entities'):

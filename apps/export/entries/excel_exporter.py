@@ -372,8 +372,8 @@ class ExcelExporter:
                 format_date(entry.created_at.date()),
                 lead.title,
                 lead.url or (lead.attachment and lead.attachment.get_file_url()),
-                (lead.author and lead.author.data.title) or lead.author_raw,
-                (lead.source and lead.source.data.title) or lead.source_raw,
+                lead.get_authors_display(),
+                lead.get_source_display(),
                 assignee and assignee.profile.get_display_name(),
                 *(
                     [
