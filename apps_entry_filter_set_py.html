@@ -131,9 +131,9 @@
     <p id="t77" class="pln"><span class="n"><a href="#t77">77</a></span><span class="t">        <span class="nam">choices</span><span class="op">=</span><span class="nam">COMMENT_STATUS</span><span class="op">,</span> <span class="nam">method</span><span class="op">=</span><span class="str">'comment_status_filter'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t78" class="pln"><span class="n"><a href="#t78">78</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t79" class="run"><span class="n"><a href="#t79">79</a></span><span class="t">    <span class="nam">comment_assignee</span> <span class="op">=</span> <span class="nam">django_filters</span><span class="op">.</span><span class="nam">ModelMultipleChoiceFilter</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t80" class="pln"><span class="n"><a href="#t80">80</a></span><span class="t">        <span class="nam">label</span><span class="op">=</span><span class="str">'Comment Assignee'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t80" class="pln"><span class="n"><a href="#t80">80</a></span><span class="t">        <span class="nam">label</span><span class="op">=</span><span class="str">'Comment Assignees'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t81" class="pln"><span class="n"><a href="#t81">81</a></span><span class="t">        <span class="nam">queryset</span><span class="op">=</span><span class="nam">User</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t82" class="pln"><span class="n"><a href="#t82">82</a></span><span class="t">        <span class="nam">field_name</span><span class="op">=</span><span class="str">'entrycomment__assignee'</span><span class="op">,</span> <span class="nam">lookup_expr</span><span class="op">=</span><span class="str">'in'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t82" class="pln"><span class="n"><a href="#t82">82</a></span><span class="t">        <span class="nam">field_name</span><span class="op">=</span><span class="str">'entrycomment__assignees'</span><span class="op">,</span> <span class="nam">lookup_expr</span><span class="op">=</span><span class="str">'in'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t83" class="pln"><span class="n"><a href="#t83">83</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t84" class="run"><span class="n"><a href="#t84">84</a></span><span class="t">    <span class="nam">comment_created_by</span> <span class="op">=</span> <span class="nam">django_filters</span><span class="op">.</span><span class="nam">ModelMultipleChoiceFilter</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t85" class="pln"><span class="n"><a href="#t85">85</a></span><span class="t">        <span class="nam">label</span><span class="op">=</span><span class="str">'Comment Created by'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -351,7 +351,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.2</a>,
-            created at 2020-07-21 04:20
+            created at 2020-07-21 08:35
         </p>
     </div>
 </div>
