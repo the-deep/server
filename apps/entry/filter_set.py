@@ -185,7 +185,7 @@ def get_filtered_entries(user, queries):
 
     lead_status = queries.get('lead_status')
     if lead_status:
-        entries = entries.filter(lead__status=lead_status)
+        entries = entries.filter(lead__status__in=lead_status)
 
     # Filter by filterset
     updated_queries = get_created_at_filters(queries)
