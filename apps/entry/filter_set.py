@@ -179,8 +179,13 @@ class EntryCommentFilterSet(django_filters.FilterSet):
 def get_filtered_entries(user, queries):
     entries = Entry.get_for(user)
     project = queries.get('project')
+
     if project:
         entries = entries.filter(lead__project__id=project)
+
+    lead_status = queries.get('lead_status')
+    if lead_status:
+        entries = entries.filter(lead__status__in=lead_status)
 
     # Filter by filterset
     updated_queries = get_created_at_filters(queries)
