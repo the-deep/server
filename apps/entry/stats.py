@@ -16,6 +16,20 @@ SUPPORTED_WIDGETS = [
 ]
 
 
+def _get_lead_data(lead):
+    return {
+        'id': lead.id,
+        'title': lead.title,
+        'source_type': lead.source_type,
+        'confidentiality': lead.confidentiality,
+        'source_raw': lead.source_raw,
+        'source': lead.source and {
+            'id': lead.source.id,
+            'title': lead.source.data.title,
+        },
+    }
+
+
 def _get_project_geoareas(project):
     qs = GeoArea.objects.filter(
         admin_level__region__in=project.regions.values_list('id'),
@@ -119,7 +133,7 @@ def _get_attribute_data(collector, attribute, cd_widget_map):
     collector[widget_pk] = _get_attribute_widget_value(cd_widget_map, data['value'], widget_type, widget_pk)
 
 
-def get_project_entries_stats(project):
+def get_project_entries_stats(project, skip_geo_data=False):
     """
     NOTE: This is a custom API made for Entries VIz and only works for certain AF.
 
@@ -232,8 +246,6 @@ def get_project_entries_stats(project):
         } for reliability in w_reliability['data']['scale_units']
     ]
 
-    geo_array = _get_project_geoareas(project)
-
     meta = {
         'data_calculated': timezone.now(),
         'context_array': context_array,
@@ -243,8 +255,10 @@ def get_project_entries_stats(project):
         'specific_needs_groups_array': specific_needs_groups_array,
         'severity_units': severity_units,
         'reliability_units': reliability_units,
-        'geo_array': geo_array,
     }
+
+    if not skip_geo_data:
+        meta['geo_array'] = _get_project_geoareas(project)
 
     data = []
     entries = Entry.objects.filter(project=project).prefetch_related(
@@ -263,6 +277,7 @@ def get_project_entries_stats(project):
         data.append({
             'pk': entry.pk,
             'created_date': entry.created_at,
+            'lead': _get_lead_data(entry.lead),
             'date': entry.lead.published_on,
             'severity': collector.get(w_severity['pk']),
             'reliability': collector.get(w_reliability['pk']),
