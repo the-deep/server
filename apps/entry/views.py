@@ -204,7 +204,14 @@ class EntryOptionsView(views.APIView):
         if fields_query:
             fields = fields_query.split(',')
 
-        options = {}
+        options = {
+            'lead_status': [
+                {
+                    'key': s[0],
+                    'value': s[1],
+                } for s in Lead.STATUSES
+            ]
+        }
 
         def _filter_by_projects(qs, projects):
             for p in projects:
