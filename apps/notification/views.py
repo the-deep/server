@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 
 from .serializers import NotificationSerializer
 from .models import Notification
+from notification.filter_set import NotificationFilterSet
 
 from rest_framework import (
     exceptions,
@@ -17,6 +18,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     filterset_fields = ('project',)
+    filterset_class = NotificationFilterSet
 
     def get_queryset(self):
         return Notification.get_for(
