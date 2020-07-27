@@ -22,11 +22,15 @@ class LeadFilterSet(django_filters.FilterSet):
     'in' lookup expressions and CSVWidget.
     """
 
-    ENTRIES_EXISTS = 'entries_exists'
+    ENTRIES_EXIST = 'entries_exists'
     ASSESSMENT_EXISTS = 'assessment_exists'
+    ENTRIES_DO_NOT_EXIST = 'entries_do_not_exist'
+    ASSESSMENT_DOES_NOT_EXIST = 'assessment_does_not_exist'
     EXISTS_CHOICE = (
-        (ENTRIES_EXISTS, 'Entries Exists'),
+        (ENTRIES_EXIST, 'Entry Exists'),
         (ASSESSMENT_EXISTS, 'Assessment Exists'),
+        (ENTRIES_DO_NOT_EXIST, 'Entries do not exist'),
+        (ASSESSMENT_DOES_NOT_EXIST, 'Assessment does not exist'),
     )
 
     search = django_filters.CharFilter(method='search_filter')
@@ -150,10 +154,14 @@ class LeadFilterSet(django_filters.FilterSet):
         return qs.filter(project_id__in=project_ids)
 
     def exists_filter(self, qs, name, value):
-        if value == self.ENTRIES_EXISTS:
+        if value == self.ENTRIES_EXIST:
             return qs.filter(entry__isnull=False)
         elif value == self.ASSESSMENT_EXISTS:
             return qs.filter(assessment__isnull=False)
+        elif value == self.ENTRIES_DO_NOT_EXIST:
+            return qs.filter(entry__isnull=True)
+        elif value == self.ASSESSMENT_DOES_NOT_EXIST:
+            return qs.filter(assessment__isnull=True)
         return qs
 
     def emm_entities_filter(self, qs, name, value):

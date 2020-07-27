@@ -896,14 +896,22 @@ class LeadTests(TestCase):
         # Entries exists filter test
         self.create_entry(lead=lead1)
         self.create_entry(lead=lead2)
-        response = self.client.get(f'{url}&exists={LeadFilterSet.ENTRIES_EXISTS}')
+        response = self.client.get(f'{url}&exists={LeadFilterSet.ENTRIES_EXIST}')
         assert response.json()['count'] == 2, 'Lead count should be 2 for lead with entries'
+
+        # Entries do not exist filter test
+        response = self.client.get(f'{url}&exists={LeadFilterSet.ENTRIES_DO_NOT_EXIST}')
+        assert response.json()['count'] == 1, 'Lead count should be 1 for lead without entries'
 
         # Assessment exists filter test
         self.create_assessment(lead=lead1)
         self.create_assessment(lead=lead3)
         response = self.client.get(f'{url}&exists={LeadFilterSet.ASSESSMENT_EXISTS}')
         assert response.json()['count'] == 2, 'Lead count should be 2 for lead with assessment'
+
+        # Assessment does not exist filter test
+        response = self.client.get(f'{url}&exists={LeadFilterSet.ASSESSMENT_DOES_NOT_EXIST}')
+        assert response.json()['count'] == 1, 'Lead count should be 1 for lead without assessment'
 
     def test_lead_filter_search(self):
         url = '/api/v1/leads/?emm_entities={}'
