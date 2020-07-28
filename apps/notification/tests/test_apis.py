@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from deep.tests import TestCase
+from django.utils import timezone
 
 from user.models import User
 from notification.models import Notification
@@ -102,3 +105,71 @@ class TestNotificationAPIs(TestCase):
             role=self.normal_role
         )
         return join_request
+
+    def test_get_filtered_notifications(self):
+        project = self.create(Project, role=self.admin_role)
+        user = self.create(User)
+        url = '/api/v1/notifications/'
+        params = {'project': project.id}
+
+        self.authenticate()
+        # store the time
+        before = timezone.now()
+        # create a notification
+        self.create_join_request(project, user)
+
+        # filtering of timestamp has a step of ONE DAY
+        after = before + timedelta(days=1)
+
+        print(before.strftime('%Y-%m-%d%z'))
+        print(after.strftime('%Y-%m-%d%z'))
+
+        response = self.client.get(url, params)
+        self.assert_200(response)
+        data = response.json()
+        assert data['count'] == 1, "A notification was created for join request but didnot show"
+
+        # now applying filters
+
+        # is_pending filter
+        # by default the notification created is in status = pending
+        params.update(dict(is_pending='false'))
+        response = self.client.get(url, params)
+        self.assert_200(response)
+        data = response.json()
+        assert data['count'] == 0, "One Notification was in pending"
+
+        params.update(dict(is_pending='true'))
+        response = self.client.get(url, params)
+        self.assert_200(response)
+        data = response.json()
+        assert data['count'] == 1, "One Notification was in pending"
+
+        # timestamp filter
+        params.pop('is_pending', None)
+        params.update(dict(timestamp__gt=before.strftime('%Y-%m-%d%z')))
+        response = self.client.get(url, params)
+        self.assert_200(response)
+        data = response.json()
+        assert data['count'] == 1, "One Notification should be after 'before time' "
+
+        params.pop('timestamp__gt', None)
+        params.update(dict(timestamp__lt=before.strftime('%Y-%m-%d%z')))
+        response = self.client.get(url, params)
+        self.assert_200(response)
+        data = response.json()
+        assert data['count'] == 0, "No notification should be before 'before time'"
+
+        params.pop('timestamp__lt', None)
+        params.update(dict(timestamp__gt=after.strftime('%Y-%m-%d%z')))
+        response = self.client.get(url, params)
+        self.assert_200(response)
+        data = response.json()
+        assert data['count'] == 0, "No notification should be after 'after time'"
+
+        params.update(dict(timestamp__gt=before.strftime('%Y-%m-%d%z'),
+                           timestamp__lt=after.strftime('%Y-%m-%d%z')))
+        response = self.client.get(url, params)
+        self.assert_200(response)
+        data = response.json()
+        assert data['count'] == 1, "One notification should be after 'before time' and before 'after time'"
