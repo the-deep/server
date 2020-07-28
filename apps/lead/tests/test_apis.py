@@ -808,6 +808,35 @@ class LeadTests(TestCase):
         response = self.client.post(url, data)
         self.assert_400(response)
 
+    def test_lead_order_by_priority(self):
+        project = self.create(Project)
+        project.add_member(self.user)
+
+        self.create_lead(project=project, priority=Lead.HIGH)
+        self.create_lead(project=project, priority=Lead.MEDIUM)
+        self.create_lead(project=project, priority=Lead.HIGH)
+        self.create_lead(project=project, priority=Lead.LOW)
+
+        url = '/api/v1/leads/?ordering=priority'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        leads = response.data['results']
+        assert leads[0]['priority'] == Lead.HIGH
+        assert leads[1]['priority'] == Lead.HIGH
+        assert leads[2]['priority'] == Lead.MEDIUM
+        assert leads[3]['priority'] == Lead.LOW
+
+        url = '/api/v1/leads/?ordering=-priority'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        leads = response.data['results']
+        assert leads[0]['priority'] == Lead.LOW
+        assert leads[1]['priority'] == Lead.MEDIUM
+        assert leads[2]['priority'] == Lead.HIGH
+        assert leads[3]['priority'] == Lead.HIGH
+
     def test_lead_order_by_page_count(self):
         # Create lead and lead_previews
         project = self.create(Project)
@@ -846,12 +875,19 @@ class LeadTests(TestCase):
 
     def test_lead_filter(self):
         project = self.create_project(create_assessment_template=True)
+        project2 = self.create_project(create_assessment_template=True)
+
         lead1 = self.create_lead(project=project)
         lead2 = self.create_lead(project=project)
         lead3 = self.create_lead(project=project)
-        url = f'/api/v1/leads/?project={project.pk}'
+        lead4 = self.create_lead(project=project2, priority=Lead.HIGH)
 
         self.authenticate()
+
+        response = self.client.get(f'/api/v1/leads/?project={project2.pk}&priority={Lead.HIGH}')
+        assert response.json()['results'][0]['id'] == lead4.pk
+
+        url = f'/api/v1/leads/?project={project.pk}'
 
         # Project filter test
         response = self.client.get(url)
