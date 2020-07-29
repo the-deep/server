@@ -179,22 +179,6 @@ class LeadFilterSet(django_filters.FilterSet):
                 qs = qs.order_by(models.F('leadpreview__page_count').desc(nulls_last=True))
             elif ordering == 'page_count':
                 qs = qs.order_by(models.F('leadpreview__page_count').asc(nulls_first=True))
-            elif ordering == 'priority':
-                qs = qs.annotate(priority_order=models.Case(
-                    models.When(priority=Lead.HIGH, then=models.Value(0)),
-                    models.When(priority=Lead.MEDIUM, then=models.Value(1)),
-                    models.When(priority=Lead.LOW, then=models.Value(2)),
-                    default=models.Value(1),
-                    output_field=models.IntegerField(),)
-                ).order_by('priority_order')
-            elif ordering == '-priority':
-                qs = qs.annotate(priority_order=models.Case(
-                    models.When(priority=Lead.HIGH, then=models.Value(0)),
-                    models.When(priority=Lead.MEDIUM, then=models.Value(1)),
-                    models.When(priority=Lead.LOW, then=models.Value(2)),
-                    default=models.Value(1),
-                    output_field=models.IntegerField(),)
-                ).order_by('-priority_order')
             else:
                 qs = qs.order_by(ordering)
         return qs

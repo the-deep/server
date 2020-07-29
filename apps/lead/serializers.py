@@ -315,6 +315,11 @@ class KeyValueSerializer(serializers.Serializer):
     value = serializers.CharField()
 
 
+class NumericKeyValueSerializer(serializers.Serializer):
+    key = serializers.IntegerField()
+    value = serializers.CharField()
+
+
 class EmmTagSerializer(serializers.Serializer):
     key = serializers.CharField()
     label = serializers.CharField()
@@ -333,7 +338,7 @@ class LegacyLeadOptionsSerializer(serializers.Serializer):
     assignee = KeyValueSerializer(many=True)
     confidentiality = KeyValueSerializer(many=True)
     status = KeyValueSerializer(many=True)
-    priority = KeyValueSerializer(many=True)
+    priority = NumericKeyValueSerializer(many=True)
     emm_entities = EmmEntitySerializer(many=True)
     emm_keywords = EmmTagSerializer(many=True)
     emm_risk_factors = EmmTagSerializer(many=True)
@@ -354,7 +359,7 @@ class LeadOptionsSerializer(serializers.Serializer):
     projects = SimpleProjectSerializer(many=True)
     confidentiality = KeyValueSerializer(many=True)
     status = KeyValueSerializer(many=True)
-    priority = KeyValueSerializer(many=True)
+    priority = NumericKeyValueSerializer(many=True)
     lead_groups = SimpleLeadGroupSerializer(many=True)
     members = SimpleUserSerializer(many=True)
     organizations = SimpleOrganizationSerializer(many=True)

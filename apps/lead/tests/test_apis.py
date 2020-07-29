@@ -822,20 +822,20 @@ class LeadTests(TestCase):
         response = self.client.get(url)
         self.assert_200(response)
         leads = response.data['results']
-        assert leads[0]['priority'] == Lead.HIGH
-        assert leads[1]['priority'] == Lead.HIGH
-        assert leads[2]['priority'] == Lead.MEDIUM
-        assert leads[3]['priority'] == Lead.LOW
+        assert leads[0]['priority'] == Lead.LOW
+        assert leads[1]['priority'] == Lead.MEDIUM
+        assert leads[2]['priority'] == Lead.HIGH
+        assert leads[3]['priority'] == Lead.HIGH
 
         url = '/api/v1/leads/?ordering=-priority'
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
         leads = response.data['results']
-        assert leads[0]['priority'] == Lead.LOW
-        assert leads[1]['priority'] == Lead.MEDIUM
-        assert leads[2]['priority'] == Lead.HIGH
-        assert leads[3]['priority'] == Lead.HIGH
+        assert leads[0]['priority'] == Lead.HIGH
+        assert leads[1]['priority'] == Lead.HIGH
+        assert leads[2]['priority'] == Lead.MEDIUM
+        assert leads[3]['priority'] == Lead.LOW
 
     def test_lead_order_by_page_count(self):
         # Create lead and lead_previews

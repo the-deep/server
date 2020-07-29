@@ -66,9 +66,9 @@ class Lead(UserResource, ProjectEntityMixin):
         (PROCESSED, 'Processed'),
     )
 
-    HIGH = 'high'
-    MEDIUM = 'medium'
-    LOW = 'low'
+    LOW = 100
+    MEDIUM = 200
+    HIGH = 300
 
     PRIORITIES = (
         (HIGH, 'High'),
@@ -128,9 +128,8 @@ class Lead(UserResource, ProjectEntityMixin):
                                    choices=SOURCE_TYPES,
                                    default=UNKNOWN)
 
-    priority = models.CharField(max_length=30,
-                                choices=PRIORITIES,
-                                default=LOW)
+    priority = models.IntegerField(choices=PRIORITIES,
+                                   default=LOW)
 
     confidentiality = models.CharField(max_length=30,
                                        choices=CONFIDENTIALITIES,
