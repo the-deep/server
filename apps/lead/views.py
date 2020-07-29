@@ -293,6 +293,13 @@ class LeadOptionsView(views.APIView):
             } for s in Lead.STATUSES
         ]
 
+        options['priority'] = [
+            {
+                'key': s[0],
+                'value': s[1],
+            } for s in Lead.PRIORITIES
+        ]
+
         options['project'] = [
             {
                 'key': project.id,
@@ -374,11 +381,18 @@ class LeadOptionsView(views.APIView):
                     'value': s[1],
                 } for s in Lead.STATUSES
             ],
+            'priority': [
+                {
+                    'key': s[0],
+                    'value': s[1],
+                } for s in Lead.PRIORITIES
+            ],
 
             # Dynamic Options
 
             'lead_groups': LeadGroup.objects.filter(project_filter, id__in=lead_groups_id).distinct(),
-            'members': _filter_users_by_projects_memberships(members_qs, projects).prefetch_related('profile').distinct(),
+            'members': _filter_users_by_projects_memberships(members_qs, projects)\
+                                    .prefetch_related('profile').distinct(),
             'organizations': Organization.objects.filter(id__in=organizations_id).distinct(),
 
             # EMM specific options
