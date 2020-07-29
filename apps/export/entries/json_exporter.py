@@ -43,6 +43,7 @@ class JsonExporter:
             data['lead_id'] = lead.id
             data['lead'] = lead.title
             data['source'] = lead.get_source_display()
+            data['priority'] = lead.get_priority_display()
             data['author'] = lead.get_authors_display()
             data['date'] = lead.published_on
             data['excerpt'] = entry.excerpt
