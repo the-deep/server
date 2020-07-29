@@ -121,9 +121,6 @@ class TestNotificationAPIs(TestCase):
         # filtering of timestamp has a step of ONE DAY
         after = before + timedelta(days=1)
 
-        print(before.strftime('%Y-%m-%d%z'))
-        print(after.strftime('%Y-%m-%d%z'))
-
         response = self.client.get(url, params)
         self.assert_200(response)
         data = response.json()
@@ -137,13 +134,13 @@ class TestNotificationAPIs(TestCase):
         response = self.client.get(url, params)
         self.assert_200(response)
         data = response.json()
-        assert data['count'] == 0, "One Notification was in pending"
+        assert data['count'] == 0, "Expected zero non-pending notification"
 
         params.update(dict(is_pending='true'))
         response = self.client.get(url, params)
         self.assert_200(response)
         data = response.json()
-        assert data['count'] == 1, "One Notification was in pending"
+        assert data['count'] == 1, "Expected one pending notification"
 
         # timestamp filter
         params.pop('is_pending', None)
