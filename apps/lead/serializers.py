@@ -124,6 +124,8 @@ class LeadSerializer(
     Lead Model Serializer
     """
     no_of_entries = serializers.IntegerField(read_only=True)
+    assessment_id = serializers.IntegerField(read_only=True)
+
     attachment = SimpleFileSerializer(required=False)
     thumbnail = URLCachedFileField(
         source='leadpreview.thumbnail',
