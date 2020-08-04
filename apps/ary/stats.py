@@ -53,7 +53,7 @@ def _get_ary_field_options(config):
     raise Exception(f'Unknown field type provided {field_type}')
 
 
-def get_project_ary_stats(project):
+def get_project_ary_entry_stats(project):
     """
     NOTE: This is a custom made API for Ary VIz and might not work for all Assessment Frameworks.
     """

@@ -8,15 +8,14 @@ from reversion.admin import VersionAdmin
 
 from deep.admin import linkify
 
-from .tasks import generate_entry_stats, generate_ary_stats
+from .tasks import generate_stats
 from .forms import ProjectRoleForm
 from .models import (
     Project,
     ProjectRole,
     ProjectMembership,
     ProjectUserGroupMembership,
-    ProjectEntryStats,
-    ProjectAryStats,
+    ProjectStats,
     ProjectStatus,
     ProjectStatusCondition,
     ProjectJoinRequest,
@@ -32,7 +31,7 @@ def trigger_project_stat_calc(generator):
         messages.add_message(
             request, messages.INFO,
             mark_safe(
-                f'Successfully triggered Project Stats Calculation ({generator.__name__}) for projects: <br><hr>' +
+                'Successfully triggered Project Stats Calculation for projects: <br><hr>' +
                 '<br>'.join(
                     '* {0} : {1}'.format(*value)
                     for value in queryset.values_list('project_id', 'project__title').distinct()[:TRIGGER_LIMIT]
@@ -123,26 +122,16 @@ class ProjectRoleAdmin(admin.ModelAdmin):
     form = ProjectRoleForm
 
 
-@admin.register(ProjectEntryStats)
+@admin.register(ProjectStats)
 class ProjectEntryStatsAdmin(admin.ModelAdmin):
     AF = linkify('project.analysis_framework', 'AF')
 
     search_fields = ('project__title',)
     list_filter = ('status',)
-    list_display = ('project', 'modified_at', AF, 'status', 'file',)
-    actions = [trigger_project_stat_calc(generate_entry_stats)]
+    list_display = ('project', 'modified_at', AF, 'status', 'file', 'confidential_file',)
+    actions = [trigger_project_stat_calc(generate_stats)]
     autocomplete_fields = ('project',)
     readonly_fields = (AF,)
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('project', 'project__analysis_framework')
-
-
-@admin.register(ProjectAryStats)
-class ProjectAryStatsAdmin(ProjectEntryStatsAdmin):
-    list_display = ('project', 'modified_at', 'status', 'file', 'confidential_file')
-    actions = [trigger_project_stat_calc(generate_ary_stats)]
-    readonly_fields = []
-
-    def get_queryset(self, request):
-        return super().get_queryset(request)

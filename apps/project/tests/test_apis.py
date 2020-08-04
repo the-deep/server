@@ -13,7 +13,7 @@ from analysis_framework.models import (
     Widget,
 )
 from lead.models import LeadGroup
-from project.tasks import _generate_entry_stats
+from project.tasks import _generate_project_stats
 from project.models import (
     Project,
     ProjectRole,
@@ -33,6 +33,7 @@ from . import entry_stats_data
 
 
 class ProjectApiTest(TestCase):
+    fixtures = ['apps/ary/fixtures/ary_template_data.json']
 
     def setUp(self):
         super().setUp()
@@ -1007,7 +1008,7 @@ class ProjectApiTest(TestCase):
         response = self.client.patch(url, patch_data)
         self.assertEqual(response.status_code, status)
 
-    def test_project_entries_stats(self):
+    def test_project_stats(self):
         project_user = self.create(User)
         non_project_user = self.create(User)
 
@@ -1057,7 +1058,7 @@ class ProjectApiTest(TestCase):
             }
             invalid_stat_config[widget_identifier] = {'pk': 0}
 
-        url = f'/api/v1/projects/{project.pk}/entries-viz/'
+        url = f'/api/v1/projects/{project.pk}/project-viz/'
 
         # 404 for non project user
         self.authenticate(non_project_user)
@@ -1078,7 +1079,7 @@ class ProjectApiTest(TestCase):
         self.assert_202(response)
 
         # 500 if invalid config is set and stat is generated
-        _generate_entry_stats(project.pk)
+        _generate_project_stats(project.pk)
         response = self.client.get(url)
         self.assert_200(response)
         self.assertEqual(response.json()['status'], 'failure')
@@ -1087,7 +1088,7 @@ class ProjectApiTest(TestCase):
         af.save()
 
         # 302 (Redirect to data file) if valid config is set and stat is generated
-        _generate_entry_stats(project.pk)
+        _generate_project_stats(project.pk)
         response = self.client.get(url)
         self.assert_200(response)
         self.assertEqual(response.json()['status'], 'success')

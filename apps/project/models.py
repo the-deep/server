@@ -581,16 +581,16 @@ class ProjectRole(models.Model):
             return item_permissions & permission_bit != 0
 
 
-class ProjectBaseStats(models.Model):
+class ProjectStats(models.Model):
     THRESHOLD_SECONDS = 60 * 20
 
+    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name='entry_stats')
     modified_at = models.DateTimeField(auto_now=True)
     status = models.CharField(
         max_length=30, choices=ProcessStatus.STATUS_CHOICES, default=ProcessStatus.PENDING,
     )
-
-    class Meta:
-        abstract = True
+    file = models.FileField(upload_to='project-stats/', max_length=255, null=True, blank=True)
+    confidential_file = models.FileField(upload_to='project-stats/', max_length=255, null=True, blank=True)
 
     def __str__(self):
         return str(self.project)
@@ -611,14 +611,3 @@ class ProjectBaseStats(models.Model):
         ):
             return True
         return False
-
-
-class ProjectEntryStats(ProjectBaseStats):
-    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name='entry_stats')
-    file = models.FileField(upload_to='entry-stats/', max_length=255, null=True, blank=True)
-
-
-class ProjectAryStats(ProjectBaseStats):
-    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name='ary_stats')
-    file = models.FileField(upload_to='ary-stats/', max_length=255, null=True, blank=True)
-    confidential_file = models.FileField(upload_to='entry-stats/', max_length=255, null=True, blank=True)
