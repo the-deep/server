@@ -1,6 +1,10 @@
 from django.utils import timezone
 from django.db.models import F, Count
-from entry.stats import _get_project_geoareas
+from entry.stats import (
+    _get_project_geoareas,
+    _get_lead_data,
+    get_project_entries_stats
+)
 from apps.entry.widgets.geo_widget import get_valid_geo_ids
 
 from organization.models import OrganizationType, Organization
@@ -49,7 +53,7 @@ def _get_ary_field_options(config):
     raise Exception(f'Unknown field type provided {field_type}')
 
 
-def get_project_ary_stats(project):
+def get_project_ary_entry_stats(project):
     """
     NOTE: This is a custom made API for Ary VIz and might not work for all Assessment Frameworks.
     """
@@ -153,7 +157,6 @@ def get_project_ary_stats(project):
                 name=F('title')
             )
         ),
-        'geo_array': _get_project_geoareas(project),
         # scale used by score_pillar
         'scorepillar_scale': list(ScoreScale.objects.values('id', 'color', 'value', name=F('title'))),
         'final_scores_array': {
@@ -246,12 +249,10 @@ def get_project_ary_stats(project):
         }
 
         lead = ary.lead
-        lead_data = {
-            'id': lead.id,
-            'title': lead.title,
-            'source_type': lead.source_type,
-            'confidentiality': lead.confidentiality,
-        }
+        # Non confidential data
+        lead_data = _get_lead_data(lead)
+
+        # confidential data (if lead is confidential)
         lead_source_data = {}
         if (
             lead.source_type in [Lead.DISK, Lead.DROPBOX, Lead.GOOGLE_DRIVE] and
@@ -308,6 +309,16 @@ def get_project_ary_stats(project):
                 ) for unit_of_analysis_type in ['households', 'individuals']
             },
 
+            'data_collection_technique_sample_size': {
+                technique['id']: sum(
+                    attribute.get(str(methodology_attributes_fields['sampling_size_field_pk'])) or 0
+                    for attribute in methodology_attributes
+                    if int(
+                        attribute.get(str(dynamic_fields['data_collection_technique']['pk'])) or -1
+                    ) == int(technique['id'])
+                ) for technique in dynamic_meta['data_collection_technique']
+            },
+
             # Methodology Fields Data
             **{
                 key: [
@@ -343,10 +354,21 @@ def get_project_ary_stats(project):
         else:
             public_data.append(ary_data)
 
+    entry_stats = get_project_entries_stats(project, skip_geo_data=True)
+    geo_array = _get_project_geoareas(project)
+
     return {
-        'meta': meta,
-        'data': public_data,
+        'geo_data': geo_array,
+        'entry_data': entry_stats,
+        'ary_data': {
+            'meta': meta,
+            'data': public_data,
+        },
     }, {
-        'meta': meta,
-        'data': confidential_data,
+        'geo_data': geo_array,
+        'entry_data': entry_stats,
+        'ary_data': {
+            'meta': meta,
+            'data': confidential_data,
+        },
     }

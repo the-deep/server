@@ -46,8 +46,7 @@ from .models import (
     ProjectMembership,
     ProjectJoinRequest,
     ProjectUserGroupMembership,
-    ProjectEntryStats,
-    ProjectAryStats,
+    ProjectStats,
 )
 from .serializers import (
     ProjectSerializer,
@@ -71,7 +70,7 @@ from .filter_set import (
     ProjectMembershipFilterSet,
     ProjectUserGroupMembershipFilterSet,
 )
-from .tasks import generate_entry_stats, generate_ary_stats
+from .tasks import generate_stats
 
 from .token import project_request_token_generator
 logger = logging.getLogger(__name__)
@@ -81,16 +80,22 @@ def _get_viz_data(request, StatModel, stat_generator, project):
     """
     Util function to trigger and serve Project entry/ary viz data
     """
+    if (
+            project.analysis_framework is None or
+            project.analysis_framework.properties is None or
+            project.analysis_framework.properties.get('stats_config') is None
+    ):
+        return response.Response(
+            {'error': f'No configuration provided for current Project: {project.title}, Contact Admin'},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
     stats, created = StatModel.objects.get_or_create(project=project)
 
-    # Check only for ARY (Can view confidential data)
-    if stat_generator == generate_ary_stats:
-        can_view_confidential = ProjectMembership.objects.filter(member=request.user, project=project).annotate(
-            view_all=models.F('role__lead_permissions').bitand(PROJECT_PERMISSIONS.lead.view)
-        ).filter(view_all=PROJECT_PERMISSIONS.lead.view).exists()
-        stat_file = stats.confidential_file if can_view_confidential else stats.file
-    else:
-        stat_file = stats.file
+    can_view_confidential = ProjectMembership.objects.filter(member=request.user, project=project).annotate(
+        view_all=models.F('role__lead_permissions').bitand(PROJECT_PERMISSIONS.lead.view)
+    ).filter(view_all=PROJECT_PERMISSIONS.lead.view).exists()
+    stat_file = stats.confidential_file if can_view_confidential else stats.file
 
     file_url = request.build_absolute_uri(
         URLCachedFileField().to_representation(stat_file)
@@ -102,12 +107,12 @@ def _get_viz_data(request, StatModel, stat_generator, project):
         })
     elif stats.status == ProcessStatus.FAILURE:
         return response.Response({
-            'message': f'Failed to generate stats ({StatModel.__name__}), Contact Admin',
+            'message': 'Failed to generate stats, Contact Admin',
             'data': file_url,
             'status': stats.status,
         })
-    # TODO: Refactor task trigger if all users have access to this API
-    stat_generator.delay(project.pk)
+    transaction.on_commit(lambda: stat_generator.delay(project.pk))
+    # NOTE: Not changing modified_at if already pending
     if stats.status != ProcessStatus.PENDING:
         stats.status = ProcessStatus.PENDING
         stats.save()
@@ -246,37 +251,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         permission_classes=[permissions.IsAuthenticated],
-        url_path='entries-viz',
+        url_path='project-viz',
     )
-    def get_entries_viz_data(self, request, pk=None, version=None):
+    def get_project_viz_data(self, request, pk=None, version=None):
         """
         Get viz data for project entries:
         """
         project = self.get_object()
-
-        if (
-                project.analysis_framework is None or
-                project.analysis_framework.properties is None or
-                project.analysis_framework.properties.get('stats_config') is None
-        ):
-            return response.Response(
-                {'error': f'No configuration provided for current Project: {project.title}, Contact Admin'},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        return _get_viz_data(request, ProjectEntryStats, generate_entry_stats, project)
-
-    @action(
-        detail=True,
-        permission_classes=[permissions.IsAuthenticated],
-        url_path='ary-viz',
-    )
-    def get_ary_viz_data(self, request, pk=None, version=None):
-        """
-        Get viz data for project ary:
-        """
-        project = self.get_object()
-        return _get_viz_data(request, ProjectAryStats, generate_ary_stats, project)
+        return _get_viz_data(request, ProjectStats, generate_stats, project)
 
     """
     Join request to this project
