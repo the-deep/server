@@ -60,8 +60,14 @@ class NotificationViewSet(viewsets.ModelViewSet):
         qs = self.filter_queryset(self.get_queryset())
         total = qs.count()
 
-        unseen_count = qs.filter(
-            status=Notification.STATUS_UNSEEN).count()
+        unseen_notifications = qs.filter(status=Notification.STATUS_UNSEEN)
 
-        result = {'unseen': unseen_count, 'total': total}
+        unseen_requests_count = unseen_notifications.filter(data__status='pending').count()
+        unseen_notifications_count = unseen_notifications.count() - unseen_requests_count
+
+        result = {
+            'unseen_notifications': unseen_notifications_count,
+            'unseen_requests': unseen_requests_count,
+            'total': total,
+        }
         return response.Response(result)
