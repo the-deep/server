@@ -6,6 +6,9 @@ from django.utils import timezone
 from user.models import User
 from notification.models import Notification
 from project.models import ProjectJoinRequest, Project
+from entry.models import EntryComment, Entry
+from lead.models import Lead
+from analysis_framework.models import AnalysisFramework
 
 
 class TestNotificationAPIs(TestCase):
@@ -170,3 +173,42 @@ class TestNotificationAPIs(TestCase):
         self.assert_200(response)
         data = response.json()
         assert data['count'] == 1, "One notification should be after 'before time' and before 'after time'"
+
+    def test_get_notification_count(self):
+        project = self.create_project()
+        user = self.create(User)
+
+        url = '/api/v1/notifications/count/'
+        data = {'project': project.id}
+
+        self.authenticate()
+
+        response = self.client.get(url, data)
+        self.assert_200(response)
+        data = response.data
+        assert data['total'] == 0
+        assert data['unseen_notifications'] == 0
+        assert data['unseen_requests'] == 0
+
+        # Now, create join request
+        join_request = self.create_join_request(project, user)
+        response = self.client.get(url, data)
+        data = response.data
+        self.assert_200(response)
+        assert data['total'] == 1
+        assert data['unseen_notifications'] == 0
+        assert data['unseen_requests'] == 1
+
+        # Change status of project join request
+        join_request.status = 'accepted'
+        join_request.responded_by = self.user
+        join_request.save()
+
+        response = self.client.get(url, data)
+        data = response.data
+        self.assert_200(response)
+        assert data['total'] == 2
+        # One notification is of join request
+        # Another new notification is created after user sucessfully joins project
+        assert data['unseen_notifications'] == 2
+        assert data['unseen_requests'] == 0
