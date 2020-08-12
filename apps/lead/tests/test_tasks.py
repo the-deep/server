@@ -5,7 +5,7 @@ from mock import patch
 
 from lead.tasks import (
     extract_from_lead,
-    _preprocess,
+    preprocess,
     send_lead_text_to_deepl,
     requests,
     get_unclassified_leads,
@@ -67,7 +67,7 @@ class ExtractFromLeadTaskTest(TestCase):
             extracted = get_or_write_file(path + '.txt', lead_preview.text_extract)
             self.assertEqual(
                 ' '.join(lead_preview.text_extract.split()),
-                _preprocess(' '.join(extracted.read().split())),
+                preprocess(' '.join(extracted.read().split())),
             )
         except Exception:
             logger.warning('LEAD EXTRACTION ERROR:', exc_info=True)

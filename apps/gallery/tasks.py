@@ -4,7 +4,7 @@ from gallery.models import (
     File,
     FilePreview,
 )
-from lead.tasks import _preprocess
+from lead.tasks import preprocess
 from utils.extractor.file_document import FileDocument
 
 from redis_store import redis
@@ -34,7 +34,7 @@ def _extract_from_file_core(file_preview_id):
                     file.file.name,
                 ).extract()
 
-                text = _preprocess(text)
+                text = preprocess(text)
 
                 if i != 0:
                     all_text += '\n\n'
