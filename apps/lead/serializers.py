@@ -22,6 +22,7 @@ from .models import (
     LeadEMMTrigger,
     EMMEntity,
 )
+from lead.tasks import get_duplicate_leads
 
 
 def check_if_url_exists(url, user=None, project=None, exception_id=None, return_lead=False):
@@ -219,7 +220,17 @@ class LeadSerializer(
         emm_triggers = validated_data.pop('emm_triggers', [])
         emm_entities = validated_data.pop('emm_entities', [])
 
+        # Check for duplicates
+        # NOTE: This is not inside validate because we don't want to check this for put/patch methods
+        duplicate_leads, error = get_duplicate_leads(validated_data)
+        if error:
+            raise serializers.ValidationError(error)
+        if duplicate_leads:
+            raise serializers.ValidationError('There are similar leads to this lead')
+
         lead = super().create(validated_data)
+
+        # TODO: add to index
 
         for entity in emm_entities:
             entity = EMMEntity.objects.filter(name=entity['name']).first()

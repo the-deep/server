@@ -1,28 +1,29 @@
-from celery import shared_task
-# from channels import Group
-from django.core.files import File
-from django.db import transaction
-from django.db.models import Q
-from django.db.models.functions import Length
-from django.conf import settings
-from lead.models import (
-    Lead,
-    LeadPreview,
-    LeadPreviewImage,
-)
-from redis_store import redis
-# from rest_framework.renderers import JSONRenderer
-from utils.extractor.file_document import FileDocument
-from utils.extractor.web_document import WebDocument
-from utils.extractor.thumbnailers import DocThumbnailer
-# from utils.websocket.subscription import SubscriptionConsumer
-
 import time
 import reversion
 import os
 import re
 import requests
 import tempfile
+
+from django.core.files import File
+from django.db import transaction
+from django.db.models import Q
+from django.db.models.functions import Length
+from django.conf import settings
+
+from celery import shared_task
+from redis_store import redis
+
+from lead.models import (
+    Lead,
+    LeadPreview,
+    LeadPreviewImage,
+)
+
+from utils.extractor.file_document import FileDocument
+from utils.extractor.web_document import WebDocument
+from utils.extractor.thumbnailers import DocThumbnailer
+
 
 import logging
 
@@ -31,7 +32,7 @@ logger = logging.getLogger(__name__)
 DEEPL_CLASSIFY_URL = settings.DEEPL_API + '/v2/classify/'
 
 
-def _preprocess(text):
+def preprocess(text):
     # Remove NUL (0x00) characters
     text = text.replace('\x00', '')
     # Tabs and nbsps to space
@@ -78,7 +79,7 @@ def _extract_from_lead_core(lead_id):
                 doc = WebDocument(lead.url)
                 text, images, page_count = doc.extract()
 
-            text = _preprocess(text)
+            text = preprocess(text)
             word_count = len(re.findall(r'\b\S+\b', text))
         except Exception:
             logger.error('Lead Extraction Failed!!', exc_info=True)
