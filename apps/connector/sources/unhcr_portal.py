@@ -210,6 +210,14 @@ COUNTRIES_OPTIONS = [
 ]
 
 
+def _format_date_or_none(iso_datestr):
+    try:
+        date = datetime.datetime.strptime(iso_datestr, '%Y-%m-%d')
+        return date.strftime('%d-%m-%Y')
+    except Exception:
+        return None
+
+
 @ConnectorWrapper
 class UNHCRPortal(Source):
     URL = 'https://data2.unhcr.org/en/search'
@@ -248,13 +256,22 @@ class UNHCRPortal(Source):
     }
 
     def get_content(self, url, params):
-        resp = requests.get(self.URL, params=params)
+        resp = requests.get(url, params=params)
         return resp.text
 
     def fetch(self, params, offset, limit):
         results = []
-        if params.get('country'):
-            params['country_json'] = '{"0":"' + params['country'] + '"}'
+        country = params.pop('country', None)
+        date_from = _format_date_or_none(params.pop('date_from', None))
+        date_to = _format_date_or_none(params.pop('date_to', None))
+        if country:
+            params['global_filter[country_json]'] = '{"0":"' + country + '"}'
+            params['global_filter[country]'] = country
+        if date_from:
+            params['global_filter[date_from]'] = date_from
+        if date_to:
+            params['global_filter[date_to]'] = date_to
+
         params.update(self.params)  # type is default
 
         content = self.get_content(self.URL, params)
