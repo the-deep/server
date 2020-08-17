@@ -213,6 +213,9 @@ class LeadSerializer(
     # TODO: Probably also validate assignee to valid list of users
 
     def create(self, validated_data):
+        request = self.context['request']
+        # check if force save or not
+        force_save = request.query_params.get('_force', 'false')
         assignee_field = validated_data.pop('get_assignee', None)
         assignee_id = assignee_field and assignee_field.get('id', None)
         assignee = assignee_id and get_object_or_404(User, id=assignee_id)
@@ -225,8 +228,8 @@ class LeadSerializer(
         duplicate_leads, error = get_duplicate_leads(validated_data)
         if error:
             raise serializers.ValidationError(error)
-        if duplicate_leads:
-            raise serializers.ValidationError('There are similar leads to this lead')
+        if duplicate_leads and force_save != 'true':
+            raise serializers.ValidationError('There are leads similar to this lead')
 
         lead = super().create(validated_data)
 

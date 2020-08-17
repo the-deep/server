@@ -63,6 +63,7 @@ sentry-sdk>=0.10,<0.20
 tldextract==2.2.0
 tornado>=4.2.0,<6.0.0
 wordcloud==1.5.0
+typing-extensions==3.7.4.2
 
 # django-autofixture
 git+https://github.com/volrath/django-autofixture.git@0472a494485dd597d598e20d9e1c6c47cf0eadb7
@@ -72,3 +73,5 @@ git+https://github.com/davedash/django-fixture-magic.git@466fa35c075009e4a1974f6
 # document_deduplication
 langdetect==1.0.8
 deep_utils.deduplication
+deep_utils.dynamodb
+pynamodb==4.3.2
