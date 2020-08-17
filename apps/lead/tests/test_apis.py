@@ -1,4 +1,8 @@
-from deep.tests import TestCase
+from deep.tests import (
+    TestCase,
+    decorate_class_with,
+    mock_module_function_with_return_value
+)
 from user.models import User
 from user.serializers import SimpleUserSerializer
 from project.models import (
@@ -47,7 +51,15 @@ UNHCR_DATA = {
     'url': 'https://www.unhcr.org',
 }
 
+mock_get_duplicate_decorator = decorate_class_with(
+    mock_module_function_with_return_value(
+        'lead.serializers.get_duplicate_leads',
+        ([], None)
+    )
+)
 
+
+@mock_get_duplicate_decorator
 class LeadTests(TestCase):
     def setUp(self):
         super().setUp()
@@ -1259,6 +1271,7 @@ SAMPLE_WEB_INFO_WEBSITE = 'reliefweb.int'
 SAMPLE_WEB_INFO_TITLE = 'Yemen Emergency Food Security and Nutrition Assessment (EFSNA) 2016 - Preliminary Results' # noqa
 
 
+@mock_get_duplicate_decorator
 class WebInfoExtractionTests(TestCase):
     def setUp(self):
         super().setUp()
