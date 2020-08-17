@@ -1,4 +1,8 @@
 import os
+import types
+import inspect
+from mock import patch
+
 import autofixture
 from rest_framework import (
     test,
@@ -297,3 +301,38 @@ class _CaptureOnCommitCallbacksContext:
         if exc_type is None and self.execute:
             for callback in self.callbacks:
                 callback()
+
+
+def mock_module_function_with_return_value(module_function_full_name, return_value):
+    """
+    Example: Whenever we need to mock a function from a module, say lead.serializers.get_duplicate_leads,
+    we decorate the method with @patch('lead.serializers.get_duplicate_leads') this will return a function with
+    an extra paramter, the mock object, say mock_obj. We can then set the return value or raise exception and do
+    many things with the mock object.
+
+    This function takes a function path string and it's return value and mocks a given function
+    """
+    def decorator(method):
+        patch_decorator = patch(module_function_full_name)
+        # When we apply this decorator, the new function will have an extra argument which is the
+        # mock object
+
+        def new_func(self, *args):
+            # Since this function is going to be decorated, we are sure that this will have
+            # an added argument, which is the mock object. So we can safely access args[-1]
+            args[-1].return_value = return_value
+            method(self, *args[:-1])  # but our method does not take extra arg so omit the last arg(i.e. the mock object)
+
+        return patch_decorator(new_func)  # this is where the magic of adding a new arg happens
+    return decorator
+
+
+def decorate_class_with(method_decorator):
+    """
+    This is used to decorate a class' methods with the given method decorator
+    """
+    def decorator(cls):
+        for name, fn in inspect.getmembers(cls):
+            if isinstance(fn, types.FunctionType):
+                setattr(cls, name, method_decorator(fn))
+    return decorator

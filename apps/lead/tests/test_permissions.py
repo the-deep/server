@@ -1,11 +1,23 @@
-from deep.tests import TestCase
+from deep.tests import (
+    TestCase,
+    decorate_class_with,
+    mock_module_function_with_return_value
+)
 
 from lead.models import Lead
 from organization.models import Organization
 from project.permissions import PROJECT_PERMISSIONS, get_project_permissions_value
 from project.models import Project, ProjectRole
 
+mock_get_duplicate_decorator = decorate_class_with(
+    mock_module_function_with_return_value(
+        'lead.serializers.get_duplicate_leads',
+        ([], None)
+    )
+)
 
+
+@mock_get_duplicate_decorator
 class TestLeadPermissions(TestCase):
     def setUp(self):
         super().setUp()
