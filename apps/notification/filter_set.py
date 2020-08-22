@@ -15,6 +15,7 @@ class NotificationFilterSet(django_filters.FilterSet):
         (TRUE, 'True'),
         (FALSE, 'False'),
     )
+
     timestamp__lt = django_filters.DateFilter(
         field_name='timestamp', lookup_expr='lt',
         input_formats=['%Y-%m-%d%z'],
@@ -41,6 +42,7 @@ class NotificationFilterSet(django_filters.FilterSet):
         model = Notification
         fields = {
             'timestamp': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            'status': ['exact'],
             'notification_type': ['exact'],
         }
 
