@@ -6,9 +6,6 @@ from django.utils import timezone
 from user.models import User
 from notification.models import Notification
 from project.models import ProjectJoinRequest, Project
-from entry.models import EntryComment, Entry
-from lead.models import Lead
-from analysis_framework.models import AnalysisFramework
 
 
 class TestNotificationAPIs(TestCase):
@@ -145,8 +142,22 @@ class TestNotificationAPIs(TestCase):
         data = response.json()
         assert data['count'] == 1, "Expected one pending notification"
 
-        # timestamp filter
+        # status filter
         params.pop('is_pending', None)
+        params.update(dict(status='unseen'))
+        response = self.client.get(url, params)
+        self.assert_200(response)
+        data = response.json()
+        assert data['count'] == 1, "One Notification should be with unseen status"
+
+        params.update(dict(status='seen'))
+        response = self.client.get(url, params)
+        self.assert_200(response)
+        data = response.json()
+        assert data['count'] == 0, "Zero notification should be with seen status"
+
+        # timestamp filter
+        params.pop('status', None)
         params.update(dict(timestamp__gt=before.strftime('%Y-%m-%d%z')))
         response = self.client.get(url, params)
         self.assert_200(response)
