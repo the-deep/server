@@ -162,7 +162,7 @@ class EntryLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
         model = Lead
         fields = (
             'id', 'title', 'created_at', 'url', 'attachment', 'tabular_book',
-            'client_id', 'assignee', 'assignee_details',
+            'client_id', 'assignee', 'assignee_details', 'published_on',
         )
 
     def get_tabular_book(self, obj):
