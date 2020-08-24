@@ -22,7 +22,7 @@ from .models import (
     LeadEMMTrigger,
     EMMEntity,
 )
-from lead.tasks import get_duplicate_leads
+from lead.tasks import get_duplicate_leads, add_lead_to_index
 
 
 def check_if_url_exists(url, user=None, project=None, exception_id=None, return_lead=False):
@@ -225,15 +225,19 @@ class LeadSerializer(
 
         # Check for duplicates
         # NOTE: This is not inside validate because we don't want to check this for put/patch methods
-        duplicate_leads, error = get_duplicate_leads(validated_data)
-        if error:
-            raise serializers.ValidationError(error)
-        if duplicate_leads and force_save != 'true':
+        lead_duplication_info = get_duplicate_leads(validated_data)
+        if lead_duplication_info.error:
+            raise serializers.ValidationError(lead_duplication_info.error)
+        if lead_duplication_info.similar_leads and force_save != 'true':
             raise serializers.ValidationError('There are leads similar to this lead')
 
         lead = super().create(validated_data)
 
-        # TODO: add to index
+        # Now add to index
+        # Note that, if there is no text or unsupported language, vector is None
+        # We add to index only if there is vector
+        if lead_duplication_info.vector:
+            add_lead_to_index(lead, lead_duplication_info)
 
         for entity in emm_entities:
             entity = EMMEntity.objects.filter(name=entity['name']).first()
