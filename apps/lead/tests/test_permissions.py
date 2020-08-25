@@ -1,23 +1,20 @@
 from deep.tests import (
     TestCase,
-    decorate_class_with,
     mock_module_function_with_return_value
 )
 
 from lead.models import Lead
+from lead.tasks import LeadDuplicationInfo
 from organization.models import Organization
 from project.permissions import PROJECT_PERMISSIONS, get_project_permissions_value
 from project.models import Project, ProjectRole
 
-mock_get_duplicate_decorator = decorate_class_with(
-    mock_module_function_with_return_value(
-        'lead.serializers.get_duplicate_leads',
-        ([], None)
-    )
+get_duplicate_decorator = mock_module_function_with_return_value(
+    'lead.serializers.get_duplicate_leads',
+    LeadDuplicationInfo(similar_leads=[])
 )
 
 
-@mock_get_duplicate_decorator
 class TestLeadPermissions(TestCase):
     def setUp(self):
         super().setUp()
@@ -122,6 +119,7 @@ class TestLeadPermissions(TestCase):
         resp = self.client.get(url)
         self.assert_404(resp)
 
+    @get_duplicate_decorator
     def test_create_lead_no_permission(self):
         # Create a project where self.user has no lead creation permission
         project = self.create(Project, role=self.no_lead_creation_role)
@@ -140,6 +138,7 @@ class TestLeadPermissions(TestCase):
         response = self.client.post(url, data)
         self.assert_403(response)
 
+    @get_duplicate_decorator
     def test_create_lead_with_permission(self):
         # Create a project where self.user has no lead creation permission
         project = self.create(Project, role=self.lead_creation_role)

@@ -1,6 +1,5 @@
 from deep.tests import (
     TestCase,
-    decorate_class_with,
     mock_module_function_with_return_value
 )
 from user.models import User
@@ -24,6 +23,7 @@ from lead.models import (
     LeadEMMTrigger,
     LeadGroup,
 )
+from lead.tasks import LeadDuplicationInfo
 from user_group.models import UserGroup, GroupMembership
 
 import logging
@@ -51,15 +51,14 @@ UNHCR_DATA = {
     'url': 'https://www.unhcr.org',
 }
 
-mock_get_duplicate_decorator = decorate_class_with(
-    mock_module_function_with_return_value(
-        'lead.serializers.get_duplicate_leads',
-        ([], None)
-    )
+get_duplicate_decorator = mock_module_function_with_return_value(
+    'lead.serializers.get_duplicate_leads',
+    LeadDuplicationInfo(similar_leads=[])
 )
+# NOTE that no need to mock add_to_index because that is called only when the get_duplicate_leads
+# return object has attribute 'vector' set. In above mock, it will have a default value None
 
 
-@mock_get_duplicate_decorator
 class LeadTests(TestCase):
     def setUp(self):
         super().setUp()
@@ -68,6 +67,7 @@ class LeadTests(TestCase):
     def create_organization(self, **kwargs):
         return self.create(Organization, **kwargs)
 
+    @get_duplicate_decorator
     def test_create_lead(self, assignee=None):
         lead_count = Lead.objects.count()
         project = self.create(Project, role=self.admin_role)
@@ -136,6 +136,7 @@ class LeadTests(TestCase):
 
         self.assertLess(Lead.objects.count(), lead_count)
 
+    @get_duplicate_decorator
     def test_create_high_priority_lead(self, assignee=None):
         lead_count = Lead.objects.count()
         project = self.create(Project, role=self.admin_role)
@@ -165,6 +166,7 @@ class LeadTests(TestCase):
         # low is default priority
         self.assertEqual(r_data['priority'], Lead.HIGH)
 
+    @get_duplicate_decorator
     def test_create_lead_with_emm(self):
         entity1 = self.create(EMMEntity, name='entity1')
         entity2 = self.create(EMMEntity, name='entity2')
@@ -211,6 +213,7 @@ class LeadTests(TestCase):
         # Check emm triggers created
         assert LeadEMMTrigger.objects.filter(lead_id=lead_id).count() == 2
 
+    @get_duplicate_decorator
     def test_get_lead_check_no_of_entries(self, assignee=None):
         project = self.create(Project, role=self.admin_role)
 
@@ -237,6 +240,7 @@ class LeadTests(TestCase):
         r_data = response.json()
         assert 'noOfEntries' in r_data["results"][0]
 
+    @get_duplicate_decorator
     def test_create_lead_no_create_role(self, assignee=None):
         lead_count = Lead.objects.count()
         project = self.create(Project, role=self.admin_role)
@@ -1271,7 +1275,6 @@ SAMPLE_WEB_INFO_WEBSITE = 'reliefweb.int'
 SAMPLE_WEB_INFO_TITLE = 'Yemen Emergency Food Security and Nutrition Assessment (EFSNA) 2016 - Preliminary Results' # noqa
 
 
-@mock_get_duplicate_decorator
 class WebInfoExtractionTests(TestCase):
     def setUp(self):
         super().setUp()

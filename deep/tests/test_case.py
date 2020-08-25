@@ -325,22 +325,25 @@ def mock_module_function_with_return_value(module_function_full_name, return_val
         # When we apply this decorator, the new function will have an extra argument which is the
         # mock object
 
-        def new_func(self, *args):
+        def new_func(self, *args, **kwargs):
+            print(args, kwargs)
             # Since this function is going to be decorated, we are sure that this will have
             # an added argument, which is the mock object. So we can safely access args[-1]
             args[-1].return_value = return_value
-            method(self, *args[:-1])  # but our method does not take extra arg so omit the last arg(i.e. the mock object)
+            method(self, *args[:-1], **kwargs)  # but our method does not take extra arg so omit the last arg(i.e. the mock object)
 
         return patch_decorator(new_func)  # this is where the magic of adding a new arg happens
     return decorator
 
 
+# This is not used.
 def decorate_class_with(method_decorator):
     """
-    This is used to decorate a class' methods with the given method decorator
+    This is used to decorate a class' all methods with the given method decorator
     """
     def decorator(cls):
         for name, fn in inspect.getmembers(cls):
             if isinstance(fn, types.FunctionType):
                 setattr(cls, name, method_decorator(fn))
+        return cls
     return decorator
