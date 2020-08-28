@@ -6,13 +6,8 @@ BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR=$(dirname "$(dirname "$BASE_DIR")")
 instid=`curl -s -o - http://169.254.169.254/latest/meta-data/instance-id`
 
-if ! [ -z "$IN_CERN" ]; then # In cern
-    export EBS_HOSTNAME=${DEPLOYMENT_ENV_NAME}_${instid}_CERN
-    crontab $ROOT_DIR/deploy/cern/cronjobs
-else
-    export EBS_HOSTNAME=${DEPLOYMENT_ENV_NAME}_${instid}
-    crontab $ROOT_DIR/deploy/cronjobs
-fi
+export EBS_HOSTNAME=${DEPLOYMENT_ENV_NAME}_${instid}
+crontab $ROOT_DIR/deploy/cronjobs
 
 ### ENV FOR CRON JOBS
 printenv | sed 's/^\([a-zA-Z0-9_]*\)=\(.*\)$/export \1="\2"/g' > /aws-script/env_var.sh
@@ -36,7 +31,6 @@ echo '######################################'
 # To start workers [Channels/Celery]
 if [ "$EBS_ENV_TYPE" == "worker" ]; then
     echo 'Worker Environment'
-    export DJANGO_ALLOWED_HOST=$DJANGO_ALLOWED_HOST_WEBSOCKET
     cd $ROOT_DIR
 
     if [ "$WORKER_TYPE" == "celery" ]; then
@@ -62,12 +56,12 @@ fi
 if [ "$EBS_ENV_TYPE" == "web" ]; then
 
     echo 'API Environment'
-    export DJANGO_ALLOWED_HOST=$DJANGO_ALLOWED_HOST_API
     if [ -z "$NO_DJANGO_MIGRATION" ]; then
         echo '>> [Running] Django Collectstatic and Migrate'
         python3 $ROOT_DIR/manage.py collectstatic --no-input >> /var/log/deep.log 2>&1
         python3 $ROOT_DIR/manage.py migrate --no-input >> /var/log/deep.log 2>&1
     else # Variable Set
+        # NOTE: Running migrate and collectstatic from elasticbeanstalk post deploy (For ElasticBeanstalk)
         echo '>> [Not Running] Django Collectstatic and Migrate, because ENV: NO_DJANGO_MIGRATION is set'
     fi
     uwsgi --ini $ROOT_DIR/deploy/configs/uwsgi.ini # Start uwsgi server
