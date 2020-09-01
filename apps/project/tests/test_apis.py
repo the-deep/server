@@ -672,6 +672,10 @@ class ProjectApiTest(TestCase):
 
         self.assertEqual(response.data['project']['id'], project.id)
         self.assertEqual(response.data['requested_by']['id'], test_user.id)
+        self.assertEqual(
+            ProjectJoinRequest.objects.get(id=response.data['id']).data['expected_contribution'],
+            data['expected_contribution']
+        )
 
     def test_invalid_join_request(self):
         project = self.create(Project, role=self.admin_role)
