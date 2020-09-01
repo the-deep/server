@@ -493,6 +493,7 @@ class ProjectJoinRequest(models.Model):
         related_name='project_join_responses',
     )
     responded_at = models.DateTimeField(null=True, blank=True, default=None)
+    data = JSONField(default=dict, blank=True, null=True)
 
     def __str__(self):
         return 'Join request for {} by {} ({})'.format(

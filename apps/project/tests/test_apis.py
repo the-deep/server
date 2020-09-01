@@ -659,15 +659,33 @@ class ProjectApiTest(TestCase):
     def test_join_request(self):
         project = self.create(Project, role=self.admin_role)
         test_user = self.create(User)
+        data = dict(
+            expected_contribution='bla',
+            about_requester='bla',
+        )
 
         url = '/api/v1/projects/{}/join/'.format(project.id)
 
         self.authenticate(test_user)
-        response = self.client.post(url)
+        response = self.client.post(url, data)
         self.assert_201(response)
 
         self.assertEqual(response.data['project']['id'], project.id)
         self.assertEqual(response.data['requested_by']['id'], test_user.id)
+
+    def test_invalid_join_request(self):
+        project = self.create(Project, role=self.admin_role)
+        test_user = self.create(User)
+        data = dict(
+            # expected_contribution missing,
+            about_requester='bla',
+        )
+        url = '/api/v1/projects/{}/join/'.format(project.id)
+
+        self.authenticate(test_user)
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        self.assertIn('expected_contribution', response.data['errors'])
 
     def test_accept_request(self):
         project = self.create(Project, role=self.admin_role)
