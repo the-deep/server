@@ -135,16 +135,14 @@ def send_project_join_request_emails(join_request_id):
     join_request = ProjectJoinRequest.objects.get(id=join_request_id)
     project = join_request.project
     request_by = join_request.requested_by
-    expected_contribution = join_request.data['expected_contribution']
-    about_requester = join_request.data['about_requester']
+    reason = join_request.data['reason']
     request_data = {'join_request': join_request}
     email_type = Profile.E_JOIN_REQUESTS
 
     context = {
         'request_by': request_by,
         'project': project,
-        'expected_contribution': expected_contribution,
-        'about_requester': about_requester,
+        'reason': reason,
         'pid': urlsafe_base64_encode(force_bytes(join_request.pk)).decode(),
     }
 
