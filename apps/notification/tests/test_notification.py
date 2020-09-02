@@ -19,7 +19,8 @@ class TestNotification(TestCase):
         ProjectJoinRequest.objects.create(
             project=project,
             requested_by=normal_user,
-            role=self.normal_role
+            role=self.normal_role,
+            data={'reason': 'bla'}
         )
         # Get notifications for admin_users
         for user in [self.user, admin_user]:
@@ -33,6 +34,7 @@ class TestNotification(TestCase):
                 Notification.PROJECT_JOIN_REQUEST
             assert notification.receiver == user
             assert notification.data['status'] == 'pending'
+            assert notification.data['data']['reason'] is not None
 
         # Get notifications for requesting user
         # there should be none
@@ -47,7 +49,8 @@ class TestNotification(TestCase):
         join_request = ProjectJoinRequest.objects.create(
             project=project,
             requested_by=normal_user,
-            role=self.normal_role
+            role=self.normal_role,
+            data={'reason': 'bla'}
         )
 
         # Get notification for self.user
@@ -91,7 +94,8 @@ class TestNotification(TestCase):
         join_request = ProjectJoinRequest.objects.create(
             project=project,
             requested_by=normal_user,
-            role=self.normal_role
+            role=self.normal_role,
+            data={'reason': 'bla'}
         )
 
         # Get notification for self.user
@@ -131,7 +135,8 @@ class TestNotification(TestCase):
         join_request = ProjectJoinRequest.objects.create(
             project=project,
             requested_by=normal_user,
-            role=self.normal_role
+            role=self.normal_role,
+            data={'reason': 'bla'}
         )
 
         # Get notification for self.user
