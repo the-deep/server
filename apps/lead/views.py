@@ -366,6 +366,8 @@ class LeadOptionsView(views.APIView):
         members_qs = User.objects.filter(id__in=members_id) if len(members_id) else User.objects
 
         options = {
+            # FIXME: We will not need multiple projects after new changes in lead add process
+            # It's simpler to just support one project
             'projects': projects,
 
             # Static Options
@@ -389,10 +391,11 @@ class LeadOptionsView(views.APIView):
             ],
 
             # Dynamic Options
-
-            'lead_groups': LeadGroup.objects.filter(project_filter, id__in=lead_groups_id).distinct(),
-            'members': _filter_users_by_projects_memberships(members_qs, projects)\
-                                    .prefetch_related('profile').distinct(),
+            'lead_groups': LeadGroup.objects.filter(
+                project_filter,
+                **({'id__in': lead_groups_id} if lead_groups_id else {}),
+            ).distinct(),
+            'members': _filter_users_by_projects_memberships(members_qs, projects).prefetch_related('profile').distinct(),
             'organizations': Organization.objects.filter(id__in=organizations_id).distinct(),
 
             # EMM specific options
