@@ -1,6 +1,7 @@
 from django.contrib import admin
 from reversion.admin import VersionAdmin
 import reversion
+from admin_auto_filters.filters import AutocompleteFilterFactory
 
 from deep.admin import query_buttons
 
@@ -52,7 +53,11 @@ class EntryAdmin(VersionAdmin):
         'lead', 'project', 'created_by', 'created_at',
         query_buttons('View', [inline[0] for inline in custom_inlines]),
     ]
-    list_filter = ('project', 'created_by', 'created_at')
+    list_filter = (
+        AutocompleteFilterFactory('Project', 'project'),
+        AutocompleteFilterFactory('Created by', 'created_by'),
+        'created_at',
+    )
     autocomplete_fields = (
         'lead', 'project', 'created_by', 'modified_by', 'analysis_framework', 'tabular_field',
     )
@@ -70,7 +75,7 @@ class EntryAdmin(VersionAdmin):
 class ProjectEntryLabelAdmin(VersionAdmin):
     search_fields = ('title',)
     autocomplete_fields = ('created_by', 'modified_by', 'project')
-    list_filter = ('project',)
+    list_filter = (AutocompleteFilterFactory('Project', 'project'),)
     list_display = ('__str__', 'color')
 
 

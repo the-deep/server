@@ -13,6 +13,10 @@ from .models import (
     ConnectorSource,
     ConnectorUser,
     ConnectorProject,
+
+    UnifiedConnector,
+    UnifiedConnectorSource,
+    ConnectorLead,
 )
 
 
@@ -54,8 +58,7 @@ class SourceEMMTriggerSerializer(serializers.Serializer):
     count = serializers.IntegerField()
 
 
-class SourceDataSerializer(RemoveNullFieldsMixin,
-                           serializers.ModelSerializer):
+class SourceDataSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     existing = serializers.SerializerMethodField()
     key = serializers.CharField(source='id')
     emm_entities = serializers.SerializerMethodField()
@@ -203,3 +206,25 @@ class ConnectorSerializer(RemoveNullFieldsMixin,
         if not hasattr(source, 'filters'):
             return []
         return source.filters
+
+
+# ------------------------------------- UNIFIED CONNECTOR -------------------------------------- #
+
+class ConnectorLeadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ConnectorLead
+        fields = '__all__'
+
+
+class UnifiedConnectorSourceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UnifiedConnectorSource
+        exclude = ('leads',)
+
+
+class UnifiedConnectorSerializer(UserResourceSerializer):
+    sources = UnifiedConnectorSourceSerializer(source='unifiedconnectorsource_set', many=True)
+
+    class Meta:
+        model = UnifiedConnector
+        fields = '__all__'

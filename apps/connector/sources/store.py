@@ -14,17 +14,24 @@ from . import (
 import random
 
 
+sources_list = [
+    atom_feed.AtomFeed,
+    rss_feed.RssFeed,
+    emm.EMM,
+    acaps_briefing_notes.AcapsBriefingNotes,
+    unhcr_portal.UNHCRPortal,
+    relief_web.ReliefWeb,
+    pdna.PDNA,
+    research_center.ResearchResourceCenter,
+    wpf.WorldFoodProgramme,
+    humanitarian_response.HumanitarianResponse,
+]
+
+assert len(set([source.key for source in sources_list])) == len(sources_list), 'Duplicate key found for connectors'
+
 source_store = OrderedDict([
-    (atom_feed.AtomFeed.key, atom_feed.AtomFeed),
-    ('rss-feed', rss_feed.RssFeed),
-    ('emm', emm.EMM),
-    ('acaps-briefing-notes', acaps_briefing_notes.AcapsBriefingNotes),
-    ('unhcr-portal', unhcr_portal.UNHCRPortal),
-    ('relief-web', relief_web.ReliefWeb),
-    ('post-disaster-needs-assessment', pdna.PDNA),
-    ('research-resource-center', research_center.ResearchResourceCenter),
-    ('world-food-programme', wpf.WorldFoodProgramme),
-    ('humanitarian-response', humanitarian_response.HumanitarianResponse),
+    (source.key, source)
+    for source in sources_list
 ])
 
 sources = None

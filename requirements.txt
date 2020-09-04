@@ -12,6 +12,7 @@ coreapi==2.3.3
 dateparser==0.7.0
 decorator==4.3.2
 descartes==1.1.0
+django-admin-autocomplete-filter==0.6.1
 django-celery-beat==1.4.0
 django-cors-headers==2.4.0
 django-crispy-forms==1.7.2

@@ -6,6 +6,7 @@ from redis_store import redis
 from django.db import transaction
 from django.contrib.postgres import search
 
+from deep.celery import Queues
 from geo.models import models, GeoArea
 
 from utils.common import redis_lock, LogTime
@@ -196,7 +197,7 @@ def tabular_extract_geo(geodata_pk):
     return return_value
 
 
-@shared_task
+@shared_task(queue=Queues.CRONJOB)
 def remaining_tabular_generate_columns_image():
     """
     Scheduled task

@@ -3,6 +3,7 @@ from django.utils.safestring import mark_safe
 from django.contrib import messages
 from django.db.models import Count
 from django.contrib.postgres.aggregates import StringAgg
+from admin_auto_filters.filters import AutocompleteFilterFactory
 
 from reversion.admin import VersionAdmin
 
@@ -79,7 +80,7 @@ class ProjectAdmin(VersionAdmin):
         'analysis_framework', 'assessment_template', 'category_editor',
         'created_by', 'modified_by', 'regions',
     )
-    list_filter = ('assessment_template',)
+    list_filter = (AutocompleteFilterFactory('Assessment Template', 'assessment_template'),)
     inlines = [ProjectMembershipInline,
                ProjectUserGroupMembershipInline,
                ProjectJoinRequestInline,

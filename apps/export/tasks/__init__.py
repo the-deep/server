@@ -1,5 +1,7 @@
 import logging
 from celery import shared_task
+
+from deep.celery import Queues
 from export.models import Export
 
 from .tasks_entries import export_entries
@@ -15,7 +17,7 @@ EXPORTER_TYPE = {
 }
 
 
-@shared_task
+@shared_task(queue=Queues.HEAVY)
 def export_task(export_id):
     try:
         export = Export.objects.get(pk=export_id)

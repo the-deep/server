@@ -9,12 +9,6 @@ from connector.utils import ConnectorWrapper
 from .rss_feed import RssFeed
 
 
-def _get_field_value(item, field, default=None):
-    if item:
-        return item.get(field, default)
-    return default
-
-
 @ConnectorWrapper
 class AtomFeed(RssFeed):
     title = 'Atom Feed'
@@ -42,7 +36,7 @@ class AtomFeed(RssFeed):
             data = {
                 'source_type': Lead.RSS,
                 **{
-                    lead_field: _get_field_value(item, params.get(param_key))
+                    lead_field: (item or {}).get(params.get(param_key))
                     for lead_field, param_key in self.option_lead_field_map.items()
                 },
             }

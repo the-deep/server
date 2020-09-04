@@ -365,3 +365,8 @@ class ConnectorSourcesApiTest(TestCase):
         organization_search.get('Old Deep')
 
         assert Organization.objects.filter(title__in=organization_titles).count() == 3
+
+
+class UnifiedConnectorTest(TestCase):
+    def test_create_connector(self):
+        pass

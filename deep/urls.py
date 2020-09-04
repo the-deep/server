@@ -129,6 +129,9 @@ from connector.views import (
     ConnectorViewSet,
     ConnectorUserViewSet,
     ConnectorProjectViewSet,
+    UnifiedConnectorViewSet,
+    UnifiedConnectorSourceViewSet,
+    UnifiedConnectorSourceLeadViewSet,
 )
 from export.views import (
     ExportTriggerView,
@@ -318,6 +321,13 @@ router.register(r'connector-users', ConnectorUserViewSet,
                 basename='connector_users')
 router.register(r'connector-projects', ConnectorProjectViewSet,
                 basename='connector_projects')
+router.register(r'projects/(?P<project_id>\d+)/unified-connectors', UnifiedConnectorViewSet, basename='unified_connector')
+router.register(
+    r'projects/(?P<project_id>\d+)/unified-connector-sources',
+    UnifiedConnectorSourceViewSet, basename='unified_connector_source')
+router.register(
+    r'projects/(?P<project_id>\d+)/unified-connector-sources/(?P<source_id>\d+)/leads',
+    UnifiedConnectorSourceLeadViewSet, basename='unified_connector_source_lead')
 
 # Organization routers
 router.register(r'organizations', OrganizationViewSet, basename='organization')

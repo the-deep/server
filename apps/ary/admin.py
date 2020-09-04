@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from django.http import HttpResponse
+from admin_auto_filters.filters import AutocompleteFilterFactory
 
 from deep.admin import linkify, ModelAdmin, VersionAdmin
 
@@ -155,7 +156,7 @@ class MethodologyFieldAdmin(FieldAdminMixin, ModelAdmin):
 class TemplateGroupAdminMixin():
     search_fields = ('title', 'template__title')
     list_display = ('title', linkify('template'),)
-    list_filter = ('template',)
+    list_filter = (AutocompleteFilterFactory('Template', 'template'),)
 
 
 @admin.register(Focus)

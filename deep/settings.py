@@ -115,6 +115,7 @@ INSTALLED_APPS = [
     'django_premailer',
     'django_celery_beat',
     'jsoneditor',
+    'admin_auto_filters',
     'drf_yasg',  # API Documentation
 ] + [
     '{}.{}.apps.{}Config'.format(

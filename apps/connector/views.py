@@ -1,4 +1,5 @@
 from django.db import models
+from django.shortcuts import get_object_or_404
 from rest_framework import (
     exceptions,
     permissions,
@@ -8,7 +9,7 @@ from rest_framework import (
 )
 
 from rest_framework.decorators import action
-from deep.permissions import ModifyPermission
+from deep.permissions import ModifyPermission, IsProjectMember
 from project.models import Project
 from utils.common import parse_number
 
@@ -19,11 +20,19 @@ from .serializers import (
     ConnectorSerializer,
     ConnectorUserSerializer,
     ConnectorProjectSerializer,
+
+    UnifiedConnectorSerializer,
+    UnifiedConnectorSourceSerializer,
+    ConnectorLeadSerializer,
 )
 from .models import (
     Connector,
     ConnectorUser,
     ConnectorProject,
+
+    UnifiedConnector,
+    UnifiedConnectorSource,
+    ConnectorLead,
 )
 from .sources.store import source_store
 from .sources.base import Source
@@ -208,3 +217,38 @@ class ConnectorProjectViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return ConnectorProject.get_for(self.request.user)
+
+
+# ------------------------------------- UNIFIED CONNECTOR -------------------------------------- #
+
+class UnifiedConnectorViewSet(viewsets.ModelViewSet):
+    serializer_class = UnifiedConnectorSerializer
+    permission_classes = [permissions.IsAuthenticated, ModifyPermission, IsProjectMember]
+
+    def get_queryset(self):
+        return UnifiedConnector.objects.filter(project_id=self.kwargs['project_id'])
+
+
+class UnifiedConnectorSourceViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = UnifiedConnectorSourceSerializer
+    permission_classes = [permissions.IsAuthenticated, IsProjectMember]
+
+    def get_queryset(self):
+        return UnifiedConnectorSource.objects.filter(connector__project_id=self.kwargs['project_id'])
+
+
+class UnifiedConnectorSourceLeadViewSet(viewsets.ReadOnlyModelViewSet):
+    # TODO: Limit Pagination
+    serializer_class = ConnectorLeadSerializer
+    permission_classes = [permissions.IsAuthenticated, IsProjectMember]
+
+    def get_queryset(self):
+        source = get_object_or_404(
+            UnifiedConnectorSource,
+            pk=self.kwargs['source_id'],
+            connector__project_id=self.kwargs['project_id'],
+        )
+        return ConnectorLead.objects.filter(
+            unifiedconnectorsourcelead__source=source,
+            status=ConnectorLead.Status.SUCCESS,
+        ).distinct()

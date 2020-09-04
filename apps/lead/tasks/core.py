@@ -11,6 +11,7 @@ from django.db.models import Q
 from django.db.models.functions import Length
 from django.conf import settings
 
+from deep.celery import Queues
 from celery import shared_task
 from redis_store import redis
 
@@ -203,8 +204,7 @@ def classify_lead(lead):
         'text': preview.text_extract,
     }
     try:
-        response = requests.post(DEEPL_CLASSIFY_URL,
-                                    data=data)
+        response = requests.post(DEEPL_CLASSIFY_URL, data=data)
     except requests.exceptions.ConnectionError:
         preview.classification_status = LeadPreview.STATUS_CLASSIFICATION_FAILED
         preview.save()
@@ -312,7 +312,8 @@ def get_unclassified_leads(limit=10):
         text_len__lte=5000  # Texts of length 5000 do not pose huge computation in DEEPL
     ).prefetch_related('leadpreview')[:limit]  # Do not get all the previews, do it in a chunk
 
-@shared_task
+
+@shared_task(queue=Queues.CRONJOB)
 def classify_remaining_lead_previews():
     """
     Scheduled task(celery beat)

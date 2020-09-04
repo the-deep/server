@@ -1,3 +1,8 @@
+import os
+import reversion
+import tempfile
+import zipfile
+
 from celery import shared_task
 from django.conf import settings
 from django.contrib.gis.gdal import DataSource
@@ -7,10 +12,7 @@ from geo.models import Region, AdminLevel, GeoArea
 
 from redis_store import redis
 
-import os
-import reversion
-import tempfile
-import zipfile
+from deep.celery import Queues
 
 import logging
 
@@ -202,7 +204,7 @@ def _load_geo_areas(region_id):
     return True
 
 
-@shared_task
+@shared_task(queue=Queues.HEAVY)
 def load_geo_areas(region_id):
     key = 'load_geo_areas_{}'.format(region_id)
     lock = redis.get_lock(key, 60 * 30)  # Lock lifetime 30 minutes

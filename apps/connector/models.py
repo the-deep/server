@@ -1,13 +1,14 @@
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 
-from connector.sources.store import get_sources
 from user_resource.models import UserResource
 
 from utils.common import is_valid_regex
 
 from project.models import Project
 from user.models import User
+
+from .sources.store import source_store
 
 
 class ConnectorSource(models.Model):
@@ -165,3 +166,102 @@ class EMMConfig(models.Model):
         if not is_valid_regex(self.trigger_regex):
             raise Exception(f'{self.trigger_regex} is not a valid Regular Expression')
         super().save(*args, **kwargs)
+
+
+# ------------------------------------- UNIFIED CONNECTOR -------------------------------------- #
+
+class ConnectorLead(models.Model):
+    """
+    Leads collected from connectors.
+    This is assigned to UnifiedConnectorSource using UnifiedConnectorSourceLead
+    """
+    class Status():
+        SUCCESS = 'success'
+        FAILURE = 'failure'
+
+        CHOICES = [
+            (SUCCESS, 'Success'),
+            (FAILURE, 'Failure'),
+        ]
+
+    url = models.TextField(blank=True)
+    status = models.CharField(max_length=30, blank=True, null=True, choices=Status.CHOICES)
+    data = JSONField(default=dict, blank=True)
+    # NOTE: Extract data is located in AWS dynamodb
+
+    def __str__(self):
+        return f'{self.get_status_display()}:{self.url}'
+
+
+class UnifiedConnector(UserResource):
+    """
+    Unified Connector: Contains source level connector
+    """
+    title = models.CharField(max_length=255)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.title
+
+    def can_modify(self, user):
+        # TODO:
+        return True
+
+
+class UnifiedConnectorSource(models.Model):
+    """
+    Source Connectors:
+    - Source Type (Reliefweb, WorldFoodProgramme, etc)
+    - Params: Contains parameters to fetch leads from selected source.
+    - Stats (Number of leads by Year-Month)
+    - Status
+    """
+    class Status():
+        PROCESSING = 'processing'
+        SUCCESS = 'success'
+        FAILURE = 'failure'
+
+        CHOICES = [
+            (PROCESSING, 'Processing'),
+            (SUCCESS, 'Success'),
+            (FAILURE, 'Failure'),
+        ]
+
+    source = models.ForeignKey(ConnectorSource, on_delete=models.CASCADE)
+    connector = models.ForeignKey(UnifiedConnector, on_delete=models.CASCADE)
+    params = JSONField(default=dict, blank=True)
+
+    # Server Generated Attributes
+    last_calculated_at = models.DateTimeField(blank=True, null=True)
+    stats = JSONField(default=dict, blank=True)  # number of leads by Year-Month
+    status = models.CharField(max_length=30, default=Status.PROCESSING, choices=Status.CHOICES)
+    leads = models.ManyToManyField(
+        ConnectorLead, blank=True,
+        through_fields=('source', 'lead'),
+        through='UnifiedConnectorSourceLead',
+    )
+
+    @property
+    def source_fetcher(self):
+        return source_store[self.source_id]
+
+    def __str__(self):
+        return self.source_id
+
+    def add_lead(self, lead, **kwargs):
+        return UnifiedConnectorSourceLead.objects.create(
+            lead=lead,
+            source=self,
+            **kwargs,
+        )
+
+
+class UnifiedConnectorSourceLead(models.Model):
+    """
+    Link UnifiedConnectorSource with ConnectorLead
+    """
+    source = models.ForeignKey(UnifiedConnectorSource, on_delete=models.CASCADE)
+    lead = models.ForeignKey(ConnectorLead, on_delete=models.CASCADE)
+    # Extra attributes here (eg: duplicate)
+    # added = models.BooleanField(default=True)
+    # skip = models.BooleanField(default=True)
