@@ -27,7 +27,7 @@ RUN apt-get update -y && apt-get install -y \
         gawk \
         fonts-noto \
         # Required by orca (Plotly)
-        xvfb libgtk2.0-0 libgconf-2-4 \
+        libxss1 xvfb libgtk2.0-0 libgconf-2-4 \
         # Required by cloudwatch scripts
         unzip \
         libwww-perl \
