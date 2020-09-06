@@ -29,11 +29,7 @@ DEEP_ENVIRONMENT = os.environ.get('DEEP_ENVIRONMENT', 'development')
 ALLOWED_HOSTS = [os.environ.get('DJANGO_ALLOWED_HOST', '*')]
 
 DEEPER_FRONTEND_HOST = os.environ.get('FRONTEND_HOST', 'localhost:3000')
-DEEPER_BACKEND_HOST = os.environ.get('DJANGO_ALLOWED_HOST', 'localhost:8000')
-
-DJANGO_API_HOST = os.environ.get('DJANGO_ALLOWED_HOST_API', 'localhost:8000')
-DJANGO_WEBSOCKET_HOST =\
-    os.environ.get('DJANGO_ALLOWED_HOST_WEBSOCKET', 'localhost:8000')
+DJANGO_API_HOST = os.environ.get('DJANGO_ALLOWED_HOST', 'localhost:8000')
 
 DEEPER_SITE_NAME = os.environ.get('DEEPER_SITE_NAME', 'DEEPER')
 HTTP_PROTOCOL = os.environ.get('DEEP_HTTPS', 'http')
@@ -275,8 +271,9 @@ if os.environ.get('DJANGO_USE_S3', 'False').lower() == 'true':
     # AWS S3 Bucket Credentials
     AWS_STORAGE_BUCKET_NAME_STATIC = os.environ['DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC']
     AWS_STORAGE_BUCKET_NAME_MEDIA = os.environ['DJANGO_AWS_STORAGE_BUCKET_NAME_MEDIA']
-    AWS_ACCESS_KEY_ID = os.environ['S3_AWS_ACCESS_KEY_ID']
-    AWS_SECRET_ACCESS_KEY = os.environ['S3_AWS_SECRET_ACCESS_KEY']
+    # If environment variable are not provided, then EC2 Role will be used.
+    AWS_ACCESS_KEY_ID = os.environ.get('S3_AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('S3_AWS_SECRET_ACCESS_KEY')
     AWS_S3_ENDPOINT_URL = os.environ.get('S3_AWS_ENDPOINT_URL') if DEBUG else None
 
     AWS_S3_FILE_OVERWRITE = False
@@ -420,14 +417,14 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
         },
         'handlers': {
             'SysLog': {
-                'level': 'DEBUG',
+                'level': 'INFO',
                 'class': 'logging.handlers.SysLogHandler',
                 'filters': ['add_username_attribute'],
                 'formatter': 'simple',
                 'address': papertrail_address,
             },
             'ProfilingSysLog': {
-                'level': 'DEBUG',
+                'level': 'INFO',
                 'class': 'logging.handlers.SysLogHandler',
                 'formatter': 'profiling',
                 'address': papertrail_address,
@@ -443,7 +440,7 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
             },
             'profiling': {
                 'handlers': ['ProfilingSysLog'],
-                'level': 'DEBUG',
+                'level': 'INFO',
                 'propagate': True,
             },
         }
@@ -504,23 +501,21 @@ CORS_ALLOW_HEADERS = (
     'x-requested-with',
 )
 
-# Email CONFIGS
-USE_EMAIL_CONFIG = os.environ.get('USE_EMAIL_CONFIG',
-                                  'False').lower() == 'true'
+# Email CONFIGS (NOT USED)
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER',
-                                 'deepnotifications1@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'deep1234')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
-EMAIL_FROM = 'DEEP Admin {}<{}>'.format(
-    f'[{DEEP_ENVIRONMENT.upper()}]' if DEEP_ENVIRONMENT.lower() != 'beta' else '',
+
+# Email CONFIGS
+USE_EMAIL_CONFIG = os.environ.get('USE_EMAIL_CONFIG', 'False').lower() == 'true'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'deepnotifications1@gmail.com')
+EMAIL_FROM = '{}DEEP Admin <{}>'.format(
+    f'[{DEEP_ENVIRONMENT.upper()}] ' if DEEP_ENVIRONMENT.lower() != 'beta' else '',
     EMAIL_HOST_USER,
 )
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT')) if os.environ.get('EMAIL_PORT')\
-    else 587
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-ADMINS = [('Ewan', 'ewanogle@gmail.com'),
-          ('Togglecorp', 'info@togglecorp.com')]
+DEFAULT_FROM_EMAIL = EMAIL_FROM
+ADMINS = [('Ewan', 'ewanogle@gmail.com'), ('Togglecorp', 'info@togglecorp.com')]
 
 if TESTING or not USE_EMAIL_CONFIG:
     """
@@ -532,10 +527,9 @@ else:
     Use AWS SES
     """
     EMAIL_BACKEND = 'django_ses.SESBackend'
-    AWS_SES_ACCESS_KEY_ID = os.environ['SES_AWS_ACCESS_KEY_ID']
-    AWS_SES_SECRET_ACCESS_KEY = os.environ['SES_AWS_SECRET_ACCESS_KEY']
-    # AWS_SES_REGION_NAME = 'us-east-1'
-    # AWS_SES_REGION_ENDPOINT = 'email.us-east-1.amazonaws.com'
+    # If environment variable are not provided, then EC2 Role will be used.
+    AWS_SES_ACCESS_KEY_ID = os.environ.get('SES_AWS_ACCESS_KEY_ID')
+    AWS_SES_SECRET_ACCESS_KEY = os.environ.get('SES_AWS_SECRET_ACCESS_KEY')
 
 # Gallery files Cache-control max-age - 1hr from s3
 MAX_FILE_CACHE_AGE = GALLERY_FILE_EXPIRE - (60 * 60)
@@ -566,8 +560,7 @@ if SENTRY_DSN:
         'environment': DEEP_ENVIRONMENT,
         'debug': DEBUG,
         'tags': {
-            'in_cern': os.environ.get('IN_CERN', False),
-            'site': DEEPER_BACKEND_HOST,
+            'site': DJANGO_API_HOST,
         },
     }
     sentry.init_sentry(
