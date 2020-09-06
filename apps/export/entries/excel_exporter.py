@@ -11,12 +11,14 @@ from utils.common import format_date, generate_filename, excel_column_name
 
 logger = logging.getLogger(__name__)
 
+EXPORT_DATE_FORMAT = '%m/%d/%y'
+
 
 class ExcelExporter:
     def __init__(self, entries, decoupled=True, project_id=None):
         self.wb = WorkBook()
 
-        # Create worksheets(Main, Grouped, Entry Groups)
+        # Create worksheets(Main, Grouped, Entry Groups, Bibliography)
         if decoupled:
             self.split = self.wb.get_active_sheet()\
                 .set_title('Split Entries')
@@ -27,6 +29,8 @@ class ExcelExporter:
 
         self.entry_groups_sheet = self.wb.create_sheet('Entry Groups')
         self.decoupled = decoupled
+        self.bibliography_sheet = self.wb.create_sheet('Bibliography')
+        self.bibliography_data = {}
 
         self.modified_exceprt_exists = entries.filter(
             dropped_excerpt__isnull=False).exclude(dropped_excerpt__exact='').exists()
@@ -377,6 +381,13 @@ class ExcelExporter:
             lead = entry.lead
             assignee = entry.lead.get_assignee()
 
+            author = lead.get_authors_display()
+            source = lead.get_source_display()
+            published_on = (lead.published_on and lead.published_on.strftime(EXPORT_DATE_FORMAT)) or ''
+            url = lead.url
+
+            self.bibliography_data[lead.id] = (author, source, published_on, url, lead.title)
+
             rows = RowsBuilder(self.split, self.group, self.decoupled)
             rows.add_value(format_date(lead.published_on))
 
@@ -426,6 +437,13 @@ class ExcelExporter:
             self.entry_groups_sheet.append([row_data])
         return self
 
+    def add_bibliography_sheet(self):
+        self.bibliography_sheet.append([['Author', 'Source', 'Published Date', 'Title']])
+        for author, source, published, url, title in self.bibliography_data.values():
+            self.bibliography_sheet.append(
+                [[author, source, published, f'=HYPERLINK("{url}", "{title}")' if url else title]]
+            )
+
     def export(self):
         """
         Export and return export data
@@ -433,6 +451,9 @@ class ExcelExporter:
         self.group.set_col_types(self.col_types)
         if self.split:
             self.split.set_col_types(self.col_types)
+
+        # Add bibliography
+        self.add_bibliography_sheet()
 
         buffer = self.wb.save()
         filename = generate_filename('Entries Export', 'xlsx')
