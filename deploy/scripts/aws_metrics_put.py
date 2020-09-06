@@ -7,6 +7,12 @@ KILO = 1024
 MEGA = 1048576
 GIGA = 1073741824
 
+"""
+NOTE:
+    Not used right now
+    This was used for CERN instances
+"""
+
 # Create CloudWatch client
 
 cloudwatch = boto3.client(
@@ -241,8 +247,6 @@ metrics = [
 
     get_cpu_usage(),
 ]
-
-# print(json.dumps(metrics))
 
 cloudwatch.put_metric_data(
     Namespace='CERN',

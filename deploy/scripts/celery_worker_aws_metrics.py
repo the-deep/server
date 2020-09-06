@@ -11,6 +11,12 @@ import logging
 
 logger = logging.getLogger(__file__)
 
+"""
+This was used to collect number of celery workers
+This is not used right now.
+The metrics was used to scale up/down workers.
+"""
+
 AWS_META_URL = 'http://169.254.169.254/latest/meta-data'
 
 sys.path.append("/code/")
