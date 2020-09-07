@@ -9,6 +9,7 @@ from rest_framework import (
     views,
     viewsets,
     serializers,
+    status,
     mixins,
 )
 from deep.permissions import ModifyPermission, IsProjectMember, CreateEntryPermission
@@ -80,6 +81,28 @@ class EntryViewSet(viewsets.ModelViewSet):
         self.page = self.paginate_queryset(queryset)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
+
+    @action(
+        detail=True,
+        permission_classes=[ModifyPermission],
+        url_path='verify',
+        methods=['post']
+    )
+    def verify_entry(self, request, **kwargs):
+        entry = self.get_object()
+        entry.verify(request.user)
+        return response.Response(status=status.HTTP_200_OK)
+
+    @action(
+        detail=True,
+        permission_classes=[ModifyPermission],
+        url_path='unverify',
+        methods=['post']
+    )
+    def unverify_entry(self, request, **kwargs):
+        entry = self.get_object()
+        entry.verify(request.user, verified=False)
+        return response.Response(status=status.HTTP_200_OK)
 
 
 class EntryFilterView(generics.GenericAPIView):
