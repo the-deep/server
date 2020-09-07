@@ -233,6 +233,10 @@ class EntrySerializer(RemoveNullFieldsMixin,
                 project=validated_data['lead'].project,
                 request=self.context['request'],
             )
+        # once altered, unverify the entry if its verified
+        if instance and instance.verified:
+            validated_data['verified'] = False
+            validated_data['verification_last_changed_by'] = self.context['request'].user
         entry = super().update(instance, validated_data)
         return entry
 
