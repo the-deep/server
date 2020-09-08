@@ -94,6 +94,9 @@ class ProjectJoinRequest(View):
             'email_type': 'join_requests',
             'project': project,
             'pid': 'fakeuid',
+            'reason': 'I want to join this project \
+                because this is closely related to my research. \
+                Data from this project will help me alot.',
         })
         return TemplateResponse(
             request, 'project/project_join_request_email.html', context)
