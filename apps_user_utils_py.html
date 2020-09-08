@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/user/utils.py: 76%</title>
+    <title>Coverage for apps/user/utils.py: 77%</title>
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
     <script type="text/javascript" src="jquery.hotkeys.js"></script>
@@ -17,12 +17,12 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>apps/user/utils.py</b> :
-            <span class="pc_cov">76%</span>
+            <span class="pc_cov">77%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            53 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">43 run</button>
+            54 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">44 run</button>
             <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">10 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">3 partial</button>
@@ -189,35 +189,37 @@
     <p id="t135" class="run"><span class="n"><a href="#t135">135</a></span><span class="t">    <span class="nam">join_request</span> <span class="op">=</span> <span class="nam">ProjectJoinRequest</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">id</span><span class="op">=</span><span class="nam">join_request_id</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t136" class="run"><span class="n"><a href="#t136">136</a></span><span class="t">    <span class="nam">project</span> <span class="op">=</span> <span class="nam">join_request</span><span class="op">.</span><span class="nam">project</span>&nbsp;</span><span class="r"></span></p>
     <p id="t137" class="run"><span class="n"><a href="#t137">137</a></span><span class="t">    <span class="nam">request_by</span> <span class="op">=</span> <span class="nam">join_request</span><span class="op">.</span><span class="nam">requested_by</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t138" class="run"><span class="n"><a href="#t138">138</a></span><span class="t">    <span class="nam">request_data</span> <span class="op">=</span> <span class="op">{</span><span class="str">'join_request'</span><span class="op">:</span> <span class="nam">join_request</span><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t139" class="run"><span class="n"><a href="#t139">139</a></span><span class="t">    <span class="nam">email_type</span> <span class="op">=</span> <span class="nam">Profile</span><span class="op">.</span><span class="nam">E_JOIN_REQUESTS</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t140" class="pln"><span class="n"><a href="#t140">140</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t141" class="run"><span class="n"><a href="#t141">141</a></span><span class="t">    <span class="nam">context</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t142" class="pln"><span class="n"><a href="#t142">142</a></span><span class="t">        <span class="str">'request_by'</span><span class="op">:</span> <span class="nam">request_by</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t143" class="pln"><span class="n"><a href="#t143">143</a></span><span class="t">        <span class="str">'project'</span><span class="op">:</span> <span class="nam">project</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t144" class="pln"><span class="n"><a href="#t144">144</a></span><span class="t">        <span class="str">'pid'</span><span class="op">:</span> <span class="nam">urlsafe_base64_encode</span><span class="op">(</span><span class="nam">force_bytes</span><span class="op">(</span><span class="nam">join_request</span><span class="op">.</span><span class="nam">pk</span><span class="op">)</span><span class="op">)</span><span class="op">.</span><span class="nam">decode</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t145" class="pln"><span class="n"><a href="#t145">145</a></span><span class="t">    <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t146" class="pln"><span class="n"><a href="#t146">146</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t147" class="run"><span class="n"><a href="#t147">147</a></span><span class="t">    <span class="key">for</span> <span class="nam">user</span> <span class="key">in</span> <span class="nam">project</span><span class="op">.</span><span class="nam">get_admins</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t148" class="run"><span class="n"><a href="#t148">148</a></span><span class="t">        <span class="nam">request_data</span><span class="op">.</span><span class="nam">update</span><span class="op">(</span><span class="op">{</span><span class="str">'will_responded_by'</span><span class="op">:</span> <span class="nam">user</span><span class="op">}</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t149" class="run"><span class="n"><a href="#t149">149</a></span><span class="t">        <span class="nam">context</span><span class="op">.</span><span class="nam">update</span><span class="op">(</span><span class="op">{</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t150" class="pln"><span class="n"><a href="#t150">150</a></span><span class="t">            <span class="str">'uid'</span><span class="op">:</span> <span class="nam">urlsafe_base64_encode</span><span class="op">(</span><span class="nam">force_bytes</span><span class="op">(</span><span class="nam">user</span><span class="op">.</span><span class="nam">pk</span><span class="op">)</span><span class="op">)</span><span class="op">.</span><span class="nam">decode</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t151" class="pln"><span class="n"><a href="#t151">151</a></span><span class="t">            <span class="str">'token'</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t152" class="pln"><span class="n"><a href="#t152">152</a></span><span class="t">                <span class="nam">project_request_token_generator</span><span class="op">.</span><span class="nam">make_token</span><span class="op">(</span><span class="nam">request_data</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t153" class="pln"><span class="n"><a href="#t153">153</a></span><span class="t">        <span class="op">}</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t154" class="pln"><span class="n"><a href="#t154">154</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t155" class="run"><span class="n"><a href="#t155">155</a></span><span class="t">        <span class="nam">send_mail_to_user</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t156" class="pln"><span class="n"><a href="#t156">156</a></span><span class="t">            <span class="nam">user</span><span class="op">,</span> <span class="nam">email_type</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t157" class="pln"><span class="n"><a href="#t157">157</a></span><span class="t">            <span class="nam">context</span><span class="op">=</span><span class="nam">context</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t158" class="pln"><span class="n"><a href="#t158">158</a></span><span class="t">            <span class="nam">subject_template_name</span><span class="op">=</span><span class="str">'project/project_join_request.txt'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t159" class="pln"><span class="n"><a href="#t159">159</a></span><span class="t">            <span class="nam">email_template_name</span><span class="op">=</span><span class="str">'project/project_join_request_email.html'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t160" class="pln"><span class="n"><a href="#t160">160</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t138" class="run"><span class="n"><a href="#t138">138</a></span><span class="t">    <span class="nam">reason</span> <span class="op">=</span> <span class="nam">join_request</span><span class="op">.</span><span class="nam">data</span><span class="op">[</span><span class="str">'reason'</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t139" class="run"><span class="n"><a href="#t139">139</a></span><span class="t">    <span class="nam">request_data</span> <span class="op">=</span> <span class="op">{</span><span class="str">'join_request'</span><span class="op">:</span> <span class="nam">join_request</span><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t140" class="run"><span class="n"><a href="#t140">140</a></span><span class="t">    <span class="nam">email_type</span> <span class="op">=</span> <span class="nam">Profile</span><span class="op">.</span><span class="nam">E_JOIN_REQUESTS</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t141" class="pln"><span class="n"><a href="#t141">141</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t142" class="run"><span class="n"><a href="#t142">142</a></span><span class="t">    <span class="nam">context</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t143" class="pln"><span class="n"><a href="#t143">143</a></span><span class="t">        <span class="str">'request_by'</span><span class="op">:</span> <span class="nam">request_by</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t144" class="pln"><span class="n"><a href="#t144">144</a></span><span class="t">        <span class="str">'project'</span><span class="op">:</span> <span class="nam">project</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t145" class="pln"><span class="n"><a href="#t145">145</a></span><span class="t">        <span class="str">'reason'</span><span class="op">:</span> <span class="nam">reason</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t146" class="pln"><span class="n"><a href="#t146">146</a></span><span class="t">        <span class="str">'pid'</span><span class="op">:</span> <span class="nam">urlsafe_base64_encode</span><span class="op">(</span><span class="nam">force_bytes</span><span class="op">(</span><span class="nam">join_request</span><span class="op">.</span><span class="nam">pk</span><span class="op">)</span><span class="op">)</span><span class="op">.</span><span class="nam">decode</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t147" class="pln"><span class="n"><a href="#t147">147</a></span><span class="t">    <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t148" class="pln"><span class="n"><a href="#t148">148</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t149" class="run"><span class="n"><a href="#t149">149</a></span><span class="t">    <span class="key">for</span> <span class="nam">user</span> <span class="key">in</span> <span class="nam">project</span><span class="op">.</span><span class="nam">get_admins</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t150" class="run"><span class="n"><a href="#t150">150</a></span><span class="t">        <span class="nam">request_data</span><span class="op">.</span><span class="nam">update</span><span class="op">(</span><span class="op">{</span><span class="str">'will_responded_by'</span><span class="op">:</span> <span class="nam">user</span><span class="op">}</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t151" class="run"><span class="n"><a href="#t151">151</a></span><span class="t">        <span class="nam">context</span><span class="op">.</span><span class="nam">update</span><span class="op">(</span><span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t152" class="pln"><span class="n"><a href="#t152">152</a></span><span class="t">            <span class="str">'uid'</span><span class="op">:</span> <span class="nam">urlsafe_base64_encode</span><span class="op">(</span><span class="nam">force_bytes</span><span class="op">(</span><span class="nam">user</span><span class="op">.</span><span class="nam">pk</span><span class="op">)</span><span class="op">)</span><span class="op">.</span><span class="nam">decode</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t153" class="pln"><span class="n"><a href="#t153">153</a></span><span class="t">            <span class="str">'token'</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t154" class="pln"><span class="n"><a href="#t154">154</a></span><span class="t">                <span class="nam">project_request_token_generator</span><span class="op">.</span><span class="nam">make_token</span><span class="op">(</span><span class="nam">request_data</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t155" class="pln"><span class="n"><a href="#t155">155</a></span><span class="t">        <span class="op">}</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t156" class="pln"><span class="n"><a href="#t156">156</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t157" class="run"><span class="n"><a href="#t157">157</a></span><span class="t">        <span class="nam">send_mail_to_user</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t158" class="pln"><span class="n"><a href="#t158">158</a></span><span class="t">            <span class="nam">user</span><span class="op">,</span> <span class="nam">email_type</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t159" class="pln"><span class="n"><a href="#t159">159</a></span><span class="t">            <span class="nam">context</span><span class="op">=</span><span class="nam">context</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t160" class="pln"><span class="n"><a href="#t160">160</a></span><span class="t">            <span class="nam">subject_template_name</span><span class="op">=</span><span class="str">'project/project_join_request.txt'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t161" class="pln"><span class="n"><a href="#t161">161</a></span><span class="t">            <span class="nam">email_template_name</span><span class="op">=</span><span class="str">'project/project_join_request_email.html'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t162" class="pln"><span class="n"><a href="#t162">162</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </div>
 <div id="footer">
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.2.1</a>,
-            created at 2020-09-06 08:31 +0000
+            created at 2020-09-08 09:09 +0000
         </p>
     </div>
 </div>
