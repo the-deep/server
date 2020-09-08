@@ -558,7 +558,7 @@
     <p id="t504" class="pln"><span class="n"><a href="#t504">504</a></span><span class="t"><span class="com"># Email CONFIGS (NOT USED)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t505" class="run"><span class="n"><a href="#t505">505</a></span><span class="t"><span class="nam">EMAIL_HOST</span> <span class="op">=</span> <span class="nam">os</span><span class="op">.</span><span class="nam">environ</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'EMAIL_HOST'</span><span class="op">,</span> <span class="str">'smtp.gmail.com'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t506" class="run"><span class="n"><a href="#t506">506</a></span><span class="t"><span class="nam">EMAIL_HOST_PASSWORD</span> <span class="op">=</span> <span class="nam">os</span><span class="op">.</span><span class="nam">environ</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'EMAIL_HOST_PASSWORD'</span><span class="op">,</span> <span class="str">'deep1234'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t507" class="run"><span class="n"><a href="#t507">507</a></span><span class="t"><span class="nam">EMAIL_PORT</span> <span class="op">=</span> <span class="nam">int</span><span class="op">(</span><span class="nam">os</span><span class="op">.</span><span class="nam">environ</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'EMAIL_PORT'</span><span class="op">,</span> <span class="num">587</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t507" class="run"><span class="n"><a href="#t507">507</a></span><span class="t"><span class="nam">EMAIL_PORT</span> <span class="op">=</span> <span class="nam">int</span><span class="op">(</span><span class="nam">os</span><span class="op">.</span><span class="nam">environ</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'EMAIL_PORT'</span><span class="op">)</span> <span class="key">or</span> <span class="num">587</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t508" class="run"><span class="n"><a href="#t508">508</a></span><span class="t"><span class="nam">EMAIL_USE_TLS</span> <span class="op">=</span> <span class="nam">os</span><span class="op">.</span><span class="nam">environ</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'EMAIL_USE_TLS'</span><span class="op">,</span> <span class="str">'True'</span><span class="op">)</span><span class="op">.</span><span class="nam">lower</span><span class="op">(</span><span class="op">)</span> <span class="op">==</span> <span class="str">'true'</span>&nbsp;</span><span class="r"></span></p>
     <p id="t509" class="pln"><span class="n"><a href="#t509">509</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t510" class="pln"><span class="n"><a href="#t510">510</a></span><span class="t"><span class="com"># Email CONFIGS</span>&nbsp;</span><span class="r"></span></p>
@@ -665,7 +665,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.2.1</a>,
-            created at 2020-09-08 09:09 +0000
+            created at 2020-09-08 12:20 +0000
         </p>
     </div>
 </div>
