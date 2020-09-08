@@ -278,12 +278,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 {'message': "You cannot send join request to the private project"}
             )
 
-        join_request = ProjectJoinRequest.objects.create(
-            project=project,
-            requested_by=request.user,
-            status='pending',
-            role=ProjectRole.get_default_role()
+        serializer = ProjectJoinRequestSerializer(
+            data={
+                'role': ProjectRole.get_default_role().id,
+                **request.data,
+            },
+            context={'request': request, 'project': project}
         )
+        serializer.is_valid(raise_exception=True)
+        join_request = serializer.save()
 
         serializer = ProjectJoinRequestSerializer(
             join_request,

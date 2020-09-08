@@ -6,6 +6,10 @@
             padding-top: 24px;
         }
 
+        .user-replies {
+            padding-left: 5px;
+        }
+
         .button-container {
             padding: 12px 0 24px;
         }
@@ -25,6 +29,13 @@
         <span class="bold">{{ request_by.profile.get_display_name }} ({{ request_by.email }}) </span>
             has requested to join the project
         <span class="bold"> {{ project.title }}.</span>
+    </p>
+
+    <p>
+        <span class="bold">Why does the user want to join this project?</span>
+    </p>
+    <p>
+        <span class="user-replies">{{ reason }}</span>
     </p>
 
     <div class="actions">

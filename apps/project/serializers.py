@@ -445,10 +445,18 @@ class ProjectJoinRequestSerializer(RemoveNullFieldsMixin,
     project = SimpleProjectSerializer(read_only=True)
     requested_by = SimpleUserSerializer(read_only=True)
     responded_by = SimpleUserSerializer(read_only=True)
+    # `reason`  will be stored into json field
+    reason = serializers.CharField(source='data.reason', required=True)
 
     class Meta:
         model = ProjectJoinRequest
         fields = '__all__'
+
+    def create(self, validated_data):
+        validated_data['project'] = self.context['project']
+        validated_data['requested_by'] = self.context['request'].user
+        validated_data['status'] = 'pending'
+        return super(ProjectJoinRequestSerializer, self).create(validated_data)
 
 
 class ProjectUserGroupSerializer(serializers.ModelSerializer):
