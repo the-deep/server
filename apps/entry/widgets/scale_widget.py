@@ -1,4 +1,4 @@
-def _get_scale_label(widget, data, widget_data):
+def _get_scale(widget, data, widget_data):
     selected_scale = data.get('value')
     selected_scales = [selected_scale] if selected_scale is not None else []
 
@@ -19,7 +19,7 @@ def _get_scale_label(widget, data, widget_data):
 
 
 def update_attribute(widget, data, widget_data):
-    scale, selected_scales = _get_scale_label(widget, data, widget_data)
+    scale, selected_scales = _get_scale(widget, data, widget_data)
 
     # export_data.data.report.keys will be used in report by conditional widget
     conditional_keys = {
@@ -54,7 +54,7 @@ def update_attribute(widget, data, widget_data):
 
 
 def get_comprehensive_data(widgets_meta, widget, data, widget_data):
-    label, selected_scales = _get_scale_label(widget, data, widget_data)
+    scale, selected_scales = _get_scale(widget, data, widget_data)
     scale_units = widget_data.get('scale_units', [])
 
     if widgets_meta.get(widget.pk) is None:
@@ -65,7 +65,8 @@ def get_comprehensive_data(widgets_meta, widget, data, widget_data):
 
     return {
         **widgets_meta[widget.pk],
-        'label': label,
+        'scale': scale,
+        'label': scale['label'],
         'index': ([
             (i + 1) for i, v in enumerate(scale_units)
             if v['key'] == selected_scales[0]
