@@ -1,5 +1,5 @@
 class Dummy:
-    pass
+    _conditional = True
 
 
 def update_attribute(widget, data, widget_data):
@@ -31,6 +31,8 @@ def update_attribute(widget, data, widget_data):
 
         w_obj = Dummy()
         w_obj.key = w_key
+        w_obj.title = w['title']
+        w_obj.widget_id = w['widget_id']
 
         update_info = widget_module.update_attribute(
             w_obj,
