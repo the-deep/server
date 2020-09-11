@@ -47,13 +47,26 @@ class ComprehensiveEntryApiTest(TestCase):
         return widget_store[widget_id].get_comprehensive_data
 
     def assertAttributeValue(self, widgets_meta, widget_id, widget_data, attr_data, expected_c_response):
+        expected_c_response = expected_c_response or {}
         widget, attribute = self.create_attribute(widget_data, attr_data)
         widget_data = widget.properties and widget.properties.get('data')
         data = attribute.data or {}
         c_resposne = self.get_data_selector(widget_id)(
             widgets_meta, widget, data, widget_data,
-        )
-        self.assertEqual(expected_c_response, c_resposne)
+        ) or {}
+        if widget_id in ('scaleWidget',):
+            # new key 'scale' is appended
+            self.assertTrue(expected_c_response.items() <= c_resposne.items(),
+                            (expected_c_response.items(), c_resposne.items()))
+        elif widget_id in ('conditionalWidget',):
+            # custom handler for scale widget again
+            if expected_c_response.get('type') == 'scaleWidget':
+                self.assertTrue(expected_c_response.get('value').items() <= c_resposne.get('value').items(),
+                                (expected_c_response.items(), c_resposne.items()))
+            else:
+                self.assertEqual(expected_c_response, c_resposne)
+        else:
+            self.assertEqual(expected_c_response, c_resposne)
 
     def _test_widget(self, widget_id):
         widget_data = WIDGET_DATA[widget_id]

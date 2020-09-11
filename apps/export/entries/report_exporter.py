@@ -358,7 +358,6 @@ class ReportExporter:
                     exportable=exportable,
                     data__report__keys__isnull=False,
                 ).first()
-                logger.info(str(['entry', entry.id, str(export_data)]))
 
                 if export_data:
                     self._load_into_levels(
