@@ -112,6 +112,27 @@ class ReportExporter:
         self.collected_widget_text = collected_widget_text
         return self
 
+    def _add_scale_widget_data(self, para, data):
+        """
+        report for scale widget expects following keys
+            - title
+            - label
+            - color
+        as described here: apps.entry.widgets.scale_widget._get_scale_label
+        """
+        if data.get('label', None) and data.get('color', None):
+            run = para.add_run(' [{}.{}]'.format(data['title'][:3], data['label'][:5]))
+            run.add_font_color(data['color'])
+
+    def _add_widget_information_into_report(self, para, report):
+        if 'widget_id' in report:
+            if report['widget_id'] == 'scaleWidget':
+                self._add_scale_widget_data(para, report)
+        elif 'keys' in report:
+            # this is for conditional widgets
+            for nested_report in report['keys']:
+                self._add_widget_information_into_report(para, nested_report)
+
     def _generate_for_entry(self, entry):
         """
         Generate paragraphs for an entry
@@ -169,6 +190,9 @@ class ReportExporter:
             lead.attachment and lead.attachment.get_file_url()
         )
         date = entry.lead.published_on
+
+        for report in entry.exportdata_set.values_list('data__report', flat=True):
+            self._add_widget_information_into_report(para, report)
 
         para.add_run('(' if widget_texts_exists else ' (')
 
@@ -291,8 +315,8 @@ class ReportExporter:
         self.doc.add_heading('Uncategorized', 2)
         self.doc.add_paragraph()
 
-        if entries:
-            [self._generate_for_entry(entry) for entry in entries]
+        for entry in entries:
+            self._generate_for_entry(entry)
 
     def add_entries(self, entries):
         """
@@ -334,6 +358,7 @@ class ReportExporter:
                     exportable=exportable,
                     data__report__keys__isnull=False,
                 ).first()
+                logger.info(str(['entry', entry.id, str(export_data)]))
 
                 if export_data:
                     self._load_into_levels(

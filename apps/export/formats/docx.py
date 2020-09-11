@@ -1,7 +1,7 @@
 from docx.enum.dml import MSO_THEME_COLOR_INDEX
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Pt
+from docx.shared import Pt, RGBColor
 
 from PIL import Image
 
@@ -75,6 +75,12 @@ class Run:
                 self.ref.add_picture(fimage)
         except Exception:
             self.add_text('Invalid Image')
+
+    def add_font_color(self, hex_color_string):
+        if '#' in hex_color_string:
+            hex_color_string = hex_color_string[1:]
+        color = RGBColor.from_string(hex_color_string)
+        self.ref.font.color.rgb = color
 
 
 class Paragraph:
