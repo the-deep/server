@@ -121,8 +121,8 @@ class ReportExporter:
         as described here: apps.entry.widgets.scale_widget._get_scale_label
         """
         if data.get('label', None) and data.get('color', None):
-            run = para.add_run(' [{}.{}]'.format(data['title'][:3], data['label'][:5]))
-            run.add_font_color(data['color'])
+            para.add_shaded_text('[{}.{}]'.format(data['title'][:3], data['label'][:5]),
+                                 data['color'])
 
     def _add_widget_information_into_report(self, para, report):
         if 'widget_id' in report:

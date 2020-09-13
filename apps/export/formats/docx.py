@@ -82,6 +82,15 @@ class Run:
         color = RGBColor.from_string(hex_color_string)
         self.ref.font.color.rgb = color
 
+    def add_shading(self, hex_color_string):
+        if '#' in hex_color_string:
+            hex_color_string = hex_color_string[1:]
+
+        rPr = self.ref._element.get_or_add_rPr()
+        ele = OxmlElement('w:shd')
+        ele.set(qn('w:fill'), hex_color_string)
+        rPr.append(ele)
+
 
 class Paragraph:
     """
@@ -149,6 +158,11 @@ class Paragraph:
         self.ref.paragraph_format.alignment = \
             docx.enum.text.WD_ALIGN_PARAGRAPH.JUSTIFY
         return self
+
+    def add_shaded_text(self, text, color):
+        self.add_run(' ')
+        run = self.add_run(text)
+        run.add_shading(color)
 
 
 class Document:
