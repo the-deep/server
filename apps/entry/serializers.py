@@ -188,6 +188,10 @@ class EntrySerializer(RemoveNullFieldsMixin,
     resolved_comment_count = serializers.SerializerMethodField()
     unresolved_comment_count = serializers.SerializerMethodField()
     project_labels = serializers.SerializerMethodField()
+    verification_last_changed_by_details = SimpleUserSerializer(
+        source='verification_last_changed_by',
+        read_only=True,
+    )
 
     class Meta:
         model = Entry
