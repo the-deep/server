@@ -58,6 +58,16 @@ class Entry(UserResource, ProjectEntityMixin):
 
     dropped_excerpt = models.TextField(blank=True)
     highlight_hidden = models.BooleanField(default=False)
+    verified = models.BooleanField(default=False,
+                                   blank=True, null=True)
+    verification_last_changed_by = models.ForeignKey(User,
+                                                     blank=True, null=True,
+                                                     related_name='+', on_delete=models.SET_NULL)
+
+    def verify(self, user, verified=True):
+        self.verified = verified
+        self.verification_last_changed_by = user
+        self.save()
 
     @staticmethod
     def annotate_comment_count(qs):

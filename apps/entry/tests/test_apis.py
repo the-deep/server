@@ -396,6 +396,9 @@ class EntryTests(TestCase):
     def test_filters(self):
         entry = self.create_entry()
 
+        self.filter_test('verified=False', 1)
+        self.filter_test('verified=True', 0)
+
         filter = self.create(
             Filter,
             analysis_framework=entry.analysis_framework,
@@ -479,6 +482,46 @@ class EntryTests(TestCase):
             {d['id']: d['order'] for d in order_data},
             {d['id']: d['order'] for d in response.json()}
         )
+
+    def test_verify_entry(self):
+        entry = self.create_entry()
+        user = self.create(User)
+        entry.project.add_member(user, self.view_only_role)
+        verify_url = '/api/v1/entries/{}/verify/'.format(entry.id)
+        unverify_url = '/api/v1/entries/{}/unverify/'.format(entry.id)
+
+        self.authenticate(user)
+
+        response = self.client.post(verify_url)
+        self.assert_403(response)
+
+        # normal role
+        user = self.create(User)
+        entry.project.add_member(user, self.normal_role)
+        self.authenticate()
+        response = self.client.post(verify_url)
+        self.assert_200(response)
+        entry.refresh_from_db()
+        self.assertTrue(entry.verified)
+        response = self.client.post(unverify_url)
+        self.assert_200(response)
+        entry.refresh_from_db()
+        self.assertFalse(entry.verified)
+
+    def test_update_entry_unverifies_verified_entry(self):
+        entry = self.create_entry(verified=True)
+        self.assertTrue(entry.verified)
+
+        url = '/api/v1/entries/{}/'.format(entry.id)
+        data = {
+            'excerpt': 'updated...'
+        }
+
+        self.authenticate()
+        response = self.client.patch(url, data)
+        self.assert_200(response)
+        entry.refresh_from_db()
+        self.assertFalse(entry.verified)
 
     # TODO: test export data and filter data apis
 

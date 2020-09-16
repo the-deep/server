@@ -40,6 +40,7 @@ class ExcelExporter:
             'Date of Lead Publication',
             'Imported By',
             'Date Imported',
+            'Verification Status',
             'Lead Title',
             'Lead URL',
             'Author',
@@ -394,6 +395,7 @@ class ExcelExporter:
             rows.add_value_list([
                 entry.created_by.profile.get_display_name(),
                 format_date(entry.created_at.date()),
+                'Verified' if entry.verified else 'Unverified',
                 lead.title,
                 lead.url or (lead.attachment and lead.attachment.get_file_url()),
                 lead.get_authors_display(),

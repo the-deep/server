@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.db import models
 from django.contrib.auth.models import User
+import django_filters
 
 from analysis_framework.models import Filter
 from lead.models import Lead
@@ -11,8 +12,6 @@ from entry.models import (
     EntryComment,
     ProjectEntryLabel,
 )
-
-import django_filters
 
 
 # TODO: Find out whether we need to call timezone.make_aware
@@ -108,6 +107,7 @@ class EntryFilterSet(django_filters.FilterSet):
                 x: ['exact'] for x in [
                     'id', 'excerpt', 'lead__title', 'created_at',
                     'created_by', 'modified_at', 'modified_by', 'project',
+                    'verified'
                 ]
             },
             'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
