@@ -47,8 +47,6 @@ from .models import (
     ProjectJoinRequest,
     ProjectUserGroupMembership,
     ProjectStats,
-    ProjectEntryStats,
-    ProjectAryStats,
     ProjectOrganization
 )
 from .serializers import (
@@ -610,7 +608,7 @@ class ProjectOptionsView(views.APIView):
             fields = fields_query.split(',')
 
         options = {
-            'organizations': [
+            'project_organization_types': [
                 {
                     'key': s[0],
                     'value': s[1],

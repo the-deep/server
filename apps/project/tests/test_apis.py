@@ -63,7 +63,7 @@ class ProjectApiTest(TestCase):
             'title': 'Test project',
             'data': {'testKey': 'testValue'},
             'organizations': [
-                {'organization': Organization.objects.all()[0].id, 'type': ProjectOrganization.DONOR},
+                {'organization': self.org1.id, 'type': ProjectOrganization.DONOR},
             ],
         }
 
