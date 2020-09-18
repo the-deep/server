@@ -142,7 +142,7 @@ class AcapsBriefingNotes(Source):
         resp = requests.get(url, params=params)
         return resp.text
 
-    def fetch(self, params, offset, limit):
+    def fetch(self, params, offset=None, limit=None):
         results = []
         content = self.get_content(self.URL, params)
         soup = Soup(content, 'html.parser')
@@ -177,5 +177,10 @@ class AcapsBriefingNotes(Source):
                         self.URL, params, e.args)
                 )
 
-        final_results = results[offset: offset + limit]
+        final_results = results
+        if offset:
+            final_results = results[offset:]
+        if limit:
+            final_results = results[:limit]
+
         return final_results, len(results)

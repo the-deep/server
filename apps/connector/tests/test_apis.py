@@ -1,16 +1,29 @@
+from mock import patch
+
+from django.test import override_settings
 from deep.tests import TestCase
 from user.models import User
 from project.models import Project
 from organization.models import Organization
-from connector.sources.store import get_random_source, acaps_briefing_notes
+from connector.sources.store import get_random_source, acaps_briefing_notes, source_store
 from connector.sources.base import OrganizationSearch
 from connector.models import (
     Connector,
     ConnectorSource,
     ConnectorUser,
+    UnifiedConnector,
+    UnifiedConnectorSource,
     # EMMConfig,
 )
 from connector.sources import store
+from .connector_content_mock_data import (
+    RELIEF_WEB_MOCK_DATA,
+    RELIEF_WEB_MOCK_DATA_LAMBDA_RESPONSE_EXISTING_SOURCES,
+    RELIEF_WEB_MOCK_DATA_LAMBDA_RESPONSE_NEW_SOURCES,
+
+    MOCK_CONTENT_DATA_BY_KEY,
+    MOCK_LAMBDA_RESPONSE_SOURCES_BY_KEY,
+)
 
 
 def get_source_object(key):
@@ -343,7 +356,6 @@ class ConnectorSourcesApiTest(TestCase):
         data = response.data['results']
 
         for each in data:
-            print(each)
             assert 'status' in each
             if each['source'] == 'acaps-briefing-notes':
                 assert each['status'] == ConnectorSource.STATUS_BROKEN
@@ -368,5 +380,256 @@ class ConnectorSourcesApiTest(TestCase):
 
 
 class UnifiedConnectorTest(TestCase):
-    def test_create_connector(self):
-        pass
+    sample_unified_connector_data = {
+        'clientId': 'random-id-from-client',
+        'sources': [
+            {
+                'params': {
+                    'from': '2020-09-10',
+                    'country': 'NPL',
+                },
+                'source': store.relief_web.ReliefWeb.key,
+            }
+        ],
+        'title': 'Nepal Leads',
+        'isActive': True,
+
+    }
+
+    def test_unified_connector_common_api(self):
+        project = self.create_project()
+
+        url = f'/api/v1/projects/{project.pk}/unified-connectors/'
+        data = self.sample_unified_connector_data
+
+        # Test POST API
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        data = response.json()
+        unified_connector_id = data['id']
+
+        # Test GET API
+        url = f'/api/v1/projects/{project.pk}/unified-connectors/{unified_connector_id}/'
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        # Test PUT API
+        data.update({
+            'sources': [
+                {
+                    # Update older connector
+                    **data['sources'][0],  # id from here
+                    'params': {
+                        'from': '2021-09-10',
+                        'country': 'NPL',
+                    },
+                },
+                {
+                    # Add older connector
+                    'params': {
+                        'feed-url': 'https://reliefweb.int/country/lby/rss.xml?primary_country=140&created=20180101-20190101',  # noqa: E501
+                        'website': 'https://reliefweb.int/',
+                        'url-field': 'link',
+                        'date-field': 'published',
+                        'title-field': 'title',
+                    },
+                    'source': store.rss_feed.RssFeed.key,
+                }
+            ],
+        })
+        url = f'/api/v1/projects/{project.pk}/unified-connectors/{unified_connector_id}/'
+        response = self.client.put(url, data)
+        response_data = response.json()
+        self.assert_200(response)
+        self.assertEqual(2, len(response_data['sources']))
+        assert data['sources'][0]['id'] in [source['id'] for source in response_data['sources']]
+
+    def test_unified_connector_trigger(self):
+        project = self.create_project()
+
+        url = f'/api/v1/projects/{project.pk}/unified-connectors/'
+        data = self.sample_unified_connector_data
+
+        # Test POST API
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        data = response.json()
+        unified_connector_id = data['id']
+
+        # Test process connectors
+        url = f'/api/v1/projects/{project.pk}/unified-connectors/{unified_connector_id}/trigger-sync/'
+        response = self.client.post(url)
+        self.assert_200(response)
+
+    @override_settings(CELERY_TASK_ALWAYS_EAGER=True)
+    @patch('connector.sources.relief_web.requests')
+    @patch('connector.tasks.invoke_lambda_function')
+    def test_unified_connector_processing(self, invoke_lambda_function_mock, reliefweb_requests_mock):
+        project = self.create_project()
+
+        url = f'/api/v1/projects/{project.pk}/unified-connectors/'
+        data = self.sample_unified_connector_data
+
+        # Test POST API
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        data = response.json()
+        unified_connector_id = data['id']
+        unified_connector_trigger_url = (
+            f'/api/v1/projects/{project.pk}/unified-connectors/{unified_connector_id}/trigger-sync/'
+        )
+        unified_connector = UnifiedConnector.objects.get(pk=unified_connector_id)
+
+        # Initial lambda error mock #
+        # INITIAL MOCK
+        reliefweb_requests_mock.post.return_value.text = RELIEF_WEB_MOCK_DATA
+        invoke_lambda_function_mock.return_value = [
+            500, {'error_message': 'Mock error message'}
+        ]
+        with self.captureOnCommitCallbacks(execute=True):
+            self.assert_200(self.client.post(unified_connector_trigger_url))
+        self.assertEqual(
+            list(unified_connector.unifiedconnectorsource_set.values_list('status', flat=True)),
+            [UnifiedConnectorSource.Status.FAILURE]
+        )
+
+        # lambda working mock #
+        # Change invoke for mocking lambda responses
+        invoke_lambda_function_mock.side_effect = lambda lambda_function, body: [
+            # Initial response
+            200, {
+                'existingSources': RELIEF_WEB_MOCK_DATA_LAMBDA_RESPONSE_EXISTING_SOURCES,
+                'asyncJobUuid': 'random-uuid',
+            }
+        ] if not body.get('asyncJobUuid') else [
+            # Pool response (first pending and then success)
+            200,
+            (
+                {'status': 'pending'} if body['retryCount'] == 0 else {
+                    'sources': RELIEF_WEB_MOCK_DATA_LAMBDA_RESPONSE_NEW_SOURCES,
+                    'status': 'success',
+                }
+            )
+        ]
+        with self.captureOnCommitCallbacks(execute=True):
+            self.assert_200(self.client.post(unified_connector_trigger_url))
+        self.assertEqual(
+            list(unified_connector.unifiedconnectorsource_set.values_list('status', flat=True)),
+            [UnifiedConnectorSource.Status.SUCCESS]
+        )
+
+        # lambda working on first try mock (no pooling required) #
+        # Change invoke for mocking lambda responses
+        invoke_lambda_function_mock.return_value = [
+            200, {
+                'existingSources': (
+                    RELIEF_WEB_MOCK_DATA_LAMBDA_RESPONSE_EXISTING_SOURCES + RELIEF_WEB_MOCK_DATA_LAMBDA_RESPONSE_NEW_SOURCES
+                ),
+                'asyncJobUuid': None,
+            }
+        ]
+        with self.captureOnCommitCallbacks(execute=True):
+            self.assert_200(self.client.post(unified_connector_trigger_url))
+        self.assertEqual(
+            list(unified_connector.unifiedconnectorsource_set.values_list('status', flat=True)),
+            [UnifiedConnectorSource.Status.SUCCESS]
+        )
+
+    @override_settings(CELERY_TASK_ALWAYS_EAGER=True)
+    @patch('connector.tasks.invoke_lambda_function')
+    def test_unified_connector_integration_with_connector(self, invoke_lambda_function_mock):
+        project = self.create_project()
+
+        url = f'/api/v1/projects/{project.pk}/unified-connectors/'
+        data = {
+            'clientId': 'random-id-from-client',
+            'sources': [
+                {
+                    'params': {
+                        'from': '2020-09-10',
+                        'country': 'NPL',
+                    },
+                    'source': store.relief_web.ReliefWeb.key,
+                }, {
+                    'params': {
+                        'feed-url': 'https://feedly.com/f/RgQDCHTXsLH8ZTuoy7N2ALOg.atom?count=5',
+                        'url-field': 'link',
+                        'date-field': 'published',
+                        'title-field': 'title',
+                        'author-field': None,
+                        'source-field': 'author',
+                        'website-field': 'link',
+                    },
+                    'source': store.atom_feed.AtomFeed.key,
+                }, {
+                    'params': {
+                        'feed-url': 'https://reliefweb.int/country/ukr/rss.xml',
+                        'url-field': 'link',
+                        'date-field': 'author',
+                        'title-field': 'title',
+                        'source-field': 'source',
+                        'website-field': 'link',
+                    },
+                    'source': store.rss_feed.RssFeed.key,
+                }, {
+                    'params': {
+                        'feed-url': 'https://emm.newsbrief.eu/rss/rss?type=category&id=TH5739-Philippines&duplicates=false',
+                        'url-field': 'link',
+                        'date-field': 'pubDate',
+                        'title-field': 'title',
+                        'author-field': 'source',
+                        'source-field': 'source',
+                        'website-field': 'source',
+                    },
+                    'source': store.emm.EMM.key,
+                },
+            ],
+            'title': 'Nepal Leads',
+            'isActive': True,
+        }
+
+        # Test POST API
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        data = response.json()
+        unified_connector_id = data['id']
+        unified_connector_trigger_url = (
+            f'/api/v1/projects/{project.pk}/unified-connectors/{unified_connector_id}/trigger-sync/'
+        )
+        unified_connector = UnifiedConnector.objects.get(pk=unified_connector_id)
+
+        invoke_lambda_function_mock.side_effect = lambda lambda_function, data: [
+            200, {
+                'existingSources': MOCK_LAMBDA_RESPONSE_SOURCES_BY_KEY[data['source_key']],
+                'asyncJobUuid': None,
+            }
+        ]
+
+        # Start request mock
+        mocked_requests = []
+        for source_key, _ in source_store.items():
+            MOCK_CONTENT_DATA = MOCK_CONTENT_DATA_BY_KEY.get(source_key)
+            if not MOCK_CONTENT_DATA:
+                continue
+            # NOTE: Using __bases__[0] to get the correct class instead of Wrapper Class
+            connector_requests_mock = patch(f'{_.__bases__[0].__module__}.requests')
+            connector_requests = connector_requests_mock.start()
+            for request_method in ['get', 'post']:
+                return_value = getattr(connector_requests, request_method).return_value
+                return_value.text = return_value.content = return_value.get.return_value = MOCK_CONTENT_DATA
+            mocked_requests.append(connector_requests_mock)
+
+        with self.captureOnCommitCallbacks(execute=True):
+            self.assert_200(self.client.post(unified_connector_trigger_url))
+        self.assertEqual(
+            list(unified_connector.unifiedconnectorsource_set.values_list('status', flat=True)),
+            [UnifiedConnectorSource.Status.SUCCESS for _ in data['sources']]
+        )
+
+        # Stop request mock
+        for mocked_request in mocked_requests:
+            mocked_request.stop()

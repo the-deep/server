@@ -23,7 +23,8 @@ from .serializers import (
 
     UnifiedConnectorSerializer,
     UnifiedConnectorSourceSerializer,
-    ConnectorLeadSerializer,
+    UnifiedConnectorWithTrendingStatsSerializer,
+    UnifiedConnectorSourceLeadSerializer,
 )
 from .models import (
     Connector,
@@ -32,10 +33,11 @@ from .models import (
 
     UnifiedConnector,
     UnifiedConnectorSource,
-    ConnectorLead,
+    UnifiedConnectorSourceLead,
 )
 from .sources.store import source_store
 from .sources.base import Source
+from .tasks import process_unified_connector
 
 
 class SourceViewSet(viewsets.ViewSet):
@@ -145,7 +147,7 @@ class ConnectorViewSet(viewsets.ModelViewSet):
         }
 
         source = source_store[connector.source.key]()
-        data, count = source.get_leads(params, offset, limit)
+        data, count = source.get_leads(params, offset=offset, limit=limit)
 
         # Paginate manually
         # FIXME: Make this better: probably cache, and also optimize
@@ -226,7 +228,49 @@ class UnifiedConnectorViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ModifyPermission, IsProjectMember]
 
     def get_queryset(self):
-        return UnifiedConnector.objects.filter(project_id=self.kwargs['project_id'])
+        return UnifiedConnector.objects.filter(project_id=self.kwargs['project_id']).prefetch_related(
+            models.Prefetch(
+                'unifiedconnectorsource_set',
+                queryset=UnifiedConnectorSource.objects.annotate(
+                    total_leads=models.Count('leads', distinct=True),
+                ),
+            ),
+        )
+
+    def get_serializer_class(self):
+        if self.action in ['get_with_trending_stats', 'retrieve']:
+            return UnifiedConnectorWithTrendingStatsSerializer
+        return super().get_serializer_class()
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['project'] = Project.objects.get(pk=self.kwargs['project_id'])
+        return context
+
+    @action(
+        detail=False,
+        url_path='with-trending-stats',
+        methods=('get',),
+        # TODO: Better permissions
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def get_with_trending_stats(self, *args, **kwargs):
+        return self.list(*args, **kwargs)
+
+    @action(
+        detail=True,
+        url_path='trigger-sync',
+        methods=('post',),
+        # TODO: Better permissions
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def trigger_sync(self, *args, **kwargs):
+        unified_connector = self.get_object()
+        if unified_connector.is_active:
+            process_unified_connector.s(unified_connector.pk).delay()
+            return response.Response({'status': 'success'})
+        # TODO: Proper message structure
+        return response.Response({'status': 'failed', 'message': 'inactive unified connector'})
 
 
 class UnifiedConnectorSourceViewSet(viewsets.ReadOnlyModelViewSet):
@@ -234,12 +278,14 @@ class UnifiedConnectorSourceViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsProjectMember]
 
     def get_queryset(self):
-        return UnifiedConnectorSource.objects.filter(connector__project_id=self.kwargs['project_id'])
+        return UnifiedConnectorSource.objects.filter(
+            connector__project_id=self.kwargs['project_id'],
+        ).annotate(total_leads=models.Count('leads', distinct=True))
 
 
-class UnifiedConnectorSourceLeadViewSet(viewsets.ReadOnlyModelViewSet):
+class UnifiedConnectorSourceLeadViewSet(viewsets.ModelViewSet):
     # TODO: Limit Pagination
-    serializer_class = ConnectorLeadSerializer
+    serializer_class = UnifiedConnectorSourceLeadSerializer
     permission_classes = [permissions.IsAuthenticated, IsProjectMember]
 
     def get_queryset(self):
@@ -248,7 +294,4 @@ class UnifiedConnectorSourceLeadViewSet(viewsets.ReadOnlyModelViewSet):
             pk=self.kwargs['source_id'],
             connector__project_id=self.kwargs['project_id'],
         )
-        return ConnectorLead.objects.filter(
-            unifiedconnectorsourcelead__source=source,
-            status=ConnectorLead.Status.SUCCESS,
-        ).distinct()
+        return UnifiedConnectorSourceLead.objects.filter(source=source).select_related('lead')

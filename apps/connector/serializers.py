@@ -1,11 +1,12 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
-from deep.serializers import RemoveNullFieldsMixin
+from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
 from organization.serializers import SimpleOrganizationSerializer
 from user_resource.serializers import UserResourceSerializer
 from lead.models import Lead
 from lead.views import check_if_url_exists
+from project.serializers import SimpleProjectSerializer
 
 from .sources.store import source_store
 from .models import (
@@ -16,6 +17,7 @@ from .models import (
 
     UnifiedConnector,
     UnifiedConnectorSource,
+    UnifiedConnectorSourceLead,
     ConnectorLead,
 )
 
@@ -31,9 +33,26 @@ class SourceOptionSerializer(RemoveNullFieldsMixin,
     )
 
 
-class SourceSerializer(RemoveNullFieldsMixin,
-                       DynamicFieldsMixin,
-                       serializers.Serializer):
+class SimpleSourceSerializer(RemoveNullFieldsMixin, serializers.Serializer):
+    title = serializers.CharField()
+    key = serializers.CharField()
+    status = serializers.SerializerMethodField()
+    logo = URLCachedFileField(read_only=True)
+
+    def get_status(self, obj):
+        key = obj.key
+        source_obj = ConnectorSource.objects.filter(key=key).first()
+        # By default status is working if not added in the db
+        if source_obj is None:
+            return ConnectorSource.STATUS_WORKING
+        return source_obj.status
+
+    class Meta:
+        model = ConnectorSource
+        fields = ('id', 'title', 'key', 'status')
+
+
+class SourceSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.Serializer):
     title = serializers.CharField()
     key = serializers.CharField()
     options = SourceOptionSerializer(many=True)
@@ -85,12 +104,15 @@ class SourceDataSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
 
     def get_authors(self, lead):
         if hasattr(lead, '_authors'):
-            return [author.pk for author in lead._authors]
+            return [author.pk for author in lead._authors if author]
         return []
 
     def get_authors_detail(self, lead):
         if hasattr(lead, '_authors'):
-            return SimpleOrganizationSerializer(lead._authors, many=True).data
+            return SimpleOrganizationSerializer(
+                [author for author in lead._authors if author],
+                many=True,
+            ).data
         return []
 
     def get_emm_entities(self, lead):
@@ -216,15 +238,49 @@ class ConnectorLeadSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class UnifiedConnectorSourceLeadSerializer(serializers.ModelSerializer):
+    lead = ConnectorLeadSerializer(read_only=True)
+
+    class Meta:
+        model = UnifiedConnectorSourceLead
+        exclude = ('source',)
+        read_only_fields = [
+            field.name for field in UnifiedConnectorSourceLead._meta.get_fields()
+            if field.name not in ['blocked']
+        ]
+
+
 class UnifiedConnectorSourceSerializer(serializers.ModelSerializer):
+    """
+    NOTE:
+    - total_leads is provided from UnifiedConnectorViewSet
+    """
+    sourceDetail = SimpleSourceSerializer(source='source', read_only=True)
+    total_leads = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = UnifiedConnectorSource
-        exclude = ('leads',)
+        exclude = ('leads', 'stats')
+        read_only_fields = ('connector', 'last_calculated_at', 'stats', 'status',)
 
 
 class UnifiedConnectorSerializer(UserResourceSerializer):
     sources = UnifiedConnectorSourceSerializer(source='unifiedconnectorsource_set', many=True)
+    project = SimpleProjectSerializer(read_only=True)
 
     class Meta:
         model = UnifiedConnector
         fields = '__all__'
+
+    def validate(self, data):
+        data['project'] = self.context['project']
+        return data
+
+
+class UnifiedConnectorSourceWithTrendingStatsSerializer(UnifiedConnectorSourceSerializer):
+    class Meta(UnifiedConnectorSourceSerializer.Meta):
+        exclude = ('leads',)
+
+
+class UnifiedConnectorWithTrendingStatsSerializer(UnifiedConnectorSerializer):
+    sources = UnifiedConnectorSourceWithTrendingStatsSerializer(source='unifiedconnectorsource_set', many=True)

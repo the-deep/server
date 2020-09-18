@@ -3,6 +3,7 @@ Django settings for deep project.
 """
 import os
 import sys
+import requests
 from celery.schedules import crontab
 
 from utils import sentry
@@ -608,3 +609,35 @@ REDOC_SETTINGS = {
 
 
 OPEN_API_DOCS_TIMEOUT = 86400  # 24 Hours
+
+
+def try_url(url, default=None):
+    """
+    Return None on error
+    """
+    try:
+        return requests.get(url, timeout=0.01).text
+    except requests.exceptions.RequestException:
+        return None
+
+
+# Add instance id to ALLOWED_HOSTS (to avoid invaid host error for ALB Health Checks)
+EC2_IP_ADDRESS = try_url('http://169.254.169.254/latest/meta-data/local-ipv4')
+if EC2_IP_ADDRESS:
+    ALLOWED_HOSTS.append(EC2_IP_ADDRESS)
+
+# Set AWS_DEFAULT_REGION is not provided
+os.environ['AWS_DEFAULT_REGION'] = os.environ.get(
+    'AWS_DEFAULT_REGION'
+) or try_url('http://169.254.169.254/latest/meta-data/placement/region')
+
+# AWS LAMBDA CONFIGS
+DEEP_LAMBDA_STAGE = {
+    'beta': 'beta',
+    'alpha': 'dev',
+    'nightly': 'nightly',
+    'development': 'nightly',
+}.get(DEEP_ENVIRONMENT.lower(), 'local')
+
+DEEP_LAMBDA_SOURCE_EXTRACT = os.environ.get(
+    'DEEP_LAMBDA_SOURCE_EXTRACT', f'deep-util-services-{DEEP_LAMBDA_STAGE}-sourceExtract')

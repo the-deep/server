@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models import Count
 from admin_auto_filters.filters import AutocompleteFilterFactory
 
-from deep.admin import VersionAdmin
+from deep.admin import VersionAdmin, StackedInline
 from connector.models import (
     Connector,
     EMMConfig,
@@ -14,12 +14,24 @@ from connector.models import (
 )
 
 
-admin.site.register(ConnectorSource)
+@admin.register(ConnectorSource)
+class ConnectorSourceAdmin(VersionAdmin):
+    list_display = ('title', 'status', 'total_connectors')
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(
+            total_connectors=Count('connector', distinct=True),
+        )
+
+    def total_connectors(self, obj):
+        return obj.total_connectors
+    total_connectors.admin_order_field = 'total_connectors'
 
 
 @admin.register(Connector)
 class ConnectorAdmin(VersionAdmin):
     autocomplete_fields = ('created_by', 'modified_by',)
+    list_filter = ('source',)
 
 
 @admin.register(EMMConfig)
@@ -29,7 +41,7 @@ class EMMConfigAdmin(VersionAdmin):
 
 # ------------------------------------- UNIFIED CONNECTOR -------------------------------------- #
 
-class UnifiedConnectorSourceAdmin(admin.StackedInline):
+class UnifiedConnectorSourceAdmin(StackedInline):
     model = UnifiedConnectorSource
     extra = 0
 

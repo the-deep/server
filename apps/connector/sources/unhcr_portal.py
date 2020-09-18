@@ -259,7 +259,7 @@ class UNHCRPortal(Source):
         resp = requests.get(url, params=params)
         return resp.text
 
-    def fetch(self, params, offset, limit):
+    def fetch(self, params, offset=None, limit=None):
         results = []
         country = params.pop('country', None)
         date_from = _format_date_or_none(params.pop('date_from', None))
@@ -284,7 +284,11 @@ class UNHCRPortal(Source):
         items = content.findAll('li', {'class': ['searchResultItem']})
 
         total_count = len(items)
-        limited_items = items[offset: offset + limit]
+        limited_items = items
+        if offset:
+            limited_items = items[offset:]
+        if limit:
+            limited_items = items[:limit]
 
         for item in limited_items:
             itemcontent = item.find(

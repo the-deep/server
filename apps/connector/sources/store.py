@@ -15,12 +15,12 @@ import random
 
 
 sources_list = [
+    relief_web.ReliefWeb,
     atom_feed.AtomFeed,
     rss_feed.RssFeed,
     emm.EMM,
     acaps_briefing_notes.AcapsBriefingNotes,
     unhcr_portal.UNHCRPortal,
-    relief_web.ReliefWeb,
     pdna.PDNA,
     research_center.ResearchResourceCenter,
     wpf.WorldFoodProgramme,

@@ -255,7 +255,7 @@ class ReliefWeb(Source):
             return {'operator': 'AND', 'conditions': filters}
         return {}
 
-    def fetch(self, params, offset, limit):
+    def fetch(self, params, offset=None, limit=None):
         results = []
 
         post_params = {}

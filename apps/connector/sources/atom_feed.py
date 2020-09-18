@@ -18,7 +18,7 @@ class AtomFeed(RssFeed):
         resp = requests.get(url)
         return resp.content
 
-    def fetch(self, params, offset, limit):
+    def fetch(self, params, offset=None, limit=None):
         results = []
         if not params or not params.get('feed-url'):
             return results, 0
@@ -30,7 +30,11 @@ class AtomFeed(RssFeed):
         items = feed.entries
         total_count = len(items)
 
-        limited_items = items[offset: offset + limit]
+        limited_items = items
+        if offset:
+            limited_items = limited_items[offset:]
+        if limit:
+            limited_items = limited_items[:limit]
 
         for item in limited_items:
             data = {

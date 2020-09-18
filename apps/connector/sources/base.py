@@ -4,6 +4,7 @@ from django.db.models import Q
 
 from organization.models import Organization
 from utils.common import random_key
+from utils.date_extractor import str_to_date
 
 from lead.models import Lead
 
@@ -86,10 +87,11 @@ class Source(ABC):
 
         leads = []
         for ldata in leads_data:
+            published_on = str_to_date(ldata['published_on'])
             lead = Lead(
                 id=ldata.get('id', random_key()),
                 title=ldata['title'],
-                published_on=ldata['published_on'],
+                published_on=published_on and str(published_on),
                 url=ldata['url'],
                 source_raw=ldata['source'],
                 author_raw=ldata['author'],
