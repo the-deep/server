@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for deep/serializers.py: 97%</title>
+    <title>Coverage for deep/serializers.py: 74%</title>
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
     <script type="text/javascript" src="jquery.hotkeys.js"></script>
@@ -17,15 +17,15 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>deep/serializers.py</b> :
-            <span class="pc_cov">97%</span>
+            <span class="pc_cov">74%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            42 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">41 run</button>
-            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">1 missing</button>
+            45 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">34 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">11 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
-            <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">1 partial</button>
+            <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">2 partial</button>
         </h2>
     </div>
 </div>
@@ -52,11 +52,11 @@
     </div>
 </div>
 <div id="source">
-    <p id="t1" class="pln"><span class="n"><a href="#t1">1</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t1" class="run"><span class="n"><a href="#t1">1</a></span><span class="t"><span class="key">from</span> <span class="nam">django</span><span class="op">.</span><span class="nam">core</span><span class="op">.</span><span class="nam">files</span><span class="op">.</span><span class="nam">storage</span> <span class="key">import</span> <span class="nam">FileSystemStorage</span><span class="op">,</span> <span class="nam">get_storage_class</span>&nbsp;</span><span class="r"></span></p>
     <p id="t2" class="run"><span class="n"><a href="#t2">2</a></span><span class="t"><span class="key">from</span> <span class="nam">django</span><span class="op">.</span><span class="nam">core</span><span class="op">.</span><span class="nam">cache</span> <span class="key">import</span> <span class="nam">cache</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t3" class="run"><span class="n"><a href="#t3">3</a></span><span class="t"><span class="key">from</span> <span class="nam">django</span><span class="op">.</span><span class="nam">conf</span> <span class="key">import</span> <span class="nam">settings</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t4" class="run"><span class="n"><a href="#t4">4</a></span><span class="t"><span class="key">from</span> <span class="nam">rest_framework</span> <span class="key">import</span> <span class="nam">serializers</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t5" class="pln"><span class="n"><a href="#t5">5</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t3" class="run"><span class="n"><a href="#t3">3</a></span><span class="t"><span class="key">from</span> <span class="nam">rest_framework</span> <span class="key">import</span> <span class="nam">serializers</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t4" class="pln"><span class="n"><a href="#t4">4</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t5" class="run"><span class="n"><a href="#t5">5</a></span><span class="t"><span class="key">from</span> <span class="nam">deep</span><span class="op">.</span><span class="nam">middleware</span> <span class="key">import</span> <span class="nam">get_s3_signed_url_ttl</span>&nbsp;</span><span class="r"></span></p>
     <p id="t6" class="run"><span class="n"><a href="#t6">6</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="nam">writable_nested_serializers</span> <span class="key">import</span> <span class="op">(</span> <span class="com"># noqa F401</span>&nbsp;</span><span class="r"></span></p>
     <p id="t7" class="pln"><span class="n"><a href="#t7">7</a></span><span class="t">    <span class="nam">ListToDictField</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t8" class="pln"><span class="n"><a href="#t8">8</a></span><span class="t">    <span class="nam">NestedCreateMixin</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -108,43 +108,54 @@
     <p id="t54" class="pln"><span class="n"><a href="#t54">54</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t55" class="run"><span class="n"><a href="#t55">55</a></span><span class="t">    <span class="op">@</span><span class="nam">classmethod</span>&nbsp;</span><span class="r"></span></p>
     <p id="t56" class="pln"><span class="n"><a href="#t56">56</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_cache_key</span><span class="op">(</span><span class="nam">cls</span><span class="op">,</span> <span class="nam">filename</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t57" class="run"><span class="n"><a href="#t57">57</a></span><span class="t">        <span class="key">return</span> <span class="nam">cls</span><span class="op">.</span><span class="nam">CACHE_KEY</span><span class="op">.</span><span class="nam">format</span><span class="op">(</span><span class="nam">hash</span><span class="op">(</span><span class="nam">filename</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t57" class="mis show_mis"><span class="n"><a href="#t57">57</a></span><span class="t">        <span class="key">return</span> <span class="nam">cls</span><span class="op">.</span><span class="nam">CACHE_KEY</span><span class="op">.</span><span class="nam">format</span><span class="op">(</span><span class="nam">hash</span><span class="op">(</span><span class="nam">filename</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t58" class="pln"><span class="n"><a href="#t58">58</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t59" class="pln"><span class="n"><a href="#t59">59</a></span><span class="t">    <span class="com"># obj is django models.FileField</span>&nbsp;</span><span class="r"></span></p>
     <p id="t60" class="run"><span class="n"><a href="#t60">60</a></span><span class="t">    <span class="key">def</span> <span class="nam">to_representation</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">obj</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t61" class="run"><span class="n"><a href="#t61">61</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">obj</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t62" class="run"><span class="n"><a href="#t62">62</a></span><span class="t">            <span class="key">return</span> <span class="key">None</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t63" class="run"><span class="n"><a href="#t63">63</a></span><span class="t">        <span class="nam">key</span> <span class="op">=</span> <span class="nam">URLCachedFileField</span><span class="op">.</span><span class="nam">get_cache_key</span><span class="op">(</span><span class="nam">obj</span><span class="op">.</span><span class="nam">name</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t64" class="run"><span class="n"><a href="#t64">64</a></span><span class="t">        <span class="nam">url</span> <span class="op">=</span> <span class="nam">cache</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">key</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t65" class="run"><span class="n"><a href="#t65">65</a></span><span class="t">        <span class="key">if</span> <span class="nam">url</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t66" class="run"><span class="n"><a href="#t66">66</a></span><span class="t">            <span class="key">return</span> <span class="nam">url</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t67" class="run"><span class="n"><a href="#t67">67</a></span><span class="t">        <span class="nam">url</span> <span class="op">=</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">to_representation</span><span class="op">(</span><span class="nam">obj</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t68" class="run"><span class="n"><a href="#t68">68</a></span><span class="t">        <span class="nam">cache</span><span class="op">.</span><span class="nam">set</span><span class="op">(</span><span class="nam">key</span><span class="op">,</span> <span class="nam">url</span><span class="op">,</span> <span class="nam">settings</span><span class="op">.</span><span class="nam">MAX_FILE_CACHE_AGE</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t69" class="run"><span class="n"><a href="#t69">69</a></span><span class="t">        <span class="key">return</span> <span class="nam">url</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t61" class="pln"><span class="n"><a href="#t61">61</a></span><span class="t">        <span class="str">"""</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t62" class="pln"><span class="n"><a href="#t62">62</a></span><span class="t"><span class="str">        Caching signed url server-side</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t63" class="pln"><span class="n"><a href="#t63">63</a></span><span class="t"><span class="str">        Assumptions:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t64" class="pln"><span class="n"><a href="#t64">64</a></span><span class="t"><span class="str">            - Single storage is used (accessable by get_storage_class)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t65" class="pln"><span class="n"><a href="#t65">65</a></span><span class="t"><span class="str">            - Either FileSystemStorage(local/default) or S3Boto3Storage(prod/deep.s3_storages.MediaStorage) is used.</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t66" class="pln"><span class="n"><a href="#t66">66</a></span><span class="t"><span class="str">        """</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t67" class="pln"><span class="n"><a href="#t67">67</a></span><span class="t">        <span class="com"># No need to cache for FileSystemStorage</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t68" class="par run show_par"><span class="n"><a href="#t68">68</a></span><span class="t">        <span class="key">if</span> <span class="nam">get_storage_class</span><span class="op">(</span><span class="op">)</span> <span class="op">==</span> <span class="nam">FileSystemStorage</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">68&#x202F;&#x219B;&#x202F;72</span><span class="annotate long">line 68 didn't jump to line 72, because the condition on line 68 was never false</span></span></p>
+    <p id="t69" class="run"><span class="n"><a href="#t69">69</a></span><span class="t">            <span class="key">return</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">to_representation</span><span class="op">(</span><span class="nam">obj</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t70" class="pln"><span class="n"><a href="#t70">70</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t71" class="pln"><span class="n"><a href="#t71">71</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t72" class="pln"><span class="n"><a href="#t72">72</a></span><span class="t"><span class="com"># required=False List Integer Field</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t73" class="run"><span class="n"><a href="#t73">73</a></span><span class="t"><span class="key">def</span> <span class="nam">IdListField</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t74" class="run"><span class="n"><a href="#t74">74</a></span><span class="t">    <span class="key">return</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ListField</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t75" class="pln"><span class="n"><a href="#t75">75</a></span><span class="t">        <span class="nam">child</span><span class="op">=</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t76" class="pln"><span class="n"><a href="#t76">76</a></span><span class="t">        <span class="nam">default</span><span class="op">=</span><span class="nam">list</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t77" class="pln"><span class="n"><a href="#t77">77</a></span><span class="t">        <span class="nam">allow_empty</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t78" class="pln"><span class="n"><a href="#t78">78</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t79" class="pln"><span class="n"><a href="#t79">79</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t80" class="pln"><span class="n"><a href="#t80">80</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t81" class="pln"><span class="n"><a href="#t81">81</a></span><span class="t"><span class="com"># required=False List String Field</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t82" class="run"><span class="n"><a href="#t82">82</a></span><span class="t"><span class="key">def</span> <span class="nam">StringListField</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t83" class="run"><span class="n"><a href="#t83">83</a></span><span class="t">    <span class="key">return</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ListField</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t84" class="pln"><span class="n"><a href="#t84">84</a></span><span class="t">        <span class="nam">child</span><span class="op">=</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t85" class="pln"><span class="n"><a href="#t85">85</a></span><span class="t">        <span class="nam">default</span><span class="op">=</span><span class="nam">list</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t86" class="pln"><span class="n"><a href="#t86">86</a></span><span class="t">        <span class="nam">allow_empty</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t87" class="pln"><span class="n"><a href="#t87">87</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t71" class="pln"><span class="n"><a href="#t71">71</a></span><span class="t">        <span class="com"># Cache for S3Boto3Storage</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t72" class="mis show_mis"><span class="n"><a href="#t72">72</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">obj</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t73" class="mis show_mis"><span class="n"><a href="#t73">73</a></span><span class="t">            <span class="key">return</span> <span class="key">None</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t74" class="mis show_mis"><span class="n"><a href="#t74">74</a></span><span class="t">        <span class="nam">key</span> <span class="op">=</span> <span class="nam">URLCachedFileField</span><span class="op">.</span><span class="nam">get_cache_key</span><span class="op">(</span><span class="nam">obj</span><span class="op">.</span><span class="nam">name</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t75" class="mis show_mis"><span class="n"><a href="#t75">75</a></span><span class="t">        <span class="nam">url</span> <span class="op">=</span> <span class="nam">cache</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">key</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t76" class="mis show_mis"><span class="n"><a href="#t76">76</a></span><span class="t">        <span class="key">if</span> <span class="nam">url</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t77" class="mis show_mis"><span class="n"><a href="#t77">77</a></span><span class="t">            <span class="key">return</span> <span class="nam">url</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t78" class="mis show_mis"><span class="n"><a href="#t78">78</a></span><span class="t">        <span class="nam">url</span> <span class="op">=</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">to_representation</span><span class="op">(</span><span class="nam">obj</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t79" class="mis show_mis"><span class="n"><a href="#t79">79</a></span><span class="t">        <span class="nam">cache</span><span class="op">.</span><span class="nam">set</span><span class="op">(</span><span class="nam">key</span><span class="op">,</span> <span class="nam">url</span><span class="op">,</span> <span class="nam">get_s3_signed_url_ttl</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t80" class="mis show_mis"><span class="n"><a href="#t80">80</a></span><span class="t">        <span class="key">return</span> <span class="nam">url</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t81" class="pln"><span class="n"><a href="#t81">81</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t82" class="pln"><span class="n"><a href="#t82">82</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t83" class="pln"><span class="n"><a href="#t83">83</a></span><span class="t"><span class="com"># required=False List Integer Field</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t84" class="run"><span class="n"><a href="#t84">84</a></span><span class="t"><span class="key">def</span> <span class="nam">IdListField</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t85" class="run"><span class="n"><a href="#t85">85</a></span><span class="t">    <span class="key">return</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ListField</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t86" class="pln"><span class="n"><a href="#t86">86</a></span><span class="t">        <span class="nam">child</span><span class="op">=</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t87" class="pln"><span class="n"><a href="#t87">87</a></span><span class="t">        <span class="nam">default</span><span class="op">=</span><span class="nam">list</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t88" class="pln"><span class="n"><a href="#t88">88</a></span><span class="t">        <span class="nam">allow_empty</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t89" class="pln"><span class="n"><a href="#t89">89</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t90" class="pln"><span class="n"><a href="#t90">90</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t91" class="pln"><span class="n"><a href="#t91">91</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t92" class="pln"><span class="n"><a href="#t92">92</a></span><span class="t"><span class="com"># required=False List String Field</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t93" class="run"><span class="n"><a href="#t93">93</a></span><span class="t"><span class="key">def</span> <span class="nam">StringListField</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t94" class="run"><span class="n"><a href="#t94">94</a></span><span class="t">    <span class="key">return</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ListField</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t95" class="pln"><span class="n"><a href="#t95">95</a></span><span class="t">        <span class="nam">child</span><span class="op">=</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t96" class="pln"><span class="n"><a href="#t96">96</a></span><span class="t">        <span class="nam">default</span><span class="op">=</span><span class="nam">list</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t97" class="pln"><span class="n"><a href="#t97">97</a></span><span class="t">        <span class="nam">allow_empty</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t98" class="pln"><span class="n"><a href="#t98">98</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </div>
 <div id="footer">
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.3</a>,
-            created at 2020-09-16 04:20 +0000
+            created at 2020-09-20 07:21 +0000
         </p>
     </div>
 </div>
