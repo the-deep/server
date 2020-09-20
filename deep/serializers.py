@@ -1,8 +1,8 @@
-
+from django.core.files.storage import FileSystemStorage, get_storage_class
 from django.core.cache import cache
-from django.conf import settings
 from rest_framework import serializers
 
+from deep.middleware import get_s3_signed_url_ttl
 from .writable_nested_serializers import ( # noqa F401
     ListToDictField,
     NestedCreateMixin,
@@ -58,6 +58,17 @@ class URLCachedFileField(serializers.FileField):
 
     # obj is django models.FileField
     def to_representation(self, obj):
+        """
+        Caching signed url server-side
+        Assumptions:
+            - Single storage is used (accessable by get_storage_class)
+            - Either FileSystemStorage(local/default) or S3Boto3Storage(prod/deep.s3_storages.MediaStorage) is used.
+        """
+        # No need to cache for FileSystemStorage
+        if get_storage_class() == FileSystemStorage:
+            return super().to_representation(obj)
+
+        # Cache for S3Boto3Storage
         if not obj:
             return None
         key = URLCachedFileField.get_cache_key(obj.name)
@@ -65,7 +76,7 @@ class URLCachedFileField(serializers.FileField):
         if url:
             return url
         url = super().to_representation(obj)
-        cache.set(key, url, settings.MAX_FILE_CACHE_AGE)
+        cache.set(key, url, get_s3_signed_url_ttl())
         return url
 
 

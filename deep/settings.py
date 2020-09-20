@@ -135,6 +135,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'deep.middleware.RevisionMiddleware',
+    'deep.middleware.DeepInnerCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'deep.urls'
