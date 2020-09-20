@@ -163,32 +163,15 @@ class FileViewSet(viewsets.ModelViewSet):
             ).distinct()
         return File.get_for(self.request.user)
 
-    def retrieve(self, request, *args, **kwargs):
-        obj = self.get_object()
-        response = super().retrieve(request, *args, **kwargs)
-
-        key = URLCachedFileField.get_cache_key(obj.file.name)
-        response['Cache-Control'] = 'max-age={}'.format(cache.ttl(key))
-        return response
-
     @decorators.action(
         detail=True,
         url_path='preview',
     )
     def get_preview(self, request, pk=None, version=None):
-        def _response(url, max_age):
-            response = redirect(request.build_absolute_uri(url))
-            response['Cache-Control'] = 'max-age={}'.format(max_age)
-            return response
-
         obj = self.get_object()
-        key = URLCachedFileField.get_cache_key(obj.file.name)
-        url = cache.get(key)
-        if url:
-            return _response(url, cache.ttl(key))
         url = self.get_serializer(obj).data.get('file')
-        cache.set(key, url, settings.MAX_FILE_CACHE_AGE)
-        return _response(url, settings.MAX_FILE_CACHE_AGE)
+        response = redirect(request.build_absolute_uri(url))
+        return response
 
 
 class GoogleDriveFileViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
