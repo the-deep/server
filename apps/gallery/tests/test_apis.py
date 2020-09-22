@@ -27,6 +27,7 @@ class GalleryTests(TestCase):
         self.unsupported_file = tmp_file.name
 
     def tearDown(self):
+        super().tearDown()
         os.unlink(self.unsupported_file)
 
     def test_upload_supported_file(self):

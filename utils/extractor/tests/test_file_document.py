@@ -1,5 +1,4 @@
 from os.path import (join, isfile)
-import json
 import logging
 
 from django.test import TestCase
@@ -24,11 +23,13 @@ class FileDocumentTest(TestCase):
     def setUp(self):
         self.path = join(settings.TEST_DIR, 'documents_attachment')
         self.documents = join(settings.TEST_DIR, 'documents')
-
-        with open(join(self.documents, 'pages.json'), 'r') as pages:
-            self.pages = json.load(pages)
-
         makedirs(self.path)
+
+        self.pages = {
+            'pdf': 2,
+            'docx': 14,
+            'pptx': 21
+        }
 
     def extract(self, path):
         file = open(join(self.documents, path), 'rb')

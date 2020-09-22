@@ -22,7 +22,7 @@ def read_json_from_url(url):
         return json.load(fp)
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+@override_settings(MEDIA_ROOT=tempfile.gettempdir(), CELERY_TASK_ALWAYS_EAGER=True)
 class LoadGeoAreasTaskTest(TestCase):
     def setUp(self):
         super().setUp()
@@ -78,6 +78,7 @@ class LoadGeoAreasTaskTest(TestCase):
         self.admin_level1 = admin_level1
 
     def tearDown(self):
+        super().tearDown()
         if os.path.isfile(self.admin_level0.geo_shape_file.file.path):
             os.unlink(self.admin_level0.geo_shape_file.file.path)
         if os.path.isfile(self.admin_level1.geo_shape_file.file.path):

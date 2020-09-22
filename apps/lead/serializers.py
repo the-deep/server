@@ -202,13 +202,38 @@ class LeadSerializer(
             attachment,
         )
 
-    def validate(self, data):
-        attachment_id = self.get_initial().get('attachment', {}).get('id')
-        LeadSerializer.add_update__validate(
-            data, self.instance,
-            File.objects.filter(pk=attachment_id).first()
-        )
-        return data
+    def validate(self, validated_data):
+        # Creating new lead
+        if self.instance is None:
+            attachment_id = self.get_initial().get('attachment', {}).get('id')
+            LeadSerializer.add_update__validate(
+                validated_data, None,
+                File.objects.filter(pk=attachment_id).first()
+            )
+        # Updating old lead
+        else:
+            # We do not update triggers and entities
+            validated_data.pop('emm_entities', [])
+            validated_data.pop('emm_triggers', [])
+
+            # Make sure url/attachment or text are not changed
+            if (
+                self.instance.source_type == Lead.WEBSITE and
+                'url' in validated_data and validated_data['url'] != self.instance.url
+            ):
+                raise serializers.ValidationError('Changing URL is not allowed')
+            elif (
+                self.instance.source_type == Lead.TEXT and
+                'text' in validated_data and validated_data['text'] != self.instance.text
+            ):
+                raise serializers.ValidationError('Changing TEXT is not allowed')
+            elif (
+                self.instance.attachment and 'attachment' in self.get_initial() and
+                self.get_initial()['attachment'].get('id') != self.instance.attachment.id
+            ):
+                raise serializers.ValidationError('Changing ATTACHMENT is not allowed')
+
+        return validated_data
 
     # TODO: Probably also validate assignee to valid list of users
 
@@ -258,10 +283,6 @@ class LeadSerializer(
         assignee_field = validated_data.pop('get_assignee', None)
         assignee_id = assignee_field and assignee_field.get('id', None)
         assignee = assignee_id and get_object_or_404(User, id=assignee_id)
-
-        # We do not update triggers and entities
-        validated_data.pop('emm_entities', [])
-        validated_data.pop('emm_triggers', [])
 
         lead = super().update(instance, validated_data)
 

@@ -368,11 +368,8 @@ RELIEFWEB_APPNAME = 'thedeep.io'
 # HID CONFIGS [NOTE: Update config in React too]
 HID_CLIENT_ID = os.environ.get('HID_CLIENT_ID', 'deep-local')
 HID_CLIENT_NAME = os.environ.get('HID_CLIENT_NAME', 'Deep Local')
-HID_CLIENT_REDIRECT_URL = os.environ.get(
-    'HID_CLIENT_REDIRECT_URL', 'http://localhost:3000/login/')
-HID_AUTH_URI = os.environ.get(
-    'HID_AUTH_URI',
-    'https://api2.dev.humanitarian.id')  # https://auth.humanitarian.id
+HID_CLIENT_REDIRECT_URL = os.environ.get('HID_CLIENT_REDIRECT_URL', 'http://localhost:3000/login/')
+HID_AUTH_URI = os.environ.get('HID_AUTH_URI', 'https://api2.dev.humanitarian.id')  # https://auth.humanitarian.id
 
 # Logging Errors to Papertrail
 

@@ -1,7 +1,8 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from geo.tasks import add
 
 
+@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
 class CeleryTest(TestCase):
     """
     Simple celery test

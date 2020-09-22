@@ -1,6 +1,5 @@
 from os.path import (join, isfile)
 import logging
-import json
 
 from django.test import TestCase
 from django.conf import settings
@@ -14,9 +13,8 @@ logger = logging.getLogger(__name__)
 REDHUM_URL = 'https://redhum.org/documento/3227553'
 HTML_URL = 'https://reliefweb.int/report/occupied-palestinian-territory/rehabilitation-services-urgently-needed-prevent-disability'  # noqa
 DOCX_URL = 'https://calibre-ebook.com/downloads/demos/demo.docx'
-PPTX_URL = 'https://www.mhc.ab.ca/-/media/Files/PDF/Services/Online/'\
-           'BBSamples/powerpoint.pptx'
-PDF_URL = 'http://che.org.il/wp-content/uploads/2016/12/pdf-sample.pdf'
+PPTX_URL = 'https://www.mhc.ab.ca/-/media/Files/PDF/Services/Online/BBSamples/powerpoint.pptx'
+PDF_URL = 'http://www.africau.edu/images/default/sample.pdf'
 
 
 class WebDocumentTest(TestCase):
@@ -26,9 +24,13 @@ class WebDocumentTest(TestCase):
     """
     def setUp(self):
         self.path = join(settings.TEST_DIR, 'documents_urls')
-        with open(join(self.path, 'pages.json'), 'r') as pages:
-            self.pages = json.load(pages)
         makedirs(self.path)
+        self.pages = {
+            'pdf': 2,
+            'docx': 3,
+            'pptx': 2,
+            'html': 1
+        }
 
     def extract(self, url, type):
         try:

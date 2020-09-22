@@ -11,7 +11,7 @@ if [ "$CI" == "true" ]; then
 
     set -e
     echo 'import coverage; coverage.process_startup()' > /code/sitecustomize.py
-    COVERAGE_PROCESS_START=`pwd`/.coveragerc COVERAGE_FILE=`pwd`/.coverage PYTHONPATH=`pwd` py.test -n auto --dist=loadfile
+    COVERAGE_PROCESS_START=`pwd`/.coveragerc COVERAGE_FILE=`pwd`/.coverage PYTHONPATH=`pwd` py.test -n auto --dist=loadfile --durations=0
     coverage combine
     coverage report -i
     coverage html -i

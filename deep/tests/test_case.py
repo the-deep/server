@@ -251,9 +251,10 @@ class TestCase(test.APITestCase):
         }
 
         self.authenticate()
-        self.client.post(url, data, format='multipart')
+        response = self.client.post(url, data, format='multipart')
+        self.assert_201(response)
 
-        file = File.objects.last()
+        file = File.objects.get(pk=response.json()['id'])
         self.deep_test_files_path.append(file.file.path)
         return file
 

@@ -694,6 +694,7 @@ class LeadTests(TestCase):
             'url': common_url,
         }
 
+        # Here the error is `URL chaning is not allowed`
         response = self.client.patch(url, data)
         self.assert_400(response)
 
@@ -1262,6 +1263,52 @@ class LeadTests(TestCase):
             for x in data['emm_triggers']
         }
         assert expected_triggers == result_triggers
+
+    def test_lead_source_change_not_allowed(self):
+        project = self.create(Project, role=self.admin_role)
+        file1 = self.create_gallery_file()
+        file2 = self.create_gallery_file()
+
+        common_data = {
+            'title': 'Spaceship spotted in sky',
+            'project': project.id,
+            'source': self.source.pk,
+            'authors': [self.author.pk],
+        }
+        url = '/api/v1/leads/'
+
+        for source_type, field, value, new_value in [
+                (Lead.WEBSITE, 'url', 'https://same.com/', 'https://not-same.com/'),
+                (
+                    Lead.TEXT, 'text',
+                    'Alien shapeship has been spotted in the sky', 'Alien shapeship has been spotted in the land',
+                ),
+                (Lead.DISK, 'attachment', {'id': file1.pk}, {'id': file2.pk}),
+        ]:
+            data = {
+                **common_data,
+                'source_type': source_type,
+                field: value,
+            }
+            self.authenticate()
+            # First create
+            response = self.client.post(url, data)
+            self.assert_201(response)
+            lead_url = f"/api/v1/leads/{response.json()['id']}/"
+
+            # Now try changing with put
+            response = self.client.put(lead_url, {**data, field: new_value})
+            self.assert_400(response)
+            # Now try changing with patch
+            response = self.client.patch(lead_url, {field: new_value})
+            self.assert_400(response)
+
+            # Now try changing with put (for title)
+            response = self.client.put(lead_url, {**data, 'title': 'Spaceship spotted in land'})
+            self.assert_200(response)
+            # Now try changing with patch (for title)
+            response = self.client.patch(lead_url, {'title': 'Spaceship spotted in land'})
+            self.assert_200(response)
 
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:
