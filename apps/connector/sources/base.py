@@ -65,9 +65,11 @@ class Source(ABC):
     DEFAULT_PER_PAGE = 25
 
     def __init__(self):
-        if not hasattr(self, 'title') \
-                or not hasattr(self, 'key') \
-                or not hasattr(self, 'options'):
+        if (
+            not hasattr(self, 'title') or
+            not hasattr(self, 'key') or
+            not hasattr(self, 'options')
+        ):
             raise Exception('Source not defined properly')
 
     @abstractmethod

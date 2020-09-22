@@ -53,18 +53,17 @@ class SimpleSourceSerializer(RemoveNullFieldsMixin, serializers.Serializer):
 
 
 class SourceSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.Serializer):
+    """
+    NOTE: Only use this with SourceViewSet
+    """
     title = serializers.CharField()
     key = serializers.CharField()
     options = SourceOptionSerializer(many=True)
     status = serializers.SerializerMethodField()
+    logo = URLCachedFileField(source='db_config.logo', read_only=True)
 
     def get_status(self, obj):
-        key = obj.key
-        source_obj = ConnectorSource.objects.filter(key=key).first()
-        # By default status is working if not added in the db
-        if source_obj is None:
-            return ConnectorSource.STATUS_WORKING
-        return source_obj.status
+        return obj.db_config.status if obj.db_config else ConnectorSource.STATUS_WORKING
 
 
 class SourceEMMEntitiesSerializer(serializers.Serializer):

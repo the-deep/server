@@ -1,18 +1,25 @@
 from django.db import models
 from django.shortcuts import get_object_or_404
 from rest_framework import (
+    filters,
     exceptions,
     permissions,
     response,
     views,
     viewsets,
 )
+import django_filters
 
 from rest_framework.decorators import action
+from deep.paginations import HardLimitSetPagination
 from deep.permissions import ModifyPermission, IsProjectMember
 from project.models import Project
 from utils.common import parse_number
 
+from .filters import (
+    UnifiedConnectorSourceLeadFilterSet,
+    UnifiedConnectorFilterSet,
+)
 from .serializers import (
     SourceSerializer,
     SourceDataSerializer,
@@ -30,6 +37,7 @@ from .models import (
     Connector,
     ConnectorUser,
     ConnectorProject,
+    ConnectorSource,
 
     UnifiedConnector,
     UnifiedConnectorSource,
@@ -45,7 +53,12 @@ class SourceViewSet(viewsets.ViewSet):
 
     def list(self, request, version=None):
         sources = [s() for s in source_store.values()]
-        serializer = SourceSerializer(sources, many=True)
+        sources_from_db = {
+            source.key: source for source in ConnectorSource.objects.all()
+        }
+        for source in sources:
+            source.db_config = sources_from_db.get(source.key)
+        serializer = SourceSerializer(sources, context={'request': request}, many=True)
         results = serializer.data
         return response.Response({
             'count': len(results),
@@ -226,6 +239,8 @@ class ConnectorProjectViewSet(viewsets.ModelViewSet):
 class UnifiedConnectorViewSet(viewsets.ModelViewSet):
     serializer_class = UnifiedConnectorSerializer
     permission_classes = [permissions.IsAuthenticated, ModifyPermission, IsProjectMember]
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    filterset_class = UnifiedConnectorFilterSet
 
     def get_queryset(self):
         return UnifiedConnector.objects.filter(project_id=self.kwargs['project_id']).prefetch_related(
@@ -238,7 +253,7 @@ class UnifiedConnectorViewSet(viewsets.ModelViewSet):
         )
 
     def get_serializer_class(self):
-        if self.action in ['get_with_trending_stats', 'retrieve']:
+        if self.request.query_params.get('with_trending_stats', 'false').lower() == 'true':
             return UnifiedConnectorWithTrendingStatsSerializer
         return super().get_serializer_class()
 
@@ -246,16 +261,6 @@ class UnifiedConnectorViewSet(viewsets.ModelViewSet):
         context = super().get_serializer_context()
         context['project'] = Project.objects.get(pk=self.kwargs['project_id'])
         return context
-
-    @action(
-        detail=False,
-        url_path='with-trending-stats',
-        methods=('get',),
-        # TODO: Better permissions
-        permission_classes=[permissions.IsAuthenticated],
-    )
-    def get_with_trending_stats(self, *args, **kwargs):
-        return self.list(*args, **kwargs)
 
     @action(
         detail=True,
@@ -284,9 +289,12 @@ class UnifiedConnectorSourceViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class UnifiedConnectorSourceLeadViewSet(viewsets.ModelViewSet):
-    # TODO: Limit Pagination
+    pagination_class = HardLimitSetPagination
     serializer_class = UnifiedConnectorSourceLeadSerializer
     permission_classes = [permissions.IsAuthenticated, IsProjectMember]
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    filterset_class = UnifiedConnectorSourceLeadFilterSet
+    # TODO: search_fields = ('title',)
 
     def get_queryset(self):
         source = get_object_or_404(
@@ -295,3 +303,14 @@ class UnifiedConnectorSourceLeadViewSet(viewsets.ModelViewSet):
             connector__project_id=self.kwargs['project_id'],
         )
         return UnifiedConnectorSourceLead.objects.filter(source=source).select_related('lead')
+
+
+class UnifiedConnectorLeadViewSet(UnifiedConnectorSourceLeadViewSet):
+    def get_queryset(self):
+        unified_connector = get_object_or_404(
+            UnifiedConnector,
+            pk=self.kwargs['unified_id'],
+            project_id=self.kwargs['project_id'],
+        )
+        return UnifiedConnectorSourceLead.objects.\
+            filter(source__connector=unified_connector).select_related('lead').distinct()

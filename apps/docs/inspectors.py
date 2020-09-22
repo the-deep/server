@@ -207,7 +207,7 @@ class ViewSchema:
             view.request = RequestFactory()
             view.request.user = User(username='test')
             serializer = view.get_serializer()
-        except (exceptions.APIException, KeyError):
+        except (exceptions.APIException, KeyError, AttributeError):
             serializer = None
             # Note not generated for view.__class__.name, method, path
 

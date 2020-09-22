@@ -41,7 +41,7 @@ class AtomFeed(RssFeed):
                 'source_type': Lead.RSS,
                 **{
                     lead_field: (item or {}).get(params.get(param_key))
-                    for lead_field, param_key in self.option_lead_field_map.items()
+                    for lead_field, param_key in self._option_lead_field_map.items()
                 },
             }
             results.append(data)

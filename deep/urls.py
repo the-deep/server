@@ -130,6 +130,7 @@ from connector.views import (
     ConnectorUserViewSet,
     ConnectorProjectViewSet,
     UnifiedConnectorViewSet,
+    UnifiedConnectorLeadViewSet,
     UnifiedConnectorSourceViewSet,
     UnifiedConnectorSourceLeadViewSet,
 )
@@ -322,12 +323,12 @@ router.register(r'connector-users', ConnectorUserViewSet,
 router.register(r'connector-projects', ConnectorProjectViewSet,
                 basename='connector_projects')
 router.register(r'projects/(?P<project_id>\d+)/unified-connectors', UnifiedConnectorViewSet, basename='unified_connector')
-router.register(
-    r'projects/(?P<project_id>\d+)/unified-connector-sources',
-    UnifiedConnectorSourceViewSet, basename='unified_connector_source')
-router.register(
-    r'projects/(?P<project_id>\d+)/unified-connector-sources/(?P<source_id>\d+)/leads',
-    UnifiedConnectorSourceLeadViewSet, basename='unified_connector_source_lead')
+router.register(r'projects/(?P<project_id>\d+)/unified-connectors/(?P<unified_id>\d+)/leads',
+                UnifiedConnectorLeadViewSet, basename='unified_connector_lead')
+router.register(r'projects/(?P<project_id>\d+)/unified-connector-sources',
+                UnifiedConnectorSourceViewSet, basename='unified_connector_source')
+router.register(r'projects/(?P<project_id>\d+)/unified-connector-sources/(?P<source_id>\d+)/leads',
+                UnifiedConnectorSourceLeadViewSet, basename='unified_connector_source_lead')
 
 # Organization routers
 router.register(r'organizations', OrganizationViewSet, basename='organization')

@@ -4,8 +4,9 @@ import requests
 
 from utils.common import DEFAULT_HEADERS
 from lead.models import Lead
-from .base import Source
 from connector.utils import get_rss_fields, ConnectorWrapper
+
+from .base import Source
 
 
 def _get_field_value(item, field):
@@ -22,11 +23,13 @@ class RssFeed(Source):
     options = [
         {
             'key': 'feed-url',
+            'source_field': 'feed-url',
             'field_type': 'url',
             'title': 'Feed URL'
         },
         {
             'key': 'website-field',
+            'source_field': 'feed-url',
             'field_type': 'select',
             'lead_field': 'website',
             'title': 'Website',
@@ -34,6 +37,7 @@ class RssFeed(Source):
         },
         {
             'key': 'title-field',
+            'source_field': 'feed-url',
             'field_type': 'select',
             'lead_field': 'title',
             'title': 'Title field',
@@ -41,6 +45,7 @@ class RssFeed(Source):
         },
         {
             'key': 'date-field',
+            'source_field': 'feed-url',
             'field_type': 'select',
             'lead_field': 'published_on',
             'title': 'Published on field',
@@ -48,6 +53,7 @@ class RssFeed(Source):
         },
         {
             'key': 'source-field',
+            'source_field': 'feed-url',
             'field_type': 'select',
             'lead_field': 'source',
             'title': 'Publisher field',
@@ -55,6 +61,7 @@ class RssFeed(Source):
         },
         {
             'key': 'author-field',
+            'source_field': 'feed-url',
             'field_type': 'select',
             'lead_field': 'author',
             'title': 'Author field',
@@ -62,6 +69,7 @@ class RssFeed(Source):
         },
         {
             'key': 'url-field',
+            'source_field': 'feed-url',
             'field_type': 'select',
             'lead_field': 'url',
             'title': 'URL field',
@@ -69,7 +77,7 @@ class RssFeed(Source):
         },
     ]
 
-    option_lead_field_map = {
+    _option_lead_field_map = {
         option['lead_field']: option['key']
         for option in options if option.get('lead_field')
     }
@@ -102,7 +110,7 @@ class RssFeed(Source):
                 'source_type': Lead.RSS,
                 **{
                     lead_field: _get_field_value(item, params.get(param_key))
-                    for lead_field, param_key in self.option_lead_field_map.items()
+                    for lead_field, param_key in self._option_lead_field_map.items()
                 },
             }
             results.append(data)
