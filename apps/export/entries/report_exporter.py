@@ -121,8 +121,7 @@ class ReportExporter:
         as described here: apps.entry.widgets.scale_widget._get_scale
         """
         if data.get('label', None) and data.get('color', None):
-            para.add_shaded_text('[{}.{}]'.format(data['title'][:3], data['label'][:5]),
-                                 data['color'])
+            para.add_oval_shape(data['color'])
 
     def _add_widget_information_into_report(self, para, report):
         """
@@ -199,9 +198,6 @@ class ReportExporter:
         )
         date = entry.lead.published_on
 
-        for report in entry.exportdata_set.values_list('data__report', flat=True):
-            self._add_widget_information_into_report(para, report)
-
         para.add_run('(' if widget_texts_exists else ' (')
 
         # Add author is available
@@ -216,6 +212,9 @@ class ReportExporter:
         # TODO: use utils.common.format_date and perhaps use information date
         date and para.add_run(f", {date.strftime('%d/%m/%Y')}")
         para.add_run(f", {'Verified' if entry.verified else 'Unverified'}")
+
+        for report in entry.exportdata_set.values_list('data__report', flat=True):
+            self._add_widget_information_into_report(para, report)
 
         para.add_run(')')
 
