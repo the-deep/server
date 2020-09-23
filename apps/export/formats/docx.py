@@ -1,5 +1,7 @@
+from uuid import uuid4
+
 from docx.enum.dml import MSO_THEME_COLOR_INDEX
-from docx.oxml import OxmlElement
+from docx.oxml import OxmlElement, oxml_parser
 from docx.oxml.ns import qn
 from docx.shared import Pt, RGBColor
 
@@ -83,6 +85,10 @@ class Run:
         self.ref.font.color.rgb = color
 
     def add_shading(self, hex_color_string):
+        """
+        XML representation
+            <w:shd w:fill="1F497D"/>
+        """
         if '#' in hex_color_string:
             hex_color_string = hex_color_string[1:]
 
@@ -90,6 +96,38 @@ class Run:
         ele = OxmlElement('w:shd')
         ele.set(qn('w:fill'), hex_color_string)
         rPr.append(ele)
+
+    def add_oval_shape(self, fill_hex_color):
+        """
+        https://python-docx.readthedocs.io/en/latest/user/shapes.html
+        https://docs.microsoft.com/en-us/windows/win32/vml/web-workshop---specs---standards----how-to-use-vml-on-web-pages
+        """
+        color = fill_hex_color
+        if '#' != color[0]:
+            color = '#' + color
+
+        pict = OxmlElement('w:pict')
+        nsmap = dict(
+            v='urn:schemas-microsoft-com:vml'
+        )
+        oval_attrs = dict(
+            id=str(uuid4()),
+            style='width:12pt;height:12pt;z-index:-251658240;mso-position-vertical:top;mso-position-horizontal:left',
+            fillcolor=color,
+        )
+        oval = oxml_parser.makeelement('{%s}%s' % (nsmap['v'], 'oval'),
+                                       attrib=oval_attrs, nsmap=nsmap)
+
+        border_attrs = dict(
+            color='gray',
+            joinstyle='round',
+            endcap='flat'
+        )
+        stroke = oxml_parser.makeelement('{%s}%s' % (nsmap['v'], 'stroke'),
+                                         attrib=border_attrs, nsmap=nsmap)
+        oval.append(stroke)
+        pict.append(oval)
+        self.ref._element.append(pict)
 
 
 class Paragraph:
@@ -160,9 +198,12 @@ class Paragraph:
         return self
 
     def add_shaded_text(self, text, color):
-        self.add_run(' ')
         run = self.add_run(text)
         run.add_shading(color)
+
+    def add_oval_shape(self, color):
+        run = self.add_run(' ')
+        run.add_oval_shape(color)
 
 
 class Document:
