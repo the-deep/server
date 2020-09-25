@@ -434,6 +434,30 @@ class EntryTests(TestCase):
         self.post_filter_test({'search': 'el'}, 1)
         self.post_filter_test({'search': 'pollo'}, 0)
 
+    def test_lead_published_on_filter(self):
+        lead1 = self.create_lead(published_on=self.get_aware_datetime(year=2020, month=10, day=3))
+        lead2 = self.create_lead(published_on=self.get_aware_datetime(year=2020, month=10, day=4))
+        lead3 = self.create_lead(published_on=self.get_aware_datetime(year=2020, month=10, day=5))
+
+        self.create_entry(lead=lead1)
+        self.create_entry(lead=lead2)
+        self.create_entry(lead=lead3)
+
+        filters = {
+            'lead_published_on__gte': self.get_aware_datetime_str(year=2020, month=10, day=3),
+            'lead_published_on__lte': self.get_aware_datetime_str(year=2020, month=10, day=4),
+        }
+        url = '/api/v1/entries/filter/'
+        params = {
+            'filters': [[k, v] for k, v in filters.items()]
+        }
+
+        self.authenticate()
+        response = self.client.post(url, params)
+
+        self.assert_200(response)
+        assert len(response.json()['results']) == 2
+
     def test_search_filter(self):
         entry, field = self.create_entry_with_data_series()
         filters = {

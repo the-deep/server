@@ -6,6 +6,8 @@ from rest_framework import (
 )
 from jwt_auth.token import AccessToken, RefreshToken
 
+import datetime
+from django.utils import timezone
 from django.db import DEFAULT_DB_ALIAS, connections
 from django.conf import settings
 from user.models import User
@@ -276,6 +278,12 @@ class TestCase(test.APITestCase):
     @classmethod
     def captureOnCommitCallbacks(cls, *, using=DEFAULT_DB_ALIAS, execute=False):
         return _CaptureOnCommitCallbacksContext(using=using, execute=execute)
+
+    def get_aware_datetime(self, *args, **kwargs):
+        return timezone.make_aware(datetime.datetime(*args, **kwargs))
+
+    def get_aware_datetime_str(self, *args, **kwargs):
+        return self.get_aware_datetime(*args, **kwargs).strftime('%Y-%m-%d%z')
 
 
 class _CaptureOnCommitCallbacksContext:
