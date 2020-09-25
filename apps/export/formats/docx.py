@@ -197,6 +197,11 @@ class Paragraph:
             docx.enum.text.WD_ALIGN_PARAGRAPH.JUSTIFY
         return self
 
+    def delete(self):
+        p = self.ref._element
+        p.getparent().remove(p)
+        self.ref._p = self.ref._element = None
+
     def add_shaded_text(self, text, color):
         run = self.add_run(text)
         run.add_shading(color)
@@ -204,6 +209,15 @@ class Paragraph:
     def add_oval_shape(self, color):
         run = self.add_run(' ')
         run.add_oval_shape(color)
+
+    def add_next_paragraph(self, other):
+        p = self.ref._p
+        p.addnext(other.ref._p)
+
+    def add_next_page_break(self, pb):
+        ...
+        # todo
+        ...
 
 
 class Document:
