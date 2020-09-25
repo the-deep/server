@@ -67,8 +67,30 @@ class EntryFilterSet(django_filters.FilterSet):
         lookup_expr='lte',
         input_formats=['%Y-%m-%d%z'],
     )
-    lead__published_on = django_filters.DateFilter(
-        field_name='lead__published_on'
+
+    lead_published_on = django_filters.DateTimeFilter(
+        field_name='lead__published_on',
+        input_formats=['%Y-%m-%d%z'],
+    )
+    lead_published_on__gt = django_filters.DateTimeFilter(
+        field_name='lead__published_on',
+        lookup_expr='gt',
+        input_formats=['%Y-%m-%d%z'],
+    )
+    lead_published_on__lt = django_filters.DateTimeFilter(
+        field_name='lead__published_on',
+        lookup_expr='lt',
+        input_formats=['%Y-%m-%d%z'],
+    )
+    lead_published_on__gte = django_filters.DateTimeFilter(
+        field_name='lead__published_on',
+        lookup_expr='gte',
+        input_formats=['%Y-%m-%d%z'],
+    )
+    lead_published_on__lte = django_filters.DateTimeFilter(
+        field_name='lead__published_on',
+        lookup_expr='lte',
+        input_formats=['%Y-%m-%d%z'],
     )
 
     comment_status = django_filters.ChoiceFilter(
@@ -187,6 +209,28 @@ def get_filtered_entries(user, queries):
     if lead_status:
         entries = entries.filter(lead__status__in=lead_status)
 
+    lead_priority = queries.get('lead_priority')
+    if lead_priority:
+        entries = entries.filter(lead__priority__in=lead_priority)
+
+    lead_confidentiality = queries.get('lead_confidentiality')
+    if lead_confidentiality:
+        entries = entries.filter(lead__confidentiality__in=lead_confidentiality)
+
+    lead_published_on_lt = queries.get('lead_published_on__lt')
+    print('>>>>>>>>>>>>>>>>>>>>>>>>>', lead_published_on_lt)
+    # if lead_published_on_lt:
+    #     entries = entries.filter(
+    #         lead__published_on__lt=datetime.date(lead_published_on_lt),
+    #     )
+
+    lead_published_on_gte = queries.get('lead_published_on__gte')
+    print('>>>>>>>>>>>>>>>>>>>>>>>>>', lead_published_on_gte)
+    # if lead_published_on_gte:
+    #     entries = entries.filter(
+    #         lead__published_on__gte=datetime.date(lead_published_on_gte),
+    #     )
+
     # Filter by filterset
     updated_queries = get_created_at_filters(queries)
     filterset = EntryFilterSet(data=updated_queries, queryset=entries)
@@ -281,6 +325,11 @@ QUERY_MAP = {
     'created_at__lt': parse_date,
     'created_at__gte': parse_date,
     'created_at__lte': parse_date,
+    'lead__published_on': parse_date,
+    'lead__published_on__gt': parse_date,
+    'lead__published_on__lt': parse_date,
+    'lead__published_on__gte': parse_date,
+    'lead__published_on__lte': parse_date,
 }
 
 
