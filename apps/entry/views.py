@@ -233,6 +233,18 @@ class EntryOptionsView(views.APIView):
                     'key': s[0],
                     'value': s[1],
                 } for s in Lead.STATUSES
+            ],
+            'lead_priority': [
+                {
+                    'key': s[0],
+                    'value': s[1],
+                } for s in Lead.PRIORITIES
+            ],
+            'lead_confidentiality': [
+                {
+                    'key': s[0],
+                    'value': s[1],
+                } for s in Lead.CONFIDENTIALITIES
             ]
         }
 
