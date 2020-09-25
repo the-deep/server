@@ -20,7 +20,7 @@ from entry.models import (
 
 # We don't use UserResourceFilterSet since created_at and modified_at
 # are overridden below
-class EntryFilterSet(django_filters.FilterSet):
+class EntryFilterSet(django_filters.rest_framework.FilterSet):
     """
     Entry filter set
     Basic filtering with lead, excerpt, lead title and dates
@@ -133,7 +133,7 @@ class EntryFilterSet(django_filters.FilterSet):
                 ]
             },
             'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
-            'lead__published_on': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            'lead_published_on': ['exact', 'lt', 'gt', 'lte', 'gte'],
         }
         filter_overrides = {
             models.CharField: {
@@ -216,20 +216,6 @@ def get_filtered_entries(user, queries):
     lead_confidentiality = queries.get('lead_confidentiality')
     if lead_confidentiality:
         entries = entries.filter(lead__confidentiality__in=lead_confidentiality)
-
-    lead_published_on_lt = queries.get('lead_published_on__lt')
-    print('>>>>>>>>>>>>>>>>>>>>>>>>>', lead_published_on_lt)
-    # if lead_published_on_lt:
-    #     entries = entries.filter(
-    #         lead__published_on__lt=datetime.date(lead_published_on_lt),
-    #     )
-
-    lead_published_on_gte = queries.get('lead_published_on__gte')
-    print('>>>>>>>>>>>>>>>>>>>>>>>>>', lead_published_on_gte)
-    # if lead_published_on_gte:
-    #     entries = entries.filter(
-    #         lead__published_on__gte=datetime.date(lead_published_on_gte),
-    #     )
 
     # Filter by filterset
     updated_queries = get_created_at_filters(queries)
