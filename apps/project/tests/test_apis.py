@@ -395,6 +395,55 @@ class ProjectApiTest(TestCase):
             assert 'id' in ug
             assert 'title' in ug
 
+    def test_update_project_organizations(self):
+        org1 = self.create(Organization, title='Test Organization 1')
+        org2 = self.create(Organization, title='Test Organization 2')
+        org3 = self.create(Organization, title='Test Organization 3')
+        org4 = self.create(Organization, title='Test Organization 4')
+        org5 = self.create(Organization, title='Test Organization 5')
+
+        url = '/api/v1/projects/'
+        data = {
+            'title': 'TestProject',
+            'organizations': [
+                {'organization': org1.id, 'type': ProjectOrganization.DONOR},
+                {'organization': org2.id, 'type': ProjectOrganization.GOVERNMENT},
+                {'organization': org3.id, 'type': ProjectOrganization.GOVERNMENT},
+            ],
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        url = '/api/v1/projects/{}/'.format(response.json()['id'])
+
+        data = {
+            'organizations': [
+                {'organization': org4.id, 'type': ProjectOrganization.DONOR},
+                {'organization': org5.id, 'type': ProjectOrganization.GOVERNMENT},
+            ],
+        }
+
+        response = self.client.patch(url, data)
+        self.assert_200(response)
+
+        assert len(response.json()['organizations']) == 2
+
+        data = {
+            'organizations': response.json()['organizations'],
+        }
+
+        # Change organization type to the GOVERNMENT
+        data['organizations'][0]['type'] = ProjectOrganization.GOVERNMENT
+
+        response = self.client.patch(url, data)
+        self.assert_200(response)
+
+        assert len(response.json()['organizations']) == 2
+        assert response.json()['organizations'][0]['type'] == ProjectOrganization.GOVERNMENT
+        assert response.json()['organizations'][1]['type'] == ProjectOrganization.GOVERNMENT
+
     def test_update_project_add_user_group(self):
         project = self.create(
             Project,
