@@ -68,29 +68,29 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
         input_formats=['%Y-%m-%d%z'],
     )
 
-    lead_published_on = django_filters.DateTimeFilter(
+    lead_published_on = django_filters.DateFilter(
         field_name='lead__published_on',
-        input_formats=['%Y-%m-%d%z'],
+
     )
-    lead_published_on__gt = django_filters.DateTimeFilter(
+    lead_published_on__gt = django_filters.DateFilter(
         field_name='lead__published_on',
         lookup_expr='gt',
-        input_formats=['%Y-%m-%d%z'],
+
     )
-    lead_published_on__lt = django_filters.DateTimeFilter(
+    lead_published_on__lt = django_filters.DateFilter(
         field_name='lead__published_on',
         lookup_expr='lt',
-        input_formats=['%Y-%m-%d%z'],
+
     )
-    lead_published_on__gte = django_filters.DateTimeFilter(
+    lead_published_on__gte = django_filters.DateFilter(
         field_name='lead__published_on',
         lookup_expr='gte',
-        input_formats=['%Y-%m-%d%z'],
+
     )
-    lead_published_on__lte = django_filters.DateTimeFilter(
+    lead_published_on__lte = django_filters.DateFilter(
         field_name='lead__published_on',
         lookup_expr='lte',
-        input_formats=['%Y-%m-%d%z'],
+
     )
 
     comment_status = django_filters.ChoiceFilter(
