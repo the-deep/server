@@ -1,6 +1,10 @@
+import json
+from datetime import datetime
+
 from django.conf import settings
 from django.core.files.base import ContentFile, File
 from django.db.models import Case, When, Q
+from docx.shared import Inches
 
 from export.formats.docx import Document
 from export.mime_types import (
@@ -112,6 +116,30 @@ class ReportExporter:
         self.collected_widget_text = collected_widget_text
         return self
 
+    def _generate_legend_page(self):
+        if not self.legends:
+            # delete the legend page
+            parent = self.legend_heading._element
+            parent.getparent().remove(parent)
+            page_break_parent = self.legend_page_break._element
+            page_break_parent.getparent().remove(page_break_parent)
+            self.legend_paragraph.delete()
+            return
+        legends = sorted(
+            [json.loads(each) for each in set([json.dumps(temp, sort_keys=True) for temp in self.legends])],
+            key=lambda x: x['value'],
+            reverse=True
+        )
+        for legend in legends:
+            # each legend should have key (drawing) and display value (text)
+            # handling ONLY the drawing cases
+            para = self.doc.add_paragraph()
+            if legend['key']['draw'] == 'add_oval_shape':
+                para.ref.paragraph_format.right_indent = Inches(0.25)
+                para.add_oval_shape(legend['key']['value'])
+                para.add_run(f'    {legend["value"]}')
+            self.legend_paragraph.add_next_paragraph(para)
+
     def _add_scale_widget_data(self, para, data):
         """
         report for scale widget expects following keys
@@ -122,6 +150,13 @@ class ReportExporter:
         """
         if data.get('label', None) and data.get('color', None):
             para.add_oval_shape(data['color'])
+            self.legends.append({
+                'key': {
+                    'draw': 'add_oval_shape',  # paragraph.function name
+                    'value': data['color']
+                },
+                'value': f'{data["title"]} - {data["label"]}'
+            })
 
     def _add_widget_information_into_report(self, para, report):
         """
@@ -325,10 +360,26 @@ class ReportExporter:
         for entry in entries:
             self._generate_for_entry(entry)
 
+    def pre_build_document(self, project):
+        """
+        Structure the document
+        """
+        self.doc.add_heading('DEEP Export — {} — {}'.format(datetime.today().strftime('%b %d, %Y'),
+                                                            project.title),
+                             1)
+        self.doc.add_paragraph()
+
+        self.legends = []
+        self.legend_heading = self.doc.add_heading('Legend', 2)
+        self.legend_paragraph = self.doc.add_paragraph()
+        self.legend_page_break = self.doc.add_page_break()
+
     def add_entries(self, entries):
         """
         Add entries and generate parapgraphs for all entries
         """
+        if entries:
+            self.pre_build_document(entries[0].project)
         exportables = self.exportables
         af_levels_map = dict((str(level.get('id')), level.get('levels')) for level in self.levels)
         uncategorized = False
@@ -381,6 +432,7 @@ class ReportExporter:
 
         if uncategorized:
             self._generate_for_uncategorized(entries)
+        self._generate_legend_page()
 
         return self
 
