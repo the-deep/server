@@ -187,6 +187,7 @@ class ProjectDashboardSerializer(RemoveNullFieldsMixin,
 
 class ProjectOrganizationSerializer(RemoveNullFieldsMixin,
                                     DynamicFieldsMixin,
+                                    UserResourceSerializer,
                                     serializers.ModelSerializer):
     organization_type_display = serializers.CharField(source='get_organization_type_display', read_only=True)
     organization_details = SimpleOrganizationSerializer(source='organization')
@@ -294,7 +295,6 @@ class ProjectSerializer(RemoveNullFieldsMixin,
     organizations = ProjectOrganizationSerializer(
         source='projectorganization_set',
         many=True,
-        read_only=True,
     )
 
     regions = SimpleRegionSerializer(many=True, required=False)
@@ -345,14 +345,6 @@ class ProjectSerializer(RemoveNullFieldsMixin,
             role=ProjectRole.get_creator_role(),
         )
 
-        organizations = self.context['request'].data.get('organizations')
-        if organizations:
-            for org in organizations:
-                ProjectOrganization.objects.create(
-                    project=project,
-                    organization=Organization.objects.filter(id=org['organization']).first(),
-                    organization_type=org['organization_type'],
-                )
         return project
 
     def update(self, instance, validated_data):
@@ -360,33 +352,6 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         # But that might be redundant, since checked in creation, I don't know
         framework = validated_data.get('analysis_framework')
         user = self.context['request'].user
-
-        organizations = self.context['request'].data.get('organizations')
-        project_organizations = ProjectOrganization.objects.filter(project=instance)
-
-        if organizations:
-            ids = [x.id for x in project_organizations]
-            request_ids = [x.get('id') for x in organizations]
-            to_remove = list(set(ids) - set(request_ids))
-
-            for i in to_remove:
-                ProjectOrganization.objects.get(id=i).delete()
-
-            for org in organizations:
-                org_id = org.get('id')
-                if (org_id):
-                    o = ProjectOrganization.objects.filter(id=org_id).first()
-                    o.organization = Organization.objects.filter(id=org['organization']).first()
-                    o.organization_type = org['organization_type']
-                    o.save()
-                else:
-                    ProjectOrganization.objects.create(
-                        project=instance,
-                        organization=Organization.objects.filter(id=org['organization']).first(),
-                        organization_type=org['organization_type'],
-                    )
-        else:
-            project_organizations.delete()
 
         if 'is_private' in validated_data and\
                 validated_data['is_private'] != instance.is_private:
