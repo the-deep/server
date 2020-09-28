@@ -29,6 +29,10 @@ from organization.models import (
     Organization
 )
 
+from organization.serializers import (
+    SimpleOrganizationSerializer
+)
+
 from .permissions import PROJECT_PERMISSIONS
 from .activity import project_activity_log
 
@@ -184,15 +188,12 @@ class ProjectDashboardSerializer(RemoveNullFieldsMixin,
 class ProjectOrganizationSerializer(RemoveNullFieldsMixin,
                                     DynamicFieldsMixin,
                                     serializers.ModelSerializer):
-    id = serializers.IntegerField(source='pk')
-    organization = serializers.IntegerField(source='organization.id')
-    type = serializers.CharField(source='organization_type')
-    title = serializers.CharField(source='organization.title', read_only=True)
-    type_display = serializers.CharField(source='get_organization_type_display', read_only=True)
+    organization_type_display = serializers.CharField(source='get_organization_type_display', read_only=True)
+    organization_details = SimpleOrganizationSerializer(source='organization')
 
     class Meta:
         model = ProjectOrganization
-        fields = ('id', 'organization', 'title', 'type', 'type_display')
+        fields = ('id', 'organization', 'organization_details', 'organization_type', 'organization_type_display')
 
 
 class ProjectMembershipSerializer(RemoveNullFieldsMixin,
@@ -350,7 +351,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
                 ProjectOrganization.objects.create(
                     project=project,
                     organization=Organization.objects.filter(id=org['organization']).first(),
-                    organization_type=org['type'],
+                    organization_type=org['organization_type'],
                 )
         return project
 
@@ -376,13 +377,13 @@ class ProjectSerializer(RemoveNullFieldsMixin,
                 if (org_id):
                     o = ProjectOrganization.objects.filter(id=org_id).first()
                     o.organization = Organization.objects.filter(id=org['organization']).first()
-                    o.organization_type = org['type']
+                    o.organization_type = org['organization_type']
                     o.save()
                 else:
                     ProjectOrganization.objects.create(
                         project=instance,
                         organization=Organization.objects.filter(id=org['organization']).first(),
-                        organization_type=org['type'],
+                        organization_type=org['organization_type'],
                     )
         else:
             project_organizations.delete()
