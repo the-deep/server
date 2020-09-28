@@ -434,6 +434,46 @@ class EntryTests(TestCase):
         self.post_filter_test({'search': 'el'}, 1)
         self.post_filter_test({'search': 'pollo'}, 0)
 
+    def test_lead_published_on_filter(self):
+        lead1 = self.create_lead(published_on='2020-09-25')
+        lead2 = self.create_lead(published_on='2020-09-26')
+        lead3 = self.create_lead(published_on='2020-09-27')
+
+        self.create_entry(lead=lead1)
+        self.create_entry(lead=lead2)
+        self.create_entry(lead=lead3)
+
+        filters = {
+            'lead_published_on__gte': '2020-09-25',
+            'lead_published_on__lte': '2020-09-26',
+        }
+        url = '/api/v1/entries/filter/'
+        params = {
+            'filters': [[k, v] for k, v in filters.items()]
+        }
+
+        self.authenticate()
+        response = self.client.post(url, params)
+
+        self.assert_200(response)
+        assert len(response.json()['results']) == 2
+
+        # simulate filter behaviour of today from the frontend
+        filters = {
+            'lead_published_on__gte': '2020-09-25',
+            'lead_published_on__lt': '2020-09-26',
+        }
+        url = '/api/v1/entries/filter/'
+        params = {
+            'filters': [[k, v] for k, v in filters.items()]
+        }
+
+        self.authenticate()
+        response = self.client.post(url, params)
+
+        self.assert_200(response)
+        assert len(response.json()['results']) == 1
+
     def test_search_filter(self):
         entry, field = self.create_entry_with_data_series()
         filters = {
