@@ -63,7 +63,7 @@ class ProjectApiTest(TestCase):
             'title': 'Test project',
             'data': {'testKey': 'testValue'},
             'organizations': [
-                {'organization': self.org1.id, 'type': ProjectOrganization.DONOR},
+                {'organization': self.org1.id, 'organization_type': ProjectOrganization.DONOR},
             ],
         }
 
@@ -95,6 +95,7 @@ class ProjectApiTest(TestCase):
         data = {
             'title': kwargs.get('title'),
             'is_private': kwargs.get('is_private'),
+            'organizations': kwargs.get('organizations', [])
         }
 
         response = self.client.post(url, data)
@@ -161,6 +162,7 @@ class ProjectApiTest(TestCase):
         data = {
             'title': 'Test private project',
             'is_private': 'true',
+            'organizations': [],
         }
 
         user_fhx = self.create(User, email='fhx@togglecorp.com')
@@ -176,8 +178,8 @@ class ProjectApiTest(TestCase):
         self.assertEqual(Project.objects.last().is_private, True)
 
     def test_change_private_project_to_public(self):
-        private_project = self.create(Project, is_private=True)
-        public_project = self.create(Project, is_private=False)
+        private_project = self.create(Project, is_private=True, organizations=[])
+        public_project = self.create(Project, is_private=False, organizations=[])
 
         # Add roles for self.user
         private_project.add_member(self.user, ProjectRole.get_creator_role())
@@ -223,7 +225,7 @@ class ProjectApiTest(TestCase):
 
     def test_private_project_use_public_framework(self):
         """Can use public framework"""
-        private_project = self.create(Project, is_private=True)
+        private_project = self.create(Project, is_private=True, organizations=[])
         public_framework = self.create(AnalysisFramework, is_private=False)
 
         private_project.add_member(
@@ -236,6 +238,7 @@ class ProjectApiTest(TestCase):
         data = {
             'title': private_project.title,
             'analysis_framework': public_framework.id,
+            'organizations': [],
             # ... don't care other fields
         }
         self.authenticate()
@@ -244,7 +247,7 @@ class ProjectApiTest(TestCase):
 
     def test_private_project_use_private_framework_if_framework_member(self):
         """Can use private framework if member of framework"""
-        private_project = self.create(Project, is_private=True)
+        private_project = self.create(Project, is_private=True, organizations=[])
         private_framework = self.create(AnalysisFramework, is_private=False)
 
         private_framework.add_member(
@@ -262,6 +265,7 @@ class ProjectApiTest(TestCase):
         data = {
             'title': private_project.title,
             'analysis_framework': private_framework.id,
+            'organizations': [],
             # ... don't care other fields
         }
         self.authenticate()
@@ -270,7 +274,7 @@ class ProjectApiTest(TestCase):
 
     def test_private_project_use_private_framework_if_not_framework_member(self):
         """Can't use private framework if not member of framework"""
-        private_project = self.create(Project, is_private=True)
+        private_project = self.create(Project, is_private=True, organizations=[])
         private_framework = self.create(AnalysisFramework, is_private=True)
 
         private_project.add_member(
@@ -283,6 +287,7 @@ class ProjectApiTest(TestCase):
         data = {
             'title': private_project.title,
             'analysis_framework': private_framework.id,
+            'organizations': [],
             # ... don't care other fields
         }
         self.authenticate()
@@ -293,7 +298,7 @@ class ProjectApiTest(TestCase):
 
     def test_private_project_use_private_framework_if_framework_member_no_can_use(self):
         """Can't use private framework if member of framework but no can_use permission"""
-        private_project = self.create(Project, is_private=True)
+        private_project = self.create(Project, is_private=True, organizations=[])
         private_framework = self.create(AnalysisFramework, is_private=True)
 
         framework_role_no_permissions = AnalysisFrameworkRole.objects.create()
@@ -312,6 +317,7 @@ class ProjectApiTest(TestCase):
         data = {
             'title': private_project.title,
             'analysis_framework': private_framework.id,
+            'organizations': [],
             # ... don't care other fields
         }
         self.authenticate()
@@ -335,6 +341,7 @@ class ProjectApiTest(TestCase):
         data = {
             'title': public_project.title,
             'analysis_framework': public_framework.id,
+            'organizations': [],
             # ... don't care other fields
         }
         self.authenticate()
@@ -343,7 +350,7 @@ class ProjectApiTest(TestCase):
 
     def test_public_project_use_private_framework(self):
         """Can't use private framework even if member"""
-        public_project = self.create(Project, is_private=False)
+        public_project = self.create(Project, is_private=False, organizations=[])
         private_framework = self.create(AnalysisFramework, is_private=True)
 
         public_project.add_member(
@@ -361,6 +368,7 @@ class ProjectApiTest(TestCase):
         data = {
             'title': public_project.title,
             'analysis_framework': private_framework.id,
+            'organizations': [],
             # ... don't care other fields
         }
         self.authenticate()
@@ -373,7 +381,8 @@ class ProjectApiTest(TestCase):
             Project,
             user_groups=[],
             title='TestProject',
-            role=self.admin_role
+            role=self.admin_role,
+            organizations=[]
         )
         # Add usergroup
         ProjectUserGroupMembership.objects.create(
@@ -406,9 +415,9 @@ class ProjectApiTest(TestCase):
         data = {
             'title': 'TestProject',
             'organizations': [
-                {'organization': org1.id, 'type': ProjectOrganization.DONOR},
-                {'organization': org2.id, 'type': ProjectOrganization.GOVERNMENT},
-                {'organization': org3.id, 'type': ProjectOrganization.GOVERNMENT},
+                {'organization': org1.id, 'organization_type': ProjectOrganization.DONOR},
+                {'organization': org2.id, 'organization_type': ProjectOrganization.GOVERNMENT},
+                {'organization': org3.id, 'organization_type': ProjectOrganization.GOVERNMENT},
             ],
         }
 
@@ -420,8 +429,8 @@ class ProjectApiTest(TestCase):
 
         data = {
             'organizations': [
-                {'organization': org4.id, 'type': ProjectOrganization.DONOR},
-                {'organization': org5.id, 'type': ProjectOrganization.GOVERNMENT},
+                {'organization': org4.id, 'organization_type': ProjectOrganization.DONOR},
+                {'organization': org5.id, 'organizatino_type': ProjectOrganization.GOVERNMENT},
             ],
         }
 
@@ -429,20 +438,6 @@ class ProjectApiTest(TestCase):
         self.assert_200(response)
 
         assert len(response.json()['organizations']) == 2
-
-        data = {
-            'organizations': response.json()['organizations'],
-        }
-
-        # Change organization type to the GOVERNMENT
-        data['organizations'][0]['type'] = ProjectOrganization.GOVERNMENT
-
-        response = self.client.patch(url, data)
-        self.assert_200(response)
-
-        assert len(response.json()['organizations']) == 2
-        assert response.json()['organizations'][0]['type'] == ProjectOrganization.GOVERNMENT
-        assert response.json()['organizations'][1]['type'] == ProjectOrganization.GOVERNMENT
 
     def test_update_project_add_user_group(self):
         project = self.create(
@@ -1073,6 +1068,7 @@ class ProjectApiTest(TestCase):
         put_data = {
             'title': project.title,
             'is_private': changed_privacy,
+            'organizations': [],
             # Other fields we don't care
         }
         self.authenticate(user)
