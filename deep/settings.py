@@ -25,7 +25,7 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
 
-DEEP_ENVIRONMENT = os.environ.get('DEEP_ENVIRONMENT', 'development')
+DEEP_ENVIRONMENT = os.environ.get('DEEP_ENVIRONMENT', 'local')
 
 ALLOWED_HOSTS = [os.environ.get('DJANGO_ALLOWED_HOST', '*')]
 
@@ -296,7 +296,7 @@ if os.environ.get('DJANGO_USE_S3', 'False').lower() == 'true':
     STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
     STATICFILES_STORAGE = 'deep.s3_storages.StaticStorage'
 
-    # Media configuration
+    # Media configuration (don't add /)
     MEDIAFILES_LOCATION = 'media'
     MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
     DEFAULT_FILE_STORAGE = 'deep.s3_storages.MediaStorage'
@@ -618,23 +618,35 @@ def try_url(url, default=None):
         return None
 
 
+# DEDUPLICATION CONFIGS (Elasticsearch)
+DEDUPLICATION_ES_ENDPOINT = os.environ.get('DEDUPLICATION_ES_ENDPOINT')
+DEDUPLICATION_ES_STAGE = os.environ.get('DEDUPLICATION_ES_STAGE', DEEP_ENVIRONMENT)
+
 # Add instance id to ALLOWED_HOSTS (to avoid invaid host error for ALB Health Checks)
 EC2_IP_ADDRESS = try_url('http://169.254.169.254/latest/meta-data/local-ipv4')
 if EC2_IP_ADDRESS:
     ALLOWED_HOSTS.append(EC2_IP_ADDRESS)
 
-# Set AWS_DEFAULT_REGION is not provided
+# Set AWS_DEFAULT_REGION if not provided
 os.environ['AWS_DEFAULT_REGION'] = os.environ.get(
     'AWS_DEFAULT_REGION'
 ) or try_url('http://169.254.169.254/latest/meta-data/placement/region')
 
 # AWS LAMBDA CONFIGS
+# TODO: MAKE all stages name same
 DEEP_LAMBDA_STAGE = {
     'beta': 'beta',
     'alpha': 'dev',
     'nightly': 'nightly',
-    'development': 'nightly',
 }.get(DEEP_ENVIRONMENT.lower(), 'local')
 
 DEEP_LAMBDA_SOURCE_EXTRACT = os.environ.get(
     'DEEP_LAMBDA_SOURCE_EXTRACT', f'deep-util-services-{DEEP_LAMBDA_STAGE}-sourceExtract')
+
+
+# LAMBDA MODULE CONFIGS
+DEEP_SERVERLESS_MEDIA_BUCKET_NAME = locals().get('AWS_STORAGE_BUCKET_NAME_MEDIA')
+DEEP_SERVERLESS_ASYNC_JOB_TABLE_NAME = os.environ.get(
+    'DEEP_SERVERLESS_ASYNC_JOB_TABLE_NAME', f'deep-util-services-{DEEP_LAMBDA_STAGE}-async-jobs')
+DEEP_SERVERLESS_SOURCE_TABLE_NAME = os.environ.get(
+    'DEEP_SERVERLESS_SOURCE_TABLE_NAME', f'deep-util-services-{DEEP_LAMBDA_STAGE}-sources')

@@ -81,6 +81,13 @@ def custom_exception_handler(exc, context):
         errors = {
             'non_field_errors': [errors],
         }
+    elif (
+        (isinstance(errors, list) or isinstance(errors, tuple)) and
+        all(isinstance(error, str) for error in errors)
+    ):
+        errors = {
+            'non_field_errors': errors,
+        }
 
     if user_error:
         errors['internal_non_field_errors'] = errors.get('non_field_errors')
@@ -94,7 +101,7 @@ def custom_exception_handler(exc, context):
         response.data['link'] = exc.link
 
     # Logging
-    if any([isinstance(exc, exception) for exception in WARN_EXCEPTIONS]):
+    if type(exc) in WARN_EXCEPTIONS:
         logger.warning('API Exception Warning!!', exc_info=True)
     else:
         logger.error(

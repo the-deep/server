@@ -1,18 +1,20 @@
 import time
-import reversion
 import os
 import re
 import requests
 import tempfile
+import reversion
 
 from django.core.files import File
 from django.db import transaction
 from django.db.models import Q
 from django.db.models.functions import Length
 from django.conf import settings
+from celery import shared_task
+
+from deep_serverless.models.source_extract import Source as LambdaSource
 
 from deep.celery import Queues
-from celery import shared_task
 from redis_store import redis
 
 from lead.models import (
@@ -25,12 +27,61 @@ from utils.extractor.file_document import FileDocument
 from utils.extractor.web_document import WebDocument
 from utils.extractor.thumbnailers import DocThumbnailer
 
+from .text_processing import get_source_from_pynamodb_for_lead
 
 import logging
 
 logger = logging.getLogger(__name__)
 
 DEEPL_CLASSIFY_URL = settings.DEEPL_API + '/v2/classify/'
+
+
+def copy_lead_data_from_dynamodb(lead):
+    """
+    lead: Lead object instance
+
+    NOTE: ONLY WORKS WITH S3 storage and lambda config
+    """
+    source = get_source_from_pynamodb_for_lead(lead)
+
+    # TODO: if source.extract_status == LambdaSource.Status.SUCCESS:
+    if source and source.status == LambdaSource.Status.SUCCESS:
+        extract = source.extract
+        images = source.images
+        # Make sure there isn't existing lead preview
+        LeadPreview.objects.filter(lead=lead).delete()
+        LeadPreviewImage.objects.filter(lead=lead).delete()
+
+        # and create new one
+        LeadPreview.objects.create(
+            lead=lead,
+            text_extract=extract.simplified_text,
+            word_count=extract.word_count,
+            page_count=extract.page_count,
+            file_size=extract.file_size,
+        )
+
+        # Save extracted images as LeadPreviewImage instances
+        for s3_image_key in images or []:
+            media_prefix = settings.MEDIAFILES_LOCATION + '/'
+            # Remove 'media/' if present
+            if s3_image_key.startswith(media_prefix):
+                s3_image_key = s3_image_key.replace(media_prefix, '', 1)
+            lead_image = LeadPreviewImage(lead=lead)
+            lead_image.file.name = s3_image_key
+            lead_image.save()
+
+        # TODO: if source.thumbnail_status == LambdaSource.Status.SUCCESS:
+        transaction.on_commit(
+            lambda: extract_thumbnail.s(lead.id).delay()
+        )
+    else:
+        # Backup (retry in deep instance)
+        transaction.on_commit(
+            lambda: extract_from_lead.delay(lead.id)
+        )
+
+    # TODO: Send extraction to DEEPL (After DEEPL is created)
 
 
 def preprocess(text):
@@ -158,8 +209,7 @@ def extract_thumbnail(lead_id):
         logger.error('Lead Extract Thumbnail Failed!!', exc_info=True)
 
     if thumbnail:
-        leadPreview.thumbnail.save(os.path.basename(thumbnail.name),
-                                   File(thumbnail), True)
+        leadPreview.thumbnail.save(os.path.basename(thumbnail.name), File(thumbnail), True)
         # Delete thumbnail
         os.unlink(thumbnail.name)
 

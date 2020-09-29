@@ -114,8 +114,8 @@ class LeadTests(TestCase):
     def test_bulk_delete_leads(self):
         project = self.create(Project)
         lead1 = self.create(Lead, project=project)
-        lead2 = self.create(Lead, project=project)
         lead3 = self.create(Lead, project=project)
+        self.create(Lead, project=project)
         lead_count = Lead.objects.count()
 
         lead_ids = [lead1.id, lead3.id]

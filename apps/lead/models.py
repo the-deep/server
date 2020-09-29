@@ -159,7 +159,7 @@ class Lead(UserResource, ProjectEntityMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.pk:
+        if self.pk is not None:
             self.__initial = self.get_dict()
         else:
             self.__initial = None
@@ -173,15 +173,20 @@ class Lead(UserResource, ProjectEntityMixin):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        from lead.tasks import extract_from_lead
+        from lead.tasks import copy_lead_data_from_dynamodb
 
         if not settings.TESTING:
             d1 = self.__initial
             d2 = self.get_dict()
-            if not d1 or d1.get('text') != d2.get('text') or \
-                    d1.get('url') != d2.get('url') or \
-                    d1.get('attachment') != d2.get('attachment'):
-                transaction.on_commit(lambda: extract_from_lead.delay(self.id))
+
+            if (
+                # If initial save or any source data are changed
+                not d1 or
+                d1.get('text') != d2.get('text') or
+                d1.get('url') != d2.get('url') or
+                d1.get('attachment_id') != d2.get('attachment_id')
+            ):
+                copy_lead_data_from_dynamodb(self)
 
     @classmethod
     def get_for(cls, user):
@@ -277,6 +282,7 @@ class LeadPreview(models.Model):
     thumbnail_width = models.IntegerField(default=None, null=True, blank=True)
     word_count = models.IntegerField(default=None, null=True, blank=True)
     page_count = models.IntegerField(default=None, null=True, blank=True)
+    file_size = models.IntegerField(default=None, null=True, blank=True)
 
     classified_doc_id = models.IntegerField(default=None,
                                             null=True, blank=True)

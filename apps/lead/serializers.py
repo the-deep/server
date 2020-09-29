@@ -22,7 +22,11 @@ from .models import (
     LeadEMMTrigger,
     EMMEntity,
 )
-from lead.tasks import get_duplicate_leads, add_lead_to_index
+from lead.tasks import (
+    get_source_from_pynamodb,
+    get_duplicate_leads_in_project_for_source,
+    add_lead_to_index,
+)
 
 
 def check_if_url_exists(url, user=None, project=None, exception_id=None, return_lead=False):
@@ -250,9 +254,15 @@ class LeadSerializer(
 
         # Check for duplicates
         # NOTE: This is not inside validate because we don't want to check this for put/patch methods
-        lead_duplication_info = get_duplicate_leads(validated_data)
+        lead_duplication_info = get_duplicate_leads_in_project_for_source(
+            validated_data['project'].id,
+            get_source_from_pynamodb(
+                attachment_id=validated_data.get('attachment', {}).get('id'),
+                url=validated_data.get('url'),
+            ),
+        )
         if lead_duplication_info.error:
-            raise serializers.ValidationError(lead_duplication_info.error)
+            raise serializers.ValidationError(lead_duplication_info)
         if lead_duplication_info.similar_leads and force_save != 'true':
             raise serializers.ValidationError('There are leads similar to this lead')
 

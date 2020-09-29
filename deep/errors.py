@@ -1,3 +1,4 @@
+from rest_framework import serializers
 from jwt_auth.errors import (
     NOT_AUTHENTICATED,
     AUTHENTICATION_FAILED,
@@ -12,7 +13,10 @@ error_code_map = {
 }
 
 
-WARN_EXCEPTIONS = JWT_WARN_EXCEPTIONS
+WARN_EXCEPTIONS = [
+    serializers.ValidationError,
+    *JWT_WARN_EXCEPTIONS,
+]
 
 
 def map_error_codes(codes, default=None):

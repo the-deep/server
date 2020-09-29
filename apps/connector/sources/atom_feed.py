@@ -1,6 +1,6 @@
 import time
-import feedparser
 import requests
+import feedparser
 from rest_framework import serializers
 
 from lead.models import Lead

@@ -275,30 +275,37 @@ class ReliefWeb(Source):
 
         if offset:
             post_params['offset'] = offset
-        if limit:
-            post_params['limit'] = limit
+        # Valid values are between 0 and 1000
+        post_params['limit'] = min(limit or 1000, 1000)
 
         post_params['sort'] = ['date.original:desc', 'title:asc']
 
-        content = self.get_content(self.URL, post_params)
-        resp = json.loads(content)
+        relief_url = self.URL
+        while True:
+            content = self.get_content(relief_url, post_params)
+            resp = json.loads(content)
 
-        total_count = resp['totalCount']
-        limited_data = resp['data']  # The offset limit is handled by the api itself
+            total_count = resp['totalCount']
+            limited_data = resp['data']  # The offset limit is handled by the api itself
 
-        for datum in limited_data:
-            fields = datum['fields']
-            url = fields['file'][0]['url'] if fields.get('file') else fields['url_alias']
-            lead = {
-                'id': str(datum['id']),
-                'title': fields['title'],
-                'published_on': fields['date']['original'],
-                'url': url,
-                'source': 'reliefweb',
-                'source_type': Lead.WEBSITE,
-                'author': fields['source'][0]['name'],
-                'website': 'www.reliefweb.int',
-            }
-            results.append(lead)
+            for datum in limited_data:
+                fields = datum['fields']
+                url = fields['file'][0]['url'] if fields.get('file') else fields['url_alias']
+                lead = {
+                    'id': str(datum['id']),
+                    'title': fields['title'],
+                    'published_on': fields['date']['original'],
+                    'url': url,
+                    'source': 'reliefweb',
+                    'source_type': Lead.WEBSITE,
+                    'author': fields['source'][0]['name'],
+                    'website': 'www.reliefweb.int',
+                }
+                results.append(lead)
 
+            relief_url = resp['links'].get('next', {}).get('herf')
+            if not (limit is None and relief_url is not None) or len(results) >= 2000:
+                break
+
+        results = results[:2000]
         return results, total_count

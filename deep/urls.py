@@ -513,11 +513,15 @@ urlpatterns = [
                                namespace='rest_framework')),
 
     # NOTE: For debuging email templates
-    url(r'^pr-email/$', PasswordReset.as_view()),
-    url(r'^aa-email/$', AccountActivate.as_view()),
-    url(r'^pj-email/$', ProjectJoinRequest.as_view()),
-    url(r'^ec-email/$', EntryCommentEmail.as_view()),
-    url(r'^render-debug/$', RenderChart.as_view()),
+    *(
+        [
+            url(r'^pr-email/$', PasswordReset.as_view()),
+            url(r'^aa-email/$', AccountActivate.as_view()),
+            url(r'^pj-email/$', ProjectJoinRequest.as_view()),
+            url(r'^ec-email/$', EntryCommentEmail.as_view()),
+            url(r'^render-debug/$', RenderChart.as_view()),
+        ] if settings.DEBUG else []
+    ),
 
     url(r'^favicon.ico$',
         RedirectView.as_view(

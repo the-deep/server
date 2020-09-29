@@ -1,7 +1,7 @@
 from django.db import models
 
 from analysis_framework.models import Exportable
-from entry.filter_set import EntryFilterSet, get_filtered_entries
+from entry.filter_set import get_filtered_entries
 from entry.models import Entry
 from export.models import Export
 from export.entries.excel_exporter import ExcelExporter
@@ -67,6 +67,8 @@ def export_entries(export):
             .export()
 
     else:
-        raise Exception('(Entries Export) Unkown Export Type Provided: {} for Export:'.format(export_type, export.id))
+        raise Exception(
+            f'(Entries Export) Unkown Export Type Provided: {export_type} for Export:{export.id}'
+        )
 
     return export_data
