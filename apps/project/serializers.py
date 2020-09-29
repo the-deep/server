@@ -190,7 +190,7 @@ class ProjectOrganizationSerializer(RemoveNullFieldsMixin,
                                     UserResourceSerializer,
                                     serializers.ModelSerializer):
     organization_type_display = serializers.CharField(source='get_organization_type_display', read_only=True)
-    organization_details = SimpleOrganizationSerializer(source='organization')
+    organization_details = SimpleOrganizationSerializer(source='organization', read_only=True)
 
     class Meta:
         model = ProjectOrganization
