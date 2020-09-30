@@ -121,8 +121,6 @@ class ReportExporter:
             # delete the legend page
             parent = self.legend_heading._element
             parent.getparent().remove(parent)
-            page_break_parent = self.legend_page_break._element
-            page_break_parent.getparent().remove(page_break_parent)
             self.legend_paragraph.delete()
             return
         legends = sorted(
