@@ -130,11 +130,15 @@ class ReportExporter:
             key=lambda x: x['value'],
             reverse=True
         )
+        para = self.doc.add_paragraph()
+        self.legend_paragraph.add_next_paragraph(para)
+
         for legend in legends:
             # each legend should have key (drawing) and display value (text)
             # handling ONLY the drawing cases
             para = self.doc.add_paragraph()
             if legend['key']['draw'] == 'add_oval_shape':
+                # todo in a table
                 para.ref.paragraph_format.right_indent = Inches(0.25)
                 para.add_oval_shape(legend['key']['value'])
                 para.add_run(f'    {legend["value"]}')
@@ -370,9 +374,8 @@ class ReportExporter:
         self.doc.add_paragraph()
 
         self.legends = []
-        self.legend_heading = self.doc.add_heading('Legend', 2)
+        self.legend_heading = self.doc.add_heading('Legends', 2)
         self.legend_paragraph = self.doc.add_paragraph()
-        self.legend_page_break = self.doc.add_page_break()
 
     def add_entries(self, entries):
         """
@@ -476,7 +479,7 @@ class ReportExporter:
                 para.add_run(' (confidential)')
 
             self.doc.add_paragraph()
-        self.doc.add_page_break()
+        # self.doc.add_page_break()
 
         if pdf:
             temp_doc = tempfile.NamedTemporaryFile(dir=settings.TEMP_DIR)
