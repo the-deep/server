@@ -214,11 +214,6 @@ class Paragraph:
         p = self.ref._p
         p.addnext(other.ref._p)
 
-    def add_next_page_break(self, pb):
-        ...
-        # todo
-        ...
-
 
 class Document:
     """
