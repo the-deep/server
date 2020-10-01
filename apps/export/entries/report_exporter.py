@@ -116,31 +116,36 @@ class ReportExporter:
         self.collected_widget_text = collected_widget_text
         return self
 
-    def _generate_legend_page(self):
-        if not self.legends:
-            # delete the legend page
-            parent = self.legend_heading._element
-            parent.getparent().remove(parent)
-            self.legend_paragraph.delete()
-            return
-        legends = sorted(
-            [json.loads(each) for each in set([json.dumps(temp, sort_keys=True) for temp in self.legends])],
-            key=lambda x: x['value'],
-            reverse=True
-        )
+    def _generate_legend_page(self, project):
         para = self.doc.add_paragraph()
         self.legend_paragraph.add_next_paragraph(para)
 
-        for legend in legends:
-            # each legend should have key (drawing) and display value (text)
-            # handling ONLY the drawing cases
-            para = self.doc.add_paragraph()
-            if legend['key']['draw'] == 'add_oval_shape':
-                # todo in a table
+        # todo in a table
+        scale_widgets = project.analysis_framework.widget_set.filter(widget_id='scaleWidget')
+        for widget in scale_widgets[::-1]:
+            title_para = self.doc.add_paragraph()
+            title_para.ref.paragraph_format.right_indent = Inches(0.25)
+            title_para.add_run(f'{widget.title}')
+            for legend in widget.properties['data']['scale_units'][::-1]:
+                para = self.doc.add_paragraph()
                 para.ref.paragraph_format.right_indent = Inches(0.25)
-                para.add_oval_shape(legend['key']['value'])
-                para.add_run(f'    {legend["value"]}')
-            self.legend_paragraph.add_next_paragraph(para)
+                para.add_oval_shape(legend['color'])
+                para.add_run(f'    {legend["label"]}')
+                self.legend_paragraph.add_next_paragraph(para)
+            self.legend_paragraph.add_next_paragraph(title_para)
+        cond_widgets = project.analysis_framework.widget_set.filter(widget_id='conditionalWidget')
+        for c_widget in cond_widgets[::-1]:
+            for widget in filter(lambda x: x['widget']['widget_id'] == 'scaleWidget', c_widget.properties['data']['widgets']):
+                title_para = self.doc.add_paragraph()
+                title_para.ref.paragraph_format.right_indent = Inches(0.25)
+                title_para.add_run(f'{widget["widget"]["title"]}')
+                for legend in widget['widget']['properties']['data']['scale_units'][::-1]:
+                    para = self.doc.add_paragraph()
+                    para.ref.paragraph_format.right_indent = Inches(0.25)
+                    para.add_oval_shape(legend['color'])
+                    para.add_run(f'    {legend["label"]}')
+                    self.legend_paragraph.add_next_paragraph(para)
+                self.legend_paragraph.add_next_paragraph(title_para)
 
     def _add_scale_widget_data(self, para, data):
         """
@@ -152,13 +157,6 @@ class ReportExporter:
         """
         if data.get('label', None) and data.get('color', None):
             para.add_oval_shape(data['color'])
-            self.legends.append({
-                'key': {
-                    'draw': 'add_oval_shape',  # paragraph.function name
-                    'value': data['color']
-                },
-                'value': f'{data["title"]} - {data["label"]}'
-            })
 
     def _add_widget_information_into_report(self, para, report):
         """
@@ -371,7 +369,6 @@ class ReportExporter:
                              1)
         self.doc.add_paragraph()
 
-        self.legends = []
         self.legend_heading = self.doc.add_heading('Legends', 2)
         self.legend_paragraph = self.doc.add_paragraph()
 
@@ -433,7 +430,7 @@ class ReportExporter:
 
         if uncategorized:
             self._generate_for_uncategorized(entries)
-        self._generate_legend_page()
+        self._generate_legend_page(entries[0].project)
 
         return self
 
