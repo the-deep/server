@@ -16,6 +16,10 @@ from entry.models import (
 
 # TODO: Find out whether we need to call timezone.make_aware
 # from django.utils module to all datetime objects below
+class CharInFilter(django_filters.BaseInFilter,
+                   django_filters.CharFilter):
+    pass
+
 
 
 # We don't use UserResourceFilterSet since created_at and modified_at
@@ -120,6 +124,10 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
     lead_group_label = django_filters.CharFilter(
         label='Lead Group Label',
         method='lead_group_label_filter',
+    )
+    entry_type = CharInFilter(
+        field_name='entry_type',
+        lookup_expr='in'
     )
 
     class Meta:
