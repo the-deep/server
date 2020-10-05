@@ -1,6 +1,10 @@
+import json
+from datetime import datetime
+
 from django.conf import settings
 from django.core.files.base import ContentFile, File
 from django.db.models import Case, When, Q
+from docx.shared import Inches
 
 from export.formats.docx import Document
 from export.mime_types import (
@@ -112,6 +116,65 @@ class ReportExporter:
         self.collected_widget_text = collected_widget_text
         return self
 
+    def _generate_legend_page(self, project):
+        para = self.doc.add_paragraph()
+        self.legend_paragraph.add_next_paragraph(para)
+
+        # todo in a table
+        scale_widgets = project.analysis_framework.widget_set.filter(widget_id='scaleWidget')
+        for widget in scale_widgets[::-1]:
+            title_para = self.doc.add_paragraph()
+            title_para.ref.paragraph_format.right_indent = Inches(0.25)
+            title_para.add_run(f'{widget.title}')
+            for legend in widget.properties['data']['scale_units'][::-1]:
+                para = self.doc.add_paragraph()
+                para.ref.paragraph_format.right_indent = Inches(0.25)
+                para.add_oval_shape(legend['color'])
+                para.add_run(f'    {legend["label"]}')
+                self.legend_paragraph.add_next_paragraph(para)
+            self.legend_paragraph.add_next_paragraph(title_para)
+        cond_widgets = project.analysis_framework.widget_set.filter(widget_id='conditionalWidget')
+        for c_widget in cond_widgets[::-1]:
+            for widget in filter(lambda x: x['widget']['widget_id'] == 'scaleWidget', c_widget.properties['data']['widgets']):
+                title_para = self.doc.add_paragraph()
+                title_para.ref.paragraph_format.right_indent = Inches(0.25)
+                title_para.add_run(f'{widget["widget"]["title"]}')
+                for legend in widget['widget']['properties']['data']['scale_units'][::-1]:
+                    para = self.doc.add_paragraph()
+                    para.ref.paragraph_format.right_indent = Inches(0.25)
+                    para.add_oval_shape(legend['color'])
+                    para.add_run(f'    {legend["label"]}')
+                    self.legend_paragraph.add_next_paragraph(para)
+                self.legend_paragraph.add_next_paragraph(title_para)
+
+    def _add_scale_widget_data(self, para, data):
+        """
+        report for scale widget expects following keys
+            - title
+            - label
+            - color
+        as described here: apps.entry.widgets.scale_widget._get_scale
+        """
+        if data.get('label', None) and data.get('color', None):
+            para.add_oval_shape(data['color'])
+
+    def _add_widget_information_into_report(self, para, report):
+        """
+        based on widget annotate information into report
+
+        :param para: Paragraph
+        :param report: dict
+        """
+        if not isinstance(report, dict):
+            return
+        if 'widget_id' in report:
+            if report['widget_id'] == 'scaleWidget':
+                self._add_scale_widget_data(para, report)
+        elif 'keys' in report:
+            # this is for conditional widgets
+            for nested_report in report['keys']:
+                self._add_widget_information_into_report(para, nested_report)
+
     def _generate_for_entry(self, entry):
         """
         Generate paragraphs for an entry
@@ -184,6 +247,9 @@ class ReportExporter:
         # TODO: use utils.common.format_date and perhaps use information date
         date and para.add_run(f", {date.strftime('%d/%m/%Y')}")
         para.add_run(f", {'Verified' if entry.verified else 'Unverified'}")
+
+        for report in entry.exportdata_set.values_list('data__report', flat=True):
+            self._add_widget_information_into_report(para, report)
 
         para.add_run(')')
 
@@ -291,13 +357,27 @@ class ReportExporter:
         self.doc.add_heading('Uncategorized', 2)
         self.doc.add_paragraph()
 
-        if entries:
-            [self._generate_for_entry(entry) for entry in entries]
+        for entry in entries:
+            self._generate_for_entry(entry)
+
+    def pre_build_document(self, project):
+        """
+        Structure the document
+        """
+        self.doc.add_heading('DEEP Export — {} — {}'.format(datetime.today().strftime('%b %d, %Y'),
+                                                            project.title),
+                             1)
+        self.doc.add_paragraph()
+
+        self.legend_heading = self.doc.add_heading('Legends', 2)
+        self.legend_paragraph = self.doc.add_paragraph()
 
     def add_entries(self, entries):
         """
         Add entries and generate parapgraphs for all entries
         """
+        if entries:
+            self.pre_build_document(entries[0].project)
         exportables = self.exportables
         af_levels_map = dict((str(level.get('id')), level.get('levels')) for level in self.levels)
         uncategorized = False
@@ -350,6 +430,7 @@ class ReportExporter:
 
         if uncategorized:
             self._generate_for_uncategorized(entries)
+        self._generate_legend_page(entries[0].project)
 
         return self
 
@@ -393,7 +474,7 @@ class ReportExporter:
                 para.add_run(' (confidential)')
 
             self.doc.add_paragraph()
-        self.doc.add_page_break()
+        # self.doc.add_page_break()
 
         if pdf:
             temp_doc = tempfile.NamedTemporaryFile(dir=settings.TEMP_DIR)
