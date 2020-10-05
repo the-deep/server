@@ -23,7 +23,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 import django_filters
 
-from deep.permissions import ModifyPermission, CreateLeadPermission
+from deep.permissions import ModifyPermission, CreateLeadPermission, DeleteLeadPermission
 from deep.paginations import AutocompleteSetPagination
 
 from lead.filter_set import (
@@ -228,6 +228,28 @@ class LeadViewSet(viewsets.ModelViewSet):
             else:
                 filter_data[key] = value
         return filter_data
+
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
+        methods=['POST'],
+        url_path='pre-bulk-delete'
+    )
+    def leads_pre_delete(self, request, version=None):
+        lead_ids = [int(each) for each in request.data.get('ids', '').split(',')]
+        tbd_entities = Lead.get_associated_entities(lead_ids)
+        return response.Response(tbd_entities, status=status.HTTP_200_OK)
+
+    @action(
+        detail=False,
+        permission_classes=[DeleteLeadPermission],
+        methods=['DELETE'],
+        url_path='bulk-delete'
+    )
+    def leads_bulk_delete(self, request, version=None):
+        lead_ids = [int(each) for each in request.data.get('ids', '').split(',')]
+        Lead.objects.filter(id__in=lead_ids).delete()
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class LeadPreviewViewSet(viewsets.ReadOnlyModelViewSet):

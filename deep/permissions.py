@@ -65,6 +65,46 @@ class CreateLeadPermission(permissions.BasePermission):
         return projects_count == len(project_ids)
 
 
+class DeleteLeadPermission(permissions.BasePermission):
+    """Checks if user can delete lead(s)"""
+    def has_permission(self, request, view):
+        if request.method not in ('DELETE',):
+            return True
+
+        project_id = request.data.get('project')
+        lead_ids = request.data.get('ids', '').split(',')
+
+        if not project_id:
+            return False
+        if not lead_ids:
+            return True
+
+        # Since this supports list value for project
+        if isinstance(project_id, list):
+            project_ids = set(project_id)
+        else:
+            project_ids = {project_id}
+
+        lead_projects = set(Lead.objects.filter(id__in=lead_ids).values_list('project', flat=True))
+        if lead_projects.difference(project_ids):
+            # if lead being deleted project is not mentioned in project_ids
+            return False
+
+        delete_lead_perm_value = PROJECT_PERMISSIONS.lead.delete
+
+        # Check if the user has delete permissions on all projects
+        projects_count = Project.objects.filter(
+            id__in=project_ids,
+            projectmembership__member=request.user
+        ).annotate(
+            delete_lead=F('projectmembership__role__lead_permissions').bitand(delete_lead_perm_value)
+        ).filter(
+            delete_lead__gt=0,
+        ).count()
+
+        return projects_count == len(project_ids)
+
+
 class CreateEntryPermission(permissions.BasePermission):
     """Permission class to check if user can create Lead"""
     def get_project_id(self, request):
