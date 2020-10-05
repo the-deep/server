@@ -244,8 +244,10 @@ class Lead(UserResource, ProjectEntityMixin):
         Used for pre-check before deletion
         """
         from entry.models import Entry
+        from ary.models import Assessment
         return {
-            'entries': Entry.objects.filter(lead__in=lead_ids).count()
+            'entries': Entry.objects.filter(lead__in=lead_ids).count(),
+            'assessments': Assessment.objects.filter(lead__in=lead_ids).count(),
         }
 
 
