@@ -123,27 +123,31 @@ class ReportExporter:
         # todo in a table
         scale_widgets = project.analysis_framework.widget_set.filter(widget_id='scaleWidget')
         for widget in scale_widgets[::-1]:
+            if not hasattr(widget, 'title'):
+                continue
             title_para = self.doc.add_paragraph()
             title_para.ref.paragraph_format.right_indent = Inches(0.25)
             title_para.add_run(f'{widget.title}')
-            for legend in widget.properties['data']['scale_units'][::-1]:
+            for legend in widget.properties.get('data', {}).get('scale_units')[::-1]:
                 para = self.doc.add_paragraph()
                 para.ref.paragraph_format.right_indent = Inches(0.25)
-                para.add_oval_shape(legend['color'])
-                para.add_run(f'    {legend["label"]}')
+                para.add_oval_shape(legend.get('color'))
+                para.add_run(f'    {legend.get("label", "-Missing-")}')
                 self.legend_paragraph.add_next_paragraph(para)
             self.legend_paragraph.add_next_paragraph(title_para)
         cond_widgets = project.analysis_framework.widget_set.filter(widget_id='conditionalWidget')
         for c_widget in cond_widgets[::-1]:
-            for widget in filter(lambda x: x['widget']['widget_id'] == 'scaleWidget', c_widget.properties['data']['widgets']):
+            for widget in filter(lambda x: x.get('widget', {}).get('widget_id') == 'scaleWidget', c_widget.properties.get('data', {}).get('widgets', [])):
+                if not widget.get('widget', {}).get('title'):
+                    continue
                 title_para = self.doc.add_paragraph()
                 title_para.ref.paragraph_format.right_indent = Inches(0.25)
-                title_para.add_run(f'{widget["widget"]["title"]}')
-                for legend in widget['widget']['properties']['data']['scale_units'][::-1]:
+                title_para.add_run(f'{widget.get("widget", {}).get("title")}')
+                for legend in widget.get('widget', {}).get('properties', {}).get('data', {}).get('scale_units', [])[::-1]:
                     para = self.doc.add_paragraph()
                     para.ref.paragraph_format.right_indent = Inches(0.25)
-                    para.add_oval_shape(legend['color'])
-                    para.add_run(f'    {legend["label"]}')
+                    para.add_oval_shape(legend.get('color'))
+                    para.add_run(f'    {legend.get("label", "-Missing-")}')
                     self.legend_paragraph.add_next_paragraph(para)
                 self.legend_paragraph.add_next_paragraph(title_para)
 
@@ -156,7 +160,7 @@ class ReportExporter:
         as described here: apps.entry.widgets.scale_widget._get_scale
         """
         if data.get('label', None) and data.get('color', None):
-            para.add_oval_shape(data['color'])
+            para.add_oval_shape(data.get('color'))
 
     def _add_widget_information_into_report(self, para, report):
         """
@@ -168,11 +172,11 @@ class ReportExporter:
         if not isinstance(report, dict):
             return
         if 'widget_id' in report:
-            if report['widget_id'] == 'scaleWidget':
+            if report.get('widget_id') == 'scaleWidget':
                 self._add_scale_widget_data(para, report)
         elif 'keys' in report:
             # this is for conditional widgets
-            for nested_report in report['keys']:
+            for nested_report in report.get('keys'):
                 self._add_widget_information_into_report(para, nested_report)
 
     def _generate_for_entry(self, entry):
