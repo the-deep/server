@@ -250,7 +250,7 @@ class ReportExporter:
         # Finally add date
         # TODO: use utils.common.format_date and perhaps use information date
         date and para.add_run(f", {date.strftime('%d/%m/%Y')}")
-        para.add_run(f", {'Verified' if entry.verified else 'Unverified'}")
+        # para.add_run(f", {'Verified' if entry.verified else 'Unverified'}")
 
         for report in entry.exportdata_set.values_list('data__report', flat=True):
             self._add_widget_information_into_report(para, report)
