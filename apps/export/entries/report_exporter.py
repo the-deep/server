@@ -430,7 +430,8 @@ class ReportExporter:
 
         if uncategorized:
             self._generate_for_uncategorized(entries)
-        self._generate_legend_page(entries[0].project)
+        if entries:
+            self._generate_legend_page(entries[0].project)
 
         return self
 
