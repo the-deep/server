@@ -21,9 +21,9 @@
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            270 statements &nbsp;
+            269 statements &nbsp;
             <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">35 run</button>
-            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">235 missing</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">234 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">0 partial</button>
         </h2>
@@ -304,7 +304,7 @@
     <p id="t250" class="pln"><span class="n"><a href="#t250">250</a></span><span class="t">        <span class="com"># Finally add date</span>&nbsp;</span><span class="r"></span></p>
     <p id="t251" class="pln"><span class="n"><a href="#t251">251</a></span><span class="t">        <span class="com"># TODO: use utils.common.format_date and perhaps use information date</span>&nbsp;</span><span class="r"></span></p>
     <p id="t252" class="mis show_mis"><span class="n"><a href="#t252">252</a></span><span class="t">        <span class="nam">date</span> <span class="key">and</span> <span class="nam">para</span><span class="op">.</span><span class="nam">add_run</span><span class="op">(</span><span class="str">f", {date.strftime('%d/%m/%Y')}"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t253" class="mis show_mis"><span class="n"><a href="#t253">253</a></span><span class="t">        <span class="nam">para</span><span class="op">.</span><span class="nam">add_run</span><span class="op">(</span><span class="str">f", {'Verified' if entry.verified else 'Unverified'}"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t253" class="pln"><span class="n"><a href="#t253">253</a></span><span class="t">        <span class="com"># para.add_run(f", {'Verified' if entry.verified else 'Unverified'}")</span>&nbsp;</span><span class="r"></span></p>
     <p id="t254" class="pln"><span class="n"><a href="#t254">254</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t255" class="mis show_mis"><span class="n"><a href="#t255">255</a></span><span class="t">        <span class="key">for</span> <span class="nam">report</span> <span class="key">in</span> <span class="nam">entry</span><span class="op">.</span><span class="nam">exportdata_set</span><span class="op">.</span><span class="nam">values_list</span><span class="op">(</span><span class="str">'data__report'</span><span class="op">,</span> <span class="nam">flat</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t256" class="mis show_mis"><span class="n"><a href="#t256">256</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">_add_widget_information_into_report</span><span class="op">(</span><span class="nam">para</span><span class="op">,</span> <span class="nam">report</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -569,7 +569,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.3</a>,
-            created at 2020-10-06 09:19 +0000
+            created at 2020-10-06 09:20 +0000
         </p>
     </div>
 </div>
