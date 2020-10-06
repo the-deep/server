@@ -17,7 +17,6 @@ from entry.models import (
 # TODO: Find out whether we need to call timezone.make_aware
 # from django.utils module to all datetime objects below
 
-
 # We don't use UserResourceFilterSet since created_at and modified_at
 # are overridden below
 class EntryFilterSet(django_filters.rest_framework.FilterSet):
@@ -129,7 +128,7 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
                 x: ['exact'] for x in [
                     'id', 'excerpt', 'lead__title', 'created_at',
                     'created_by', 'modified_at', 'modified_by', 'project',
-                    'verified'
+                    'verified',
                 ]
             },
             'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
@@ -212,6 +211,10 @@ def get_filtered_entries(user, queries):
     lead_priority = queries.get('lead_priority')
     if lead_priority:
         entries = entries.filter(lead__priority__in=lead_priority)
+
+    entry_type = queries.get('entry_type')
+    if entry_type:
+        entries = entries.filter(entry_type__in=entry_type)
 
     lead_confidentiality = queries.get('lead_confidentiality')
     if lead_confidentiality:

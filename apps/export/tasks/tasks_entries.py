@@ -16,7 +16,9 @@ def export_entries(export):
     export_type = export.export_type
 
     filters = export.filters
-    queryset = get_filtered_entries(user, filters)
+    queryset = get_filtered_entries(user, filters).prefetch_related(
+        'entrygrouplabel_set'
+    )
     queryset = Entry.get_exportable_queryset(queryset)
 
     search = filters.get('search')
@@ -27,10 +29,6 @@ def export_entries(export):
         )
 
     filters['project'] = project_id
-
-    queryset = EntryFilterSet(filters, queryset=queryset).qs.prefetch_related(
-        'entrygrouplabel_set'
-    )
 
     exportables = Exportable.objects.filter(
         analysis_framework__project__id=project_id,
