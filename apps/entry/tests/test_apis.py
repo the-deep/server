@@ -106,6 +106,17 @@ class EntryTests(TestCase):
         self.post_filter_test(filters, 2)
         filters['geo_custom_shape'] = 'Point,Line,Polygon'
         self.post_filter_test(filters, 3)
+    
+    def test_filter_entries_by_type(self):
+        lead = self.create_lead()
+
+        entry1 = self.create_entry(lead=lead, entry_type=Entry.EXCERPT)
+        entry2 = self.create_entry(lead=lead, entry_type=Entry.IMAGE)
+        entry3 = self.create_entry(lead=lead, entry_type=Entry.DATA_SERIES)
+
+        self.post_filter_test({'entry_type': [Entry.EXCERPT, Entry.IMAGE]}, Entry.objects.filter(entry_type__in=[Entry.EXCERPT, Entry.IMAGE]).count())
+        self.post_filter_test({'entry_type': [Entry.EXCERPT]}, Entry.objects.filter(entry_type__in=[Entry.EXCERPT]).count())
+        self.post_filter_test({'entry_type': [Entry.IMAGE, Entry.DATA_SERIES]}, Entry.objects.filter(entry_type__in=[Entry.IMAGE, Entry.DATA_SERIES]).count())
 
     def test_search_filter_entry_group_label(self):
         lead = self.create_lead()
