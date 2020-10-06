@@ -15,17 +15,20 @@ class OrganizationTypeSerializer(serializers.ModelSerializer):
 
 
 class MergedAsOrganizationSerializer(serializers.ModelSerializer):
+    logo = URLCachedFileField(source='logo.file', read_only=True)
+
     class Meta:
         model = Organization
-        fields = ('id', 'title',)
+        fields = ('id', 'title', 'logo')
 
 
 class SimpleOrganizationSerializer(serializers.ModelSerializer):
+    logo = URLCachedFileField(source='logo.file', read_only=True)
     merged_as = MergedAsOrganizationSerializer(source='parent', read_only=True)
 
     class Meta:
         model = Organization
-        fields = ('id', 'title', 'merged_as',)
+        fields = ('id', 'title', 'merged_as', 'logo')
 
 
 class OrganizationSerializer(

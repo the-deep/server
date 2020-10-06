@@ -22,6 +22,15 @@ from .models import (
     ProjectUserGroupMembership,
     ProjectStatusCondition,
     ProjectStatus,
+    ProjectOrganization,
+)
+
+from organization.models import (
+    Organization
+)
+
+from organization.serializers import (
+    SimpleOrganizationSerializer
 )
 
 from .permissions import PROJECT_PERMISSIONS
@@ -176,6 +185,18 @@ class ProjectDashboardSerializer(RemoveNullFieldsMixin,
         return list(project_activity_log(project))
 
 
+class ProjectOrganizationSerializer(RemoveNullFieldsMixin,
+                                    DynamicFieldsMixin,
+                                    UserResourceSerializer,
+                                    serializers.ModelSerializer):
+    organization_type_display = serializers.CharField(source='get_organization_type_display', read_only=True)
+    organization_details = SimpleOrganizationSerializer(source='organization', read_only=True)
+
+    class Meta:
+        model = ProjectOrganization
+        fields = ('id', 'organization', 'organization_details', 'organization_type', 'organization_type_display')
+
+
 class ProjectMembershipSerializer(RemoveNullFieldsMixin,
                                   DynamicFieldsMixin,
                                   serializers.ModelSerializer):
@@ -271,6 +292,11 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         read_only=True,
     )
 
+    organizations = ProjectOrganizationSerializer(
+        source='projectorganization_set',
+        many=True,
+    )
+
     regions = SimpleRegionSerializer(many=True, required=False)
     role = serializers.SerializerMethodField()
 
@@ -318,6 +344,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
             member=member,
             role=ProjectRole.get_creator_role(),
         )
+
         return project
 
     def update(self, instance, validated_data):
