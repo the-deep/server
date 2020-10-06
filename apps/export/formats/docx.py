@@ -78,17 +78,19 @@ class Run:
         except Exception:
             self.add_text('Invalid Image')
 
-    def add_font_color(self, hex_color_string):
+    def add_font_color(self, hex_color_string=None):
+        hex_color_string = hex_color_string or '#000000'
         if '#' in hex_color_string:
             hex_color_string = hex_color_string[1:]
         color = RGBColor.from_string(hex_color_string)
         self.ref.font.color.rgb = color
 
-    def add_shading(self, hex_color_string):
+    def add_shading(self, hex_color_string=None):
         """
         XML representation
             <w:shd w:fill="1F497D"/>
         """
+        hex_color_string = hex_color_string or '#888888'
         if '#' in hex_color_string:
             hex_color_string = hex_color_string[1:]
 
@@ -97,11 +99,12 @@ class Run:
         ele.set(qn('w:fill'), hex_color_string)
         rPr.append(ele)
 
-    def add_oval_shape(self, fill_hex_color):
+    def add_oval_shape(self, fill_hex_color=None):
         """
         https://python-docx.readthedocs.io/en/latest/user/shapes.html
         https://docs.microsoft.com/en-us/windows/win32/vml/web-workshop---specs---standards----how-to-use-vml-on-web-pages
         """
+        fill_hex_color = fill_hex_color or '#ffffff'
         color = fill_hex_color
         if '#' != color[0]:
             color = '#' + color
