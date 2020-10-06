@@ -16,11 +16,6 @@ from entry.models import (
 
 # TODO: Find out whether we need to call timezone.make_aware
 # from django.utils module to all datetime objects below
-class CharInFilter(django_filters.BaseInFilter,
-                   django_filters.CharFilter):
-    pass
-
-
 
 # We don't use UserResourceFilterSet since created_at and modified_at
 # are overridden below
@@ -125,10 +120,6 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
         label='Lead Group Label',
         method='lead_group_label_filter',
     )
-    entry_type = CharInFilter(
-        field_name='entry_type',
-        lookup_expr='in'
-    )
 
     class Meta:
         model = Entry
@@ -137,7 +128,7 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
                 x: ['exact'] for x in [
                     'id', 'excerpt', 'lead__title', 'created_at',
                     'created_by', 'modified_at', 'modified_by', 'project',
-                    'verified', 'entry_type'
+                    'verified',
                 ]
             },
             'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
@@ -220,6 +211,10 @@ def get_filtered_entries(user, queries):
     lead_priority = queries.get('lead_priority')
     if lead_priority:
         entries = entries.filter(lead__priority__in=lead_priority)
+
+    entry_type = queries.get('entry_type')
+    if entry_type:
+        entries = entries.filter(entry_type__in=entry_type)
 
     lead_confidentiality = queries.get('lead_confidentiality')
     if lead_confidentiality:
