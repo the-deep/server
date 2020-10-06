@@ -233,7 +233,7 @@ class LeadViewSet(viewsets.ModelViewSet):
         detail=False,
         permission_classes=[permissions.IsAuthenticated],
         methods=['POST'],
-        url_path='pre-bulk-delete'
+        url_path='dry-bulk-delete'
     )
     def leads_pre_delete(self, request, version=None):
         lead_ids = [int(each) for each in request.data.get('ids', '').split(',')]
