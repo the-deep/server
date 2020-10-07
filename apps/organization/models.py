@@ -55,9 +55,14 @@ class Organization(UserResource):
         """
         Get merged organization if merged
         """
+        if hasattr(self, '_data'):
+            return self._data
+
         if self.parent_id:
-            return self.parent
-        return self
+            self._data = self.parent
+        else:
+            self._data = self
+        return self._data
 
     def __str__(self):
         return f'{self.pk} : ({self.short_name}) {self.title} ' + (
