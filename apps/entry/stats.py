@@ -27,6 +27,14 @@ def _get_lead_data(lead):
             'id': lead.source.id,
             'title': lead.source.data.title,
         },
+        'author_raw': lead.author_raw,
+        'authors': [
+            {
+                'id': author.id,
+                'title': author.data.title,
+                # TODO: Legacy: Remove `or` logic after all the author are migrated to authors from author
+            } for author in lead.authors.all() or ([lead.author] if lead.author else [])
+        ],
     }
 
 
