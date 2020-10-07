@@ -150,13 +150,16 @@ def get_project_ary_entry_stats(project):
                 name=F('title')
             )
         ),
-        'organization': list(
-            Organization.objects.values(
-                'id', 'short_name', 'long_name',
-                'organization_type_id',
-                name=F('title')
-            )
-        ),
+        'organization': [
+            {
+                'id': org.id,
+                'name': org.data.title,
+                'short_name': org.data.short_name,
+                'long_name': org.data.long_name,
+                'organization_type_id': org.organization_type_id,
+            }
+            for org in Organization.objects.all()
+        ],
         # scale used by score_pillar
         'scorepillar_scale': list(ScoreScale.objects.values('id', 'color', 'value', name=F('title'))),
         'final_scores_array': {
