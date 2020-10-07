@@ -92,7 +92,7 @@ class LeadTests(TestCase):
         lead_ids = [str(lead1.id), str(lead3.id)]
         admin_user = self.create(User)
         project.add_member(admin_user, role=self.admin_role)
-        url = '/api/v1/leads/pre-bulk-delete/'
+        url = '/api/v1/leads/dry-bulk-delete/'
         self.authenticate(admin_user)
         response = self.client.post(url, {'ids': ','.join(lead_ids)})
         self.assert_200(response)
