@@ -111,7 +111,7 @@ class LeadTests(TestCase):
         project.add_member(admin_user, role=self.admin_role)
         url = '/api/v1/leads/bulk-delete/'
         self.authenticate(admin_user)
-        response = self.client.delete(url, {'project': project.id,
+        response = self.client.post(url, {'project': project.id,
                                             'ids': ','.join(lead_ids)})
         self.assert_204(response)
 

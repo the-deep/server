@@ -243,7 +243,7 @@ class LeadViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         permission_classes=[DeleteLeadPermission],
-        methods=['DELETE'],
+        methods=['POST'],
         url_path='bulk-delete'
     )
     def leads_bulk_delete(self, request, version=None):
