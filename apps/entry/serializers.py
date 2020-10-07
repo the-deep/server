@@ -8,6 +8,7 @@ from deep.serializers import (
     ListToDictField,
     UniqueFieldsMixin,
 )
+from organization.serializers import SimpleOrganizationSerializer
 from user_resource.serializers import UserResourceSerializer
 from gallery.serializers import FileSerializer
 from project.models import Project
@@ -157,12 +158,22 @@ class EntryLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     tabular_book = serializers.SerializerMethodField()
 
     assignee_details = SimpleUserSerializer(source='get_assignee', read_only=True)
+    authors_details = SimpleOrganizationSerializer(source='authors', many=True, read_only=True)
+    source_details = SimpleOrganizationSerializer(source='source', read_only=True)
+    confidentiality_display = serializers.CharField(source='get_confidentiality_display', read_only=True)
+    created_by_details = SimpleUserSerializer(source='get_created_by', read_only=True)
+    page_count = serializers.IntegerField(
+        source='leadpreview.page_count',
+        read_only=True,
+    )
 
     class Meta:
         model = Lead
         fields = (
             'id', 'title', 'created_at', 'url', 'attachment', 'tabular_book',
             'client_id', 'assignee', 'assignee_details', 'published_on',
+            'authors_details', 'source_details', 'confidentiality_display',
+            'created_by_details', 'page_count', 'confidentiality',
         )
 
     def get_tabular_book(self, obj):
