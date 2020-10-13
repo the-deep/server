@@ -239,15 +239,15 @@ class Lead(UserResource, ProjectEntityMixin):
         return self.author_raw
 
     @classmethod
-    def get_associated_entities(cls, lead_ids):
+    def get_associated_entities(cls, project_id, lead_ids):
         """
         Used for pre-check before deletion
         """
         from entry.models import Entry
         from ary.models import Assessment
         return {
-            'entries': Entry.objects.filter(lead__in=lead_ids).count(),
-            'assessments': Assessment.objects.filter(lead__in=lead_ids).count(),
+            'entries': Entry.objects.filter(lead__in=lead_ids, lead__project_id=project_id).count(),
+            'assessments': Assessment.objects.filter(lead__project_id=project_id, lead__in=lead_ids).count(),
         }
 
 

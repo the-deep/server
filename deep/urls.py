@@ -76,6 +76,7 @@ from questionnaire.views import (
 from lead.views import (
     LeadGroupViewSet,
     LeadViewSet,
+    LeadBulkDeleteViewSet,
     LeadPreviewViewSet,
     LeadOptionsView,
     LeadExtractionTriggerView,
@@ -246,6 +247,8 @@ router.register(r'lead-groups', LeadGroupViewSet,
                 basename='lead_group')
 router.register(r'leads', LeadViewSet,
                 basename='lead')
+router.register(r'project/(?P<project_id>\d+)/leads', LeadBulkDeleteViewSet,
+                basename='leads-bulk')
 router.register(r'lead-previews', LeadPreviewViewSet,
                 basename='lead_preview')
 
