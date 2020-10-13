@@ -238,6 +238,18 @@ class Lead(UserResource, ProjectEntityMixin):
             return self.author and self.author.data.title
         return self.author_raw
 
+    @classmethod
+    def get_associated_entities(cls, project_id, lead_ids):
+        """
+        Used for pre-check before deletion
+        """
+        from entry.models import Entry
+        from ary.models import Assessment
+        return {
+            'entries': Entry.objects.filter(lead__in=lead_ids, lead__project_id=project_id).count(),
+            'assessments': Assessment.objects.filter(lead__project_id=project_id, lead__in=lead_ids).count(),
+        }
+
 
 class LeadPreview(models.Model):
     STATUS_CLASSIFICATION_NONE = 'none'  # For leads which are not texts

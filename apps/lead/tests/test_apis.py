@@ -84,6 +84,46 @@ class LeadTests(TestCase):
         # low is default priority
         self.assertEqual(r_data['priority'], Lead.LOW)
 
+    def test_pre_bulk_delete_leads(self):
+        project = self.create(Project)
+        lead1 = self.create(Lead, project=project)
+        lead3 = self.create(Lead, project=project)
+
+        lead_ids = [lead1.id, lead3.id]
+        admin_user = self.create(User)
+        project.add_member(admin_user, role=self.admin_role)
+        url = '/api/v1/project/{}/leads/dry-bulk-delete/'.format(project.id)
+        self.authenticate(admin_user)
+        response = self.client.post(url, {'leads': lead_ids})
+        self.assert_200(response)
+        r_data = response.data
+        self.assertIn('entries', r_data)
+
+    def test_bulk_delete_leads(self):
+        project = self.create(Project)
+        lead1 = self.create(Lead, project=project)
+        lead2 = self.create(Lead, project=project)
+        lead3 = self.create(Lead, project=project)
+        lead_count = Lead.objects.count()
+
+        lead_ids = [lead1.id, lead3.id]
+        url = '/api/v1/project/{}/leads/bulk-delete/'.format(project.id)
+
+        # calling without delete permissions
+        view_user = self.create(User)
+        project.add_member(view_user, role=self.view_only_role)
+        self.authenticate(view_user)
+        response = self.client.post(url, {'leads': lead_ids})
+        self.assert_403(response)
+
+        admin_user = self.create(User)
+        project.add_member(admin_user, role=self.admin_role)
+        self.authenticate(admin_user)
+        response = self.client.post(url, {'leads': lead_ids})
+        self.assert_204(response)
+
+        self.assertLess(Lead.objects.count(), lead_count)
+
     def test_create_high_priority_lead(self, assignee=None):
         lead_count = Lead.objects.count()
         project = self.create(Project, role=self.admin_role)
