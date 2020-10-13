@@ -89,12 +89,12 @@ class LeadTests(TestCase):
         lead1 = self.create(Lead, project=project)
         lead3 = self.create(Lead, project=project)
 
-        lead_ids = [str(lead1.id), str(lead3.id)]
+        lead_ids = [lead1.id, lead3.id]
         admin_user = self.create(User)
         project.add_member(admin_user, role=self.admin_role)
-        url = '/api/v1/leads/dry-bulk-delete/'
+        url = '/api/v1/project/{}/leads/dry-bulk-delete/'.format(project.id)
         self.authenticate(admin_user)
-        response = self.client.post(url, {'ids': ','.join(lead_ids)})
+        response = self.client.post(url, {'leads': lead_ids})
         self.assert_200(response)
         r_data = response.data
         self.assertIn('entries', r_data)
@@ -106,22 +106,21 @@ class LeadTests(TestCase):
         lead3 = self.create(Lead, project=project)
         lead_count = Lead.objects.count()
 
-        lead_ids = [str(lead1.id), str(lead3.id)]
-        admin_user = self.create(User)
-        project.add_member(admin_user, role=self.admin_role)
-        url = '/api/v1/leads/bulk-delete/'
-        self.authenticate(admin_user)
-        response = self.client.post(url, {'project': project.id,
-                                            'ids': ','.join(lead_ids)})
-        self.assert_204(response)
+        lead_ids = [lead1.id, lead3.id]
+        url = '/api/v1/project/{}/leads/bulk-delete/'.format(project.id)
 
         # calling without delete permissions
         view_user = self.create(User)
         project.add_member(view_user, role=self.view_only_role)
         self.authenticate(view_user)
-        response = self.client.delete(url, {'project': project.id,
-                                            'ids': ','.join(lead_ids)})
+        response = self.client.post(url, {'leads': lead_ids})
         self.assert_403(response)
+
+        admin_user = self.create(User)
+        project.add_member(admin_user, role=self.admin_role)
+        self.authenticate(admin_user)
+        response = self.client.post(url, {'leads': lead_ids})
+        self.assert_204(response)
 
         self.assertLess(Lead.objects.count(), lead_count)
 
