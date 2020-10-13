@@ -161,6 +161,7 @@ class ReportExporter:
         """
         if data.get('label', None) and data.get('color', None):
             para.add_oval_shape(data.get('color'))
+            para.add_run(' {}'.format(data.get('label', '')))
 
     def _add_widget_information_into_report(self, para, report):
         """
@@ -251,11 +252,10 @@ class ReportExporter:
         # TODO: use utils.common.format_date and perhaps use information date
         date and para.add_run(f", {date.strftime('%d/%m/%Y')}")
         # para.add_run(f", {'Verified' if entry.verified else 'Unverified'}")
-
+        para.add_run(')')
+        para = self.doc.add_paragraph().justify()
         for report in entry.exportdata_set.values_list('data__report', flat=True):
             self._add_widget_information_into_report(para, report)
-
-        para.add_run(')')
 
         # Adding Entry Group Labels
         group_labels = self.entry_group_labels.get(entry.pk) or []
