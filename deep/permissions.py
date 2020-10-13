@@ -65,6 +65,30 @@ class CreateLeadPermission(permissions.BasePermission):
         return projects_count == len(project_ids)
 
 
+class DeleteLeadPermission(permissions.BasePermission):
+    """Checks if user can delete lead(s)"""
+    def has_permission(self, request, view):
+        if request.method not in ('POST', 'DELETE'):
+            return True
+
+        project_id = view.kwargs.get('project_id')
+
+        if not project_id:
+            return False
+
+        delete_lead_perm_value = PROJECT_PERMISSIONS.lead.delete
+
+        # Check if the user has delete permissions on all projects
+        return Project.objects.filter(
+            id=project_id,
+            projectmembership__member=request.user
+        ).annotate(
+            delete_lead=F('projectmembership__role__lead_permissions').bitand(delete_lead_perm_value)
+        ).filter(
+            delete_lead__gt=0,
+        ).exists()
+
+
 class CreateEntryPermission(permissions.BasePermission):
     """Permission class to check if user can create Lead"""
     def get_project_id(self, request):
