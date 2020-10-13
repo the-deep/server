@@ -229,26 +229,28 @@ class LeadViewSet(viewsets.ModelViewSet):
                 filter_data[key] = value
         return filter_data
 
+
+class LeadBulkDeleteViewSet(viewsets.GenericViewSet):
+    permission_classes = [DeleteLeadPermission]
+
     @action(
         detail=False,
-        permission_classes=[permissions.IsAuthenticated],
-        methods=['POST'],
-        url_path='dry-bulk-delete'
+        methods=['post'],
+        url_path='dry-bulk-delete',
     )
-    def leads_pre_delete(self, request, version=None):
-        lead_ids = [int(each) for each in request.data.get('ids', '').split(',')]
-        tbd_entities = Lead.get_associated_entities(lead_ids)
+    def dry_bulk_delete(self, request, project_id, version=None):
+        lead_ids = request.data.get('leads', [])
+        tbd_entities = Lead.get_associated_entities(project_id, lead_ids)
         return response.Response(tbd_entities, status=status.HTTP_200_OK)
 
     @action(
         detail=False,
-        permission_classes=[DeleteLeadPermission],
-        methods=['POST'],
-        url_path='bulk-delete'
+        methods=['post'],
+        url_path='bulk-delete',
     )
-    def leads_bulk_delete(self, request, version=None):
-        lead_ids = [int(each) for each in request.data.get('ids', '').split(',')]
-        Lead.objects.filter(id__in=lead_ids).delete()
+    def bulk_delete(self, request, project_id, version=None):
+        lead_ids = request.data.get('leads', [])
+        Lead.get_leads(project_id, lead_ids).delete()
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
 
