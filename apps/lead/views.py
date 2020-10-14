@@ -233,6 +233,10 @@ class LeadViewSet(viewsets.ModelViewSet):
 class LeadBulkDeleteViewSet(viewsets.GenericViewSet):
     permission_classes = [DeleteLeadPermission]
 
+    def get_serializer_class(self):
+        # required by ViewSchema generator
+        return serializers.Serializer
+
     @action(
         detail=False,
         methods=['post'],
