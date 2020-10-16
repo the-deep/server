@@ -228,14 +228,14 @@ def add_assessment_to_rows(sheets, assessment, planned_assessment=False):
                 new_ass_keys = assessment_row_keys.difference(sheet_row_keys)
                 new_sheet_keys = sheet_row_keys.difference(assessment_row_keys)
 
+                default_sheet = DEFAULTS.get(sheet)
+                default = default_sheet and default_sheet.get(col, default_sheet.get('*'))
                 if new_ass_keys:
                     # Add the key to each row in  column data
-                    default = DEFAULTS[sheet].get(col, DEFAULTS[sheet].get('*'))
                     columns_data = add_new_keys(new_ass_keys, columns_data, default)
 
                 if new_sheet_keys:
                     # Add new keys to assessment data
-                    default = DEFAULTS[sheet].get(col, DEFAULTS[sheet].get('*'))
                     assessment_col_data = add_new_keys(
                         new_sheet_keys, assessment_col_data, default
                     )

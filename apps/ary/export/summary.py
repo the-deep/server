@@ -35,7 +35,7 @@ def get_methodology_summary(assessment):
         for group in groups
     }
 
-    for attr in methodology.get('Attributes', []):
+    for attr in methodology.get('Attributes') or []:
         for group, options in groups_options.items():
             data = attr.get(group) or [{}]
             attr_data = attributes.get(group, {})
