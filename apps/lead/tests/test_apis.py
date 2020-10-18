@@ -978,6 +978,41 @@ class LeadTests(TestCase):
         obtained_ids = {x['id'] for x in resp.data['results']}
         assert expected_ids == obtained_ids
 
+    def test_lead_filter_search_by_author(self):
+        project = self.create_project()
+        author = self.create(Organization, title='blablaone')
+        author2 = self.create(Organization, title='blablatwo')
+
+        lead1 = self.create(Lead, project=project, author=author, author_raw='wood')
+        lead2 = self.create(Lead, project=project, author=author2)
+        lead3 = self.create(Lead, project=project, author=None)
+
+        lead = self.create(Lead, project=project)
+        lead.authors.set([author, author2])
+
+        url = '/api/v1/leads/filter/'
+        post_data = {'search': 'blablaone'}
+        expected_ids = {lead1.id, lead.id}
+        self.authenticate()
+        resp = self.client.post(url, post_data)
+        self.assert_200(resp)
+        obtained_ids = {x['id'] for x in resp.data['results']}
+        assert expected_ids == obtained_ids
+
+        post_data = {'search': 'blablatwo'}
+        expected_ids = {lead2.id, lead.id}
+        resp = self.client.post(url, post_data)
+        self.assert_200(resp)
+        obtained_ids = {x['id'] for x in resp.data['results']}
+        assert expected_ids == obtained_ids
+
+        post_data = {'search': 'wood'}
+        expected_ids = {lead1.id}
+        resp = self.client.post(url, post_data)
+        self.assert_200(resp)
+        obtained_ids = {x['id'] for x in resp.data['results']}
+        assert expected_ids == obtained_ids
+
     def test_lead_filter_emm_entities(self):
         url = '/api/v1/leads/?emm_entities={}'
         project = self.create_project()
