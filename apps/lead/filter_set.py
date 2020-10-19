@@ -139,13 +139,25 @@ class LeadFilterSet(django_filters.FilterSet):
 
     def search_filter(self, qs, name, value):
         # NOTE: This exists to make it compatible with post filter
+        if not value:
+            return qs
         return qs.filter(
+            # By title
             models.Q(title__icontains=value) |
+            # By source
             models.Q(source_raw__icontains=value) |
             models.Q(source__title__icontains=value) |
+            models.Q(source__parent__title__icontains=value) |
+            # By author
+            models.Q(author__title__icontains=value) |
+            models.Q(author__parent__title__icontains=value) |
+            models.Q(author_raw__icontains=value) |
+            models.Q(authors__title__icontains=value) |
+            models.Q(authors__parent__title__icontains=value) |
+            # By URL
             models.Q(url__icontains=value) |
             models.Q(website__icontains=value)
-        )
+        ).distinct()
 
     def project_filter(self, qs, name, value):
         # NOTE: @bewakes used this because normal project filter
