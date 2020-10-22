@@ -38,5 +38,13 @@
             "key": "questionnaire",
             "title": "Questionnaire Builder"
         }
+    },
+    {
+        "model": "user.feature",
+        "pk": 6,
+        "fields": {
+            "key": "quality_control",
+            "title": "Quality Control"
+        }
     }
 ]
