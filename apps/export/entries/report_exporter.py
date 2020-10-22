@@ -241,7 +241,9 @@ class ReportExporter:
         para.add_run('(' if widget_texts_exists else ' (')
 
         # Add author is available
-        (author and author.lower() != (source or '').lower()) and para.add_run(f'{author}, ')
+        (author and author.lower() != (source or '').lower()) and (
+            para.add_hyperlink(url, f'{author}, ') if url else para.add_run(f'{author}, ')
+        )
         # Add source (with url if available)
         para.add_hyperlink(url, source) if url else para.add_run(source)
         # Add lead-entry id
