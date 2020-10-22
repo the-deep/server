@@ -244,6 +244,8 @@ class ReportExporter:
         (author and author.lower() != (source or '').lower()) and para.add_run(f'{author}, ')
         # Add source (with url if available)
         para.add_hyperlink(url, source) if url else para.add_run(source)
+        # Add lead-entry id
+        para.add_run(f", {lead.id}-{entry.id}")
         # Add (confidential) to source without ,
         lead.confidentiality == Lead.CONFIDENTIAL and para.add_run(' (confidential)')
         # Add lead title if available
