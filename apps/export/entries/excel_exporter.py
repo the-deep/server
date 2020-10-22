@@ -41,12 +41,15 @@ class ExcelExporter:
             'Imported By',
             'Date Imported',
             'Verification Status',
+            'Lead Id',
             'Lead Title',
             'Lead URL',
             'Author',
             'Source',
             'Lead Priority',
             'Assignee',
+            'Entry Id',
+            'Lead-Entry Id',
             *(
                 [
                     'Modified Excerpt',
@@ -396,12 +399,15 @@ class ExcelExporter:
                 entry.created_by.profile.get_display_name(),
                 format_date(entry.created_at.date()),
                 'Verified' if entry.verified else 'Unverified',
+                f'{lead.id}',
                 lead.title,
                 lead.url or (lead.attachment and lead.attachment.get_file_url()),
                 lead.get_authors_display(),
                 lead.get_source_display(),
                 lead.get_priority_display(),
                 assignee and assignee.profile.get_display_name(),
+                f'{entry.id}',
+                f'{lead.id}-{entry.id}',
                 *(
                     [
                         self.get_entry_data(entry),
