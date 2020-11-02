@@ -40,9 +40,10 @@ class OrganizationSearch():
                 for _, d in text_queries
             ],
         )
-        exact_organizations = Organization.objects.filter(exact_query).all()
+        exact_organizations = Organization.objects.filter(exact_query).select_related('parent').all()
         organization_map = {
-            key.lower(): organization
+            # NOTE: organization.data will return itself or it's parent organization (handling merged organizations)
+            key.lower(): organization.data
             for organization in exact_organizations
             for key in [organization.title, organization.short_name, organization.long_name]
         }

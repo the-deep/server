@@ -1,9 +1,17 @@
-from rest_framework import viewsets, mixins, permissions, filters
+from rest_framework import (
+    viewsets,
+    mixins,
+    permissions,
+    filters,
+    response,
+)
+from rest_framework.decorators import action
 
 import django_filters
 
 from deep.paginations import AutocompleteSetPagination
 
+from connector.sources.base import OrganizationSearch
 from .serializers import (
     OrganizationSerializer,
     OrganizationTypeSerializer,
@@ -40,5 +48,23 @@ class OrganizationViewSet(
 
     def get_queryset(self):
         if self.kwargs.get('pk'):
-            return Organization.objects.prefetch_related('parent')
+            return Organization.objects.select_related('parent')
         return Organization.objects.filter(parent=None)
+
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
+        methods=['post'],
+        url_path='get-or-create',
+    )
+    def get_or_create(self, request, version=None):
+        titles = request.data.get('organizations')
+        organization_search = OrganizationSearch(titles)
+        return response.Response({
+            'results': [
+                {
+                    'key': title,
+                    'organization': self.get_serializer(organization_search.get(title)).data
+                } for title in titles
+            ]
+        })
