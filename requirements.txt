@@ -75,6 +75,6 @@ git+https://github.com/davedash/django-fixture-magic.git@466fa35c075009e4a1974f6
 
 # document_deduplication
 langdetect==1.0.8
-deep-utils-deduplication-test==1.0.6
+deep-utils.deduplication==1.0.8
 deep-serverless-test==1.0.2
 pynamodb==4.3.2
