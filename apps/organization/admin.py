@@ -44,11 +44,6 @@ class OrganizationTypeAdmin(admin.ModelAdmin):
     get_relief_web_id.short_description = 'ReliefWeb'
     get_relief_web_id.admin_order_field = 'relief_web_id'
 
-    def has_change_permission(self, request, obj=None):
-        if obj:
-            return obj.relief_web_id is None
-        return True
-
 
 class OrganizationInline(ReadOnlyMixin, admin.TabularInline):
     model = Organization
