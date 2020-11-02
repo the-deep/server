@@ -327,7 +327,6 @@ def mock_module_function_with_return_value(module_function_full_name, return_val
         # mock object
 
         def new_func(self, *args, **kwargs):
-            print(args, kwargs)
             # Since this function is going to be decorated, we are sure that this will have
             # an added argument, which is the mock object. So we can safely access args[-1]
             args[-1].return_value = return_value
