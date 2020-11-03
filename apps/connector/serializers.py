@@ -252,10 +252,13 @@ class UnifiedConnectorSourceLeadSerializer(serializers.ModelSerializer):
 class UnifiedConnectorSourceSerializer(serializers.ModelSerializer):
     """
     NOTE:
-    - total_leads is provided from UnifiedConnectorViewSet
+    Provided from UnifiedConnectorViewSet
+        - total_leads
+        - already_not_added_and_not_blocked_leads
     """
     sourceDetail = SimpleSourceSerializer(source='source', read_only=True)
     total_leads = serializers.IntegerField(read_only=True)
+    already_not_added_and_not_blocked_leads = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = UnifiedConnectorSource

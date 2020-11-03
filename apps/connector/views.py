@@ -7,6 +7,7 @@ from rest_framework import (
     response,
     views,
     viewsets,
+    mixins,
 )
 import django_filters
 
@@ -267,7 +268,7 @@ class UnifiedConnectorViewSet(viewsets.ModelViewSet):
         url_path='trigger-sync',
         methods=('post',),
         # TODO: Better permissions
-        permission_classes=[permissions.IsAuthenticated],
+        permission_classes=[permissions.IsAuthenticated, IsProjectMember],
     )
     def trigger_sync(self, *args, **kwargs):
         unified_connector = self.get_object()
@@ -285,10 +286,25 @@ class UnifiedConnectorSourceViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         return UnifiedConnectorSource.objects.filter(
             connector__project_id=self.kwargs['project_id'],
-        ).annotate(total_leads=models.Count('leads', distinct=True))
+        ).annotate(
+            total_leads=models.Count('leads', distinct=True),
+            already_not_added_and_not_blocked_leads=models.Count(
+                'unifiedconnectorsourcelead',
+                filter=(
+                    models.Q(unifiedconnectorsourcelead__already_added=False) &
+                    models.Q(unifiedconnectorsourcelead__blocked=False)
+                ),
+                distinct=True,
+            ),
+        )
 
 
-class UnifiedConnectorSourceLeadViewSet(viewsets.ModelViewSet):
+class UnifiedConnectorSourceLeadViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet
+):
     pagination_class = HardLimitSetPagination
     serializer_class = UnifiedConnectorSourceLeadSerializer
     permission_classes = [permissions.IsAuthenticated, IsProjectMember]
@@ -303,6 +319,41 @@ class UnifiedConnectorSourceLeadViewSet(viewsets.ModelViewSet):
             connector__project_id=self.kwargs['project_id'],
         )
         return UnifiedConnectorSourceLead.objects.filter(source=source).select_related('lead')
+
+    @action(
+        detail=False,
+        url_path='bulk-update',
+        methods=('post',),
+    )
+    def bulk_update(self, request, *args, **kwargs):
+        """
+        ```
+        {
+            "block": [array of id <number>],
+            "unblock": [array of id <number>]
+        }
+        ```
+        """
+        source_id = self.kwargs['source_id']
+        to_block = request.data.get('block', [])
+        to_unblock = request.data.get('unblock', [])
+
+        base_qs = UnifiedConnectorSourceLead.objects.filter(source_id=source_id)
+        blocked_ids = None
+        unblocked_ids = None
+        if to_block:
+            qs = base_qs.filter(id__in=to_block)
+            blocked_ids = qs.values_list('id', flat=True)
+            qs.update(blocked=True)
+        if to_unblock:
+            qs = base_qs.filter(id__in=to_unblock)
+            unblocked_ids = qs.values_list('id', flat=True)
+            qs.update(blocked=False)
+
+        return response.Response({
+            'blocked': blocked_ids,
+            'unblocked': unblocked_ids,
+        })
 
 
 class UnifiedConnectorLeadViewSet(UnifiedConnectorSourceLeadViewSet):

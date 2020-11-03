@@ -13,6 +13,8 @@ from connector.models import (
     ConnectorUser,
     UnifiedConnector,
     UnifiedConnectorSource,
+    ConnectorLead,
+    UnifiedConnectorSourceLead,
     # EMMConfig,
 )
 from connector.sources import store
@@ -633,3 +635,76 @@ class UnifiedConnectorTest(TestCase):
         # Stop request mock
         for mocked_request in mocked_requests:
             mocked_request.stop()
+
+    def test_unified_connector_leads_bulk_action(self):
+        project = self.create_project()
+
+        unified_connector_source = self.create(
+            UnifiedConnectorSource,
+            source=get_source_object(store.atom_feed.AtomFeed.key),
+            connector=self.create(UnifiedConnector, project=project),
+            blocked=False,
+        )
+        unified_connector_source_lead1 = self.create(
+            UnifiedConnectorSourceLead,
+            source=unified_connector_source,
+            lead=self.create(ConnectorLead),
+            blocked=False,
+        )
+        unified_connector_source_lead2 = self.create(
+            UnifiedConnectorSourceLead,
+            source=unified_connector_source,
+            lead=self.create(ConnectorLead),
+            blocked=True,
+        )
+        unified_connector_source_lead3 = self.create(
+            UnifiedConnectorSourceLead,
+            source=unified_connector_source,
+            lead=self.create(ConnectorLead),
+            blocked=False,
+        )
+
+        unified_connector_source2 = self.create(
+            UnifiedConnectorSource,
+            source=get_source_object(store.atom_feed.AtomFeed.key),
+            connector=self.create(UnifiedConnector, project=project),
+        )
+        unified_connector_source_lead4 = self.create(
+            UnifiedConnectorSourceLead,
+            source=unified_connector_source2,
+            lead=self.create(ConnectorLead),
+            blocked=False,
+        )
+
+        to_block = [
+            unified_connector_source_lead1,
+            unified_connector_source_lead3,
+            unified_connector_source_lead4,
+        ]
+        to_unblock = [unified_connector_source_lead2]
+        url = f'/api/v1/projects/{project.id}/unified-connector-sources/{unified_connector_source.id}/leads/bulk-update/'
+        data = {
+            'block': [ele.id for ele in to_block],
+            'unblock': [ele.id for ele in to_unblock],
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        resp_body = response.json()
+        print(data, response.json())
+        self.assert_200(response)
+        self.assertEqual(
+            sorted([ele.id for ele in to_block if ele.source == unified_connector_source]),
+            sorted(resp_body['blocked']),
+        )
+        self.assertEqual(
+            sorted(data['unblock']),
+            sorted(resp_body['unblocked']),
+        )
+
+        for ele in to_block:
+            ele.refresh_from_db()
+            self.assertEqual(ele.blocked, ele.source == unified_connector_source)
+        for ele in to_unblock:
+            ele.refresh_from_db()
+            self.assertEqual(ele.blocked, False)
