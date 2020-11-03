@@ -11,8 +11,8 @@ def on_lead_saved(sender, **kwargs):
     instance.project.update_status()
 
 
-@receiver(models.signals.pre_delete, sender=LeadPreview)
-@receiver(models.signals.pre_delete, sender=LeadPreviewImage)
+# @receiver(models.signals.post_delete, sender=LeadPreview)
+# @receiver(models.signals.post_delete, sender=LeadPreviewImage)
 def cleanup_file_on_instance_delete(sender, instance, **kwargs):
     for field in instance._meta.get_fields():
         if isinstance(field, models.FileField):
@@ -20,7 +20,7 @@ def cleanup_file_on_instance_delete(sender, instance, **kwargs):
             field_value = getattr(instance, field_name)
             if not field_value:
                 continue
-            storage, path = field_value.storage, field_value.path
+            storage, path = field_value.storage, field_value.name
             def delete_files():
                 storage.delete(path)
 
