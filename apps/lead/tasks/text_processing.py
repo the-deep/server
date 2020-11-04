@@ -4,14 +4,14 @@ import langdetect
 from django.conf import settings
 
 from deep_serverless.models.source_extract import Source
-from deep_utils.deduplication.vector_generator import create_trigram_vector, SUPPORTED_LANGUAGES
-from deep_utils.deduplication.elasticsearch import (
+from utils.deduplication.vector_generator import create_trigram_vector, SUPPORTED_LANGUAGES
+from utils.deduplication.elasticsearch import (
     search_similar,
     create_knn_vector_index_if_not_exists,
     add_to_index,
     Es,  # This is just the type
 )
-from deep_utils.deduplication.utils import es_wrapper, remove_puncs_and_extra_spaces
+from utils.deduplication.utils import es_wrapper, remove_puncs_and_extra_spaces
 
 from typing import List, Optional
 from typing_extensions import TypedDict
