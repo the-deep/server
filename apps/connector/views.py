@@ -14,6 +14,7 @@ import django_filters
 from rest_framework.decorators import action
 from deep.paginations import HardLimitSetPagination
 from deep.permissions import ModifyPermission, IsProjectMember
+from deep.exceptions import NotImplementedException
 from project.models import Project
 from utils.common import parse_number
 
@@ -247,9 +248,7 @@ class UnifiedConnectorViewSet(viewsets.ModelViewSet):
         return UnifiedConnector.objects.filter(project_id=self.kwargs['project_id']).prefetch_related(
             models.Prefetch(
                 'unifiedconnectorsource_set',
-                queryset=UnifiedConnectorSource.objects.annotate(
-                    total_leads=models.Count('leads', distinct=True),
-                ),
+                queryset=UnifiedConnectorSource.annotate_leads_count(UnifiedConnectorSource.objects),
             ),
         )
 
@@ -267,7 +266,6 @@ class UnifiedConnectorViewSet(viewsets.ModelViewSet):
         detail=True,
         url_path='trigger-sync',
         methods=('post',),
-        # TODO: Better permissions
         permission_classes=[permissions.IsAuthenticated, IsProjectMember],
     )
     def trigger_sync(self, *args, **kwargs):
@@ -284,18 +282,10 @@ class UnifiedConnectorSourceViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsProjectMember]
 
     def get_queryset(self):
-        return UnifiedConnectorSource.objects.filter(
-            connector__project_id=self.kwargs['project_id'],
-        ).annotate(
-            total_leads=models.Count('leads', distinct=True),
-            already_not_added_and_not_blocked_leads=models.Count(
-                'unifiedconnectorsourcelead',
-                filter=(
-                    models.Q(unifiedconnectorsourcelead__already_added=False) &
-                    models.Q(unifiedconnectorsourcelead__blocked=False)
-                ),
-                distinct=True,
-            ),
+        return UnifiedConnectorSource.annotate_leads_count(
+            UnifiedConnectorSource.objects.filter(
+                connector__project_id=self.kwargs['project_id'],
+            )
         )
 
 
@@ -310,7 +300,6 @@ class UnifiedConnectorSourceLeadViewSet(
     permission_classes = [permissions.IsAuthenticated, IsProjectMember]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
     filterset_class = UnifiedConnectorSourceLeadFilterSet
-    # TODO: search_fields = ('title',)
 
     def get_queryset(self):
         source = get_object_or_404(
@@ -334,11 +323,18 @@ class UnifiedConnectorSourceLeadViewSet(
         }
         ```
         """
-        source_id = self.kwargs['source_id']
+        base_qs = None
+        if 'source_id' in self.kwargs:
+            base_qs = UnifiedConnectorSourceLead.objects.filter(source_id=self.kwargs['source_id'])
+        elif 'unified_id' in self.kwargs:
+            base_qs = UnifiedConnectorSourceLead.objects.filter(source__connector_id=self.kwargs['unified_id'])
+
+        if base_qs is None:
+            raise NotImplementedException()
+
         to_block = request.data.get('block', [])
         to_unblock = request.data.get('unblock', [])
 
-        base_qs = UnifiedConnectorSourceLead.objects.filter(source_id=source_id)
         blocked_ids = None
         unblocked_ids = None
         if to_block:
@@ -363,5 +359,6 @@ class UnifiedConnectorLeadViewSet(UnifiedConnectorSourceLeadViewSet):
             pk=self.kwargs['unified_id'],
             project_id=self.kwargs['project_id'],
         )
-        return UnifiedConnectorSourceLead.objects.\
-            filter(source__connector=unified_connector).select_related('lead').distinct()
+        return UnifiedConnectorSourceLead.objects.filter(
+            source__connector=unified_connector,
+        ).select_related('lead').distinct()

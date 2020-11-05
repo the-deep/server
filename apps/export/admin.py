@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.contrib import messages
+from admin_auto_filters.filters import AutocompleteFilterFactory
 
 from deep.admin import ModelAdmin, document_preview
 
@@ -35,6 +36,10 @@ class ExportAdmin(ModelAdmin):
                     'format', 'pending', 'is_preview', 'status',)
     search_fields = ('title',)
     readonly_fields = (document_preview('file'),)
-    list_filter = ('type', 'export_type', 'format', 'pending', 'is_preview', 'status',)
+    list_filter = (
+        AutocompleteFilterFactory('Exported By', 'exported_by'),
+        AutocompleteFilterFactory('Project', 'project'),
+        'type', 'export_type', 'format', 'pending', 'is_preview', 'status',
+    )
     actions = [trigger_retry]
     autocomplete_fields = ('project', 'exported_by',)

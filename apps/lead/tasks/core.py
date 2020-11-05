@@ -40,7 +40,8 @@ def copy_lead_data_from_dynamodb(lead):
     """
     lead: Lead object instance
 
-    NOTE: ONLY WORKS WITH S3 storage and lambda config
+    NOTE: ONLY WORKS WITH S3 storage and lambda config (dynamo access)
+    TODO: Also work for development mode
     """
     source = get_source_from_pynamodb_for_lead(lead)
 
@@ -55,7 +56,7 @@ def copy_lead_data_from_dynamodb(lead):
         # and create new one
         LeadPreview.objects.create(
             lead=lead,
-            text_extract=extract.simplified_text,
+            text_extract=source.get_simplified_text(),
             word_count=extract.word_count,
             page_count=extract.page_count,
             file_size=extract.file_size,

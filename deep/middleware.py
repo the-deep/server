@@ -60,7 +60,7 @@ class DeepInnerCacheMiddleware:
                 )
                 return max(0, expiration.timestamp() - timezone.now().timestamp())
         except requests.exceptions.RequestException:
-            logger.error('Failed to retrive IAM Role session expiration.', exc_info=True)
+            logger.warning('Failed to retrive IAM Role session expiration.', exc_info=True)
         # Avoid cache for now (This shouldn't happen)
         return 0
 

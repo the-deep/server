@@ -52,6 +52,7 @@ class UnifiedConnectorAdmin(VersionAdmin):
     list_filter = [
         AutocompleteFilterFactory('Project', 'project'),
         AutocompleteFilterFactory('Created by', 'created_by'),
+        'is_active',
         'created_at',
     ]
     autocomplete_fields = ('project', 'created_by', 'modified_by',)
@@ -75,3 +76,4 @@ class UnifiedConnectorAdmin(VersionAdmin):
 class ConnectorLeadAdmin(admin.ModelAdmin):
     list_display = ('url', 'status')
     list_filter = ('status',)
+    search_fields = ['url']

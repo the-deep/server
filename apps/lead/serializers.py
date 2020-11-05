@@ -15,6 +15,7 @@ from user_resource.serializers import UserResourceSerializer
 from project.serializers import SimpleProjectSerializer
 from gallery.serializers import SimpleFileSerializer, File
 from user.models import User
+from connector.models import UnifiedConnectorSourceLead
 from .models import (
     LeadGroup,
     Lead,
@@ -244,7 +245,7 @@ class LeadSerializer(
     def create(self, validated_data):
         request = self.context['request']
         # check if force save or not
-        force_save = request.query_params.get('_force', 'false')
+        force_save = request.query_params.get('_force', 'false').lower() == 'true'
         assignee_field = validated_data.pop('get_assignee', None)
         assignee_id = assignee_field and assignee_field.get('id', None)
         assignee = assignee_id and get_object_or_404(User, id=assignee_id)
@@ -262,11 +263,30 @@ class LeadSerializer(
             ),
         )
         if lead_duplication_info.error:
-            raise serializers.ValidationError(lead_duplication_info)
-        if lead_duplication_info.similar_leads and force_save != 'true':
-            raise serializers.ValidationError('There are leads similar to this lead')
+            raise serializers.ValidationError(lead_duplication_info.error)
+        if lead_duplication_info.similar_leads and not force_save:
+            similar_leads = Lead.objects.filter(
+                project=validated_data['project'],
+                id__in=[
+                    ele['lead_id'] for ele in lead_duplication_info.similar_leads
+                ]
+            )
+            if similar_leads.exists():
+                raise serializers.ValidationError({
+                    'message': 'There are leads similar to this lead',
+                    'leads': SimpleLeadSerializer(similar_leads, many=True).data
+                })
 
         lead = super().create(validated_data)
+
+        # Update connector leads status
+        if lead.url:
+            transaction.on_commit(
+                lambda: UnifiedConnectorSourceLead.objects.filter(
+                    source__connector__project=lead.project,
+                    lead__url=lead.url,
+                ).update(already_added=True)
+            )
 
         # Now add to index
         # Note that, if there is no text or unsupported language, vector is None

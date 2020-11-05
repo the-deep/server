@@ -23,13 +23,11 @@ class RssFeed(Source):
     options = [
         {
             'key': 'feed-url',
-            'source_field': 'feed-url',
             'field_type': 'url',
             'title': 'Feed URL'
         },
         {
             'key': 'website-field',
-            'source_field': 'feed-url',
             'field_type': 'select',
             'lead_field': 'website',
             'title': 'Website',
@@ -37,7 +35,6 @@ class RssFeed(Source):
         },
         {
             'key': 'title-field',
-            'source_field': 'feed-url',
             'field_type': 'select',
             'lead_field': 'title',
             'title': 'Title field',
@@ -45,7 +42,6 @@ class RssFeed(Source):
         },
         {
             'key': 'date-field',
-            'source_field': 'feed-url',
             'field_type': 'select',
             'lead_field': 'published_on',
             'title': 'Published on field',
@@ -53,7 +49,6 @@ class RssFeed(Source):
         },
         {
             'key': 'source-field',
-            'source_field': 'feed-url',
             'field_type': 'select',
             'lead_field': 'source',
             'title': 'Publisher field',
@@ -61,7 +56,6 @@ class RssFeed(Source):
         },
         {
             'key': 'author-field',
-            'source_field': 'feed-url',
             'field_type': 'select',
             'lead_field': 'author',
             'title': 'Author field',
@@ -69,7 +63,6 @@ class RssFeed(Source):
         },
         {
             'key': 'url-field',
-            'source_field': 'feed-url',
             'field_type': 'select',
             'lead_field': 'url',
             'title': 'URL field',

@@ -682,29 +682,31 @@ class UnifiedConnectorTest(TestCase):
             unified_connector_source_lead4,
         ]
         to_unblock = [unified_connector_source_lead2]
-        url = f'/api/v1/projects/{project.id}/unified-connector-sources/{unified_connector_source.id}/leads/bulk-update/'
-        data = {
-            'block': [ele.id for ele in to_block],
-            'unblock': [ele.id for ele in to_unblock],
-        }
+        for url in [
+            f'/api/v1/projects/{project.id}/unified-connector-sources/{unified_connector_source.id}/leads/bulk-update/',
+            f'/api/v1/projects/{project.id}/unified-connectors/{unified_connector_source.connector.id}/leads/bulk-update/',
+        ]:
+            data = {
+                'block': [ele.id for ele in to_block],
+                'unblock': [ele.id for ele in to_unblock],
+            }
 
-        self.authenticate()
-        response = self.client.post(url, data)
-        resp_body = response.json()
-        print(data, response.json())
-        self.assert_200(response)
-        self.assertEqual(
-            sorted([ele.id for ele in to_block if ele.source == unified_connector_source]),
-            sorted(resp_body['blocked']),
-        )
-        self.assertEqual(
-            sorted(data['unblock']),
-            sorted(resp_body['unblocked']),
-        )
+            self.authenticate()
+            response = self.client.post(url, data)
+            resp_body = response.json()
+            self.assert_200(response)
+            self.assertEqual(
+                sorted([ele.id for ele in to_block if ele.source == unified_connector_source]),
+                sorted(resp_body['blocked']),
+            )
+            self.assertEqual(
+                sorted(data['unblock']),
+                sorted(resp_body['unblocked']),
+            )
 
-        for ele in to_block:
-            ele.refresh_from_db()
-            self.assertEqual(ele.blocked, ele.source == unified_connector_source)
-        for ele in to_unblock:
-            ele.refresh_from_db()
-            self.assertEqual(ele.blocked, False)
+            for ele in to_block:
+                ele.refresh_from_db()
+                self.assertEqual(ele.blocked, ele.source == unified_connector_source)
+            for ele in to_unblock:
+                ele.refresh_from_db()
+                self.assertEqual(ele.blocked, False)

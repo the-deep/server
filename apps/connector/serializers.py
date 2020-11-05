@@ -256,7 +256,7 @@ class UnifiedConnectorSourceSerializer(serializers.ModelSerializer):
         - total_leads
         - already_not_added_and_not_blocked_leads
     """
-    sourceDetail = SimpleSourceSerializer(source='source', read_only=True)
+    source_detail = SimpleSourceSerializer(source='source', read_only=True)
     total_leads = serializers.IntegerField(read_only=True)
     already_not_added_and_not_blocked_leads = serializers.IntegerField(read_only=True)
 

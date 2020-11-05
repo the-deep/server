@@ -13,12 +13,13 @@ class LeadDuplicationTests(TestCase):
     def create_organization(self, **kwargs):
         return self.create(Organization, **kwargs)
 
-    @patch('lead.serializers.get_duplicate_leads')
+    @patch('lead.serializers.get_duplicate_leads_in_project_for_source')
     # NOTE that no need to mock add_to_index because that is called only when the get_duplicate_leads
     # return object has attribute 'vector' set. Below we set return value with that attribute defaulting to None
     def test_create_lead_with_duplicate(self, get_duplicate_leads_patch):
-        lead_count = Lead.objects.count()
         project = self.create(Project, role=self.admin_role)
+        lead = self.create(Lead, project=project)
+        lead_count = Lead.objects.count()
 
         url = '/api/v1/leads/'
         data = {
@@ -33,7 +34,7 @@ class LeadDuplicationTests(TestCase):
         }
 
         # If the function(get_duplicate_leads) returns Object with similar_leads attribute, then there are duplicates
-        similar_leads = [dict(lead_id=5, similarity_score=0.9)]
+        similar_leads = [dict(lead_id=lead.pk, similarity_score=0.9)]
         get_duplicate_leads_patch.return_value = LeadDuplicationInfo(similar_leads=similar_leads)
         # So in this case, we should get 400 error
 
@@ -43,7 +44,7 @@ class LeadDuplicationTests(TestCase):
 
         self.assertEqual(Lead.objects.count(), lead_count)
 
-    @patch('lead.serializers.get_duplicate_leads')
+    @patch('lead.serializers.get_duplicate_leads_in_project_for_source')
     # NOTE that no need to mock add_to_index because that is called only when the get_duplicate_leads
     # return object has attribute 'vector' set. Below we set return value with that attribute defaulting to None
     def test_create_lead_with_no_duplicate(self, get_duplicate_leads_patch):
@@ -74,7 +75,7 @@ class LeadDuplicationTests(TestCase):
         self.assertEqual(r_data['title'], data['title'])
         self.assertEqual(r_data['assignee'], self.user.id)
 
-    @patch('lead.serializers.get_duplicate_leads')
+    @patch('lead.serializers.get_duplicate_leads_in_project_for_source')
     # NOTE that no need to mock add_to_index because that is called only when the get_duplicate_leads
     # return object has attribute 'vector' set. Below we set return value with that attribute defaulting to None
     def test_force_create_lead_with_duplicate(self, get_duplicate_leads_patch):

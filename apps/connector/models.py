@@ -188,8 +188,7 @@ class ConnectorLead(models.Model):
 
     url = models.TextField(blank=True)
     status = models.CharField(max_length=30, blank=True, null=True, choices=Status.CHOICES)
-    data = JSONField(default=dict, blank=True)
-    # NOTE: Extract data is located in AWS dynamodb
+    data = JSONField(default=dict, blank=True)  # NOTE: Extract data is copied in AWS dynamodb
 
     def __str__(self):
         return f'{self.get_status_display()}:{self.url}'
@@ -207,8 +206,7 @@ class UnifiedConnector(UserResource):
         return self.title
 
     def can_modify(self, user):
-        # TODO:
-        return True
+        return self.project.can_modify(user)
 
 
 class UnifiedConnectorSource(models.Model):
@@ -250,12 +248,29 @@ class UnifiedConnectorSource(models.Model):
         super().__init__(*args, **kwargs)
         self.old_params = self.params
 
+    def __str__(self):
+        return self.source_id
+
+    def can_modify(self, user):
+        return self.connector.can_modify(user)
+
+    @classmethod
+    def annotate_leads_count(cls, qs):
+        return qs.annotate(
+            total_leads=models.Count('leads', distinct=True),
+            already_not_added_and_not_blocked_leads=models.Count(
+                'unifiedconnectorsourcelead',
+                filter=(
+                    models.Q(unifiedconnectorsourcelead__already_added=False) &
+                    models.Q(unifiedconnectorsourcelead__blocked=False)
+                ),
+                distinct=True,
+            ),
+        )
+
     @property
     def source_fetcher(self):
         return source_store[self.source_id]
-
-    def __str__(self):
-        return self.source_id
 
     def add_lead(self, lead, **kwargs):
         already_added = self.connector.project.lead_set.filter(url=lead.url).exists()
@@ -299,5 +314,4 @@ class UnifiedConnectorSourceLead(models.Model):
     source = models.ForeignKey(UnifiedConnectorSource, on_delete=models.CASCADE)
     lead = models.ForeignKey(ConnectorLead, on_delete=models.CASCADE)
     blocked = models.BooleanField(default=False)
-    # TODO: Update this attribute while creating leads
     already_added = models.BooleanField(default=False)

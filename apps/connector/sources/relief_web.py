@@ -1,4 +1,5 @@
 import requests
+import math
 import json
 
 from lead.models import Lead
@@ -187,6 +188,8 @@ COUNTRIES = [
     {"key": "SDS", "label": "South Sudan"},
 ]
 
+RELIEFWEB_MAX_LIMIT = 1000
+
 
 def _format_date(datestr):
     return datestr + 'T00:00:00+00:00'
@@ -275,20 +278,19 @@ class ReliefWeb(Source):
 
         if offset:
             post_params['offset'] = offset
-        # Valid values are between 0 and 1000
-        post_params['limit'] = min(limit or 1000, 1000)
+
+        limit = min(limit or 2000, 2000)
+        post_params['limit'] = min(limit or RELIEFWEB_MAX_LIMIT, RELIEFWEB_MAX_LIMIT)
 
         post_params['sort'] = ['date.original:desc', 'title:asc']
 
         relief_url = self.URL
-        while True:
+        for _ in range(math.ceil(post_params['limit'] / limit)):
             content = self.get_content(relief_url, post_params)
             resp = json.loads(content)
-
             total_count = resp['totalCount']
-            limited_data = resp['data']  # The offset limit is handled by the api itself
 
-            for datum in limited_data:
+            for datum in resp['data']:
                 fields = datum['fields']
                 url = fields['file'][0]['url'] if fields.get('file') else fields['url_alias']
                 lead = {
@@ -304,8 +306,8 @@ class ReliefWeb(Source):
                 results.append(lead)
 
             relief_url = resp['links'].get('next', {}).get('herf')
-            if not (limit is None and relief_url is not None) or len(results) >= 2000:
+            post_params['limit'] = min(limit - len(lead), RELIEFWEB_MAX_LIMIT)
+            if relief_url is None or post_params['limit'] <= 0:
                 break
 
-        results = results[:2000]
         return results, total_count

@@ -25,5 +25,4 @@ class UnifiedConnectorSourceLeadFilterSet(filters.FilterSet):
         fields = ('already_added', 'blocked',)
 
     def search_filter(self, qs, name, value):
-        # NOTE: This exists to make it compatible with post filter
         return qs.filter(lead__data__title__icontains=value)

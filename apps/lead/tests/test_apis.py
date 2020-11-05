@@ -1,3 +1,6 @@
+from mock import patch
+from deep_serverless.models.source_extract import Source
+
 from deep.tests import (
     TestCase,
     mock_module_function_with_return_value
@@ -52,7 +55,7 @@ UNHCR_DATA = {
 }
 
 get_duplicate_decorator = mock_module_function_with_return_value(
-    'lead.serializers.get_duplicate_leads',
+    'lead.serializers.get_duplicate_leads_in_project_for_source',
     LeadDuplicationInfo(similar_leads=[])
 )
 # NOTE that no need to mock add_to_index because that is called only when the get_duplicate_leads
@@ -1264,7 +1267,12 @@ class LeadTests(TestCase):
         }
         assert expected_triggers == result_triggers
 
-    def test_lead_source_change_not_allowed(self):
+    @get_duplicate_decorator
+    @patch('lead.tasks.core.get_source_from_pynamodb_for_lead')
+    @patch('lead.serializers.get_source_from_pynamodb')
+    def test_lead_source_change_not_allowed(
+        self, pull_from_pynamodb_mock, get_source_from_pynamodb_mock,
+    ):
         project = self.create(Project, role=self.admin_role)
         file1 = self.create_gallery_file()
         file2 = self.create_gallery_file()
@@ -1276,6 +1284,15 @@ class LeadTests(TestCase):
             'authors': [self.author.pk],
         }
         url = '/api/v1/leads/'
+
+        mock_source = Source()
+        mock_source.status = Source.Status.SUCCESS
+        mock_source.extract.simplified_text = 'This is a simplified text'
+        mock_source.extract.word_count = 1001
+        mock_source.extract.page_count = 10
+        mock_source.extract.file_size = 1001
+        mock_source.images = ['upload-directory/file1.jpg']
+        pull_from_pynamodb_mock.return_value = get_source_from_pynamodb_mock.return_value = mock_source
 
         for source_type, field, value, new_value in [
                 (Lead.WEBSITE, 'url', 'https://same.com/', 'https://not-same.com/'),

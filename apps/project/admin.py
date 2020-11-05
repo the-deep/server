@@ -80,7 +80,10 @@ class ProjectAdmin(VersionAdmin):
         'analysis_framework', 'assessment_template', 'category_editor',
         'created_by', 'modified_by', 'regions',
     )
-    list_filter = (AutocompleteFilterFactory('Assessment Template', 'assessment_template'),)
+    list_filter = (
+        AutocompleteFilterFactory('Assessment Template', 'assessment_template'),
+        AutocompleteFilterFactory('Created By', 'created_by'),
+    )
     inlines = [ProjectMembershipInline,
                ProjectUserGroupMembershipInline,
                ProjectJoinRequestInline,

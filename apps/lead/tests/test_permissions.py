@@ -10,7 +10,7 @@ from project.permissions import PROJECT_PERMISSIONS, get_project_permissions_val
 from project.models import Project, ProjectRole
 
 get_duplicate_decorator = mock_module_function_with_return_value(
-    'lead.serializers.get_duplicate_leads',
+    'lead.serializers.get_duplicate_leads_in_project_for_source',
     LeadDuplicationInfo(similar_leads=[])
 )
 

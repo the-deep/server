@@ -51,7 +51,6 @@ class UnifiedConnectorTask():
 
     @classmethod
     def _process_unified_source(cls, source, project):
-        # TODO: Clean all previous leads if params are changed
         params = source.params
         source_fetcher = source.source_fetcher()
         data, count = source_fetcher.get_leads(params)
