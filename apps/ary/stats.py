@@ -153,10 +153,11 @@ def get_project_ary_entry_stats(project):
         'organization': [
             {
                 'id': org.id,
-                'name': org.data.title,
-                'short_name': org.data.short_name,
-                'long_name': org.data.long_name,
+                'name': org.title,
+                'short_name': org.short_name,
+                'long_name': org.long_name,
                 'organization_type_id': org.organization_type_id,
+                'parent': org.parent_id,
             }
             for org in Organization.objects.all()
         ],
