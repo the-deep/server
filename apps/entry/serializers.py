@@ -158,8 +158,8 @@ class EntryLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     tabular_book = serializers.SerializerMethodField()
 
     assignee_details = SimpleUserSerializer(source='get_assignee', read_only=True)
-    authors_details = SimpleOrganizationSerializer(source='authors', many=True, read_only=True)
-    source_details = SimpleOrganizationSerializer(source='source', read_only=True)
+    authors_detail = SimpleOrganizationSerializer(source='authors', many=True, read_only=True)
+    source_detail = SimpleOrganizationSerializer(source='source', read_only=True)
     confidentiality_display = serializers.CharField(source='get_confidentiality_display', read_only=True)
     created_by_details = SimpleUserSerializer(source='get_created_by', read_only=True)
     page_count = serializers.IntegerField(
@@ -172,7 +172,7 @@ class EntryLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
         fields = (
             'id', 'title', 'created_at', 'url', 'attachment', 'tabular_book',
             'client_id', 'assignee', 'assignee_details', 'published_on',
-            'authors_details', 'source_details', 'confidentiality_display',
+            'authors_detail', 'source_detail', 'confidentiality_display',
             'created_by_details', 'page_count', 'confidentiality',
         )
 
