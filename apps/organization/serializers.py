@@ -28,7 +28,7 @@ class SimpleOrganizationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Organization
-        fields = ('id', 'title', 'merged_as', 'logo')
+        fields = ('id', 'title', 'short_name', 'merged_as', 'logo')
 
 
 class OrganizationSerializer(
