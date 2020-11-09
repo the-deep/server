@@ -5,6 +5,7 @@ from django.conf import settings
 from project.models import Project
 from user.models import User
 from lead.models import Lead
+from organization.models import Organization
 from analysis_framework.models import (
     AnalysisFramework, Widget, Filter
 )
@@ -589,12 +590,12 @@ class EntryTest(TestCase):
             role=self.admin_role
         )
 
-    def create_lead(self):
+    def create_lead(self, **fields):
         project = self.create_project()
-        return self.create(Lead, project=project)
+        return self.create(Lead, project=project, **fields)
 
     def create_entry(self, **fields):
-        lead = self.create_lead()
+        lead = fields.pop('lead', self.create_lead())
         return self.create(
             Entry, lead=lead, project=lead.project,
             analysis_framework=lead.project.analysis_framework,
@@ -622,3 +623,38 @@ class EntryTest(TestCase):
             }
             ),
         )
+
+    def test_list_entries_summary(self):
+        org1 = self.create(Organization)
+        org2 = self.create(Organization)
+        org3 = self.create(Organization)
+        org4 = self.create(Organization)
+        org5 = self.create(Organization)
+
+        lead1 = self.create_lead(source=org1)
+        lead1.authors.set([org1, org4])
+        lead2 = self.create_lead(source=org3)
+        lead2.authors.set([org1, org2])
+        lead3 = self.create_lead(source=org3)
+
+        entry1 = self.create_entry(lead=lead1)
+        entry2 = self.create_entry(lead=lead1)
+        entry3 = self.create_entry(lead=lead2)
+        entry4 = self.create_entry(lead=lead2)
+        entry5 = self.create_entry(lead=lead2)
+
+        url = '/api/v1/entries/'
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        r_data = response.json()
+        self.assertIn('summary', r_data)
+        summ = r_data['summary']
+        self.assertEqual(summ['totalVerifiedEntries'], Entry.objects.filter(verified=True).count())
+        self.assertEqual(summ['totalUnverifiedEntries'], Entry.objects.filter(verified=False).count())
+        self.assertEqual(summ['totalLeads'], len([lead1, lead2]))
+        self.assertEqual(summ['totalUniqueAuthors'], len({org1.organization_type,
+                                                          org2.organization_type,
+                                                          org4.organization_type}))
+        self.assertEqual(summ['totalSources'], len({org1, org3}))
