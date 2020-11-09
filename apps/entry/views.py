@@ -51,7 +51,30 @@ from tabular.models import Field as TabularField
 import django_filters
 
 
-class EntryViewSet(viewsets.ModelViewSet):
+class EntrySummaryPaginationMixin(object):
+    def get_paginated_response(self, data):
+        if not self.request.GET.get('calculate_summary', '0') == '1':
+            return super().get_paginated_response(data)
+        qs = self.filter_queryset(self.get_queryset())
+        total_unique_org_type = qs.values('lead__authors__organization_type_id').annotate(count=models.Count('lead__authors__organization_type_id')).count()
+        total_sources = qs.values('lead__source_id').annotate(count=models.Count('lead__source_id')).count()
+        summary_data = dict(
+            total_verified_entries=qs.filter(verified=True).count(),
+            total_unverified_entries=qs.filter(verified=False).count(),
+            total_leads=qs.values('lead').distinct().count(),
+            total_unique_authors=total_unique_org_type,
+            total_sources=total_sources,
+        )
+        return response.Response(OrderedDict([
+            ('count', self.paginator.count),
+            ('next', self.paginator.get_next_link()),
+            ('previous', self.paginator.get_previous_link()),
+            ('results', data),
+            ('summary', summary_data)
+        ]))
+
+
+class EntryViewSet(EntrySummaryPaginationMixin, viewsets.ModelViewSet):
     """
     Entry view set
     """
@@ -72,27 +95,6 @@ class EntryViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return EntryRetriveSerializer
         return super().get_serializer_class()
-
-    def get_paginated_response(self, data):
-        if not self.request.GET.get('calculate_summary', 'true') == 'true':
-            return super().get_paginated_response(data)
-        qs = self.filter_queryset(self.get_queryset())
-        total_unique_org_type = qs.values('lead__authors__organization_type_id').annotate(count=models.Count('lead__authors__organization_type_id')).count()
-        total_sources = qs.values('lead__source_id').annotate(count=models.Count('lead__source_id')).count()
-        summary_data = dict(
-            total_verified_entries=qs.filter(verified=True).count(),
-            total_unverified_entries=qs.filter(verified=False).count(),
-            total_leads=qs.values('lead').distinct().count(),
-            total_unique_authors=total_unique_org_type,
-            total_sources=total_sources,
-        )
-        return response.Response(OrderedDict([
-            ('count', self.paginator.count),
-            ('next', self.paginator.get_next_link()),
-            ('previous', self.paginator.get_previous_link()),
-            ('results', data),
-            ('summary', summary_data)
-        ]))
 
     @action(
         detail=False,
@@ -128,7 +130,7 @@ class EntryViewSet(viewsets.ModelViewSet):
         return response.Response(status=status.HTTP_200_OK)
 
 
-class EntryFilterView(generics.GenericAPIView):
+class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
     """
     Entry view for getting entries based filters in POST body
     """
