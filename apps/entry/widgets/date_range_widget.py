@@ -38,6 +38,9 @@ def update_attribute(widget, data, widget_data):
                 'excel': {
                     'values': [from_date, to_date],
                 },
+                'report': {
+                    'value': [from_date, to_date],
+                }
             },
         },
     }
