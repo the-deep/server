@@ -643,7 +643,7 @@ class EntryTest(TestCase):
         entry4 = self.create_entry(lead=lead2)
         entry5 = self.create_entry(lead=lead2)
 
-        url = '/api/v1/entries/'
+        url = '/api/v1/entries/?calculate_summary=1'
 
         self.authenticate()
         response = self.client.get(url)
