@@ -42,10 +42,10 @@ def update_attribute(widget, data, widget_data):
         'export_data': {
             'data': {
                 'excel': {
-                    'values': [
-                        from_time,
-                        to_time,
-                    ],
+                    'values': [from_time, to_time],
+                },
+                'report': {
+                    'values': [from_time, to_time],
                 },
             },
         },
