@@ -643,10 +643,10 @@ class EntryTest(TestCase):
         entry4 = self.create_entry(lead=lead2)
         entry5 = self.create_entry(lead=lead2)
 
-        url = '/api/v1/entries/?calculate_summary=1'
+        url = '/api/v1/entries/filter/?calculate_summary=1'
 
         self.authenticate()
-        response = self.client.get(url)
+        response = self.client.post(url)
         self.assert_200(response)
         r_data = response.json()
         self.assertIn('summary', r_data)
