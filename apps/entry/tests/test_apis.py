@@ -643,10 +643,26 @@ class EntryTest(TestCase):
         entry4 = self.create_entry(lead=lead2)
         entry5 = self.create_entry(lead=lead2)
 
-        url = '/api/v1/entries/filter/?calculate_summary=1'
+        url = '/api/v1/entries/filter/'
 
         self.authenticate()
-        response = self.client.post(url)
+        response = self.client.post(url, dict(calculate_summary='1'))
+        self.assert_200(response)
+        r_data = response.json()
+        self.assertIn('summary', r_data)
+        summ = r_data['summary']
+        self.assertEqual(summ['totalVerifiedEntries'], Entry.objects.filter(verified=True).count())
+        self.assertEqual(summ['totalUnverifiedEntries'], Entry.objects.filter(verified=False).count())
+        self.assertEqual(summ['totalLeads'], len([lead1, lead2]))
+        self.assertEqual(summ['totalUniqueAuthors'], len({org1.organization_type,
+                                                          org2.organization_type,
+                                                          org4.organization_type}))
+        self.assertEqual(summ['totalSources'], len({org1, org3}))
+
+        url = '/api/v1/entries/?calculate_summary=1'
+
+        self.authenticate()
+        response = self.client.get(url)
         self.assert_200(response)
         r_data = response.json()
         self.assertIn('summary', r_data)
