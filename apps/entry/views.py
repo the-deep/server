@@ -58,10 +58,11 @@ class EntrySummaryPaginationMixin(object):
         qs = self.filter_queryset(self.get_queryset())
         total_unique_org_type = qs.values('lead__authors__organization_type_id').annotate(count=models.Count('lead__authors__organization_type_id')).count()
         total_sources = qs.values('lead__source_id').annotate(count=models.Count('lead__source_id')).count()
+        total_leads = qs.values('lead_id').annotate(count=models.Count('lead_id')).count()
         summary_data = dict(
             total_verified_entries=qs.filter(verified=True).count(),
             total_unverified_entries=qs.filter(verified=False).count(),
-            total_leads=qs.values('lead').distinct().count(),
+            total_leads=total_leads,
             total_unique_authors=total_unique_org_type,
             total_sources=total_sources,
         )
