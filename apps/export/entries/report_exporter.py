@@ -28,11 +28,13 @@ logger = logging.getLogger(__name__)
 
 
 class ReportExporter:
-    def __init__(self):
+    def __init__(self, exporting_widgets=None):
         self.doc = Document(
             os.path.join(settings.APPS_DIR, 'static/doc_export/template.docx')
         )
         self.lead_ids = []
+        # ordered list of widget ids
+        self.exporting_widgets = exporting_widgets or []
 
     def load_exportables(self, exportables):
         exportables = exportables.filter(
@@ -163,6 +165,33 @@ class ReportExporter:
             para.add_oval_shape(data.get('color'))
             para.add_run(' {}'.format(data.get('label', '')))
 
+    def _add_date_range_widget_data(self, para, data):
+        """
+        report for date range widget expects following
+            - tuple (from, to)
+        as described here: apps.entry.widgets.date_range_widget._get_date
+        """
+        if any(data.get('values', [])):
+            para.add_run(' {} - {}', data.get['values'][0] or "00-00-00", data.get['values'][1] or "00-00-00")
+
+    def _add_time_range_widget_data(self, para, data):
+        """
+        report for time range widget expects following
+            - tuple (from, to)
+        as described here: apps.entry.widgets.time_range_widget._get_time
+        """
+        if any(data.get('values', [])):
+            para.add_run(' {} - {}', data.get['values'][0] or "~~:~~", data.get['values'][1] or "~~:~~")
+
+    def _add_date_or_time_widget_data(self, para, data):
+        """
+        report for time widget expects following
+            - string (=time)
+        as described here: apps.entry.widgets.time_widget._get_time
+        """
+        if data.get('value', None):
+            para.add_run(' {}', data.get['value'])
+
     def _add_widget_information_into_report(self, para, report):
         """
         based on widget annotate information into report
@@ -175,10 +204,14 @@ class ReportExporter:
         if 'widget_id' in report:
             if report.get('widget_id') == 'scaleWidget':
                 self._add_scale_widget_data(para, report)
-        elif 'keys' in report:
-            # this is for conditional widgets
-            for nested_report in report.get('keys'):
-                self._add_widget_information_into_report(para, nested_report)
+            elif report.get('widget_id') == 'dateRangeWidget':
+                self._add_date_range_widget_data(para, report)
+            elif report.get('widget_id') == 'timeRangeWidget':
+                self._add_time_range_widget_data(para, report)
+            elif report.get('widget_id') == 'timeWidget':
+                self._add_date_or_time_widget_data(para, report)
+            elif report.get('widget_id') == 'dateWidget':
+                self._add_date_or_time_widget_data(para, report)
 
     def _generate_for_entry(self, entry):
         """
@@ -258,6 +291,7 @@ class ReportExporter:
         # para.add_run(f", {'Verified' if entry.verified else 'Unverified'}")
         para.add_run(')')
         para = self.doc.add_paragraph().justify()
+        # TODO: check the order here
         for report in entry.exportdata_set.values_list('data__report', flat=True):
             self._add_widget_information_into_report(para, report)
 

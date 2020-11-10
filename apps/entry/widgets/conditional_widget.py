@@ -15,6 +15,7 @@ def update_attribute(widget, data, widget_data):
 
     filter_data = []
     excel_data = []
+    report_data = []
     report_keys = []
     for w in widgets:
         widget_module = widget_store.get(w.get('widget_id'))
@@ -52,9 +53,9 @@ def update_attribute(widget, data, widget_data):
 
         if w_export_data:
             excel_data.append(w_export_data.get('data', {}).get('excel'))
-            report_keys += w_export_data.get('data', {})\
-                .get('report', {})\
-                .get('keys') or []
+            report_data = w_export_data.get('data', {})\
+                .get('report', {})
+            report_keys = report_data.get('keys') or []
         else:
             excel_data.append(None)
 
@@ -64,8 +65,10 @@ def update_attribute(widget, data, widget_data):
             'data': {
                 'excel': excel_data,
                 'report': {
+                    **report_data,
                     'keys': report_keys,
                 },
+                # TODO: 'condition':
             },
         },
     }
