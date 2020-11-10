@@ -53,7 +53,7 @@ import django_filters
 
 class EntrySummaryPaginationMixin(object):
     def get_paginated_response(self, data):
-        if not self.request.GET.get('calculate_summary', '0') == '1':
+        if not self.request.data.get('calculate_summary', self.request.GET.get('calculate_summary', '0')) == '1':
             return super().get_paginated_response(data)
         qs = self.filter_queryset(self.get_queryset())
         total_unique_org_type = qs.values('lead__authors__organization_type_id').annotate(count=models.Count('lead__authors__organization_type_id')).count()
