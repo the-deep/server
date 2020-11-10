@@ -21,16 +21,6 @@ def _get_scale(widget, data, widget_data):
 def update_attribute(widget, data, widget_data):
     scale, selected_scales = _get_scale(widget, data, widget_data)
 
-    # export_data.data.report.keys will be used in report by conditional widget
-    conditional_keys = {
-        'keys': [{
-            'widget_id': scale['widget_id'],
-            'title': scale['title'],
-            'label': scale['label'],
-            'color': scale['color'],
-        }]
-    } if hasattr(widget, '_conditional') else {}
-
     return {
         'filter_data': [{
             'values': selected_scales,
@@ -46,7 +36,6 @@ def update_attribute(widget, data, widget_data):
                     'title': scale['title'],
                     'label': scale['label'],
                     'color': scale['color'],
-                    **conditional_keys
                 }
             },
         },

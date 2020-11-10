@@ -28,6 +28,7 @@ def update_attribute(widget, data, widget_data):
                     'value': time_str
                 },
                 'report': {
+                    'widget_id': 'timeWidget',
                     'value': time_str,
                 },
             },

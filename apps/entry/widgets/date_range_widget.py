@@ -39,7 +39,8 @@ def update_attribute(widget, data, widget_data):
                     'values': [from_date, to_date],
                 },
                 'report': {
-                    'value': [from_date, to_date],
+                    'widget_id': 'dateRangeWidget',
+                    'values': [from_date, to_date],
                 }
             },
         },

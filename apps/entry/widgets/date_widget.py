@@ -26,6 +26,7 @@ def update_attribute(widget, data, widget_data):
                     'value': date,
                 },
                 'report': {
+                    'widget_id': 'dateWidget',
                     'value': date,
                 }
             }

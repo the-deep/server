@@ -45,6 +45,7 @@ def update_attribute(widget, data, widget_data):
                     'values': [from_time, to_time],
                 },
                 'report': {
+                    'widget_id': 'timeRangeWidget',
                     'values': [from_time, to_time],
                 },
             },
