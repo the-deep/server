@@ -137,11 +137,11 @@ class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
     serializer_class = EntryRetriveProccesedSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request, version=None):
-        filters = request.data.get('filters', [])
+    def get_queryset(self):
+        filters = self.request.data.get('filters', [])
         filters = {f[0]: f[1] for f in filters}
 
-        queryset = get_filtered_entries(request.user, filters).prefetch_related(
+        queryset = get_filtered_entries(self.request.user, filters).prefetch_related(
             'lead', 'lead__attachment', 'lead__assignee',
         )
         queryset = Entry.annotate_comment_count(queryset)
@@ -170,7 +170,10 @@ class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
                 )
             )
 
-        queryset = EntryFilterSet(filters, queryset=queryset).qs
+        return EntryFilterSet(filters, queryset=queryset).qs
+
+    def post(self, request, version=None):
+        queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
 
         # Precalculate entry group label count (Used by EntrySerializer)
