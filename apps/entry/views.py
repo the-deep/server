@@ -66,13 +66,10 @@ class EntrySummaryPaginationMixin(object):
             total_unique_authors=total_unique_org_type,
             total_sources=total_sources,
         )
-        return response.Response(OrderedDict([
-            ('count', self.paginator.count),
-            ('next', self.paginator.get_next_link()),
-            ('previous', self.paginator.get_previous_link()),
-            ('results', data),
-            ('summary', summary_data)
-        ]))
+        return response.Response({
+            **super().get_paginated_response(data).data,
+            'summary': summary_data
+        })
 
 
 class EntryViewSet(EntrySummaryPaginationMixin, viewsets.ModelViewSet):
