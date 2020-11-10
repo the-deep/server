@@ -757,6 +757,7 @@ class LeadCopyView(BaseCopyView):
         preview_images = lead.images.all()
         emm_triggers = lead.emm_triggers.all()
         emm_entities = lead.emm_entities.all()
+        authors = lead.authors.all()
 
         lead.pk = None
         try:
@@ -781,6 +782,7 @@ class LeadCopyView(BaseCopyView):
         # Clone Many to many Fields
         lead.assignee.add(user)  # Assign requesting user
         lead.emm_entities.set(emm_entities)
+        lead.authors.set(authors)
 
         # Clone Many to one Fields
         LeadPreviewImage.objects.bulk_create([
