@@ -730,6 +730,8 @@ class LeadTests(TestCase):
         lead1_title = 'Lead 1 2019--222-'
         lead1_text_extract = 'This is a test text extract'
         lead1_preview_file = 'invalid_test_file'
+        author = self.create(Organization, title='blablaone')
+        author2 = self.create(Organization, title='blablatwo')
         emm_keyword = 'emm1'
         emm_risk_factor = 'risk1'
         emm_count = 22
@@ -738,6 +740,7 @@ class LeadTests(TestCase):
         # Generate Leads
         lead1 = self.create(
             Lead, title=lead1_title, project=project1s, source_type=Lead.WEBSITE, url='http://example.com')
+        lead1.authors.set([author, author2])
         lead2 = self.create(Lead, project=project2s)
         lead3 = self.create(Lead, project=project3s)
         lead4 = self.create(Lead, project=project4s)
@@ -798,6 +801,8 @@ class LeadTests(TestCase):
         lead1_copy = Lead.objects.filter(title=lead1_title).exclude(pk=lead1.pk).first()
         emm_trigger = lead1_copy.emm_triggers.filter(emm_risk_factor=emm_risk_factor, emm_keyword=emm_keyword)[0]
         assert lead1_copy.pk != lead1.pk
+        assert lead1_copy.authors.count() == 2
+        assert sorted(lead1_copy.authors.values_list('id', flat=True)) == [author.id, author2.id]
         assert lead1_copy.leadpreview.text_extract == lead1_text_extract
         assert lead1_copy.images.all()[0].file == lead1_preview_file
         assert emm_trigger.count == emm_count
