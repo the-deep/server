@@ -172,6 +172,8 @@ class LeadSerializer(
     tabular_book = serializers.SerializerMethodField()
     emm_triggers = LeadEMMTriggerSerializer(many=True, required=False)
     emm_entities = EMMEntitySerializer(many=True, required=False)
+    # extra fields added from entryleadserializer
+    confidentiality_display = serializers.CharField(source='get_confidentiality_display', read_only=True)
 
     class Meta:
         model = Lead
