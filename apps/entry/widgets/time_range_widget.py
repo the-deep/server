@@ -1,3 +1,5 @@
+WIDGET_ID = 'timeRangeWidget'
+
 def parse_time(time_string):
     splits = time_string.split(':')
     h = int(splits[0])
@@ -41,12 +43,15 @@ def update_attribute(widget, data, widget_data):
 
         'export_data': {
             'data': {
-                'excel': {
+                'version': 1,
+                'common': {
                     'values': [from_time, to_time],
+                    'widget_id': WIDGET_ID,
+                    'widget_key': widget.key,
+                },
+                'excel': {
                 },
                 'report': {
-                    'widget_id': 'timeRangeWidget',
-                    'values': [from_time, to_time],
                 },
             },
         },
