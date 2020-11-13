@@ -5,7 +5,7 @@ from django.conf import settings
 from project.models import Project
 from user.models import User
 from lead.models import Lead
-from organization.models import Organization
+from organization.models import Organization, OrganizationType
 from analysis_framework.models import (
     AnalysisFramework, Widget, Filter
 )
@@ -625,16 +625,18 @@ class EntryTest(TestCase):
         )
 
     def test_list_entries_summary(self):
-        org1 = self.create(Organization)
-        org2 = self.create(Organization)
-        org3 = self.create(Organization)
-        org4 = self.create(Organization)
-        org5 = self.create(Organization)
+        org_type1 = self.create(OrganizationType)
+        org_type2 = self.create(OrganizationType)
+        org1 = self.create(Organization, organization_type=org_type1)
+        org2 = self.create(Organization, organization_type=org_type1)
+        org3 = self.create(Organization, organization_type=org_type2)
+        org4 = self.create(Organization, organization_type=org_type2)
+        org5 = self.create(Organization, organization_type=None)
 
         lead1 = self.create_lead(source=org1)
         lead1.authors.set([org1, org4])
         lead2 = self.create_lead(source=org3)
-        lead2.authors.set([org1, org2])
+        lead2.authors.set([org1, org2, org5])
         lead3 = self.create_lead(source=org3)
 
         entry1 = self.create_entry(lead=lead1)
@@ -654,10 +656,10 @@ class EntryTest(TestCase):
         self.assertEqual(summ['totalVerifiedEntries'], Entry.objects.filter(verified=True).count())
         self.assertEqual(summ['totalUnverifiedEntries'], Entry.objects.filter(verified=False).count())
         self.assertEqual(summ['totalLeads'], len([lead1, lead2]))
-        self.assertEqual(summ['totalUniqueAuthors'], len({org1.organization_type,
-                                                          org2.organization_type,
-                                                          org4.organization_type}))
         self.assertEqual(summ['totalSources'], len({org1, org3}))
+        print(summ['orgTypeCount'])
+        self.assertTrue({'org': {'id': org_type1.id, 'shortName': org_type1.short_name, 'title': org_type1.title}, 'count': 2} in summ['orgTypeCount'])
+        self.assertTrue({'org': {'id': org_type2.id, 'shortName': org_type2.short_name, 'title': org_type2.title}, 'count': 1} in summ['orgTypeCount'])
 
         url = '/api/v1/entries/?calculate_summary=1'
 
@@ -670,7 +672,6 @@ class EntryTest(TestCase):
         self.assertEqual(summ['totalVerifiedEntries'], Entry.objects.filter(verified=True).count())
         self.assertEqual(summ['totalUnverifiedEntries'], Entry.objects.filter(verified=False).count())
         self.assertEqual(summ['totalLeads'], len([lead1, lead2]))
-        self.assertEqual(summ['totalUniqueAuthors'], len({org1.organization_type,
-                                                          org2.organization_type,
-                                                          org4.organization_type}))
         self.assertEqual(summ['totalSources'], len({org1, org3}))
+        self.assertTrue({'org': {'id': org_type1.id, 'shortName': org_type1.short_name, 'title': org_type1.title}, 'count': 2} in summ['orgTypeCount'])
+        self.assertTrue({'org': {'id': org_type2.id, 'shortName': org_type2.short_name, 'title': org_type2.title}, 'count': 1} in summ['orgTypeCount'])
