@@ -18,12 +18,13 @@ from . import (
 
 
 widget_store = {
-    'dateWidget': date_widget,
-    'dateRangeWidget': date_range_widget,
-    'timeWidget': time_widget,
-    'timeRangeWidget': time_range_widget,
+    date_widget.WIDGET_ID: date_widget,
+    date_range_widget.WIDGET_ID: date_range_widget,
+    time_widget.WIDGET_ID: time_widget,
+    time_range_widget.WIDGET_ID: time_range_widget,
     'numberWidget': number_widget,
-    'scaleWidget': scale_widget,
+    scale_widget.WIDGET_ID: scale_widget,
+    # TODO: import the rest rather defining here
     'selectWidget': select_widget,
     'multiselectWidget': multiselect_widget,
     'geoWidget': geo_widget,

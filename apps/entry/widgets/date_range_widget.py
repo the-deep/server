@@ -2,6 +2,7 @@ from datetime import datetime
 
 
 ONE_DAY = 24 * 60 * 60
+WIDGET_ID = 'dateRangeWidget'
 
 
 def _get_date(widget, data, widget_data):
@@ -35,12 +36,15 @@ def update_attribute(widget, data, widget_data):
 
         'export_data': {
             'data': {
-                'excel': {
+                'version': 1,
+                'common': {
                     'values': [from_date, to_date],
+                    'widget_id': WIDGET_ID,
+                    'widget_key': widget.key,
+                },
+                'excel': {
                 },
                 'report': {
-                    'widget_id': 'dateRangeWidget',
-                    'values': [from_date, to_date],
                 }
             },
         },

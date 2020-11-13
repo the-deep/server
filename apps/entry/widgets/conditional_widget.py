@@ -52,10 +52,16 @@ def update_attribute(widget, data, widget_data):
         } for wfd in w_filter_data]
 
         if w_export_data:
-            excel_data.append(w_export_data.get('data', {}).get('excel'))
-            report_data = w_export_data.get('data', {})\
-                .get('report', {})
-            report_keys = report_data.get('keys') or []
+            excel_data.append({
+                **w_export_data.get('data', {}).get('common', {}),
+                **w_export_data.get('data', {}).get('excel', {}),
+            })
+            report_datum = {
+                **w_export_data.get('data', {}).get('common', {}),
+                **w_export_data.get('data', {}).get('report', {}),
+            }
+            report_keys += report_datum.get('keys') or []
+            report_data.append(report_datum)
         else:
             excel_data.append(None)
 
@@ -65,7 +71,7 @@ def update_attribute(widget, data, widget_data):
             'data': {
                 'excel': excel_data,
                 'report': {
-                    **report_data,
+                    'other': report_data,
                     'keys': report_keys,
                 },
                 # TODO: 'condition':

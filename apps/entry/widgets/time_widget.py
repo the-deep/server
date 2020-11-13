@@ -1,3 +1,5 @@
+WIDGET_ID = 'timeWidget'
+
 def parse_time(time_string):
     splits = time_string.split(':')
     h = int(splits[0])
@@ -24,12 +26,15 @@ def update_attribute(widget, data, widget_data):
 
         'export_data': {
             'data': {
+                'version': 1,
+                'common': {
+                    'value': time_str,
+                    'widget_id': WIDGET_ID,
+                    'widget_key': widget.key
+                },
                 'excel': {
-                    'value': time_str
                 },
                 'report': {
-                    'widget_id': 'timeWidget',
-                    'value': time_str,
                 },
             },
         },

@@ -20,7 +20,9 @@ from export.mime_types import (
     PDF_MIME_TYPE,
 )
 
+from analysis_framework.models import Widget
 from entry.models import Entry, ExportData, Attribute, EntryGroupLabel
+from entry.widgets import scale_widget, time_widget, date_widget, time_range_widget, date_range_widget
 from lead.models import Lead
 from utils.common import generate_filename
 from tabular.viz import renderer as viz_renderer
@@ -164,6 +166,7 @@ class ReportExporter:
         as described here: apps.entry.widgets.scale_widget._get_scale
         """
         if data.get('label', None) and data.get('color', None):
+            para.add_run(', ', bold=True)
             para.add_oval_shape(data.get('color'))
             para.add_run('{}'.format(data.get('label', '')), bold)
             return True
@@ -175,7 +178,7 @@ class ReportExporter:
         as described here: apps.entry.widgets.date_range_widget._get_date
         """
         if len(data.get('values', [])) == 2 and any(data.get('values', [])):
-            para.add_run('{} - {}'.format(data['values'][0] or "00-00-00", data['values'][1] or "00-00-00"), bold)
+            para.add_run(', {} - {}'.format(data['values'][0] or "00-00-00", data['values'][1] or "00-00-00"), bold)
             return True
 
     def _add_time_range_widget_data(self, para, data, bold=True):
@@ -185,7 +188,7 @@ class ReportExporter:
         as described here: apps.entry.widgets.time_range_widget._get_time
         """
         if len(data.get('values', [])) == 2 and any(data.get('values', [])):
-            para.add_run('{} - {}'.format(data['values'][0] or "~~:~~", data['values'][1] or "~~:~~"), bold)
+            para.add_run(', {} - {}'.format(data['values'][0] or "~~:~~", data['values'][1] or "~~:~~"), bold)
             return True
 
     def _add_date_or_time_widget_data(self, para, data, bold=True):
@@ -195,7 +198,7 @@ class ReportExporter:
         as described here: apps.entry.widgets.time_widget._get_time
         """
         if data.get('value', None):
-            para.add_run('{}'.format(data['value']), bold)
+            para.add_run(', {}'.format(data['value']), bold)
             return True
 
     def _add_widget_information_into_report(self, para, report, bold=True):
@@ -208,14 +211,16 @@ class ReportExporter:
         if not isinstance(report, dict):
             return
         if 'widget_id' in report:
-            if report.get('widget_id') == 'scaleWidget':
-                return self._add_scale_widget_data(para, report)
-            if report.get('widget_id') == 'dateRangeWidget':
-                return self._add_date_range_widget_data(para, report)
-            if report.get('widget_id') == 'timeRangeWidget':
-                return self._add_time_range_widget_data(para, report)
-            if report.get('widget_id') in ('timeWidget', 'dateWidget'):
-                return self._add_date_or_time_widget_data(para, report)
+            widget_id = report.get('widget_id') 
+            mapper = {
+                scale_widget.WIDGET_ID: self._add_scale_widget_data,
+                date_range_widget.WIDGET_ID: self._add_date_range_widget_data,
+                time_range_widget.WIDGET_ID: self._add_time_range_widget_data,
+                time_widget.WIDGET_ID: self._add_date_or_time_widget_data,
+                date_widget.WIDGET_ID: self._add_date_or_time_widget_data,
+            }
+            if widget_id in mapper.keys():
+                return mapper[widget_id](para, report, bold)
 
     def _generate_for_entry(self, entry):
         """
@@ -224,26 +229,39 @@ class ReportExporter:
 
         para = self.doc.add_paragraph().justify()
 
-        whens = [
-            When(exportable__widget_key=key, then=key_index)
-            for key_index, key in enumerate(self.exporting_widgets)
+        para.add_run('[', bold=True)
+        # Add lead-entry id
+        url = '{protocol}://{site}/projects/{project}/leads/{lead}/entries/edit/?entry_id={entry}'.format(
+            protocol=settings.HTTP_PROTOCOL,
+            site=settings.DEEPER_FRONTEND_HOST,
+            project=entry.lead.project.id,
+            lead=entry.lead.id,
+            entry=entry.id
+        )
+        # format of exporting_widgets = "[517,43,42,[405,"scalewidget-xe11vlcxs2gqdh1r","Scale"]]"
+        widget_keys = [
+            Widget.objects.get(id=each).key if not isinstance(each, list) else each[1]
+            for each in self.exporting_widgets
         ]
-        export_data = entry.exportdata_set. \
-            filter(exportable__widget_key__in=self.exporting_widgets). \
-            annotate(w_order=Case(*whens, output_field=IntegerField())). \
-            order_by('w_order').values_list('data', flat=True)
-        if export_data:
-            para.add_run('[', bold=True)
+        # para.add_hyperlink(url, f"{entry.lead.id}-{entry.id}")
+        para.add_run(f'{entry.lead.id}-{entry.id}', bold=True)
+        export_data = []
+        for each in entry.exportdata_set.all():
+            if 'other' in each.data.get('report', {}):
+                for rep in each.data['report'].get('other', []):
+                    if rep.get('widget_key') and rep['widget_key'] in widget_keys:
+                        export_data.append(rep)
+            else:
+                export_datum = {**each.data.get('common', {}),
+                                **each.data.get('report', {})}
+                if export_datum.get('widget_key') and export_datum['widget_key'] in widget_keys:
+                    export_data.append(export_datum)
 
-            for idx in range(len(export_data)-1):
-                data = export_data[idx]
-                if self._add_widget_information_into_report(para, {**data.get('common', {}),
-                                                                   **data.get('report', {})}):
-                    # separator
-                    para.add_run(' | ', bold=True)
-            self._add_widget_information_into_report(para, {**export_data.last().get('common', {}),
-                                                            **export_data.last().get('report', {})})
-            para.add_run('] ', bold=True)
+        export_data.sort(key=lambda x: widget_keys.index(x['widget_key']))
+        if export_data:
+            for data in export_data:
+                self._add_widget_information_into_report(para, data)
+        para.add_run('] ', bold=True)
 
         # Format is
         # excerpt (source) OR excerpt \n text from widgets \n (source)
@@ -306,8 +324,6 @@ class ReportExporter:
         )
         # Add source (with url if available)
         para.add_hyperlink(url, source) if url else para.add_run(source)
-        # Add lead-entry id
-        para.add_run(f", {lead.id}-{entry.id}")
         # Add (confidential) to source without ,
         lead.confidentiality == Lead.CONFIDENTIAL and para.add_run(' (confidential)')
         # Add lead title if available

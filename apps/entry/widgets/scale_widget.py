@@ -1,3 +1,5 @@
+WIDGET_ID = 'scaleWidget'
+
 def _get_scale(widget, data, widget_data):
     selected_scale = data.get('value')
     selected_scales = [selected_scale] if selected_scale is not None else []
@@ -28,11 +30,15 @@ def update_attribute(widget, data, widget_data):
 
         'export_data': {
             'data': {
+                'version': 1,
+                'common': {
+                    'widget_id': WIDGET_ID,
+                    'widget_key': widget.key,
+                },
                 'excel': {
                     'value': scale['label'],
                 },
                 'report': {
-                    'widget_id': scale['widget_id'],
                     'title': scale['title'],
                     'label': scale['label'],
                     'color': scale['color'],

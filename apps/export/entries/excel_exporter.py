@@ -431,7 +431,8 @@ class ExcelExporter:
                     data__excel__isnull=False,
                 ).first()
 
-                export_data = export_data and export_data.data.get('excel')
+                export_data = export_data and {**export_data.data.get('common', {}),
+                                               **export_data.data.get('excel', {})}
                 self.add_entries_from_excel_data(rows, data, export_data)
 
             rows.apply()
