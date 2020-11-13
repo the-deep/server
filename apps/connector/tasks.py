@@ -7,6 +7,9 @@ from django.utils import timezone
 from django.db import transaction
 from django.conf import settings
 
+from deep_serverless.models.base import AsyncJob
+from deep_serverless.models.source_extract import Source
+
 from utils.common import redis_lock
 
 from .serializers import SourceDataSerializer
@@ -44,7 +47,7 @@ class UnifiedConnectorTask():
         for processed_lead in processed_leads:
             connector_lead = ConnectorLead.objects.get(url=processed_lead['url'])
             connector_lead.status = (
-                ConnectorLead.Status.SUCCESS if processed_lead['status'] == 'success'
+                ConnectorLead.Status.SUCCESS if processed_lead['status'] == Source.Status.SUCCESS
                 else ConnectorLead.Status.FAILURE
             )
             connector_lead.save()
@@ -71,7 +74,6 @@ class UnifiedConnectorTask():
                 # Connector lead which needs to be processed
                 yield connector_lead.url
             if created or connector_lead.id not in current_unified_source_leads_id:
-                # TODO: Add in bulk
                 source.add_lead(connector_lead)
 
     @classmethod
@@ -138,7 +140,7 @@ def process_unified_connector(unified_connector_id):
     UnifiedConnectorTask.process_unified_connector(unified_connector_id)
 
 
-@shared_task(bind=True, max_retries=10)
+@shared_task(bind=True, max_retries=30)
 def pool_aws_lambda_source_extract(self, source_id, lambda_async_job_uuid):
     retry_count = pool_aws_lambda_source_extract.request.retries
     source = UnifiedConnectorSource.objects.get(pk=source_id)
@@ -149,16 +151,15 @@ def pool_aws_lambda_source_extract(self, source_id, lambda_async_job_uuid):
     })
 
     # body status are from deep-serverless
-    if status_code != 200 or response_body['status'] in ['error', 'failed']:
+    if status_code != 200 or response_body['status'] in [AsyncJob.Status.ERROR, AsyncJob.Status.FAILED]:
         if status_code != 200:
             logger.error(f'Failed to invoke {settings.DEEP_LAMBDA_SOURCE_EXTRACT}: {response_body}')
         source.status = UnifiedConnectorSource.Status.FAILURE
-    elif response_body['status'] == 'success':
+    elif response_body['status'] == AsyncJob.Status.SUCCESS:
         UnifiedConnectorTask.handle_source_extract_response(response_body['sources'])
         source.status = UnifiedConnectorSource.Status.SUCCESS
     else:
         source.status = UnifiedConnectorSource.Status.PROCESSING
-        # Retry again 1 min
-        self.retry(countdown=60 * retry_count)
+        self.retry(countdown=30)
     source.generate_stats(commit=False)
     source.save()

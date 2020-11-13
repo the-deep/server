@@ -73,7 +73,7 @@ git+https://github.com/davedash/django-fixture-magic.git@466fa35c075009e4a1974f6
 
 # document_deduplication
 langdetect==1.0.8
-deep-serverless==1.0.4
 pynamodb==4.3.2
 elasticsearch==7.8.1
 requests-aws4auth==1.0
+git+https://github.com/the-deep/serverless.git@feature/connect-integration#egg=deep-serverless&subdirectory=py-vendor

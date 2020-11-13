@@ -5,6 +5,12 @@ files:
     tag: uwsgi/error
   - path: /var/log/celery/celery.log
     tag: celery
+  - path: /var/log/celery/celery-default.log
+    tag: celery-default
+  - path: /var/log/celery/celery-heavy.log
+    tag: celery-heavy
+  - path: /var/log/celery/celery-cronjob.log
+    tag: celery-cronjob
   - path: /var/log/daphne/access.log
     tag: django-channel
   - path: /var/log/deep.log

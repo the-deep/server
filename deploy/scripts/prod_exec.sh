@@ -34,12 +34,33 @@ if [ "$EBS_ENV_TYPE" == "worker" ]; then
     cd $ROOT_DIR
 
     if [ "$WORKER_TYPE" == "celery" ]; then
-        echo '>> Starting Celery Worker'
         # Start celery
         mkdir -p /var/log/celery/
-        SENTRY_DSN= celery flower -A deep --basic_auth=${FLOWER_BASIC_AUTHS} --address=0.0.0.0 --port=80 &
-        celery -A deep -Q 'default,heavy,cronjob' worker -B --quiet -l info \
-            --logfile=/var/log/celery/celery.log \
+        CELERY_QUEUE_TYPE=${CELERY_QUEUE_TYPE:-default,heavy,cronjob}
+        CELERY_QUEUE_CONCURRENCY=${CELERY_QUEUE_CONCURRENCY:-8}
+        CELERY_LOG_FILE="celery.log"
+        # If there is cronjob in the queue list, can there needs to be celery beats
+        if [[ $CELERY_QUEUE_TYPE == *"cronjob"* ]]; then
+            CELERY_BEAT_ARG="-B"
+            CELERY_FLOWER_ENABLE="true"
+        fi
+        # If multiple queues aren't specified then specific log file is used (Better log tagging)
+        if ! [[ $CELERY_QUEUE_TYPE == *","* ]]; then
+            CELERY_LOG_FILE="celery-${CELERY_QUEUE_TYPE}.log"
+        fi
+
+        echo ">> Queue: $CELERY_QUEUE_TYPE"
+        echo ">> Log Destination: $CELERY_LOG_FILE"
+        echo ">> Concurrency: $CELERY_QUEUE_CONCURRENCY"
+        echo ">> Starting Celery Worker"
+
+        if [[ $CELERY_FLOWER_ENABLE == "true" ]]; then
+            SENTRY_DSN= celery flower -A deep --basic_auth=${FLOWER_BASIC_AUTHS} --address=0.0.0.0 --port=80 &
+        fi
+
+        celery -A deep -Q $CELERY_QUEUE_TYPE worker $CELERY_BEAT_ARG --quiet -l info \
+            --concurrency=$CELERY_QUEUE_CONCURRENCY \
+            --logfile=/var/log/celery/$CELERY_LOG_FILE \
             --scheduler django_celery_beat.schedulers:DatabaseScheduler
     elif [ "$WORKER_TYPE" == "channel" ]; then
         echo '>> Starting Django Channels'
