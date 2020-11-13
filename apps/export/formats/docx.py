@@ -141,8 +141,10 @@ class Paragraph:
     def __init__(self, ref):
         self.ref = ref
 
-    def add_run(self, text=None):
-        return Run(self.ref.add_run(xstr(text)))
+    def add_run(self, text=None, bold=False):
+        run = Run(self.ref.add_run(xstr(text)))
+        run.ref.bold = bold
+        return run
 
     def add_hyperlink(self, url, text):
         part = self.ref.part
