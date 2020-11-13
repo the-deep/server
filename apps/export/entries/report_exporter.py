@@ -1,9 +1,17 @@
-import json
 from datetime import datetime
+from subprocess import call
+import os
+import tempfile
+import logging
 
 from django.conf import settings
 from django.core.files.base import ContentFile, File
-from django.db.models import Case, When, Q
+from django.db.models import (
+    Case,
+    When,
+    Q,
+    IntegerField
+)
 from docx.shared import Inches
 
 from export.formats.docx import Document
@@ -17,12 +25,6 @@ from lead.models import Lead
 from utils.common import generate_filename
 from tabular.viz import renderer as viz_renderer
 from export.models import Export
-
-from subprocess import call
-import os
-import tempfile
-import logging
-
 
 logger = logging.getLogger(__name__)
 
@@ -153,7 +155,7 @@ class ReportExporter:
                     self.legend_paragraph.add_next_paragraph(para)
                 self.legend_paragraph.add_next_paragraph(title_para)
 
-    def _add_scale_widget_data(self, para, data):
+    def _add_scale_widget_data(self, para, data, bold=True):
         """
         report for scale widget expects following keys
             - title
@@ -163,36 +165,40 @@ class ReportExporter:
         """
         if data.get('label', None) and data.get('color', None):
             para.add_oval_shape(data.get('color'))
-            para.add_run(' {}'.format(data.get('label', '')))
+            para.add_run('{}'.format(data.get('label', '')), bold)
+            return True
 
-    def _add_date_range_widget_data(self, para, data):
+    def _add_date_range_widget_data(self, para, data, bold=True):
         """
         report for date range widget expects following
             - tuple (from, to)
         as described here: apps.entry.widgets.date_range_widget._get_date
         """
-        if any(data.get('values', [])):
-            para.add_run(' {} - {}', data.get['values'][0] or "00-00-00", data.get['values'][1] or "00-00-00")
+        if len(data.get('values', [])) == 2 and any(data.get('values', [])):
+            para.add_run('{} - {}'.format(data['values'][0] or "00-00-00", data['values'][1] or "00-00-00"), bold)
+            return True
 
-    def _add_time_range_widget_data(self, para, data):
+    def _add_time_range_widget_data(self, para, data, bold=True):
         """
         report for time range widget expects following
             - tuple (from, to)
         as described here: apps.entry.widgets.time_range_widget._get_time
         """
-        if any(data.get('values', [])):
-            para.add_run(' {} - {}', data.get['values'][0] or "~~:~~", data.get['values'][1] or "~~:~~")
+        if len(data.get('values', [])) == 2 and any(data.get('values', [])):
+            para.add_run('{} - {}'.format(data['values'][0] or "~~:~~", data['values'][1] or "~~:~~"), bold)
+            return True
 
-    def _add_date_or_time_widget_data(self, para, data):
+    def _add_date_or_time_widget_data(self, para, data, bold=True):
         """
         report for time widget expects following
             - string (=time)
         as described here: apps.entry.widgets.time_widget._get_time
         """
         if data.get('value', None):
-            para.add_run(' {}', data.get['value'])
+            para.add_run('{}'.format(data['value']), bold)
+            return True
 
-    def _add_widget_information_into_report(self, para, report):
+    def _add_widget_information_into_report(self, para, report, bold=True):
         """
         based on widget annotate information into report
 
@@ -203,20 +209,41 @@ class ReportExporter:
             return
         if 'widget_id' in report:
             if report.get('widget_id') == 'scaleWidget':
-                self._add_scale_widget_data(para, report)
-            elif report.get('widget_id') == 'dateRangeWidget':
-                self._add_date_range_widget_data(para, report)
-            elif report.get('widget_id') == 'timeRangeWidget':
-                self._add_time_range_widget_data(para, report)
-            elif report.get('widget_id') == 'timeWidget':
-                self._add_date_or_time_widget_data(para, report)
-            elif report.get('widget_id') == 'dateWidget':
-                self._add_date_or_time_widget_data(para, report)
+                return self._add_scale_widget_data(para, report)
+            if report.get('widget_id') == 'dateRangeWidget':
+                return self._add_date_range_widget_data(para, report)
+            if report.get('widget_id') == 'timeRangeWidget':
+                return self._add_time_range_widget_data(para, report)
+            if report.get('widget_id') in ('timeWidget', 'dateWidget'):
+                return self._add_date_or_time_widget_data(para, report)
 
     def _generate_for_entry(self, entry):
         """
         Generate paragraphs for an entry
         """
+
+        para = self.doc.add_paragraph().justify()
+
+        whens = [
+            When(exportable__widget_key=key, then=key_index)
+            for key_index, key in enumerate(self.exporting_widgets)
+        ]
+        export_data = entry.exportdata_set. \
+            filter(exportable__widget_key__in=self.exporting_widgets). \
+            annotate(w_order=Case(*whens, output_field=IntegerField())). \
+            order_by('w_order').values_list('data', flat=True)
+        if export_data:
+            para.add_run('[', bold=True)
+
+            for idx in range(len(export_data)-1):
+                data = export_data[idx]
+                if self._add_widget_information_into_report(para, {**data.get('common', {}),
+                                                                   **data.get('report', {})}):
+                    # separator
+                    para.add_run(' | ', bold=True)
+            self._add_widget_information_into_report(para, {**export_data.last().get('common', {}),
+                                                            **export_data.last().get('report', {})})
+            para.add_run('] ', bold=True)
 
         # Format is
         # excerpt (source) OR excerpt \n text from widgets \n (source)
@@ -227,7 +254,7 @@ class ReportExporter:
             entry.excerpt if entry.entry_type == Entry.EXCERPT
             else ''
         )
-        para = self.doc.add_paragraph(excerpt).justify()
+        para.add_run(excerpt)
 
         # Add texts from TextWidget
         widget_texts_exists = len(self.collected_widget_text.get(entry.id, [])) > 0
@@ -290,10 +317,7 @@ class ReportExporter:
         date and para.add_run(f", {date.strftime('%d/%m/%Y')}")
         # para.add_run(f", {'Verified' if entry.verified else 'Unverified'}")
         para.add_run(')')
-        para = self.doc.add_paragraph().justify()
-        # TODO: check the order here
-        for report in entry.exportdata_set.values_list('data__report', flat=True):
-            self._add_widget_information_into_report(para, report)
+        # para = self.doc.add_paragraph().justify()
 
         # Adding Entry Group Labels
         group_labels = self.entry_group_labels.get(entry.pk) or []
