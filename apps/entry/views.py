@@ -20,6 +20,7 @@ from django.utils import timezone
 from project.models import Project
 from lead.models import Lead
 from analysis_framework.models import Widget
+from organization.models import OrganizationType
 
 from .models import (
     Entry, Attribute, FilterData, ExportData, EntryComment,
@@ -53,17 +54,39 @@ import django_filters
 
 class EntrySummaryPaginationMixin(object):
     def get_paginated_response(self, data):
-        if not self.request.data.get('calculate_summary', self.request.GET.get('calculate_summary', '0')) == '1':
+        if not self.request.data.get('calculate_summary',
+                                     self.request.GET.get('calculate_summary', '0')) == '1':
             return super().get_paginated_response(data)
         qs = self.filter_queryset(self.get_queryset())
-        total_unique_org_type = qs.values('lead__authors__organization_type_id').annotate(count=models.Count('lead__authors__organization_type_id')).count()
+        q = qs.annotate(
+                org=models.functions.Coalesce('lead__authors__parent',
+                                              'lead__authors')) \
+            .values('org').annotate(
+                org_type=models.functions.Coalesce('lead__authors__parent__organization_type',
+                                                   'lead__authors__organization_type')) \
+            .values('org_type').order_by('org_type').annotate(
+            count=models.Count('org', distinct=True)
+        ).values('org_type', 'count')
+        q = {each['org_type']: each['count'] for each in q if each['org_type']}
+        org_types = OrganizationType.objects.filter(id__in=q.keys())
+        org_type_count = [
+            {
+                'org': {
+                    'id': org_type.id,
+                    'title': org_type.title,
+                    'shortName': org_type.short_name,
+                },
+                'count': q[org_type.id]
+            }
+            for org_type in org_types
+        ]
         total_sources = qs.values('lead__source_id').annotate(count=models.Count('lead__source_id')).count()
         total_leads = qs.values('lead_id').annotate(count=models.Count('lead_id')).count()
         summary_data = dict(
             total_verified_entries=qs.filter(verified=True).count(),
             total_unverified_entries=qs.filter(verified=False).count(),
             total_leads=total_leads,
-            total_unique_authors=total_unique_org_type,
+            org_type_count=org_type_count,
             total_sources=total_sources,
         )
         return response.Response({

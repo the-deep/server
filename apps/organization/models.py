@@ -4,6 +4,7 @@ from user_resource.models import UserResource
 
 class OrganizationType(models.Model):
     title = models.CharField(max_length=255, blank=True)
+    short_name = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField(blank=True)
     relief_web_id = models.IntegerField(unique=True, blank=True, null=True)
 
