@@ -187,6 +187,7 @@ class Lead(UserResource, ProjectEntityMixin):
                 d1.get('attachment_id') != d2.get('attachment_id')
             ):
                 copy_lead_data_from_dynamodb(self)
+        self.__initial = self.get_dict()
 
     @classmethod
     def get_for(cls, user):

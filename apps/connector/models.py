@@ -305,6 +305,7 @@ class UnifiedConnectorSource(models.Model):
             self.stats = {}
             self.status = UnifiedConnectorSource.Status.NOT_PROCESSED
         super().save(*args, **kwargs)
+        self.old_params = self.params
 
 
 class UnifiedConnectorSourceLead(models.Model):
