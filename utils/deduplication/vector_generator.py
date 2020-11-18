@@ -42,7 +42,9 @@ def create_count_vector(processed_text: str, trigrams: Dict[str, int]) -> List[i
 
 def normalize_count_vector(count_vector: List[int]) -> List[float]:
     total_count = sum(count_vector)
-    return [round(x / total_count, 5) for x in count_vector]
+    percent_vector = [round(x / total_count, 5) for x in count_vector]
+    magnitude = sum([x * x for x in percent_vector]) ** 0.5
+    return [x / magnitude for x in percent_vector]
 
 
 def create_trigram_vector(lang: str, text: str) -> List[float]:
