@@ -101,8 +101,7 @@ class EMMEntitySerializer(serializers.Serializer, RemoveNullFieldsMixin, Dynamic
         fields = '__all__'
 
 
-class SimpleLeadSerializer(RemoveNullFieldsMixin,
-                           serializers.ModelSerializer):
+class SimpleLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Lead
         fields = (
@@ -112,6 +111,22 @@ class SimpleLeadSerializer(RemoveNullFieldsMixin,
         )
         # Legacy Fields
         read_only_fields = ('author_raw', 'source_raw',)
+
+
+class DuplicateLeadDataSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
+    """
+    Lead serializer used for providing duplicate lead data.
+    """
+    attachment = SimpleFileSerializer(required=False, read_only=True)
+    created_by_details = SimpleUserSerializer(source='created_by', read_only=True)
+
+    class Meta:
+        model = Lead
+        fields = (
+            'id', 'title', 'created_at',
+            'created_by_details', 'attachment',
+        )
+        read_only_fields = fields
 
 
 class LeadEMMTriggerSerializer(serializers.ModelSerializer, RemoveNullFieldsMixin, DynamicFieldsMixin):
@@ -272,9 +287,12 @@ class LeadSerializer(
                 ]
             )
             if similar_leads.exists():
+                # TODO: DuplicateLeadDataSerializer is providing string numbers
                 raise serializers.ValidationError({
-                    'message': 'There are leads similar to this lead',
-                    'leads': SimpleLeadSerializer(similar_leads, many=True).data
+                    'non_field_errors': [{
+                        'message': 'There are leads similar to this lead',
+                        'leads': DuplicateLeadDataSerializer(similar_leads, many=True).data
+                    }],
                 })
 
         lead = super().create(validated_data)
