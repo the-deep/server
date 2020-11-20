@@ -32,6 +32,6 @@ widget_store = {
     'matrix1dWidget': matrix1d_widget,
     'matrix2dWidget': matrix2d_widget,
     'numberMatrixWidget': number_matrix_widget,
-    'conditionalWidget': conditional_widget,
+    conditional_widget.WIDGET_ID: conditional_widget,
     'textWidget': text_widget,
 }

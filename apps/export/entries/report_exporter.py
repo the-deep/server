@@ -31,6 +31,10 @@ from export.models import Export
 logger = logging.getLogger(__name__)
 
 
+class ExportDataVersionMismatch(Exception):
+    pass
+
+
 class ReportExporter:
     def __init__(self, exporting_widgets=None):
         self.doc = Document(
@@ -165,6 +169,9 @@ class ReportExporter:
             - color
         as described here: apps.entry.widgets.scale_widget._get_scale
         """
+        if data.get('version') != scale_widget.DATA_VERSION:
+            raise ExportDataVersionMismatch('Scale widget data is not upto date. '
+                                            'Please wait, it will be updated soon.')
         if data.get('label', None) and data.get('color', None):
             para.add_run(', ', bold=True)
             para.add_oval_shape(data.get('color'))
@@ -177,6 +184,9 @@ class ReportExporter:
             - tuple (from, to)
         as described here: apps.entry.widgets.date_range_widget._get_date
         """
+        if data.get('version') != date_range_widget.DATA_VERSION:
+            raise ExportDataVersionMismatch('Date Range widget data is not upto date. '
+                                            'Please wait, it will be updated soon.')
         if len(data.get('values', [])) == 2 and any(data.get('values', [])):
             para.add_run(', {} - {}'.format(data['values'][0] or "00-00-00", data['values'][1] or "00-00-00"), bold)
             return True
@@ -187,16 +197,35 @@ class ReportExporter:
             - tuple (from, to)
         as described here: apps.entry.widgets.time_range_widget._get_time
         """
+        if data.get('version') != time_range_widget.DATA_VERSION:
+            raise ExportDataVersionMismatch('Time Range widget data is not upto date. '
+                                            'Please wait, it will be updated soon.')
         if len(data.get('values', [])) == 2 and any(data.get('values', [])):
             para.add_run(', {} - {}'.format(data['values'][0] or "~~:~~", data['values'][1] or "~~:~~"), bold)
             return True
 
-    def _add_date_or_time_widget_data(self, para, data, bold=True):
+    def _add_time_widget_data(self, para, data, bold=True):
         """
         report for time widget expects following
             - string (=time)
         as described here: apps.entry.widgets.time_widget._get_time
         """
+        if data.get('version') != time_widget.DATA_VERSION:
+            raise ExportDataVersionMismatch('Time widget data is not upto date. '
+                                            'Please wait, it will be updated soon.')
+        if data.get('value', None):
+            para.add_run(', {}'.format(data['value']), bold)
+            return True
+
+    def _add_date_widget_data(self, para, data, bold=True):
+        """
+        report for date widget expects following
+            - string (=date)
+        as described here: apps.entry.widgets.date_widget
+        """
+        if data.get('version') != date_widget.DATA_VERSION:
+            raise ExportDataVersionMismatch('Date widget data is not upto date. '
+                                            'Please wait, it will be updated soon.')
         if data.get('value', None):
             para.add_run(', {}'.format(data['value']), bold)
             return True
@@ -216,8 +245,8 @@ class ReportExporter:
                 scale_widget.WIDGET_ID: self._add_scale_widget_data,
                 date_range_widget.WIDGET_ID: self._add_date_range_widget_data,
                 time_range_widget.WIDGET_ID: self._add_time_range_widget_data,
-                time_widget.WIDGET_ID: self._add_date_or_time_widget_data,
-                date_widget.WIDGET_ID: self._add_date_or_time_widget_data,
+                time_widget.WIDGET_ID: self._add_time_widget_data,
+                date_widget.WIDGET_ID: self._add_date_widget_data,
             }
             if widget_id in mapper.keys():
                 return mapper[widget_id](para, report, bold)

@@ -3,6 +3,9 @@ from datetime import datetime
 
 ONE_DAY = 24 * 60 * 60
 WIDGET_ID = 'dateWidget'
+# NOTE: Please update the data version when you update the data format
+# this is tallied against the version stored in the export json data
+DATA_VERSION = 1
 
 
 def _get_date(widget, data, widget_data):
@@ -10,6 +13,7 @@ def _get_date(widget, data, widget_data):
 
     date = value and datetime.strptime(value, '%Y-%m-%d')
     number = date and int(date.timestamp() / ONE_DAY)
+    # NOTE: Please update the data version when you update the data format
     return date and date.strftime('%d-%m-%Y'), number
 
 
@@ -17,17 +21,18 @@ def update_attribute(widget, data, widget_data):
     date, number = _get_date(widget, data, widget_data)
 
     return {
+        # NOTE: Please update the data version when you update the data format
         'filter_data': [{
             'number': number,
         }],
 
         'export_data': {
             'data': {
-                'version': 1,
                 'common': {
                     'value': date,
                     'widget_id': WIDGET_ID,
-                    'widget_key': widget.key
+                    'widget_key': widget.key,
+                    'version': DATA_VERSION,
                 },
                 'excel': {
                 },
