@@ -1,3 +1,6 @@
+WIDGET_ID = 'conditionalWidget'
+
+
 class Dummy:
     _conditional = True
 

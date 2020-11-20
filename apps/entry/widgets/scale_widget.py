@@ -1,4 +1,7 @@
 WIDGET_ID = 'scaleWidget'
+# NOTE: Please update the data version when you update the data format
+DATA_VERSION = 1
+
 
 def _get_scale(widget, data, widget_data):
     selected_scale = data.get('value')
@@ -11,6 +14,8 @@ def _get_scale(widget, data, widget_data):
     ), None)
     scale = scale or {}
     return {
+        # Note: Please change the DATA_VERSION when you change the data format
+
         # widget_id will be used to alter rendering in report
         'widget_id': getattr(widget, 'widget_id', ''),
         # widget related attributes
@@ -24,16 +29,17 @@ def update_attribute(widget, data, widget_data):
     scale, selected_scales = _get_scale(widget, data, widget_data)
 
     return {
+        # Note: Please change the DATA_VERSION when you change the data format
         'filter_data': [{
             'values': selected_scales,
         }],
 
         'export_data': {
             'data': {
-                'version': 1,
                 'common': {
                     'widget_id': WIDGET_ID,
                     'widget_key': widget.key,
+                    'version': DATA_VERSION,
                 },
                 'excel': {
                     'value': scale['label'],

@@ -3,6 +3,8 @@ from datetime import datetime
 
 ONE_DAY = 24 * 60 * 60
 WIDGET_ID = 'dateRangeWidget'
+# NOTE: Please update the data version when you update the data format
+DATA_VERSION = 1
 
 
 def _get_date(widget, data, widget_data):
@@ -16,6 +18,7 @@ def _get_date(widget, data, widget_data):
     from_number = from_date and int(from_date.timestamp() / ONE_DAY)
     to_number = to_date and int(to_date.timestamp() / ONE_DAY)
 
+    # NOTE: Please update the data version when you update the data format
     return (
         from_number,
         to_number,
@@ -29,6 +32,7 @@ def update_attribute(widget, data, widget_data):
     (from_number, to_number), (from_date, to_date) = _get_date(widget, data, widget_data)
 
     return {
+        # NOTE: Please update the data version when you update the data format
         'filter_data': [{
             'from_number': from_number,
             'to_number': to_number,
@@ -36,11 +40,11 @@ def update_attribute(widget, data, widget_data):
 
         'export_data': {
             'data': {
-                'version': 1,
                 'common': {
                     'values': [from_date, to_date],
                     'widget_id': WIDGET_ID,
                     'widget_key': widget.key,
+                    'version': DATA_VERSION,
                 },
                 'excel': {
                 },
