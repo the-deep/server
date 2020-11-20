@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from django.contrib.auth.models import User
 from django.db import models
 from rest_framework.decorators import action
@@ -18,6 +20,7 @@ from django.utils import timezone
 from project.models import Project
 from lead.models import Lead
 from analysis_framework.models import Widget
+from organization.models import OrganizationType
 
 from .models import (
     Entry, Attribute, FilterData, ExportData, EntryComment,
@@ -49,7 +52,50 @@ from tabular.models import Field as TabularField
 import django_filters
 
 
-class EntryViewSet(viewsets.ModelViewSet):
+class EntrySummaryPaginationMixin(object):
+    def get_paginated_response(self, data):
+        if not self.request.data.get('calculate_summary',
+                                     self.request.GET.get('calculate_summary', '0')) == '1':
+            return super().get_paginated_response(data)
+        qs = self.filter_queryset(self.get_queryset())
+        q = qs.annotate(
+                org=models.functions.Coalesce('lead__authors__parent',
+                                              'lead__authors')) \
+            .values('org').annotate(
+                org_type=models.functions.Coalesce('lead__authors__parent__organization_type',
+                                                   'lead__authors__organization_type')) \
+            .values('org_type').order_by('org_type').annotate(
+            count=models.Count('org', distinct=True)
+        ).values('org_type', 'count')
+        q = {each['org_type']: each['count'] for each in q if each['org_type']}
+        org_types = OrganizationType.objects.filter(id__in=q.keys())
+        org_type_count = [
+            {
+                'org': {
+                    'id': org_type.id,
+                    'title': org_type.title,
+                    'shortName': org_type.short_name,
+                },
+                'count': q[org_type.id]
+            }
+            for org_type in org_types
+        ]
+        total_sources = qs.values('lead__source_id').annotate(count=models.Count('lead__source_id')).count()
+        total_leads = qs.values('lead_id').annotate(count=models.Count('lead_id')).count()
+        summary_data = dict(
+            total_verified_entries=qs.filter(verified=True).count(),
+            total_unverified_entries=qs.filter(verified=False).count(),
+            total_leads=total_leads,
+            org_type_count=org_type_count,
+            total_sources=total_sources,
+        )
+        return response.Response({
+            **super().get_paginated_response(data).data,
+            'summary': summary_data
+        })
+
+
+class EntryViewSet(EntrySummaryPaginationMixin, viewsets.ModelViewSet):
     """
     Entry view set
     """
@@ -105,18 +151,18 @@ class EntryViewSet(viewsets.ModelViewSet):
         return response.Response(status=status.HTTP_200_OK)
 
 
-class EntryFilterView(generics.GenericAPIView):
+class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
     """
     Entry view for getting entries based filters in POST body
     """
     serializer_class = EntryRetriveProccesedSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request, version=None):
-        filters = request.data.get('filters', [])
+    def get_queryset(self):
+        filters = self.request.data.get('filters', [])
         filters = {f[0]: f[1] for f in filters}
 
-        queryset = get_filtered_entries(request.user, filters).prefetch_related(
+        queryset = get_filtered_entries(self.request.user, filters).prefetch_related(
             'lead', 'lead__attachment', 'lead__assignee',
         )
         queryset = Entry.annotate_comment_count(queryset)
@@ -145,7 +191,10 @@ class EntryFilterView(generics.GenericAPIView):
                 )
             )
 
-        queryset = EntryFilterSet(filters, queryset=queryset).qs
+        return EntryFilterSet(filters, queryset=queryset).qs
+
+    def post(self, request, version=None):
+        queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
 
         # Precalculate entry group label count (Used by EntrySerializer)

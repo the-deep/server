@@ -5,6 +5,7 @@ from django.conf import settings
 from project.models import Project
 from user.models import User
 from lead.models import Lead
+from organization.models import Organization, OrganizationType
 from analysis_framework.models import (
     AnalysisFramework, Widget, Filter
 )
@@ -589,12 +590,12 @@ class EntryTest(TestCase):
             role=self.admin_role
         )
 
-    def create_lead(self):
+    def create_lead(self, **fields):
         project = self.create_project()
-        return self.create(Lead, project=project)
+        return self.create(Lead, project=project, **fields)
 
     def create_entry(self, **fields):
-        lead = self.create_lead()
+        lead = fields.pop('lead', self.create_lead())
         return self.create(
             Entry, lead=lead, project=lead.project,
             analysis_framework=lead.project.analysis_framework,
@@ -622,3 +623,55 @@ class EntryTest(TestCase):
             }
             ),
         )
+
+    def test_list_entries_summary(self):
+        org_type1 = self.create(OrganizationType)
+        org_type2 = self.create(OrganizationType)
+        org1 = self.create(Organization, organization_type=org_type1)
+        org2 = self.create(Organization, organization_type=org_type1)
+        org3 = self.create(Organization, organization_type=org_type2)
+        org4 = self.create(Organization, organization_type=org_type2)
+        org5 = self.create(Organization, organization_type=None)
+
+        lead1 = self.create_lead(source=org1)
+        lead1.authors.set([org1, org4])
+        lead2 = self.create_lead(source=org3)
+        lead2.authors.set([org1, org2, org5])
+        lead3 = self.create_lead(source=org3)
+
+        entry1 = self.create_entry(lead=lead1)
+        entry2 = self.create_entry(lead=lead1)
+        entry3 = self.create_entry(lead=lead2)
+        entry4 = self.create_entry(lead=lead2)
+        entry5 = self.create_entry(lead=lead2)
+
+        url = '/api/v1/entries/filter/'
+
+        self.authenticate()
+        response = self.client.post(url, dict(calculate_summary='1'))
+        self.assert_200(response)
+        r_data = response.json()
+        self.assertIn('summary', r_data)
+        summ = r_data['summary']
+        self.assertEqual(summ['totalVerifiedEntries'], Entry.objects.filter(verified=True).count())
+        self.assertEqual(summ['totalUnverifiedEntries'], Entry.objects.filter(verified=False).count())
+        self.assertEqual(summ['totalLeads'], len([lead1, lead2]))
+        self.assertEqual(summ['totalSources'], len({org1, org3}))
+        print(summ['orgTypeCount'])
+        self.assertTrue({'org': {'id': org_type1.id, 'shortName': org_type1.short_name, 'title': org_type1.title}, 'count': 2} in summ['orgTypeCount'])
+        self.assertTrue({'org': {'id': org_type2.id, 'shortName': org_type2.short_name, 'title': org_type2.title}, 'count': 1} in summ['orgTypeCount'])
+
+        url = '/api/v1/entries/?calculate_summary=1'
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        r_data = response.json()
+        self.assertIn('summary', r_data)
+        summ = r_data['summary']
+        self.assertEqual(summ['totalVerifiedEntries'], Entry.objects.filter(verified=True).count())
+        self.assertEqual(summ['totalUnverifiedEntries'], Entry.objects.filter(verified=False).count())
+        self.assertEqual(summ['totalLeads'], len([lead1, lead2]))
+        self.assertEqual(summ['totalSources'], len({org1, org3}))
+        self.assertTrue({'org': {'id': org_type1.id, 'shortName': org_type1.short_name, 'title': org_type1.title}, 'count': 2} in summ['orgTypeCount'])
+        self.assertTrue({'org': {'id': org_type2.id, 'shortName': org_type2.short_name, 'title': org_type2.title}, 'count': 1} in summ['orgTypeCount'])
