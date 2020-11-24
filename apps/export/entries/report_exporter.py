@@ -29,7 +29,10 @@ from entry.widgets import (
     time_range_widget,
     date_range_widget,
     geo_widget,
+    select_widget,
 )
+from entry.widgets.store import widget_store
+
 from lead.models import Lead
 from utils.common import generate_filename
 from tabular.viz import renderer as viz_renderer
@@ -200,9 +203,6 @@ class ReportExporter:
             - color
         as described here: apps.entry.widgets.scale_widget._get_scale
         """
-        if data.get('version') != scale_widget.DATA_VERSION:
-            raise ExportDataVersionMismatch('Scale widget data is not upto date. '
-                                            'Please wait, it will be updated soon.')
         if data.get('label', None) and data.get('color', None):
             para.add_run(SEPARATOR, bold=True)
             para.add_oval_shape(data.get('color'))
@@ -215,9 +215,6 @@ class ReportExporter:
             - tuple (from, to)
         as described here: apps.entry.widgets.date_range_widget._get_date
         """
-        if data.get('version') != date_range_widget.DATA_VERSION:
-            raise ExportDataVersionMismatch('Date Range widget data is not upto date. '
-                                            'Please wait, it will be updated soon.')
         if len(data.get('values', [])) == 2 and any(data.get('values', [])):
             para.add_run('{}{} - {}'.format(SEPARATOR, data['values'][0] or "00-00-00", data['values'][1] or "00-00-00"), bold)
             return True
@@ -228,22 +225,11 @@ class ReportExporter:
             - tuple (from, to)
         as described here: apps.entry.widgets.time_range_widget._get_time
         """
-        if data.get('version') != time_range_widget.DATA_VERSION:
-            raise ExportDataVersionMismatch('Time Range widget data is not upto date. '
-                                            'Please wait, it will be updated soon.')
         if len(data.get('values', [])) == 2 and any(data.get('values', [])):
             para.add_run('{}{} - {}'.format(SEPARATOR, data['values'][0] or "~~:~~", data['values'][1] or "~~:~~"), bold)
             return True
 
     def _add_time_widget_data(self, para, data, bold=True):
-        """
-        report for time widget expects following
-            - string (=time)
-        as described here: apps.entry.widgets.time_widget._get_time
-        """
-        if data.get('version') != time_widget.DATA_VERSION:
-            raise ExportDataVersionMismatch('Time widget data is not upto date. '
-                                            'Please wait, it will be updated soon.')
         if data.get('value', None):
             para.add_run('{}{}'.format(SEPARATOR, ['value']), bold)
             return True
@@ -254,11 +240,14 @@ class ReportExporter:
             - string (=date)
         as described here: apps.entry.widgets.date_widget
         """
-        if data.get('version') != date_widget.DATA_VERSION:
-            raise ExportDataVersionMismatch('Date widget data is not upto date. '
-                                            'Please wait, it will be updated soon.')
         if data.get('value', None):
             para.add_run('{}{}'.format(SEPARATOR, data['value']), bold)
+            return True
+
+    def _add_select_widget_data(self, para, data, bold=True):
+        if data.get('type') == 'list' and data.get('value', []):
+            values = data.get('value', [])
+            para.add_run(f'{SEPARATOR}{", ".join(values)}', bold)
             return True
 
     def _add_geo_widget_data(self, para, data, bold=True):
@@ -323,8 +312,12 @@ class ReportExporter:
                 time_widget.WIDGET_ID: self._add_time_widget_data,
                 date_widget.WIDGET_ID: self._add_date_widget_data,
                 geo_widget.WIDGET_ID: self._add_geo_widget_data,
+                select_widget.WIDGET_ID: self._add_select_widget_data,
             }
             if widget_id in mapper.keys():
+                if report.get('version') != widget_store[widget_id].DATA_VERSION:
+                    raise ExportDataVersionMismatch(f'{widget_id} widget data is not upto date. '
+                                                    'Please wait, it will be updated soon.')
                 return mapper[widget_id](para, report, bold)
 
     def _generate_for_entry(self, entry):
