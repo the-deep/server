@@ -37,6 +37,8 @@ from export.models import Export
 
 logger = logging.getLogger(__name__)
 
+SEPARATOR = '; '
+
 
 class ExportDataVersionMismatch(Exception):
     pass
@@ -202,7 +204,7 @@ class ReportExporter:
             raise ExportDataVersionMismatch('Scale widget data is not upto date. '
                                             'Please wait, it will be updated soon.')
         if data.get('label', None) and data.get('color', None):
-            para.add_run(', ', bold=True)
+            para.add_run(SEPARATOR, bold=True)
             para.add_oval_shape(data.get('color'))
             para.add_run('{}'.format(data.get('label', '')), bold)
             return True
@@ -217,7 +219,7 @@ class ReportExporter:
             raise ExportDataVersionMismatch('Date Range widget data is not upto date. '
                                             'Please wait, it will be updated soon.')
         if len(data.get('values', [])) == 2 and any(data.get('values', [])):
-            para.add_run(', {} - {}'.format(data['values'][0] or "00-00-00", data['values'][1] or "00-00-00"), bold)
+            para.add_run('{}{} - {}'.format(SEPARATOR, data['values'][0] or "00-00-00", data['values'][1] or "00-00-00"), bold)
             return True
 
     def _add_time_range_widget_data(self, para, data, bold=True):
@@ -230,7 +232,7 @@ class ReportExporter:
             raise ExportDataVersionMismatch('Time Range widget data is not upto date. '
                                             'Please wait, it will be updated soon.')
         if len(data.get('values', [])) == 2 and any(data.get('values', [])):
-            para.add_run(', {} - {}'.format(data['values'][0] or "~~:~~", data['values'][1] or "~~:~~"), bold)
+            para.add_run('{}{} - {}'.format(SEPARATOR, data['values'][0] or "~~:~~", data['values'][1] or "~~:~~"), bold)
             return True
 
     def _add_time_widget_data(self, para, data, bold=True):
@@ -243,7 +245,7 @@ class ReportExporter:
             raise ExportDataVersionMismatch('Time widget data is not upto date. '
                                             'Please wait, it will be updated soon.')
         if data.get('value', None):
-            para.add_run(', {}'.format(data['value']), bold)
+            para.add_run('{}{}'.format(SEPARATOR, ['value']), bold)
             return True
 
     def _add_date_widget_data(self, para, data, bold=True):
@@ -256,7 +258,7 @@ class ReportExporter:
             raise ExportDataVersionMismatch('Date widget data is not upto date. '
                                             'Please wait, it will be updated soon.')
         if data.get('value', None):
-            para.add_run(', {}'.format(data['value']), bold)
+            para.add_run('{}{}'.format(SEPARATOR, data['value']), bold)
             return True
 
     def _add_geo_widget_data(self, para, data, bold=True):
@@ -300,7 +302,7 @@ class ReportExporter:
                                 break
 
         if render_values:
-            para.add_run(f", {', '.join(set(render_values))}", bold)
+            para.add_run(f"{SEPARATOR}{', '.join(set(render_values))}", bold)
             return True
 
     def _add_widget_information_into_report(self, para, report, bold=True):
