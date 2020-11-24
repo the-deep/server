@@ -30,6 +30,7 @@ from entry.widgets import (
     date_range_widget,
     geo_widget,
     select_widget,
+    multiselect_widget
 )
 from entry.widgets.store import widget_store
 
@@ -67,7 +68,7 @@ class ReportExporter:
         self.exportables = exportables
 
         geo_data_required = Widget.objects.filter(
-            id__in=self.exporting_widgets,
+            id__in=[each[0] if type(each) in (list, tuple) else each for each in self.exporting_widgets],
             widget_id=geo_widget.WIDGET_ID
         ).exists()
         # Load geo data if required
@@ -250,6 +251,12 @@ class ReportExporter:
             para.add_run(f'{SEPARATOR}{", ".join(values)}', bold)
             return True
 
+    def _add_multi_select_widget_data(self, para, data, bold=True):
+        if data.get('type') == 'list' and data.get('value', []):
+            values = data.get('value', [])
+            para.add_run(f'{SEPARATOR}{", ".join(values)}', bold)
+            return True
+
     def _add_geo_widget_data(self, para, data, bold=True):
         # XXX: Cache this value.
         # Right now everything needs to be loaded so doing this at entry save can take lot of memory
@@ -313,6 +320,7 @@ class ReportExporter:
                 date_widget.WIDGET_ID: self._add_date_widget_data,
                 geo_widget.WIDGET_ID: self._add_geo_widget_data,
                 select_widget.WIDGET_ID: self._add_select_widget_data,
+                multiselect_widget.WIDGET_ID: self._add_multi_select_widget_data,
             }
             if widget_id in mapper.keys():
                 if report.get('version') != widget_store[widget_id].DATA_VERSION:

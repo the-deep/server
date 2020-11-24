@@ -26,8 +26,8 @@ widget_store = {
     scale_widget.WIDGET_ID: scale_widget,
     geo_widget.WIDGET_ID: geo_widget,
     # TODO: import the rest rather defining here
-    'selectWidget': select_widget,
-    'multiselectWidget': multiselect_widget,
+    select_widget.WIDGET_ID: select_widget,
+    multiselect_widget.WIDGET_ID: multiselect_widget,
     'organigramWidget': organigram_widget,
     'matrix1dWidget': matrix1d_widget,
     'matrix2dWidget': matrix2d_widget,

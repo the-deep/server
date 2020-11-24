@@ -65,8 +65,8 @@ class Command(BaseCommand):
             widget = options['widget']
             for attr in qs.filter(widget__widget_id=widget):
                 update_entry_attribute(attr)
-            for attr in qs.filter(widget__widget_id=condtional_widget.WIDGET_ID):
-                if widget_name in [each['widget']['widget_id'] for each in attr.widget.properties['data']['widgets']]:
+            for attr in qs.filter(widget__widget_id=conditional_widget.WIDGET_ID):
+                if widget in [each['widget']['widget_id'] for each in attr.widget.properties['data']['widgets']]:
                     update_entry_attribute(attr)
         else:
             for attr in qs:
