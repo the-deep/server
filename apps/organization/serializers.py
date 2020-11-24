@@ -64,7 +64,9 @@ class ArySourceOrganizationSerializer(DynamicFieldsMixin, UserResourceSerializer
     logo = URLCachedFileField(source='logo.file', allow_null=True)
     key = serializers.IntegerField(source='pk')
     label = serializers.CharField(source='title')
+    merged_as = MergedAsOrganizationSerializer(source='parent', read_only=True)
 
     class Meta:
         model = Organization
-        fields = ('key', 'label', 'long_name', 'short_name', 'logo', 'organization_type')
+        fields = ('key', 'label', 'long_name',
+                  'short_name', 'logo', 'organization_type', 'merged_as')
