@@ -55,7 +55,7 @@ def export_entries(export):
         show_groups = filters.get('show_groups')
         pdf = export.filters.get('pdf', False)
         export_data = ReportExporter(exporting_widgets=exporting_widgets)\
-            .load_exportables(exportables)\
+            .load_exportables(exportables, regions)\
             .load_levels(report_levels)\
             .load_structure(report_structure)\
             .load_group_lables(queryset, show_groups)\

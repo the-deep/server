@@ -24,10 +24,10 @@ widget_store = {
     time_range_widget.WIDGET_ID: time_range_widget,
     'numberWidget': number_widget,
     scale_widget.WIDGET_ID: scale_widget,
+    geo_widget.WIDGET_ID: geo_widget,
     # TODO: import the rest rather defining here
     'selectWidget': select_widget,
     'multiselectWidget': multiselect_widget,
-    'geoWidget': geo_widget,
     'organigramWidget': organigram_widget,
     'matrix1dWidget': matrix1d_widget,
     'matrix2dWidget': matrix2d_widget,

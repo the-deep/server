@@ -1,5 +1,8 @@
 from utils.common import is_valid_number
 
+WIDGET_ID = 'geoWidget'
+DATA_VERSION = 1
+
 
 def _get_geoareas_from_polygon(geo_value):
     try:
@@ -50,8 +53,13 @@ def update_attribute(widget, data, widget_data):
 
         'export_data': {
             'data': {
-                'excel': {
+                'common': {
+                    'widget_id': WIDGET_ID,
+                    'widget_key': widget.key,
+                    'version': DATA_VERSION,
                     'values': values,  # GEOAREA IDs
+                },
+                'excel': {
                     'polygons': polygons,  # Polygons
                 },
             }
