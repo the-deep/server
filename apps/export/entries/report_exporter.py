@@ -1,8 +1,8 @@
-from datetime import datetime
-from subprocess import call
 import os
 import tempfile
 import logging
+from datetime import datetime
+from subprocess import call
 
 from django.conf import settings
 from django.core.files.base import ContentFile, File
@@ -22,7 +22,14 @@ from export.mime_types import (
 
 from analysis_framework.models import Widget
 from entry.models import Entry, ExportData, Attribute, EntryGroupLabel
-from entry.widgets import scale_widget, time_widget, date_widget, time_range_widget, date_range_widget
+from entry.widgets import (
+    scale_widget,
+    time_widget,
+    date_widget,
+    time_range_widget,
+    date_range_widget,
+    geo_widget,
+)
 from lead.models import Lead
 from utils.common import generate_filename
 from tabular.viz import renderer as viz_renderer
@@ -43,13 +50,35 @@ class ReportExporter:
         self.lead_ids = []
         # ordered list of widget ids
         self.exporting_widgets = exporting_widgets or []
+        self.region_data = {}
+        # XXX: Limit memory usage? (Or use redis?)
+        self.geoarea_data_cache = {}
 
-    def load_exportables(self, exportables):
+    def load_exportables(self, exportables, regions):
         exportables = exportables.filter(
             data__report__levels__isnull=False,
         )
 
         self.exportables = exportables
+
+        geo_data_required = Widget.objects.filter(
+            id__in=self.exporting_widgets,
+            widget_id=geo_widget.WIDGET_ID
+        ).exists()
+        # Load geo data if required
+        if geo_data_required:
+            self.region_data = {}
+            for region in regions:
+                # Collect geo area names for each admin level
+                self.region_data[region.id] = [
+                    {
+                        'id': admin_level.id,
+                        'level': admin_level.level,
+                        'geo_area_titles': admin_level.get_geo_area_titles(),
+                    }
+                    for admin_level in region.adminlevel_set.all()
+                ]
+
         return self
 
     def load_levels(self, levels):
@@ -230,6 +259,50 @@ class ReportExporter:
             para.add_run(', {}'.format(data['value']), bold)
             return True
 
+    def _add_geo_widget_data(self, para, data, bold=True):
+        # XXX: Cache this value.
+        # Right now everything needs to be loaded so doing this at entry save can take lot of memory
+        render_values = []
+        geo_id_values = [str(v) for v in data.get('values') or []]
+
+        if len(geo_id_values) == 0:
+            return
+
+        for region_id, admin_levels in self.region_data.items():
+            for admin_level in admin_levels:
+                geo_area_titles = admin_level['geo_area_titles']
+                for geo_id in geo_id_values:
+                    if geo_id not in geo_area_titles:
+                        continue
+                    if geo_id in self.geoarea_data_cache:
+                        title = self.geoarea_data_cache[geo_id]
+                        title and render_values.append(title)
+                        continue
+                    self.geoarea_data_cache[geo_id] = None
+
+                    title = geo_area_titles[geo_id].get('title')
+                    parent_id = geo_area_titles[geo_id].get('parent_id')
+                    if admin_level['level'] == 1:
+                        title and render_values.append(title)
+                        self.geoarea_data_cache[geo_id] = title
+                        continue
+
+                    # Try to look through parent
+                    for _level in range(0, admin_level['level'] - 1)[::-1]:
+                        if parent_id:
+                            _geo_area_titles = admin_levels[_level]['geo_area_titles']
+                            _geo_area = _geo_area_titles.get(parent_id) or {}
+                            _title = _geo_area.get('title')
+                            parent_id = _geo_area.get('parent_id')
+                            if _level == 1:
+                                _title and render_values.append(_title)
+                                self.geoarea_data_cache[geo_id] = title
+                                break
+
+        if render_values:
+            para.add_run(f", {', '.join(set(render_values))}", bold)
+            return True
+
     def _add_widget_information_into_report(self, para, report, bold=True):
         """
         based on widget annotate information into report
@@ -240,13 +313,14 @@ class ReportExporter:
         if not isinstance(report, dict):
             return
         if 'widget_id' in report:
-            widget_id = report.get('widget_id') 
+            widget_id = report.get('widget_id')
             mapper = {
                 scale_widget.WIDGET_ID: self._add_scale_widget_data,
                 date_range_widget.WIDGET_ID: self._add_date_range_widget_data,
                 time_range_widget.WIDGET_ID: self._add_time_range_widget_data,
                 time_widget.WIDGET_ID: self._add_time_widget_data,
                 date_widget.WIDGET_ID: self._add_date_widget_data,
+                geo_widget.WIDGET_ID: self._add_geo_widget_data,
             }
             if widget_id in mapper.keys():
                 return mapper[widget_id](para, report, bold)
