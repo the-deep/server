@@ -241,6 +241,9 @@ def get_filtered_entries(user, queries):
         query_gt = queries.get(
             filter.key + '__gt'
         )
+        query_and = queries.get(
+            filter.key + '__and'
+        )
 
         if filter.filter_type == Filter.NUMBER:
             if query:
@@ -287,15 +290,25 @@ def get_filtered_entries(user, queries):
                 )
                 entries = entries.filter(q, filterdata__filter=filter)
 
-        elif filter.filter_type == Filter.LIST and query:
+        elif filter.filter_type == Filter.LIST:
+            # query and query_and are mutual exclusive and query_and has higher priority
+            query = query_and or query
             if not isinstance(query, list):
                 query = query.split(',')
 
             if len(query) > 0:
-                entries = entries.filter(
-                    filterdata__filter=filter,
-                    filterdata__values__overlap=query,
-                )
+                # Use contains (AND) filter if query_and was defined
+                if query_and:
+                    entries = entries.filter(
+                        filterdata__filter=filter,
+                        filterdata__values__contains=query,
+                    )
+                # Use overlap (OR) filter if query is only defined
+                elif query:
+                    entries = entries.filter(
+                        filterdata__filter=filter,
+                        filterdata__values__overlap=query,
+                    )
 
     return entries.order_by('-lead__created_by', 'lead', 'created_by')
 
