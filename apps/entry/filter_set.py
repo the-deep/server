@@ -293,10 +293,10 @@ def get_filtered_entries(user, queries):
         elif filter.filter_type == Filter.LIST:
             # query and query_and are mutual exclusive and query_and has higher priority
             query = query_and or query
-            if not isinstance(query, list):
+            if query and not isinstance(query, list):
                 query = query.split(',')
 
-            if len(query) > 0:
+            if query and len(query) > 0:
                 # Use contains (AND) filter if query_and was defined
                 if query_and:
                     entries = entries.filter(
