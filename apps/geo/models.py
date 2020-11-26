@@ -165,6 +165,11 @@ class AdminLevel(models.Model):
     class Meta:
         ordering = ['level']
 
+    def get_geo_area_titles(self):
+        if not self.geo_area_titles:
+            self.calc_cache()
+        return self.geo_area_titles
+
     def calc_cache(self, save=True):
         # GeoJSON
         geojson = json.loads(serialize(

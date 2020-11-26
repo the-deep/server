@@ -1,3 +1,8 @@
+WIDGET_ID = 'selectWidget'
+# NOTE: Please update the data version when you update the data format
+DATA_VERSION = 1
+
+
 def _get_label_list(widget, data, widget_data):
     values = data.get('value')
     values = [values] if values is not None else []
@@ -25,9 +30,14 @@ def update_attribute(widget, data, widget_data):
 
         'export_data': {
             'data': {
-                'excel': {
+                'common': {
+                    'widget_id': WIDGET_ID,
+                    'widget_key': widget.key,
+                    'version': DATA_VERSION,
                     'type': 'list',
                     'value': label_list,
+                },
+                'excel': {
                 },
             },
         },

@@ -1,8 +1,11 @@
+import os
+
 from entry.models import Attribute
 from gallery.models import File
 from django.urls import reverse
 from utils.image import decode_base64_if_possible
 
+from .widgets import conditional_widget
 from .widgets.utils import set_filter_data, set_export_data
 from .widgets.store import widget_store
 

@@ -1,3 +1,7 @@
+WIDGET_ID = 'numberMatrixWidget'
+DATA_VERSION = 1
+
+
 def update_attribute(widget, _data, widget_data):
     data = (_data or {}).get('value') or {}
     row_headers = widget_data.get('row_headers', [])
@@ -23,6 +27,11 @@ def update_attribute(widget, _data, widget_data):
         'filter_data': [],
         'export_data': {
             'data': {
+                'common': {
+                    'widget_id': WIDGET_ID,
+                    'widget_key': widget.key,
+                    'version': DATA_VERSION,
+                },
                 'excel': {
                     'values': excel_values,
                 },
