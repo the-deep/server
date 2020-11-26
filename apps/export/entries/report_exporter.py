@@ -41,7 +41,8 @@ from export.models import Export
 
 logger = logging.getLogger(__name__)
 
-SEPARATOR = '; '
+SEPARATOR = ', '
+INTERNAL_SEPARATOR = '; '
 
 
 class ExportDataVersionMismatch(Exception):
@@ -232,7 +233,7 @@ class ReportExporter:
 
     def _add_time_widget_data(self, para, data, bold=True):
         if data.get('value', None):
-            para.add_run('{}{}'.format(SEPARATOR, ['value']), bold)
+            para.add_run('{}{}'.format(SEPARATOR, data['value']), bold)
             return True
 
     def _add_date_widget_data(self, para, data, bold=True):
@@ -248,13 +249,13 @@ class ReportExporter:
     def _add_select_widget_data(self, para, data, bold=True):
         if data.get('type') == 'list' and data.get('value', []):
             values = data.get('value', [])
-            para.add_run(f'{SEPARATOR}{", ".join(values)}', bold)
+            para.add_run(f'{SEPARATOR}{INTERNAL_SEPARATOR.join(values)}', bold)
             return True
 
     def _add_multi_select_widget_data(self, para, data, bold=True):
         if data.get('type') == 'list' and data.get('value', []):
             values = data.get('value', [])
-            para.add_run(f'{SEPARATOR}{", ".join(values)}', bold)
+            para.add_run(f'{SEPARATOR}{INTERNAL_SEPARATOR.join(values)}', bold)
             return True
 
     def _add_geo_widget_data(self, para, data, bold=True):
@@ -298,7 +299,7 @@ class ReportExporter:
                                 break
 
         if render_values:
-            para.add_run(f"{SEPARATOR}{', '.join(set(render_values))}", bold)
+            para.add_run(f"{SEPARATOR}{INTERNAL_SEPARATOR.join(set(render_values))}", bold)
             return True
 
     def _add_widget_information_into_report(self, para, report, bold=True):
@@ -325,7 +326,7 @@ class ReportExporter:
             if widget_id in mapper.keys():
                 if report.get('version') != widget_store[widget_id].DATA_VERSION:
                     raise ExportDataVersionMismatch(f'{widget_id} widget data is not upto date. '
-                                                    'Please wait, it will be updated soon.')
+                                                    f'\nExport data being exported: {report}\n')
                 return mapper[widget_id](para, report, bold)
 
     def _generate_for_entry(self, entry):
@@ -337,20 +338,16 @@ class ReportExporter:
 
         para.add_run('[', bold=True)
         # Add lead-entry id
-        url = '{protocol}://{site}/projects/{project}/leads/{lead}/entries/edit/?entry_id={entry}'.format(
-            protocol=settings.HTTP_PROTOCOL,
-            site=settings.DEEPER_FRONTEND_HOST,
-            project=entry.lead.project.id,
-            lead=entry.lead.id,
-            entry=entry.id
-        )
+        url = f'{settings.HTTP_PROTOCOL}://{settings.DEEPER_FRONTEND_HOST}/permalink/projects/{entry.lead.project.id}' \
+              f'/leads/{entry.lead.id}/entries/{entry.id}/'
+
         # format of exporting_widgets = "[517,43,42,[405,"scalewidget-xe11vlcxs2gqdh1r","Scale"]]"
         widget_keys = [
             Widget.objects.get(id=each).key if not isinstance(each, list) else each[1]
             for each in self.exporting_widgets
         ]
-        # para.add_hyperlink(url, f"{entry.lead.id}-{entry.id}")
-        para.add_run(f'{entry.lead.id}-{entry.id}', bold=True)
+        para.add_hyperlink(url, f"{entry.lead.id}-{entry.id}")
+        # para.add_run(f'{entry.lead.id}-{entry.id}', bold=True)
         export_data = []
         for each in entry.exportdata_set.all():
             if 'other' in each.data.get('report', {}):
@@ -366,7 +363,11 @@ class ReportExporter:
         export_data.sort(key=lambda x: widget_keys.index(x['widget_key']))
         if export_data:
             for data in export_data:
-                self._add_widget_information_into_report(para, data)
+                try:
+                    self._add_widget_information_into_report(para, data)
+                except ExportDataVersionMismatch as e:
+                    print(f'For entry {entry.id}, project {entry.project.id}')
+                    raise e
         para.add_run('] ', bold=True)
 
         # Format is

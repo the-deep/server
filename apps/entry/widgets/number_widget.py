@@ -1,3 +1,7 @@
+WIDGET_ID = 'numberWidget'
+DATA_VERSION = 1
+
+
 def _get_number(widget, data, widget_data):
     value = data.get('value')
     return value and str(value), value
@@ -5,6 +9,7 @@ def _get_number(widget, data, widget_data):
 
 def update_attribute(*args):
     str_value, value = _get_number(*args)
+    widget = args[0]
 
     return {
         'filter_data': [{
@@ -13,6 +18,11 @@ def update_attribute(*args):
 
         'export_data': {
             'data': {
+                'common': {
+                    'widget_id': WIDGET_ID,
+                    'widget_key': widget.key,
+                    'version': DATA_VERSION,
+                },
                 'excel': {
                     'value': str_value,
                 },

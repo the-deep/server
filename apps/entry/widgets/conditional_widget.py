@@ -20,8 +20,10 @@ def update_attribute(widget, data, widget_data):
     excel_data = []
     report_data = []
     report_keys = []
+    common_data = {}
     for w in widgets:
         widget_module = widget_store.get(w.get('widget_id'))
+        common_data[getattr(widget_module, 'WIDGET_ID')] = getattr(widget_module, 'DATA_VERSION', None)
         if not widget_module:
             continue
 
@@ -77,6 +79,7 @@ def update_attribute(widget, data, widget_data):
                     'other': report_data,
                     'keys': report_keys,
                 },
+                'common': common_data
                 # TODO: 'condition':
             },
         },
