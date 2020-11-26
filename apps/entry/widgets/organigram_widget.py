@@ -1,3 +1,7 @@
+WIDGET_ID = 'organigramWidget'
+DATA_VERSION = 1
+
+
 def _get_parent_nodes(node_mapping, node_key):
     node = node_mapping[node_key]
     parent_node_key = node.get('parent_node')
@@ -77,6 +81,11 @@ def update_attribute(widget, data, widget_data):
 
         'export_data': {
             'data': {
+                'common': {
+                    'widget_id': WIDGET_ID,
+                    'widget_key': widget.key,
+                    'version': DATA_VERSION,
+                },
                 'excel': {
                     'type': 'lists',
                     'values': selected_nodes_with_parents,

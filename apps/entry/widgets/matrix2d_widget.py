@@ -1,3 +1,7 @@
+WIDGET_ID = 'matrix2dWidget'
+DATA_VERSION = 1
+
+
 def update_attribute(widget, data, widget_data):
     data = (data or {}).get('value', {})
     dimensions = widget_data.get('dimensions', [])
@@ -78,6 +82,11 @@ def update_attribute(widget, data, widget_data):
 
         'export_data': {
             'data': {
+                'common': {
+                    'widget_id': WIDGET_ID,
+                    'widget_key': widget.key,
+                    'version': DATA_VERSION,
+                },
                 'excel': {
                     'type': 'lists',
                     'values': excel_values,

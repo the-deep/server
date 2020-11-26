@@ -1,10 +1,19 @@
 from datetime import datetime, timedelta
 import os
+import time
 
 from django.core.management.base import BaseCommand
-from django.db.models import Q, Max, Min, OuterRef, Subquery, DateTimeField
+from django.db.models import (
+    Q,
+    Max,
+    Min,
+    OuterRef,
+    Subquery,
+    DateTimeField,
+    Exists
+)
 
-from entry.models import Attribute
+from entry.models import Attribute, ExportData
 from entry.utils import update_entry_attribute
 from entry.widgets.store import widget_store
 from entry.widgets import conditional_widget
@@ -38,7 +47,59 @@ class Command(BaseCommand):
             help='Specific widget export data migration',
         )
 
+    def update_attributes(self, widget, qs):
+        if not qs.exists():
+            return
+        if widget == conditional_widget.WIDGET_ID:
+            # conditional widget is handled within each overview widget
+            return
+        curr_data_version = getattr(widget_store[widget], 'DATA_VERSION', None)
+        to_be_changed_export_data_exists = Exists(
+            ExportData.objects.filter(
+                exportable__widget_key=OuterRef('widget__key'),
+                entry_id=OuterRef('entry')
+            ).filter(
+                ~Q(data__has_key='common') |
+                ~Q(data__common__has_key='version') |
+                (
+                    Q(data__has_key='common') &
+                    Q(data__common__has_key='version') &
+                    ~Q(data__common__version=curr_data_version)
+                )
+            )
+        )
+        count = 0
+        for attr in qs.filter(widget__widget_id=widget).annotate(
+            export_data_exists=to_be_changed_export_data_exists
+        ).filter(export_data_exists=True):
+            count += 1
+            update_entry_attribute(attr)
+
+        to_be_changed_export_data_conditional_exists = Exists(
+            ExportData.objects.filter(
+                exportable__widget_key=OuterRef('widget__key'),
+                entry_id=OuterRef('entry'),
+            ).filter(
+                ~Q(data__has_key='common') |
+                # ~Q(data__common__has_key=widget) |
+                (
+                    Q(data__has_key='common') &
+                    Q(data__common__has_key=widget) &
+                    ~Q(**{f'data__common__{widget}': curr_data_version})
+                )
+            )
+        )
+        count2 = 0
+        for attr in qs.filter(widget__widget_id=conditional_widget.WIDGET_ID).annotate(
+            export_data_exists=to_be_changed_export_data_conditional_exists
+        ).filter(export_data_exists=True):
+            count2 += 1
+            update_entry_attribute(attr)
+
+        print(f'Updated {count} overview and {count2} conditional widgets for {widget}.')
+
     def handle(self, *args, **options):
+        old = time.time()
         qs = Attribute.objects.all()
         if options.get('project'):
             qs = qs.filter(entry__project=options['project'])
@@ -63,11 +124,12 @@ class Command(BaseCommand):
 
         if options.get('widget') in widget_store.keys():
             widget = options['widget']
-            for attr in qs.filter(widget__widget_id=widget):
-                update_entry_attribute(attr)
-            for attr in qs.filter(widget__widget_id=conditional_widget.WIDGET_ID):
-                if widget in [each['widget']['widget_id'] for each in attr.widget.properties['data']['widgets']]:
-                    update_entry_attribute(attr)
+            qs = qs.filter(Q(widget__widget_id=widget) | Q(widget__widget_id=conditional_widget.WIDGET_ID))
+            self.update_attributes(widget, qs)
         else:
-            for attr in qs:
-                update_entry_attribute(attr)
+            for widget in widget_store.keys():
+                self.update_attributes(widget, qs.filter(
+                    Q(widget__widget_id=widget) | Q(widget__widget_id=conditional_widget.WIDGET_ID)
+                ))
+        print(f'Checked on {qs.count()} attributes.')
+        print(f'It took {time.time() - old} seconds.')
