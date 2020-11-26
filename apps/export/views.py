@@ -12,6 +12,9 @@ from export.serializers import ExportSerializer
 from export.models import Export
 from project.models import Project
 from project.permissions import PROJECT_PERMISSIONS
+from export.filter_set import (
+    ExportFilterSet,
+)
 
 from export.tasks import export_task
 
@@ -26,19 +29,10 @@ class MetaExtractionView(views.APIView):
 class ExportViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ExportSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filterset_class = ExportFilterSet
 
     def get_queryset(self):
-        exports = Export.get_for(self.request.user)
-
-        project = self.request.GET.get('project')
-        if project:
-            exports = exports.filter(project__id=project)
-
-        is_preview = self.request.GET.get('is_preview')
-        if is_preview:
-            exports = exports.filter(is_preview=(int(is_preview) == 1))
-
-        return exports
+        return Export.get_for(self.request.user)
 
 
 class ExportTriggerView(views.APIView):
