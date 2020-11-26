@@ -1,3 +1,7 @@
+WIDGET_ID = 'matrix1dWidget'
+DATA_VERSION = 1
+
+
 def update_attribute(widget, data, widget_data):
     filter_values = []
     excel_values = []
@@ -40,6 +44,11 @@ def update_attribute(widget, data, widget_data):
 
         'export_data': {
             'data': {
+                'common': {
+                    'widget_id': WIDGET_ID,
+                    'widget_key': widget.key,
+                    'version': DATA_VERSION,
+                },
                 'excel': {
                     'type': 'lists',
                     'values': excel_values,

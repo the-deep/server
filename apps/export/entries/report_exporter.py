@@ -1,9 +1,17 @@
-import json
+import os
+import tempfile
+import logging
 from datetime import datetime
+from subprocess import call
 
 from django.conf import settings
 from django.core.files.base import ContentFile, File
-from django.db.models import Case, When, Q
+from django.db.models import (
+    Case,
+    When,
+    Q,
+    IntegerField
+)
 from docx.shared import Inches
 
 from export.formats.docx import Document
@@ -12,34 +20,72 @@ from export.mime_types import (
     PDF_MIME_TYPE,
 )
 
+from analysis_framework.models import Widget
 from entry.models import Entry, ExportData, Attribute, EntryGroupLabel
+from entry.widgets import (
+    scale_widget,
+    time_widget,
+    date_widget,
+    time_range_widget,
+    date_range_widget,
+    geo_widget,
+    select_widget,
+    multiselect_widget
+)
+from entry.widgets.store import widget_store
+
 from lead.models import Lead
 from utils.common import generate_filename
 from tabular.viz import renderer as viz_renderer
 from export.models import Export
 
-from subprocess import call
-import os
-import tempfile
-import logging
-
-
 logger = logging.getLogger(__name__)
+
+SEPARATOR = ', '
+INTERNAL_SEPARATOR = '; '
+
+
+class ExportDataVersionMismatch(Exception):
+    pass
 
 
 class ReportExporter:
-    def __init__(self):
+    def __init__(self, exporting_widgets=None):
         self.doc = Document(
             os.path.join(settings.APPS_DIR, 'static/doc_export/template.docx')
         )
         self.lead_ids = []
+        # ordered list of widget ids
+        self.exporting_widgets = exporting_widgets or []
+        self.region_data = {}
+        # XXX: Limit memory usage? (Or use redis?)
+        self.geoarea_data_cache = {}
 
-    def load_exportables(self, exportables):
+    def load_exportables(self, exportables, regions):
         exportables = exportables.filter(
             data__report__levels__isnull=False,
         )
 
         self.exportables = exportables
+
+        geo_data_required = Widget.objects.filter(
+            id__in=[each[0] if type(each) in (list, tuple) else each for each in self.exporting_widgets],
+            widget_id=geo_widget.WIDGET_ID
+        ).exists()
+        # Load geo data if required
+        if geo_data_required:
+            self.region_data = {}
+            for region in regions:
+                # Collect geo area names for each admin level
+                self.region_data[region.id] = [
+                    {
+                        'id': admin_level.id,
+                        'level': admin_level.level,
+                        'geo_area_titles': admin_level.get_geo_area_titles(),
+                    }
+                    for admin_level in region.adminlevel_set.all()
+                ]
+
         return self
 
     def load_levels(self, levels):
@@ -151,7 +197,7 @@ class ReportExporter:
                     self.legend_paragraph.add_next_paragraph(para)
                 self.legend_paragraph.add_next_paragraph(title_para)
 
-    def _add_scale_widget_data(self, para, data):
+    def _add_scale_widget_data(self, para, data, bold=True):
         """
         report for scale widget expects following keys
             - title
@@ -160,10 +206,103 @@ class ReportExporter:
         as described here: apps.entry.widgets.scale_widget._get_scale
         """
         if data.get('label', None) and data.get('color', None):
+            para.add_run(SEPARATOR, bold=True)
             para.add_oval_shape(data.get('color'))
-            para.add_run(' {}'.format(data.get('label', '')))
+            para.add_run('{}'.format(data.get('label', '')), bold)
+            return True
 
-    def _add_widget_information_into_report(self, para, report):
+    def _add_date_range_widget_data(self, para, data, bold=True):
+        """
+        report for date range widget expects following
+            - tuple (from, to)
+        as described here: apps.entry.widgets.date_range_widget._get_date
+        """
+        if len(data.get('values', [])) == 2 and any(data.get('values', [])):
+            para.add_run('{}{} - {}'.format(SEPARATOR, data['values'][0] or "00-00-00", data['values'][1] or "00-00-00"), bold)
+            return True
+
+    def _add_time_range_widget_data(self, para, data, bold=True):
+        """
+        report for time range widget expects following
+            - tuple (from, to)
+        as described here: apps.entry.widgets.time_range_widget._get_time
+        """
+        if len(data.get('values', [])) == 2 and any(data.get('values', [])):
+            para.add_run('{}{} - {}'.format(SEPARATOR, data['values'][0] or "~~:~~", data['values'][1] or "~~:~~"), bold)
+            return True
+
+    def _add_time_widget_data(self, para, data, bold=True):
+        if data.get('value', None):
+            para.add_run('{}{}'.format(SEPARATOR, data['value']), bold)
+            return True
+
+    def _add_date_widget_data(self, para, data, bold=True):
+        """
+        report for date widget expects following
+            - string (=date)
+        as described here: apps.entry.widgets.date_widget
+        """
+        if data.get('value', None):
+            para.add_run('{}{}'.format(SEPARATOR, data['value']), bold)
+            return True
+
+    def _add_select_widget_data(self, para, data, bold=True):
+        if data.get('type') == 'list' and data.get('value', []):
+            values = data.get('value', [])
+            para.add_run(f'{SEPARATOR}{INTERNAL_SEPARATOR.join(values)}', bold)
+            return True
+
+    def _add_multi_select_widget_data(self, para, data, bold=True):
+        if data.get('type') == 'list' and data.get('value', []):
+            values = data.get('value', [])
+            para.add_run(f'{SEPARATOR}{INTERNAL_SEPARATOR.join(values)}', bold)
+            return True
+
+    def _add_geo_widget_data(self, para, data, bold=True):
+        # XXX: Cache this value.
+        # Right now everything needs to be loaded so doing this at entry save can take lot of memory
+        render_values = []
+        geo_id_values = [str(v) for v in data.get('values') or []]
+
+        if len(geo_id_values) == 0:
+            return
+
+        for region_id, admin_levels in self.region_data.items():
+            for admin_level in admin_levels:
+                geo_area_titles = admin_level['geo_area_titles']
+                for geo_id in geo_id_values:
+                    if geo_id not in geo_area_titles:
+                        continue
+                    if geo_id in self.geoarea_data_cache:
+                        title = self.geoarea_data_cache[geo_id]
+                        title and render_values.append(title)
+                        continue
+                    self.geoarea_data_cache[geo_id] = None
+
+                    title = geo_area_titles[geo_id].get('title')
+                    parent_id = geo_area_titles[geo_id].get('parent_id')
+                    if admin_level['level'] == 1:
+                        title and render_values.append(title)
+                        self.geoarea_data_cache[geo_id] = title
+                        continue
+
+                    # Try to look through parent
+                    for _level in range(0, admin_level['level'] - 1)[::-1]:
+                        if parent_id:
+                            _geo_area_titles = admin_levels[_level]['geo_area_titles']
+                            _geo_area = _geo_area_titles.get(parent_id) or {}
+                            _title = _geo_area.get('title')
+                            parent_id = _geo_area.get('parent_id')
+                            if _level == 1:
+                                _title and render_values.append(_title)
+                                self.geoarea_data_cache[geo_id] = title
+                                break
+
+        if render_values:
+            para.add_run(f"{SEPARATOR}{INTERNAL_SEPARATOR.join(set(render_values))}", bold)
+            return True
+
+    def _add_widget_information_into_report(self, para, report, bold=True):
         """
         based on widget annotate information into report
 
@@ -173,17 +312,63 @@ class ReportExporter:
         if not isinstance(report, dict):
             return
         if 'widget_id' in report:
-            if report.get('widget_id') == 'scaleWidget':
-                self._add_scale_widget_data(para, report)
-        elif 'keys' in report:
-            # this is for conditional widgets
-            for nested_report in report.get('keys'):
-                self._add_widget_information_into_report(para, nested_report)
+            widget_id = report.get('widget_id')
+            mapper = {
+                scale_widget.WIDGET_ID: self._add_scale_widget_data,
+                date_range_widget.WIDGET_ID: self._add_date_range_widget_data,
+                time_range_widget.WIDGET_ID: self._add_time_range_widget_data,
+                time_widget.WIDGET_ID: self._add_time_widget_data,
+                date_widget.WIDGET_ID: self._add_date_widget_data,
+                geo_widget.WIDGET_ID: self._add_geo_widget_data,
+                select_widget.WIDGET_ID: self._add_select_widget_data,
+                multiselect_widget.WIDGET_ID: self._add_multi_select_widget_data,
+            }
+            if widget_id in mapper.keys():
+                if report.get('version') != widget_store[widget_id].DATA_VERSION:
+                    raise ExportDataVersionMismatch(f'{widget_id} widget data is not upto date. '
+                                                    f'\nExport data being exported: {report}\n')
+                return mapper[widget_id](para, report, bold)
 
     def _generate_for_entry(self, entry):
         """
         Generate paragraphs for an entry
         """
+
+        para = self.doc.add_paragraph().justify()
+
+        para.add_run('[', bold=True)
+        # Add lead-entry id
+        url = f'{settings.HTTP_PROTOCOL}://{settings.DEEPER_FRONTEND_HOST}/permalink/projects/{entry.lead.project.id}' \
+              f'/leads/{entry.lead.id}/entries/{entry.id}/'
+
+        # format of exporting_widgets = "[517,43,42,[405,"scalewidget-xe11vlcxs2gqdh1r","Scale"]]"
+        widget_keys = [
+            Widget.objects.get(id=each).key if not isinstance(each, list) else each[1]
+            for each in self.exporting_widgets
+        ]
+        para.add_hyperlink(url, f"{entry.lead.id}-{entry.id}")
+        # para.add_run(f'{entry.lead.id}-{entry.id}', bold=True)
+        export_data = []
+        for each in entry.exportdata_set.all():
+            if 'other' in each.data.get('report', {}):
+                for rep in each.data['report'].get('other', []):
+                    if rep.get('widget_key') and rep['widget_key'] in widget_keys:
+                        export_data.append(rep)
+            else:
+                export_datum = {**each.data.get('common', {}),
+                                **each.data.get('report', {})}
+                if export_datum.get('widget_key') and export_datum['widget_key'] in widget_keys:
+                    export_data.append(export_datum)
+
+        export_data.sort(key=lambda x: widget_keys.index(x['widget_key']))
+        if export_data:
+            for data in export_data:
+                try:
+                    self._add_widget_information_into_report(para, data)
+                except ExportDataVersionMismatch as e:
+                    print(f'For entry {entry.id}, project {entry.project.id}')
+                    raise e
+        para.add_run('] ', bold=True)
 
         # Format is
         # excerpt (source) OR excerpt \n text from widgets \n (source)
@@ -194,7 +379,7 @@ class ReportExporter:
             entry.excerpt if entry.entry_type == Entry.EXCERPT
             else ''
         )
-        para = self.doc.add_paragraph(excerpt).justify()
+        para.add_run(excerpt)
 
         # Add texts from TextWidget
         widget_texts_exists = len(self.collected_widget_text.get(entry.id, [])) > 0
@@ -246,8 +431,6 @@ class ReportExporter:
         )
         # Add source (with url if available)
         para.add_hyperlink(url, source) if url else para.add_run(source)
-        # Add lead-entry id
-        para.add_run(f", {lead.id}-{entry.id}")
         # Add (confidential) to source without ,
         lead.confidentiality == Lead.CONFIDENTIAL and para.add_run(' (confidential)')
         # Add lead title if available
@@ -257,9 +440,7 @@ class ReportExporter:
         date and para.add_run(f", {date.strftime('%d/%m/%Y')}")
         # para.add_run(f", {'Verified' if entry.verified else 'Unverified'}")
         para.add_run(')')
-        para = self.doc.add_paragraph().justify()
-        for report in entry.exportdata_set.values_list('data__report', flat=True):
-            self._add_widget_information_into_report(para, report)
+        # para = self.doc.add_paragraph().justify()
 
         # Adding Entry Group Labels
         group_labels = self.entry_group_labels.get(entry.pk) or []

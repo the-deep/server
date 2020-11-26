@@ -17,6 +17,8 @@ EXPORT_DATE_FORMAT = '%m/%d/%y'
 class ExcelExporter:
     def __init__(self, entries, decoupled=True, project_id=None):
         self.wb = WorkBook()
+        # XXX: Limit memory usage? (Or use redis?)
+        self.geoarea_data_cache = {}
 
         # Create worksheets(Main, Grouped, Entry Groups, Bibliography)
         if decoupled:
@@ -128,11 +130,9 @@ class ExcelExporter:
                     self.titles.append('{} (code)'.format(admin_level.title))
 
                     # Collect geo area names for each admin level
-                    if not admin_level.geo_area_titles:
-                        admin_level.calc_cache()
                     admin_level_data.append({
                         'id': admin_level.id,
-                        'geo_area_titles': admin_level.geo_area_titles,
+                        'geo_area_titles': admin_level.get_geo_area_titles(),
                     })
 
                 self.region_data[region.id] = admin_level_data
@@ -255,6 +255,10 @@ class ExcelExporter:
                     for geo_id in geo_id_values:
                         if geo_id not in geo_area_titles:
                             continue
+                        if geo_id in self.geoarea_data_cache:
+                            rows_value.append(self.geoarea_data_cache[geo_id])
+                            continue
+
                         row_values = ['' for i in range(0, max_levels - level)] * 2
 
                         title = geo_area_titles[geo_id].get('title', '')
@@ -273,6 +277,7 @@ class ExcelExporter:
                             else:
                                 row_values.extend(['', ''])
                         rows_value.append(row_values[::-1])
+                        self.geoarea_data_cache[geo_id] = row_values[::-1]
 
                 if len(rows_value) > 0:
                     rows.add_rows_of_value_lists(rows_value)
@@ -431,7 +436,14 @@ class ExcelExporter:
                     data__excel__isnull=False,
                 ).first()
 
-                export_data = export_data and export_data.data.get('excel')
+                # TODO: handle for conditional widget
+                if export_data and type(export_data.data.get('excel', {})) == list:
+                    export_data = export_data.data.get('excel', [])
+                else:
+                    export_data = export_data and {
+                        **export_data.data.get('common', {}),
+                        **export_data.data.get('excel', {})
+                    }
                 self.add_entries_from_excel_data(rows, data, export_data)
 
             rows.apply()

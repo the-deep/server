@@ -1,3 +1,7 @@
+WIDGET_ID = 'textWidget'
+DATA_VERSION = 1
+
+
 def _get_text(widget, data, widget_data):
     return str(
         data.get('value') or ''
@@ -6,6 +10,7 @@ def _get_text(widget, data, widget_data):
 
 def update_attribute(*args, **kwargs):
     text = _get_text(*args, **kwargs)
+    widget = args[0]
 
     return {
         'filter_data': [{
@@ -14,6 +19,11 @@ def update_attribute(*args, **kwargs):
 
         'export_data': {
             'data': {
+                'common': {
+                    'widget_id': WIDGET_ID,
+                    'widget_key': widget.key,
+                    'version': DATA_VERSION,
+                },
                 'excel': {
                     'value': text,
                 },

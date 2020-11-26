@@ -1,3 +1,6 @@
+WIDGET_ID = 'conditionalWidget'
+
+
 class Dummy:
     _conditional = True
 
@@ -15,9 +18,12 @@ def update_attribute(widget, data, widget_data):
 
     filter_data = []
     excel_data = []
+    report_data = []
     report_keys = []
+    common_data = {}
     for w in widgets:
         widget_module = widget_store.get(w.get('widget_id'))
+        common_data[getattr(widget_module, 'WIDGET_ID')] = getattr(widget_module, 'DATA_VERSION', None)
         if not widget_module:
             continue
 
@@ -51,10 +57,16 @@ def update_attribute(widget, data, widget_data):
         } for wfd in w_filter_data]
 
         if w_export_data:
-            excel_data.append(w_export_data.get('data', {}).get('excel'))
-            report_keys += w_export_data.get('data', {})\
-                .get('report', {})\
-                .get('keys') or []
+            excel_data.append({
+                **w_export_data.get('data', {}).get('common', {}),
+                **w_export_data.get('data', {}).get('excel', {}),
+            })
+            report_datum = {
+                **w_export_data.get('data', {}).get('common', {}),
+                **w_export_data.get('data', {}).get('report', {}),
+            }
+            report_keys += report_datum.get('keys') or []
+            report_data.append(report_datum)
         else:
             excel_data.append(None)
 
@@ -64,8 +76,11 @@ def update_attribute(widget, data, widget_data):
             'data': {
                 'excel': excel_data,
                 'report': {
+                    'other': report_data,
                     'keys': report_keys,
                 },
+                'common': common_data
+                # TODO: 'condition':
             },
         },
     }

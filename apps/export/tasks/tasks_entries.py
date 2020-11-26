@@ -38,6 +38,9 @@ def export_entries(export):
         project__id=project_id
     ).distinct()
 
+    # which widget data needs to be exported along with
+    exporting_widgets = filters.get('exporting_widgets', [])
+
     if export_type == Export.EXCEL:
         decoupled = filters.get('decoupled', True)
         export_data = ExcelExporter(queryset, decoupled, project_id)\
@@ -51,8 +54,8 @@ def export_entries(export):
         text_widget_ids = filters.get('text_widget_ids') or []
         show_groups = filters.get('show_groups')
         pdf = export.filters.get('pdf', False)
-        export_data = ReportExporter()\
-            .load_exportables(exportables)\
+        export_data = ReportExporter(exporting_widgets=exporting_widgets)\
+            .load_exportables(exportables, regions)\
             .load_levels(report_levels)\
             .load_structure(report_structure)\
             .load_group_lables(queryset, show_groups)\
