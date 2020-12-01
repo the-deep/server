@@ -3,6 +3,7 @@ Django settings for deep project.
 """
 import os
 import sys
+import logging
 from celery.schedules import crontab
 
 from utils import sentry
@@ -388,6 +389,9 @@ def add_username_attribute(record):
             record.username = 'Anonymous_User'
     return True
 
+
+# pdfminer can log heavy logs
+logging.getLogger("pdfminer").setLevel(logging.WARNING)
 
 if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
     format_args = (

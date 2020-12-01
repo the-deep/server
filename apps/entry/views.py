@@ -1,4 +1,4 @@
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -21,7 +21,9 @@ from project.models import Project
 from lead.models import Lead
 from analysis_framework.models import Widget
 from organization.models import OrganizationType
+from analysis_framework.models import Filter
 
+from .widgets import matrix1d_widget, matrix2d_widget
 from .models import (
     Entry, Attribute, FilterData, ExportData, EntryComment,
     # Entry Grouping
@@ -53,21 +55,123 @@ import django_filters
 
 
 class EntrySummaryPaginationMixin(object):
+    def get_entry_fiters(self):
+        if hasattr(self, '_entry_filters'):
+            return self._entry_filters
+
+        filters = self.request.data.get('filters', [])
+        filters = {f[0]: f[1] for f in filters}
+        self._entry_filters = filters
+        return self._entry_filters
+
+    def get_counts_by_matrix_2d(self, qs):
+        # Project should be provided
+        filters = self.get_entry_fiters()
+        project = filters.get('project')
+        if project is None:
+            return {}
+
+        # Pull necessary widgets
+        widgets = Widget.objects.filter(
+            analysis_framework__project=project,
+            widget_id__in=[matrix1d_widget.WIDGET_ID, matrix2d_widget.WIDGET_ID]
+        ).values_list('key', 'widget_id', 'properties')
+
+        # Pull necessary filters
+        filters = {
+            filter.key: filter
+            for filter in Filter.objects.filter(
+                analysis_framework__project=project,
+                key__in=[
+                    _key
+                    for key, widget_id, _ in widgets
+                    for _key in (
+                        [
+                            f'{key}-dimensions',
+                            f'{key}-sectors'
+                        ] if widget_id == matrix2d_widget.WIDGET_ID else
+                        [key]
+                    )
+                ]
+            )
+        }
+
+        # Calculate count
+        agg_data = qs.aggregate(
+            **{
+                f"{key}__{ele['id' if widget_id == matrix2d_widget.WIDGET_ID else 'key']}__{verfied_status}": models.Count(
+                    'id',
+                    filter=models.Q(
+                        verified=verfied_status == 'verified',
+                        filterdata__filter=(
+                            filters[f'{key}-{data_type}' if widget_id == matrix2d_widget.WIDGET_ID else key]
+                        ),
+                        filterdata__values__contains=[
+                            ele['id' if widget_id == matrix2d_widget.WIDGET_ID else 'key']
+                        ],
+                    ),
+                    distinct=True,
+                )
+                for key, widget_id, properties in widgets
+                for data_type in (
+                    ['sectors', 'dimensions'] if widget_id == matrix2d_widget.WIDGET_ID else
+                    ['rows']
+                )
+                for _ele in properties['data'][data_type]
+                for ele in [
+                    _ele,
+                    *(
+                        _ele.get(f'sub{data_type}' if widget_id == matrix2d_widget.WIDGET_ID else 'cells') or []
+                    )
+                ]
+                for verfied_status in ['verified', 'unverified']
+            }
+        )
+
+        # Re-structure data (also snake-case to camel case conversion will change the key)
+        response = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+        for key, count in agg_data.items():
+            widget_key, label_key, verified_status = key.split('__')
+            response[widget_key][label_key][verified_status] = count
+        return [
+            {
+                'widget_key': widget_key,
+                'label_key': label_key,
+                'verified_count': count['verified'],
+                'unverified_count': count['unverified'],
+            }
+            for widget_key, widget_data in response.items()
+            for label_key, count in widget_data.items()
+        ]
+
     def get_paginated_response(self, data):
-        if not self.request.data.get('calculate_summary',
-                                     self.request.GET.get('calculate_summary', '0')) == '1':
+        calculate_summary = self.request.data.get(
+            'calculate_summary',
+            self.request.GET.get('calculate_summary', '0')
+        ) == '1'
+        calculate_count_per_toc_item = self.request.data.get(
+            'calculate_count_per_toc_item',
+            self.request.GET.get('calculate_count_per_toc_item', '0')
+        ) == '1'
+        if not calculate_summary:
             return super().get_paginated_response(data)
+
         qs = self.filter_queryset(self.get_queryset())
         q = qs.annotate(
-                org=models.functions.Coalesce('lead__authors__parent',
-                                              'lead__authors')) \
-            .values('org').annotate(
-                org_type=models.functions.Coalesce('lead__authors__parent__organization_type',
-                                                   'lead__authors__organization_type')) \
-            .values('org_type').order_by('org_type').annotate(
+            org=models.functions.Coalesce('lead__authors__parent', 'lead__authors')
+        ).values('org').annotate(
+            org_type=models.functions.Coalesce(
+                'lead__authors__parent__organization_type',
+                'lead__authors__organization_type'
+            )
+        ).values('org_type').order_by('org_type').annotate(
             count=models.Count('org', distinct=True)
         ).values('org_type', 'count')
-        q = {each['org_type']: each['count'] for each in q if each['org_type']}
+
+        q = {
+            each['org_type']: each['count']
+            for each in q if each['org_type']
+        }
         org_types = OrganizationType.objects.filter(id__in=q.keys())
         org_type_count = [
             {
@@ -89,6 +193,9 @@ class EntrySummaryPaginationMixin(object):
             org_type_count=org_type_count,
             total_sources=total_sources,
         )
+        if calculate_count_per_toc_item:
+            summary_data['count_per_toc_item'] = self.get_counts_by_matrix_2d(qs)
+
         return response.Response({
             **super().get_paginated_response(data).data,
             'summary': summary_data
@@ -159,8 +266,7 @@ class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        filters = self.request.data.get('filters', [])
-        filters = {f[0]: f[1] for f in filters}
+        filters = self.get_entry_fiters()
 
         queryset = get_filtered_entries(self.request.user, filters).prefetch_related(
             'lead', 'lead__attachment', 'lead__assignee',
