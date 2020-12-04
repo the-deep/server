@@ -60,10 +60,12 @@ class Lead(UserResource, ProjectEntityMixin):
     # Status of a lead that can be pending, processed or deleted.
     PENDING = 'pending'
     PROCESSED = 'processed'
+    VALIDATED = 'validated'
 
     STATUSES = (
         (PENDING, 'Pending'),
         (PROCESSED, 'Processed'),
+        (VALIDATED, 'Validated')
     )
 
     LOW = 100
