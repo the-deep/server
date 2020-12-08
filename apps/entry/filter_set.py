@@ -2,6 +2,7 @@ from functools import reduce
 from datetime import datetime
 
 from django.db import models
+from django.db.models.functions import StrIndex, Lower
 from django.contrib.auth.models import User
 import django_filters
 
@@ -120,13 +121,17 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
         label='Lead Group Label',
         method='lead_group_label_filter',
     )
+    lead__title = django_filters.CharFilter(
+        field_name='lead__title',
+        lookup_expr='icontains'
+    )
 
     class Meta:
         model = Entry
         fields = {
             **{
                 x: ['exact'] for x in [
-                    'id', 'excerpt', 'lead__title', 'created_at',
+                    'id', 'excerpt', 'created_at',
                     'created_by', 'modified_at', 'modified_by', 'project',
                     'verified',
                 ]
@@ -142,6 +147,13 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
                 },
             },
         }
+
+    # def lead_title_filter(self, queryset, name, value):
+    #     if value.strip():
+    #         return queryset.annotate(
+    #             idx=StrIndex(Lower('lead__title'), Value(value.lower()))
+    #         ).filter(idx__gt=0).order_by('idx', 'lead__title')
+    #     return queryset
 
     def comment_status_filter(self, queryset, name, value):
         if value == self.UNRESOLVED:
