@@ -352,6 +352,7 @@ class LegacyLeadOptionsSerializer(serializers.Serializer):
     emm_keywords = EmmTagSerializer(many=True)
     emm_risk_factors = EmmTagSerializer(many=True)
     has_emm_leads = serializers.BooleanField()
+    organization_types = KeyValueSerializer(many=True)
 
 
 class LeadOptionsBodySerializer(serializers.Serializer):
@@ -362,6 +363,7 @@ class LeadOptionsBodySerializer(serializers.Serializer):
     emm_entities = IdListField()
     emm_keywords = StringListField()
     emm_risk_factors = StringListField()
+    organization_types = IdListField()
 
 
 class LeadOptionsSerializer(serializers.Serializer):
@@ -376,3 +378,4 @@ class LeadOptionsSerializer(serializers.Serializer):
     emm_keywords = EmmTagSerializer(many=True)
     emm_risk_factors = EmmTagSerializer(many=True)
     has_emm_leads = serializers.BooleanField()
+    organization_types = KeyValueSerializer(many=True)

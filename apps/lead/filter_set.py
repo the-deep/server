@@ -3,6 +3,7 @@ import django_filters
 
 from user_resource.filters import UserResourceFilterSet
 from project.models import Project
+from organization.models import OrganizationType
 from user.models import User
 from .models import Lead, LeadGroup
 
@@ -112,6 +113,13 @@ class LeadFilterSet(django_filters.FilterSet):
 
     ordering = django_filters.CharFilter(
         method='ordering_filter',
+    )
+
+    authoring_organizations = django_filters.ModelMultipleChoiceFilter(
+        field_name='authors__organization_type',
+        widget=django_filters.widgets.CSVWidget,
+        lookup_expr='in',
+        queryset=OrganizationType.objects.all(),
     )
 
     class Meta:
