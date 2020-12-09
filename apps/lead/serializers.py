@@ -174,6 +174,11 @@ class LeadSerializer(
     emm_entities = EMMEntitySerializer(many=True, required=False)
     # extra fields added from entryleadserializer
     confidentiality_display = serializers.CharField(source='get_confidentiality_display', read_only=True)
+    entries_verified_count = serializers.IntegerField(read_only=True)
+    percentage_of_verified_entries = serializers.FloatField(
+        source='get_percentage_of_verified_entries',
+        read_only=True,
+    )
 
     class Meta:
         model = Lead

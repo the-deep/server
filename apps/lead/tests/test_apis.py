@@ -1018,6 +1018,36 @@ class LeadTests(TestCase):
         obtained_ids = {x['id'] for x in resp.data['results']}
         assert expected_ids == obtained_ids
 
+    def test_verified_entries_percentage_in_lead(self):
+        project = self.create_project()
+
+        lead = self.create(Lead, project=project)
+        lead1 = self.create(Lead, project=project)
+        self.create_entry(lead=lead, project=project, verified=True)
+        self.create_entry(lead=lead, project=project, verified=False)
+        self.create_entry(lead=lead1, project=project, verified=True)
+        self.create_entry(lead=lead, project=project, verified=True)
+
+        # test for get
+        url = '/api/v1/leads/'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        counts = [x['entries_verified_count'] for x in response.data['results']]
+        self.assertEqual(counts, [1, 2])
+        percentage = [x['percentage_of_verified_entries'] for x in response.data['results']]
+        self.assertEqual(percentage, [1.00, 0.67])
+
+        # test for post
+        url = '/api/v1/leads/filter/'
+        self.authenticate()
+        response = self.client.post(url, dict())
+        self.assert_200(response)
+        counts = [x['entries_verified_count'] for x in response.data['results']]
+        self.assertEqual(counts, [1, 2])
+        percentage = [x['percentage_of_verified_entries'] for x in response.data['results']]
+        self.assertEqual(percentage, [1.00, 0.67])
+
     def test_lead_filter_emm_entities(self):
         url = '/api/v1/leads/?emm_entities={}'
         project = self.create_project()

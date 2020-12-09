@@ -218,11 +218,23 @@ class Lead(UserResource, ProjectEntityMixin):
         )
         return qs.annotate(
             no_of_entries=models.Count('entry', distinct=True),
-            assessment_id=models.F('assessment')
+            assessment_id=models.F('assessment'),
+            entries_verified_count=models.Count('entry', filter=models.Q(entry__verified=True)),
+            percentage_of_verified_entries=models.Case(
+                models.When(models.Q(no_of_entries=0), then=0),
+                models.When(models.Q(no_of_entries__gt=0), then=models.F('entries_verified_count') * 1.0 / models.F('no_of_entries')),
+                output_field=models.FloatField()
+            )
         )
 
     def get_assignee(self):
         return self.assignee.first()
+
+    def get_percentage_of_verified_entries(self):
+        if hasattr(self, 'percentage_of_verified_entries'):
+            value = self.percentage_of_verified_entries
+            return round(value, 2)
+        return None
 
     def get_source_display(self):
         if self.source:
