@@ -21,8 +21,8 @@
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            46 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">41 run</button>
+            45 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">40 run</button>
             <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">5 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">0 partial</button>
@@ -117,19 +117,18 @@
     <p id="t63" class="run"><span class="n"><a href="#t63">63</a></span><span class="t"><span class="key">class</span> <span class="nam">ArySourceOrganizationSerializer</span><span class="op">(</span><span class="nam">DynamicFieldsMixin</span><span class="op">,</span> <span class="nam">UserResourceSerializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t64" class="run"><span class="n"><a href="#t64">64</a></span><span class="t">    <span class="nam">logo</span> <span class="op">=</span> <span class="nam">URLCachedFileField</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'logo.file'</span><span class="op">,</span> <span class="nam">allow_null</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t65" class="run"><span class="n"><a href="#t65">65</a></span><span class="t">    <span class="nam">key</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'pk'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t66" class="run"><span class="n"><a href="#t66">66</a></span><span class="t">    <span class="nam">label</span> <span class="op">=</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">CharField</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'title'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t67" class="run"><span class="n"><a href="#t67">67</a></span><span class="t">    <span class="nam">merged_as</span> <span class="op">=</span> <span class="nam">MergedAsOrganizationSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'parent'</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t68" class="pln"><span class="n"><a href="#t68">68</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t69" class="run"><span class="n"><a href="#t69">69</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t70" class="run"><span class="n"><a href="#t70">70</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">Organization</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t71" class="run"><span class="n"><a href="#t71">71</a></span><span class="t">        <span class="nam">fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'key'</span><span class="op">,</span> <span class="str">'label'</span><span class="op">,</span> <span class="str">'long_name'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t72" class="pln"><span class="n"><a href="#t72">72</a></span><span class="t">                  <span class="str">'short_name'</span><span class="op">,</span> <span class="str">'logo'</span><span class="op">,</span> <span class="str">'organization_type'</span><span class="op">,</span> <span class="str">'merged_as'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t66" class="run"><span class="n"><a href="#t66">66</a></span><span class="t">    <span class="nam">merged_as</span> <span class="op">=</span> <span class="nam">MergedAsOrganizationSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'parent'</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t67" class="pln"><span class="n"><a href="#t67">67</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t68" class="run"><span class="n"><a href="#t68">68</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t69" class="run"><span class="n"><a href="#t69">69</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">Organization</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t70" class="run"><span class="n"><a href="#t70">70</a></span><span class="t">        <span class="nam">fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'key'</span><span class="op">,</span> <span class="str">'title'</span><span class="op">,</span> <span class="str">'long_name'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t71" class="pln"><span class="n"><a href="#t71">71</a></span><span class="t">                  <span class="str">'short_name'</span><span class="op">,</span> <span class="str">'logo'</span><span class="op">,</span> <span class="str">'organization_type'</span><span class="op">,</span> <span class="str">'merged_as'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </div>
 <div id="footer">
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.3</a>,
-            created at 2020-12-02 06:07 +0000
+            created at 2020-12-09 05:50 +0000
         </p>
     </div>
 </div>
