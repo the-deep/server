@@ -84,6 +84,30 @@ class LeadTests(TestCase):
         # low is default priority
         self.assertEqual(r_data['priority'], Lead.LOW)
 
+    def test_lead_create_with_status_validated(self, assignee=None):
+        lead_begining = Lead.objects.count()
+        project = self.create(Project, role=self.admin_role)
+
+        url = '/api/v1/leads/'
+        data = {
+            'title': 'Spaceship spotted in sky',
+            'project': project.id,
+            'source': self.source.pk,
+            'author': self.author.pk,
+            'confidentiality': Lead.UNPROTECTED,
+            'status': Lead.VALIDATED,
+            'text': 'Alien shapeship has been spotted in the sky',
+            'assignee': assignee or self.user.id,
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        self.assertEqual(Lead.objects.count(), lead_begining + 1)
+        r_data = response.data
+        self.assertEqual(r_data['status'], data['status'])
+
     def test_pre_bulk_delete_leads(self):
         project = self.create(Project)
         lead1 = self.create(Lead, project=project)
