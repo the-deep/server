@@ -575,6 +575,51 @@ class EntryTests(TestCase):
         entry.refresh_from_db()
         self.assertFalse(entry.verified)
 
+    def test_authoring_organization_filter(self):
+        organization_type1 = self.create(OrganizationType, title="National")
+        organization_type2 = self.create(OrganizationType, title="International")
+        organization_type3 = self.create(OrganizationType, title="Government")
+
+        organization1 = self.create(Organization, organization_type=organization_type1)
+        organization2 = self.create(Organization, organization_type=organization_type2)
+        organization3 = self.create(Organization, organization_type=organization_type3)
+
+        # create lead
+        lead = self.create_lead(authors=[organization1])
+        lead1 = self.create_lead(authors=[organization2])
+        lead2 = self.create_lead(authors=[organization3, organization2])
+
+        # create entry
+        entry = self.create_entry(lead=lead)
+        entry1 = self.create_entry(lead=lead1)
+        entry2 = self.create_entry(lead=lead2)
+
+        # filter single post
+        filters = {
+            'authoring_organizations': [organization_type1.id],
+        }
+        self.post_filter_test(filters, 1)  # Should return 1 entry
+
+        # filter multiple post
+        filters = {
+            'authoring_organizations': [organization_type1.id, organization_type3.id],
+        }
+        self.post_filter_test(filters, 2)  # Should return 2 entry
+
+        # Test for GET
+        url = '/api/v1/entries/?authoring_organizations={}'
+
+        response = self.client.get(url.format(organization_type1.id))
+        self.assert_200(response)
+        assert len(response.data['results']) == 1, "There should be 1 entry"
+
+        # get multiple leads
+        organization_type_query = ','.join([
+            str(id) for id in [organization_type1.id, organization_type3.id]
+        ])
+        response = self.client.get(url.format(organization_type_query))
+        assert len(response.data['results']) == 2, "There should be 2 entry"
+
     # TODO: test export data and filter data apis
 
 

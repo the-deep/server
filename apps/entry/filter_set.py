@@ -5,6 +5,7 @@ from django.db import models
 from django.contrib.auth.models import User
 import django_filters
 
+from deep.filter_set import DjangoFilterCSVWidget
 from analysis_framework.models import Filter
 from lead.models import Lead
 from entry.models import (
@@ -12,6 +13,7 @@ from entry.models import (
     EntryComment,
     ProjectEntryLabel,
 )
+from organization.models import OrganizationType
 
 
 # TODO: Find out whether we need to call timezone.make_aware
@@ -119,6 +121,12 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
     lead_group_label = django_filters.CharFilter(
         label='Lead Group Label',
         method='lead_group_label_filter',
+    )
+    authoring_organizations = django_filters.ModelMultipleChoiceFilter(
+        field_name='lead__authors__organization_type',
+        widget=DjangoFilterCSVWidget,
+        lookup_expr='in',
+        queryset=OrganizationType.objects.all()
     )
 
     class Meta:
