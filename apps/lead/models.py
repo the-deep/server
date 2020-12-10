@@ -218,7 +218,9 @@ class Lead(UserResource, ProjectEntityMixin):
         )
         return qs.annotate(
             no_of_entries=models.Count('entry', distinct=True),
-            assessment_id=models.F('assessment')
+            assessment_id=models.F('assessment'),
+            verified_entries_count=models.Count('entry',
+                                                filter=models.Q(entry__verified=True)),
         )
 
     def get_assignee(self):
@@ -249,6 +251,12 @@ class Lead(UserResource, ProjectEntityMixin):
             'entries': Entry.objects.filter(lead__in=lead_ids, lead__project_id=project_id).count(),
             'assessments': Assessment.objects.filter(lead__project_id=project_id, lead__in=lead_ids).count(),
         }
+
+    def get_verified_entries_count(self):
+        # if annotated previously then return as is
+        if hasattr(self, 'verified_entries_count'):
+            return self.verified_entries_count
+        return self.entry_set.filter(verified=True).count()
 
 
 class LeadPreview(models.Model):
