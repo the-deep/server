@@ -400,6 +400,12 @@ class EntryOptionsView(views.APIView):
                     'key': s[0],
                     'value': s[1],
                 } for s in Lead.CONFIDENTIALITIES
+            ],
+            'organization_types': [
+                {
+                    'key': organization_type.id,
+                    'value': organization_type.title,
+                } for organization_type in OrganizationType.objects.all()
             ]
         }
 
