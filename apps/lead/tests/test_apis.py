@@ -983,6 +983,22 @@ class LeadTests(TestCase):
         obtained_ids = {x['id'] for x in resp.data['results']}
         assert expected_ids == obtained_ids
 
+    def test_filtered_lead_list_with_verified_entries_count(self):
+        project = self.create_project()
+
+        lead = self.create(Lead, project=project)
+        lead2 = self.create(Lead, project=project)
+        self.create_entry(lead=lead, project=project, verified=True)
+        self.create_entry(lead=lead, project=project, verified=False)
+        self.create_entry(lead=lead2, project=project, verified=True)
+
+        url = '/api/v1/leads/filter/'
+        self.authenticate()
+        resp = self.client.post(url, dict())
+        self.assert_200(resp)
+        counts = [x['verified_entries_count'] for x in resp.data['results']]
+        self.assertEqual(counts, [1, 1])
+
     def test_lead_filter_search_by_author(self):
         project = self.create_project()
         author = self.create(Organization, title='blablaone')
