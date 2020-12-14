@@ -25,13 +25,7 @@ from .serializers import (
     NotificationSerializer,
     PasswordResetSerializer,
 )
-
-
-class UserPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return obj == request.user
+from .permissions import UserViewSetPermission, UserPermission
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -57,8 +51,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     queryset = User.objects.filter(is_active=True).order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [UserPermission]
-
+    permission_classes = [UserPermission, UserViewSetPermission]
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
 
     def get_object(self):
