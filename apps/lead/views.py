@@ -32,7 +32,7 @@ from lead.filter_set import (
 )
 from project.models import Project, ProjectMembership
 from project.permissions import PROJECT_PERMISSIONS as PROJ_PERMS
-from organization.models import Organization
+from organization.models import Organization, OrganizationType
 from organization.serializers import SimpleOrganizationSerializer
 from .models import (
     LeadGroup,
@@ -365,6 +365,12 @@ class LeadOptionsView(views.APIView):
         # Add info about if the project has emm leads, just check if entities or keywords present
         options['has_emm_leads'] = (not not options['emm_entities']) or (not not options['emm_keywords'])
 
+        options['organization_types'] = [
+            {
+                'key': organization_type.id,
+                'value': organization_type.title,
+            } for organization_type in OrganizationType.objects.all()
+        ]
         return response.Response(LegacyLeadOptionsSerializer(options).data)
 
     @swagger_auto_schema(
@@ -382,6 +388,7 @@ class LeadOptionsView(views.APIView):
         emm_entities = fields['emm_entities']
         emm_keywords = fields['emm_keywords']
         emm_risk_factors = fields['emm_risk_factors']
+        organization_type_ids = fields['organization_types']
 
         projects = Project.get_for_member(request.user).filter(
             id__in=projects_id,
@@ -454,7 +461,8 @@ class LeadOptionsView(views.APIView):
             'has_emm_leads': (
                 EMMEntity.objects.filter(lead__project__in=projects).exists() or
                 LeadEMMTrigger.objects.filter(lead__project__in=projects).exists()
-            )
+            ),
+            'organization_types': OrganizationType.objects.filter(id__in=organization_type_ids).distinct(),
         }
         return response.Response(LeadOptionsSerializer(options).data)
 
