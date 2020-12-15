@@ -986,7 +986,7 @@ class LeadTests(TestCase):
         assert response.json()['count'] == 1, 'Lead count should be 1 for lead without assessment'
 
     def test_lead_authoring_organization_type_filter(self):
-        url = '/api/v1/leads/?authoring_organizations={}'
+        url = '/api/v1/leads/?authoring_organization_types={}'
 
         project = self.create_project(title="lead_test_project")
         organization_type1 = self.create(OrganizationType, title="National")
@@ -996,40 +996,39 @@ class LeadTests(TestCase):
         organization1 = self.create(Organization, organization_type=organization_type1)
         organization2 = self.create(Organization, organization_type=organization_type2)
         organization3 = self.create(Organization, organization_type=organization_type3)
+        organization4 = self.create(Organization, parent=organization1)
 
         # create lead
         lead = self.create(Lead, project=project, authors=[organization1])
         lead1 = self.create(Lead, project=project, authors=[organization2])
         lead2 = self.create(Lead, project=project, authors=[organization3, organization2])
-
+        lead4 = self.create(Lead, project=project, authors=[organization4])
         self.authenticate()
 
         # Authoring organization_type filter test
         response = self.client.get(url.format(organization_type1.id))
         self.assert_200(response)
-        assert len(response.data['results']) == 1, "There should be 1 lead"
-        assert response.data['results'][0]['id'] == lead.id
+        assert len(response.data['results']) == 2, "There should be 2 lead"
 
         # get multiple leads
         organization_type_query = ','.join([
             str(id) for id in [organization_type1.id, organization_type3.id]
         ])
         response = self.client.get(url.format(organization_type_query))
-        assert len(response.data['results']) == 2, "There should be 2 lead"
+        assert len(response.data['results']) == 3, "There should be 3 lead"
 
         # test authoring_organization post filter
         url = '/api/v1/leads/filter/'
-        filter_data = {'authoring_organizations': [organization_type1.id]}
+        filter_data = {'authoring_organization_types': [organization_type1.id]}
         self.authenticate()
         response = self.client.post(url, data=filter_data, format='json')
-        assert len(response.data['results']) == 1, "There should be 1 lead"
-        assert response.data['results'][0]['id'] == lead.id
+        assert len(response.data['results']) == 2, "There should be 2 lead"
 
         # test multiple post
-        filter_data = {'authoring_organizations': [organization_type1.id, organization_type3.id]}
+        filter_data = {'authoring_organization_types': [organization_type1.id, organization_type3.id]}
         self.authenticate()
         response = self.client.post(url, filter_data, format='json')
-        assert len(response.data['results']) == 2, "There should be 2 lead"
+        assert len(response.data['results']) == 3, "There should be 3 lead"
 
     def test_lead_filter_search(self):
         url = '/api/v1/leads/?emm_entities={}'

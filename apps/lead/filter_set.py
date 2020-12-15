@@ -115,11 +115,8 @@ class LeadFilterSet(django_filters.FilterSet):
         method='ordering_filter',
     )
 
-    authoring_organizations = django_filters.ModelMultipleChoiceFilter(
-        field_name='authors__organization_type',
-        widget=django_filters.widgets.CSVWidget,
-        lookup_expr='in',
-        queryset=OrganizationType.objects.all(),
+    authoring_organization_types = django_filters.CharFilter(
+        method='authoring_organization_types_filter'
     )
 
     class Meta:
@@ -210,6 +207,15 @@ class LeadFilterSet(django_filters.FilterSet):
             else:
                 qs = qs.order_by(ordering)
         return qs
+
+    def authoring_organization_types_filter(self, qs, name, value):
+        splitted = [x for x in value.split(',') if x]
+        qs = qs.annotate(organization_types=models.functions.Coalesce(
+                'authors__parent__organization_type',
+                'authors__organization_type'
+            )
+        ).distinct()
+        return qs.filter(organization_types__in=splitted)
 
 
 class LeadGroupFilterSet(UserResourceFilterSet):
