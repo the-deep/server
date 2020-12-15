@@ -3,6 +3,7 @@ import django_filters
 
 from user_resource.filters import UserResourceFilterSet
 from project.models import Project
+from organization.models import OrganizationType
 from user.models import User
 from .models import Lead, LeadGroup
 
@@ -114,6 +115,10 @@ class LeadFilterSet(django_filters.FilterSet):
         method='ordering_filter',
     )
 
+    authoring_organization_types = django_filters.CharFilter(
+        method='authoring_organization_types_filter'
+    )
+
     class Meta:
         model = Lead
         fields = {
@@ -202,6 +207,15 @@ class LeadFilterSet(django_filters.FilterSet):
             else:
                 qs = qs.order_by(ordering)
         return qs
+
+    def authoring_organization_types_filter(self, qs, name, value):
+        splitted = [x for x in value.split(',') if x]
+        qs = qs.annotate(organization_types=models.functions.Coalesce(
+                'authors__parent__organization_type',
+                'authors__organization_type'
+            )
+        ).distinct()
+        return qs.filter(organization_types__in=splitted)
 
 
 class LeadGroupFilterSet(UserResourceFilterSet):
