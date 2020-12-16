@@ -614,12 +614,12 @@ class EntryTests(TestCase):
 
         # filter single post
         filters = {
-            'authoring_organization_types': organization_type1.id
+            'authoring_organization_types': [organization_type1.id],
         }
         self.post_filter_test(filters, 2)
 
         filters = {
-            'authoring_organization_types': ','.join([str(id) for id in [organization_type1.id, organization_type3.id]])
+            'authoring_organization_types': [organization_type1.id, organization_type3.id]
         }
         self.post_filter_test(filters, 3)
 
