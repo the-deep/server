@@ -122,8 +122,10 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
         label='Lead Group Label',
         method='lead_group_label_filter',
     )
-    authoring_organization_types = django_filters.CharFilter(
-        method='authoring_organization_types_filter'
+    authoring_organization_types = django_filters.ModelMultipleChoiceFilter(
+        method='authoring_organization_types_filter',
+        widget=DjangoFilterCSVWidget,
+        queryset=OrganizationType.objects.all(),
     )
 
     class Meta:
@@ -195,17 +197,16 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
             return queryset.filter(entrygrouplabel__group__title__icontains=value).distinct()
         return queryset
 
-    def authoring_organization_types_filter(self, queryset, name, value):
-        splitted = [x for x in value.split(',') if x]
-        if splitted:
-            queryset = queryset.annotate(
+    def authoring_organization_types_filter(self, qs, name, value):
+        if value:
+            qs = qs.annotate(
                 organization_types=models.functions.Coalesce(
                     'lead__authors__parent__organization_type',
                     'lead__authors__organization_type'
                 )
             )
-            return queryset.filter(organization_types__in=splitted).distinct()
-        return queryset
+            return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
+        return qs
 
 
 class EntryCommentFilterSet(django_filters.FilterSet):
