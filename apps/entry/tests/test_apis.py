@@ -583,42 +583,46 @@ class EntryTests(TestCase):
         organization1 = self.create(Organization, organization_type=organization_type1)
         organization2 = self.create(Organization, organization_type=organization_type2)
         organization3 = self.create(Organization, organization_type=organization_type3)
+        organization4 = self.create(Organization, parent=organization1)
 
         # create lead
         lead = self.create_lead(authors=[organization1])
         lead1 = self.create_lead(authors=[organization2])
         lead2 = self.create_lead(authors=[organization3, organization2])
+        lead3 = self.create_lead(authors=[organization4])
 
         # create entry
         entry = self.create_entry(lead=lead)
         entry1 = self.create_entry(lead=lead1)
         entry2 = self.create_entry(lead=lead2)
-
-        # filter single post
-        filters = {
-            'authoring_organizations': [organization_type1.id],
-        }
-        self.post_filter_test(filters, 1)  # Should return 1 entry
-
-        # filter multiple post
-        filters = {
-            'authoring_organizations': [organization_type1.id, organization_type3.id],
-        }
-        self.post_filter_test(filters, 2)  # Should return 2 entry
+        entry3 = self.create_entry(lead=lead3)
 
         # Test for GET
-        url = '/api/v1/entries/?authoring_organizations={}'
+        url = '/api/v1/entries/?authoring_organization_types={}'
 
+        self.authenticate()
         response = self.client.get(url.format(organization_type1.id))
         self.assert_200(response)
-        assert len(response.data['results']) == 1, "There should be 1 entry"
+        assert len(response.data['results']) == 2, "There should be 2 entry"
 
         # get multiple leads
         organization_type_query = ','.join([
             str(id) for id in [organization_type1.id, organization_type3.id]
         ])
         response = self.client.get(url.format(organization_type_query))
-        assert len(response.data['results']) == 2, "There should be 2 entry"
+        assert len(response.data['results']) == 3, "There should be 3 entry"
+
+        # filter single post
+        filters = {
+            'authoring_organization_types': organization_type1.id
+        }
+        self.post_filter_test(filters, 2)
+
+        filters = {
+            'authoring_organization_types': ','.join([str(id) for id in [organization_type1.id, organization_type3.id]])
+        }
+        self.post_filter_test(filters, 3)
+
 
     # TODO: test export data and filter data apis
 

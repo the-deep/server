@@ -122,11 +122,8 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
         label='Lead Group Label',
         method='lead_group_label_filter',
     )
-    authoring_organizations = django_filters.ModelMultipleChoiceFilter(
-        field_name='lead__authors__organization_type',
-        widget=DjangoFilterCSVWidget,
-        lookup_expr='in',
-        queryset=OrganizationType.objects.all()
+    authoring_organization_types = django_filters.CharFilter(
+        method='authoring_organization_types_filter'
     )
 
     class Meta:
@@ -196,6 +193,18 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
     def lead_group_label_filter(self, queryset, name, value):
         if value:
             return queryset.filter(entrygrouplabel__group__title__icontains=value).distinct()
+        return queryset
+
+    def authoring_organization_types_filter(self, queryset, name, value):
+        splitted = [x for x in value.split(',') if x]
+        if splitted:
+            queryset = queryset.annotate(
+                organization_types=models.functions.Coalesce(
+                    'lead__authors__parent__organization_type',
+                    'lead__authors__organization_type'
+                )
+            )
+            return queryset.filter(organization_types__in=splitted).distinct()
         return queryset
 
 
