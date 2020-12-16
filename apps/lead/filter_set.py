@@ -1,6 +1,7 @@
 from django.db import models
 import django_filters
 
+from deep.filter_set import DjangoFilterCSVWidget
 from user_resource.filters import UserResourceFilterSet
 from project.models import Project
 from organization.models import OrganizationType
@@ -115,8 +116,10 @@ class LeadFilterSet(django_filters.FilterSet):
         method='ordering_filter',
     )
 
-    authoring_organization_types = django_filters.CharFilter(
-        method='authoring_organization_types_filter'
+    authoring_organization_types = django_filters.ModelMultipleChoiceFilter(
+        method='authoring_organization_types_filter',
+        widget=DjangoFilterCSVWidget,
+        queryset=OrganizationType.objects.all(),
     )
 
     class Meta:
@@ -209,13 +212,15 @@ class LeadFilterSet(django_filters.FilterSet):
         return qs
 
     def authoring_organization_types_filter(self, qs, name, value):
-        splitted = [x for x in value.split(',') if x]
-        qs = qs.annotate(organization_types=models.functions.Coalesce(
-                'authors__parent__organization_type',
-                'authors__organization_type'
+        if value:
+            qs = qs.annotate(
+                organization_types=models.functions.Coalesce(
+                    'authors__parent__organization_type',
+                    'authors__organization_type'
+                )
             )
-        ).distinct()
-        return qs.filter(organization_types__in=splitted)
+            return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
+        return qs
 
 
 class LeadGroupFilterSet(UserResourceFilterSet):

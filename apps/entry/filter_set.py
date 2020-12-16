@@ -5,6 +5,7 @@ from django.db import models
 from django.contrib.auth.models import User
 import django_filters
 
+from deep.filter_set import DjangoFilterCSVWidget
 from analysis_framework.models import Filter
 from lead.models import Lead
 from entry.models import (
@@ -12,6 +13,7 @@ from entry.models import (
     EntryComment,
     ProjectEntryLabel,
 )
+from organization.models import OrganizationType
 
 
 # TODO: Find out whether we need to call timezone.make_aware
@@ -120,6 +122,11 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
         label='Lead Group Label',
         method='lead_group_label_filter',
     )
+    authoring_organization_types = django_filters.ModelMultipleChoiceFilter(
+        method='authoring_organization_types_filter',
+        widget=DjangoFilterCSVWidget,
+        queryset=OrganizationType.objects.all(),
+    )
 
     class Meta:
         model = Entry
@@ -189,6 +196,17 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
         if value:
             return queryset.filter(entrygrouplabel__group__title__icontains=value).distinct()
         return queryset
+
+    def authoring_organization_types_filter(self, qs, name, value):
+        if value:
+            qs = qs.annotate(
+                organization_types=models.functions.Coalesce(
+                    'lead__authors__parent__organization_type',
+                    'lead__authors__organization_type'
+                )
+            )
+            return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
+        return qs
 
 
 class EntryCommentFilterSet(django_filters.FilterSet):
