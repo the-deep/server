@@ -1,5 +1,5 @@
 WIDGET_ID = 'matrix2dWidget'
-DATA_VERSION = 1
+DATA_VERSION = 2
 
 
 def update_attribute(widget, data, widget_data):
@@ -59,8 +59,17 @@ def update_attribute(widget, data, widget_data):
                         sector_data.get('title'),
                         [get_ss_title(ss) for ss in subsectors],
                     ])
+
+                    # Without subsectors {sector}-{dimension}-{sub-dimension}
                     report_values.append(
                         '{}-{}-{}'.format(sector_key, key, sub_key)
+                    )
+                    # With subsectors {sector}-{sub-sector}-{dimension}-{sub-dimension}
+                    report_values.extend(
+                        [
+                            '{}-{}-{}-{}'.format(sector_key, ss, key, sub_key)
+                            for ss in subsectors
+                        ]
                     )
 
             if subdim_exists:
