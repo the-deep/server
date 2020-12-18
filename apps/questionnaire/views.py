@@ -278,8 +278,7 @@ class XFormView(views.APIView):
         try:
             return response.Response(xls_form.XLSForm.create_enketo_form(xlsform_file))
         except Exception as e:
-            # TODO: Define and use global validation for non_field_errors for deep client
-            raise exceptions.ValidationError({'non_field_errors': [e]})
+            raise exceptions.ValidationError(str(e))
 
 
 class KoboToolboxExport(views.APIView):
