@@ -19,9 +19,14 @@ class ExportFilterSet(django_filters.rest_framework.FilterSet):
         method='ordering_filter',
     )
 
+    status = django_filters.MultipleChoiceFilter(
+        choices=Export.STATUS_CHOICES,
+        lookup_expr='in'
+    )
+
     class Meta:
         model = Export
-        fields = ['is_preview']
+        fields = ['is_preview', 'archived']
 
     def ordering_filter(self, qs, name, value):
         orderings = [x.strip() for x in value.split(',') if x.strip()]
