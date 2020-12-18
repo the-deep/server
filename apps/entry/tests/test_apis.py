@@ -1,7 +1,9 @@
-from deep.tests import TestCase
 import autofixture
 
 from django.conf import settings
+from reversion.models import Version
+
+from deep.tests import TestCase
 from project.models import Project
 from user.models import User
 from lead.models import Lead
@@ -551,14 +553,27 @@ class EntryTests(TestCase):
         user = self.create(User)
         entry.project.add_member(user, self.normal_role)
         self.authenticate()
-        response = self.client.post(verify_url)
+
+        current_version = Version.objects.get_for_object(entry).count()
+        response = self.client.post(verify_url, {'version_id': current_version}, format='json')
         self.assert_200(response)
         entry.refresh_from_db()
         self.assertTrue(entry.verified)
-        response = self.client.post(unverify_url)
+
+        current_version = Version.objects.get_for_object(entry).count()
+        response = self.client.post(unverify_url, {'version_id': current_version}, format='json')
         self.assert_200(response)
+        response_data = response.json()
+        assert response_data['id'] == entry.pk
+        assert response_data['versionId'] != current_version
+        assert response_data['versionId'] == current_version + 1
         entry.refresh_from_db()
         self.assertFalse(entry.verified)
+
+        # With old current_version
+        response = self.client.post(unverify_url, {'version_id': current_version}, format='json')
+        self.assert_400(response)
+        entry.refresh_from_db()
 
     def test_update_entry_unverifies_verified_entry(self):
         entry = self.create_entry(verified=True)
