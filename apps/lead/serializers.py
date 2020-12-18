@@ -186,13 +186,6 @@ class LeadSerializer(
         read_only_fields = ('author_raw', 'source_raw')
         write_only_on_create_fields = ['emm_triggers', 'emm_entities']
 
-    def get_fields(self, *args, **kwargs):
-        fields = super().get_fields(*args, **kwargs)
-        request = self.context.get('request', None)
-        if request and getattr(request, 'method', None) != 'POST':
-            for field in ['emm_triggers', 'emm_entities']:
-                fields[field].read_only = True
-        return fields
 
     def get_tabular_book(self, obj):
         file = obj.attachment
