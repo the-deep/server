@@ -12,9 +12,8 @@ from jwt_auth.token import AccessToken, TokenError
 from redis_store import redis
 from urllib.parse import parse_qs
 
+from deep import error_codes
 from jwt_auth.errors import (
-    NOT_AUTHENTICATED,
-    AUTHENTICATION_FAILED,
     NotAuthenticatedError,
     UserNotFoundError,
 )
@@ -79,7 +78,7 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
                     # AUTHENTICATION FAILED WITH GIVEN TOKEN
                     self.message.reply_channel.send({
                         'accept': False,
-                        'errorCode': AUTHENTICATION_FAILED,
+                        'errorCode': error_codes.AUTHENTICATION_FAILED,
                         'error': e.message,
                     })
                     return
@@ -102,7 +101,7 @@ class SubscriptionConsumer(JsonWebsocketConsumer):
         # No jwt was passed in the query params, so raise an error
         self.message.reply_channel.send({
             'accept': False,
-            'errorCode': NOT_AUTHENTICATED,
+            'errorCode': error_codes.NOT_AUTHENTICATED,
             'error': 'JWT token not provided for authentication',
         })
 
