@@ -183,6 +183,7 @@ class LeadTests(TestCase):
     def test_create_lead_with_emm(self):
         entity1 = self.create(EMMEntity, name='entity1')
         entity2 = self.create(EMMEntity, name='entity2')
+        entity3 = self.create(EMMEntity, name='entity3')
 
         lead_count = Lead.objects.count()
         project = self.create(Project, role=self.admin_role)
@@ -225,6 +226,16 @@ class LeadTests(TestCase):
 
         # Check emm triggers created
         assert LeadEMMTrigger.objects.filter(lead_id=lead_id).count() == 2
+
+        # This should not change anything in the database
+        data['emm_triggers'] = None
+        data['emm_entities'] = [{'name': entity3.name}]
+        response = self.client.put(f"{url}{r_data['id']}/", data, format='json')
+        self.assert_200(response)
+        assert 'emm_entities' in r_data
+        assert 'emm_triggers' in r_data
+        assert len(r_data['emm_entities']) == 2
+        assert len(r_data['emm_triggers']) == 2
 
     def test_get_lead_check_no_of_entries(self, assignee=None):
         project = self.create(Project, role=self.admin_role)
