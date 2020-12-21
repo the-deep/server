@@ -5,8 +5,9 @@ services:
   - docker
 
 before_install:
+  # TODO: use latest instead of 0.7.0 (After this is fixed https://github.com/codeclimate/test-reporter/issues/449)
   - |
-    curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64\
+    curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-0.7.0-linux-amd64\
     > /tmp/cc-test-reporter
   - chmod +x /tmp/cc-test-reporter
   - get_image() { [[ "$(docker images -q ${1} 2> /dev/null)" != "" ]] && echo ${1} || echo ${2}; }
