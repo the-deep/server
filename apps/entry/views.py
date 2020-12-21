@@ -2,7 +2,6 @@ from collections import OrderedDict, defaultdict
 
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils import timezone
 from rest_framework.decorators import action
 from rest_framework import (
     filters,
@@ -15,16 +14,15 @@ from rest_framework import (
     status,
     mixins,
 )
-from reversion.models import Version
-
 from deep.permissions import ModifyPermission, IsProjectMember, CreateEntryPermission
+
+from django.utils import timezone
 from project.models import Project
 from lead.models import Lead
 from analysis_framework.models import Widget
 from organization.models import OrganizationType
 from analysis_framework.models import Filter
 
-from .errors import EntryValidationVersionMismatchError
 from .widgets import matrix1d_widget, matrix2d_widget
 from .models import (
     Entry, Attribute, FilterData, ExportData, EntryComment,
@@ -237,16 +235,6 @@ class EntryViewSet(EntrySummaryPaginationMixin, viewsets.ModelViewSet):
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
 
-    def _validate_entry_version(self, entry, requested_version):
-        if requested_version is None:
-            raise EntryValidationVersionMismatchError('Version is required')
-        current_entry_version = Version.objects.get_for_object(entry).count()
-        if requested_version != current_entry_version:
-            raise EntryValidationVersionMismatchError(
-                f'Version mismatch. Current version in server: {current_entry_version}.'
-                f' Requested version: {requested_version}'
-            )
-
     @action(
         detail=True,
         permission_classes=[ModifyPermission],
@@ -255,14 +243,8 @@ class EntryViewSet(EntrySummaryPaginationMixin, viewsets.ModelViewSet):
     )
     def verify_entry(self, request, **kwargs):
         entry = self.get_object()
-        self._validate_entry_version(entry, request.data.get('version_id'))
         entry.verify(request.user)
-        return response.Response(
-            self.get_serializer_class()(
-                entry,
-                context=self.get_serializer_context(),
-            ).data
-        )
+        return response.Response(status=status.HTTP_200_OK)
 
     @action(
         detail=True,
@@ -272,14 +254,8 @@ class EntryViewSet(EntrySummaryPaginationMixin, viewsets.ModelViewSet):
     )
     def unverify_entry(self, request, **kwargs):
         entry = self.get_object()
-        self._validate_entry_version(entry, request.data.get('version_id'))
         entry.verify(request.user, verified=False)
-        return response.Response(
-            self.get_serializer_class()(
-                entry,
-                context=self.get_serializer_context(),
-            ).data
-        )
+        return response.Response(status=status.HTTP_200_OK)
 
 
 class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):

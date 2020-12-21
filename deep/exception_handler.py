@@ -3,7 +3,6 @@ import sentry_sdk
 
 from rest_framework.views import exception_handler
 from rest_framework.response import Response
-from rest_framework.exceptions import ErrorDetail as DrfErrorDetail
 from rest_framework import status
 
 from deep.errors import map_error_codes, WARN_EXCEPTIONS
@@ -67,10 +66,7 @@ def custom_exception_handler(exc, context):
     if hasattr(exc, 'message'):
         errors = exc.message
     elif hasattr(exc, 'detail'):
-        if type(exc.detail) is list:
-            errors = [str(error) for error in exc.detail]
-        else:
-            errors = exc.detail
+        errors = exc.detail
     elif response.status_code == 404:
         errors = 'Resource not found'
     else:
@@ -84,10 +80,6 @@ def custom_exception_handler(exc, context):
     if isinstance(errors, str):
         errors = {
             'non_field_errors': [errors],
-        }
-    elif isinstance(errors, list) and all([isinstance(error, str) for error in errors]):
-        errors = {
-            'non_field_errors': errors,
         }
 
     if user_error:

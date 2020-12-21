@@ -1,16 +1,24 @@
 from django.conf import settings
-from deep import error_codes
+
+TOKEN_INVALID = 4001
+NOT_AUTHENTICATED = 4011
+AUTHENTICATION_FAILED = 4012
+INVALID_CAPTCHA = 4004
+
+USER_INACTIVE = 4013
+USER_NOT_FOUND = 4014
+USER_CREDENDIALS_MISSMATCH = 4015
 
 
 class UserNotFoundError(Exception):
     status_code = 401
-    code = error_codes.USER_NOT_FOUND
+    code = USER_NOT_FOUND
     message = 'User not found'
 
 
 class UserInactiveError(Exception):
     status_code = 401
-    code = error_codes.USER_INACTIVE
+    code = USER_INACTIVE
     message = 'User account is deactivated'
 
     def __init__(self, message):
@@ -20,25 +28,25 @@ class UserInactiveError(Exception):
 
 class UnknownTokenError(Exception):
     status_code = 400
-    code = error_codes.TOKEN_INVALID
+    code = TOKEN_INVALID
     message = 'Token contains no valid user identification'
 
 
 class NotAuthenticatedError(Exception):
     status_code = 401
-    code = error_codes.NOT_AUTHENTICATED,
+    code = NOT_AUTHENTICATED,
     message = 'You are not authenticated'
 
 
 class InvalidCaptchaError(Exception):
     status_code = 401
-    code = error_codes.INVALID_CAPTCHA
+    code = INVALID_CAPTCHA
     default_detail = 'Invalid captcha! Please, Try Again'
 
 
 class AuthenticationFailedError(Exception):
     status_code = 400
-    code = error_codes.AUTHENTICATION_FAILED
+    code = AUTHENTICATION_FAILED
     message = 'No active account found with the given credentials'
 
     def __init__(self, login_attempts=None):

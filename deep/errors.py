@@ -1,17 +1,18 @@
-from deep import error_codes
-from jwt_auth.errors import WARN_EXCEPTIONS as JWT_WARN_EXCEPTIONS
-from entry.errors import EntryValidationVersionMismatchError
+from jwt_auth.errors import (
+    NOT_AUTHENTICATED,
+    AUTHENTICATION_FAILED,
+    TOKEN_INVALID,
 
+    WARN_EXCEPTIONS as JWT_WARN_EXCEPTIONS,
+)
 
 error_code_map = {
-    'not_authenticated': error_codes.NOT_AUTHENTICATED,
-    'authentication_failed': error_codes.AUTHENTICATION_FAILED,
+    'not_authenticated': NOT_AUTHENTICATED,
+    'authentication_failed': AUTHENTICATION_FAILED,
 }
 
 
-WARN_EXCEPTIONS = JWT_WARN_EXCEPTIONS + [
-    EntryValidationVersionMismatchError,
-]
+WARN_EXCEPTIONS = JWT_WARN_EXCEPTIONS
 
 
 def map_error_codes(codes, default=None):
@@ -24,6 +25,6 @@ def map_error_codes(codes, default=None):
         return error_code_map.get(codes, default)
 
     if codes == {'non_field_errors': ['invalid']}:
-        return error_codes.TOKEN_INVALID
+        return TOKEN_INVALID
 
     return default

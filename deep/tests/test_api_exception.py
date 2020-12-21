@@ -1,5 +1,5 @@
 from deep.tests import TestCase
-from deep.error_codes import NOT_AUTHENTICATED
+from deep.errors import NOT_AUTHENTICATED
 
 
 class ApiExceptionTests(TestCase):
