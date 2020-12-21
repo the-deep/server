@@ -56,3 +56,17 @@ class ExportTests(TestCase):
         export = Export.objects.get(id=response.data['export_triggered'])
         self.assertTrue(export.pending)
         self.assertEqual(export.exported_by, self.user)
+
+    def test_export_filter_by_status(self):
+        export = self.create(Export, exported_by=self.user, status=Export.SUCCESS, archived=False)
+        export1 = self.create(Export, exported_by=self.user, status=Export.SUCCESS, archived=False)
+        export2 = self.create(Export, exported_by=self.user, status=Export.PENDING, archived=True)
+        export3 = self.create(Export, exported_by=self.user, status=Export.FAILURE, archived=False)
+
+        self.authenticate()
+        response = self.client.get(f'/api/v1/exports/?status={Export.PENDING}&archived={True}')
+        assert response.json()['count'] == 1
+
+        self.authenticate()
+        response = self.client.get(f'/api/v1/exports/?status={Export.PENDING}&status={Export.FAILURE}')
+        assert response.json()['count'] == 2
