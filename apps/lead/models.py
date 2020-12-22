@@ -254,12 +254,6 @@ class Lead(UserResource, ProjectEntityMixin):
             'assessments': Assessment.objects.filter(lead__project_id=project_id, lead__in=lead_ids).count(),
         }
 
-    def get_verified_entries_count(self):
-        # if annotated previously then return as is
-        if hasattr(self, 'verified_entries_count'):
-            return self.verified_entries_count
-        return self.entry_set.filter(verified=True).count()
-
 
 class LeadPreview(models.Model):
     STATUS_CLASSIFICATION_NONE = 'none'  # For leads which are not texts
