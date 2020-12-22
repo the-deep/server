@@ -25,6 +25,7 @@ import django_filters
 
 from deep.permissions import ModifyPermission, CreateLeadPermission, DeleteLeadPermission
 from deep.paginations import AutocompleteSetPagination
+from entry.filter_set import get_filtered_entries
 
 from lead.filter_set import (
     LeadGroupFilterSet,
@@ -210,9 +211,23 @@ class LeadViewSet(viewsets.ModelViewSet):
     )
     def leads_filter(self, request, version=None):
         raw_filter_data = request.data
+        raw_entries_filter_data = raw_filter_data.pop('entries_filter', {})
         filter_data = self._get_processed_filter_data(raw_filter_data)
+        entries_filter_data = raw_entries_filter_data
 
-        qs = LeadFilterSet(data=filter_data, queryset=self.get_queryset()).qs
+        queryset = self.get_queryset()
+        queryset = queryset.annotate(
+            filtered_entries_count=models.functions.Coalesce(
+                models.Subquery(
+                    get_filtered_entries(self.request.user, entries_filter_data).filter(
+                        lead=models.OuterRef('pk')
+                    ).values('lead').order_by().annotate(
+                        count=models.Count('id')
+                    ).values('count')[:1], output_field=models.IntegerField()
+                ), 0
+            )
+        )
+        qs = LeadFilterSet(data=filter_data, queryset=queryset).qs
         page = self.paginate_queryset(qs)
 
         if page is not None:

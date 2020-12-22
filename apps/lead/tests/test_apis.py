@@ -8,6 +8,7 @@ from project.models import (
 from project.serializers import SimpleProjectSerializer
 from geo.models import Region
 
+from entry.models import Entry
 from organization.models import (
     Organization,
     OrganizationType,
@@ -1065,6 +1066,32 @@ class LeadTests(TestCase):
         self.assert_200(resp)
         obtained_ids = {x['id'] for x in resp.data['results']}
         assert expected_ids == obtained_ids
+
+    def test_lead_filter_with_entries_filter(self):
+        project = self.create_project()
+        lead1 = self.create(Lead, project=project, title='mytext')
+        lead2 = self.create(Lead, project=project, source_raw='thisis_mytext')
+        lead3 = self.create(Lead, project=project, website='http://thisis-mytext.com')
+
+        url = '/api/v1/leads/filter/'
+        post_data = {}
+        self.authenticate()
+        response = self.client.post(url, post_data)
+        assert response.json()['count'] == 3
+
+        post_data = {'custom_filters': 'exclude_empty_filtered_entries'}
+        response = self.client.post(url, post_data)
+        assert response.json()['count'] == 0, 'There are not supposed to be leads with entries'
+
+        self.create(Entry, project=project, lead=lead1, verified=True)
+        self.create(Entry, project=project, lead=lead1, verified=False)
+        self.create(Entry, project=project, lead=lead2, verified=False)
+
+        post_data = {'custom_filters': 'exclude_empty_filtered_entries',
+                     'entries_filter': {'verified': True}}
+        response = self.client.post(url, post_data)
+        assert response.json()['count'] == 1
+        assert response.json()['results'][0]['filteredEntriesCount'] == 1, response.json()
 
     def test_filtered_lead_list_with_verified_entries_count(self):
         project = self.create_project()
