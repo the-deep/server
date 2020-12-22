@@ -19,9 +19,15 @@ class ExportFilterSet(django_filters.rest_framework.FilterSet):
         method='ordering_filter',
     )
 
+    status = django_filters.MultipleChoiceFilter(
+        choices=Export.STATUS_CHOICES,
+        lookup_expr='in',
+        widget=django_filters.widgets.CSVWidget
+    )
+
     class Meta:
         model = Export
-        fields = []
+        fields = ['is_archived']
 
     def ordering_filter(self, qs, name, value):
         orderings = [x.strip() for x in value.split(',') if x.strip()]

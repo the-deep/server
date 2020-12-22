@@ -104,7 +104,7 @@ class ExportTests(TestCase):
         response = self.client.patch(url)
         self.assert_404(response)
 
-        # test update by another user 
+        # test update by another user
         url = '/api/v1/exports/{}/'.format(export1.id)
         data = {
             'title': 'Title test'
@@ -112,3 +112,23 @@ class ExportTests(TestCase):
         self.authenticate(user2)
         response = self.client.patch(url)
         self.assert_404(response)
+
+    def test_export_filter_by_status(self):
+        export = self.create(Export, exported_by=self.user, status=Export.SUCCESS)
+        export1 = self.create(Export, exported_by=self.user, status=Export.SUCCESS)
+        export2 = self.create(Export, exported_by=self.user, status=Export.PENDING)
+        export3 = self.create(Export, exported_by=self.user, status=Export.FAILURE)
+
+        self.authenticate()
+        response = self.client.get(f'/api/v1/exports/?status={Export.PENDING}')
+        assert response.json()['count'] == 1
+
+    def test_export_filter_by_archived(self):
+        export = self.create(Export, exported_by=self.user, is_archived=False)
+        export1 = self.create(Export, exported_by=self.user, is_archived=False)
+        export2 = self.create(Export, exported_by=self.user, is_archived=True)
+        export3 = self.create(Export, exported_by=self.user, is_archived=False)
+
+        self.authenticate()
+        response = self.client.get(f'/api/v1/exports/?is_archived={True}')
+        assert response.json()['count'] == 1
