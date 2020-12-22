@@ -2,7 +2,11 @@ from django.contrib.auth.models import User
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
-from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
+from deep.serializers import (
+    RemoveNullFieldsMixin,
+    URLCachedFileField,
+    WriteOnlyOnCreateSerializerMixin
+)
 from user.models import Profile, Feature
 from user.utils import send_password_reset
 from project.models import Project
@@ -28,7 +32,7 @@ class SimpleUserSerializer(RemoveNullFieldsMixin,
         fields = ('id', 'display_name', 'email', 'display_picture')
 
 
-class UserSerializer(RemoveNullFieldsMixin,
+class UserSerializer(RemoveNullFieldsMixin, WriteOnlyOnCreateSerializerMixin,
                      DynamicFieldsMixin, serializers.ModelSerializer):
     organization = serializers.CharField(source='profile.organization',
                                          allow_blank=True)
@@ -71,6 +75,7 @@ class UserSerializer(RemoveNullFieldsMixin,
                   'login_attempts', 'recaptcha_response',
                   'email', 'organization', 'display_picture',
                   'language', 'email_opt_outs')
+        write_only_on_create_fields = ('email', )
 
     def validate_recaptcha_response(self, recaptcha_response):
         if not validate_recaptcha(recaptcha_response):
