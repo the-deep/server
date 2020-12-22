@@ -49,7 +49,7 @@ class UserResourceSerializer(NestedCreateMixin,
     def get_version_id(self, resource):
         if not reversion.is_registered(resource.__class__):
             return None
-        version_id = len(Version.objects.get_for_object(resource))
+        version_id = Version.objects.get_for_object(resource).count()
 
         if self.context['request'].method in ['POST', 'PUT', 'PATCH']:
             version_id += 1
