@@ -56,3 +56,17 @@ class ExportTests(TestCase):
         export = Export.objects.get(id=response.data['export_triggered'])
         self.assertTrue(export.pending)
         self.assertEqual(export.exported_by, self.user)
+
+    def test_delete_export(self):
+        export = self.create(Export, exported_by=self.user)
+        url = '/api/v1/exports/{}/'.format(export.id)
+
+        self.authenticate()
+        response = self.client.delete(url)
+        self.assert_204(response)  # delete from api
+
+        # check for database
+        assert Export.objects.count() == 1  # should not delete from database
+        export_data = Export.objects.get(id=export.id)
+        self.assertEqual(export_data.id, export.id)
+        self.assertEqual(export_data.is_deleted, True)  # should set `is_delted=True`
