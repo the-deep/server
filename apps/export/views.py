@@ -18,6 +18,7 @@ from export.filter_set import (
 )
 
 from export.tasks import export_task
+from export.permissions import ExportViewSetPermission
 
 
 class MetaExtractionView(views.APIView):
@@ -27,12 +28,9 @@ class MetaExtractionView(views.APIView):
         pass
 
 
-class ExportViewSet(mixins.DestroyModelMixin,
-                    mixins.ListModelMixin,
-                    mixins.RetrieveModelMixin,
-                    viewsets.GenericViewSet):
+class ExportViewSet(viewsets.ModelViewSet):
     serializer_class = ExportSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [ExportViewSetPermission]
     filterset_class = ExportFilterSet
 
     def get_queryset(self):
