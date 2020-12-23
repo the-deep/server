@@ -83,5 +83,6 @@ class Export(models.Model):
     @staticmethod
     def get_for(user):
         return Export.objects.filter(
-            exported_by=user
+            exported_by=user,
+            is_deleted=False
         ).distinct()
