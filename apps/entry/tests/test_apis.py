@@ -573,7 +573,6 @@ class EntryTests(TestCase):
         # With old current_version
         response = self.client.post(unverify_url, {'version_id': current_version}, format='json')
         self.assert_400(response)
-        entry.refresh_from_db()
 
     def test_update_entry_unverifies_verified_entry(self):
         entry = self.create_entry(verified=True)

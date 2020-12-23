@@ -311,6 +311,7 @@ def get_unclassified_leads(limit=10):
         text_len__lte=5000  # Texts of length 5000 do not pose huge computation in DEEPL
     ).prefetch_related('leadpreview')[:limit]  # Do not get all the previews, do it in a chunk
 
+
 @shared_task
 def classify_remaining_lead_previews():
     """
