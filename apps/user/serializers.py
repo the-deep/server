@@ -5,7 +5,7 @@ from rest_framework import serializers
 from deep.serializers import (
     RemoveNullFieldsMixin,
     URLCachedFileField,
-    WriteOnlyOnCreateSerializerMixin
+    WriteOnlyOnCreateSerializerMixin,
 )
 from user.models import Profile, Feature
 from user.utils import send_password_reset
@@ -75,7 +75,7 @@ class UserSerializer(RemoveNullFieldsMixin, WriteOnlyOnCreateSerializerMixin,
                   'login_attempts', 'recaptcha_response',
                   'email', 'organization', 'display_picture',
                   'language', 'email_opt_outs')
-        write_only_on_create_fields = ('email', )
+        write_only_on_create_fields = ('email', 'username')
 
     def validate_recaptcha_response(self, recaptcha_response):
         if not validate_recaptcha(recaptcha_response):

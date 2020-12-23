@@ -38,20 +38,23 @@ class UserApiTests(TestCase):
         self.assertEqual(r_data['username'], data['username'])
 
         data1 = {
-            'email': 'hari.krishna@gmail.com'
+            'email': 'hari.krishna@gmail.com',
+            'username': 'hari.krishna@gmail.com'
         }
         user= User.objects.get(id=r_data['id'])
         self.authenticate(user=user)
         response = self.client.patch(f"{url}{r_data['id']}/", data1)
         self.assert_200(response)  # authenticate user with same user id
-        self.assertEqual(response.data['email'], data['email'])  #should return previous email
+        self.assertEqual(response.data['email'], data['email'])  # Should return previous email
+        self.assertEqual(response.data['username'], data['username'])  # Should return previous username
 
         data1 = {
-            'email': 'hari.krishna@gmail.com'
+            'email': 'hari.krishna@gmail.com',
+            'username': 'hari.krishna@gmail.com'
         }
         self.authenticate()
         response = self.client.patch(f"{url}{r_data['id']}/", data1)
-        self.assert_403(response)  #authenticate user with different user id
+        self.assert_403(response)  # Authenticate user with different user id
 
     def test_active_project(self):
         # Create a project with self.user as member
