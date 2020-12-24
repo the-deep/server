@@ -195,6 +195,12 @@ class LeadViewSet(viewsets.ModelViewSet):
             emm_info = self._get_extra_emm_info(qs)
         return response.Response(emm_info)
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if self.action == 'leads_filter':
+            context['post_is_used_for_filter'] = True
+        return context
+
     @action(
         detail=False,
         permission_classes=[permissions.IsAuthenticated],
