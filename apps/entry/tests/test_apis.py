@@ -18,6 +18,7 @@ from entry.models import (
     ProjectEntryLabel,
     LeadEntryGroup,
     EntryGroupLabel,
+    EntryComment,
 )
 
 from gallery.models import File
@@ -738,3 +739,44 @@ class EntryTest(TestCase):
         self.assertEqual(summ['totalSources'], len({org1, org3}))
         self.assertTrue({'org': {'id': org_type1.id, 'shortName': org_type1.short_name, 'title': org_type1.title}, 'count': 2} in summ['orgTypeCount'])
         self.assertTrue({'org': {'id': org_type2.id, 'shortName': org_type2.short_name, 'title': org_type2.title}, 'count': 1} in summ['orgTypeCount'])
+
+
+class EntryCommentTest(TestCase):
+    def test_entry_comment_assignee_in_project(self):
+        user1 = self.create(User)
+        user2 = self.create(User)
+
+        project = self.create_project(role=self.admin_role)
+        lead = self.create_lead(project=project)
+        entry = self.create_entry(lead=lead, project=project)
+        entry.project.add_member(user1)
+
+        url = '/api/v1/entry-comments/'
+        data = {
+            'text': 'test_entry_comment',
+            'entry': entry.id,
+            'assignees': [user1.id],
+        }
+        self.authenticate(user1)
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+    def test_entry_comment_assignee_not_in_project(self):
+        user1 = self.create(User)
+        user2 = self.create(User)
+
+        project = self.create_project(role=self.admin_role)
+        lead = self.create_lead(project=project)
+        entry = self.create_entry(lead=lead, project=project)
+        entry.project.add_member(user1)
+
+        url = '/api/v1/entry-comments/'
+        data = {
+            'text': 'test_entry_comment',
+            'entry': entry.id,
+            'assignees': [user2.id],
+        }
+        self.authenticate(user1)
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        assert 'assignees' in response.data['errors']

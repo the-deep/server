@@ -20,6 +20,8 @@ from geo.serializers import SimpleRegionSerializer
 from tabular.serializers import FieldProcessedOnlySerializer
 from user.serializers import EntryCommentUserSerializer, ComprehensiveUserSerializer, SimpleUserSerializer
 from .widgets.store import widget_store
+from project.models import ProjectMembership
+
 
 from .models import (
     Attribute,
@@ -437,6 +439,11 @@ class EntryCommentSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
+        assignees = data.get('assignees')
+        entry = data.get('entry')
+        is_assignee = set(ProjectMembership.objects.filter(project=entry.project, member__in=assignees).values_list('member', flat=True).distinct()) == set([a.id for a in assignees])
+        if not is_assignee:
+            raise serializers.ValidationError({'assignees': "Cannot assign assignees to this entry_comment"})
         is_patch = self.context['request'].method == 'PATCH'
         if self.instance and self.instance.is_resolved:
             raise serializers.ValidationError('Comment is resolved, no changes allowed')
