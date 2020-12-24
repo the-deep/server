@@ -22,8 +22,8 @@
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            38 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">38 run</button>
+            40 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">40 run</button>
             <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">0 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">0 partial</button>
@@ -106,15 +106,17 @@
     <p id="t51" class="run"><span class="n"><a href="#t51">51</a></span><span class="t">            <span class="key">return</span> <span class="key">None</span>&nbsp;</span><span class="r"></span></p>
     <p id="t52" class="run"><span class="n"><a href="#t52">52</a></span><span class="t">        <span class="nam">version_id</span> <span class="op">=</span> <span class="nam">Version</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">get_for_object</span><span class="op">(</span><span class="nam">resource</span><span class="op">)</span><span class="op">.</span><span class="nam">count</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t53" class="pln"><span class="n"><a href="#t53">53</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t54" class="run"><span class="n"><a href="#t54">54</a></span><span class="t">        <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">context</span><span class="op">[</span><span class="str">'request'</span><span class="op">]</span><span class="op">.</span><span class="nam">method</span> <span class="key">in</span> <span class="op">[</span><span class="str">'POST'</span><span class="op">,</span> <span class="str">'PUT'</span><span class="op">,</span> <span class="str">'PATCH'</span><span class="op">]</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t55" class="run"><span class="n"><a href="#t55">55</a></span><span class="t">            <span class="nam">version_id</span> <span class="op">+=</span> <span class="num">1</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t56" class="run"><span class="n"><a href="#t56">56</a></span><span class="t">        <span class="key">return</span> <span class="nam">version_id</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t54" class="run"><span class="n"><a href="#t54">54</a></span><span class="t">        <span class="nam">request</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">context</span><span class="op">[</span><span class="str">'request'</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t55" class="run"><span class="n"><a href="#t55">55</a></span><span class="t">        <span class="key">if</span> <span class="nam">request</span><span class="op">.</span><span class="nam">method</span> <span class="key">in</span> <span class="op">[</span><span class="str">'POST'</span><span class="op">,</span> <span class="str">'PUT'</span><span class="op">,</span> <span class="str">'PATCH'</span><span class="op">]</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t56" class="run"><span class="n"><a href="#t56">56</a></span><span class="t">            <span class="key">if</span> <span class="key">not</span> <span class="op">(</span><span class="nam">request</span><span class="op">.</span><span class="nam">method</span> <span class="op">==</span> <span class="str">'POST'</span> <span class="key">and</span> <span class="nam">self</span><span class="op">.</span><span class="nam">context</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'post_is_used_for_filter'</span><span class="op">,</span> <span class="key">False</span><span class="op">)</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t57" class="run"><span class="n"><a href="#t57">57</a></span><span class="t">                <span class="nam">version_id</span> <span class="op">+=</span> <span class="num">1</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t58" class="run"><span class="n"><a href="#t58">58</a></span><span class="t">        <span class="key">return</span> <span class="nam">version_id</span>&nbsp;</span><span class="r"></span></p>
 </div>
 <div id="footer">
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.3.1</a>,
-            created at 2020-12-23 05:05 +0000
+            created at 2020-12-24 05:51 +0000
         </p>
     </div>
 </div>
