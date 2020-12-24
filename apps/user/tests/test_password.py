@@ -14,4 +14,4 @@ class PasswordCheckerTest(TestCase):
 
         with self.assertRaises(ValidationError) as vd:
             CustomMaximumLengthValidator(max_length=128).validate('12'*129)
-        self.assertEqual(vd.exception.messages, [expected_error % 128])
+        self.assertEqual(vd.exception.error_list[0].code, 'password_too_long')

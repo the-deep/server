@@ -1,5 +1,6 @@
 from deep.tests import TestCase
 from user.models import User
+from django.core.exceptions import ValidationError
 
 
 class JwtApiTests(TestCase):
@@ -37,3 +38,14 @@ class JwtApiTests(TestCase):
 
         response = self.client.post(url, data)
         self.assert_200(response)
+
+    def test_login_with_password_greater_than_128_characters(self):
+        data = {
+            'username': "Hari@gmail.com",
+            "password": 'a'*130
+        }
+        url = '/api/v1/token/'
+
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        assert 'password' in response.data['errors']
