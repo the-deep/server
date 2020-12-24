@@ -341,6 +341,7 @@ class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
         serializer_class = self.get_serializer_class()
         context = self.get_serializer_context()
         context['entry_group_label_count'] = entry_group_label_count
+        context['post_is_used_for_filter'] = True
 
         if page is not None:
             serializer = serializer_class(page, many=True, context=context)
