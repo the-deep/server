@@ -198,6 +198,7 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.'
         'NumericPasswordValidator',
     },
+    # NOTE: Using django admin panel for password reset/change
     {
         'NAME': 'user.validators.CustomMaximumLengthValidator',
     },

@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib.auth import authenticate, models
+from django.contrib.auth import authenticate, models, password_validation 
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
@@ -23,6 +23,10 @@ class TokenObtainPairSerializer(serializers.Serializer):
     def validate_recaptcha(self, recaptcha_response):
         if not validate_recaptcha(recaptcha_response):
             raise InvalidCaptchaError
+
+    def validate_password(self, value):
+        password_validation.validate_password(value, self.instance)
+        return value
 
     def deactivate_account(self, user):
         if user.profile.login_attempts == settings.MAX_LOGIN_ATTEMPTS:
