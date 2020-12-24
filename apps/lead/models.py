@@ -186,11 +186,16 @@ class Lead(UserResource, ProjectEntityMixin):
                 transaction.on_commit(lambda: extract_from_lead.delay(self.id))
 
     @classmethod
-    def get_for(cls, user):
+    def get_for(cls, user, filters=None):
         """
         Lead can only be accessed by users who have access to
         it's project along with required permissions
+        param: filters: filters that need to be applied into queryset
         """
+        from entry.filter_set import get_filtered_entries
+
+        filters = filters or dict()
+
         view_unprotected_perm_value = PROJECT_PERMISSIONS.lead.view_only_unprotected
         view_perm_value = PROJECT_PERMISSIONS.lead.view
 
@@ -217,6 +222,29 @@ class Lead(UserResource, ProjectEntityMixin):
             ) |
             # Or, return nothing if view_all is not present
             models.Q(view_all=view_perm_value)
+        )
+        # filter entries
+        entries_filter_data = filters.get('entries_filter_data', {})
+        qs = qs.annotate(
+            filtered_entries_count=models.functions.Coalesce(
+                models.Subquery(
+                    get_filtered_entries(user, entries_filter_data).filter(
+                        lead=models.OuterRef('pk')
+                    ).annotate(
+                        count=models.Count('id')
+                    ).values('count')[:1], output_field=models.IntegerField()
+                ), 0
+            ),
+            verified_filtered_entries_count=models.functions.Coalesce(
+                models.Subquery(
+                    get_filtered_entries(user, entries_filter_data).filter(
+                        lead=models.OuterRef('pk'),
+                        verified=True
+                    ).annotate(
+                        count=models.Count('id')
+                    ).values('count')[:1], output_field=models.IntegerField()
+                ), 0
+            ),
         )
         return qs.annotate(
             no_of_entries=models.Count('entry', distinct=True),
