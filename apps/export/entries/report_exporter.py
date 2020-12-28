@@ -493,6 +493,7 @@ class ReportExporter:
             levels,
             level_entries_map,
             valid_levels,
+            is_preview,
             structures=None,
             heading_level=2,
     ):
@@ -517,6 +518,8 @@ class ReportExporter:
                 self.doc.add_paragraph()
 
             if entries:
+                if is_preview:
+                    [self._generate_for_entry(entry) for entry in entries[:50]]
                 [self._generate_for_entry(entry) for entry in entries]
 
             if sublevels:
@@ -535,11 +538,14 @@ class ReportExporter:
                     heading_level + 1,
                 )
 
-    def _generate_for_uncategorized(self, entries):
+    def _generate_for_uncategorized(self, entries, is_preview):
         entries = entries.exclude(
             Q(exportdata__data__report__keys__isnull=False) |
             Q(exportdata__data__report__keys__len__gt=0)
         )
+        if is_preview:
+            entries = entries[:50]
+
         if entries.count() == 0:
             return
 
@@ -561,7 +567,7 @@ class ReportExporter:
         self.legend_heading = self.doc.add_heading('Legends', 2)
         self.legend_paragraph = self.doc.add_paragraph()
 
-    def add_entries(self, entries):
+    def add_entries(self, entries, is_preview=False):
         """
         Add entries and generate parapgraphs for all entries
         """
@@ -614,11 +620,11 @@ class ReportExporter:
                 s.get('levels') for s in self.structure
                 if str(s['id']) == str(exportable.id)
             ), None)
-            self._generate_for_levels(levels, level_entries_map,
+            self._generate_for_levels(levels, level_entries_map, is_preview,
                                       valid_levels, structures)
 
         if uncategorized:
-            self._generate_for_uncategorized(entries)
+            self._generate_for_uncategorized(entries, is_preview)
         if entries:
             self._generate_legend_page(entries[0].project)
 
