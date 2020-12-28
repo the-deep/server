@@ -14,6 +14,7 @@ def export_entries(export):
     user = export.exported_by
     project_id = export.project.id
     export_type = export.export_type
+    is_preview = export.is_preview
 
     filters = export.filters
     queryset = get_filtered_entries(user, filters).prefetch_related(
@@ -45,7 +46,7 @@ def export_entries(export):
         decoupled = filters.get('decoupled', True)
         export_data = ExcelExporter(queryset, decoupled, project_id)\
             .load_exportables(exportables, regions)\
-            .add_entries(queryset)\
+            .add_entries(queryset, is_preview)\
             .export()
 
     elif export_type == Export.REPORT:
@@ -60,13 +61,13 @@ def export_entries(export):
             .load_structure(report_structure)\
             .load_group_lables(queryset, show_groups)\
             .load_text_from_text_widgets(queryset, text_widget_ids)\
-            .add_entries(queryset)\
+            .add_entries(queryset, is_preview)\
             .export(pdf=pdf)
 
     elif export_type == Export.JSON:
         export_data = JsonExporter()\
             .load_exportables(exportables)\
-            .add_entries(queryset)\
+            .add_entries(queryset, is_preview)\
             .export()
 
     else:
