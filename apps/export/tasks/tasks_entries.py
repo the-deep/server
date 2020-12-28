@@ -8,6 +8,7 @@ from export.entries.excel_exporter import ExcelExporter
 from export.entries.report_exporter import ReportExporter
 from export.entries.json_exporter import JsonExporter
 from geo.models import Region
+from lead.filter_set import LeadFilterSet
 
 
 def export_entries(export):
@@ -17,7 +18,27 @@ def export_entries(export):
     is_preview = export.is_preview
 
     filters = export.filters
-    queryset = get_filtered_entries(user, filters).prefetch_related(
+    # remove lead so that it can be used to include or exclude
+    lead_ids = filters.pop('lead', [])
+    include_leads = filters.get('include_leads', True)
+    queryset = get_filtered_entries(user, filters)
+    if not include_leads:
+        lead_filters = filters.get('lead_filters', dict())
+        all_leads = Lead.get_for(
+            user,
+            dict(entries_filter_data=lead_filters.pop('entries_filter', dict()))
+        )
+        all_leads = LeadFilterSet(data=lead_filters, queryset=all_leads).qs
+        queryset = queryset.filter(
+            lead_id__in=all_leads
+        ).exclude(
+            lead_id__in=lead_ids
+        )
+    else:
+        queryset = queryset.filter(
+            lead_id__in=lead_ids
+        )
+    queryset = queryset.prefetch_related(
         'entrygrouplabel_set'
     )
     queryset = Entry.get_exportable_queryset(queryset)
