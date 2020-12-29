@@ -11,6 +11,7 @@ from export.assessments import ExcelExporter, NewExcelExporter
 def export_assessments(export):
     project = export.project
     export_type = export.export_type
+    is_preview = export.is_preview
 
     arys = Assessment.objects.filter(lead__project=project).distinct()
     if export_type == Export.JSON:
@@ -23,7 +24,7 @@ def export_assessments(export):
     elif export_type == Export.EXCEL:
         sheets_data = get_export_data_for_assessments(arys)
         export_data = NewExcelExporter(sheets_data)\
-            .export()
+            .export(is_preview)
     else:
         raise Exception(
             '(Assessments Export) Unkown Export Type Provided: {} for Export:'.format(export_type, export.id),
@@ -35,6 +36,7 @@ def export_assessments(export):
 def export_planned_assessments(export):
     project = export.project
     export_type = export.export_type
+    is_preview = export.is_preview
 
     arys = PlannedAssessment.objects.filter(project=project).distinct()
     if export_type == Export.JSON:
@@ -47,7 +49,7 @@ def export_planned_assessments(export):
     elif export_type == Export.EXCEL:
         sheets_data = get_export_data_for_planned_assessments(arys)
         export_data = NewExcelExporter(sheets_data)\
-            .export()
+            .export(is_preview)
     else:
         raise Exception(
             '(Assessments Export) Unkown Export Type Provided: {} for Export:'.format(export_type, export.id),

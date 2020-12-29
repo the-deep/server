@@ -464,7 +464,7 @@ class ExcelExporter:
                 [[author, source, published, f'=HYPERLINK("{url}", "{title}")' if url else title]]
             )
 
-    def export(self):
+    def export(self, is_preview=False):
         """
         Export and return export data
         """
@@ -476,5 +476,8 @@ class ExcelExporter:
         self.add_bibliography_sheet()
 
         buffer = self.wb.save()
-        filename = generate_filename('Entries Export', 'xlsx')
+        if is_preview:
+            filename = generate_filename('Preview Entries Export', 'xlsx')
+        else:
+            filename = generate_filename('Entries Export', 'xlsx')
         return filename, Export.XLSX, EXCEL_MIME_TYPE, ContentFile(buffer)

@@ -630,7 +630,7 @@ class ReportExporter:
 
         return self
 
-    def export(self, pdf=False):
+    def export(self, pdf=False, is_preview=False):
         """
         Export and return export data
         """
@@ -682,8 +682,10 @@ class ReportExporter:
 
             call(['libreoffice', '--headless', '--convert-to',
                   'pdf', temp_doc.name, '--outdir', settings.TEMP_DIR])
-
-            filename = generate_filename('Entries General Export', 'pdf')
+            if is_preview:
+                filename = generate_filename('Preview Entries General Export', 'pdf')
+            else:
+                filename = generate_filename('Entries General Export', 'pdf')
             file = File(open(temp_pdf, 'rb'))
             export_format = Export.PDF
             export_mime_type = PDF_MIME_TYPE
@@ -694,8 +696,10 @@ class ReportExporter:
 
         else:
             buffer = self.doc.save()
-
-            filename = generate_filename('Entries General Export', 'docx')
+            if is_preview:
+                filename = generate_filename('Preview Entries General Export', 'pdf')
+            else:
+                filename = generate_filename('Entries General Export', 'pdf')
             file = ContentFile(buffer)
             export_format = Export.DOCX
             export_mime_type = DOCX_MIME_TYPE

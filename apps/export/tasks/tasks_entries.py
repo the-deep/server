@@ -47,7 +47,7 @@ def export_entries(export):
         export_data = ExcelExporter(queryset, decoupled, project_id)\
             .load_exportables(exportables, regions)\
             .add_entries(queryset, is_preview)\
-            .export()
+            .export(is_preview)
 
     elif export_type == Export.REPORT:
         report_structure = filters.get('report_structure')
@@ -62,13 +62,13 @@ def export_entries(export):
             .load_group_lables(queryset, show_groups)\
             .load_text_from_text_widgets(queryset, text_widget_ids)\
             .add_entries(queryset, is_preview)\
-            .export(pdf=pdf)
+            .export(is_preview, pdf=pdf)
 
     elif export_type == Export.JSON:
         export_data = JsonExporter()\
             .load_exportables(exportables)\
             .add_entries(queryset, is_preview)\
-            .export()
+            .export(is_preview)
 
     else:
         raise Exception('(Entries Export) Unkown Export Type Provided: {} for Export:'.format(export_type, export.id))
