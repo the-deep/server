@@ -67,14 +67,11 @@ class JsonExporter:
             self.data['entries'].append(data)
         return self
 
-    def export(self, is_preview=False):
+    def export(self):
         """
         Export and return export data
         """
-        if is_preview:
-            filename = generate_filename('Preview Entries JSON Export', 'json')
-        else:
-            filename = generate_filename('Entries JSON Export', 'json')
+        filename = generate_filename('Entries JSON Export', 'json')
         json_data = json.dumps(self.data, sort_keys=True, indent=2,
                                cls=DjangoJSONEncoder).encode('utf-8')
 
