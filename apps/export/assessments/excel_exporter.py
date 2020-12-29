@@ -153,7 +153,7 @@ class ExcelExporter:
 
             self._excel_rows.append(rows)
 
-    def export(self):
+    def export(self, is_preview=False):
         # Generate rows
         self.assessments_to_rows()
 
@@ -188,7 +188,10 @@ class ExcelExporter:
             self.split.set_col_types(self.col_types)
 
         buffer = self.wb.save()
-        filename = generate_filename('Assessments Export', 'xlsx')
+        if is_preview:
+            filename = generate_filename(' Preview Assessments Export', 'xlsx')
+        else:
+            filename = generate_filename('Assessments Export', 'xlsx')
         return filename, Export.XLSX, EXCEL_MIME_TYPE, ContentFile(buffer)
 
 
@@ -279,7 +282,7 @@ class NewExcelExporter:
                     row.extend(rowdata)
                 self.wb_sheets[sheet].append([row])
 
-    def export(self):
+    def export(self, is_preview=False):
         # Write cols header first
         self.add_headers()
 
@@ -291,5 +294,8 @@ class NewExcelExporter:
             self.wb.wb.remove(self.wb.wb.get_sheet_by_name('Sheet'))
 
         buffer = self.wb.save()
-        filename = generate_filename('Assessments Export', 'xlsx')
+        if is_preview:
+            filename = generate_filename('Preview Assessments Export', 'xlsx')
+        else:
+            filename = generate_filename('Assessments Export', 'xlsx')
         return filename, Export.XLSX, EXCEL_MIME_TYPE, ContentFile(buffer)
