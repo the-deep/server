@@ -225,7 +225,12 @@ class Lead(UserResource, ProjectEntityMixin):
         )
         # filter entries
         entries_filter_data = filters.get('entries_filter_data', {})
-        qs = qs.annotate(
+
+        return qs.annotate(
+            entries_count=models.Count('entry', distinct=True),
+            assessment_id=models.F('assessment'),
+            verified_entries_count=models.Count('entry',
+                                                filter=models.Q(entry__verified=True)),
             filtered_entries_count=models.functions.Coalesce(
                 models.Subquery(
                     get_filtered_entries(user, entries_filter_data).filter(
@@ -234,7 +239,7 @@ class Lead(UserResource, ProjectEntityMixin):
                         count=models.Count('id')
                     ).values('count')[:1], output_field=models.IntegerField()
                 ), 0
-            ),
+            ) if entries_filter_data else F('entries_count'),
             verified_filtered_entries_count=models.functions.Coalesce(
                 models.Subquery(
                     get_filtered_entries(user, entries_filter_data).filter(
@@ -244,13 +249,7 @@ class Lead(UserResource, ProjectEntityMixin):
                         count=models.Count('id')
                     ).values('count')[:1], output_field=models.IntegerField()
                 ), 0
-            ),
-        )
-        return qs.annotate(
-            no_of_entries=models.Count('entry', distinct=True),
-            assessment_id=models.F('assessment'),
-            verified_entries_count=models.Count('entry',
-                                                filter=models.Q(entry__verified=True)),
+            ) if entries_filter_data else F('verified_entries_count'),
         )
 
     def get_assignee(self):
