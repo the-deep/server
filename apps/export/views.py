@@ -6,7 +6,6 @@ from rest_framework import (
     views,
     viewsets,
     status,
-    mixins
 )
 
 from export.serializers import ExportSerializer
@@ -18,7 +17,6 @@ from export.filter_set import (
 )
 
 from export.tasks import export_task
-from export.permissions import ExportViewSetPermission
 
 
 class MetaExtractionView(views.APIView):
@@ -30,7 +28,7 @@ class MetaExtractionView(views.APIView):
 
 class ExportViewSet(viewsets.ModelViewSet):
     serializer_class = ExportSerializer
-    permission_classes = [ExportViewSetPermission]
+    permission_classes = [permissions.IsAuthenticated]
     filterset_class = ExportFilterSet
 
     def get_queryset(self):
