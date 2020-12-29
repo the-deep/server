@@ -696,7 +696,8 @@ class ReportExporter:
 
         else:
             buffer = self.doc.save()
-            filename = generate_filename('Entries General Export', 'pdf')
+
+            filename = generate_filename('Entries General Export', 'docx')
             file = ContentFile(buffer)
             export_format = Export.DOCX
             export_mime_type = DOCX_MIME_TYPE
