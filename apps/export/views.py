@@ -26,13 +26,19 @@ class MetaExtractionView(views.APIView):
         pass
 
 
-class ExportViewSet(viewsets.ReadOnlyModelViewSet):
+class ExportViewSet(viewsets.ModelViewSet):
     serializer_class = ExportSerializer
     permission_classes = [permissions.IsAuthenticated]
     filterset_class = ExportFilterSet
 
     def get_queryset(self):
         return Export.get_for(self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        export = self.get_object()
+        export.is_deleted = True
+        export.save()
+        return response.Response({}, status=status.HTTP_204_NO_CONTENT)
 
 
 class ExportTriggerView(views.APIView):
