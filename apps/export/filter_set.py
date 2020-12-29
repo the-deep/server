@@ -21,7 +21,7 @@ class ExportFilterSet(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = Export
-        fields = ['is_preview']
+        fields = []
 
     def ordering_filter(self, qs, name, value):
         orderings = [x.strip() for x in value.split(',') if x.strip()]

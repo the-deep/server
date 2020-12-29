@@ -50,7 +50,8 @@ class ExportDataVersionMismatch(Exception):
 
 
 class ReportExporter:
-    def __init__(self, exporting_widgets=None):
+    def __init__(self, exporting_widgets=None, is_preview=False):
+        self.is_preview = is_preview
         self.doc = Document(
             os.path.join(settings.APPS_DIR, 'static/doc_export/template.docx')
         )
@@ -493,7 +494,6 @@ class ReportExporter:
             levels,
             level_entries_map,
             valid_levels,
-            is_preview,
             structures=None,
             heading_level=2,
     ):
@@ -518,9 +518,8 @@ class ReportExporter:
                 self.doc.add_paragraph()
 
             if entries:
-                if is_preview:
-                    [self._generate_for_entry(entry) for entry in entries[:50]]
-                [self._generate_for_entry(entry) for entry in entries]
+                iterable_entries = entries[:Export.PREVIEW_ENTRY_SIZE] if self.is_preview else entries
+                [self._generate_for_entry(entry) for entry in iterable_entries]
 
             if sublevels:
                 substructures = None
@@ -538,21 +537,23 @@ class ReportExporter:
                     heading_level + 1,
                 )
 
-    def _generate_for_uncategorized(self, entries, is_preview):
+    def _generate_for_uncategorized(self, entries, categorized_entry_processed):
         entries = entries.exclude(
             Q(exportdata__data__report__keys__isnull=False) |
             Q(exportdata__data__report__keys__len__gt=0)
         )
-        if is_preview:
-            entries = entries[:50]
 
         if entries.count() == 0:
+            return
+
+        if self.is_preview and categorized_entry_processed >= Export.PREVIEW_ENTRY_SIZE:
             return
 
         self.doc.add_heading('Uncategorized', 2)
         self.doc.add_paragraph()
 
-        for entry in entries:
+        iterable_entries = entries[:Export.PREVIEW_ENTRY_SIZE - categorized_entry_processed] if self.is_preview else entries
+        for entry in iterable_entries:
             self._generate_for_entry(entry)
 
     def pre_build_document(self, project):
@@ -567,7 +568,7 @@ class ReportExporter:
         self.legend_heading = self.doc.add_heading('Legends', 2)
         self.legend_paragraph = self.doc.add_paragraph()
 
-    def add_entries(self, entries, is_preview=False):
+    def add_entries(self, entries):
         """
         Add entries and generate parapgraphs for all entries
         """
@@ -576,6 +577,7 @@ class ReportExporter:
         exportables = self.exportables
         af_levels_map = dict((str(level.get('id')), level.get('levels')) for level in self.levels)
         uncategorized = False
+        categorized_entry_processed = 0  # NOTE: Used for preview limit only
 
         if self.structure:
             ids = [s['id'] for s in self.structure]
@@ -599,7 +601,9 @@ class ReportExporter:
 
             level_entries_map = {}
             valid_levels = []
-            for entry in entries:
+
+            iterable_entries = entries[:Export.PREVIEW_ENTRY_SIZE] if self.is_preview else entries
+            for entry in iterable_entries:
                 # TODO
                 # Set entry.report_data to all exportdata for all exportable
                 # for this entry for later use
@@ -615,22 +619,23 @@ class ReportExporter:
                         entry, export_data.data.get('report').get('keys'),
                         levels, level_entries_map, valid_levels,
                     )
+                    categorized_entry_processed += 1
 
             structures = self.structure and next((
                 s.get('levels') for s in self.structure
                 if str(s['id']) == str(exportable.id)
             ), None)
-            self._generate_for_levels(levels, level_entries_map, is_preview,
+            self._generate_for_levels(levels, level_entries_map,
                                       valid_levels, structures)
 
         if uncategorized:
-            self._generate_for_uncategorized(entries, is_preview)
+            self._generate_for_uncategorized(entries, categorized_entry_processed)
         if entries:
             self._generate_legend_page(entries[0].project)
 
         return self
 
-    def export(self, pdf=False, is_preview=False):
+    def export(self, pdf=False):
         """
         Export and return export data
         """
@@ -677,15 +682,10 @@ class ReportExporter:
             self.doc.save_to_file(temp_doc)
 
             filename = temp_doc.name.split('/')[-1]
-            temp_pdf = os.path.join(settings.TEMP_DIR,
-                                    '{}.pdf'.format(filename))
+            temp_pdf = os.path.join(settings.TEMP_DIR, '{}.pdf'.format(filename))
 
-            call(['libreoffice', '--headless', '--convert-to',
-                  'pdf', temp_doc.name, '--outdir', settings.TEMP_DIR])
-            if is_preview:
-                filename = generate_filename('Preview Entries General Export', 'pdf')
-            else:
-                filename = generate_filename('Entries General Export', 'pdf')
+            call(['libreoffice', '--headless', '--convert-to', 'pdf', temp_doc.name, '--outdir', settings.TEMP_DIR])
+            filename = generate_filename('Entries General Export', 'pdf')
             file = File(open(temp_pdf, 'rb'))
             export_format = Export.PDF
             export_mime_type = PDF_MIME_TYPE
@@ -696,10 +696,7 @@ class ReportExporter:
 
         else:
             buffer = self.doc.save()
-            if is_preview:
-                filename = generate_filename('Preview Entries General Export', 'pdf')
-            else:
-                filename = generate_filename('Entries General Export', 'pdf')
+            filename = generate_filename('Entries General Export', 'pdf')
             file = ContentFile(buffer)
             export_format = Export.DOCX
             export_mime_type = DOCX_MIME_TYPE

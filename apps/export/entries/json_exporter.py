@@ -10,7 +10,8 @@ import json
 
 
 class JsonExporter:
-    def __init__(self):
+    def __init__(self, is_preview=False):
+        self.is_preview = is_preview
         self.data = {}
 
     def load_exportables(self, exportables):
@@ -36,7 +37,9 @@ class JsonExporter:
 
     def add_entries(self, entries):
         self.data['entries'] = []
-        for entry in entries:
+
+        iterable_entries = entries[:Export.PREVIEW_ENTRY_SIZE] if self.is_preview else entries
+        for entry in iterable_entries:
             lead = entry.lead
             data = {}
             data['id'] = entry.id
