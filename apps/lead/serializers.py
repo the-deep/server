@@ -125,10 +125,11 @@ class LeadSerializer(
     Lead Model Serializer
     """
     # annotated in lead.get_for
-    no_of_entries = serializers.IntegerField(read_only=True)
+    entries_count = serializers.IntegerField(read_only=True)
     verified_entries_count = serializers.IntegerField(read_only=True)
-    # annotated in LeadViewSet filter
     filtered_entries_count = serializers.IntegerField(read_only=True)
+    verified_filtered_entries_count = serializers.IntegerField(read_only=True)
+    
     assessment_id = serializers.IntegerField(read_only=True)
 
     priority_display = serializers.CharField(source='get_priority_display', read_only=True)
