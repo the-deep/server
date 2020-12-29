@@ -338,15 +338,15 @@ CELERY_BEAT_SCHEDULE = {
 CHANNEL_REDIS_URL = os.environ.get('CHANNEL_REDIS_URL', 'redis://redis:6379/1')
 
 # CHANNELS CONFIG
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'asgi_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [CHANNEL_REDIS_URL],
-        },
-        'ROUTING': 'deep.routing.channel_routing',
-    },
-}
+# CHANNEL_LAYERS = {
+#    'default': {
+#        'BACKEND': 'asgi_redis.core.RedisChannelLayer',
+#        'CONFIG': {
+#            'hosts': [CHANNEL_REDIS_URL],
+#        },
+#        'ROUTING': 'deep.routing.channel_routing',
+#    },
+# }
 
 DJANGO_CACHE_REDIS_URL = os.environ.get('DJANGO_CACHE_REDIS_URL', 'redis://redis:6379/2')
 CACHES = {

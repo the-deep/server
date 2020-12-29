@@ -443,7 +443,7 @@ class EntryCommentSerializer(serializers.ModelSerializer):
         entry = data.get('entry')
         is_assignee = set(ProjectMembership.objects.filter(project=entry.project, member__in=assignees).values_list('member', flat=True).distinct()) == set([a.id for a in assignees])
         if not is_assignee:
-            raise serializers.ValidationError({'assignees': "Cannot assign assignees to this entry_comment"})
+            raise serializers.ValidationError({'assignees': "Selected assignees don't belong to this project"})
         is_patch = self.context['request'].method == 'PATCH'
         if self.instance and self.instance.is_resolved:
             raise serializers.ValidationError('Comment is resolved, no changes allowed')
