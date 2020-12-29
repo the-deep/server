@@ -25,6 +25,7 @@ def export_task(export_id):
         export.save()
 
         filename, export_format, mime_type, file = EXPORTER_TYPE[export.type](export)
+        filename = f'Preview-{filename}' if export.is_preview else filename
 
         export.title = filename
         export.format = export_format

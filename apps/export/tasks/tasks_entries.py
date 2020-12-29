@@ -44,10 +44,10 @@ def export_entries(export):
 
     if export_type == Export.EXCEL:
         decoupled = filters.get('decoupled', True)
-        export_data = ExcelExporter(queryset, decoupled, project_id)\
+        export_data = ExcelExporter(queryset, decoupled, project_id, is_preview=is_preview)\
             .load_exportables(exportables, regions)\
-            .add_entries(queryset, is_preview)\
-            .export(is_preview)
+            .add_entries(queryset)\
+            .export()
 
     elif export_type == Export.REPORT:
         report_structure = filters.get('report_structure')
@@ -55,22 +55,24 @@ def export_entries(export):
         text_widget_ids = filters.get('text_widget_ids') or []
         show_groups = filters.get('show_groups')
         pdf = export.filters.get('pdf', False)
-        export_data = ReportExporter(exporting_widgets=exporting_widgets)\
+        export_data = ReportExporter(exporting_widgets=exporting_widgets, is_preview=is_preview)\
             .load_exportables(exportables, regions)\
             .load_levels(report_levels)\
             .load_structure(report_structure)\
             .load_group_lables(queryset, show_groups)\
             .load_text_from_text_widgets(queryset, text_widget_ids)\
-            .add_entries(queryset, is_preview)\
-            .export(is_preview, pdf=pdf)
+            .add_entries(queryset)\
+            .export(pdf=pdf)
 
     elif export_type == Export.JSON:
-        export_data = JsonExporter()\
+        export_data = JsonExporter(is_preview=is_preview)\
             .load_exportables(exportables)\
-            .add_entries(queryset, is_preview)\
-            .export(is_preview)
+            .add_entries(queryset)\
+            .export()
 
     else:
-        raise Exception('(Entries Export) Unkown Export Type Provided: {} for Export:'.format(export_type, export.id))
+        raise Exception(
+            '(Entries Export) Unkown Export Type Provided: {export_type} for Export: {export.id}'
+        )
 
     return export_data

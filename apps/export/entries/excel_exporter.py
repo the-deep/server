@@ -15,7 +15,8 @@ EXPORT_DATE_FORMAT = '%m/%d/%y'
 
 
 class ExcelExporter:
-    def __init__(self, entries, decoupled=True, project_id=None):
+    def __init__(self, entries, decoupled=True, project_id=None, is_preview=False):
+        self.is_preview = is_preview
         self.wb = WorkBook()
         # XXX: Limit memory usage? (Or use redis?)
         self.geoarea_data_cache = {}
@@ -375,7 +376,8 @@ class ExcelExporter:
         return ''
 
     def add_entries(self, entries):
-        for i, entry in enumerate(entries):
+        iterable_entries = entries[:Export.PREVIEW_ENTRY_SIZE] if self.is_preview else entries
+        for i, entry in enumerate(iterable_entries):
             # Export each entry
             # Start building rows and export data for each exportable
 
@@ -464,7 +466,7 @@ class ExcelExporter:
                 [[author, source, published, f'=HYPERLINK("{url}", "{title}")' if url else title]]
             )
 
-    def export(self, is_preview=False):
+    def export(self):
         """
         Export and return export data
         """
@@ -476,8 +478,5 @@ class ExcelExporter:
         self.add_bibliography_sheet()
 
         buffer = self.wb.save()
-        if is_preview:
-            filename = generate_filename('Preview Entries Export', 'xlsx')
-        else:
-            filename = generate_filename('Entries Export', 'xlsx')
+        filename = generate_filename('Entries Export', 'xlsx')
         return filename, Export.XLSX, EXCEL_MIME_TYPE, ContentFile(buffer)

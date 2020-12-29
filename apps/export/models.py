@@ -54,6 +54,8 @@ class Export(models.Model):
         (REPORT, 'Report'),
         (JSON, 'Json'),
     )
+    # Number of entries to proccess if is_preview is True
+    PREVIEW_ENTRY_SIZE = 50
 
     project = models.ForeignKey(
         Project, default=None, null=True, blank=True, on_delete=models.CASCADE,
