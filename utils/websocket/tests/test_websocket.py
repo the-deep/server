@@ -1,3 +1,6 @@
+"""
+NOTE: We aren't using websocket so skiping this right now
+
 from channels.test import ChannelTestCase, WSClient
 
 
@@ -13,3 +16,4 @@ class TestWebsocket(ChannelTestCase):
                                 path='/test/')
         self.assertEqual(client.receive(),
                          {'message': 'echo'})
+"""

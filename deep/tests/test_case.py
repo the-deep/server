@@ -70,36 +70,42 @@ class TestCase(test.APITestCase):
             logger = logging.getLogger(__name__)
             logger.warning('', exc_info=True)
 
+    def assert_http_code(self, response, status_code):
+        error_resp = getattr(response, 'data', None)
+        mesg = error_resp
+        if type(error_resp) is dict and 'errors' in error_resp:
+            mesg = error_resp['errors']
+        return self.assertEqual(response.status_code, status_code, mesg)
+
     def assert_200(self, response):
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assert_http_code(response, status.HTTP_200_OK)
 
     def assert_201(self, response):
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assert_http_code(response, status.HTTP_201_CREATED)
 
     def assert_202(self, response):
-        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assert_http_code(response, status.HTTP_202_ACCEPTED)
 
     def assert_204(self, response):
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assert_http_code(response, status.HTTP_204_NO_CONTENT)
 
     def assert_302(self, response):
-        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
+        self.assert_http_code(response, status.HTTP_302_FOUND)
 
     def assert_400(self, response):
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assert_http_code(response, status.HTTP_400_BAD_REQUEST)
 
     def assert_403(self, response):
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assert_http_code(response, status.HTTP_403_FORBIDDEN)
 
     def assert_404(self, response):
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assert_http_code(response, status.HTTP_404_NOT_FOUND)
 
     def assert_405(self, response):
-        self.assertEqual(
-            response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assert_http_code(response, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def assert_500(self, response):
-        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assert_http_code(response, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def create(self, model, **kwargs):
         if not kwargs.get('created_by'):

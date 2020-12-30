@@ -109,17 +109,17 @@ class EntryTests(TestCase):
         self.post_filter_test(filters, 2)
         filters['geo_custom_shape'] = 'Point,Line,Polygon'
         self.post_filter_test(filters, 3)
-    
+
     def test_filter_entries_by_type(self):
         lead = self.create_lead()
 
-        entry1 = self.create_entry(lead=lead, entry_type=Entry.EXCERPT)
-        entry2 = self.create_entry(lead=lead, entry_type=Entry.IMAGE)
-        entry3 = self.create_entry(lead=lead, entry_type=Entry.DATA_SERIES)
+        self.create_entry(lead=lead, entry_type=Entry.EXCERPT)
+        self.create_entry(lead=lead, entry_type=Entry.IMAGE)
+        self.create_entry(lead=lead, entry_type=Entry.DATA_SERIES)
 
-        self.post_filter_test({'entry_type': [Entry.EXCERPT, Entry.IMAGE]}, Entry.objects.filter(entry_type__in=[Entry.EXCERPT, Entry.IMAGE]).count())
+        self.post_filter_test({'entry_type': [Entry.EXCERPT, Entry.IMAGE]}, Entry.objects.filter(entry_type__in=[Entry.EXCERPT, Entry.IMAGE]).count())  # noqa: E501
         self.post_filter_test({'entry_type': [Entry.EXCERPT]}, Entry.objects.filter(entry_type__in=[Entry.EXCERPT]).count())
-        self.post_filter_test({'entry_type': [Entry.IMAGE, Entry.DATA_SERIES]}, Entry.objects.filter(entry_type__in=[Entry.IMAGE, Entry.DATA_SERIES]).count())
+        self.post_filter_test({'entry_type': [Entry.IMAGE, Entry.DATA_SERIES]}, Entry.objects.filter(entry_type__in=[Entry.IMAGE, Entry.DATA_SERIES]).count())  # noqa: E501
 
     def test_search_filter_entry_group_label(self):
         lead = self.create_lead()
@@ -606,10 +606,10 @@ class EntryTests(TestCase):
         lead3 = self.create_lead(authors=[organization4])
 
         # create entry
-        entry = self.create_entry(lead=lead)
-        entry1 = self.create_entry(lead=lead1)
-        entry2 = self.create_entry(lead=lead2)
-        entry3 = self.create_entry(lead=lead3)
+        self.create_entry(lead=lead)
+        self.create_entry(lead=lead1)
+        self.create_entry(lead=lead2)
+        self.create_entry(lead=lead3)
 
         # Test for GET
         url = '/api/v1/entries/?authoring_organization_types={}'
@@ -636,7 +636,6 @@ class EntryTests(TestCase):
             'authoring_organization_types': [organization_type1.id, organization_type3.id]
         }
         self.post_filter_test(filters, 3)
-
 
     # TODO: test export data and filter data apis
 
@@ -700,13 +699,13 @@ class EntryTest(TestCase):
         lead1.authors.set([org1, org4])
         lead2 = self.create_lead(source=org3)
         lead2.authors.set([org1, org2, org5])
-        lead3 = self.create_lead(source=org3)
+        self.create_lead(source=org3)
 
-        entry1 = self.create_entry(lead=lead1)
-        entry2 = self.create_entry(lead=lead1)
-        entry3 = self.create_entry(lead=lead2)
-        entry4 = self.create_entry(lead=lead2)
-        entry5 = self.create_entry(lead=lead2)
+        self.create_entry(lead=lead1)
+        self.create_entry(lead=lead1)
+        self.create_entry(lead=lead2)
+        self.create_entry(lead=lead2)
+        self.create_entry(lead=lead2)
 
         url = '/api/v1/entries/filter/'
 
@@ -720,9 +719,9 @@ class EntryTest(TestCase):
         self.assertEqual(summ['totalUnverifiedEntries'], Entry.objects.filter(verified=False).count())
         self.assertEqual(summ['totalLeads'], len([lead1, lead2]))
         self.assertEqual(summ['totalSources'], len({org1, org3}))
-        print(summ['orgTypeCount'])
-        self.assertTrue({'org': {'id': org_type1.id, 'shortName': org_type1.short_name, 'title': org_type1.title}, 'count': 2} in summ['orgTypeCount'])
-        self.assertTrue({'org': {'id': org_type2.id, 'shortName': org_type2.short_name, 'title': org_type2.title}, 'count': 1} in summ['orgTypeCount'])
+
+        self.assertTrue({'org': {'id': org_type1.id, 'shortName': org_type1.short_name, 'title': org_type1.title}, 'count': 2} in summ['orgTypeCount'])  # noqa: E501
+        self.assertTrue({'org': {'id': org_type2.id, 'shortName': org_type2.short_name, 'title': org_type2.title}, 'count': 1} in summ['orgTypeCount'])  # noqa: E501
 
         url = '/api/v1/entries/?calculate_summary=1'
 
@@ -736,5 +735,5 @@ class EntryTest(TestCase):
         self.assertEqual(summ['totalUnverifiedEntries'], Entry.objects.filter(verified=False).count())
         self.assertEqual(summ['totalLeads'], len([lead1, lead2]))
         self.assertEqual(summ['totalSources'], len({org1, org3}))
-        self.assertTrue({'org': {'id': org_type1.id, 'shortName': org_type1.short_name, 'title': org_type1.title}, 'count': 2} in summ['orgTypeCount'])
-        self.assertTrue({'org': {'id': org_type2.id, 'shortName': org_type2.short_name, 'title': org_type2.title}, 'count': 1} in summ['orgTypeCount'])
+        self.assertTrue({'org': {'id': org_type1.id, 'shortName': org_type1.short_name, 'title': org_type1.title}, 'count': 2} in summ['orgTypeCount'])  # noqa: E501
+        self.assertTrue({'org': {'id': org_type2.id, 'shortName': org_type2.short_name, 'title': org_type2.title}, 'count': 1} in summ['orgTypeCount'])  # noqa: E501

@@ -20,6 +20,8 @@ from geo.serializers import SimpleRegionSerializer
 from tabular.serializers import FieldProcessedOnlySerializer
 from user.serializers import EntryCommentUserSerializer, ComprehensiveUserSerializer, SimpleUserSerializer
 from .widgets.store import widget_store
+from project.models import ProjectMembership
+
 
 from .models import (
     Attribute,
@@ -428,7 +430,13 @@ class EntryCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = EntryComment
         fields = '__all__'
-        read_only_fields = ('is_resolved', 'created_by', 'resolved_at')
+        read_only_fields = ('entry', 'is_resolved', 'created_by', 'resolved_at')
+
+    def _get_entry(self):
+        if not hasattr(self, '_entry'):
+            entry = Entry.objects.get(pk=int(self.context['entry_id']))
+            self._entry = entry
+        return self._entry
 
     def add_comment_text(self, comment, text):
         return EntryCommentText.objects.create(
@@ -436,7 +444,27 @@ class EntryCommentSerializer(serializers.ModelSerializer):
             text=text,
         )
 
+    def validate_parent(self, parent_comment):
+        if parent_comment:
+            if parent_comment.entry != self._get_entry():
+                raise serializers.ValidationError('Selected parent comment is assigned to different entry')
+            return parent_comment
+
     def validate(self, data):
+        assignees = data.get('assignees')
+        data['entry'] = entry = self._get_entry()
+
+        # Check if all assignes are members
+        if assignees:
+            current_members_id = set(
+                ProjectMembership.objects.filter(project=entry.project, member__in=assignees)
+                .values_list('member', flat=True)
+                .distinct()
+            )
+            assigned_users_id = set([a.id for a in assignees])
+            if current_members_id != assigned_users_id:
+                raise serializers.ValidationError({'assignees': "Selected assignees don't belong to this project"})
+
         is_patch = self.context['request'].method == 'PATCH'
         if self.instance and self.instance.is_resolved:
             raise serializers.ValidationError('Comment is resolved, no changes allowed')
