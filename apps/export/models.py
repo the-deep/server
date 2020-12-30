@@ -79,6 +79,7 @@ class Export(models.Model):
     pending = models.BooleanField(default=True)
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default=PENDING)
     is_deleted = models.BooleanField(default=False)
+    is_archived = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
