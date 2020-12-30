@@ -14,6 +14,9 @@ logger = logging.getLogger('django')
 
 
 class ExcelExporter:
+    """
+    NOTE: Legacy exporter (Not used)
+    """
     def __init__(self, decoupled=True):
         self.wb = WorkBook()
 

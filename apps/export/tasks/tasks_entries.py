@@ -14,6 +14,7 @@ def export_entries(export):
     user = export.exported_by
     project_id = export.project.id
     export_type = export.export_type
+    is_preview = export.is_preview
 
     filters = export.filters
     queryset = get_filtered_entries(user, filters).prefetch_related(
@@ -43,7 +44,7 @@ def export_entries(export):
 
     if export_type == Export.EXCEL:
         decoupled = filters.get('decoupled', True)
-        export_data = ExcelExporter(queryset, decoupled, project_id)\
+        export_data = ExcelExporter(queryset, decoupled, project_id, is_preview=is_preview)\
             .load_exportables(exportables, regions)\
             .add_entries(queryset)\
             .export()
@@ -54,7 +55,7 @@ def export_entries(export):
         text_widget_ids = filters.get('text_widget_ids') or []
         show_groups = filters.get('show_groups')
         pdf = export.filters.get('pdf', False)
-        export_data = ReportExporter(exporting_widgets=exporting_widgets)\
+        export_data = ReportExporter(exporting_widgets=exporting_widgets, is_preview=is_preview)\
             .load_exportables(exportables, regions)\
             .load_levels(report_levels)\
             .load_structure(report_structure)\
@@ -64,12 +65,14 @@ def export_entries(export):
             .export(pdf=pdf)
 
     elif export_type == Export.JSON:
-        export_data = JsonExporter()\
+        export_data = JsonExporter(is_preview=is_preview)\
             .load_exportables(exportables)\
             .add_entries(queryset)\
             .export()
 
     else:
-        raise Exception('(Entries Export) Unkown Export Type Provided: {} for Export:'.format(export_type, export.id))
+        raise Exception(
+            '(Entries Export) Unkown Export Type Provided: {export_type} for Export: {export.id}'
+        )
 
     return export_data
