@@ -212,7 +212,7 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
 class EntryCommentFilterSet(django_filters.FilterSet):
     class Meta:
         model = EntryComment
-        fields = ('entry',)
+        fields = ('created_by', 'is_resolved', 'resolved_at')
 
 
 def get_filtered_entries(user, queries):

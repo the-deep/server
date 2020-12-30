@@ -1,3 +1,6 @@
+"""
+NOTE: We aren't using websocket so skiping this right now
+
 from user.models import User
 from channels.generic.websockets import WebsocketConsumer
 from channels.test import ChannelTestCase, WSClient
@@ -112,3 +115,4 @@ class TestSubscription(ChannelTestCase):
         # TODO: Test if we are really removed from the group
 
         # TODO Test single channel unsubscription instead of channel
+"""

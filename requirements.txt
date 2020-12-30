@@ -3,7 +3,7 @@ Pillow==5.4.1
 PyJWT==1.7.1
 Pygments==2.3.1
 Shapely==1.6.4.post2
-asgi-redis==1.4.3
+# asgi-redis==1.4.3
 beautifulsoup4==4.7.1
 boto3==1.9.88
 celery[redis]==4.2.1
