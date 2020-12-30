@@ -637,48 +637,6 @@ class EntryTests(TestCase):
         }
         self.post_filter_test(filters, 3)
 
-    def test_entry_comment(self):
-        user1 = self.create(User)  # Comment creater
-        user2 = self.create(User)  # Project member
-        user3 = self.create(User)  # Non-project member
-
-        project = self.create_project(role=self.admin_role)
-        lead = self.create_lead(project=project)
-        entry = self.create_entry(lead=lead, project=project)
-        entry.project.add_member(user2)
-
-        url = f'/api/v1/entries/{entry.id}/entry-comments/'
-        data = {
-            'text': 'test_entry_comment',
-            'assignees': [user2.id],
-        }
-        self.authenticate(user1)
-
-        # Check if non-member can create entry comment
-        response = self.client.post(url, data)
-        self.assert_403(response)
-
-        # Check if member can create entry comment
-        entry.project.add_member(user1)
-        response = self.client.post(url, data)
-        resp_data = response.data
-        self.assert_201(response)
-
-        # Check if member can create entry comment with non-member assignee
-        data['assignees'] = [user3.id]
-        response = self.client.post(url, data)
-        self.assert_400(response)
-        assert 'assignees' in response.data['errors']
-
-        data['assignees'] = [user2.id]
-        # Comment owner should be able to update comment
-        response = self.client.put(f"{url}{resp_data['id']}/", data)
-        self.assert_200(response)
-
-        # Comment non-owner shouldn't be able to update comment
-        self.authenticate(user2)
-        response = self.client.put(f"{url}{resp_data['id']}/", data)
-        self.assert_403(response)
     # TODO: test export data and filter data apis
 
 
