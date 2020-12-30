@@ -32,7 +32,10 @@ class ExportViewSet(viewsets.ModelViewSet):
     filterset_class = ExportFilterSet
 
     def get_queryset(self):
-        return Export.get_for(self.request.user)
+        qs = Export.get_for(self.request.user)
+        if self.action == 'list':
+            return qs.filter(is_preview=False)
+        return qs
 
     def destroy(self, request, *args, **kwargs):
         export = self.get_object()
