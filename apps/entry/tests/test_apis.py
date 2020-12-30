@@ -18,7 +18,6 @@ from entry.models import (
     ProjectEntryLabel,
     LeadEntryGroup,
     EntryGroupLabel,
-    EntryComment,
 )
 
 from gallery.models import File
@@ -110,17 +109,17 @@ class EntryTests(TestCase):
         self.post_filter_test(filters, 2)
         filters['geo_custom_shape'] = 'Point,Line,Polygon'
         self.post_filter_test(filters, 3)
-    
+
     def test_filter_entries_by_type(self):
         lead = self.create_lead()
 
-        entry1 = self.create_entry(lead=lead, entry_type=Entry.EXCERPT)
-        entry2 = self.create_entry(lead=lead, entry_type=Entry.IMAGE)
-        entry3 = self.create_entry(lead=lead, entry_type=Entry.DATA_SERIES)
+        self.create_entry(lead=lead, entry_type=Entry.EXCERPT)
+        self.create_entry(lead=lead, entry_type=Entry.IMAGE)
+        self.create_entry(lead=lead, entry_type=Entry.DATA_SERIES)
 
-        self.post_filter_test({'entry_type': [Entry.EXCERPT, Entry.IMAGE]}, Entry.objects.filter(entry_type__in=[Entry.EXCERPT, Entry.IMAGE]).count())
+        self.post_filter_test({'entry_type': [Entry.EXCERPT, Entry.IMAGE]}, Entry.objects.filter(entry_type__in=[Entry.EXCERPT, Entry.IMAGE]).count())  # noqa: E501
         self.post_filter_test({'entry_type': [Entry.EXCERPT]}, Entry.objects.filter(entry_type__in=[Entry.EXCERPT]).count())
-        self.post_filter_test({'entry_type': [Entry.IMAGE, Entry.DATA_SERIES]}, Entry.objects.filter(entry_type__in=[Entry.IMAGE, Entry.DATA_SERIES]).count())
+        self.post_filter_test({'entry_type': [Entry.IMAGE, Entry.DATA_SERIES]}, Entry.objects.filter(entry_type__in=[Entry.IMAGE, Entry.DATA_SERIES]).count())  # noqa: E501
 
     def test_search_filter_entry_group_label(self):
         lead = self.create_lead()
@@ -607,10 +606,10 @@ class EntryTests(TestCase):
         lead3 = self.create_lead(authors=[organization4])
 
         # create entry
-        entry = self.create_entry(lead=lead)
-        entry1 = self.create_entry(lead=lead1)
-        entry2 = self.create_entry(lead=lead2)
-        entry3 = self.create_entry(lead=lead3)
+        self.create_entry(lead=lead)
+        self.create_entry(lead=lead1)
+        self.create_entry(lead=lead2)
+        self.create_entry(lead=lead3)
 
         # Test for GET
         url = '/api/v1/entries/?authoring_organization_types={}'
@@ -638,7 +637,48 @@ class EntryTests(TestCase):
         }
         self.post_filter_test(filters, 3)
 
+    def test_entry_comment(self):
+        user1 = self.create(User)  # Comment creater
+        user2 = self.create(User)  # Project member
+        user3 = self.create(User)  # Non-project member
 
+        project = self.create_project(role=self.admin_role)
+        lead = self.create_lead(project=project)
+        entry = self.create_entry(lead=lead, project=project)
+        entry.project.add_member(user2)
+
+        url = f'/api/v1/entries/{entry.id}/entry-comments/'
+        data = {
+            'text': 'test_entry_comment',
+            'assignees': [user2.id],
+        }
+        self.authenticate(user1)
+
+        # Check if non-member can create entry comment
+        response = self.client.post(url, data)
+        self.assert_403(response)
+
+        # Check if member can create entry comment
+        entry.project.add_member(user1)
+        response = self.client.post(url, data)
+        resp_data = response.data
+        self.assert_201(response)
+
+        # Check if member can create entry comment with non-member assignee
+        data['assignees'] = [user3.id]
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        assert 'assignees' in response.data['errors']
+
+        data['assignees'] = [user2.id]
+        # Comment owner should be able to update comment
+        response = self.client.put(f"{url}{resp_data['id']}/", data)
+        self.assert_200(response)
+
+        # Comment non-owner shouldn't be able to update comment
+        self.authenticate(user2)
+        response = self.client.put(f"{url}{resp_data['id']}/", data)
+        self.assert_403(response)
     # TODO: test export data and filter data apis
 
 
@@ -701,13 +741,13 @@ class EntryTest(TestCase):
         lead1.authors.set([org1, org4])
         lead2 = self.create_lead(source=org3)
         lead2.authors.set([org1, org2, org5])
-        lead3 = self.create_lead(source=org3)
+        self.create_lead(source=org3)
 
-        entry1 = self.create_entry(lead=lead1)
-        entry2 = self.create_entry(lead=lead1)
-        entry3 = self.create_entry(lead=lead2)
-        entry4 = self.create_entry(lead=lead2)
-        entry5 = self.create_entry(lead=lead2)
+        self.create_entry(lead=lead1)
+        self.create_entry(lead=lead1)
+        self.create_entry(lead=lead2)
+        self.create_entry(lead=lead2)
+        self.create_entry(lead=lead2)
 
         url = '/api/v1/entries/filter/'
 
@@ -721,9 +761,9 @@ class EntryTest(TestCase):
         self.assertEqual(summ['totalUnverifiedEntries'], Entry.objects.filter(verified=False).count())
         self.assertEqual(summ['totalLeads'], len([lead1, lead2]))
         self.assertEqual(summ['totalSources'], len({org1, org3}))
-        print(summ['orgTypeCount'])
-        self.assertTrue({'org': {'id': org_type1.id, 'shortName': org_type1.short_name, 'title': org_type1.title}, 'count': 2} in summ['orgTypeCount'])
-        self.assertTrue({'org': {'id': org_type2.id, 'shortName': org_type2.short_name, 'title': org_type2.title}, 'count': 1} in summ['orgTypeCount'])
+
+        self.assertTrue({'org': {'id': org_type1.id, 'shortName': org_type1.short_name, 'title': org_type1.title}, 'count': 2} in summ['orgTypeCount'])  # noqa: E501
+        self.assertTrue({'org': {'id': org_type2.id, 'shortName': org_type2.short_name, 'title': org_type2.title}, 'count': 1} in summ['orgTypeCount'])  # noqa: E501
 
         url = '/api/v1/entries/?calculate_summary=1'
 
@@ -737,46 +777,5 @@ class EntryTest(TestCase):
         self.assertEqual(summ['totalUnverifiedEntries'], Entry.objects.filter(verified=False).count())
         self.assertEqual(summ['totalLeads'], len([lead1, lead2]))
         self.assertEqual(summ['totalSources'], len({org1, org3}))
-        self.assertTrue({'org': {'id': org_type1.id, 'shortName': org_type1.short_name, 'title': org_type1.title}, 'count': 2} in summ['orgTypeCount'])
-        self.assertTrue({'org': {'id': org_type2.id, 'shortName': org_type2.short_name, 'title': org_type2.title}, 'count': 1} in summ['orgTypeCount'])
-
-
-class EntryCommentTest(TestCase):
-    def test_entry_comment_assignee_in_project(self):
-        user1 = self.create(User)
-        user2 = self.create(User)
-
-        project = self.create_project(role=self.admin_role)
-        lead = self.create_lead(project=project)
-        entry = self.create_entry(lead=lead, project=project)
-        entry.project.add_member(user1)
-
-        url = '/api/v1/entry-comments/'
-        data = {
-            'text': 'test_entry_comment',
-            'entry': entry.id,
-            'assignees': [user1.id],
-        }
-        self.authenticate(user1)
-        response = self.client.post(url, data)
-        self.assert_201(response)
-
-    def test_entry_comment_assignee_not_in_project(self):
-        user1 = self.create(User)
-        user2 = self.create(User)
-
-        project = self.create_project(role=self.admin_role)
-        lead = self.create_lead(project=project)
-        entry = self.create_entry(lead=lead, project=project)
-        entry.project.add_member(user1)
-
-        url = '/api/v1/entry-comments/'
-        data = {
-            'text': 'test_entry_comment',
-            'entry': entry.id,
-            'assignees': [user2.id],
-        }
-        self.authenticate(user1)
-        response = self.client.post(url, data)
-        self.assert_400(response)
-        assert 'assignees' in response.data['errors']
+        self.assertTrue({'org': {'id': org_type1.id, 'shortName': org_type1.short_name, 'title': org_type1.title}, 'count': 2} in summ['orgTypeCount'])  # noqa: E501
+        self.assertTrue({'org': {'id': org_type2.id, 'shortName': org_type2.short_name, 'title': org_type2.title}, 'count': 1} in summ['orgTypeCount'])  # noqa: E501

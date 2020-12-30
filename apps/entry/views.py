@@ -490,13 +490,18 @@ class ComprehensiveEntriesViewSet(viewsets.ReadOnlyModelViewSet):
 
 class EntryCommentViewSet(viewsets.ModelViewSet):
     serializer_class = EntryCommentSerializer
-    permission_classes = [permissions.IsAuthenticated,
-                          ModifyPermission]
+    permission_classes = [permissions.IsAuthenticated, ModifyPermission, IsProjectMember]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     filterset_class = EntryCommentFilterSet
 
     def get_queryset(self):
-        return EntryComment.get_for(self.request.user)
+        return EntryComment.get_for(self.request.user).filter(entry=self.kwargs['entry_id'])
+
+    def get_serializer_context(self):
+        return {
+            **super().get_serializer_context(),
+            'entry_id': self.kwargs.get('entry_id'),
+        }
 
     @action(
         detail=True,
