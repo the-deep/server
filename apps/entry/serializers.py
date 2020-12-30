@@ -430,7 +430,7 @@ class EntryCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = EntryComment
         fields = '__all__'
-        read_only_fields = ('is_resolved', 'created_by', 'resolved_at')
+        read_only_fields = ('entry', 'is_resolved', 'created_by', 'resolved_at')
 
     def add_comment_text(self, comment, text):
         return EntryCommentText.objects.create(
@@ -440,10 +440,19 @@ class EntryCommentSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         assignees = data.get('assignees')
-        entry = data.get('entry')
-        is_assignee = set(ProjectMembership.objects.filter(project=entry.project, member__in=assignees).values_list('member', flat=True).distinct()) == set([a.id for a in assignees])
-        if not is_assignee:
+        data['entry_id'] = int(self.context['entry_id'])
+        entry = Entry.objects.get(pk=data['entry_id'])
+
+        # Check if all assignes are members
+        current_members_id = set(
+            ProjectMembership.objects.filter(project=entry.project, member__in=assignees)
+            .values_list('member', flat=True)
+            .distinct()
+        )
+        assigned_users_id = set([a.id for a in assignees])
+        if current_members_id != assigned_users_id:
             raise serializers.ValidationError({'assignees': "Selected assignees don't belong to this project"})
+
         is_patch = self.context['request'].method == 'PATCH'
         if self.instance and self.instance.is_resolved:
             raise serializers.ValidationError('Comment is resolved, no changes allowed')

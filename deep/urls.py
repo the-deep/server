@@ -269,8 +269,8 @@ router.register(r'entry-export-data', ExportDataViewSet,
                 basename='entry_export_data')
 router.register(r'edit-entries-data', EditEntriesDataViewSet,
                 basename='edit_entries_data')
-router.register(r'entry-comments', EntryCommentViewSet,
-                basename='entry-comment')
+
+router.register(r'entries/(?P<entry_id>\d+)/entry-comments', EntryCommentViewSet, basename='entry-comment')
 router.register(r'projects/(?P<project_id>\d+)/entry-labels', ProjectEntryLabelViewSet, basename='entry-labels')
 router.register(r'leads/(?P<lead_id>\d+)/entry-groups', LeadEntryGroupViewSet, basename='entry-groups')
 
