@@ -335,8 +335,7 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 # REDIS STORE CONFIG "redis://:{password}@{host}:{port}/{db}"
-CHANNEL_REDIS_URL = os.environ.get('CHANNEL_REDIS_URL', 'redis://redis:6379/1')
-
+# CHANNEL_REDIS_URL = os.environ.get('CHANNEL_REDIS_URL', 'redis://redis:6379/1')
 # CHANNELS CONFIG
 # CHANNEL_LAYERS = {
 #    'default': {

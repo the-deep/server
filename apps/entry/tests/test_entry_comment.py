@@ -14,11 +14,11 @@ class EntryCommentTests(TestCase):
             'parent': None,
         })
         assert self.comment.is_resolved is False
+        self.entry.project.add_member(self.root_user)
 
     def test_create_comment(self):
-        url = '/api/v1/entry-comments/'
+        url = f'/api/v1/entries/{self.entry.pk}/entry-comments/'
         data = {
-            'entry': self.entry.pk,
             'assignees': [self.user.pk],
             'text': 'This is first comment',
             'parent': None,
@@ -42,9 +42,8 @@ class EntryCommentTests(TestCase):
     def test_create_comment_reply(self):
         entry_2 = self.create_entry()
 
-        url = '/api/v1/entry-comments/'
+        url = f'/api/v1/entries/{entry_2.pk}/entry-comments/'
         data = {
-            'entry': entry_2.pk,
             'assignees': [self.user.pk],
             'text': 'This is first comment',
             'parent': self.comment.pk,
@@ -52,15 +51,24 @@ class EntryCommentTests(TestCase):
 
         self.authenticate()
         response = self.client.post(url, data)
+        self.assert_400(response)
+        assert 'parent' in response.data['errors']
+
+        comment_2 = self.create(EntryComment, **{
+            'entry': entry_2,
+            'assignees': [self.user],
+            'text': 'This is a comment text',
+            'parent': None,
+        })
+        data['parent'] = comment_2.pk
+        response = self.client.post(url, data)
         self.assert_201(response)
-        r_data = response.json()
-        assert r_data['entry'] == self.entry.pk, 'Should be same to parent entry'
-        assert r_data['assignees'] == [], 'There should be no assignee in reply comment'
+        assert response.data['entry'] == entry_2.pk, 'Should be same to parent entry'
+        assert response.data['assignees'] == [], 'There should be no assignee in reply comment'
 
     def test_comment_text_history(self):
-        url = '/api/v1/entry-comments/'
+        url = f'/api/v1/entries/{self.entry.pk}/entry-comments/'
         data = {
-            'entry': self.entry.pk,
             'assignees': [self.user.pk],
             'text': 'This is first comment',
             'parent': None,
@@ -85,9 +93,8 @@ class EntryCommentTests(TestCase):
         assert len(r_data['textHistory']) == 2
 
     def test_comment_resolve(self):
-        url = '/api/v1/entry-comments/'
+        url = f'/api/v1/entries/{self.entry.pk}/entry-comments/'
         data = {
-            'entry': self.entry.pk,
             'assignees': [self.user.pk],
             'text': 'This is first comment',
             'parent': None,
@@ -137,11 +144,10 @@ class EntryCommentTests(TestCase):
         self.assert_403(response)
 
     def test_comment_delete(self):
-        url = '/api/v1/entry-comments/'
+        url = f'/api/v1/entries/{self.entry.pk}/entry-comments/'
         user1 = self.user
         user2 = self.root_user
         data = {
-            'entry': self.entry.pk,
             'assignees': [self.user.pk],
             'text': 'This is first comment',
             'parent': None,
@@ -190,9 +196,8 @@ class EntryCommentTests(TestCase):
         for user in [reviewer, tagger1, tagger2]:
             self.entry.project.add_member(user, role=self.normal_role)
 
-        url = '/api/v1/entry-comments/'
+        url = f'/api/v1/entries/{self.entry.pk}/entry-comments/'
         data = {
-            'entry': self.entry.pk,
             'assignees': [tagger1.pk],
             'text': 'This is first comment',
             'parent': None,
@@ -307,20 +312,67 @@ class EntryCommentTests(TestCase):
 
         # Non member user
         data = {
-            'entry': entry.pk,
             'text': 'Test comment',
             'assignees': [user1.pk, user2.pk],
         }
 
         self.authenticate(user)
 
-        url = '/api/v1/entry-comments/'
+        url = f'/api/v1/entries/{entry.pk}/entry-comments/'
         response = self.client.post(url, data)
         self.assert_201(response)
         comment_id = response.json()['id']
 
-        url = f'/api/v1/entry-comments/{comment_id}/'
+        url = f'/api/v1/entries/{entry.pk}/entry-comments/{comment_id}/'
         data['text'] = 'updated test comment'
         data['assignees'] = [user1.pk]
         response = self.client.put(url, data)
         self.assert_200(response)
+
+    def test_entry_comment_permissions(self):
+        """
+        Test
+        - if users w/o can create entry comment
+        - if users w/o can assigne member/non-member to the entry comment
+        """
+        user1 = self.create_user()  # Comment creater
+        user2 = self.create_user()  # Project member
+        user3 = self.create_user()  # Non-project member
+
+        project = self.create_project(role=self.admin_role)
+        lead = self.create_lead(project=project)
+        entry = self.create_entry(lead=lead, project=project)
+        entry.project.add_member(user2)
+
+        url = f'/api/v1/entries/{entry.id}/entry-comments/'
+        data = {
+            'text': 'test_entry_comment',
+            'assignees': [user2.id],
+        }
+        self.authenticate(user1)
+
+        # Check if non-member can create entry comment
+        response = self.client.post(url, data)
+        self.assert_403(response)
+
+        # Check if member can create entry comment
+        entry.project.add_member(user1)
+        response = self.client.post(url, data)
+        resp_data = response.data
+        self.assert_201(response)
+
+        # Check if member can create entry comment with non-member assignee
+        data['assignees'] = [user3.id]
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        assert 'assignees' in response.data['errors']
+
+        data['assignees'] = [user2.id]
+        # Comment owner should be able to update comment
+        response = self.client.put(f"{url}{resp_data['id']}/", data)
+        self.assert_200(response)
+
+        # Comment non-owner shouldn't be able to update comment
+        self.authenticate(user2)
+        response = self.client.put(f"{url}{resp_data['id']}/", data)
+        self.assert_403(response)

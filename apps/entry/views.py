@@ -508,7 +508,7 @@ class EntryCommentViewSet(viewsets.ModelViewSet):
         url_path='resolve',
         methods=['post'],
     )
-    def resolve_comment(self, request, pk, version=None):
+    def resolve_comment(self, request, pk, entry_id=None, version=None):
         comment = self.get_object()
         if comment.is_resolved:
             raise serializers.ValidationError('Already Resolved')
