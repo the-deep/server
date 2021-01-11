@@ -325,6 +325,14 @@ class ProjectSerializer(RemoveNullFieldsMixin,
         model = Project
         exclude = ('members', )
 
+    def to_representation(self, data):
+        result = super().to_representation(data)
+        if not result['is_private'] and self.context['request'].user.id in [e['member'] for e in result['memberships']]:
+            pass
+        else:
+            result['memberships'] = []
+        return result
+
     def create(self, validated_data):
         member = self.context['request'].user
         is_private = validated_data.get('is_private', False)
@@ -457,6 +465,8 @@ class ProjectSerializer(RemoveNullFieldsMixin,
                 'Invalid analysis framework: {}'.format(analysis_framework.id))
         return analysis_framework
 
+    """def to_representation(self, data):
+        print("data", data)"""
 
 class ProjectStatSerializer(ProjectSerializer):
     number_of_leads = serializers.IntegerField(read_only=True)
