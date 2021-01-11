@@ -38,7 +38,7 @@ from . import entry_stats_data
 
 
 class ProjectApiTest(TestCase):
-    fixtures = ['apps/ary/fixtures/ary_template_data.json']
+    fixtures = ['ary_template_data.json']
 
     def setUp(self):
         super().setUp()
@@ -145,7 +145,7 @@ class ProjectApiTest(TestCase):
 
         url = f'/api/v1/projects/{project.id}/members/'
 
-        self.authenticate()
+        self.authenticate(user1)  # autheniticate with the members only
         resp = self.client.get(url)
         self.assert_200(resp)
 
@@ -652,6 +652,25 @@ class ProjectApiTest(TestCase):
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['id'], project1.id)
 
+    def test_project_members_view(self):
+        # NOTE: Can only get if  member of project
+        project1 = self.create(Project)
+        test_user = self.create(User)
+        test_dummy = self.create(User)
+        project1.add_member(test_user, role=self.admin_role)
+
+        url = f'/api/v1/projects/{project1.pk}/members/'
+        # authenticate test_user
+        self.authenticate(test_user)
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(response.data['count'], 1)
+
+        # authenticate test_dummy user
+        self.authenticate(test_dummy)
+        response = self.client.get(url)
+        self.assert_403(response)
+
     def test_add_member(self):
         project = self.create(Project, role=self.admin_role)
         test_user = self.create(User)
@@ -700,8 +719,50 @@ class ProjectApiTest(TestCase):
 
         self.authenticate()
         response = self.client.post(url, data)
+        print(response.data)
         self.assert_400(response)
         assert 'errors' in response.data
+
+    def test_project_membership_edit_normal_role(self):
+        # user try to update member where he/she isnot the admin in the project
+        project = self.create(Project, role=self.normal_role)  # this creates user with normal_role
+        test_user = self.create(User)
+        m1 = project.add_member(test_user, role=self.normal_role)
+        data = {
+            'role': self.admin_role.id,
+        }
+        url = '/api/v1/project-memberships/{}/'.format(m1.id)
+        self.authenticate()  # authenticate with normal_role
+        response = self.client.patch(url, data)
+        self.assert_403(response)
+
+    def test_project_membership_edit_admin_role(self):
+        project = self.create(Project, role=self.admin_role)
+        test_user = self.create(User)
+        m1 = project.add_member(test_user, role=self.normal_role)
+        data = {
+            'role': self.admin_role.id
+        }
+        url = '/api/v1/project-memberships/{}/'.format(m1.id)
+        self.authenticate()  # authenticate with admin_role
+        response = self.client.patch(url, data)
+        self.assert_200(response)
+
+    def test_project_membership_add(self):
+        # user try to add member where he/she isnot the admin in the project
+        project = self.create(Project)
+        test_user1 = self.create(User)
+        test_user2 = self.create(User)
+        project.add_member(test_user2, role=self.normal_role)
+        data = {
+            'member': test_user1.id,
+            'project': project.id,
+            'role': self.admin_role.id
+        }
+        url = '/api/v1/project-memberships/'
+        self.authenticate(test_user2)  # test_user2 has normal_role in project
+        response = self.client.post(url, data)
+        self.assert_400(response)
 
     def test_options(self):
         url = '/api/v1/project-options/'
@@ -1178,3 +1239,21 @@ class ProjectApiTest(TestCase):
         # Only provide projects leads-group [Pagination is done for larger dataset]
         assert set([lg['id'] for lg in response.json()['results']]) ==\
             set([lead_group1.pk, lead_group2.pk])
+
+    def test_project_memberships_if_not_in_project(self):
+        """
+        NOTE: This test include the not_private project.
+        But the memberships is not shown if user is not the member
+        """
+        project = self.create(Project, is_private=False)
+        user1 = self.create(User)
+        user2 = self.create(User)
+        project.add_member(user1, role=self.admin_role)
+
+        url = '/api/v1/projects/'
+        self.authenticate(user2)  # authenticate with another user that is not project member
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(response.data['count'], 1)  # there should be one project
+        self.assertEqual(response.data['results'][0]['id'], project.id)
+        self.assertEqual(response.data['results'][0]['memberships'], [])  # No members should be shown

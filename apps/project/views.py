@@ -480,9 +480,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
             models.Q(projectmembership__project=project) |
             models.Q(usergroup__projectusergroupmembership__project=project)
         ).distinct()
-        self.page = self.paginate_queryset(members)
-        serializer = self.get_serializer(self.page, many=True)
-        return self.get_paginated_response(serializer.data)
+        if members.filter(id=request.user.id).exists():
+            self.page = self.paginate_queryset(members)
+            serializer = self.get_serializer(self.page, many=True)
+            return self.get_paginated_response(serializer.data)
+        else:
+            return response.Response('Forbidden Acess', status=403)
 
     """
     Project Lead-Groups
