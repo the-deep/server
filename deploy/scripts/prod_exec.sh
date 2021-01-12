@@ -37,9 +37,11 @@ if [ "$EBS_ENV_TYPE" == "worker" ]; then
         echo '>> Starting Celery Worker'
         # Start celery
         mkdir -p /var/log/celery/
+        mkdir -p /var/run/celery/
         SENTRY_DSN= celery flower -A deep --basic_auth=${FLOWER_BASIC_AUTHS} --address=0.0.0.0 --port=80 &
         celery -A deep worker -B --quiet -l info \
             --logfile=/var/log/celery/celery.log \
+            --statedb=/var/run/celery/worker.state \
             --scheduler django_celery_beat.schedulers:DatabaseScheduler
     elif [ "$WORKER_TYPE" == "channel" ]; then
         echo '>> Starting Django Channels'
