@@ -198,3 +198,21 @@ class UserApiTests(TestCase):
         self.authenticate(user_dummy)
         response = self.client.get('/api/v1/users/me/preferences/')
         self.assertEqual(len(response.data['accessible_features']), 1)
+
+    def test_user_preference_feature_avialable_for_all(self):
+        user_fhx = self.create(User, email='fhx@togglecorp.com')
+
+        feature = self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
+                              key=Feature.PRIVATE_PROJECT, title='Private project',
+                              email_domains=[], users=[], is_available_for_all=False)
+
+        self.authenticate(user_fhx)
+        response = self.client.get('/api/v1/users/me/preferences/')
+        self.assertEqual(len(response.data['accessible_features']), 0)
+
+        feature.is_available_for_all = True
+        feature.save()
+
+        self.authenticate(user_fhx)
+        response = self.client.get('/api/v1/users/me/preferences/')
+        self.assertEqual(len(response.data['accessible_features']), 1)
