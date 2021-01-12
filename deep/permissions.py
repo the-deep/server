@@ -161,10 +161,15 @@ class IsProjectMember(permissions.BasePermission):
         lead_id = view.kwargs.get('lead_id')
         entry_id = view.kwargs.get('entry_id')
 
-        if project_id and Project.get_for_member(request.user).filter(id=project_id).exists():
-            return True
-        elif lead_id and Lead.get_for(request.user).filter(id=lead_id).exists():
-            return True
-        elif entry_id and Entry.get_for(request.user).filter(id=entry_id).exists():
-            return True
-        return False
+        if project_id:
+            return Project.get_for_member(request.user).filter(id=project_id).exists()
+        elif lead_id:
+            return Lead.get_for(request.user).filter(id=lead_id).exists()
+        elif entry_id:
+            return Entry.get_for(request.user).filter(id=entry_id).exists()
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        if type(obj) == Project:
+            return obj.members.filter(id=request.user.id).exists()
+        return True

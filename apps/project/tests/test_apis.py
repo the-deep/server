@@ -74,19 +74,6 @@ class ProjectApiTest(TestCase):
         self.assertEqual(Project.objects.count(), project_count + 1)
         self.assertEqual(response.data['title'], data['title'])
 
-        # Test that the user has been made admin
-        self.assertEqual(len(response.data['memberships']), 1)
-        self.assertEqual(response.data['memberships'][0]['member'],
-                         self.user.pk)
-
-        # assert single membership
-        self.assertEqual(len(response.data['memberships']), 1)
-        self.assertEqual(len(response.data['organizations']), 1)
-        membership = ProjectMembership.objects.get(
-            pk=response.data['memberships'][0]['id'])
-        self.assertEqual(membership.member.pk, self.user.pk)
-        self.assertEqual(membership.role, self.admin_role)
-
     def create_project(self, **kwargs):
         use_api = kwargs.pop('use_api', True)
         if not use_api:
@@ -719,7 +706,6 @@ class ProjectApiTest(TestCase):
 
         self.authenticate()
         response = self.client.post(url, data)
-        print(response.data)
         self.assert_400(response)
         assert 'errors' in response.data
 
@@ -1242,8 +1228,7 @@ class ProjectApiTest(TestCase):
 
     def test_project_memberships_if_not_in_project(self):
         """
-        NOTE: This test include the not_private project.
-        But the memberships is not shown if user is not the member
+        NOTE: This test include the test for ProjectSerializer that doesnot return the memberships
         """
         project = self.create(Project, is_private=False)
         user1 = self.create(User)
@@ -1256,4 +1241,25 @@ class ProjectApiTest(TestCase):
         self.assert_200(response)
         self.assertEqual(response.data['count'], 1)  # there should be one project
         self.assertEqual(response.data['results'][0]['id'], project.id)
-        self.assertEqual(response.data['results'][0]['memberships'], [])  # No members should be shown
+        self.assertNotIn('memberships', response.data['results'][0])  # No memberships field should be shown
+
+    def test_project_memberships_in_particluar_project(self):
+        project1 = self.create(Project, is_private=False)
+        user1 = self.create(User)
+        user2 = self.create(User)
+        project1.add_member(user1, role=self.admin_role)
+
+        url = f'/api/v1/projects/{project1.id}/'
+        self.authenticate(user1)
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(response.data['id'], project1.id)
+        self.assertIn('memberships', response.data)
+        self.assertEqual(response.data['memberships'][0]['member'], user1.id)
+
+        # same project authenticate with not member user
+        self.authenticate(user2)
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(response.data['id'], project1.id)
+        self.assertNotIn('memberships', response.data)  # `membership` field shouldnot be present
