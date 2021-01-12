@@ -286,11 +286,6 @@ class ProjectUsergroupMembershipSerializer(RemoveNullFieldsMixin,
 
 class ProjectSerializer(RemoveNullFieldsMixin,
                         DynamicFieldsMixin, UserResourceSerializer):
-    memberships = ProjectMembershipSerializer(
-        source='projectmembership_set',
-        many=True,
-        read_only=True,
-    )
 
     organizations = ProjectOrganizationSerializer(
         source='projectorganization_set',
@@ -324,14 +319,6 @@ class ProjectSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = Project
         exclude = ('members', )
-
-    def to_representation(self, data):
-        result = super().to_representation(data)
-        if not result['is_private'] and self.context['request'].user.id in [e['member'] for e in result['memberships']]:
-            pass
-        else:
-            result['memberships'] = []
-        return result
 
     def create(self, validated_data):
         member = self.context['request'].user
@@ -465,8 +452,14 @@ class ProjectSerializer(RemoveNullFieldsMixin,
                 'Invalid analysis framework: {}'.format(analysis_framework.id))
         return analysis_framework
 
-    """def to_representation(self, data):
-        print("data", data)"""
+
+class ProjectMemberViewSerializer(ProjectSerializer):
+    memberships = ProjectMembershipSerializer(
+        source='projectmembership_set',
+        many=True,
+        read_only=True,
+    )
+
 
 class ProjectStatSerializer(ProjectSerializer):
     number_of_leads = serializers.IntegerField(read_only=True)

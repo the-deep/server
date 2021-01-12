@@ -25,7 +25,10 @@ from docs.utils import mark_as_list, mark_as_delete
 import ary.serializers as arys
 
 from deep.views import get_frontend_url
-from deep.permissions import ModifyPermission
+from deep.permissions import (
+    ModifyPermission,
+    IsProjectMember,
+)
 from deep.serializers import URLCachedFileField
 from deep.models import ProcessStatus
 from tabular.models import Field
@@ -58,6 +61,7 @@ from .serializers import (
     ProjectUserGroupSerializer,
     ProjectDashboardSerializer,
     ProjectStatusOptionsSerializer,
+    ProjectMemberViewSerializer,
 )
 from .permissions import (
     JoinPermission,
@@ -125,7 +129,6 @@ def _get_viz_data(request, StatModel, stat_generator, project):
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
-    serializer_class = ProjectSerializer
     permission_classes = [permissions.IsAuthenticated,
                           ModifyPermission]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
@@ -135,6 +138,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return get_filtered_projects(self.request.user, self.request.GET)
+
+    def get_serializer_class(self):
+        # get the project and check for its member with current user
+        if (self.lookup_url_kwarg or self.lookup_field) not in self.kwargs:
+            return ProjectSerializer
+        project = self.get_object()
+        if project.members.filter(id=self.request.user.id).exists():
+            return ProjectMemberViewSerializer
+        return ProjectSerializer
 
     def get_project_object(self):
         """
@@ -442,14 +454,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
         permission_classes=[
             permissions.IsAuthenticated, ModifyPermission,
         ],
-        serializer_class=ProjectJoinRequestSerializer,
         url_path='requests',
     )
     def get_requests(self, request, pk=None, version=None):
         project = self.get_object()
         join_requests = project.projectjoinrequest_set.all()
         self.page = self.paginate_queryset(join_requests)
-        serializer = self.get_serializer(self.page, many=True)
+        serializer = ProjectJoinRequestSerializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
 
     """
@@ -470,8 +481,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        permission_classes=[permissions.IsAuthenticated],
-        serializer_class=SimpleUserSerializer,
+        permission_classes=[permissions.IsAuthenticated, IsProjectMember],
         url_path='members'
     )
     def get_members(self, request, pk=None, version=None):
@@ -480,12 +490,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
             models.Q(projectmembership__project=project) |
             models.Q(usergroup__projectusergroupmembership__project=project)
         ).distinct()
-        if members.filter(id=request.user.id).exists():
-            self.page = self.paginate_queryset(members)
-            serializer = self.get_serializer(self.page, many=True)
-            return self.get_paginated_response(serializer.data)
-        else:
-            return response.Response('Forbidden Acess', status=403)
+        self.page = self.paginate_queryset(members)
+        serializer = SimpleUserSerializer(self.page, many=True)
+        return self.get_paginated_response(serializer.data)
 
     """
     Project Lead-Groups
@@ -542,12 +549,11 @@ class ProjectStatViewSet(ProjectViewSet):
     @action(
         detail=True,
         permission_classes=[permissions.IsAuthenticated],
-        serializer_class=ProjectDashboardSerializer,
         url_path='dashboard',
     )
     def get_dashboard(self, request, pk=None, version=None):
         project = self.get_object()
-        serializer = self.get_serializer(project)
+        serializer = ProjectDashboardSerializer(project)
         return response.Response(serializer.data)
 
 
