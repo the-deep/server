@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.cache import cache
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 
@@ -16,12 +17,14 @@ class Export(models.Model):
     STARTED = 'started'
     SUCCESS = 'success'
     FAILURE = 'failure'
+    CANCELED = 'canceled'
 
     STATUS_CHOICES = (
         (PENDING, 'Pending'),
         (STARTED, 'Started'),
         (SUCCESS, 'Success'),
         (FAILURE, 'Failure'),
+        (CANCELED, 'Canceled'),
     )
 
     XLSX = 'xlsx'
@@ -54,13 +57,13 @@ class Export(models.Model):
         (REPORT, 'Report'),
         (JSON, 'Json'),
     )
+    EXPORT_TASK_CACHE_KEY = 'EXPORT-{id}-TASK-ID'
+
     # Number of entries to proccess if is_preview is True
     PREVIEW_ENTRY_SIZE = 10
     PREVIEW_ASSESSMENT_SIZE = 10
 
-    project = models.ForeignKey(
-        Project, default=None, null=True, blank=True, on_delete=models.CASCADE,
-    )
+    project = models.ForeignKey(Project, default=None, null=True, blank=True, on_delete=models.CASCADE)
     is_preview = models.BooleanField(default=False)
 
     title = models.CharField(max_length=255, blank=True)
@@ -90,3 +93,14 @@ class Export(models.Model):
             exported_by=user,
             is_deleted=False
         ).distinct()
+
+    def get_task_id(self, clear=False):
+        cache_key = self.EXPORT_TASK_CACHE_KEY.format(id=self.id)
+        value = cache.get(cache_key)
+        if clear:
+            cache.delete(cache_key)
+        return value
+
+    def set_task_id(self, async_id):
+        # Defined timeout is arbitrary now.
+        return cache.set(self.EXPORT_TASK_CACHE_KEY.format(id=self.id), async_id, 345600)

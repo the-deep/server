@@ -5,6 +5,8 @@ PYTHON_MYPY_DEP_PATH=/code/.mypy-dep/
 
 pip3 install -r requirements.txt
 
+mkdir -p /var/run/celery/
+
 if [ "${USING_MYPY}" == 'true' ]; then
     # TODO: better/faster way?
     rm -rf $PYTHON_MYPY_DEP_PATH/*

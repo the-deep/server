@@ -16,10 +16,15 @@ EXPORTER_TYPE = {
 
 
 @shared_task
-def export_task(export_id):
+def export_task(export_id, force=False):
     try:
         export = Export.objects.get(pk=export_id)
         data_type = export.type
+
+        # Skip if export is already started
+        if not force and export.status != Export.PENDING:
+            logger.warning(f'Export status is {export.get_status_display()}')
+            return 'SKIPPED'
 
         export.status = Export.STARTED
         export.save()
