@@ -239,7 +239,7 @@ class Lead(UserResource, ProjectEntityMixin):
                         count=models.Count('id')
                     ).values('count')[:1], output_field=models.IntegerField()
                 ), 0
-            ) if entries_filter_data else F('entries_count'),
+            ) if entries_filter_data else models.F('entries_count'),
             verified_filtered_entries_count=models.functions.Coalesce(
                 models.Subquery(
                     get_filtered_entries(user, entries_filter_data).filter(
@@ -249,7 +249,7 @@ class Lead(UserResource, ProjectEntityMixin):
                         count=models.Count('id')
                     ).values('count')[:1], output_field=models.IntegerField()
                 ), 0
-            ) if entries_filter_data else F('verified_entries_count'),
+            ) if entries_filter_data else models.F('verified_entries_count'),
         )
 
     def get_assignee(self):
