@@ -11,7 +11,7 @@ def format_value(val):
 
 
 def get_data_collection_techniques_info(assessment):
-    attributes = assessment.get_methodology_json()['Attributes'] or []
+    attributes = assessment.get_methodology_json().get('Attributes') or []
     data = []
 
     for attribute in attributes:

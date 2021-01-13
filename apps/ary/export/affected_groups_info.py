@@ -7,7 +7,7 @@ default_values = {
 
 def get_affected_groups_info(assessment):
     template = assessment.project.assessment_template
-    aff_data = assessment.get_methodology_json()['Affected Groups'] or []
+    aff_data = assessment.get_methodology_json().get('Affected Groups') or []
 
     root_affected_group = AffectedGroup.objects.filter(
         template=template, parent=None

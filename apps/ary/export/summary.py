@@ -52,7 +52,7 @@ def get_assessment_export_summary(assessment, planned_assessment=False):
     """
     template = assessment.project.assessment_template
 
-    additional_documents = assessment.metadata.get('additional_documents') or {}
+    additional_documents = (assessment.metadata or {}).get('additional_documents') or {}
 
     metadata = assessment.get_metadata_json()
     methodology = assessment.get_methodology_json()
@@ -61,7 +61,7 @@ def get_assessment_export_summary(assessment, planned_assessment=False):
     selected_focuses = set(methodology.get('Focuses') or [])
 
     sectors = [x.title for x in Sector.objects.filter(template=template)]
-    selected_sectors = set(methodology['Sectors'] or [])
+    selected_sectors = set(methodology.get('Sectors') or [])
 
     root_affected_group = AffectedGroup.objects.filter(template=template, parent=None).first()
     all_affected_groups = root_affected_group.get_children_list() if root_affected_group else []
@@ -76,9 +76,9 @@ def get_assessment_export_summary(assessment, planned_assessment=False):
         } for x in all_affected_groups
     ]
 
-    selected_affected_groups_ids = {x['key'] for x in (methodology['Affected Groups'] or [])}
+    selected_affected_groups_ids = {x['key'] for x in (methodology.get('Affected Groups') or [])}
 
-    locations = get_valid_geo_ids(assessment.methodology['locations'] or [])
+    locations = get_valid_geo_ids((assessment.methodology or {}).get('locations') or {})
 
     geo_areas = GeoArea.objects.filter(id__in=locations).prefetch_related('admin_level')
     admin_levels = {f'Admin {x}': 0 for x in range(7)}
