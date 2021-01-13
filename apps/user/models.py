@@ -79,7 +79,9 @@ class Profile(models.Model):
         try:
             user_domain = (self.user.email or self.user.username).split('@')[1]
             return Feature.objects.filter(
-                Q(users=self.user) | Q(email_domains__domain_name__exact=user_domain)
+                Q(is_available_for_all=True) |
+                Q(users=self.user) |
+                Q(email_domains__domain_name__exact=user_domain)
             )
         except IndexError:
             return []
@@ -160,6 +162,7 @@ class Feature(models.Model):
 
     users = models.ManyToManyField(User, blank=True)
     email_domains = models.ManyToManyField(EmailDomain, blank=True)
+    is_available_for_all = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
