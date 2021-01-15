@@ -264,8 +264,8 @@ class EntrySerializer(RemoveNullFieldsMixin,
         elif image_raw:
             generated_image = base64_to_deep_image(
                 image_raw,
-                lead=lead,
-                request=request,
+                lead,
+                request.user,
             )
             if type(generated_image) == File:
                 data['image'] = generated_image

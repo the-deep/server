@@ -325,6 +325,9 @@ class LeadPreview(models.Model):
 
 
 class LeadPreviewImage(models.Model):
+    """
+    NOTE: File can be only used by gallery (when attached to a entry)
+    """
     lead = models.ForeignKey(
         Lead, related_name='images', on_delete=models.CASCADE,
     )

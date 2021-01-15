@@ -270,16 +270,11 @@ class LeadPreviewImageSerializer(RemoveNullFieldsMixin,
     Serializer for lead preview image
     """
 
-    file = serializers.FileField(required=False)
+    file = URLCachedFileField(read_only=True)
 
     class Meta:
         model = LeadPreviewImage
-        fields = ('file',)
-
-    def to_representation(self, instance):
-        """Convert to string. so leadPreview have array of urls"""
-        ret = super().to_representation(instance)
-        return ret.get('file')
+        fields = ('id', 'file',)
 
 
 class LeadPreviewSerializer(RemoveNullFieldsMixin,

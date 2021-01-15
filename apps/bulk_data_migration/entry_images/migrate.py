@@ -20,8 +20,8 @@ def migrate_entry(entry, root_url):
 
     new_image = base64_to_deep_image(
         image,
-        lead=entry.lead,
-        request=CustomRequest(entry.created_by, root_url),
+        entry.lead,
+        entry.created_by,
     )
 
     if new_image == image:
@@ -35,6 +35,8 @@ def migrate_entry(entry, root_url):
 
 
 def migrate(*args):
+    print('This should be already migrated')
+    return
     root_url = args[0]
     with reversion.create_revision():
         for entry in Entry.objects.all():

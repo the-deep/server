@@ -73,7 +73,7 @@ class PrivateFileView(views.APIView):
                 file.is_public or
                 Lead.get_for(user).filter(pk__in=leads_pk).exists() or
                 Entry.get_for(user).filter(
-                    image=request.build_absolute_uri(
+                    image_raw=request.build_absolute_uri(
                         reverse('file', kwargs={'file_id': file.pk}),
                     )
                 ).exists()
