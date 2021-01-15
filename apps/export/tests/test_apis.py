@@ -1,3 +1,5 @@
+from django.core.cache import cache
+
 from deep.tests import TestCase
 from project.models import Project
 from export.models import Export
@@ -101,7 +103,7 @@ class ExportTests(TestCase):
             'title': 'Title test'
         }
         self.authenticate(user1)
-        response = self.client.patch(url)
+        response = self.client.patch(url, data)
         self.assert_404(response)
 
         # test update by another user
@@ -110,25 +112,42 @@ class ExportTests(TestCase):
             'title': 'Title test'
         }
         self.authenticate(user2)
-        response = self.client.patch(url)
+        response = self.client.patch(url, data)
         self.assert_404(response)
 
     def test_export_filter_by_status(self):
-        export = self.create(Export, exported_by=self.user, status=Export.SUCCESS)
-        export1 = self.create(Export, exported_by=self.user, status=Export.SUCCESS)
-        export2 = self.create(Export, exported_by=self.user, status=Export.PENDING)
-        export3 = self.create(Export, exported_by=self.user, status=Export.FAILURE)
+        self.create(Export, exported_by=self.user, status=Export.SUCCESS)
+        self.create(Export, exported_by=self.user, status=Export.SUCCESS)
+        self.create(Export, exported_by=self.user, status=Export.PENDING)
+        self.create(Export, exported_by=self.user, status=Export.FAILURE)
 
         self.authenticate()
         response = self.client.get(f'/api/v1/exports/?status={Export.PENDING}')
         assert response.json()['count'] == 1
 
     def test_export_filter_by_archived(self):
-        export = self.create(Export, exported_by=self.user, is_archived=False)
-        export1 = self.create(Export, exported_by=self.user, is_archived=False)
-        export2 = self.create(Export, exported_by=self.user, is_archived=True)
-        export3 = self.create(Export, exported_by=self.user, is_archived=False)
+        self.create(Export, exported_by=self.user, is_archived=False)
+        self.create(Export, exported_by=self.user, is_archived=False)
+        self.create(Export, exported_by=self.user, is_archived=True)
+        self.create(Export, exported_by=self.user, is_archived=False)
 
         self.authenticate()
         response = self.client.get(f'/api/v1/exports/?is_archived={True}')
         assert response.json()['count'] == 1
+
+    def test_export_cancel(self):
+        for initial_status, final_status in [
+                (Export.PENDING, Export.CANCELED),
+                (Export.STARTED, Export.CANCELED),
+                (Export.SUCCESS, Export.SUCCESS),
+                (Export.FAILURE, Export.FAILURE),
+                (Export.CANCELED, Export.CANCELED),
+        ]:
+            export = self.create(Export, status=initial_status, exported_by=self.user, is_archived=False)
+            url = '/api/v1/exports/{}/cancel/'.format(export.id)
+            # without export.set_task_id('this-is-random-id'), it will not throw error
+
+            self.authenticate()
+            response = self.client.post(url)
+            self.assert_200(response)
+            self.assertEqual(response.data['status'], final_status)

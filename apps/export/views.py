@@ -1,5 +1,7 @@
 from django.conf import settings
+from django.core.cache import cache
 from django.db import transaction
+from rest_framework.decorators import action
 from rest_framework import (
     permissions,
     response,
@@ -7,6 +9,7 @@ from rest_framework import (
     viewsets,
     status,
 )
+from celery.task.control import revoke
 
 from export.serializers import ExportSerializer
 from export.models import Export
@@ -36,6 +39,19 @@ class ExportViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return qs.filter(is_preview=False)
         return qs
+
+    @action(
+        detail=True,
+        url_path='cancel',
+        methods=('post',),
+    )
+    def cancel(self, request, pk=None, version=None):
+        export = self.get_object()
+        if export.status in [Export.PENDING, Export.STARTED]:
+            revoke(export.get_task_id(clear=True), terminate=True)
+            export.status = Export.CANCELED
+        export.save()
+        return self.retrieve(request, pk=pk)
 
     def destroy(self, request, *args, **kwargs):
         export = self.get_object()
@@ -99,7 +115,9 @@ class ExportTriggerView(views.APIView):
         )
 
         if True or not settings.TESTING:
-            transaction.on_commit(lambda: export_task.delay(export.id))
+            transaction.on_commit(
+                lambda: export.set_task_id(export_task.delay(export.id).id)
+            )
 
         return response.Response({
             'export_triggered': export.id,

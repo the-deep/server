@@ -5,7 +5,11 @@ from django.core.management.base import BaseCommand
 from django.utils import autoreload
 
 
-CMD = 'celery -A deep worker -B --concurrency=2 -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler'
+CMD = (
+    'celery -A deep worker -B --concurrency=2 -l info '
+    '--scheduler django_celery_beat.schedulers:DatabaseScheduler '
+    '--statedb=/var/run/celery/worker.state'
+)
 
 
 def restart_celery(*args, **kwargs):

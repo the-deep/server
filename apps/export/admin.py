@@ -13,11 +13,11 @@ TRIGGER_LIMIT = 5
 
 def trigger_retry(modeladmin, request, queryset):
     for export_id in queryset.values_list('id', flat=True).distinct()[:TRIGGER_LIMIT]:
-        export_task.delay(export_id)
+        export_task.delay(export_id, force=True)
     messages.add_message(
         request, messages.INFO,
         mark_safe(
-            'Successfully triggerd retry for exports: <br><hr>' +
+            'Successfully force triggerd retry for exports: <br><hr>' +
             '<br>'.join(
                 '& {} : {}'.format(*value)
                 for value in queryset.values_list('id', 'title').distinct()[:TRIGGER_LIMIT]
@@ -26,7 +26,7 @@ def trigger_retry(modeladmin, request, queryset):
     )
 
 
-trigger_retry.short_description = 'Trigger export process for selected export, limit: {}'.format(TRIGGER_LIMIT)
+trigger_retry.short_description = 'Force trigger export process for selected export, limit: {}'.format(TRIGGER_LIMIT)
 
 
 @admin.register(Export)
