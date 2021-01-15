@@ -336,6 +336,19 @@ class LeadPreviewImage(models.Model):
     def __str__(self):
         return 'Image extracted for {}'.format(self.lead)
 
+    def clone_as_deep_file(self, user):
+        """
+        Generates a gallery/models.py::File copy
+        """
+        file = File.objects.create(
+            title=self.file.name,
+            created_by=user,
+            modified_by=user,
+        )
+        file.file.save(self.file.name, self.file)
+        file.projects.add(self.lead.project)
+        return file
+
 
 class LeadEMMTrigger(models.Model):
     lead = models.ForeignKey(Lead, related_name='emm_triggers', on_delete=models.CASCADE)
