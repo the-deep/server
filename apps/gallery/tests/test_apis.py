@@ -184,7 +184,7 @@ class GalleryTests(TestCase):
 
         # With authentication and with file access (Entry)
         entry = self.create(Entry, project=project, lead=lead)
-        entry.image = entry_file.get_file_url()
+        entry.image_raw = entry_file.get_file_url()
         entry.save()
         response = self.client.get(entry_file_url)
         assert response.status_code == 302, "Should return 302 redirect"
