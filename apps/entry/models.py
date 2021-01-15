@@ -50,7 +50,8 @@ class Entry(UserResource, ProjectEntityMixin):
         default=EXCERPT,
     )
     excerpt = models.TextField(blank=True)
-    image = models.TextField(blank=True)
+    image = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True)
+    image_raw = models.TextField(blank=True)
     tabular_field = models.ForeignKey(
         'tabular.Field', on_delete=models.CASCADE,
         null=True, blank=True,

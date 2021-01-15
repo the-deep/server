@@ -478,8 +478,8 @@ class ReportExporter:
         image = None
         image_text = None
         if entry.entry_type == Entry.IMAGE:
-            image = entry.image
-            # para.add_run().add_image(entry.image)
+            image = entry.image_raw
+            # para.add_run().add_image(entry.image_raw)
         elif entry.entry_type == Entry.DATA_SERIES and entry.tabular_field:
             image = viz_renderer.get_entry_image(entry)
             h_stats = (entry.tabular_field.cache or {}).get('health_stats', {})

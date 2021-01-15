@@ -6,7 +6,7 @@ from reversion.models import Version
 from deep.tests import TestCase
 from project.models import Project
 from user.models import User
-from lead.models import Lead
+from lead.models import Lead, LeadPreviewImage
 from organization.models import Organization, OrganizationType
 from analysis_framework.models import (
     AnalysisFramework, Widget, Filter
@@ -636,6 +636,68 @@ class EntryTests(TestCase):
             'authoring_organization_types': [organization_type1.id, organization_type3.id]
         }
         self.post_filter_test(filters, 3)
+
+    def test_entry_image_validation(self):
+        lead = self.create_lead()
+
+        url = '/api/v1/entries/'
+        data = {
+            'lead': lead.pk,
+            'project': lead.project.pk,
+            'analysis_framework': lead.project.analysis_framework.pk,
+            'excerpt': 'This is test excerpt',
+            'attributes': {},
+        }
+
+        self.authenticate()
+        image = self.create_gallery_file()
+
+        # Using raw image
+        data['image_raw'] = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='  # noqa: E501
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        assert 'image' in response.data
+        assert 'image_details' in response.data
+        data.pop('image_raw')
+
+        # Using lead image (same lead)
+        data['lead_image'] = self.create(LeadPreviewImage, lead=lead, file=image.file).pk
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        assert 'image' in response.data
+        assert 'image_details' in response.data
+        data.pop('lead_image')
+
+        # Using lead image (different lead)
+        data['lead_image'] = self.create(LeadPreviewImage, lead=self.create_lead(), file=image.file).pk
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        data.pop('lead_image')
+
+        # Using gallery file (owned)
+        data['image'] = image.pk
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        assert 'image' in response.data
+        assert 'image_details' in response.data
+        data.pop('image')
+
+        # Using gallery file (not owned)
+        image.created_by = self.root_user
+        image.is_public = False
+        image.save()
+        data['image'] = image.pk
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        data.pop('image')
+
+        # Using gallery file (not owned but public)
+        image.is_public = True
+        image.save()
+        data['image'] = image.pk
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        data.pop('image')
 
     # TODO: test export data and filter data apis
 

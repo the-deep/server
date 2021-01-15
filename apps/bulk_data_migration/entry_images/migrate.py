@@ -1,7 +1,7 @@
 from urllib.parse import urljoin
 import reversion
 from entry.models import Entry
-from entry.utils import validate_image_for_entry
+from entry.utils import base64_to_deep_image
 
 
 class CustomRequest:
@@ -14,13 +14,13 @@ class CustomRequest:
 
 
 def migrate_entry(entry, root_url):
-    image = entry.image
+    image = entry.image_raw
     if not image:
         return
 
-    new_image = validate_image_for_entry(
+    new_image = base64_to_deep_image(
         image,
-        project=entry.lead.project,
+        lead=entry.lead,
         request=CustomRequest(entry.created_by, root_url),
     )
 

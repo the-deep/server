@@ -1,11 +1,7 @@
-import os
-
 from entry.models import Attribute
 from gallery.models import File
-from django.urls import reverse
 from utils.image import decode_base64_if_possible
 
-from .widgets import conditional_widget
 from .widgets.utils import set_filter_data, set_export_data
 from .widgets.store import widget_store
 
@@ -52,9 +48,9 @@ def update_attributes(**attr_filters):
         update_entry_attribute(attribute)
 
 
-def validate_image_for_entry(image, project, request):
+def base64_to_deep_image(image, lead, request):
     if not image:
-        return image
+        return
 
     decoded_file, header = decode_base64_if_possible(image)
     if isinstance(decoded_file, str):
@@ -71,7 +67,5 @@ def validate_image_for_entry(image, project, request):
         modified_by=request.user,
     )
     file.file.save(decoded_file.name, decoded_file)
-    file.projects.add(project)
-
-    url = reverse('file', kwargs={'file_id': file.id})
-    return request.build_absolute_uri(url)
+    file.projects.add(lead.project)
+    return file

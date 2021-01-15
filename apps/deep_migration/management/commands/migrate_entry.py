@@ -133,7 +133,7 @@ class Command(MigrationCommand):
             entry.excerpt = data['excerpt']
             entry.entry_type = Entry.EXCERPT
         elif data.get('image'):
-            entry.image = data['image']
+            entry.image_raw = data['image']
             entry.entry_type = Entry.IMAGE
 
         entry.created_by = get_user(entry_data['created_by'])
