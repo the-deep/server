@@ -755,26 +755,19 @@ class EntryTest(TestCase):
         )
 
     def test_entry_no_image(self):
-        entry = self.create_entry(image='')
+        entry = self.create_entry(image=None, image_raw='')
         assert entry.get_image_url() is None
 
     def test_entry_image(self):
         entry_image_url = '/some/path'
-        entry = self.create_entry(
-            image='{}/{}'.format(entry_image_url, self.file.id)
-        )
-        assert entry.get_image_url() is not None
-        # Get file again, because it won't have random_string updated
         file = File.objects.get(id=self.file.id)
-        assert entry.get_image_url() == '{protocol}://{domain}{url}'.format(
-            protocol=settings.HTTP_PROTOCOL,
-            domain=settings.DJANGO_API_HOST,
-            url='/private-file/{uuid}/{filename}'.format(**{
-                'uuid': file.uuid,
-                'filename': file.title,
-            }
-            ),
+        entry_with_raw_image = self.create_entry(
+            image=None,
+            image_raw='{}/{}'.format(entry_image_url, file.id)
         )
+        entry_with_image = self.create_entry(image=File.objects.get(id=file.id))
+        assert entry_with_raw_image.get_image_url() == file.get_file_url()
+        assert entry_with_image.get_image_url() == file.get_file_url()
 
     def test_list_entries_summary(self):
         org_type1 = self.create(OrganizationType)

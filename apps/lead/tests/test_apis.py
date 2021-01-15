@@ -1,4 +1,7 @@
+import os
 from deep.tests import TestCase
+from django.db.models import ImageField
+
 from user.models import User
 from user.serializers import SimpleUserSerializer
 from project.models import (
@@ -14,6 +17,7 @@ from organization.models import (
     OrganizationType,
 )
 from organization.serializers import SimpleOrganizationSerializer
+from entry.utils import base64_to_deep_image
 from lead.filter_set import LeadFilterSet
 from lead.serializers import SimpleLeadGroupSerializer
 from entry.models import (

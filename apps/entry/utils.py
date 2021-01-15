@@ -48,7 +48,7 @@ def update_attributes(**attr_filters):
         update_entry_attribute(attribute)
 
 
-def base64_to_deep_image(image, lead, request):
+def base64_to_deep_image(image, lead, user):
     if not image:
         return
 
@@ -63,8 +63,8 @@ def base64_to_deep_image(image, lead, request):
     file = File.objects.create(
         title=decoded_file.name,
         mime_type=mime_type,
-        created_by=request.user,
-        modified_by=request.user,
+        created_by=user,
+        modified_by=user,
     )
     file.file.save(decoded_file.name, decoded_file)
     file.projects.add(lead.project)
