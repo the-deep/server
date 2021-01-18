@@ -149,7 +149,9 @@ class LeadViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         filters = dict()
-        filters['entries_filter_data'] = self.request.data.pop('entries_filter', {})
+        filters['entries_filter_data'] = {
+            f[0]: f[1] for f in self.request.data.pop('entries_filter', [])
+        }
         leads = Lead.get_for(self.request.user, filters)
         lead_id = self.request.GET.get('similar')
         if lead_id:

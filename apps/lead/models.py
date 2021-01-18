@@ -225,6 +225,7 @@ class Lead(UserResource, ProjectEntityMixin):
         )
         # filter entries
         entries_filter_data = filters.get('entries_filter_data', {})
+        entries_filter_data['from_subquery'] = True
 
         return qs.annotate(
             entries_count=models.Count('entry', distinct=True),
