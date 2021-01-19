@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for deep/permissions.py: 83%</title>
+    <title>Coverage for deep/permissions.py: 84%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -18,12 +18,12 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>deep/permissions.py</b> :
-            <span class="pc_cov">83%</span>
+            <span class="pc_cov">84%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            82 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">72 run</button>
+            86 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">76 run</button>
             <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">10 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">7 partial</button>
@@ -216,19 +216,24 @@
     <p id="t161" class="run"><span class="n"><a href="#t161">161</a></span><span class="t">        <span class="nam">lead_id</span> <span class="op">=</span> <span class="nam">view</span><span class="op">.</span><span class="nam">kwargs</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'lead_id'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t162" class="run"><span class="n"><a href="#t162">162</a></span><span class="t">        <span class="nam">entry_id</span> <span class="op">=</span> <span class="nam">view</span><span class="op">.</span><span class="nam">kwargs</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'entry_id'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t163" class="pln"><span class="n"><a href="#t163">163</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t164" class="run"><span class="n"><a href="#t164">164</a></span><span class="t">        <span class="key">if</span> <span class="nam">project_id</span> <span class="key">and</span> <span class="nam">Project</span><span class="op">.</span><span class="nam">get_for_member</span><span class="op">(</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">)</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">id</span><span class="op">=</span><span class="nam">project_id</span><span class="op">)</span><span class="op">.</span><span class="nam">exists</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t165" class="run"><span class="n"><a href="#t165">165</a></span><span class="t">            <span class="key">return</span> <span class="key">True</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t166" class="par run show_par"><span class="n"><a href="#t166">166</a></span><span class="t">        <span class="key">elif</span> <span class="nam">lead_id</span> <span class="key">and</span> <span class="nam">Lead</span><span class="op">.</span><span class="nam">get_for</span><span class="op">(</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">)</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">id</span><span class="op">=</span><span class="nam">lead_id</span><span class="op">)</span><span class="op">.</span><span class="nam">exists</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">166&#x202F;&#x219B;&#x202F;167</span><span class="annotate long">line 166 didn't jump to line 167, because the condition on line 166 was never true</span></span></p>
-    <p id="t167" class="mis show_mis"><span class="n"><a href="#t167">167</a></span><span class="t">            <span class="key">return</span> <span class="key">True</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t168" class="run"><span class="n"><a href="#t168">168</a></span><span class="t">        <span class="key">elif</span> <span class="nam">entry_id</span> <span class="key">and</span> <span class="nam">Entry</span><span class="op">.</span><span class="nam">get_for</span><span class="op">(</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">)</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">id</span><span class="op">=</span><span class="nam">entry_id</span><span class="op">)</span><span class="op">.</span><span class="nam">exists</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t169" class="run"><span class="n"><a href="#t169">169</a></span><span class="t">            <span class="key">return</span> <span class="key">True</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t170" class="run"><span class="n"><a href="#t170">170</a></span><span class="t">        <span class="key">return</span> <span class="key">False</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t164" class="run"><span class="n"><a href="#t164">164</a></span><span class="t">        <span class="key">if</span> <span class="nam">project_id</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t165" class="run"><span class="n"><a href="#t165">165</a></span><span class="t">            <span class="key">return</span> <span class="nam">Project</span><span class="op">.</span><span class="nam">get_for_member</span><span class="op">(</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">)</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">id</span><span class="op">=</span><span class="nam">project_id</span><span class="op">)</span><span class="op">.</span><span class="nam">exists</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t166" class="par run show_par"><span class="n"><a href="#t166">166</a></span><span class="t">        <span class="key">elif</span> <span class="nam">lead_id</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">166&#x202F;&#x219B;&#x202F;167</span><span class="annotate long">line 166 didn't jump to line 167, because the condition on line 166 was never true</span></span></p>
+    <p id="t167" class="mis show_mis"><span class="n"><a href="#t167">167</a></span><span class="t">            <span class="key">return</span> <span class="nam">Lead</span><span class="op">.</span><span class="nam">get_for</span><span class="op">(</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">)</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">id</span><span class="op">=</span><span class="nam">lead_id</span><span class="op">)</span><span class="op">.</span><span class="nam">exists</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t168" class="run"><span class="n"><a href="#t168">168</a></span><span class="t">        <span class="key">elif</span> <span class="nam">entry_id</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t169" class="run"><span class="n"><a href="#t169">169</a></span><span class="t">            <span class="key">return</span> <span class="nam">Entry</span><span class="op">.</span><span class="nam">get_for</span><span class="op">(</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">)</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">id</span><span class="op">=</span><span class="nam">entry_id</span><span class="op">)</span><span class="op">.</span><span class="nam">exists</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t170" class="run"><span class="n"><a href="#t170">170</a></span><span class="t">        <span class="key">return</span> <span class="key">True</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t171" class="pln"><span class="n"><a href="#t171">171</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t172" class="run"><span class="n"><a href="#t172">172</a></span><span class="t">    <span class="key">def</span> <span class="nam">has_object_permission</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">request</span><span class="op">,</span> <span class="nam">view</span><span class="op">,</span> <span class="nam">obj</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t173" class="run"><span class="n"><a href="#t173">173</a></span><span class="t">        <span class="key">if</span> <span class="nam">type</span><span class="op">(</span><span class="nam">obj</span><span class="op">)</span> <span class="op">==</span> <span class="nam">Project</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t174" class="run"><span class="n"><a href="#t174">174</a></span><span class="t">            <span class="key">return</span> <span class="nam">obj</span><span class="op">.</span><span class="nam">members</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">id</span><span class="op">=</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">.</span><span class="nam">id</span><span class="op">)</span><span class="op">.</span><span class="nam">exists</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t175" class="run"><span class="n"><a href="#t175">175</a></span><span class="t">        <span class="key">return</span> <span class="key">True</span>&nbsp;</span><span class="r"></span></p>
 </div>
 <div id="footer">
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.3.1</a>,
-            created at 2021-01-19 05:55 +0000
+            created at 2021-01-19 11:10 +0000
         </p>
     </div>
 </div>
