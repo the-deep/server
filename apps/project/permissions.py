@@ -109,7 +109,6 @@ class MembershipModifyPermission(permissions.BasePermission):
             member=request.user
         ).first()
         user_role = user and user.role
-
         if not user_role or user_role.level > obj.role.level:
             return False
 

@@ -286,11 +286,6 @@ class ProjectUsergroupMembershipSerializer(RemoveNullFieldsMixin,
 
 class ProjectSerializer(RemoveNullFieldsMixin,
                         DynamicFieldsMixin, UserResourceSerializer):
-    memberships = ProjectMembershipSerializer(
-        source='projectmembership_set',
-        many=True,
-        read_only=True,
-    )
 
     organizations = ProjectOrganizationSerializer(
         source='projectorganization_set',
@@ -456,6 +451,14 @@ class ProjectSerializer(RemoveNullFieldsMixin,
             raise serializers.ValidationError(
                 'Invalid analysis framework: {}'.format(analysis_framework.id))
         return analysis_framework
+
+
+class ProjectMemberViewSerializer(ProjectSerializer):
+    memberships = ProjectMembershipSerializer(
+        source='projectmembership_set',
+        many=True,
+        read_only=True,
+    )
 
 
 class ProjectStatSerializer(ProjectSerializer):
