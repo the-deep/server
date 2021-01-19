@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models, transaction
 
+from deep import compiler
 from rest_framework.decorators import action
 from rest_framework import (
     serializers,
@@ -152,7 +153,9 @@ class LeadViewSet(viewsets.ModelViewSet):
         filters['entries_filter_data'] = {
             f[0]: f[1] for f in self.request.data.pop('entries_filter', [])
         }
+        filters['entries_filter_data']['project'] = self.request.data.get('project', [None])[0]
         leads = Lead.get_for(self.request.user, filters)
+
         lead_id = self.request.GET.get('similar')
         if lead_id:
             similar_lead = Lead.objects.get(id=lead_id)
