@@ -437,6 +437,7 @@ class TestTabularExtraction(TestCase):
 
     def tearDown(self):
         """Remove temp files"""
+        super().tearDown()
         for file in self.files:
             os.remove(file)
 
