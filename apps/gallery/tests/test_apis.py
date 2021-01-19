@@ -27,6 +27,7 @@ class GalleryTests(TestCase):
         self.unsupported_file = tmp_file.name
 
     def tearDown(self):
+        super().tearDown()
         os.unlink(self.unsupported_file)
 
     def test_upload_supported_file(self):
@@ -156,6 +157,7 @@ class GalleryTests(TestCase):
 
         file_id = self.save_file_with_api({'isPublic': False})
         entry_file_id = self.save_file_with_api({'isPublic': False})
+
         file = File.objects.get(id=file_id)
         entry_file = File.objects.get(id=entry_file_id)
         file_url = urlf.format(file.uuid, file.title)
