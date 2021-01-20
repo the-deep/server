@@ -153,7 +153,12 @@ class LeadViewSet(viewsets.ModelViewSet):
         filters['entries_filter_data'] = {
             f[0]: f[1] for f in self.request.data.pop('entries_filter', [])
         }
-        filters['entries_filter_data']['project'] = self.request.data.get('project', [None])[0]
+        if self.request.data.get('project'):
+            project_id = self.request.data['project']
+            if isinstance(project_id, list) and len(project_id) > 0:
+                filters['entries_filter_data']['project'] = project_id[0]
+            else:
+                filters['entries_filter_data']['project'] = project_id
         leads = Lead.get_for(self.request.user, filters)
 
         lead_id = self.request.GET.get('similar')

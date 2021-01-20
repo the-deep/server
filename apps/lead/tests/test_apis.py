@@ -268,7 +268,7 @@ class LeadTests(TestCase):
         response = self.client.get(url)
 
         r_data = response.json()
-        assert 'noOfEntries' in r_data["results"][0]
+        assert 'entriesCount' in r_data["results"][0]
 
     def test_create_lead_no_create_role(self, assignee=None):
         lead_count = Lead.objects.count()
