@@ -5,8 +5,8 @@ from django.utils.hashable import make_hashable
 class CustomSQLCompiler:
     def get_group_by(self, select, order_by):
         """
-        Original SQLCompiler.get_group_by produces type error when with tuple(params) when checking
-        with seen in the last if statement. This is fixed in the newer version (2021-01-19).
+        Original SQLCompiler.get_group_by produces type error with tuple(params) when checking
+        with seen in the last if statement. This is fixed in the newer version (checking on 3.0).
         """
         if self.query.group_by is None:
             return []

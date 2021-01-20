@@ -224,10 +224,10 @@ class Lead(UserResource, ProjectEntityMixin):
             models.Q(view_all=view_perm_value)
         )
         # filter entries
-        original_filter = entries_filter_data = filters.get('entries_filter_data', {})
-        project = original_filter.pop('project', None)
+        entries_filter_data = filters.get('entries_filter_data', {})
+        original_filter = {**entries_filter_data}
+        original_filter.pop('project', None)
         entries_filter_data['from_subquery'] = True
-        entries_filter_data['project'] = project
 
         return qs.annotate(
             entries_count=models.Count('entry', distinct=True),
