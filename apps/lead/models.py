@@ -224,8 +224,10 @@ class Lead(UserResource, ProjectEntityMixin):
             models.Q(view_all=view_perm_value)
         )
         # filter entries
-        entries_filter_data = filters.get('entries_filter_data', {})
+        original_filter = entries_filter_data = filters.get('entries_filter_data', {})
+        project = original_filter.pop('project', None)
         entries_filter_data['from_subquery'] = True
+        entries_filter_data['project'] = project
 
         return qs.annotate(
             entries_count=models.Count('entry', distinct=True),
@@ -236,21 +238,21 @@ class Lead(UserResource, ProjectEntityMixin):
                 models.Subquery(
                     get_filtered_entries(user, entries_filter_data).filter(
                         lead=models.OuterRef('pk')
-                    ).annotate(
+                    ).values('lead').order_by().annotate(
                         count=models.Count('id')
                     ).values('count')[:1], output_field=models.IntegerField()
                 ), 0
-            ) if entries_filter_data else models.F('entries_count'),
+            ) if original_filter else models.F('entries_count'),
             verified_filtered_entries_count=models.functions.Coalesce(
                 models.Subquery(
                     get_filtered_entries(user, entries_filter_data).filter(
                         lead=models.OuterRef('pk'),
                         verified=True
-                    ).annotate(
+                    ).values('lead').order_by().annotate(
                         count=models.Count('id')
                     ).values('count')[:1], output_field=models.IntegerField()
                 ), 0
-            ) if entries_filter_data else models.F('verified_entries_count'),
+            ) if original_filter else models.F('verified_entries_count'),
         )
 
     def get_assignee(self):
