@@ -1091,16 +1091,24 @@ class LeadTests(TestCase):
 
         entry1 = self.create(Entry, project=project, lead=lead1, verified=True,
                              entry_type=Entry.EXCERPT)
+        entry11 = self.create(Entry, project=project, lead=lead1, verified=True,
+                              entry_type=Entry.EXCERPT)
+        post_data = {'entries_filter': [('verified', True)]}
+        response = self.client.post(url, post_data)
+        assert response.json()['count'] == 3
+        assert set([each['filteredEntriesCount'] for each in response.json()['results']]) == set([0, 0, 2]),\
+            response.json()
+
         entry2 = self.create(Entry, project=project, lead=lead2, verified=False,
                              entry_type=Entry.IMAGE)
         entry3 = self.create(Entry, project=project, lead=lead3, verified=False,
                              entry_type=Entry.DATA_SERIES)
-
         post_data = {'custom_filters': 'exclude_empty_filtered_entries',
                      'entries_filter': [('verified', True)]}
         response = self.client.post(url, post_data)
         assert response.json()['count'] == 1
-        assert response.json()['results'][0]['filteredEntriesCount'] == 1, response.json()
+        assert response.data['results'][0]['id'] == lead1.id, response.data
+        assert response.json()['results'][0]['filteredEntriesCount'] == 2, response.json()
 
         post_data['entries_filter'] = []
         post_data['entries_filter'].append(('entry_type', [Entry.EXCERPT, Entry.IMAGE]))
