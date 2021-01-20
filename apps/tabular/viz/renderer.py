@@ -187,13 +187,16 @@ def calc_preprocessed_data(field):
     return field.cache['status']
 
 
-def _add_image_to_gallery(image_name, image, mime_type):
+def _add_image_to_gallery(image_name, image, mime_type, project):
     file = File.objects.create(
         title=image_name,
         mime_type=mime_type,
         metadata={'tabular': True},
+        is_public=False,
     )
     file.file.save(image_name, image)
+    if project:
+        file.projects.add(project)
     logger.info(
         'Added image to tabular gallery {}(id={})'.format(image_name, file.id),
     )
@@ -217,6 +220,7 @@ def render_field_chart(field):
         )
         images = []
 
+    project = field.sheet.book.project
     if images and len(images) > 0:
         field_images = []
         for image in images:
@@ -227,7 +231,8 @@ def render_field_chart(field):
             file = _add_image_to_gallery(
                 'tabular_{}_{}.{}'.format(field.sheet.id, field.id, file_format),
                 file_content,
-                mime_type=file_mime,
+                file_mime,
+                project,
             )
             field_images.append({
                 'id': file.id, 'chart_type': chart_type, 'format': file_format,
