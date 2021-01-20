@@ -8,6 +8,7 @@ from export.entries.excel_exporter import ExcelExporter
 from export.entries.report_exporter import ReportExporter
 from export.entries.json_exporter import JsonExporter
 from geo.models import Region
+from lead.models import Lead
 from lead.filter_set import LeadFilterSet
 
 
@@ -20,15 +21,24 @@ def export_entries(export):
     filters = export.filters
     # remove lead so that it can be used to include or exclude
     lead_ids = filters.pop('lead', [])
-    include_leads = filters.get('include_leads', True)
-    queryset = get_filtered_entries(user, filters)
+    include_leads = filters.pop('include_leads', True)
+
+    # prepare entries filter data
+    entries_filter_data = {
+        f[0]: f[1] for f in filters.pop('entries_filter', [])
+    }
+    # project is necessary
+    entries_filter_data['project'] = project_id
+    # get filtered entries
+    queryset = get_filtered_entries(user, entries_filter_data)
+
+    filters['entries_filter_data'] = entries_filter_data
     if not include_leads:
-        lead_filters = filters.get('lead_filters', dict())
         all_leads = Lead.get_for(
             user,
-            dict(entries_filter_data=lead_filters.pop('entries_filter', dict()))
+            filters
         )
-        all_leads = LeadFilterSet(data=lead_filters, queryset=all_leads).qs
+        all_leads = LeadFilterSet(data=filters, queryset=all_leads).qs
         queryset = queryset.filter(
             lead_id__in=all_leads
         ).exclude(
