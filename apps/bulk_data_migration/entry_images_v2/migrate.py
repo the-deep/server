@@ -20,28 +20,25 @@ S3_URL_PREFIX = f'https://{settings.AWS_STORAGE_BUCKET_NAME_MEDIA}.s3.amazonaws.
 
 
 def _get_file_from_file_url(entry, string):
-    fileid = parse_number(string.rstrip('/').split('/')[-1])
-    return fileid and File.objects.filter(id=fileid).first()
     try:
         fileid = parse_number(string.rstrip('/').split('/')[-1])
-        return fileid and File.objects.filter(id=fileid).first()
     except IndexError:
-        pass
+        return
+    return fileid and File.objects.filter(id=fileid).first()
 
 
 def _get_file_from_s3_url(entry, string):
-    file_path = '/'.join(string.split('?')[0].split('/')[4:])
+    try:
+        file_path = '/'.join(string.split('?')[0].split('/')[4:])
+    except IndexError:
+        return
     # NOTE: For lead-preview generate gallery files
     if file_path.startswith('lead-preview/'):
         lead_preview = LeadPreviewImage.objects.filter(file=file_path).first()
         if lead_preview and lead_preview.file.storage.exists(lead_preview.file):
             return lead_preview.clone_as_deep_file(entry.created_by)
         return
-    try:
-        file_path = '/'.join(string.split('?')[0].split('/')[4:])
-        return file_path and File.objects.filter(file=file_path).first()
-    except IndexError:
-        pass
+    return file_path and File.objects.filter(file=file_path).first()
 
 
 def migrate_entry(entry):
