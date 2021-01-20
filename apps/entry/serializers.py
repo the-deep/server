@@ -221,7 +221,7 @@ class EntrySerializer(RemoveNullFieldsMixin,
     def get_project_labels(self, entry):
         # Should be provided from view
         label_count = self.context.get('entry_group_label_count')
-        if label_count:
+        if label_count is not None:
             return label_count.get(entry.pk) or []
         # Fallback
         return EntryGroupLabel.get_stat_for_entry(entry.entrygrouplabel_set)
