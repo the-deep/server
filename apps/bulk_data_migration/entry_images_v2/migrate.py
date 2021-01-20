@@ -11,13 +11,6 @@ from gallery.models import File
 python3 manage.py bulk_migrate entry_images_v2
 """
 
-# TODO: REMOVE THIS
-settings.HTTP_PROTOCOL = 'https'
-settings.DJANGO_API_HOST = 'api.thedeep.io'
-settings.AWS_STORAGE_BUCKET_NAME_MEDIA = 'deeper-prod-media'
-settings.MEDIAFILES_LOCATION = 'media'
-
-
 FILE_API_PREFIX = '{protocol}://{domain}{url}'.format(
     protocol=settings.HTTP_PROTOCOL,
     domain=settings.DJANGO_API_HOST,
@@ -55,13 +48,11 @@ def migrate_entry(entry):
     """
     Migrate to deep gallery image from s3 and file api URL.
     """
-    # For file api URL
     image_raw = entry.image_raw
     file = None
 
     if image_raw.find(FILE_API_PREFIX) == 0:
         file = _get_file_from_file_url(entry, image_raw)
-    # For API URL
     elif image_raw.find(S3_URL_PREFIX) == 0:
         file = _get_file_from_s3_url(entry, image_raw)
 

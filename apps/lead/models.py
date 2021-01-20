@@ -256,7 +256,10 @@ class Lead(UserResource, ProjectEntityMixin):
         )
 
     def get_assignee(self):
-        return self.assignee.first()
+        # To be used by prefetch_related (Also, there is only one assignee)
+        assignees = self.assignee.all()
+        if assignees:
+            return assignees[0]
 
     def get_source_display(self):
         if self.source:

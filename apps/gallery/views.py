@@ -1,6 +1,5 @@
 import logging
 from django.urls import reverse
-from django.core.cache import cache
 from django.views.generic import View
 from django.conf import settings
 from django.db import models, transaction
@@ -22,7 +21,6 @@ from rest_framework import (
 import django_filters
 
 from deep.permissions import ModifyPermission
-from deep.serializers import URLCachedFileField
 from project.models import Project
 from lead.models import Lead
 from entry.models import Entry
@@ -54,10 +52,12 @@ def DEFAULT_EXTRACTION_FUNCTION(file):
     return {}
 
 
+# TODO: Remove this after all entry images are migrated
 class FileView(View):
     def get(self, request, file_id):
-        file = get_object_or_404(File, id=file_id)
-        return redirect(request.build_absolute_uri(file.file.url))
+        return response.Response({
+            'error': 'This API is deprecated',
+        }, status=status.HTTP_403_FORBIDDEN)
 
 
 class PrivateFileView(views.APIView):
@@ -72,6 +72,7 @@ class PrivateFileView(views.APIView):
         if (
                 file.is_public or
                 Lead.get_for(user).filter(pk__in=leads_pk).exists() or
+                Entry.get_for(user).filter(image=file).exists() or
                 Entry.get_for(user).filter(
                     image_raw=request.build_absolute_uri(
                         reverse('file', kwargs={'file_id': file.pk}),
@@ -79,7 +80,11 @@ class PrivateFileView(views.APIView):
                 ).exists()
                 # TODO: Add Profile
         ):
-            return redirect(request.build_absolute_uri(file.file.url))
+            if file.file:
+                return redirect(request.build_absolute_uri(file.file.url))
+            return response.Response({
+                'error': 'File doesn\'t exists',
+            }, status=status.HTTP_404_NOT_FOUND)
         return response.Response({
             'error': 'Access Forbidden, Contact Admin',
         }, status=status.HTTP_403_FORBIDDEN)
@@ -156,11 +161,6 @@ class FileViewSet(viewsets.ModelViewSet):
     search_fields = ('title', 'file')
 
     def get_queryset(self):
-        if self.action == 'list':
-            return File.objects.filter(
-                models.Q(created_by=self.request.user) |
-                models.Q(is_public=True)
-            ).distinct()
         return File.get_for(self.request.user)
 
     @decorators.action(

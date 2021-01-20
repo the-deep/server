@@ -478,7 +478,7 @@ class ReportExporter:
         image = None
         image_text = None
         if entry.entry_type == Entry.IMAGE:
-            image = entry.image_raw
+            image = (entry.image and entry.image.file) or entry.image_raw
             # para.add_run().add_image(entry.image_raw)
         elif entry.entry_type == Entry.DATA_SERIES and entry.tabular_field:
             image = viz_renderer.get_entry_image(entry)
