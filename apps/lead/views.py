@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models, transaction
 
-from deep import compiler
+from deep import compiler  # noqa: F401
 from rest_framework.decorators import action
 from rest_framework import (
     serializers,
