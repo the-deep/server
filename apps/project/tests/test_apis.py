@@ -1291,7 +1291,7 @@ class ProjectApiTest(TestCase):
         self.update_obj(self.create_entry(lead=lead4, verified=False), created_at=now + relativedelta(months=-3, days=-1))
 
         self.authenticate(user)
-        url = '/api/v1/projects/summary/'
+        url = '/api/v1/projects-stat/summary/'
         response = self.client.get(url)
         self.assert_200(response)
         self.assertEqual(response.data['projects_count'], 3)
