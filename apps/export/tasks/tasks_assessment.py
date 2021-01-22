@@ -15,8 +15,12 @@ def _export_assessments(export, AssessmentModel, excel_sheet_data_generator):
     filters = export.filters
 
     arys = AssessmentModel.objects.filter(project=project).prefetch_related('project').distinct()
-    if AssessmentModel == Assessment and filters.get('lead'):
-        arys = arys.filter(lead__in=filters['lead'])
+    if AssessmentModel == Assessment:
+        lead = filters.get('lead', [])
+        if filters.get('include_leads', True):
+            arys = arys.filter(lead__in=lead)
+        else:
+            arys = arys.exclude(lead__in=lead)
     iterable_arys = arys[:Export.PREVIEW_ASSESSMENT_SIZE] if is_preview else arys
 
     if export_type == Export.JSON:
