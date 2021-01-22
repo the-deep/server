@@ -8,6 +8,7 @@ from project.models import (
 from project.serializers import SimpleProjectSerializer
 from geo.models import Region
 
+from entry.models import Entry
 from organization.models import (
     Organization,
     OrganizationType,
@@ -15,6 +16,12 @@ from organization.models import (
 from organization.serializers import SimpleOrganizationSerializer
 from lead.filter_set import LeadFilterSet
 from lead.serializers import SimpleLeadGroupSerializer
+from entry.models import (
+    Entry,
+    ProjectEntryLabel,
+    LeadEntryGroup,
+    EntryGroupLabel,
+)
 from lead.models import (
     Lead,
     LeadPreview,
@@ -261,7 +268,7 @@ class LeadTests(TestCase):
         response = self.client.get(url)
 
         r_data = response.json()
-        assert 'noOfEntries' in r_data["results"][0]
+        assert 'entriesCount' in r_data["results"][0]
 
     def test_create_lead_no_create_role(self, assignee=None):
         lead_count = Lead.objects.count()
@@ -1065,6 +1072,79 @@ class LeadTests(TestCase):
         self.assert_200(resp)
         obtained_ids = {x['id'] for x in resp.data['results']}
         assert expected_ids == obtained_ids
+
+    def test_lead_filter_with_entries_filter(self):
+        project = self.create_project()
+        lead1 = self.create(Lead, project=project, title='mytext')
+        lead2 = self.create(Lead, project=project, source_raw='thisis_mytext')
+        lead3 = self.create(Lead, project=project, website='http://thisis-mytext.com')
+
+        url = '/api/v1/leads/filter/'
+        post_data = {}
+        self.authenticate()
+        response = self.client.post(url, post_data)
+        assert response.json()['count'] == 3
+
+        post_data = {'custom_filters': 'exclude_empty_filtered_entries'}
+        response = self.client.post(url, post_data)
+        assert response.json()['count'] == 0, 'There are not supposed to be leads with entries'
+
+        entry1 = self.create(Entry, project=project, lead=lead1, verified=True,
+                             entry_type=Entry.EXCERPT)
+        entry11 = self.create(Entry, project=project, lead=lead1, verified=True,
+                              entry_type=Entry.EXCERPT)
+        post_data = {'entries_filter': [('verified', True)]}
+        response = self.client.post(url, post_data)
+        assert response.json()['count'] == 3
+        assert set([each['filteredEntriesCount'] for each in response.json()['results']]) == set([0, 0, 2]),\
+            response.json()
+
+        entry2 = self.create(Entry, project=project, lead=lead2, verified=False,
+                             entry_type=Entry.IMAGE)
+        entry3 = self.create(Entry, project=project, lead=lead3, verified=False,
+                             entry_type=Entry.DATA_SERIES)
+        post_data = {'custom_filters': 'exclude_empty_filtered_entries',
+                     'entries_filter': [('verified', True)]}
+        response = self.client.post(url, post_data)
+        assert response.json()['count'] == 1
+        assert response.data['results'][0]['id'] == lead1.id, response.data
+        assert response.json()['results'][0]['filteredEntriesCount'] == 2, response.json()
+
+        post_data['entries_filter'] = []
+        post_data['entries_filter'].append(('entry_type', [Entry.EXCERPT, Entry.IMAGE]))
+        response = self.client.post(url, post_data)
+        self.assertEqual(response.json()['count'], 2, response.json())
+        assert response.json()['results'][0]['filteredEntriesCount'] == 1, response.json()
+
+        # filter by project_entry_labels
+        # Labels
+        label1 = self.create(ProjectEntryLabel, project=project, title='Label 1', order=1,
+                             color='#23f23a')
+        label2 = self.create(ProjectEntryLabel, project=project, title='Label 2', order=2,
+                             color='#23f23a')
+        label3 = self.create(ProjectEntryLabel, project=project, title='Label 3', order=3,
+                             color='#23f23a')
+
+        # Groups
+        group11 = self.create(LeadEntryGroup, lead=lead1, title='Group 1', order=1)
+        group12 = self.create(LeadEntryGroup, lead=lead1, title='Group 2', order=2)
+        group21 = self.create(LeadEntryGroup, lead=lead2, title='Group 2', order=2)
+
+        self.create(EntryGroupLabel, group=group11, label=label1, entry=entry1)
+        self.create(EntryGroupLabel, group=group12, label=label2, entry=entry1)
+        self.create(EntryGroupLabel, group=group21, label=label2, entry=entry2)
+
+        post_data['entries_filter'] = []
+        post_data['entries_filter'].append(('project_entry_labels', [label1.id]))
+        response = self.client.post(url, post_data)
+        self.assertEqual(response.json()['count'], 1, response.json())
+        assert response.json()['results'][0]['filteredEntriesCount'] == 1, response.json()
+
+        post_data['entries_filter'] = []
+        post_data['entries_filter'].append(('project_entry_labels', [label1.id, label2.id]))
+        response = self.client.post(url, post_data)
+        self.assertEqual(response.json()['count'], 2, response.json())
+        assert response.json()['results'][0]['filteredEntriesCount'] == 1, response.json()
 
     def test_filtered_lead_list_with_verified_entries_count(self):
         project = self.create_project()

@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import FieldError
 import django_filters
 
 from deep.filter_set import DjangoFilterCSVWidget
@@ -33,6 +34,12 @@ class LeadFilterSet(django_filters.FilterSet):
         (ASSESSMENT_EXISTS, 'Assessment Exists'),
         (ENTRIES_DO_NOT_EXIST, 'Entries do not exist'),
         (ASSESSMENT_DOES_NOT_EXIST, 'Assessment does not exist'),
+    )
+    EXCLUDE_EMPTY_FILTERED_ENTRIES = 'exclude_empty_filtered_entries'
+    EXCLUDE_EMPTY_VERIFIED_FILTERED_ENTRIES = 'exclude_empty_verified_filtered_entries'
+    FILTERED_ENTRIES_CHOICE = (
+        (EXCLUDE_EMPTY_FILTERED_ENTRIES, 'exclude empty filtered entries'),
+        (EXCLUDE_EMPTY_VERIFIED_FILTERED_ENTRIES , 'exclude empty verified filtered entries'),
     )
 
     search = django_filters.CharFilter(method='search_filter')
@@ -120,6 +127,11 @@ class LeadFilterSet(django_filters.FilterSet):
         method='authoring_organization_types_filter',
         widget=DjangoFilterCSVWidget,
         queryset=OrganizationType.objects.all(),
+    )
+    # used in export
+    custom_filters = django_filters.ChoiceFilter(
+        label='Filtered Exists Choice',
+        choices=FILTERED_ENTRIES_CHOICE, method='filtered_exists_filter',
     )
 
     class Meta:
@@ -220,6 +232,14 @@ class LeadFilterSet(django_filters.FilterSet):
                 )
             )
             return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
+        return qs
+
+    def filtered_exists_filter(self, qs, name, value):
+        # NOTE: check annotations at Lead.get_for
+        if value == self.EXCLUDE_EMPTY_FILTERED_ENTRIES:
+            return qs.filter(filtered_entries_count__gte=1)
+        elif value == self.EXCLUDE_EMPTY_VERIFIED_FILTERED_ENTRIES:
+            return qs.filter(verified_filtered_entries_count__gte=1)
         return qs
 
 

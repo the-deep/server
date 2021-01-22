@@ -155,12 +155,12 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
             return queryset.filter(
                 entrycomment__is_resolved=False,
                 entrycomment__parent__isnull=True,
-            ).distinct()
+            )
         elif value == self.RESOLVED:
             return queryset.filter(
                 entrycomment__is_resolved=True,
                 entrycomment__parent__isnull=True,
-            ).distinct()
+            )
         return queryset
 
     def comment_created_by_filter(self, queryset, name, value):
@@ -168,7 +168,7 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
             return queryset.filter(
                 entrycomment__created_by__in=value,
                 entrycomment__parent__isnull=True,
-            ).distinct()
+            )
         return queryset
 
     def geo_custom_shape_filter(self, queryset, name, value):
@@ -182,19 +182,19 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
                     ) for v in value.split(',')
                 ],
             )
-            return queryset.filter(query_params).distinct()
+            return queryset.filter(query_params)
         return queryset
 
     def project_entry_labels_filter(self, queryset, name, value):
         if value:
             return queryset.filter(
                 entrygrouplabel__label__in=value,
-            ).distinct()
+            )
         return queryset
 
     def lead_group_label_filter(self, queryset, name, value):
         if value:
-            return queryset.filter(entrygrouplabel__group__title__icontains=value).distinct()
+            return queryset.filter(entrygrouplabel__group__title__icontains=value)
         return queryset
 
     def authoring_organization_types_filter(self, qs, name, value):
@@ -205,8 +205,16 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
                     'lead__authors__organization_type'
                 )
             )
-            return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
+            return qs.filter(organization_types__in=[ot.id for ot in value])
         return qs
+
+    @property
+    def qs(self):
+        qs = super().qs
+        # Note: Since we cannot have `.distinct()` inside a subquery
+        if self.data.get('from_subquery', False):
+            return Entry.objects.filter(id__in=qs)
+        return qs.distinct()
 
 
 class EntryCommentFilterSet(django_filters.FilterSet):
@@ -216,6 +224,8 @@ class EntryCommentFilterSet(django_filters.FilterSet):
 
 
 def get_filtered_entries(user, queries):
+    # NOTE: lets not use `.distinct()` in this function as it is used by a
+    # subquery in `lead/models.py`.
     entries = Entry.get_for(user)
     project = queries.get('project')
 
