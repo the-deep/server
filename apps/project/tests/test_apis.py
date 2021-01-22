@@ -1,3 +1,4 @@
+from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 from datetime import timedelta
 
@@ -74,10 +75,7 @@ class ProjectApiTest(TestCase):
         self.assertEqual(Project.objects.count(), project_count + 1)
         self.assertEqual(response.data['title'], data['title'])
 
-    def create_project(self, **kwargs):
-        use_api = kwargs.pop('use_api', True)
-        if not use_api:
-            return super().create_project(**kwargs)
+    def create_project_api(self, **kwargs):
         url = '/api/v1/projects/'
         data = {
             'title': kwargs.get('title'),
@@ -95,11 +93,11 @@ class ProjectApiTest(TestCase):
                     users=[user_fhx], email_domains=[])
         self.authenticate(user_fhx)
 
-        self.create_project(title='Project 1', is_private=False)
-        self.create_project(title='Project 2', is_private=False)
-        self.create_project(title='Project 3', is_private=False)
-        self.create_project(title='Project 4', is_private=False)
-        self.create_project(title='Private Project 1', is_private=True)
+        self.create_project_api(title='Project 1', is_private=False)
+        self.create_project_api(title='Project 2', is_private=False)
+        self.create_project_api(title='Project 3', is_private=False)
+        self.create_project_api(title='Project 4', is_private=False)
+        self.create_project_api(title='Private Project 1', is_private=True)
 
         response = self.client.get('/api/v1/projects/')
         self.assertEqual(len(response.data['results']), 5)
@@ -107,8 +105,8 @@ class ProjectApiTest(TestCase):
         other_user = self.create(User)
         self.authenticate(other_user)
 
-        # self.create_project(title='Project 5', is_private=False)
-        # self.create_project(title='Private Project 3', is_private=True)
+        # self.create_project_api(title='Project 5', is_private=False)
+        # self.create_project_api(title='Private Project 3', is_private=True)
 
         response = self.client.get('/api/v1/projects/')
         self.assertEqual(len(response.data['results']), 4)
@@ -184,10 +182,10 @@ class ProjectApiTest(TestCase):
                     users=[user_dummy], email_domains=[])
 
         self.authenticate(user_fhx)
-        self.assert_403(self.create_project(title='Private test', is_private=True))
+        self.assert_403(self.create_project_api(title='Private test', is_private=True))
 
         self.authenticate(user_dummy)
-        self.assert_201(self.create_project(title='Private test', is_private=True))
+        self.assert_201(self.create_project_api(title='Private test', is_private=True))
 
     def test_get_private_project_detail_unauthorized(self):
         user_fhx = self.create(User, email='fhx@togglecorp.com')
@@ -196,7 +194,7 @@ class ProjectApiTest(TestCase):
                     users=[user_fhx], email_domains=[])
 
         self.authenticate(user_fhx)
-        response = self.create_project(title='Test private project', is_private=True)
+        response = self.create_project_api(title='Test private project', is_private=True)
         self.assert_201(response)
 
         self.assertEqual(response.data['is_private'], True)
@@ -1213,7 +1211,7 @@ class ProjectApiTest(TestCase):
         self.assertEqual(response.json()['status'], 'success')
 
     def test_project_lead_groups_api(self):
-        project = self.create_project(role=self.normal_role, use_api=False)
+        project = self.create_project(role=self.normal_role)
         lead_group1 = self.create(LeadGroup, project=project)
         lead_group2 = self.create(LeadGroup, project=project)
 
@@ -1263,3 +1261,42 @@ class ProjectApiTest(TestCase):
         self.assert_200(response)
         self.assertEqual(response.data['id'], project1.id)
         self.assertNotIn('memberships', response.data)  # `membership` field shouldnot be present
+
+    def test_project_summary_api(self):
+        user = self.create_user()
+
+        project1 = self.create_project(title='Project 1')
+        project2 = self.create_project(title='Project 2')
+        project3 = self.create_project(title='Project 3')
+        project1.add_member(user)
+        project2.add_member(user)
+        project3.add_member(user)
+
+        lead1 = self.create_lead(project=project1)
+        lead2 = self.create_lead(project=project1)
+        lead3 = self.create_lead(project=project2)
+        lead4 = self.create_lead(project=project3)
+        self.create_lead(project=project1)
+
+        now = timezone.now()
+        self.update_obj(self.create_entry(lead=lead1, verified=False), created_at=now + relativedelta(months=-3, days=-1))
+        self.update_obj(self.create_entry(lead=lead1, verified=False), created_at=now + relativedelta(months=-2))
+        self.update_obj(self.create_entry(lead=lead2, verified=False), created_at=now + relativedelta(months=-3))
+        self.update_obj(self.create_entry(lead=lead2, verified=True), created_at=now + relativedelta(months=-3))
+        self.update_obj(self.create_entry(lead=lead2, verified=True), created_at=now + relativedelta(months=-3))
+        self.update_obj(self.create_entry(lead=lead3, verified=False), created_at=now + relativedelta(days=-10))
+        self.update_obj(self.create_entry(lead=lead3, verified=False), created_at=now + relativedelta(days=-20))
+        self.update_obj(self.create_entry(lead=lead3, verified=True), created_at=now + relativedelta(days=-30))
+        self.update_obj(self.create_entry(lead=lead3, verified=True), created_at=now + relativedelta(days=-40))
+        self.update_obj(self.create_entry(lead=lead4, verified=False), created_at=now + relativedelta(months=-3, days=-1))
+
+        self.authenticate(user)
+        url = '/api/v1/projects/summary/'
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(response.data['projects_count'], 3)
+        self.assertEqual(response.data['total_leads_count'], 5)
+        self.assertEqual(response.data['total_leads_tagged_count'], 4)
+        self.assertEqual(response.data['total_leads_tagged_and_verified_count'], 2)
+        self.assertEqual(len(response.data['recent_entries_activity']['projects']), 2)
+        self.assertEqual(len(response.data['recent_entries_activity']['activities']), 5)

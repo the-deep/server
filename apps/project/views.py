@@ -185,9 +185,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
 
-    """
-    Get analysis framework for this project
-    """
     @action(
         detail=False,
         permission_classes=[permissions.IsAuthenticated],
@@ -206,19 +203,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
         # Entries activity
         recent_entries = Entry.objects.filter(
             project__in=projects,
-            created_at__gte=(timezone.now() - relativedelta(months=3))
+            created_at__gte=(timezone.now() + relativedelta(months=-3))
         )
         recent_entries_activity = {
             'projects': (
                 recent_entries.order_by().values('project')
                 .annotate(count=models.Count('*'))
                 .filter(count__gt=0)
-                .values(id=models.F('project'), title=models.F('project__title'))
+                .values('count', id=models.F('project'), title=models.F('project__title'))
             ),
             'activities': (
                 recent_entries.order_by('project', 'created_at__date').values('project', 'created_at__date')
                 .annotate(count=models.Count('*'))
-                .values('project', 'count', date=models.Func(models.F('created_at__date'), function="DATE")),
+                .values('project', 'count', date=models.Func(models.F('created_at__date'), function='DATE'))
             ),
         }
         return response.Response({
