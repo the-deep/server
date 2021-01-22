@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models, transaction
 
+from deep import compiler  # noqa: F401
 from rest_framework.decorators import action
 from rest_framework import (
     serializers,
@@ -148,7 +149,18 @@ class LeadViewSet(viewsets.ModelViewSet):
         )
 
     def get_queryset(self):
-        leads = Lead.get_for(self.request.user)
+        filters = dict()
+        filters['entries_filter_data'] = {
+            f[0]: f[1] for f in self.request.data.pop('entries_filter', [])
+        }
+        if self.request.data.get('project'):
+            project_id = self.request.data['project']
+            if isinstance(project_id, list) and len(project_id) > 0:
+                filters['entries_filter_data']['project'] = project_id[0]
+            else:
+                filters['entries_filter_data']['project'] = project_id
+        leads = Lead.get_for(self.request.user, filters)
+
         lead_id = self.request.GET.get('similar')
         if lead_id:
             similar_lead = Lead.objects.get(id=lead_id)
@@ -212,7 +224,8 @@ class LeadViewSet(viewsets.ModelViewSet):
         raw_filter_data = request.data
         filter_data = self._get_processed_filter_data(raw_filter_data)
 
-        qs = LeadFilterSet(data=filter_data, queryset=self.get_queryset()).qs
+        queryset = self.get_queryset()
+        qs = LeadFilterSet(data=filter_data, queryset=queryset).qs
         page = self.paginate_queryset(qs)
 
         if page is not None:

@@ -125,7 +125,11 @@ class LeadSerializer(
     Lead Model Serializer
     """
     # annotated in lead.get_for
-    no_of_entries = serializers.IntegerField(read_only=True)
+    entries_count = serializers.IntegerField(read_only=True)
+    verified_entries_count = serializers.IntegerField(read_only=True)
+    filtered_entries_count = serializers.IntegerField(read_only=True)
+    verified_filtered_entries_count = serializers.IntegerField(read_only=True)
+    
     assessment_id = serializers.IntegerField(read_only=True)
 
     priority_display = serializers.CharField(source='get_priority_display', read_only=True)
@@ -176,8 +180,6 @@ class LeadSerializer(
     emm_entities = EMMEntitySerializer(many=True, required=False)
     # extra fields added from entryleadserializer
     confidentiality_display = serializers.CharField(source='get_confidentiality_display', read_only=True)
-    verified_entries_count = serializers.IntegerField(source='get_verified_entries_count',
-                                                      read_only=True)
 
     class Meta:
         model = Lead
@@ -185,7 +187,6 @@ class LeadSerializer(
         # Legacy Fields
         read_only_fields = ('author_raw', 'source_raw')
         write_only_on_create_fields = ['emm_triggers', 'emm_entities']
-
 
     def get_tabular_book(self, obj):
         file = obj.attachment

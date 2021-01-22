@@ -186,11 +186,16 @@ class Lead(UserResource, ProjectEntityMixin):
                 transaction.on_commit(lambda: extract_from_lead.delay(self.id))
 
     @classmethod
-    def get_for(cls, user):
+    def get_for(cls, user, filters=None):
         """
         Lead can only be accessed by users who have access to
         it's project along with required permissions
+        param: filters: filters that need to be applied into queryset
         """
+        from entry.filter_set import get_filtered_entries
+
+        filters = filters or dict()
+
         view_unprotected_perm_value = PROJECT_PERMISSIONS.lead.view_only_unprotected
         view_perm_value = PROJECT_PERMISSIONS.lead.view
 
@@ -218,11 +223,36 @@ class Lead(UserResource, ProjectEntityMixin):
             # Or, return nothing if view_all is not present
             models.Q(view_all=view_perm_value)
         )
+        # filter entries
+        entries_filter_data = filters.get('entries_filter_data', {})
+        original_filter = {**entries_filter_data}
+        original_filter.pop('project', None)
+        entries_filter_data['from_subquery'] = True
+
         return qs.annotate(
-            no_of_entries=models.Count('entry', distinct=True),
+            entries_count=models.Count('entry', distinct=True),
             assessment_id=models.F('assessment'),
             verified_entries_count=models.Count('entry',
                                                 filter=models.Q(entry__verified=True)),
+            filtered_entries_count=models.functions.Coalesce(
+                models.Subquery(
+                    get_filtered_entries(user, entries_filter_data).filter(
+                        lead=models.OuterRef('pk')
+                    ).values('lead').order_by().annotate(
+                        count=models.Count('id')
+                    ).values('count')[:1], output_field=models.IntegerField()
+                ), 0
+            ) if original_filter else models.F('entries_count'),
+            verified_filtered_entries_count=models.functions.Coalesce(
+                models.Subquery(
+                    get_filtered_entries(user, entries_filter_data).filter(
+                        lead=models.OuterRef('pk'),
+                        verified=True
+                    ).values('lead').order_by().annotate(
+                        count=models.Count('id')
+                    ).values('count')[:1], output_field=models.IntegerField()
+                ), 0
+            ) if original_filter else models.F('verified_entries_count'),
         )
 
     def get_assignee(self):
@@ -253,12 +283,6 @@ class Lead(UserResource, ProjectEntityMixin):
             'entries': Entry.objects.filter(lead__in=lead_ids, lead__project_id=project_id).count(),
             'assessments': Assessment.objects.filter(lead__project_id=project_id, lead__in=lead_ids).count(),
         }
-
-    def get_verified_entries_count(self):
-        # if annotated previously then return as is
-        if hasattr(self, 'verified_entries_count'):
-            return self.verified_entries_count
-        return self.entry_set.filter(verified=True).count()
 
 
 class LeadPreview(models.Model):
