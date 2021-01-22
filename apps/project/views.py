@@ -1,5 +1,6 @@
 import logging
 
+from dateutil.relativedelta import relativedelta
 import django_filters
 from django.conf import settings
 from django.http import Http404
@@ -36,10 +37,12 @@ from tabular.models import Field
 from user.utils import send_project_join_request_emails
 from user.serializers import SimpleUserSerializer
 from user.models import User
+from lead.models import Lead
 from lead.views import ProjectLeadGroupViewSet
 from geo.models import Region
 from user_group.models import UserGroup
 from geo.serializers import RegionSerializer
+from entry.models import Entry
 from entry.views import ComprehensiveEntriesViewSet
 
 from .models import (
@@ -181,6 +184,50 @@ class ProjectViewSet(viewsets.ModelViewSet):
         self.page = self.paginate_queryset(projects)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
+
+    """
+    Get analysis framework for this project
+    """
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='summary'
+    )
+    def get_summary(self, request, pk=None, version=None):
+        projects = Project.get_for_member(request.user)
+        # Lead stats
+        leads = Lead.objects.filter(project__in=projects)
+        total_leads_tagged_count = leads.annotate(entries_count=models.Count('entry')).filter(entries_count__gt=0).count()
+        total_leads_tagged_and_verified_count = leads.annotate(
+            verified_entries_count=models.Count(
+                'entry', filter=models.Q(entry__verified=True)
+            ),
+        ).filter(verified_entries_count__gt=0).count()
+        # Entries activity
+        recent_entries = Entry.objects.filter(
+            project__in=projects,
+            created_at__gte=(timezone.now() - relativedelta(months=3))
+        )
+        recent_entries_activity = {
+            'projects': (
+                recent_entries.order_by().values('project')
+                .annotate(count=models.Count('*'))
+                .filter(count__gt=0)
+                .values(id=models.F('project'), title=models.F('project__title'))
+            ),
+            'activities': (
+                recent_entries.order_by('project', 'created_at__date').values('project', 'created_at__date')
+                .annotate(count=models.Count('*'))
+                .values('project', 'count', date=models.Func(models.F('created_at__date'), function="DATE")),
+            ),
+        }
+        return response.Response({
+            'projects_count': projects.count(),
+            'total_leads_count': leads.count(),
+            'total_leads_tagged_count': total_leads_tagged_count,
+            'total_leads_tagged_and_verified_count': total_leads_tagged_and_verified_count,
+            'recent_entries_activity': recent_entries_activity,
+        })
 
     """
     Get analysis framework for this project

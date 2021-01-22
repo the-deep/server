@@ -25,10 +25,6 @@ from .models import (
     ProjectOrganization,
 )
 
-from organization.models import (
-    Organization
-)
-
 from organization.serializers import (
     SimpleOrganizationSerializer
 )
