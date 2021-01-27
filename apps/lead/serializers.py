@@ -109,6 +109,21 @@ class SimpleLeadSerializer(RemoveNullFieldsMixin,
         read_only_fields = ('author_raw', 'source_raw',)
 
 
+class AssignmentLeadSerializer(RemoveNullFieldsMixin,
+                               serializers.ModelSerializer):
+    content_id = serializers.IntegerField(source='id', read_only=True)
+    content_title = serializers.CharField(source='title', read_only=True)
+    project_title = serializers.CharField(source='project.title', read_only=True)
+    created_by_name = serializers.CharField(source='created_by.username', read_only=True)
+
+    class Meta:
+        model = Lead
+        fields = (
+            'content_id', 'content_title', 'project',
+            'project_title', 'created_by', 'created_by_name',
+        )
+
+
 class LeadEMMTriggerSerializer(serializers.ModelSerializer, RemoveNullFieldsMixin, DynamicFieldsMixin):
     emm_risk_factor = serializers.CharField(required=False)
     count = serializers.IntegerField(required=False)

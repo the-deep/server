@@ -1,14 +1,20 @@
 from django.dispatch import receiver
-from django.db.models.signals import post_save, pre_save, m2m_changed
+from django.db.models.signals import (
+    post_save,
+    pre_save,
+    m2m_changed,
+    post_delete
+)
 from django.db import transaction
 from django.conf import settings
 
 from entry.models import EntryComment, EntryCommentText
 from entry.serializers import EntryCommentSerializer
-from notification.models import Notification
+from notification.models import Notification, Assignment
 from notification.tasks import send_entry_comment_email
-
+from lead.models import Lead
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -89,3 +95,45 @@ def create_entry_commit_text_notification(sender, instance, created, **kwargs):
         )
 
     transaction.on_commit(lambda: send_notifications_for_commit(comment.pk, meta))
+
+
+@receiver(m2m_changed, sender=Lead.assignee.through)
+def lead_assignment_signal(sender, instance, action, **kwargs):
+    pk_set = kwargs.get('pk_set', [])
+    if action == 'post_add' and pk_set:
+        for receiver in pk_set:
+            Assignment.objects.create(
+                content_object=instance,
+                created_for_id=receiver,
+                project=instance.project,
+            )
+
+    if action == 'post_remove' and pk_set:
+        Assignment.objects.filter(lead__id=instance.id).delete()
+
+
+@receiver(m2m_changed, sender=EntryComment.assignees.through)
+def entrycomment_assignment_signal(sender, instance, action, **kwargs):
+    pk_set = kwargs.get('pk_set', [])
+    if action == 'post_add' and pk_set:
+        for receiver in pk_set:
+            Assignment.objects.create(
+                content_object=instance,
+                created_for_id=receiver,
+                project=instance.entry.project,
+            )
+
+    if action == 'post_remove' and pk_set:
+        Assignment.objects.filter(entry__id=instance.id).delete()
+
+
+@receiver(post_delete, sender=Lead)
+def delete_assignment(sender, instance, *args, **kwargs):
+    assignment = instance.id
+    Assignment.objects.filter(lead__id=assignment).delete()
+
+
+@receiver(post_delete, sender=EntryComment)
+def delete_assignment(sender, instance, *args, **kwargs):
+    assignment = instance.id
+    Assignment.objects.filter(entry__id=assignment).delete()

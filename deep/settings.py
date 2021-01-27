@@ -111,6 +111,7 @@ INSTALLED_APPS = [
     'djangorestframework_camel_case',
     'drf_dynamic_fields',
     'rest_framework',
+    'generic_relations',  # DRF Generic relations
     'reversion',
     'storages',
     'django_premailer',
