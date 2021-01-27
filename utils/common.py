@@ -145,23 +145,6 @@ def generate_filename(title, extension):
     )
 
 
-def generate_timeseries(data, min_date, max_date):
-    timeseries = []
-    data_map = {datum['date']: datum['count'] for datum in data}
-
-    oldest_date = min_date
-    latest_date = max_date
-
-    current_date = oldest_date
-    while current_date <= latest_date:
-        timeseries.append({
-            'date': current_date,
-            'count': data_map.get(current_date.date(), 0)
-        })
-        current_date = current_date + timedelta(days=1)
-    return timeseries
-
-
 def identity(x):
     return x
 

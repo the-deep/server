@@ -32,6 +32,7 @@ from deep.permissions import (
 )
 from deep.serializers import URLCachedFileField
 from deep.models import ProcessStatus
+from deep.paginations import SmallSizeSetPagination
 from tabular.models import Field
 
 from user.utils import send_project_join_request_emails
@@ -62,7 +63,6 @@ from .serializers import (
     ProjectMembershipSerializer,
     ProjectJoinRequestSerializer,
     ProjectUserGroupSerializer,
-    ProjectDashboardSerializer,
     ProjectStatusOptionsSerializer,
     ProjectMemberViewSerializer,
 )
@@ -78,7 +78,7 @@ from .filter_set import (
     ProjectMembershipFilterSet,
     ProjectUserGroupMembershipFilterSet,
 )
-from .tasks import generate_stats
+from .tasks import generate_viz_stats
 
 from .token import project_request_token_generator
 logger = logging.getLogger(__name__)
@@ -274,7 +274,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         Get viz data for project entries:
         """
         project = self.get_object()
-        return _get_viz_data(request, ProjectStats, generate_stats, project)
+        return _get_viz_data(request, ProjectStats, generate_viz_stats, project)
 
     """
     Join request to this project
@@ -536,35 +536,46 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return response.Response(meta)
 
 
-# FIXME: user better API
 class ProjectStatViewSet(ProjectViewSet):
-    serializer_class = ProjectStatSerializer
+    pagination_class = SmallSizeSetPagination
+
+    def get_serializer_class(self):
+        return ProjectStatSerializer
 
     def get_queryset(self):
-        return get_filtered_projects(
+        qs = get_filtered_projects(
             self.request.user, self.request.GET,
             annotate=True,
+        ).prefetch_related(
+            'regions', 'organizations',
+        ).select_related(
+            'status',
+            'created_by__profile', 'modified_by__profile'
         )
+        if self.action == 'get_recent_projects':
+            # TODO: order by recent activities
+            return qs
+        return qs
 
-    """
-    Get dashboard related data for this project
-    """
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        self.filter_queryset(self.get_queryset())
+        return context
+
     @action(
-        detail=True,
+        detail=False,
         permission_classes=[permissions.IsAuthenticated],
-        url_path='dashboard',
+        url_path='recent'
     )
-    def get_dashboard(self, request, pk=None, version=None):
-        project = self.get_object()
-        serializer = ProjectDashboardSerializer(project)
-        return response.Response(serializer.data)
+    def get_recent_projects(self, *args, **kwargs):
+        return self.list(*args, **kwargs)
 
     @action(
         detail=False,
         permission_classes=[permissions.IsAuthenticated],
         url_path='summary'
     )
-    def get_summary(self, request, pk=None, version=None):
+    def get_projects_summary(self, request, pk=None, version=None):
         projects = Project.get_for_member(request.user)
         # Lead stats
         leads = Lead.objects.filter(project__in=projects)
