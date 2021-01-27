@@ -1,9 +1,9 @@
-from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
-
-from django.db import models
-from django.db.models.functions import TruncDate
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.db.models.functions import TruncDate, Cast
+from django.contrib.auth.models import User
 from django.db.models import Q
+from django.db import models
 
 from deep.models import ProcessStatus
 from user_resource.models import UserResource
@@ -13,8 +13,6 @@ from analysis_framework.models import AnalysisFramework
 from category_editor.models import CategoryEditor
 from project.permissions import PROJECT_PERMISSIONS, PROJECT_PERMISSION_MODEL_MAP
 from organization.models import Organization
-
-from utils.common import generate_timeseries
 
 from django.utils import timezone
 from datetime import timedelta
@@ -175,6 +173,9 @@ class Project(UserResource):
         blank=True,
     )
 
+    # Store project stats data as cache. View project/tasks for structure
+    stats_cache = JSONField(default=dict)
+
     def __str__(self):
         return self.title
 
@@ -189,52 +190,25 @@ class Project(UserResource):
         )
 
     @staticmethod
+    def calc_stats():
+        pass
+
+    @staticmethod
     def get_annotated():
-        from entry.models import Lead, Entry
-
-        pk = models.OuterRef('pk')
-
-        threshold = timezone.now() - timedelta(days=30)
-
-        # TODO: Use count while using Django 2.1
         return Project.objects.annotate(
-            number_of_leads=models.functions.Coalesce(models.Subquery(
-                Lead.objects.filter(
-                    project=pk,
-                ).distinct().order_by().values('project')
-                .annotate(c=models.Count('*')).values('c')[:1],
-                output_field=models.IntegerField(),
-            ), 0),
-
-            number_of_entries=models.functions.Coalesce(models.Subquery(
-                Entry.objects.filter(
-                    lead__project=pk,
-                ).distinct().order_by().values('lead__project')
-                .annotate(c=models.Count('*')).values('c')[:1],
-                output_field=models.IntegerField(),
-            ), 0),
-
-            # NOTE: Used for sorting in discover projects
-            leads_activity=models.functions.Coalesce(models.Subquery(
-                Lead.objects.filter(
-                    project=pk,
-                    created_at__gt=threshold,
-                ).order_by().values('project')\
-                .annotate(c=models.Count('*')).values('c')[:1],
-                output_field=models.IntegerField(),
-            ), 0),
-
-            # NOTE: Used for sorting in discover projects
-            entries_activity=models.functions.Coalesce(models.Subquery(
-                Entry.objects.filter(
-                    lead__project=pk,
-                    created_at__gt=threshold,
-                ).order_by().values('lead__project')
-                .annotate(c=models.Count('*')).values('c')[:1],
-                output_field=models.IntegerField(),
-            ), 0),
-
-            number_of_users=models.Count('members', distinct=True),
+            **{
+                key: Cast(KeyTextTransform(key, 'stats_cache'), models.IntegerField())
+                for key in [
+                    ('number_of_leads'),
+                    ('number_of_leads_tagged'),
+                    ('number_of_leads_tagged_and_verified'),
+                    ('number_of_entries'),
+                    ('number_of_users'),
+                    # NOTE: Used for sorting in discover projects
+                    ('leads_activity'),
+                    ('entries_activity'),
+                ]
+            }
         )
 
     @staticmethod
@@ -333,38 +307,10 @@ class Project(UserResource):
         )
 
     def get_entries_activity(self):
-        from entry.models import Entry
-        min_date = timezone.now() - timedelta(days=30)
-        max_date = timezone.now()
-
-        activity = Entry.objects.filter(
-            lead__project=self,
-            created_at__date__gte=min_date,
-            created_at__date__lte=max_date,
-        ).annotate(
-            date=TruncDate('created_at'),
-        ).order_by().values('date').annotate(
-            count=models.Count('date'),
-        ).values('date', 'count')
-
-        return generate_timeseries(activity, min_date, max_date)
+        return (self.stats_cache or {}).get('entries_activities') or []
 
     def get_leads_activity(self):
-        from lead.models import Lead
-        min_date = timezone.now() - timedelta(days=30)
-        max_date = timezone.now()
-
-        activity = Lead.objects.filter(
-            project=self,
-            created_at__date__gte=min_date,
-            created_at__date__lte=max_date,
-        ).annotate(
-            date=TruncDate('created_at'),
-        ).order_by().values('date').annotate(
-            count=models.Count('date'),
-        ).values('date', 'count')
-
-        return generate_timeseries(activity, min_date, max_date)
+        return (self.stats_cache or {}).get('leads_activities') or []
 
     def get_admins(self):
         return User.objects.filter(

@@ -332,6 +332,11 @@ CELERY_BEAT_SCHEDULE = {
         # Every 3 hours
         'schedule': crontab(minute=0, hour="*/3"),
     },
+    'project_generate_stats': {
+        'task': 'project.tasks.generate_project_stats_cache',
+        # Every 1 hour
+        'schedule': crontab(minute=0, hour="*/1"),
+    },
 }
 
 # REDIS STORE CONFIG "redis://:{password}@{host}:{port}/{db}"
