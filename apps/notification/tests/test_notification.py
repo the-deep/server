@@ -1,9 +1,10 @@
 from deep.tests import TestCase
 
 from user.models import User
-from notification.models import Notification
+from notification.models import Notification, Assignment
 from project.models import ProjectJoinRequest, Project
-
+from lead.models import Lead
+from entry.models import Entry, EntryComment
 
 class TestNotification(TestCase):
     """Unit test for Notification"""
@@ -161,3 +162,83 @@ class TestNotification(TestCase):
         # there should be none
         notifications = Notification.get_for(normal_user)
         assert notifications.count() == 0
+
+
+class TestAssignment(TestCase):
+    """ Unit test for Assignment"""
+
+    def test_create_assignment_create_on_entry_comment(self):
+        project = self.create(Project)
+        entry = self.create(Entry, project=project)
+        user1 = self.create(User)
+        user2 = self.create(User)
+
+        old_assignment_count = Assignment.objects.count()
+        entry_comment = self.create(EntryComment, entry=entry)
+        new_assignment_count = Assignment.objects.count()
+        self.assertEqual(old_assignment_count, new_assignment_count)
+
+        entry_comment.assignees.add(user1)
+        entry_comment.save()
+        new_assignment_count = Assignment.objects.count()
+        self.assertEqual(old_assignment_count + 1, new_assignment_count)
+
+        # try to change the assigne for the entry_comment and test for the change in assignment
+        entry_comment.assignees.remove(user1)
+        entry_comment.assignees.add(user2)
+        entry_comment.save()
+        self.assertEqual(old_assignment_count + 1, new_assignment_count)
+        assignment = Assignment.objects.get(entry__id=entry_comment.id)
+        self.assertEqual(assignment.created_for, user2)  # should represent the new user2
+
+        # try to add another user and remove both from assignee
+        entry_comment.assignees.add(user1)
+        entry_comment.save()
+        new_assignment_count = Assignment.objects.count()
+        self.assertEqual(old_assignment_count + 2, new_assignment_count)
+
+        # try to get the assignment for user
+        entry_comment.assignees.add(user1, user2)
+        entry_comment.save()
+        assignment = Assignment.get_for(user1)
+        assert assignment.count() == 1  # for only the user
+
+    def test_assignment_create_on_lead_create(self):
+        project = self.create(Project)
+        user1 = self.create(User)
+        user2 = self.create(User)
+
+        old_assignment_count = Assignment.objects.count()
+        lead = self.create(Lead, project=project)
+        new_assignment_count = Assignment.objects.count()
+        self.assertEqual(old_assignment_count, new_assignment_count)  # no assignment to be cretaed for empyt assignee
+
+        # try add assignee in the lead
+        lead.assignee.add(user1)
+        lead.save()
+        new_assignment_count = Assignment.objects.count()
+        self.assertEqual(old_assignment_count + 1, new_assignment_count)
+
+        # try to change the assigne for the lead and test for the change in assignment
+        lead.assignee.remove(user1)
+        lead.assignee.add(user2)
+        lead.save()
+        self.assertEqual(old_assignment_count + 1, new_assignment_count)
+        assignment = Assignment.objects.get(lead__id=lead.id)
+        self.assertEqual(assignment.created_for, user2)  # should represent the new user2
+
+        # try to add another user and remove both from assignee
+        lead.assignee.add(user1)
+        lead.save()
+        new_assignment_count = Assignment.objects.count()
+        self.assertEqual(old_assignment_count + 2, new_assignment_count)
+
+        lead.assignee.remove(user1, user2)
+        lead.save()
+        self.assertEqual(Assignment.objects.count(), 0)
+
+        # try to get the assignment for user
+        lead.assignee.add(user1, user2)
+        lead.save()
+        assignment = Assignment.get_for(user1)
+        assert assignment.count() == 1  # for only the user

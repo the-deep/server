@@ -1,8 +1,8 @@
 import django_filters
 from rest_framework.decorators import action
 
-from .serializers import NotificationSerializer
-from .models import Notification
+from .serializers import NotificationSerializer, AssignmentSerializer
+from .models import Notification, Assignment
 from notification.filter_set import NotificationFilterSet
 
 from rest_framework import (
@@ -71,3 +71,21 @@ class NotificationViewSet(viewsets.ModelViewSet):
             'total': total,
         }
         return response.Response(result)
+
+
+class AssignmentViewSet(viewsets.ModelViewSet):
+    serializer_class = AssignmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filterset_fields = ('project',)
+
+    def get_queryset(self):
+        return Assignment.get_for(
+            self.request.user,
+        )
+
+    def filter_queryset(self, queryset):
+        qs = super().filter_queryset(queryset)
+        project = self.request.query_params.get('project')
+        if project is not None:
+            qs.filter(project=project)
+        return qs

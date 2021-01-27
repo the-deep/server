@@ -4,8 +4,10 @@ from deep.tests import TestCase
 from django.utils import timezone
 
 from user.models import User
-from notification.models import Notification
+from lead.models import Lead
+from notification.models import Notification, Assignment
 from project.models import ProjectJoinRequest, Project
+from entry.models import Entry, EntryComment
 
 
 class TestNotificationAPIs(TestCase):
@@ -223,3 +225,57 @@ class TestNotificationAPIs(TestCase):
         # Another new notification is created after user sucessfully joins project
         assert data['unseen_notifications'] == 2
         assert data['unseen_requests'] == 0
+
+
+class TestAssignmentApi(TestCase):
+    """ Api test for assignment model"""
+
+    def test_get_assignments_lead(self):
+        project = self.create_project()
+        project1 = self.create_project()
+        user1 = self.create(User)
+        user2 = self.create(User)
+
+        url = '/api/v1/assignments/'
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        data = response.data
+        assert data['count'] == 0, "No Assignments till now"
+
+        # try creating lead
+        lead = self.create_lead(project=project, assignee=[user1])
+        self.create(Lead, project=project1, assignee=[user2])
+
+        self.authenticate(user1)
+        params = {'project': project.id}
+
+        response = self.client.get(url, params)
+        self.assert_200(response)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['created_for'], user1.id)
+        self.assertEqual(response.data['results'][0]['content_object']['project'], project.id)
+        self.assertEqual(response.data['results'][0]['assignment_model_type'], "lead")
+
+    def test_get_assignments_entrycomment(self):
+        project = self.create_project()
+        project1 = self.create_project()
+        entry = self.create(Entry, project=project)
+        user1 = self.create(User)
+        user2 = self.create(User)
+
+        url = '/api/v1/assignments/'
+        entry_comment = self.create(EntryComment, entry=entry, project=project, assignees=[user1])
+        self.create(EntryComment, entry=entry, project=project1, assignee=[user2])
+
+        self.authenticate(user1)
+        params = {'project': project.id}
+
+        response = self.client.get(url, params)
+        self.assert_200(response)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['created_for'], user1.id)
+        self.assertEqual(response.data['results'][0]['content_object']['project'], entry.project.id)
+        self.assertEqual(response.data['results'][0]['assignment_model_type'], "entrycomment")
