@@ -418,6 +418,21 @@ class EntryCommentTextSerializer(serializers.ModelSerializer):
         exclude = ('comment',)
 
 
+class AssignmentEntryCommentSerializer(serializers.ModelSerializer):
+    content_id = serializers.IntegerField(source='id', read_only=True)
+    content_title = serializers.CharField(source='text', read_only=True)
+    project = serializers.IntegerField(source='entry.project_id', read_only=True)
+    project_title = serializers.CharField(source='entry.project.title', read_only=True)
+    created_by_name = serializers.CharField(source='created_by.username', read_only=True)
+    entry_excerpt = serializers.CharField(source='entry.excerpt', read_only=True)
+
+    class Meta:
+        model = EntryComment
+        fields = ('content_id', 'content_title', 'entry',
+                  'project', 'project_title', 'created_by',
+                  'created_by_name', 'entry_excerpt')
+
+
 class EntryCommentSerializer(serializers.ModelSerializer):
     created_by_detail = EntryCommentUserSerializer(source='created_by', read_only=True)
     assignees_detail = EntryCommentUserSerializer(source='assignees', read_only=True, many=True)

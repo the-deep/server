@@ -1,8 +1,16 @@
 from rest_framework import serializers
 
-from deep.serializers import RemoveNullFieldsMixin
+from generic_relations.relations import GenericRelatedField
 
-from .models import (Notification)
+from deep.serializers import RemoveNullFieldsMixin
+from lead.models import Lead
+from lead.serializers import AssignmentLeadSerializer
+from entry.models import EntryComment
+from entry.serializers import AssignmentEntryCommentSerializer
+from .models import (
+    Notification,
+    Assignment
+)
 
 
 class NotificationSerializer(RemoveNullFieldsMixin,
@@ -37,3 +45,21 @@ class NotificationSerializer(RemoveNullFieldsMixin,
             return notification.data
 
         return {}
+
+
+class AssignmentSerializer(serializers.ModelSerializer):
+    content_object = GenericRelatedField({
+        Lead: AssignmentLeadSerializer(),
+        EntryComment: AssignmentEntryCommentSerializer(),
+    }, read_only=True,
+    )
+
+    class Meta:
+        model = Assignment
+        fields = '__all__'
+        read_only_fields = ('timestamp', 'created_for', 'project', 'object_id', 'content_type')
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['assignment_model_type'] = instance.content_type.model
+        return data
