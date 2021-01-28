@@ -284,7 +284,8 @@ class TestCase(test.APITestCase):
     def update_obj(self, obj, **fields):
         for key, value in fields.items():
             setattr(obj, key, value)
-        return obj.save()
+        obj.save()
+        return obj
 
     @classmethod
     def captureOnCommitCallbacks(cls, *, using=DEFAULT_DB_ALIAS, execute=False):

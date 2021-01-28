@@ -190,10 +190,6 @@ class Project(UserResource):
         )
 
     @staticmethod
-    def calc_stats():
-        pass
-
-    @staticmethod
     def get_annotated():
         return Project.objects.annotate(
             **{
