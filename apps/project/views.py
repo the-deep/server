@@ -2,6 +2,7 @@ import logging
 
 from dateutil.relativedelta import relativedelta
 import django_filters
+from django.db import connection as django_db_connection
 from django.conf import settings
 from django.http import Http404
 from django.db import transaction, models
@@ -543,7 +544,7 @@ class ProjectStatViewSet(ProjectViewSet):
         return ProjectStatSerializer
 
     def get_queryset(self):
-        qs = get_filtered_projects(
+        return get_filtered_projects(
             self.request.user, self.request.GET,
             annotate=True,
         ).prefetch_related(
@@ -552,23 +553,54 @@ class ProjectStatViewSet(ProjectViewSet):
             'status',
             'created_by__profile', 'modified_by__profile'
         )
-        if self.action == 'get_recent_projects':
-            # TODO: order by recent activities
-            return qs
-        return qs
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        self.filter_queryset(self.get_queryset())
-        return context
 
     @action(
         detail=False,
         permission_classes=[permissions.IsAuthenticated],
         url_path='recent'
     )
-    def get_recent_projects(self, *args, **kwargs):
-        return self.list(*args, **kwargs)
+    def get_recent_projects(self, request, *args, **kwargs):
+        # NOTE: Django ORM union don't allow annotation
+        with django_db_connection.cursor() as cursor:
+            select_sql = [
+                f'''
+                    SELECT
+                        tb."project_id" AS "project",
+                        MAX(tb."{field}_at") AS "date"
+                    FROM "{Model._meta.db_table}" AS tb
+                    WHERE tb."{field}_by_id" = {request.user.pk}
+                    GROUP BY tb."project_id"
+                ''' for Model, field in [
+                    (Lead, 'created'),
+                    (Lead, 'modified'),
+                    (Entry, 'created'),
+                    (Entry, 'modified'),
+                ]
+            ]
+            union_sql = '(' + ') UNION ('.join(select_sql) + ')'
+            cursor.execute(
+                f'SELECT DISTINCT(entities."project"), MAX("date") as "date" FROM ({union_sql}) as entities'
+                f' GROUP BY entities."project" ORDER BY "date" DESC'
+            )
+            recent_projects_id = [pk for pk, _ in cursor.fetchall()]
+        projects_map = {
+            project.pk: project
+            for project in self.get_queryset().filter(
+                Project.get_query_for_member(request.user),
+                pk__in=recent_projects_id,
+            )[:3]
+        }
+        recent_projects = [
+            projects_map[id]
+            for id in recent_projects_id if projects_map.get(id)
+        ]
+        return response.Response(
+            self.get_serializer_class()(
+                recent_projects,
+                context=self.get_serializer_context(),
+                many=True,
+            ).data
+        )
 
     @action(
         detail=False,
@@ -581,10 +613,11 @@ class ProjectStatViewSet(ProjectViewSet):
         leads = Lead.objects.filter(project__in=projects)
         total_leads_tagged_count = leads.annotate(entries_count=models.Count('entry')).filter(entries_count__gt=0).count()
         total_leads_tagged_and_verified_count = leads.annotate(
+            entries_count=models.Count('entry'),
             verified_entries_count=models.Count(
                 'entry', filter=models.Q(entry__verified=True)
             ),
-        ).filter(verified_entries_count__gt=0).count()
+        ).filter(entries_count__gt=0, entries_count=models.F('verified_entries_count')).count()
         # Entries activity
         recent_entries = Entry.objects.filter(
             project__in=projects,

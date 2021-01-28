@@ -156,12 +156,6 @@ class AnalysisFrameworkMembershipSerializer(
         return super().delete(instance)
 
 
-class SimpleAnalysisFrameworkSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceSerializer):
-    class Meta:
-        model = AnalysisFramework
-        fields = ('id', 'title', 'description')
-
-
 class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
                                   DynamicFieldsMixin, UserResourceSerializer):
     """

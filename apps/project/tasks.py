@@ -103,11 +103,17 @@ def _generate_project_stats_cache():
             entries_count=models.Subquery(
                 Entry.objects.filter(
                     lead=models.OuterRef('pk'),
+                ).order_by().values('lead').annotate(count=models.Count('id')).values('count')[:1],
+                output_field=models.IntegerField()
+            ),
+            entries_verified_count=models.Subquery(
+                Entry.objects.filter(
+                    lead=models.OuterRef('pk'),
                     verified=True,
                 ).order_by().values('lead').annotate(count=models.Count('id')).values('count')[:1],
                 output_field=models.IntegerField()
             ),
-        ).filter(entries_count__gt=0)
+        ).filter(entries_count__gt=0, entries_count=models.F('entries_verified_count'))
     )
     entries_count_map = _count_by_project_qs(Entry.objects.all())
     members_count_map = _count_by_project_qs(ProjectMembership.objects.all())
