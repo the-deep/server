@@ -89,3 +89,16 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         if project is not None:
             qs.filter(project=project)
         return qs
+
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='status'
+    )
+    def get_status(self, request, version=None):
+        queryset = self.filter_queryset(self.get_queryset()).filter(is_done=False)
+        temp = list(queryset.values_list("id", flat=True))  # lazy evaluation of queryset
+        queryset.update(is_done=True)
+        data = Assignment.objects.filter(id__in=temp)
+        serializer = AssignmentSerializer(data, many=True)
+        return response.Response(serializer.data)

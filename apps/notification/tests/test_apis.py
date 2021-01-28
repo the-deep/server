@@ -279,3 +279,35 @@ class TestAssignmentApi(TestCase):
         self.assertEqual(response.data['results'][0]['created_for'], user1.id)
         self.assertEqual(response.data['results'][0]['content_object']['project'], entry.project.id)
         self.assertEqual(response.data['results'][0]['assignment_model_type'], "entrycomment")
+
+    def test_assignment_is_done(self):
+        project = self.create(Project)
+        user1 = self.create(User)
+        user2 = self.create(User)
+        assignment = self.create(Assignment, created_for=user1, project=project)
+        assignment1 = self.create(Assignment, created_for=user1, project=project)
+        assignment2 = self.create(Assignment, created_for=user1, project=project)
+
+        url = '/api/v1/assignments/'
+        self.authenticate(user1)
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(response.data['count'], 3)
+
+        # try to put is_done for single assignment
+        url = f'/api/v1/assignments/{assignment.id}/'
+        data = {
+            'is_done': 'true',
+        }
+        self.authenticate(user1)
+        response = self.client.put(url, data)
+        self.assert_200(response)
+        self.assertEqual(response.data['is_done'], True)
+
+        url = f'/api/v1/assignments/status/'
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(len(response.data), 2)  # should be to assignemnt that is `is_done=True`
+        self.assertEqual(response.data[0]['id'], assignment2.id)
+        self.assertEqual(response.data[0]['is_done'], True)
+        self.assertEqual(response.data[1]['is_done'], True)

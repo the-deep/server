@@ -92,6 +92,7 @@ class Assignment(models.Model):
         null=True,
         default=None
     )
+    is_done = models.BooleanField(default=False)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
