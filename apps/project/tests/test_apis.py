@@ -14,7 +14,10 @@ from analysis_framework.models import (
     Widget,
 )
 from lead.models import LeadGroup
-from project.tasks import _generate_project_stats
+from project.tasks import (
+    _generate_project_viz_stats,
+    _generate_project_stats_cache,
+)
 from project.models import (
     Project,
     ProjectRole,
@@ -1196,7 +1199,7 @@ class ProjectApiTest(TestCase):
         self.assert_202(response)
 
         # 500 if invalid config is set and stat is generated
-        _generate_project_stats(project.pk)
+        _generate_project_viz_stats(project.pk)
         response = self.client.get(url)
         self.assert_200(response)
         self.assertEqual(response.json()['status'], 'failure')
@@ -1205,7 +1208,7 @@ class ProjectApiTest(TestCase):
         af.save()
 
         # 302 (Redirect to data file) if valid config is set and stat is generated
-        _generate_project_stats(project.pk)
+        _generate_project_viz_stats(project.pk)
         response = self.client.get(url)
         self.assert_200(response)
         self.assertEqual(response.json()['status'], 'success')
@@ -1279,13 +1282,13 @@ class ProjectApiTest(TestCase):
         self.create_lead(project=project1)
 
         now = timezone.now()
-        self.update_obj(self.create_entry(lead=lead1, verified=False), created_at=now + relativedelta(months=-3, days=-1))
-        self.update_obj(self.create_entry(lead=lead1, verified=False), created_at=now + relativedelta(months=-2))
+        self.update_obj(self.create_entry(lead=lead1, verified=True), created_at=now + relativedelta(months=-3, days=-1))
+        self.update_obj(self.create_entry(lead=lead1, verified=True), created_at=now + relativedelta(months=-2))
         self.update_obj(self.create_entry(lead=lead2, verified=False), created_at=now + relativedelta(months=-3))
         self.update_obj(self.create_entry(lead=lead2, verified=True), created_at=now + relativedelta(months=-3))
         self.update_obj(self.create_entry(lead=lead2, verified=True), created_at=now + relativedelta(months=-3))
-        self.update_obj(self.create_entry(lead=lead3, verified=False), created_at=now + relativedelta(days=-10))
-        self.update_obj(self.create_entry(lead=lead3, verified=False), created_at=now + relativedelta(days=-20))
+        self.update_obj(self.create_entry(lead=lead3, verified=True), created_at=now + relativedelta(days=-10))
+        self.update_obj(self.create_entry(lead=lead3, verified=True), created_at=now + relativedelta(days=-20))
         self.update_obj(self.create_entry(lead=lead3, verified=True), created_at=now + relativedelta(days=-30))
         self.update_obj(self.create_entry(lead=lead3, verified=True), created_at=now + relativedelta(days=-40))
         self.update_obj(self.create_entry(lead=lead4, verified=False), created_at=now + relativedelta(months=-3, days=-1))
@@ -1300,3 +1303,87 @@ class ProjectApiTest(TestCase):
         self.assertEqual(response.data['total_leads_tagged_and_verified_count'], 2)
         self.assertEqual(len(response.data['recent_entries_activity']['projects']), 2)
         self.assertEqual(len(response.data['recent_entries_activity']['activities']), 5)
+
+    def test_project_recent_api(self):
+        user = self.create_user()
+
+        project1 = self.create_project(title='Project 1')
+        project2 = self.create_project(title='Project 2')
+        project3 = self.create_project(title='Project 3')
+        project4 = self.create_project(title='Project 4')
+        project1.add_member(user)
+        project2.add_member(user)
+        project3.add_member(user)
+
+        lead1 = self.create_lead(project=project1, created_by=user)
+        lead2 = self.create_lead(project=project2, created_by=user)
+        self.create_entry(lead=lead1, verified=False, created_by=user)
+        self.create_lead(project=project3, created_by=user)
+        self.create_lead(project=project4, created_by=user)
+
+        self.authenticate(user)
+        url = '/api/v1/projects-stat/recent/'
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data[0]['id'], project3.pk)
+        self.assertEqual(response.data[1]['id'], project1.pk)
+        self.assertEqual(response.data[2]['id'], project2.pk)
+
+        lead2.modified_by = user
+        lead2.save()
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data[0]['id'], project2.pk)
+
+    def test_project_stats_api(self):
+        user = self.create_user()
+
+        project1 = self.create_project(title='Project 1')
+        project2 = self.create_project(title='Project 2')
+        project3 = self.create_project(title='Project 3')
+        project1.add_member(user)
+        project2.add_member(user)
+
+        now = timezone.now()
+        lead1_1 = self.update_obj(self.create_lead(project=project1), created_at=now + relativedelta(months=-1))
+        lead1_2 = self.update_obj(self.create_lead(project=project1), created_at=now + relativedelta(months=-2))
+        lead1_3 = self.update_obj(self.create_lead(project=project1), created_at=now + relativedelta(months=-2))
+        lead1_4 = self.update_obj(self.create_lead(project=project1), created_at=now + relativedelta(months=-1))
+        self.update_obj(self.create_lead(project=project1), created_at=now + relativedelta(months=-1))
+
+        self.update_obj(self.create_entry(lead=lead1_1, verified=False), created_at=now + relativedelta(months=-1))
+        self.update_obj(self.create_entry(lead=lead1_1, verified=False), created_at=now + relativedelta(months=-1))
+        self.update_obj(self.create_entry(lead=lead1_2, verified=True), created_at=now + relativedelta(months=-3))
+        self.update_obj(self.create_entry(lead=lead1_2, verified=False), created_at=now + relativedelta(months=-2))
+        self.update_obj(self.create_entry(lead=lead1_2, verified=True), created_at=now + relativedelta(months=-2))
+        self.update_obj(self.create_entry(lead=lead1_3, verified=True), created_at=now + relativedelta(months=-3))
+        self.update_obj(self.create_entry(lead=lead1_3, verified=True), created_at=now + relativedelta(months=-3))
+        self.create_entry(lead=lead1_3, verified=True)
+        self.create_entry(lead=lead1_4, verified=True)
+
+        lead2 = self.create_lead(project=project2)
+        lead3 = self.create_lead(project=project3)
+        self.create_entry(lead=lead2, verified=False)
+        self.create_entry(lead=lead3, verified=False)
+
+        # Run the caching process
+        _generate_project_stats_cache()
+
+        self.authenticate(user)
+        url = '/api/v1/projects-stat/?involvement=my_projects'
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(len(response.data['results']), 2)
+        # Check response for Project 1
+        project_1_data = next(
+            project for project in response.data['results'] if project['id'] == project1.pk
+        )
+        self.assertEqual(project_1_data['id'], project1.pk)
+        self.assertEqual(project_1_data['number_of_leads'], 5)
+        self.assertEqual(project_1_data['number_of_leads_tagged'], 4)
+        self.assertEqual(project_1_data['number_of_leads_tagged_and_verified'], 2)
+        self.assertEqual(project_1_data['number_of_entries'], 9)
+        self.assertEqual(len(project_1_data['leads_activity']), 2)
+        self.assertEqual(len(project_1_data['entries_activity']), 3)

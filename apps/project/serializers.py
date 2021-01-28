@@ -8,7 +8,6 @@ from geo.models import Region
 from geo.serializers import SimpleRegionSerializer
 from entry.models import Lead, Entry
 from analysis_framework.models import AnalysisFrameworkMembership
-from analysis_framework.serializers import SimpleAnalysisFrameworkSerializer
 from user.models import Feature
 from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
