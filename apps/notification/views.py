@@ -3,7 +3,10 @@ from rest_framework.decorators import action
 
 from .serializers import NotificationSerializer, AssignmentSerializer
 from .models import Notification, Assignment
-from notification.filter_set import NotificationFilterSet
+from notification.filter_set import (
+    NotificationFilterSet,
+    AssignmentFilterSet
+)
 
 from rest_framework import (
     exceptions,
@@ -76,29 +79,23 @@ class NotificationViewSet(viewsets.ModelViewSet):
 class AssignmentViewSet(viewsets.ModelViewSet):
     serializer_class = AssignmentSerializer
     permission_classes = [permissions.IsAuthenticated]
-    filterset_fields = ('project',)
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filterset_class = AssignmentFilterSet
 
     def get_queryset(self):
         return Assignment.get_for(
             self.request.user,
         )
 
-    def filter_queryset(self, queryset):
-        qs = super().filter_queryset(queryset)
-        project = self.request.query_params.get('project')
-        if project is not None:
-            qs.filter(project=project)
-        return qs
-
     @action(
         detail=False,
+        methods=['POST'],
         permission_classes=[permissions.IsAuthenticated],
-        url_path='status'
+        url_path='bulk-mark-as-done'
     )
-    def get_status(self, request, version=None):
+    def status(self, request, version=None):
         queryset = self.filter_queryset(self.get_queryset()).filter(is_done=False)
-        temp = list(queryset.values_list("id", flat=True))  # lazy evaluation of queryset
-        queryset.update(is_done=True)
-        data = Assignment.objects.filter(id__in=temp)
-        serializer = AssignmentSerializer(data, many=True)
-        return response.Response(serializer.data)
+        updated_rows_count = queryset.update(is_done=True)
+        return response.Response({
+            'assignment_updated': updated_rows_count,
+        })

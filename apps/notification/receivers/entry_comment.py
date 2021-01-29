@@ -106,10 +106,12 @@ def lead_assignment_signal(sender, instance, action, **kwargs):
                 content_object=instance,
                 created_for_id=receiver,
                 project=instance.project,
+                created_by=instance.created_by,
             )
 
-    if action == 'post_remove' and pk_set:
-        Assignment.objects.filter(lead__id=instance.id).delete()
+    elif action == 'post_remove' and pk_set:
+        for receiver in pk_set:
+            Assignment.objects.filter(lead__id=instance.id, created_for_id=receiver).delete()
 
 
 @receiver(m2m_changed, sender=EntryComment.assignees.through)
@@ -121,19 +123,21 @@ def entrycomment_assignment_signal(sender, instance, action, **kwargs):
                 content_object=instance,
                 created_for_id=receiver,
                 project=instance.entry.project,
+                created_by=instance.created_by,
             )
 
-    if action == 'post_remove' and pk_set:
-        Assignment.objects.filter(entry__id=instance.id).delete()
+    elif action == 'post_remove' and pk_set:
+        for receiver in pk_set:
+            Assignment.objects.filter(entry__id=instance.id, created_for_id=receiver).delete()
 
 
 @receiver(post_delete, sender=Lead)
 def delete_assignment(sender, instance, *args, **kwargs):
-    assignment = instance.id
-    Assignment.objects.filter(lead__id=assignment).delete()
+    lead_id = instance.id
+    Assignment.objects.filter(lead__id=lead_id).delete()
 
 
 @receiver(post_delete, sender=EntryComment)
 def delete_assignment(sender, instance, *args, **kwargs):
-    assignment = instance.id
-    Assignment.objects.filter(entry__id=assignment).delete()
+    entry_id = instance.id
+    Assignment.objects.filter(entry__id=entry_id).delete()

@@ -4,9 +4,7 @@ from generic_relations.relations import GenericRelatedField
 
 from deep.serializers import RemoveNullFieldsMixin
 from lead.models import Lead
-from lead.serializers import AssignmentLeadSerializer
 from entry.models import EntryComment
-from entry.serializers import AssignmentEntryCommentSerializer
 from .models import (
     Notification,
     Assignment
@@ -47,6 +45,36 @@ class NotificationSerializer(RemoveNullFieldsMixin,
         return {}
 
 
+class AssignmentEntryCommentSerializer(serializers.ModelSerializer):
+    content_id = serializers.IntegerField(source='id', read_only=True)
+    content_title = serializers.CharField(source='text', read_only=True)
+    project = serializers.IntegerField(source='entry.project_id', read_only=True)
+    project_title = serializers.CharField(source='entry.project.title', read_only=True)
+    created_by_name = serializers.CharField(source='created_by.username', read_only=True)
+    entry_excerpt = serializers.CharField(source='entry.excerpt', read_only=True)
+
+    class Meta:
+        model = EntryComment
+        fields = ('content_id', 'content_title', 'entry',
+                  'project', 'project_title', 'created_by',
+                  'created_by_name', 'entry_excerpt')
+
+
+class AssignmentLeadSerializer(RemoveNullFieldsMixin,
+                               serializers.ModelSerializer):
+    content_id = serializers.IntegerField(source='id', read_only=True)
+    content_title = serializers.CharField(source='title', read_only=True)
+    project_title = serializers.CharField(source='project.title', read_only=True)
+    created_by_name = serializers.CharField(source='created_by.username', read_only=True)
+
+    class Meta:
+        model = Lead
+        fields = (
+            'content_id', 'content_title', 'project',
+            'project_title', 'created_by', 'created_by_name',
+        )
+
+
 class AssignmentSerializer(serializers.ModelSerializer):
     content_object = GenericRelatedField({
         Lead: AssignmentLeadSerializer(),
@@ -57,7 +85,14 @@ class AssignmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Assignment
         fields = '__all__'
-        read_only_fields = ('timestamp', 'created_for', 'project', 'object_id', 'content_type')
+        read_only_fields = (
+            'timestamp',
+            'created_for',
+            'project',
+            'created_by',
+            'object_id',
+            'content_type'
+        )
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

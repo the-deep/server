@@ -168,13 +168,13 @@ class TestAssignment(TestCase):
     """ Unit test for Assignment"""
 
     def test_create_assignment_create_on_entry_comment(self):
-        project = self.create(Project)
-        entry = self.create(Entry, project=project)
-        user1 = self.create(User)
+        project = self.create_project()
         user2 = self.create(User)
+        entry = self.create_entry(created_by=user2, project=project)
+        user1 = self.create(User)
 
         old_assignment_count = Assignment.objects.count()
-        entry_comment = self.create(EntryComment, entry=entry)
+        entry_comment = self.create(EntryComment, entry=entry, created_by=user2)
         new_assignment_count = Assignment.objects.count()
         self.assertEqual(old_assignment_count, new_assignment_count)
 
@@ -209,7 +209,7 @@ class TestAssignment(TestCase):
         user2 = self.create(User)
 
         old_assignment_count = Assignment.objects.count()
-        lead = self.create(Lead, project=project)
+        lead = self.create(Lead, project=project, created_by=user2)
         new_assignment_count = Assignment.objects.count()
         self.assertEqual(old_assignment_count, new_assignment_count)  # no assignment to be cretaed for empyt assignee
 
@@ -242,3 +242,25 @@ class TestAssignment(TestCase):
         lead.save()
         assignment = Assignment.get_for(user1)
         assert assignment.count() == 1  # for only the user
+
+    def test_assignment_on_lead_and_entry_comment_delete(self):
+        project = self.create_project()
+        user1 = self.create(User)
+        user2 = self.create(User)
+        entry = self.create_entry(created_by=user2, project=project)
+
+        old_assignment_count = Assignment.objects.count()
+        lead = self.create(Lead, project=project, created_by=user2)
+        lead.assignee.add(user1)
+        lead.save()
+        entry_comment = self.create(EntryComment, entry=entry, created_by=user2)
+        entry_comment.assignees.add(user1)
+        entry_comment.save()
+        new_assignment_count = Assignment.objects.count()
+        self.assertEqual(new_assignment_count, old_assignment_count + 2)
+
+        # try deleting lead and entry_comment
+        lead.delete()
+        entry_comment.delete()
+        new_assignment_count = Assignment.objects.count()
+        self.assertEqual(new_assignment_count, old_assignment_count)  # no lead and entry_comment should be there
