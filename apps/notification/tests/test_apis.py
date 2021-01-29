@@ -238,7 +238,7 @@ class TestAssignmentApi(TestCase):
 
         url = '/api/v1/assignments/'
 
-        self.authenticate()
+        self.authenticate(user1)
         response = self.client.get(url)
         self.assert_200(response)
 
@@ -262,9 +262,9 @@ class TestAssignmentApi(TestCase):
     def test_get_assignments_entrycomment(self):
         project = self.create_project()
         project1 = self.create_project()
-        entry = self.create(Entry, project=project)
         user1 = self.create(User)
         user2 = self.create(User)
+        entry = self.create_entry(created_by=user2, project=project)
 
         url = '/api/v1/assignments/'
         entry_comment = self.create(EntryComment, entry=entry, project=project, assignees=[user1])
@@ -284,9 +284,9 @@ class TestAssignmentApi(TestCase):
         project = self.create(Project)
         user1 = self.create(User)
         user2 = self.create(User)
-        assignment = self.create(Assignment, created_for=user1, project=project)
-        assignment1 = self.create(Assignment, created_for=user1, project=project)
-        assignment2 = self.create(Assignment, created_for=user1, project=project)
+        assignment = self.create(Assignment, created_for=user1, project=project, created_by=user2)
+        assignment1 = self.create(Assignment, created_for=user1, project=project, created_by=user2)
+        assignment2 = self.create(Assignment, created_for=user1, project=project, created_by=user2)
 
         url = '/api/v1/assignments/'
         self.authenticate(user1)
@@ -304,10 +304,18 @@ class TestAssignmentApi(TestCase):
         self.assert_200(response)
         self.assertEqual(response.data['is_done'], True)
 
-        url = f'/api/v1/assignments/status/'
+        url = f'/api/v1/assignments/bulk-mark-as-done/'
+        data = {
+            'is_done': 'true',
+        }
+        response = self.client.post(url, data)
+        self.assert_200(response)
+        self.assertEqual(response.data['assignment_updated'], 2)
+
+        # test for is_done is true
+        url = '/api/v1/assignments/'
+        self.authenticate(user1)
         response = self.client.get(url)
         self.assert_200(response)
-        self.assertEqual(len(response.data), 2)  # should be to assignemnt that is `is_done=True`
-        self.assertEqual(response.data[0]['id'], assignment2.id)
-        self.assertEqual(response.data[0]['is_done'], True)
-        self.assertEqual(response.data[1]['is_done'], True)
+        self.assertEqual(response.data['results'][1]['is_done'], True)
+        self.assertEqual(response.data['results'][2]['is_done'], True)

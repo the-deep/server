@@ -81,16 +81,22 @@ class Assignment(models.Model):
     """
     Assignment Model
     """
-    timestamp = models.DateTimeField(
-        default=timezone.now,
+    created_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='created_by',
     )
-    created_for = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_for = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='created_for',
+    )
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
         blank=True,
-        null=True,
-        default=None
+        default=None,
     )
     is_done = models.BooleanField(default=False)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
@@ -98,7 +104,7 @@ class Assignment(models.Model):
     content_object = GenericForeignKey('content_type', 'object_id')
 
     class Meta:
-        ordering = ['-timestamp']
+        ordering = ['-created_at']
 
     @staticmethod
     def get_for(user):

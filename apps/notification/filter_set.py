@@ -1,7 +1,7 @@
 import django_filters
 from django.db.models import Q
 
-from .models import Notification
+from .models import Notification, Assignment
 
 
 class NotificationFilterSet(django_filters.FilterSet):
@@ -56,3 +56,9 @@ class NotificationFilterSet(django_filters.FilterSet):
                 ~Q(data__status='pending') | Q(data__status__isnull=True)
             ).distinct()
         return queryset
+
+
+class AssignmentFilterSet(django_filters.FilterSet):
+    class Meta:
+        model = Assignment
+        fields = ('project', 'is_done')
