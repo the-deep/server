@@ -1,12 +1,15 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.contrib import messages
-from django.db.models import Count
+from django.db import models
 from django.contrib.postgres.aggregates import StringAgg
 
 from reversion.admin import VersionAdmin
 
 from deep.admin import linkify
+from lead.models import Lead
+from entry.models import Entry
+from ary.models import Assessment
 
 from .tasks import generate_stats
 from .forms import ProjectRoleForm
@@ -73,7 +76,8 @@ class ProjectAdmin(VersionAdmin):
         linkify('category_editor', 'Category Editor'),
         linkify('analysis_framework', 'Assessment Framework'),
         linkify('assessment_template', 'Assessment Template'),
-        'members_count', 'associated_regions',
+        'associated_regions',
+        'entries_count', 'assessment_count', 'members_count',
     ]
     autocomplete_fields = (
         'analysis_framework', 'assessment_template', 'category_editor',
@@ -86,11 +90,24 @@ class ProjectAdmin(VersionAdmin):
                ProjectOrganizationInline]
 
     def get_queryset(self, request):
+        def _count_subquery(Model, count_field='id'):
+            return models.functions.Coalesce(
+                models.Subquery(
+                    Model.objects.filter(
+                        project=models.OuterRef('pk'),
+                    ).order_by().values('project')
+                    .annotate(c=models.Count('id', distinct=True)).values('c')[:1],
+                    output_field=models.IntegerField(),
+                ), 0)
+
         return super().get_queryset(request).prefetch_related(
             'category_editor', 'analysis_framework', 'assessment_template',
         ).annotate(
-            members_count=Count('members', distinct=True),
-            associated_regions_count=Count('regions', distinct=True),
+            leads_count=_count_subquery(Lead),
+            entries_count=_count_subquery(Entry),
+            assessment_count=_count_subquery(Assessment),
+            members_count=_count_subquery(ProjectMembership, count_field='member'),
+            associated_regions_count=models.Count('regions', distinct=True),
             associated_regions=StringAgg('regions__title', ',', distinct=True),
         )
 
@@ -100,8 +117,22 @@ class ProjectAdmin(VersionAdmin):
             return self.readonly_fields + ('is_private', )
         return self.readonly_fields
 
+    def entries_count(self, obj):
+        return obj.entries_count
+
+    def leads_count(self, obj):
+        return obj.leads_count
+
+    def assessment_count(self, obj):
+        return obj.assessment_count
+
     def members_count(self, obj):
         return obj.members_count
+
+    entries_count.admin_order_field = 'entries_count'
+    leads_count.admin_order_field = 'leads_count'
+    assessment_count.admin_order_field = 'assessment_count'
+    members_count.admin_order_field = 'members_count'
 
     def associated_regions(self, obj):
         count = obj.associated_regions_count
