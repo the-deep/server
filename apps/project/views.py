@@ -583,13 +583,15 @@ class ProjectStatViewSet(ProjectViewSet):
                 f' GROUP BY entities."project" ORDER BY "date" DESC'
             )
             recent_projects_id = [pk for pk, _ in cursor.fetchall()]
+        # Only pull project data for which user is member of
+        qs = self.get_queryset().filter(Project.get_query_for_member(request.user))
+        current_users_project_id = set(qs.filter(pk__in=recent_projects_id).values_list('pk', flat=True))
+        recent_projects_id = [pk for pk in recent_projects_id if pk in current_users_project_id][:3]
         projects_map = {
             project.pk: project
-            for project in self.get_queryset().filter(
-                Project.get_query_for_member(request.user),
-                pk__in=recent_projects_id,
-            )[:3]
+            for project in qs.filter(pk__in=recent_projects_id)
         }
+        # Maintain the order
         recent_projects = [
             projects_map[id]
             for id in recent_projects_id if projects_map.get(id)
