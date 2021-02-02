@@ -1,3 +1,5 @@
+from mock import patch
+
 from deep.tests import TestCase
 
 from user.models import User
@@ -5,6 +7,7 @@ from notification.models import Notification, Assignment
 from project.models import ProjectJoinRequest, Project
 from lead.models import Lead
 from entry.models import Entry, EntryComment
+
 
 class TestNotification(TestCase):
     """Unit test for Notification"""
@@ -167,95 +170,94 @@ class TestNotification(TestCase):
 class TestAssignment(TestCase):
     """ Unit test for Assignment"""
 
-    def test_create_assignment_create_on_entry_comment(self):
+    @patch('notification.receivers.entry_comment.get_user')
+    def test_create_assignment_create_on_entry_comment(self, get_user_mocked_func):
         project = self.create_project()
-        user2 = self.create(User)
-        entry = self.create_entry(created_by=user2, project=project)
-        user1 = self.create(User)
+        entry = self.create_entry(project=project)
+        user1 = self.create_user()
+        user2 = self.create_user()
+        get_user_mocked_func.return_value = user2
 
         old_assignment_count = Assignment.objects.count()
-        entry_comment = self.create(EntryComment, entry=entry, created_by=user2)
+        entry_comment = self.create(EntryComment, entry=entry)
         new_assignment_count = Assignment.objects.count()
+
         self.assertEqual(old_assignment_count, new_assignment_count)
 
         entry_comment.assignees.add(user1)
-        entry_comment.save()
         new_assignment_count = Assignment.objects.count()
         self.assertEqual(old_assignment_count + 1, new_assignment_count)
 
         # try to change the assigne for the entry_comment and test for the change in assignment
         entry_comment.assignees.remove(user1)
         entry_comment.assignees.add(user2)
-        entry_comment.save()
         self.assertEqual(old_assignment_count + 1, new_assignment_count)
         assignment = Assignment.objects.get(entry__id=entry_comment.id)
         self.assertEqual(assignment.created_for, user2)  # should represent the new user2
 
         # try to add another user and remove both from assignee
         entry_comment.assignees.add(user1)
-        entry_comment.save()
         new_assignment_count = Assignment.objects.count()
         self.assertEqual(old_assignment_count + 2, new_assignment_count)
 
         # try to get the assignment for user
         entry_comment.assignees.add(user1, user2)
-        entry_comment.save()
         assignment = Assignment.get_for(user1)
         assert assignment.count() == 1  # for only the user
+        assert get_user_mocked_func.called
 
-    def test_assignment_create_on_lead_create(self):
+    @patch('notification.receivers.entry_comment.get_user')
+    def test_assignment_create_on_lead_create(self, get_user_mocked_func):
         project = self.create(Project)
-        user1 = self.create(User)
-        user2 = self.create(User)
+        user1 = self.create_user()
+        user2 = self.create_user()
+        get_user_mocked_func.return_value = user2
 
         old_assignment_count = Assignment.objects.count()
-        lead = self.create(Lead, project=project, created_by=user2)
+        lead = self.create(Lead, project=project)
         new_assignment_count = Assignment.objects.count()
         self.assertEqual(old_assignment_count, new_assignment_count)  # no assignment to be cretaed for empyt assignee
 
         # try add assignee in the lead
         lead.assignee.add(user1)
-        lead.save()
         new_assignment_count = Assignment.objects.count()
         self.assertEqual(old_assignment_count + 1, new_assignment_count)
 
         # try to change the assigne for the lead and test for the change in assignment
         lead.assignee.remove(user1)
         lead.assignee.add(user2)
-        lead.save()
         self.assertEqual(old_assignment_count + 1, new_assignment_count)
         assignment = Assignment.objects.get(lead__id=lead.id)
         self.assertEqual(assignment.created_for, user2)  # should represent the new user2
 
         # try to add another user and remove both from assignee
         lead.assignee.add(user1)
-        lead.save()
         new_assignment_count = Assignment.objects.count()
         self.assertEqual(old_assignment_count + 2, new_assignment_count)
 
         lead.assignee.remove(user1, user2)
-        lead.save()
         self.assertEqual(Assignment.objects.count(), 0)
 
         # try to get the assignment for user
         lead.assignee.add(user1, user2)
-        lead.save()
         assignment = Assignment.get_for(user1)
         assert assignment.count() == 1  # for only the user
+        assert get_user_mocked_func.called
 
+    @patch('notification.receivers.entry_comment.get_user')
     def test_assignment_on_lead_and_entry_comment_delete(self):
         project = self.create_project()
         user1 = self.create(User)
         user2 = self.create(User)
-        entry = self.create_entry(created_by=user2, project=project)
-
+        entry = self.create_entry(project=project)
+        get_user_mocked_func.return_value = user2
+        
         old_assignment_count = Assignment.objects.count()
-        lead = self.create(Lead, project=project, created_by=user2)
+        lead = self.create(Lead, project=project)
         lead.assignee.add(user1)
-        lead.save()
-        entry_comment = self.create(EntryComment, entry=entry, created_by=user2)
+        entry_comment = self.create(EntryComment, entry=entry)
         entry_comment.assignees.add(user1)
-        entry_comment.save()
+    
         new_assignment_count = Assignment.objects.count()
         self.assertEqual(new_assignment_count, old_assignment_count + 2)
 

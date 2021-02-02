@@ -48,31 +48,22 @@ class NotificationSerializer(RemoveNullFieldsMixin,
 class AssignmentEntryCommentSerializer(serializers.ModelSerializer):
     content_id = serializers.IntegerField(source='id', read_only=True)
     content_title = serializers.CharField(source='text', read_only=True)
-    project = serializers.IntegerField(source='entry.project_id', read_only=True)
-    project_title = serializers.CharField(source='entry.project.title', read_only=True)
-    created_by_name = serializers.CharField(source='created_by.username', read_only=True)
     entry_excerpt = serializers.CharField(source='entry.excerpt', read_only=True)
 
     class Meta:
         model = EntryComment
-        fields = ('content_id', 'content_title', 'entry',
-                  'project', 'project_title', 'created_by',
-                  'created_by_name', 'entry_excerpt')
+        fields = ('content_id', 'content_title', 'entry', 'entry_excerpt')
 
 
 class AssignmentLeadSerializer(RemoveNullFieldsMixin,
                                serializers.ModelSerializer):
     content_id = serializers.IntegerField(source='id', read_only=True)
     content_title = serializers.CharField(source='title', read_only=True)
-    project_title = serializers.CharField(source='project.title', read_only=True)
-    created_by_name = serializers.CharField(source='created_by.username', read_only=True)
 
     class Meta:
         model = Lead
         fields = (
-            'content_id', 'content_title', 'project',
-            'project_title', 'created_by', 'created_by_name',
-        )
+            'content_id', 'content_title',)
 
 
 class AssignmentSerializer(serializers.ModelSerializer):
@@ -81,6 +72,8 @@ class AssignmentSerializer(serializers.ModelSerializer):
         EntryComment: AssignmentEntryCommentSerializer(),
     }, read_only=True,
     )
+    project_title = serializers.CharField(source='project.title', read_only=True)
+    created_by_username = serializers.CharField(source='created_by.username', read_only=True)
 
     class Meta:
         model = Assignment
@@ -89,7 +82,9 @@ class AssignmentSerializer(serializers.ModelSerializer):
             'timestamp',
             'created_for',
             'project',
+            'project_title',
             'created_by',
+            'created_by_username',
             'object_id',
             'content_type'
         )

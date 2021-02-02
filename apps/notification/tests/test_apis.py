@@ -256,7 +256,7 @@ class TestAssignmentApi(TestCase):
         self.assert_200(response)
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['created_for'], user1.id)
-        self.assertEqual(response.data['results'][0]['content_object']['project'], project.id)
+        self.assertEqual(response.data['results'][0]['project'], project.id)
         self.assertEqual(response.data['results'][0]['assignment_model_type'], "lead")
 
     def test_get_assignments_entrycomment(self):
@@ -264,11 +264,19 @@ class TestAssignmentApi(TestCase):
         project1 = self.create_project()
         user1 = self.create(User)
         user2 = self.create(User)
-        entry = self.create_entry(created_by=user2, project=project)
+        entry = self.create_entry(project=project)
 
         url = '/api/v1/assignments/'
+
+        self.authenticate(user1)
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        data = response.data
+        assert data['count'] == 0, "No Assignments till now"
+
         entry_comment = self.create(EntryComment, entry=entry, project=project, assignees=[user1])
-        self.create(EntryComment, entry=entry, project=project1, assignee=[user2])
+        self.create(EntryComment, entry=entry, project=project1, assignees=[user2])
 
         self.authenticate(user1)
         params = {'project': project.id}
@@ -277,7 +285,7 @@ class TestAssignmentApi(TestCase):
         self.assert_200(response)
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['created_for'], user1.id)
-        self.assertEqual(response.data['results'][0]['content_object']['project'], entry.project.id)
+        self.assertEqual(response.data['results'][0]['project'], entry.project.id)
         self.assertEqual(response.data['results'][0]['assignment_model_type'], "entrycomment")
 
     def test_assignment_is_done(self):

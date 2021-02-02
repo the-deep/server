@@ -84,7 +84,8 @@ class Assignment(models.Model):
     created_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,
+        blank=True, null=True,
+        on_delete=models.SET_NULL,
         related_name='created_by',
     )
     created_for = models.ForeignKey(
@@ -95,8 +96,6 @@ class Assignment(models.Model):
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
-        blank=True,
-        default=None,
     )
     is_done = models.BooleanField(default=False)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
