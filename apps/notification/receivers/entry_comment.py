@@ -1,3 +1,6 @@
+import logging
+from datetime import datetime
+
 from django.dispatch import receiver
 from django.db.models.signals import (
     post_save,
@@ -8,13 +11,12 @@ from django.db.models.signals import (
 from django.db import transaction
 from django.conf import settings
 
+from deep.middleware import get_user
 from entry.models import EntryComment, EntryCommentText
 from entry.serializers import EntryCommentSerializer
 from notification.models import Notification, Assignment
 from notification.tasks import send_entry_comment_email
 from lead.models import Lead
-import logging
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -100,16 +102,18 @@ def create_entry_commit_text_notification(sender, instance, created, **kwargs):
 @receiver(m2m_changed, sender=Lead.assignee.through)
 def lead_assignment_signal(sender, instance, action, **kwargs):
     pk_set = kwargs.get('pk_set', [])
-    if action == 'post_add' and pk_set:
+    # Gets the username from the request with a middleware helper
+    user = get_user()
+    if action == 'post_add' and pk_set and user:
         for receiver in pk_set:
             Assignment.objects.create(
                 content_object=instance,
                 created_for_id=receiver,
                 project=instance.project,
-                created_by=instance.created_by,
+                created_by=user,
             )
 
-    elif action == 'post_remove' and pk_set:
+    elif action == 'post_remove' and pk_set and user:
         for receiver in pk_set:
             Assignment.objects.filter(lead__id=instance.id, created_for_id=receiver).delete()
 
@@ -117,16 +121,18 @@ def lead_assignment_signal(sender, instance, action, **kwargs):
 @receiver(m2m_changed, sender=EntryComment.assignees.through)
 def entrycomment_assignment_signal(sender, instance, action, **kwargs):
     pk_set = kwargs.get('pk_set', [])
-    if action == 'post_add' and pk_set:
+    # Gets the username from the request with a middleware helper
+    user = get_user()
+    if action == 'post_add' and pk_set and user:
         for receiver in pk_set:
             Assignment.objects.create(
                 content_object=instance,
                 created_for_id=receiver,
                 project=instance.entry.project,
-                created_by=instance.created_by,
+                created_by=user,
             )
 
-    elif action == 'post_remove' and pk_set:
+    elif action == 'post_remove' and pk_set and user:
         for receiver in pk_set:
             Assignment.objects.filter(entry__id=instance.id, created_for_id=receiver).delete()
 

@@ -72,3 +72,32 @@ class DeepInnerCacheMiddleware:
 
     def process_view(self, request, view_function, *args, **kwargs):
         setattr(_threadlocal, self.THREAD_S3_SIGNED_URL_TTL_ATTRIBUTE, None)
+
+
+def get_signal_request():
+    """
+    !!! Do not use if your operation is asynchronus !!!
+    Allow to access current request in signals
+    This is a hack that looks into the thread
+    Mainly used for log purpose
+    """
+
+    return getattr(_threadlocal, "request", None)
+
+
+def get_user():
+    req = get_signal_request()
+    if req and req.user:
+        return req.user
+    else:
+        return None
+
+
+class RequestMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        # One-time configuration and initialization.
+
+    def __call__(self, request):
+        setattr(_threadlocal, "request", request)
+        return self.get_response(request)

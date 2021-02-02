@@ -138,6 +138,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'deep.middleware.RevisionMiddleware',
     'deep.middleware.DeepInnerCacheMiddleware',
+    'deep.middleware.RequestMiddleware',
 ]
 
 ROOT_URLCONF = 'deep.urls'
