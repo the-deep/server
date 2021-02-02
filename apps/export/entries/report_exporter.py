@@ -354,7 +354,6 @@ class ReportExporter:
             run = para.add_run('', bold=bold)
             with open(ASSESSMENT_ICON_IMAGE_PATH, 'rb') as fp:
                 run.add_inline_image(fp, width=Inches(0.15), height=Inches(0.15))
-            para.add_run(SEPARATOR, bold=bold)
 
         to_process_fuctions = []
 
@@ -362,7 +361,8 @@ class ReportExporter:
         to_process_fuctions.append(_add_assessment_icon)
         # Collect Assessment GEO Data
         locations = get_valid_geo_ids((assessment.methodology or {}).get('locations') or [])
-        to_process_fuctions.append(lambda: self._add_geo_admin_level_1_data(para, locations, bold=bold))
+        if locations:
+            to_process_fuctions.append(lambda: self._add_geo_admin_level_1_data(para, locations, bold=bold))
         # Affected Groups Data
         affected_groups_info = [
             '/'.join(info.values()) for info in ary_get_affected_groups_info(assessment)['affected_groups_info']
