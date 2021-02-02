@@ -22,7 +22,7 @@ def get_title_from_geo_json_data(x):
 
 
 def get_locations_info(assessment):
-    all_locations = (assessment.methodology or {}).get('locations') or {}
+    all_locations = (assessment.methodology or {}).get('locations') or []
     locations = get_valid_geo_ids(all_locations)
 
     # Custom locations include custom added points and polygons

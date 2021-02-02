@@ -4,6 +4,7 @@ from docx.enum.dml import MSO_THEME_COLOR_INDEX
 from docx.oxml import OxmlElement, oxml_parser
 from docx.oxml.ns import qn
 from docx.shared import Pt, RGBColor
+from docx.oxml.shape import CT_Inline, CT_Picture
 
 from PIL import Image
 
@@ -98,6 +99,13 @@ class Run:
         ele = OxmlElement('w:shd')
         ele.set(qn('w:fill'), hex_color_string)
         rPr.append(ele)
+
+    def add_inline_image(self, image, width, height):
+        inline = self.ref.part.new_pic_inline(image, width, height)
+        # Remove left/right spacing
+        inline.set('distL', '0')
+        inline.set('distR', '0')
+        return self.ref._r.add_drawing(inline)
 
     def add_oval_shape(self, fill_hex_color=None):
         """
