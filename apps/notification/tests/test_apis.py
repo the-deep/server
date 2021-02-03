@@ -246,7 +246,7 @@ class TestAssignmentApi(TestCase):
         assert data['count'] == 0, "No Assignments till now"
 
         # try creating lead
-        self.create_lead(project=project, assignee=[user1])
+        lead = self.create_lead(project=project, assignee=[user1])
         self.create(Lead, project=project1, assignee=[user2])
 
         self.authenticate(user1)
@@ -257,6 +257,7 @@ class TestAssignmentApi(TestCase):
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['project_details']['id'], project.id)
         self.assertEqual(response.data['results'][0]['content_object_type'], 'lead')
+        self.assertEqual(response.data['results'][0]['content_object_details']['id'], lead.id)
 
     def test_get_assignments_entrycomment(self):
         project = self.create_project()
@@ -274,7 +275,7 @@ class TestAssignmentApi(TestCase):
         data = response.data
         assert data['count'] == 0, "No Assignments till now"
 
-        self.create(EntryComment, entry=entry, project=project, assignees=[user1])
+        entry_comment = self.create(EntryComment, entry=entry, project=project, assignees=[user1])
         self.create(EntryComment, entry=entry, project=project1, assignees=[user2])
 
         self.authenticate(user1)
@@ -285,6 +286,7 @@ class TestAssignmentApi(TestCase):
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['project_details']['id'], entry.project.id)
         self.assertEqual(response.data['results'][0]['content_object_type'], 'entrycomment')
+        self.assertEqual(response.data['results'][0]['content_object_details']['id'], entry_comment.id)
 
     def test_assignment_is_done(self):
         project = self.create(Project)
