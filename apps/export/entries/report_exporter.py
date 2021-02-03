@@ -10,7 +10,6 @@ from django.db.models import (
     Case,
     When,
     Q,
-    IntegerField
 )
 from docx.shared import Inches
 
@@ -33,6 +32,12 @@ from entry.widgets import (
     multiselect_widget
 )
 from entry.widgets.store import widget_store
+from entry.widgets.geo_widget import get_valid_geo_ids
+
+from ary.export.affected_groups_info import get_affected_groups_info as ary_get_affected_groups_info
+from ary.export.data_collection_techniques_info import (
+    get_data_collection_techniques_info as ary_get_data_collection_techniques_info
+)
 
 from lead.models import Lead
 from utils.common import generate_filename
@@ -43,6 +48,7 @@ logger = logging.getLogger(__name__)
 
 SEPARATOR = ', '
 INTERNAL_SEPARATOR = '; '
+ASSESSMENT_ICON_IMAGE_PATH = os.path.join(settings.BASE_DIR, 'apps/static/image/drop-icon.png')
 
 
 class ExportDataVersionMismatch(Exception):
@@ -184,7 +190,10 @@ class ReportExporter:
             self.legend_paragraph.add_next_paragraph(title_para)
         cond_widgets = project.analysis_framework.widget_set.filter(widget_id='conditionalWidget')
         for c_widget in cond_widgets[::-1]:
-            for widget in filter(lambda x: x.get('widget', {}).get('widget_id') == 'scaleWidget', c_widget.properties.get('data', {}).get('widgets', [])):
+            for widget in filter(
+                lambda x: x.get('widget', {}).get('widget_id') == 'scaleWidget',
+                c_widget.properties.get('data', {}).get('widgets', [])
+            ):
                 if not widget.get('widget', {}).get('title'):
                     continue
                 title_para = self.doc.add_paragraph()
@@ -207,7 +216,6 @@ class ReportExporter:
         as described here: apps.entry.widgets.scale_widget._get_scale
         """
         if data.get('label', None) and data.get('color', None):
-            para.add_run(SEPARATOR, bold=True)
             para.add_oval_shape(data.get('color'))
             para.add_run('{}'.format(data.get('label', '')), bold)
             return True
@@ -219,7 +227,13 @@ class ReportExporter:
         as described here: apps.entry.widgets.date_range_widget._get_date
         """
         if len(data.get('values', [])) == 2 and any(data.get('values', [])):
-            para.add_run('{}{} - {}'.format(SEPARATOR, data['values'][0] or "00-00-00", data['values'][1] or "00-00-00"), bold)
+            para.add_run(
+                '{} - {}'.format(
+                    data['values'][0] or "00-00-00",
+                    data['values'][1] or "00-00-00",
+                ),
+                bold,
+            )
             return True
 
     def _add_time_range_widget_data(self, para, data, bold=True):
@@ -229,12 +243,12 @@ class ReportExporter:
         as described here: apps.entry.widgets.time_range_widget._get_time
         """
         if len(data.get('values', [])) == 2 and any(data.get('values', [])):
-            para.add_run('{}{} - {}'.format(SEPARATOR, data['values'][0] or "~~:~~", data['values'][1] or "~~:~~"), bold)
+            para.add_run('{} - {}'.format(data['values'][0] or "~~:~~", data['values'][1] or "~~:~~"), bold)
             return True
 
     def _add_time_widget_data(self, para, data, bold=True):
         if data.get('value', None):
-            para.add_run('{}{}'.format(SEPARATOR, data['value']), bold)
+            para.add_run(data['value'], bold)
             return True
 
     def _add_date_widget_data(self, para, data, bold=True):
@@ -244,30 +258,26 @@ class ReportExporter:
         as described here: apps.entry.widgets.date_widget
         """
         if data.get('value', None):
-            para.add_run('{}{}'.format(SEPARATOR, data['value']), bold)
+            para.add_run(data['value'], bold)
             return True
 
     def _add_select_widget_data(self, para, data, bold=True):
         if data.get('type') == 'list' and data.get('value', []):
             values = data.get('value', [])
-            para.add_run(f'{SEPARATOR}{INTERNAL_SEPARATOR.join(values)}', bold)
+            para.add_run(INTERNAL_SEPARATOR.join(values), bold)
             return True
 
     def _add_multi_select_widget_data(self, para, data, bold=True):
         if data.get('type') == 'list' and data.get('value', []):
             values = data.get('value', [])
-            para.add_run(f'{SEPARATOR}{INTERNAL_SEPARATOR.join(values)}', bold)
+            para.add_run(INTERNAL_SEPARATOR.join(values), bold)
             return True
 
-    def _add_geo_widget_data(self, para, data, bold=True):
-        # XXX: Cache this value.
-        # Right now everything needs to be loaded so doing this at entry save can take lot of memory
-        render_values = []
-        geo_id_values = [str(v) for v in data.get('values') or []]
-
+    def _add_geo_admin_level_1_data(self, para, geo_id_values, bold=True):
         if len(geo_id_values) == 0:
             return
 
+        render_values = []
         for region_id, admin_levels in self.region_data.items():
             for admin_level in admin_levels:
                 geo_area_titles = admin_level['geo_area_titles']
@@ -300,8 +310,16 @@ class ReportExporter:
                                 break
 
         if render_values:
-            para.add_run(f"{SEPARATOR}{INTERNAL_SEPARATOR.join(set(render_values))}", bold)
+            para.add_run(INTERNAL_SEPARATOR.join(set(render_values)), bold)
             return True
+
+    def _add_geo_widget_data(self, para, data, bold=True):
+        # XXX: Cache this value.
+        # Right now everything needs to be loaded so doing this at entry save can take lot of memory
+        geo_id_values = [str(v) for v in data.get('values') or []]
+        if len(geo_id_values) == 0:
+            return
+        return self._add_geo_admin_level_1_data(para, geo_id_values, bold=bold)
 
     def _add_widget_information_into_report(self, para, report, bold=True):
         """
@@ -330,6 +348,53 @@ class ReportExporter:
                                                     f'\nExport data being exported: {report}\n')
                 return mapper[widget_id](para, report, bold)
 
+    def _add_assessment_info_for_entry(self, assessment, para, bold=True):
+        def _add_assessment_icon():
+            # NOTE: Add icon here
+            run = para.add_run('', bold=bold)
+            with open(ASSESSMENT_ICON_IMAGE_PATH, 'rb') as fp:
+                run.add_inline_image(fp, width=Inches(0.15), height=Inches(0.15))
+
+        to_process_fuctions = []
+
+        # Add Assessment icon
+        to_process_fuctions.append(_add_assessment_icon)
+        # Collect Assessment GEO Data
+        locations = get_valid_geo_ids((assessment.methodology or {}).get('locations') or [])
+        if locations:
+            to_process_fuctions.append(lambda: self._add_geo_admin_level_1_data(para, locations, bold=bold))
+        # Affected Groups Data
+        affected_groups_info = [
+            '/'.join(info.values()) for info in ary_get_affected_groups_info(assessment)['affected_groups_info']
+        ]
+        if affected_groups_info:
+            to_process_fuctions.append(lambda: para.add_run(f'{INTERNAL_SEPARATOR}'.join(affected_groups_info), bold=bold))
+        # Data collection techniques data
+        data_collection_techniques_info = [
+            f"{info['Sampling Size']} {info['Data Collection Technique']}"
+            for info in ary_get_data_collection_techniques_info(assessment)['data_collection_technique']
+            if info.get('Sampling Size')
+        ]
+        if data_collection_techniques_info:
+            to_process_fuctions.append(
+                lambda: para.add_run(f'{INTERNAL_SEPARATOR}'.join(data_collection_techniques_info), bold=bold)
+            )
+        # 12 -> Data collection start date, 13 -> Data collection start date. FROM ary_template_data.json
+        data_collection_start_date = (assessment.metadata or {}).get('basic_information', {}).get('12')
+        data_collection_end_date = (assessment.metadata or {}).get('basic_information', {}).get('13')
+        if data_collection_start_date or data_collection_end_date:
+            to_process_fuctions.append(
+                lambda: (
+                    para.add_run(f'Data collection: {data_collection_start_date} – {data_collection_end_date}', bold=bold)
+                )
+            )
+
+        # Finally add all assessment data to the docx
+        total_process_functions = len(to_process_fuctions) - 1
+        for index, add_data in enumerate(to_process_fuctions):
+            if add_data() and index > 0 and index < total_process_functions:
+                para.add_run(SEPARATOR, bold=bold)
+
     def _generate_for_entry(self, entry):
         """
         Generate paragraphs for an entry
@@ -339,16 +404,26 @@ class ReportExporter:
 
         para.add_run('[', bold=True)
         # Add lead-entry id
-        url = f'{settings.HTTP_PROTOCOL}://{settings.DEEPER_FRONTEND_HOST}/permalink/projects/{entry.lead.project.id}' \
-              f'/leads/{entry.lead.id}/entries/{entry.id}/'
+        url = (
+            f'{settings.HTTP_PROTOCOL}://{settings.DEEPER_FRONTEND_HOST}'
+            f'/permalink/projects/{entry.project_id}/leads/{entry.lead_id}/entries/{entry.id}/'
+        )
 
         # format of exporting_widgets = "[517,43,42,[405,"scalewidget-xe11vlcxs2gqdh1r","Scale"]]"
         widget_keys = [
             Widget.objects.get(id=each).key if not isinstance(each, list) else each[1]
             for each in self.exporting_widgets
         ]
-        para.add_hyperlink(url, f"{entry.lead.id}-{entry.id}")
-        # para.add_run(f'{entry.lead.id}-{entry.id}', bold=True)
+        para.add_hyperlink(url, f"{entry.lead_id}-{entry.id}")
+        para.add_run(']', bold=True)
+
+        assessment = getattr(entry.lead, 'assessment', None)
+        if assessment:
+            para.add_run(' [', bold=True)
+            self._add_assessment_info_for_entry(assessment, para, bold=True)
+            para.add_run('] ', bold=True)
+
+        para.add_run('[', bold=True)
         export_data = []
         for each in entry.exportdata_set.all():
             if 'other' in each.data.get('report', {}):
@@ -363,9 +438,14 @@ class ReportExporter:
 
         export_data.sort(key=lambda x: widget_keys.index(x['widget_key']))
         if export_data:
-            for data in export_data:
+            export_data_len = len(export_data) - 1
+            for index, data in enumerate(export_data):
                 try:
-                    self._add_widget_information_into_report(para, data)
+                    if (
+                        self._add_widget_information_into_report(para, data, bold=True) and
+                        index < export_data_len
+                    ):
+                        para.add_run(SEPARATOR, bold=True)
                 except ExportDataVersionMismatch as e:
                     print(f'For entry {entry.id}, project {entry.project.id}')
                     raise e
