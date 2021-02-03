@@ -7,7 +7,7 @@ from user.models import User
 from lead.models import Lead
 from notification.models import Notification, Assignment
 from project.models import ProjectJoinRequest, Project
-from entry.models import Entry, EntryComment
+from entry.models import EntryComment
 
 
 class TestNotificationAPIs(TestCase):
@@ -246,7 +246,7 @@ class TestAssignmentApi(TestCase):
         assert data['count'] == 0, "No Assignments till now"
 
         # try creating lead
-        lead = self.create_lead(project=project, assignee=[user1])
+        self.create_lead(project=project, assignee=[user1])
         self.create(Lead, project=project1, assignee=[user2])
 
         self.authenticate(user1)
@@ -275,7 +275,7 @@ class TestAssignmentApi(TestCase):
         data = response.data
         assert data['count'] == 0, "No Assignments till now"
 
-        entry_comment = self.create(EntryComment, entry=entry, project=project, assignees=[user1])
+        self.create(EntryComment, entry=entry, project=project, assignees=[user1])
         self.create(EntryComment, entry=entry, project=project1, assignees=[user2])
 
         self.authenticate(user1)
@@ -293,8 +293,8 @@ class TestAssignmentApi(TestCase):
         user1 = self.create(User)
         user2 = self.create(User)
         assignment = self.create(Assignment, created_for=user1, project=project, created_by=user2)
-        assignment1 = self.create(Assignment, created_for=user1, project=project, created_by=user2)
-        assignment2 = self.create(Assignment, created_for=user1, project=project, created_by=user2)
+        self.create(Assignment, created_for=user1, project=project, created_by=user2)
+        self.create(Assignment, created_for=user1, project=project, created_by=user2)
 
         url = '/api/v1/assignments/'
         self.authenticate(user1)
@@ -312,7 +312,7 @@ class TestAssignmentApi(TestCase):
         self.assert_200(response)
         self.assertEqual(response.data['is_done'], True)
 
-        url = f'/api/v1/assignments/bulk-mark-as-done/'
+        url = '/api/v1/assignments/bulk-mark-as-done/'
         data = {
             'is_done': 'true',
         }

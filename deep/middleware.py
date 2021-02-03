@@ -5,11 +5,15 @@ import threading
 from reversion.views import create_revision
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.core.files.storage import get_storage_class
 
 from utils.date_extractor import str_to_date
 
 logger = logging.getLogger(__name__)
+
+
+_threadlocal = threading.local()
 
 
 class RevisionMiddleware:
@@ -26,9 +30,6 @@ class RevisionMiddleware:
         if request.path in self.skip_paths:
             return self.original_get_response(request)
         return self.get_response(request)
-
-
-_threadlocal = threading.local()
 
 
 def get_s3_signed_url_ttl():
@@ -74,23 +75,17 @@ class DeepInnerCacheMiddleware:
         setattr(_threadlocal, self.THREAD_S3_SIGNED_URL_TTL_ATTRIBUTE, None)
 
 
-def get_signal_request():
-    """
-    !!! Do not use if your operation is asynchronus !!!
-    Allow to access current request in signals
-    This is a hack that looks into the thread
-    Mainly used for log purpose
-    """
-
-    return getattr(_threadlocal, "request", None)
+def _do_set_current_request(request_fun):
+    setattr(_threadlocal, 'request', request_fun.__get__(request_fun, threading.local))
 
 
-def get_user():
-    req = get_signal_request()
-    if req and req.user:
-        return req.user
-    else:
-        return None
+def _set_current_request(request=None):
+    '''
+    Sets current user in local thread.
+    Can be used as a hook e.g. for shell jobs (when request object is not
+    available).
+    '''
+    _do_set_current_request(lambda self: request)
 
 
 class RequestMiddleware:
@@ -99,5 +94,27 @@ class RequestMiddleware:
         # One-time configuration and initialization.
 
     def __call__(self, request):
-        setattr(_threadlocal, "request", request)
+        _do_set_current_request(lambda self: request)
         return self.get_response(request)
+
+
+def get_current_request():
+    """
+    !!! Do not use if your operation is asynchronus !!!
+    Allow to access current request in signals
+    This is a hack that looks into the thread
+    Mainly used for log purpose
+    """
+
+    request = getattr(_threadlocal, "request", None)
+    if callable(request):
+        return request()
+    return request
+
+
+def get_current_user():
+    request = get_current_request()
+    current_user = request and request.user
+    if isinstance(current_user, AnonymousUser):
+        return None
+    return current_user
