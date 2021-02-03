@@ -83,8 +83,8 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     filterset_class = AssignmentFilterSet
 
     def get_queryset(self):
-        return Assignment.get_for(
-            self.request.user,
+        return Assignment.get_for(self.request.user).select_related(
+            'project', 'created_by', 'content_type',
         )
 
     @action(

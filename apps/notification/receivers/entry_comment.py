@@ -114,7 +114,10 @@ def lead_assignment_signal(sender, instance, action, **kwargs):
 
     elif action == 'post_remove' and pk_set and user:
         for receiver_user in pk_set:
-            Assignment.objects.filter(lead__id=instance.id, created_for_id=receiver_user).delete()
+            Assignment.objects.filter(
+                lead__id=instance.id,
+                created_for_id=receiver_user,
+            ).delete()
 
 
 @receiver(m2m_changed, sender=EntryComment.assignees.through)
@@ -133,7 +136,10 @@ def entrycomment_assignment_signal(sender, instance, action, **kwargs):
 
     elif action == 'post_remove' and pk_set and user:
         for receiver_user in pk_set:
-            Assignment.objects.filter(entry__id=instance.id, created_for_id=receiver_user).delete()
+            Assignment.objects.filter(
+                entry_comment__id=instance.id,
+                created_for_id=receiver_user,
+            ).delete()
 
 
 @receiver(post_delete, sender=Lead)
@@ -143,4 +149,4 @@ def delete_related_assignment(sender, instance, *args, **kwargs):
     if type(instance) == Lead:
         Assignment.objects.filter(lead__id=pk).delete()
     elif type(instance) == Lead:
-        Assignment.objects.filter(entry__id=pk).delete()
+        Assignment.objects.filter(entry_comment__id=pk).delete()

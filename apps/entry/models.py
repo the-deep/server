@@ -311,7 +311,7 @@ class EntryComment(models.Model):
         'EntryComment',
         null=True, blank=True, on_delete=models.CASCADE,
     )
-    assignments = GenericRelation(Assignment, related_query_name='entry')
+    assignments = GenericRelation(Assignment, related_query_name='entry_comment')
 
     def __str__(self):
         return f'{self.entry}: {self.text} (Resolved: {self.is_resolved})'
