@@ -67,6 +67,7 @@ class ReportExporter:
         self.region_data = {}
         # XXX: Limit memory usage? (Or use redis?)
         self.geoarea_data_cache = {}
+        self.assessment_data_cache = {}
 
     def load_exportables(self, exportables, regions):
         exportables = exportables.filter(
@@ -273,7 +274,7 @@ class ReportExporter:
             para.add_run(INTERNAL_SEPARATOR.join(values), bold)
             return True
 
-    def _add_geo_admin_level_1_data(self, para, geo_id_values, bold=True):
+    def _get_geo_admin_level_1_data(self, geo_id_values):
         if len(geo_id_values) == 0:
             return
 
@@ -310,8 +311,7 @@ class ReportExporter:
                                 break
 
         if render_values:
-            para.add_run(INTERNAL_SEPARATOR.join(set(render_values)), bold)
-            return True
+            return INTERNAL_SEPARATOR.join(set(render_values))
 
     def _add_geo_widget_data(self, para, data, bold=True):
         # XXX: Cache this value.
@@ -319,7 +319,10 @@ class ReportExporter:
         geo_id_values = [str(v) for v in data.get('values') or []]
         if len(geo_id_values) == 0:
             return
-        return self._add_geo_admin_level_1_data(para, geo_id_values, bold=bold)
+        geo_values = self._get_geo_admin_level_1_data(geo_id_values)
+        if geo_values:
+            para.add_run(geo_values, bold=bold)
+            return True
 
     def _add_widget_information_into_report(self, para, report, bold=True):
         """
@@ -355,44 +358,51 @@ class ReportExporter:
             with open(ASSESSMENT_ICON_IMAGE_PATH, 'rb') as fp:
                 run.add_inline_image(fp, width=Inches(0.15), height=Inches(0.15))
 
-        to_process_fuctions = []
+        cache = self.assessment_data_cache.get(assessment.pk)
 
-        # Add Assessment icon
-        to_process_fuctions.append(_add_assessment_icon)
-        # Collect Assessment GEO Data
-        locations = get_valid_geo_ids((assessment.methodology or {}).get('locations') or [])
-        if locations:
-            to_process_fuctions.append(lambda: self._add_geo_admin_level_1_data(para, locations, bold=bold))
-        # Affected Groups Data
-        affected_groups_info = [
-            '/'.join(info.values()) for info in ary_get_affected_groups_info(assessment)['affected_groups_info']
-        ]
-        if affected_groups_info:
-            to_process_fuctions.append(lambda: para.add_run(f'{INTERNAL_SEPARATOR}'.join(affected_groups_info), bold=bold))
-        # Data collection techniques data
-        data_collection_techniques_info = [
-            f"{info['Sampling Size']} {info['Data Collection Technique']}"
-            for info in ary_get_data_collection_techniques_info(assessment)['data_collection_technique']
-            if info.get('Sampling Size')
-        ]
-        if data_collection_techniques_info:
-            to_process_fuctions.append(
-                lambda: para.add_run(f'{INTERNAL_SEPARATOR}'.join(data_collection_techniques_info), bold=bold)
+        # Check/Calculate data for assessment
+        if cache is None:
+            cache = {}
+            # Collect Assessment GEO Data
+            cache['locations'] = self._get_geo_admin_level_1_data(
+                get_valid_geo_ids((assessment.methodology or {}).get('locations') or [])
             )
-        # 12 -> Data collection start date, 13 -> Data collection start date. FROM ary_template_data.json
-        data_collection_start_date = (assessment.metadata or {}).get('basic_information', {}).get('12')
-        data_collection_end_date = (assessment.metadata or {}).get('basic_information', {}).get('13')
-        if data_collection_start_date or data_collection_end_date:
-            to_process_fuctions.append(
-                lambda: (
-                    para.add_run(f'Data collection: {data_collection_start_date} – {data_collection_end_date}', bold=bold)
-                )
-            )
+            cache['affected_groups_info'] = INTERNAL_SEPARATOR.join([
+                '/'.join([str(s) for s in info.values() if s])
+                for info in ary_get_affected_groups_info(assessment)['affected_groups_info']
+            ])
+            cache['data_collection_techniques_info'] = INTERNAL_SEPARATOR.join([
+                f"{info['Sampling Size']} {info['Data Collection Technique']}"
+                for info in ary_get_data_collection_techniques_info(assessment)['data_collection_technique']
+                if info.get('Sampling Size')
+            ])
+            dc_start_date = (assessment.metadata or {}).get('basic_information', {}).get('12')
+            dc_end_date = (assessment.metadata or {}).get('basic_information', {}).get('13')
+            if dc_start_date or dc_end_date:
+                cache['data_collection_date'] = f'Data collection: {dc_start_date} - {dc_end_date}'
+            self.assessment_data_cache[assessment.pk] = cache
+
+        locations = cache['locations']
+        affected_groups_info = cache['affected_groups_info']
+        data_collection_techniques_info = cache['data_collection_techniques_info']
+        data_collection_date = cache.get('data_collection_date')
+
+        to_process_fuctions = [
+            func
+            for condition, func in [
+                (True, _add_assessment_icon),
+                (locations, lambda: para.add_run(locations, bold=bold)),
+                (affected_groups_info, lambda: para.add_run(affected_groups_info, bold=bold)),
+                (data_collection_techniques_info, lambda: para.add_run(data_collection_techniques_info, bold=bold)),
+                (data_collection_date, lambda: para.add_run(data_collection_date, bold=bold)),
+            ] if condition
+        ]
 
         # Finally add all assessment data to the docx
         total_process_functions = len(to_process_fuctions) - 1
         for index, add_data in enumerate(to_process_fuctions):
-            if add_data() and index > 0 and index < total_process_functions:
+            add_data()
+            if index < total_process_functions:
                 para.add_run(SEPARATOR, bold=bold)
 
     def _generate_for_entry(self, entry):
