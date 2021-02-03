@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 
 from .serializers import NotificationSerializer, AssignmentSerializer
 from .models import Notification, Assignment
+from deep.paginations import AssignmentPagination
 from notification.filter_set import (
     NotificationFilterSet,
     AssignmentFilterSet
@@ -81,6 +82,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     filterset_class = AssignmentFilterSet
+    pagination_class = AssignmentPagination
 
     def get_queryset(self):
         return Assignment.get_for(self.request.user).select_related(

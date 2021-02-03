@@ -53,7 +53,7 @@ class AssignmentEntryCommentSerializer(RemoveNullFieldsMixin, serializers.ModelS
 
     class Meta:
         model = EntryComment
-        fields = ('id', 'title', 'entry', 'entry_excerpt',)
+        fields = ('id', 'text', 'entry', 'entry_excerpt',)
 
 
 class AssignmentLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
@@ -66,13 +66,14 @@ class AssignmentSerializer(serializers.ModelSerializer):
     content_object_details = GenericRelatedField({
         Lead: AssignmentLeadSerializer(),
         EntryComment: AssignmentEntryCommentSerializer(),
-    }, read_only=True)
+    }, read_only=True, source='content_object')
     project_details = SimpleProjectSerializer(source='project', read_only=True)
     created_by_details = SimpleUserSerializer(source='created_by', read_only=True)
 
     class Meta:
         model = Assignment
         read_only_fields = [
+            'id',
             'created_at',
             'project_details', 'created_by_details', 'content_object_details'
         ]
