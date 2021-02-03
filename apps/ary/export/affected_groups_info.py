@@ -5,6 +5,7 @@ default_values = {
 }
 
 
+# NOTE: This is also used in entries word/pdf exporter
 def get_affected_groups_info(assessment):
     template = assessment.project.assessment_template
     aff_data = assessment.get_methodology_json().get('Affected Groups') or []
