@@ -6,7 +6,7 @@ from user.models import User
 from notification.models import Notification, Assignment
 from project.models import ProjectJoinRequest, Project
 from lead.models import Lead
-from entry.models import Entry, EntryComment
+from entry.models import EntryComment
 
 
 class TestNotification(TestCase):
@@ -170,7 +170,7 @@ class TestNotification(TestCase):
 class TestAssignment(TestCase):
     """ Unit test for Assignment"""
 
-    @patch('notification.receivers.entry_comment.get_user')
+    @patch('notification.receivers.entry_comment.get_current_user')
     def test_create_assignment_create_on_entry_comment(self, get_user_mocked_func):
         project = self.create_project()
         entry = self.create_entry(project=project)
@@ -192,7 +192,7 @@ class TestAssignment(TestCase):
         entry_comment.assignees.remove(user1)
         entry_comment.assignees.add(user2)
         self.assertEqual(old_assignment_count + 1, new_assignment_count)
-        assignment = Assignment.objects.get(entry__id=entry_comment.id)
+        assignment = Assignment.objects.get(entry_comment__id=entry_comment.id)
         self.assertEqual(assignment.created_for, user2)  # should represent the new user2
 
         # try to add another user and remove both from assignee
@@ -206,7 +206,7 @@ class TestAssignment(TestCase):
         assert assignment.count() == 1  # for only the user
         assert get_user_mocked_func.called
 
-    @patch('notification.receivers.entry_comment.get_user')
+    @patch('notification.receivers.entry_comment.get_current_user')
     def test_assignment_create_on_lead_create(self, get_user_mocked_func):
         project = self.create(Project)
         user1 = self.create_user()
@@ -244,20 +244,20 @@ class TestAssignment(TestCase):
         assert assignment.count() == 1  # for only the user
         assert get_user_mocked_func.called
 
-    @patch('notification.receivers.entry_comment.get_user')
-    def test_assignment_on_lead_and_entry_comment_delete(self):
+    @patch('notification.receivers.entry_comment.get_current_user')
+    def test_assignment_on_lead_and_entry_comment_delete(self, get_user_mocked_func):
         project = self.create_project()
         user1 = self.create(User)
         user2 = self.create(User)
         entry = self.create_entry(project=project)
         get_user_mocked_func.return_value = user2
-        
+
         old_assignment_count = Assignment.objects.count()
         lead = self.create(Lead, project=project)
         lead.assignee.add(user1)
         entry_comment = self.create(EntryComment, entry=entry)
         entry_comment.assignees.add(user1)
-    
+
         new_assignment_count = Assignment.objects.count()
         self.assertEqual(new_assignment_count, old_assignment_count + 2)
 
