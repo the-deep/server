@@ -52,6 +52,7 @@ PROFILE = os.environ.get('PROFILE', 'false').lower() == 'true'
 
 LOCAL_APPS = [
     # DEEP APPS
+    'analysis',
     'analysis_framework',
     'ary',
     'category_editor',
