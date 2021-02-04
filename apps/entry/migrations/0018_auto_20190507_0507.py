@@ -6,7 +6,12 @@ from entry.utils import update_attributes
 
 
 def update_number_matrix_attributes(apps, schema_editor):
+    """
+    NOTE: This migration is out-of-date. Keeping it here for reference only.
+    
     update_attributes(widget__widget_id='numberMatrixWidget')
+    """
+    pass
 
 
 class Migration(migrations.Migration):
