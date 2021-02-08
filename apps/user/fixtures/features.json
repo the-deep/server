@@ -46,5 +46,13 @@
             "key": "quality_control",
             "title": "Quality Control"
         }
+    },
+    {
+        "model": "user.feature",
+        "pk": 7,
+        "fields": {
+            "key": "new_ui",
+            "title": "New UI"
+        }
     }
 ]
