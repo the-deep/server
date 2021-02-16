@@ -4,6 +4,11 @@ from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 
+# Celery Terminated Exception: The worker processing a job has been terminated by user request.
+from billiard.exceptions import Terminated
+
+IGNORED_ERRORS = [Terminated]
+
 
 class InvalidGitRepository(Exception):
     pass
@@ -69,6 +74,7 @@ def init_sentry(app_type, tags={}, **config):
     ]
     sentry_sdk.init(
         **config,
+        ignore_errors=IGNORED_ERRORS,
         integrations=integrations,
     )
     with sentry_sdk.configure_scope() as scope:
