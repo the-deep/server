@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from .models import (
     Analysis,
+    AnalysisPillar,
     AnalyticalStatement,
     AnalyticalStatementEntry,
 )
@@ -9,6 +10,11 @@ from .models import (
 
 @admin.register(Analysis)
 class AnalysisAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(AnalysisPillar)
+class AnalysisPillarAdmin(admin.ModelAdmin):
     pass
 
 
