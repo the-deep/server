@@ -259,6 +259,106 @@ class TestAssignmentApi(TestCase):
         self.assertEqual(response.data['results'][0]['content_object_type'], 'lead')
         self.assertEqual(response.data['results'][0]['content_object_details']['id'], lead.id)
 
+    def test_create_assignment_on_lead_title_change(self):
+        project = self.create_project()
+        user1 = self.create(User)
+
+        url = '/api/v1/assignments/'
+
+        self.authenticate(user1)
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        data = response.data
+        assert data['count'] == 0, "No Assignments till now"
+
+        # create lead with title
+        lead = self.create(Lead, title="Uncommitted", project=project, assignee=[user1])
+        url = '/api/v1/leads/'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(response.data['count'], 1)
+
+        url = '/api/v1/assignments/'
+        self.authenticate(user1)
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(response.data['count'], 1)
+
+        # try to change the title this should not create another assignment
+        url = '/api/v1/leads/{}/'.format(lead.id)
+        data = {
+            'title': 'Changed'
+        }
+        self.authenticate()
+        response = self.client.patch(url, data)
+        self.assert_200(response)
+
+        # try to check the assignment
+        url = '/api/v1/assignments/'
+        self.authenticate(user1)
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        data = response.data
+        assert data['count'] == 1
+        self.assertEqual(response.data['results'][0]['content_object_details']['id'], lead.id)
+        self.assertEqual(response.data['results'][0]['content_object_details']['title'], 'Changed')  # the new title
+
+    def test_create_assignment_on_lead_assignee_change(self):
+        project = self.create_project()
+        user1 = self.create(User)
+        user2 = self.create(User)
+
+        url = '/api/v1/assignments/'
+
+        self.authenticate(user1)
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        data = response.data
+        assert data['count'] == 0, "No Assignments till now"
+
+        # create lead with title
+        lead = self.create(Lead, title="Uncommitted", project=project, assignee=[user1])
+        url = '/api/v1/leads/'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(response.data['count'], 1)
+
+        url = '/api/v1/assignments/'
+        self.authenticate(user1)
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(response.data['count'], 1)
+
+        # try to change the title this should not create another assignment
+        url = '/api/v1/leads/{}/'.format(lead.id)
+        data = {
+            'assignee': user2.id
+        }
+        self.authenticate()
+        response = self.client.patch(url, data)
+        self.assert_200(response)
+
+        # try to check the assignment
+        url = '/api/v1/assignments/'
+        self.authenticate(user1)
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        data = response.data
+        assert data['count'] == 0  # changing the assignee should remove fromn the previous assignee
+
+        # try to aunthenticate the user2
+        url = '/api/v1/assignments/'
+        self.authenticate(user2)
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(response.data['count'], 1)
+
     def test_get_assignments_entrycomment(self):
         project = self.create_project()
         project1 = self.create_project()
@@ -287,6 +387,116 @@ class TestAssignmentApi(TestCase):
         self.assertEqual(response.data['results'][0]['project_details']['id'], entry.project.id)
         self.assertEqual(response.data['results'][0]['content_object_type'], 'entrycomment')
         self.assertEqual(response.data['results'][0]['content_object_details']['id'], entry_comment.id)
+
+    def test_create_assignment_on_entry_comment_text_change(self):
+        project = self.create_project()
+        project1 = self.create_project()
+        user1 = self.create(User)
+        user2 = self.create(User)
+        entry = self.create_entry(project=project)
+        entry.project.add_member(user1)
+
+        url1 = '/api/v1/assignments/'
+
+        self.authenticate(user1)
+        response = self.client.get(url1)
+        self.assert_200(response)
+
+        data = response.data
+        assert data['count'] == 0, "No Assignments till now"
+
+        url = f'/api/v1/entries/{entry.pk}/entry-comments/'
+        data = {
+            'assignees': [user1.pk],
+            'text': 'This is first comment',
+            'parent': None,
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        comment_id = response.json()['id']
+
+        url1 = '/api/v1/assignments/'
+        self.authenticate(user1)
+        response = self.client.get(url1)
+        self.assert_200(response)
+        self.assertEqual(response.data['count'], 1)
+
+        # Patch new text
+        new_text = 'this is second comment'
+        self.authenticate()
+        response = self.client.patch(f'{url}{comment_id}/', {'text': new_text})
+        self.assert_200(response)
+
+        # try to check the assignment
+        url = '/api/v1/assignments/'
+        self.authenticate(user1)
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        data = response.data
+        assert data['count'] == 1
+        self.assertEqual(response.data['results'][0]['content_object_details']['id'], comment_id)
+        self.assertEqual(response.data['results'][0]['content_object_details']['text'], new_text)
+
+    def test_assignment_create_on_entry_comment_assignee_change(self):
+        project = self.create_project()
+        project1 = self.create_project()
+        user1 = self.create(User)
+        user2 = self.create(User)
+        entry = self.create_entry(project=project)
+        for user in [user1, user2]:
+            entry.project.add_member(user, role=self.normal_role)
+
+        url1 = '/api/v1/assignments/'
+
+        self.authenticate(user1)
+        response = self.client.get(url1)
+        self.assert_200(response)
+
+        data = response.data
+        assert data['count'] == 0, "No Assignments till now"
+
+        url = f'/api/v1/entries/{entry.pk}/entry-comments/'
+        data = {
+            'assignees': [user1.pk],
+            'text': 'This is first comment',
+            'parent': None,
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        comment_id = response.json()['id']
+
+        url1 = '/api/v1/assignments/'
+        self.authenticate(user1)
+        response = self.client.get(url1)
+        self.assert_200(response)
+        self.assertEqual(response.data['count'], 1)
+
+        # Patch new assignee
+        self.authenticate()
+        response = self.client.patch(f'{url}{comment_id}/', {'assignees': [user2.pk]})
+        self.assert_200(response)
+
+        # try to check the assignment
+        url = '/api/v1/assignments/'
+        self.authenticate(user1)
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        data = response.data
+        assert data['count'] == 0  # no assignment for user1
+
+        url = '/api/v1/assignments/'
+        self.authenticate(user2)
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        data = response.data
+        assert data['count'] == 1  # assignment for user2
 
     def test_assignment_is_done(self):
         project = self.create(Project)
