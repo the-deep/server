@@ -10,15 +10,9 @@ class Analysis(models.Model):
     title = models.CharField(max_length=255)
     team_lead = models.ForeignKey(
         User,
-        blank=True,
-        null=True,
         on_delete=models.CASCADE,
     )
-    created_on = models.DateField(blank=True, null=True)
-    analysis_pillars = models.ManyToManyField(
-        'AnalysisPillar',
-        blank=True,
-    )
+    created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
@@ -30,13 +24,15 @@ class AnalysisPillar(models.Model):
     filters = JSONField(blank=True, null=True, default=None)
     assignee = models.ForeignKey(
         User,
-        blank=True,
-        null=True,
+        on_delete=models.CASCADE
+    )
+    analysis = models.ForeignKey(
+        Analysis,
         on_delete=models.CASCADE
     )
 
     def __str__(self):
-        return self.main_statement
+        return self.main_statement and self.main_statement[:255]
 
 
 class AnalyticalStatement(models.Model):
@@ -58,7 +54,7 @@ class AnalyticalStatement(models.Model):
         ordering = ('order',)
 
     def __str__(self):
-        return self.statement
+        return self.statement and self.statement[:255]
 
 
 class AnalyticalStatementEntry(models.Model):
