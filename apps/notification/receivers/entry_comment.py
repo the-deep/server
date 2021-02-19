@@ -105,12 +105,15 @@ def lead_assignment_signal(sender, instance, action, **kwargs):
     user = get_current_user()
     if action == 'post_add' and pk_set and user:
         for receiver_user in pk_set:
+            if Assignment.objects.filter(lead__id=instance.id,
+                                         created_for_id=receiver_user,
+                                         project=instance.project).exists():
+                continue
             Assignment.objects.create(
                 content_object=instance,
                 created_for_id=receiver_user,
                 project=instance.project,
-                created_by=user,
-            )
+                created_by=user,)
 
     elif action == 'post_remove' and pk_set and user:
         for receiver_user in pk_set:
@@ -127,6 +130,10 @@ def entrycomment_assignment_signal(sender, instance, action, **kwargs):
     user = get_current_user()
     if action == 'post_add' and pk_set and user:
         for receiver_user in pk_set:
+            if Assignment.objects.filter(entry_comment__id=instance.id,
+                                         created_for_id=receiver_user,
+                                         project=instance.entry.project).exists():
+                continue
             Assignment.objects.create(
                 content_object=instance,
                 created_for_id=receiver_user,
@@ -148,5 +155,5 @@ def delete_related_assignment(sender, instance, *args, **kwargs):
     pk = instance.id
     if type(instance) == Lead:
         Assignment.objects.filter(lead__id=pk).delete()
-    elif type(instance) == Lead:
+    elif type(instance) == EntryComment:
         Assignment.objects.filter(entry_comment__id=pk).delete()
