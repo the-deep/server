@@ -122,6 +122,11 @@ def lead_assignment_signal(sender, instance, action, **kwargs):
                 created_for_id=receiver_user,
             ).delete()
 
+    # handling `post_clear` since single assignee is passed
+    # though the api
+    elif action == 'post_clear':
+        Assignment.objects.filter(lead__id=instance.id).delete()
+
 
 @receiver(m2m_changed, sender=EntryComment.assignees.through)
 def entrycomment_assignment_signal(sender, instance, action, **kwargs):
