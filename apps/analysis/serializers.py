@@ -16,7 +16,8 @@ class AnalysisPillarSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AnalysisPillar
-        exclude = ('analysis',)
+        fields = ('__all__')
+        read_only_fields = ('analysis',)
 
 
 class AnalysisSerializer(RemoveNullFieldsMixin,
@@ -28,3 +29,7 @@ class AnalysisSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = Analysis
         fields = '__all__'
+
+
+class AnalysisMetaSerializer(AnalysisSerializer):
+    analysis_pillar = AnalysisPillarSerializer(many=True, source='analysispillar_set', required=False)
