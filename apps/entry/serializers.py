@@ -31,7 +31,6 @@ from .models import (
     EntryCommentText,
     ExportData,
     FilterData,
-
     # Entry Grouping
     ProjectEntryLabel,
     LeadEntryGroup,
@@ -546,3 +545,8 @@ class SimpleEntrySerializer(serializers.ModelSerializer):
         fields = ('id', 'excerpt', 'dropped_excerpt',
                   'image', 'image_details', 'entry_type',
                   'tabular_field', 'tabular_field_data')
+
+
+class EntryCommentTextSerializer(serializers.ModelSerializer):
+    class Meta:
+        exclude = ('comment',)

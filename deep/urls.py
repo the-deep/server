@@ -109,6 +109,9 @@ from analysis.views import (
     AnalysisPillarEntryViewSet,
     DiscardedEntryOptionsView
 )
+from quality_assurance.views import (
+    EntryReviewCommentViewSet,
+)
 from analysis_framework.views import (
     AnalysisFrameworkCloneView,
     AnalysisFrameworkViewSet,
@@ -298,6 +301,13 @@ router.register(
     r'analysis-pillar/(?P<analysis_pillar_id>\d+)/discarded-entries',
     AnalysisPillarDiscardedEntryViewSet, basename='analysis_pillar_discarded_entries'
 )
+
+router.register(
+    r'projects/(?P<project_id>\d+)/analysis/(?P<analysis_id>\d+)/pillars/(?P<analysis_pillar_id>\d+)/analytical-statement',
+    AnalyticalStatementViewSet, basename='analytical_statement')
+# QA routers
+router.register(
+    r'entries/(?P<entry_id>\d+)/review-comments', EntryReviewCommentViewSet, basename='entry-review-comment')
 
 # Analysis framework routers
 router.register(r'analysis-frameworks/(?P<af_id>\d+)/questions',
