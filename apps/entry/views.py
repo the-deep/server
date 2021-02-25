@@ -15,6 +15,7 @@ from rest_framework import (
     mixins,
 )
 from reversion.models import Version
+import django_filters
 
 from deep.permissions import ModifyPermission, IsProjectMember, CreateEntryPermission
 from project.models import Project
@@ -52,7 +53,6 @@ from .filter_set import (
     get_filtered_entries,
 )
 from tabular.models import Field as TabularField
-import django_filters
 
 
 class EntrySummaryPaginationMixin(object):
