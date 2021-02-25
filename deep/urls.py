@@ -103,6 +103,9 @@ from analysis.views import (
     AnalysisPillarViewSet,
     AnalyticalStatementViewSet,
 )
+from quality_assurance.views import (
+    EntryReviewCommentViewSet,
+)
 from analysis_framework.views import (
     AnalysisFrameworkCloneView,
     AnalysisFrameworkViewSet,
@@ -287,6 +290,9 @@ router.register(r'projects/(?P<project_id>\d+)/analysis', AnalysisViewSet,
 router.register(r'projects/(?P<project_id>\d+)/analysis/(?P<analysis_id>\d+)/pillars',
                 AnalysisPillarViewSet, basename='analysis_analysis_pillar')
 router.register(r'projects/(?P<project_id>\d+)/analysis/(?P<analysis_id>\d+)/pillars/(?P<analysis_pillar_id>\d+)/analytical-statement', AnalyticalStatementViewSet, basename='analytical_statement')
+# QA routers
+router.register(
+    r'entries/(?P<entry_id>\d+)/review-comments', EntryReviewCommentViewSet, basename='entry-review-comment')
 
 # Analysis framework routers
 router.register(r'analysis-frameworks/(?P<af_id>\d+)/questions',

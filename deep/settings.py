@@ -74,6 +74,7 @@ LOCAL_APPS = [
     'notification',
     'client_page_meta',
     'questionnaire',
+    'quality_assurance',
 
     # MISC DEEP APPS
     'bulk_data_migration',
