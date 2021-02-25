@@ -99,6 +99,9 @@ from entry.views import (
     ProjectEntryLabelViewSet,
     LeadEntryGroupViewSet,
 )
+from quality_assurance.views import (
+    EntryReviewCommentViewSet,
+)
 from analysis_framework.views import (
     AnalysisFrameworkCloneView,
     AnalysisFrameworkViewSet,
@@ -274,6 +277,10 @@ router.register(r'edit-entries-data', EditEntriesDataViewSet,
 router.register(r'entries/(?P<entry_id>\d+)/entry-comments', EntryCommentViewSet, basename='entry-comment')
 router.register(r'projects/(?P<project_id>\d+)/entry-labels', ProjectEntryLabelViewSet, basename='entry-labels')
 router.register(r'leads/(?P<lead_id>\d+)/entry-groups', LeadEntryGroupViewSet, basename='entry-groups')
+
+# QA routers
+router.register(
+    r'entries/(?P<entry_id>\d+)/review-comments', EntryReviewCommentViewSet, basename='entry-review-comment')
 
 # Analysis framework routers
 router.register(r'analysis-frameworks/(?P<af_id>\d+)/questions',

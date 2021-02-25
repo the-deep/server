@@ -30,7 +30,6 @@ from .models import (
     EntryCommentText,
     ExportData,
     FilterData,
-
     # Entry Grouping
     ProjectEntryLabel,
     LeadEntryGroup,
@@ -503,3 +502,8 @@ class EntryCommentSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         return self.comment_save(validated_data, instance)
+
+
+class EntryCommentTextSerializer(serializers.ModelSerializer):
+    class Meta:
+        exclude = ('comment',)
