@@ -17,11 +17,10 @@ class TestAnalysisAPIs(TestCase):
         analysis_count = Analysis.objects.count()
         user = self.create_user()
         project = self.create_project()
-        url = '/api/v1/analysis/'
+        url = f'/api/v1/projects/{project.id}/analysis/'
         data = {
             'title': 'Test Analysis',
             'team_lead': user.id,
-            'project': project.id,
         }
         self.authenticate()
         response = self.client.post(url, data)
@@ -34,8 +33,9 @@ class TestAnalysisAPIs(TestCase):
     def test_create_pillar_from_analysis(self):
         pillar_count = AnalysisPillar.objects.count()
         user = self.create_user()
+        project = self.create_project()
         analysis = self.create(Analysis, title='Test Analysis')
-        url = f'/api/v1/analysis/{analysis.id}/pillars/'
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
         data = {
             'main_statement': 'Some main statement',
             'information_gap': 'Some information gap',
@@ -49,10 +49,11 @@ class TestAnalysisAPIs(TestCase):
 
     def test_create_analytical_statement(self):
         statement_count = AnalyticalStatement.objects.count()
+        project = self.create_project()
         entry = self.create(Entry)
-        analysis = self.create(Analysis, title='Test Analysis')
+        analysis = self.create(Analysis, title='Test Analysis', project=project)
         pillar = self.create(AnalysisPillar, analysis=analysis)
-        url = f'/api/v1/analysis/{analysis.id}/pillars/{pillar.id}/analytical-statement/'
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{pillar.id}/analytical-statement/'
         data = {
             "analytical_entries": [
                 {
@@ -76,7 +77,8 @@ class TestAnalysisAPIs(TestCase):
         user2 = self.create_user()
         entry = self.create_entry()
         entry1 = self.create_entry()
-        analysis1 = self.create(Analysis, title='Test Analysis', team_lead=user)
+        project = self.create_project()
+        analysis1 = self.create(Analysis, title='Test Analysis', team_lead=user, project=project)
         analysis2 = self.create(Analysis, title='Not for test', team_lead=user)
         pillar1 = self.create(AnalysisPillar, analysis=analysis1, title='title1', assignee=user)
         pillar2 = self.create(AnalysisPillar, analysis=analysis1, title='title2', assignee=user)
@@ -93,7 +95,7 @@ class TestAnalysisAPIs(TestCase):
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry1)
 
-        url = f'/api/v1/analysis/{analysis1.id}/summary/'
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis1.id}/summary/'
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)

@@ -281,12 +281,11 @@ router.register(r'projects/(?P<project_id>\d+)/entry-labels', ProjectEntryLabelV
 router.register(r'leads/(?P<lead_id>\d+)/entry-groups', LeadEntryGroupViewSet, basename='entry-groups')
 
 # Analysis routers
-router.register(r'analysis', AnalysisViewSet,
+router.register(r'projects/(?P<project_id>\d+)/analysis', AnalysisViewSet,
                 basename='analysis')
-router.register(r'analysis/(?P<analysis_id>\d+)/pillars',
+router.register(r'projects/(?P<project_id>\d+)/analysis/(?P<analysis_id>\d+)/pillars',
                 AnalysisPillarViewSet, basename='analysis_analysis_pillar')
-router.register(r'analysis/(?P<analysis_id>\d+)/pillars/(?P<analysis_pillar_id>\d+)/analytical-statement',
-                AnalyticalStatementViewSet, basename='analytical_statement')
+router.register(r'projects/(?P<project_id>\d+)/analysis/(?P<analysis_id>\d+)/pillars/(?P<analysis_pillar_id>\d+)/analytical-statement', AnalyticalStatementViewSet, basename='analytical_statement')
 
 # Analysis framework routers
 router.register(r'analysis-frameworks/(?P<af_id>\d+)/questions',
