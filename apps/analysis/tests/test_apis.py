@@ -17,12 +17,13 @@ class TestAnalysisAPIs(TestCase):
         analysis_count = Analysis.objects.count()
         user = self.create_user()
         project = self.create_project()
+        project.add_member(user)
         url = f'/api/v1/projects/{project.id}/analysis/'
         data = {
             'title': 'Test Analysis',
             'team_lead': user.id,
         }
-        self.authenticate()
+        self.authenticate(user)
         response = self.client.post(url, data)
         self.assert_201(response)
         self.assertEqual(Analysis.objects.count(), analysis_count + 1)
@@ -30,10 +31,26 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(r_data['title'], data['title'])
         self.assertEqual(r_data['teamLead'], user.id)
 
+    def test_create_analysis_with_user_not_project_member(self):
+        analysis_count = Analysis.objects.count()
+        user = self.create_user()
+        user2 = self.create_user()
+        project = self.create_project()
+        project.add_member(user)
+        url = f'/api/v1/projects/{project.id}/analysis/'
+        data = {
+            'title': 'Test Analysis',
+            'team_lead': user.id,
+        }
+        self.authenticate(user2)
+        response = self.client.post(url, data)
+        self.assert_403(response)
+
     def test_create_pillar_from_analysis(self):
         pillar_count = AnalysisPillar.objects.count()
         user = self.create_user()
         project = self.create_project()
+        project.add_member(user)
         analysis = self.create(Analysis, title='Test Analysis')
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
         data = {
@@ -42,14 +59,16 @@ class TestAnalysisAPIs(TestCase):
             'assignee': user.id,
             'title': 'Some title'
         }
-        self.authenticate()
+        self.authenticate(user)
         response = self.client.post(url, data)
         self.assert_201(response)
         self.assertEqual(AnalysisPillar.objects.count(), pillar_count + 1)
 
     def test_create_analytical_statement(self):
         statement_count = AnalyticalStatement.objects.count()
+        user = self.create_user()
         project = self.create_project()
+        project.add_member(user)
         entry = self.create(Entry)
         analysis = self.create(Analysis, title='Test Analysis', project=project)
         pillar = self.create(AnalysisPillar, analysis=analysis)
@@ -65,7 +84,7 @@ class TestAnalysisAPIs(TestCase):
             "order": 1,
             "analysisPillar": pillar.id
         }
-        self.authenticate()
+        self.authenticate(user)
         response = self.client.post(url, data)
         self.assert_201(response)
         self.assertEqual(AnalyticalStatement.objects.filter(analysis_pillar__analysis=analysis).count(), statement_count + 1)
@@ -78,6 +97,7 @@ class TestAnalysisAPIs(TestCase):
         entry = self.create_entry()
         entry1 = self.create_entry()
         project = self.create_project()
+        project.add_member(user)
         analysis1 = self.create(Analysis, title='Test Analysis', team_lead=user, project=project)
         analysis2 = self.create(Analysis, title='Not for test', team_lead=user)
         pillar1 = self.create(AnalysisPillar, analysis=analysis1, title='title1', assignee=user)
@@ -96,7 +116,7 @@ class TestAnalysisAPIs(TestCase):
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry1)
 
         url = f'/api/v1/projects/{project.id}/analysis/{analysis1.id}/summary/'
-        self.authenticate()
+        self.authenticate(user)
         response = self.client.get(url)
         self.assert_200(response)
         data = response.data
@@ -111,3 +131,17 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(data['framework_overview'][0]['title'], pillar3.title)
         self.assertEqual(data['framework_overview'][0]['entries_count'], 2)
         self.assertEqual(data['framework_overview'][1]['entries_count'], 1)
+
+        # try to post to api
+        data = {
+            'team_lead': user.id,
+            'team_lead_name': user.username
+        }
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_405(response)
+
+        # try get summary by user that is not member of project
+        self.authenticate(user2)
+        response = self.client.get(url)
+        self.assert_403(response)
