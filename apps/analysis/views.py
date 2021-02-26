@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.db import models
 from django.utils import timezone
+
 from rest_framework.decorators import action
 from rest_framework import (
     permissions,
@@ -11,11 +12,18 @@ from rest_framework import (
     status
 )
 
-from .models import Analysis, AnalysisPillar
+from .models import (
+    Analysis,
+    AnalysisPillar,
+    AnalyticalStatement,
+    AnalyticalStatementEntry
+)
 from .serializers import (
     AnalysisSerializer,
     AnalysisMetaSerializer,
     AnalysisPillarSerializer,
+    AnalyticalStatementSerializer,
+    AnalysisSummarySerializer,
 )
 
 
@@ -33,30 +41,13 @@ class AnalysisViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        url_path='analysis-pillar',
-        methods=['patch']
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='summary'
     )
-    def update_pillar(self, request, pk=None, version=None):
-        instance = self.get_object()
-        pillars = request.data.get('analysis_pillar', [])
-        pillar_maps = {x['id']: x for x in pillars}
-
-        pillar_objs = AnalysisPillar.objects.filter(
-            analysis=instance,
-            id__in=[x['id'] for x in pillars]
-        )
-        for pillar in pillar_objs:
-            serializer = AnalysisPillarSerializer(
-                pillar,
-                data=pillar_maps[pillar.id],
-                context={'request': request},
-                partial=True,
-            )
-            serializer.is_valid()
-            serializer.update(pillar, pillar_maps[pillar.id])
-        return response.Response(
-            AnalysisMetaSerializer(instance, context={'request': request}).data,
-        )
+    def get_summary(self, request, pk=None, version=None):
+        analysis = self.get_object()
+        serializer = AnalysisSummarySerializer(analysis)
+        return response.Response(serializer.data)
 
 
 class AnalysisPillarViewSet(viewsets.ModelViewSet):
@@ -64,7 +55,12 @@ class AnalysisPillarViewSet(viewsets.ModelViewSet):
     permissions_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return AnalysisPillar.objects.all()
+        return AnalysisPillar.objects.filter(analysis=analysis_id)
 
-    def create(self, request, version=None):
-        return response.Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+class AnalyticalStatementViewSet(viewsets.ModelViewSet):
+    serializer_class = AnalyticalStatementSerializer
+    permissions_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return AnalyticalStatement.objects.filter(analysis_pillar=self.kwargs['analysis_pillar_id'])
