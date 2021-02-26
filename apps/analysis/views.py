@@ -37,14 +37,14 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
     def get_queryset(self):
-        return Analysis.objects.all()
+        return Analysis.objects.filter(project=self.kwargs['project_id'])
 
     @action(
         detail=True,
         permission_classes=[permissions.IsAuthenticated],
         url_path='summary'
     )
-    def get_summary(self, request, pk=None, version=None):
+    def get_summary(self, request, project_id, pk=None, version=None):
         analysis = self.get_object()
         serializer = AnalysisSummarySerializer(analysis)
         return response.Response(serializer.data)
