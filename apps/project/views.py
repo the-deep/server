@@ -1,6 +1,8 @@
 import logging
 
+from dateutil.relativedelta import relativedelta
 import django_filters
+from django.db import connection as django_db_connection
 from django.conf import settings
 from django.http import Http404
 from django.db import transaction, models
@@ -31,15 +33,18 @@ from deep.permissions import (
 )
 from deep.serializers import URLCachedFileField
 from deep.models import ProcessStatus
+from deep.paginations import SmallSizeSetPagination
 from tabular.models import Field
 
 from user.utils import send_project_join_request_emails
 from user.serializers import SimpleUserSerializer
 from user.models import User
+from lead.models import Lead
 from lead.views import ProjectLeadGroupViewSet
 from geo.models import Region
 from user_group.models import UserGroup
 from geo.serializers import RegionSerializer
+from entry.models import Entry
 from entry.views import ComprehensiveEntriesViewSet
 
 from .models import (
@@ -59,7 +64,6 @@ from .serializers import (
     ProjectMembershipSerializer,
     ProjectJoinRequestSerializer,
     ProjectUserGroupSerializer,
-    ProjectDashboardSerializer,
     ProjectStatusOptionsSerializer,
     ProjectMemberViewSerializer,
 )
@@ -75,7 +79,7 @@ from .filter_set import (
     ProjectMembershipFilterSet,
     ProjectUserGroupMembershipFilterSet,
 )
-from .tasks import generate_stats
+from .tasks import generate_viz_stats
 
 from .token import project_request_token_generator
 logger = logging.getLogger(__name__)
@@ -271,7 +275,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         Get viz data for project entries:
         """
         project = self.get_object()
-        return _get_viz_data(request, ProjectStats, generate_stats, project)
+        return _get_viz_data(request, ProjectStats, generate_viz_stats, project)
 
     """
     Join request to this project
@@ -533,28 +537,114 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return response.Response(meta)
 
 
-# FIXME: user better API
 class ProjectStatViewSet(ProjectViewSet):
-    serializer_class = ProjectStatSerializer
+    pagination_class = SmallSizeSetPagination
+
+    def get_serializer_class(self):
+        return ProjectStatSerializer
 
     def get_queryset(self):
         return get_filtered_projects(
             self.request.user, self.request.GET,
             annotate=True,
+        ).prefetch_related(
+            'regions', 'organizations',
+        ).select_related(
+            'status',
+            'created_by__profile', 'modified_by__profile'
         )
 
-    """
-    Get dashboard related data for this project
-    """
     @action(
-        detail=True,
+        detail=False,
         permission_classes=[permissions.IsAuthenticated],
-        url_path='dashboard',
+        url_path='recent'
     )
-    def get_dashboard(self, request, pk=None, version=None):
-        project = self.get_object()
-        serializer = ProjectDashboardSerializer(project)
-        return response.Response(serializer.data)
+    def get_recent_projects(self, request, *args, **kwargs):
+        # NOTE: Django ORM union don't allow annotation
+        with django_db_connection.cursor() as cursor:
+            select_sql = [
+                f'''
+                    SELECT
+                        tb."project_id" AS "project",
+                        MAX(tb."{field}_at") AS "date"
+                    FROM "{Model._meta.db_table}" AS tb
+                    WHERE tb."{field}_by_id" = {request.user.pk}
+                    GROUP BY tb."project_id"
+                ''' for Model, field in [
+                    (Lead, 'created'),
+                    (Lead, 'modified'),
+                    (Entry, 'created'),
+                    (Entry, 'modified'),
+                ]
+            ]
+            union_sql = '(' + ') UNION ('.join(select_sql) + ')'
+            cursor.execute(
+                f'SELECT DISTINCT(entities."project"), MAX("date") as "date" FROM ({union_sql}) as entities'
+                f' GROUP BY entities."project" ORDER BY "date" DESC'
+            )
+            recent_projects_id = [pk for pk, _ in cursor.fetchall()]
+        # Only pull project data for which user is member of
+        qs = self.get_queryset().filter(Project.get_query_for_member(request.user))
+        current_users_project_id = set(qs.filter(pk__in=recent_projects_id).values_list('pk', flat=True))
+        recent_projects_id = [pk for pk in recent_projects_id if pk in current_users_project_id][:3]
+        projects_map = {
+            project.pk: project
+            for project in qs.filter(pk__in=recent_projects_id)
+        }
+        # Maintain the order
+        recent_projects = [
+            projects_map[id]
+            for id in recent_projects_id if projects_map.get(id)
+        ]
+        return response.Response(
+            self.get_serializer_class()(
+                recent_projects,
+                context=self.get_serializer_context(),
+                many=True,
+            ).data
+        )
+
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='summary'
+    )
+    def get_projects_summary(self, request, pk=None, version=None):
+        projects = Project.get_for_member(request.user)
+        # Lead stats
+        leads = Lead.objects.filter(project__in=projects)
+        total_leads_tagged_count = leads.annotate(entries_count=models.Count('entry')).filter(entries_count__gt=0).count()
+        total_leads_tagged_and_verified_count = leads.annotate(
+            entries_count=models.Count('entry'),
+            verified_entries_count=models.Count(
+                'entry', filter=models.Q(entry__verified=True)
+            ),
+        ).filter(entries_count__gt=0, entries_count=models.F('verified_entries_count')).count()
+        # Entries activity
+        recent_entries = Entry.objects.filter(
+            project__in=projects,
+            created_at__gte=(timezone.now() + relativedelta(months=-3))
+        )
+        recent_entries_activity = {
+            'projects': (
+                recent_entries.order_by().values('project')
+                .annotate(count=models.Count('*'))
+                .filter(count__gt=0)
+                .values('count', id=models.F('project'), title=models.F('project__title'))
+            ),
+            'activities': (
+                recent_entries.order_by('project', 'created_at__date').values('project', 'created_at__date')
+                .annotate(count=models.Count('*'))
+                .values('project', 'count', date=models.Func(models.F('created_at__date'), function='DATE'))
+            ),
+        }
+        return response.Response({
+            'projects_count': projects.count(),
+            'total_leads_count': leads.count(),
+            'total_leads_tagged_count': total_leads_tagged_count,
+            'total_leads_tagged_and_verified_count': total_leads_tagged_and_verified_count,
+            'recent_entries_activity': recent_entries_activity,
+        })
 
 
 class ProjectMembershipViewSet(viewsets.ModelViewSet):

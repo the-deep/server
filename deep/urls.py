@@ -159,6 +159,7 @@ from client_page_meta.views import (
 
 from notification.views import (
     NotificationViewSet,
+    AssignmentViewSet
 )
 
 from jwt_auth.views import (
@@ -329,6 +330,8 @@ router.register(r'exports', ExportViewSet, basename='export')
 # Notification routers
 router.register(r'notifications',
                 NotificationViewSet, basename='notification')
+router.register(r'assignments',
+                AssignmentViewSet, basename='assignments')
 
 # Language routers
 router.register(r'languages', LanguageViewSet, basename='language')

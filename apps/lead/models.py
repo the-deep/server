@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.fields import GenericRelation
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models, transaction
@@ -5,6 +6,7 @@ from django.db import models, transaction
 from project.models import Project
 from project.permissions import PROJECT_PERMISSIONS
 from project.mixins import ProjectEntityMixin
+from notification.models import Assignment
 from organization.models import Organization
 from user_resource.models import UserResource
 from gallery.models import File
@@ -152,6 +154,7 @@ class Lead(UserResource, ProjectEntityMixin):
     )
 
     emm_entities = models.ManyToManyField('EMMEntity', blank=True)
+    assignments = GenericRelation(Assignment, related_query_name='lead')
 
     def __str__(self):
         return '{}'.format(self.title)

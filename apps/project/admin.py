@@ -11,7 +11,7 @@ from lead.models import Lead
 from entry.models import Entry
 from ary.models import Assessment
 
-from .tasks import generate_stats
+from .tasks import generate_viz_stats, generate_project_stats_cache
 from .forms import ProjectRoleForm
 from .models import (
     Project,
@@ -28,7 +28,7 @@ from .models import (
 TRIGGER_LIMIT = 5
 
 
-def trigger_project_stat_calc(generator):
+def trigger_project_viz_stat_calc(generator):
     def action(modeladmin, request, queryset):
         for project_id in queryset.values_list('project_id', flat=True).distinct()[:TRIGGER_LIMIT]:
             generator.delay(project_id, force=True)
@@ -43,6 +43,19 @@ def trigger_project_stat_calc(generator):
             )
         )
     action.short_description = 'Trigger project stat calculation'
+    return action
+
+
+def trigger_project_stat_cache_calc():
+    def action(modeladmin, request, queryset):
+        generate_project_stats_cache.delay(force=True)
+        messages.add_message(
+            request, messages.INFO,
+            mark_safe(
+                'Successfully triggered Project Stats Cache Calculation for projects.'
+            )
+        )
+    action.short_description = 'Trigger project stat cache calculation'
     return action
 
 
@@ -84,6 +97,7 @@ class ProjectAdmin(VersionAdmin):
         'created_by', 'modified_by', 'regions',
     )
     list_filter = ('assessment_template',)
+    actions = [trigger_project_stat_cache_calc()]
     inlines = [ProjectMembershipInline,
                ProjectUserGroupMembershipInline,
                ProjectJoinRequestInline,
@@ -166,7 +180,7 @@ class ProjectEntryStatsAdmin(admin.ModelAdmin):
     search_fields = ('project__title',)
     list_filter = ('status',)
     list_display = ('project', 'modified_at', AF, 'status', 'file', 'confidential_file',)
-    actions = [trigger_project_stat_calc(generate_stats)]
+    actions = [trigger_project_viz_stat_calc(generate_viz_stats)]
     autocomplete_fields = ('project',)
     readonly_fields = (AF,)
 
