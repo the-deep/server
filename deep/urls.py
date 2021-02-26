@@ -101,7 +101,8 @@ from entry.views import (
 )
 from analysis.views import (
     AnalysisViewSet,
-    AnalysisPillarViewSet
+    AnalysisPillarViewSet,
+    AnalyticalStatementViewSet,
 )
 from analysis_framework.views import (
     AnalysisFrameworkCloneView,
@@ -282,8 +283,11 @@ router.register(r'leads/(?P<lead_id>\d+)/entry-groups', LeadEntryGroupViewSet, b
 # Analysis routers
 router.register(r'analysis', AnalysisViewSet,
                 basename='analysis')
-router.register(r'analysis-pillar', AnalysisPillarViewSet,
-                basename='analysis_pillar')
+router.register(r'analysis/(?P<analysis_id>\d+)/pillars',
+                AnalysisPillarViewSet, basename='analysis_analysis_pillar')
+router.register(r'analysis/(?P<analysis_id>\d+)/pillars/(?P<analysis_pillar_id>\d+)/analytical-statement',
+                AnalyticalStatementViewSet, basename='analytical_statement')
+
 # Analysis framework routers
 router.register(r'analysis-frameworks/(?P<af_id>\d+)/questions',
                 FrameworkQuestionViewSet, basename='framework-question')

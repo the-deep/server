@@ -13,12 +13,17 @@ class Analysis(models.Model):
         on_delete=models.CASCADE,
     )
     created_on = models.DateTimeField(auto_now_add=True)
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+    )
 
     def __str__(self):
         return self.title
 
 
 class AnalysisPillar(models.Model):
+    title = models.CharField(max_length=255)
     main_statement = models.TextField()
     information_gap = models.TextField()
     filters = JSONField(blank=True, null=True, default=None)
