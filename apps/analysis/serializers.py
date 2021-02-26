@@ -37,6 +37,11 @@ class AnalysisSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = Analysis
         fields = '__all__'
+        read_only_fields = ('project',)
+    
+    def validate(self, data):
+        data['project_id'] = int(self.context['view'].kwargs['project_id'])
+        return data
 
 
 class AnalysisMetaSerializer(AnalysisSerializer):
