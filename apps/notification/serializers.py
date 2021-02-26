@@ -1,8 +1,17 @@
 from rest_framework import serializers
 
-from deep.serializers import RemoveNullFieldsMixin
+from generic_relations.relations import GenericRelatedField
 
-from .models import (Notification)
+from deep.serializers import RemoveNullFieldsMixin
+from user.serializers import SimpleUserSerializer
+from project.serializers import SimpleProjectSerializer
+
+from lead.models import Lead
+from entry.models import EntryComment
+from .models import (
+    Notification,
+    Assignment
+)
 
 
 class NotificationSerializer(RemoveNullFieldsMixin,
@@ -37,3 +46,40 @@ class NotificationSerializer(RemoveNullFieldsMixin,
             return notification.data
 
         return {}
+
+
+class AssignmentEntryCommentSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
+    entry_excerpt = serializers.CharField(source='entry.excerpt', read_only=True)
+
+    class Meta:
+        model = EntryComment
+        fields = ('id', 'text', 'entry', 'entry_excerpt',)
+
+
+class AssignmentLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Lead
+        fields = ('id', 'title',)
+
+
+class AssignmentSerializer(serializers.ModelSerializer):
+    content_object_details = GenericRelatedField({
+        Lead: AssignmentLeadSerializer(),
+        EntryComment: AssignmentEntryCommentSerializer(),
+    }, read_only=True, source='content_object')
+    project_details = SimpleProjectSerializer(source='project', read_only=True)
+    created_by_details = SimpleUserSerializer(source='created_by', read_only=True)
+
+    class Meta:
+        model = Assignment
+        read_only_fields = [
+            'id',
+            'created_at',
+            'project_details', 'created_by_details', 'content_object_details'
+        ]
+        fields = read_only_fields + ['is_done']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['content_object_type'] = instance.content_type.model
+        return data

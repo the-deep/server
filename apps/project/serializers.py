@@ -25,10 +25,6 @@ from .models import (
     ProjectOrganization,
 )
 
-from organization.models import (
-    Organization
-)
-
 from organization.serializers import (
     SimpleOrganizationSerializer
 )
@@ -101,90 +97,6 @@ class SimpleProjectRoleSerializer(RemoveNullFieldsMixin,
         fields = ('id', 'title')
 
 
-class ProjectDashboardSerializer(RemoveNullFieldsMixin,
-                                 DynamicFieldsMixin,
-                                 serializers.ModelSerializer):
-
-    created_by = serializers.CharField(
-        source='created_by.profile.get_display_name',
-        read_only=True,
-    )
-    created_by_id = serializers.IntegerField(
-        source='created_by.profile.id',
-        read_only=True,
-    )
-    regions = SimpleRegionSerializer(many=True, required=False)
-    number_of_users = serializers.IntegerField(read_only=True)
-
-    number_of_leads = serializers.IntegerField(read_only=True)
-    number_of_entries = serializers.IntegerField(read_only=True)
-    status = serializers.ReadOnlyField(source='status.title')
-
-    leads_activity = serializers.ReadOnlyField(source='get_leads_activity')
-    entries_activity = serializers.ReadOnlyField(source='get_entries_activity')
-
-    top_sourcers = serializers.SerializerMethodField()
-    top_taggers = serializers.SerializerMethodField()
-    activity_log = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Project
-        fields = ('created_at', 'created_by', 'created_by_id', 'regions',
-                  'top_sourcers', 'top_taggers', 'status', 'activity_log',
-                  'number_of_users', 'number_of_leads', 'number_of_entries',
-                  'leads_activity', 'entries_activity', 'is_private',
-                  )
-
-    def get_top_sourcers(self, project):
-        sourcers = ProjectMembership.objects.filter(
-            project=project,
-        ).annotate(
-            leads_count=models.functions.Coalesce(models.Subquery(
-                Lead.objects.filter(
-                    project=project,
-                    created_by=models.OuterRef('member'),
-                ).order_by().values('project')
-                .annotate(cnt=models.Count('*')).values('cnt')[:1],
-                output_field=models.IntegerField(),
-            ), 0),
-        ).order_by('-leads_count')[:5]
-
-        return [
-            {
-                'id': sourcer.id,
-                'name': sourcer.member.profile.get_display_name(),
-                'user_id': sourcer.member.id,
-                'count': sourcer.leads_count,
-            } for sourcer in sourcers
-        ]
-
-    def get_top_taggers(self, project):
-        taggers = ProjectMembership.objects.filter(
-            project=project,
-        ).annotate(
-            entries_count=models.functions.Coalesce(models.Subquery(
-                Entry.objects.filter(
-                    project=project,
-                    created_by=models.OuterRef('member'),
-                ).order_by().values('project')
-                .annotate(cnt=models.Count('*')).values('cnt')[:1],
-                output_field=models.IntegerField(),
-            ), 0),
-        ).order_by('-entries_count')[:5]
-
-        return [
-            {
-                'id': tagger.id,
-                'name': tagger.member.profile.get_display_name(),
-                'user_id': tagger.member.id,
-                'count': tagger.entries_count,
-            } for tagger in taggers
-        ]
-
-    def get_activity_log(self, project):
-        return list(project_activity_log(project))
-
-
 class ProjectOrganizationSerializer(RemoveNullFieldsMixin,
                                     DynamicFieldsMixin,
                                     UserResourceSerializer,
@@ -224,7 +136,7 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
 
     def get_member_status(self, membership):
         if ProjectRole.get_admin_roles().filter(
-                id=membership.role.id
+            id=membership.role.id
         ).exists():
             return 'admin'
         return 'member'
@@ -284,8 +196,7 @@ class ProjectUsergroupMembershipSerializer(RemoveNullFieldsMixin,
         return resource
 
 
-class ProjectSerializer(RemoveNullFieldsMixin,
-                        DynamicFieldsMixin, UserResourceSerializer):
+class ProjectSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceSerializer):
 
     organizations = ProjectOrganizationSerializer(
         source='projectorganization_set',
@@ -318,7 +229,7 @@ class ProjectSerializer(RemoveNullFieldsMixin,
 
     class Meta:
         model = Project
-        exclude = ('members', )
+        exclude = ('members', 'stats_cache')
 
     def create(self, validated_data):
         member = self.context['request'].user
@@ -463,10 +374,49 @@ class ProjectMemberViewSerializer(ProjectSerializer):
 
 class ProjectStatSerializer(ProjectSerializer):
     number_of_leads = serializers.IntegerField(read_only=True)
+    number_of_leads_tagged = serializers.IntegerField(read_only=True)
+    number_of_leads_tagged_and_verified = serializers.IntegerField(read_only=True)
     number_of_entries = serializers.IntegerField(read_only=True)
+    status = serializers.ReadOnlyField(source='status.title')
 
     leads_activity = serializers.ReadOnlyField(source='get_leads_activity')
     entries_activity = serializers.ReadOnlyField(source='get_entries_activity')
+
+    top_sourcers = serializers.SerializerMethodField()
+    top_taggers = serializers.SerializerMethodField()
+    activity_log = serializers.SerializerMethodField()
+
+    def _get_top_entity_contributer(self, project, Entity):
+        contributers = ProjectMembership.objects.filter(
+            project=project,
+        ).annotate(
+            entity_count=models.functions.Coalesce(models.Subquery(
+                Entity.objects.filter(
+                    project=project,
+                    created_by=models.OuterRef('member'),
+                ).order_by().values('project')
+                .annotate(cnt=models.Count('*')).values('cnt')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+        ).order_by('-entity_count').select_related('member', 'member__profile')[:5]
+
+        return [
+            {
+                'id': contributer.id,
+                'name': contributer.member.profile.get_display_name(),
+                'user_id': contributer.member.id,
+                'count': contributer.entity_count,
+            } for contributer in contributers
+        ]
+
+    def get_top_sourcers(self, project):
+        return self._get_top_entity_contributer(project, Lead)
+
+    def get_top_taggers(self, project):
+        return self._get_top_entity_contributer(project, Entry)
+
+    def get_activity_log(self, project):
+        return list(project_activity_log(project))
 
 
 class ProjectJoinRequestSerializer(RemoveNullFieldsMixin,

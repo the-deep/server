@@ -14,7 +14,6 @@ from analysis_framework.models import (
 from user.models import User, Feature
 from user.serializers import SimpleUserSerializer
 from project.models import Project
-from project.serializers import SimpleProjectSerializer
 
 
 class WidgetSerializer(RemoveNullFieldsMixin,
@@ -188,6 +187,7 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
         fields = ('__all__')
 
     def get_visible_projects(self, obj):
+        from project.serializers import SimpleProjectSerializer
         user = None
         if 'request' in self.context:
             user = self.context['request'].user

@@ -1,9 +1,13 @@
 import django_filters
 from rest_framework.decorators import action
 
-from .serializers import NotificationSerializer
-from .models import Notification
-from notification.filter_set import NotificationFilterSet
+from .serializers import NotificationSerializer, AssignmentSerializer
+from .models import Notification, Assignment
+from deep.paginations import AssignmentPagination
+from notification.filter_set import (
+    NotificationFilterSet,
+    AssignmentFilterSet
+)
 
 from rest_framework import (
     exceptions,
@@ -71,3 +75,29 @@ class NotificationViewSet(viewsets.ModelViewSet):
             'total': total,
         }
         return response.Response(result)
+
+
+class AssignmentViewSet(viewsets.ModelViewSet):
+    serializer_class = AssignmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filterset_class = AssignmentFilterSet
+    pagination_class = AssignmentPagination
+
+    def get_queryset(self):
+        return Assignment.get_for(self.request.user).select_related(
+            'project', 'created_by', 'content_type',
+        )
+
+    @action(
+        detail=False,
+        methods=['POST'],
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='bulk-mark-as-done'
+    )
+    def status(self, request, version=None):
+        queryset = self.filter_queryset(self.get_queryset()).filter(is_done=False)
+        updated_rows_count = queryset.update(is_done=True)
+        return response.Response({
+            'assignment_updated': updated_rows_count,
+        })

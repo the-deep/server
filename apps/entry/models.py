@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.fields import ArrayField
@@ -10,6 +11,7 @@ from gallery.models import File
 from user.models import User
 from user_resource.models import UserResource
 from lead.models import Lead
+from notification.models import Assignment
 from analysis_framework.models import (
     AnalysisFramework,
     Widget,
@@ -309,6 +311,7 @@ class EntryComment(models.Model):
         'EntryComment',
         null=True, blank=True, on_delete=models.CASCADE,
     )
+    assignments = GenericRelation(Assignment, related_query_name='entry_comment')
 
     def __str__(self):
         return f'{self.entry}: {self.text} (Resolved: {self.is_resolved})'

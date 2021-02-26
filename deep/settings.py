@@ -111,6 +111,7 @@ INSTALLED_APPS = [
     'djangorestframework_camel_case',
     'drf_dynamic_fields',
     'rest_framework',
+    'generic_relations',  # DRF Generic relations
     'reversion',
     'storages',
     'django_premailer',
@@ -137,6 +138,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'deep.middleware.RevisionMiddleware',
     'deep.middleware.DeepInnerCacheMiddleware',
+    'deep.middleware.RequestMiddleware',
 ]
 
 ROOT_URLCONF = 'deep.urls'
@@ -331,6 +333,11 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'lead.tasks.classify_remaining_lead_previews',
         # Every 3 hours
         'schedule': crontab(minute=0, hour="*/3"),
+    },
+    'project_generate_stats': {
+        'task': 'project.tasks.generate_project_stats_cache',
+        # Every 1 hour
+        'schedule': crontab(minute=0, hour="*/1"),
     },
 }
 

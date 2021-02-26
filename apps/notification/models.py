@@ -1,3 +1,5 @@
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.utils import timezone
@@ -73,3 +75,36 @@ class Notification(models.Model):
     @staticmethod
     def get_for(user):
         return Notification.objects.filter(receiver=user).distinct()
+
+
+class Assignment(models.Model):
+    """
+    Assignment Model
+    """
+    created_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        User,
+        blank=True, null=True,
+        on_delete=models.SET_NULL,
+        related_name='created_by',
+    )
+    created_for = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='created_for',
+    )
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+    )
+    is_done = models.BooleanField(default=False)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    class Meta:
+        ordering = ['-created_at']
+
+    @staticmethod
+    def get_for(user):
+        return Assignment.objects.filter(created_for=user).distinct()

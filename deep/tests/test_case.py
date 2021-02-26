@@ -10,6 +10,8 @@ import datetime
 from django.utils import timezone
 from django.db import DEFAULT_DB_ALIAS, connections
 from django.conf import settings
+
+from deep.middleware import _set_current_request as _set_middleware_current_request
 from user.models import User
 from project.models import ProjectRole, Project
 from project.permissions import get_project_permissions_value
@@ -44,6 +46,7 @@ class TestCase(test.APITestCase):
         self.deep_test_files_path = []
 
     def tearDown(self):
+        _set_middleware_current_request(None)
         for file_path in self.deep_test_files_path:
             if os.path.isfile(file_path):
                 os.unlink(file_path)
@@ -280,6 +283,12 @@ class TestCase(test.APITestCase):
             project=lead.project,
             **fields
         )
+
+    def update_obj(self, obj, **fields):
+        for key, value in fields.items():
+            setattr(obj, key, value)
+        obj.save()
+        return obj
 
     @classmethod
     def captureOnCommitCallbacks(cls, *, using=DEFAULT_DB_ALIAS, execute=False):
