@@ -12,6 +12,8 @@ from rest_framework import (
     status
 )
 
+from deep.permissions import IsProjectMember
+
 from .models import (
     Analysis,
     AnalysisPillar,
@@ -29,7 +31,7 @@ from .serializers import (
 
 class AnalysisViewSet(viewsets.ModelViewSet):
     serializer_class = AnalysisSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsProjectMember]
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -41,7 +43,6 @@ class AnalysisViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        permission_classes=[permissions.IsAuthenticated],
         url_path='summary'
     )
     def get_summary(self, request, project_id, pk=None, version=None):
@@ -52,7 +53,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
 
 class AnalysisPillarViewSet(viewsets.ModelViewSet):
     serializer_class = AnalysisPillarSerializer
-    permissions_classes = [permissions.IsAuthenticated]
+    permissions_classes = [permissions.IsAuthenticated, IsProjectMember]
 
     def get_queryset(self):
         return AnalysisPillar.objects.filter(analysis=analysis_id)
@@ -60,7 +61,7 @@ class AnalysisPillarViewSet(viewsets.ModelViewSet):
 
 class AnalyticalStatementViewSet(viewsets.ModelViewSet):
     serializer_class = AnalyticalStatementSerializer
-    permissions_classes = [permissions.IsAuthenticated]
+    permissions_classes = [permissions.IsAuthenticated, IsProjectMember]
 
     def get_queryset(self):
         return AnalyticalStatement.objects.filter(analysis_pillar=self.kwargs['analysis_pillar_id'])
