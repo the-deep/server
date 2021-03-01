@@ -26,7 +26,7 @@ class TokenObtainPairSerializer(serializers.Serializer):
             raise InvalidCaptchaError
 
     def validate_password(self, password):
-        # this will now only handel max-length in login
+        # this will now only handle max-length in the login
         CustomMaximumLengthValidator().validate(password=password)
         return password
 
