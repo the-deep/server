@@ -46,7 +46,7 @@ class JwtApiTests(TestCase):
     def test_login_with_password_greater_than_128_characters(self):
         data = {
             'username': "Hari@gmail.com",
-            "password": 'aass' * 130
+            "password": 'abcd' * 130
         }
         url = '/api/v1/token/'
 
