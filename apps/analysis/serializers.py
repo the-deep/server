@@ -17,6 +17,7 @@ from .models import (
 
 
 class AnalysisPillarSerializer(serializers.ModelSerializer):
+    assignee_name = serializers.CharField(source='assignee.username', read_only=True)
 
     class Meta:
         model = AnalysisPillar
@@ -33,12 +34,13 @@ class AnalysisSerializer(RemoveNullFieldsMixin,
                          NestedCreateMixin,
                          NestedUpdateMixin,):
     analysis_pillar = AnalysisPillarSerializer(many=True, source='analysispillar_set', required=False)
+    team_lead_name = serializers.CharField(source='team_lead.username', read_only=True)
 
     class Meta:
         model = Analysis
         fields = '__all__'
         read_only_fields = ('project',)
-    
+
     def validate(self, data):
         data['project_id'] = int(self.context['view'].kwargs['project_id'])
         return data
