@@ -56,7 +56,7 @@ class AnalysisPillarViewSet(viewsets.ModelViewSet):
     permissions_classes = [permissions.IsAuthenticated, IsProjectMember]
 
     def get_queryset(self):
-        return AnalysisPillar.objects.filter(analysis=analysis_id)
+        return AnalysisPillar.objects.filter(analysis=self.kwargs['analysis_id'])
 
 
 class AnalyticalStatementViewSet(viewsets.ModelViewSet):
