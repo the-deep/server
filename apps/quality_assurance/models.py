@@ -66,10 +66,10 @@ class BaseReviewComment(models.Model):
 
 
 class BaseReviewCommentText(models.Model):
-    # NOTE: Define comment
-    # comment = models.ForeignKey(
-    #     BaseReviewComment, related_name='comment_texts', on_delete=models.CASCADE
-    # )
+    """
+    NOTE: Define comment
+        comment = models.ForeignKey(BaseReviewComment, related_name='comment_texts', on_delete=models.CASCADE)
+    """
     created_at = models.DateTimeField(auto_now_add=True)
     text = models.TextField()
 
@@ -85,6 +85,22 @@ class EntryReviewComment(BaseReviewComment):
 
     class Meta(BaseReviewComment.Meta):
         abstract = False
+
+    def get_related_users(self, skip_owner_user=True):
+        users = (
+            self.mentioned_users.through.objects
+            .filter(entryreviewcomment__entry=self)
+            .values_list('id', flat=True).distinct()
+        )
+        users.extend(
+            self.objects
+            .filter(entry=self.entry)
+            .values_list('created_by_id', flat=True).distinct()
+        )
+        queryset = User.objects.filter(pk__in=set(users))
+        if skip_owner_user:
+            queryset = queryset.exclude(pk=self.created_by_id)
+        return queryset
 
 
 class EntryReviewCommentText(BaseReviewCommentText):

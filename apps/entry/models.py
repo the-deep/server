@@ -61,11 +61,14 @@ class Entry(UserResource, ProjectEntityMixin):
 
     dropped_excerpt = models.TextField(blank=True)
     highlight_hidden = models.BooleanField(default=False)
-    verified = models.BooleanField(default=False,
-                                   blank=True, null=True)
-    verification_last_changed_by = models.ForeignKey(User,
-                                                     blank=True, null=True,
-                                                     related_name='+', on_delete=models.SET_NULL)
+
+    # NOTE: verification is also called controlled in QA
+    verified = models.BooleanField(default=False, blank=True, null=True)
+    verification_last_changed_by = models.ForeignKey(
+        User, blank=True, null=True,
+        related_name='+', on_delete=models.SET_NULL)
+    # NOTE: approved_by is related to review comment
+    approved_by = models.ManyToManyField(User, blank=True)
 
     def verify(self, user, verified=True):
         self.verified = verified
@@ -75,6 +78,7 @@ class Entry(UserResource, ProjectEntityMixin):
     @staticmethod
     def annotate_comment_count(qs):
         return qs.annotate(
+            approved_by_count=models.Count('approved_by'),
             resolved_comment_count=models.Count(
                 'entrycomment',
                 filter=models.Q(

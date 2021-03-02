@@ -292,9 +292,10 @@ class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
     def get_queryset(self):
         filters = self.get_entry_fiters()
 
-        queryset = get_filtered_entries(self.request.user, filters).prefetch_related(
-            'lead', 'lead__attachment', 'lead__assignee',
-        )
+        queryset = get_filtered_entries(self.request.user, filters).select_related(
+            'lead', 'lead__attachment',
+            'verification_last_changed_by',
+        ).prefetch_related('lead__assignee')
         queryset = Entry.annotate_comment_count(queryset)
 
         project = filters.get('project')
