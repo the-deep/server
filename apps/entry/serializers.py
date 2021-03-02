@@ -205,6 +205,9 @@ class EntrySerializer(RemoveNullFieldsMixin,
         read_only=True,
     )
 
+    # NOTE: Provided by annotate `annotate_comment_count`
+    approved_by_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Entry
         fields = '__all__'
