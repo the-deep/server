@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib.auth import authenticate, models, password_validation 
+from django.contrib.auth import authenticate, models 
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
@@ -13,6 +13,7 @@ from .errors import (
     AuthenticationFailedError,
     UserInactiveError,
 )
+from user.validators import CustomMaximumLengthValidator
 
 
 class TokenObtainPairSerializer(serializers.Serializer):
@@ -24,9 +25,10 @@ class TokenObtainPairSerializer(serializers.Serializer):
         if not validate_recaptcha(recaptcha_response):
             raise InvalidCaptchaError
 
-    def validate_password(self, value):
-        password_validation.validate_password(value, self.instance)
-        return value
+    def validate_password(self, password):
+        # this will now only handle max-length in the login
+        CustomMaximumLengthValidator().validate(password=password)
+        return password
 
     def deactivate_account(self, user):
         if user.profile.login_attempts == settings.MAX_LOGIN_ATTEMPTS:
