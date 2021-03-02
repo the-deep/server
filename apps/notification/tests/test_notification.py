@@ -170,7 +170,7 @@ class TestNotification(TestCase):
 class TestAssignment(TestCase):
     """ Unit test for Assignment"""
 
-    @patch('notification.receivers.entry_comment.get_current_user')
+    @patch('notification.receivers.assignment.get_current_user')
     def test_create_assignment_create_on_entry_comment(self, get_user_mocked_func):
         project = self.create_project()
         entry = self.create_entry(project=project)
@@ -206,7 +206,7 @@ class TestAssignment(TestCase):
         assert assignment.count() == 1  # for only the user
         assert get_user_mocked_func.called
 
-    @patch('notification.receivers.entry_comment.get_current_user')
+    @patch('notification.receivers.assignment.get_current_user')
     def test_assignment_create_on_lead_create(self, get_user_mocked_func):
         project = self.create(Project)
         user1 = self.create_user()
@@ -244,7 +244,7 @@ class TestAssignment(TestCase):
         assert assignment.count() == 1  # for only the user
         assert get_user_mocked_func.called
 
-    @patch('notification.receivers.entry_comment.get_current_user')
+    @patch('notification.receivers.assignment.get_current_user')
     def test_assignment_on_lead_and_entry_comment_delete(self, get_user_mocked_func):
         project = self.create_project()
         user1 = self.create(User)
