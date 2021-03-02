@@ -41,6 +41,7 @@ def _get_lead_data(lead):
 def _get_project_geoareas(project):
     qs = GeoArea.objects.filter(
         admin_level__region__in=project.regions.values_list('id'),
+        admin_level__level__in=[0, 1, 2],
     ).annotate(extent=Extent('polygons')).values('pk', 'admin_level__level', 'title', 'polygons', 'extent', 'parent')
     geo_array = []
 
