@@ -212,6 +212,8 @@ class EntrySerializer(RemoveNullFieldsMixin,
         write_only=True,
         queryset=LeadPreviewImage.objects.all()
     )
+    # NOTE: Provided by annotate `annotate_comment_count`
+    approved_by_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Entry
