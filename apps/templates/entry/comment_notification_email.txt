@@ -1,4 +1,4 @@
 {% load i18n %}
 {% autoescape off %}
-DEEP Entry Comment
+DEEP Entry Comment  #ENTRY-{{comment.entry_id}}
 {% endautoescape %}
