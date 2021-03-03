@@ -22,7 +22,6 @@ from .models import (
 )
 from .serializers import (
     AnalysisSerializer,
-    AnalysisMetaSerializer,
     AnalysisPillarSerializer,
     AnalyticalStatementSerializer,
     AnalysisSummarySerializer,
@@ -33,13 +32,11 @@ class AnalysisViewSet(viewsets.ModelViewSet):
     serializer_class = AnalysisSerializer
     permission_classes = [permissions.IsAuthenticated, IsProjectMember]
 
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return AnalysisMetaSerializer
-        return super().get_serializer_class()
-
     def get_queryset(self):
-        return Analysis.objects.filter(project=self.kwargs['project_id'])
+        return Analysis.objects.filter(project=self.kwargs['project_id']).select_related(
+            'project',
+            'team_lead',
+        ).prefetch_related('analysispillar_set')
 
     @action(
         detail=True,
@@ -56,7 +53,10 @@ class AnalysisPillarViewSet(viewsets.ModelViewSet):
     permissions_classes = [permissions.IsAuthenticated, IsProjectMember]
 
     def get_queryset(self):
-        return AnalysisPillar.objects.filter(analysis=self.kwargs['analysis_id'])
+        return AnalysisPillar.objects.filter(analysis=self.kwargs['analysis_id']).select_related(
+            'analysis',
+            'assignee'
+        )
 
 
 class AnalyticalStatementViewSet(viewsets.ModelViewSet):
@@ -64,4 +64,8 @@ class AnalyticalStatementViewSet(viewsets.ModelViewSet):
     permissions_classes = [permissions.IsAuthenticated, IsProjectMember]
 
     def get_queryset(self):
-        return AnalyticalStatement.objects.filter(analysis_pillar=self.kwargs['analysis_pillar_id'])
+        return AnalyticalStatement.objects.filter(analysis_pillar=self.kwargs['analysis_pillar_id']).select_related(
+            'analysis_pillar',
+        ).prefetch_related(
+            'entries',
+            'entries__analytical_statement',)
