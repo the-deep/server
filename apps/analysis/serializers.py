@@ -46,10 +46,6 @@ class AnalysisSerializer(RemoveNullFieldsMixin,
         return data
 
 
-class AnalysisMetaSerializer(AnalysisSerializer):
-    analysis_pillar = AnalysisPillarSerializer(many=True, source='analysispillar_set', required=False)
-
-
 class AnlyticalEntriesSerializer(serializers.ModelSerializer):
     class Meta:
         model = AnalyticalStatementEntry
@@ -108,21 +104,16 @@ class AnalysisSummarySerializer(serializers.ModelSerializer):
         ).annotate(entries_in_analysis=models.Count('entries')).filter(entries_in_analysis__gt=0).count()
 
     def get_framework_overview(self, analysis):
-        pillars = AnalysisPillar.objects.filter(
-            analysis=analysis
-        ).annotate(
-            entries_count=models.functions.Coalesce(models.Subquery(
-                AnalyticalStatement.objects.filter(
-                    analysis_pillar=models.OuterRef('pk')
-                ).order_by().values('analysis_pillar').annotate(count=models.Count('entries'))
-                .values('count')[:1],
-                output_field=models.IntegerField(),
-            ), 0)
+        return list(
+            AnalysisPillar.objects.filter(
+                analysis=analysis
+            ).annotate(
+                entries_count=models.functions.Coalesce(models.Subquery(
+                    AnalyticalStatement.objects.filter(
+                        analysis_pillar=models.OuterRef('pk')
+                    ).order_by().values('analysis_pillar').annotate(count=models.Count('entries'))
+                    .values('count')[:1],
+                    output_field=models.IntegerField(),
+                ), 0)
+            ).values('id', 'title', 'entries_count')
         )
-        return [
-            {
-                'id': pillar.id,
-                'title': pillar.title,
-                'entries_count': pillar.entries_count,
-            } for pillar in pillars
-        ]
