@@ -76,10 +76,7 @@ class AdminLevelSerializer(RemoveNullFieldsMixin,
     """
     Admin Level Model Serializer
     """
-    geo_shape_file_details = SimpleFileSerializer(
-        source='geo_shape_file',
-        read_only=True,
-    )
+    geo_shape_file_details = SimpleFileSerializer(source='geo_shape_file', read_only=True)
 
     geojson_file = URLCachedFileField(required=False, read_only=True)
     bounds_file = URLCachedFileField(required=False, read_only=True)
