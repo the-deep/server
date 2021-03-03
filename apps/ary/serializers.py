@@ -80,12 +80,12 @@ class LeadAssessmentSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserRe
             return
         files_id = []
         for items in additional_documents.values():
-            for item in items:
+            for item in items or []:
                 if item.get('id') and item.get('type') == 'file':
                     files_id.append(item['id'])
         # TODO:
         qs = File.objects.filter(id__in=files_id).all()
-        return SimpleFileSerializer(qs, many=True).data
+        return SimpleFileSerializer(qs, context=self.context, many=True).data
 
     def create(self, validated_data):
         # If this assessment is being created for the first time,
