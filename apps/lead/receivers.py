@@ -3,16 +3,9 @@ from django.db.transaction import on_commit
 from django.dispatch import receiver
 
 from lead.models import (
-    Lead,
     LeadPreview,
     LeadPreviewImage,
 )
-
-
-@receiver(models.signals.post_save, sender=Lead)
-def on_lead_saved(sender, **kwargs):
-    instance = kwargs.get('instance')
-    instance.project.update_status()
 
 
 @receiver(models.signals.post_delete, sender=LeadPreview)

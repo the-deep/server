@@ -53,8 +53,6 @@ class UserSerializer(RemoveNullFieldsMixin, WriteOnlyOnCreateSerializerMixin,
     )
     display_picture_url = URLCachedFileField(
         source='profile.display_picture.file',
-        # queryset=File.objects.all(),
-        # allow_null=True,
         read_only=True,
     )
     display_name = serializers.CharField(
@@ -138,7 +136,6 @@ class UserPreferencesSerializer(RemoveNullFieldsMixin,
     )
     display_picture_url = URLCachedFileField(
         source='profile.display_picture.file',
-        # queryset=File.objects.all(),
         read_only=True,
     )
     display_name = serializers.CharField(
@@ -215,18 +212,12 @@ class ComprehensiveUserSerializer(serializers.ModelSerializer):
 
 
 class EntryCommentUserSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(
-        source='profile.get_display_name',
-        read_only=True,
-    )
+    name = serializers.CharField(source='profile.get_display_name', read_only=True)
     display_picture_url = URLCachedFileField(
         source='profile.display_picture.file',
         read_only=True,
     )
-    organization = serializers.CharField(
-        source='profile.organization',
-        read_only=True,
-    )
+    organization = serializers.CharField(source='profile.organization', read_only=True)
 
     class Meta:
         model = User
