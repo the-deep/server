@@ -145,3 +145,20 @@ class TestAnalysisAPIs(TestCase):
         self.authenticate(user2)
         response = self.client.get(url)
         self.assert_403(response)
+
+    def test_clone_analysis(self):
+        user = self.create_user()
+        project = self.create_project()
+        project.add_member(user)
+        analysis = self.create(Analysis, project=project)
+
+        url = f'/api/v1/clone-analysis/{analysis.id}/'
+        data = {
+            'title': 'cloned_title',
+        }
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        self.assertNotEqual(response.data['id'], analysis.id)
+        self.assertEqual(response.data['title'], f'{analysis.title} (cloned)')
