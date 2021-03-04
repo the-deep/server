@@ -4,6 +4,7 @@ from django.utils import timezone
 
 from rest_framework.decorators import action
 from rest_framework import (
+    exceptions,
     permissions,
     response,
     views,
@@ -46,6 +47,35 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         analysis = self.get_object()
         serializer = AnalysisSummarySerializer(analysis)
         return response.Response(serializer.data)
+
+
+class AnalysisCloneViewSet(views.APIView):
+    permissions_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, analysis_id, version=None):
+        if not Analysis.objects.filter(id=analysis_id).exists():
+            raise exceptions.NotFound
+
+        analysis = Analysis.objects.get(
+            id=analysis_id
+        )
+        if not analysis.get_for(request.user):
+            raise exceptions.PermissionDenied
+
+        cloned_title = request.data.get('title')
+        if not cloned_title:
+            raise exceptions.ValidationError({
+                'title': 'Title should be present',
+            })
+        new_analysis = analysis.clone_analysis()
+        serializer = AnalysisSerializer(
+            new_analysis,
+            context={'request': request},
+        )
+        return response.Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class AnalysisPillarViewSet(viewsets.ModelViewSet):
