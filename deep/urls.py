@@ -101,6 +101,7 @@ from entry.views import (
 )
 from analysis.views import (
     AnalysisViewSet,
+    AnalysisCloneViewSet,
     AnalysisPillarViewSet,
     AnalyticalStatementViewSet,
 )
@@ -502,6 +503,8 @@ urlpatterns = [
         AnalysisFrameworkCloneView.as_view()),
     url(get_api_path(r'clone-category-editor/(?P<ce_id>\d+)/$'),
         CategoryEditorCloneView.as_view()),
+    url(get_api_path(r'clone-analysis/(?P<analysis_id>\d+)/$'),
+        AnalysisCloneViewSet.as_view()),
 
     # Combined API View
     url(get_api_path(r'combined/$'), CombinedView.as_view()),
