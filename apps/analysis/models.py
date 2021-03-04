@@ -1,3 +1,5 @@
+import copy
+
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 
@@ -20,6 +22,19 @@ class Analysis(models.Model):
 
     def __str__(self):
         return self.title
+
+    @staticmethod
+    def get_for(user):
+        return Analysis.objects.filter(
+            models.Q(project__members=user)
+        ).distinct()
+
+    def clone_analysis(self):
+        analysis_cloned = copy.deepcopy(self)
+        analysis_cloned.pk = None
+        analysis_cloned.title = f'{self.title} (cloned)'
+        analysis_cloned.save()
+        return analysis_cloned
 
 
 class AnalysisPillar(models.Model):
