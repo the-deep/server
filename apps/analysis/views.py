@@ -48,16 +48,46 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         serializer = AnalysisSummarySerializer(analysis)
         return response.Response(serializer.data)
 
+    @action(
+        detail=True,
+        url_path='pillar-overview'
+    )
+    def get_pillar_overview(self, request, project_id, pk=None, version=None):
+        analysis = self.get_object()
+        pillar_list = AnalysisPillar.objects.filter(
+            analysis=analysis
+        )
+        return response.Response(
+            [
+                {
+                    'id': pillar.id,
+                    'pillar_title': pillar.title,
+                    'assignee': pillar.assignee.username,
+                    'analytical_statement': AnalyticalStatement.objects.filter(
+                        analysis_pillar=pillar
+                    ).annotate(
+                        entries_count=models.Count('entries')).values(
+                        'entries_count', 'id', 'statement'
+                    ),
+                    'created_on': pillar.created_on,
+                    'analytical_statement_count': AnalyticalStatement.objects.filter(analysis_pillar=pillar).count()
+                }for pillar in pillar_list
 
-class AnalysisCloneViewSet(views.APIView):
-    permissions_classes = [permissions.IsAuthenticated]
+            ]
+        )
 
-    def post(self, request, analysis_id, version=None):
-        if not Analysis.objects.filter(id=analysis_id).exists():
+    @action(
+        detail=True,
+        url_path='clone-analysis',
+        methods=['post']
+    )
+    def clone_analysis(self, request, project_id, pk=None, version=None):
+        analysis = self.get_object()
+        if not Analysis.objects.filter(id=analysis.id).exists():
             raise exceptions.NotFound
 
         analysis = Analysis.objects.get(
-            id=analysis_id
+            id=analysis.id
         )
         if not analysis.get_for(request.user):
             raise exceptions.PermissionDenied
