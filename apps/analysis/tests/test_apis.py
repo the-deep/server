@@ -152,13 +152,58 @@ class TestAnalysisAPIs(TestCase):
         project.add_member(user)
         analysis = self.create(Analysis, project=project)
 
-        url = f'/api/v1/clone-analysis/{analysis.id}/'
+        url = url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/clone-analysis/'
         data = {
             'title': 'cloned_title',
         }
-        self.authenticate()
+        self.authenticate(user)
         response = self.client.post(url, data)
         self.assert_201(response)
 
         self.assertNotEqual(response.data['id'], analysis.id)
         self.assertEqual(response.data['title'], f'{analysis.title} (cloned)')
+
+    def test_pillar_overview_in_analysis(self):
+        user = self.create_user()
+        user2 = self.create_user()
+        entry = self.create_entry()
+        entry1 = self.create_entry()
+        entry2 = self.create_entry()
+        project = self.create_project()
+        project.add_member(user)
+        analysis1 = self.create(Analysis, title='Test Analysis', team_lead=user, project=project)
+        pillar1 = self.create(AnalysisPillar, analysis=analysis1, title='title1', assignee=user)
+        pillar2 = self.create(AnalysisPillar, analysis=analysis1, title='title2', assignee=user)
+
+        analytical_statement1 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
+        analytical_statement2 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry1)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry2)
+
+        analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar2)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry)
+
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis1.id}/pillar-overview/'
+        self.authenticate(user)
+        response = self.client.get(url)
+        self.assert_200(response)
+        data = response.data
+        self.assertEqual(data[0]['pillar_title'], pillar2.title)
+        self.assertEqual(len(data[0]['analytical_statement']), 1)
+        self.assertEqual(data[0]['analytical_statement'][0]['entries_count'], 1)
+        self.assertEqual(data[0]['analytical_statement_count'], 1)
+        self.assertEqual(data[1]['analytical_statement_count'], 2)
+
+        # try to post to api
+        data = {
+            'assignee': user.id
+        }
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_405(response)
+
+        # try get pillar-overview by user that is not member of project
+        self.authenticate(user2)
+        response = self.client.get(url)
+        self.assert_403(response)

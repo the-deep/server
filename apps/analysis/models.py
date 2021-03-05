@@ -41,6 +41,7 @@ class AnalysisPillar(models.Model):
     title = models.CharField(max_length=255)
     main_statement = models.TextField()
     information_gap = models.TextField()
+    created_on = models.DateTimeField(auto_now_add=True)
     filters = JSONField(blank=True, null=True, default=None)
     assignee = models.ForeignKey(
         User,
