@@ -46,6 +46,30 @@ class TestAnalysisAPIs(TestCase):
         response = self.client.post(url, data)
         self.assert_403(response)
 
+    def test_create_pillar_from_analysis_api(self):
+        analysis_count = Analysis.objects.count()
+        pillar_count = AnalysisPillar.objects.count()
+        user = self.create_user()
+        user2 = self.create_user()
+        project = self.create_project()
+        project.add_member(user)
+        url = f'/api/v1/projects/{project.id}/analysis/'
+        data = {
+            'title': 'Test Analysis',
+            'team_lead': user.id,
+            'analysis_pillar': [{
+                'main_statement': 'Some main statement',
+                'information_gap': 'Some information gap',
+                'assignee': user.id,
+                'title': 'Some title'
+            }]
+        }
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        self.assertEqual(Analysis.objects.count(), analysis_count + 1)
+        self.assertEqual(AnalysisPillar.objects.count(), pillar_count + 1)
+
     def test_create_pillar_from_analysis(self):
         pillar_count = AnalysisPillar.objects.count()
         user = self.create_user()
@@ -150,7 +174,7 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        analysis = self.create(Analysis, project=project)
+        analysis = self.create(Analysis, project=project, title="Test Clone")
 
         url = url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/clone-analysis/'
         data = {
