@@ -88,6 +88,11 @@ class QualityAccuranceTests(TestCase):
         self.assert_201(response)
         assert ApprovedByQs.filter(entry=entry).count() == 0
 
+        # Should include is_approved_by_current_user as False
+        response = self.client.post('/api/v1/entries/filter/', data={'project': project.pk})
+        self.assert_200(response)
+        assert not response.data['results'][0]['is_approved_by_current_user']
+
         # Approve
         data = {
             'text': 'This is a test comment for approvable',
@@ -96,6 +101,11 @@ class QualityAccuranceTests(TestCase):
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
         assert ApprovedByQs.filter(entry=entry).count() == 1
+
+        # Should include is_approved_by_current_user as True
+        response = self.client.post('/api/v1/entries/filter/', data={'project': project.pk})
+        self.assert_200(response)
+        assert response.data['results'][0]['is_approved_by_current_user']
 
         self.authenticate(user2)
         data = {
