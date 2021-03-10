@@ -4,6 +4,7 @@ from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
+from deep.middleware import get_current_user
 from utils.common import parse_number
 from project.mixins import ProjectEntityMixin
 from project.permissions import PROJECT_PERMISSIONS
@@ -74,10 +75,15 @@ class Entry(UserResource, ProjectEntityMixin):
         self.verification_last_changed_by = user
         self.save()
 
-    @staticmethod
-    def annotate_comment_count(qs):
+    @classmethod
+    def annotate_comment_count(cls, qs):
+        current_user = get_current_user()
+        approved_by_current_user_qs = cls.approved_by.through.objects.filter(
+            entry=models.OuterRef('pk'), user=current_user
+        )
         return qs.annotate(
             approved_by_count=models.Count('approved_by'),
+            is_approved_by_current_user=models.Exists(approved_by_current_user_qs),
             resolved_comment_count=models.Count(
                 'entrycomment',
                 filter=models.Q(
