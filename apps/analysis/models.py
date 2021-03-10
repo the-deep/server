@@ -39,8 +39,8 @@ class Analysis(models.Model):
 
 class AnalysisPillar(models.Model):
     title = models.CharField(max_length=255)
-    main_statement = models.TextField()
-    information_gap = models.TextField()
+    main_statement = models.TextField(blank=True)
+    information_gap = models.TextField(blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     filters = JSONField(blank=True, null=True, default=None)
     assignee = models.ForeignKey(
@@ -53,7 +53,7 @@ class AnalysisPillar(models.Model):
     )
 
     def __str__(self):
-        return self.main_statement and self.main_statement[:255]
+        return self.title
 
 
 class AnalyticalStatement(models.Model):
