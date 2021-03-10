@@ -214,6 +214,7 @@ class EntrySerializer(RemoveNullFieldsMixin,
     )
     # NOTE: Provided by annotate `annotate_comment_count`
     approved_by_count = serializers.IntegerField(read_only=True)
+    is_approved_by_current_user = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Entry
