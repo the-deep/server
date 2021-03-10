@@ -66,7 +66,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                     'analytical_statement': AnalyticalStatement.objects.filter(
                         analysis_pillar=pillar
                     ).annotate(
-                        entries_count=models.Count('entries')).values(
+                        entries_count=models.Count('entries', distinct=True)).values(
                         'entries_count', 'id', 'statement'
                     ),
                     'created_on': pillar.created_on,
@@ -83,16 +83,10 @@ class AnalysisViewSet(viewsets.ModelViewSet):
     )
     def clone_analysis(self, request, project_id, pk=None, version=None):
         analysis = self.get_object()
-        if not Analysis.objects.filter(id=analysis.id).exists():
-            raise exceptions.NotFound
-
-        analysis = Analysis.objects.get(
-            id=analysis.id
-        )
         if not analysis.get_for(request.user):
             raise exceptions.PermissionDenied
 
-        cloned_title = request.data.get('title')
+        cloned_title = request.data.get('title').strip()
         if not cloned_title:
             raise exceptions.ValidationError({
                 'title': 'Title should be present',
@@ -128,4 +122,5 @@ class AnalyticalStatementViewSet(viewsets.ModelViewSet):
             'analysis_pillar',
         ).prefetch_related(
             'entries',
-            'entries__analytical_statement',)
+            'analyticalstatemententry_set',
+        )

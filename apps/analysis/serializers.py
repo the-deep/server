@@ -25,7 +25,9 @@ class AnalysisPillarSerializer(serializers.ModelSerializer):
         read_only_fields = ('analysis',)
 
     def validate(self, data):
-        data['analysis_id'] = int(self.context['view'].kwargs['analysis_id'])
+        analysis_id = self.context['view'].kwargs.get('analysis_id', None)
+        if analysis_id:
+            data['analysis_id'] = int(analysis_id)
         return data
 
 
@@ -111,7 +113,7 @@ class AnalysisSummarySerializer(serializers.ModelSerializer):
                 entries_count=models.functions.Coalesce(models.Subquery(
                     AnalyticalStatement.objects.filter(
                         analysis_pillar=models.OuterRef('pk')
-                    ).order_by().values('analysis_pillar').annotate(count=models.Count('entries'))
+                    ).order_by().values('analysis_pillar').annotate(count=models.Count('entries', distinct=True))
                     .values('count')[:1],
                     output_field=models.IntegerField(),
                 ), 0)
