@@ -488,6 +488,49 @@ class EntryTests(TestCase):
         self.assert_200(response)
         assert len(response.json()['results']) == 1
 
+    def test_lead_assignee_filter(self):
+        another_user = self.create(User)
+        lead1 = self.create_lead()
+        lead1.assignee.add(self.user.pk)
+        lead2 = self.create_lead()
+        lead2.assignee.add(another_user.pk)
+
+        self.create_entry(lead=lead1)
+        self.create_entry(lead=lead1)
+        self.create_entry(lead=lead1)
+        self.create_entry(lead=lead2)
+        self.create_entry(lead=lead2)
+
+        # test assignee created by self user
+        filters = {
+            'lead_assignee': [self.user.pk],
+        }
+        url = '/api/v1/entries/filter/'
+        params = {
+            'filters': [[k, v] for k, v in filters.items()]
+        }
+
+        self.authenticate()
+        response = self.client.post(url, params)
+
+        self.assert_200(response)
+        assert len(response.json()['results']) == 3
+
+        # test assignee created by self user
+        filters = {
+            'lead_assignee': [another_user.pk],
+        }
+        url = '/api/v1/entries/filter/'
+        params = {
+            'filters': [[k, v] for k, v in filters.items()]
+        }
+
+        self.authenticate()
+        response = self.client.post(url, params)
+
+        self.assert_200(response)
+        assert len(response.json()['results']) == 2
+
     def test_search_filter(self):
         entry, field = self.create_entry_with_data_series()
         filters = {
