@@ -19,7 +19,7 @@ class EntryReviewCommentTextSerializer(serializers.ModelSerializer):
 
 
 class EntryReviewCommentSerializer(serializers.ModelSerializer):
-    text = serializers.CharField(write_only=True)
+    text = serializers.CharField(write_only=True, required=False)
     text_history = EntryReviewCommentTextSerializer(source='comment_texts', read_only=True, many=True)
     lead = serializers.IntegerField(source='entry.lead_id', read_only=True)
     created_by_detail = EntryCommentUserSerializer(source='created_by', read_only=True)
@@ -50,7 +50,7 @@ class EntryReviewCommentSerializer(serializers.ModelSerializer):
             entry.approved_by.add(current_user)
         elif comment_type == CommentType.UNAPPROVE:
             if not approved_by_qs.exists():
-                raise serializers.ValidationError({'comment_type': 'Need to approve first'})
+                raise serializers.ValidationError({'comment_type': 'Need to be approved first'})
             entry.approved_by.remove(current_user)
         elif comment_type == CommentType.CONTROL:
             if entry.verified:
@@ -58,7 +58,7 @@ class EntryReviewCommentSerializer(serializers.ModelSerializer):
             entry.verify(current_user)
         elif comment_type == CommentType.UNCONTROL:
             if not entry.verified:
-                raise serializers.ValidationError({'comment_type': 'Need to verified/controlled first'})
+                raise serializers.ValidationError({'comment_type': 'Need to be verified/controlled first'})
             entry.verify(current_user, verified=False)
         return comment_type
 
@@ -89,6 +89,11 @@ class EntryReviewCommentSerializer(serializers.ModelSerializer):
         Comment Middleware save logic
         """
         text = validated_data.pop('text', '').strip()
+        comment_type = validated_data.get('comment_type', CommentType.__default__)
+        # Make sure to check text required
+        if not text and comment_type in [CommentType.COMMENT, CommentType.UNAPPROVE, CommentType.UNCONTROL]:
+            raise serializers.ValidationError({'text': 'Text is required'})
+
         text_change = True
         if instance is None:  # Create
             instance = super().create(validated_data)

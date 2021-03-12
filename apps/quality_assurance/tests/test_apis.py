@@ -308,4 +308,31 @@ class QualityAccuranceTests(TestCase):
         assert response.data['results'][0]['approved_by_count'] == 3
         assert response.data['results'][0]['verified']
 
+    def test_entry_review_comment_text_required_api(self):
+        project = self.create_project()
+        entry = self.create_entry(project=project)
+        user1 = self.create_user()
+        project.add_member(user1, role=self.normal_role)
+
+        for comment_type, text_required in [
+                (None, True),  # Default is CommentType.COMMENT
+                (CommentType.COMMENT, True),
+                (CommentType.APPROVE, False),
+                (CommentType.UNAPPROVE, True),
+                (CommentType.CONTROL, False),
+                (CommentType.UNCONTROL, True),
+        ]:
+            self.authenticate(user1)
+            data = {}
+            if comment_type:
+                data['comment_type'] = comment_type
+            response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
+            if text_required:
+                self.assert_400(response)
+                data['text'] = 'This is a comment'
+                response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
+                self.assert_201(response)
+            else:
+                self.assert_201(response)
+
     # TODO: notification
