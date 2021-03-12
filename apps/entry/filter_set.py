@@ -93,6 +93,11 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
         lookup_expr='lte',
 
     )
+    lead_assignee = django_filters.ModelMultipleChoiceFilter(
+        label='Comment Assignees',
+        queryset=User.objects.all(),
+        field_name='lead__assignee', lookup_expr='in',
+    )
 
     comment_status = django_filters.ChoiceFilter(
         label='Comment Status',
