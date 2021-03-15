@@ -40,12 +40,12 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         ).prefetch_related('analysispillar_set')
 
     @action(
-        detail=True,
+        detail=False,
         url_path='summary'
     )
     def get_summary(self, request, project_id, pk=None, version=None):
-        analysis = self.get_object()
-        serializer = AnalysisSummarySerializer(analysis)
+        queryset = self.filter_queryset(self.get_queryset()).filter(project=project_id)
+        serializer = AnalysisSummarySerializer(queryset, many=True, partial=True)
         return response.Response(serializer.data)
 
     @action(
@@ -71,7 +71,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                     ),
                     'created_on': pillar.created_on,
                     'analytical_statement_count': AnalyticalStatement.objects.filter(analysis_pillar=pillar).count()
-                }for pillar in pillar_list
+                } for pillar in pillar_list
 
             ]
         )
@@ -79,13 +79,11 @@ class AnalysisViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         url_path='clone-analysis',
+        permission_classes=[IsProjectMember],
         methods=['post']
     )
     def clone_analysis(self, request, project_id, pk=None, version=None):
         analysis = self.get_object()
-        if not analysis.get_for(request.user):
-            raise exceptions.PermissionDenied
-
         cloned_title = request.data.get('title').strip()
         if not cloned_title:
             raise exceptions.ValidationError({
