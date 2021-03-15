@@ -23,12 +23,6 @@ class Analysis(models.Model):
     def __str__(self):
         return self.title
 
-    @staticmethod
-    def get_for(user):
-        return Analysis.objects.filter(
-            models.Q(project__members=user)
-        ).distinct()
-
     def clone_analysis(self):
         analysis_cloned = copy.deepcopy(self)
         analysis_cloned.pk = None

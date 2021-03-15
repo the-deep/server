@@ -46,6 +46,13 @@ from user_group.models import UserGroup
 from geo.serializers import RegionSerializer
 from entry.models import Entry
 from entry.views import ComprehensiveEntriesViewSet
+from organization.models import Organization
+from analysis.models import (
+    Analysis,
+    AnalysisPillar,
+    AnalyticalStatement,
+    AnalyticalStatementEntry
+)
 
 from .models import (
     ProjectStatus,
@@ -535,6 +542,60 @@ class ProjectViewSet(viewsets.ModelViewSet):
             },
         }
         return response.Response(meta)
+
+    """
+    Get analysis for this project
+    """
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated, IsProjectMember],
+        url_path='analysis-overview'
+    )
+    def get_analysis(self, request, pk=None, version=None):
+        project = self.get_object()
+        # get all the analysis in the project
+        analysis_list = Analysis.objects.filter(
+            project=project
+        ).values('id', 'title', 'created_on')
+
+        leads = Lead.objects.filter(project=project)
+        total_sources = leads.annotate(entries_count=models.Count('entry')).filter(entries_count__gt=0).count()
+        entries_total = Entry.objects.filter(project=project).count()
+        entries_analyzed = AnalyticalStatement.objects.filter(
+            analysis_pillar__analysis__project=project
+        ).values('entries').distinct().count()
+        analyzed_source = AnalyticalStatement.objects.filter(
+            analysis_pillar__analysis__project=project
+        ).values('entries__lead_id').distinct().count()
+
+        lead_qs = Lead.objects.filter(
+            project=project,
+            authors__isnull=False
+        ).annotate(
+            entries_count=models.functions.Coalesce(models.Subquery(
+                AnalyticalStatementEntry.objects.filter(
+                    entry__lead_id=models.OuterRef('pk')
+                ).order_by().values('entry__lead_id').annotate(count=models.Count('*'))
+                .values('count')[:1],
+                output_field=models.IntegerField(),
+            ), 0)
+        ).filter(entries_count__gt=0)
+        authoring_organizations = Lead.objects.filter(id__in=lead_qs).order_by('authors__created_at').values('authors')\
+            .annotate(
+                count=models.Count('id')
+        ).values(
+            'count',
+            organization_id=models.F('authors'),
+            organization_title=models.F('authors__title')
+        )
+        return response.Response({
+            'analysis_list': analysis_list,
+            'entries_total': entries_total,
+            'analyzed_entries_count': entries_analyzed,
+            'sources_total': total_sources,
+            'analyzed_source_count': analyzed_source,
+            'authoring_organizations': authoring_organizations
+        })
 
 
 class ProjectStatViewSet(ProjectViewSet):
