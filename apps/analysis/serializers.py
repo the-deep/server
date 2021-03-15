@@ -80,20 +80,15 @@ class AnalysisSummarySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Analysis
-        fields = ('team_lead', 'team_lead_name', 'pillar_list', 'analytical_statement_count',
+        fields = ('id', 'team_lead', 'team_lead_name', 'pillar_list', 'analytical_statement_count',
                   'entries_used_in_analysis', 'framework_overview')
 
     def get_pillar_list(self, analysis):
-        pillars = AnalysisPillar.objects.filter(
-            analysis=analysis
+        return list(
+            AnalysisPillar.objects.filter(
+                analysis=analysis
+            ).values('id', 'title', assignee_username=models.F('assignee__username'))
         )
-        return [
-            {
-                'id': pillar.id,
-                'title': pillar.title,
-                'assignee': pillar.assignee.username
-            } for pillar in pillars
-        ]
 
     def get_analytical_statement_count(self, analysis):
         return AnalyticalStatement.objects.filter(
