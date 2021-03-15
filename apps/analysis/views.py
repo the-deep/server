@@ -27,11 +27,13 @@ from .serializers import (
     AnalyticalStatementSerializer,
     AnalysisSummarySerializer,
 )
+from .filter_set import AnalysisFilterSet
 
 
 class AnalysisViewSet(viewsets.ModelViewSet):
     serializer_class = AnalysisSerializer
     permission_classes = [permissions.IsAuthenticated, IsProjectMember]
+    filterset_class = AnalysisFilterSet
 
     def get_queryset(self):
         return Analysis.objects.filter(project=self.kwargs['project_id']).select_related(
