@@ -9,6 +9,7 @@ from analysis.models import (
     AnalyticalStatement,
     AnalyticalStatementEntry,
 )
+from organization.models import Organization
 
 
 class TestAnalysisAPIs(TestCase):
@@ -241,6 +242,64 @@ class TestAnalysisAPIs(TestCase):
         self.assert_405(response)
 
         # try get pillar-overview by user that is not member of project
+        self.authenticate(user2)
+        response = self.client.get(url)
+        self.assert_403(response)
+
+    def test_analysis_overview_in_project(self):
+        user = self.create_user()
+        user2 = self.create_user()
+        project = self.create_project()
+        project.add_member(user)
+
+        organization1 = self.create(Organization, title='UN')
+        organization2 = self.create(Organization, title='RED CROSS')
+        organization3 = self.create(Organization, title='ToggleCorp')
+
+        lead1 = self.create_lead(authors=[organization1], project=project, title='TESTA')
+        lead2 = self.create_lead(authors=[organization2, organization3], project=project, title='TESTB')
+        lead3 = self.create_lead(authors=[organization3], project=project, title='TESTC')
+        lead4 = self.create_lead(authors=[organization2], project=project, title='TESTD')
+
+        entry1 = self.create_entry(lead=lead1, project=project)
+        entry2 = self.create_entry(lead=lead2, project=project)
+        entry3 = self.create_entry(lead=lead3, project=project)
+        entry4 = self.create_entry(lead=lead3, project=project)
+
+        analysis1 = self.create(Analysis, title='Test Analysis', team_lead=user, project=project)
+        analysis2 = self.create(Analysis, title='Test Analysis New', team_lead=user, project=project)
+        pillar1 = self.create(AnalysisPillar, analysis=analysis1, title='title1')
+        pillar2 = self.create(AnalysisPillar, analysis=analysis2, title='title2')
+
+        analytical_statement1 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
+        analytical_statement2 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
+        analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry1)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry1)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry2)
+
+        analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar2)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry3)
+
+        url = f'/api/v1/projects/{project.id}/analysis-overview/'
+        self.authenticate(user)
+        response = self.client.get(url)
+        self.assert_200(response)
+        data = response.data
+
+        self.assertEqual(len(data['analysis_list']), 2)
+        self.assertEqual(data['analysis_list'][1]['title'], analysis1.title)
+        self.assertEqual(data['entries_total'], 4)
+        self.assertEqual(data['sources_total'], 3)  # since we take only that lead which entry has been created
+        self.assertEqual(data['analyzed_source_count'], 3)
+        self.assertEqual(data['analyzed_entries_count'], 3)
+        self.assertEqual(len(data['authoring_organizations']), 3)
+        self.assertEqual(data['authoring_organizations'][0]['organization_id'], organization1.id)
+        self.assertEqual(data['authoring_organizations'][0]['organization_title'], organization1.title)
+        self.assertEqual(data['authoring_organizations'][0]['count'], 1)
+        self.assertEqual(data['authoring_organizations'][1]['count'], 1)
+        self.assertEqual(data['authoring_organizations'][2]['count'], 2)
+
         self.authenticate(user2)
         response = self.client.get(url)
         self.assert_403(response)
