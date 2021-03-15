@@ -25,6 +25,7 @@ class CommentType(enum.Enum):
 
 class BaseReviewComment(models.Model):
     created_by = models.ForeignKey(User, related_name='%(class)s_created', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
     comment_type = enum.EnumField(CommentType)
     mentioned_users = models.ManyToManyField(User, blank=True)
 
