@@ -18,6 +18,7 @@ from .models import (
 
 class AnalysisPillarSerializer(serializers.ModelSerializer):
     assignee_name = serializers.CharField(source='assignee.username', read_only=True)
+    analysis_title = serializers.CharField(source='analysis.title', read_only=True)
 
     class Meta:
         model = AnalysisPillar
