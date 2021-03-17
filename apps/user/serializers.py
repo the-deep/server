@@ -272,3 +272,12 @@ class PasswordChangeSerializer(serializers.Serializer):
                 client_ip=client_ip,
                 device_type=device_type)
         )
+
+
+class UserNotificationSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='profile.get_display_name', read_only=True)
+    # display_picture = URLCachedFileField(source='profile.display_picture.file', read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('id', 'name', 'email')
