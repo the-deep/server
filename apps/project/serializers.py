@@ -39,6 +39,12 @@ class SimpleProjectSerializer(RemoveNullFieldsMixin,
         fields = ('id', 'title', 'is_private')
 
 
+class ProjectNotificationSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ('id', 'title')
+
+
 class ProjectRoleSerializer(RemoveNullFieldsMixin,
                             DynamicFieldsMixin,
                             serializers.ModelSerializer):
