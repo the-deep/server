@@ -156,6 +156,7 @@ from deep.views import (
     ProjectJoinRequest,
     ProjectPublicVizView,
     EntryCommentEmail,
+    EntryReviewCommentEmail,
     AccountActivate,
 )
 from organization.views import (
@@ -547,13 +548,6 @@ urlpatterns = [
     re_path(r'^project-viz/(?P<project_stat_id>\d+)/(?P<token>[0-9a-f-]+)/$',
             ProjectPublicVizView.as_view(), name='project-stat-viz-public'),
 
-    # NOTE: For debuging email templates
-    re_path(r'^pr-email/$', PasswordReset.as_view()),
-    re_path(r'^aa-email/$', AccountActivate.as_view()),
-    re_path(r'^pj-email/$', ProjectJoinRequest.as_view()),
-    re_path(r'^ec-email/$', EntryCommentEmail.as_view()),
-    re_path(r'^render-debug/$', RenderChart.as_view()),
-
     re_path(r'^favicon.ico$',
             RedirectView.as_view(url=get_frontend_url('favicon.ico')),
             name="favicon"),
@@ -561,6 +555,11 @@ urlpatterns = [
     # graphql patterns
     re_path('^graphiql/?$', csrf_exempt(CustomGraphQLView.as_view(graphiql=True))),
     re_path('^graphql/?$', csrf_exempt(CustomGraphQLView.as_view())),
+    re_path(r'^favicon.ico$',
+            RedirectView.as_view(
+                url=get_frontend_url('favicon.ico'),
+            ),
+            name="favicon"),
 ] + static.static(
     settings.MEDIA_URL, view=xframe_options_exempt(serve),
     document_root=settings.MEDIA_ROOT
@@ -572,6 +571,14 @@ if settings.DEBUG:
         urlpatterns += [
             re_path('__debug__/', include(debug_toolbar.urls)),
         ]
+    urlpatterns += [
+        re_path(r'^pr-email/$', PasswordReset.as_view()),
+        re_path(r'^aa-email/$', AccountActivate.as_view()),
+        re_path(r'^pj-email/$', ProjectJoinRequest.as_view()),
+        re_path(r'^ec-email/$', EntryCommentEmail.as_view()),
+        re_path(r'^erc-email/$', EntryReviewCommentEmail.as_view()),
+        re_path(r'^render-debug/$', RenderChart.as_view()),
+    ]
 
 handler404 = Api_404View.as_view()
 
