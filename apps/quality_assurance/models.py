@@ -63,7 +63,9 @@ class BaseReviewComment(models.Model):
 
     @property
     def text(self):
-        return self.comment_texts.last()
+        last_comment_text = self.comment_texts.order_by('-id').first()
+        if last_comment_text:
+            return last_comment_text.text
 
 
 class BaseReviewCommentText(models.Model):
@@ -88,13 +90,13 @@ class EntryReviewComment(BaseReviewComment):
         abstract = False
 
     def get_related_users(self, skip_owner_user=True):
-        users = (
+        users = list(
             self.mentioned_users.through.objects
-            .filter(entryreviewcomment__entry=self)
-            .values_list('id', flat=True).distinct()
+            .filter(entryreviewcomment__entry=self.entry)
+            .values_list('user', flat=True).distinct()
         )
         users.extend(
-            self.objects
+            type(self).objects
             .filter(entry=self.entry)
             .values_list('created_by_id', flat=True).distinct()
         )
