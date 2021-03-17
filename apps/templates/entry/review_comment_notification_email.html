@@ -17,7 +17,7 @@
             border: solid black;
             border-width: 0 3px 3px 0;
             display: inline-block;
-            transform: rotate(45deg);
+            transform: rotate(-135deg);
             padding: 3px;
         }
         .arrow:last-child {
@@ -56,7 +56,7 @@
             {{comment.created_by.profile.get_display_name}} modified the comment you are mentioned in:
         </p>
         <div class="comment-edit-container">
-            {% for comment_text in comment.entrycommenttext_set.all %}
+            {% for comment_text in comment.comment_texts.all %}
             <div class="comment">
                 {{comment_text.text | markdown_render}}
             </div>
@@ -66,7 +66,7 @@
     {% endif %}
     <a
         class="comment-link"
-        href="{{protocol}}://{{client_domain}}/permalink/projects/{{comment.entry.project_id}}/leads/{{comment.entry.lead_id}}/entries/{{comment.entry_id}}/review-comments/"
+        href="{{protocol}}://{{client_domain}}/permalink/projects/{{comment.entry.project_id}}/leads/{{comment.entry.lead_id}}/entries/{{comment.entry_id}}/review-comments/{{comment.pk}}/"
     >
         Click here to go to the comment
     </a>
