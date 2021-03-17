@@ -1,8 +1,10 @@
 from deep.tests import TestCase
 from entry.models import Entry
+from notification.models import Notification
 from quality_assurance.models import (
     # EntryReviewComment,
     CommentType,
+    EntryReviewComment,
 )
 
 ApprovedByQs = Entry.approved_by.through.objects
@@ -335,4 +337,120 @@ class QualityAccuranceTests(TestCase):
             else:
                 self.assert_201(response)
 
-    # TODO: notification
+    def test_entry_review_comment_notification(self):
+        def _get_comment_users_pk(pk):
+            return set(
+                EntryReviewComment.objects.get(pk=pk).get_related_users().values_list('pk', flat=True)
+            )
+
+        def _clean_comments(project):
+            return EntryReviewComment.objects.filter(entry__project=project).delete()
+
+        def _clear_notifications():
+            return Notification.objects.all().delete()
+
+        def _get_notifications_receivers():
+            return set(
+                Notification.objects.values_list('receiver', flat=True)
+            ), set(
+                Notification.objects.values_list('notification_type', flat=True).distinct()
+            )
+
+        project = self.create_project()
+        entry = self.create_entry(project=project)
+        user1 = self.create_user()
+        user2 = self.create_user()
+        user3 = self.create_user()
+        user4 = self.create_user()
+        project.add_member(user1, role=self.normal_role)
+        project.add_member(user2, role=self.normal_role)
+        project.add_member(user3, role=self.normal_role)
+        project.add_member(user4, role=self.normal_role)
+        url = f'/api/v1/entries/{entry.pk}/review-comments/'
+
+        self.authenticate(user1)
+
+        # Create a commit
+        _clear_notifications()
+        data = {
+            'text': 'This is a comment',
+            'comment_type': CommentType.COMMENT,
+            'mentioned_users': [user2.pk],
+        }
+        # Need self.captureOnCommitCallbacks as this API uses transation.on_commit
+        with self.captureOnCommitCallbacks(execute=True):
+            comment_id = self.client.post(url, data=data).json()['id']
+        assert _get_comment_users_pk(comment_id) == set([user2.pk])
+        assert _get_notifications_receivers() == (
+            set([user2.pk]),
+            set([Notification.ENTRY_REVIEW_COMMENT_ADD]),
+        )
+
+        # Create a commit (multiple mentioned_users)
+        _clear_notifications()
+        data = {
+            'text': 'This is a comment',
+            'comment_type': CommentType.COMMENT,
+            'mentioned_users': [user2.pk, user3.pk, user1.pk],
+        }
+        # Need self.captureOnCommitCallbacks as this API uses transation.on_commit
+        with self.captureOnCommitCallbacks(execute=True):
+            comment_id = self.client.post(url, data=data).json()['id']
+        assert _get_comment_users_pk(comment_id) == set([user2.pk, user3.pk])
+        assert _get_notifications_receivers() == (
+            set([user2.pk, user3.pk]),
+            set([Notification.ENTRY_REVIEW_COMMENT_ADD]),
+        )
+
+        # Create a commit different comment_type
+        for comment_type in [
+            CommentType.APPROVE, CommentType.UNAPPROVE,
+            CommentType.CONTROL, CommentType.UNCONTROL,
+        ]:
+            _clean_comments(project)
+            _clear_notifications()
+            data = {
+                'text': 'This is a comment',
+                'comment_type': comment_type,
+                'mentioned_users': [user1.pk, user2.pk, user3.pk],
+            }
+            # Need self.captureOnCommitCallbacks as this API uses transation.on_commit
+            with self.captureOnCommitCallbacks(execute=True):
+                comment_id = self.client.post(url, data=data).json()['id']
+            assert _get_comment_users_pk(comment_id) == set([user2.pk, user3.pk])
+            assert _get_notifications_receivers() == (
+                set([user2.pk, user3.pk]),
+                set([Notification.ENTRY_REVIEW_COMMENT_ADD]),
+            )
+
+            _clear_notifications()
+            # Need self.captureOnCommitCallbacks as this API uses transation.on_commit
+            with self.captureOnCommitCallbacks(execute=True):
+                resp = self.client.patch(f'{url}{comment_id}/', data=data)
+                self.assert_200(resp)
+            assert _get_comment_users_pk(comment_id) == set([user2.pk, user3.pk])
+            assert _get_notifications_receivers() == (set(), set())  # No new notifications are created
+
+            _clear_notifications()
+            data['text'] = 'this is a new comment text'
+            # Need self.captureOnCommitCallbacks as this API uses transation.on_commit
+            with self.captureOnCommitCallbacks(execute=True):
+                resp = self.client.patch(f'{url}{comment_id}/', data=data)
+                self.assert_200(resp)
+            assert _get_comment_users_pk(comment_id) == set([user2.pk, user3.pk])
+            assert _get_notifications_receivers() == (
+                set([user2.pk, user3.pk]),
+                set([Notification.ENTRY_REVIEW_COMMENT_MODIFY]),
+            )  # New notifications are created
+
+            _clear_notifications()
+            data['mentioned_users'].append(user4.pk)
+            # Need self.captureOnCommitCallbacks as this API uses transation.on_commit
+            with self.captureOnCommitCallbacks(execute=True):
+                resp = self.client.patch(f'{url}{comment_id}/', data=data)
+                self.assert_200(resp)
+            assert _get_comment_users_pk(comment_id) == set([user4.pk, user2.pk, user3.pk])
+            assert _get_notifications_receivers() == (
+                set([user4.pk]),
+                set([Notification.ENTRY_REVIEW_COMMENT_MODIFY]),
+            )  # New notifications are created only for user2
