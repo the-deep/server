@@ -556,7 +556,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         # get all the analysis in the project
         analysis_list = Analysis.objects.filter(
             project=project
-        ).values('id', 'title', 'created_on')
+        ).values('id', 'title', 'created_at')
 
         leads = Lead.objects.filter(project=project)
         total_sources = leads.annotate(entries_count=models.Count('entry')).filter(entries_count__gt=0).count()
