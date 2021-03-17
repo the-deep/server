@@ -71,7 +71,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                         entries_count=models.Count('entries', distinct=True)).values(
                         'entries_count', 'id', 'statement'
                     ),
-                    'created_on': pillar.created_on,
+                    'created_at': pillar.created_at,
                     'analytical_statement_count': AnalyticalStatement.objects.filter(analysis_pillar=pillar).count()
                 } for pillar in pillar_list
 
