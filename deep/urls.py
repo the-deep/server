@@ -144,6 +144,7 @@ from deep.views import (
     PasswordReset,
     ProjectJoinRequest,
     EntryCommentEmail,
+    EntryReviewCommentEmail,
     AccountActivate,
 )
 from organization.views import (
@@ -512,12 +513,6 @@ urlpatterns = [
                                namespace='rest_framework')),
 
     # NOTE: For debuging email templates
-    url(r'^pr-email/$', PasswordReset.as_view()),
-    url(r'^aa-email/$', AccountActivate.as_view()),
-    url(r'^pj-email/$', ProjectJoinRequest.as_view()),
-    url(r'^ec-email/$', EntryCommentEmail.as_view()),
-    url(r'^render-debug/$', RenderChart.as_view()),
-
     url(r'^favicon.ico$',
         RedirectView.as_view(
             url=get_frontend_url('favicon.ico'),
@@ -526,6 +521,16 @@ urlpatterns = [
 ] + static.static(
     settings.MEDIA_URL, view=xframe_options_exempt(serve),
     document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG:
+    urlpatterns += [
+        url(r'^pr-email/$', PasswordReset.as_view()),
+        url(r'^aa-email/$', AccountActivate.as_view()),
+        url(r'^pj-email/$', ProjectJoinRequest.as_view()),
+        url(r'^ec-email/$', EntryCommentEmail.as_view()),
+        url(r'^erc-email/$', EntryReviewCommentEmail.as_view()),
+        url(r'^render-debug/$', RenderChart.as_view()),
+    ]
 
 if 'silk' in settings.INSTALLED_APPS:
     urlpatterns += [
