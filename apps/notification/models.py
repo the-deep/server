@@ -22,6 +22,10 @@ class Notification(models.Model):
     ENTRY_COMMENT_REPLY_MODIFY = 'entry_comment_reply_modify'
     ENTRY_COMMENT_RESOLVED = 'entry_comment_resolved'
 
+    # Entry Comment Review Notifications Types
+    ENTRY_REVIEW_COMMENT_ADD = 'entry_review_comment_add'
+    ENTRY_REVIEW_COMMENT_MODIFY = 'entry_review_comment_modify'
+
     TYPE_CHOICES = (
         (PROJECT_JOIN_REQUEST, 'Join project request'),
         (PROJECT_JOIN_REQUEST_ABORT, 'Join project request abort'),
@@ -33,6 +37,9 @@ class Notification(models.Model):
         (ENTRY_COMMENT_REPLY_ADD, 'Entry Comment Reply Add'),
         (ENTRY_COMMENT_REPLY_MODIFY, 'Entry Comment Reply Modify'),
         (ENTRY_COMMENT_RESOLVED, 'Entry Comment Resolved'),
+
+        (ENTRY_REVIEW_COMMENT_ADD, 'entry_review_comment_add'),
+        (ENTRY_REVIEW_COMMENT_MODIFY, 'entry_review_comment_modify'),
     )
     TYPES = [choice[0] for choice in TYPE_CHOICES]
 
