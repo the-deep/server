@@ -14,7 +14,7 @@ class Analysis(models.Model):
         User,
         on_delete=models.CASCADE,
     )
-    created_on = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
@@ -35,7 +35,7 @@ class AnalysisPillar(models.Model):
     title = models.CharField(max_length=255)
     main_statement = models.TextField(blank=True)
     information_gap = models.TextField(blank=True)
-    created_on = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     filters = JSONField(blank=True, null=True, default=None)
     assignee = models.ForeignKey(
         User,
