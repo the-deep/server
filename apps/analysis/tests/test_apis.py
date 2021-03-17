@@ -300,6 +300,7 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(data['authoring_organizations'][1]['count'], 1)
         self.assertEqual(data['authoring_organizations'][2]['count'], 2)
 
+        # authenticate with user that is not project member
         self.authenticate(user2)
         response = self.client.get(url)
         self.assert_403(response)
