@@ -580,13 +580,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 output_field=models.IntegerField(),
             ), 0)
         ).filter(entries_count__gt=0)
-        authoring_organizations = Lead.objects.filter(id__in=lead_qs).order_by('authors__created_at').values('authors')\
-            .annotate(
-                count=models.Count('id')
-        ).values(
+        authoring_organizations = Lead.objects.filter(id__in=lead_qs).order_by().values(
+            'authors__organization_type'
+        ).annotate(count=models.Count('id')).values(
             'count',
-            organization_id=models.F('authors'),
-            organization_title=models.F('authors__title')
+            organization_type_id=models.F('authors__organization_type'),
+            organization_type_title=models.F('authors__organization_type__title')
         )
         return response.Response({
             'analysis_list': analysis_list,
