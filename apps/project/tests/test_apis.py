@@ -26,6 +26,7 @@ from project.tasks import (
     _generate_project_viz_stats,
     _generate_project_stats_cache,
 )
+from ary.models import AssessmentTemplate
 from project.models import (
     Project,
     ProjectRole,
@@ -86,6 +87,26 @@ class ProjectApiTest(TestCase):
 
         self.assertEqual(Project.objects.count(), project_count + 1)
         self.assertEqual(response.data['title'], data['title'])
+
+    def test_check_assessment_template_in_project_create(self):
+        project_count = Project.objects.count()
+        assessment = self.create(AssessmentTemplate)
+        url = '/api/v1/projects/'
+        data = {
+            'title': 'Test project',
+            'data': {'testKey': 'testValue'},
+            'organizations': [
+                {'organization': self.org1.id, 'organization_type': ProjectOrganization.DONOR},
+            ],
+            'has_assessments': True
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        self.assertEqual(Project.objects.count(), project_count + 1)
+        self.assertEqual(response.data['assessment_template'], assessment.id)
 
     def create_project_api(self, **kwargs):
         url = '/api/v1/projects/'

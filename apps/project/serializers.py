@@ -14,7 +14,7 @@ from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
 from user_group.serializers import SimpleUserGroupSerializer
 from user_resource.serializers import UserResourceSerializer
-
+from ary.models import AssessmentTemplate
 from .models import (
     Project,
     ProjectMembership,
@@ -227,6 +227,7 @@ class ProjectSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceS
     number_of_users = serializers.IntegerField(read_only=True)
     status_title = serializers.ReadOnlyField(source='status.title')
     is_visualization_enabled = serializers.SerializerMethodField(read_only=True)
+    has_assessments = serializers.BooleanField(required=False)
 
     class Meta:
         model = Project
@@ -284,6 +285,12 @@ class ProjectSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceS
         raise PermissionDenied(
             {'message': "You don't have permissions to use the analysis framework in the project"}
         )
+
+    def validate(self, data):
+        has_assessments = data.pop('has_assessments', None)
+        if has_assessments is not None:
+            data['assessment_template'] = AssessmentTemplate.objects.first() if has_assessments else None
+        return data
 
     def get_is_visualization_enabled(self, project):
         af = project.analysis_framework
