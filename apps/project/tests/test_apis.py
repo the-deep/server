@@ -106,6 +106,7 @@ class ProjectApiTest(TestCase):
         self.assertEqual(Project.objects.count(), project_count + 1)
         self.assertEqual(response.data['assessment_template'], assessment.id)
 
+<<<<<<< HEAD
         # providing `has_assessments=False`
         data['has_assessments'] = False
         self.authenticate()
@@ -119,6 +120,8 @@ class ProjectApiTest(TestCase):
         response = self.client.post(url, data)
         self.assert_400(response)
 
+=======
+>>>>>>> Set has_assessments boolean for assessment template
     def create_project_api(self, **kwargs):
         url = '/api/v1/projects/'
         data = {

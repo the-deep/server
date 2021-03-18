@@ -225,7 +225,10 @@ class ProjectSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceS
     number_of_users = serializers.IntegerField(read_only=True)
     is_visualization_enabled = serializers.SerializerMethodField(read_only=True)
     has_assessments = serializers.BooleanField(required=False)
+<<<<<<< HEAD
     status_display = serializers.CharField(source='get_status_display', read_only=True)
+=======
+>>>>>>> Set has_assessments boolean for assessment template
 
     class Meta:
         model = Project
