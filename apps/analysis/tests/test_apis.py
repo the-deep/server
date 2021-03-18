@@ -9,7 +9,7 @@ from analysis.models import (
     AnalyticalStatement,
     AnalyticalStatementEntry,
 )
-from organization.models import Organization
+from organization.models import Organization, OrganizationType
 
 
 class TestAnalysisAPIs(TestCase):
@@ -252,9 +252,12 @@ class TestAnalysisAPIs(TestCase):
         project = self.create_project()
         project.add_member(user)
 
-        organization1 = self.create(Organization, title='UN')
-        organization2 = self.create(Organization, title='RED CROSS')
-        organization3 = self.create(Organization, title='ToggleCorp')
+        organization_type1 = self.create(OrganizationType, title='OrgA')
+        organization_type2 = self.create(OrganizationType, title='Orgb')
+
+        organization1 = self.create(Organization, title='UN', organization_type=organization_type1)
+        organization2 = self.create(Organization, title='RED CROSS', organization_type=organization_type2)
+        organization3 = self.create(Organization, title='ToggleCorp', organization_type=organization_type1)
 
         lead1 = self.create_lead(authors=[organization1], project=project, title='TESTA')
         lead2 = self.create_lead(authors=[organization2, organization3], project=project, title='TESTB')
@@ -293,12 +296,11 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(data['sources_total'], 3)  # since we take only that lead which entry has been created
         self.assertEqual(data['analyzed_source_count'], 3)
         self.assertEqual(data['analyzed_entries_count'], 3)
-        self.assertEqual(len(data['authoring_organizations']), 3)
-        self.assertEqual(data['authoring_organizations'][0]['organization_id'], organization1.id)
-        self.assertEqual(data['authoring_organizations'][0]['organization_title'], organization1.title)
-        self.assertEqual(data['authoring_organizations'][0]['count'], 1)
+        self.assertEqual(len(data['authoring_organizations']), 2)
+        self.assertEqual(data['authoring_organizations'][0]['organization_type_id'], organization_type1.id)
+        self.assertEqual(data['authoring_organizations'][0]['organization_type_title'], organization_type1.title)
+        self.assertEqual(data['authoring_organizations'][0]['count'], 3)
         self.assertEqual(data['authoring_organizations'][1]['count'], 1)
-        self.assertEqual(data['authoring_organizations'][2]['count'], 2)
 
         # authenticate with user that is not project member
         self.authenticate(user2)
