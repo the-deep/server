@@ -19,8 +19,6 @@ from .models import (
     ProjectMembership,
     ProjectUserGroupMembership,
     ProjectStats,
-    ProjectStatus,
-    ProjectStatusCondition,
     ProjectJoinRequest,
     ProjectOrganization,
 )
@@ -156,16 +154,6 @@ class ProjectAdmin(VersionAdmin):
         elif count == 1:
             return regions
         return f'{regions[:10]}.... ({count})'
-
-
-class ProjectConditionInline(admin.StackedInline):
-    model = ProjectStatusCondition
-    extra = 0
-
-
-@admin.register(ProjectStatus)
-class ProjectStatusAdmin(admin.ModelAdmin):
-    inlines = [ProjectConditionInline]
 
 
 @admin.register(ProjectRole)

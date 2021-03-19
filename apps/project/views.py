@@ -54,7 +54,6 @@ from analysis.models import (
 )
 
 from .models import (
-    ProjectStatus,
     Project,
     ProjectRole,
     ProjectMembership,
@@ -70,7 +69,6 @@ from .serializers import (
     ProjectMembershipSerializer,
     ProjectJoinRequestSerializer,
     ProjectUserGroupSerializer,
-    ProjectStatusOptionsSerializer,
     ProjectMemberViewSerializer,
     ProjectRecentActivitySerializer,
 )
@@ -654,7 +652,6 @@ class ProjectStatViewSet(ProjectViewSet):
         ).prefetch_related(
             'regions', 'organizations',
         ).select_related(
-            'status',
             'created_by__profile', 'modified_by__profile'
         )
 
@@ -852,12 +849,6 @@ class ProjectOptionsView(views.APIView):
                 key=models.F('id'),
                 value=models.F('title')
             ).values('key', 'value')
-
-        if (fields is None or 'status' in fields):
-            options['status'] = ProjectStatusOptionsSerializer(
-                ProjectStatus.objects.all().prefetch_related('conditions'),
-                many=True
-            ).data
 
         if (fields is None or 'involvement' in fields):
             options['involvement'] = [
