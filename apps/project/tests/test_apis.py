@@ -32,8 +32,6 @@ from project.models import (
     ProjectRole,
     ProjectMembership,
     ProjectJoinRequest,
-    ProjectStatus,
-    ProjectStatusCondition,
     ProjectUserGroupMembership,
     ProjectOrganization,
     ProjectStats,
@@ -107,6 +105,20 @@ class ProjectApiTest(TestCase):
 
         self.assertEqual(Project.objects.count(), project_count + 1)
         self.assertEqual(response.data['assessment_template'], assessment.id)
+
+        # not providing has_assessments
+        data = {
+            'title': 'Test project',
+            'data': {'testKey': 'testValue'},
+            'organizations': [
+                {'organization': self.org1.id, 'organization_type': ProjectOrganization.DONOR},
+            ],
+            'has_assessments': False
+        }
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        self.assertNotIn('assessment_template', response.data)
 
     def create_project_api(self, **kwargs):
         url = '/api/v1/projects/'
@@ -968,76 +980,18 @@ class ProjectApiTest(TestCase):
         self.assertEqual(request.status, 'accepted')
         self.assertEqual(request.responded_by, self.user)
 
-    def _test_status_filter(self, and_conditions):
-        status = self.create(ProjectStatus, and_conditions=and_conditions)
-        self.create(
-            ProjectStatusCondition,
-            project_status=status,
-            condition_type=ProjectStatusCondition.NO_LEADS_CREATED,
-            days=5,
-        )
-        self.create(
-            ProjectStatusCondition,
-            project_status=status,
-            condition_type=ProjectStatusCondition.NO_ENTRIES_CREATED,
-            days=5,
-        )
+    def test_status_filter(self):
+        project1 = self.create(Project, role=self.admin_role, status='active')
+        project2 = self.create(Project, role=self.admin_role, status='inactive')
+        project3 = self.create(Project, role=self.admin_role, status='inactive')
 
-        old_date = timezone.now() - timedelta(days=8)
+        test_user = self.create(User)
+        project1.add_member(test_user, role=self.normal_role)
 
-        # One with old lead
-        project1 = self.create(Project, role=self.admin_role)
-        lead = self.create(Lead, project=project1)
-        Lead.objects.filter(pk=lead.pk).update(created_at=old_date)
-        Lead.objects.get(pk=lead.pk).save()
-
-        # One with latest lead
-        project2 = self.create(Project, role=self.admin_role)
-        self.create(Lead, project=project2)
-
-        # One empty
-        self.create(Project, role=self.admin_role)
-
-        # One with latest lead but expired entry
-        project4 = self.create(Project, role=self.admin_role)
-        lead = self.create(Lead, project=project4)
-        entry = self.create(Entry, lead=lead)
-        Entry.objects.filter(pk=entry.pk).update(created_at=old_date)
-        Lead.objects.get(pk=lead.pk).save()
-
-        # One with expired lead and expired entry
-        project5 = self.create(Project, role=self.admin_role)
-        lead = self.create(Lead, project=project5)
-        entry = self.create(Entry, lead=lead)
-        Lead.objects.filter(pk=lead.pk).update(created_at=old_date)
-        Entry.objects.filter(pk=entry.pk).update(created_at=old_date)
-        Lead.objects.get(pk=lead.pk).save()
-
-        url = '/api/v1/projects/?status={}'.format(status.id)
-
-        self.authenticate()
+        url = f'/api/v1/projects/?status=inactive'
+        self.authenticate(test_user)
         response = self.client.get(url)
-        self.assert_200(response)
-
-        expected = [
-            project1.id,
-            project5.id,
-        ] if and_conditions else [
-            project1.id,
-            project2.id,
-            project4.id,
-            project5.id,
-        ]
-        obtained = [r['id'] for r in response.data['results']]
-
-        self.assertEqual(response.data['count'], len(expected))
-        self.assertTrue(sorted(expected) == sorted(obtained))
-
-    def test_status_filter_or_conditions(self):
-        self._test_status_filter(False)
-
-    def test_status_filter_and_conditions(self):
-        self._test_status_filter(True)
+        self.assertEqual(response.data['count'], 2)
 
     def test_involvment_filter(self):
         project1 = self.create(Project, role=self.admin_role)

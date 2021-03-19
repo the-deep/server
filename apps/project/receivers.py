@@ -7,8 +7,6 @@ from project.models import (
     ProjectMembership,
     ProjectUserGroupMembership,
     ProjectJoinRequest,
-    ProjectStatus,
-    ProjectStatusCondition,
 )
 
 
@@ -66,13 +64,3 @@ def on_membership_saved(sender, **kwargs):
         responded_by=instance.added_by,
         responded_at=instance.joined_at,
     )
-
-
-# Whenever a project status value is changed, update all projects' statuses
-@receiver(models.signals.post_save, sender=ProjectStatus)
-@receiver(models.signals.post_delete, sender=ProjectStatus)
-@receiver(models.signals.post_save, sender=ProjectStatusCondition)
-def on_status_updated(sender, **kwargs):
-    with transaction.atomic():
-        for project in Project.objects.all():
-            project.update_status()

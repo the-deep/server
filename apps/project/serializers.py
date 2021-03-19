@@ -21,8 +21,6 @@ from .models import (
     ProjectJoinRequest,
     ProjectRole,
     ProjectUserGroupMembership,
-    ProjectStatusCondition,
-    ProjectStatus,
     ProjectOrganization,
 )
 
@@ -225,7 +223,6 @@ class ProjectSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceS
     user_groups = SimpleUserGroupSerializer(many=True, read_only=True)
 
     number_of_users = serializers.IntegerField(read_only=True)
-    status_title = serializers.ReadOnlyField(source='status.title')
     is_visualization_enabled = serializers.SerializerMethodField(read_only=True)
     has_assessments = serializers.BooleanField(required=False)
 
@@ -385,7 +382,7 @@ class ProjectStatSerializer(ProjectSerializer):
     number_of_leads_tagged = serializers.IntegerField(read_only=True)
     number_of_leads_tagged_and_verified = serializers.IntegerField(read_only=True)
     number_of_entries = serializers.IntegerField(read_only=True)
-    status = serializers.ReadOnlyField(source='status.title')
+    status = serializers.ReadOnlyField()
 
     leads_activity = serializers.ReadOnlyField(source='get_leads_activity')
     entries_activity = serializers.ReadOnlyField(source='get_entries_activity')
@@ -453,22 +450,6 @@ class ProjectUserGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectUserGroupMembership
         fields = '__all__'
-
-
-class ProjectStatusConditionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProjectStatusCondition
-        fields = '__all__'
-
-
-class ProjectStatusOptionsSerializer(serializers.ModelSerializer):
-    key = serializers.IntegerField(source='id', read_only=True)
-    value = serializers.CharField(source='title', read_only=True)
-    conditions = ProjectStatusConditionSerializer(many=True)
-
-    class Meta:
-        model = ProjectStatus
-        fields = ('key', 'value', 'and_conditions', 'conditions')
 
 
 class ProjectRecentActivitySerializer(serializers.Serializer):
