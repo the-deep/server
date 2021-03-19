@@ -1,0 +1,73 @@
+{% extends "base_email.html" %}
+
+{% load deep_notification_tags %}
+
+{% block head %}
+    <style>
+        .email-label {
+            color: #000;
+            font-size: 14px;
+        }
+        .comment {
+            text-align: start;
+            padding: 6px 0;
+        }
+
+        .arrow {
+            border: solid black;
+            border-width: 0 3px 3px 0;
+            display: inline-block;
+            transform: rotate(-135deg);
+            padding: 3px;
+        }
+        .arrow:last-child {
+            display: none;
+        }
+
+        .comment-link {
+            display: block;
+            margin-top: 24px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% if notification_type == Notification.ENTRY_REVIEW_COMMENT_ADD %}
+        <p class="email-label">
+        {{comment.created_by.profile.get_display_name}}
+        {% if comment.comment_type == CommentType.APPROVE %}
+            approved
+        {% elif comment.comment_type == CommentType.UNAPPROVE %}
+            unapproved
+        {% elif comment.comment_type == CommentType.CONTROL %}
+            controlled
+        {% elif comment.comment_type == CommentType.UNCONTROL %}
+            uncontrolled
+        {% else %}
+            added a comment in
+        {% endif %}
+        Entry: <{{comment.entry.lead}}>
+        </p>
+        <div class="comment">
+            {{comment.text | markdown_render }}
+        </div>
+    {% elif notification_type == Notification.ENTRY_REVIEW_COMMENT_MODIFY %}
+        <p class="email-label">
+            {{comment.created_by.profile.get_display_name}} modified the comment you are mentioned in:
+        </p>
+        <div class="comment-edit-container">
+            {% for comment_text in comment.comment_texts.all %}
+            <div class="comment">
+                {{comment_text.text | markdown_render}}
+            </div>
+            <p class="arrow"></p>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <a
+        class="comment-link"
+        href="{{protocol}}://{{client_domain}}/permalink/projects/{{comment.entry.project_id}}/leads/{{comment.entry.lead_id}}/entries/{{comment.entry_id}}/review-comments/{{comment.pk}}/"
+    >
+        Click here to go to the comment
+    </a>
+{% endblock %}

@@ -207,3 +207,12 @@ class EntryCommentUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'name', 'email', 'organization', 'display_picture',)
+
+
+class UserNotificationSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='profile.get_display_name', read_only=True)
+    # display_picture = URLCachedFileField(source='profile.display_picture.file', read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('id', 'name', 'email')

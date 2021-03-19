@@ -99,6 +99,9 @@ from entry.views import (
     ProjectEntryLabelViewSet,
     LeadEntryGroupViewSet,
 )
+from quality_assurance.views import (
+    EntryReviewCommentViewSet,
+)
 from analysis_framework.views import (
     AnalysisFrameworkCloneView,
     AnalysisFrameworkViewSet,
@@ -141,6 +144,7 @@ from deep.views import (
     PasswordReset,
     ProjectJoinRequest,
     EntryCommentEmail,
+    EntryReviewCommentEmail,
     AccountActivate,
 )
 from organization.views import (
@@ -274,6 +278,10 @@ router.register(r'edit-entries-data', EditEntriesDataViewSet,
 router.register(r'entries/(?P<entry_id>\d+)/entry-comments', EntryCommentViewSet, basename='entry-comment')
 router.register(r'projects/(?P<project_id>\d+)/entry-labels', ProjectEntryLabelViewSet, basename='entry-labels')
 router.register(r'leads/(?P<lead_id>\d+)/entry-groups', LeadEntryGroupViewSet, basename='entry-groups')
+
+# QA routers
+router.register(
+    r'entries/(?P<entry_id>\d+)/review-comments', EntryReviewCommentViewSet, basename='entry-review-comment')
 
 # Analysis framework routers
 router.register(r'analysis-frameworks/(?P<af_id>\d+)/questions',
@@ -505,12 +513,6 @@ urlpatterns = [
                                namespace='rest_framework')),
 
     # NOTE: For debuging email templates
-    url(r'^pr-email/$', PasswordReset.as_view()),
-    url(r'^aa-email/$', AccountActivate.as_view()),
-    url(r'^pj-email/$', ProjectJoinRequest.as_view()),
-    url(r'^ec-email/$', EntryCommentEmail.as_view()),
-    url(r'^render-debug/$', RenderChart.as_view()),
-
     url(r'^favicon.ico$',
         RedirectView.as_view(
             url=get_frontend_url('favicon.ico'),
@@ -519,6 +521,16 @@ urlpatterns = [
 ] + static.static(
     settings.MEDIA_URL, view=xframe_options_exempt(serve),
     document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG:
+    urlpatterns += [
+        url(r'^pr-email/$', PasswordReset.as_view()),
+        url(r'^aa-email/$', AccountActivate.as_view()),
+        url(r'^pj-email/$', ProjectJoinRequest.as_view()),
+        url(r'^ec-email/$', EntryCommentEmail.as_view()),
+        url(r'^erc-email/$', EntryReviewCommentEmail.as_view()),
+        url(r'^render-debug/$', RenderChart.as_view()),
+    ]
 
 if 'silk' in settings.INSTALLED_APPS:
     urlpatterns += [

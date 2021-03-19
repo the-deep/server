@@ -30,7 +30,6 @@ from .models import (
     EntryCommentText,
     ExportData,
     FilterData,
-
     # Entry Grouping
     ProjectEntryLabel,
     LeadEntryGroup,
@@ -205,6 +204,10 @@ class EntrySerializer(RemoveNullFieldsMixin,
         source='verification_last_changed_by',
         read_only=True,
     )
+
+    # NOTE: Provided by annotate `annotate_comment_count`
+    approved_by_count = serializers.IntegerField(read_only=True)
+    is_approved_by_current_user = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Entry
@@ -503,3 +506,8 @@ class EntryCommentSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         return self.comment_save(validated_data, instance)
+
+
+class EntryCommentTextSerializer(serializers.ModelSerializer):
+    class Meta:
+        exclude = ('comment',)
