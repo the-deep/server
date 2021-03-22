@@ -217,6 +217,51 @@ class Project(UserResource):
             return Project.get_annotated().exclude(Q(is_private=True) & ~Q(members=user))
         return Project.objects.exclude(Q(is_private=True) & ~Q(members=user))
 
+    @classmethod
+    def get_recent_activities(cls, user):
+        from entry.models import Entry, EntryComment
+        from lead.models import Lead
+
+        project_qs = cls.get_for_member(user)
+        created_by_expression = models.functions.Coalesce(
+            models.Func(
+                models.Value(' '), models.F('created_by_id__first_name'), models.F('created_by_id__last_name'),
+                function='CONCAT_WS'
+            ), models.F('created_by_id__email'), output_field=models.CharField()
+        )
+
+        leads_qs = Lead.objects.filter(project__in=project_qs).values_list(
+            'id', 'created_at', 'project_id', 'project__title', 'created_by_id',
+            models.Value('lead', output_field=models.CharField()),
+            created_by_expression,
+        )
+        entry_qs = Entry.objects.filter(project__in=project_qs).values_list(
+            'id', 'created_at', 'project_id', 'project__title', 'created_by_id',
+            models.Value('entry', output_field=models.CharField()),
+            created_by_expression,
+        )
+        entry_comment_qs = EntryComment.objects.filter(entry__project__in=project_qs).values_list(
+            'id', 'entrycommenttext__created_at', 'entry__project_id', 'entry__project__title', 'created_by_id',
+            models.Value('entry-comment', output_field=models.CharField()),
+            created_by_expression,
+        )
+
+        return [
+            {
+                field: item[index]
+                for index, field in enumerate([
+                    'id',
+                    'created_at',
+                    'project',
+                    'project_display_name',
+                    'created_by',
+                    'type',
+                    'created_by_display_name',
+                ])
+            }
+            for item in leads_qs.union(entry_qs).union(entry_comment_qs).order_by('-created_at')[:30]
+        ]
+
     @staticmethod
     def get_for_public(requestUser, user):
         return Project\

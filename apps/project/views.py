@@ -167,6 +167,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return get_object_or_404(self.get_queryset(), pk=self.kwargs['pk'])
         raise Http404
 
+    @action(
+        detail=False,
+        url_path='recent-activities',
+    )
+    def get_recent_activities(self, request, version=None):
+        return response.Response({
+            'results': Project.get_recent_activities(request.user)
+        })
+
     """
     Get list of projects that user is member of
     """

@@ -9,7 +9,12 @@ from user.models import (
     Feature,
 )
 from deep.tests import TestCase
-from entry.models import Lead, Entry, Attribute
+from entry.models import (
+    Lead,
+    Entry,
+    Attribute,
+    EntryComment,
+)
 from analysis_framework.models import (
     AnalysisFramework,
     AnalysisFrameworkRole,
@@ -1442,3 +1447,40 @@ class ProjectApiTest(TestCase):
         stats.save()
         response = self.client.get(f"{viz_public_url}?format=json")
         self.assert_403(response)
+
+    def test_project_recent_activities_api(self):
+        normal_user = self.create_user()
+        member_user = self.create_user()
+
+        project = self.create_project(title='Project 1')
+        project.add_member(member_user)
+
+        now = timezone.now()
+        # Leads
+        lead1 = self.update_obj(self.create_lead(project=project), created_at=now + relativedelta(months=-1))
+        lead2 = self.update_obj(self.create_lead(project=project), created_at=now + relativedelta(months=-2))
+        lead3 = self.update_obj(self.create_lead(project=project), created_at=now + relativedelta(months=-2))
+
+        # Entries
+        self.update_obj(self.create_entry(lead=lead1, project=project), created_at=now + relativedelta(months=-1))
+        self.update_obj(self.create_entry(lead=lead1, project=project), created_at=now + relativedelta(months=-1))
+        self.update_obj(self.create_entry(lead=lead2, project=project), created_at=now + relativedelta(months=-3))
+        self.update_obj(self.create_entry(lead=lead2, project=project), created_at=now + relativedelta(months=-2))
+        self.update_obj(self.create_entry(lead=lead2, project=project), created_at=now + relativedelta(months=-2))
+        self.update_obj(self.create_entry(lead=lead3, project=project), created_at=now + relativedelta(months=-3))
+        entry = self.update_obj(self.create_entry(lead=lead3, project=project), created_at=now + relativedelta(months=-3))
+
+        # Entries Comments
+        self.create(EntryComment, entry=entry)
+
+        url = '/api/v1/projects/recent-activities/'
+
+        self.authenticate(normal_user)
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(len(response.data['results']), 0)
+
+        self.authenticate(member_user)
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(len(response.data['results']), 11)
