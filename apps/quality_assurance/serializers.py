@@ -115,7 +115,7 @@ class EntryReviewCommentSerializer(serializers.ModelSerializer):
             current_mentioned_users_pk = list(instance.mentioned_users.values_list('pk', flat=True))
             notify_meta['new_mentioned_users'] = [
                 user
-                for user in validated_data.get('mentioned_users')
+                for user in validated_data.get('mentioned_users', [])
                 if user.pk not in current_mentioned_users_pk
             ]
             instance = super().update(instance, validated_data)
@@ -140,12 +140,14 @@ class EntryReviewCommentNotificationSerializer(serializers.ModelSerializer):
     lead = serializers.IntegerField(source='entry.lead_id', read_only=True)
     project_details = ProjectNotificationSerializer(source='entry.project', read_only=True)
     created_by_details = UserNotificationSerializer(source='created_by', read_only=True)
+    comment_type_display = serializers.CharField(source='get_comment_type_display', read_only=True)
 
     class Meta:
         model = EntryReviewComment
         fields = (
             'id', 'entry', 'created_at',
             'text', 'lead', 'project_details', 'created_by_details',
+            'comment_type', 'comment_type_display',
         )
 
 
