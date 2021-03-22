@@ -1,3 +1,5 @@
+import uuid
+
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 from datetime import timedelta
@@ -27,6 +29,7 @@ from project.models import (
     ProjectStatusCondition,
     ProjectUserGroupMembership,
     ProjectOrganization,
+    ProjectStats,
 )
 
 from organization.models import (
@@ -1212,6 +1215,7 @@ class ProjectApiTest(TestCase):
         response = self.client.get(url)
         self.assert_200(response)
         self.assertEqual(response.json()['status'], 'success')
+        return project
 
     def test_project_lead_groups_api(self):
         project = self.create_project(role=self.normal_role)
@@ -1387,3 +1391,54 @@ class ProjectApiTest(TestCase):
         self.assertEqual(project_1_data['number_of_entries'], 9)
         self.assertEqual(len(project_1_data['leads_activity']), 2)
         self.assertEqual(len(project_1_data['entries_activity']), 3)
+
+    def test_project_stats_public_api(self):
+        normal_user = self.create_user()
+        admin_user = self.create_user()
+        member_user = self.create_user()
+
+        project = self.test_project_stats()
+        project.add_member(admin_user, role=self.admin_role)
+        project.add_member(member_user, role=self.normal_role)
+
+        url = f'/api/v1/projects/{project.pk}/public-viz/'
+
+        # Check permission for token generation
+        for action in ['set', 'unset', 'random']:
+            for user, assertLogic in [
+                (normal_user, self.assert_403),
+                (member_user, self.assert_403),
+                (admin_user, self.assert_200),
+            ]:
+                self.authenticate(user)
+                response = self.client.post(url, data={'action': action})
+                if action == 'random' and assertLogic == self.assert_200:
+                    self.assert_400(response)
+                else:
+                    assertLogic(response)
+                if assertLogic == self.assert_200:
+                    if action == 'set':
+                        assert response.data['public_url'] is not None
+                        # Logout and check if response is okay
+                        self.client.logout()
+                        response = self.client.get(f"{response.data['public_url']}?format=json")
+                        self.assert_200(response)
+                    elif action == 'unset':
+                        assert response.data['public_url'] is None
+                        # Logout and check if response is not okay
+                        self.client.logout()
+                        response = self.client.get(f"{response.data['public_url']}?format=json")
+                        self.assert_404(response)
+
+        # Make sure response are only for valid token
+        self.client.logout()
+        stats = ProjectStats.objects.get(project=project)
+        stats.token = uuid.uuid4()
+        stats.save()
+        viz_public_url = stats.get_public_url()
+        response = self.client.get(f"{viz_public_url}?format=json")
+        self.assert_200(response)
+        stats.token = None
+        stats.save()
+        response = self.client.get(f"{viz_public_url}?format=json")
+        self.assert_403(response)
