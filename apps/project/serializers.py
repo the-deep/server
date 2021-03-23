@@ -225,6 +225,7 @@ class ProjectSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceS
     number_of_users = serializers.IntegerField(read_only=True)
     is_visualization_enabled = serializers.SerializerMethodField(read_only=True)
     has_assessments = serializers.BooleanField(required=False)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
 
     class Meta:
         model = Project
@@ -382,7 +383,6 @@ class ProjectStatSerializer(ProjectSerializer):
     number_of_leads_tagged = serializers.IntegerField(read_only=True)
     number_of_leads_tagged_and_verified = serializers.IntegerField(read_only=True)
     number_of_entries = serializers.IntegerField(read_only=True)
-    status = serializers.ReadOnlyField()
 
     leads_activity = serializers.ReadOnlyField(source='get_leads_activity')
     entries_activity = serializers.ReadOnlyField(source='get_entries_activity')
