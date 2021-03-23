@@ -106,19 +106,18 @@ class ProjectApiTest(TestCase):
         self.assertEqual(Project.objects.count(), project_count + 1)
         self.assertEqual(response.data['assessment_template'], assessment.id)
 
-        # not providing has_assessments
-        data = {
-            'title': 'Test project',
-            'data': {'testKey': 'testValue'},
-            'organizations': [
-                {'organization': self.org1.id, 'organization_type': ProjectOrganization.DONOR},
-            ],
-            'has_assessments': False
-        }
+        # providing `has_assessments=False`
+        data['has_assessments'] = False
         self.authenticate()
         response = self.client.post(url, data)
         self.assert_201(response)
         self.assertNotIn('assessment_template', response.data)
+
+        # providing `has_assessments=None`
+        data['has_assessments'] = None
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_400(response)
 
     def create_project_api(self, **kwargs):
         url = '/api/v1/projects/'
@@ -986,12 +985,28 @@ class ProjectApiTest(TestCase):
         project3 = self.create(Project, role=self.admin_role, status='inactive')
 
         test_user = self.create(User)
-        project1.add_member(test_user, role=self.normal_role)
+        project1.add_member(test_user, role=self.admin_role)
 
         url = f'/api/v1/projects/?status=inactive'
         self.authenticate(test_user)
         response = self.client.get(url)
         self.assertEqual(response.data['count'], 2)
+
+        # try filtering out the active status
+        url = f'/api/v1/projects/?status=active'
+        self.authenticate(test_user)
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], 1)
+
+        # try to update the status of the project
+        data = {
+            'status': 'active'
+        }
+        url1 = f'/api/v1/projects/{project1.id}/'
+        self.authenticate(test_user)
+        response = self.client.patch(url1, data)
+        self.assert_200(response)
+        self.assertEqual(response.data['status'], project1.status)
 
     def test_involvment_filter(self):
         project1 = self.create(Project, role=self.admin_role)
