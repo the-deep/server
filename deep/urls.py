@@ -1,7 +1,6 @@
 """deep URL Configuration
 """
 from django.views.decorators.clickjacking import xframe_options_exempt
-from deep.views import get_frontend_url
 from django.views.generic.base import RedirectView
 from django.conf.urls import url, include, static
 from django.views.static import serve
@@ -140,11 +139,13 @@ from export.views import (
     ExportViewSet,
 )
 from deep.views import (
+    get_frontend_url,
     Api_404View,
     CombinedView,
     FrontendView,
     PasswordReset,
     ProjectJoinRequest,
+    ProjectPublicVizView,
     EntryCommentEmail,
     AccountActivate,
 )
@@ -515,6 +516,9 @@ urlpatterns = [
     # DRF auth, TODO: logout
     url(r'^api-auth/', include('rest_framework.urls',
                                namespace='rest_framework')),
+
+    url(r'^project-viz/(?P<project_stat_id>\d+)/(?P<token>[0-9a-f-]+)/$',
+        ProjectPublicVizView.as_view(), name='project-stat-viz-public'),
 
     # NOTE: For debuging email templates
     url(r'^pr-email/$', PasswordReset.as_view()),

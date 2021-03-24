@@ -1,0 +1,103 @@
+{% block head %}
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300&display=swap');
+
+        html {
+            margin: 0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Source Sans Pro', sans-serif;
+            overflow: hidden;
+        }
+
+        .project-title {
+            padding: 6px 10px;
+        }
+
+        .error-message {
+            height: 100vh;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        ::-webkit-scrollbar-track {
+            background-color: #eee;
+        }
+
+        ::-webkit-scrollbar {
+            background-color: #eee;
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #bbb;
+        }
+    </style>
+    <script>
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        window.addEventListener("load", async function() {
+            if ('{{status}}' == 'pending') {
+                let retry = 0;
+                const max_retry = 20;
+                while (retry < max_retry) {
+                    retry += 1;
+                    let response = await fetch('{{poll_url}}');
+                    let response_json = await response.json()
+
+                    const iframe = document.getElementById('viz-frame');
+                    const error_div = document.getElementById('error');
+                    if (response_json.status != 'pending') {
+                        if (response_json.status === 'success') {
+                            iframe.src = `https://the-deep.github.io/deepviz-entries/?dataUrl=${encodeURIComponent(response_json.data)}`;
+                            iframe.style.display = 'block';
+                        } else {
+                            error_div.innerText = response_json.error;
+                            error_div.style.display = 'flex';
+                        }
+                        break;
+                    }
+                    await sleep(5000);
+                }
+            }
+
+        });
+    </script>
+{% endblock %}
+
+{% block body %}
+    <h3
+        id="project_title"
+        class="project-title"
+    >
+        {{project_title}}
+    </h3>
+    <div
+        id="error"
+        class="error-message"
+        style="display: {% if error %} flex {% else %} none {% endif %}"
+    >
+        {{error}}
+    </div>
+    {% if not error %}
+        <iframe
+            id="viz-frame"
+            src="https://the-deep.github.io/deepviz-entries/?dataUrl={{data|urlencode}}"
+            sandbox="allow-scripts allow-same-origin allow-downloads"
+            style="display: {% if data %} block {% else %} none {% endif %}"
+        ></iframe>
+    {% endif %}
+{% endblock %}

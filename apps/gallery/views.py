@@ -1,6 +1,5 @@
 import logging
 from django.urls import reverse
-from django.core.cache import cache
 from django.views.generic import View
 from django.conf import settings
 from django.db import models, transaction
@@ -22,7 +21,6 @@ from rest_framework import (
 import django_filters
 
 from deep.permissions import ModifyPermission
-from deep.serializers import URLCachedFileField
 from project.models import Project
 from lead.models import Lead
 from entry.models import Entry

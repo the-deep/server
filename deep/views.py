@@ -5,6 +5,7 @@ from rest_framework import (
     response,
 )
 
+from django.http import JsonResponse
 from django.urls import resolve
 from django.views.generic import View
 from django.conf import settings
@@ -62,6 +63,23 @@ class CombinedView(views.APIView):
             results[api] = api_response.data
 
         return response.Response(results)
+
+
+class ProjectPublicVizView(View):
+    """
+    View for public viz view without user authentication
+    """
+    def get(self, request, project_stat_id, token):
+        from project.views import _get_viz_data
+
+        json_only = request.GET.get('format', 'html').upper() == 'json'
+        project = Project.objects.get(entry_stats__id=project_stat_id)
+        context, status_code = _get_viz_data(request, project, False, token)
+        context['project_title'] = project.title
+        if json_only:
+            return JsonResponse(context, status=status_code)
+        context['poll_url'] = f'{request.path}?format=json'
+        return TemplateResponse(request, 'project/project_viz.html', context, status=status_code)
 
 
 def get_basic_email_context():

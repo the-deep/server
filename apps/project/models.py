@@ -1,6 +1,7 @@
+from django.urls import reverse
 from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
-from django.db.models.functions import TruncDate, Cast
+from django.db.models.functions import Cast
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.db import models
@@ -570,6 +571,9 @@ class ProjectStats(models.Model):
     file = models.FileField(upload_to='project-stats/', max_length=255, null=True, blank=True)
     confidential_file = models.FileField(upload_to='project-stats/', max_length=255, null=True, blank=True)
 
+    # Token is used to retrive the viz data (non-confidential)
+    token = models.UUIDField(null=True, unique=True)
+
     def __str__(self):
         return str(self.project)
 
@@ -579,6 +583,16 @@ class ProjectStats(models.Model):
             models.Q(project__members=user) |
             models.Q(project__user_groups__members=user)
         ).distinct()
+
+    def get_public_url(self, request=None):
+        if self.token:
+            url = reverse('project-stat-viz-public', kwargs={
+                'project_stat_id': self.id,
+                'token': self.token,
+            })
+            if request:
+                url = request.build_absolute_uri(url)
+            return url
 
     def is_ready(self):
         time_threshold = timezone.now() - timedelta(seconds=self.THRESHOLD_SECONDS)
