@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.utils.crypto import get_random_string
 import logging
 import requests
 
@@ -23,44 +22,40 @@ class HidConfig:
 config = HidConfig()
 
 
+class HIDBaseException(Exception):
+    def __init__(self, message=None):
+        if message:
+            self.message = message
+
+
+class InvalidHIDConfigurationException(HIDBaseException):
+    message = 'Invalid HID Configuration'
+
+
+class HIDFetchFailedException(HIDBaseException):
+    message = 'HID User data fetch failed'
+
+
+class HIDEmailNotVerifiedException(HIDBaseException):
+    message = 'Email is not verified in HID'
+
+
 class HumanitarianId:
     """
     Handles HID Token
-    Login Existing User
-    Register New User
     """
     def __init__(self, access_token):
-        self.token, self.user_id = self.get_token_and_user_id(access_token)
-
-        if not config.client_id or not self.token or not self.user_id:
-            self.status = False
-            return
-
-        url = config.auth_uri + '/api/v2/user/' + self.user_id
-        r = requests.get(
-            url, headers={'Authorization': 'Bearer ' + self.token},
-        )
-        # Verify User
-        if r.status_code == 200:
-            self.data = r.json()
-            if self.data['email_verified'] and not self.data['deleted']:
-                self.status = True
-            else:
-                self.status = False
-        else:
-            self.status = False
+        self.data = self.get_user_information_from_access_token(access_token)
+        self.user_id = self.data['sub']
 
     def get_user(self):
-        if not self.status:
-            return None
-
         profile = Profile.objects.filter(hid=self.user_id).first()
         if profile is None:
             user = User.objects.filter(email=self.data['email']).first()
             if user:
                 self._save_user(user)
-            else:
-                user = self._create_user()
+                return user
+            user = self._create_user()
             return user
         return profile.user
 
@@ -72,10 +67,6 @@ class HumanitarianId:
         user.last_name = self.data['family_name']
         user.email = self.data['email']
         user.profile.hid = self.user_id
-        user.profile.organization = self.data.get('organization').get('name')\
-            if self.data.get('organization')\
-            else user.profile.organization
-
         user.save()
 
     def _create_user(self):
@@ -83,34 +74,29 @@ class HumanitarianId:
         Create User with HID data
         """
         username = self.data['email']
-        password = get_random_string(length=32)
 
         user = User.objects.create_user(
             first_name=self.data['given_name'],
             last_name=self.data['family_name'],
             email=self.data['email'],
             username=username,
-            password=password
         )
 
         user.profile.hid = self.user_id
-        user.profile.organization = self.data.get('organization').get('name')\
-            if self.data.get('organization')\
-            else ''
-
         user.save()
         return user
 
-    def get_token_and_user_id(self, access_token):
-        if config.client_id:
+    def get_user_information_from_access_token(self, access_token):
+        if config.auth_uri:
+            # https://github.com/UN-OCHA/hid_api/blob/363f5a06fe25360515494bce050a6d2987058a2a/api/controllers/UserController.js#L1536-L1546
             url = config.auth_uri + '/account.json'
             r = requests.post(
                 url, headers={'Authorization': 'Bearer ' + access_token},
             )
             if r.status_code == 200:
                 data = r.json()
-                return access_token, data['_id']
-            else:
-                logger.error('HID Get Token Failed!! \n{}'.format(r.json()))
-
-        return None, None
+                if not data['email_verified']:
+                    raise HIDEmailNotVerifiedException()
+                return data
+            raise HIDFetchFailedException('HID Get Token Failed!! \n{}'.format(r.json()))
+        raise InvalidHIDConfigurationException()

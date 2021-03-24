@@ -3,30 +3,25 @@ import logging
 
 from mock import patch
 
-from rest_framework import status
+# from rest_framework import status
 from django.test import TestCase
-from utils.hid import config as hid_config
+from utils.hid import hid
 from utils.common import DEFAULT_HEADERS
 
 # from urllib.parse import urlparse
 # from requests.exceptions import ConnectionError
 # import traceback
 
-from utils.hid import HumanitarianId
-from utils.hid.hid import User
-
-# NOTE: Make sure this works for testing
-# NOTE: Also add deep app to this user in HID
+# MOCK Data
 HID_EMAIL = 'dev@togglecorp.com'
 HID_PASSWORD = 'XXXXXXXXXXXXXXXX'
 HID_FIRSTNAME = 'Togglecorp'
 HID_LASTNAME = 'Dev'
 
-# TODO: use redirect_uri from django config
-HID_LOGIN_URL = hid_config.auth_uri + '/oauth/authorize?'\
-    'response_type=token&client_id=' + hid_config.client_id +\
-    '&scope=profile&state=12345&'\
-    'redirect_uri=' + hid_config.redirect_url
+HID_LOGIN_URL = (
+    f'{hid.config.auth_uri}/oauth/authorize?'
+    f'response_type=token&client_id={hid.config.client_id}&scope=profile&state=12345&redirect_uri={hid.config.redirect_url}'
+)
 
 logger = logging.getLogger(__name__)
 
@@ -67,11 +62,11 @@ class HIDIntegrationTest(TestCase):
         # NOTE: LIVE API IS NOT USED FOR TESTING. LEAVING IT HERE FOR REFERENCE ONLY #####
 
         # Send request to get crumb cookie, required for login.
-        response = self.requests.get(hid_config.auth_uri, headers=self.headers)
+        response = self.requests.get(hid.config.auth_uri, headers=self.headers)
 
         # Try to login with dev user
         response = self.requests.post(
-            hid_config.auth_uri + '/login',
+            hid.config.auth_uri + '/login',
             data={
                 'email': HID_EMAIL,
                 'password': HID_PASSWORD,
@@ -108,33 +103,45 @@ class HIDIntegrationTest(TestCase):
         mock_requests.post.return_value.status_code = 200
         mock_requests.post.return_value.json.return_value = {
             # Also returns other value, but we don't require it for now
-            '_id': 'xxxxxxxxxxxxxxxxxxxxxxxx',
-        }
-        # get -> /api/v2/user/
-        mock_requests.get.return_value.status_code = 200
-        mock_requests.get.return_value.json.return_value = {
+            'id': 'xxxxxxx1234xxxxxxxxxxxx',
+            'sub': 'xxxxxxx1234xxxxxxxxxxxx',
             # Also returns other value, but we don't require it for now
             "email_verified": True,
-            "deleted": False,
             "email": HID_EMAIL,
+            "name": "Xxxxxx Xxxxxx",
             "given_name": "Xxxxxx",
             "family_name": "Xxxxxx",
-            "organizations": [],
+            # NOTE USED
+            "iss": "https://auth.humanitarian.id",
+            "user_id": "",
         }
+        return mock_requests.post.return_value
 
     @patch('utils.hid.hid.requests')
     def test_new_user(self, mock_requests):
         """
         Test for new user
         """
-        self._setup_mock_hid_requests(mock_requests)
+        mock_return_value = self._setup_mock_hid_requests(mock_requests)
         access_token = self.get_access_token()
-        # NOTE: To avoid error on auth fail
-        if access_token is None:
-            return
-        user = HumanitarianId(access_token).get_user()
+        user = hid.HumanitarianId(access_token).get_user()
         self.assertEqual(getattr(user, 'email', None), HID_EMAIL)
         user.delete()
+
+        mock_return_value.status_code = 400
+        with self.assertRaises(hid.HIDFetchFailedException):
+            user = hid.HumanitarianId(access_token).get_user()
+        mock_return_value.status_code = 200
+
+        mock_return_value.json.return_value['email_verified'] = False
+        with self.assertRaises(hid.HIDEmailNotVerifiedException):
+            user = hid.HumanitarianId(access_token).get_user()
+        mock_return_value.json.return_value['email_verified'] = True
+
+        mock_return_value.json.return_value.pop('given_name')
+        with self.assertRaises(KeyError):
+            user = hid.HumanitarianId(access_token).get_user()
+        mock_return_value.json.return_value['given_name'] = 'Xxxxxx'
 
     @patch('utils.hid.hid.requests')
     def test_link_user(self, mock_requests):
@@ -144,11 +151,8 @@ class HIDIntegrationTest(TestCase):
 
         self._setup_mock_hid_requests(mock_requests)
         access_token = self.get_access_token()
-        # NOTE: To avoid error on auth fail
-        if access_token is None:
-            return
 
-        user = User.objects.create_user(
+        user = hid.User.objects.create_user(
             first_name=HID_FIRSTNAME,
             last_name=HID_LASTNAME,
             email=HID_EMAIL,
@@ -156,6 +160,6 @@ class HIDIntegrationTest(TestCase):
             password=HID_PASSWORD
         )
 
-        hid_user = HumanitarianId(access_token).get_user()
+        hid_user = hid.HumanitarianId(access_token).get_user()
         self.assertEqual(hid_user, user)
         user.delete()
