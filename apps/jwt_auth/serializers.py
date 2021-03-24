@@ -1,10 +1,11 @@
+import logging
+
 from django.conf import settings
-from django.contrib.auth import authenticate, models 
-from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth import authenticate, models
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 
-from utils.hid import HumanitarianId
+from utils.hid import hid
 from user.utils import send_account_activation
 from .token import AccessToken, RefreshToken, TokenError
 from .recaptcha import validate_recaptcha
@@ -14,6 +15,8 @@ from .errors import (
     UserInactiveError,
 )
 from user.validators import CustomMaximumLengthValidator
+
+logger = logging.getLogger(__name__)
 
 
 class TokenObtainPairSerializer(serializers.Serializer):
@@ -119,14 +122,15 @@ class HIDTokenObtainPairSerializer(serializers.Serializer):
     state = serializers.IntegerField(required=False)
 
     def validate(self, data):
-        hid = HumanitarianId(data['access_token'])
+        humanitarian_id = hid.HumanitarianId(data['access_token'])
 
         try:
-            user = hid.get_user()
-        except ObjectDoesNotExist:
-            raise serializers.ValidationError(
-                'Error in HID Integration'
-            )
+            user = humanitarian_id.get_user()
+        except hid.HIDBaseException as e:
+            raise serializers.ValidationError(e.message)
+        except Exception:
+            logger.error('HID error', exc_info=True)
+            raise serializers.ValidationError('Unexpected Error')
 
         access_token = AccessToken.for_user(user)
         refresh_token = RefreshToken.for_access_token(access_token)
