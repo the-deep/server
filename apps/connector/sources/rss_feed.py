@@ -77,7 +77,7 @@ class RssFeed(Source):
     dynamic_fields = [1, 2, 3, 4, 5]
 
     def get_content(self, url, params):
-        resp = requests.get(url)
+        resp = requests.get(url, headers=DEFAULT_HEADERS)
         return resp.content
 
     def fetch(self, params, offset, limit):
