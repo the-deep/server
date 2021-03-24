@@ -1,7 +1,19 @@
+import logging
+
 from django.core.cache import cache
 from django.conf import settings
 
 from utils.common import replace_ns
+
+
+logger = logging.getLogger(__name__)
+
+
+class ConnectorGetLeadException(Exception):
+    status_code = 400
+
+    def __init__(self, message):
+        self.message = message
 
 
 def ConnectorWrapper(ConnectorClass):
@@ -13,9 +25,12 @@ def ConnectorWrapper(ConnectorClass):
         def get_leads(self, *args, **kwargs):
             try:
                 ret = super().get_leads(*args, **kwargs)
-            except Exception:
-                raise Exception(
-                    "Parsing Connector Source data for {} failed. Maybe the source HTML structure has changed".format(self.title)  # noqa
+            except Exception as e:
+                logger.error('Connector: Get lead failed', exc_info=True)
+                raise ConnectorGetLeadException(
+                    f"Parsing Connector Source data for {self.title} failed. "
+                    "Maybe the source HTML structure has changed "
+                    f"Error: {str(e)}"
                 )
             else:
                 return ret
