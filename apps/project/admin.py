@@ -182,7 +182,7 @@ class ProjectEntryStatsAdmin(admin.ModelAdmin):
     list_display = ('project', 'modified_at', AF, 'status', 'file', 'confidential_file',)
     actions = [trigger_project_viz_stat_calc(generate_viz_stats)]
     autocomplete_fields = ('project',)
-    readonly_fields = (AF,)
+    readonly_fields = (AF, 'token')
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('project', 'project__analysis_framework')

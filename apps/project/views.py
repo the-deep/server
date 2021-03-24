@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from dateutil.relativedelta import relativedelta
 import django_filters
@@ -46,10 +47,8 @@ from user_group.models import UserGroup
 from geo.serializers import RegionSerializer
 from entry.models import Entry
 from entry.views import ComprehensiveEntriesViewSet
-from organization.models import Organization
 from analysis.models import (
     Analysis,
-    AnalysisPillar,
     AnalyticalStatement,
     AnalyticalStatementEntry
 )
@@ -92,7 +91,7 @@ from .token import project_request_token_generator
 logger = logging.getLogger(__name__)
 
 
-def _get_viz_data(request, StatModel, stat_generator, project):
+def _get_viz_data(request, project, can_view_confidential, token=None):
     """
     Util function to trigger and serve Project entry/ary viz data
     """
@@ -101,42 +100,43 @@ def _get_viz_data(request, StatModel, stat_generator, project):
             project.analysis_framework.properties is None or
             project.analysis_framework.properties.get('stats_config') is None
     ):
-        return response.Response(
-            {'error': f'No configuration provided for current Project: {project.title}, Contact Admin'},
-            status=status.HTTP_404_NOT_FOUND,
-        )
+        return {
+            'error': f'No configuration provided for current Project: {project.title}, Contact Admin',
+        }, status.HTTP_404_NOT_FOUND
 
-    stats, created = StatModel.objects.get_or_create(project=project)
+    stats, created = ProjectStats.objects.get_or_create(project=project)
 
-    can_view_confidential = ProjectMembership.objects.filter(member=request.user, project=project).annotate(
-        view_all=models.F('role__lead_permissions').bitand(PROJECT_PERMISSIONS.lead.view)
-    ).filter(view_all=PROJECT_PERMISSIONS.lead.view).exists()
+    if token and token != str(stats.token):
+        return {'error': 'Token is invalid'}, status.HTTP_403_FORBIDDEN
+
     stat_file = stats.confidential_file if can_view_confidential else stats.file
+    file_url = (
+        request.build_absolute_uri(URLCachedFileField().to_representation(stat_file))
+        if stat_file else None
+    )
+    stats_meta = {
+        'data': file_url,
+        'modified_at': stats.modified_at,
+        'status': stats.status,
+        'public_url': stats.get_public_url(request),
+    }
 
-    file_url = request.build_absolute_uri(
-        URLCachedFileField().to_representation(stat_file)
-    ) if stats.file else None
     if stats.is_ready():
-        return response.Response({
-            'data': file_url,
-            'status': stats.status,
-        })
+        return stats_meta, status.HTTP_200_OK
     elif stats.status == ProcessStatus.FAILURE:
-        return response.Response({
-            'message': 'Failed to generate stats, Contact Admin',
-            'data': file_url,
-            'status': stats.status,
-        })
-    transaction.on_commit(lambda: stat_generator.delay(project.pk))
+        return {
+            'error': 'Failed to generate stats, Contact Admin',
+            **stats_meta,
+        }, status.HTTP_200_OK
+    transaction.on_commit(lambda: generate_viz_stats.delay(project.pk))
     # NOTE: Not changing modified_at if already pending
     if stats.status != ProcessStatus.PENDING:
         stats.status = ProcessStatus.PENDING
         stats.save()
-    return response.Response({
+    return {
         'message': 'Processing the request, try again later',
-        'data': file_url,
-        'status': stats.status,
-    }, status=status.HTTP_202_ACCEPTED)
+        **stats_meta,
+    }, status.HTTP_202_ACCEPTED
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -192,6 +192,27 @@ class ProjectViewSet(viewsets.ModelViewSet):
         self.page = self.paginate_queryset(projects)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
+
+    """
+    Generate project public VIZ URL
+    """
+    @action(
+        detail=True,
+        methods=['post'],
+        url_path='public-viz',
+    )
+    def generate_public_viz(self, request, pk=None, version=None):
+        project = self.get_object()
+        action = request.data.get('action', 'set')
+        stats, created = ProjectStats.objects.get_or_create(project=project)
+        if action == 'set':
+            stats.token = uuid.uuid4()
+        elif action == 'unset':
+            stats.token = None
+        else:
+            raise exceptions.ValidationError({'action': f'Invalid action {action}'})
+        stats.save(update_fields=['token'])
+        return response.Response({'public_url': stats.get_public_url(request)})
 
     """
     Get analysis framework for this project
@@ -282,7 +303,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
         Get viz data for project entries:
         """
         project = self.get_object()
-        return _get_viz_data(request, ProjectStats, generate_viz_stats, project)
+        can_view_confidential = (
+            ProjectMembership.objects
+            .filter(member=request.user, project=project)
+            .annotate(
+                view_all=models.F('role__lead_permissions').bitand(PROJECT_PERMISSIONS.lead.view)
+            )
+            .filter(view_all=PROJECT_PERMISSIONS.lead.view)
+            .exists()
+        )
+        context, status_code = _get_viz_data(request, project, can_view_confidential)
+        return response.Response(context, status=status_code)
 
     """
     Join request to this project
