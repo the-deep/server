@@ -14,6 +14,7 @@ class Migration(migrations.Migration):
             model_name='projectstatuscondition',
             name='project_status',
         ),
+        migrations.RunSQL('SET CONSTRAINTS ALL IMMEDIATE'),
         migrations.AlterField(
             model_name='project',
             name='status',
