@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for utils/extractor/web_document.py: 81%</title>
+    <title>Coverage for utils/extractor/web_document.py: 85%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -18,13 +18,13 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>utils/extractor/web_document.py</b> :
-            <span class="pc_cov">81%</span>
+            <span class="pc_cov">85%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
             35 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">29 run</button>
-            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">6 missing</button>
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">31 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">4 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">3 partial</button>
         </h2>
@@ -85,9 +85,9 @@
     <p id="t30" class="pln"><span class="n"><a href="#t30">30</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t31" class="run"><span class="n"><a href="#t31">31</a></span><span class="t">        <span class="key">try</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t32" class="run"><span class="n"><a href="#t32">32</a></span><span class="t">            <span class="nam">r</span> <span class="op">=</span> <span class="nam">requests</span><span class="op">.</span><span class="nam">head</span><span class="op">(</span><span class="nam">url</span><span class="op">,</span> <span class="nam">headers</span><span class="op">=</span><span class="nam">DEFAULT_HEADERS</span><span class="op">,</span> <span class="nam">verify</span><span class="op">=</span><span class="key">False</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t33" class="mis show_mis"><span class="n"><a href="#t33">33</a></span><span class="t">        <span class="key">except</span> <span class="nam">requests</span><span class="op">.</span><span class="nam">exceptions</span><span class="op">.</span><span class="nam">RequestException</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t33" class="run"><span class="n"><a href="#t33">33</a></span><span class="t">        <span class="key">except</span> <span class="nam">requests</span><span class="op">.</span><span class="nam">exceptions</span><span class="op">.</span><span class="nam">RequestException</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t34" class="pln"><span class="n"><a href="#t34">34</a></span><span class="t">            <span class="com"># If we can't get header, assume html and try to continue.</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t35" class="mis show_mis"><span class="n"><a href="#t35">35</a></span><span class="t">            <span class="nam">r</span> <span class="op">=</span> <span class="nam">requests</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">url</span><span class="op">,</span> <span class="nam">headers</span><span class="op">=</span><span class="nam">DEFAULT_HEADERS</span><span class="op">,</span> <span class="nam">verify</span><span class="op">=</span><span class="key">False</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t35" class="run"><span class="n"><a href="#t35">35</a></span><span class="t">            <span class="nam">r</span> <span class="op">=</span> <span class="nam">requests</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">url</span><span class="op">,</span> <span class="nam">headers</span><span class="op">=</span><span class="nam">DEFAULT_HEADERS</span><span class="op">,</span> <span class="nam">verify</span><span class="op">=</span><span class="key">False</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t36" class="mis show_mis"><span class="n"><a href="#t36">36</a></span><span class="t">            <span class="nam">doc</span> <span class="op">=</span> <span class="nam">r</span><span class="op">.</span><span class="nam">content</span>&nbsp;</span><span class="r"></span></p>
     <p id="t37" class="mis show_mis"><span class="n"><a href="#t37">37</a></span><span class="t">            <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">__init__</span><span class="op">(</span><span class="nam">doc</span><span class="op">,</span> <span class="nam">type</span><span class="op">,</span> <span class="nam">params</span><span class="op">=</span><span class="nam">params</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t38" class="mis show_mis"><span class="n"><a href="#t38">38</a></span><span class="t">            <span class="key">return</span>&nbsp;</span><span class="r"></span></p>
@@ -120,7 +120,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-03-19 10:14 +0000
+            created at 2021-03-24 10:36 +0000
         </p>
     </div>
 </div>
