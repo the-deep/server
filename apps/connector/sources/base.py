@@ -100,7 +100,7 @@ class Source(ABC):
             )
 
             if ldata.get('author') is not None:
-                lead._authors = [organization_search.get(ldata['author'])]
+                lead._authors = filter(None, [organization_search.get(ldata['author'])])
 
             # Add emm info
             if ldata.get('emm_triggers') is not None:
