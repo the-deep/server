@@ -210,6 +210,10 @@ class Project(UserResource):
             )
         ).distinct()
 
+    @property
+    def has_assessments(self):
+        return self.assessment_template_id is not None
+
     def can_get(self, user):
         return self.is_member(user) or not self.is_private
 
