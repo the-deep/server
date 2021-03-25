@@ -280,7 +280,7 @@ def get_project_ary_entry_stats(project):
             'focus': _get_integer_array(methodology_raw.get('focuses')),
             'sector': _get_integer_array(methodology_raw.get('sectors')),
             'scores': scores,
-            'geo': get_valid_geo_ids(_get_integer_array(methodology_raw.get('locations'))),
+            'geo': get_valid_geo_ids(methodology_raw.get('locations') or []),
             'affected_groups': _get_integer_array(methodology_raw.get('affected_groups')),
 
             'organization_and_stakeholder_type': [

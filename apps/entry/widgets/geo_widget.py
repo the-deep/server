@@ -23,11 +23,13 @@ def get_valid_geo_ids(raw_values, extract_polygon_title=False):
 
     for raw_value in raw_values:
         if is_valid_number(raw_value):
-            geo_areas.append(raw_value)
+            geo_areas.append(int(raw_value))
         else:
             # This will be a polygon
             pgeo_areas, ptitle, pregion_id = _get_geoareas_from_polygon(raw_value)
-            geo_areas.extend(pgeo_areas)
+            geo_areas.extend([
+                int(id) for id in pgeo_areas if is_valid_number(id)
+            ])
             if extract_polygon_title and ptitle and pregion_id:
                 polygons.append({
                     'region_id': pregion_id,
