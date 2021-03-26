@@ -155,7 +155,7 @@
     <p id="t100" class="pln"><span class="n"><a href="#t100">100</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t101" class="pln"><span class="n"><a href="#t101">101</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t102" class="mis show_mis"><span class="n"><a href="#t102">102</a></span><span class="t">            <span class="key">if</span> <span class="nam">ldata</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'author'</span><span class="op">)</span> <span class="key">is</span> <span class="key">not</span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t103" class="mis show_mis"><span class="n"><a href="#t103">103</a></span><span class="t">                <span class="nam">lead</span><span class="op">.</span><span class="nam">_authors</span> <span class="op">=</span> <span class="op">[</span><span class="nam">organization_search</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">ldata</span><span class="op">[</span><span class="str">'author'</span><span class="op">]</span><span class="op">)</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t103" class="mis show_mis"><span class="n"><a href="#t103">103</a></span><span class="t">                <span class="nam">lead</span><span class="op">.</span><span class="nam">_authors</span> <span class="op">=</span> <span class="nam">filter</span><span class="op">(</span><span class="key">None</span><span class="op">,</span> <span class="op">[</span><span class="nam">organization_search</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">ldata</span><span class="op">[</span><span class="str">'author'</span><span class="op">]</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t104" class="pln"><span class="n"><a href="#t104">104</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t105" class="pln"><span class="n"><a href="#t105">105</a></span><span class="t">            <span class="com"># Add emm info</span>&nbsp;</span><span class="r"></span></p>
     <p id="t106" class="mis show_mis"><span class="n"><a href="#t106">106</a></span><span class="t">            <span class="key">if</span> <span class="nam">ldata</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'emm_triggers'</span><span class="op">)</span> <span class="key">is</span> <span class="key">not</span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -185,7 +185,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-03-24 10:36 +0000
+            created at 2021-03-26 03:36 +0000
         </p>
     </div>
 </div>

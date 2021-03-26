@@ -132,7 +132,7 @@
     <p id="t77" class="run"><span class="n"><a href="#t77">77</a></span><span class="t">    <span class="nam">dynamic_fields</span> <span class="op">=</span> <span class="op">[</span><span class="num">1</span><span class="op">,</span> <span class="num">2</span><span class="op">,</span> <span class="num">3</span><span class="op">,</span> <span class="num">4</span><span class="op">,</span> <span class="num">5</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p id="t78" class="pln"><span class="n"><a href="#t78">78</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t79" class="run"><span class="n"><a href="#t79">79</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_content</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">url</span><span class="op">,</span> <span class="nam">params</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t80" class="mis show_mis"><span class="n"><a href="#t80">80</a></span><span class="t">        <span class="nam">resp</span> <span class="op">=</span> <span class="nam">requests</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">url</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t80" class="mis show_mis"><span class="n"><a href="#t80">80</a></span><span class="t">        <span class="nam">resp</span> <span class="op">=</span> <span class="nam">requests</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">url</span><span class="op">,</span> <span class="nam">headers</span><span class="op">=</span><span class="nam">DEFAULT_HEADERS</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t81" class="mis show_mis"><span class="n"><a href="#t81">81</a></span><span class="t">        <span class="key">return</span> <span class="nam">resp</span><span class="op">.</span><span class="nam">content</span>&nbsp;</span><span class="r"></span></p>
     <p id="t82" class="pln"><span class="n"><a href="#t82">82</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t83" class="run"><span class="n"><a href="#t83">83</a></span><span class="t">    <span class="key">def</span> <span class="nam">fetch</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">params</span><span class="op">,</span> <span class="nam">offset</span><span class="op">,</span> <span class="nam">limit</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -197,7 +197,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-03-24 10:36 +0000
+            created at 2021-03-26 03:36 +0000
         </p>
     </div>
 </div>
