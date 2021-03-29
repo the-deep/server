@@ -14,6 +14,7 @@ from entry.models import (
     Entry,
     Attribute,
     EntryComment,
+    EntryCommentText,
 )
 from analysis_framework.models import (
     AnalysisFramework,
@@ -1471,7 +1472,9 @@ class ProjectApiTest(TestCase):
         entry = self.update_obj(self.create_entry(lead=lead3, project=project), created_at=now + relativedelta(months=-3))
 
         # Entries Comments
-        self.create(EntryComment, entry=entry)
+        entry_comment = self.create(EntryComment, entry=entry)
+        self.create(EntryCommentText, comment=entry_comment, text='Old')
+        self.create(EntryCommentText, comment=entry_comment, text='New')
 
         url = '/api/v1/projects/recent-activities/'
 

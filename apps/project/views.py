@@ -72,6 +72,7 @@ from .serializers import (
     ProjectUserGroupSerializer,
     ProjectStatusOptionsSerializer,
     ProjectMemberViewSerializer,
+    ProjectRecentActivitySerializer,
 )
 from .permissions import (
     JoinPermission,
@@ -173,7 +174,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
     )
     def get_recent_activities(self, request, version=None):
         return response.Response({
-            'results': Project.get_recent_activities(request.user)
+            'results': ProjectRecentActivitySerializer(
+                Project.get_recent_activities(request.user),
+                context={'request': request}, many=True,
+            ).data
         })
 
     """
