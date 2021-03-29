@@ -1,9 +1,10 @@
 from django.db import models
+from django.core.files import File
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
-from deep.serializers import RemoveNullFieldsMixin
+from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
 from geo.models import Region
 from geo.serializers import SimpleRegionSerializer
 from entry.models import Lead, Entry
@@ -461,3 +462,18 @@ class ProjectStatusOptionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectStatus
         fields = ('key', 'value', 'and_conditions', 'conditions')
+
+
+class ProjectRecentActivitySerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    created_at = serializers.DateTimeField()
+    project = serializers.IntegerField()
+    project_display_name = serializers.CharField()
+    created_by = serializers.IntegerField()
+    created_by_display_picture = serializers.SerializerMethodField()
+    type = serializers.CharField()
+    created_by_display_name = serializers.CharField()
+
+    def get_created_by_display_picture(self, instance):
+        name = instance['created_by_display_picture']
+        return name and self.context['request'].build_absolute_uri(URLCachedFileField.name_to_representation(name))

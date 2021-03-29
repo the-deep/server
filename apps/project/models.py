@@ -231,20 +231,23 @@ class Project(UserResource):
         )
 
         leads_qs = Lead.objects.filter(project__in=project_qs).values_list(
-            'id', 'created_at', 'project_id', 'project__title', 'created_by_id',
+            'id', 'created_at', 'project_id', 'project__title',
+            'created_by_id', 'created_by__profile__display_picture__file',
             models.Value('lead', output_field=models.CharField()),
             created_by_expression,
         )
         entry_qs = Entry.objects.filter(project__in=project_qs).values_list(
-            'id', 'created_at', 'project_id', 'project__title', 'created_by_id',
+            'id', 'created_at', 'project_id', 'project__title',
+            'created_by_id', 'created_by__profile__display_picture__file',
             models.Value('entry', output_field=models.CharField()),
             created_by_expression,
         )
         entry_comment_qs = EntryComment.objects.filter(entry__project__in=project_qs).values_list(
-            'id', 'entrycommenttext__created_at', 'entry__project_id', 'entry__project__title', 'created_by_id',
+            'id', 'entrycommenttext__created_at', 'entry__project_id', 'entry__project__title',
+            'created_by_id', 'created_by__profile__display_picture__file',
             models.Value('entry-comment', output_field=models.CharField()),
             created_by_expression,
-        )
+        ).distinct('id')
 
         return [
             {
@@ -255,6 +258,7 @@ class Project(UserResource):
                     'project',
                     'project_display_name',
                     'created_by',
+                    'created_by_display_picture',
                     'type',
                     'created_by_display_name',
                 ])
