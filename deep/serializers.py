@@ -10,6 +10,8 @@ from .writable_nested_serializers import ( # noqa F401
     UniqueFieldsMixin,
 )
 
+StorageClass = get_storage_class()
+
 
 def remove_null(d):
     if not isinstance(d, (dict, list)):
@@ -56,6 +58,29 @@ class URLCachedFileField(serializers.FileField):
     def get_cache_key(cls, filename):
         return cls.CACHE_KEY.format(hash(filename))
 
+    @classmethod
+    def name_to_representation(cls, name):
+        """
+        Caching signed url server-side
+        NOTE: Using storage_class.url directly
+        Assumptions:
+            - Single storage is used (accessable by get_storage_class)
+            - Either FileSystemStorage(local/default) or S3Boto3Storage(prod/deep.s3_storages.MediaStorage) is used.
+        """
+        if StorageClass == FileSystemStorage:
+            return StorageClass().url(name)
+
+        # Cache for S3Boto3Storage
+        if not name:
+            return None
+        key = URLCachedFileField.get_cache_key(name)
+        url = cache.get(key)
+        if url:
+            return url
+        url = StorageClass().url(name)
+        cache.set(key, url, get_s3_signed_url_ttl())
+        return url
+
     # obj is django models.FileField
     def to_representation(self, obj):
         """
@@ -65,7 +90,7 @@ class URLCachedFileField(serializers.FileField):
             - Either FileSystemStorage(local/default) or S3Boto3Storage(prod/deep.s3_storages.MediaStorage) is used.
         """
         # No need to cache for FileSystemStorage
-        if get_storage_class() == FileSystemStorage:
+        if StorageClass == FileSystemStorage:
             return super().to_representation(obj)
 
         # Cache for S3Boto3Storage
