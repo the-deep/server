@@ -129,7 +129,7 @@ class LeadSerializer(
     verified_entries_count = serializers.IntegerField(read_only=True)
     filtered_entries_count = serializers.IntegerField(read_only=True)
     verified_filtered_entries_count = serializers.IntegerField(read_only=True)
-    
+
     assessment_id = serializers.IntegerField(read_only=True)
 
     priority_display = serializers.CharField(source='get_priority_display', read_only=True)

@@ -72,6 +72,7 @@ from .serializers import (
     ProjectUserGroupSerializer,
     ProjectStatusOptionsSerializer,
     ProjectMemberViewSerializer,
+    ProjectRecentActivitySerializer,
 )
 from .permissions import (
     JoinPermission,
@@ -166,6 +167,18 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if self.kwargs.get('pk') is not None:
             return get_object_or_404(self.get_queryset(), pk=self.kwargs['pk'])
         raise Http404
+
+    @action(
+        detail=False,
+        url_path='recent-activities',
+    )
+    def get_recent_activities(self, request, version=None):
+        return response.Response({
+            'results': ProjectRecentActivitySerializer(
+                Project.get_recent_activities(request.user),
+                context={'request': request}, many=True,
+            ).data
+        })
 
     """
     Get list of projects that user is member of
