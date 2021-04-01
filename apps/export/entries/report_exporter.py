@@ -478,7 +478,9 @@ class ReportExporter:
         widget_texts_exists and self.doc.add_paragraph()  # Blank line
         for order in sorted(entry_texts.keys()):
             title, text = entry_texts[order]
-            self.doc.add_heading(f'{title}: ', 1).add_run(text).bold = False
+            para = self.doc.add_paragraph().justify()
+            para.add_run(f'{title}: ', bold=True)
+            para.add_run(text)
         if widget_texts_exists:
             para = self.doc.add_paragraph()
 
