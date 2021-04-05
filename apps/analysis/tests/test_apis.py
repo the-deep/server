@@ -89,6 +89,62 @@ class TestAnalysisAPIs(TestCase):
         self.assert_201(response)
         self.assertEqual(AnalysisPillar.objects.count(), pillar_count + 1)
 
+    def test_create_pillar_along_with_statement(self):
+        pillar_count = AnalysisPillar.objects.count()
+        statement_count = AnalyticalStatement.objects.count()
+        user = self.create_user()
+        project = self.create_project()
+        project.add_member(user)
+        entry1 = self.create(Entry)
+        entry2 = self.create(Entry)
+        analysis = self.create(Analysis, title='Test Analysis')
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statement': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "entry": entry1.id,
+                        },
+                        {
+                            "order": 2,
+                            "entry": entry2.id
+                        }
+                    ],
+                }
+            ]
+        }
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        self.assertEqual(AnalysisPillar.objects.count(), pillar_count + 1)
+        self.assertEqual(AnalyticalStatement.objects.filter(
+                         analysis_pillar__analysis=analysis).count(), statement_count + 1)
+
+        # try to edit
+        response_id = response.data['id']
+        data = {
+            'main_statement': 'HELLO FROM MARS',
+            'analytical_statement': [
+                {
+                    'statement': "tea",
+                    'order': 2
+                }
+            ]
+        }
+        self.authenticate(user)
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{response_id}/'
+        response = self.client.patch(url, data)
+        self.assert_200(response)
+        self.assertEqual(response.data['main_statement'], data['main_statement'])
+
     def test_create_analytical_statement(self):
         statement_count = AnalyticalStatement.objects.count()
         user = self.create_user()
@@ -112,7 +168,8 @@ class TestAnalysisAPIs(TestCase):
         self.authenticate(user)
         response = self.client.post(url, data)
         self.assert_201(response)
-        self.assertEqual(AnalyticalStatement.objects.filter(analysis_pillar__analysis=analysis).count(), statement_count + 1)
+        self.assertEqual(AnalyticalStatement.objects.filter(
+                         analysis_pillar__analysis=analysis).count(), statement_count + 1)
         r_data = response.json()
         self.assertEqual(r_data['statement'], data['statement'])
 
@@ -200,6 +257,35 @@ class TestAnalysisAPIs(TestCase):
         self.authenticate(user2)
         response = self.client.post(url, data)
         self.assert_403(response)
+
+    def test_patch_analytical_statement(self):
+        user = self.create_user()
+        project = self.create_project()
+        project.add_member(user)
+        analysis = self.create(Analysis)
+        pillar = self.create(AnalysisPillar, analysis=analysis, title='title1', assignee=user)
+        analytical_statement = self.create(AnalyticalStatement, analysis_pillar=pillar, statement='Hello from here')
+
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{pillar.id}/statement/'
+        data = {
+            'analytical_statement': [
+                {
+                    'id': analytical_statement.id,
+                    'statement': 'Hello from there'
+                }
+            ]
+        }
+        self.authenticate(user)
+        response = self.client.patch(url, data)
+        self.assert_200(response)
+        self.assertEqual(response.data['analytical_statement'][0]['id'], analytical_statement.id)
+
+        # try to post or get from the api
+        response = self.client.get(url)
+        self.assert_405(response)
+
+        response = self.client.post(url, data)
+        self.assert_405(response)
 
     def test_pillar_overview_in_analysis(self):
         user = self.create_user()

@@ -112,6 +112,34 @@ class AnalysisPillarViewSet(viewsets.ModelViewSet):
             'assignee'
         )
 
+    @action(
+        detail=True,
+        url_path='statement',
+        methods=['patch']
+    )
+    def update_statement(self, request, project_id, analysis_id, pk=None, version=None):
+        instance = self.get_object()
+        statements = request.data.get('analytical_statement', [])
+        statement_maps = {x['id']: x for x in statements}
+        statement_objs = AnalyticalStatement.objects.filter(
+            analysis_pillar=instance,
+            id__in=[x['id'] for x in statements]
+        )
+
+        for statement in statement_objs:
+            serializer = AnalysisPillarSerializer(
+                statement,
+                data=statement_maps[statement.id],
+                context={'request': request, 'view': self},
+                partial=True,
+            )
+            serializer.is_valid()
+            serializer.update(statement, statement_maps[statement.id])
+
+        return response.Response(
+            AnalysisPillarSerializer(instance, context={'request': request, 'view': self}).data,
+        )
+
 
 class AnalyticalStatementViewSet(viewsets.ModelViewSet):
     serializer_class = AnalyticalStatementSerializer
