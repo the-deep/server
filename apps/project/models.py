@@ -19,105 +19,19 @@ from django.utils import timezone
 from datetime import timedelta
 
 
-class ProjectStatus(models.Model):
-    title = models.CharField(max_length=255)
-    and_conditions = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.title
-
-    class Meta:
-        verbose_name_plural = 'project statuses'
-
-    def check_for(self, project):
-        conditions = [
-            c.check_for(project)
-            for c in self.conditions.all()
-        ]
-
-        # NOTE: if there are no conditions, it should always return false
-        # PS: any([]) is False, all([]) is False
-        if len(conditions) <= 0:
-            return False
-
-        if self.and_conditions:
-            return all(conditions)
-        else:
-            return any(conditions)
-
-
-class ProjectStatusCondition(models.Model):
-    SOME_LEADS_CREATED = 'some_leads'
-    SOME_ENTRIES_CREATED = 'some_entries'
-    NO_LEADS_CREATED = 'no_leads'
-    NO_ENTRIES_CREATED = 'no_entries'
-
-    CONDITION_TYPES = (
-        (SOME_LEADS_CREATED, 'Some leads created since'),
-        (SOME_ENTRIES_CREATED, 'Some entries created since'),
-        (NO_LEADS_CREATED, 'No leads created since'),
-        (NO_ENTRIES_CREATED, 'No entries created since'),
-    )
-
-    project_status = models.ForeignKey(
-        ProjectStatus,
-        related_name='conditions',
-        on_delete=models.CASCADE,
-    )
-    condition_type = models.CharField(max_length=48,
-                                      choices=CONDITION_TYPES)
-    days = models.IntegerField()
-
-    def __str__(self):
-        condition_types = dict(ProjectStatusCondition.CONDITION_TYPES)
-        return '{} : {} days'.format(
-            condition_types[self.condition_type],
-            self.days,
-        )
-
-    def check_for(self, project):
-        from entry.models import Entry, Lead
-        time_threshold = timezone.now() - timedelta(days=self.days)
-
-        if self.condition_type == ProjectStatusCondition.NO_LEADS_CREATED:
-            if Lead.objects.filter(
-                project=project,
-                created_at__gt=time_threshold,
-            ).exists():
-                return False
-            return True
-
-        if self.condition_type == ProjectStatusCondition.SOME_LEADS_CREATED:
-            if Lead.objects.filter(
-                project=project,
-                created_at__gt=time_threshold,
-            ).exists():
-                return True
-            return False
-
-        if self.condition_type == ProjectStatusCondition.NO_ENTRIES_CREATED:
-            if Entry.objects.filter(
-                lead__project=project,
-                created_at__gt=time_threshold,
-            ).exists():
-                return False
-            return True
-
-        if self.condition_type == ProjectStatusCondition.SOME_ENTRIES_CREATED:
-            if Entry.objects.filter(
-                lead__project=project,
-                created_at__gt=time_threshold,
-            ).exists():
-                return True
-            return False
-
-        return False
-
-
 class Project(UserResource):
     """
     Project model
     """
+
+    # Status Choices
+    ACTIVE = 'active'
+    INACTIVE = 'inactive'
+
+    STATUS_CHOICES = (
+        (ACTIVE, 'Active'),
+        (INACTIVE, 'Inactive')
+    )
 
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -160,12 +74,9 @@ class Project(UserResource):
 
     is_visualization_enabled = models.BooleanField(default=False)
 
-    # Data for cache purposes
-    status = models.ForeignKey(
-        ProjectStatus,
-        blank=True, default=None, null=True,
-        on_delete=models.SET_NULL,
-    )
+    status = models.CharField(max_length=30,
+                              choices=STATUS_CHOICES,
+                              default=INACTIVE)
 
     organizations = models.ManyToManyField(
         Organization,
@@ -299,6 +210,10 @@ class Project(UserResource):
             )
         ).distinct()
 
+    @property
+    def has_assessments(self):
+        return self.assessment_template_id is not None
+
     def can_get(self, user):
         return self.is_member(user) or not self.is_private
 
@@ -332,24 +247,6 @@ class Project(UserResource):
             project=self,
             added_by=added_by or user,
             linked_group=linked_group,
-        )
-
-    def calc_status(self):
-        # NOTE: the ordering of status if important
-        for status in ProjectStatus.objects.filter():
-            if status.check_for(self):
-                return status
-
-        # NOTE: if no conditions pass, return first status with no condition
-        return ProjectStatus.objects.filter(
-            conditions__isnull=True
-        ).first()
-
-    def update_status(self):
-        Project.objects.filter(
-            id=self.id
-        ).update(
-            status=self.calc_status()
         )
 
     def get_entries_activity(self):
