@@ -474,7 +474,6 @@ class ProjectApiTest(TestCase):
             title='TestProject',
             role=self.admin_role
         )
-
         memberships = ProjectMembership.objects.filter(project=project)
         initial_member_count = memberships.count()
 
@@ -482,6 +481,7 @@ class ProjectApiTest(TestCase):
         data = {
             'project': project.id,
             'usergroup': self.ug1.id,
+            'role': self.normal_role.id
         }
 
         self.authenticate()
@@ -496,6 +496,7 @@ class ProjectApiTest(TestCase):
             # -1 because usergroup admin and project admin is common
             final_member_count
         )
+        self.assertEqual(response.data['role_title'], self.normal_role.title)
 
     def test_update_project_remove_ug(self):
         project = self.create(
@@ -717,6 +718,7 @@ class ProjectApiTest(TestCase):
         self.assertEqual(response.data['role'], data['role'])
         self.assertEqual(response.data['member'], data['member'])
         self.assertEqual(response.data['project'], data['project'])
+        self.assertEqual(response.data['role_title'], self.normal_role.title)
 
     def test_add_member_unexistent_role(self):
         project = self.create(Project, role=self.admin_role)
