@@ -26,13 +26,12 @@ from project.tasks import (
     _generate_project_viz_stats,
     _generate_project_stats_cache,
 )
+from ary.models import AssessmentTemplate
 from project.models import (
     Project,
     ProjectRole,
     ProjectMembership,
     ProjectJoinRequest,
-    ProjectStatus,
-    ProjectStatusCondition,
     ProjectUserGroupMembership,
     ProjectOrganization,
     ProjectStats,
@@ -86,6 +85,39 @@ class ProjectApiTest(TestCase):
 
         self.assertEqual(Project.objects.count(), project_count + 1)
         self.assertEqual(response.data['title'], data['title'])
+
+    def test_check_assessment_template_in_project_create(self):
+        project_count = Project.objects.count()
+        assessment = self.create(AssessmentTemplate)
+        url = '/api/v1/projects/'
+        data = {
+            'title': 'Test project',
+            'data': {'testKey': 'testValue'},
+            'organizations': [
+                {'organization': self.org1.id, 'organization_type': ProjectOrganization.DONOR},
+            ],
+            'has_assessments': True
+        }
+
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        self.assertEqual(Project.objects.count(), project_count + 1)
+        self.assertEqual(response.data['assessment_template'], assessment.id)
+
+        # providing `has_assessments=False`
+        data['has_assessments'] = False
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        self.assertNotIn('assessment_template', response.data)
+
+        # providing `has_assessments=None`
+        data['has_assessments'] = None
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_400(response)
 
     def create_project_api(self, **kwargs):
         url = '/api/v1/projects/'
@@ -947,76 +979,34 @@ class ProjectApiTest(TestCase):
         self.assertEqual(request.status, 'accepted')
         self.assertEqual(request.responded_by, self.user)
 
-    def _test_status_filter(self, and_conditions):
-        status = self.create(ProjectStatus, and_conditions=and_conditions)
-        self.create(
-            ProjectStatusCondition,
-            project_status=status,
-            condition_type=ProjectStatusCondition.NO_LEADS_CREATED,
-            days=5,
-        )
-        self.create(
-            ProjectStatusCondition,
-            project_status=status,
-            condition_type=ProjectStatusCondition.NO_ENTRIES_CREATED,
-            days=5,
-        )
+    def test_status_filter(self):
+        project1 = self.create(Project, role=self.admin_role, status='active')
+        project2 = self.create(Project, role=self.admin_role, status='inactive')
+        project3 = self.create(Project, role=self.admin_role, status='inactive')
 
-        old_date = timezone.now() - timedelta(days=8)
+        test_user = self.create(User)
+        project1.add_member(test_user, role=self.admin_role)
 
-        # One with old lead
-        project1 = self.create(Project, role=self.admin_role)
-        lead = self.create(Lead, project=project1)
-        Lead.objects.filter(pk=lead.pk).update(created_at=old_date)
-        Lead.objects.get(pk=lead.pk).save()
-
-        # One with latest lead
-        project2 = self.create(Project, role=self.admin_role)
-        self.create(Lead, project=project2)
-
-        # One empty
-        self.create(Project, role=self.admin_role)
-
-        # One with latest lead but expired entry
-        project4 = self.create(Project, role=self.admin_role)
-        lead = self.create(Lead, project=project4)
-        entry = self.create(Entry, lead=lead)
-        Entry.objects.filter(pk=entry.pk).update(created_at=old_date)
-        Lead.objects.get(pk=lead.pk).save()
-
-        # One with expired lead and expired entry
-        project5 = self.create(Project, role=self.admin_role)
-        lead = self.create(Lead, project=project5)
-        entry = self.create(Entry, lead=lead)
-        Lead.objects.filter(pk=lead.pk).update(created_at=old_date)
-        Entry.objects.filter(pk=entry.pk).update(created_at=old_date)
-        Lead.objects.get(pk=lead.pk).save()
-
-        url = '/api/v1/projects/?status={}'.format(status.id)
-
-        self.authenticate()
+        url = f'/api/v1/projects/?status=inactive'
+        self.authenticate(test_user)
         response = self.client.get(url)
+        self.assertEqual(response.data['count'], 2)
+
+        # try filtering out the active status
+        url = f'/api/v1/projects/?status=active'
+        self.authenticate(test_user)
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], 1)
+
+        # try to update the status of the project
+        data = {
+            'status': 'active'
+        }
+        url1 = f'/api/v1/projects/{project1.id}/'
+        self.authenticate(test_user)
+        response = self.client.patch(url1, data)
         self.assert_200(response)
-
-        expected = [
-            project1.id,
-            project5.id,
-        ] if and_conditions else [
-            project1.id,
-            project2.id,
-            project4.id,
-            project5.id,
-        ]
-        obtained = [r['id'] for r in response.data['results']]
-
-        self.assertEqual(response.data['count'], len(expected))
-        self.assertTrue(sorted(expected) == sorted(obtained))
-
-    def test_status_filter_or_conditions(self):
-        self._test_status_filter(False)
-
-    def test_status_filter_and_conditions(self):
-        self._test_status_filter(True)
+        self.assertEqual(response.data['status'], project1.status)
 
     def test_involvment_filter(self):
         project1 = self.create(Project, role=self.admin_role)

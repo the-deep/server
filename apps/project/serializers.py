@@ -14,15 +14,13 @@ from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
 from user_group.serializers import SimpleUserGroupSerializer
 from user_resource.serializers import UserResourceSerializer
-
+from ary.models import AssessmentTemplate
 from .models import (
     Project,
     ProjectMembership,
     ProjectJoinRequest,
     ProjectRole,
     ProjectUserGroupMembership,
-    ProjectStatusCondition,
-    ProjectStatus,
     ProjectOrganization,
 )
 
@@ -225,8 +223,9 @@ class ProjectSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceS
     user_groups = SimpleUserGroupSerializer(many=True, read_only=True)
 
     number_of_users = serializers.IntegerField(read_only=True)
-    status_title = serializers.ReadOnlyField(source='status.title')
     is_visualization_enabled = serializers.SerializerMethodField(read_only=True)
+    has_assessments = serializers.BooleanField(required=False)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
 
     class Meta:
         model = Project
@@ -284,6 +283,12 @@ class ProjectSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceS
         raise PermissionDenied(
             {'message': "You don't have permissions to use the analysis framework in the project"}
         )
+
+    def validate(self, data):
+        has_assessments = data.pop('has_assessments', None)
+        if has_assessments is not None:
+            data['assessment_template'] = AssessmentTemplate.objects.first() if has_assessments else None
+        return data
 
     def get_is_visualization_enabled(self, project):
         af = project.analysis_framework
@@ -378,7 +383,6 @@ class ProjectStatSerializer(ProjectSerializer):
     number_of_leads_tagged = serializers.IntegerField(read_only=True)
     number_of_leads_tagged_and_verified = serializers.IntegerField(read_only=True)
     number_of_entries = serializers.IntegerField(read_only=True)
-    status = serializers.ReadOnlyField(source='status.title')
 
     leads_activity = serializers.ReadOnlyField(source='get_leads_activity')
     entries_activity = serializers.ReadOnlyField(source='get_entries_activity')
@@ -446,22 +450,6 @@ class ProjectUserGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectUserGroupMembership
         fields = '__all__'
-
-
-class ProjectStatusConditionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProjectStatusCondition
-        fields = '__all__'
-
-
-class ProjectStatusOptionsSerializer(serializers.ModelSerializer):
-    key = serializers.IntegerField(source='id', read_only=True)
-    value = serializers.CharField(source='title', read_only=True)
-    conditions = ProjectStatusConditionSerializer(many=True)
-
-    class Meta:
-        model = ProjectStatus
-        fields = ('key', 'value', 'and_conditions', 'conditions')
 
 
 class ProjectRecentActivitySerializer(serializers.Serializer):
