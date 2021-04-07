@@ -92,6 +92,7 @@ class TestAnalysisAPIs(TestCase):
     def test_create_pillar_along_with_statement(self):
         pillar_count = AnalysisPillar.objects.count()
         statement_count = AnalyticalStatement.objects.count()
+        entry_count = AnalyticalStatementEntry.objects.count()
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
@@ -118,6 +119,16 @@ class TestAnalysisAPIs(TestCase):
                             "entry": entry2.id
                         }
                     ],
+                },
+                {
+                    "statement": "test",
+                    "order": 2,
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "entry": entry1.id,
+                        }
+                    ],
                 }
             ]
         }
@@ -126,7 +137,7 @@ class TestAnalysisAPIs(TestCase):
         self.assert_201(response)
         self.assertEqual(AnalysisPillar.objects.count(), pillar_count + 1)
         self.assertEqual(AnalyticalStatement.objects.filter(
-                         analysis_pillar__analysis=analysis).count(), statement_count + 1)
+                         analysis_pillar__analysis=analysis).count(), statement_count + 2)
 
         # try to edit
         response_id = response.data['id']
@@ -135,8 +146,18 @@ class TestAnalysisAPIs(TestCase):
             'analytical_statement': [
                 {
                     'statement': "tea",
-                    'order': 2
-                }
+                    'order': 1,
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "entry": entry1.id,
+                        },
+                        {
+                            "order": 2,
+                            "entry": entry2.id
+                        }
+                    ],
+                },
             ]
         }
         self.authenticate(user)
@@ -144,6 +165,17 @@ class TestAnalysisAPIs(TestCase):
         response = self.client.patch(url, data)
         self.assert_200(response)
         self.assertEqual(response.data['main_statement'], data['main_statement'])
+        self.assertEqual(response.data['analytical_statement'][0]['statement'],
+                         data['analytical_statement'][0]['statement'])
+        # not passing all the resources the data must be deleted from the database
+        self.assertEqual(AnalyticalStatement.objects.filter(
+                         analysis_pillar__analysis=analysis).count(), statement_count + 1)
+        self.assertIn(response.data['analytical_statement'][0]['id'],
+                      list(AnalyticalStatement.objects.filter(
+                           analysis_pillar__analysis=analysis).values_list('id', flat=True)),)
+        # checking for the entries
+        self.assertEqual(AnalyticalStatementEntry.objects.filter(
+                         analytical_statement__analysis_pillar__analysis=analysis).count(), entry_count + 2)
 
     def test_create_analytical_statement(self):
         statement_count = AnalyticalStatement.objects.count()
