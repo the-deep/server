@@ -133,6 +133,7 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = ProjectMembership
         fields = '__all__'
+        read_only_fields = ('project', )
 
     def get_member_status(self, membership):
         if ProjectRole.get_admin_roles().filter(
@@ -148,18 +149,24 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
         return project
 
     def validate(self, data):
+        data['project_id'] = int(self.context['view'].kwargs['project_id'])
+        # get the members of the project
+        members = ProjectMembership.objects.filter(
+            project=data['project_id']
+        ).values('member')
+        member = data.get('member')
+        if member:
+            member = member.id
+        if member in [mem['member'] for mem in members]:
+            raise serializers.ValidationError({'member': 'Member already exist'})
         role = data.get('role')
         if not role:
             return data
-
-        project = data.get('project',
-                           self.instance and self.instance.project)
         user = self.context['request'].user
         user_role = ProjectMembership.objects.filter(
-            project=project,
+            project=data['project_id'],
             member=user,
         ).first().role
-
         if role.level < user_role.level:
             raise serializers.ValidationError('Invalid role')
         return data
@@ -453,6 +460,11 @@ class ProjectUserGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectUserGroupMembership
         fields = '__all__'
+        read_only_fields = ('project',)
+
+    def validate(self, data):
+        data['project_id'] = int(self.context['view'].kwargs['project_id'])
+        return data
 
 
 class ProjectRecentActivitySerializer(serializers.Serializer):
