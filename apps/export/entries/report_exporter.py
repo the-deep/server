@@ -56,18 +56,35 @@ class ExportDataVersionMismatch(Exception):
 
 
 class ReportExporter:
-    def __init__(self, exporting_widgets=None, is_preview=False):
+    def __init__(
+        self,
+        exporting_widgets=None,
+        is_preview=False,
+        show_lead_entry_id=True,
+        show_assessment_data=True,
+        show_entry_widget_data=True,
+    ):
         self.is_preview = is_preview
+        self.show_lead_entry_id = show_lead_entry_id
+        self.show_assessment_data = show_assessment_data
+        self.show_entry_widget_data = show_entry_widget_data
+
         self.doc = Document(
             os.path.join(settings.APPS_DIR, 'static/doc_export/template.docx')
         )
         self.lead_ids = []
         # ordered list of widget ids
         self.exporting_widgets = exporting_widgets or []
+        # format of exporting_widgets = "[517,43,42,[405,"scalewidget-xe11vlcxs2gqdh1r","Scale"]]"
+        self.exporting_widgets_keys = [
+            Widget.objects.get(id=each).key if not isinstance(each, list) else each[1]
+            for each in self.exporting_widgets
+        ]
         self.region_data = {}
         # XXX: Limit memory usage? (Or use redis?)
         self.geoarea_data_cache = {}
         self.assessment_data_cache = {}
+        self.entry_widget_data_cache = {}
 
     def load_exportables(self, exportables, regions):
         exportables = exportables.filter(
@@ -216,9 +233,11 @@ class ReportExporter:
             - color
         as described here: apps.entry.widgets.scale_widget._get_scale
         """
-        if data.get('label', None) and data.get('color', None):
-            para.add_oval_shape(data.get('color'))
-            para.add_run('{}'.format(data.get('label', '')), bold)
+        label = data.get('label')
+        color = data.get('color')
+        if label and color:
+            para.add_oval_shape(color)
+            para.add_run(label, bold)
             return True
 
     def _add_date_range_widget_data(self, para, data, bold=True):
@@ -264,14 +283,12 @@ class ReportExporter:
 
     def _add_select_widget_data(self, para, data, bold=True):
         if data.get('type') == 'list' and data.get('value', []):
-            values = data.get('value', [])
-            para.add_run(INTERNAL_SEPARATOR.join(values), bold)
+            para.add_run(INTERNAL_SEPARATOR.join(data['value']), bold)
             return True
 
     def _add_multi_select_widget_data(self, para, data, bold=True):
         if data.get('type') == 'list' and data.get('value', []):
-            values = data.get('value', [])
-            para.add_run(INTERNAL_SEPARATOR.join(values), bold)
+            para.add_run(INTERNAL_SEPARATOR.join(data['value']), bold)
             return True
 
     def _get_geo_admin_level_1_data(self, geo_id_values):
@@ -347,8 +364,9 @@ class ReportExporter:
             }
             if widget_id in mapper.keys():
                 if report.get('version') != widget_store[widget_id].DATA_VERSION:
-                    raise ExportDataVersionMismatch(f'{widget_id} widget data is not upto date. '
-                                                    f'\nExport data being exported: {report}\n')
+                    raise ExportDataVersionMismatch(
+                        f'{widget_id} widget data is not upto date. Export data being exported: {report}'
+                    )
                 return mapper[widget_id](para, report, bold)
 
     def _add_assessment_info_for_entry(self, assessment, para, bold=True):
@@ -398,56 +416,37 @@ class ReportExporter:
             ] if condition
         ]
 
+        para.add_run(' [', bold=True)
         # Finally add all assessment data to the docx
         total_process_functions = len(to_process_fuctions) - 1
         for index, add_data in enumerate(to_process_fuctions):
             add_data()
             if index < total_process_functions:
                 para.add_run(SEPARATOR, bold=bold)
+        para.add_run('] ', bold=True)
 
-    def _generate_for_entry(self, entry):
-        """
-        Generate paragraphs for an entry
-        """
+    def _generate_for_entry_widget_data(self, entry, para):
+        if entry.id not in self.entry_widget_data_cache:
+            export_data = []
+            for each in entry.exportdata_set.all():
+                if 'other' in each.data.get('report', {}):
+                    for rep in each.data['report'].get('other', []):
+                        if rep.get('widget_key') and rep['widget_key'] in self.exporting_widgets_keys:
+                            export_data.append(rep)
+                else:
+                    export_datum = {
+                        **each.data.get('common', {}),
+                        **each.data.get('report', {}),
+                    }
+                    if export_datum.get('widget_key') and export_datum['widget_key'] in self.exporting_widgets_keys:
+                        export_data.append(export_datum)
+            export_data.sort(key=lambda x: self.exporting_widgets_keys.index(x['widget_key']))
+            self.entry_widget_data_cache[entry.id] = export_data
+        else:
+            export_data = self.entry_widget_data_cache[entry.id]
 
-        para = self.doc.add_paragraph().justify()
-
-        para.add_run('[', bold=True)
-        # Add lead-entry id
-        url = (
-            f'{settings.HTTP_PROTOCOL}://{settings.DEEPER_FRONTEND_HOST}'
-            f'/permalink/projects/{entry.project_id}/leads/{entry.lead_id}/entries/{entry.id}/'
-        )
-
-        # format of exporting_widgets = "[517,43,42,[405,"scalewidget-xe11vlcxs2gqdh1r","Scale"]]"
-        widget_keys = [
-            Widget.objects.get(id=each).key if not isinstance(each, list) else each[1]
-            for each in self.exporting_widgets
-        ]
-        para.add_hyperlink(url, f"{entry.lead_id}-{entry.id}")
-        para.add_run(']', bold=True)
-
-        assessment = getattr(entry.lead, 'assessment', None)
-        if assessment:
-            para.add_run(' [', bold=True)
-            self._add_assessment_info_for_entry(assessment, para, bold=True)
-            para.add_run('] ', bold=True)
-
-        para.add_run('[', bold=True)
-        export_data = []
-        for each in entry.exportdata_set.all():
-            if 'other' in each.data.get('report', {}):
-                for rep in each.data['report'].get('other', []):
-                    if rep.get('widget_key') and rep['widget_key'] in widget_keys:
-                        export_data.append(rep)
-            else:
-                export_datum = {**each.data.get('common', {}),
-                                **each.data.get('report', {})}
-                if export_datum.get('widget_key') and export_datum['widget_key'] in widget_keys:
-                    export_data.append(export_datum)
-
-        export_data.sort(key=lambda x: widget_keys.index(x['widget_key']))
         if export_data:
+            para.add_run('[', bold=True)
             export_data_len = len(export_data) - 1
             for index, data in enumerate(export_data):
                 try:
@@ -457,9 +456,38 @@ class ReportExporter:
                     ):
                         para.add_run(SEPARATOR, bold=True)
                 except ExportDataVersionMismatch as e:
-                    print(f'For entry {entry.id}, project {entry.project.id}')
+                    logger.error(
+                        f'ExportDataVersionMismatch: For entry {entry.id}, project {entry.project.id}',
+                        exc_info=True
+                    )
                     raise e
-        para.add_run('] ', bold=True)
+            para.add_run('] ', bold=True)
+
+    def _generate_for_entry(self, entry):
+        """
+        Generate paragraphs for an entry
+        """
+
+        para = self.doc.add_paragraph().justify()
+
+        # entry-lead id
+        if self.show_lead_entry_id:
+            para.add_run('[', bold=True)
+            # Add lead-entry id
+            url = (
+                f'{settings.HTTP_PROTOCOL}://{settings.DEEPER_FRONTEND_HOST}'
+                f'/permalink/projects/{entry.project_id}/leads/{entry.lead_id}/entries/{entry.id}/'
+            )
+            para.add_hyperlink(url, f"{entry.lead_id}-{entry.id}")
+            para.add_run(']', bold=True)
+
+        # Assessment Data
+        if self.show_assessment_data and getattr(entry.lead, 'assessment', None):
+            self._add_assessment_info_for_entry(entry.lead.assessment, para, bold=True)
+
+        # Entry widget Data
+        if self.show_entry_widget_data:
+            self._generate_for_entry_widget_data(entry, para)
 
         # Format is
         # excerpt (source) OR excerpt \n text from widgets \n (source)
