@@ -55,6 +55,137 @@ class ExportDataVersionMismatch(Exception):
     pass
 
 
+class WidgetExporter:
+
+    @staticmethod
+    def _add_common(para, text, bold):
+        para.add_run(text, bold)
+
+    @staticmethod
+    def _add_scale_widget_data(para, label, color, bold):
+        """
+            Output: <oval shape with color> <space> <text>
+        """
+        para.add_oval_shape(color)
+        para.add_run(label, bold)
+
+    @classmethod
+    def _get_scale_widget_data(cls, data, bold, **kwargs):
+        """
+        report for scale widget expects following keys
+            - title
+            - label
+            - color
+        as described here: apps.entry.widgets.scale_widget._get_scale
+        """
+        label = data.get('label')
+        color = data.get('color')
+        if label and color:
+            return cls._add_scale_widget_data, label, color, bold
+
+    @classmethod
+    def _get_date_range_widget_data(cls, data, bold, **kwargs):
+        """
+        report for date range widget expects following
+            - tuple (from, to)
+        as described here: apps.entry.widgets.date_range_widget._get_date
+        """
+        values = data.get('values', [])
+        if len(values) == 2 and any(values):
+            label = '{} - {}'.format(
+                values[0] or "00-00-00",
+                values[1] or "00-00-00",
+            )
+            return cls._add_common, label, bold
+
+    @classmethod
+    def _get_time_range_widget_data(cls, data, bold, **kwargs):
+        """
+        report for time range widget expects following
+            - tuple (from, to)
+        as described here: apps.entry.widgets.time_range_widget._get_time
+        """
+        values = data.get('values', [])
+        if len(values) == 2 and any(values):
+            text = '{} - {}'.format(
+                values[0] or "~~:~~",
+                values[1] or "~~:~~",
+            )
+            return cls._add_common, text, bold
+
+    @classmethod
+    def _get_date_widget_data(cls, data, bold, **kwargs):
+        """
+        report for date widget expects following
+            - string (=date)
+        as described here: apps.entry.widgets.date_widget
+        """
+        value = data.get('value')
+        if value:
+            return cls._add_common, value, bold
+
+    @classmethod
+    def _get_time_widget_data(cls, data, bold, **kwargs):
+        cls._get_date_widget_data(data, bold, **kwargs)
+
+    @classmethod
+    def _get_select_widget_data(cls, data, bold, **kwargs):
+        type_ = data.get('type')
+        value = [str(v) for v in data.get('value') or []]
+        if type_ == 'list' and value:
+            return cls._add_common, INTERNAL_SEPARATOR.join(value), bold
+
+    @classmethod
+    def _get_multi_select_widget_data(cls, data, bold, **kwargs):
+        return cls._get_select_widget_data(data, bold, **kwargs)
+
+    @classmethod
+    def _get_geo_widget_data(cls, data, bold, **kwargs):
+        # XXX: Cache this value.
+        # Right now everything needs to be loaded so doing this at entry save can take lot of memory
+        geo_id_values = [str(v) for v in data.get('values') or []]
+        if len(geo_id_values) == 0:
+            return
+        geo_values = kwargs['_get_geo_admin_level_1_data'](geo_id_values)
+        if geo_values:
+            return cls._add_common, geo_values, bold
+
+    @classmethod
+    def get_widget_information_into_report(
+        cls,
+        report,
+        bold=True,
+        **kwargs,
+    ):
+        """
+        based on widget annotate information into report
+
+        :param report: dict
+
+        returns: function_to_add_to_report, *data
+        """
+        if not isinstance(report, dict):
+            return
+        if 'widget_id' in report:
+            widget_id = report.get('widget_id')
+            mapper = {
+                scale_widget.WIDGET_ID: cls._get_scale_widget_data,
+                date_range_widget.WIDGET_ID: cls._get_date_range_widget_data,
+                time_range_widget.WIDGET_ID: cls._get_time_range_widget_data,
+                time_widget.WIDGET_ID: cls._get_time_widget_data,
+                date_widget.WIDGET_ID: cls._get_date_widget_data,
+                geo_widget.WIDGET_ID: cls._get_geo_widget_data,
+                select_widget.WIDGET_ID: cls._get_select_widget_data,
+                multiselect_widget.WIDGET_ID: cls._get_multi_select_widget_data,
+            }
+            if widget_id in mapper.keys():
+                if report.get('version') != widget_store[widget_id].DATA_VERSION:
+                    raise ExportDataVersionMismatch(
+                        f'{widget_id} widget data is not upto date. Export data being exported: {report}'
+                    )
+                return mapper[widget_id](report, bold, **kwargs)
+
+
 class ReportExporter:
     def __init__(
         self,
@@ -225,72 +356,6 @@ class ReportExporter:
                     self.legend_paragraph.add_next_paragraph(para)
                 self.legend_paragraph.add_next_paragraph(title_para)
 
-    def _add_scale_widget_data(self, para, data, bold=True):
-        """
-        report for scale widget expects following keys
-            - title
-            - label
-            - color
-        as described here: apps.entry.widgets.scale_widget._get_scale
-        """
-        label = data.get('label')
-        color = data.get('color')
-        if label and color:
-            para.add_oval_shape(color)
-            para.add_run(label, bold)
-            return True
-
-    def _add_date_range_widget_data(self, para, data, bold=True):
-        """
-        report for date range widget expects following
-            - tuple (from, to)
-        as described here: apps.entry.widgets.date_range_widget._get_date
-        """
-        if len(data.get('values', [])) == 2 and any(data.get('values', [])):
-            para.add_run(
-                '{} - {}'.format(
-                    data['values'][0] or "00-00-00",
-                    data['values'][1] or "00-00-00",
-                ),
-                bold,
-            )
-            return True
-
-    def _add_time_range_widget_data(self, para, data, bold=True):
-        """
-        report for time range widget expects following
-            - tuple (from, to)
-        as described here: apps.entry.widgets.time_range_widget._get_time
-        """
-        if len(data.get('values', [])) == 2 and any(data.get('values', [])):
-            para.add_run('{} - {}'.format(data['values'][0] or "~~:~~", data['values'][1] or "~~:~~"), bold)
-            return True
-
-    def _add_time_widget_data(self, para, data, bold=True):
-        if data.get('value', None):
-            para.add_run(data['value'], bold)
-            return True
-
-    def _add_date_widget_data(self, para, data, bold=True):
-        """
-        report for date widget expects following
-            - string (=date)
-        as described here: apps.entry.widgets.date_widget
-        """
-        if data.get('value', None):
-            para.add_run(data['value'], bold)
-            return True
-
-    def _add_select_widget_data(self, para, data, bold=True):
-        if data.get('type') == 'list' and data.get('value', []):
-            para.add_run(INTERNAL_SEPARATOR.join(data['value']), bold)
-            return True
-
-    def _add_multi_select_widget_data(self, para, data, bold=True):
-        if data.get('type') == 'list' and data.get('value', []):
-            para.add_run(INTERNAL_SEPARATOR.join(data['value']), bold)
-            return True
-
     def _get_geo_admin_level_1_data(self, geo_id_values):
         if len(geo_id_values) == 0:
             return
@@ -329,45 +394,6 @@ class ReportExporter:
 
         if render_values:
             return INTERNAL_SEPARATOR.join(set(render_values))
-
-    def _add_geo_widget_data(self, para, data, bold=True):
-        # XXX: Cache this value.
-        # Right now everything needs to be loaded so doing this at entry save can take lot of memory
-        geo_id_values = [str(v) for v in data.get('values') or []]
-        if len(geo_id_values) == 0:
-            return
-        geo_values = self._get_geo_admin_level_1_data(geo_id_values)
-        if geo_values:
-            para.add_run(geo_values, bold=bold)
-            return True
-
-    def _add_widget_information_into_report(self, para, report, bold=True):
-        """
-        based on widget annotate information into report
-
-        :param para: Paragraph
-        :param report: dict
-        """
-        if not isinstance(report, dict):
-            return
-        if 'widget_id' in report:
-            widget_id = report.get('widget_id')
-            mapper = {
-                scale_widget.WIDGET_ID: self._add_scale_widget_data,
-                date_range_widget.WIDGET_ID: self._add_date_range_widget_data,
-                time_range_widget.WIDGET_ID: self._add_time_range_widget_data,
-                time_widget.WIDGET_ID: self._add_time_widget_data,
-                date_widget.WIDGET_ID: self._add_date_widget_data,
-                geo_widget.WIDGET_ID: self._add_geo_widget_data,
-                select_widget.WIDGET_ID: self._add_select_widget_data,
-                multiselect_widget.WIDGET_ID: self._add_multi_select_widget_data,
-            }
-            if widget_id in mapper.keys():
-                if report.get('version') != widget_store[widget_id].DATA_VERSION:
-                    raise ExportDataVersionMismatch(
-                        f'{widget_id} widget data is not upto date. Export data being exported: {report}'
-                    )
-                return mapper[widget_id](para, report, bold)
 
     def _add_assessment_info_for_entry(self, assessment, para, bold=True):
         def _add_assessment_icon():
@@ -427,40 +453,46 @@ class ReportExporter:
 
     def _generate_for_entry_widget_data(self, entry, para):
         if entry.id not in self.entry_widget_data_cache:
-            export_data = []
+            raw_export_data = []
             for each in entry.exportdata_set.all():
                 if 'other' in each.data.get('report', {}):
                     for rep in each.data['report'].get('other', []):
                         if rep.get('widget_key') and rep['widget_key'] in self.exporting_widgets_keys:
-                            export_data.append(rep)
+                            raw_export_data.append(rep)
                 else:
                     export_datum = {
                         **each.data.get('common', {}),
                         **each.data.get('report', {}),
                     }
                     if export_datum.get('widget_key') and export_datum['widget_key'] in self.exporting_widgets_keys:
-                        export_data.append(export_datum)
-            export_data.sort(key=lambda x: self.exporting_widgets_keys.index(x['widget_key']))
+                        raw_export_data.append(export_datum)
+            raw_export_data.sort(key=lambda x: self.exporting_widgets_keys.index(x['widget_key']))
+
+            export_data = []
+            if raw_export_data:
+                for data in raw_export_data:
+                    try:
+                        resp = WidgetExporter.get_widget_information_into_report(
+                            data,
+                            bold=True,
+                            _get_geo_admin_level_1_data=self._get_geo_admin_level_1_data
+                        )
+                        resp and export_data.append(resp)
+                    except ExportDataVersionMismatch:
+                        logger.error(
+                            f'ExportDataVersionMismatch: For entry {entry.id}, project {entry.project.id}',
+                            exc_info=True
+                        )
             self.entry_widget_data_cache[entry.id] = export_data
-        else:
-            export_data = self.entry_widget_data_cache[entry.id]
+        export_data = self.entry_widget_data_cache[entry.id]
 
         if export_data:
-            para.add_run('[', bold=True)
+            para.add_run(' [', bold=True)
             export_data_len = len(export_data) - 1
-            for index, data in enumerate(export_data):
-                try:
-                    if (
-                        self._add_widget_information_into_report(para, data, bold=True) and
-                        index < export_data_len
-                    ):
-                        para.add_run(SEPARATOR, bold=True)
-                except ExportDataVersionMismatch as e:
-                    logger.error(
-                        f'ExportDataVersionMismatch: For entry {entry.id}, project {entry.project.id}',
-                        exc_info=True
-                    )
-                    raise e
+            for index, [func, *args] in enumerate(export_data):
+                func(para, *args)  # Add to para
+                if index < export_data_len:
+                    para.add_run(SEPARATOR, bold=True)
             para.add_run('] ', bold=True)
 
     def _generate_for_entry(self, entry):
