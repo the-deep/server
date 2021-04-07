@@ -793,7 +793,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         )
 
     def get_queryset(self):
-        return ProjectMembership.get_for(self.request.user)
+        return ProjectMembership.get_for(self.request.user).filter(project=self.kwargs['project_id'])
 
 
 class ProjectOptionsView(views.APIView):
@@ -927,3 +927,6 @@ class ProjectUserGroupViewSet(viewsets.ModelViewSet):
                        filters.SearchFilter, filters.OrderingFilter)
     queryset = ProjectUserGroupMembership.objects.all()
     filterset_class = ProjectUserGroupMembershipFilterSet
+
+    def get_queryset(self):
+        return ProjectUserGroupMembership.objects.filter(project=self.kwargs['project_id'])
