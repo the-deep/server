@@ -1,7 +1,7 @@
 from django.db import models
 
 from analysis_framework.models import Exportable
-from entry.filter_set import EntryFilterSet, get_filtered_entries
+from entry.filter_set import get_filtered_entries
 from entry.models import Entry
 from export.models import Export
 from export.entries.excel_exporter import ExcelExporter
@@ -72,6 +72,11 @@ def export_entries(export):
 
     # which widget data needs to be exported along with
     exporting_widgets = filters.get('exporting_widgets', [])
+    report_show_attributes = dict(
+        show_lead_entry_id=filters.get('report_show_lead_entry_id', True),
+        show_assessment_data=filters.get('report_show_assessment_data', True),
+        show_entry_widget_data=filters.get('report_show_entry_widget_data', True),
+    )
 
     if export_type == Export.EXCEL:
         decoupled = filters.get('decoupled', True)
@@ -86,14 +91,19 @@ def export_entries(export):
         text_widget_ids = filters.get('text_widget_ids') or []
         show_groups = filters.get('show_groups')
         pdf = export.filters.get('pdf', False)
-        export_data = ReportExporter(exporting_widgets=exporting_widgets, is_preview=is_preview)\
-            .load_exportables(exportables, regions)\
-            .load_levels(report_levels)\
-            .load_structure(report_structure)\
-            .load_group_lables(queryset, show_groups)\
-            .load_text_from_text_widgets(queryset, text_widget_ids)\
-            .add_entries(queryset)\
+        export_data = (
+            ReportExporter(
+                exporting_widgets=exporting_widgets,
+                is_preview=is_preview,
+                **report_show_attributes,
+            ).load_exportables(exportables, regions)
+            .load_levels(report_levels)
+            .load_structure(report_structure)
+            .load_group_lables(queryset, show_groups)
+            .load_text_from_text_widgets(queryset, text_widget_ids)
+            .add_entries(queryset)
             .export(pdf=pdf)
+        )
 
     elif export_type == Export.JSON:
         export_data = JsonExporter(is_preview=is_preview)\
