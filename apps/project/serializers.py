@@ -128,12 +128,12 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
         read_only=True,
         many=True,
     )
-    role_title = serializers.CharField(source='role.title', read_only=True)
+    role_details = SimpleProjectRoleSerializer(source='role', read_only=True)
 
     class Meta:
         model = ProjectMembership
         fields = '__all__'
-        read_only_fields = ('project', )
+        read_only_fields = ('project',)
 
     def get_member_status(self, membership):
         if ProjectRole.get_admin_roles().filter(
@@ -451,7 +451,7 @@ class ProjectJoinRequestSerializer(RemoveNullFieldsMixin,
 
 class ProjectUserGroupSerializer(serializers.ModelSerializer):
     title = serializers.CharField(source='usergroup.title', read_only=True)
-    role_title = serializers.CharField(source='role.title', read_only=True)
+    role_details = SimpleProjectRoleSerializer(source='role', read_only=True)
     added_by_name = serializers.CharField(source='added_by.profile.get_display_name', read_only=True)
 
     class Meta:
