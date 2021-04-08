@@ -793,7 +793,9 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         )
 
     def get_queryset(self):
-        return ProjectMembership.get_for(self.request.user).filter(project=self.kwargs['project_id'])
+        return ProjectMembership.get_for(self.request.user).filter(project=self.kwargs['project_id']).select_related(
+            'role'
+        )
 
 
 class ProjectOptionsView(views.APIView):
@@ -929,4 +931,6 @@ class ProjectUserGroupViewSet(viewsets.ModelViewSet):
     filterset_class = ProjectUserGroupMembershipFilterSet
 
     def get_queryset(self):
-        return ProjectUserGroupMembership.objects.filter(project=self.kwargs['project_id'])
+        return ProjectUserGroupMembership.objects.filter(project=self.kwargs['project_id']).select_related(
+            'role'
+        )

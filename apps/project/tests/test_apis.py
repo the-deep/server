@@ -495,7 +495,7 @@ class ProjectApiTest(TestCase):
             # -1 because usergroup admin and project admin is common
             final_member_count
         )
-        self.assertEqual(response.data['role_title'], self.normal_role.title)
+        self.assertEqual(response.data['role_details']['title'], self.normal_role.title)
         self.assertEqual(response.data['project'], project.id)
 
     def test_update_project_remove_ug(self):
@@ -717,7 +717,7 @@ class ProjectApiTest(TestCase):
         self.assertEqual(response.data['role'], data['role'])
         self.assertEqual(response.data['member'], data['member'])
         self.assertEqual(response.data['project'], project.id)
-        self.assertEqual(response.data['role_title'], self.normal_role.title)
+        self.assertEqual(response.data['role_details']['title'], self.normal_role.title)
 
     def test_add_member_unexistent_role(self):
         project = self.create(Project, role=self.admin_role)
