@@ -262,12 +262,12 @@ class TestAnalysisAPIs(TestCase):
         lead1 = self.create_lead(authors=[organization1], project=project, title='TESTA')
         lead2 = self.create_lead(authors=[organization2, organization3], project=project, title='TESTB')
         lead3 = self.create_lead(authors=[organization3], project=project, title='TESTC')
-        lead4 = self.create_lead(authors=[organization2], project=project, title='TESTD')
+        self.create_lead(authors=[organization2], project=project, title='TESTD')
 
         entry1 = self.create_entry(lead=lead1, project=project)
         entry2 = self.create_entry(lead=lead2, project=project)
         entry3 = self.create_entry(lead=lead3, project=project)
-        entry4 = self.create_entry(lead=lead3, project=project)
+        self.create_entry(lead=lead3, project=project)
 
         analysis1 = self.create(Analysis, title='Test Analysis', team_lead=user, project=project)
         analysis2 = self.create(Analysis, title='Test Analysis New', team_lead=user, project=project)

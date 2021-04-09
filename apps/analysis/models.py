@@ -6,15 +6,15 @@ from django.contrib.postgres.fields import JSONField
 from user.models import User
 from project.models import Project
 from entry.models import Entry
+from user_resource.models import UserResource
 
 
-class Analysis(models.Model):
+class Analysis(UserResource):
     title = models.CharField(max_length=255)
     team_lead = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
     )
-    created_at = models.DateTimeField(auto_now_add=True)
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
@@ -31,11 +31,10 @@ class Analysis(models.Model):
         return analysis_cloned
 
 
-class AnalysisPillar(models.Model):
+class AnalysisPillar(UserResource):
     title = models.CharField(max_length=255)
     main_statement = models.TextField(blank=True)
     information_gap = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
     filters = JSONField(blank=True, null=True, default=None)
     assignee = models.ForeignKey(
         User,
@@ -50,7 +49,7 @@ class AnalysisPillar(models.Model):
         return self.title
 
 
-class AnalyticalStatement(models.Model):
+class AnalyticalStatement(UserResource):
     statement = models.TextField()
     entries = models.ManyToManyField(
         Entry,
@@ -72,7 +71,7 @@ class AnalyticalStatement(models.Model):
         return self.statement and self.statement[:255]
 
 
-class AnalyticalStatementEntry(models.Model):
+class AnalyticalStatementEntry(UserResource):
     entry = models.ForeignKey(
         Entry,
         on_delete=models.CASCADE
