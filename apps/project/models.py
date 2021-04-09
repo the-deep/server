@@ -518,6 +518,7 @@ class ProjectStats(models.Model):
     confidential_file = models.FileField(upload_to='project-stats/', max_length=255, null=True, blank=True)
 
     # Token is used to retrive the viz data (non-confidential)
+    public_share = models.BooleanField(default=False)
     token = models.UUIDField(null=True, unique=True)
 
     def __str__(self):

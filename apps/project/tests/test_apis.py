@@ -2,7 +2,6 @@ import uuid
 
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
-from datetime import timedelta
 
 from user.models import (
     User,
@@ -981,19 +980,19 @@ class ProjectApiTest(TestCase):
 
     def test_status_filter(self):
         project1 = self.create(Project, role=self.admin_role, status='active')
-        project2 = self.create(Project, role=self.admin_role, status='inactive')
-        project3 = self.create(Project, role=self.admin_role, status='inactive')
+        self.create(Project, role=self.admin_role, status='inactive')
+        self.create(Project, role=self.admin_role, status='inactive')
 
         test_user = self.create(User)
         project1.add_member(test_user, role=self.admin_role)
 
-        url = f'/api/v1/projects/?status=inactive'
+        url = '/api/v1/projects/?status=inactive'
         self.authenticate(test_user)
         response = self.client.get(url)
         self.assertEqual(response.data['count'], 2)
 
         # try filtering out the active status
-        url = f'/api/v1/projects/?status=active'
+        url = '/api/v1/projects/?status=active'
         self.authenticate(test_user)
         response = self.client.get(url)
         self.assertEqual(response.data['count'], 1)
@@ -1400,41 +1399,64 @@ class ProjectApiTest(TestCase):
         url = f'/api/v1/projects/{project.pk}/public-viz/'
 
         # Check permission for token generation
-        for action in ['set', 'unset', 'random']:
+        for action in ['new', 'off', 'new', 'on', 'random']:
             for user, assertLogic in [
                 (normal_user, self.assert_403),
                 (member_user, self.assert_403),
                 (admin_user, self.assert_200),
             ]:
                 self.authenticate(user)
+                current_stats = ProjectStats.objects.get(project=project)
                 response = self.client.post(url, data={'action': action})
                 if action == 'random' and assertLogic == self.assert_200:
                     self.assert_400(response)
                 else:
                     assertLogic(response)
                 if assertLogic == self.assert_200:
-                    if action == 'set':
-                        assert response.data['public_url'] is not None
+                    if action == 'new':
+                        assert response.data['public_url'] != current_stats.token
                         # Logout and check if response is okay
                         self.client.logout()
                         response = self.client.get(f"{response.data['public_url']}?format=json")
                         self.assert_200(response)
-                    elif action == 'unset':
-                        assert response.data['public_url'] is None
+                    elif action == 'on':
+                        assert (
+                            response.data['public_url'] is not None
+                        ) or (
+                            response.data['public_url'] == current_stats.token
+                        )
                         # Logout and check if response is not okay
                         self.client.logout()
                         response = self.client.get(f"{response.data['public_url']}?format=json")
-                        self.assert_404(response)
+                        self.assert_200(response)
+                    elif action == 'off':
+                        assert (
+                            response.data['public_url'] is not None
+                        ) or (
+                            response.data['public_url'] == current_stats.token
+                        )
+                        # Logout and check if response is not okay
+                        self.client.logout()
+                        response = self.client.get(f"{response.data['public_url']}?format=json")
+                        self.assert_403(response)
 
         # Make sure response are only for valid token
         self.client.logout()
         stats = ProjectStats.objects.get(project=project)
         stats.token = uuid.uuid4()
+        stats.public_share = True
         stats.save()
         viz_public_url = stats.get_public_url()
         response = self.client.get(f"{viz_public_url}?format=json")
         self.assert_200(response)
+        # Disabling public_share
+        stats.public_share = False
+        stats.save()
+        response = self.client.get(f"{viz_public_url}?format=json")
+        self.assert_403(response)
+        # Removing token
         stats.token = None
+        stats.public_share = True
         stats.save()
         response = self.client.get(f"{viz_public_url}?format=json")
         self.assert_403(response)
