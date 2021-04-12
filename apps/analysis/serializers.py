@@ -33,7 +33,7 @@ class AnalyticalStatementSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = AnalyticalStatement
         fields = '__all__'
-        read_only_fields = ('analysis_pillar', )
+        read_only_fields = ('analysis_pillar',)
 
     def validate(self, data):
         analysis_pillar_id = self.context['view'].kwargs.get('analysis_pillar_id', None)
