@@ -298,7 +298,7 @@ class TestAnalysisAPIs(TestCase):
         pillar = self.create(AnalysisPillar, analysis=analysis, title='title1', assignee=user)
         analytical_statement = self.create(AnalyticalStatement, analysis_pillar=pillar, statement='Hello from here')
 
-        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{pillar.id}/statement/'
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{pillar.id}/'
         data = {
             'analytical_statement': [
                 {
@@ -311,13 +311,6 @@ class TestAnalysisAPIs(TestCase):
         response = self.client.patch(url, data)
         self.assert_200(response)
         self.assertEqual(response.data['analytical_statement'][0]['id'], analytical_statement.id)
-
-        # try to post or get from the api
-        response = self.client.get(url)
-        self.assert_405(response)
-
-        response = self.client.post(url, data)
-        self.assert_405(response)
 
     def test_pillar_overview_in_analysis(self):
         user = self.create_user()
