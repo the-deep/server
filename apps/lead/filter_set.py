@@ -142,8 +142,8 @@ class LeadFilterSet(django_filters.FilterSet):
                 for x in ['id', 'title', 'text', 'url', 'website']
             },
             'emm_entities': ['exact'],
-            'emm_keywords': ['exact'],
-            'emm_risk_factors': ['exact'],
+            # 'emm_keywords': ['exact'],
+            # 'emm_risk_factors': ['exact'],
             'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
             'published_on': ['exact', 'lt', 'gt', 'lte', 'gte'],
         }
