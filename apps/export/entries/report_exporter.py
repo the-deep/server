@@ -576,23 +576,40 @@ class ReportExporter:
         )
         date = entry.lead.published_on
 
-        para.add_run('(' if widget_texts_exists else ' (')
+        ########################################################################
+        footer_text = '(' if widget_texts_exists else " ("
+        # para.add_run('(' if widget_texts_exists else ' (')
 
         # Add author is available
-        (author and author.lower() != (source or '').lower()) and (
-            para.add_hyperlink(url, f'{author}, ') if url else para.add_run(f'{author}, ')
-        )
+        # (author and author.lower() != (source or '').lower()) and (
+        #     para.add_hyperlink(url, f'{author}, ') if url else para.add_run(f'{author}, ')
+        # )
+
+        footer_text += f'{author}, ' if author else ''
+
         # Add source (with url if available)
-        para.add_hyperlink(url, source) if url else para.add_run(source)
+        # para.add_hyperlink(url, source) if url else para.add_run(source)
+
         # Add (confidential) to source without ,
-        lead.confidentiality == Lead.CONFIDENTIAL and para.add_run(' (confidential)')
+        # lead.confidentiality == Lead.CONFIDENTIAL and para.add_run(' (confidential)')
+
+        footer_text += f" (confidential)" if lead.confidentiality == Lead.CONFIDENTIAL else ""
+
         # Add lead title if available
-        lead.title and para.add_run(f", {lead.title}")
+        # lead.title and para.add_run(f", {lead.title}")
+
+        footer_text += lead.title if lead.title else ""
+
         # Finally add date
         # TODO: use utils.common.format_date and perhaps use information date
-        date and para.add_run(f", {date.strftime('%d/%m/%Y')}")
+        # date and para.add_run(f", {date.strftime('%d/%m/%Y')}")
+        footer_text += f", {date.strftime('%d/%m/%Y')}" if date else ""
         # para.add_run(f", {'Verified' if entry.verified else 'Unverified'}")
-        para.add_run(')')
+        # para.add_run(')')
+        footer_text += ")"
+
+        para.add_footnote(footer_text)
+        ########################################################################.
         # para = self.doc.add_paragraph().justify()
 
         # Adding Entry Group Labels

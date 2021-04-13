@@ -230,6 +230,10 @@ class Paragraph:
         p = self.ref._p
         p.addnext(other.ref._p)
 
+    def add_footnote(self, text):
+        footnotes_part = self.ref.part._footnotes_part.element
+        footnote = self.ref._p.add_fn(text, footnotes_part)
+        return footnote
 
 class Document:
     """
