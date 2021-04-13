@@ -105,8 +105,12 @@ def _get_viz_data(request, project, can_view_confidential, token=None):
 
     stats, created = ProjectStats.objects.get_or_create(project=project)
 
-    if token and token != str(stats.token):
-        return {'error': 'Token is invalid'}, status.HTTP_403_FORBIDDEN
+    if token and (
+        not stats.public_share or token != str(stats.token)
+    ):
+        return {
+            'error': 'Token is invalid or sharing is disabled. Please contact project\'s admin.'
+        }, status.HTTP_403_FORBIDDEN
 
     stat_file = stats.confidential_file if can_view_confidential else stats.file
     file_url = (
@@ -117,6 +121,7 @@ def _get_viz_data(request, project, can_view_confidential, token=None):
         'data': file_url,
         'modified_at': stats.modified_at,
         'status': stats.status,
+        'public_share': stats.public_share,
         'public_url': stats.get_public_url(request),
     }
 
@@ -214,15 +219,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
     )
     def generate_public_viz(self, request, pk=None, version=None):
         project = self.get_object()
-        action = request.data.get('action', 'set')
+        action = request.data.get('action', 'new')
         stats, created = ProjectStats.objects.get_or_create(project=project)
-        if action == 'set':
+        if action == 'new':
+            stats.public_share = True
             stats.token = uuid.uuid4()
-        elif action == 'unset':
-            stats.token = None
+        elif action == 'on':
+            stats.public_share = True
+            stats.token = stats.token or uuid.uuid4()
+        elif action == 'off':
+            stats.public_share = False
         else:
             raise exceptions.ValidationError({'action': f'Invalid action {action}'})
-        stats.save(update_fields=['token'])
+        stats.save(update_fields=['token', 'public_share'])
         return response.Response({'public_url': stats.get_public_url(request)})
 
     """
