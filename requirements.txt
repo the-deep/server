@@ -70,6 +70,11 @@ tldextract==2.2.0
 tornado>=4.2.0,<6.0.0
 user-agents==2.2.0
 wordcloud==1.5.0
+graphene-django==2.15.0
+graphene-graphiql-explorer==0.0.1
+graphene-django-extras==0.4.9
+
+django-utils-six
 
 # django-autofixture
 git+https://github.com/volrath/django-autofixture.git@0472a494485dd597d598e20d9e1c6c47cf0eadb7
