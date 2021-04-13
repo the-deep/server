@@ -631,7 +631,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 output_field=models.IntegerField(),
             ), 0)
         ).filter(entries_count__gt=0)
-        authoring_organizations = Lead.objects.filter(id__in=lead_qs).order_by().values(
+        authoring_organizations = Lead.objects.filter(id__in=lead_qs).order_by('authors__organization_type').values(
             'authors__organization_type'
         ).annotate(count=models.Count('id')).values(
             'count',

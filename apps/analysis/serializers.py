@@ -3,6 +3,7 @@ from django.db import models
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
 
+from user_resource.serializers import UserResourceSerializer
 from deep.serializers import (
     RemoveNullFieldsMixin,
     NestedCreateMixin,
@@ -16,7 +17,7 @@ from .models import (
 )
 
 
-class AnalysisPillarSerializer(serializers.ModelSerializer):
+class AnalysisPillarSerializer(UserResourceSerializer):
     assignee_name = serializers.CharField(source='assignee.username', read_only=True)
     analysis_title = serializers.CharField(source='analysis.title', read_only=True)
 
@@ -32,10 +33,13 @@ class AnalysisPillarSerializer(serializers.ModelSerializer):
         return data
 
 
-class AnalysisSerializer(RemoveNullFieldsMixin,
-                         DynamicFieldsMixin,
-                         NestedCreateMixin,
-                         NestedUpdateMixin,):
+class AnalysisSerializer(
+    RemoveNullFieldsMixin,
+    DynamicFieldsMixin,
+    UserResourceSerializer,
+    NestedCreateMixin,
+    NestedUpdateMixin,
+):
     analysis_pillar = AnalysisPillarSerializer(many=True, source='analysispillar_set', required=False)
     team_lead_name = serializers.CharField(source='team_lead.username', read_only=True)
 
@@ -49,17 +53,20 @@ class AnalysisSerializer(RemoveNullFieldsMixin,
         return data
 
 
-class AnlyticalEntriesSerializer(serializers.ModelSerializer):
+class AnlyticalEntriesSerializer(UserResourceSerializer):
     class Meta:
         model = AnalyticalStatementEntry
         fields = ('id', 'order', 'entry')
         read_only_fields = ('analytical_statement',)
 
 
-class AnalyticalStatementSerializer(RemoveNullFieldsMixin,
-                                    DynamicFieldsMixin,
-                                    NestedCreateMixin,
-                                    NestedUpdateMixin,):
+class AnalyticalStatementSerializer(
+    RemoveNullFieldsMixin,
+    DynamicFieldsMixin,
+    UserResourceSerializer,
+    NestedCreateMixin,
+    NestedUpdateMixin,
+):
     analytical_entries = AnlyticalEntriesSerializer(source='analyticalstatemententry_set', many=True, required=False)
 
     class Meta:
