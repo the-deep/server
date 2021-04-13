@@ -105,7 +105,6 @@ INSTALLED_APPS = [
     'ordered_model',
     'fixture_magic',
     'autofixture',
-    'channels',
     'corsheaders',
     'crispy_forms',
     'django_filters',
@@ -367,9 +366,6 @@ CACHES = {
     },
 }
 
-
-ASGI_APPLICATION = "deep.routing.channel_routing"
-
 TEST_DIR = os.path.join(BASE_DIR, 'deep/test_files')
 
 # RELIEF WEB
@@ -452,7 +448,7 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
                     'handlers': ['SysLog'],
                     'propagate': True,
                 }
-                for app in LOCAL_APPS + ['deep', 'utils', 'celery', 'channels', 'django']
+                for app in LOCAL_APPS + ['deep', 'utils', 'celery', 'django']
             },
             'profiling': {
                 'handlers': ['ProfilingSysLog'],
@@ -622,3 +618,5 @@ REDOC_SETTINGS = {
 
 
 OPEN_API_DOCS_TIMEOUT = 86400  # 24 Hours
+
+DEFAULT_AUTO_FIELD='django.db.models.AutoField' 

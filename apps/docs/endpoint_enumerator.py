@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.admindocs.views import simplify_regex
 from importlib import import_module
-from rest_framework.compat import (
+from django.urls import (
     URLPattern, URLResolver,
 )
 from django.urls.resolvers import RoutePattern

@@ -144,7 +144,7 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
                 ]
             },
             'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
-            'lead_published_on': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            # 'lead_published_on': ['exact', 'lt', 'gt', 'lte', 'gte'],
         }
         filter_overrides = {
             models.CharField: {
