@@ -105,7 +105,6 @@ INSTALLED_APPS = [
     'ordered_model',
     'fixture_magic',
     'autofixture',
-    'channels',
     'corsheaders',
     'crispy_forms',
     'django_filters',
@@ -367,9 +366,6 @@ CACHES = {
     },
 }
 
-
-ASGI_APPLICATION = "deep.routing.channel_routing"
-
 TEST_DIR = os.path.join(BASE_DIR, 'deep/test_files')
 
 # RELIEF WEB
@@ -452,7 +448,7 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
                     'handlers': ['SysLog'],
                     'propagate': True,
                 }
-                for app in LOCAL_APPS + ['deep', 'utils', 'celery', 'channels', 'django']
+                for app in LOCAL_APPS + ['deep', 'utils', 'celery', 'django']
             },
             'profiling': {
                 'handlers': ['ProfilingSysLog'],
@@ -624,3 +620,4 @@ OPEN_API_DOCS_TIMEOUT = 86400  # 24 Hours
 
 ANALYTICAL_STATEMENT_COUNT = 30  # max no of analytical statement that can be created
 ANALYTICAL_ENTRIES_COUNT = 50  # max no of entries that can be created in analytical_statement
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
