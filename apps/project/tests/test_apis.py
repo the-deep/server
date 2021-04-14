@@ -797,6 +797,18 @@ class ProjectApiTest(TestCase):
         response = self.client.get(url)
         self.assert_200(response)
 
+    def test_project_status_in_project_options(self):
+        url = '/api/v1/project-options/'
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertIn('project_status', response.data)
+        self.assertEqual(response.data['project_status'][0]['key'], 'active')
+        self.assertEqual(response.data['project_status'][0]['value'], 'Active')
+        self.assertEqual(response.data['project_status'][1]['key'], 'inactive')
+        self.assertEqual(response.data['project_status'][1]['value'], 'Inactive')
+
     def test_join_request(self):
         project = self.create(Project, role=self.admin_role)
         test_user = self.create(User)
