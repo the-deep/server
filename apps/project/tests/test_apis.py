@@ -2,6 +2,7 @@ import uuid
 
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
+from django.utils.hashable import make_hashable
 
 from user.models import (
     User,
@@ -798,16 +799,18 @@ class ProjectApiTest(TestCase):
         self.assert_200(response)
 
     def test_project_status_in_project_options(self):
+        choices = dict(make_hashable(Project.STATUS_CHOICES))
+
         url = '/api/v1/project-options/'
 
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
         self.assertIn('project_status', response.data)
-        self.assertEqual(response.data['project_status'][0]['key'], 'active')
-        self.assertEqual(response.data['project_status'][0]['value'], 'Active')
-        self.assertEqual(response.data['project_status'][1]['key'], 'inactive')
-        self.assertEqual(response.data['project_status'][1]['value'], 'Inactive')
+        self.assertEqual(response.data['project_status'][0]['key'], Project.ACTIVE)
+        self.assertEqual(response.data['project_status'][0]['value'], choices[Project.ACTIVE])
+        self.assertEqual(response.data['project_status'][1]['key'], Project.INACTIVE)
+        self.assertEqual(response.data['project_status'][1]['value'], choices[Project.INACTIVE])
 
     def test_join_request(self):
         project = self.create(Project, role=self.admin_role)
