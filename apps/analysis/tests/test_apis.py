@@ -76,7 +76,7 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        analysis = self.create(Analysis, title='Test Analysis')
+        analysis = self.create(Analysis, title='Test Analysis', created_by=user)
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
         data = {
             'main_statement': 'Some main statement',
@@ -87,6 +87,7 @@ class TestAnalysisAPIs(TestCase):
         self.authenticate(user)
         response = self.client.post(url, data)
         self.assert_201(response)
+        self.assertEqual(response.data['created_by'], user.id)
         self.assertEqual(AnalysisPillar.objects.count(), pillar_count + 1)
 
     def test_create_pillar_along_with_statement(self):
@@ -294,16 +295,31 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
+        entry1 = self.create(Entry)
+        entry2 = self.create(Entry)
         analysis = self.create(Analysis)
         pillar = self.create(AnalysisPillar, analysis=analysis, title='title1', assignee=user)
         analytical_statement = self.create(AnalyticalStatement, analysis_pillar=pillar, statement='Hello from here')
-
+        staatement_entry1 = self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement,
+                                        entry=entry1, order=1)
+        statement_entry2 = self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement,
+                                       entry=entry2, order=2)
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{pillar.id}/'
         data = {
             'analytical_statement': [
                 {
                     'id': analytical_statement.id,
-                    'statement': 'Hello from there'
+                    'statement': 'Hello from there',
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "entry": entry2.id,
+                        },
+                        {
+                            "order": 2,
+                            "entry": entry1.id
+                        }
+                    ],
                 }
             ]
         }
@@ -311,6 +327,8 @@ class TestAnalysisAPIs(TestCase):
         response = self.client.patch(url, data)
         self.assert_200(response)
         self.assertEqual(response.data['analytical_statement'][0]['id'], analytical_statement.id)
+        self.assertEqual(response.data['analytical_statement'][0]['analytical_entries'][0]['entry'],
+                         statement_entry2.entry.id)
 
     def test_pillar_overview_in_analysis(self):
         user = self.create_user()

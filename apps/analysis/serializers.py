@@ -17,17 +17,20 @@ from .models import (
 )
 
 
-class AnlyticalEntriesSerializer(serializers.ModelSerializer):
+class AnlyticalEntriesSerializer(UserResourceSerializer):
     class Meta:
         model = AnalyticalStatementEntry
         fields = ('id', 'order', 'entry')
         read_only_fields = ('analytical_statement',)
 
 
-class AnalyticalStatementSerializer(RemoveNullFieldsMixin,
-                                    DynamicFieldsMixin,
-                                    NestedCreateMixin,
-                                    NestedUpdateMixin,):
+class AnalyticalStatementSerializer(
+    RemoveNullFieldsMixin,
+    DynamicFieldsMixin,
+    UserResourceSerializer,
+    NestedCreateMixin,
+    NestedUpdateMixin,
+):
     analytical_entries = AnlyticalEntriesSerializer(source='analyticalstatemententry_set', many=True, required=False)
 
     class Meta:
@@ -42,10 +45,13 @@ class AnalyticalStatementSerializer(RemoveNullFieldsMixin,
         return data
 
 
-class AnalysisPillarSerializer(RemoveNullFieldsMixin,
-                               DynamicFieldsMixin,
-                               NestedCreateMixin,
-                               NestedUpdateMixin,):
+class AnalysisPillarSerializer(
+    RemoveNullFieldsMixin,
+    DynamicFieldsMixin,
+    UserResourceSerializer,
+    NestedCreateMixin,
+    NestedUpdateMixin,
+):
     assignee_name = serializers.CharField(source='assignee.username', read_only=True)
     analysis_title = serializers.CharField(source='analysis.title', read_only=True)
     analytical_statement = AnalyticalStatementSerializer(many=True, source='analyticalstatement_set', required=False)
