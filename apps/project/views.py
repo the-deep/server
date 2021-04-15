@@ -868,9 +868,9 @@ class ProjectOptionsView(views.APIView):
             ]
         options['project_status'] = [
             {
-                'key': status[0],
-                'value': status[1]
-            } for status in Project.STATUS_CHOICES
+                'key': value,
+                'value': label
+            } for value, label in Project.STATUS_CHOICES
         ]
         return response.Response(options)
 
