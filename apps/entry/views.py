@@ -282,6 +282,21 @@ class EntryViewSet(EntrySummaryPaginationMixin, viewsets.ModelViewSet):
         )
 
 
+class EntryListView(generics.GenericAPIView):
+    serializer_class = EntrySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Entry.objects.all()
+
+    def post(self, request, version=None):
+        entries_id = request.data['ids']
+        entries = Entry.objects.filter(id__in=entries_id)
+        serializer_class = self.get_serializer_class()
+        serializer = serializer_class(entries, many=True, context={'request': request})
+        return response.Response(serializer.data)
+
+
 class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
     """
     Entry view for getting entries based filters in POST body
