@@ -682,6 +682,24 @@ class EntryTests(TestCase):
 
     # TODO: test export data and filter data apis
 
+    def test_fetch_entries_on_list_of_ids_post(self):
+        entry1 = self.create_entry()
+        entry2 = self.create_entry()
+        self.create_entry()
+
+        url = '/api/v1/entries-list/'
+        data = {
+            'ids': [entry1.id, entry2.id]
+        }
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_200(response)
+        assert len(response.data) == 2, "Two entries should be shown"
+
+        # try to get from the api
+        response = self.client.get(url)
+        self.assert_405(response)
+
 
 class EntryTest(TestCase):
     def setUp(self):
