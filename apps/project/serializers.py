@@ -128,10 +128,12 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
         read_only=True,
         many=True,
     )
+    role_details = SimpleProjectRoleSerializer(source='role', read_only=True)
 
     class Meta:
         model = ProjectMembership
         fields = '__all__'
+        read_only_fields = ('project',)
 
     def get_member_status(self, membership):
         if ProjectRole.get_admin_roles().filter(
@@ -146,19 +148,22 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
             raise serializers.ValidationError('Invalid project')
         return project
 
+    def project_member_validation(self, project, member):
+        if ProjectMembership.objects.filter(project=project).filter(member=member).exists():
+            raise serializers.ValidationError({'member': 'Member already exist'})
+
     def validate(self, data):
+        data['project_id'] = int(self.context['view'].kwargs['project_id'])
+        member = data.get('member')
+        self.project_member_validation(data['project_id'], member)
         role = data.get('role')
         if not role:
             return data
-
-        project = data.get('project',
-                           self.instance and self.instance.project)
         user = self.context['request'].user
         user_role = ProjectMembership.objects.filter(
-            project=project,
+            project=data['project_id'],
             member=user,
         ).first().role
-
         if role.level < user_role.level:
             raise serializers.ValidationError('Invalid role')
         return data
@@ -446,10 +451,17 @@ class ProjectJoinRequestSerializer(RemoveNullFieldsMixin,
 
 class ProjectUserGroupSerializer(serializers.ModelSerializer):
     title = serializers.CharField(source='usergroup.title', read_only=True)
+    role_details = SimpleProjectRoleSerializer(source='role', read_only=True)
+    added_by_name = serializers.CharField(source='added_by.profile.get_display_name', read_only=True)
 
     class Meta:
         model = ProjectUserGroupMembership
         fields = '__all__'
+        read_only_fields = ('project',)
+
+    def validate(self, data):
+        data['project_id'] = int(self.context['view'].kwargs['project_id'])
+        return data
 
 
 class ProjectRecentActivitySerializer(serializers.Serializer):

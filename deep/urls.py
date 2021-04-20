@@ -238,9 +238,9 @@ router.register(r'projects-stat', ProjectStatViewSet,
                 basename='project-stat')
 router.register(r'project-roles', ProjectRoleViewSet,
                 basename='project_role')
-router.register(r'project-memberships', ProjectMembershipViewSet,
+router.register(r'projects/(?P<project_id>\d+)/project-memberships', ProjectMembershipViewSet,
                 basename='project_membership')
-router.register(r'project-usergroups', ProjectUserGroupViewSet,
+router.register(r'projects/(?P<project_id>\d+)/project-usergroups', ProjectUserGroupViewSet,
                 basename='project_usergroup')
 
 # Geo routers

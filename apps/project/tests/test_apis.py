@@ -474,14 +474,13 @@ class ProjectApiTest(TestCase):
             title='TestProject',
             role=self.admin_role
         )
-
         memberships = ProjectMembership.objects.filter(project=project)
         initial_member_count = memberships.count()
 
-        url = '/api/v1/project-usergroups/'
+        url = f'/api/v1/projects/{project.id}/project-usergroups/'
         data = {
-            'project': project.id,
             'usergroup': self.ug1.id,
+            'role': self.normal_role.id
         }
 
         self.authenticate()
@@ -496,6 +495,8 @@ class ProjectApiTest(TestCase):
             # -1 because usergroup admin and project admin is common
             final_member_count
         )
+        self.assertEqual(response.data['role_details']['title'], self.normal_role.title)
+        self.assertEqual(response.data['project'], project.id)
 
     def test_update_project_remove_ug(self):
         project = self.create(
@@ -519,7 +520,7 @@ class ProjectApiTest(TestCase):
         ).count()
 
         # We keep just ug1, and remove ug2
-        url = '/api/v1/project-usergroups/{}/'.format(project_ug2.id)
+        url = f'/api/v1/projects/{project.id}/project-usergroups/{project_ug2.id}/'
 
         self.authenticate()
         response = self.client.delete(url)
@@ -703,10 +704,9 @@ class ProjectApiTest(TestCase):
         project = self.create(Project, role=self.admin_role)
         test_user = self.create(User)
 
-        url = '/api/v1/project-memberships/'
+        url = f'/api/v1/projects/{project.id}/project-memberships/'
         data = {
             'member': test_user.pk,
-            'project': project.pk,
             'role': self.normal_role.id,
         }
 
@@ -716,16 +716,16 @@ class ProjectApiTest(TestCase):
 
         self.assertEqual(response.data['role'], data['role'])
         self.assertEqual(response.data['member'], data['member'])
-        self.assertEqual(response.data['project'], data['project'])
+        self.assertEqual(response.data['project'], project.id)
+        self.assertEqual(response.data['role_details']['title'], self.normal_role.title)
 
     def test_add_member_unexistent_role(self):
         project = self.create(Project, role=self.admin_role)
         test_user = self.create(User)
 
-        url = '/api/v1/project-memberships/'
+        url = f'/api/v1/projects/{project.id}/project-memberships/'
         data = {
             'member': test_user.pk,
-            'project': project.pk,
             'role': 9999
         }
 
@@ -739,16 +739,16 @@ class ProjectApiTest(TestCase):
         test_user = self.create(User)
         project.add_member(test_user)
 
-        url = '/api/v1/project-memberships/'
+        url = f'/api/v1/projects/{project.id}/project-memberships/'
         data = {
-            'member': test_user.pk,
-            'project': project.pk,
+            'member': test_user.pk
         }
 
         self.authenticate()
         response = self.client.post(url, data)
         self.assert_400(response)
         assert 'errors' in response.data
+        assert 'member' in response.data['errors']
 
     def test_project_membership_edit_normal_role(self):
         # user try to update member where he/she isnot the admin in the project
@@ -758,7 +758,7 @@ class ProjectApiTest(TestCase):
         data = {
             'role': self.admin_role.id,
         }
-        url = '/api/v1/project-memberships/{}/'.format(m1.id)
+        url = f'/api/v1/projects/{project.id}/project-memberships/{m1.id}/'
         self.authenticate()  # authenticate with normal_role
         response = self.client.patch(url, data)
         self.assert_403(response)
@@ -770,7 +770,7 @@ class ProjectApiTest(TestCase):
         data = {
             'role': self.admin_role.id
         }
-        url = '/api/v1/project-memberships/{}/'.format(m1.id)
+        url = f'/api/v1/projects/{project.id}/project-memberships/{m1.id}/'
         self.authenticate()  # authenticate with admin_role
         response = self.client.patch(url, data)
         self.assert_200(response)
@@ -783,10 +783,9 @@ class ProjectApiTest(TestCase):
         project.add_member(test_user2, role=self.normal_role)
         data = {
             'member': test_user1.id,
-            'project': project.id,
             'role': self.admin_role.id
         }
-        url = '/api/v1/project-memberships/'
+        url = f'/api/v1/projects/{project.id}/project-memberships/'
         self.authenticate(test_user2)  # test_user2 has normal_role in project
         response = self.client.post(url, data)
         self.assert_400(response)
@@ -1052,8 +1051,8 @@ class ProjectApiTest(TestCase):
         m1 = project.add_member(test_user1, role=self.normal_role)
         m2 = project.add_member(test_user2, role=self.admin_role)
 
-        url1 = '/api/v1/project-memberships/{}/'.format(m1.id)
-        url2 = '/api/v1/project-memberships/{}/'.format(m2.id)
+        url1 = f'/api/v1/projects/{project.id}/project-memberships/{m1.id}/'
+        url2 = f'/api/v1/projects/{project.id}/project-memberships/{m2.id}/'
 
         # Initial condition: We are Admin
         self.authenticate()
