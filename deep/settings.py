@@ -622,3 +622,6 @@ REDOC_SETTINGS = {
 
 
 OPEN_API_DOCS_TIMEOUT = 86400  # 24 Hours
+
+ANALYTICAL_STATEMENT_COUNT = 30  # max no of analytical statement that can be created
+ANALYTICAL_ENTRIES_COUNT = 50  # max no of entries that can be created in analytical_statement

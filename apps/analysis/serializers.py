@@ -9,6 +9,10 @@ from deep.serializers import (
     NestedCreateMixin,
     NestedUpdateMixin
 )
+from deep.settings import (
+    ANALYTICAL_STATEMENT_COUNT,
+    ANALYTICAL_ENTRIES_COUNT
+)
 from .models import (
     Analysis,
     AnalysisPillar,
