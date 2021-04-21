@@ -1,5 +1,3 @@
-from django.core.exceptions import ValidationError
-
 from deep.tests import TestCase
 from deep.settings import (
     ANALYTICAL_STATEMENT_COUNT,
@@ -212,81 +210,66 @@ class TestAnalysisAPIs(TestCase):
         r_data = response.json()
         self.assertEqual(r_data['statement'], data['statement'])
 
-    def test_create_analytical_statement_greater_than_30(self):
-        user = self.create_user()
-        project = self.create_project()
-        project.add_member(user)
-        entry = self.create(Entry)
-        analysis = self.create(Analysis, project=project)
-        pillar = self.create(AnalysisPillar, analysis=analysis)
-        analytical_statement1 = self.create(AnalyticalStatement, analysis_pillar=pillar)
-        with self.assertRaises(ValidationError):
-            for _ in range(ANALYTICAL_STATEMENT_COUNT + 1):
-                self.create(AnalyticalStatement, analysis_pillar=pillar)
-        new_count = AnalyticalStatement.objects.filter(analysis_pillar=pillar).count()
-        self.assertEqual(new_count, ANALYTICAL_STATEMENT_COUNT)
-
     def test_create_analytical_statement_greater_than_30_api_level(self):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
         entry = self.create(Entry)
         analysis = self.create(Analysis, project=project)
-        pillar = self.create(AnalysisPillar, analysis=analysis)
-        for _ in range(ANALYTICAL_STATEMENT_COUNT - 1):
-            self.create(AnalyticalStatement, analysis_pillar=pillar)
 
-        # try to post with the data
         data = {
-            "analytical_entries": [
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statement': [
                 {
+                    "statement": "coffee",
                     "order": 1,
-                    "entry": entry.id
-                }
-            ],
-            "statement": "test statement",
-            "order": 1,
-            "analysisPillar": pillar.id
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "entry": entry.id,
+                        }
+                    ]
+                } for _ in range(ANALYTICAL_STATEMENT_COUNT)
+            ]
         }
-        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{pillar.id}/analytical-statement/'
-        self.authenticate(user)
-        response = self.client.post(url, data)
-        self.assert_201(response)
-
-        # try to again post
-        data = {
-            "analytical_entries": [
-                {
-                    "order": 1,
-                    "entry": entry.id
-                }
-            ],
-            "statement": "statement",
-            "order": 1,
-            "analysisPillar": pillar.id
-        }
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
         self.authenticate(user)
         response = self.client.post(url, data)
         self.assert_400(response)
         self.assertIn('non_field_errors', response.data['errors'])
 
-    def test_create_analytical_entries_greater_than_50(self):
+    def test_create_analytical_entries_greater_than_50_api_level(self):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        entry = self.create(Entry)
+        entries_list = [self.create(Entry) for _ in range(ANALYTICAL_ENTRIES_COUNT)]
         analysis = self.create(Analysis, project=project)
-        pillar = self.create(AnalysisPillar, analysis=analysis)
-        analytical_statement = self.create(AnalyticalStatement, analysis_pillar=pillar)
-        analytical_statement_entry = self.create(AnalyticalStatementEntry,
-                                                 analytical_statement=analytical_statement,
-                                                 entry=entry)
-        with self.assertRaises(ValidationError):
-            for _ in range(ANALYTICAL_ENTRIES_COUNT + 1):
-                self.create(AnalyticalStatementEntry,
-                            analytical_statement=analytical_statement)
-        new_count = AnalyticalStatementEntry.objects.filter(analytical_statement=analytical_statement).count()
-        self.assertEqual(new_count, ANALYTICAL_ENTRIES_COUNT)
+
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statement': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "entry": entry.id,
+                        } for entry in entries_list
+                    ]
+                }
+            ]
+        }
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_400(response)
 
     def test_summary_for_analysis(self):
         user = self.create_user()

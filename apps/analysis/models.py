@@ -75,13 +75,6 @@ class AnalyticalStatement(UserResource):
     def __str__(self):
         return self.statement and self.statement[:255]
 
-    def save(self, *args, **kwargs):
-        if self.pk is None and \
-            AnalyticalStatement.objects.filter(
-                analysis_pillar=self.analysis_pillar).count() >= ANALYTICAL_STATEMENT_COUNT:
-            raise ValidationError('Analytical statement count must be less than {}'.format(ANALYTICAL_STATEMENT_COUNT))
-        return super().save(*args, **kwargs)
-
 
 class AnalyticalStatementEntry(UserResource):
     entry = models.ForeignKey(
@@ -97,10 +90,3 @@ class AnalyticalStatementEntry(UserResource):
     class Meta:
         ordering = ('order',)
         unique_together = ('entry', 'analytical_statement')
-
-    def save(self, *args, **kwargs):
-        if self.pk is None and \
-            AnalyticalStatementEntry.objects.filter(
-                analytical_statement=self.analytical_statement).count() >= ANALYTICAL_ENTRIES_COUNT:
-            raise ValidationError('Analytical entries count must be less than {}'.format(ANALYTICAL_ENTRIES_COUNT))
-        return super().save(*args, **kwargs)

@@ -46,6 +46,10 @@ class AnalyticalStatementSerializer(
         analysis_pillar_id = self.context['view'].kwargs.get('analysis_pillar_id', None)
         if analysis_pillar_id:
             data['analysis_pillar_id'] = int(analysis_pillar_id)
+        # Validate the analytical_entries
+        analytical_entries_present = AnalyticalStatementEntry.objects.filter(analytical_statement=self.instance).count()
+        if analytical_entries_present + len(data.get('analyticalstatemententry_set', [])) >= ANALYTICAL_ENTRIES_COUNT:
+            raise serializers.ValidationError(f'Analytical entires count must be less than {ANALYTICAL_ENTRIES_COUNT}')
         return data
 
 
@@ -69,6 +73,10 @@ class AnalysisPillarSerializer(
         analysis_id = self.context['view'].kwargs.get('analysis_id', None)
         if analysis_id:
             data['analysis_id'] = int(analysis_id)
+        # validate analysis_statement
+        analytical_statement_present = AnalyticalStatement.objects.filter(analysis_pillar=self.instance).count()
+        if analytical_statement_present + len(data.get('analyticalstatement_set', [])) >= ANALYTICAL_STATEMENT_COUNT:
+            raise serializers.ValidationError(f'Analytical statement count must be less than {ANALYTICAL_STATEMENT_COUNT}')
         return data
 
 
