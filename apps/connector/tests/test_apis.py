@@ -1,3 +1,5 @@
+from mock import patch
+
 from deep.tests import TestCase
 from user.models import User
 from project.models import Project
@@ -11,6 +13,8 @@ from connector.models import (
     # EMMConfig,
 )
 from connector.sources import store
+
+from .connector_content_mock_data import RSS_FEED_MOCK_DATA
 
 
 def get_source_object(key):
@@ -118,6 +122,35 @@ class ConnectorApiTest(TestCase):
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
+
+    @patch('connector.sources.rss_feed.requests')
+    def test_connector_leads(self, mock_requests):
+        mock_requests.get.return_value.content = RSS_FEED_MOCK_DATA
+        connector = self.create(
+            Connector,
+            source=get_source_object('rss-feed'),
+            params=SAMPLE_RSS_PARAMS,
+            role='self'
+        )
+        url = '/api/v1/connectors/{}/leads/'.format(connector.id)
+
+        self.authenticate()
+        response = self.client.post(url)
+        self.assert_200(response)
+
+        self.assertIsNotNone(response.data.get('results'))
+        self.assertTrue(response.data['count'] == 20)
+        self.assertIsInstance(response.data['results'], list)
+
+        first_lead = response.data['results'][0]
+        for key in [
+            'source_raw', 'source', 'source_detail',
+            'author_raw', 'author_detail',
+            'authors', 'authors_detail',
+        ]:
+            self.assertTrue(first_lead[key] not in [None, []])
+
+        self.assertIsNotNone(first_lead['authors'][0] == first_lead['authors_detail'][0]['id'])
 
     # FIXME: Fix the broken tests by mocking
     # def test_get_leads_from_connector(self):
