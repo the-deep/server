@@ -866,7 +866,12 @@ class ProjectOptionsView(views.APIView):
                 {'key': 'my_projects', 'value': 'My projects'},
                 {'key': 'not_my_projects', 'value': 'Not my projects'}
             ]
-
+        options['project_status'] = [
+            {
+                'key': value,
+                'value': label
+            } for value, label in Project.STATUS_CHOICES
+        ]
         return response.Response(options)
 
 
