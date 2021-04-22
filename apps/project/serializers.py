@@ -459,19 +459,13 @@ class ProjectUserGroupSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('project',)
 
-    def validate_project_usergroup(self, project, usergroup):
-        if ProjectUserGroupMembership.objects.filter(project=project, usergroup=usergroup).exists():
-            raise serializers.ValidationError({'usergroup': 'Usergroup already exist in the project'})
-
     def validate(self, data):
         data['project_id'] = int(self.context['view'].kwargs['project_id'])
         usergroup = data.get('usergroup')
-        usergroup = self.validate_project_usergroup(data['project_id'], usergroup)
+        if usergroup and ProjectUserGroupMembership.objects.filter(project=data['project_id'],
+                                                                   usergroup=usergroup).exists():
+            raise serializers.ValidationError({'usergroup': 'Usergroup already exist in the project'})
         return data
-
-    def create(self, validated_data):
-        instance, _ = ProjectUserGroupMembership.objects.get_or_create(**validated_data)
-        return instance
 
 
 class ProjectRecentActivitySerializer(serializers.Serializer):
