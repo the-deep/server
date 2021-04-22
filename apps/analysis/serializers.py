@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
@@ -8,10 +9,6 @@ from deep.serializers import (
     RemoveNullFieldsMixin,
     NestedCreateMixin,
     NestedUpdateMixin
-)
-from deep.settings import (
-    ANALYTICAL_STATEMENT_COUNT,
-    ANALYTICAL_ENTRIES_COUNT
 )
 from .models import (
     Analysis,
@@ -47,9 +44,11 @@ class AnalyticalStatementSerializer(
         if analysis_pillar_id:
             data['analysis_pillar_id'] = int(analysis_pillar_id)
         # Validate the analytical_entries
-        analytical_entries_present = AnalyticalStatementEntry.objects.filter(analytical_statement=self.instance).count()
-        if analytical_entries_present + len(data.get('analyticalstatemententry_set', [])) >= ANALYTICAL_ENTRIES_COUNT:
-            raise serializers.ValidationError(f'Analytical entires count must be less than {ANALYTICAL_ENTRIES_COUNT}')
+        entries = data.get('analyticalstatemententry_set')
+        if entries and len(entries) > settings.ANALYTICAL_ENTRIES_COUNT:
+            raise serializers.ValidationError(
+                f'Analytical entires count must be less than {settings.ANALYTICAL_ENTRIES_COUNT}'
+            )
         return data
 
 
@@ -74,9 +73,11 @@ class AnalysisPillarSerializer(
         if analysis_id:
             data['analysis_id'] = int(analysis_id)
         # validate analysis_statement
-        analytical_statement_present = AnalyticalStatement.objects.filter(analysis_pillar=self.instance).count()
-        if analytical_statement_present + len(data.get('analyticalstatement_set', [])) >= ANALYTICAL_STATEMENT_COUNT:
-            raise serializers.ValidationError(f'Analytical statement count must be less than {ANALYTICAL_STATEMENT_COUNT}')
+        analytical_statement = data.get('analyticalstatement_set')
+        if analytical_statement and len(analytical_statement) > settings.ANALYTICAL_STATEMENT_COUNT:
+            raise serializers.ValidationError(
+                f'Analytical statement count must be less than{settings.ANALYTICAL_STATEMENT_COUNT}'
+            )
         return data
 
 
