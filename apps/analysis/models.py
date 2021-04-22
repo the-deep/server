@@ -2,12 +2,7 @@ import copy
 
 from django.db import models
 from django.contrib.postgres.fields import JSONField
-from django.core.exceptions import ValidationError
 
-from deep.settings import (
-    ANALYTICAL_ENTRIES_COUNT,
-    ANALYTICAL_STATEMENT_COUNT
-)
 from user.models import User
 from project.models import Project
 from entry.models import Entry

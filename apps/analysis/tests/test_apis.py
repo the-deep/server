@@ -1,12 +1,7 @@
+from django.conf import settings
 from deep.tests import TestCase
-from deep.settings import (
-    ANALYTICAL_STATEMENT_COUNT,
-    ANALYTICAL_ENTRIES_COUNT
-)
 
-from project.models import Project
 from entry.models import Entry
-from user.models import User
 from analysis.models import (
     Analysis,
     AnalysisPillar,
@@ -232,7 +227,31 @@ class TestAnalysisAPIs(TestCase):
                             "entry": entry.id,
                         }
                     ]
-                } for _ in range(ANALYTICAL_STATEMENT_COUNT)
+                } for _ in range(settings.ANALYTICAL_STATEMENT_COUNT)
+            ]
+        }
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        # posting statement greater than `ANALYTICAL_STATEMENT_COUNT`
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statement': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "entry": entry.id,
+                        }
+                    ]
+                } for _ in range(settings.ANALYTICAL_STATEMENT_COUNT + 1)
             ]
         }
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
@@ -245,7 +264,8 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        entries_list = [self.create(Entry) for _ in range(ANALYTICAL_ENTRIES_COUNT)]
+        entries_list = [self.create(Entry) for _ in range(settings.ANALYTICAL_ENTRIES_COUNT)]
+        entries_list_one_more = [self.create(Entry) for _ in range(settings.ANALYTICAL_ENTRIES_COUNT + 1)]
         analysis = self.create(Analysis, project=project)
 
         data = {
@@ -262,6 +282,30 @@ class TestAnalysisAPIs(TestCase):
                             "order": 1,
                             "entry": entry.id,
                         } for entry in entries_list
+                    ]
+                }
+            ]
+        }
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        # try posting for entries less than `ANALYTICAL_ENTRIES_COUNT + 1`
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statement': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "entry": entry.id,
+                        } for entry in entries_list_one_more
                     ]
                 }
             ]
