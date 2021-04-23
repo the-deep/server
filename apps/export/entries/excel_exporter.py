@@ -7,11 +7,21 @@ from entry.models import Entry, ExportData, ProjectEntryLabel, LeadEntryGroup
 from lead.models import Lead
 from export.models import Export
 
-from utils.common import format_date, generate_filename, excel_column_name
+from utils.common import (
+    format_date,
+    generate_filename,
+    excel_column_name,
+    get_valid_xml_string as xstr
+)
 
 logger = logging.getLogger(__name__)
 
 EXPORT_DATE_FORMAT = '%m/%d/%y'
+
+
+def get_hyperlink(url, text):
+    clean_text = xstr(text.replace('"', '""'))
+    return f'=HYPERLINK("{url}", "{clean_text}")'
 
 
 class ExcelExporter:
@@ -353,8 +363,8 @@ class ExcelExporter:
         else:
             sheet_col_name = excel_column_name(col_number)
 
-        link = f'"#\'{worksheet_title}\'!{sheet_col_name}1"'
-        return f'=HYPERLINK({link}, "{field.title}")'
+        link = f'#\'{worksheet_title}\'!{sheet_col_name}1'
+        return get_hyperlink(link, field.title)
 
     def get_entry_data(self, entry):
         if entry.entry_type == Entry.EXCERPT:
@@ -386,8 +396,8 @@ class ExcelExporter:
             for group_label in entry.entrygrouplabel_set.all():
                 key = (group_label.group.lead_id, group_label.group_id)
                 entries_sheet_name = 'Grouped Entries' if self.decoupled else 'Entries'
-                link = f'"#\'{entries_sheet_name}\'!A{i+2}"'
-                self.group_label_matrix[key][group_label.label_id] = f'=HYPERLINK({link}, "{entry.excerpt[:50]}")'
+                link = f'#\'{entries_sheet_name}\'!A{i+2}'
+                self.group_label_matrix[key][group_label.label_id] = get_hyperlink(link, entry.excerpt[:50])
 
             lead = entry.lead
             assignee = entry.lead.get_assignee()
@@ -463,7 +473,7 @@ class ExcelExporter:
         self.bibliography_sheet.append([['Author', 'Source', 'Published Date', 'Title']])
         for author, source, published, url, title in self.bibliography_data.values():
             self.bibliography_sheet.append(
-                [[author, source, published, f'=HYPERLINK("{url}", "{title}")' if url else title]]
+                [[author, source, published, get_hyperlink(url, title) if url else title]]
             )
 
     def export(self):
