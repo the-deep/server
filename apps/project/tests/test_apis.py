@@ -765,6 +765,13 @@ class ProjectApiTest(TestCase):
         self.assertEqual(response.data['member'], data['member'])
         self.assertEqual(response.data['project'], project.id)
         self.assertEqual(response.data['role_details']['title'], self.normal_role.title)
+        response_id = response.data['id']
+        url = f'/api/v1/projects/{project.id}/project-memberships/{response_id}/'
+        data = {
+            'role': self.admin_role.id
+        }
+        response = self.client.patch(url, data)
+        self.assert_200(response)
 
     def test_add_member_unexistent_role(self):
         project = self.create(Project, role=self.admin_role)
@@ -784,11 +791,11 @@ class ProjectApiTest(TestCase):
     def test_add_member_duplicate(self):
         project = self.create(Project, role=self.admin_role)
         test_user = self.create(User)
-        project.add_member(test_user)
-
+        project.add_member(test_user, role=self.normal_role)
         url = f'/api/v1/projects/{project.id}/project-memberships/'
         data = {
-            'member': test_user.pk
+            'member': test_user.pk,
+            'role': self.normal_role.id
         }
 
         self.authenticate()
@@ -796,6 +803,20 @@ class ProjectApiTest(TestCase):
         self.assert_400(response)
         assert 'errors' in response.data
         assert 'member' in response.data['errors']
+
+        # try deleting the members and add back again
+        ProjectMembership.objects.filter(
+            project=project,
+            member=test_user
+        ).delete()
+
+        data = {
+            'member': test_user.pk,
+            'role': self.normal_role.id
+        }
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
 
     def test_project_membership_edit_normal_role(self):
         # user try to update member where he/she isnot the admin in the project
