@@ -108,7 +108,7 @@ class Project(UserResource):
                 for key in [
                     ('number_of_leads'),
                     ('number_of_leads_tagged'),
-                    ('number_of_leads_tagged_and_verified'),
+                    ('number_of_leads_tagged_and_controlled'),
                     ('number_of_entries'),
                     ('number_of_users'),
                     # NOTE: Used for sorting in discover projects

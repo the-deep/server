@@ -7,7 +7,7 @@ from quality_assurance.models import (
     EntryReviewComment,
 )
 
-ApprovedByQs = Entry.approved_by.through.objects
+VerifiedByQs = Entry.verified_by.through.objects
 
 
 class QualityAccuranceTests(TestCase):
@@ -71,7 +71,7 @@ class QualityAccuranceTests(TestCase):
         response = self.client.get(f'/api/v1/entries/{entry.pk}/review-comments/')
         self.assert_403(response)
 
-    def test_entry_review_comment_approve_api(self):
+    def test_entry_review_comment_verify_api(self):
         project = self.create_project()
         entry = self.create_entry(project=project)
         user1 = self.create_user()
@@ -88,74 +88,74 @@ class QualityAccuranceTests(TestCase):
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
-        assert ApprovedByQs.filter(entry=entry).count() == 0
+        assert VerifiedByQs.filter(entry=entry).count() == 0
 
-        # Should include is_approved_by_current_user as False
+        # Should include is_verified_by_current_user as False
         response = self.client.post('/api/v1/entries/filter/', data={'project': project.pk})
         self.assert_200(response)
-        assert not response.data['results'][0]['is_approved_by_current_user']
+        assert not response.data['results'][0]['is_verified_by_current_user']
 
-        # Approve
+        # Verify
         data = {
             'text': 'This is a test comment for approvable',
-            'comment_type': CommentType.APPROVE,
+            'comment_type': CommentType.VERIFY,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
-        assert ApprovedByQs.filter(entry=entry).count() == 1
+        assert VerifiedByQs.filter(entry=entry).count() == 1
 
-        # Should include is_approved_by_current_user as True
+        # Should include is_verified_by_current_user as True
         response = self.client.post('/api/v1/entries/filter/', data={'project': project.pk})
         self.assert_200(response)
-        assert response.data['results'][0]['is_approved_by_current_user']
+        assert response.data['results'][0]['is_verified_by_current_user']
 
         self.authenticate(user2)
         data = {
             'text': 'This is a test comment',
-            'comment_type': CommentType.APPROVE,
+            'comment_type': CommentType.VERIFY,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
-        assert ApprovedByQs.filter(entry=entry).count() == 2
+        assert VerifiedByQs.filter(entry=entry).count() == 2
 
-        # Unapprove
+        # Unverify
         data = {
             'text': 'This is a test comment for unapprovable',
-            'comment_type': CommentType.UNAPPROVE,
+            'comment_type': CommentType.UNVERIFY,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
 
-        assert ApprovedByQs.filter(entry=entry).count() == 1
+        assert VerifiedByQs.filter(entry=entry).count() == 1
 
-        # Can't approve already approve
+        # Can't verify already verify
         self.authenticate(user1)
         data = {
             'text': 'This is a test comment',
-            'comment_type': CommentType.APPROVE,
+            'comment_type': CommentType.VERIFY,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_400(response)
 
-        assert ApprovedByQs.filter(entry=entry).count() == 1
+        assert VerifiedByQs.filter(entry=entry).count() == 1
 
-        # Can't unapprove not approve
+        # Can't unverify not verify
         self.authenticate(user2)
         data = {
             'text': 'This is a test comment',
-            'comment_type': CommentType.UNAPPROVE,
+            'comment_type': CommentType.UNVERIFY,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_400(response)
         self.authenticate(user3)
         data = {
             'text': 'This is a test comment',
-            'comment_type': CommentType.UNAPPROVE,
+            'comment_type': CommentType.UNVERIFY,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_400(response)
 
-        assert ApprovedByQs.filter(entry=entry).count() == 1
+        assert VerifiedByQs.filter(entry=entry).count() == 1
 
     def test_entry_review_comment_control_api(self):
         project = self.create_project()
@@ -183,31 +183,31 @@ class QualityAccuranceTests(TestCase):
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
         entry.refresh_from_db()
-        assert entry.verified
-        assert entry.verification_last_changed_by == user1
+        assert entry.controlled
+        assert entry.controlled_changed_by == user1
 
         # Control using same user again
         data = {
-            'text': 'This is a test comment to again control/verify already verified',
+            'text': 'This is a test comment to again control already verified',
             'comment_type': CommentType.CONTROL,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_400(response)
         entry.refresh_from_db()
-        assert entry.verified
-        assert entry.verification_last_changed_by == user1
+        assert entry.controlled
+        assert entry.controlled_changed_by == user1
 
         # Control using another user again
         self.authenticate(user2)
         data = {
-            'text': 'This is a test comment to again control/verify already verified',
+            'text': 'This is a test comment to again control already verified',
             'comment_type': CommentType.CONTROL,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_400(response)
         entry.refresh_from_db()
-        assert entry.verified
-        assert entry.verification_last_changed_by == user1
+        assert entry.controlled
+        assert entry.controlled_changed_by == user1
 
         # Uncontrol (any users can also uncontrol)
         self.authenticate(user2)
@@ -218,21 +218,21 @@ class QualityAccuranceTests(TestCase):
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
         entry.refresh_from_db()
-        assert not entry.verified
-        assert entry.verification_last_changed_by == user2
+        assert not entry.controlled
+        assert entry.controlled_changed_by == user2
 
         for user in [user1, user2]:
             self.authenticate(user)
             # Can't uncontrol already uncontrol
             data = {
                 'text': 'This is a test comment',
-                'comment_type': CommentType.UNAPPROVE,
+                'comment_type': CommentType.UNVERIFY,
             }
             response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
             self.assert_400(response)
             entry.refresh_from_db()
-            assert not entry.verified
-            assert entry.verification_last_changed_by == user2
+            assert not entry.controlled
+            assert entry.controlled_changed_by == user2
 
     def test_entry_review_comment_summary_api(self):
         project = self.create_project()
@@ -257,8 +257,8 @@ class QualityAccuranceTests(TestCase):
         for user in [user2, user3]:
             self.authenticate(user)
             data = {
-                'text': 'This is a approve comment',
-                'comment_type': CommentType.APPROVE,
+                'text': 'This is a verify comment',
+                'comment_type': CommentType.VERIFY,
             }
             response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
             self.assert_201(response)
@@ -273,11 +273,11 @@ class QualityAccuranceTests(TestCase):
 
         response = self.client.get(f'/api/v1/entries/{entry.pk}/review-comments/')
         assert 'summary' in response.data
-        assert len(response.data['summary']['approved_by']) == 2
-        assert response.data['summary']['verified']
-        assert response.data['summary']['verification_last_changed_by']['id'] == user4.pk
+        assert len(response.data['summary']['verified_by']) == 2
+        assert response.data['summary']['controlled']
+        assert response.data['summary']['controlled_changed_by']['id'] == user4.pk
 
-    def test_entry_filter_approved_count_api(self):
+    def test_entry_filter_verified_count_api(self):
         project = self.create_project()
         entry = self.create_entry(project=project)
 
@@ -286,16 +286,16 @@ class QualityAccuranceTests(TestCase):
             project.add_member(user, role=self.normal_role)
             self.authenticate(user)
             data = {
-                'text': 'This is a approve comment',
-                'comment_type': CommentType.APPROVE,
+                'text': 'This is a verify comment',
+                'comment_type': CommentType.VERIFY,
             }
             response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
             self.assert_201(response)
 
         response = self.client.post('/api/v1/entries/filter/', data={'project': project.pk})
         self.assert_200(response)
-        assert response.data['results'][0]['approved_by_count'] == 3
-        assert not response.data['results'][0]['verified']
+        assert response.data['results'][0]['verified_by_count'] == 3
+        assert not response.data['results'][0]['controlled']
 
         self.authenticate(user)
         data = {
@@ -307,8 +307,8 @@ class QualityAccuranceTests(TestCase):
 
         response = self.client.post('/api/v1/entries/filter/', data={'project': project.pk})
         self.assert_200(response)
-        assert response.data['results'][0]['approved_by_count'] == 3
-        assert response.data['results'][0]['verified']
+        assert response.data['results'][0]['verified_by_count'] == 3
+        assert response.data['results'][0]['controlled']
 
     def test_entry_review_comment_text_required_api(self):
         project = self.create_project()
@@ -319,8 +319,8 @@ class QualityAccuranceTests(TestCase):
         for comment_type, text_required in [
                 (None, True),  # Default is CommentType.COMMENT
                 (CommentType.COMMENT, True),
-                (CommentType.APPROVE, False),
-                (CommentType.UNAPPROVE, True),
+                (CommentType.VERIFY, False),
+                (CommentType.UNVERIFY, True),
                 (CommentType.CONTROL, False),
                 (CommentType.UNCONTROL, True),
         ]:
@@ -404,7 +404,7 @@ class QualityAccuranceTests(TestCase):
 
         # Create a commit different comment_type
         for comment_type in [
-            CommentType.APPROVE, CommentType.UNAPPROVE,
+            CommentType.VERIFY, CommentType.UNVERIFY,
             CommentType.CONTROL, CommentType.UNCONTROL,
         ]:
             _clean_comments(project)
