@@ -64,27 +64,28 @@ class Entry(UserResource, ProjectEntityMixin):
     highlight_hidden = models.BooleanField(default=False)
 
     # NOTE: verification is also called controlled in QA
-    verified = models.BooleanField(default=False, blank=True, null=True)
-    verification_last_changed_by = models.ForeignKey(
+    controlled = models.BooleanField(default=False, blank=True, null=True)
+    controlled_changed_by = models.ForeignKey(
         User, blank=True, null=True,
         related_name='+', on_delete=models.SET_NULL)
-    # NOTE: approved_by is related to review comment
-    approved_by = models.ManyToManyField(User, blank=True)
+    # NOTE: verified_by is related to review comment
+    verified_by = models.ManyToManyField(User, blank=True)
 
-    def verify(self, user, verified=True):
-        self.verified = verified
-        self.verification_last_changed_by = user
+    # NOTE: control is like final verified action
+    def control(self, user, controlled=True):
+        self.controlled = controlled
+        self.controlled_changed_by = user
         self.save()
 
     @classmethod
     def annotate_comment_count(cls, qs):
         current_user = get_current_user()
-        approved_by_current_user_qs = cls.approved_by.through.objects.filter(
+        verified_by_current_user_qs = cls.verified_by.through.objects.filter(
             entry=models.OuterRef('pk'), user=current_user
         )
         return qs.annotate(
-            approved_by_count=models.Count('approved_by'),
-            is_approved_by_current_user=models.Exists(approved_by_current_user_qs),
+            verified_by_count=models.Count('verified_by'),
+            is_verified_by_current_user=models.Exists(verified_by_current_user_qs),
             resolved_comment_count=models.Count(
                 'entrycomment',
                 filter=models.Q(

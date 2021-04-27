@@ -413,8 +413,8 @@ class EntryTests(TestCase):
     def test_filters(self):
         entry = self.create_entry()
 
-        self.filter_test('verified=False', 1)
-        self.filter_test('verified=True', 0)
+        self.filter_test('controlled=False', 1)
+        self.filter_test('controlled=True', 0)
 
         filter = self.create(
             Filter,
@@ -544,16 +544,16 @@ class EntryTests(TestCase):
             {d['id']: d['order'] for d in response.json()}
         )
 
-    def test_verify_entry(self):
+    def test_control_entry(self):
         entry = self.create_entry()
         user = self.create(User)
         entry.project.add_member(user, self.view_only_role)
-        verify_url = '/api/v1/entries/{}/verify/'.format(entry.id)
-        unverify_url = '/api/v1/entries/{}/unverify/'.format(entry.id)
+        control_url = '/api/v1/entries/{}/control/'.format(entry.id)
+        uncontrol_url = '/api/v1/entries/{}/uncontrol/'.format(entry.id)
 
         self.authenticate(user)
 
-        response = self.client.post(verify_url)
+        response = self.client.post(control_url)
         self.assert_403(response)
 
         # normal role
@@ -562,28 +562,28 @@ class EntryTests(TestCase):
         self.authenticate()
 
         current_version = Version.objects.get_for_object(entry).count()
-        response = self.client.post(verify_url, {'version_id': current_version}, format='json')
+        response = self.client.post(control_url, {'version_id': current_version}, format='json')
         self.assert_200(response)
         entry.refresh_from_db()
-        self.assertTrue(entry.verified)
+        self.assertTrue(entry.controlled)
 
         current_version = Version.objects.get_for_object(entry).count()
-        response = self.client.post(unverify_url, {'version_id': current_version}, format='json')
+        response = self.client.post(uncontrol_url, {'version_id': current_version}, format='json')
         self.assert_200(response)
         response_data = response.json()
         assert response_data['id'] == entry.pk
         assert response_data['versionId'] != current_version
         assert response_data['versionId'] == current_version + 1
         entry.refresh_from_db()
-        self.assertFalse(entry.verified)
+        self.assertFalse(entry.controlled)
 
         # With old current_version
-        response = self.client.post(unverify_url, {'version_id': current_version}, format='json')
+        response = self.client.post(uncontrol_url, {'version_id': current_version}, format='json')
         self.assert_400(response)
 
-    def test_update_entry_unverifies_verified_entry(self):
-        entry = self.create_entry(verified=True)
-        self.assertTrue(entry.verified)
+    def test_update_entry_unverifies_controlled_entry(self):
+        entry = self.create_entry(controlled=True)
+        self.assertTrue(entry.controlled)
 
         url = '/api/v1/entries/{}/'.format(entry.id)
         data = {
@@ -594,7 +594,7 @@ class EntryTests(TestCase):
         response = self.client.patch(url, data)
         self.assert_200(response)
         entry.refresh_from_db()
-        self.assertFalse(entry.verified)
+        self.assertFalse(entry.controlled)
 
     def test_authoring_organization_filter(self):
         organization_type1 = self.create(OrganizationType, title="National")
@@ -798,8 +798,8 @@ class EntryTest(TestCase):
         r_data = response.json()
         self.assertIn('summary', r_data)
         summ = r_data['summary']
-        self.assertEqual(summ['totalVerifiedEntries'], Entry.objects.filter(verified=True).count())
-        self.assertEqual(summ['totalUnverifiedEntries'], Entry.objects.filter(verified=False).count())
+        self.assertEqual(summ['totalControlledEntries'], Entry.objects.filter(controlled=True).count())
+        self.assertEqual(summ['totalUncontrolledEntries'], Entry.objects.filter(controlled=False).count())
         self.assertEqual(summ['totalLeads'], len([lead1, lead2]))
         self.assertEqual(summ['totalSources'], len({org1, org3}))
 
@@ -814,8 +814,8 @@ class EntryTest(TestCase):
         r_data = response.json()
         self.assertIn('summary', r_data)
         summ = r_data['summary']
-        self.assertEqual(summ['totalVerifiedEntries'], Entry.objects.filter(verified=True).count())
-        self.assertEqual(summ['totalUnverifiedEntries'], Entry.objects.filter(verified=False).count())
+        self.assertEqual(summ['totalControlledEntries'], Entry.objects.filter(controlled=True).count())
+        self.assertEqual(summ['totalUncontrolledEntries'], Entry.objects.filter(controlled=False).count())
         self.assertEqual(summ['totalLeads'], len([lead1, lead2]))
         self.assertEqual(summ['totalSources'], len({org1, org3}))
         self.assertTrue({'org': {'id': org_type1.id, 'shortName': org_type1.short_name, 'title': org_type1.title}, 'count': 2} in summ['orgTypeCount'])  # noqa: E501

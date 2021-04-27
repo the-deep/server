@@ -98,7 +98,7 @@ def _generate_project_stats_cache():
             ),
         ).filter(entries_count__gt=0)
     )
-    leads_tagged_and_verified_count_map = _count_by_project_qs(
+    leads_tagged_and_controlled_count_map = _count_by_project_qs(
         Lead.objects.annotate(
             entries_count=models.Subquery(
                 Entry.objects.filter(
@@ -106,14 +106,14 @@ def _generate_project_stats_cache():
                 ).order_by().values('lead').annotate(count=models.Count('id')).values('count')[:1],
                 output_field=models.IntegerField()
             ),
-            entries_verified_count=models.Subquery(
+            entries_controlled_count=models.Subquery(
                 Entry.objects.filter(
                     lead=models.OuterRef('pk'),
-                    verified=True,
+                    controlled=True,
                 ).order_by().values('lead').annotate(count=models.Count('id')).values('count')[:1],
                 output_field=models.IntegerField()
             ),
-        ).filter(entries_count__gt=0, entries_count=models.F('entries_verified_count'))
+        ).filter(entries_count__gt=0, entries_count=models.F('entries_controlled_count'))
     )
     entries_count_map = _count_by_project_qs(Entry.objects.all())
     members_count_map = _count_by_project_qs(ProjectMembership.objects.all())
@@ -133,7 +133,7 @@ def _generate_project_stats_cache():
             number_of_users=members_count_map.get(pk, 0),
             number_of_leads=leads_count_map.get(pk, 0),
             number_of_leads_tagged=leads_tagged_count_map.get(pk, 0),
-            number_of_leads_tagged_and_verified=leads_tagged_and_verified_count_map.get(pk, 0),
+            number_of_leads_tagged_and_controlled=leads_tagged_and_controlled_count_map.get(pk, 0),
             number_of_entries=entries_count_map.get(pk, 0),
             leads_activity=leads_activity_count_map.get(pk, 0),
             entries_activity=entries_activity_count_map.get(pk, 0),

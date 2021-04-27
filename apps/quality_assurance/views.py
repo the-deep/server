@@ -12,7 +12,7 @@ from entry.models import Entry
 
 from .serializers import (
     EntryReviewCommentSerializer,
-    ApprovedBySerializer,
+    VerifiedBySerializer,
 )
 from .models import (
     EntryReviewComment,
@@ -43,9 +43,9 @@ class EntryReviewCommentViewSet(
     def get_paginated_response(self, data):
         entry = Entry.objects.get(pk=self.kwargs['entry_id'])
         summary_data = {
-            'approved_by': ApprovedBySerializer(entry.approved_by.all(), many=True).data,
-            'verified': entry.verified,
-            'verification_last_changed_by': ApprovedBySerializer(entry.verification_last_changed_by).data,
+            'verified_by': VerifiedBySerializer(entry.verified_by.all(), many=True).data,
+            'controlled': entry.controlled,
+            'controlled_changed_by': VerifiedBySerializer(entry.controlled_changed_by).data,
         }
         return response.Response({
             **super().get_paginated_response(data).data,

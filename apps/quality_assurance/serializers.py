@@ -51,23 +51,23 @@ class EntryReviewCommentSerializer(serializers.ModelSerializer):
 
         entry = self._get_entry()
         current_user = get_current_user()
-        approved_by_qs = Entry.approved_by.through.objects.filter(entry=entry, user=current_user)
-        if comment_type == CommentType.APPROVE:
-            if approved_by_qs.exists():
-                raise serializers.ValidationError({'comment_type': 'Already approved'})
-            entry.approved_by.add(current_user)
-        elif comment_type == CommentType.UNAPPROVE:
-            if not approved_by_qs.exists():
-                raise serializers.ValidationError({'comment_type': 'Need to be approved first'})
-            entry.approved_by.remove(current_user)
+        verified_by_qs = Entry.verified_by.through.objects.filter(entry=entry, user=current_user)
+        if comment_type == CommentType.VERIFY:
+            if verified_by_qs.exists():
+                raise serializers.ValidationError({'comment_type': 'Already verified'})
+            entry.verified_by.add(current_user)
+        elif comment_type == CommentType.UNVERIFY:
+            if not verified_by_qs.exists():
+                raise serializers.ValidationError({'comment_type': 'Need to be verified first'})
+            entry.verified_by.remove(current_user)
         elif comment_type == CommentType.CONTROL:
-            if entry.verified:
-                raise serializers.ValidationError({'comment_type': 'Already verified/controlled'})
-            entry.verify(current_user)
+            if entry.controlled:
+                raise serializers.ValidationError({'comment_type': 'Already controlled'})
+            entry.control(current_user)
         elif comment_type == CommentType.UNCONTROL:
-            if not entry.verified:
-                raise serializers.ValidationError({'comment_type': 'Need to be verified/controlled first'})
-            entry.verify(current_user, verified=False)
+            if not entry.controlled:
+                raise serializers.ValidationError({'comment_type': 'Need to be controlled first'})
+            entry.control(current_user, controlled=False)
         return comment_type
 
     def validate(self, data):
@@ -99,7 +99,7 @@ class EntryReviewCommentSerializer(serializers.ModelSerializer):
         text = validated_data.pop('text', '').strip()
         comment_type = validated_data.get('comment_type', CommentType.__default__)
         # Make sure to check text required
-        if not text and comment_type in [CommentType.COMMENT, CommentType.UNAPPROVE, CommentType.UNCONTROL]:
+        if not text and comment_type in [CommentType.COMMENT, CommentType.UNVERIFY, CommentType.UNCONTROL]:
             raise serializers.ValidationError({'text': 'Text is required'})
 
         current_text = instance and instance.text
@@ -151,5 +151,5 @@ class EntryReviewCommentNotificationSerializer(serializers.ModelSerializer):
         )
 
 
-class ApprovedBySerializer(EntryCommentUserSerializer):
+class VerifiedBySerializer(EntryCommentUserSerializer):
     pass

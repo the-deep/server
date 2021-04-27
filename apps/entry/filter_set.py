@@ -140,7 +140,7 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
                 x: ['exact'] for x in [
                     'id', 'excerpt', 'lead__title', 'created_at',
                     'created_by', 'modified_at', 'modified_by', 'project',
-                    'verified',
+                    'controlled',
                 ]
             },
             'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
