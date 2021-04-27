@@ -126,9 +126,9 @@ class LeadSerializer(
     """
     # annotated in lead.get_for
     entries_count = serializers.IntegerField(read_only=True)
-    verified_entries_count = serializers.IntegerField(read_only=True)
+    controlled_entries_count = serializers.IntegerField(read_only=True)
     filtered_entries_count = serializers.IntegerField(read_only=True)
-    verified_filtered_entries_count = serializers.IntegerField(read_only=True)
+    controlled_filtered_entries_count = serializers.IntegerField(read_only=True)
 
     assessment_id = serializers.IntegerField(read_only=True)
 
