@@ -591,7 +591,7 @@ class ReportExporter:
         # Finally add date
         # TODO: use utils.common.format_date and perhaps use information date
         date and para.add_run(f", {date.strftime('%d/%m/%Y')}")
-        # para.add_run(f", {'Verified' if entry.verified else 'Unverified'}")
+        # para.add_run(f", {'Controlled' if entry.controlled else 'Unverified'}")
         para.add_run(')')
         # para = self.doc.add_paragraph().justify()
 

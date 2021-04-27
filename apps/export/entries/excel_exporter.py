@@ -405,7 +405,7 @@ class ExcelExporter:
             rows.add_value_list([
                 entry.created_by.profile.get_display_name(),
                 format_date(entry.created_at.date()),
-                'Verified' if entry.verified else 'Unverified',
+                'Controlled' if entry.controlled else 'Uncontrolled',
                 f'{lead.id}',
                 lead.title,
                 lead.url or (lead.attachment and lead.attachment.get_file_url()),

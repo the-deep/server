@@ -35,10 +35,10 @@
     {% if notification_type == Notification.ENTRY_REVIEW_COMMENT_ADD %}
         <p class="email-label">
         {{comment.created_by.profile.get_display_name}}
-        {% if comment.comment_type == CommentType.APPROVE %}
-            approved
-        {% elif comment.comment_type == CommentType.UNAPPROVE %}
-            unapproved
+        {% if comment.comment_type == CommentType.VERIFY %}
+            verified
+        {% elif comment.comment_type == CommentType.UNVERIFY %}
+            unverified
         {% elif comment.comment_type == CommentType.CONTROL %}
             controlled
         {% elif comment.comment_type == CommentType.UNCONTROL %}

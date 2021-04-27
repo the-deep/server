@@ -8,16 +8,16 @@ from user.models import User
 # ---------------------------------------------- Abstract Table ---------------------------------------
 class CommentType(enum.Enum):
     COMMENT = 0
-    APPROVE = 1
-    UNAPPROVE = 2
+    VERIFY = 1
+    UNVERIFY = 2
     CONTROL = 3
     UNCONTROL = 4
 
     __default__ = COMMENT
     __labels__ = {
         COMMENT: 'Comment',
-        APPROVE: 'Approve',
-        UNAPPROVE: 'Unapprove',
+        VERIFY: 'Verify',
+        UNVERIFY: 'Unverify',
         CONTROL: 'Control',
         UNCONTROL: 'UnControl',
     }

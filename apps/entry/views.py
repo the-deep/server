@@ -103,7 +103,7 @@ class EntrySummaryPaginationMixin(object):
                 f"{key}__{ele['id' if widget_id == matrix2d_widget.WIDGET_ID else 'key']}__{verfied_status}": models.Count(
                     'id',
                     filter=models.Q(
-                        verified=verfied_status == 'verified',
+                        controlled=verfied_status == 'controlled',
                         filterdata__filter=(
                             filters[f'{key}-{data_type}' if widget_id == matrix2d_widget.WIDGET_ID else key]
                         ),
@@ -125,21 +125,21 @@ class EntrySummaryPaginationMixin(object):
                         _ele.get(f'sub{data_type}' if widget_id == matrix2d_widget.WIDGET_ID else 'cells') or []
                     )
                 ]
-                for verfied_status in ['verified', 'unverified']
+                for verfied_status in ['controlled', 'uncontrolled']
             }
         )
 
         # Re-structure data (also snake-case to camel case conversion will change the key)
         response = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
         for key, count in agg_data.items():
-            widget_key, label_key, verified_status = key.split('__')
-            response[widget_key][label_key][verified_status] = count
+            widget_key, label_key, controlled_status = key.split('__')
+            response[widget_key][label_key][controlled_status] = count
         return [
             {
                 'widget_key': widget_key,
                 'label_key': label_key,
-                'verified_count': count['verified'],
-                'unverified_count': count['unverified'],
+                'controlled_count': count['controlled'],
+                'uncontrolled_count': count['uncontrolled'],
             }
             for widget_key, widget_data in response.items()
             for label_key, count in widget_data.items()
@@ -188,8 +188,8 @@ class EntrySummaryPaginationMixin(object):
         total_sources = qs.values('lead__source_id').annotate(count=models.Count('lead__source_id')).count()
         total_leads = qs.values('lead_id').annotate(count=models.Count('lead_id')).count()
         summary_data = dict(
-            total_verified_entries=qs.filter(verified=True).count(),
-            total_unverified_entries=qs.filter(verified=False).count(),
+            total_controlled_entries=qs.filter(controlled=True).count(),
+            total_uncontrolled_entries=qs.filter(controlled=False).count(),
             total_leads=total_leads,
             org_type_count=org_type_count,
             total_sources=total_sources,
@@ -248,14 +248,14 @@ class EntryViewSet(EntrySummaryPaginationMixin, viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        permission_classes=[ModifyPermission],
-        url_path='verify',
+        permission_classes=[permissions.IsAuthenticated, ModifyPermission],
+        url_path='control',
         methods=['post']
     )
-    def verify_entry(self, request, **kwargs):
+    def control_entry(self, request, **kwargs):
         entry = self.get_object()
         self._validate_entry_version(entry, request.data.get('version_id'))
-        entry.verify(request.user)
+        entry.control(request.user)
         return response.Response(
             self.get_serializer_class()(
                 entry,
@@ -265,14 +265,14 @@ class EntryViewSet(EntrySummaryPaginationMixin, viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        permission_classes=[ModifyPermission],
-        url_path='unverify',
+        permission_classes=[permissions.IsAuthenticated, ModifyPermission],
+        url_path='uncontrol',
         methods=['post']
     )
-    def unverify_entry(self, request, **kwargs):
+    def uncontrol_entry(self, request, **kwargs):
         entry = self.get_object()
         self._validate_entry_version(entry, request.data.get('version_id'))
-        entry.verify(request.user, verified=False)
+        entry.control(request.user, controlled=False)
         return response.Response(
             self.get_serializer_class()(
                 entry,
@@ -293,7 +293,7 @@ class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
 
         queryset = get_filtered_entries(self.request.user, filters).select_related(
             'lead', 'lead__attachment',
-            'verification_last_changed_by',
+            'controlled_changed_by',
         ).prefetch_related('lead__assignee')
         queryset = Entry.annotate_comment_count(queryset)
 
