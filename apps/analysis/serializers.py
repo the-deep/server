@@ -17,9 +17,44 @@ from .models import (
 )
 
 
-class AnalysisPillarSerializer(UserResourceSerializer):
+class AnlyticalEntriesSerializer(UserResourceSerializer):
+    class Meta:
+        model = AnalyticalStatementEntry
+        fields = ('id', 'order', 'entry')
+        read_only_fields = ('analytical_statement',)
+
+
+class AnalyticalStatementSerializer(
+    RemoveNullFieldsMixin,
+    DynamicFieldsMixin,
+    UserResourceSerializer,
+    NestedCreateMixin,
+    NestedUpdateMixin,
+):
+    analytical_entries = AnlyticalEntriesSerializer(source='analyticalstatemententry_set', many=True, required=False)
+
+    class Meta:
+        model = AnalyticalStatement
+        fields = '__all__'
+        read_only_fields = ('analysis_pillar',)
+
+    def validate(self, data):
+        analysis_pillar_id = self.context['view'].kwargs.get('analysis_pillar_id', None)
+        if analysis_pillar_id:
+            data['analysis_pillar_id'] = int(analysis_pillar_id)
+        return data
+
+
+class AnalysisPillarSerializer(
+    RemoveNullFieldsMixin,
+    DynamicFieldsMixin,
+    UserResourceSerializer,
+    NestedCreateMixin,
+    NestedUpdateMixin,
+):
     assignee_name = serializers.CharField(source='assignee.username', read_only=True)
     analysis_title = serializers.CharField(source='analysis.title', read_only=True)
+    analytical_statement = AnalyticalStatementSerializer(many=True, source='analyticalstatement_set', required=False)
 
     class Meta:
         model = AnalysisPillar
@@ -50,32 +85,6 @@ class AnalysisSerializer(
 
     def validate(self, data):
         data['project_id'] = int(self.context['view'].kwargs['project_id'])
-        return data
-
-
-class AnlyticalEntriesSerializer(UserResourceSerializer):
-    class Meta:
-        model = AnalyticalStatementEntry
-        fields = ('id', 'order', 'entry')
-        read_only_fields = ('analytical_statement',)
-
-
-class AnalyticalStatementSerializer(
-    RemoveNullFieldsMixin,
-    DynamicFieldsMixin,
-    UserResourceSerializer,
-    NestedCreateMixin,
-    NestedUpdateMixin,
-):
-    analytical_entries = AnlyticalEntriesSerializer(source='analyticalstatemententry_set', many=True, required=False)
-
-    class Meta:
-        model = AnalyticalStatement
-        fields = '__all__'
-        read_only_fields = ('analysis_pillar', )
-
-    def validate(self, data):
-        data['analysis_pillar_id'] = int(self.context['view'].kwargs['analysis_pillar_id'])
         return data
 
 
