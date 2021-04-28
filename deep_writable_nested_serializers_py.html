@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for deep/writable_nested_serializers.py: 79%</title>
+    <title>Coverage for deep/writable_nested_serializers.py: 80%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -18,15 +18,15 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>deep/writable_nested_serializers.py</b> :
-            <span class="pc_cov">79%</span>
+            <span class="pc_cov">80%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
             211 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">175 run</button>
-            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">36 missing</button>
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">177 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">34 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
-            <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">15 partial</button>
+            <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">13 partial</button>
         </h2>
     </div>
 </div>
@@ -270,8 +270,8 @@
     <p id="t215" class="run"><span class="n"><a href="#t215">215</a></span><span class="t">        <span class="nam">pk_list</span> <span class="op">=</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p id="t216" class="run"><span class="n"><a href="#t216">216</a></span><span class="t">        <span class="key">for</span> <span class="nam">d</span> <span class="key">in</span> <span class="nam">filter</span><span class="op">(</span><span class="key">None</span><span class="op">,</span> <span class="nam">related_data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t217" class="run"><span class="n"><a href="#t217">217</a></span><span class="t">            <span class="nam">pk</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">_get_related_pk</span><span class="op">(</span><span class="nam">d</span><span class="op">,</span> <span class="nam">model_class</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t218" class="par run show_par"><span class="n"><a href="#t218">218</a></span><span class="t">            <span class="key">if</span> <span class="nam">pk</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">218&#x202F;&#x219B;&#x202F;219</span><span class="annotate long">line 218 didn't jump to line 219, because the condition on line 218 was never true</span></span></p>
-    <p id="t219" class="mis show_mis"><span class="n"><a href="#t219">219</a></span><span class="t">                <span class="nam">pk_list</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">pk</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t218" class="run"><span class="n"><a href="#t218">218</a></span><span class="t">            <span class="key">if</span> <span class="nam">pk</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t219" class="run"><span class="n"><a href="#t219">219</a></span><span class="t">                <span class="nam">pk_list</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">pk</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t220" class="pln"><span class="n"><a href="#t220">220</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t221" class="run"><span class="n"><a href="#t221">221</a></span><span class="t">        <span class="nam">instances</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
     <p id="t222" class="pln"><span class="n"><a href="#t222">222</a></span><span class="t">            <span class="nam">str</span><span class="op">(</span><span class="nam">related_instance</span><span class="op">.</span><span class="nam">pk</span><span class="op">)</span><span class="op">:</span> <span class="nam">related_instance</span>&nbsp;</span><span class="r"></span></p>
@@ -375,8 +375,8 @@
     <p id="t320" class="run"><span class="n"><a href="#t320">320</a></span><span class="t">        <span class="nam">pk_list</span> <span class="op">=</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p id="t321" class="run"><span class="n"><a href="#t321">321</a></span><span class="t">        <span class="key">for</span> <span class="nam">d</span> <span class="key">in</span> <span class="nam">filter</span><span class="op">(</span><span class="key">None</span><span class="op">,</span> <span class="nam">related_data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t322" class="run"><span class="n"><a href="#t322">322</a></span><span class="t">            <span class="nam">pk</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">_get_related_pk</span><span class="op">(</span><span class="nam">d</span><span class="op">,</span> <span class="nam">model_class</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t323" class="par run show_par"><span class="n"><a href="#t323">323</a></span><span class="t">            <span class="key">if</span> <span class="nam">pk</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">323&#x202F;&#x219B;&#x202F;324</span><span class="annotate long">line 323 didn't jump to line 324, because the condition on line 323 was never true</span></span></p>
-    <p id="t324" class="mis show_mis"><span class="n"><a href="#t324">324</a></span><span class="t">                <span class="nam">pk_list</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">pk</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t323" class="run"><span class="n"><a href="#t323">323</a></span><span class="t">            <span class="key">if</span> <span class="nam">pk</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t324" class="run"><span class="n"><a href="#t324">324</a></span><span class="t">                <span class="nam">pk_list</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">pk</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t325" class="pln"><span class="n"><a href="#t325">325</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t326" class="run"><span class="n"><a href="#t326">326</a></span><span class="t">        <span class="key">return</span> <span class="nam">pk_list</span>&nbsp;</span><span class="r"></span></p>
     <p id="t327" class="pln"><span class="n"><a href="#t327">327</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -493,7 +493,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-04-22 08:16 +0000
+            created at 2021-04-28 10:54 +0000
         </p>
     </div>
 </div>
