@@ -134,9 +134,10 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
     )
 
     # Entries Id
-    entry_ids = django_filters.CharFilter(
+    entry_ids = django_filters.ModelMultipleChoiceFilter(
         label='entry_filter',
-        method='entry_ids_filter'
+        method='entry_ids_filter',
+        queryset=Entry.objects.all()
     )
 
     class Meta:
@@ -220,9 +221,8 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
         return qs
 
     def entry_ids_filter(self, qs, name, value):
-        value = eval(value)
-        if type(value) is list:
-            return qs.filter(id__in=value)
+        if value:
+            return qs.filter(id__in=[entry.id for entry in value])
         return qs
 
     @property
