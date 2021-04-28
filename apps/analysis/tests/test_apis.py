@@ -1,8 +1,7 @@
+from django.conf import settings
 from deep.tests import TestCase
 
-from project.models import Project
 from entry.models import Entry
-from user.models import User
 from analysis.models import (
     Analysis,
     AnalysisPillar,
@@ -205,6 +204,116 @@ class TestAnalysisAPIs(TestCase):
                          analysis_pillar__analysis=analysis).count(), statement_count + 1)
         r_data = response.json()
         self.assertEqual(r_data['statement'], data['statement'])
+
+    def test_create_analytical_statement_greater_than_30_api_level(self):
+        user = self.create_user()
+        project = self.create_project()
+        project.add_member(user)
+        entry = self.create(Entry)
+        analysis = self.create(Analysis, project=project)
+
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statement': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "entry": entry.id,
+                        }
+                    ]
+                } for _ in range(settings.ANALYTICAL_STATEMENT_COUNT)
+            ]
+        }
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        # posting statement greater than `ANALYTICAL_STATEMENT_COUNT`
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statement': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "entry": entry.id,
+                        }
+                    ]
+                } for _ in range(settings.ANALYTICAL_STATEMENT_COUNT + 1)
+            ]
+        }
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        self.assertIn('non_field_errors', response.data['errors'])
+
+    def test_create_analytical_entries_greater_than_50_api_level(self):
+        user = self.create_user()
+        project = self.create_project()
+        project.add_member(user)
+        entries_list = [self.create(Entry) for _ in range(settings.ANALYTICAL_ENTRIES_COUNT)]
+        entries_list_one_more = [self.create(Entry) for _ in range(settings.ANALYTICAL_ENTRIES_COUNT + 1)]
+        analysis = self.create(Analysis, project=project)
+
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statement': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "entry": entry.id,
+                        } for entry in entries_list
+                    ]
+                }
+            ]
+        }
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        # try posting for entries less than `ANALYTICAL_ENTRIES_COUNT + 1`
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statement': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "entry": entry.id,
+                        } for entry in entries_list_one_more
+                    ]
+                }
+            ]
+        }
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_400(response)
 
     def test_summary_for_analysis(self):
         user = self.create_user()
