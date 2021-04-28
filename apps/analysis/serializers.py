@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
@@ -42,6 +43,12 @@ class AnalyticalStatementSerializer(
         analysis_pillar_id = self.context['view'].kwargs.get('analysis_pillar_id', None)
         if analysis_pillar_id:
             data['analysis_pillar_id'] = int(analysis_pillar_id)
+        # Validate the analytical_entries
+        entries = data.get('analyticalstatemententry_set')
+        if entries and len(entries) > settings.ANALYTICAL_ENTRIES_COUNT:
+            raise serializers.ValidationError(
+                f'Analytical entires count must be less than {settings.ANALYTICAL_ENTRIES_COUNT}'
+            )
         return data
 
 
@@ -65,6 +72,12 @@ class AnalysisPillarSerializer(
         analysis_id = self.context['view'].kwargs.get('analysis_id', None)
         if analysis_id:
             data['analysis_id'] = int(analysis_id)
+        # validate analysis_statement
+        analytical_statement = data.get('analyticalstatement_set')
+        if analytical_statement and len(analytical_statement) > settings.ANALYTICAL_STATEMENT_COUNT:
+            raise serializers.ValidationError(
+                f'Analytical statement count must be less than{settings.ANALYTICAL_STATEMENT_COUNT}'
+            )
         return data
 
 
