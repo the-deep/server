@@ -87,7 +87,6 @@ from lead.views import (
 )
 from entry.views import (
     EntryViewSet,
-    EntryListView,
     AttributeViewSet,
     FilterDataViewSet,
     EntryFilterView,
@@ -477,8 +476,6 @@ urlpatterns = [
     # Assessment copy
     url(get_api_path(r'assessment-copy/$'), AssessmentCopyView.as_view()),
 
-    # entries list
-    url(get_api_path(r'entries-list/$'), EntryListView.as_view()),
     # Filter apis
     url(get_api_path(r'entries/filter/'), EntryFilterView.as_view()),
 
