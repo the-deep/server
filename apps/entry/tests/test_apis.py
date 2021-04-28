@@ -718,7 +718,7 @@ class EntryTests(TestCase):
         self.assert_200(response)
         assert len(response.json()['results']) == 2  # only the entry of project that user is member
 
-        # try without authenticating the user
+        # try authenticating with default user created with project
         filters = {
             'entry_ids': [entry1.pk, entry2.pk, entry3.pk],
         }
