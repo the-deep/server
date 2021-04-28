@@ -682,23 +682,56 @@ class EntryTests(TestCase):
 
     # TODO: test export data and filter data apis
 
-    def test_fetch_entries_on_list_of_ids_post(self):
-        entry1 = self.create_entry()
-        entry2 = self.create_entry()
-        self.create_entry()
-
-        url = '/api/v1/entries-list/'
-        data = {
-            'ids': [entry1.id, entry2.id]
+    def test_entry_id_filter(self):
+        user = self.create_user()
+        project = self.create_project()
+        project.add_member(user)
+        entry1 = self.create_entry(project=project)
+        entry2 = self.create_entry(project=project)
+        entry3 = self.create_entry()
+        filters = {
+            'entry_ids': [entry1.pk, entry3.pk],
         }
-        self.authenticate()
-        response = self.client.post(url, data)
-        self.assert_200(response)
-        assert len(response.data) == 2, "Two entries should be shown"
+        url = '/api/v1/entries/filter/'
+        params = {
+            'filters': [[k, v] for k, v in filters.items()]
+        }
 
-        # try to get from the api
-        response = self.client.get(url)
-        self.assert_405(response)
+        self.authenticate(user)
+        response = self.client.post(url, params)
+
+        self.assert_200(response)
+        assert len(response.json()['results']) == 1  # only the entry of project that user is member
+
+        # try filtering out the entries that the user is not member of
+        filters = {
+            'entry_ids': [entry1.pk, entry2.pk, entry3.pk],
+        }
+        url = '/api/v1/entries/filter/'
+        params = {
+            'filters': [[k, v] for k, v in filters.items()]
+        }
+
+        self.authenticate(user)
+        response = self.client.post(url, params)
+
+        self.assert_200(response)
+        assert len(response.json()['results']) == 2  # only the entry of project that user is member
+
+        # try without authenticating the user
+        filters = {
+            'entry_ids': [entry1.pk, entry2.pk, entry3.pk],
+        }
+        url = '/api/v1/entries/filter/'
+        params = {
+            'filters': [[k, v] for k, v in filters.items()]
+        }
+
+        self.authenticate()
+        response = self.client.post(url, params)
+
+        self.assert_200(response)
+        assert len(response.json()['results']) == 3  # should be all the entry
 
 
 class EntryTest(TestCase):

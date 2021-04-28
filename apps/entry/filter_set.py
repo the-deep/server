@@ -133,6 +133,12 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
         queryset=OrganizationType.objects.all(),
     )
 
+    # Entries Id
+    entry_ids = django_filters.CharFilter(
+        label='entry_filter',
+        method='entry_ids_filter'
+    )
+
     class Meta:
         model = Entry
         fields = {
@@ -211,6 +217,12 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
                 )
             )
             return qs.filter(organization_types__in=[ot.id for ot in value])
+        return qs
+
+    def entry_ids_filter(self, qs, name, value):
+        value = eval(value)
+        if type(value) is list:
+            return qs.filter(id__in=value)
         return qs
 
     @property
