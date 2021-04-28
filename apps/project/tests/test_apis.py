@@ -791,11 +791,11 @@ class ProjectApiTest(TestCase):
     def test_add_member_duplicate(self):
         project = self.create(Project, role=self.admin_role)
         test_user = self.create(User)
-        project.add_member(test_user, role=self.normal_role)
+        project.add_member(test_user)
+
         url = f'/api/v1/projects/{project.id}/project-memberships/'
         data = {
-            'member': test_user.pk,
-            'role': self.normal_role.id
+            'member': test_user.pk
         }
 
         self.authenticate()
@@ -812,7 +812,6 @@ class ProjectApiTest(TestCase):
 
         data = {
             'member': test_user.pk,
-            'role': self.normal_role.id
         }
         self.authenticate()
         response = self.client.post(url, data)
