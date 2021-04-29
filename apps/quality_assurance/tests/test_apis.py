@@ -1,6 +1,7 @@
 from deep.tests import TestCase
 from entry.models import Entry
 from notification.models import Notification
+from project.models import ProjectMembership
 from quality_assurance.models import (
     # EntryReviewComment,
     CommentType,
@@ -19,9 +20,9 @@ class QualityAccuranceTests(TestCase):
         user2 = self.create_user()
         user3 = self.create_user()
         user4 = self.create_user()
-        project.add_member(user1, role=self.normal_role)
-        project.add_member(user2, role=self.normal_role)
-        project.add_member(user3, role=self.normal_role)
+        project.add_member(user1, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
+        project.add_member(user2, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
+        project.add_member(user3, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
 
         self.authenticate(user1)
         data = {
@@ -77,9 +78,9 @@ class QualityAccuranceTests(TestCase):
         user1 = self.create_user()
         user2 = self.create_user()
         user3 = self.create_user()
-        project.add_member(user1, role=self.normal_role)
-        project.add_member(user2, role=self.normal_role)
-        project.add_member(user3, role=self.normal_role)
+        project.add_member(user1, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
+        project.add_member(user2, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
+        project.add_member(user3, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
 
         self.authenticate(user1)
         data = {
@@ -157,15 +158,39 @@ class QualityAccuranceTests(TestCase):
 
         assert VerifiedByQs.filter(entry=entry).count() == 1
 
+    def test_entry_review_comment_project_qa_badge_api(self):
+        project = self.create_project()
+        entry = self.create_entry(project=project)
+        user1 = self.create_user()
+        user1_membership = project.add_member(user1, role=self.normal_role)
+
+        self.authenticate(user1)
+        for comment_type in [CommentType.CONTROL, CommentType.UNCONTROL]:
+            user1_membership.badges = []
+            user1_membership.save()
+
+            data = {
+                'text': 'This is a test comment',
+                'comment_type': comment_type,
+            }
+            response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
+            self.assert_400(response)
+
+            user1_membership.badges = [ProjectMembership.BadgeType.QA]
+            user1_membership.save()
+
+            response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
+            self.assert_201(response)
+
     def test_entry_review_comment_control_api(self):
         project = self.create_project()
         entry = self.create_entry(project=project)
         user1 = self.create_user()
         user2 = self.create_user()
         user3 = self.create_user()
-        project.add_member(user1, role=self.normal_role)
-        project.add_member(user2, role=self.normal_role)
-        project.add_member(user3, role=self.normal_role)
+        project.add_member(user1, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
+        project.add_member(user2, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
+        project.add_member(user3, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
 
         self.authenticate(user1)
         data = {
@@ -241,10 +266,10 @@ class QualityAccuranceTests(TestCase):
         user2 = self.create_user()
         user3 = self.create_user()
         user4 = self.create_user()
-        project.add_member(user1, role=self.normal_role)
-        project.add_member(user2, role=self.normal_role)
-        project.add_member(user3, role=self.normal_role)
-        project.add_member(user4, role=self.normal_role)
+        project.add_member(user1, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
+        project.add_member(user2, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
+        project.add_member(user3, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
+        project.add_member(user4, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
 
         self.authenticate(user1)
         data = {
@@ -283,7 +308,7 @@ class QualityAccuranceTests(TestCase):
 
         for user in range(0, 3):
             user = self.create_user()
-            project.add_member(user, role=self.normal_role)
+            project.add_member(user, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
             self.authenticate(user)
             data = {
                 'text': 'This is a verify comment',
@@ -314,7 +339,7 @@ class QualityAccuranceTests(TestCase):
         project = self.create_project()
         entry = self.create_entry(project=project)
         user1 = self.create_user()
-        project.add_member(user1, role=self.normal_role)
+        project.add_member(user1, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
 
         for comment_type, text_required in [
                 (None, True),  # Default is CommentType.COMMENT
@@ -362,10 +387,10 @@ class QualityAccuranceTests(TestCase):
         user2 = self.create_user()
         user3 = self.create_user()
         user4 = self.create_user()
-        project.add_member(user1, role=self.normal_role)
-        project.add_member(user2, role=self.normal_role)
-        project.add_member(user3, role=self.normal_role)
-        project.add_member(user4, role=self.normal_role)
+        project.add_member(user1, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
+        project.add_member(user2, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
+        project.add_member(user3, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
+        project.add_member(user4, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
         url = f'/api/v1/entries/{entry.pk}/review-comments/'
 
         self.authenticate(user1)
