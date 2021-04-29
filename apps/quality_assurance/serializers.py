@@ -55,7 +55,6 @@ class EntryReviewCommentSerializer(serializers.ModelSerializer):
 
         if (
             comment_type in [CommentType.CONTROL, CommentType.UNCONTROL] and
-            # TODO: Make sure this works for linked_group as well
             not ProjectMembership.objects.filter(
                 project=entry.project,
                 member=self.context['request'].user,

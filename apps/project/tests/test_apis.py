@@ -173,7 +173,9 @@ class ProjectApiTest(TestCase):
         project = self.create(Project)
 
         project.add_member(user1)
-        ProjectUserGroupMembership.objects.create(project=project, usergroup=usergroup)
+        ProjectUserGroupMembership.objects.create(
+            project=project, usergroup=usergroup, badges=[ProjectMembership.BadgeType.QA]
+        )
 
         url = f'/api/v1/projects/{project.id}/members/'
 
