@@ -387,13 +387,14 @@ class EntryTests(TestCase):
         r_data = response.json()
         self.assertEqual(len(r_data['results']), count)
 
-    def post_filter_test(self, filters, count=1):
+    def post_filter_test(self, filters, count=1, skip_auth=False):
         url = '/api/v1/entries/filter/'
         params = {
             'filters': [[k, v] for k, v in filters.items()]
         }
 
-        self.authenticate()
+        if skip_auth:
+            self.authenticate()
         response = self.client.post(url, params)
         self.assert_200(response)
 
@@ -689,49 +690,19 @@ class EntryTests(TestCase):
         entry1 = self.create_entry(project=project)
         entry2 = self.create_entry(project=project)
         entry3 = self.create_entry()
-        filters = {
-            'entries_id': [entry1.pk, entry3.pk],
-        }
-        url = '/api/v1/entries/filter/'
-        params = {
-            'filters': [[k, v] for k, v in filters.items()]
-        }
 
         self.authenticate(user)
-        response = self.client.post(url, params)
-
-        self.assert_200(response)
-        assert len(response.json()['results']) == 1, "only the entry of project that user is member"
+        # only the entry of project that user is member
+        self.post_filter_test({'entries_id': [entry1.pk, entry3.pk]}, 1, skip_auth=False)
 
         # try filtering out the entries that the user is not member of
-        filters = {
-            'entries_id': [entry1.pk, entry2.pk, entry3.pk],
-        }
-        url = '/api/v1/entries/filter/'
-        params = {
-            'filters': [[k, v] for k, v in filters.items()]
-        }
-
-        self.authenticate(user)
-        response = self.client.post(url, params)
-
-        self.assert_200(response)
-        assert len(response.json()['results']) == 2, "Only the entry of project that user is member"
+        # Only the entry of project that user is member
+        self.post_filter_test({'entries_id': [entry1.pk, entry2.pk, entry3.pk]}, 2, skip_auth=False)
 
         # try authenticating with default user created with project
-        filters = {
-            'entries_id': [entry1.pk, entry2.pk, entry3.pk],
-        }
-        url = '/api/v1/entries/filter/'
-        params = {
-            'filters': [[k, v] for k, v in filters.items()]
-        }
-
         self.authenticate()
-        response = self.client.post(url, params)
-
-        self.assert_200(response)
-        assert len(response.json()['results']) == 3, "There should be 3 the entry"
+        # There should be 3 the entry
+        self.post_filter_test({'entries_id': [entry1.pk, entry2.pk, entry3.pk]}, 3, skip_auth=False)
 
 
 class EntryTest(TestCase):
