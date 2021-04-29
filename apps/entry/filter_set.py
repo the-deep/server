@@ -133,13 +133,6 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
         queryset=OrganizationType.objects.all(),
     )
 
-    # Entries Id
-    entry_ids = django_filters.ModelMultipleChoiceFilter(
-        label='entry_filter',
-        method='entry_ids_filter',
-        queryset=Entry.objects.all()
-    )
-
     class Meta:
         model = Entry
         fields = {
@@ -220,11 +213,6 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
             return qs.filter(organization_types__in=[ot.id for ot in value])
         return qs
 
-    def entry_ids_filter(self, qs, name, value):
-        if value:
-            return qs.filter(id__in=[entry.id for entry in value])
-        return qs
-
     @property
     def qs(self):
         qs = super().qs
@@ -244,7 +232,11 @@ def get_filtered_entries(user, queries):
     # NOTE: lets not use `.distinct()` in this function as it is used by a
     # subquery in `lead/models.py`.
     entries = Entry.get_for(user)
+    entries_id = queries.get('entries_id')
     project = queries.get('project')
+
+    if entries_id:
+        entries = entries.filter(id__in=entries_id)
 
     if project:
         entries = entries.filter(lead__project__id=project)

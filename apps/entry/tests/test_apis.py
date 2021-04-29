@@ -690,7 +690,7 @@ class EntryTests(TestCase):
         entry2 = self.create_entry(project=project)
         entry3 = self.create_entry()
         filters = {
-            'entry_ids': [entry1.pk, entry3.pk],
+            'entries_id': [entry1.pk, entry3.pk],
         }
         url = '/api/v1/entries/filter/'
         params = {
@@ -701,11 +701,11 @@ class EntryTests(TestCase):
         response = self.client.post(url, params)
 
         self.assert_200(response)
-        assert len(response.json()['results']) == 1  # only the entry of project that user is member
+        assert len(response.json()['results']) == 1, "only the entry of project that user is member"
 
         # try filtering out the entries that the user is not member of
         filters = {
-            'entry_ids': [entry1.pk, entry2.pk, entry3.pk],
+            'entries_id': [entry1.pk, entry2.pk, entry3.pk],
         }
         url = '/api/v1/entries/filter/'
         params = {
@@ -716,11 +716,11 @@ class EntryTests(TestCase):
         response = self.client.post(url, params)
 
         self.assert_200(response)
-        assert len(response.json()['results']) == 2  # only the entry of project that user is member
+        assert len(response.json()['results']) == 2, "Only the entry of project that user is member"
 
         # try authenticating with default user created with project
         filters = {
-            'entry_ids': [entry1.pk, entry2.pk, entry3.pk],
+            'entries_id': [entry1.pk, entry2.pk, entry3.pk],
         }
         url = '/api/v1/entries/filter/'
         params = {
@@ -731,7 +731,7 @@ class EntryTests(TestCase):
         response = self.client.post(url, params)
 
         self.assert_200(response)
-        assert len(response.json()['results']) == 3  # should be all the entry
+        assert len(response.json()['results']) == 3, "There should be 3 the entry"
 
 
 class EntryTest(TestCase):
