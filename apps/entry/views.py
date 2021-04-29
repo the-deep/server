@@ -101,10 +101,10 @@ class EntrySummaryPaginationMixin(object):
         # Calculate count
         agg_data = qs.aggregate(
             **{
-                f"{key}__{ele['id' if widget_id == matrix2d_widget.WIDGET_ID else 'key']}__{verfied_status}": models.Count(
+                f"{key}__{ele['id' if widget_id == matrix2d_widget.WIDGET_ID else 'key']}__{control_status}": models.Count(
                     'id',
                     filter=models.Q(
-                        controlled=verfied_status == 'controlled',
+                        controlled=control_status == 'controlled',
                         filterdata__filter=(
                             filters[f'{key}-{data_type}' if widget_id == matrix2d_widget.WIDGET_ID else key]
                         ),
@@ -126,7 +126,7 @@ class EntrySummaryPaginationMixin(object):
                         _ele.get(f'sub{data_type}' if widget_id == matrix2d_widget.WIDGET_ID else 'cells') or []
                     )
                 ]
-                for verfied_status in ['controlled', 'uncontrolled']
+                for control_status in ['controlled', 'uncontrolled']
             }
         )
 

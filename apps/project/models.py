@@ -1,10 +1,11 @@
 from django.urls import reverse
-from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.fields import JSONField, ArrayField
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.db.models.functions import Cast
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.db import models
+from django_enumfield import enum
 
 from deep.models import ProcessStatus
 from user_resource.models import UserResource
@@ -236,8 +237,13 @@ class Project(UserResource):
         role = self.get_role(user)
         return role is not None and role.can_delete_setup
 
-    def add_member(self, user,
-                   role=None, added_by=None, linked_group=None):
+    def add_member(
+        self, user,
+        role=None,
+        added_by=None,
+        linked_group=None,
+        badges=[],
+    ):
         if role is None:
             role = ProjectRole.get_default_role()
 
@@ -247,6 +253,7 @@ class Project(UserResource):
             project=self,
             added_by=added_by or user,
             linked_group=linked_group,
+            badges=badges,
         )
 
     def get_entries_activity(self):
@@ -296,6 +303,11 @@ class ProjectMembership(models.Model):
     """
     Project-Member relationship attributes
     """
+    class BadgeType(enum.Enum):
+        QA = 0
+        __labels__ = {
+            QA: 'Quality Assurance',
+        }
 
     member = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
@@ -316,6 +328,8 @@ class ProjectMembership(models.Model):
         null=True, blank=True, default=None,
         related_name='added_project_memberships',
     )
+    # Represents additional permission like QA
+    badges = ArrayField(enum.EnumField(BadgeType), default=list, blank=True)
 
     class Meta:
         unique_together = ('member', 'project')

@@ -290,7 +290,10 @@ router.register(r'projects/(?P<project_id>\d+)/analysis', AnalysisViewSet,
                 basename='analysis')
 router.register(r'projects/(?P<project_id>\d+)/analysis/(?P<analysis_id>\d+)/pillars',
                 AnalysisPillarViewSet, basename='analysis_analysis_pillar')
-router.register(r'projects/(?P<project_id>\d+)/analysis/(?P<analysis_id>\d+)/pillars/(?P<analysis_pillar_id>\d+)/analytical-statement', AnalyticalStatementViewSet, basename='analytical_statement')
+router.register(
+    r'projects/(?P<project_id>\d+)/analysis/(?P<analysis_id>\d+)/pillars/(?P<analysis_pillar_id>\d+)/analytical-statement',
+    AnalyticalStatementViewSet, basename='analytical_statement')
+
 # QA routers
 router.register(
     r'entries/(?P<entry_id>\d+)/review-comments', EntryReviewCommentViewSet, basename='entry-review-comment')

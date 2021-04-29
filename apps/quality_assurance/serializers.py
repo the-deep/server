@@ -52,6 +52,20 @@ class EntryReviewCommentSerializer(serializers.ModelSerializer):
         entry = self._get_entry()
         current_user = get_current_user()
         verified_by_qs = Entry.verified_by.through.objects.filter(entry=entry, user=current_user)
+
+        if (
+            comment_type in [CommentType.CONTROL, CommentType.UNCONTROL] and
+            # TODO: Make sure this works for linked_group as well
+            not ProjectMembership.objects.filter(
+                project=entry.project,
+                member=self.context['request'].user,
+                badges__contains=[ProjectMembership.BadgeType.QA],
+            ).exists()
+        ):
+            raise serializers.ValidationError({
+                'comment_type': 'Controlled/UnControlled comment are only allowd by QA',
+            })
+
         if comment_type == CommentType.VERIFY:
             if verified_by_qs.exists():
                 raise serializers.ValidationError({'comment_type': 'Already verified'})
