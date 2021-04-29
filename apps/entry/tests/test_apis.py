@@ -117,6 +117,7 @@ class EntryTests(TestCase):
         self.create_entry(lead=lead, entry_type=Entry.IMAGE)
         self.create_entry(lead=lead, entry_type=Entry.DATA_SERIES)
 
+        self.authenticate()
         self.post_filter_test({'entry_type': [Entry.EXCERPT, Entry.IMAGE]}, Entry.objects.filter(entry_type__in=[Entry.EXCERPT, Entry.IMAGE]).count())  # noqa: E501
         self.post_filter_test({'entry_type': [Entry.EXCERPT]}, Entry.objects.filter(entry_type__in=[Entry.EXCERPT]).count())
         self.post_filter_test({'entry_type': [Entry.IMAGE, Entry.DATA_SERIES]}, Entry.objects.filter(entry_type__in=[Entry.IMAGE, Entry.DATA_SERIES]).count())  # noqa: E501
@@ -148,6 +149,7 @@ class EntryTests(TestCase):
         ]
 
         default_filter = {'project': project.id}
+        self.authenticate()
         self.post_filter_test({**default_filter, 'project_entry_labels': [label1.pk]}, 2)
         self.post_filter_test({**default_filter, 'project_entry_labels': [label2.pk]}, 1)
 
@@ -462,32 +464,15 @@ class EntryTests(TestCase):
             'lead_published_on__gte': '2020-09-25',
             'lead_published_on__lte': '2020-09-26',
         }
-        url = '/api/v1/entries/filter/'
-        params = {
-            'filters': [[k, v] for k, v in filters.items()]
-        }
-
         self.authenticate()
-        response = self.client.post(url, params)
-
-        self.assert_200(response)
-        assert len(response.json()['results']) == 2
+        self.post_filter_test(filters, 2)
 
         # simulate filter behaviour of today from the frontend
         filters = {
             'lead_published_on__gte': '2020-09-25',
             'lead_published_on__lt': '2020-09-26',
         }
-        url = '/api/v1/entries/filter/'
-        params = {
-            'filters': [[k, v] for k, v in filters.items()]
-        }
-
-        self.authenticate()
-        response = self.client.post(url, params)
-
-        self.assert_200(response)
-        assert len(response.json()['results']) == 1
+        self.post_filter_test(filters, 1)
 
     def test_lead_assignee_filter(self):
         another_user = self.create(User)
@@ -503,40 +488,18 @@ class EntryTests(TestCase):
         self.create_entry(lead=lead2)
 
         # test assignee created by self user
-        filters = {
-            'lead_assignee': [self.user.pk],
-        }
-        url = '/api/v1/entries/filter/'
-        params = {
-            'filters': [[k, v] for k, v in filters.items()]
-        }
-
         self.authenticate()
-        response = self.client.post(url, params)
+        self.post_filter_test({'lead_assignee': [self.user.pk]}, 3)
 
-        self.assert_200(response)
-        assert len(response.json()['results']) == 3
-
-        # test assignee created by self user
-        filters = {
-            'lead_assignee': [another_user.pk],
-        }
-        url = '/api/v1/entries/filter/'
-        params = {
-            'filters': [[k, v] for k, v in filters.items()]
-        }
-
-        self.authenticate()
-        response = self.client.post(url, params)
-
-        self.assert_200(response)
-        assert len(response.json()['results']) == 2
+        # test assignee created by another user
+        self.post_filter_test({'lead_assignee': [another_user.pk]}, 2)
 
     def test_search_filter(self):
         entry, field = self.create_entry_with_data_series()
         filters = {
             'search': 'kadabra',
         }
+        self.authenticate()
         self.post_filter_test(filters)  # Should have single result
 
         filters = {
