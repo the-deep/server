@@ -58,7 +58,7 @@ class EntryReviewCommentSerializer(serializers.ModelSerializer):
             not ProjectMembership.objects.filter(
                 project=entry.project,
                 member=self.context['request'].user,
-                badges__contains=[ProjectMembership.BadgeType.QA],
+                badges__contains=[ProjectMembership.BadgeType.QA.value],
             ).exists()
         ):
             raise serializers.ValidationError({
