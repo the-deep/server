@@ -1,15 +1,11 @@
-from django.shortcuts import render
 from django.db import models
-from django.utils import timezone
 
 from rest_framework.decorators import action
 from rest_framework import (
     exceptions,
     permissions,
     response,
-    views,
     viewsets,
-    serializers,
     status
 )
 
@@ -19,7 +15,6 @@ from .models import (
     Analysis,
     AnalysisPillar,
     AnalyticalStatement,
-    AnalyticalStatementEntry
 )
 from .serializers import (
     AnalysisSerializer,
@@ -81,7 +76,6 @@ class AnalysisViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         url_path='clone-analysis',
-        permission_classes=[IsProjectMember],
         methods=['post']
     )
     def clone_analysis(self, request, project_id, pk=None, version=None):
