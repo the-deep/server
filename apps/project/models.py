@@ -383,6 +383,8 @@ class ProjectUserGroupMembership(models.Model):
         null=True, blank=True, default=None,
         related_name='added_project_usergroups',
     )
+    # Represents additional permission like QA
+    badges = ArrayField(enum.EnumField(ProjectMembership.BadgeType), default=list, blank=True)
 
     class Meta:
         unique_together = ('usergroup', 'project')
