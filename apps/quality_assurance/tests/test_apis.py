@@ -190,7 +190,7 @@ class QualityAccuranceTests(TestCase):
         user3 = self.create_user()
         project.add_member(user1, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
         project.add_member(user2, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
-        project.add_member(user3, role=self.normal_role, badges=[ProjectMembership.BadgeType.QA])
+        project.add_member(user3, role=self.normal_role)
 
         self.authenticate(user1)
         data = {
