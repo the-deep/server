@@ -1,9 +1,8 @@
-from django.db import models, transaction
+from django.db import models
 from django.dispatch import receiver
 
 from user.models import User
 from project.models import (
-    Project,
     ProjectMembership,
     ProjectUserGroupMembership,
     ProjectJoinRequest,
@@ -19,13 +18,13 @@ def refresh_project_memberships_usergroup_modified(sender, instance, **kwargs):
         project=project,
         linked_group=user_group,
     )
-    existing_members.update(role=instance.role)
+    existing_members.update(role=instance.role, badges=instance.badges)
 
     project_ug_members = User.objects.filter(usergroup__project=project)
     new_users = project_ug_members.difference(project.get_all_members()).\
         distinct()
     for user in new_users:
-        project.add_member(user, role=instance.role, linked_group=user_group)
+        project.add_member(user, role=instance.role, linked_group=user_group, badges=instance.badges)
 
 
 @receiver(models.signals.pre_delete, sender=ProjectUserGroupMembership)
