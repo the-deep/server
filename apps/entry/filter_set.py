@@ -232,7 +232,11 @@ def get_filtered_entries(user, queries):
     # NOTE: lets not use `.distinct()` in this function as it is used by a
     # subquery in `lead/models.py`.
     entries = Entry.get_for(user)
+    entries_id = queries.get('entries_id')
     project = queries.get('project')
+
+    if entries_id:
+        entries = entries.filter(id__in=entries_id)
 
     if project:
         entries = entries.filter(lead__project__id=project)
