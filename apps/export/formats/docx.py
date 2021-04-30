@@ -1,4 +1,12 @@
+import docx
+import requests
+import io
+import re
+import tempfile
+import base64
+import logging
 from uuid import uuid4
+
 
 from docx.enum.dml import MSO_THEME_COLOR_INDEX
 from docx.oxml import OxmlElement, oxml_parser
@@ -7,18 +15,14 @@ from docx.shared import Pt, RGBColor
 
 from PIL import Image
 
-import docx
-import requests
-import io
-import re
-import tempfile
-import base64
-import logging
-
-from utils.common import get_valid_xml_string as xstr
+from utils.common import get_valid_xml_string
 
 
 logger = logging.getLogger(__name__)
+
+
+def xstr(text):
+    return get_valid_xml_string(text, escape=False)
 
 
 def _write_file(r, fp):
@@ -168,7 +172,7 @@ class Paragraph:
         r_pr = docx.oxml.shared.OxmlElement('w:rPr')
 
         new_run.append(r_pr)
-        new_run.text = xstr(text)
+        new_run.text = get_valid_xml_string(text)
 
         hyperlink.append(new_run)
         self.ref._p.append(hyperlink)
