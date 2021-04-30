@@ -4,7 +4,6 @@ from docx.enum.dml import MSO_THEME_COLOR_INDEX
 from docx.oxml import OxmlElement, oxml_parser
 from docx.oxml.ns import qn
 from docx.shared import Pt, RGBColor
-from docx.oxml.shape import CT_Inline, CT_Picture
 
 from PIL import Image
 

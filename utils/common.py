@@ -104,8 +104,7 @@ def is_valid_xml_char_ordinal(c):
 def get_valid_xml_string(string, escape=True):
     if string:
         s = xml_escape(string) if escape else string
-        return ''.join(c for c in s
-                       if is_valid_xml_char_ordinal(c))
+        return ''.join(c for c in s if is_valid_xml_char_ordinal(c))
     return ''
 
 
