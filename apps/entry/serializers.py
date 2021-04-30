@@ -284,13 +284,6 @@ class EntrySerializer(RemoveNullFieldsMixin,
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        image = validated_data.get('image')
-        if image:
-            validated_data['image'] = validate_image_for_entry(
-                image,
-                project=validated_data['lead'].project,
-                request=self.context['request'],
-            )
         # once altered, uncontrol the entry if its uncontrolled
         if instance and instance.controlled:
             validated_data['controlled'] = False

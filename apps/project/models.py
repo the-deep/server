@@ -292,7 +292,7 @@ class Project(UserResource):
         role=None,
         added_by=None,
         linked_group=None,
-        badges=[],
+        badges=None,
     ):
         if role is None:
             role = ProjectRole.get_default_role()
@@ -303,7 +303,7 @@ class Project(UserResource):
             project=self,
             added_by=added_by or user,
             linked_group=linked_group,
-            badges=badges,
+            badges=badges or [],
         )
 
     def get_entries_activity(self):
