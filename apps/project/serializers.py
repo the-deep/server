@@ -461,6 +461,10 @@ class ProjectUserGroupSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         data['project_id'] = int(self.context['view'].kwargs['project_id'])
+        usergroup = data.get('usergroup')
+        if usergroup and ProjectUserGroupMembership.objects.filter(project=data['project_id'],
+                                                                   usergroup=usergroup).exists():
+            raise serializers.ValidationError({'usergroup': 'Usergroup already exist in the project'})
         return data
 
 

@@ -539,6 +539,52 @@ class ProjectApiTest(TestCase):
             final_member_count
         )
 
+    def test_duplicate_usergroup_add_in_project(self):
+        project = self.create(
+            Project,
+            title='For test',
+            user_groups=[],
+            role=self.admin_role
+        )
+        # add usergroup to the project
+        ProjectUserGroupMembership.objects.create(
+            usergroup=self.ug1,
+            project=project
+        )
+        membership_count = ProjectUserGroupMembership.objects.filter(
+            project=project
+        ).count()
+        # now try to create same usergroup from api level
+        data = {
+            'usergroup': self.ug1.id,
+            'role': self.normal_role.id
+        }
+        url = f'/api/v1/projects/{project.id}/project-usergroups/'
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        assert 'errors' in response.data
+        assert 'usergroup' in response.data['errors']
+
+        # try deleting the usergroup
+        ProjectUserGroupMembership.objects.filter(
+            usergroup=self.ug1,
+            project=project
+        ).delete()
+        self.assertEqual(ProjectUserGroupMembership.objects.filter(
+                         project=project
+                         ).count(), membership_count - 1)
+
+        # now try to add the same usergroup
+        data = {
+            'usergroup': self.ug1.id,
+            'role': self.normal_role.id
+        }
+        url = f'/api/v1/projects/{project.id}/project-usergroups/'
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
     def test_add_user_to_usergroup(self):
         project = self.create(
             Project,
