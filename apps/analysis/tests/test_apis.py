@@ -105,17 +105,20 @@ class TestAnalysisAPIs(TestCase):
             'information_gap': 'Some information gap',
             'assignee': user.id,
             'title': 'Some title',
-            'analytical_statement': [
+            'analytical_statements': [
                 {
                     "statement": "coffee",
                     "order": 1,
+                    "uuid": "1",
                     "analytical_entries": [
                         {
                             "order": 1,
+                            "uuid": "1",
                             "entry": entry1.id,
                         },
                         {
                             "order": 2,
+                            "uuid": "2",
                             "entry": entry2.id
                         }
                     ],
@@ -123,9 +126,11 @@ class TestAnalysisAPIs(TestCase):
                 {
                     "statement": "test",
                     "order": 2,
+                    "uuid": "2",
                     "analytical_entries": [
                         {
                             "order": 1,
+                            "uuid": "1",
                             "entry": entry1.id,
                         }
                     ],
@@ -143,17 +148,20 @@ class TestAnalysisAPIs(TestCase):
         response_id = response.data['id']
         data = {
             'main_statement': 'HELLO FROM MARS',
-            'analytical_statement': [
+            'analytical_statements': [
                 {
                     'statement': "tea",
                     'order': 1,
+                    "uuid": "1",
                     "analytical_entries": [
                         {
                             "order": 1,
+                            "uuid": "1",
                             "entry": entry1.id,
                         },
                         {
                             "order": 2,
+                            "uuid": "2",
                             "entry": entry2.id
                         }
                     ],
@@ -165,12 +173,12 @@ class TestAnalysisAPIs(TestCase):
         response = self.client.patch(url, data)
         self.assert_200(response)
         self.assertEqual(response.data['main_statement'], data['main_statement'])
-        self.assertEqual(response.data['analytical_statement'][0]['statement'],
-                         data['analytical_statement'][0]['statement'])
+        self.assertEqual(response.data['analytical_statements'][0]['statement'],
+                         data['analytical_statements'][0]['statement'])
         # not passing all the resources the data must be deleted from the database
         self.assertEqual(AnalyticalStatement.objects.filter(
                          analysis_pillar__analysis=analysis).count(), statement_count + 1)
-        self.assertIn(response.data['analytical_statement'][0]['id'],
+        self.assertIn(response.data['analytical_statements'][0]['id'],
                       list(AnalyticalStatement.objects.filter(
                            analysis_pillar__analysis=analysis).values_list('id', flat=True)),)
         # checking for the entries
@@ -190,11 +198,13 @@ class TestAnalysisAPIs(TestCase):
             "analytical_entries": [
                 {
                     "order": 1,
+                    "uuid": "1",
                     "entry": entry.id
                 }
             ],
             "statement": "test statement",
             "order": 1,
+            "uuid": "1",
             "analysisPillar": pillar.id
         }
         self.authenticate(user)
@@ -217,13 +227,15 @@ class TestAnalysisAPIs(TestCase):
             'information_gap': 'Some information gap',
             'assignee': user.id,
             'title': 'Some title',
-            'analytical_statement': [
+            'analytical_statements': [
                 {
                     "statement": "coffee",
                     "order": 1,
+                    "uuid": "1",
                     "analytical_entries": [
                         {
                             "order": 1,
+                            "uuid": "1",
                             "entry": entry.id,
                         }
                     ]
@@ -241,13 +253,15 @@ class TestAnalysisAPIs(TestCase):
             'information_gap': 'Some information gap',
             'assignee': user.id,
             'title': 'Some title',
-            'analytical_statement': [
+            'analytical_statements': [
                 {
                     "statement": "coffee",
                     "order": 1,
+                    "uuid": "1",
                     "analytical_entries": [
                         {
                             "order": 1,
+                            "uuid": "1",
                             "entry": entry.id,
                         }
                     ]
@@ -273,13 +287,15 @@ class TestAnalysisAPIs(TestCase):
             'information_gap': 'Some information gap',
             'assignee': user.id,
             'title': 'Some title',
-            'analytical_statement': [
+            'analytical_statements': [
                 {
                     "statement": "coffee",
                     "order": 1,
+                    "uuid": "1",
                     "analytical_entries": [
                         {
                             "order": 1,
+                            "uuid": str(entry.id),
                             "entry": entry.id,
                         } for entry in entries_list
                     ]
@@ -297,13 +313,15 @@ class TestAnalysisAPIs(TestCase):
             'information_gap': 'Some information gap',
             'assignee': user.id,
             'title': 'Some title',
-            'analytical_statement': [
+            'analytical_statements': [
                 {
                     "statement": "coffee",
                     "order": 1,
+                    "uuid": "1",
                     "analytical_entries": [
                         {
                             "order": 1,
+                            "uuid": str(entry.id),
                             "entry": entry.id,
                         } for entry in entries_list_one_more
                     ]
@@ -415,17 +433,20 @@ class TestAnalysisAPIs(TestCase):
                                        entry=entry2, order=2)
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{pillar.id}/'
         data = {
-            'analytical_statement': [
+            'analytical_statements': [
                 {
                     'id': analytical_statement.id,
+                    "uuid": str(analytical_statement.id),
                     'statement': 'Hello from there',
                     "analytical_entries": [
                         {
                             "order": 1,
+                            "uuid": "1",
                             "entry": entry2.id,
                         },
                         {
                             "order": 2,
+                            "uuid": "2",
                             "entry": entry1.id
                         }
                     ],
@@ -435,8 +456,8 @@ class TestAnalysisAPIs(TestCase):
         self.authenticate(user)
         response = self.client.patch(url, data)
         self.assert_200(response)
-        self.assertEqual(response.data['analytical_statement'][0]['id'], analytical_statement.id)
-        self.assertEqual(response.data['analytical_statement'][0]['analytical_entries'][0]['entry'],
+        self.assertEqual(response.data['analytical_statements'][0]['id'], analytical_statement.id)
+        self.assertEqual(response.data['analytical_statements'][0]['analytical_entries'][0]['entry'],
                          statement_entry2.entry.id)
 
     def test_pillar_overview_in_analysis(self):
@@ -466,8 +487,8 @@ class TestAnalysisAPIs(TestCase):
         self.assert_200(response)
         data = response.data
         self.assertEqual(data[0]['pillar_title'], pillar2.title)
-        self.assertEqual(len(data[0]['analytical_statement']), 1)
-        self.assertEqual(data[0]['analytical_statement'][0]['entries_count'], 1)
+        self.assertEqual(len(data[0]['analytical_statements']), 1)
+        self.assertEqual(data[0]['analytical_statements'][0]['entries_count'], 1)
         self.assertEqual(data[0]['analytical_statement_count'], 1)
         self.assertEqual(data[1]['analytical_statement_count'], 2)
 
