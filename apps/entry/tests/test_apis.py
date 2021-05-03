@@ -494,42 +494,35 @@ class EntryTests(TestCase):
         lead1.assignee.add(self.user.pk)
         lead2 = self.create_lead()
         lead2.assignee.add(another_user.pk)
+        lead3 = self.create_lead()
+        lead3.assignee.add(self.user.pk)
 
         self.create_entry(lead=lead1)
         self.create_entry(lead=lead1)
         self.create_entry(lead=lead1)
+
         self.create_entry(lead=lead2)
         self.create_entry(lead=lead2)
+
+        self.create_entry(lead=lead3)
 
         # test assignee created by self user
         filters = {
             'lead_assignee': [self.user.pk],
         }
-        url = '/api/v1/entries/filter/'
-        params = {
-            'filters': [[k, v] for k, v in filters.items()]
-        }
+        self.post_filter_test(filters, 4)
 
-        self.authenticate()
-        response = self.client.post(url, params)
-
-        self.assert_200(response)
-        assert len(response.json()['results']) == 3
-
-        # test assignee created by self user
+        # test assignee created by another user
         filters = {
             'lead_assignee': [another_user.pk],
         }
-        url = '/api/v1/entries/filter/'
-        params = {
-            'filters': [[k, v] for k, v in filters.items()]
+        self.post_filter_test(filters, 2)
+
+        # test assignee created by both users
+        filters = {
+            'lead_assignee': [self.user.pk, another_user.pk],
         }
-
-        self.authenticate()
-        response = self.client.post(url, params)
-
-        self.assert_200(response)
-        assert len(response.json()['results']) == 2
+        self.post_filter_test(filters, 6)
 
     def test_search_filter(self):
         entry, field = self.create_entry_with_data_series()

@@ -16,19 +16,15 @@ class AssessmentFilterSet(UserResourceFilterSet):
     project = django_filters.ModelMultipleChoiceFilter(
         queryset=Project.objects.all(),
         field_name='lead__project',
-        lookup_expr='in',
     )
     lead = django_filters.ModelMultipleChoiceFilter(
         queryset=Lead.objects.all(),
-        lookup_expr='in',
     )
     lead_group = django_filters.ModelMultipleChoiceFilter(
         queryset=LeadGroup.objects.all(),
-        lookup_expr='in',
     )
     created_by = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all(),
-        lookup_expr='in',
         widget=django_filters.widgets.CSVWidget,
     )
 
@@ -50,11 +46,9 @@ class PlannedAssessmentFilterSet(UserResourceFilterSet):
     project = django_filters.ModelMultipleChoiceFilter(
         queryset=Project.objects.all(),
         field_name='project',
-        lookup_expr='in',
     )
     created_by = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all(),
-        lookup_expr='in',
         widget=django_filters.widgets.CSVWidget,
     )
 

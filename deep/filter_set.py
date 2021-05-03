@@ -12,5 +12,5 @@ class DjangoFilterCSVWidget(django_filters.widgets.CSVWidget):
             # if value is already list(by POST)
             elif type(value) is list:
                 return value
-            return value.split(',')
+            return [x.strip() for x in value.strip().split(',') if x.strip()]
         return None

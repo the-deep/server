@@ -61,17 +61,14 @@ class LeadFilterSet(django_filters.FilterSet):
     )
     confidentiality = django_filters.MultipleChoiceFilter(
         choices=Lead.CONFIDENTIALITIES,
-        lookup_expr='in',
         widget=django_filters.widgets.CSVWidget,
     )
     status = django_filters.MultipleChoiceFilter(
         choices=Lead.STATUSES,
-        lookup_expr='in',
         widget=django_filters.widgets.CSVWidget,
     )
     priority = django_filters.MultipleChoiceFilter(
         choices=Lead.PRIORITIES,
-        lookup_expr='in',
         widget=django_filters.widgets.CSVWidget,
     )
     assignee = django_filters.ModelMultipleChoiceFilter(
