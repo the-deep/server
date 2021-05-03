@@ -1,7 +1,6 @@
 import copy
 
 from django.db import models
-from django.contrib.postgres.fields import JSONField
 from django.utils.translation import gettext_lazy as _
 from django_enumfield import enum
 
@@ -37,7 +36,8 @@ class AnalysisPillar(UserResource):
     title = models.CharField(max_length=255)
     main_statement = models.TextField(blank=True)
     information_gap = models.TextField(blank=True)
-    filters = JSONField(blank=True, null=True, default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
+    filters = models.JSONField(blank=True, null=True, default=None)
     assignee = models.ForeignKey(
         User,
         on_delete=models.CASCADE

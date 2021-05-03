@@ -1,7 +1,6 @@
 import time
 
 from django.db import models, transaction
-from django.contrib.postgres.fields import JSONField
 from user_resource.models import UserResource
 from gallery.models import File
 from project.models import Project
@@ -70,8 +69,8 @@ class Book(UserResource):
         max_length=30,
         choices=FILE_TYPES,
     )
-    options = JSONField(default=None, blank=True, null=True)
-    meta = JSONField(default=None, blank=True, null=True)
+    options = models.JSONField(default=None, blank=True, null=True)
+    meta = models.JSONField(default=None, blank=True, null=True)
 
     def get_file(self):
         if self.file:
@@ -107,7 +106,7 @@ class Sheet(models.Model):
     title = models.CharField(max_length=255)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     data_row_index = models.IntegerField(default=1)
-    options = JSONField(default=None, blank=True, null=True)
+    options = models.JSONField(default=None, blank=True, null=True)
     hidden = models.BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
@@ -170,10 +169,10 @@ class Field(models.Model):
         default=STRING
     )
     hidden = models.BooleanField(default=False)
-    options = JSONField(default=None, blank=True, null=True)
-    cache = JSONField(default=dict, blank=True, null=True)
+    options = models.JSONField(default=None, blank=True, null=True)
+    cache = models.JSONField(default=dict, blank=True, null=True)
     ordering = models.IntegerField(default=1)
-    data = JSONField(default=list)
+    data = models.JSONField(default=list)
 
     @property
     def actual_data(self):
@@ -261,7 +260,7 @@ class Geodata(models.Model):
         (FAILED, 'Failed'),
     )
 
-    data = JSONField(default=None, blank=True, null=True)
+    data = models.JSONField(default=None, blank=True, null=True)
     field = models.OneToOneField(
         Field,
         on_delete=models.CASCADE,

@@ -4,7 +4,6 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.gis.db import models
 from django.core.serializers import serialize
 from django.contrib.gis.gdal import Envelope
-from django.contrib.postgres.fields import JSONField
 from user_resource.models import UserResource
 from gallery.models import File
 
@@ -21,13 +20,13 @@ class Region(UserResource):
     title = models.CharField(max_length=255)
     public = models.BooleanField(default=True)
 
-    regional_groups = JSONField(default=None, blank=True, null=True)
-    key_figures = JSONField(default=None, blank=True, null=True)
-    population_data = JSONField(default=None, blank=True, null=True)
-    media_sources = JSONField(default=None, blank=True, null=True)
+    regional_groups = models.JSONField(default=None, blank=True, null=True)
+    key_figures = models.JSONField(default=None, blank=True, null=True)
+    population_data = models.JSONField(default=None, blank=True, null=True)
+    media_sources = models.JSONField(default=None, blank=True, null=True)
 
     # cache data
-    geo_options = JSONField(default=None, blank=True, null=True)
+    geo_options = models.JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -157,7 +156,7 @@ class AdminLevel(models.Model):
     bounds_file = models.FileField(
         upload_to='geo-bounds/', max_length=255, null=True, blank=True, default=None,
     )
-    geo_area_titles = JSONField(default=None, blank=True, null=True)
+    geo_area_titles = models.JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -275,7 +274,7 @@ class GeoArea(models.Model):
                                null=True, blank=True, default=None)
     title = models.CharField(max_length=255)
     code = models.CharField(max_length=255, blank=True)
-    data = JSONField(default=None, blank=True, null=True)
+    data = models.JSONField(default=None, blank=True, null=True)
 
     # TODO Rename to geometry
     polygons = models.GeometryField(null=True, blank=True, default=None)

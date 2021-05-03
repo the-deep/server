@@ -1,5 +1,5 @@
 import uuid as python_uuid
-from django.contrib.postgres.fields import JSONField, ArrayField
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.conf import settings
 from django.urls import reverse
@@ -13,7 +13,7 @@ class File(UserResource):
     file = models.FileField(upload_to='gallery/', max_length=255,
                             null=True, blank=True, default=None)
     mime_type = models.CharField(max_length=130, blank=True, null=True)
-    metadata = JSONField(default=None, blank=True, null=True)
+    metadata = models.JSONField(default=None, blank=True, null=True)
 
     is_public = models.BooleanField(default=False)
     projects = models.ManyToManyField('project.Project', blank=True)
@@ -51,7 +51,7 @@ class File(UserResource):
 class FilePreview(models.Model):
     file_ids = ArrayField(models.IntegerField())
     text = models.TextField(blank=True)
-    ngrams = JSONField(null=True, blank=True, default=None)
+    ngrams = models.JSONField(null=True, blank=True, default=None)
     extracted = models.BooleanField(default=False)
 
     def __str__(self):

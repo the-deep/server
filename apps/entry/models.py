@@ -1,6 +1,5 @@
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.aggregates.general import ArrayAgg
-from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
@@ -191,7 +190,7 @@ class Attribute(models.Model):
     """
     entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
     widget = models.ForeignKey(Widget, on_delete=models.CASCADE)
-    data = JSONField(default=None, blank=True, null=True)
+    data = models.JSONField(default=None, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -273,7 +272,7 @@ class ExportData(models.Model):
     """
     entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
     exportable = models.ForeignKey(Exportable, on_delete=models.CASCADE)
-    data = JSONField(default=None, blank=True, null=True)
+    data = models.JSONField(default=None, blank=True, null=True)
 
     @staticmethod
     def get_for(user):

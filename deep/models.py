@@ -1,7 +1,6 @@
 # Some useful abstract models
 
 from django.db import models
-from django.contrib.postgres.fields import JSONField
 
 
 class Field(models.Model):
@@ -47,7 +46,7 @@ class Field(models.Model):
         default=None,
     )
 
-    properties = JSONField(default=None, blank=True, null=True)
+    properties = models.JSONField(default=None, blank=True, null=True)
 
     class Meta:
         abstract = True
