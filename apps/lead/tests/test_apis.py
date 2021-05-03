@@ -9,7 +9,6 @@ from project.models import (
 from project.serializers import SimpleProjectSerializer
 from geo.models import Region
 
-from entry.models import Entry
 from organization.models import (
     Organization,
     OrganizationType,

@@ -7,8 +7,7 @@ from .models import Export
 class ExportFilterSet(django_filters.rest_framework.FilterSet):
     """
     Export filter set
-    Also make most fields filerable by multiple values using
-    'in' lookup expressions and CSVWidget.
+    Also make most fields filerable by multiple values
     """
     project = django_filters.ModelChoiceFilter(
         queryset=Project.objects.all(),
@@ -21,7 +20,6 @@ class ExportFilterSet(django_filters.rest_framework.FilterSet):
 
     status = django_filters.MultipleChoiceFilter(
         choices=Export.STATUS_CHOICES,
-        lookup_expr='in',
         widget=django_filters.widgets.CSVWidget
     )
 

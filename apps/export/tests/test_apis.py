@@ -124,6 +124,10 @@ class ExportTests(TestCase):
         self.authenticate()
         response = self.client.get(f'/api/v1/exports/?status={Export.PENDING}')
         assert response.json()['count'] == 1
+        response = self.client.get('/api/v1/exports/')
+        assert response.json()['count'] == 4
+        response = self.client.get(f'/api/v1/exports/?status={Export.PENDING},{Export.FAILURE}')
+        assert response.json()['count'] == 2
 
     def test_export_filter_by_archived(self):
         self.create(Export, exported_by=self.user, is_archived=False)
