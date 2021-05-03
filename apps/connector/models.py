@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField
 
 from connector.sources.store import get_sources
 from user_resource.models import UserResource
@@ -39,7 +38,7 @@ class Connector(UserResource):
         null=True,
         on_delete=models.CASCADE,
     )
-    params = JSONField(default=None, blank=True, null=True)
+    params = models.JSONField(default=None, blank=True, null=True)
 
     users = models.ManyToManyField(User, blank=True,
                                    through='ConnectorUser')

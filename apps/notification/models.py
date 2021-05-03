@@ -1,7 +1,6 @@
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.contrib.postgres.fields import JSONField
 from django.utils import timezone
 
 from user.models import User
@@ -56,7 +55,7 @@ class Notification(models.Model):
         max_length=48,
         choices=TYPE_CHOICES,
     )
-    data = JSONField(default=None, blank=True, null=True)
+    data = models.JSONField(default=None, blank=True, null=True)
     status = models.CharField(
         max_length=48,
         choices=STATUS_CHOICES,

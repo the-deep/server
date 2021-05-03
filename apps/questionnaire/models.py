@@ -1,5 +1,6 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField, ArrayField, HStoreField
+from django.db.models import JSONField
+from django.contrib.postgres.fields import ArrayField, HStoreField
 from django.utils.hashable import make_hashable
 from django.utils.encoding import force_str
 
