@@ -21,7 +21,7 @@ from .models import (
 class AnlyticalEntriesSerializer(UserResourceSerializer):
     class Meta:
         model = AnalyticalStatementEntry
-        fields = ('id', 'order', 'entry')
+        fields = ('id', 'client_id', 'order', 'entry')
         read_only_fields = ('analytical_statement',)
 
 
@@ -61,7 +61,7 @@ class AnalysisPillarSerializer(
 ):
     assignee_name = serializers.CharField(source='assignee.username', read_only=True)
     analysis_title = serializers.CharField(source='analysis.title', read_only=True)
-    analytical_statement = AnalyticalStatementSerializer(many=True, source='analyticalstatement_set', required=False)
+    analytical_statements = AnalyticalStatementSerializer(many=True, source='analyticalstatement_set', required=False)
 
     class Meta:
         model = AnalysisPillar
