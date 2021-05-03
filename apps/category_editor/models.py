@@ -1,11 +1,10 @@
-from django.contrib.postgres.fields import JSONField
 from django.db import models
 from user_resource.models import UserResource
 
 
 class CategoryEditor(UserResource):
     title = models.CharField(max_length=255)
-    data = JSONField(default=None, blank=True, null=True)
+    data = models.JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
         return self.title

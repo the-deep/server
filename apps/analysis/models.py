@@ -1,7 +1,6 @@
 import copy
 
 from django.db import models
-from django.contrib.postgres.fields import JSONField
 
 from user.models import User
 from project.models import Project
@@ -36,7 +35,7 @@ class AnalysisPillar(models.Model):
     main_statement = models.TextField(blank=True)
     information_gap = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    filters = JSONField(blank=True, null=True, default=None)
+    filters = models.JSONField(blank=True, null=True, default=None)
     assignee = models.ForeignKey(
         User,
         on_delete=models.CASCADE

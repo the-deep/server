@@ -1,6 +1,5 @@
 from collections import OrderedDict
 from django.db import models
-from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 
 from user_resource.models import UserResource
@@ -357,11 +356,11 @@ class Assessment(UserResource, ProjectEntityMixin):
         LeadGroup, on_delete=models.CASCADE,
         default=None, blank=True, null=True,
     )
-    metadata = JSONField(default=None, blank=True, null=True)
-    methodology = JSONField(default=None, blank=True, null=True)
-    summary = JSONField(default=None, blank=True, null=True)
-    score = JSONField(default=None, blank=True, null=True)
-    questionnaire = JSONField(default=None, blank=True, null=True)
+    metadata = models.JSONField(default=None, blank=True, null=True)
+    methodology = models.JSONField(default=None, blank=True, null=True)
+    summary = models.JSONField(default=None, blank=True, null=True)
+    score = models.JSONField(default=None, blank=True, null=True)
+    questionnaire = models.JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
         return str(self.lead)
@@ -660,8 +659,8 @@ class PlannedAssessment(UserResource, ProjectEntityMixin):
     """
     project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
-    metadata = JSONField(default=None, blank=True, null=True)
-    methodology = JSONField(default=None, blank=True, null=True)
+    metadata = models.JSONField(default=None, blank=True, null=True)
+    methodology = models.JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
         return self.title
