@@ -469,19 +469,35 @@ class EntryTests(TestCase):
         lead1.assignee.add(self.user.pk)
         lead2 = self.create_lead()
         lead2.assignee.add(another_user.pk)
+        lead3 = self.create_lead()
+        lead3.assignee.add(self.user.pk)
 
         self.create_entry(lead=lead1)
         self.create_entry(lead=lead1)
         self.create_entry(lead=lead1)
+
         self.create_entry(lead=lead2)
         self.create_entry(lead=lead2)
+
+        self.create_entry(lead=lead3)
 
         # test assignee created by self user
-        self.authenticate()
-        self.post_filter_test({'lead_assignee': [self.user.pk]}, 3)
+        filters = {
+            'lead_assignee': [self.user.pk],
+        }
+        self.post_filter_test(filters, 4)
 
         # test assignee created by another user
-        self.post_filter_test({'lead_assignee': [another_user.pk]}, 2)
+        filters = {
+            'lead_assignee': [another_user.pk],
+        }
+        self.post_filter_test(filters, 2)
+
+        # test assignee created by both users
+        filters = {
+            'lead_assignee': [self.user.pk, another_user.pk],
+        }
+        self.post_filter_test(filters, 6)
 
     def test_search_filter(self):
         entry, field = self.create_entry_with_data_series()
