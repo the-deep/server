@@ -65,7 +65,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                     'id': pillar.id,
                     'pillar_title': pillar.title,
                     'assignee': pillar.assignee.username,
-                    'analytical_statement': AnalyticalStatement.objects.filter(
+                    'analytical_statements': AnalyticalStatement.objects.filter(
                         analysis_pillar=pillar
                     ).annotate(
                         entries_count=models.Count('entries', distinct=True)).values(
