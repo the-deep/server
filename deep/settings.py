@@ -58,7 +58,6 @@ LOCAL_APPS = [
     'category_editor',
     'connector',
     'deep_migration',
-    'docs',
     'entry',
     'export',
     'gallery',
@@ -619,4 +618,4 @@ REDOC_SETTINGS = {
 
 OPEN_API_DOCS_TIMEOUT = 86400  # 24 Hours
 
-DEFAULT_AUTO_FIELD='django.db.models.AutoField' 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
