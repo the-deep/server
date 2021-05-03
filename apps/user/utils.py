@@ -68,7 +68,7 @@ def send_mail_to_user(user, email_type, context={}, *args, **kwargs):
         'unsubscribe_email_token':
             unsubscribe_email_token_generator.make_token(user),
         'unsubscribe_email_id':
-            urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+            urlsafe_base64_encode(force_bytes(user.pk)),
     })
 
     _send_mail(
@@ -98,7 +98,7 @@ def send_password_reset(user, welcome=False):
     user.
     """
     context = {
-        'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
         'token': default_token_generator.make_token(user),
         'welcome': welcome,
     }
@@ -116,7 +116,7 @@ def send_account_activation(user):
     user.
     """
     context = {
-        'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
         'token': default_token_generator.make_token(user),
     }
     send_mail_to_user(
@@ -143,13 +143,13 @@ def send_project_join_request_emails(join_request_id):
         'request_by': request_by,
         'project': project,
         'reason': reason,
-        'pid': urlsafe_base64_encode(force_bytes(join_request.pk)).decode(),
+        'pid': urlsafe_base64_encode(force_bytes(join_request.pk)),
     }
 
     for user in project.get_admins():
         request_data.update({'will_responded_by': user})
         context.update({
-            'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
             'token':
                 project_request_token_generator.make_token(request_data)
         })
