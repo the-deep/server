@@ -138,7 +138,7 @@ class GalleryTests(TestCase):
         file = File.objects.get(id=file_id)
 
         url = urlf_public.format(
-            urlsafe_base64_encode(force_bytes(file_id)).decode(),
+            urlsafe_base64_encode(force_bytes(file_id)),
             'random-strings-xxyyzz',
             file.title,
         )
