@@ -159,9 +159,6 @@ from organization.views import (
 from lang.views import (
     LanguageViewSet,
 )
-from docs.views import (
-    DocsView,
-)
 from client_page_meta.views import (
     PageViewSet,
 )
@@ -525,9 +522,6 @@ urlpatterns = [
 
     # Viewsets
     url(get_api_path(''), include(router.urls)),
-
-    # Docs
-    url(get_api_path(r'docs/'), DocsView.as_view()),
 
     # DRF auth, TODO: logout
     url(r'^api-auth/', include('rest_framework.urls',
