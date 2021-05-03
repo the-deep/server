@@ -58,7 +58,6 @@ LOCAL_APPS = [
     'category_editor',
     'connector',
     'deep_migration',
-    'docs',
     'entry',
     'export',
     'gallery',
