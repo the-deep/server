@@ -21,7 +21,7 @@ from .models import (
 class AnlyticalEntriesSerializer(UserResourceSerializer):
     class Meta:
         model = AnalyticalStatementEntry
-        fields = ('id', 'uuid', 'order', 'entry')
+        fields = ('id', 'client_id', 'order', 'entry')
         read_only_fields = ('analytical_statement',)
 
 

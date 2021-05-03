@@ -8,7 +8,10 @@ from analysis.models import (
     AnalyticalStatement,
     AnalyticalStatementEntry,
 )
-from organization.models import Organization, OrganizationType
+from organization.models import (
+    Organization,
+    OrganizationType
+)
 
 
 class TestAnalysisAPIs(TestCase):
@@ -109,16 +112,16 @@ class TestAnalysisAPIs(TestCase):
                 {
                     "statement": "coffee",
                     "order": 1,
-                    "uuid": "1",
+                    "client_id": "1",
                     "analytical_entries": [
                         {
                             "order": 1,
-                            "uuid": "1",
+                            "client_id": "1",
                             "entry": entry1.id,
                         },
                         {
                             "order": 2,
-                            "uuid": "2",
+                            "client_id": "2",
                             "entry": entry2.id
                         }
                     ],
@@ -126,11 +129,11 @@ class TestAnalysisAPIs(TestCase):
                 {
                     "statement": "test",
                     "order": 2,
-                    "uuid": "2",
+                    "client_id": "2",
                     "analytical_entries": [
                         {
                             "order": 1,
-                            "uuid": "1",
+                            "client_id": "1",
                             "entry": entry1.id,
                         }
                     ],
@@ -152,16 +155,16 @@ class TestAnalysisAPIs(TestCase):
                 {
                     'statement': "tea",
                     'order': 1,
-                    "uuid": "1",
+                    "client_id": "1",
                     "analytical_entries": [
                         {
                             "order": 1,
-                            "uuid": "1",
+                            "client_id": "1",
                             "entry": entry1.id,
                         },
                         {
                             "order": 2,
-                            "uuid": "2",
+                            "client_id": "2",
                             "entry": entry2.id
                         }
                     ],
@@ -198,13 +201,13 @@ class TestAnalysisAPIs(TestCase):
             "analytical_entries": [
                 {
                     "order": 1,
-                    "uuid": "1",
+                    "client_id": "1",
                     "entry": entry.id
                 }
             ],
             "statement": "test statement",
             "order": 1,
-            "uuid": "1",
+            "client_id": "1",
             "analysisPillar": pillar.id
         }
         self.authenticate(user)
@@ -231,11 +234,11 @@ class TestAnalysisAPIs(TestCase):
                 {
                     "statement": "coffee",
                     "order": 1,
-                    "uuid": "1",
+                    "client_id": "1",
                     "analytical_entries": [
                         {
                             "order": 1,
-                            "uuid": "1",
+                            "client_id": "1",
                             "entry": entry.id,
                         }
                     ]
@@ -257,11 +260,11 @@ class TestAnalysisAPIs(TestCase):
                 {
                     "statement": "coffee",
                     "order": 1,
-                    "uuid": "1",
+                    "client_id": "1",
                     "analytical_entries": [
                         {
                             "order": 1,
-                            "uuid": "1",
+                            "client_id": "1",
                             "entry": entry.id,
                         }
                     ]
@@ -291,11 +294,11 @@ class TestAnalysisAPIs(TestCase):
                 {
                     "statement": "coffee",
                     "order": 1,
-                    "uuid": "1",
+                    "client_id": "1",
                     "analytical_entries": [
                         {
                             "order": 1,
-                            "uuid": str(entry.id),
+                            "client_id": str(entry.id),
                             "entry": entry.id,
                         } for entry in entries_list
                     ]
@@ -317,11 +320,11 @@ class TestAnalysisAPIs(TestCase):
                 {
                     "statement": "coffee",
                     "order": 1,
-                    "uuid": "1",
+                    "client_id": "1",
                     "analytical_entries": [
                         {
                             "order": 1,
-                            "uuid": str(entry.id),
+                            "client_id": str(entry.id),
                             "entry": entry.id,
                         } for entry in entries_list_one_more
                     ]
@@ -347,20 +350,20 @@ class TestAnalysisAPIs(TestCase):
         pillar3 = self.create(AnalysisPillar, analysis=analysis1, title='title3', assignee=user2)
         pillar4 = self.create(AnalysisPillar, analysis=analysis2, title='title3', assignee=user2)
 
-        analytical_statement1 = self.create(AnalyticalStatement, analysis_pillar=pillar1, uuid='1')
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry, uuid='1')
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry1, uuid='2')
+        analytical_statement1 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry1)
 
-        analytical_statement2 = self.create(AnalyticalStatement, analysis_pillar=pillar2, uuid='2')
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry, uuid='1')
+        analytical_statement2 = self.create(AnalyticalStatement, analysis_pillar=pillar2)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry)
 
-        analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar3, uuid='3')
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry, uuid='1')
+        analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar3)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry1)
 
-        analytical_statement4 = self.create(AnalyticalStatement, analysis_pillar=pillar4, uuid='4')
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement4, entry=entry, uuid='1')
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement4, entry=entry1, uuid='2')
+        analytical_statement4 = self.create(AnalyticalStatement, analysis_pillar=pillar4)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement4, entry=entry)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement4, entry=entry1)
 
         url = f'/api/v1/projects/{project.id}/analysis/summary/'
         self.authenticate(user)
@@ -430,38 +433,38 @@ class TestAnalysisAPIs(TestCase):
             AnalyticalStatement,
             analysis_pillar=pillar,
             statement='Hello from here',
-            uuid='1'
+            client_id='1'
         )
         staatement_entry1 = self.create(
             AnalyticalStatementEntry,
             analytical_statement=analytical_statement,
             entry=entry1,
             order=1,
-            uuid='1'
+            client_id='1'
         )
         statement_entry2 = self.create(
             AnalyticalStatementEntry,
             analytical_statement=analytical_statement,
             entry=entry2,
             order=2,
-            uuid='2'
+            client_id='2'
         )
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{pillar.id}/'
         data = {
             'analytical_statements': [
                 {
                     'id': analytical_statement.id,
-                    "uuid": str(analytical_statement.id),
+                    "client_id": str(analytical_statement.id),
                     'statement': 'Hello from there',
                     "analytical_entries": [
                         {
                             "order": 1,
-                            "uuid": "1",
+                            "client_id": "1",
                             "entry": entry2.id,
                         },
                         {
                             "order": 2,
-                            "uuid": "2",
+                            "client_id": "2",
                             "entry": entry1.id
                         }
                     ],
@@ -487,14 +490,14 @@ class TestAnalysisAPIs(TestCase):
         pillar1 = self.create(AnalysisPillar, analysis=analysis1, title='title1', assignee=user)
         pillar2 = self.create(AnalysisPillar, analysis=analysis1, title='title2', assignee=user)
 
-        analytical_statement1 = self.create(AnalyticalStatement, analysis_pillar=pillar1, uuid='1')
-        analytical_statement2 = self.create(AnalyticalStatement, analysis_pillar=pillar1, uuid='2')
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry, uuid='1')
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry1, uuid='2')
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry2, uuid='3')
+        analytical_statement1 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
+        analytical_statement2 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry1)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry2)
 
-        analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar2, uuid='3')
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry, uuid='1')
+        analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar2)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3)
 
         url = f'/api/v1/projects/{project.id}/analysis/{analysis1.id}/pillar-overview/'
         self.authenticate(user)
@@ -548,14 +551,14 @@ class TestAnalysisAPIs(TestCase):
         pillar1 = self.create(AnalysisPillar, analysis=analysis1, title='title1')
         pillar2 = self.create(AnalysisPillar, analysis=analysis2, title='title2')
 
-        analytical_statement1 = self.create(AnalyticalStatement, analysis_pillar=pillar1, uuid='1')
-        analytical_statement2 = self.create(AnalyticalStatement, analysis_pillar=pillar1, uuid='2')
-        analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar1, uuid='3')
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry1, uuid='1')
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry1, uuid='2')
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry2, uuid='3')
+        analytical_statement1 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
+        analytical_statement2 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
+        analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry1)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry1)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry2)
 
-        analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar2, uuid='4')
+        analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar2)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry3)
 
         url = f'/api/v1/projects/{project.id}/analysis-overview/'

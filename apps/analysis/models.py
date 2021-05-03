@@ -63,7 +63,6 @@ class AnalyticalStatement(UserResource):
     )
     include_in_report = models.BooleanField(default=False)
     order = models.IntegerField()
-    uuid = models.CharField(max_length=255)
 
     class Meta:
         ordering = ('order',)
@@ -82,7 +81,6 @@ class AnalyticalStatementEntry(UserResource):
         on_delete=models.CASCADE
     )
     order = models.IntegerField()
-    uuid = models.CharField(max_length=255)
 
     class Meta:
         ordering = ('order',)
