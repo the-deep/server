@@ -1,5 +1,4 @@
 from django.urls import reverse
-from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.db.models.functions import Cast
 from django.contrib.auth.models import User
@@ -65,7 +64,7 @@ class Project(UserResource):
         null=True,
         on_delete=models.SET_NULL,
     )
-    data = JSONField(default=None, blank=True, null=True)
+    data = models.JSONField(default=None, blank=True, null=True)
 
     is_default = models.BooleanField(default=False)
 
@@ -86,7 +85,7 @@ class Project(UserResource):
     )
 
     # Store project stats data as cache. View project/tasks for structure
-    stats_cache = JSONField(default=dict)
+    stats_cache = models.JSONField(default=dict)
 
     def __str__(self):
         return self.title
@@ -417,7 +416,7 @@ class ProjectJoinRequest(models.Model):
         related_name='project_join_responses',
     )
     responded_at = models.DateTimeField(null=True, blank=True, default=None)
-    data = JSONField(default=get_default_join_request_data, blank=True, null=True)
+    data = models.JSONField(default=get_default_join_request_data, blank=True, null=True)
 
     def __str__(self):
         return 'Join request for {} by {} ({})'.format(

@@ -1,7 +1,6 @@
 from django.db import models
 from django.core.cache import cache
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import JSONField
 
 from project.models import Project
 
@@ -71,7 +70,7 @@ class Export(models.Model):
     format = models.CharField(max_length=100, choices=FORMATS, blank=True)
     type = models.CharField(max_length=99, choices=DATA_TYPES, blank=True)
     export_type = models.CharField(max_length=100, choices=EXPORT_TYPES, blank=True)
-    filters = JSONField(default=dict, blank=True, null=True,)
+    filters = models.JSONField(default=dict, blank=True, null=True,)
 
     mime_type = models.CharField(max_length=200, blank=True)
     file = models.FileField(upload_to='export/', max_length=255,

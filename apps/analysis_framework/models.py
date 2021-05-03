@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField
 from user_resource.models import UserResource
 from user.models import User
 from organization.models import Organization
@@ -22,7 +21,7 @@ class AnalysisFramework(UserResource):
         through='AnalysisFrameworkMembership'
     )
 
-    properties = JSONField(default=dict, blank=True, null=True)
+    properties = models.JSONField(default=dict, blank=True, null=True)
 
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, blank=True, null=True)
     # Image is provided by user as a reference.
@@ -185,7 +184,7 @@ class Widget(models.Model):
     key = models.CharField(max_length=100, default=None, blank=True, null=True)
     widget_id = models.CharField(max_length=100, db_index=True)
     title = models.CharField(max_length=255)
-    properties = JSONField(default=None, blank=True, null=True)
+    properties = models.JSONField(default=None, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -247,7 +246,7 @@ class Filter(models.Model):
     key = models.CharField(max_length=100, db_index=True)
     widget_key = models.CharField(max_length=100)
     title = models.CharField(max_length=255)
-    properties = JSONField(default=None, blank=True, null=True)
+    properties = models.JSONField(default=None, blank=True, null=True)
     filter_type = models.CharField(max_length=20, choices=FILTER_TYPES,
                                    default=LIST)
 
@@ -298,7 +297,7 @@ class Exportable(models.Model):
     widget_key = models.CharField(max_length=100, db_index=True)
     inline = models.BooleanField(default=False)
     order = models.IntegerField(default=1)
-    data = JSONField(default=None, blank=True, null=True)
+    data = models.JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
         return 'Exportable ({})'.format(self.widget_key)
