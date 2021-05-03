@@ -132,7 +132,6 @@ class FileFilterSet(UserResourceFilterSet):
     projects = django_filters.ModelMultipleChoiceFilter(
         field_name='projects',
         queryset=Project.objects.all(),
-        lookup_expr='in',
         widget=django_filters.widgets.CSVWidget,
         method=filter_files_by_projects,
     )

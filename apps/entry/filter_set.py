@@ -35,7 +35,6 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
 
     lead = django_filters.ModelMultipleChoiceFilter(
         queryset=Lead.objects.all(),
-        lookup_expr='in',
     )
     created_by = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all(),
@@ -96,7 +95,7 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
     lead_assignee = django_filters.ModelMultipleChoiceFilter(
         label='Comment Assignees',
         queryset=User.objects.all(),
-        field_name='lead__assignee', lookup_expr='in',
+        field_name='lead__assignee',
     )
 
     comment_status = django_filters.ChoiceFilter(
@@ -106,7 +105,7 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
     comment_assignee = django_filters.ModelMultipleChoiceFilter(
         label='Comment Assignees',
         queryset=User.objects.all(),
-        field_name='entrycomment__assignees', lookup_expr='in',
+        field_name='entrycomment__assignees',
     )
     comment_created_by = django_filters.ModelMultipleChoiceFilter(
         label='Comment Created by',
