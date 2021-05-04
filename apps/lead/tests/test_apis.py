@@ -863,7 +863,6 @@ class LeadTests(TestCase):
             Q(pk=lead1.pk) | Q(project=project2d)
         ).get()
         lead1_copy.refresh_from_db()
-        # assert there are emm_triggers
         self.assertEqual(
             lead1_copy.images.count(),
             lead1.images.count(),
@@ -1141,7 +1140,9 @@ class LeadTests(TestCase):
         post_data['entries_filter'].append(('entry_type', [Entry.EXCERPT, Entry.IMAGE]))
         response = self.client.post(url, post_data)
         self.assertEqual(response.json()['count'], 2, response.json())
-        assert response.json()['results'][0]['filteredEntriesCount'] == 1, response.json()
+        # there should be 1 image entry and 2 excerpt entries
+        assert 1 in [item['filteredEntriesCount'] for item in response.json()['results']], response.json()
+        assert 2 in [item['filteredEntriesCount'] for item in response.json()['results']], response.json()
 
         # filter by project_entry_labels
         # Labels
@@ -1171,7 +1172,9 @@ class LeadTests(TestCase):
         post_data['entries_filter'].append(('project_entry_labels', [label1.id, label2.id]))
         response = self.client.post(url, post_data)
         self.assertEqual(response.json()['count'], 2, response.json())
-        assert response.json()['results'][0]['filteredEntriesCount'] == 1, response.json()
+        # lead1 has 1 label1+label2 entries
+        # lead2 has 1 label2 entries
+        assert [1, 1] == [item['filteredEntriesCount'] for item in response.json()['results']], response.json()
 
     def test_filtered_lead_list_with_verified_entries_count(self):
         project = self.create_project()
