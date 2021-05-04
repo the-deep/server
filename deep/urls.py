@@ -14,9 +14,9 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from django_otp.admin import OTPAdminSite
-from graphene_django.views import GraphQLView
 
 from . import converters
+from deep.views import CustomGraphQLView
 
 # import autofixture
 
@@ -373,7 +373,7 @@ def get_api_path(path):
     return '{}{}'.format(API_PREFIX, path)
 
 
-GraphQLView.graphiql_template = "graphene_graphiql_explorer/graphiql.html"
+CustomGraphQLView.graphiql_template = "graphene_graphiql_explorer/graphiql.html"
 
 # Enable OTP in Production
 if not settings.DEBUG:
@@ -549,8 +549,8 @@ urlpatterns = [
             name="favicon"),
 ] + [
     # graphql patterns
-    re_path('^graphiql/?$', csrf_exempt(GraphQLView.as_view(graphiql=True))),
-    re_path('^graphql/?$', csrf_exempt(GraphQLView.as_view())),
+    re_path('^graphiql/?$', csrf_exempt(CustomGraphQLView.as_view(graphiql=True))),
+    re_path('^graphql/?$', csrf_exempt(CustomGraphQLView.as_view())),
 ] + static.static(
     settings.MEDIA_URL, view=xframe_options_exempt(serve),
     document_root=settings.MEDIA_ROOT
