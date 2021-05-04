@@ -24,8 +24,8 @@ class TestNotificationAPIs(TestCase):
         response = self.client.get(url, data)
         self.assert_200(response)
 
-        data = response.data
-        assert data['count'] == 0, "No notifications so far"
+        rdata = response.data
+        assert rdata['count'] == 0, "No notifications so far"
 
         # Now, create notifications
         self.create_join_request(project, user)
