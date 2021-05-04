@@ -43,14 +43,6 @@ if [ "$EBS_ENV_TYPE" == "worker" ]; then
             --logfile=/var/log/celery/celery.log \
             --statedb=/var/run/celery/worker.state \
             --scheduler django_celery_beat.schedulers:DatabaseScheduler
-    # elif [ "$WORKER_TYPE" == "channel" ]; then
-    #     echo '>> Starting Django Channels'
-    #     # Start channels
-    #     mkdir -p /var/log/daphne/
-    #     daphne -b 0.0.0.0 -p 80 --access-log /var/log/daphne/access.log deep.asgi:channel_layer \
-    #         >> /var/log/daphne/access.log 2>&1 &
-    #     python3 manage.py runworker >> /var/log/daphne/access.log 2>&1
-    # fi
 
 fi
 

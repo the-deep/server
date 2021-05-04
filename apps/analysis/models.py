@@ -36,7 +36,6 @@ class AnalysisPillar(UserResource):
     title = models.CharField(max_length=255)
     main_statement = models.TextField(blank=True)
     information_gap = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
     filters = models.JSONField(blank=True, null=True, default=None)
     assignee = models.ForeignKey(
         User,

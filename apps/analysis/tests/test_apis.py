@@ -576,10 +576,12 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(data['analyzed_source_count'], 3)
         self.assertEqual(data['analyzed_entries_count'], 3)
         self.assertEqual(len(data['authoring_organizations']), 2)
-        self.assertEqual(data['authoring_organizations'][0]['organization_type_id'], organization_type1.id)
-        self.assertEqual(data['authoring_organizations'][0]['organization_type_title'], organization_type1.title)
-        self.assertEqual(data['authoring_organizations'][0]['count'], 3)
-        self.assertEqual(data['authoring_organizations'][1]['count'], 1)
+        self.assertIn(organization_type1.id, [item['organization_type_id'] for item in data['authoring_organizations']])
+        self.assertIn(
+            organization_type1.title,
+            [item['organization_type_title'] for item in data['authoring_organizations']]
+        )
+        self.assertEqual(set([item['count'] for item in data['authoring_organizations']]), set([1, 3]))
 
         # authenticate with user that is not project member
         self.authenticate(user2)
