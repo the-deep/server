@@ -22,8 +22,7 @@ def refresh_project_memberships_usergroup_modified(sender, instance, **kwargs):
     existing_members.update(role=instance.role)
 
     project_ug_members = User.objects.filter(usergroup__project=project)
-    new_users = project_ug_members.difference(project.get_all_members()).\
-        distinct()
+    new_users = project_ug_members.exclude(id__in=project.get_all_members()).distinct()
     for user in new_users:
         project.add_member(user, role=instance.role, linked_group=user_group)
 
