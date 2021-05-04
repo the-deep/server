@@ -10,7 +10,9 @@ from django.urls import resolve
 from django.views.generic import View
 from django.conf import settings
 from django.template.response import TemplateResponse
+from graphene_django.views import GraphQLView
 
+from deep.graphene_context import GQLContext
 from user.models import User, Profile
 from project.models import Project
 from entry.models import EntryComment
@@ -168,3 +170,8 @@ class EntryCommentEmail(View):
         })
         return TemplateResponse(
             request, 'entry/comment_notification_email.html', context)
+
+
+class CustomGraphQLView(GraphQLView):
+    def get_context(self, request):
+        return GQLContext(request)
