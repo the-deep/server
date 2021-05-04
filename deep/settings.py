@@ -117,6 +117,8 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'jsoneditor',
     'drf_yasg',  # API Documentation
+    'graphene_django',
+    'graphene_graphiql_explorer',
 ] + [
     '{}.{}.apps.{}Config'.format(
         APPS_DIR.split('/')[-1],
@@ -619,3 +621,30 @@ REDOC_SETTINGS = {
 OPEN_API_DOCS_TIMEOUT = 86400  # 24 Hours
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+# WHITELIST following nodes from authentication checks
+GRAPHENE_NODES_WHITELIST = (
+    '__schema',
+    '__type',
+    # custom nodes...
+)
+
+# https://docs.graphene-python.org/projects/django/en/latest/settings/
+GRAPHENE = {
+    'ATOMIC_MUTATIONS': True,
+    'SCHEMA': 'deep.schema.schema',
+    'SCHEMA_OUTPUT': 'schema.json',  # defaults to schema.json,
+    'SCHEMA_INDENT': 2,  # Defaults to None (displays all data on a single   line)
+    'MIDDLEWARE': [
+        'deep.middleware.WhiteListMiddleware',
+    ],
+}
+
+GRAPHENE_DJANGO_EXTRAS = {
+    'DEFAULT_PAGINATION_CLASS': 'graphene_django_extras.paginations.PageGraphqlPagination',
+    'DEFAULT_PAGE_SIZE': 20,
+    'MAX_PAGE_SIZE': 50,
+}
+
+if DEEP_ENVIRONMENT in ['production']:
+    GRAPHENE['MIDDLEWARE'].append('deep.middleware.DisableIntrospectionSchemaMiddleware')
