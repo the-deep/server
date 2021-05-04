@@ -864,7 +864,6 @@ class LeadTests(TestCase):
             Q(pk=lead1.pk) | Q(project=project2d)
         ).get()
         lead1_copy.refresh_from_db()
-        # assert there are emm_triggers
         self.assertEqual(
             lead1_copy.images.count(),
             lead1.images.count(),
