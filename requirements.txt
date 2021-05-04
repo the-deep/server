@@ -11,6 +11,9 @@ coreapi==2.3.3
 dateparser==0.7.0
 decorator==4.3.2
 descartes==1.1.0
+django==3.2
+djangorestframework-camel-case==1.2.0
+djangorestframework==3.12.4
 django-celery-beat==1.4.0
 django-cors-headers==2.4.0
 django-crispy-forms==1.11.2
@@ -26,9 +29,7 @@ django-redis==4.10.0
 django-reversion==3.0.9
 django-ses==1.0.2
 django-storages==1.7.1
-django==3.2
-djangorestframework-camel-case==1.2.0
-djangorestframework==3.12.4
+django-utils-six
 drf-dynamic-fields==0.3.0
 drf-yasg[validation]==1.20.0
 feedparser==5.2.1
@@ -69,11 +70,6 @@ tldextract==2.2.0
 tornado>=4.2.0,<6.0.0
 user-agents==2.2.0
 wordcloud==1.5.0
-graphene-django==2.15.0
-graphene-graphiql-explorer==0.0.1
-graphene-django-extras==0.4.9
-
-django-utils-six
 
 # django-autofixture
 git+https://github.com/volrath/django-autofixture.git@0472a494485dd597d598e20d9e1c6c47cf0eadb7
