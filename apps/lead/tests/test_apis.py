@@ -1,3 +1,5 @@
+from django.db.models import Q
+
 from deep.tests import TestCase
 
 from user.models import User
@@ -784,7 +786,8 @@ class LeadTests(TestCase):
 
         # Generate Leads
         lead1 = self.create(
-            Lead, title=lead1_title, project=project1s, source_type=Lead.WEBSITE, url='http://example.com')
+            Lead, title=lead1_title, project=project1s, source_type=Lead.WEBSITE, url='http://example.com'
+        )
         lead1.authors.set([author, author2])
         lead2 = self.create(Lead, project=project2s)
         lead3 = self.create(Lead, project=project3s)
@@ -796,6 +799,8 @@ class LeadTests(TestCase):
         # Generating Foreign elements for lead1
         self.create(LeadPreview, lead=lead1, text_extract=lead1_text_extract)
         self.create(LeadPreviewImage, lead=lead1, file=lead1_preview_file)
+        print(lead1.id, 'the lead is here')
+        print(lead1.images.count(), 'the lead image count')
         emm_trigger = self.create(
             LeadEMMTrigger, lead=lead1, emm_keyword=emm_keyword, emm_risk_factor=emm_risk_factor, count=emm_count)
         lead1.emm_entities.set([self.create(EMMEntity, name=emm_entity_name)])
@@ -843,9 +848,32 @@ class LeadTests(TestCase):
             assert new_lead_count == current_lead_count, f'Project: {project.title} lead count is different'
 
         # Test Foreign Fields
-        lead1_copy = Lead.objects.filter(title=lead1_title).exclude(pk=lead1.pk).first()
+        self.assertEqual(
+            Lead.objects.filter(title=lead1_title).count(),
+            3,
+            'Should have been 3: Original + Custom created + Copy(of original)'
+        )
+        self.assertEqual(
+            Lead.objects.filter(title=lead1_title).exclude(
+                Q(pk=lead1.pk) | Q(project=project2d)
+            ).count(),
+            1,
+            'Should have been 1: Copy(of original)'
+        )
+        lead1_copy = Lead.objects.filter(title=lead1_title).exclude(
+            Q(pk=lead1.pk) | Q(project=project2d)
+        ).get()
+        lead1_copy.refresh_from_db()
+        # assert there are emm_triggers
+        self.assertEqual(
+            lead1_copy.images.count(),
+            lead1.images.count(),
+        )
+        self.assertEqual(
+            lead1_copy.emm_triggers.count(),
+            lead1.emm_triggers.count(),
+        )
         emm_trigger = lead1_copy.emm_triggers.filter(emm_risk_factor=emm_risk_factor, emm_keyword=emm_keyword)[0]
-        assert lead1_copy.pk != lead1.pk
         assert lead1_copy.authors.count() == 2
         assert sorted(lead1_copy.authors.values_list('id', flat=True)) == [author.id, author2.id]
         assert lead1_copy.leadpreview.text_extract == lead1_text_extract

@@ -780,11 +780,11 @@ class LeadCopyView(BaseCopyView):
             return obj
 
         # LeadGroup?
-        preview = lead.leadpreview if hasattr(lead, 'leadpreview') else None
-        preview_images = lead.images.all()
-        emm_triggers = lead.emm_triggers.all()
-        emm_entities = lead.emm_entities.all()
-        authors = lead.authors.all()
+        preview = original_lead.leadpreview if hasattr(lead, 'leadpreview') else None
+        preview_images = original_lead.images.all()
+        emm_triggers = original_lead.emm_triggers.all()
+        emm_entities = original_lead.emm_entities.all()
+        authors = original_lead.authors.all()
 
         lead.pk = None
         try:
