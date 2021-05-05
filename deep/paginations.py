@@ -8,7 +8,7 @@ class AutocompleteSetPagination(pagination.LimitOffsetPagination):
 
 class SmallSizeSetPagination(pagination.LimitOffsetPagination):
     default_limit = 10
-    max_limit = 25
+    max_limit = 50
 
 
 class AssignmentPagination(pagination.LimitOffsetPagination):
