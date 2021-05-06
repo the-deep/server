@@ -1,12 +1,20 @@
 import graphene
 
-
-class Query(graphene.ObjectType):
-    placeholder = graphene.String()
+from analysis_framework import mutation as af_mutations, schema as af_schema
 
 
-class Mutation(graphene.ObjectType):
-    placeholder = graphene.String()
+class Query(
+    af_schema.Query,
+    graphene.ObjectType
+):
+    pass
+
+
+class Mutation(
+    af_mutations.Mutation,
+    graphene.ObjectType
+):
+    pass
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
