@@ -3,16 +3,13 @@ import requests
 import threading
 
 from reversion.views import create_revision
-from django.core.exceptions import PermissionDenied
 from django.utils import timezone
-from django.utils.translation import gettext
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.files.storage import get_storage_class
 
 from utils.date_extractor import str_to_date
 
-PERMISSION_DENIED_MESSAGE = 'You do not have permission to perform this action.'
 
 logger = logging.getLogger(__name__)
 _threadlocal = threading.local()
@@ -120,29 +117,3 @@ def get_current_user():
     if isinstance(current_user, AnonymousUser):
         return None
     return current_user
-
-
-class WhiteListMiddleware:
-    '''
-    Graphql node whitelist for unauthenticated user
-    '''
-    def resolve(self, next, root, info, **args):
-        # if user is not authenticated and user is not accessing
-        # whitelisted nodes, then raise permission denied error
-
-        # furthermore, this check must only happen in the root node, and not in deeper nodes
-        if not hasattr(self, '_skip_white_list_check'):
-            if not info.context.user.is_authenticated and info.field_name not in settings.GRAPHENE_NODES_WHITELIST:
-                raise PermissionDenied(gettext(PERMISSION_DENIED_MESSAGE))
-        self._skip_white_list_check = True
-        return next(root, info, **args)
-
-
-class DisableIntrospectionSchemaMiddleware:
-    """
-    This middleware should be used in production.
-    """
-    def resolve(self, next, root, info, **args):
-        if info.field_name == '__schema':
-            return None
-        return next(root, info, **args)

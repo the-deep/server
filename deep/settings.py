@@ -626,7 +626,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 GRAPHENE_NODES_WHITELIST = (
     '__schema',
     '__type',
+    '__typename',
     # custom nodes...
+    'login',
 )
 
 # https://docs.graphene-python.org/projects/django/en/latest/settings/
@@ -636,7 +638,7 @@ GRAPHENE = {
     'SCHEMA_OUTPUT': 'schema.json',  # defaults to schema.json,
     'SCHEMA_INDENT': 2,  # Defaults to None (displays all data on a single   line)
     'MIDDLEWARE': [
-        'deep.middleware.WhiteListMiddleware',
+        'utils.graphene.middleware.WhiteListMiddleware',
     ],
 }
 
