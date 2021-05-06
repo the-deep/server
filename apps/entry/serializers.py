@@ -10,10 +10,11 @@ from deep.serializers import (
 )
 from organization.serializers import SimpleOrganizationSerializer
 from user_resource.serializers import UserResourceSerializer
-from gallery.serializers import FileSerializer
+from gallery.models import File
+from gallery.serializers import FileSerializer, SimpleFileSerializer
 from project.models import Project
 from lead.serializers import LeadSerializer
-from lead.models import Lead
+from lead.models import Lead, LeadPreviewImage
 from analysis_framework.serializers import AnalysisFrameworkSerializer
 from geo.models import GeoArea, Region
 from geo.serializers import SimpleRegionSerializer
@@ -36,7 +37,7 @@ from .models import (
     LeadEntryGroup,
     EntryGroupLabel,
 )
-from .utils import validate_image_for_entry
+from .utils import base64_to_deep_image
 
 logger = logging.getLogger(__name__)
 
@@ -206,6 +207,13 @@ class EntrySerializer(RemoveNullFieldsMixin,
         read_only=True,
     )
 
+    image_details = SimpleFileSerializer(source='image', read_only=True)
+    lead_image = serializers.PrimaryKeyRelatedField(
+        required=False,
+        write_only=True,
+        queryset=LeadPreviewImage.objects.all()
+    )
+
     class Meta:
         model = Entry
         fields = '__all__'
@@ -213,7 +221,7 @@ class EntrySerializer(RemoveNullFieldsMixin,
     def get_project_labels(self, entry):
         # Should be provided from view
         label_count = self.context.get('entry_group_label_count')
-        if label_count:
+        if label_count is not None:
             return label_count.get(entry.pk) or []
         # Fallback
         return EntryGroupLabel.get_stat_for_entry(entry.entrygrouplabel_set)
@@ -228,28 +236,48 @@ class EntrySerializer(RemoveNullFieldsMixin,
             return entry.unresolved_comment_count
         return entry.entrycomment_set.filter(parent=None, is_resolved=False).count()
 
+    def validate(self, data):
+        """
+        - Lead image is copied to deep gallery files
+        - Raw image (base64) are saved as deep gallery files
+        """
+        request = self.context['request']
+        lead = data.get('lead') or self.instance.lead
+        image = data.get('image')
+        image_raw = data.pop('image_raw', None)
+        lead_image = data.pop('lead_image', None)
+
+        # If gallery file is provided make sure user owns the file
+        if image:
+            if not image.is_public and image.created_by != self.context['request'].user:
+                raise serializers.ValidationError({
+                    'image': f'You don\'t have permission to attach image: {image}',
+                })
+            return data
+        # If lead image is provided make sure lead are same
+        elif lead_image:
+            if lead_image.lead != lead:
+                raise serializers.ValidationError({
+                    'lead_image': f'You don\'t have permission to attach lead image: {lead_image}',
+                })
+            data['image'] = lead_image.clone_as_deep_file(request.user)
+        elif image_raw:
+            generated_image = base64_to_deep_image(
+                image_raw,
+                lead,
+                request.user,
+            )
+            if type(generated_image) == File:
+                data['image'] = generated_image
+        return data
+
     def create(self, validated_data):
         if validated_data.get('project') is None:
             validated_data['project'] = validated_data['lead'].project
 
-        image = validated_data.get('image')
-        if image:
-            validated_data['image'] = validate_image_for_entry(
-                image,
-                project=validated_data['lead'].project,
-                request=self.context['request'],
-            )
-
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        image = validated_data.get('image')
-        if image:
-            validated_data['image'] = validate_image_for_entry(
-                image,
-                project=validated_data['lead'].project,
-                request=self.context['request'],
-            )
         # once altered, unverify the entry if its verified
         if instance and instance.verified:
             validated_data['verified'] = False
@@ -407,7 +435,7 @@ class ComprehensiveEntriesSerializer(
     class Meta:
         model = Entry
         fields = (
-            'id', 'created_at', 'modified_at', 'entry_type', 'excerpt', 'image', 'tabular_field',
+            'id', 'created_at', 'modified_at', 'entry_type', 'excerpt', 'image_raw', 'tabular_field',
             'attributes', 'created_by', 'modified_by', 'project', 'original_excerpt',
         )
 

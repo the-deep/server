@@ -1,4 +1,5 @@
 from deep.tests import TestCase
+
 from user.models import User
 from user.serializers import SimpleUserSerializer
 from project.models import (
@@ -136,7 +137,7 @@ class LeadTests(TestCase):
     def test_bulk_delete_leads(self):
         project = self.create(Project)
         lead1 = self.create(Lead, project=project)
-        lead2 = self.create(Lead, project=project)
+        self.create(Lead, project=project)
         lead3 = self.create(Lead, project=project)
         lead_count = Lead.objects.count()
 
@@ -1017,10 +1018,10 @@ class LeadTests(TestCase):
         organization4 = self.create(Organization, parent=organization1)
 
         # create lead
-        lead = self.create(Lead, project=project, authors=[organization1])
-        lead1 = self.create(Lead, project=project, authors=[organization2])
-        lead2 = self.create(Lead, project=project, authors=[organization3, organization2])
-        lead4 = self.create(Lead, project=project, authors=[organization4])
+        self.create(Lead, project=project, authors=[organization1])
+        self.create(Lead, project=project, authors=[organization2])
+        self.create(Lead, project=project, authors=[organization3, organization2])
+        self.create(Lead, project=project, authors=[organization4])
         self.authenticate()
 
         # Authoring organization_type filter test
@@ -1169,7 +1170,7 @@ class LeadTests(TestCase):
 
         lead1 = self.create(Lead, project=project, author=author, author_raw='wood')
         lead2 = self.create(Lead, project=project, author=author2)
-        lead3 = self.create(Lead, project=project, author=None)
+        self.create(Lead, project=project, author=None)
 
         lead = self.create(Lead, project=project)
         lead.authors.set([author, author2])

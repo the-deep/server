@@ -15,7 +15,7 @@ class File(UserResource):
     mime_type = models.CharField(max_length=130, blank=True, null=True)
     metadata = JSONField(default=None, blank=True, null=True)
 
-    is_public = models.BooleanField(default=True)
+    is_public = models.BooleanField(default=False)
     projects = models.ManyToManyField('project.Project', blank=True)
 
     def __str__(self):
@@ -28,13 +28,7 @@ class File(UserResource):
 
     @staticmethod
     def get_for(user):
-        return File.objects.all()
-        # return File.objects.filter(
-        #     models.Q(created_by=user) |
-        #     models.Q(is_public=True) |
-        #     models.Q(permitted_users=user) |
-        #     models.Q(permitted_user_groups__members=user)
-        # ).distinct()
+        return File.objects.filter(created_by=user)
 
     def can_get(self, user):
         return True

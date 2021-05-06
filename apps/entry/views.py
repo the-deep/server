@@ -1,8 +1,9 @@
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
+from django.db.models import Prefetch
 from rest_framework.decorators import action
 from rest_framework import (
     filters,
@@ -12,7 +13,6 @@ from rest_framework import (
     views,
     viewsets,
     serializers,
-    status,
     mixins,
 )
 from reversion.models import Version
@@ -321,7 +321,19 @@ class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
                 )
             )
 
-        return EntryFilterSet(filters, queryset=queryset).qs
+        return (
+            EntryFilterSet(filters, queryset=queryset).qs
+            .select_related(
+                'image', 'lead',
+                'created_by__profile', 'modified_by__profile',
+            ).prefetch_related(
+                'attribute_set',
+                'lead__authors',
+                'lead__assignee',
+                'lead__assignee__profile',
+                'lead__leadpreview',
+            )
+        )
 
     def post(self, request, version=None):
         queryset = self.get_queryset()
@@ -359,6 +371,7 @@ class EditEntriesDataViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet)
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        # TODO: Optimize this queryset
         return Lead.get_for(self.request.user)
 
 

@@ -1,7 +1,7 @@
 from urllib.parse import urljoin
 import reversion
 from entry.models import Entry
-from entry.utils import validate_image_for_entry
+from entry.utils import base64_to_deep_image
 
 
 class CustomRequest:
@@ -14,14 +14,14 @@ class CustomRequest:
 
 
 def migrate_entry(entry, root_url):
-    image = entry.image
+    image = entry.image_raw
     if not image:
         return
 
-    new_image = validate_image_for_entry(
+    new_image = base64_to_deep_image(
         image,
-        project=entry.lead.project,
-        request=CustomRequest(entry.created_by, root_url),
+        entry.lead,
+        entry.created_by,
     )
 
     if new_image == image:
@@ -35,6 +35,8 @@ def migrate_entry(entry, root_url):
 
 
 def migrate(*args):
+    print('This should be already migrated')
+    return
     root_url = args[0]
     with reversion.create_revision():
         for entry in Entry.objects.all():

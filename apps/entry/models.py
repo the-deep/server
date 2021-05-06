@@ -52,7 +52,8 @@ class Entry(UserResource, ProjectEntityMixin):
         default=EXCERPT,
     )
     excerpt = models.TextField(blank=True)
-    image = models.TextField(blank=True)
+    image = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True)
+    image_raw = models.TextField(blank=True)
     tabular_field = models.ForeignKey(
         'tabular.Field', on_delete=models.CASCADE,
         null=True, blank=True,
@@ -108,17 +109,15 @@ class Entry(UserResource, ProjectEntityMixin):
     def get_image_url(self):
         if hasattr(self, 'image_url'):
             return self.image_url
-        if not self.image:
-            return None
 
-        fileid = parse_number(self.image.rstrip('/').split('/')[-1])  # remove last slash if present
-        if fileid is None:
-            return None
-        file = File.objects.filter(id=fileid).first()
-        if not file:
-            return None
-
-        self.image_url = file.get_file_url()
+        gallery_file = None
+        if self.image:
+            gallery_file = self.image
+        elif self.image_raw:
+            fileid = parse_number(self.image_raw.rstrip('/').split('/')[-1])  # remove last slash if present
+            if fileid:
+                gallery_file = File.objects.filter(id=fileid).first()
+        self.image_url = gallery_file and gallery_file.get_file_url()
         return self.image_url
 
     @classmethod

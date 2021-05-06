@@ -153,7 +153,7 @@ class AdminLevelViewSet(viewsets.ModelViewSet):
     search_fields = ('title')
 
     def get_queryset(self):
-        return AdminLevel.get_for(self.request.user).defer(
+        return AdminLevel.get_for(self.request.user).select_related('geo_shape_file').defer(
             *AdminLevelSerializer.Meta.exclude
         )
 
