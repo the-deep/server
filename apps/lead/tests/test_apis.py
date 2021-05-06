@@ -799,8 +799,6 @@ class LeadTests(TestCase):
         # Generating Foreign elements for lead1
         self.create(LeadPreview, lead=lead1, text_extract=lead1_text_extract)
         self.create(LeadPreviewImage, lead=lead1, file=lead1_preview_file)
-        print(lead1.id, 'the lead is here')
-        print(lead1.images.count(), 'the lead image count')
         emm_trigger = self.create(
             LeadEMMTrigger, lead=lead1, emm_keyword=emm_keyword, emm_risk_factor=emm_risk_factor, count=emm_count)
         lead1.emm_entities.set([self.create(EMMEntity, name=emm_entity_name)])
