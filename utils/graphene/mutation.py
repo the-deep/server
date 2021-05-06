@@ -1,16 +1,25 @@
 from collections import OrderedDict
 
+from django.db.models import JSONField
 import graphene
 import graphene_django
+from graphene.types.generic import GenericScalar
 from graphene_django.registry import get_global_registry
 from graphene_django.rest_framework.serializer_converter import (
     get_graphene_type_from_serializer_field,
-    convert_serializer_to_input_type
 )
+from graphene_django_extras.converter import convert_django_field
 from rest_framework import serializers
 
-from apps.contrib.enums import ENUM_TO_GRAPHENE_ENUM_MAP
-from apps.contrib.serializers import IntegerIDField
+from utils.graphene.permissions import permission_checker
+from utils.graphene.error_types import mutation_is_not_valid
+# from apps.contrib.serializers import IntegerIDField
+
+
+@convert_django_field.register(JSONField)
+def convert_json_field_to_scalar(field, registry=None):
+    # https://github.com/graphql-python/graphene-django/issues/303#issuecomment-339939955
+    return GenericScalar()
 
 
 @get_graphene_type_from_serializer_field.register(serializers.ListSerializer)
@@ -31,7 +40,7 @@ def convert_serializer_field_to_many_related_id(field):
 
 
 @get_graphene_type_from_serializer_field.register(serializers.PrimaryKeyRelatedField)
-@get_graphene_type_from_serializer_field.register(IntegerIDField)
+# @get_graphene_type_from_serializer_field.register(IntegerIDField)
 def convert_serializer_field_to_id(field):
     return graphene.ID
 
@@ -84,6 +93,40 @@ def convert_serializer_field(field, is_input=True, convert_choices_to_enum=True)
     return graphql_type(*args, **kwargs)
 
 
+def convert_serializer_to_input_type(serializer_class):
+    """
+    graphene_django.rest_framework.serializer_converter.convert_serializer_to_input_type
+    """
+    cached_type = convert_serializer_to_input_type.cache.get(
+        serializer_class.__name__, None
+    )
+    if cached_type:
+        return cached_type
+    serializer = serializer_class()
+
+    items = {
+        name: convert_serializer_field(field)
+        for name, field in serializer.fields.items()
+    }
+    # Alter naming
+    serializer_name = serializer.__class__.__name__
+    serializer_name = ''.join(''.join(serializer_name.split('ModelSerializer')).split('Serializer'))
+    ref_name = f'{serializer_name}InputType'
+
+    base_classes = (graphene.InputObjectType,)
+
+    ret_type = type(
+        ref_name,
+        base_classes,
+        items,
+    )
+    convert_serializer_to_input_type.cache[serializer_class.__name__] = ret_type
+    return ret_type
+
+
+convert_serializer_to_input_type.cache = {}
+
+
 def fields_for_serializer(
     serializer,
     only_fields,
@@ -133,3 +176,41 @@ def generate_input_type_for_serializer(
 
 # override the default implementation
 graphene_django.rest_framework.serializer_converter.convert_serializer_field = convert_serializer_field
+graphene_django.rest_framework.serializer_converter.convert_serializer_to_input_type = convert_serializer_to_input_type
+
+
+class GrapheneMutation(graphene.Mutation):
+    # output fields
+    errors = graphene.List(graphene.NonNull(GenericScalar))
+    ok = graphene.Boolean()
+
+    @classmethod
+    def get_queryset(cls):
+        return cls.model._meta.default_manager.all()
+
+    @classmethod
+    def get_object(cls):
+        return cls
+
+    @classmethod
+    @permission_checker([])
+    def mutate(cls, root, info, **kwargs):
+        data = kwargs['data']
+        id = kwargs.get('id')
+        if id:
+            serializer = cls.serializer_class(
+                instance=cls.get_querset().get(id=id),
+                data=data,
+                context={'request': info.context},
+                partial=True,
+            )
+        else:
+            serializer = cls.serializer_class(
+                data=data,
+                context={'request': info.context}
+            )
+        errors = mutation_is_not_valid(serializer)
+        if errors:
+            return cls(errors=errors, ok=False)
+        instance = serializer.save()
+        return cls(result=instance, errors=None, ok=True)
