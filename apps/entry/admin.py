@@ -55,7 +55,7 @@ class EntryAdmin(VersionAdmin):
     list_filter = ('project', 'created_by', 'created_at')
     autocomplete_fields = (
         'lead', 'project', 'created_by', 'modified_by', 'analysis_framework', 'tabular_field',
-        'image', 'verification_last_changed_by',
+        'image', 'controlled_changed_by',
     )
     ordering = ('project', 'created_by', 'created_at')
 
