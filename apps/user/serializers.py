@@ -26,10 +26,14 @@ class SimpleUserSerializer(RemoveNullFieldsMixin,
         source='profile.display_picture',
         read_only=True,
     )
+    display_picture_url = URLCachedFileField(
+        source='profile.display_picture.file',
+        read_only=True,
+    )
 
     class Meta:
         model = User
-        fields = ('id', 'display_name', 'email', 'display_picture')
+        fields = ('id', 'display_name', 'email', 'display_picture', 'display_picture_url')
 
 
 class UserSerializer(RemoveNullFieldsMixin, WriteOnlyOnCreateSerializerMixin,
@@ -46,6 +50,10 @@ class UserSerializer(RemoveNullFieldsMixin, WriteOnlyOnCreateSerializerMixin,
         queryset=File.objects.all(),
         allow_null=True,
         required=False,
+    )
+    display_picture_url = URLCachedFileField(
+        source='profile.display_picture.file',
+        read_only=True,
     )
     display_name = serializers.CharField(
         source='profile.get_display_name',
@@ -74,7 +82,7 @@ class UserSerializer(RemoveNullFieldsMixin, WriteOnlyOnCreateSerializerMixin,
                   'display_name', 'last_active_project',
                   'login_attempts', 'recaptcha_response',
                   'email', 'organization', 'display_picture',
-                  'language', 'email_opt_outs')
+                  'display_picture_url', 'language', 'email_opt_outs')
         write_only_on_create_fields = ('email', 'username')
 
     def validate_recaptcha_response(self, recaptcha_response):
@@ -126,6 +134,10 @@ class UserPreferencesSerializer(RemoveNullFieldsMixin,
         allow_null=True,
         required=False,
     )
+    display_picture_url = URLCachedFileField(
+        source='profile.display_picture.file',
+        read_only=True,
+    )
     display_name = serializers.CharField(
         source='profile.get_display_name',
         read_only=True,
@@ -152,8 +164,8 @@ class UserPreferencesSerializer(RemoveNullFieldsMixin,
     class Meta:
         model = User
         fields = ('display_name', 'username', 'email', 'last_active_project',
-                  'display_picture', 'is_superuser', 'language', 'accessible_features',
-                  'fallback_language',)
+                  'display_picture', 'display_picture_url', 'is_superuser',
+                  'language', 'accessible_features', 'fallback_language',)
 
 
 class PasswordResetSerializer(RemoveNullFieldsMixin,
@@ -201,9 +213,12 @@ class ComprehensiveUserSerializer(serializers.ModelSerializer):
 
 class EntryCommentUserSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='profile.get_display_name', read_only=True)
-    display_picture = URLCachedFileField(source='profile.display_picture.file', read_only=True)
+    display_picture_url = URLCachedFileField(
+        source='profile.display_picture.file',
+        read_only=True,
+    )
     organization = serializers.CharField(source='profile.organization', read_only=True)
 
     class Meta:
         model = User
-        fields = ('id', 'name', 'email', 'organization', 'display_picture',)
+        fields = ('id', 'name', 'email', 'organization', 'display_picture_url',)

@@ -9,6 +9,7 @@ from deep.serializers import (
 )
 
 from project.models import Project
+from gallery.models import File
 from user_resource.serializers import UserResourceSerializer
 from lead.serializers import SimpleLeadSerializer
 from lead.models import Lead, LeadGroup
@@ -19,6 +20,7 @@ from organization.serializers import (
     ArySourceOrganizationSerializer,
     OrganizationTypeSerializer,
 )
+from gallery.serializers import SimpleFileSerializer
 
 from .models import (
     AssessmentTemplate,
@@ -62,16 +64,28 @@ class PlannedAssessmentSerializer(
         fields = '__all__'
 
 
-class LeadAssessmentSerializer(RemoveNullFieldsMixin,
-                               DynamicFieldsMixin,
-                               UserResourceSerializer):
-    lead_title = serializers.CharField(source='lead.title',
-                                       read_only=True)
+class LeadAssessmentSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceSerializer):
+    lead_title = serializers.CharField(source='lead.title', read_only=True)
+    gallery_files_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Assessment
         fields = ('__all__')
         read_only_fields = ('lead', 'lead_group', 'project')
+
+    def get_gallery_files_details(self, assessment):
+        # Right now gallery files are only used in additional_documents
+        additional_documents = (assessment.metadata or {}).get('additional_documents')
+        if not additional_documents:
+            return
+        files_id = []
+        for items in additional_documents.values():
+            for item in items or []:
+                if item.get('id') and item.get('type') == 'file':
+                    files_id.append(item['id'])
+        # TODO:
+        qs = File.objects.filter(id__in=files_id).all()
+        return SimpleFileSerializer(qs, context=self.context, many=True).data
 
     def create(self, validated_data):
         # If this assessment is being created for the first time,

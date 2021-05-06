@@ -6,7 +6,7 @@ from reversion.models import Version
 from deep.tests import TestCase
 from project.models import Project
 from user.models import User
-from lead.models import Lead
+from lead.models import Lead, LeadPreviewImage
 from organization.models import Organization, OrganizationType
 from analysis_framework.models import (
     AnalysisFramework, Widget, Filter
@@ -644,6 +644,68 @@ class EntryTests(TestCase):
         }
         self.post_filter_test(filters, 3)
 
+    def test_entry_image_validation(self):
+        lead = self.create_lead()
+
+        url = '/api/v1/entries/'
+        data = {
+            'lead': lead.pk,
+            'project': lead.project.pk,
+            'analysis_framework': lead.project.analysis_framework.pk,
+            'excerpt': 'This is test excerpt',
+            'attributes': {},
+        }
+
+        self.authenticate()
+        image = self.create_gallery_file()
+
+        # Using raw image
+        data['image_raw'] = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='  # noqa: E501
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        assert 'image' in response.data
+        assert 'image_details' in response.data
+        data.pop('image_raw')
+
+        # Using lead image (same lead)
+        data['lead_image'] = self.create(LeadPreviewImage, lead=lead, file=image.file).pk
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        assert 'image' in response.data
+        assert 'image_details' in response.data
+        data.pop('lead_image')
+
+        # Using lead image (different lead)
+        data['lead_image'] = self.create(LeadPreviewImage, lead=self.create_lead(), file=image.file).pk
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        data.pop('lead_image')
+
+        # Using gallery file (owned)
+        data['image'] = image.pk
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        assert 'image' in response.data
+        assert 'image_details' in response.data
+        data.pop('image')
+
+        # Using gallery file (not owned)
+        image.created_by = self.root_user
+        image.is_public = False
+        image.save()
+        data['image'] = image.pk
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        data.pop('image')
+
+        # Using gallery file (not owned but public)
+        image.is_public = True
+        image.save()
+        data['image'] = image.pk
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        data.pop('image')
+
     # TODO: test export data and filter data apis
 
     def test_entry_id_filter(self):
@@ -693,26 +755,19 @@ class EntryTest(TestCase):
         )
 
     def test_entry_no_image(self):
-        entry = self.create_entry(image='')
+        entry = self.create_entry(image=None, image_raw='')
         assert entry.get_image_url() is None
 
     def test_entry_image(self):
         entry_image_url = '/some/path'
-        entry = self.create_entry(
-            image='{}/{}'.format(entry_image_url, self.file.id)
-        )
-        assert entry.get_image_url() is not None
-        # Get file again, because it won't have random_string updated
         file = File.objects.get(id=self.file.id)
-        assert entry.get_image_url() == '{protocol}://{domain}{url}'.format(
-            protocol=settings.HTTP_PROTOCOL,
-            domain=settings.DJANGO_API_HOST,
-            url='/private-file/{uuid}/{filename}'.format(**{
-                'uuid': file.uuid,
-                'filename': file.title,
-            }
-            ),
+        entry_with_raw_image = self.create_entry(
+            image=None,
+            image_raw='{}/{}'.format(entry_image_url, file.id)
         )
+        entry_with_image = self.create_entry(image=File.objects.get(id=file.id))
+        assert entry_with_raw_image.get_image_url() == file.get_file_url()
+        assert entry_with_image.get_image_url() == file.get_file_url()
 
     def test_list_entries_summary(self):
         org_type1 = self.create(OrganizationType)

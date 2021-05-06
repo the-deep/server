@@ -259,7 +259,10 @@ class Lead(UserResource, ProjectEntityMixin):
         )
 
     def get_assignee(self):
-        return self.assignee.first()
+        # To be used by prefetch_related (Also, there is only one assignee)
+        assignees = self.assignee.all()
+        if assignees:
+            return assignees[0]
 
     def get_source_display(self):
         if self.source:
@@ -328,6 +331,9 @@ class LeadPreview(models.Model):
 
 
 class LeadPreviewImage(models.Model):
+    """
+    NOTE: File can be only used by gallery (when attached to a entry)
+    """
     lead = models.ForeignKey(
         Lead, related_name='images', on_delete=models.CASCADE,
     )
@@ -335,6 +341,19 @@ class LeadPreviewImage(models.Model):
 
     def __str__(self):
         return 'Image extracted for {}'.format(self.lead)
+
+    def clone_as_deep_file(self, user):
+        """
+        Generates a gallery/models.py::File copy
+        """
+        file = File.objects.create(
+            title=self.file.name,
+            created_by=user,
+            modified_by=user,
+        )
+        file.file.save(self.file.name, self.file)
+        file.projects.add(self.lead.project)
+        return file
 
 
 class LeadEMMTrigger(models.Model):

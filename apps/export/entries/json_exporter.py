@@ -50,7 +50,7 @@ class JsonExporter:
             data['author'] = lead.get_authors_display()
             data['date'] = lead.published_on
             data['excerpt'] = entry.excerpt
-            data['image'] = entry.image
+            data['image'] = entry.get_image_url()
             data['attributes'] = []
             data['data_series'] = {}
 

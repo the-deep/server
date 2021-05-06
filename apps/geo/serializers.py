@@ -8,6 +8,7 @@ from user_resource.serializers import UserResourceSerializer
 from geo.models import Region, AdminLevel  # , GeoShape
 from geo.tasks import load_geo_areas
 from project.models import Project
+from gallery.serializers import SimpleFileSerializer
 
 
 class SimpleRegionSerializer(RemoveNullFieldsMixin,
@@ -75,6 +76,8 @@ class AdminLevelSerializer(RemoveNullFieldsMixin,
     """
     Admin Level Model Serializer
     """
+    geo_shape_file_details = SimpleFileSerializer(source='geo_shape_file', read_only=True)
+
     geojson_file = URLCachedFileField(required=False, read_only=True)
     bounds_file = URLCachedFileField(required=False, read_only=True)
 
