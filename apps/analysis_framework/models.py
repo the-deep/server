@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField
 from user_resource.models import UserResource
 from user.models import User
+from organization.models import Organization
 
 
 class AnalysisFramework(UserResource):
@@ -22,6 +23,12 @@ class AnalysisFramework(UserResource):
     )
 
     properties = JSONField(default=dict, blank=True, null=True)
+
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, blank=True, null=True)
+    # Image is provided by user as a reference.
+    preview_image = models.FileField(
+        upload_to='af-preview-image/', max_length=255, null=True, blank=True, default=None,
+    )
 
     def __str__(self):
         return self.title

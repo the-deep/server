@@ -5,15 +5,17 @@ from django.db.models import Q
 from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
 from questionnaire.serializers import FrameworkQuestionSerializer
-from analysis_framework.models import (
+from user.models import User, Feature
+from user.serializers import SimpleUserSerializer
+from project.models import Project
+from organization.serializers import SimpleOrganizationSerializer
+
+from .models import (
     AnalysisFramework,
     AnalysisFrameworkRole,
     AnalysisFrameworkMembership,
     Widget, Filter, Exportable,
 )
-from user.models import User, Feature
-from user.serializers import SimpleUserSerializer
-from project.models import Project
 
 
 class WidgetSerializer(RemoveNullFieldsMixin,
@@ -156,8 +158,7 @@ class AnalysisFrameworkMembershipSerializer(
         return super().delete(instance)
 
 
-class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
-                                  DynamicFieldsMixin, UserResourceSerializer):
+class AnalysisFrameworkSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceSerializer):
     """
     Analysis Framework Model Serializer
     """
@@ -181,6 +182,7 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
     )
 
     role = serializers.SerializerMethodField()
+    organization_details = SimpleOrganizationSerializer(source='organization', read_only=True)
 
     class Meta:
         model = AnalysisFramework
@@ -192,7 +194,7 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
         if 'request' in self.context:
             user = self.context['request'].user
         projects = obj.project_set.exclude(Q(is_private=True) & ~Q(members=user))
-        return SimpleProjectSerializer(projects, many=True, read_only=True).data
+        return SimpleProjectSerializer(projects, context=self.context, many=True, read_only=True).data
 
     def get_users_with_add_permission(self, obj):
         """
@@ -202,6 +204,7 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
             User.objects.filter(
                 id__in=obj.analysisframeworkmembership_set.filter(role__can_add_user=True).values('member'),
             ).all(),
+            context=self.context,
             many=True,
         ).data
 
@@ -220,7 +223,7 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
         else:
             return {}
 
-        return AnalysisFrameworkRoleSerializer(role).data
+        return AnalysisFrameworkRoleSerializer(role, context=self.context).data
 
     def validate_project(self, project):
         try:
