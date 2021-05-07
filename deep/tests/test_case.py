@@ -50,6 +50,12 @@ class TestCase(test.APITestCase):
         for file_path in self.deep_test_files_path:
             if os.path.isfile(file_path):
                 os.unlink(file_path)
+        # Unlink any files created while running test
+        for file in File.objects.all():
+            if file.file:
+                file_path = file.file.path
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
 
     def authenticate(self, user=None):
         user = user or self.user

@@ -1,3 +1,7 @@
+import os
+
+from django.conf import settings
+
 from deep.tests import TestCase
 from analysis_framework.models import (
     AnalysisFramework,
@@ -6,6 +10,7 @@ from analysis_framework.models import (
 
 from project.models import Project
 from user.models import User
+from organization.models import Organization
 
 
 class AnalysisFrameworkTests(TestCase):
@@ -157,17 +162,26 @@ class AnalysisFrameworkTests(TestCase):
 
     def test_create_analysis_framework(self):
         project = self.create(Project, role=self.admin_role)
+        organization = self.create(Organization)
+        preview_image_sample = os.path.join(settings.BASE_DIR, 'apps/static/image/drop-icon.png')
 
         url = '/api/v1/analysis-frameworks/'
         data = {
             'title': 'Test AnalysisFramework Title',
             'project': project.id,
+            'organization': organization.id,
+            'preview_image': open(preview_image_sample, 'rb'),
         }
 
-        response = self.post_and_check_201(url, data, AnalysisFramework, ['title'])
-
-        project = Project.objects.get(id=project.id)
-        self.assertEqual(project.analysis_framework.id, response.data['id'])
+        self.authenticate()
+        response = self.client.post(url, data, format='multipart')
+        project.refresh_from_db()
+        self.assert_201(response)
+        self.assertEqual(response.data['title'], data['title'])
+        self.assertEqual(response.data['organization'], data['organization'])
+        self.assertEqual(response.data['organization_details']['id'], organization.id)
+        self.assertIsNotNone(response.data['preview_image'])
+        self.assertEqual(project.analysis_framework_id, response.data['id'])
 
         # test Group Membership created or not
         assert AnalysisFrameworkMembership.objects.filter(

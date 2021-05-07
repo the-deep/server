@@ -372,7 +372,10 @@ class EditEntriesDataViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet)
 
     def get_queryset(self):
         # TODO: Optimize this queryset
-        return Lead.get_for(self.request.user)
+        return Lead.get_for(self.request.user).select_related(
+            'project',
+            'project__analysis_framework', 'project__analysis_framework__organization',
+        )
 
 
 class AttributeViewSet(viewsets.ModelViewSet):
