@@ -78,28 +78,27 @@ class Entry(UserResource, ProjectEntityMixin):
 
     @classmethod
     def annotate_comment_count(cls, qs):
+        def _count_subquery(subquery):
+            return models.functions.Coalesce(
+                models.Subquery(
+                    subquery.values('entry').order_by().annotate(
+                        count=models.Count('id', distinct=True)
+                    ).values('count')[:1],
+                    output_field=models.IntegerField()
+                ), 0,
+            )
+
         current_user = get_current_user()
-        verified_by_current_user_qs = cls.verified_by.through.objects.filter(
-            entry=models.OuterRef('pk'), user=current_user
-        )
+        verified_by_qs = cls.verified_by.through.objects.filter(entry=models.OuterRef('pk'))
+        entrycomment_qs = EntryComment.objects.filter(entry=models.OuterRef('pk'), parent=None)
         return qs.annotate(
-            verified_by_count=models.Count('verified_by'),
-            is_verified_by_current_user=models.Exists(verified_by_current_user_qs),
-            resolved_comment_count=models.Count(
-                'entrycomment',
-                filter=models.Q(
-                    entrycomment__parent=None,
-                    entrycomment__is_resolved=True,
-                ),
-                distinct=True,
+            verified_by_count=_count_subquery(verified_by_qs),
+            is_verified_by_current_user=models.Exists(verified_by_qs.filter(user=current_user)),
+            resolved_comment_count=_count_subquery(
+                entrycomment_qs.filter(is_resolved=True)
             ),
-            unresolved_comment_count=models.Count(
-                'entrycomment',
-                filter=models.Q(
-                    entrycomment__parent=None,
-                    entrycomment__is_resolved=False,
-                ),
-                distinct=True,
+            unresolved_comment_count=_count_subquery(
+                entrycomment_qs.filter(is_resolved=False)
             ),
         )
 
