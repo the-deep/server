@@ -1,6 +1,5 @@
 import autofixture
 
-from django.conf import settings
 from reversion.models import Version
 
 from deep.tests import TestCase
@@ -646,6 +645,8 @@ class EntryTests(TestCase):
 
     def test_entry_image_validation(self):
         lead = self.create_lead()
+        user = self.create_user()
+        lead.project.add_member(user, role=self.normal_role)
 
         url = '/api/v1/entries/'
         data = {
@@ -667,6 +668,14 @@ class EntryTests(TestCase):
         assert 'image_details' in response.data
         data.pop('image_raw')
 
+        # Try to update entry with another user. we don't want 400 here as we are not updating image
+        self.authenticate(user)
+        response = self.client.patch(f"{url}{response.data['id']}/", {'attributes': {}})
+        self.assert_200(response)
+        assert 'image' in response.data
+        assert 'image_details' in response.data
+
+        self.authenticate()
         # Using lead image (same lead)
         data['lead_image'] = self.create(LeadPreviewImage, lead=lead, file=image.file).pk
         response = self.client.post(url, data)
@@ -705,7 +714,6 @@ class EntryTests(TestCase):
         response = self.client.post(url, data)
         self.assert_201(response)
         data.pop('image')
-
     # TODO: test export data and filter data apis
 
     def test_entry_id_filter(self):
