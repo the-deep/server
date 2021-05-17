@@ -1,9 +1,13 @@
 import graphene
+from graphene_django.rest_framework.mutation import SerializerMutation
 from django.contrib.auth.models import User
 from django.contrib.auth import login
 
 from analysis_framework.models import AnalysisFramework
-from analysis_framework.serializers import AnalysisFrameworkSerializer
+from analysis_framework.serializers import (
+    AnalysisFrameworkSerializer,
+    AnalysisFrameworkMinimalSerializer,
+)
 from analysis_framework.schema import AnalysisFrameworkType
 from utils.graphene.mutation import (
     generate_input_type_for_serializer,
@@ -13,7 +17,7 @@ from utils.graphene.mutation import (
 
 AnalysisFrameworkInputType = generate_input_type_for_serializer(
     'AnalysisFrameworkInputType ',
-    serializer_class=AnalysisFrameworkSerializer
+    serializer_class=AnalysisFrameworkMinimalSerializer
 )
 
 
@@ -41,6 +45,12 @@ class CreateAnalysisFramework(GrapheneMutation):
     model = AnalysisFramework
 
 
+class AnalysisFrameworkMutation(SerializerMutation):
+    class Meta:
+        serializer_class = AnalysisFrameworkMinimalSerializer
+        model_operations = ('create', 'update')
+
+
 class Login(graphene.Mutation):
     class Arguments:
         email = graphene.String(required=True)
@@ -55,6 +65,7 @@ class Login(graphene.Mutation):
 
 
 class Mutation(object):
+    analysis_framework_mutate = AnalysisFrameworkMutation.Field()
     create_analysis_framework = CreateAnalysisFramework.Field()
     update_analysis_framework = UpdateAnalysisFramework.Field()
     login = Login.Field()

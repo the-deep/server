@@ -189,17 +189,13 @@ class GrapheneMutation(graphene.Mutation):
         return cls.model._meta.default_manager.all()
 
     @classmethod
-    def get_object(cls):
-        return cls
-
-    @classmethod
     @permission_checker([])
     def mutate(cls, root, info, **kwargs):
         data = kwargs['data']
         id = kwargs.get('id')
         if id:
             serializer = cls.serializer_class(
-                instance=cls.get_querset().get(id=id),
+                instance=cls.get_queryset().get(id=id),
                 data=data,
                 context={'request': info.context},
                 partial=True,

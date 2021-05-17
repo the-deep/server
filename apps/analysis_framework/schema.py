@@ -23,9 +23,10 @@ class WidgetListType(CustomDjangoListObjectType):
 class AnalysisFrameworkType(DjangoObjectType):
     class Meta:
         model = AnalysisFramework
+        only_fields = ('title', 'widgets', 'description', 'is_private')
 
 
-class AnalysisFrameworListType(CustomDjangoListObjectType):
+class AnalysisFrameworkListType(CustomDjangoListObjectType):
     class Meta:
         model = AnalysisFramework
         filter_fields = ['id']
@@ -36,7 +37,7 @@ class AnalysisFrameworListType(CustomDjangoListObjectType):
 class Query:
     analysis_framework = DjangoObjectField(AnalysisFrameworkType)
     analysis_framework_list = DjangoPaginatedListObjectField(
-        AnalysisFrameworListType,
+        AnalysisFrameworkListType,
         pagination=PageGraphqlPagination(
             page_size_query_param='pageSize'
         )
