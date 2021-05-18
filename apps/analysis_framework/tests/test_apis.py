@@ -160,6 +160,26 @@ class AnalysisFrameworkTests(TestCase):
         assert 'member_details' in data[0]
         assert data[0]['framework'] == framework.id
 
+    def test_get_more_memberships_data(self):
+        user1 = self.create_user()
+        user2 = self.create_user()
+        framework = self.create(AnalysisFramework)
+        framework.add_member(
+            user=user1,
+            role=framework.get_or_create_owner_role(),
+            added_by=user2
+        )
+
+        url = f'/api/v1/analysis-frameworks/{framework.id}/memberships/'
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        data = response.data['results']
+        assert 'added_by_details' in data[0]
+        self.assertEqual(data[0]['added_by_details']['id'], user2.id)
+        assert 'role_details' in data[0]
+
     def test_create_analysis_framework(self):
         project = self.create(Project, role=self.admin_role)
         organization = self.create(Organization)
