@@ -13,6 +13,7 @@ from rest_framework import (
 )
 from rest_framework.decorators import action
 from deep.permissions import ModifyPermission
+from deep.paginations import SmallSizeSetPagination
 
 from project.models import Project
 from entry.models import Entry
@@ -73,14 +74,15 @@ class AnalysisFrameworkViewSet(viewsets.ModelViewSet):
     )
     def get_memberships(self, request, pk=None, version=None):
         framework = self.get_object()
-        memberships = AnalysisFrameworkMembership.objects.filter(framework=framework)
-
+        memberships = AnalysisFrameworkMembership.objects.filter(framework=framework).select_related(
+            'member', 'role', 'added_by'
+        )
         serializer = AnalysisFrameworkMembershipSerializer(
-            memberships,
+            self.paginate_queryset(memberships),
             context={'request': request},
             many=True
         )
-        return response.Response({'results': serializer.data})
+        return self.get_paginated_response(serializer.data)
 
 
 class AnalysisFrameworkCloneView(views.APIView):
@@ -164,9 +166,12 @@ class AnalysisFrameworkMembershipViewSet(viewsets.ModelViewSet):
     serializer_class = AnalysisFrameworkMembershipSerializer
     permission_classes = [permissions.IsAuthenticated,
                           FrameworkMembershipModifyPermission]
+    pagination_class = SmallSizeSetPagination
 
     def get_queryset(self):
-        return AnalysisFrameworkMembership.get_for(self.request.user)
+        return AnalysisFrameworkMembership.get_for(self.request.user).select_related(
+            'member', 'role', 'added_by'
+        )
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

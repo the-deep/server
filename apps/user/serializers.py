@@ -30,10 +30,16 @@ class SimpleUserSerializer(RemoveNullFieldsMixin,
         source='profile.display_picture.file',
         read_only=True,
     )
+    organization_title = serializers.CharField(
+        source='profile.organization',
+        read_only=True
+    )
 
     class Meta:
         model = User
-        fields = ('id', 'display_name', 'email', 'display_picture', 'display_picture_url')
+        fields = ('id', 'display_name', 'email',
+                  'display_picture', 'display_picture_url',
+                  'organization_title')
 
 
 class UserSerializer(RemoveNullFieldsMixin, WriteOnlyOnCreateSerializerMixin,
