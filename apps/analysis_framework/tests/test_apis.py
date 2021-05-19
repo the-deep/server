@@ -163,6 +163,8 @@ class AnalysisFrameworkTests(TestCase):
     def test_get_more_memberships_data(self):
         user1 = self.create_user()
         user2 = self.create_user()
+        user3 = self.create_user()
+        user4 = self.create_user()
         framework = self.create(AnalysisFramework)
         framework.add_member(
             user=user1,
@@ -179,6 +181,16 @@ class AnalysisFrameworkTests(TestCase):
         assert 'added_by_details' in data[0]
         self.assertEqual(data[0]['added_by_details']['id'], user2.id)
         assert 'role_details' in data[0]
+
+        # test for the pagination support in memberships
+        framework.add_member(user2)
+        framework.add_member(user3)
+        framework.add_member(user4)
+        url = f'/api/v1/analysis-frameworks/{framework.id}/memberships/?limit=2'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(len(response.data['results']), 2)
 
     def test_create_analysis_framework(self):
         project = self.create(Project, role=self.admin_role)
