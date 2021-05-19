@@ -1,33 +1,35 @@
-from django.shortcuts import render
 from django.db import models
-from django.utils import timezone
 
 from rest_framework.decorators import action
 from rest_framework import (
     exceptions,
     permissions,
     response,
-    views,
     viewsets,
-    serializers,
     status
 )
 
 from deep.permissions import IsProjectMember
+from entry.views import EntryViewSet
+from entry.models import Entry
 
 from .models import (
     Analysis,
     AnalysisPillar,
     AnalyticalStatement,
-    AnalyticalStatementEntry
+    DiscardedEntries
 )
 from .serializers import (
     AnalysisSerializer,
     AnalysisPillarSerializer,
     AnalyticalStatementSerializer,
     AnalysisSummarySerializer,
+    DiscardedEntriesSerializer,
 )
-from .filter_set import AnalysisFilterSet
+from .filter_set import (
+    AnalysisFilterSet,
+    DisCardedEntriesFilterSet
+)
 
 
 class AnalysisViewSet(viewsets.ModelViewSet):
@@ -111,6 +113,30 @@ class AnalysisPillarViewSet(viewsets.ModelViewSet):
             'analysis',
             'assignee'
         )
+
+
+class DiscardedEntriesViewSet(viewsets.ModelViewSet):
+    serializer_class = DiscardedEntriesSerializer
+    permissions_classes = [permissions.IsAuthenticated]
+    filterset_class = DisCardedEntriesFilterSet
+
+    def get_queryset(self):
+        return DiscardedEntries.objects.filter(analysis_pillar=self.kwargs['analysis_pillar_id'])
+
+    def get_serializer_context(self):
+        return {
+            **super().get_serializer_context(),
+            'analysis_pillar_id': self.kwargs.get('analysis_pillar_id'),
+        }
+
+
+class PillarEntriesViewSet(EntryViewSet):
+
+    def get_queryset(self):
+        discarded_entries = DiscardedEntries.objects.filter(
+            analysis_pillar=self.kwargs['analysis_pillar_id']
+        ).values('entry')
+        return Entry.objects.exclude(id__in=discarded_entries)
 
 
 class AnalyticalStatementViewSet(viewsets.ModelViewSet):

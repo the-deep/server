@@ -15,6 +15,7 @@ from .models import (
     AnalysisPillar,
     AnalyticalStatement,
     AnalyticalStatementEntry,
+    DiscardedEntries,
 )
 
 
@@ -49,6 +50,17 @@ class AnalyticalStatementSerializer(
             raise serializers.ValidationError(
                 f'Analytical entires count must be less than {settings.ANALYTICAL_ENTRIES_COUNT}'
             )
+        return data
+
+
+class DiscardedEntriesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DiscardedEntries
+        fields = '__all__'
+        read_only_fields = ['analysis_pillar']
+
+    def validate(self, data):
+        data['analysis_pillar_id'] = int(self.context['analysis_pillar_id'])
         return data
 
 

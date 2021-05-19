@@ -5,6 +5,7 @@ from .models import (
     AnalysisPillar,
     AnalyticalStatement,
     AnalyticalStatementEntry,
+    DiscardedEntries
 )
 
 
@@ -25,3 +26,8 @@ class AnalyticalStatementEntryInline(admin.TabularInline):
 @admin.register(AnalyticalStatement)
 class AnalyticalStatementAdmin(admin.ModelAdmin):
     inlines = [AnalyticalStatementEntryInline]
+
+
+@admin.register(DiscardedEntries)
+class DisCardedEntriesAdmin(admin.ModelAdmin):
+    pass
