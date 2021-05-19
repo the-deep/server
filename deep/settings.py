@@ -129,6 +129,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'django_referrer_policy.middleware.ReferrerPolicyMiddleware',  # TODO: REMOVE THIS AFTER UPGRADE TO DJANGO 3
+    'csp.middleware.CSPMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -268,6 +270,27 @@ LANGUAGES = (
     ('np', 'Nepali'),
 )
 
+# Security Header configuration
+SESSION_COOKIE_NAME = f'deep-{DEEP_ENVIRONMENT}-sessionid'
+CSRF_COOKIE_NAME = f'deep-{DEEP_ENVIRONMENT}-csrftoken'
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+CSP_DEFAULT_SRC = ["'self'"]
+# SECURE_REFERRER_POLICY = 'same-origin'  TODO: USE this after upgrading to Django 3
+REFERRER_POLICY = 'same-origin'  # TODO: REMOVE THIS AFTER UPGRADE TO DJANGO 3
+if HTTP_PROTOCOL == 'https':
+    SESSION_COOKIE_NAME = f'__Secure-{SESSION_COOKIE_NAME}'
+    CSRF_COOKIE_NAME = f'__Secure-{CSRF_COOKIE_NAME}'
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    # SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 30  # TODO: Increase this slowly
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
@@ -301,6 +324,7 @@ if os.environ.get('DJANGO_USE_S3', 'False').lower() == 'true':
     STATICFILES_LOCATION = 'static'
     STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
     STATICFILES_STORAGE = 'deep.s3_storages.StaticStorage'
+    CSP_DEFAULT_SRC.append(f'{AWS_STORAGE_BUCKET_NAME_STATIC}.s3.amazonaws.com')
 
     # Media configuration
     MEDIAFILES_LOCATION = 'media'
