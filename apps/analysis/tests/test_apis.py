@@ -7,6 +7,7 @@ from analysis.models import (
     AnalysisPillar,
     AnalyticalStatement,
     AnalyticalStatementEntry,
+    DiscardedEntries,
 )
 from organization.models import (
     Organization,
@@ -583,3 +584,69 @@ class TestAnalysisAPIs(TestCase):
         self.authenticate(user2)
         response = self.client.get(url)
         self.assert_403(response)
+
+    def test_discarded_entries_in_analysis_pillar(self):
+        entry = self.create_entry()
+        pillar = self.create(AnalysisPillar)
+        data = {
+            'entry': entry.id,
+            'tag': DiscardedEntries.REDUNDANT
+        }
+        url = f'/api/v1/analysis-pillar/{pillar.id}/discarded-entries/'
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        self.assertEqual(response.data['analysis_pillar'], pillar.id)
+        self.assertEqual(response.data['entry'], entry.id)
+
+    def test_discarded_entries_tag_filter(self):
+        pillar = self.create(AnalysisPillar)
+        self.create(DiscardedEntries, analysis_pillar=pillar, tag=DiscardedEntries.REDUNDANT)
+        self.create(DiscardedEntries, analysis_pillar=pillar, tag=DiscardedEntries.TOO_OLD)
+        self.create(DiscardedEntries, analysis_pillar=pillar, tag=DiscardedEntries.TOO_OLD)
+        self.create(DiscardedEntries, analysis_pillar=pillar, tag=DiscardedEntries.OUTLIER)
+
+        url = f'/api/v1/analysis-pillar/{pillar.id}/discarded-entries/?tag={DiscardedEntries.TOO_OLD}'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(len(response.data['results']), 2)  # Two discarded entries be present
+
+    def test_all_entries_in_analysis_pillar(self):
+        pillar = self.create(AnalysisPillar)
+        entry1 = self.create(Entry)
+        self.create(Entry)
+        self.create(Entry)
+        self.create(Entry)
+
+        # Check the entry count
+        url1 = f'/api/v1/analysis-pillar/{pillar.id}/entries/'
+        self.authenticate()
+        response = self.client.get(url1)
+        self.assert_200(response)
+        self.assertEqual(len(response.data['results']), 4)
+
+        # now try to discard the entry from the discarded entries api
+        data = {
+            'entry': entry1.id,
+            'tag': DiscardedEntries.REDUNDANT
+        }
+        url2 = f'/api/v1/analysis-pillar/{pillar.id}/discarded-entries/'
+        self.authenticate()
+        response = self.client.post(url2, data)
+        self.assert_201(response)
+
+        # try checking the entries api this should remove the entry recently posted
+        response = self.client.get(url1)
+        self.assert_200(response)
+        entry_ids = [res['id'] for res in response.data['results']]
+        self.assertEqual(len(response.data['results']), 3)
+        self.assertNotIn(entry1.id, entry_ids, 'entry1 should not be in the entries_id')
+
+        # try to check for the another analysis_pillar
+        pillar2 = self.create(AnalysisPillar)
+        url = f'/api/v1/analysis-pillar/{pillar2.id}/entries/'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(len(response.data['results']), 4)  # discarded entry should also be available here

@@ -49,6 +49,40 @@ class AnalysisPillar(UserResource):
         return self.title
 
 
+class DiscardedEntries(models.Model):
+    """
+    Discarded entries for AnalysisPillar
+    """
+    # Tag choices
+    REDUNDANT = 'redundant'
+    TOO_OLD = 'too_old'
+    ANECDOTAL = 'anecdotal'
+    OUTLIER = 'outlier'
+
+    TAG_TYPES = (
+        (REDUNDANT, 'Redundant'),
+        (TOO_OLD, 'Too Old'),
+        (ANECDOTAL, 'ANECDOTAL'),
+        (OUTLIER, 'Outlier')
+    )
+
+    analysis_pillar = models.ForeignKey(
+        AnalysisPillar,
+        on_delete=models.CASCADE
+    )
+    entry = models.ForeignKey(
+        Entry,
+        on_delete=models.CASCADE
+    )
+    tag = models.CharField(
+        max_length=30,
+        choices=TAG_TYPES
+    )
+
+    def __str__(self):
+        return f'{self.analysis_pillar} - {self.entry}'
+
+
 class AnalyticalStatement(UserResource):
     statement = models.TextField()
     entries = models.ManyToManyField(
