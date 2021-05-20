@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             name='DiscardedEntry',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('tag', django_enumfield.db.fields.EnumField(enum=analysis.models.DiscardedEntry.TAG_TYPE)),
+                ('tag', django_enumfield.db.fields.EnumField(enum=analysis.models.DiscardedEntry.TagType)),
                 ('analysis_pillar', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='analysis.AnalysisPillar')),
                 ('entry', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='entry.Entry')),
             ],

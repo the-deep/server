@@ -390,18 +390,7 @@ class EntryTests(TestCase):
         self.assertEqual(len(r_data['results']), count)
 
     def post_filter_test(self, filters, count=1, skip_auth=False):
-        url = '/api/v1/entries/filter/'
-        params = {
-            'filters': [[k, v] for k, v in filters.items()]
-        }
-
-        if skip_auth:
-            self.authenticate()
-        response = self.client.post(url, params)
-        self.assert_200(response)
-
-        r_data = response.json()
-        self.assertEqual(len(r_data['results']), count, f'Filters: {filters}')
+        return super().post_filter_test('/api/v1/entries/filter/', filters, count=count, skip_auth=False)
 
     def both_filter_test(self, filters, count=1):
         self.filter_test(filters, count)
