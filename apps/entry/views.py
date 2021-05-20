@@ -3,7 +3,6 @@ from collections import defaultdict
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
-from django.db.models import Prefetch
 from rest_framework.decorators import action
 from rest_framework import (
     filters,
@@ -322,7 +321,7 @@ class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
             )
 
         return (
-            EntryFilterSet(filters, queryset=queryset).qs
+            queryset
             .select_related(
                 'image', 'lead',
                 'created_by__profile', 'modified_by__profile',
@@ -335,7 +334,7 @@ class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
             )
         )
 
-    def post(self, request, version=None):
+    def post(self, request, **kwargs):
         queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
 

@@ -55,7 +55,7 @@ class DiscardedEntry(models.Model):
     """
     Discarded entries for AnalysisPillar
     """
-    class TAG_TYPE(enum.Enum):
+    class TagType(enum.Enum):
         REDUNDANT = 0
         TOO_OLD = 1
         ANECDOTAL = 2
@@ -76,7 +76,7 @@ class DiscardedEntry(models.Model):
         Entry,
         on_delete=models.CASCADE
     )
-    tag = enum.EnumField(TAG_TYPE)
+    tag = enum.EnumField(TagType)
 
     class Meta:
         unique_together = ('entry', 'analysis_pillar')

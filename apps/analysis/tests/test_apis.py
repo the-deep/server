@@ -595,7 +595,7 @@ class TestAnalysisAPIs(TestCase):
         pillar1 = self.create(AnalysisPillar, analysis=analysis)
         data = {
             'entry': entry.id,
-            'tag': DiscardedEntry.TAG_TYPE.REDUNDANT
+            'tag': DiscardedEntry.TagType.REDUNDANT
         }
         url = f'/api/v1/analysis-pillar/{pillar1.id}/discarded-entries/'
         self.authenticate(user)
@@ -612,12 +612,12 @@ class TestAnalysisAPIs(TestCase):
         project.add_member(user)
         analysis = self.create(Analysis, project=project)
         pillar = self.create(AnalysisPillar, analysis=analysis)
-        self.create(DiscardedEntry, analysis_pillar=pillar, tag=DiscardedEntry.TAG_TYPE.REDUNDANT)
-        self.create(DiscardedEntry, analysis_pillar=pillar, tag=DiscardedEntry.TAG_TYPE.TOO_OLD)
-        self.create(DiscardedEntry, analysis_pillar=pillar, tag=DiscardedEntry.TAG_TYPE.TOO_OLD)
-        self.create(DiscardedEntry, analysis_pillar=pillar, tag=DiscardedEntry.TAG_TYPE.OUTLIER)
+        self.create(DiscardedEntry, analysis_pillar=pillar, tag=DiscardedEntry.TagType.REDUNDANT)
+        self.create(DiscardedEntry, analysis_pillar=pillar, tag=DiscardedEntry.TagType.TOO_OLD)
+        self.create(DiscardedEntry, analysis_pillar=pillar, tag=DiscardedEntry.TagType.TOO_OLD)
+        self.create(DiscardedEntry, analysis_pillar=pillar, tag=DiscardedEntry.TagType.OUTLIER)
 
-        url = f'/api/v1/analysis-pillar/{pillar.id}/discarded-entries/?tag={DiscardedEntry.TAG_TYPE.TOO_OLD.value}'
+        url = f'/api/v1/analysis-pillar/{pillar.id}/discarded-entries/?tag={DiscardedEntry.TagType.TOO_OLD.value}'
         self.authenticate(user)
         response = self.client.get(url)
         self.assert_200(response)
@@ -629,40 +629,35 @@ class TestAnalysisAPIs(TestCase):
         project.add_member(user)
         analysis = self.create(Analysis, project=project)
         pillar = self.create(AnalysisPillar, analysis=analysis)
-        entry1 = self.create(Entry)
-        self.create(Entry)
-        self.create(Entry)
-        self.create(Entry)
+        entry1 = self.create(Entry, project=project)
+        self.create(Entry, project=project)
+        self.create(Entry, project=project)
+        self.create(Entry, project=project)
 
         # Check the entry count
-        url1 = f'/api/v1/analysis-pillar/{pillar.id}/entries/'
+        analysis_pillar_entries_url = f'/api/v1/analysis-pillar/{pillar.id}/entries/'
         self.authenticate(user)
-        response = self.client.get(url1)
+        response = self.client.post(analysis_pillar_entries_url)
         self.assert_200(response)
         self.assertEqual(len(response.data['results']), 4)  # this should list all the entries present
 
         # now try to discard the entry from the discarded entries api
         data = {
             'entry': entry1.id,
-            'tag': DiscardedEntry.REDUNDANT
+            'tag': DiscardedEntry.TagType.REDUNDANT
         }
-        url2 = f'/api/v1/analysis-pillar/{pillar.id}/discarded-entries/'
         self.authenticate(user)
-        response = self.client.post(url2, data)
+        response = self.client.post(f'/api/v1/analysis-pillar/{pillar.id}/discarded-entries/', data)
         self.assert_201(response)
 
         # try checking the entries that are discarded
-        url = f'/api/v1/analysis-pillar/{pillar.id}/entries/?discarded=True'
         self.authenticate(user)
-        response = self.client.get(url)
-        self.assert_200(response)
-        self.assertEqual(len(response.data['results']), 1)
-        response_id = [res['id'] for res in response.data]
-        self.assertNotIn(entry1.id, response_id)
+        response = self.post_filter_test(analysis_pillar_entries_url, {'discarded': True}, count=1)
+        response_id = [res['id'] for res in response.data['results']]
+        self.assertIn(entry1.id, response_id)
 
         # try checking the entries that are not discarded
-        url = f'/api/v1/analysis-pillar/{pillar.id}/entries/?discarded=False'
         self.authenticate(user)
-        response = self.client.get(url)
-        self.assert_200(response)
-        self.assertEqual(len(response.data['results']), 3)
+        response = self.post_filter_test(analysis_pillar_entries_url, {'discarded': False}, count=3)
+        response_id = [res['id'] for res in response.data['results']]
+        self.assertNotIn(entry1.id, response_id)

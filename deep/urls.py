@@ -288,14 +288,12 @@ router.register(r'projects/(?P<project_id>\d+)/analysis', AnalysisViewSet,
                 basename='analysis')
 router.register(r'projects/(?P<project_id>\d+)/analysis/(?P<analysis_id>\d+)/pillars',
                 AnalysisPillarViewSet, basename='analysis_analysis_pillar')
-router.register(r'projects/(?P<project_id>\d+)/analysis/(?P<analysis_id>\d+)/pillars/(?P<analysis_pillar_id>\d+)/analytical-statement', AnalyticalStatementViewSet, basename='analytical_statement')
+router.register(
+    r'projects/(?P<project_id>\d+)/analysis/(?P<analysis_id>\d+)/pillars/(?P<analysis_pillar_id>\d+)/analytical-statement',
+    AnalyticalStatementViewSet, basename='analytical_statement')
 router.register(
     r'analysis-pillar/(?P<analysis_pillar_id>\d+)/discarded-entries',
     AnalysisPillarDiscardedEntryViewSet, basename='analysis_pillar_discarded_entries'
-)
-router.register(
-    r'analysis-pillar/(?P<analysis_pillar_id>\d+)/entries',
-    AnalysisPillarEntryViewSet, basename='analysis_pillar_entries'
 )
 
 # Analysis framework routers
@@ -488,6 +486,11 @@ urlpatterns = [
 
     # Filter apis
     url(get_api_path(r'entries/filter/'), EntryFilterView.as_view()),
+    url(
+        get_api_path(r'analysis-pillar/(?P<analysis_pillar_id>\d+)/entries'),
+        AnalysisPillarEntryViewSet.as_view(),
+        name='analysis_pillar_entries',
+    ),
 
     url(get_api_path(
         r'projects/(?P<project_id>\d+)/category-editor/classify/'

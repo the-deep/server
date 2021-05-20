@@ -1,6 +1,4 @@
 from django.db import models
-from django.db.models import query
-from django.db.models.query import QuerySet
 
 from rest_framework.decorators import action
 from rest_framework import (
@@ -12,8 +10,7 @@ from rest_framework import (
 )
 
 from deep.permissions import IsProjectMember
-from entry.views import EntryViewSet
-from entry.models import Entry
+from entry.views import EntryFilterView
 
 from .models import (
     Analysis,
@@ -30,8 +27,7 @@ from .serializers import (
 )
 from .filter_set import (
     AnalysisFilterSet,
-    DisCardedEntryFilterSet,
-    AnalysisPillarEntryFilterSet,
+    DiscardedEntryFilterSet,
 )
 
 
@@ -121,7 +117,7 @@ class AnalysisPillarViewSet(viewsets.ModelViewSet):
 class AnalysisPillarDiscardedEntryViewSet(viewsets.ModelViewSet):
     serializer_class = DiscardedEntrySerializer
     permissions_classes = [permissions.IsAuthenticated, IsProjectMember]  # what permissions to look for here??
-    filterset_class = DisCardedEntryFilterSet
+    filterset_class = DiscardedEntryFilterSet
 
     def get_queryset(self):
         return DiscardedEntry.objects.filter(analysis_pillar=self.kwargs['analysis_pillar_id'])
@@ -133,9 +129,16 @@ class AnalysisPillarDiscardedEntryViewSet(viewsets.ModelViewSet):
         }
 
 
-class AnalysisPillarEntryViewSet(EntryViewSet):
-    permissions_classes = [permissions.IsAuthenticated, IsProjectMember]  # what permissions to look for here??
-    filterset_class = AnalysisPillarEntryFilterSet
+class AnalysisPillarEntryViewSet(EntryFilterView):
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        filters = self.get_entry_fiters()
+        discard_entires = filters.get('discarded')
+        analysis_pillar_id = self.kwargs['analysis_pillar_id']
+        discarded_entries = DiscardedEntry.objects.filter(analysis_pillar=analysis_pillar_id).values('entry')
+        if discard_entires:
+            return queryset.filter(id__in=discarded_entries)
+        return queryset.exclude(id__in=discarded_entries)
 
 
 class AnalyticalStatementViewSet(viewsets.ModelViewSet):
