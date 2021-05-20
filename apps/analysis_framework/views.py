@@ -22,7 +22,8 @@ from .models import (
     AnalysisFrameworkRole,
 )
 from .serializers import (
-    AnalysisFrameworkSerializer, WidgetSerializer,
+    AnalysisFrameworkSerializer,
+    WidgetSerializer,
     FilterSerializer, ExportableSerializer,
     AnalysisFrameworkMembershipSerializer,
     AnalysisFrameworkRoleSerializer,
@@ -43,7 +44,7 @@ class AnalysisFrameworkViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         query_params = self.request.query_params
-        queryset = AnalysisFramework.get_for(self.request.user)
+        queryset = AnalysisFramework.get_for(self.request.user).select_related('organization')
         month_ago = timezone.now() - timedelta(days=30)
         activity_param = query_params.get('activity')
 
