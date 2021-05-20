@@ -239,7 +239,7 @@
     <p id="t184" class="pln"><span class="n"><a href="#t184">184</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t185" class="pln"><span class="n"><a href="#t185">185</a></span><span class="t">        <span class="com"># With authentication and with file access (Entry)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t186" class="run"><span class="n"><a href="#t186">186</a></span><span class="t">        <span class="nam">entry</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="nam">Entry</span><span class="op">,</span> <span class="nam">project</span><span class="op">=</span><span class="nam">project</span><span class="op">,</span> <span class="nam">lead</span><span class="op">=</span><span class="nam">lead</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t187" class="run"><span class="n"><a href="#t187">187</a></span><span class="t">        <span class="nam">entry</span><span class="op">.</span><span class="nam">image</span> <span class="op">=</span> <span class="nam">entry_file</span><span class="op">.</span><span class="nam">get_file_url</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t187" class="run"><span class="n"><a href="#t187">187</a></span><span class="t">        <span class="nam">entry</span><span class="op">.</span><span class="nam">image_raw</span> <span class="op">=</span> <span class="nam">entry_file</span><span class="op">.</span><span class="nam">get_file_url</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t188" class="run"><span class="n"><a href="#t188">188</a></span><span class="t">        <span class="nam">entry</span><span class="op">.</span><span class="nam">save</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t189" class="run"><span class="n"><a href="#t189">189</a></span><span class="t">        <span class="nam">response</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">client</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">entry_file_url</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t190" class="run"><span class="n"><a href="#t190">190</a></span><span class="t">        <span class="key">assert</span> <span class="nam">response</span><span class="op">.</span><span class="nam">status_code</span> <span class="op">==</span> <span class="num">302</span><span class="op">,</span> <span class="str">"Should return 302 redirect"</span>&nbsp;</span><span class="r"></span></p>
@@ -265,7 +265,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-05-05 05:43 +0000
+            created at 2021-05-20 07:11 +0000
         </p>
     </div>
 </div>

@@ -208,7 +208,7 @@
     <p id="t153" class="run"><span class="n"><a href="#t153">153</a></span><span class="t">    <span class="nam">search_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'title'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t154" class="pln"><span class="n"><a href="#t154">154</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t155" class="run"><span class="n"><a href="#t155">155</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_queryset</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t156" class="mis show_mis"><span class="n"><a href="#t156">156</a></span><span class="t">        <span class="key">return</span> <span class="nam">AdminLevel</span><span class="op">.</span><span class="nam">get_for</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">)</span><span class="op">.</span><span class="nam">defer</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t156" class="mis show_mis"><span class="n"><a href="#t156">156</a></span><span class="t">        <span class="key">return</span> <span class="nam">AdminLevel</span><span class="op">.</span><span class="nam">get_for</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">)</span><span class="op">.</span><span class="nam">select_related</span><span class="op">(</span><span class="str">'geo_shape_file'</span><span class="op">)</span><span class="op">.</span><span class="nam">defer</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t157" class="pln"><span class="n"><a href="#t157">157</a></span><span class="t">            <span class="op">*</span><span class="nam">AdminLevelSerializer</span><span class="op">.</span><span class="nam">Meta</span><span class="op">.</span><span class="nam">exclude</span>&nbsp;</span><span class="r"></span></p>
     <p id="t158" class="pln"><span class="n"><a href="#t158">158</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t159" class="pln"><span class="n"><a href="#t159">159</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -303,7 +303,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-05-05 05:43 +0000
+            created at 2021-05-20 07:11 +0000
         </p>
     </div>
 </div>

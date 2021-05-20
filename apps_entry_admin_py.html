@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/entry/admin.py: 82%</title>
+    <title>Coverage for apps/entry/admin.py: 81%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -18,13 +18,13 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>apps/entry/admin.py</b> :
-            <span class="pc_cov">82%</span>
+            <span class="pc_cov">81%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            40 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">35 run</button>
-            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">5 missing</button>
+            42 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">36 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">6 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">0 partial</button>
         </h2>
@@ -110,32 +110,36 @@
     <p id="t55" class="run"><span class="n"><a href="#t55">55</a></span><span class="t">    <span class="nam">list_filter</span> <span class="op">=</span> <span class="op">(</span><span class="str">'project'</span><span class="op">,</span> <span class="str">'created_by'</span><span class="op">,</span> <span class="str">'created_at'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t56" class="run"><span class="n"><a href="#t56">56</a></span><span class="t">    <span class="nam">autocomplete_fields</span> <span class="op">=</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t57" class="pln"><span class="n"><a href="#t57">57</a></span><span class="t">        <span class="str">'lead'</span><span class="op">,</span> <span class="str">'project'</span><span class="op">,</span> <span class="str">'created_by'</span><span class="op">,</span> <span class="str">'modified_by'</span><span class="op">,</span> <span class="str">'analysis_framework'</span><span class="op">,</span> <span class="str">'tabular_field'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t58" class="pln"><span class="n"><a href="#t58">58</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t59" class="run"><span class="n"><a href="#t59">59</a></span><span class="t">    <span class="nam">ordering</span> <span class="op">=</span> <span class="op">(</span><span class="str">'project'</span><span class="op">,</span> <span class="str">'created_by'</span><span class="op">,</span> <span class="str">'created_at'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t60" class="pln"><span class="n"><a href="#t60">60</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t61" class="run"><span class="n"><a href="#t61">61</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_inline_instances</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">request</span><span class="op">,</span> <span class="nam">obj</span><span class="op">=</span><span class="key">None</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t62" class="mis show_mis"><span class="n"><a href="#t62">62</a></span><span class="t">        <span class="nam">inlines</span> <span class="op">=</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t63" class="mis show_mis"><span class="n"><a href="#t63">63</a></span><span class="t">        <span class="key">for</span> <span class="nam">name</span><span class="op">,</span> <span class="nam">inline</span> <span class="key">in</span> <span class="nam">self</span><span class="op">.</span><span class="nam">custom_inlines</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t64" class="mis show_mis"><span class="n"><a href="#t64">64</a></span><span class="t">            <span class="key">if</span> <span class="nam">request</span><span class="op">.</span><span class="nam">GET</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">f'show_{name}'</span><span class="op">,</span> <span class="str">'False'</span><span class="op">)</span><span class="op">.</span><span class="nam">lower</span><span class="op">(</span><span class="op">)</span> <span class="op">==</span> <span class="str">'true'</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t65" class="mis show_mis"><span class="n"><a href="#t65">65</a></span><span class="t">                <span class="nam">inlines</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">inline</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">model</span><span class="op">,</span> <span class="nam">self</span><span class="op">.</span><span class="nam">admin_site</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t66" class="mis show_mis"><span class="n"><a href="#t66">66</a></span><span class="t">        <span class="key">return</span> <span class="nam">inlines</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t67" class="pln"><span class="n"><a href="#t67">67</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t68" class="pln"><span class="n"><a href="#t68">68</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t69" class="run"><span class="n"><a href="#t69">69</a></span><span class="t"><span class="op">@</span><span class="nam">admin</span><span class="op">.</span><span class="nam">register</span><span class="op">(</span><span class="nam">ProjectEntryLabel</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t70" class="run"><span class="n"><a href="#t70">70</a></span><span class="t"><span class="key">class</span> <span class="nam">ProjectEntryLabelAdmin</span><span class="op">(</span><span class="nam">VersionAdmin</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t71" class="run"><span class="n"><a href="#t71">71</a></span><span class="t">    <span class="nam">search_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'title'</span><span class="op">,</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t72" class="run"><span class="n"><a href="#t72">72</a></span><span class="t">    <span class="nam">autocomplete_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'created_by'</span><span class="op">,</span> <span class="str">'modified_by'</span><span class="op">,</span> <span class="str">'project'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t73" class="run"><span class="n"><a href="#t73">73</a></span><span class="t">    <span class="nam">list_filter</span> <span class="op">=</span> <span class="op">(</span><span class="str">'project'</span><span class="op">,</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t74" class="run"><span class="n"><a href="#t74">74</a></span><span class="t">    <span class="nam">list_display</span> <span class="op">=</span> <span class="op">(</span><span class="str">'__str__'</span><span class="op">,</span> <span class="str">'color'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t75" class="pln"><span class="n"><a href="#t75">75</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t76" class="pln"><span class="n"><a href="#t76">76</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t77" class="run"><span class="n"><a href="#t77">77</a></span><span class="t"><span class="nam">reversion</span><span class="op">.</span><span class="nam">register</span><span class="op">(</span><span class="nam">LeadEntryGroup</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t58" class="pln"><span class="n"><a href="#t58">58</a></span><span class="t">        <span class="str">'image'</span><span class="op">,</span> <span class="str">'verification_last_changed_by'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t59" class="pln"><span class="n"><a href="#t59">59</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t60" class="run"><span class="n"><a href="#t60">60</a></span><span class="t">    <span class="nam">ordering</span> <span class="op">=</span> <span class="op">(</span><span class="str">'project'</span><span class="op">,</span> <span class="str">'created_by'</span><span class="op">,</span> <span class="str">'created_at'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t61" class="pln"><span class="n"><a href="#t61">61</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t62" class="run"><span class="n"><a href="#t62">62</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_queryset</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">request</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t63" class="mis show_mis"><span class="n"><a href="#t63">63</a></span><span class="t">        <span class="key">return</span> <span class="nam">Entry</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">prefetch_related</span><span class="op">(</span><span class="str">'project'</span><span class="op">,</span> <span class="str">'created_by'</span><span class="op">,</span> <span class="str">'lead'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t64" class="pln"><span class="n"><a href="#t64">64</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t65" class="run"><span class="n"><a href="#t65">65</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_inline_instances</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">request</span><span class="op">,</span> <span class="nam">obj</span><span class="op">=</span><span class="key">None</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t66" class="mis show_mis"><span class="n"><a href="#t66">66</a></span><span class="t">        <span class="nam">inlines</span> <span class="op">=</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t67" class="mis show_mis"><span class="n"><a href="#t67">67</a></span><span class="t">        <span class="key">for</span> <span class="nam">name</span><span class="op">,</span> <span class="nam">inline</span> <span class="key">in</span> <span class="nam">self</span><span class="op">.</span><span class="nam">custom_inlines</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t68" class="mis show_mis"><span class="n"><a href="#t68">68</a></span><span class="t">            <span class="key">if</span> <span class="nam">request</span><span class="op">.</span><span class="nam">GET</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">f'show_{name}'</span><span class="op">,</span> <span class="str">'False'</span><span class="op">)</span><span class="op">.</span><span class="nam">lower</span><span class="op">(</span><span class="op">)</span> <span class="op">==</span> <span class="str">'true'</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t69" class="mis show_mis"><span class="n"><a href="#t69">69</a></span><span class="t">                <span class="nam">inlines</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">inline</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">model</span><span class="op">,</span> <span class="nam">self</span><span class="op">.</span><span class="nam">admin_site</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t70" class="mis show_mis"><span class="n"><a href="#t70">70</a></span><span class="t">        <span class="key">return</span> <span class="nam">inlines</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t71" class="pln"><span class="n"><a href="#t71">71</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t72" class="pln"><span class="n"><a href="#t72">72</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t73" class="run"><span class="n"><a href="#t73">73</a></span><span class="t"><span class="op">@</span><span class="nam">admin</span><span class="op">.</span><span class="nam">register</span><span class="op">(</span><span class="nam">ProjectEntryLabel</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t74" class="run"><span class="n"><a href="#t74">74</a></span><span class="t"><span class="key">class</span> <span class="nam">ProjectEntryLabelAdmin</span><span class="op">(</span><span class="nam">VersionAdmin</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t75" class="run"><span class="n"><a href="#t75">75</a></span><span class="t">    <span class="nam">search_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'title'</span><span class="op">,</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t76" class="run"><span class="n"><a href="#t76">76</a></span><span class="t">    <span class="nam">autocomplete_fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'created_by'</span><span class="op">,</span> <span class="str">'modified_by'</span><span class="op">,</span> <span class="str">'project'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t77" class="run"><span class="n"><a href="#t77">77</a></span><span class="t">    <span class="nam">list_filter</span> <span class="op">=</span> <span class="op">(</span><span class="str">'project'</span><span class="op">,</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t78" class="run"><span class="n"><a href="#t78">78</a></span><span class="t">    <span class="nam">list_display</span> <span class="op">=</span> <span class="op">(</span><span class="str">'__str__'</span><span class="op">,</span> <span class="str">'color'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t79" class="pln"><span class="n"><a href="#t79">79</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t80" class="pln"><span class="n"><a href="#t80">80</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t81" class="run"><span class="n"><a href="#t81">81</a></span><span class="t"><span class="nam">reversion</span><span class="op">.</span><span class="nam">register</span><span class="op">(</span><span class="nam">LeadEntryGroup</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </div>
 <div id="footer">
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-05-05 05:43 +0000
+            created at 2021-05-20 07:11 +0000
         </p>
     </div>
 </div>
