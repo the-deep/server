@@ -102,8 +102,8 @@ from analysis.views import (
     AnalysisViewSet,
     AnalysisPillarViewSet,
     AnalyticalStatementViewSet,
-    DiscardedEntriesViewSet,
-    PillarEntriesViewSet,
+    AnalysisPillarDiscardedEntryViewSet,
+    AnalysisPillarEntryViewSet,
 )
 from analysis_framework.views import (
     AnalysisFrameworkCloneView,
@@ -291,11 +291,11 @@ router.register(r'projects/(?P<project_id>\d+)/analysis/(?P<analysis_id>\d+)/pil
 router.register(r'projects/(?P<project_id>\d+)/analysis/(?P<analysis_id>\d+)/pillars/(?P<analysis_pillar_id>\d+)/analytical-statement', AnalyticalStatementViewSet, basename='analytical_statement')
 router.register(
     r'analysis-pillar/(?P<analysis_pillar_id>\d+)/discarded-entries',
-    DiscardedEntriesViewSet, basename='analysis_pillar_discarded_entries'
+    AnalysisPillarDiscardedEntryViewSet, basename='analysis_pillar_discarded_entries'
 )
 router.register(
     r'analysis-pillar/(?P<analysis_pillar_id>\d+)/entries',
-    PillarEntriesViewSet, basename='analysis_pillar_entries'
+    AnalysisPillarEntryViewSet, basename='analysis_pillar_entries'
 )
 
 # Analysis framework routers

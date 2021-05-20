@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import query
+from django.db.models.query import QuerySet
 
 from rest_framework.decorators import action
 from rest_framework import (
@@ -17,18 +19,19 @@ from .models import (
     Analysis,
     AnalysisPillar,
     AnalyticalStatement,
-    DiscardedEntries
+    DiscardedEntry
 )
 from .serializers import (
     AnalysisSerializer,
     AnalysisPillarSerializer,
     AnalyticalStatementSerializer,
     AnalysisSummarySerializer,
-    DiscardedEntriesSerializer,
+    DiscardedEntrySerializer,
 )
 from .filter_set import (
     AnalysisFilterSet,
-    DisCardedEntriesFilterSet
+    DisCardedEntryFilterSet,
+    AnalysisPillarEntryFilterSet,
 )
 
 
@@ -115,13 +118,13 @@ class AnalysisPillarViewSet(viewsets.ModelViewSet):
         )
 
 
-class DiscardedEntriesViewSet(viewsets.ModelViewSet):
-    serializer_class = DiscardedEntriesSerializer
-    permissions_classes = [permissions.IsAuthenticated]
-    filterset_class = DisCardedEntriesFilterSet
+class AnalysisPillarDiscardedEntryViewSet(viewsets.ModelViewSet):
+    serializer_class = DiscardedEntrySerializer
+    permissions_classes = [permissions.IsAuthenticated, IsProjectMember]  # what permissions to look for here??
+    filterset_class = DisCardedEntryFilterSet
 
     def get_queryset(self):
-        return DiscardedEntries.objects.filter(analysis_pillar=self.kwargs['analysis_pillar_id'])
+        return DiscardedEntry.objects.filter(analysis_pillar=self.kwargs['analysis_pillar_id'])
 
     def get_serializer_context(self):
         return {
@@ -130,13 +133,9 @@ class DiscardedEntriesViewSet(viewsets.ModelViewSet):
         }
 
 
-class PillarEntriesViewSet(EntryViewSet):
-
-    def get_queryset(self):
-        discarded_entries = DiscardedEntries.objects.filter(
-            analysis_pillar=self.kwargs['analysis_pillar_id']
-        ).values('entry')
-        return Entry.objects.exclude(id__in=discarded_entries)
+class AnalysisPillarEntryViewSet(EntryViewSet):
+    permissions_classes = [permissions.IsAuthenticated, IsProjectMember]  # what permissions to look for here??
+    filterset_class = AnalysisPillarEntryFilterSet
 
 
 class AnalyticalStatementViewSet(viewsets.ModelViewSet):

@@ -15,7 +15,7 @@ from .models import (
     AnalysisPillar,
     AnalyticalStatement,
     AnalyticalStatementEntry,
-    DiscardedEntries,
+    DiscardedEntry
 )
 
 
@@ -53,9 +53,9 @@ class AnalyticalStatementSerializer(
         return data
 
 
-class DiscardedEntriesSerializer(serializers.ModelSerializer):
+class DiscardedEntrySerializer(serializers.ModelSerializer):
     class Meta:
-        model = DiscardedEntries
+        model = DiscardedEntry
         fields = '__all__'
         read_only_fields = ['analysis_pillar']
 

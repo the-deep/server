@@ -2,6 +2,8 @@ import copy
 
 from django.db import models
 from django.contrib.postgres.fields import JSONField
+from django.utils.translation import gettext_lazy as _
+from django_enumfield import enum
 
 from user.models import User
 from project.models import Project
@@ -49,22 +51,22 @@ class AnalysisPillar(UserResource):
         return self.title
 
 
-class DiscardedEntries(models.Model):
+class DiscardedEntry(models.Model):
     """
     Discarded entries for AnalysisPillar
     """
-    # Tag choices
-    REDUNDANT = 'redundant'
-    TOO_OLD = 'too_old'
-    ANECDOTAL = 'anecdotal'
-    OUTLIER = 'outlier'
+    class TAG_TYPE(enum.Enum):
+        REDUNDANT = 0
+        TOO_OLD = 1
+        ANECDOTAL = 2
+        OUTLIER = 3
 
-    TAG_TYPES = (
-        (REDUNDANT, 'Redundant'),
-        (TOO_OLD, 'Too Old'),
-        (ANECDOTAL, 'ANECDOTAL'),
-        (OUTLIER, 'Outlier')
-    )
+        __labels__ = {
+            REDUNDANT: _('Redundant'),
+            TOO_OLD: _('Too old'),
+            ANECDOTAL: _('Anecdotal'),
+            OUTLIER: _('Outlier'),
+        }
 
     analysis_pillar = models.ForeignKey(
         AnalysisPillar,
@@ -74,10 +76,10 @@ class DiscardedEntries(models.Model):
         Entry,
         on_delete=models.CASCADE
     )
-    tag = models.CharField(
-        max_length=30,
-        choices=TAG_TYPES
-    )
+    tag = enum.EnumField(TAG_TYPE)
+
+    class Meta:
+        unique_together = ('entry', 'analysis_pillar')
 
     def __str__(self):
         return f'{self.analysis_pillar} - {self.entry}'
