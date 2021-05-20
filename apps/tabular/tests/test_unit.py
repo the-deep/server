@@ -439,7 +439,8 @@ class TestTabularExtraction(TestCase):
         """Remove temp files"""
         super().tearDown()
         for file in self.files:
-            os.remove(file)
+            if os.path.exists(file):
+                os.remove(file)
 
 
 def test_comma_separated_numbers():
