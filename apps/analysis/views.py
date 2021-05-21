@@ -132,13 +132,12 @@ class AnalysisPillarDiscardedEntryViewSet(viewsets.ModelViewSet):
 class AnalysisPillarEntryViewSet(EntryFilterView):
     def get_queryset(self):
         queryset = super().get_queryset()
-        filters = self.get_entry_fiters()
-        discard_entires = filters.get('discarded')
+        filters = self.get_entries_filters()
         analysis_pillar_id = self.kwargs['analysis_pillar_id']
-        discarded_entries = DiscardedEntry.objects.filter(analysis_pillar=analysis_pillar_id).values('entry')
-        if discard_entires:
-            return queryset.filter(id__in=discarded_entries)
-        return queryset.exclude(id__in=discarded_entries)
+        discarded_entries_qs = DiscardedEntry.objects.filter(analysis_pillar=analysis_pillar_id).values('entry')
+        if filters.get('discarded'):
+            return queryset.filter(id__in=discarded_entries_qs)
+        return queryset.exclude(id__in=discarded_entries_qs)
 
 
 class AnalyticalStatementViewSet(viewsets.ModelViewSet):
