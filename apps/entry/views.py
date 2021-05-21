@@ -56,7 +56,7 @@ import django_filters
 
 
 class EntrySummaryPaginationMixin(object):
-    def get_entry_fiters(self):
+    def get_entries_filters(self):
         if hasattr(self, '_entry_filters'):
             return self._entry_filters
 
@@ -67,7 +67,7 @@ class EntrySummaryPaginationMixin(object):
 
     def get_counts_by_matrix_2d(self, qs):
         # Project should be provided
-        filters = self.get_entry_fiters()
+        filters = self.get_entries_filters()
         project = filters.get('project')
         if project is None:
             return {}
@@ -289,7 +289,7 @@ class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        filters = self.get_entry_fiters()
+        filters = self.get_entries_filters()
 
         queryset = get_filtered_entries(self.request.user, filters).prefetch_related(
             'lead', 'lead__attachment', 'lead__assignee',
