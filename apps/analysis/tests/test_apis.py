@@ -587,9 +587,9 @@ class TestAnalysisAPIs(TestCase):
 
     def test_post_discarded_entries_in_analysis_pillar(self):
         user = self.create_user()
-        entry = self.create_entry()
         project = self.create_project()
         project.add_member(user)
+        entry = self.create_entry(project=project)
         analysis = self.create(Analysis, project=project)
         pillar1 = self.create(AnalysisPillar, analysis=analysis)
         data = {
@@ -618,6 +618,20 @@ class TestAnalysisAPIs(TestCase):
         self.authenticate(user2)
         response = self.client.post(url, data)
         self.assert_403(response)
+
+        # try to post entry that has different project than analysis pillar project
+        user2 = self.create_user()
+        project2 = self.create_project()
+        project2.add_member(user2)
+        entry = self.create_entry(project=project2)
+        data = {
+            'entry': entry.id,
+            'tag': DiscardedEntry.TagType.REDUNDANT,
+        }
+        url = f'/api/v1/analysis-pillar/{pillar1.id}/discarded-entries/'
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_400(response)
 
     def test_discarded_entries_tag_filter(self):
         user = self.create_user()

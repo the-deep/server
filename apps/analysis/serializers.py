@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
@@ -63,6 +64,11 @@ class DiscardedEntrySerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         data['analysis_pillar_id'] = int(self.context['analysis_pillar_id'])
+        analysis_pillar = get_object_or_404(AnalysisPillar, id=data['analysis_pillar_id'])
+        if data['entry'].project != analysis_pillar.analysis.project:
+            raise serializers.ValidationError(
+                f'Analysis pillar project doesnot match Entry project'
+            )
         return data
 
 
