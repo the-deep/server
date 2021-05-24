@@ -54,6 +54,8 @@ class AnalyticalStatementSerializer(
 
 
 class DiscardedEntrySerializer(serializers.ModelSerializer):
+    tag_display = serializers.CharField(source='get_tag_display', read_only=True)
+
     class Meta:
         model = DiscardedEntry
         fields = '__all__'
