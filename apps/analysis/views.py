@@ -116,7 +116,7 @@ class AnalysisPillarViewSet(viewsets.ModelViewSet):
 
 class AnalysisPillarDiscardedEntryViewSet(viewsets.ModelViewSet):
     serializer_class = DiscardedEntrySerializer
-    permissions_classes = [permissions.IsAuthenticated, IsProjectMember]  # what permissions to look for here??
+    permission_classes = [permissions.IsAuthenticated, IsProjectMember]
     filterset_class = DiscardedEntryFilterSet
 
     def get_queryset(self):
@@ -130,6 +130,8 @@ class AnalysisPillarDiscardedEntryViewSet(viewsets.ModelViewSet):
 
 
 class AnalysisPillarEntryViewSet(EntryFilterView):
+    permission_classes = [IsProjectMember]
+
     def get_queryset(self):
         queryset = super().get_queryset()
         filters = self.get_entries_filters()

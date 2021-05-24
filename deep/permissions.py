@@ -6,6 +6,7 @@ from project.models import Project, ProjectRole
 from project.permissions import PROJECT_PERMISSIONS
 from lead.models import Lead
 from entry.models import Entry
+from analysis.models import AnalysisPillar
 
 logger = logging.getLogger(__name__)
 
@@ -160,6 +161,7 @@ class IsProjectMember(permissions.BasePermission):
         project_id = view.kwargs.get('project_id')
         lead_id = view.kwargs.get('lead_id')
         entry_id = view.kwargs.get('entry_id')
+        analysis_pillar_id = view.kwargs.get('analysis_pillar_id')
 
         if project_id:
             return Project.get_for_member(request.user).filter(id=project_id).exists()
@@ -167,6 +169,11 @@ class IsProjectMember(permissions.BasePermission):
             return Lead.get_for(request.user).filter(id=lead_id).exists()
         elif entry_id:
             return Entry.get_for(request.user).filter(id=entry_id).exists()
+        elif analysis_pillar_id:
+            return AnalysisPillar.objects.filter(
+                analysis__project__projectmembership__member=request.user,
+                id=analysis_pillar_id
+            ).exists()
         return True
 
     def has_object_permission(self, request, view, obj):

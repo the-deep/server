@@ -1,6 +1,5 @@
 import django_filters
 
-from entry.filter_set import EntryFilterSet
 from .models import (
     Analysis,
     DiscardedEntry

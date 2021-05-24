@@ -587,7 +587,6 @@ class TestAnalysisAPIs(TestCase):
 
     def test_post_discarded_entries_in_analysis_pillar(self):
         user = self.create_user()
-        user2 = self.create_user()
         entry = self.create_entry()
         project = self.create_project()
         project.add_member(user)
@@ -605,6 +604,20 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(response.data['entry'], entry.id)
 
         # try to authenticate with user that is not project member
+        user2 = self.create_user()
+        self.authenticate(user2)
+        response = self.client.get(url)
+        self.assert_403(response)
+
+        entry1 = self.create_entry()
+        data = {
+            'entry': entry1.id,
+            'tag': DiscardedEntry.TagType.REDUNDANT
+        }
+        url = f'/api/v1/analysis-pillar/{pillar1.id}/discarded-entries/'
+        self.authenticate(user2)
+        response = self.client.post(url, data)
+        self.assert_403(response)
 
     def test_discarded_entries_tag_filter(self):
         user = self.create_user()
@@ -622,6 +635,12 @@ class TestAnalysisAPIs(TestCase):
         response = self.client.get(url)
         self.assert_200(response)
         self.assertEqual(len(response.data['results']), 2)  # Two discarded entries be present
+
+        # filter by member that is not project member
+        user2 = self.create_user()
+        self.authenticate(user2)
+        response = self.client.get(url)
+        self.assert_403(response)
 
     def test_all_entries_in_analysis_pillar(self):
         user = self.create_user()
