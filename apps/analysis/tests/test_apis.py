@@ -1,3 +1,6 @@
+from dateutil.relativedelta import relativedelta
+from django.utils import timezone
+
 from django.conf import settings
 from rest_framework.exceptions import ErrorDetail
 
@@ -493,10 +496,18 @@ class TestAnalysisAPIs(TestCase):
     def test_summary_for_analysis(self):
         user = self.create_user()
         user2 = self.create_user()
-        entry = self.create_entry()
-        entry1 = self.create_entry()
         project = self.create_project()
         project.add_member(user)
+
+        now = timezone.now()
+        lead1 = self.create_lead(project=project, created_at=now + relativedelta(days=-1))
+        lead2 = self.create_lead(project=project, created_at=now)
+        self.create_lead(project=project, created_at=now + relativedelta(days=-3))
+        entry = self.create_entry(lead=lead1, project=project)
+        entry1 = self.create_entry(lead=lead2, project=project)
+        entry2 = self.create_entry(lead=lead1, project=project)
+        self.create_entry(lead=lead2, project=project)
+
         analysis1 = self.create(Analysis, title='Test Analysis', team_lead=user, project=project)
         analysis2 = self.create(Analysis, title='Not for test', team_lead=user, project=project)
         pillar1 = self.create(AnalysisPillar, analysis=analysis1, title='title1', assignee=user)
@@ -518,6 +529,7 @@ class TestAnalysisAPIs(TestCase):
         analytical_statement4 = self.create(AnalyticalStatement, analysis_pillar=pillar4)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement4, entry=entry)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement4, entry=entry1)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement4, entry=entry2)
 
         url = f'/api/v1/projects/{project.id}/analysis/summary/'
         self.authenticate(user)
@@ -532,11 +544,19 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(data[1]['pillar_list'][2]['assignee_username'], pillar1.assignee.username)
         self.assertEqual(data[1]['analytical_statement_count'], 3)
         self.assertEqual(data[1]['entries_used_in_analysis'], 3)
+        self.assertEqual(data[1]['analysis_overview']['entries_analyzed'], 2)
+        self.assertEqual(data[1]['analysis_overview']['sources_analyzed'], 2)
+        self.assertEqual(data[1]['total_sources'], 2)
+        self.assertEqual(data[1]['total_entries'], 4)
+        self.assertEqual(data[1]['publication_date']['start_date'], lead1.created_at.date())  # since we use lead that has entry created for
+        self.assertEqual(data[1]['publication_date']['end_date'], lead2.created_at.date())
         self.assertEqual(data[1]['framework_overview'][0]['title'], pillar3.title)
         self.assertEqual(data[1]['framework_overview'][0]['entries_count'], 2)
         self.assertEqual(data[1]['framework_overview'][1]['entries_count'], 1)
         self.assertEqual(data[0]['team_lead'], user.id)
         self.assertEqual(data[0]['team_lead_name'], user.username)
+        self.assertEqual(data[0]['analysis_overview']['entries_analyzed'], 3)
+        self.assertEqual(data[0]['analysis_overview']['sources_analyzed'], 2)
 
         # try to post to api
         data = {

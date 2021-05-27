@@ -6,7 +6,10 @@ from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
 
 from user_resource.serializers import UserResourceSerializer
+
 from entry.serializers import SimpleEntrySerializer
+from lead.models import Lead
+from entry.models import Entry
 from deep.serializers import (
     RemoveNullFieldsMixin,
     NestedCreateMixin,
@@ -124,16 +127,20 @@ class AnalysisSerializer(
 
 
 class AnalysisSummarySerializer(serializers.ModelSerializer):
-    team_lead_name = serializers.CharField(source='team_lead.username')
+    team_lead_name = serializers.CharField()
+    dragged_entries = serializers.IntegerField()
+    sources_analyzed = serializers.IntegerField()
     pillar_list = serializers.SerializerMethodField()
-    analytical_statement_count = serializers.SerializerMethodField()
-    entries_used_in_analysis = serializers.SerializerMethodField()
     framework_overview = serializers.SerializerMethodField()
+    publication_date = serializers.SerializerMethodField()
+    discarded_entries = serializers.IntegerField()
+    total_entries = serializers.IntegerField()
 
     class Meta:
         model = Analysis
-        fields = ('id', 'team_lead', 'team_lead_name', 'pillar_list', 'analytical_statement_count',
-                  'entries_used_in_analysis', 'framework_overview')
+        fields = ('id', 'team_lead', 'team_lead_name', 'dragged_entries', 'discarded_entries',
+                  'sources_analyzed', 'pillar_list', 'framework_overview', 'publication_date',
+                  'total_entries')
 
     def get_pillar_list(self, analysis):
         return list(
@@ -141,16 +148,6 @@ class AnalysisSummarySerializer(serializers.ModelSerializer):
                 analysis=analysis
             ).values('id', 'title', assignee_username=models.F('assignee__username'))
         )
-
-    def get_analytical_statement_count(self, analysis):
-        return AnalyticalStatement.objects.filter(
-            analysis_pillar__analysis=analysis
-        ).count()
-
-    def get_entries_used_in_analysis(self, analysis):
-        return AnalyticalStatement.objects.filter(
-            analysis_pillar__analysis=analysis
-        ).annotate(entries_in_analysis=models.Count('entries')).filter(entries_in_analysis__gt=0).count()
 
     def get_framework_overview(self, analysis):
         return list(
@@ -166,3 +163,22 @@ class AnalysisSummarySerializer(serializers.ModelSerializer):
                 ), 0)
             ).values('id', 'title', 'entries_count')
         )
+
+    def get_publication_date(self, analysis):
+        lead_qs = Lead.objects.filter(
+            project=analysis.project
+        ).annotate(
+            entries_count=models.functions.Coalesce(models.Subquery(
+                AnalyticalStatementEntry.objects.filter(
+                    entry__lead_id=models.OuterRef('pk')
+                ).order_by().values('entry__lead_id').annotate(count=models.Count('*'))
+                .values('count')[:1],
+                output_field=models.IntegerField(),
+            ), 0)
+        ).filter(entries_count__gt=0).order_by('created_at')
+        lead_first_created_date = lead_qs.values_list('created_at__date', flat=True).first()
+        lead_last_created_date = lead_qs.values_list('created_at__date', flat=True).last()
+        return {
+            'start_date': lead_first_created_date,
+            'end_date': lead_last_created_date
+        }
