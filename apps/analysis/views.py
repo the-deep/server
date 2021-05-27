@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.expressions import Subquery
 
 from rest_framework.decorators import action
 from rest_framework import (
@@ -13,6 +14,8 @@ from rest_framework import (
 from deep.permissions import IsProjectMember
 from entry.views import EntryFilterView
 
+from entry.models import Entry
+from lead.models import Lead
 from .models import (
     Analysis,
     AnalysisPillar,
@@ -41,14 +44,61 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         return Analysis.objects.filter(project=self.kwargs['project_id']).select_related(
             'project',
             'team_lead',
-        ).prefetch_related('analysispillar_set')
+        )
 
     @action(
         detail=False,
         url_path='summary'
     )
-    def get_summary(self, request, project_id, pk=None, version=None):
+    def get_summary(self, request, project_id, filters=None, pk=None, version=None):
+        from entry.filter_set import get_filtered_entries
+
+        filters = filters or dict()
+        entries_filter_data = filters.get('', {})
         queryset = self.filter_queryset(self.get_queryset()).filter(project=project_id)
+        queryset = queryset.prefetch_related(
+            models.Prefetch(
+                'analysispillar_set',
+                queryset=AnalysisPillar.objects.defer(
+                    'analysis'
+                ).prefetch_related('analyticalstatement_set')
+            )
+        )
+        queryset = queryset.annotate(
+            team_lead_name=models.F('team_lead__username'),
+            dragged_entries=models.functions.Coalesce(
+                models.Subquery(
+                    AnalyticalStatement.objects.filter(
+                        analysis_pillar__analysis=models.OuterRef('pk')
+                    ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count('entries', distinct=True))
+                    .values('count')[:1],
+                    output_field=models.IntegerField(),
+                ), 0),
+            sources_analyzed=models.functions.Coalesce(
+                models.Subquery(
+                    AnalyticalStatement.objects.filter(
+                        analysis_pillar__analysis=models.OuterRef('pk')
+                    ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count('entries__lead_id', distinct=True))
+                    .values('count')[:1],
+                    output_field=models.IntegerField(),
+                ), 0),
+            discarded_entries=models.functions.Coalesce(
+                models.Subquery(
+                    DiscardedEntry.objects.filter(
+                        analysis_pillar__analysis=models.OuterRef('pk')
+                    ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count('entry', distinct=True))
+                    .values('count')[:1],
+                    output_field=models.IntegerField(),
+                ), 0),
+            total_entries=models.functions.Coalesce(
+                models.Subquery(
+                    get_filtered_entries(self.request.user, entries_filter_data).filter(
+                        analyticalstatement__analysis_pillar=models.OuterRef('analysispillar')
+                    ).values('analyticalstatement__analysis_pillar').order_by().annotate(
+                        count=models.Count('id')
+                    ).values('count')[:1], output_field=models.IntegerField()
+                ), 0)
+        )
         serializer = AnalysisSummarySerializer(queryset, many=True, partial=True)
         return response.Response(serializer.data)
 
