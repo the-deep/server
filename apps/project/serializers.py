@@ -93,7 +93,7 @@ class SimpleProjectRoleSerializer(RemoveNullFieldsMixin,
                                   serializers.ModelSerializer):
     class Meta:
         model = ProjectRole
-        fields = ('id', 'title')
+        fields = ('id', 'title', 'level')
 
 
 class ProjectOrganizationSerializer(RemoveNullFieldsMixin,
