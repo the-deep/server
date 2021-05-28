@@ -104,6 +104,7 @@ from analysis.views import (
     AnalyticalStatementViewSet,
     AnalysisPillarDiscardedEntryViewSet,
     AnalysisPillarEntryViewSet,
+    DiscardedEntryOptionsView
 )
 from analysis_framework.views import (
     AnalysisFrameworkCloneView,
@@ -446,6 +447,8 @@ urlpatterns = [
         EntryOptionsView.as_view()),
     url(get_api_path(r'project-options/$'),
         ProjectOptionsView.as_view()),
+    url(get_api_path(r'discardedentry-options/$'),
+        DiscardedEntryOptionsView.as_view()),
 
     # Triggering api
     url(get_api_path(r'lead-extraction-trigger/(?P<lead_id>\d+)/$'),

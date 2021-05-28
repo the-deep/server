@@ -6,6 +6,7 @@ from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
 
 from user_resource.serializers import UserResourceSerializer
+from entry.serializers import SimpleEntrySerializer
 from deep.serializers import (
     RemoveNullFieldsMixin,
     NestedCreateMixin,
@@ -56,6 +57,7 @@ class AnalyticalStatementSerializer(
 
 class DiscardedEntrySerializer(serializers.ModelSerializer):
     tag_display = serializers.CharField(source='get_tag_display', read_only=True)
+    entry_details = SimpleEntrySerializer(source='entry', read_only=True)
 
     class Meta:
         model = DiscardedEntry

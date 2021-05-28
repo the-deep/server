@@ -531,3 +531,14 @@ class EntryCommentSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         return self.comment_save(validated_data, instance)
+
+
+class SimpleEntrySerializer(serializers.ModelSerializer):
+    image_details = SimpleFileSerializer(source='image', read_only=True)
+    tabular_field_data = FieldProcessedOnlySerializer(source='tabular_field')
+
+    class Meta:
+        model = Entry
+        fields = ('id', 'excerpt', 'dropped_excerpt',
+                  'image', 'image_details', 'entry_type',
+                  'tabular_field', 'tabular_field_data')

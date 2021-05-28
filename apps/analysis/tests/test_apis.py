@@ -1,4 +1,5 @@
 from django.conf import settings
+
 from deep.tests import TestCase
 
 from entry.models import Entry
@@ -602,6 +603,8 @@ class TestAnalysisAPIs(TestCase):
         self.assert_201(response)
         self.assertEqual(response.data['analysis_pillar'], pillar1.id)
         self.assertEqual(response.data['entry'], entry.id)
+        self.assertIn('entry_details', response.data)
+        self.assertEqual(response.data['entry_details']['id'], entry.id)
 
         # try to authenticate with user that is not project member
         user2 = self.create_user()
@@ -694,3 +697,25 @@ class TestAnalysisAPIs(TestCase):
         response = self.post_filter_test(analysis_pillar_entries_url, {'discarded': False}, count=3)
         response_id = [res['id'] for res in response.data['results']]
         self.assertNotIn(entry1.id, response_id)
+
+    def test_discardedentry_options(self):
+        url = '/api/v1/discardedentry-options/'
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertIn('discarded_entries_tags', response.data)
+        self.assertEqual(
+            response.data['discarded_entries_tags'][0]['key'],
+            DiscardedEntry.TagType.REDUNDANT)
+        self.assertEqual(
+            response.data['discarded_entries_tags'][0]['value'],
+            DiscardedEntry.TagType.REDUNDANT.name.title()
+        )
+        self.assertEqual(
+            response.data['discarded_entries_tags'][1]['key'],
+            DiscardedEntry.TagType.TOO_OLD)
+        self.assertEqual(
+            response.data['discarded_entries_tags'][1]['value'],
+            DiscardedEntry.TagType.TOO_OLD.name.title()
+        )
