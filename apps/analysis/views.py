@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework import (
     exceptions,
     permissions,
+    views,
     response,
     viewsets,
     status
@@ -153,3 +154,19 @@ class AnalyticalStatementViewSet(viewsets.ModelViewSet):
             'entries',
             'analyticalstatemententry_set',
         )
+
+
+class DiscardedEntryOptionsView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, version=None):
+        options = {
+            'discarded_entries_tags': [
+                {
+                    'key': entry.value,
+                    'value': entry.name.title()
+                } for entry in DiscardedEntry.TagType
+            ]
+        }
+
+        return response.Response(options)
