@@ -3,7 +3,6 @@ from collections import defaultdict
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
-from django.db.models import Prefetch
 from rest_framework.decorators import action
 from rest_framework import (
     filters,
@@ -57,7 +56,7 @@ import django_filters
 
 
 class EntrySummaryPaginationMixin(object):
-    def get_entry_fiters(self):
+    def get_entries_filters(self):
         if hasattr(self, '_entry_filters'):
             return self._entry_filters
 
@@ -68,7 +67,7 @@ class EntrySummaryPaginationMixin(object):
 
     def get_counts_by_matrix_2d(self, qs):
         # Project should be provided
-        filters = self.get_entry_fiters()
+        filters = self.get_entries_filters()
         project = filters.get('project')
         if project is None:
             return {}
@@ -290,7 +289,7 @@ class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        filters = self.get_entry_fiters()
+        filters = self.get_entries_filters()
 
         queryset = get_filtered_entries(self.request.user, filters).prefetch_related(
             'lead', 'lead__attachment', 'lead__assignee',
@@ -322,7 +321,7 @@ class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
             )
 
         return (
-            EntryFilterSet(filters, queryset=queryset).qs
+            queryset
             .select_related(
                 'image', 'lead',
                 'created_by__profile', 'modified_by__profile',
@@ -335,7 +334,7 @@ class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
             )
         )
 
-    def post(self, request, version=None):
+    def post(self, request, **kwargs):
         queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
 

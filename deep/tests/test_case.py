@@ -296,6 +296,20 @@ class TestCase(test.APITestCase):
         obj.save()
         return obj
 
+    def post_filter_test(self, url, filters, count=1, skip_auth=False):
+        params = {
+            'filters': [[k, v] for k, v in filters.items()]
+        }
+
+        if skip_auth:
+            self.authenticate()
+        response = self.client.post(url, params)
+        self.assert_200(response)
+
+        r_data = response.json()
+        self.assertEqual(len(r_data['results']), count, f'Filters: {filters}')
+        return response
+
     @classmethod
     def captureOnCommitCallbacks(cls, *, using=DEFAULT_DB_ALIAS, execute=False):
         return _CaptureOnCommitCallbacksContext(using=using, execute=execute)

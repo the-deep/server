@@ -1,10 +1,12 @@
 from django.db import models
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
 
 from user_resource.serializers import UserResourceSerializer
+from entry.serializers import SimpleEntrySerializer
 from deep.serializers import (
     RemoveNullFieldsMixin,
     NestedCreateMixin,
@@ -15,6 +17,7 @@ from .models import (
     AnalysisPillar,
     AnalyticalStatement,
     AnalyticalStatementEntry,
+    DiscardedEntry
 )
 
 
@@ -48,6 +51,25 @@ class AnalyticalStatementSerializer(
         if entries and len(entries) > settings.ANALYTICAL_ENTRIES_COUNT:
             raise serializers.ValidationError(
                 f'Analytical entires count must be less than {settings.ANALYTICAL_ENTRIES_COUNT}'
+            )
+        return data
+
+
+class DiscardedEntrySerializer(serializers.ModelSerializer):
+    tag_display = serializers.CharField(source='get_tag_display', read_only=True)
+    entry_details = SimpleEntrySerializer(source='entry', read_only=True)
+
+    class Meta:
+        model = DiscardedEntry
+        fields = '__all__'
+        read_only_fields = ['analysis_pillar']
+
+    def validate(self, data):
+        data['analysis_pillar_id'] = int(self.context['analysis_pillar_id'])
+        analysis_pillar = get_object_or_404(AnalysisPillar, id=data['analysis_pillar_id'])
+        if data['entry'].project != analysis_pillar.analysis.project:
+            raise serializers.ValidationError(
+                f'Analysis pillar project doesnot match Entry project'
             )
         return data
 

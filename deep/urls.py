@@ -102,6 +102,9 @@ from analysis.views import (
     AnalysisViewSet,
     AnalysisPillarViewSet,
     AnalyticalStatementViewSet,
+    AnalysisPillarDiscardedEntryViewSet,
+    AnalysisPillarEntryViewSet,
+    DiscardedEntryOptionsView
 )
 from analysis_framework.views import (
     AnalysisFrameworkCloneView,
@@ -286,7 +289,13 @@ router.register(r'projects/(?P<project_id>\d+)/analysis', AnalysisViewSet,
                 basename='analysis')
 router.register(r'projects/(?P<project_id>\d+)/analysis/(?P<analysis_id>\d+)/pillars',
                 AnalysisPillarViewSet, basename='analysis_analysis_pillar')
-router.register(r'projects/(?P<project_id>\d+)/analysis/(?P<analysis_id>\d+)/pillars/(?P<analysis_pillar_id>\d+)/analytical-statement', AnalyticalStatementViewSet, basename='analytical_statement')
+router.register(
+    r'projects/(?P<project_id>\d+)/analysis/(?P<analysis_id>\d+)/pillars/(?P<analysis_pillar_id>\d+)/analytical-statement',
+    AnalyticalStatementViewSet, basename='analytical_statement')
+router.register(
+    r'analysis-pillar/(?P<analysis_pillar_id>\d+)/discarded-entries',
+    AnalysisPillarDiscardedEntryViewSet, basename='analysis_pillar_discarded_entries'
+)
 
 # Analysis framework routers
 router.register(r'analysis-frameworks/(?P<af_id>\d+)/questions',
@@ -438,6 +447,8 @@ urlpatterns = [
         EntryOptionsView.as_view()),
     url(get_api_path(r'project-options/$'),
         ProjectOptionsView.as_view()),
+    url(get_api_path(r'discardedentry-options/$'),
+        DiscardedEntryOptionsView.as_view()),
 
     # Triggering api
     url(get_api_path(r'lead-extraction-trigger/(?P<lead_id>\d+)/$'),
@@ -478,6 +489,11 @@ urlpatterns = [
 
     # Filter apis
     url(get_api_path(r'entries/filter/'), EntryFilterView.as_view()),
+    url(
+        get_api_path(r'analysis-pillar/(?P<analysis_pillar_id>\d+)/entries'),
+        AnalysisPillarEntryViewSet.as_view(),
+        name='analysis_pillar_entries',
+    ),
 
     url(get_api_path(
         r'projects/(?P<project_id>\d+)/category-editor/classify/'

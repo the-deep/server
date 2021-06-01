@@ -1,6 +1,9 @@
 import django_filters
 
-from .models import Analysis
+from .models import (
+    Analysis,
+    DiscardedEntry
+)
 
 
 class AnalysisFilterSet(django_filters.FilterSet):
@@ -26,5 +29,17 @@ class AnalysisFilterSet(django_filters.FilterSet):
     )
 
     class Meta:
-        models = Analysis
+        model = Analysis
         fields = ()
+
+
+class DiscardedEntryFilterSet(django_filters.FilterSet):
+    tag = django_filters.MultipleChoiceFilter(
+        choices=DiscardedEntry.TagType.choices(),
+        lookup_expr='in',
+        widget=django_filters.widgets.CSVWidget,
+    )
+
+    class Meta:
+        model = DiscardedEntry
+        fields = []
