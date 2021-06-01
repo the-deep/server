@@ -22,8 +22,8 @@
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            303 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">247 run</button>
+            309 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">253 run</button>
             <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">56 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">4 partial</button>
@@ -586,12 +586,23 @@
     <p id="t531" class="pln"><span class="n"><a href="#t531">531</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t532" class="run"><span class="n"><a href="#t532">532</a></span><span class="t">    <span class="key">def</span> <span class="nam">update</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">instance</span><span class="op">,</span> <span class="nam">validated_data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t533" class="run"><span class="n"><a href="#t533">533</a></span><span class="t">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">comment_save</span><span class="op">(</span><span class="nam">validated_data</span><span class="op">,</span> <span class="nam">instance</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t534" class="pln"><span class="n"><a href="#t534">534</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t535" class="pln"><span class="n"><a href="#t535">535</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t536" class="run"><span class="n"><a href="#t536">536</a></span><span class="t"><span class="key">class</span> <span class="nam">SimpleEntrySerializer</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">ModelSerializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t537" class="run"><span class="n"><a href="#t537">537</a></span><span class="t">    <span class="nam">image_details</span> <span class="op">=</span> <span class="nam">SimpleFileSerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'image'</span><span class="op">,</span> <span class="nam">read_only</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t538" class="run"><span class="n"><a href="#t538">538</a></span><span class="t">    <span class="nam">tabular_field_data</span> <span class="op">=</span> <span class="nam">FieldProcessedOnlySerializer</span><span class="op">(</span><span class="nam">source</span><span class="op">=</span><span class="str">'tabular_field'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t539" class="pln"><span class="n"><a href="#t539">539</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t540" class="run"><span class="n"><a href="#t540">540</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t541" class="run"><span class="n"><a href="#t541">541</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">Entry</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t542" class="run"><span class="n"><a href="#t542">542</a></span><span class="t">        <span class="nam">fields</span> <span class="op">=</span> <span class="op">(</span><span class="str">'id'</span><span class="op">,</span> <span class="str">'excerpt'</span><span class="op">,</span> <span class="str">'dropped_excerpt'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t543" class="pln"><span class="n"><a href="#t543">543</a></span><span class="t">                  <span class="str">'image'</span><span class="op">,</span> <span class="str">'image_details'</span><span class="op">,</span> <span class="str">'entry_type'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t544" class="pln"><span class="n"><a href="#t544">544</a></span><span class="t">                  <span class="str">'tabular_field'</span><span class="op">,</span> <span class="str">'tabular_field_data'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </div>
 <div id="footer">
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-06-01 05:07 +0000
+            created at 2021-06-01 12:03 +0000
         </p>
     </div>
 </div>
