@@ -13,6 +13,10 @@ from user.notifications import Notification
 
 
 class UserApiTests(TestCase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user_password = 'joHnDave!@#123'
+
     def test_create_user(self):
         user_count = User.objects.count()
 
@@ -41,7 +45,7 @@ class UserApiTests(TestCase):
             'email': 'hari.krishna@gmail.com',
             'username': 'hari.krishna@gmail.com'
         }
-        user= User.objects.get(id=r_data['id'])
+        user = User.objects.get(id=r_data['id'])
         self.authenticate(user=user)
         response = self.client.patch(f"{url}{r_data['id']}/", data1)
         self.assert_200(response)  # authenticate user with same user id
@@ -216,3 +220,49 @@ class UserApiTests(TestCase):
         self.authenticate(user_fhx)
         response = self.client.get('/api/v1/users/me/preferences/')
         self.assertEqual(len(response.data['accessible_features']), 1)
+
+    def test_password_change(self):
+        user = User.objects.create_user(
+            username='ram@dave.com',
+            first_name='Ram',
+            last_name='Dave',
+            password=self.user_password,
+            email='ram@dave.com',
+        )
+        new_pass = "nepal!@#RRFASF"
+        data = {
+            "old_password": self.user_password,
+            "new_password": new_pass
+        }
+        url = '/api/v1/password-change/'
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        user.refresh_from_db()
+        assert user.check_password(data['new_password'])
+
+        # now try with posting  diferent `new_password` that doesnot follow django password validation
+        data = {
+            "old_password": new_pass,  # since password is already changed in the database level
+            "new_password": "nepa"
+        }
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        print(response.content)
+        self.assert_400(response)
+
+        # now try with posting different `old_password`
+        data = {
+            "old_password": "hahahmeme",
+            "new_password": "nepa"
+        }
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        print(response.content)
+        self.assert_400(response)
+
+        # test for other method
+        self.authenticate(user)
+        response = self.client.get(url)
+        self.assert_405(response)
