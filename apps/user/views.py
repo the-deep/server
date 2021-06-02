@@ -24,6 +24,7 @@ from .serializers import (
     UserPreferencesSerializer,
     NotificationSerializer,
     PasswordResetSerializer,
+    PasswordChangeSerializer
 )
 from .permissions import UserPermission, UserViewSetPermission
 
@@ -137,6 +138,21 @@ class PasswordResetView(views.APIView):
         serializer.save()
         return response.Response(
             serializer.data, status=status.HTTP_201_CREATED)
+
+
+class PasswordChangeView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, version=None):
+        serializer = PasswordChangeSerializer(
+            data=request.data,
+            context={
+                'request': request
+            }
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return response.Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 def user_activate_confirm(

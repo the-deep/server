@@ -160,3 +160,12 @@ def send_project_join_request_emails(join_request_id):
             subject_template_name='project/project_join_request.txt',
             email_template_name='project/project_join_request_email.html',
         )
+
+
+def send_password_change(user):
+    send_mail_to_user(
+        user, email_type=Profile.E_PASSWORD_CHANGE,
+        context={},
+        subject_template_name='password_change/password_change_subject.txt',
+        email_template_name='password_change/password_change_email.html',
+    )
