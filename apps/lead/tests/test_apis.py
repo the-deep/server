@@ -1139,7 +1139,7 @@ class LeadTests(TestCase):
         response = self.client.post(url, post_data)
         self.assertEqual(response.json()['count'], 2, response.json())
         # there should be 1 image entry and 2 excerpt entries
-        assert set([1, 2]) == set([item['filteredEntriesCount'] for item in response.json()['results']], response.json())
+        assert set([1, 2]) == set([item['filteredEntriesCount'] for item in response.json()['results']]), response.json()
 
         # filter by project_entry_labels
         # Labels
