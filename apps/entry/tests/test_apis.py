@@ -485,6 +485,7 @@ class EntryTests(TestCase):
         filters = {
             'lead_assignee': [self.user.pk],
         }
+        self.authenticate()
         self.post_filter_test(filters, 4)
 
         # test assignee created by another user
