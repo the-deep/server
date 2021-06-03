@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.db import transaction
 
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
@@ -12,7 +13,7 @@ from deep.serializers import (
 from user.models import Profile, Feature
 from user.utils import (
     send_password_reset,
-    send_password_change
+    send_password_changed_notification
 )
 from project.models import Project
 from gallery.models import File
@@ -235,12 +236,11 @@ class EntryCommentUserSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'email', 'organization', 'display_picture_url',)
 
 
-class PasswordChangeSerializer(serializers.ModelSerializer):
+class PasswordChangeSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True, write_only=True)
     new_password = serializers.CharField(required=True, write_only=True)
 
     class Meta:
-        model = User
         fields = ['old_password', 'new_password']
 
     def validate_old_password(self, password):
@@ -257,4 +257,6 @@ class PasswordChangeSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         user.set_password(self.validated_data['new_password'])
         user.save()
-        send_password_change(user)
+        transaction.on_commit(
+            lambda: send_password_changed_notification.delay(user.id)
+        )

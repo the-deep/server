@@ -1,5 +1,6 @@
 import logging
 from celery import shared_task
+
 from django.contrib.auth.models import User
 from django.utils.encoding import force_bytes
 from django.conf import settings
@@ -162,9 +163,11 @@ def send_project_join_request_emails(join_request_id):
         )
 
 
-def send_password_change(user):
+@shared_task
+def send_password_changed_notification(user_id):
+    user = User.objects.get(pk=user_id)
     send_mail_to_user(
-        user, email_type=Profile.E_PASSWORD_CHANGE,
+        user, email_type=Profile.E_PASSWORD_CHANGED,
         context={},
         subject_template_name='password_change/password_change_subject.txt',
         email_template_name='password_change/password_change_email.html',

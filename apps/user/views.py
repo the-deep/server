@@ -130,20 +130,14 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
 
-
-class PasswordResetView(views.APIView):
-    def post(self, request, version=None):
-        serializer = PasswordResetSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return response.Response(
-            serializer.data, status=status.HTTP_201_CREATED)
-
-
-class PasswordChangeView(views.APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request, version=None):
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='me/change-password',
+        serializer_class=PasswordChangeSerializer,
+        methods=['POST']
+    )
+    def change_password(self, request, pk=None, version=None):
         serializer = PasswordChangeSerializer(
             data=request.data,
             context={
@@ -152,7 +146,16 @@ class PasswordChangeView(views.APIView):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return response.Response(serializer.data, status=status.HTTP_201_CREATED)
+        return response.Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class PasswordResetView(views.APIView):
+    def post(self, request, version=None):
+        serializer = PasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return response.Response(
+            serializer.data, status=status.HTTP_201_CREATED)
 
 
 def user_activate_confirm(

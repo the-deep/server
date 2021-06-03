@@ -234,10 +234,10 @@ class UserApiTests(TestCase):
             "old_password": self.user_password,
             "new_password": new_pass
         }
-        url = '/api/v1/password-change/'
+        url = '/api/v1/users/me/change-password/'
         self.authenticate(user)
         response = self.client.post(url, data)
-        self.assert_201(response)
+        self.assert_200(response)
 
         user.refresh_from_db()
         assert user.check_password(data['new_password'])
@@ -249,7 +249,6 @@ class UserApiTests(TestCase):
         }
         self.authenticate(user)
         response = self.client.post(url, data)
-        print(response.content)
         self.assert_400(response)
 
         # now try with posting different `old_password`
@@ -259,7 +258,6 @@ class UserApiTests(TestCase):
         }
         self.authenticate(user)
         response = self.client.post(url, data)
-        print(response.content)
         self.assert_400(response)
 
         # test for other method

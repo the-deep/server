@@ -23,7 +23,6 @@ from user.views import (
     PasswordResetView,
     user_activate_confirm,
     unsubscribe_email,
-    PasswordChangeView
 )
 from gallery.views import (
     FileView,
@@ -438,9 +437,6 @@ urlpatterns = [
             )
         ),
         name='password_reset_confirm'),
-    # Password Change View
-    url(get_api_path(r'password-change/$'),
-        PasswordChangeView.as_view()),
 
     # Attribute options for various models
     url(get_api_path(r'lead-options/$'),
