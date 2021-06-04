@@ -13,9 +13,6 @@ from user.notifications import Notification
 
 
 class UserApiTests(TestCase):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.user_password = 'joHnDave!@#123'
 
     def test_create_user(self):
         user_count = User.objects.count()
@@ -93,6 +90,21 @@ class UserApiTests(TestCase):
         self.authenticate()
         response = self.client.patch(url, data)
         self.assert_200(response)
+
+    def test_authentication_in_users_instance(self):
+        user = self.create(User, first_name='hello', last_name='bye')
+
+        url = f'/api/v1/users/{user.id}/'
+
+        # try to get with no authentication
+        response = self.client.get(url)
+        self.assert_401(response)
+
+        # now authenticate
+        self.authenticate(user)
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(response.data['first_name'], user.first_name)
 
     def test_get_me(self):
         url = '/api/v1/users/me/'
@@ -222,6 +234,7 @@ class UserApiTests(TestCase):
         self.assertEqual(len(response.data['accessible_features']), 1)
 
     def test_password_change(self):
+        self.user_password = 'joHnDave!@#123'
         user = User.objects.create_user(
             username='ram@dave.com',
             first_name='Ram',

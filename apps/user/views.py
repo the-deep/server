@@ -26,7 +26,7 @@ from .serializers import (
     PasswordResetSerializer,
     PasswordChangeSerializer
 )
-from .permissions import UserPermission, UserViewSetPermission
+from .permissions import UserPermission
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -52,7 +52,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     queryset = User.objects.filter(is_active=True).order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [UserPermission, UserViewSetPermission]
+    permission_classes = [UserPermission]
 
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
 
@@ -146,7 +146,7 @@ class UserViewSet(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return response.Response(serializer.data, status=status.HTTP_200_OK)
+        return response.Response(status=status.HTTP_200_OK)
 
 
 class PasswordResetView(views.APIView):

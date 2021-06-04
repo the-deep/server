@@ -169,6 +169,6 @@ def send_password_changed_notification(user_id):
     send_mail_to_user(
         user, email_type=Profile.E_PASSWORD_CHANGED,
         context={},
-        subject_template_name='password_change/password_change_subject.txt',
-        email_template_name='password_change/password_change_email.html',
+        subject_template_name='password_changed/subject.txt',
+        email_template_name='password_changed/email.html',
     )

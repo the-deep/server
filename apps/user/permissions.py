@@ -2,15 +2,16 @@ from rest_framework import permissions
 
 
 class UserPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return obj == request.user
+    def _is_authenticated(self, rq):
+        return rq.user and rq.user.is_authenticated
 
-
-class UserViewSetPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if (view.action == 'create' or (request.user and request.user.is_authenticated)):
+        if self._is_authenticated(request) or view.action == 'create':
             # NOTE:for create user using same api, so return True for `create`
             return True
         return False
+
+    def has_object_permission(self, request, view, obj):
+        if self._is_authenticated(request) and request.method in permissions.SAFE_METHODS:
+            return True
+        return obj == request.user
