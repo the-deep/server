@@ -240,9 +240,6 @@ class PasswordChangeSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True, write_only=True)
     new_password = serializers.CharField(required=True, write_only=True)
 
-    class Meta:
-        fields = ['old_password', 'new_password']
-
     def validate_old_password(self, password):
         user = self.context['request'].user
         if not user.check_password(password):
