@@ -133,6 +133,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         permission_classes=[permissions.IsAuthenticated],
+        url_name="change_password",
         url_path='me/change-password',
         serializer_class=PasswordChangeSerializer,
         methods=['POST']

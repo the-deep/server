@@ -1,5 +1,8 @@
 import logging
+import datetime
+
 from celery import shared_task
+from user_agents import parse
 
 from django.contrib.auth.models import User
 from django.utils.encoding import force_bytes
@@ -163,12 +166,34 @@ def send_project_join_request_emails(join_request_id):
         )
 
 
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[-1].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
+def get_device_type(request):
+    http_agent = request.META.get('HTTP_USER_AGENT')
+    if http_agent:
+        user_agent = parse(http_agent)
+        return user_agent.browser.family + ',' + user_agent.os.family
+    return
+
+
 @shared_task
-def send_password_changed_notification(user_id):
+def send_password_changed_notification(user_id, client_ip, device_type):
     user = User.objects.get(pk=user_id)
+    context = {
+        'time': datetime.datetime.now(),
+        'location': client_ip,
+        'device': device_type,
+    }
     send_mail_to_user(
         user, email_type=Profile.E_PASSWORD_CHANGED,
-        context={},
+        context=context,
         subject_template_name='password_changed/subject.txt',
         email_template_name='password_changed/email.html',
     )
