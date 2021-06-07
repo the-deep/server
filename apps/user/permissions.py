@@ -3,7 +3,7 @@ from rest_framework import permissions
 
 class UserPermission(permissions.BasePermission):
     def _is_authenticated(self, rq):
-        return rq.user and rq.user.is_authenticated
+        return rq.user.is_authenticated
 
     def has_permission(self, request, view):
         if self._is_authenticated(request) or view.action == 'create':

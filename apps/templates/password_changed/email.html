@@ -1,5 +1,14 @@
+
 {% block container %}
     <p>
         Your password has been changed successfully.
+        Time:{{time}}
+        Location:{{location}}
+        Device:{{device}}
+        <a class="button-link"
+        href="{{ protocol }}://{{ domain }}{% url 'user-change_password' version='v2' %}"
+        >
+        I didn't do this--change again
+        </a>
     </p>
 {% endblock%}

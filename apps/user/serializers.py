@@ -13,7 +13,9 @@ from deep.serializers import (
 from user.models import Profile, Feature
 from user.utils import (
     send_password_reset,
-    send_password_changed_notification
+    send_password_changed_notification,
+    get_client_ip,
+    get_device_type
 )
 from project.models import Project
 from gallery.models import File
@@ -254,6 +256,11 @@ class PasswordChangeSerializer(serializers.Serializer):
         user = self.context['request'].user
         user.set_password(self.validated_data['new_password'])
         user.save()
+        client_ip = get_client_ip(self.context['request'])
+        device_type = get_device_type(self.context['request'])
         transaction.on_commit(
-            lambda: send_password_changed_notification.delay(user.id)
+            lambda: send_password_changed_notification.delay(
+                user_id=user.id,
+                client_ip=client_ip,
+                device_type=device_type)
         )
