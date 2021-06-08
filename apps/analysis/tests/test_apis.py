@@ -350,10 +350,23 @@ class TestAnalysisAPIs(TestCase):
         now = timezone.now()
         lead1 = self.create_lead(project=project, created_at=now + relativedelta(days=-1))
         lead2 = self.create_lead(project=project, created_at=now)
+        lead3 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
+        lead4 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
+        lead5 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
+        lead6 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
+        self.create_lead(project=project, created_at=now + relativedelta(days=-2))
+        lead8 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
+        lead9 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
         self.create_lead(project=project, created_at=now + relativedelta(days=-3))
         entry = self.create_entry(lead=lead1, project=project)
         entry1 = self.create_entry(lead=lead2, project=project)
-        entry2 = self.create_entry(lead=lead1, project=project)
+        entry2 = self.create_entry(lead=lead3, project=project)
+        entry3 = self.create_entry(lead=lead4, project=project)
+        entry4 = self.create_entry(lead=lead5, project=project)
+        entry5 = self.create_entry(lead=lead6, project=project)
+        entry6 = self.create_entry(lead=lead6, project=project)
+        self.create_entry(lead=lead8, project=project)
+        entry8 = self.create_entry(lead=lead9, project=project)
         self.create_entry(lead=lead2, project=project)
 
         analysis1 = self.create(Analysis, title='Test Analysis', team_lead=user, project=project)
@@ -361,23 +374,45 @@ class TestAnalysisAPIs(TestCase):
         pillar1 = self.create(AnalysisPillar, analysis=analysis1, title='title1', assignee=user)
         pillar2 = self.create(AnalysisPillar, analysis=analysis1, title='title2', assignee=user)
         pillar3 = self.create(AnalysisPillar, analysis=analysis1, title='title3', assignee=user2)
+
         pillar4 = self.create(AnalysisPillar, analysis=analysis2, title='title3', assignee=user2)
 
         analytical_statement1 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry1)
+        # lets discard some entry here
+        DiscardedEntry.objects.create(
+            analysis_pillar=pillar1,
+            entry=entry3,
+            tag=DiscardedEntry.TagType.REDUNDANT
+        )
 
         analytical_statement2 = self.create(AnalyticalStatement, analysis_pillar=pillar2)
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry4)
+        DiscardedEntry.objects.create(
+            analysis_pillar=pillar2,
+            entry=entry5,
+            tag=DiscardedEntry.TagType.REDUNDANT
+        )
 
         analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar3)
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry)
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry1)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry5)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry6)
+        DiscardedEntry.objects.create(
+            analysis_pillar=pillar3,
+            entry=entry2,
+            tag=DiscardedEntry.TagType.REDUNDANT
+        )
 
         analytical_statement4 = self.create(AnalyticalStatement, analysis_pillar=pillar4)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement4, entry=entry)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement4, entry=entry1)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement4, entry=entry2)
+        DiscardedEntry.objects.create(
+            analysis_pillar=pillar4,
+            entry=entry8,
+            tag=DiscardedEntry.TagType.REDUNDANT
+        )
 
         url = f'/api/v1/projects/{project.id}/analysis/summary/'
         self.authenticate(user)
@@ -390,21 +425,25 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(data[1]['pillar_list'][0]['id'], pillar3.id)
         self.assertEqual(data[1]['pillar_list'][1]['title'], pillar2.title)
         self.assertEqual(data[1]['pillar_list'][2]['assignee_username'], pillar1.assignee.username)
-        self.assertEqual(data[1]['analytical_statement_count'], 3)
-        self.assertEqual(data[1]['entries_used_in_analysis'], 3)
-        self.assertEqual(data[1]['analysis_overview']['entries_analyzed'], 2)
-        self.assertEqual(data[1]['analysis_overview']['sources_analyzed'], 2)
-        self.assertEqual(data[1]['total_sources'], 2)
-        self.assertEqual(data[1]['total_entries'], 4)
         self.assertEqual(data[1]['publication_date']['start_date'], lead1.created_at.date())  # since we use lead that has entry created for
         self.assertEqual(data[1]['publication_date']['end_date'], lead2.created_at.date())
         self.assertEqual(data[1]['framework_overview'][0]['title'], pillar3.title)
-        self.assertEqual(data[1]['framework_overview'][0]['entries_count'], 2)
-        self.assertEqual(data[1]['framework_overview'][1]['entries_count'], 1)
+        self.assertEqual(data[1]['framework_overview'][0]['entries_analyzed'], 3)  # discrded + analyzed entry
+        self.assertEqual(data[1]['framework_overview'][1]['entries_analyzed'], 2)  # discrded + analyzed entry
+        self.assertEqual(data[1]['analyzed_entries'], 8)
+        self.assertEqual(data[1]['analyzed_sources'], 7)  # have `distinct=True`
+        self.assertEqual(data[1]['total_entries'], 10)
+        self.assertEqual(data[1]['total_sources'], 8)  # taking lead that has entry more than one
         self.assertEqual(data[0]['team_lead'], user.id)
         self.assertEqual(data[0]['team_lead_name'], user.username)
-        self.assertEqual(data[0]['analysis_overview']['entries_analyzed'], 3)
-        self.assertEqual(data[0]['analysis_overview']['sources_analyzed'], 2)
+        self.assertEqual(data[0]['pillar_list'][0]['id'], pillar4.id)
+        self.assertEqual(data[0]['analyzed_entries'], 4)
+        self.assertEqual(data[0]['analyzed_sources'], 4)
+        self.assertEqual(data[0]['framework_overview'][0]['entries_analyzed'], 4)
+        self.assertEqual(data[1]['pillar_summary'][0]['id'], pillar3.id)
+        self.assertEqual(data[1]['pillar_summary'][0]['analytical_statement_count'], 1)
+        self.assertEqual(data[1]['pillar_summary'][0]['analytical_statements'][0]['entries_count'], 2)
+        self.assertEqual(data[1]['pillar_summary'][0]['entries_analyzed'], 3)  # discarded + dragged entries
 
         # try to post to api
         data = {
