@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models.expressions import Subquery
+from django.db.models.fields import IntegerField
 
 from rest_framework.decorators import action
 from rest_framework import (
@@ -54,7 +55,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         from entry.filter_set import get_filtered_entries
 
         filters = filters or dict()
-        entries_filter_data = filters.get('', {})
+        entries_filter_data = filters.get('entries_filter_data', {})
         queryset = self.filter_queryset(self.get_queryset()).filter(project=project_id)
         queryset = queryset.prefetch_related(
             models.Prefetch(
@@ -64,6 +65,10 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                 ).prefetch_related('analyticalstatement_set')
             )
         )
+        total_entries = get_filtered_entries(self.request.user, entries_filter_data).count()
+        total_sources = Lead.objects.filter(
+            project=project_id
+        ).annotate(entries_count=models.Count('entry')).filter(entries_count__gt=0).count()
         queryset = queryset.annotate(
             team_lead_name=models.F('team_lead__username'),
             dragged_entries=models.functions.Coalesce(
@@ -74,11 +79,19 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                     .values('count')[:1],
                     output_field=models.IntegerField(),
                 ), 0),
-            sources_analyzed=models.functions.Coalesce(
+            sources_dragged=models.functions.Coalesce(
                 models.Subquery(
                     AnalyticalStatement.objects.filter(
                         analysis_pillar__analysis=models.OuterRef('pk')
                     ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count('entries__lead_id', distinct=True))
+                    .values('count')[:1],
+                    output_field=models.IntegerField(),
+                ), 0),
+            sources_discarded=models.functions.Coalesce(
+                models.Subquery(
+                    DiscardedEntry.objects.filter(
+                        analysis_pillar__analysis=models.OuterRef('pk')
+                    ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count('entry__lead_id', distinct=True))
                     .values('count')[:1],
                     output_field=models.IntegerField(),
                 ), 0),
@@ -90,16 +103,17 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                     .values('count')[:1],
                     output_field=models.IntegerField(),
                 ), 0),
-            total_entries=models.functions.Coalesce(
-                models.Subquery(
-                    get_filtered_entries(self.request.user, entries_filter_data).filter(
-                        analyticalstatement__analysis_pillar=models.OuterRef('analysispillar')
-                    ).values('analyticalstatement__analysis_pillar').order_by().annotate(
-                        count=models.Count('id')
-                    ).values('count')[:1], output_field=models.IntegerField()
-                ), 0)
+            total_entries=models.Value(total_entries, output_field=models.IntegerField()),
+            total_sources=models.Value(total_sources, output_field=models.IntegerField())
+        ).annotate(
+            analyzed_entries=models.F('dragged_entries') + models.F('discarded_entries'),
+            analyzed_sources=models.F('sources_dragged') + models.F('sources_discarded')
         )
-        serializer = AnalysisSummarySerializer(queryset, many=True, partial=True)
+        serializer = AnalysisSummarySerializer(
+            queryset,
+            many=True,
+            partial=True,
+        )
         return response.Response(serializer.data)
 
     @action(
@@ -110,7 +124,27 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         analysis = self.get_object()
         pillar_list = AnalysisPillar.objects.filter(
             analysis=analysis
+        ).annotate(
+           dragged_entries=models.functions.Coalesce(
+                models.Subquery(
+                    AnalyticalStatement.objects.filter(
+                        analysis_pillar=models.OuterRef('pk')
+                    ).order_by().values('analysis_pillar').annotate(count=models.Count('entries', distinct=True))
+                    .values('count')[:1],
+                    output_field=models.IntegerField(),
+                ), 0),
+            discarded_entries=models.functions.Coalesce(
+                models.Subquery(
+                    DiscardedEntry.objects.filter(
+                        analysis_pillar=models.OuterRef('pk')
+                    ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count('entry', distinct=True))
+                    .values('count')[:1],
+                    output_field=models.IntegerField(),
+                ), 0),
+        ).annotate(
+            entries_analyzed=models.F('dragged_entries') + models.F('discarded_entries')
         )
+
         return response.Response(
             [
                 {
@@ -124,7 +158,8 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                         'entries_count', 'id', 'statement'
                     ),
                     'created_at': pillar.created_at,
-                    'analytical_statement_count': AnalyticalStatement.objects.filter(analysis_pillar=pillar).count()
+                    'analytical_statement_count': AnalyticalStatement.objects.filter(analysis_pillar=pillar).count(),
+                    'entries_analyzed': pillar.entries_analyzed
                 } for pillar in pillar_list
 
             ]
