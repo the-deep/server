@@ -160,6 +160,38 @@ class AnalysisFrameworkTests(TestCase):
         assert 'member_details' in data[0]
         assert data[0]['framework'] == framework.id
 
+    def test_get_more_memberships_data(self):
+        user1 = self.create_user()
+        user2 = self.create_user()
+        user3 = self.create_user()
+        user4 = self.create_user()
+        framework = self.create(AnalysisFramework)
+        framework.add_member(
+            user=user1,
+            role=framework.get_or_create_owner_role(),
+            added_by=user2
+        )
+
+        url = f'/api/v1/analysis-frameworks/{framework.id}/memberships/'
+
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        data = response.data['results']
+        assert 'added_by_details' in data[0]
+        self.assertEqual(data[0]['added_by_details']['id'], user2.id)
+        assert 'role_details' in data[0]
+
+        # test for the pagination support in memberships
+        framework.add_member(user2)
+        framework.add_member(user3)
+        framework.add_member(user4)
+        url = f'/api/v1/analysis-frameworks/{framework.id}/memberships/?limit=2'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(len(response.data['results']), 2)
+
     def test_create_analysis_framework(self):
         project = self.create(Project, role=self.admin_role)
         organization = self.create(Organization)
@@ -323,6 +355,23 @@ class AnalysisFrameworkTests(TestCase):
         self.assert_200(response)
         for membership in response.data['results']:
             self.assertEqual(membership['member'], self.user.id)
+
+    def test_post_framework_memberships(self):
+        user = self.create_user()
+        user2 = self.create_user()
+        framework = self.create(AnalysisFramework)
+        framework.add_member(user, framework.get_or_create_owner_role())
+
+        data = {
+            'role': framework.get_or_create_owner_role().id,
+            'member': user2.id,
+            'framework':framework.id
+        }
+        self.authenticate(user)
+        url = '/api/v1/framework-memberships/'
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        self.assertEqual(response.data['added_by'], user.id)  # set request user to be added_by
 
     def test_add_roles_to_public_framework_non_member(self):
         framework = self.create(AnalysisFramework, is_private=False)
