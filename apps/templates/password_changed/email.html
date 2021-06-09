@@ -5,10 +5,12 @@
         Time:{{time}}
         Location:{{location}}
         Device:{{device}}
+        If you are aware of this change, you can disregard this email.
+        If this was not triggered by you, click the button below to reset your password.
         <a class="button-link"
         href="{{ protocol }}://{{ domain }}{% url 'user-change_password' version='v2' %}"
         >
-        I didn't do this--change again
+        Reset Password
         </a>
     </p>
 {% endblock%}
