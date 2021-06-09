@@ -1,23 +1,25 @@
-Addresses xxxxxx (eg: #1 the-deep/client#1)
+Addresses xxxxxx (eg: #1 the-deep/server#1)
+Depends on xxxxxx (eg: #1 the-deep/server#1)
 
 ## Changes
 
 * Detailed list or prose of changes
-* ...
+* Breaking changes
+* Changes to configurations
 
 Mention related users here if any.
 
+## This PR doesn't introduce any:
 
-## Make sure there are no
+- [ ] temporary files, auto-generated files or secret keys
+- [ ] n+1 queries
+- [ ] flake8 issues
+- [ ] `print`
+- [ ] typos
+- [ ] unwanted comments
 
-- N+1 queries.
-- Flake8 issues.
-- `print`.
-- typos.
-- .....
+## This PR contains valid:
 
-## Make sure there are
-
-- tests.
-- valid permission (tests here too).
-- .....
+- [ ] tests
+- [ ] permission checks (tests here too)
+- [ ] translations
