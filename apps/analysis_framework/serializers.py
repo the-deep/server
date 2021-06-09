@@ -91,6 +91,14 @@ class SimpleExportableSerializer(RemoveNullFieldsMixin,
         fields = ('id', 'widget_key', 'inline', 'order', 'data')
 
 
+class AnalysisFrameworkRoleSerializer(
+    RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer,
+):
+    class Meta:
+        model = AnalysisFrameworkRole
+        fields = ('__all__')
+
+
 class AnalysisFrameworkMembershipSerializer(
     RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer,
 ):
@@ -99,6 +107,8 @@ class AnalysisFrameworkMembershipSerializer(
         required=False,
         queryset=AnalysisFrameworkRole.objects.all(),
     )
+    added_by_details = SimpleUserSerializer(read_only=True, source='added_by')
+    role_details = AnalysisFrameworkRoleSerializer(read_only=True, source='role')
 
     class Meta:
         model = AnalysisFrameworkMembership
@@ -145,6 +155,7 @@ class AnalysisFrameworkMembershipSerializer(
             )
 
         validated_data['role'] = role  # Just in case role is not provided, add default role
+        validated_data['added_by'] = user # make request user to be added_by by default
 
         return super().create(validated_data)
 
@@ -276,11 +287,3 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, Use
 
     def get_is_admin(self, analysis_framework):
         return analysis_framework.can_modify(self.context['request'].user)
-
-
-class AnalysisFrameworkRoleSerializer(
-    RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer,
-):
-    class Meta:
-        model = AnalysisFrameworkRole
-        fields = ('__all__')
