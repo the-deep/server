@@ -1,4 +1,4 @@
-Addresses xxxxxx (eg: #1 the-deep/server#1)
+Addresses xxxxxx (eg: #1 the-deep/server#1) \
 Depends on xxxxxx (eg: #1 the-deep/server#1)
 
 ## Changes
