@@ -356,6 +356,23 @@ class AnalysisFrameworkTests(TestCase):
         for membership in response.data['results']:
             self.assertEqual(membership['member'], self.user.id)
 
+    def test_post_framework_memberships(self):
+        user = self.create_user()
+        user2 = self.create_user()
+        framework = self.create(AnalysisFramework)
+        framework.add_member(user, framework.get_or_create_owner_role())
+
+        data = {
+            'role': framework.get_or_create_owner_role().id,
+            'member': user2.id,
+            'framework':framework.id
+        }
+        self.authenticate(user)
+        url = '/api/v1/framework-memberships/'
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        self.assertEqual(response.data['added_by'], user.id)  # set request user to be added_by
+
     def test_add_roles_to_public_framework_non_member(self):
         framework = self.create(AnalysisFramework, is_private=False)
         add_member_data = {
