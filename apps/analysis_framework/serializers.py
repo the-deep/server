@@ -155,6 +155,7 @@ class AnalysisFrameworkMembershipSerializer(
             )
 
         validated_data['role'] = role  # Just in case role is not provided, add default role
+        validated_data['added_by'] = user # make request user to be added_by by default
 
         return super().create(validated_data)
 
