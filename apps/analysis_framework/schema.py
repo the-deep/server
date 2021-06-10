@@ -1,3 +1,4 @@
+import graphene
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
@@ -21,17 +22,17 @@ class WidgetListType(CustomDjangoListObjectType):
 
 
 class AnalysisFrameworkType(DjangoObjectType):
+    widget_set = DjangoPaginatedListObjectField(WidgetListType)
+
     class Meta:
         model = AnalysisFramework
-        only_fields = ('title', 'widgets', 'description', 'is_private')
+        only_fields = ('id', 'title', 'widget_set', 'description', 'is_private')
 
 
 class AnalysisFrameworkListType(CustomDjangoListObjectType):
     class Meta:
         model = AnalysisFramework
         filter_fields = ['id']
-
-    widget_set = DjangoPaginatedListObjectField(WidgetListType)
 
 
 class Query:
