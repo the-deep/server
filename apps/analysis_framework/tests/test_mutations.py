@@ -1,7 +1,10 @@
 from utils.graphene.tests import GraphqlTestCase
 
+from analysis_framework.models import AnalysisFramework
+from project.models import Project
 
-class AnalysisFrameworkTests(GraphqlTestCase):
+
+class TestAnalysisFrameworkCreateUpdate(GraphqlTestCase):
     def setUp(self):
         super().setUp()
         self.create_mutation = '''
@@ -10,6 +13,21 @@ class AnalysisFrameworkTests(GraphqlTestCase):
             ok
             errors
             result {
+              id
+              title
+              isPrivate
+              description
+            }
+          }
+        }
+        '''
+        self.update_mutation = '''
+        mutation UpdateMutation($input: AnalysisFrameworkInputType!, $id: ID!) {
+          updateAnalysisFramework(data: $input, id: $id) {
+            ok
+            errors
+            result {
+              id
               title
               isPrivate
               description
@@ -37,62 +55,147 @@ class AnalysisFrameworkTests(GraphqlTestCase):
             self.input['title']
         )
 
-    def test_get_private_analysis_framework_not_member(self):
-        pass
-
-    def test_get_private_analysis_framework_not_member_but_same_project(self):
-        pass
-
-    def test_get_related_to_me_frameworks(self):
-        pass
-
-    def test_get_private_analysis_framework_by_member(self):
-        pass
-
-    def test_get_public_framework_with_roles(self):
-        pass
-
-    def test_get_memberships(self):
-        pass
-
-    def test_clone_analysis_framework_without_name(self):
-        pass
-
-    def test_clone_analysis_framework(self):
-        pass
-
     def test_create_private_framework_unauthorized(self):
-        pass
+        project = self.create(Project, role=self.admin_role)
+        self.input = dict(
+            title='new title',
+            isPrivate=True,
+            project=project.id,
+        )
+        self.force_login()
+        response = self.query(
+            self.create_mutation,
+            input_data=self.input
+        )
+        content = response.json()
+        self.assertIsNotNone(content['errors'][0]['message'])
+        # The actual message is
+        # You don't have permissions to create private framework
+        self.assertIn('permission', content['errors'][0]['message'])
 
     def test_create_private_framework(self):
-        pass
+        project = self.create(Project, role=self.admin_role)
+
+        self.input = dict(
+            title='new title',
+            isPrivate=True,
+            project=project.id,
+        )
+        self.force_login()
+
+        response = self.query(
+            self.create_mutation,
+            input_data=self.input
+        )
+        content = response.json()
+        self.assertIsNotNone(content['errors'][0]['message'])
+        # The actual message is
+        # You don't have permissions to create private framework
+        self.assertIn('permission', content['errors'][0]['message'])
+
+    def test_invalid_create_framework_privately_in_public_project(self):
+        project = self.create(Project, role=self.admin_role, is_private=False)
+        self.assertEqual(project.is_private, False)
+
+        self.input = dict(
+            title='new title',
+            isPrivate=True,
+            project=project.id,
+        )
+        self.force_login()
+
+        response = self.query(
+            self.create_mutation,
+            input_data=self.input
+        )
+        content = response.json()
+        self.assertIsNotNone(content['errors'][0]['message'])
+        self.assertIn('permission', content['errors'][0]['message'])
 
     def test_change_is_private_field(self):
-        pass
+        """Even the owner should be unable to change privacy"""
+        private_framework = self.create(AnalysisFramework, is_private=True)
+        public_framework = self.create(AnalysisFramework, is_private=False)
+        user = self.user
+        private_framework.add_member(
+            user,
+            private_framework.get_or_create_owner_role()
+        )
+        public_framework.add_member(
+            user,
+            public_framework.get_or_create_owner_role()
+        )
+        content = self._change_framework_privacy(public_framework, user)
+        self.assertIsNotNone(content['errors'][0]['message'])
+        self.assertIn('permission', content['errors'][0]['message'])
+        content = self._change_framework_privacy(private_framework, user)
+        self.assertIsNotNone(content['errors'][0]['message'])
+        self.assertIn('permission', content['errors'][0]['message'])
 
     def test_change_other_fields(self):
-        pass
+        private_framework = self.create(AnalysisFramework, is_private=True)
+        public_framework = self.create(AnalysisFramework, is_private=False)
+        user = self.user
+        private_framework.add_member(
+            user,
+            private_framework.get_or_create_owner_role()
+        )
+        public_framework.add_member(
+            user,
+            public_framework.get_or_create_owner_role()
+        )
 
-    def test_get_membersips(self):
-        pass
+        self.force_login(user)
 
-    def test_add_roles_to_public_framework_non_member(self):
-        pass
+        # private framework update
+        self.input = dict(
+            title='new title updated',
+            isPrivate=private_framework.is_private,
+        )
+        response = self.query(
+            self.update_mutation,
+            input_data=self.input,
+            variables={'id': private_framework.id},
+        )
+        private_framework.refresh_from_db()
+        content = response.json()
+        self.assertTrue(content['data']['updateAnalysisFramework']['ok'], content)
+        self.assertEqual(
+            private_framework.title,
+            self.input['title']
+        )
 
-    def test_project_analysis_framework(self):
-        pass
+        # public framework update
+        self.input = dict(
+            title='public title updated',
+            isPrivate=public_framework.is_private,
+        )
+        response = self.query(
+            self.update_mutation,
+            input_data=self.input,
+            variables={'id': public_framework.id},
+        )
+        public_framework.refresh_from_db()
+        content = response.json()
+        self.assertTrue(content['data']['updateAnalysisFramework']['ok'], content)
+        self.assertEqual(
+            public_framework.title,
+            self.input['title']
+        )
 
-    def test_filter_analysis_framework(self):
-        pass
+    def _change_framework_privacy(self, framework, user):
+        self.force_login(user)
 
-    def test_search_users_excluding_framework_members(self):
-        pass
-
-    def test_af_project_api(self):
-        pass
-
-    def check_owner_roles_present(self, framework, permissions):
-        pass
-
-    def check_default_roles_present(self, framework, permissions):
-        pass
+        changed_privacy = not framework.is_private
+        self.input = dict(
+            title='new title',
+            isPrivate=changed_privacy,
+            # other fields not cared for now
+        )
+        response = self.query(
+            self.update_mutation,
+            input_data=self.input,
+            variables={'id': framework.id},
+        )
+        content = response.json()
+        return content

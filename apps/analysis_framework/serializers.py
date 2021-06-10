@@ -169,15 +169,6 @@ class AnalysisFrameworkMembershipSerializer(
         return super().delete(instance)
 
 
-# TODO: remove me
-class AnalysisFrameworkMinimalSerializer(UserResourceSerializer):
-    widgets = SimpleWidgetSerializer(source='widget_set', many=True, required=False)
-
-    class Meta:
-        model = AnalysisFramework
-        fields = ('title', 'description', 'is_private', 'widgets')
-
-
 class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
                                   DynamicFieldsMixin,
                                   UserResourceSerializer):

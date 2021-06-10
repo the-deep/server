@@ -58,6 +58,7 @@ class GraphqlTestCase(CommonSetupClassMixin, DeepTestCase, GraphQLTestCase):
         self._client.credentials(
             HTTP_AUTHORIZATION='Bearer {}'.format(access.encode())
         )
+        # set the session as well
         self._client.force_login(user)
 
         return access.encode(), refresh.encode()

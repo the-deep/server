@@ -185,19 +185,23 @@ class GrapheneMutation(graphene.Mutation):
     ok = graphene.Boolean()
 
     @classmethod
-    def get_queryset(cls):
-        # call filterset here
-        return cls.model._meta.default_manager.all()
+    def get_queryset(cls, info, **kwargs):
+        return cls.filter_queryset(
+            cls.model._meta.default_manager.all(),
+            info,
+            **kwargs
+        )
 
     @classmethod
     def get_object(cls, info, **kwargs):
-        obj = cls.get_queryset().get(id=kwargs['id'])
+        obj = cls.get_queryset(info, **kwargs).get(id=kwargs['id'])
         cls.check_object_permissions(info, obj, **kwargs)
         return obj
 
     @classmethod
-    def filter_queryset(cls, info, **kwargs):
-        ...
+    def filter_queryset(cls, qs, info, **kwargs):
+        # customize me in the mutation if required
+        return qs
 
     @classmethod
     def get_permissions(cls):
@@ -250,3 +254,14 @@ class GrapheneMutation(graphene.Mutation):
     def mutate(cls, root, info, **kwargs):
         cls.check_permissions(info, **kwargs)
         return cls.perform_mutate(root, info, **kwargs)
+
+
+class DeleteMutation(GrapheneMutation):
+    @classmethod
+    def perform_mutate(cls, root, info, **kwargs):
+        instance = cls.get_object(info, **kwargs)
+        old_id = instance.id
+        instance.delete()
+        # add old id so that client can use it if required
+        instance.id = old_id
+        return cls(result=instance, errors=None, ok=True)
