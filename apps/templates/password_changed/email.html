@@ -8,9 +8,15 @@
         If you are aware of this change, you can disregard this email.
         If this was not triggered by you, click the button below to reset your password.
         <a class="button-link"
-        href="{{ protocol }}://{{ domain }}{% url 'user-change_password' version='v2' %}"
+        href="{{ protocol }}://{{client_domain}}/password-reset/"
         >
         Reset Password
+        </a>
+        <br>
+        Incase yo like to change your password
+        <a class="button-link"
+        href="{{ protocol }}://{{client_domain}}/users/me/change-password/">
+            Change Password
         </a>
     </p>
 {% endblock%}
