@@ -104,6 +104,9 @@ class TestCase(test.APITestCase):
     def assert_400(self, response):
         self.assert_http_code(response, status.HTTP_400_BAD_REQUEST)
 
+    def assert_401(self, response):
+        self.assert_http_code(response, status.HTTP_401_UNAUTHORIZED)
+
     def assert_403(self, response):
         self.assert_http_code(response, status.HTTP_403_FORBIDDEN)
 

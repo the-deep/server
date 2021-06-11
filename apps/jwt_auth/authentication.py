@@ -58,7 +58,7 @@ class JwtAuthentication(authentication.BaseAuthentication):
         parts = header.split()
 
         # No Bearer header at all
-        if parts[0] != AUTH_HEADER_TYPE_BYTES:
+        if len(parts) == 0 or parts[0] != AUTH_HEADER_TYPE_BYTES:
             return None
 
         # Improper Bearer header

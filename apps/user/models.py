@@ -27,6 +27,7 @@ class Profile(models.Model):
     # Email Conditions
     E_ACCOUNT_ACTIVATION = 'account_activation'
     E_PASSWORD_RESET = 'password_reset'
+    E_PASSWORD_CHANGED = 'password_changed'
 
     E_JOIN_REQUESTS = 'join_requests'
     E_NEWS_AND_UPDATES = 'news_and_updates'
@@ -42,6 +43,7 @@ class Profile(models.Model):
     ALWAYS_SEND_EMAIL_CONDITIONS = [
         E_ACCOUNT_ACTIVATION,
         E_PASSWORD_RESET,
+        E_PASSWORD_CHANGED
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)

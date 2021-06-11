@@ -24,8 +24,9 @@ from .serializers import (
     UserPreferencesSerializer,
     NotificationSerializer,
     PasswordResetSerializer,
+    PasswordChangeSerializer
 )
-from .permissions import UserPermission, UserViewSetPermission
+from .permissions import UserPermission
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -51,7 +52,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     queryset = User.objects.filter(is_active=True).order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [UserPermission, UserViewSetPermission]
+    permission_classes = [UserPermission]
 
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
 
@@ -128,6 +129,25 @@ class UserViewSet(viewsets.ModelViewSet):
         self.page = self.paginate_queryset(notifications)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
+
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
+        url_name="change_password",
+        url_path='me/change-password',
+        serializer_class=PasswordChangeSerializer,
+        methods=['POST']
+    )
+    def change_password(self, request, pk=None, version=None):
+        serializer = PasswordChangeSerializer(
+            data=request.data,
+            context={
+                'request': request
+            }
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return response.Response(status=status.HTTP_200_OK)
 
 
 class PasswordResetView(views.APIView):
