@@ -73,26 +73,6 @@ class TestAnalysisFrameworkCreateUpdate(GraphqlTestCase):
         # You don't have permissions to create private framework
         self.assertIn('permission', content['errors'][0]['message'])
 
-    def test_create_private_framework(self):
-        project = self.create(Project, role=self.admin_role)
-
-        self.input = dict(
-            title='new title',
-            isPrivate=True,
-            project=project.id,
-        )
-        self.force_login()
-
-        response = self.query(
-            self.create_mutation,
-            input_data=self.input
-        )
-        content = response.json()
-        self.assertIsNotNone(content['errors'][0]['message'])
-        # The actual message is
-        # You don't have permissions to create private framework
-        self.assertIn('permission', content['errors'][0]['message'])
-
     def test_invalid_create_framework_privately_in_public_project(self):
         project = self.create(Project, role=self.admin_role, is_private=False)
         self.assertEqual(project.is_private, False)
