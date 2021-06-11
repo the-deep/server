@@ -1,4 +1,7 @@
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
+from django.db import transaction
+
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
@@ -8,7 +11,12 @@ from deep.serializers import (
     WriteOnlyOnCreateSerializerMixin,
 )
 from user.models import Profile, Feature
-from user.utils import send_password_reset
+from user.utils import (
+    send_password_reset,
+    send_password_changed_notification,
+    get_client_ip,
+    get_device_type
+)
 from project.models import Project
 from gallery.models import File
 
@@ -228,3 +236,31 @@ class EntryCommentUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'name', 'email', 'organization', 'display_picture_url',)
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only=True)
+
+    def validate_old_password(self, password):
+        user = self.context['request'].user
+        if not user.check_password(password):
+            raise serializers.ValidationError('Invalid Old Password')
+        return password
+
+    def validate_new_password(self, password):
+        validate_password(password)
+        return password
+
+    def save(self, **kwargs):
+        user = self.context['request'].user
+        user.set_password(self.validated_data['new_password'])
+        user.save()
+        client_ip = get_client_ip(self.context['request'])
+        device_type = get_device_type(self.context['request'])
+        transaction.on_commit(
+            lambda: send_password_changed_notification.delay(
+                user_id=user.id,
+                client_ip=client_ip,
+                device_type=device_type)
+        )

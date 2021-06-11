@@ -64,6 +64,9 @@ class JwtApiTests(TestCase):
             'password': self.user_password
         }
         url = '/api/v1/token/'
+
+        # NOTE: Just to make sure empty doesn't throw error
+        self.client.credentials(HTTP_AUTHORIZATION='')
         response = self.client.post(url, data=data)
         self.assert_200(response)
         self.assertIn('access', response.data)
