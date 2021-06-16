@@ -1,6 +1,4 @@
 from django.db import models
-from django.db.models.expressions import Subquery
-from django.db.models.fields import IntegerField
 
 from rest_framework.decorators import action
 from rest_framework import (
@@ -109,12 +107,13 @@ class AnalysisViewSet(viewsets.ModelViewSet):
             analyzed_entries=models.F('dragged_entries') + models.F('discarded_entries'),
             analyzed_sources=models.F('sources_dragged') + models.F('sources_discarded')
         )
+        self.page = self.paginate_queryset(queryset)
         serializer = AnalysisSummarySerializer(
-            queryset,
+            self.page,
             many=True,
             partial=True,
         )
-        return response.Response(serializer.data)
+        return self.get_paginated_response(serializer.data)
 
     @action(
         detail=True,
