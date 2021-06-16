@@ -418,7 +418,7 @@ class TestAnalysisAPIs(TestCase):
         self.authenticate(user)
         response = self.client.get(url)
         self.assert_200(response)
-        data = response.data
+        data = response.data['results']
         self.assertEqual(data[1]['team_lead'], user.id)
         self.assertEqual(data[1]['team_lead_name'], user.username)
         self.assertEqual(len(data[1]['pillar_list']), 3)
