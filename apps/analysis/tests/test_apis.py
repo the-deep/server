@@ -338,6 +338,66 @@ class TestAnalysisAPIs(TestCase):
         response = self.client.post(url, data)
         self.assert_400(response)
 
+    def test_version_change_upon_changes_in_analytical_statement(self):
+        user = self.create_user()
+        project = self.create_project()
+        project.add_member(user)
+        entry1 = self.create(Entry)
+        entry2 = self.create(Entry)
+        analysis = self.create(Analysis, title='Test Analysis')
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statements': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "client_id": "1",
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "client_id": "1",
+                            "entry": entry1.id,
+                        }
+                    ],
+                },
+            ]
+        }
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        id = response.data['id']
+        statement_id = response.data['analytical_statements'][0]['id']
+        self.assertEqual(response.data['version'], 1)
+        self.assertEqual(response.data['analytical_statements'][0]['version'], 1)
+        # try to patch some changes in analytical_statements
+        data = {
+            'analytical_statements': [
+                {
+                    'id': statement_id,
+                    "statement": "tea",
+                    "order": 1,
+                    "client_id": "123",
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "client_id": "1",
+                            "entry": entry1.id,
+                        }
+                    ],
+                },
+            ]
+        }
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{id}/'
+        response = self.client.patch(url, data)
+        self.assert_200(response)
+        # after the sucessfull patch the version should change
+        self.assertEqual(response.data['version'], 2)
+        self.assertEqual(response.data['analytical_statements'][0]['version'], 2)
+
     def test_summary_for_analysis(self):
         user = self.create_user()
         user2 = self.create_user()
