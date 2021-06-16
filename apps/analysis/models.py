@@ -1,4 +1,6 @@
 import copy
+from typing import Counter
+from django.contrib.postgres import fields
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -45,10 +47,10 @@ class AnalysisPillar(UserResource):
         Analysis,
         on_delete=models.CASCADE
     )
+    version =  models.IntegerField(default=0)
 
     def __str__(self):
         return self.title
-
 
 class DiscardedEntry(models.Model):
     """
@@ -98,6 +100,7 @@ class AnalyticalStatement(UserResource):
     )
     include_in_report = models.BooleanField(default=False)
     order = models.IntegerField()
+    version = models.IntegerField(default=0)
 
     class Meta:
         ordering = ('order',)
