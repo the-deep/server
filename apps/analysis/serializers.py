@@ -12,6 +12,7 @@ from deep.serializers import (
     NestedCreateMixin,
     NestedUpdateMixin
 )
+from entry.models import Entry
 from .models import (
     Analysis,
     AnalysisPillar,
@@ -41,6 +42,17 @@ class AnalyticalStatementSerializer(
         model = AnalyticalStatement
         fields = '__all__'
         read_only_fields = ('analysis_pillar',)
+
+    def validate_analytical_entries(self, data):
+        objects = list()
+        for value in data:
+            for key, value in value.items():
+                if key == "entry":
+                    objects.append(value.id)
+        for obj in objects:
+            if obj not in list(Entry.objects.values_list('id', flat=True)):
+                continue
+        return data
 
     def validate(self, data):
         analysis_pillar_id = self.context['view'].kwargs.get('analysis_pillar_id', None)
