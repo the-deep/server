@@ -61,14 +61,17 @@ def _get_project_geoareas(project):
     return geo_array
 
 
-def _get_widget_info(config, widgets, widget_name, skip_data=False):
-    widget = widgets[config[widget_name]['pk']]
+def _get_widget_info(config, widgets, skip_data=False, default=None):
+    if not config and default is not None:
+        return default
+
+    widget = widgets[config['pk']]
 
     def _return(data):
         return {
             '_widget': widget,
             'pk': widget.pk,
-            'config': config[widget_name],
+            'config': config,
             'data': data,
         }
 
@@ -83,11 +86,11 @@ def _get_widget_info(config, widgets, widget_name, skip_data=False):
         return _return(w_filter.properties if w_filter else None)
 
     data = widget.properties['data']
-    is_conditional_widget = config[widget_name].get('is_conditional_widget')
+    is_conditional_widget = config.get('is_conditional_widget')
     if is_conditional_widget:
         for c_widget in data.get('widgets', []):
             _widget = c_widget['widget']
-            if _widget['key'] == config[widget_name]['widget_key']:
+            if _widget['key'] == config['widget_key']:
                 data = _widget['properties']['data']
     return _return(data)
 
@@ -180,9 +183,16 @@ def get_project_entries_stats(project, skip_geo_data=False):
     af = project.analysis_framework
     config = af.properties.get('stats_config')
 
-    widgets_pk = [info['pk'] for info in config.values()]
+    widgets_pk = [
+        info['pk']
+        for _info in config.values()
+        for info in (_info if isinstance(_info, list) else [_info])
+    ]
     cd_widget_map = {
-        w_config['pk']: w_config for w_config in config.values() if w_config.get('is_conditional_widget')
+        w_config['pk']: w_config
+        for _w_config in config.values()
+        for w_config in (_w_config if isinstance(_w_config, list) else [_w_config])
+        if w_config.get('is_conditional_widget')
     }
     widgets = {
         widget.pk: widget
@@ -193,40 +203,75 @@ def get_project_entries_stats(project, skip_geo_data=False):
     config['widget1d'] = config.get('widget1d') or config['widget_1d']
     config['widget2d'] = config.get('widget2d') or config['widget_2d']
 
-    w1d = _get_widget_info(config, widgets, 'widget1d')
-    w2d = _get_widget_info(config, widgets, 'widget2d')
-    w_specific_needs_groups = _get_widget_info(config, widgets, 'specific_needs_groups_widget')
-    w_severity = _get_widget_info(config, widgets, 'severity_widget')
-    w_reliability = _get_widget_info(config, widgets, 'reliability_widget')
-    w_ag = _get_widget_info(config, widgets, 'affected_groups_widget')
-    w_geo = _get_widget_info(config, widgets, 'geo_widget', skip_data=True)
+    # Make sure this are array
+    for key in ['widget1d', 'widget2d']:
+        if type(config[key]) is not list:
+            config[key] = [config[key]]
+
+    w_reliability_default = w_severity_default = {
+        'pk': None,
+        'data': {
+            'scale_units': [],
+        },
+    }
+    w_specific_needs_groups_default = {
+        'pk': None,
+        'data': {
+            'options': []
+        },
+    }
+
+    w1ds = [_get_widget_info(_config, widgets) for _config in config['widget1d']]
+    w2ds = [_get_widget_info(_config, widgets) for _config in config['widget2d']]
+
+    w_specific_needs_groups = _get_widget_info(
+        config.get('specific_needs_groups_widget'), widgets, default=w_specific_needs_groups_default
+    )
+    w_severity = _get_widget_info(config.get('severity_widget'), widgets, default=w_severity_default)
+    w_reliability = _get_widget_info(config.get('reliability_widget'), widgets, default=w_reliability_default)
+
+    w_ag = _get_widget_info(config['affected_groups_widget'], widgets)
+    w_geo = _get_widget_info(config['geo_widget'], widgets, skip_data=True)
+
+    matrix_widgets = [
+        {'id': w['pk'], 'type': w_type, 'title': w['_widget'].title}
+        for widgets, w_type in [[w1ds, 'widget1d'], [w2ds, 'widget2d']]
+        for w in widgets
+    ]
 
     context_array = [
         {
             'id': f"{w['pk']}-{dimension[id_key]}",
+            'widget_id': w['pk'],
             'name': dimension['title'],
             'color': dimension.get('color'),
         } for id_key, w, dimensions in [
-            ('key', w1d, w1d['data']['rows']),
-            ('id', w2d, w2d['data']['dimensions']),
+            *[('key', w1d, w1d['data']['rows']) for w1d in w1ds],
+            *[('id', w2d, w2d['data']['dimensions']) for w2d in w2ds],
         ] for dimension in dimensions
     ]
     framework_groups_array = [
         {
             'id': subdimension['id'],
+            'widget_id': w2d['pk'],
             'context_id': f"{w2d['pk']}-{dimension['id']}",
             'name': subdimension['title'],
             'tooltip': subdimension.get('tooltip'),
-        } for dimension in w2d['data']['dimensions']
+        }
+        for w2d in w2ds
+        for dimension in w2d['data']['dimensions']
         for subdimension in dimension['subdimensions']
     ]
 
     sector_array = [
         {
             'id': sector['id'],
+            'widget_id': w2d['pk'],
             'name': sector['title'],
             'tooltip': sector.get('tooltip'),
-        } for sector in w2d['data']['sectors']
+        }
+        for w2d in w2ds
+        for sector in w2d['data']['sectors']
     ]
     affected_groups_array = [
         {
@@ -257,6 +302,7 @@ def get_project_entries_stats(project, skip_geo_data=False):
 
     meta = {
         'data_calculated': timezone.now(),
+        'matrix_widgets': matrix_widgets,
         'context_array': context_array,
         'framework_groups_array': framework_groups_array,
         'sector_array': sector_array,
@@ -293,14 +339,13 @@ def get_project_entries_stats(project, skip_geo_data=False):
             'geo': collector.get(w_geo['pk'], []),
             'special_needs': collector.get(w_specific_needs_groups['pk'], []),
             'affected_groups': collector.get(w_ag['pk'], []),
-            'context': (
-                collector.get(w1d['pk'], {}).get('context_keys', []) +
-                collector.get(w2d['pk'], {}).get('context_keys', [])
-            ),
-            'sector': (
-                collector.get(w1d['pk'], {}).get('sectors_keys', []) +
-                collector.get(w2d['pk'], {}).get('sectors_keys', [])
-            ),
+            'context_sector': {
+                w['pk']: {
+                    'context': collector.get(w['pk'], {}).get('context_keys', []),
+                    'sector': collector.get(w['pk'], {}).get('sectors_keys', []),
+                }
+                for w in [*w1ds, *w2ds]
+            },
         })
 
     return {
