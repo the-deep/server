@@ -23,6 +23,7 @@ from .models import Region, AdminLevel, GeoArea
 from .serializers import (
     AdminLevelSerializer,
     RegionSerializer,
+    GeoAreaSerializer
 )
 
 from geo.tasks import load_geo_areas
@@ -241,5 +242,43 @@ class GeoOptionsView(views.APIView):
             if not region.geo_options:
                 region.calc_cache()
             result[str(region.id)] = region.geo_options
-
         return response.Response(result)
+
+
+class GeoAreaView(viewsets.ReadOnlyModelViewSet):
+    permissions_classes = [permissions.IsAuthenticated]
+    serializer_class = GeoAreaSerializer
+
+    def get_queryset(self):
+        queryset = GeoArea.objects.prefetch_related(
+            'admin_level',
+            'admin_level__region'
+        ).distinct().annotate(
+            label=models.functions.Concat(
+                models.F('admin_level__title'),
+                models.Value('/'),
+                models.F('title'),
+                output_field=models.fields.CharField()
+            ),
+            region=models.F('admin_level__region_id'),
+            region_title=models.F('admin_level__region__title'),
+            admin_level_level=models.F('admin_level__level'),
+            admin_level_title=models.F('admin_level__title'),
+            key=models.F('id')
+        )
+        project = self.request.query_params.get('project')
+        if project:
+            project = Project.objects.get(id=project)
+            if not project.is_member(self.request.user):
+                raise exceptions.PermissionDenied()
+            return queryset.filter(
+                admin_level__region__project=project
+            )
+        # this is added for the serch purpose
+        label = self.request.query_params.get('label')
+        if label:
+            return queryset.filter(
+                models.Q(title__icontains=label) |
+                models.Q(admin_level__title=label)
+            )
+        return queryset
