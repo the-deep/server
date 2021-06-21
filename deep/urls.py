@@ -444,7 +444,7 @@ urlpatterns = [
         EntryOptionsView.as_view()),
     url(get_api_path(r'project-options/$'),
         ProjectOptionsView.as_view()),
-    url(get_api_path(r'discardedentry-options/$'),
+    url(get_api_path(r'discarded-entry-options/$'),
         DiscardedEntryOptionsView.as_view()),
 
     # Triggering api
