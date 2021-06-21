@@ -367,7 +367,7 @@ class TestAnalysisAPIs(TestCase):
         entry6 = self.create_entry(lead=lead6, project=project)
         self.create_entry(lead=lead8, project=project)
         entry8 = self.create_entry(lead=lead9, project=project)
-        self.create_entry(lead=lead2, project=project)
+        entry9 = self.create_entry(lead=lead2, project=project)
 
         analysis1 = self.create(Analysis, title='Test Analysis', team_lead=user, project=project)
         analysis2 = self.create(Analysis, title='Not for test', team_lead=user, project=project)
@@ -384,6 +384,11 @@ class TestAnalysisAPIs(TestCase):
         DiscardedEntry.objects.create(
             analysis_pillar=pillar1,
             entry=entry3,
+            tag=DiscardedEntry.TagType.REDUNDANT
+        )
+        DiscardedEntry.objects.create(
+            analysis_pillar=pillar1,
+            entry=entry9,
             tag=DiscardedEntry.TagType.REDUNDANT
         )
 
@@ -430,7 +435,7 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(data[1]['framework_overview'][0]['title'], pillar3.title)
         self.assertEqual(data[1]['framework_overview'][0]['entries_analyzed'], 3)  # discrded + analyzed entry
         self.assertEqual(data[1]['framework_overview'][1]['entries_analyzed'], 2)  # discrded + analyzed entry
-        self.assertEqual(data[1]['analyzed_entries'], 8)
+        self.assertEqual(data[1]['analyzed_entries'], 9)
         self.assertEqual(data[1]['analyzed_sources'], 7)  # have `distinct=True`
         self.assertEqual(data[1]['total_entries'], 10)
         self.assertEqual(data[1]['total_sources'], 8)  # taking lead that has entry more than one
@@ -760,23 +765,22 @@ class TestAnalysisAPIs(TestCase):
         self.assertNotIn(entry1.id, response_id)
 
     def test_discardedentry_options(self):
-        url = '/api/v1/discardedentry-options/'
+        url = '/api/v1/discarded-entry-options/'
 
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
-        self.assertIn('discarded_entries_tags', response.data)
         self.assertEqual(
-            response.data['discarded_entries_tags'][0]['key'],
+            response.data[0]['key'],
             DiscardedEntry.TagType.REDUNDANT)
         self.assertEqual(
-            response.data['discarded_entries_tags'][0]['value'],
+            response.data[0]['value'],
             DiscardedEntry.TagType.REDUNDANT.name.title()
         )
         self.assertEqual(
-            response.data['discarded_entries_tags'][1]['key'],
+            response.data[1]['key'],
             DiscardedEntry.TagType.TOO_OLD)
         self.assertEqual(
-            response.data['discarded_entries_tags'][1]['value'],
+            response.data[1]['value'],
             DiscardedEntry.TagType.TOO_OLD.name.title()
         )

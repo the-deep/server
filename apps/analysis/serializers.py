@@ -139,8 +139,12 @@ class AnalysisSummarySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Analysis
-        fields = ('id', 'team_lead', 'team_lead_name', 'pillar_list', 'framework_overview', 'publication_date',
-                  'analyzed_entries', 'analyzed_sources', 'total_entries', 'total_sources', 'pillar_summary')
+        fields = ('id', 'title', 'team_lead', 'team_lead_name',
+                  'pillar_list', 'framework_overview', 'publication_date',
+                  'analyzed_entries', 'analyzed_sources', 'total_entries',
+                  'total_sources', 'pillar_summary',
+                  'created_at', 'modified_at',
+                )
 
     def get_pillar_list(self, analysis):
         return list(

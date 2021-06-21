@@ -13,7 +13,6 @@ from rest_framework import (
 from deep.permissions import IsProjectMember
 from entry.views import EntryFilterView
 
-from entry.models import Entry
 from lead.models import Lead
 from .models import (
     Analysis,
@@ -105,7 +104,6 @@ class AnalysisViewSet(viewsets.ModelViewSet):
             total_sources=models.Value(total_sources, output_field=models.IntegerField())
         ).annotate(
             analyzed_entries=models.F('dragged_entries') + models.F('discarded_entries'),
-            analyzed_sources=models.F('sources_dragged') + models.F('sources_discarded')
         )
         self.page = self.paginate_queryset(queryset)
         serializer = AnalysisSummarySerializer(
@@ -244,13 +242,10 @@ class DiscardedEntryOptionsView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, version=None):
-        options = {
-            'discarded_entries_tags': [
+        options = [
                 {
-                    'key': entry.value,
-                    'value': entry.name.title()
-                } for entry in DiscardedEntry.TagType
-            ]
-        }
-
+                    'key': tag.value,
+                    'value': tag.name.title()
+                } for tag in DiscardedEntry.TagType
+        ]
         return response.Response(options)
