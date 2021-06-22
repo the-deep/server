@@ -43,7 +43,7 @@ if [ "$EBS_ENV_TYPE" == "worker" ]; then
             --logfile=/var/log/celery/celery.log \
             --statedb=/var/run/celery/worker.state \
             --scheduler django_celery_beat.schedulers:DatabaseScheduler
-
+    fi
 fi
 
 # To start Django Server [API]
