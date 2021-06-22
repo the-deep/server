@@ -588,7 +588,7 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(data[1]['framework_overview'][0]['entries_analyzed'], 3)  # discrded + analyzed entry
         self.assertEqual(data[1]['framework_overview'][1]['entries_analyzed'], 2)  # discrded + analyzed entry
         self.assertEqual(data[1]['analyzed_entries'], 9)
-        self.assertEqual(data[1]['analyzed_sources'], 7)  # have `distinct=True`
+        self.assertEqual(data[1]['analyzed_sources'], 6)  # have `distinct=True`
         self.assertEqual(data[1]['total_entries'], 10)
         self.assertEqual(data[1]['total_sources'], 8)  # taking lead that has entry more than one
         self.assertEqual(data[0]['team_lead'], user.id)
@@ -763,6 +763,7 @@ class TestAnalysisAPIs(TestCase):
         entry2 = self.create_entry(lead=lead2, project=project)
         entry3 = self.create_entry(lead=lead3, project=project)
         self.create_entry(lead=lead3, project=project)
+        entry4 = self.create_entry(lead=lead2, project=project)
 
         analysis1 = self.create(Analysis, title='Test Analysis', team_lead=user, project=project)
         analysis2 = self.create(Analysis, title='Test Analysis New', team_lead=user, project=project)
@@ -771,10 +772,13 @@ class TestAnalysisAPIs(TestCase):
 
         analytical_statement1 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
         analytical_statement2 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
-        analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry1)
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry1)
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry2)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry2)
+        DiscardedEntry.objects.create(
+            analysis_pillar=pillar1,
+            entry=entry4,
+            tag=DiscardedEntry.TagType.REDUNDANT
+        )
 
         analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar2)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry3)
@@ -787,10 +791,10 @@ class TestAnalysisAPIs(TestCase):
 
         self.assertEqual(len(data['analysis_list']), 2)
         self.assertEqual(data['analysis_list'][1]['title'], analysis1.title)
-        self.assertEqual(data['entries_total'], 4)
+        self.assertEqual(data['entries_total'], 5)
         self.assertEqual(data['sources_total'], 3)  # since we take only that lead which entry has been created
-        self.assertEqual(data['analyzed_source_count'], 3)
-        self.assertEqual(data['analyzed_entries_count'], 3)
+        self.assertEqual(data['analyzed_source_count'], 3)  # since we take entry
+        self.assertEqual(data['analyzed_entries_count'], 4)  # discarded + analyzed
         self.assertEqual(len(data['authoring_organizations']), 2)
         self.assertIn(organization_type1.id, [item['organization_type_id'] for item in data['authoring_organizations']])
         self.assertIn(
