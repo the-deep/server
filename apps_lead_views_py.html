@@ -23,8 +23,8 @@
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
             343 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">294 run</button>
-            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">49 missing</button>
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">293 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">50 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">10 partial</button>
         </h2>
@@ -309,7 +309,7 @@
     <p id="t254" class="pln"><span class="n"><a href="#t254">254</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t255" class="run"><span class="n"><a href="#t255">255</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_serializer_class</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t256" class="pln"><span class="n"><a href="#t256">256</a></span><span class="t">        <span class="com"># required by ViewSchema generator</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t257" class="run"><span class="n"><a href="#t257">257</a></span><span class="t">        <span class="key">return</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t257" class="mis show_mis"><span class="n"><a href="#t257">257</a></span><span class="t">        <span class="key">return</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">Serializer</span>&nbsp;</span><span class="r"></span></p>
     <p id="t258" class="pln"><span class="n"><a href="#t258">258</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t259" class="run"><span class="n"><a href="#t259">259</a></span><span class="t">    <span class="op">@</span><span class="nam">action</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t260" class="pln"><span class="n"><a href="#t260">260</a></span><span class="t">        <span class="nam">detail</span><span class="op">=</span><span class="key">False</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -835,11 +835,11 @@
     <p id="t780" class="run"><span class="n"><a href="#t780">780</a></span><span class="t">            <span class="key">return</span> <span class="nam">obj</span>&nbsp;</span><span class="r"></span></p>
     <p id="t781" class="pln"><span class="n"><a href="#t781">781</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t782" class="pln"><span class="n"><a href="#t782">782</a></span><span class="t">        <span class="com"># LeadGroup?</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t783" class="run"><span class="n"><a href="#t783">783</a></span><span class="t">        <span class="nam">preview</span> <span class="op">=</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">leadpreview</span> <span class="key">if</span> <span class="nam">hasattr</span><span class="op">(</span><span class="nam">lead</span><span class="op">,</span> <span class="str">'leadpreview'</span><span class="op">)</span> <span class="key">else</span> <span class="key">None</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t784" class="run"><span class="n"><a href="#t784">784</a></span><span class="t">        <span class="nam">preview_images</span> <span class="op">=</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">images</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t785" class="run"><span class="n"><a href="#t785">785</a></span><span class="t">        <span class="nam">emm_triggers</span> <span class="op">=</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">emm_triggers</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t786" class="run"><span class="n"><a href="#t786">786</a></span><span class="t">        <span class="nam">emm_entities</span> <span class="op">=</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">emm_entities</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t787" class="run"><span class="n"><a href="#t787">787</a></span><span class="t">        <span class="nam">authors</span> <span class="op">=</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">authors</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t783" class="run"><span class="n"><a href="#t783">783</a></span><span class="t">        <span class="nam">preview</span> <span class="op">=</span> <span class="nam">original_lead</span><span class="op">.</span><span class="nam">leadpreview</span> <span class="key">if</span> <span class="nam">hasattr</span><span class="op">(</span><span class="nam">lead</span><span class="op">,</span> <span class="str">'leadpreview'</span><span class="op">)</span> <span class="key">else</span> <span class="key">None</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t784" class="run"><span class="n"><a href="#t784">784</a></span><span class="t">        <span class="nam">preview_images</span> <span class="op">=</span> <span class="nam">original_lead</span><span class="op">.</span><span class="nam">images</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t785" class="run"><span class="n"><a href="#t785">785</a></span><span class="t">        <span class="nam">emm_triggers</span> <span class="op">=</span> <span class="nam">original_lead</span><span class="op">.</span><span class="nam">emm_triggers</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t786" class="run"><span class="n"><a href="#t786">786</a></span><span class="t">        <span class="nam">emm_entities</span> <span class="op">=</span> <span class="nam">original_lead</span><span class="op">.</span><span class="nam">emm_entities</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t787" class="run"><span class="n"><a href="#t787">787</a></span><span class="t">        <span class="nam">authors</span> <span class="op">=</span> <span class="nam">original_lead</span><span class="op">.</span><span class="nam">authors</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t788" class="pln"><span class="n"><a href="#t788">788</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t789" class="run"><span class="n"><a href="#t789">789</a></span><span class="t">        <span class="nam">lead</span><span class="op">.</span><span class="nam">pk</span> <span class="op">=</span> <span class="key">None</span>&nbsp;</span><span class="r"></span></p>
     <p id="t790" class="run"><span class="n"><a href="#t790">790</a></span><span class="t">        <span class="key">try</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -880,7 +880,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-06-11 05:13 +0000
+            created at 2021-06-22 06:56 +0000
         </p>
     </div>
 </div>
