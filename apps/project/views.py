@@ -50,7 +50,8 @@ from entry.views import ComprehensiveEntriesViewSet
 from analysis.models import (
     Analysis,
     AnalyticalStatement,
-    AnalyticalStatementEntry
+    AnalyticalStatementEntry,
+    DiscardedEntry
 )
 
 from .models import (
@@ -612,12 +613,20 @@ class ProjectViewSet(viewsets.ModelViewSet):
         leads = Lead.objects.filter(project=project)
         total_sources = leads.annotate(entries_count=models.Count('entry')).filter(entries_count__gt=0).count()
         entries_total = Entry.objects.filter(project=project).count()
-        entries_analyzed = AnalyticalStatement.objects.filter(
+        entries_dragged = AnalyticalStatement.objects.filter(
             analysis_pillar__analysis__project=project
         ).values('entries').distinct().count()
-        analyzed_source = AnalyticalStatement.objects.filter(
+        entries_discarded = DiscardedEntry.objects.filter(
             analysis_pillar__analysis__project=project
-        ).values('entries__lead_id').distinct().count()
+        ).values('entry').distinct().count()
+        sources_discarded = DiscardedEntry.objects.filter(
+            analysis_pillar__analysis__project=project
+        ).order_by().values('entry__lead_id').distinct()
+        sources_dragged = AnalyticalStatement.objects.filter(
+            analysis_pillar__analysis__project=project
+        ).order_by().values('entries__lead_id').distinct()
+        analyzed_sources = sources_dragged.union(sources_discarded)
+        total_analyzed_sources = analyzed_sources.count()
 
         lead_qs = Lead.objects.filter(
             project=project,
@@ -641,9 +650,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return response.Response({
             'analysis_list': analysis_list,
             'entries_total': entries_total,
-            'analyzed_entries_count': entries_analyzed,
+            'analyzed_entries_count': entries_dragged + entries_discarded,
             'sources_total': total_sources,
-            'analyzed_source_count': analyzed_source,
+            'analyzed_source_count': total_analyzed_sources,
             'authoring_organizations': authoring_organizations
         })
 

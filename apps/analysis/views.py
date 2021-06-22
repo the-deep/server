@@ -18,7 +18,8 @@ from .models import (
     Analysis,
     AnalysisPillar,
     AnalyticalStatement,
-    DiscardedEntry
+    DiscardedEntry,
+    AnalyticalStatementEntry
 )
 from .serializers import (
     AnalysisSerializer,
@@ -76,22 +77,6 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                     .values('count')[:1],
                     output_field=models.IntegerField(),
                 ), 0),
-            sources_dragged=models.functions.Coalesce(
-                models.Subquery(
-                    AnalyticalStatement.objects.filter(
-                        analysis_pillar__analysis=models.OuterRef('pk')
-                    ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count('entries__lead_id', distinct=True))
-                    .values('count')[:1],
-                    output_field=models.IntegerField(),
-                ), 0),
-            sources_discarded=models.functions.Coalesce(
-                models.Subquery(
-                    DiscardedEntry.objects.filter(
-                        analysis_pillar__analysis=models.OuterRef('pk')
-                    ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count('entry__lead_id', distinct=True))
-                    .values('count')[:1],
-                    output_field=models.IntegerField(),
-                ), 0),
             discarded_entries=models.functions.Coalesce(
                 models.Subquery(
                     DiscardedEntry.objects.filter(
@@ -103,7 +88,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
             total_entries=models.Value(total_entries, output_field=models.IntegerField()),
             total_sources=models.Value(total_sources, output_field=models.IntegerField())
         ).annotate(
-            analyzed_entries=models.F('dragged_entries') + models.F('discarded_entries'),
+            analyzed_entries=models.F('dragged_entries') + models.F('discarded_entries')
         )
         self.page = self.paginate_queryset(queryset)
         serializer = AnalysisSummarySerializer(
@@ -122,7 +107,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         pillar_list = AnalysisPillar.objects.filter(
             analysis=analysis
         ).annotate(
-           dragged_entries=models.functions.Coalesce(
+            dragged_entries=models.functions.Coalesce(
                 models.Subquery(
                     AnalyticalStatement.objects.filter(
                         analysis_pillar=models.OuterRef('pk')
