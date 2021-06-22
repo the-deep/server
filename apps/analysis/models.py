@@ -31,6 +31,18 @@ class Analysis(UserResource):
         analysis_cloned.save()
         return analysis_cloned
 
+    @property
+    def analyzed_sources(self):
+        # FIX ME: This generates N+1 query
+        leads_dragged = AnalyticalStatement.objects.filter(
+            analysis_pillar__analysis=self
+        ).order_by().values('entries__lead_id').distinct()
+        leads_discarded = DiscardedEntry.objects.filter(
+           analysis_pillar__analysis=self
+        ).order_by().values('entry__lead_id').distinct()
+        leads_total = leads_dragged.union(leads_discarded)
+        return leads_total.count()
+
 
 class AnalysisPillar(UserResource):
     title = models.CharField(max_length=255)
