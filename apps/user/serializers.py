@@ -20,8 +20,8 @@ from user.utils import (
 from project.models import Project
 from gallery.models import File
 
-from jwt_auth.recaptcha import validate_recaptcha
-from jwt_auth.errors import (UserNotFoundError, InvalidCaptchaError)
+from jwt_auth.captcha import validate_hcaptcha
+from jwt_auth.errors import UserNotFoundError
 
 
 class NanoUserSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
@@ -98,20 +98,19 @@ class UserSerializer(RemoveNullFieldsMixin, WriteOnlyOnCreateSerializerMixin,
         read_only=True,
     )
 
-    recaptcha_response = serializers.CharField(write_only=True)
+    hcaptcha_response = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
         fields = ('id', 'username', 'first_name', 'last_name',
                   'display_name', 'last_active_project',
-                  'login_attempts', 'recaptcha_response',
+                  'login_attempts', 'hcaptcha_response',
                   'email', 'organization', 'display_picture',
                   'display_picture_url', 'language', 'email_opt_outs')
         write_only_on_create_fields = ('email', 'username')
 
-    def validate_recaptcha_response(self, recaptcha_response):
-        if not validate_recaptcha(recaptcha_response):
-            raise InvalidCaptchaError
+    def validate_hcaptcha_response(self, captcha):
+        validate_hcaptcha(captcha)
 
     def validate_last_active_project(self, project):
         if project and not project.is_member(self.context['request'].user):
@@ -120,7 +119,7 @@ class UserSerializer(RemoveNullFieldsMixin, WriteOnlyOnCreateSerializerMixin,
 
     def create(self, validated_data):
         profile_data = validated_data.pop('profile', None)
-        validated_data.pop('recaptcha_response', None)
+        validated_data.pop('hcaptcha_response', None)
         user = super().create(validated_data)
         user.save()
         user.profile = self.update_or_create_profile(user, profile_data)
@@ -194,7 +193,7 @@ class UserPreferencesSerializer(RemoveNullFieldsMixin,
 
 class PasswordResetSerializer(RemoveNullFieldsMixin,
                               serializers.Serializer):
-    recaptcha_response = serializers.CharField(required=True)
+    hcaptcha_response = serializers.CharField(required=True)
     email = serializers.EmailField(required=True)
 
     def get_user(self, email):
@@ -207,9 +206,8 @@ class PasswordResetSerializer(RemoveNullFieldsMixin,
         self.get_user(email)
         return email
 
-    def validate_recaptcha_response(self, recaptcha_response):
-        if not validate_recaptcha(recaptcha_response):
-            raise InvalidCaptchaError
+    def validate_hcaptcha_response(self, captcha):
+        validate_hcaptcha(captcha)
 
     def save(self):
         email = self.validated_data["email"]
