@@ -556,9 +556,8 @@ MAX_LOGIN_ATTEMPTS_FOR_CAPTCHA = 3
 # Max login attempts to allow before preventing further logins
 MAX_LOGIN_ATTEMPTS = 10
 
-RECAPTCHA_SECRET = os.environ.get(
-    'RECAPTCHA_SECRET', '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'
-)
+# https://docs.hcaptcha.com/#integration-testing-test-keys
+HCAPTCHA_SECRET = os.environ.get('HCAPTCHA_SECRET', '0x0000000000000000000000000000000000000000')
 
 # Sentry Config
 SENTRY_DSN = os.environ.get('SENTRY_DSN')

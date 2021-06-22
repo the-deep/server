@@ -70,6 +70,8 @@ def custom_exception_handler(exc, context):
             errors = [str(error) for error in exc.detail]
         else:
             errors = exc.detail
+    elif hasattr(exc, 'default_detail'):
+        errors = exc.default_detail
     elif response.status_code == 404:
         errors = 'Resource not found'
     else:
