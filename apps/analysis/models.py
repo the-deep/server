@@ -49,6 +49,14 @@ class AnalysisPillar(UserResource):
     def __str__(self):
         return self.title
 
+    def clone_pillar(self):
+        pillar_cloned = copy.deepcopy(self)
+        pillar_cloned.pk = None
+        pillar_cloned.client_id = None
+        pillar_cloned.title = f'{self.title} (cloned)'
+        pillar_cloned.save()
+        return pillar_cloned
+
 
 class DiscardedEntry(models.Model):
     """

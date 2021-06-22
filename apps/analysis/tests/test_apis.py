@@ -423,6 +423,29 @@ class TestAnalysisAPIs(TestCase):
         response = self.client.post(url, data)
         self.assert_403(response)
 
+    def test_clone_pillar(self):
+        user = self.create_user()
+        user2 = self.create_user()
+        project = self.create_project()
+        project.add_member(user)
+        analysis = self.create(Analysis, project=project)
+        pillar = self.create(AnalysisPillar, analysis=analysis, title="Test Clone")
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{pillar.id}/clone-pillar/'
+        data = {
+            'title': 'cloned_title',
+        }
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_201(response)
+
+        self.assertNotEqual(response.data['id'], pillar.id)
+        self.assertEqual(response.data['title'], f'{pillar.title} (cloned)')
+
+        # authenticating with user that is not project member
+        self.authenticate(user2)
+        response = self.client.post(url, data)
+        self.assert_403(response)
+
     def test_patch_analytical_statement(self):
         user = self.create_user()
         project = self.create_project()

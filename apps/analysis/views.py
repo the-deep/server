@@ -114,6 +114,29 @@ class AnalysisPillarViewSet(viewsets.ModelViewSet):
             'assignee'
         )
 
+    @action(
+        detail=True,
+        url_path='clone-pillar',
+        permission_classes=[IsProjectMember],
+        methods=['post']
+    )
+    def clone_pillar(self, request, project_id, analysis_id, pk=None, version=None):
+        pillar = self.get_object()
+        cloned_title = request.data.get('title').strip()
+        if not cloned_title:
+            raise exceptions.ValidationError({
+                'title': 'Title should be present',
+            })
+        new_pillar = pillar.clone_pillar()
+        serializer = AnalysisPillarSerializer(
+            new_pillar,
+            context={'request': request},
+        )
+        return response.Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+        )
+
 
 class AnalysisPillarDiscardedEntryViewSet(viewsets.ModelViewSet):
     serializer_class = DiscardedEntrySerializer
