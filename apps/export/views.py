@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.core.cache import cache
 from django.db import transaction
 from rest_framework.decorators import action
 from rest_framework import (
@@ -9,8 +8,8 @@ from rest_framework import (
     viewsets,
     status,
 )
-from celery.task.control import revoke
 
+from deep.celery import app as celery_app
 from export.serializers import ExportSerializer
 from export.models import Export
 from project.models import Project
@@ -48,7 +47,7 @@ class ExportViewSet(viewsets.ModelViewSet):
     def cancel(self, request, pk=None, version=None):
         export = self.get_object()
         if export.status in [Export.PENDING, Export.STARTED]:
-            revoke(export.get_task_id(clear=True), terminate=True)
+            celery_app.control.revoke(export.get_task_id(clear=True), terminate=True)
             export.status = Export.CANCELED
         export.save()
         return self.retrieve(request, pk=pk)
