@@ -428,8 +428,24 @@ class TestAnalysisAPIs(TestCase):
         user2 = self.create_user()
         project = self.create_project()
         project.add_member(user)
+        entry = self.create(Entry)
         analysis = self.create(Analysis, project=project)
-        pillar = self.create(AnalysisPillar, analysis=analysis, title="Test Clone")
+        pillar = self.create(
+            AnalysisPillar,
+            analysis=analysis,
+            title="Test Clone"
+        )
+        analytical_statement = self.create(
+            AnalyticalStatement,
+            analysis_pillar=pillar,
+            statement='Hello from here'
+        )
+        self.create(
+            AnalyticalStatementEntry,
+            analytical_statement=analytical_statement,
+            entry=entry,
+            order=1
+        )
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{pillar.id}/clone-pillar/'
         data = {
             'title': 'cloned_title',
@@ -437,9 +453,13 @@ class TestAnalysisAPIs(TestCase):
         self.authenticate(user)
         response = self.client.post(url, data)
         self.assert_201(response)
-
+        title = response.data['title']
         self.assertNotEqual(response.data['id'], pillar.id)
-        self.assertEqual(response.data['title'], f'{pillar.title} (cloned)')
+        self.assertEqual(response.data['title'], f'{title}')
+        self.assertIn('analytical_statements', response.data)
+        self.assertEqual(len(response.data['analytical_statements']), 1)
+        self.assertEqual(response.data['analytical_statements'][0]['statement'], analytical_statement.statement)
+        self.assertEqual(len(response.data['analytical_statements'][0]['analytical_entries']), 1)
 
         # authenticating with user that is not project member
         self.authenticate(user2)

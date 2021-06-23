@@ -49,12 +49,14 @@ class AnalysisPillar(UserResource):
     def __str__(self):
         return self.title
 
-    def clone_pillar(self):
+    def clone_pillar(self, title):
         pillar_cloned = copy.deepcopy(self)
         pillar_cloned.pk = None
         pillar_cloned.client_id = None
-        pillar_cloned.title = f'{self.title} (cloned)'
+        pillar_cloned.title = f'{title} (cloned)'
         pillar_cloned.save()
+        [statement.clone_to(pillar_cloned) for statement
+        in self.analyticalstatement_set.all()]
         return pillar_cloned
 
 
@@ -113,6 +115,16 @@ class AnalyticalStatement(UserResource):
     def __str__(self):
         return self.statement and self.statement[:255]
 
+    def clone_to(self, analysis_pillar):
+        cloned_statement = copy.deepcopy(self)
+        cloned_statement.pk = None
+        cloned_statement.client_id = None
+        cloned_statement.statement = self.statement
+        cloned_statement.analysis_pillar = analysis_pillar
+        cloned_statement.save()
+        [statement_entry.clone_to(cloned_statement) for statement_entry
+        in self.analyticalstatemententry_set.all()]
+        return cloned_statement
 
 class AnalyticalStatementEntry(UserResource):
     entry = models.ForeignKey(
@@ -128,3 +140,11 @@ class AnalyticalStatementEntry(UserResource):
     class Meta:
         ordering = ('order',)
         unique_together = ('entry', 'analytical_statement')
+
+    def clone_to(self, analytical_statement):
+        cloned_statement_entry = copy.deepcopy(self)
+        cloned_statement_entry.pk = None
+        cloned_statement_entry.client_id = None
+        cloned_statement_entry.analytical_statement = analytical_statement
+        cloned_statement_entry.save()
+        return cloned_statement_entry
