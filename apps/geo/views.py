@@ -15,7 +15,10 @@ from rest_framework import (
 from rest_framework.decorators import action
 import django_filters
 
-from deep.permissions import ModifyPermission
+from deep.permissions import (
+    ModifyPermission,
+    IsProjectMember
+)
 from user_resource.filters import UserResourceFilterSet
 
 from project.models import Project
@@ -25,7 +28,7 @@ from .serializers import (
     RegionSerializer,
     GeoAreaSerializer
 )
-
+from .filter_set import GeoAreaFilterSet
 from geo.tasks import load_geo_areas
 
 
@@ -246,14 +249,14 @@ class GeoOptionsView(views.APIView):
 
 
 class GeoAreaView(viewsets.ReadOnlyModelViewSet):
-    permissions_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsProjectMember]
     serializer_class = GeoAreaSerializer
+    filterset_class = GeoAreaFilterSet
 
     def get_queryset(self):
-        queryset = GeoArea.objects.prefetch_related(
-            'admin_level',
-            'admin_level__region'
-        ).distinct().annotate(
+        return GeoArea.objects.filter(
+            admin_level__region__project=self.kwargs['project_id']
+        ).annotate(
             label=models.functions.Concat(
                 models.F('admin_level__title'),
                 models.Value('/'),
@@ -265,20 +268,4 @@ class GeoAreaView(viewsets.ReadOnlyModelViewSet):
             admin_level_level=models.F('admin_level__level'),
             admin_level_title=models.F('admin_level__title'),
             key=models.F('id')
-        )
-        project = self.request.query_params.get('project')
-        if project:
-            project = Project.objects.get(id=project)
-            if not project.is_member(self.request.user):
-                raise exceptions.PermissionDenied()
-            return queryset.filter(
-                admin_level__region__project=project
-            )
-        # this is added for the serch purpose
-        label = self.request.query_params.get('label')
-        if label:
-            return queryset.filter(
-                models.Q(title__icontains=label) |
-                models.Q(admin_level__title=label)
-            )
-        return queryset
+        ).distinct()

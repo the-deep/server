@@ -249,7 +249,7 @@ router.register(r'regions', RegionViewSet,
                 basename='region')
 router.register(r'admin-levels', AdminLevelViewSet,
                 basename='admin_level')
-router.register(r'geo-area', GeoAreaView,
+router.register(r'projects/(?P<project_id>\d+)/geo-area', GeoAreaView,
                 basename='geo_area')
 
 # Lead routers
