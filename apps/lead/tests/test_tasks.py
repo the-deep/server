@@ -1,7 +1,8 @@
+from unittest.mock import patch
+
 from parameterized import parameterized
 from django.conf import settings
 from deep.tests import TestCase
-from mock import patch
 
 from lead.tasks import (
     extract_from_lead,
