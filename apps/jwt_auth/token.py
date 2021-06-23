@@ -63,8 +63,7 @@ class Token:
         # Leave rest of the payload to be set by inherited classes
 
     def encode(self):
-        return jwt.encode(self.payload, SECRET, algorithm='HS256')\
-            .decode('utf-8')
+        return jwt.encode(self.payload, SECRET, algorithm='HS256')
 
     def __repr__(self):
         return repr(self.payload)

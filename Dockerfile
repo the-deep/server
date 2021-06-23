@@ -1,12 +1,10 @@
-FROM ubuntu:18.04
-
-MAINTAINER togglecorp info@togglecorp.com
+FROM python:3.8-buster
 
 ENV PYTHONUNBUFFERED 1
 ARG ORCA_VERSION=1.2.1
 
-# Update and install common packages with apt
-RUN apt-get update -y && apt-get install -y \
+RUN apt-get update -y \
+    && apt-get install -y \
         # Basic Packages
         git \
         iproute2 \
@@ -18,10 +16,6 @@ RUN apt-get update -y && apt-get install -y \
         ca-certificates \
         cron \
         unzip \
-        python3 \
-        python3-dev \
-        python3-setuptools \
-        python3-pip \
         # Deep Required Packages
         binutils libproj-dev gdal-bin \
         libreoffice \
@@ -56,27 +50,24 @@ RUN apt-get update -y && apt-get install -y \
 
 # Chrome webdriver
 RUN CHROME_MAJOR_VERSION=$(google-chrome --version | sed -E "s/.* ([0-9]+)(\.[0-9]+){3}.*/\1/") \
-        && CHROME_DRIVER_VERSION=$(curl "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_MAJOR_VERSION}") \
-        && curl -sS -o /tmp/chromedriver_linux64.zip \
-            http://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
-        && unzip -qq /tmp/chromedriver_linux64.zip -d /usr/bin/ \
-        && chmod 755 /usr/bin/chromedriver \
-        && rm /tmp/chromedriver_linux64.zip
-
-# Support utf-8
-RUN locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
+    && CHROME_DRIVER_VERSION=$(curl "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_MAJOR_VERSION}") \
+    && curl -sS -o /tmp/chromedriver_linux64.zip \
+        http://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
+    && unzip -qq /tmp/chromedriver_linux64.zip -d /usr/bin/ \
+    && chmod 755 /usr/bin/chromedriver \
+    && rm /tmp/chromedriver_linux64.zip
 
 COPY ./deploy/scripts/remote2_syslog_init.sh /tmp/
 RUN /tmp/remote2_syslog_init.sh
 
 WORKDIR /code
 
-COPY ./requirements.txt /code/requirements.txt
-RUN echo 'alias python=python3\nalias pip=pip3' >> ~/.bashrc \
-    && python3 -m pip install --upgrade pip \
-    && pip3 install uwsgi \
-    && pip3 install -r requirements.txt
+COPY Pipfile Pipfile.lock /code/
+
+# Upgrade pip and install python packages for code
+RUN pip install --upgrade --no-cache-dir pip pipenv \
+    && pipenv install --dev --system --deploy \
+    && pip uninstall -y pipenv virtualenv-clone virtualenv
 
 COPY . /code/
 
