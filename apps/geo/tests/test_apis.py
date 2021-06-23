@@ -105,7 +105,7 @@ class GeoOptionsApi(TestCase):
                 assert 'parent' in option
 
 
-class GeoAreaApi(TestCase):
+class TestGeoAreaApi(TestCase):
     def test_geo_area(self):
         region = self.create(Region)
         region1 = self.create(Region)
@@ -126,44 +126,37 @@ class GeoAreaApi(TestCase):
                                 parent=geo_area1)
         self.create(GeoArea, admin_level=admin_level3)
 
-        url = '/api/v1/geo-area/'
+        url = f'/api/v1/projects/{project.id}/geo-area/'
 
         self.authenticate(user1)
         response = self.client.get(url)
         self.assert_200(response)
-        self.assertEqual(response.data['count'], 3)
+        self.assertEqual(response.data['count'], 2)
         # test for the label
         self.assertEqual(response.data['results'][0]['label'],
                          '{}/{}'.format(admin_level1.title,
                                           geo_area1.title))
 
-        # test for the project region
-        url1 = f'/api/v1/geo-area/?project={project.id}'
-        self.authenticate(user1)
-        response = self.client.get(url1)
-        self.assert_200(response)
-        self.assertEqual(response.data['count'], 2)  # should return the geo-area that project in the region
-
         # test for the not project member
         self.authenticate(user2)
-        response = self.client.get(url1)
+        response = self.client.get(url)
         self.assert_403(response)
 
         # test for the pagination
-        url = '/api/v1/geo-area/?limit=2'
+        url = f'/api/v1/projects/{project.id}/geo-area/?limit=1'
         self.authenticate(user1)
-        response = self.client.get(url1)
+        response = self.client.get(url)
         self.assert_200(response)
-        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(len(response.data['results']), 1)
 
         # test for the search field
-        url = '/api/v1/geo-area/?label=test'
+        url = f'/api/v1/projects/{project.id}/geo-area/?label=test'
         self.authenticate(user1)
         response = self.client.get(url)
         self.assert_200(response)
         self.assertEqual(response.data['count'], 1)
 
-        url = '/api/v1/geo-area/?label=acd'  # passing the label that is not either region or geoarea title
+        url = f'/api/v1/projects/{project.id}/geo-area/?label=acd'  # passing the label that is not either region or geoarea title
         self.authenticate(user1)
         response = self.client.get(url)
         self.assert_200(response)
