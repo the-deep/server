@@ -128,10 +128,8 @@ class AnalysisSerializer(
 
 class AnalysisSummarySerializer(serializers.ModelSerializer):
     team_lead_name = serializers.CharField()
-    pillar_list = serializers.SerializerMethodField()
-    framework_overview = serializers.SerializerMethodField()
+    pillars = serializers.SerializerMethodField()
     publication_date = serializers.SerializerMethodField()
-    pillar_summary = serializers.SerializerMethodField()
     total_entries = serializers.IntegerField()
     total_sources = serializers.IntegerField()
     analyzed_entries = serializers.IntegerField()
@@ -140,20 +138,12 @@ class AnalysisSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Analysis
         fields = ('id', 'title', 'team_lead', 'team_lead_name',
-                  'pillar_list', 'framework_overview', 'publication_date',
+                  'publication_date', 'pillars',
                   'analyzed_entries', 'analyzed_sources', 'total_entries',
-                  'total_sources', 'pillar_summary',
-                  'created_at', 'modified_at',
+                  'total_sources', 'created_at', 'modified_at',
                 )
 
-    def get_pillar_list(self, analysis):
-        return list(
-            AnalysisPillar.objects.filter(
-                analysis=analysis
-            ).values('id', 'title', assignee_username=models.F('assignee__username'))
-        )
-
-    def get_framework_overview(self, analysis):
+    def get_pillars(self, analysis):
         return list(
             AnalysisPillar.objects.filter(
                 analysis=analysis
@@ -172,7 +162,12 @@ class AnalysisSummarySerializer(serializers.ModelSerializer):
                     .values('count')[:1],
                     output_field=models.IntegerField(),
                 ), 0)
-            ).values('id', 'title', entries_analyzed=models.F('entries_dragged') + models.F('entries_discarded'))
+            ).values(
+                'id',
+                pillar_title=models.F('title'),
+                analyzed_entries=models.F('entries_dragged') + models.F('entries_discarded'),
+                assignee_username=models.F('assignee__username')
+            )
         )
 
     def get_publication_date(self, analysis):
@@ -187,49 +182,9 @@ class AnalysisSummarySerializer(serializers.ModelSerializer):
                 output_field=models.IntegerField(),
             ), 0)
         ).filter(entries_count__gt=0).order_by('created_at')
-        lead_first_created_date = lead_qs.values_list('created_at__date', flat=True).first()
-        lead_last_created_date = lead_qs.values_list('created_at__date', flat=True).last()
+        lead_first_created_date = lead_qs.aggregate(models.Min('created_at'))['created_at__min']
+        lead_last_created_date = lead_qs.aggregate(models.Max('created_at'))['created_at__max']
         return {
-            'start_date': lead_first_created_date,
-            'end_date': lead_last_created_date
+            'start_date': lead_first_created_date.date(),
+            'end_date': lead_last_created_date.date()
         }
-
-    def get_pillar_summary(self, analysis):
-        pillar_list = AnalysisPillar.objects.filter(
-            analysis=analysis
-        ).annotate(
-           dragged_entries=models.functions.Coalesce(
-                models.Subquery(
-                    AnalyticalStatement.objects.filter(
-                        analysis_pillar=models.OuterRef('pk')
-                    ).order_by().values('analysis_pillar').annotate(count=models.Count('entries', distinct=True))
-                    .values('count')[:1],
-                    output_field=models.IntegerField(),
-                ), 0),
-            discarded_entries=models.functions.Coalesce(
-                models.Subquery(
-                    DiscardedEntry.objects.filter(
-                        analysis_pillar=models.OuterRef('pk')
-                    ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count('entry', distinct=True))
-                    .values('count')[:1],
-                    output_field=models.IntegerField(),
-                ), 0),
-        ).annotate(
-            entries_analyzed=models.F('dragged_entries') + models.F('discarded_entries')
-        )
-        return [
-                {
-                    'id': pillar.id,
-                    'pillar_title': pillar.title,
-                    'assignee': pillar.assignee.username,
-                    'analytical_statements': AnalyticalStatement.objects.filter(
-                        analysis_pillar=pillar
-                    ).annotate(
-                        entries_count=models.Count('entries', distinct=True)).values(
-                        'entries_count', 'id', 'statement'
-                    ),
-                    'created_at': pillar.created_at,
-                    'analytical_statement_count': AnalyticalStatement.objects.filter(analysis_pillar=pillar).count(),
-                    'entries_analyzed': pillar.entries_analyzed
-                } for pillar in pillar_list
-            ]
