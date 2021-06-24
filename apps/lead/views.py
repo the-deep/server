@@ -170,6 +170,7 @@ class LeadViewSet(viewsets.ModelViewSet):
             ).filter(similarity__gt=0.3).order_by('-similarity')
         return leads
 
+    # TODO: Remove this API endpoint after client is using summary
     @action(
         detail=False,
         permission_classes=[permissions.IsAuthenticated],
