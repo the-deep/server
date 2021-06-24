@@ -127,9 +127,7 @@ class AnalysisPillarViewSet(viewsets.ModelViewSet):
             raise exceptions.ValidationError({
                 'title': 'Title should be present',
             })
-        new_pillar = pillar.clone_pillar(
-            cloned_title
-        )
+        new_pillar = pillar.clone_pillar(cloned_title)
         serializer = AnalysisPillarSerializer(
             new_pillar,
             context={'request': request},

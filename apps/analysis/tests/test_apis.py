@@ -440,11 +440,10 @@ class TestAnalysisAPIs(TestCase):
             analysis_pillar=pillar,
             statement='Hello from here'
         )
-        self.create(
-            AnalyticalStatementEntry,
-            analytical_statement=analytical_statement,
-            entry=entry,
-            order=1
+        analytical_statement1 = self.create(
+            AnalyticalStatement,
+            analysis_pillar=pillar,
+            statement='Hello from there'
         )
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{pillar.id}/clone-pillar/'
         data = {
@@ -457,9 +456,7 @@ class TestAnalysisAPIs(TestCase):
         self.assertNotEqual(response.data['id'], pillar.id)
         self.assertEqual(response.data['title'], f'{title}')
         self.assertIn('analytical_statements', response.data)
-        self.assertEqual(len(response.data['analytical_statements']), 1)
-        self.assertEqual(response.data['analytical_statements'][0]['statement'], analytical_statement.statement)
-        self.assertEqual(len(response.data['analytical_statements'][0]['analytical_entries']), 1)
+        self.assertEqual(len(response.data['analytical_statements']), 2)
 
         # authenticating with user that is not project member
         self.authenticate(user2)
