@@ -1465,7 +1465,6 @@ class LeadTests(TestCase):
         self.create_entry(lead=lead1, verified=True)
         self.create_entry(lead=lead2)
 
-        # Test GET
         url = '/api/v1/leads/summary/'
         self.authenticate()
         resp = self.client.get(url)
@@ -1485,7 +1484,6 @@ class LeadTests(TestCase):
         self.create_entry(lead=lead1, verified=True)
         self.create_entry(lead=lead2)
 
-        # Test GET
         url = '/api/v1/leads/summary/'
         self.authenticate()
         resp = self.client.post(url, data={}, format='json')
