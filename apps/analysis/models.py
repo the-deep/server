@@ -7,6 +7,7 @@ from django_enumfield import enum
 from user.models import User
 from project.models import Project
 from entry.models import Entry
+from lead.models import Lead
 from user_resource.models import UserResource
 
 
@@ -33,7 +34,7 @@ class Analysis(UserResource):
 
     @property
     def analyzed_sources(self):
-        # FIX ME: This generates N+1 query
+        # FIXME: This generates N+1 query
         leads_dragged = AnalyticalStatement.objects.filter(
             analysis_pillar__analysis=self
         ).order_by().values('entries__lead_id').distinct()
@@ -42,6 +43,41 @@ class Analysis(UserResource):
         ).order_by().values('entry__lead_id').distinct()
         leads_total = leads_dragged.union(leads_discarded)
         return leads_total.count()
+
+    @classmethod
+    def annotate_for_analysis_summary(cls, project_id, qs, user, filters=None):
+        from entry.filter_set import get_filtered_entries
+
+        filters = filters or dict()
+        entries_filter_data = filters.get('entries_filter_data', {})
+        total_entries = get_filtered_entries(user, entries_filter_data).count()
+        total_sources = Lead.objects.filter(
+            project=project_id
+        ).annotate(entries_count=models.Count('entry')).filter(entries_count__gt=0).count()
+        qs = qs.annotate(
+            team_lead_name=models.F('team_lead__username'),
+            dragged_entries=models.functions.Coalesce(
+                models.Subquery(
+                    AnalyticalStatement.objects.filter(
+                        analysis_pillar__analysis=models.OuterRef('pk')
+                    ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count('entries', distinct=True))
+                    .values('count')[:1],
+                    output_field=models.IntegerField(),
+                ), 0),
+            discarded_entries=models.functions.Coalesce(
+                models.Subquery(
+                    DiscardedEntry.objects.filter(
+                        analysis_pillar__analysis=models.OuterRef('pk')
+                    ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count('entry', distinct=True))
+                    .values('count')[:1],
+                    output_field=models.IntegerField(),
+                ), 0),
+            total_entries=models.Value(total_entries, output_field=models.IntegerField()),
+            total_sources=models.Value(total_sources, output_field=models.IntegerField())
+        ).annotate(
+            analyzed_entries=models.F('dragged_entries') + models.F('discarded_entries')
+        )
+        return qs
 
 
 class AnalysisPillar(UserResource):
@@ -60,6 +96,38 @@ class AnalysisPillar(UserResource):
 
     def __str__(self):
         return self.title
+
+    @classmethod
+    def annotate_for_analysis_pillar_summary(cls, qs):
+        qs = qs.annotate(
+            dragged_entries=models.functions.Coalesce(
+                models.Subquery(
+                    AnalyticalStatement.objects.filter(
+                        analysis_pillar=models.OuterRef('pk')
+                    ).order_by().values('analysis_pillar').annotate(count=models.Count('entries', distinct=True))
+                    .values('count')[:1],
+                    output_field=models.IntegerField(),
+                ), 0),
+            discarded_entries=models.functions.Coalesce(
+                models.Subquery(
+                    DiscardedEntry.objects.filter(
+                        analysis_pillar=models.OuterRef('pk')
+                    ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count('entry', distinct=True))
+                    .values('count')[:1],
+                    output_field=models.IntegerField(),
+                ), 0),
+        ).annotate(
+            entries_analyzed=models.F('dragged_entries') + models.F('discarded_entries'),
+            analytical_statement_count=models.functions.Coalesce(
+                models.Subquery(
+                    AnalyticalStatement.objects.filter(
+                        analysis_pillar=models.OuterRef('pk')
+                    ).order_by().values('analysis_pillar').annotate(count=models.Count('id', distinct=True))
+                    .values('count')[:1],
+                    output_field=models.IntegerField(),
+                ),0)
+        )
+        return qs
 
 
 class DiscardedEntry(models.Model):

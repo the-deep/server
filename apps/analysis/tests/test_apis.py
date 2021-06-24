@@ -578,29 +578,22 @@ class TestAnalysisAPIs(TestCase):
         data = response.data['results']
         self.assertEqual(data[1]['team_lead'], user.id)
         self.assertEqual(data[1]['team_lead_name'], user.username)
-        self.assertEqual(len(data[1]['pillar_list']), 3)
-        self.assertEqual(data[1]['pillar_list'][0]['id'], pillar3.id)
-        self.assertEqual(data[1]['pillar_list'][1]['title'], pillar2.title)
-        self.assertEqual(data[1]['pillar_list'][2]['assignee_username'], pillar1.assignee.username)
+        self.assertEqual(data[1]['pillars'][0]['id'], pillar3.id)
+        self.assertEqual(data[1]['pillars'][1]['pillar_title'], pillar2.title)
+        self.assertEqual(data[1]['pillars'][2]['assignee_username'], pillar1.assignee.username)
         self.assertEqual(data[1]['publication_date']['start_date'], lead1.created_at.date())  # since we use lead that has entry created for
         self.assertEqual(data[1]['publication_date']['end_date'], lead2.created_at.date())
-        self.assertEqual(data[1]['framework_overview'][0]['title'], pillar3.title)
-        self.assertEqual(data[1]['framework_overview'][0]['entries_analyzed'], 3)  # discrded + analyzed entry
-        self.assertEqual(data[1]['framework_overview'][1]['entries_analyzed'], 2)  # discrded + analyzed entry
+        self.assertEqual(data[1]['pillars'][0]['analyzed_entries'], 3)  # discrded + analyzed entry
+        self.assertEqual(data[1]['pillars'][1]['analyzed_entries'], 2)  # discrded + analyzed entry
         self.assertEqual(data[1]['analyzed_entries'], 9)
         self.assertEqual(data[1]['analyzed_sources'], 6)  # have `distinct=True`
         self.assertEqual(data[1]['total_entries'], 10)
         self.assertEqual(data[1]['total_sources'], 8)  # taking lead that has entry more than one
         self.assertEqual(data[0]['team_lead'], user.id)
         self.assertEqual(data[0]['team_lead_name'], user.username)
-        self.assertEqual(data[0]['pillar_list'][0]['id'], pillar4.id)
+        self.assertEqual(data[0]['pillars'][0]['id'], pillar4.id)
         self.assertEqual(data[0]['analyzed_entries'], 4)
         self.assertEqual(data[0]['analyzed_sources'], 4)
-        self.assertEqual(data[0]['framework_overview'][0]['entries_analyzed'], 4)
-        self.assertEqual(data[1]['pillar_summary'][0]['id'], pillar3.id)
-        self.assertEqual(data[1]['pillar_summary'][0]['analytical_statement_count'], 1)
-        self.assertEqual(data[1]['pillar_summary'][0]['analytical_statements'][0]['entries_count'], 2)
-        self.assertEqual(data[1]['pillar_summary'][0]['entries_analyzed'], 3)  # discarded + dragged entries
 
         # try to post to api
         data = {
