@@ -19,7 +19,6 @@ from .models import (
     AnalysisPillar,
     AnalyticalStatement,
     DiscardedEntry,
-    AnalyticalStatementEntry
 )
 from .serializers import (
     AnalysisSerializer,
@@ -49,11 +48,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         detail=False,
         url_path='summary'
     )
-    def get_summary(self, request, project_id, filters=None, pk=None, version=None):
-        from entry.filter_set import get_filtered_entries
-
-        filters = filters or dict()
-        entries_filter_data = filters.get('entries_filter_data', {})
+    def get_summary(self, request, project_id, pk=None, version=None):
         queryset = self.filter_queryset(self.get_queryset()).filter(project=project_id)
         queryset = queryset.prefetch_related(
             models.Prefetch(
@@ -63,33 +58,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                 ).prefetch_related('analyticalstatement_set')
             )
         )
-        total_entries = get_filtered_entries(self.request.user, entries_filter_data).count()
-        total_sources = Lead.objects.filter(
-            project=project_id
-        ).annotate(entries_count=models.Count('entry')).filter(entries_count__gt=0).count()
-        queryset = queryset.annotate(
-            team_lead_name=models.F('team_lead__username'),
-            dragged_entries=models.functions.Coalesce(
-                models.Subquery(
-                    AnalyticalStatement.objects.filter(
-                        analysis_pillar__analysis=models.OuterRef('pk')
-                    ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count('entries', distinct=True))
-                    .values('count')[:1],
-                    output_field=models.IntegerField(),
-                ), 0),
-            discarded_entries=models.functions.Coalesce(
-                models.Subquery(
-                    DiscardedEntry.objects.filter(
-                        analysis_pillar__analysis=models.OuterRef('pk')
-                    ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count('entry', distinct=True))
-                    .values('count')[:1],
-                    output_field=models.IntegerField(),
-                ), 0),
-            total_entries=models.Value(total_entries, output_field=models.IntegerField()),
-            total_sources=models.Value(total_sources, output_field=models.IntegerField())
-        ).annotate(
-            analyzed_entries=models.F('dragged_entries') + models.F('discarded_entries')
-        )
+        queryset = Analysis.annotate_for_analysis_summary(project_id, queryset, self.request.user)
         self.page = self.paginate_queryset(queryset)
         serializer = AnalysisSummarySerializer(
             self.page,
@@ -106,33 +75,14 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         analysis = self.get_object()
         pillar_list = AnalysisPillar.objects.filter(
             analysis=analysis
-        ).annotate(
-            dragged_entries=models.functions.Coalesce(
-                models.Subquery(
-                    AnalyticalStatement.objects.filter(
-                        analysis_pillar=models.OuterRef('pk')
-                    ).order_by().values('analysis_pillar').annotate(count=models.Count('entries', distinct=True))
-                    .values('count')[:1],
-                    output_field=models.IntegerField(),
-                ), 0),
-            discarded_entries=models.functions.Coalesce(
-                models.Subquery(
-                    DiscardedEntry.objects.filter(
-                        analysis_pillar=models.OuterRef('pk')
-                    ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count('entry', distinct=True))
-                    .values('count')[:1],
-                    output_field=models.IntegerField(),
-                ), 0),
-        ).annotate(
-            entries_analyzed=models.F('dragged_entries') + models.F('discarded_entries')
         )
-
+        pillars = AnalysisPillar.annotate_for_analysis_pillar_summary(pillar_list)
         return response.Response(
             [
                 {
                     'id': pillar.id,
                     'pillar_title': pillar.title,
-                    'assignee': pillar.assignee.username,
+                    'assignee_username': pillar.assignee.username,
                     'analytical_statements': AnalyticalStatement.objects.filter(
                         analysis_pillar=pillar
                     ).annotate(
@@ -140,9 +90,9 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                         'entries_count', 'id', 'statement'
                     ),
                     'created_at': pillar.created_at,
-                    'analytical_statement_count': AnalyticalStatement.objects.filter(analysis_pillar=pillar).count(),
-                    'entries_analyzed': pillar.entries_analyzed
-                } for pillar in pillar_list
+                    'analytical_statement_count': pillar.analytical_statement_count,
+                    'analyzed_entries': pillar.entries_analyzed
+                } for pillar in pillars
 
             ]
         )
