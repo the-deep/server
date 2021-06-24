@@ -35,6 +35,12 @@ from project.models import Project, ProjectMembership
 from project.permissions import PROJECT_PERMISSIONS as PROJ_PERMS
 from organization.models import Organization, OrganizationType
 from organization.serializers import SimpleOrganizationSerializer
+from utils.web_info_extractor import get_web_info_extractor
+from utils.common import DEFAULT_HEADERS
+from connector.sources.base import OrganizationSearch
+from entry.models import Entry
+
+from .tasks import extract_from_lead
 from .models import (
     LeadGroup,
     Lead,
@@ -53,11 +59,6 @@ from .serializers import (
     LeadOptionsBodySerializer,
     LegacyLeadOptionsSerializer,
 )
-
-from lead.tasks import extract_from_lead
-from utils.web_info_extractor import get_web_info_extractor
-from utils.common import DEFAULT_HEADERS
-from connector.sources.base import OrganizationSearch
 
 
 valid_lead_url_regex = re.compile(
@@ -169,26 +170,6 @@ class LeadViewSet(viewsets.ModelViewSet):
             ).filter(similarity__gt=0.3).order_by('-similarity')
         return leads
 
-    def _get_extra_emm_info(self, qs=None):
-        if qs is None:
-            qs = self.filter_queryset(self.get_queryset())
-
-        # Aggregate emm data
-        emm_entities = EMMEntity.objects.filter(lead__in=qs).values('name').\
-            annotate(
-                total_count=models.Count('name')
-        ).order_by('-total_count').values('name', 'total_count')
-
-        emm_triggers = LeadEMMTrigger.objects.filter(lead__in=qs).values('emm_keyword', 'emm_risk_factor').\
-            annotate(
-                total_count=models.Sum('count'),
-        ).order_by('-total_count').values('emm_keyword', 'emm_risk_factor', 'total_count')
-
-        extra = {}
-        extra['emm_entities'] = emm_entities
-        extra['emm_triggers'] = emm_triggers
-        return extra
-
     @action(
         detail=False,
         permission_classes=[permissions.IsAuthenticated],
@@ -196,16 +177,31 @@ class LeadViewSet(viewsets.ModelViewSet):
         url_path='emm-summary'
     )
     def emm_summary(self, request, version=None):
-        emm_info = {}
+        return self.summary(request, version=version, emm_info_only=False)
+
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
+        methods=['get', 'post'],
+        url_path='summary'
+    )
+    def summary(self, request, version=None, emm_info_only=False):
         if request.method == 'GET':
-            emm_info = self._get_extra_emm_info()
+            qs = self.filter_queryset(self.get_queryset())
         elif request.method == 'POST':
             raw_filter_data = request.data
             filter_data = self._get_processed_filter_data(raw_filter_data)
-
             qs = LeadFilterSet(data=filter_data, queryset=self.get_queryset()).qs
-            emm_info = self._get_extra_emm_info(qs)
-        return response.Response(emm_info)
+        emm_info = Lead.get_emm_summary(qs)
+        if emm_info_only:
+            return response.Response(emm_info)
+        return response.Response({
+            'total': qs.count(),
+            'total_entries': Entry.objects.filter(lead__in=qs).count(),
+            'total_verified_entries': Entry.objects.filter(lead__in=qs, verified=True).count(),
+            'total_unverified_entries': Entry.objects.filter(lead__in=qs, verified=False).count(),
+            **emm_info,
+        })
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
