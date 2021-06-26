@@ -4,7 +4,7 @@ from .models import (
     Analysis,
     AnalysisPillar,
     AnalyticalStatement,
-    AnalyticalStatementEntry, 
+    AnalyticalStatementEntry,
     DiscardedEntry
 )
 
