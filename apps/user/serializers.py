@@ -24,8 +24,18 @@ from jwt_auth.recaptcha import validate_recaptcha
 from jwt_auth.errors import (UserNotFoundError, InvalidCaptchaError)
 
 
-class SimpleUserSerializer(RemoveNullFieldsMixin,
-                           serializers.ModelSerializer):
+class NanoUserSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
+    display_name = serializers.CharField(
+        source='profile.get_display_name',
+        read_only=True,
+    )
+
+    class Meta:
+        model = User
+        fields = ('id', 'display_name')
+
+
+class SimpleUserSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     display_name = serializers.CharField(
         source='profile.get_display_name',
         read_only=True,

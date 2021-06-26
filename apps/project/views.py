@@ -606,47 +606,52 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def get_analysis(self, request, pk=None, version=None):
         project = self.get_object()
         # get all the analysis in the project
-        analysis_list = Analysis.objects.filter(
-            project=project
-        ).values('id', 'title', 'created_at')
+        # TODO: Remove this later and let client handle this using graphql
+        analysis_list = Analysis.objects.filter(project=project).values('id', 'title', 'created_at')
 
-        leads = Lead.objects.filter(project=project)
-        total_sources = leads.annotate(entries_count=models.Count('entry')).filter(entries_count__gt=0).count()
+        total_sources = Lead.objects\
+            .filter(project=project)\
+            .annotate(entries_count=models.Count('entry'))\
+            .filter(entries_count__gt=0)\
+            .count()
         entries_total = Entry.objects.filter(project=project).count()
-        entries_dragged = AnalyticalStatement.objects.filter(
-            analysis_pillar__analysis__project=project
-        ).values('entries').distinct().count()
-        entries_discarded = DiscardedEntry.objects.filter(
-            analysis_pillar__analysis__project=project
-        ).values('entry').distinct().count()
-        sources_discarded = DiscardedEntry.objects.filter(
-            analysis_pillar__analysis__project=project
-        ).order_by().values('entry__lead_id').distinct()
-        sources_dragged = AnalyticalStatement.objects.filter(
-            analysis_pillar__analysis__project=project
-        ).order_by().values('entries__lead_id').distinct()
-        analyzed_sources = sources_dragged.union(sources_discarded)
-        total_analyzed_sources = analyzed_sources.count()
+        entries_dragged = AnalyticalStatement.objects\
+            .filter(analysis_pillar__analysis__project=project)\
+            .values('entries')\
+            .distinct().count()
+        entries_discarded = DiscardedEntry.objects\
+            .filter(analysis_pillar__analysis__project=project)\
+            .values('entry')\
+            .distinct().count()
 
-        lead_qs = Lead.objects.filter(
-            project=project,
-            authors__isnull=False
-        ).annotate(
-            entries_count=models.functions.Coalesce(models.Subquery(
-                AnalyticalStatementEntry.objects.filter(
-                    entry__lead_id=models.OuterRef('pk')
-                ).order_by().values('entry__lead_id').annotate(count=models.Count('*'))
-                .values('count')[:1],
-                output_field=models.IntegerField(),
-            ), 0)
-        ).filter(entries_count__gt=0)
-        authoring_organizations = Lead.objects.filter(id__in=lead_qs).order_by('authors__organization_type').values(
-            'authors__organization_type'
-        ).annotate(count=models.Count('id')).values(
-            'count',
-            organization_type_id=models.F('authors__organization_type'),
-            organization_type_title=models.F('authors__organization_type__title')
-        )
+        sources_discarded = DiscardedEntry.objects\
+            .filter(analysis_pillar__analysis__project=project)\
+            .order_by().values('entry__lead_id').distinct()
+        sources_dragged = AnalyticalStatement.objects\
+            .filter(analysis_pillar__analysis__project=project)\
+            .order_by().values('entries__lead_id').distinct()
+        total_analyzed_sources = sources_dragged.union(sources_discarded).count()
+
+        lead_qs = Lead.objects\
+            .filter(project=project, authors__isnull=False)\
+            .annotate(
+                entries_count=models.functions.Coalesce(models.Subquery(
+                    AnalyticalStatementEntry.objects.filter(
+                        entry__lead_id=models.OuterRef('pk')
+                    ).order_by().values('entry__lead_id').annotate(count=models.Count('*'))
+                    .values('count')[:1],
+                    output_field=models.IntegerField(),
+                ), 0)
+            ).filter(entries_count__gt=0)
+        authoring_organizations = Lead.objects\
+            .filter(id__in=lead_qs)\
+            .order_by('authors__organization_type').values('authors__organization_type')\
+            .annotate(count=models.Count('id')).values(
+                'count',
+                organization_type_id=models.F('authors__organization_type'),
+                organization_type_title=models.F('authors__organization_type__title')
+            )
+
         return response.Response({
             'analysis_list': analysis_list,
             'entries_total': entries_total,

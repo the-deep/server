@@ -601,13 +601,6 @@ OTP_TOTP_ISSUER = f'Deep Admin {DEEP_ENVIRONMENT.title()}'
 OTP_EMAIL_SENDER = EMAIL_FROM
 OTP_EMAIL_SUBJECT = 'Deep Admin OTP Token'
 
-if DEBUG and not TESTING:
-    if os.environ.get('USE_SILK', 'False').lower() == 'true':
-        INSTALLED_APPS += ['silk']
-        MIDDLEWARE += ['silk.middleware.SilkyMiddleware']
-        SILKY_META = True
-        SILKY_PYTHON_PROFILER = True
-
 REDOC_SETTINGS = {
     'LAZY_RENDERING': True,
     'HIDE_HOSTNAME': True,
@@ -620,3 +613,17 @@ OPEN_API_DOCS_TIMEOUT = 86400  # 24 Hours
 ANALYTICAL_STATEMENT_COUNT = 30  # max no of analytical statement that can be created
 ANALYTICAL_ENTRIES_COUNT = 50  # max no of entries that can be created in analytical_statement
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+# DEBUG TOOLBAR CONFIGURATION
+DEBUG_TOOLBAR_CONFIG = {
+    'DISABLE_PANELS': [
+        'debug_toolbar.panels.sql.SQLPanel',
+        'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+        'debug_toolbar.panels.redirects.RedirectsPanel',
+        'debug_toolbar.panels.templates.TemplatesPanel',
+    ],
+}
+if DEBUG and 'DOCKER_HOST_IP' in os.environ:
+    INSTALLED_APPS += ['debug_toolbar']
+    MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
+    INTERNAL_IPS = [os.environ['DOCKER_HOST_IP']]

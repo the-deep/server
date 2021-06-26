@@ -546,10 +546,13 @@ urlpatterns = [
     settings.MEDIA_URL, view=xframe_options_exempt(serve),
     document_root=settings.MEDIA_ROOT)
 
-if 'silk' in settings.INSTALLED_APPS:
-    urlpatterns += [
-        url(r'^silk/', include('silk.urls', namespace='silk')),
-    ]
+if settings.DEBUG:
+    import debug_toolbar
+    if 'debug_toolbar' in settings.INSTALLED_APPS:
+        urlpatterns += [
+            url('__debug__/', include(debug_toolbar.urls)),
+        ]
+
 
 handler404 = Api_404View.as_view()
 
