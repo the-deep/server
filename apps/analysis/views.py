@@ -1,5 +1,3 @@
-from django.db import models
-
 from rest_framework.decorators import action
 from rest_framework import (
     exceptions,
@@ -10,7 +8,7 @@ from rest_framework import (
     status
 )
 
-from deep.permissions import IsProjectMember
+from deep.permissions import IsProjectMember, ModifyPermission
 from entry.views import EntryFilterView
 
 from .models import (
@@ -24,6 +22,7 @@ from .serializers import (
     AnalysisPillarSerializer,
     AnalyticalStatementSerializer,
     AnalysisSummarySerializer,
+    AnalysisPillarSummarySerializer,
     DiscardedEntrySerializer,
 )
 from .filter_set import (
@@ -34,7 +33,7 @@ from .filter_set import (
 
 class AnalysisViewSet(viewsets.ModelViewSet):
     serializer_class = AnalysisSerializer
-    permission_classes = [permissions.IsAuthenticated, IsProjectMember]
+    permission_classes = [permissions.IsAuthenticated, IsProjectMember, ModifyPermission]
     filterset_class = AnalysisFilterSet
 
     def get_queryset(self):
@@ -48,7 +47,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         url_path='summary'
     )
     def get_summary(self, request, project_id, pk=None, version=None):
-        queryset = self.filter_queryset(self.get_queryset()).filter(project=project_id)
+        queryset = self.filter_queryset(self.get_queryset())
         queryset = Analysis.annotate_for_analysis_summary(project_id, queryset, self.request.user)
         page = self.paginate_queryset(queryset)
         # NOTE: Calculating here and passing as context since we can't calculate union in subquery in Django for now
@@ -60,37 +59,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        url_path='pillar-overview'
-    )
-    def get_pillar_overview(self, request, project_id, pk=None, version=None):
-        analysis = self.get_object()
-        pillar_list = AnalysisPillar.objects.filter(
-            analysis=analysis
-        )
-        pillars = AnalysisPillar.annotate_for_analysis_pillar_summary(pillar_list)
-        return response.Response(
-            [
-                {
-                    'id': pillar.id,
-                    'pillar_title': pillar.title,
-                    'assignee_username': pillar.assignee.username,
-                    'analytical_statements': AnalyticalStatement.objects.filter(
-                        analysis_pillar=pillar
-                    ).annotate(
-                        entries_count=models.Count('entries', distinct=True)).values(
-                        'entries_count', 'id', 'statement'
-                    ),
-                    'created_at': pillar.created_at,
-                    'analytical_statement_count': pillar.analytical_statement_count,
-                    'analyzed_entries': pillar.entries_analyzed
-                } for pillar in pillars
-            ]
-        )
-
-    @action(
-        detail=True,
         url_path='clone-analysis',
-        permission_classes=[IsProjectMember],
         methods=['post']
     )
     def clone_analysis(self, request, project_id, pk=None, version=None):
@@ -113,18 +82,30 @@ class AnalysisViewSet(viewsets.ModelViewSet):
 
 class AnalysisPillarViewSet(viewsets.ModelViewSet):
     serializer_class = AnalysisPillarSerializer
-    permissions_classes = [permissions.IsAuthenticated, IsProjectMember]
+    permission_classes = [permissions.IsAuthenticated, IsProjectMember, ModifyPermission]
 
     def get_queryset(self):
-        return AnalysisPillar.objects.filter(analysis=self.kwargs['analysis_id']).select_related(
-            'analysis',
-            'assignee'
-        )
+        return AnalysisPillar.objects\
+            .filter(
+                analysis=self.kwargs['analysis_id'],
+                analysis__project=self.kwargs['project_id'],
+            ).select_related('analysis', 'assignee', 'assignee__profile')
+
+    @action(
+        detail=False,
+        url_path='summary',
+    )
+    def get_summary(self, request, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        queryset = AnalysisPillar.annotate_for_analysis_pillar_summary(queryset)
+        page = self.paginate_queryset(queryset)
+        serializer = AnalysisPillarSummarySerializer(page, many=True, partial=True)
+        return self.get_paginated_response(serializer.data)
 
 
 class AnalysisPillarDiscardedEntryViewSet(viewsets.ModelViewSet):
     serializer_class = DiscardedEntrySerializer
-    permission_classes = [permissions.IsAuthenticated, IsProjectMember]
+    permission_classes = [permissions.IsAuthenticated, IsProjectMember, ModifyPermission]
     filterset_class = DiscardedEntryFilterSet
 
     def get_queryset(self):
@@ -138,7 +119,7 @@ class AnalysisPillarDiscardedEntryViewSet(viewsets.ModelViewSet):
 
 
 class AnalysisPillarEntryViewSet(EntryFilterView):
-    permission_classes = [IsProjectMember]
+    permission_classes = [permissions.IsAuthenticated, IsProjectMember, ModifyPermission]
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -152,7 +133,7 @@ class AnalysisPillarEntryViewSet(EntryFilterView):
 
 class AnalyticalStatementViewSet(viewsets.ModelViewSet):
     serializer_class = AnalyticalStatementSerializer
-    permissions_classes = [permissions.IsAuthenticated, IsProjectMember]
+    permissions_classes = [permissions.IsAuthenticated, IsProjectMember, ModifyPermission]
 
     def get_queryset(self):
         return AnalyticalStatement.objects.filter(analysis_pillar=self.kwargs['analysis_pillar_id']).select_related(

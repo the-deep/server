@@ -8,6 +8,7 @@ from utils.data_structures import Dict
 PROJECT_PERMISSION_MODEL_MAP = {
     'lead': 'lead',
     'entry': 'entry',
+    'analysis': 'entry',
     'setup': 'setup',
     'export': 'export',
     'assessment': 'assessment',

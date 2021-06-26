@@ -104,9 +104,9 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        entry1 = self.create(Entry)
-        entry2 = self.create(Entry)
-        analysis = self.create(Analysis, title='Test Analysis')
+        entry1 = self.create_entry(project=project)
+        entry2 = self.create_entry(project=project)
+        analysis = self.create(Analysis, project=project, title='Test Analysis')
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
         data = {
             'main_statement': 'Some main statement',
@@ -638,9 +638,9 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        entry1 = self.create(Entry)
-        entry2 = self.create(Entry)
-        analysis = self.create(Analysis)
+        entry1 = self.create(Entry, project=project)
+        entry2 = self.create(Entry, project=project)
+        analysis = self.create(Analysis, project=project)
         pillar = self.create(AnalysisPillar, analysis=analysis, title='title1', assignee=user)
         analytical_statement = self.create(
             AnalyticalStatement,
@@ -694,11 +694,12 @@ class TestAnalysisAPIs(TestCase):
     def test_pillar_overview_in_analysis(self):
         user = self.create_user()
         user2 = self.create_user()
-        entry = self.create_entry()
-        entry1 = self.create_entry()
-        entry2 = self.create_entry()
         project = self.create_project()
+        entry = self.create_entry(project=project)
+        entry1 = self.create_entry(project=project)
+        entry2 = self.create_entry(project=project)
         project.add_member(user)
+
         analysis1 = self.create(Analysis, title='Test Analysis', team_lead=user, project=project)
         pillar1 = self.create(AnalysisPillar, analysis=analysis1, title='title1', assignee=user)
         pillar2 = self.create(AnalysisPillar, analysis=analysis1, title='title2', assignee=user)
@@ -712,24 +713,15 @@ class TestAnalysisAPIs(TestCase):
         analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar2)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3)
 
-        url = f'/api/v1/projects/{project.id}/analysis/{analysis1.id}/pillar-overview/'
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis1.id}/pillars/summary/'
         self.authenticate(user)
         response = self.client.get(url)
         self.assert_200(response)
-        data = response.data
-        self.assertEqual(data[0]['pillar_title'], pillar2.title)
+        data = response.data['results']
+        self.assertEqual(data[0]['title'], pillar2.title)
         self.assertEqual(len(data[0]['analytical_statements']), 1)
         self.assertEqual(data[0]['analytical_statements'][0]['entries_count'], 1)
-        self.assertEqual(data[0]['analytical_statement_count'], 1)
-        self.assertEqual(data[1]['analytical_statement_count'], 2)
-
-        # try to post to api
-        data = {
-            'assignee': user.id
-        }
-        self.authenticate(user)
-        response = self.client.post(url, data)
-        self.assert_405(response)
+        self.assertEqual(len(data[1]['analytical_statements']), 2)
 
         # try get pillar-overview by user that is not member of project
         self.authenticate(user2)

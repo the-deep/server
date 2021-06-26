@@ -80,7 +80,7 @@ class AnalysisPillarSerializer(
     NestedCreateMixin,
     NestedUpdateMixin,
 ):
-    assignee_name = serializers.CharField(source='assignee.username', read_only=True)
+    assignee_details = NanoUserSerializer(source='assignee', read_only=True)
     analysis_title = serializers.CharField(source='analysis.title', read_only=True)
     analytical_statements = AnalyticalStatementSerializer(many=True, source='analyticalstatement_set', required=False)
 
@@ -110,7 +110,7 @@ class AnalysisSerializer(
     NestedUpdateMixin,
 ):
     analysis_pillar = AnalysisPillarSerializer(many=True, source='analysispillar_set', required=False)
-    team_lead_name = serializers.CharField(source='team_lead.username', read_only=True)
+    team_lead_details = NanoUserSerializer(source='team_lead', read_only=True)
 
     class Meta:
         model = Analysis
@@ -156,3 +156,27 @@ class AnalysisSummarySerializer(serializers.ModelSerializer):
 
     def get_analyzed_sources(self, analysis):
         return self.context['analyzed_sources'].get(analysis.pk)
+
+
+class AnalysisPillarSummaryAnalyticalStatementSerializer(serializers.ModelSerializer):
+    entries_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = AnalyticalStatement
+        fields = ('id', 'statement', 'entries_count')
+
+
+class AnalysisPillarSummarySerializer(serializers.ModelSerializer):
+    assignee_details = NanoUserSerializer(source='assignee', read_only=True)
+    analytical_statements = AnalysisPillarSummaryAnalyticalStatementSerializer(
+        source='analyticalstatement_set', many=True, read_only=True)
+    analyzed_entries = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = AnalysisPillar
+        fields = (
+            'id', 'title', 'assignee', 'created_at',
+            'assignee_details',
+            'analytical_statements',
+            'analyzed_entries'
+        )
