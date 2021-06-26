@@ -13,7 +13,6 @@ from rest_framework import (
 from deep.permissions import IsProjectMember
 from entry.views import EntryFilterView
 
-from lead.models import Lead
 from .models import (
     Analysis,
     AnalysisPillar,
@@ -50,21 +49,13 @@ class AnalysisViewSet(viewsets.ModelViewSet):
     )
     def get_summary(self, request, project_id, pk=None, version=None):
         queryset = self.filter_queryset(self.get_queryset()).filter(project=project_id)
-        queryset = queryset.prefetch_related(
-            models.Prefetch(
-                'analysispillar_set',
-                queryset=AnalysisPillar.objects.defer(
-                    'analysis'
-                ).prefetch_related('analyticalstatement_set')
-            )
-        )
         queryset = Analysis.annotate_for_analysis_summary(project_id, queryset, self.request.user)
-        self.page = self.paginate_queryset(queryset)
-        serializer = AnalysisSummarySerializer(
-            self.page,
-            many=True,
-            partial=True,
-        )
+        page = self.paginate_queryset(queryset)
+        # NOTE: Calculating here and passing as context since we can't calculate union in subquery in Django for now
+        context = {
+            'analyzed_sources': Analysis.get_analyzed_sources(page),
+        }
+        serializer = AnalysisSummarySerializer(page, many=True, context=context, partial=True)
         return self.get_paginated_response(serializer.data)
 
     @action(
@@ -93,7 +84,6 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                     'analytical_statement_count': pillar.analytical_statement_count,
                     'analyzed_entries': pillar.entries_analyzed
                 } for pillar in pillars
-
             ]
         )
 
@@ -178,9 +168,9 @@ class DiscardedEntryOptionsView(views.APIView):
 
     def get(self, request, version=None):
         options = [
-                {
-                    'key': tag.value,
-                    'value': tag.name.title()
-                } for tag in DiscardedEntry.TagType
+            {
+                'key': tag.value,
+                'value': tag.name.title()
+            } for tag in DiscardedEntry.TagType
         ]
         return response.Response(options)

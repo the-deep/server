@@ -41,7 +41,6 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(r_data['teamLead'], user.id)
 
     def test_create_analysis_with_user_not_project_member(self):
-        analysis_count = Analysis.objects.count()
         user = self.create_user()
         user2 = self.create_user()
         project = self.create_project()
@@ -59,7 +58,7 @@ class TestAnalysisAPIs(TestCase):
         analysis_count = Analysis.objects.count()
         pillar_count = AnalysisPillar.objects.count()
         user = self.create_user()
-        user2 = self.create_user()
+        self.create_user()
         project = self.create_project()
         project.add_member(user)
         url = f'/api/v1/projects/{project.id}/analysis/'
@@ -500,12 +499,12 @@ class TestAnalysisAPIs(TestCase):
         project.add_member(user)
 
         now = timezone.now()
-        lead1 = self.create_lead(project=project, created_at=now + relativedelta(days=-1))
-        lead2 = self.create_lead(project=project, created_at=now)
-        lead3 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
-        lead4 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
-        lead5 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
-        lead6 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
+        lead1 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-1))
+        lead2 = self.create_lead(project=project, published_on=now, created_at=now)
+        lead3 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-2))
+        lead4 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-2))
+        lead5 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-2))
+        lead6 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-2))
         self.create_lead(project=project, created_at=now + relativedelta(days=-2))
         lead8 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
         lead9 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
@@ -577,12 +576,17 @@ class TestAnalysisAPIs(TestCase):
         self.assert_200(response)
         data = response.data['results']
         self.assertEqual(data[1]['team_lead'], user.id)
-        self.assertEqual(data[1]['team_lead_name'], user.username)
+        self.assertEqual(data[1]['team_lead_details']['id'], user.id)
+        self.assertEqual(data[1]['team_lead_details']['display_name'], user.profile.get_display_name())
         self.assertEqual(data[1]['pillars'][0]['id'], pillar3.id)
-        self.assertEqual(data[1]['pillars'][1]['pillar_title'], pillar2.title)
-        self.assertEqual(data[1]['pillars'][2]['assignee_username'], pillar1.assignee.username)
-        self.assertEqual(data[1]['publication_date']['start_date'], lead1.created_at.date())  # since we use lead that has entry created for
-        self.assertEqual(data[1]['publication_date']['end_date'], lead2.created_at.date())
+        self.assertEqual(data[1]['pillars'][1]['title'], pillar2.title)
+        self.assertEqual(
+            data[1]['pillars'][2]['assignee_details']['display_name'], pillar1.assignee.profile.get_display_name()
+        )
+        self.assertEqual(
+            data[1]['publication_date']['start_date'], lead1.published_on.strftime('%Y-%m-%d')
+        )  # since we use lead that has entry created for
+        self.assertEqual(data[1]['publication_date']['end_date'], lead1.published_on.strftime('%Y-%m-%d'))
         self.assertEqual(data[1]['pillars'][0]['analyzed_entries'], 3)  # discrded + analyzed entry
         self.assertEqual(data[1]['pillars'][1]['analyzed_entries'], 2)  # discrded + analyzed entry
         self.assertEqual(data[1]['analyzed_entries'], 9)
@@ -590,16 +594,14 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(data[1]['total_entries'], 10)
         self.assertEqual(data[1]['total_sources'], 8)  # taking lead that has entry more than one
         self.assertEqual(data[0]['team_lead'], user.id)
-        self.assertEqual(data[0]['team_lead_name'], user.username)
+        self.assertEqual(data[0]['team_lead_details']['id'], user.id)
+        self.assertEqual(data[0]['team_lead_details']['display_name'], user.profile.get_display_name())
         self.assertEqual(data[0]['pillars'][0]['id'], pillar4.id)
         self.assertEqual(data[0]['analyzed_entries'], 4)
         self.assertEqual(data[0]['analyzed_sources'], 4)
 
         # try to post to api
-        data = {
-            'team_lead': user.id,
-            'team_lead_name': user.username
-        }
+        data = {'team_lead': user.id}
         self.authenticate(user)
         response = self.client.post(url, data)
         self.assert_405(response)
@@ -646,7 +648,7 @@ class TestAnalysisAPIs(TestCase):
             statement='Hello from here',
             client_id='1'
         )
-        staatement_entry1 = self.create(
+        self.create(
             AnalyticalStatementEntry,
             analytical_statement=analytical_statement,
             entry=entry1,

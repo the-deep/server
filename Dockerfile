@@ -9,6 +9,7 @@ ARG ORCA_VERSION=1.2.1
 RUN apt-get update -y && apt-get install -y \
         # Basic Packages
         git \
+        iproute2 \
         locales \
         vim \
         curl \
