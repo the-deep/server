@@ -1,4 +1,3 @@
-from django.db import models
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 
@@ -7,9 +6,8 @@ from drf_dynamic_fields import DynamicFieldsMixin
 
 from user_resource.serializers import UserResourceSerializer
 
+from user.serializers import NanoUserSerializer
 from entry.serializers import SimpleEntrySerializer
-from lead.models import Lead
-from entry.models import Entry
 from deep.serializers import (
     RemoveNullFieldsMixin,
     NestedCreateMixin,
@@ -71,9 +69,7 @@ class DiscardedEntrySerializer(serializers.ModelSerializer):
         data['analysis_pillar_id'] = int(self.context['analysis_pillar_id'])
         analysis_pillar = get_object_or_404(AnalysisPillar, id=data['analysis_pillar_id'])
         if data['entry'].project != analysis_pillar.analysis.project:
-            raise serializers.ValidationError(
-                f'Analysis pillar project doesnot match Entry project'
-            )
+            raise serializers.ValidationError('Analysis pillar project doesnot match Entry project')
         return data
 
 
@@ -126,65 +122,37 @@ class AnalysisSerializer(
         return data
 
 
+class AnalysisSummaryPillarSerializer(serializers.ModelSerializer):
+    analyzed_entries = serializers.IntegerField()
+    assignee_details = NanoUserSerializer(source='assignee')
+
+    class Meta:
+        model = AnalysisPillar
+        fields = ('id', 'title', 'analyzed_entries', 'assignee_details')
+
+
 class AnalysisSummarySerializer(serializers.ModelSerializer):
-    team_lead_name = serializers.CharField()
-    pillars = serializers.SerializerMethodField()
-    publication_date = serializers.SerializerMethodField()
+    """
+    Used with Analysis.annotate_for_analysis_summary
+    """
     total_entries = serializers.IntegerField()
     total_sources = serializers.IntegerField()
     analyzed_entries = serializers.IntegerField()
-    analyzed_sources = serializers.IntegerField()
+
+    publication_date = serializers.JSONField()
+    team_lead_details = NanoUserSerializer(source='team_lead', read_only=True)
+    pillars = AnalysisSummaryPillarSerializer(source='analysispillar_set', many=True, read_only=True)
+
+    analyzed_sources = serializers.SerializerMethodField()
 
     class Meta:
         model = Analysis
-        fields = ('id', 'title', 'team_lead', 'team_lead_name',
-                  'publication_date', 'pillars',
-                  'analyzed_entries', 'analyzed_sources', 'total_entries',
-                  'total_sources', 'created_at', 'modified_at',
-                )
-
-    def get_pillars(self, analysis):
-        return list(
-            AnalysisPillar.objects.filter(
-                analysis=analysis
-            ).annotate(
-                entries_dragged=models.functions.Coalesce(models.Subquery(
-                    AnalyticalStatement.objects.filter(
-                        analysis_pillar=models.OuterRef('pk')
-                    ).order_by().values('analysis_pillar').annotate(count=models.Count('entries', distinct=True))
-                    .values('count')[:1],
-                    output_field=models.IntegerField(),
-                ), 0),
-                entries_discarded=models.functions.Coalesce(models.Subquery(
-                    DiscardedEntry.objects.filter(
-                        analysis_pillar=models.OuterRef('pk')
-                    ).order_by().values('analysis_pillar').annotate(count=models.Count('entry', distinct=True))
-                    .values('count')[:1],
-                    output_field=models.IntegerField(),
-                ), 0)
-            ).values(
-                'id',
-                pillar_title=models.F('title'),
-                analyzed_entries=models.F('entries_dragged') + models.F('entries_discarded'),
-                assignee_username=models.F('assignee__username')
-            )
+        fields = (
+            'id', 'title', 'team_lead', 'team_lead_details',
+            'publication_date', 'pillars',
+            'analyzed_entries', 'analyzed_sources', 'total_entries',
+            'total_sources', 'created_at', 'modified_at',
         )
 
-    def get_publication_date(self, analysis):
-        lead_qs = Lead.objects.filter(
-            project=analysis.project
-        ).annotate(
-            entries_count=models.functions.Coalesce(models.Subquery(
-                AnalyticalStatementEntry.objects.filter(
-                    entry__lead_id=models.OuterRef('pk')
-                ).order_by().values('entry__lead_id').annotate(count=models.Count('*'))
-                .values('count')[:1],
-                output_field=models.IntegerField(),
-            ), 0)
-        ).filter(entries_count__gt=0).order_by('created_at')
-        lead_first_created_date = lead_qs.aggregate(models.Min('created_at'))['created_at__min']
-        lead_last_created_date = lead_qs.aggregate(models.Max('created_at'))['created_at__max']
-        return {
-            'start_date': lead_first_created_date.date(),
-            'end_date': lead_last_created_date.date()
-        }
+    def get_analyzed_sources(self, analysis):
+        return self.context['analyzed_sources'].get(analysis.pk)
