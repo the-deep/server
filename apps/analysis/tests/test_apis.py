@@ -1,4 +1,5 @@
 from django.conf import settings
+from rest_framework.exceptions import ErrorDetail
 
 from deep.tests import TestCase
 
@@ -342,8 +343,8 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        entry1 = self.create(Entry)
-        entry2 = self.create(Entry)
+        self.create_entry(project=project)
+        self.create_entry(project=project)
         analysis = self.create(Analysis, title='Test Analysis')
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
         data = {
@@ -478,7 +479,16 @@ class TestAnalysisAPIs(TestCase):
         }
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{response_id}/'
         response = self.client.patch(url, data)
-        self.assert_200(response)
+        self.assert_400(response)
+        self.assertEqual(
+            response.data['errors']['analytical_statements'][0]['analytical_entries'][1]['entry'][0],
+            ErrorDetail(string=f'Invalid pk "{entry2.id}" - object does not exist.', code='does_not_exist'),
+        )
+        # TODO: Make sure the error is structured for client
+        # self.assertEqual(
+        #     response.json()['errors']['analyticalStatements'][0]['analyticalEntries'][1]['entry'][0],
+        #     {'string': f'Invalid pk "{entry2.id}" - object does not exist.', 'code': 'does_not_exist'},
+        # )
 
     def test_summary_for_analysis(self):
         user = self.create_user()
