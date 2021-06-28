@@ -1,3 +1,5 @@
+from unittest import mock
+
 from deep.tests import TestCase
 from project.models import (
     Project,
@@ -10,11 +12,13 @@ from user.models import (
     Feature,
 )
 from user.notifications import Notification
+from jwt_auth.errors import InvalidCaptchaError
 
 
 class UserApiTests(TestCase):
 
-    def test_create_user(self):
+    @mock.patch('jwt_auth.captcha.requests')
+    def test_create_user(self, captch_requests_mock):
         user_count = User.objects.count()
 
         url = '/api/v1/users/'
@@ -26,11 +30,18 @@ class UserApiTests(TestCase):
             'organization': 'Togglecorp',
             'password': 'admin123',
             'display_picture': None,
-            'recaptcha_response': 'TEST',
+            'hcaptcha_response': 'TEST',
         }
 
         # TODO: Test display picture api
 
+        # Failed captch response
+        captch_requests_mock.post.return_value.json.return_value = {'success': False}
+        response = self.client.post(url, data)
+        self.assert_401(response)
+        self.assertEqual(response.data['errors']['non_field_errors'][0], InvalidCaptchaError.default_detail)
+
+        captch_requests_mock.post.return_value.json.return_value = {'success': True}
         response = self.client.post(url, data)
         self.assert_201(response)
 
