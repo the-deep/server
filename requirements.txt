@@ -27,7 +27,7 @@ django-redis==4.10.0
 django-reversion==3.0.9
 django-mptt==0.12.0
 django-ses==1.0.2
-django-silk==3.0.2
+django-silk==4.1.0
 django-storages==1.7.1
 django-utils-six
 drf-dynamic-fields==0.3.0
