@@ -34,6 +34,20 @@ class UserGroupApiTest(TestCase):
         self.assertEqual(membership.member.pk, self.user.pk)
         self.assertEqual(membership.role, 'admin')
 
+    def test_usergoup_fields(self):
+        user = self.create(User)
+        self.create(
+            UserGroup,
+            role='admin',
+            created_by=user
+        )
+        url = '/api/v1/user-groups/'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertIn('created_at', response.data['results'][0])
+        self.assertEqual(response.data['results'][0]['created_by'], user.id)
+
     def test_member_of(self):
         user_group = self.create(UserGroup, role='admin')
         test_user = self.create(User)
