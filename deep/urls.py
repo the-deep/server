@@ -64,6 +64,7 @@ from geo.views import (
     GeoJsonView,
     GeoBoundsView,
     GeoOptionsView,
+    GeoAreaView
 )
 from questionnaire.views import (
     QuestionnaireViewSet,
@@ -248,6 +249,8 @@ router.register(r'regions', RegionViewSet,
                 basename='region')
 router.register(r'admin-levels', AdminLevelViewSet,
                 basename='admin_level')
+router.register(r'projects/(?P<project_id>\d+)/geo-area', GeoAreaView,
+                basename='geo_area')
 
 # Lead routers
 router.register(r'lead-groups', LeadGroupViewSet,
