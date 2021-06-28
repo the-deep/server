@@ -1,6 +1,7 @@
 #!/bin/bash -x
 
 export PYTHONUNBUFFERED=1
+export DOCKER_HOST_IP=$(/sbin/ip route|awk '/default/ { print $3 }')
 PYTHON_MYPY_DEP_PATH=/code/.mypy-dep/
 
 pip3 install -r requirements.txt

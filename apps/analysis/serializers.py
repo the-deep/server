@@ -1,4 +1,3 @@
-from django.db import models
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 
@@ -6,6 +5,8 @@ from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
 
 from user_resource.serializers import UserResourceSerializer
+
+from user.serializers import NanoUserSerializer
 from entry.serializers import SimpleEntrySerializer
 from deep.serializers import (
     RemoveNullFieldsMixin,
@@ -68,9 +69,7 @@ class DiscardedEntrySerializer(serializers.ModelSerializer):
         data['analysis_pillar_id'] = int(self.context['analysis_pillar_id'])
         analysis_pillar = get_object_or_404(AnalysisPillar, id=data['analysis_pillar_id'])
         if data['entry'].project != analysis_pillar.analysis.project:
-            raise serializers.ValidationError(
-                f'Analysis pillar project doesnot match Entry project'
-            )
+            raise serializers.ValidationError('Analysis pillar project doesnot match Entry project')
         return data
 
 
@@ -81,7 +80,7 @@ class AnalysisPillarSerializer(
     NestedCreateMixin,
     NestedUpdateMixin,
 ):
-    assignee_name = serializers.CharField(source='assignee.username', read_only=True)
+    assignee_details = NanoUserSerializer(source='assignee', read_only=True)
     analysis_title = serializers.CharField(source='analysis.title', read_only=True)
     analytical_statements = AnalyticalStatementSerializer(many=True, source='analyticalstatement_set', required=False)
 
@@ -111,7 +110,7 @@ class AnalysisSerializer(
     NestedUpdateMixin,
 ):
     analysis_pillar = AnalysisPillarSerializer(many=True, source='analysispillar_set', required=False)
-    team_lead_name = serializers.CharField(source='team_lead.username', read_only=True)
+    team_lead_details = NanoUserSerializer(source='team_lead', read_only=True)
 
     class Meta:
         model = Analysis
@@ -123,46 +122,61 @@ class AnalysisSerializer(
         return data
 
 
+class AnalysisSummaryPillarSerializer(serializers.ModelSerializer):
+    analyzed_entries = serializers.IntegerField()
+    assignee_details = NanoUserSerializer(source='assignee')
+
+    class Meta:
+        model = AnalysisPillar
+        fields = ('id', 'title', 'analyzed_entries', 'assignee_details')
+
+
 class AnalysisSummarySerializer(serializers.ModelSerializer):
-    team_lead_name = serializers.CharField(source='team_lead.username')
-    pillar_list = serializers.SerializerMethodField()
-    analytical_statement_count = serializers.SerializerMethodField()
-    entries_used_in_analysis = serializers.SerializerMethodField()
-    framework_overview = serializers.SerializerMethodField()
+    """
+    Used with Analysis.annotate_for_analysis_summary
+    """
+    total_entries = serializers.IntegerField()
+    total_sources = serializers.IntegerField()
+    analyzed_entries = serializers.IntegerField()
+
+    publication_date = serializers.JSONField()
+    team_lead_details = NanoUserSerializer(source='team_lead', read_only=True)
+    pillars = AnalysisSummaryPillarSerializer(source='analysispillar_set', many=True, read_only=True)
+
+    analyzed_sources = serializers.SerializerMethodField()
 
     class Meta:
         model = Analysis
-        fields = ('id', 'team_lead', 'team_lead_name', 'pillar_list', 'analytical_statement_count',
-                  'entries_used_in_analysis', 'framework_overview')
-
-    def get_pillar_list(self, analysis):
-        return list(
-            AnalysisPillar.objects.filter(
-                analysis=analysis
-            ).values('id', 'title', assignee_username=models.F('assignee__username'))
+        fields = (
+            'id', 'title', 'team_lead', 'team_lead_details',
+            'publication_date', 'pillars',
+            'analyzed_entries', 'analyzed_sources', 'total_entries',
+            'total_sources', 'created_at', 'modified_at',
         )
 
-    def get_analytical_statement_count(self, analysis):
-        return AnalyticalStatement.objects.filter(
-            analysis_pillar__analysis=analysis
-        ).count()
+    def get_analyzed_sources(self, analysis):
+        return self.context['analyzed_sources'].get(analysis.pk)
 
-    def get_entries_used_in_analysis(self, analysis):
-        return AnalyticalStatement.objects.filter(
-            analysis_pillar__analysis=analysis
-        ).annotate(entries_in_analysis=models.Count('entries')).filter(entries_in_analysis__gt=0).count()
 
-    def get_framework_overview(self, analysis):
-        return list(
-            AnalysisPillar.objects.filter(
-                analysis=analysis
-            ).annotate(
-                entries_count=models.functions.Coalesce(models.Subquery(
-                    AnalyticalStatement.objects.filter(
-                        analysis_pillar=models.OuterRef('pk')
-                    ).order_by().values('analysis_pillar').annotate(count=models.Count('entries', distinct=True))
-                    .values('count')[:1],
-                    output_field=models.IntegerField(),
-                ), 0)
-            ).values('id', 'title', 'entries_count')
+class AnalysisPillarSummaryAnalyticalStatementSerializer(serializers.ModelSerializer):
+    entries_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = AnalyticalStatement
+        fields = ('id', 'statement', 'entries_count')
+
+
+class AnalysisPillarSummarySerializer(serializers.ModelSerializer):
+    assignee_details = NanoUserSerializer(source='assignee', read_only=True)
+    analytical_statements = AnalysisPillarSummaryAnalyticalStatementSerializer(
+        source='analyticalstatement_set', many=True, read_only=True)
+    analyzed_entries = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = AnalysisPillar
+        fields = (
+            'id', 'title', 'assignee', 'created_at',
+            'assignee_details',
+            'analytical_statements',
+            'analyzed_entries'
         )

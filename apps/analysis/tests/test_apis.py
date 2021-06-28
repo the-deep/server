@@ -1,3 +1,6 @@
+from dateutil.relativedelta import relativedelta
+from django.utils import timezone
+
 from django.conf import settings
 from rest_framework.exceptions import ErrorDetail
 
@@ -38,7 +41,6 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(r_data['teamLead'], user.id)
 
     def test_create_analysis_with_user_not_project_member(self):
-        analysis_count = Analysis.objects.count()
         user = self.create_user()
         user2 = self.create_user()
         project = self.create_project()
@@ -56,7 +58,7 @@ class TestAnalysisAPIs(TestCase):
         analysis_count = Analysis.objects.count()
         pillar_count = AnalysisPillar.objects.count()
         user = self.create_user()
-        user2 = self.create_user()
+        self.create_user()
         project = self.create_project()
         project.add_member(user)
         url = f'/api/v1/projects/{project.id}/analysis/'
@@ -102,9 +104,9 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        entry1 = self.create(Entry)
-        entry2 = self.create(Entry)
-        analysis = self.create(Analysis, title='Test Analysis')
+        entry1 = self.create_entry(project=project)
+        entry2 = self.create_entry(project=project)
+        analysis = self.create(Analysis, project=project, title='Test Analysis')
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
         data = {
             'main_statement': 'Some main statement',
@@ -493,56 +495,113 @@ class TestAnalysisAPIs(TestCase):
     def test_summary_for_analysis(self):
         user = self.create_user()
         user2 = self.create_user()
-        entry = self.create_entry()
-        entry1 = self.create_entry()
         project = self.create_project()
         project.add_member(user)
+
+        now = timezone.now()
+        lead1 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-1))
+        lead2 = self.create_lead(project=project, published_on=now, created_at=now)
+        lead3 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-2))
+        lead4 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-2))
+        lead5 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-2))
+        lead6 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-2))
+        self.create_lead(project=project, created_at=now + relativedelta(days=-2))
+        lead8 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
+        lead9 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
+        self.create_lead(project=project, created_at=now + relativedelta(days=-3))
+        entry = self.create_entry(lead=lead1, project=project)
+        entry1 = self.create_entry(lead=lead2, project=project)
+        entry2 = self.create_entry(lead=lead3, project=project)
+        entry3 = self.create_entry(lead=lead4, project=project)
+        entry4 = self.create_entry(lead=lead5, project=project)
+        entry5 = self.create_entry(lead=lead6, project=project)
+        entry6 = self.create_entry(lead=lead6, project=project)
+        self.create_entry(lead=lead8, project=project)
+        entry8 = self.create_entry(lead=lead9, project=project)
+        entry9 = self.create_entry(lead=lead2, project=project)
+
         analysis1 = self.create(Analysis, title='Test Analysis', team_lead=user, project=project)
         analysis2 = self.create(Analysis, title='Not for test', team_lead=user, project=project)
         pillar1 = self.create(AnalysisPillar, analysis=analysis1, title='title1', assignee=user)
         pillar2 = self.create(AnalysisPillar, analysis=analysis1, title='title2', assignee=user)
         pillar3 = self.create(AnalysisPillar, analysis=analysis1, title='title3', assignee=user2)
+
         pillar4 = self.create(AnalysisPillar, analysis=analysis2, title='title3', assignee=user2)
 
         analytical_statement1 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry1)
+        # lets discard some entry here
+        DiscardedEntry.objects.create(
+            analysis_pillar=pillar1,
+            entry=entry3,
+            tag=DiscardedEntry.TagType.REDUNDANT
+        )
+        DiscardedEntry.objects.create(
+            analysis_pillar=pillar1,
+            entry=entry9,
+            tag=DiscardedEntry.TagType.REDUNDANT
+        )
 
         analytical_statement2 = self.create(AnalyticalStatement, analysis_pillar=pillar2)
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry4)
+        DiscardedEntry.objects.create(
+            analysis_pillar=pillar2,
+            entry=entry5,
+            tag=DiscardedEntry.TagType.REDUNDANT
+        )
 
         analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar3)
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry)
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry1)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry5)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry6)
+        DiscardedEntry.objects.create(
+            analysis_pillar=pillar3,
+            entry=entry2,
+            tag=DiscardedEntry.TagType.REDUNDANT
+        )
 
         analytical_statement4 = self.create(AnalyticalStatement, analysis_pillar=pillar4)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement4, entry=entry)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement4, entry=entry1)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement4, entry=entry2)
+        DiscardedEntry.objects.create(
+            analysis_pillar=pillar4,
+            entry=entry8,
+            tag=DiscardedEntry.TagType.REDUNDANT
+        )
 
         url = f'/api/v1/projects/{project.id}/analysis/summary/'
         self.authenticate(user)
         response = self.client.get(url)
         self.assert_200(response)
-        data = response.data
+        data = response.data['results']
         self.assertEqual(data[1]['team_lead'], user.id)
-        self.assertEqual(data[1]['team_lead_name'], user.username)
-        self.assertEqual(len(data[1]['pillar_list']), 3)
-        self.assertEqual(data[1]['pillar_list'][0]['id'], pillar3.id)
-        self.assertEqual(data[1]['pillar_list'][1]['title'], pillar2.title)
-        self.assertEqual(data[1]['pillar_list'][2]['assignee_username'], pillar1.assignee.username)
-        self.assertEqual(data[1]['analytical_statement_count'], 3)
-        self.assertEqual(data[1]['entries_used_in_analysis'], 3)
-        self.assertEqual(data[1]['framework_overview'][0]['title'], pillar3.title)
-        self.assertEqual(data[1]['framework_overview'][0]['entries_count'], 2)
-        self.assertEqual(data[1]['framework_overview'][1]['entries_count'], 1)
+        self.assertEqual(data[1]['team_lead_details']['id'], user.id)
+        self.assertEqual(data[1]['team_lead_details']['display_name'], user.profile.get_display_name())
+        self.assertEqual(data[1]['pillars'][0]['id'], pillar3.id)
+        self.assertEqual(data[1]['pillars'][1]['title'], pillar2.title)
+        self.assertEqual(
+            data[1]['pillars'][2]['assignee_details']['display_name'], pillar1.assignee.profile.get_display_name()
+        )
+        self.assertEqual(
+            data[1]['publication_date']['start_date'], lead1.published_on.strftime('%Y-%m-%d')
+        )  # since we use lead that has entry created for
+        self.assertEqual(data[1]['publication_date']['end_date'], lead1.published_on.strftime('%Y-%m-%d'))
+        self.assertEqual(data[1]['pillars'][0]['analyzed_entries'], 3)  # discrded + analyzed entry
+        self.assertEqual(data[1]['pillars'][1]['analyzed_entries'], 2)  # discrded + analyzed entry
+        self.assertEqual(data[1]['analyzed_entries'], 9)
+        self.assertEqual(data[1]['analyzed_sources'], 6)  # have `distinct=True`
+        self.assertEqual(data[1]['total_entries'], 10)
+        self.assertEqual(data[1]['total_sources'], 8)  # taking lead that has entry more than one
         self.assertEqual(data[0]['team_lead'], user.id)
-        self.assertEqual(data[0]['team_lead_name'], user.username)
+        self.assertEqual(data[0]['team_lead_details']['id'], user.id)
+        self.assertEqual(data[0]['team_lead_details']['display_name'], user.profile.get_display_name())
+        self.assertEqual(data[0]['pillars'][0]['id'], pillar4.id)
+        self.assertEqual(data[0]['analyzed_entries'], 4)
+        self.assertEqual(data[0]['analyzed_sources'], 4)
 
         # try to post to api
-        data = {
-            'team_lead': user.id,
-            'team_lead_name': user.username
-        }
+        data = {'team_lead': user.id}
         self.authenticate(user)
         response = self.client.post(url, data)
         self.assert_405(response)
@@ -579,9 +638,9 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        entry1 = self.create(Entry)
-        entry2 = self.create(Entry)
-        analysis = self.create(Analysis)
+        entry1 = self.create(Entry, project=project)
+        entry2 = self.create(Entry, project=project)
+        analysis = self.create(Analysis, project=project)
         pillar = self.create(AnalysisPillar, analysis=analysis, title='title1', assignee=user)
         analytical_statement = self.create(
             AnalyticalStatement,
@@ -589,7 +648,7 @@ class TestAnalysisAPIs(TestCase):
             statement='Hello from here',
             client_id='1'
         )
-        staatement_entry1 = self.create(
+        self.create(
             AnalyticalStatementEntry,
             analytical_statement=analytical_statement,
             entry=entry1,
@@ -635,11 +694,12 @@ class TestAnalysisAPIs(TestCase):
     def test_pillar_overview_in_analysis(self):
         user = self.create_user()
         user2 = self.create_user()
-        entry = self.create_entry()
-        entry1 = self.create_entry()
-        entry2 = self.create_entry()
         project = self.create_project()
+        entry = self.create_entry(project=project)
+        entry1 = self.create_entry(project=project)
+        entry2 = self.create_entry(project=project)
         project.add_member(user)
+
         analysis1 = self.create(Analysis, title='Test Analysis', team_lead=user, project=project)
         pillar1 = self.create(AnalysisPillar, analysis=analysis1, title='title1', assignee=user)
         pillar2 = self.create(AnalysisPillar, analysis=analysis1, title='title2', assignee=user)
@@ -653,24 +713,15 @@ class TestAnalysisAPIs(TestCase):
         analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar2)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3)
 
-        url = f'/api/v1/projects/{project.id}/analysis/{analysis1.id}/pillar-overview/'
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis1.id}/pillars/summary/'
         self.authenticate(user)
         response = self.client.get(url)
         self.assert_200(response)
-        data = response.data
-        self.assertEqual(data[0]['pillar_title'], pillar2.title)
+        data = response.data['results']
+        self.assertEqual(data[0]['title'], pillar2.title)
         self.assertEqual(len(data[0]['analytical_statements']), 1)
         self.assertEqual(data[0]['analytical_statements'][0]['entries_count'], 1)
-        self.assertEqual(data[0]['analytical_statement_count'], 1)
-        self.assertEqual(data[1]['analytical_statement_count'], 2)
-
-        # try to post to api
-        data = {
-            'assignee': user.id
-        }
-        self.authenticate(user)
-        response = self.client.post(url, data)
-        self.assert_405(response)
+        self.assertEqual(len(data[1]['analytical_statements']), 2)
 
         # try get pillar-overview by user that is not member of project
         self.authenticate(user2)
@@ -699,6 +750,7 @@ class TestAnalysisAPIs(TestCase):
         entry2 = self.create_entry(lead=lead2, project=project)
         entry3 = self.create_entry(lead=lead3, project=project)
         self.create_entry(lead=lead3, project=project)
+        entry4 = self.create_entry(lead=lead2, project=project)
 
         analysis1 = self.create(Analysis, title='Test Analysis', team_lead=user, project=project)
         analysis2 = self.create(Analysis, title='Test Analysis New', team_lead=user, project=project)
@@ -707,10 +759,13 @@ class TestAnalysisAPIs(TestCase):
 
         analytical_statement1 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
         analytical_statement2 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
-        analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry1)
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry1)
-        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry2)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry2)
+        DiscardedEntry.objects.create(
+            analysis_pillar=pillar1,
+            entry=entry4,
+            tag=DiscardedEntry.TagType.REDUNDANT
+        )
 
         analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar2)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry3)
@@ -723,10 +778,10 @@ class TestAnalysisAPIs(TestCase):
 
         self.assertEqual(len(data['analysis_list']), 2)
         self.assertEqual(data['analysis_list'][1]['title'], analysis1.title)
-        self.assertEqual(data['entries_total'], 4)
+        self.assertEqual(data['entries_total'], 5)
         self.assertEqual(data['sources_total'], 3)  # since we take only that lead which entry has been created
-        self.assertEqual(data['analyzed_source_count'], 3)
-        self.assertEqual(data['analyzed_entries_count'], 3)
+        self.assertEqual(data['analyzed_source_count'], 3)  # since we take entry
+        self.assertEqual(data['analyzed_entries_count'], 4)  # discarded + analyzed
         self.assertEqual(len(data['authoring_organizations']), 2)
         self.assertIn(organization_type1.id, [item['organization_type_id'] for item in data['authoring_organizations']])
         self.assertIn(
@@ -853,23 +908,22 @@ class TestAnalysisAPIs(TestCase):
         self.assertNotIn(entry1.id, response_id)
 
     def test_discardedentry_options(self):
-        url = '/api/v1/discardedentry-options/'
+        url = '/api/v1/discarded-entry-options/'
 
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
-        self.assertIn('discarded_entries_tags', response.data)
         self.assertEqual(
-            response.data['discarded_entries_tags'][0]['key'],
+            response.data[0]['key'],
             DiscardedEntry.TagType.REDUNDANT)
         self.assertEqual(
-            response.data['discarded_entries_tags'][0]['value'],
+            response.data[0]['value'],
             DiscardedEntry.TagType.REDUNDANT.name.title()
         )
         self.assertEqual(
-            response.data['discarded_entries_tags'][1]['key'],
+            response.data[1]['key'],
             DiscardedEntry.TagType.TOO_OLD)
         self.assertEqual(
-            response.data['discarded_entries_tags'][1]['value'],
+            response.data[1]['value'],
             DiscardedEntry.TagType.TOO_OLD.name.title()
         )
