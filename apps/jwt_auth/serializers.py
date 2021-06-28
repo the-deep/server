@@ -8,9 +8,8 @@ from rest_framework.exceptions import AuthenticationFailed
 from utils.hid import hid
 from user.utils import send_account_activation
 from .token import AccessToken, RefreshToken, TokenError
-from .recaptcha import validate_recaptcha
+from .captcha import validate_hcaptcha
 from .errors import (
-    InvalidCaptchaError,
     AuthenticationFailedError,
     UserInactiveError,
 )
@@ -22,11 +21,7 @@ logger = logging.getLogger(__name__)
 class TokenObtainPairSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField(write_only=True)
-    recaptcha_response = serializers.CharField(write_only=True, required=False)
-
-    def validate_recaptcha(self, recaptcha_response):
-        if not validate_recaptcha(recaptcha_response):
-            raise InvalidCaptchaError
+    hcaptcha_response = serializers.CharField(write_only=True, required=False)
 
     def validate_password(self, password):
         # this will now only handle max-length in the login
@@ -43,12 +38,12 @@ class TokenObtainPairSerializer(serializers.Serializer):
         raise UserInactiveError(
             message='Account is deactivated, check your email')
 
-    def check_login_attempts(self, user, recaptcha_response):
+    def check_login_attempts(self, user, captcha):
         login_attempts = user.profile.login_attempts
         if login_attempts >= settings.MAX_LOGIN_ATTEMPTS:
             self.deactivate_account(user)
         elif login_attempts >= settings.MAX_LOGIN_ATTEMPTS_FOR_CAPTCHA:
-            self.validate_recaptcha(recaptcha_response)
+            validate_hcaptcha(captcha)
 
     def validate(self, data):
         # NOTE: authenticate only works for active users
@@ -56,7 +51,7 @@ class TokenObtainPairSerializer(serializers.Serializer):
             username=data['username'],
             password=data['password']
         )
-        recaptcha_response = data.get('recaptcha_response')
+        captcha = data.get('hcaptcha_response')
 
         # user not active or user credentials don't match
         if not user or not user.is_active:
@@ -65,11 +60,11 @@ class TokenObtainPairSerializer(serializers.Serializer):
             if user:
                 user.profile.login_attempts += 1
                 user.save()
-                self.check_login_attempts(user, recaptcha_response)
+                self.check_login_attempts(user, captcha)
                 raise AuthenticationFailedError(user.profile.login_attempts)
             raise AuthenticationFailedError()
 
-        self.check_login_attempts(user, recaptcha_response)
+        self.check_login_attempts(user, captcha)
 
         if user.profile.login_attempts > 0:
             user.profile.login_attempts = 0
