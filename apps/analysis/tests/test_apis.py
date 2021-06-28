@@ -719,20 +719,24 @@ class TestAnalysisAPIs(TestCase):
     def test_all_entries_in_analysis_pillar(self):
         user = self.create_user()
         project = self.create_project()
+        project2 = self.create_project()
         project.add_member(user)
+        project2.add_member(user)
         analysis = self.create(Analysis, project=project)
         pillar = self.create(AnalysisPillar, analysis=analysis)
         entry1 = self.create(Entry, project=project)
         self.create(Entry, project=project)
         self.create(Entry, project=project)
         self.create(Entry, project=project)
+        self.create(Entry, project=project2)
 
         # Check the entry count
         analysis_pillar_entries_url = f'/api/v1/analysis-pillar/{pillar.id}/entries/'
         self.authenticate(user)
         response = self.client.post(analysis_pillar_entries_url)
         self.assert_200(response)
-        self.assertEqual(len(response.data['results']), 4)  # this should list all the entries present
+        # this should output only those entries that have same project as analysis does
+        self.assertEqual(len(response.data['results']), 4)
 
         # now try to discard the entry from the discarded entries api
         data = {
