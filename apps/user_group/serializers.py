@@ -1,8 +1,9 @@
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
+
 from deep.serializers import RemoveNullFieldsMixin
 from user_group.models import UserGroup, GroupMembership
-
+from user_resource.serializers import UserResourceSerializer
 
 class SimpleUserGroupSerializer(RemoveNullFieldsMixin,
                                 serializers.ModelSerializer):
@@ -11,9 +12,11 @@ class SimpleUserGroupSerializer(RemoveNullFieldsMixin,
         fields = ('id', 'title')
 
 
-class GroupMembershipSerializer(RemoveNullFieldsMixin,
-                                DynamicFieldsMixin,
-                                serializers.ModelSerializer):
+class GroupMembershipSerializer(
+    RemoveNullFieldsMixin,
+    DynamicFieldsMixin,
+    serializers.ModelSerializer
+):
     member_email = serializers.CharField(source='member.email', read_only=True)
     member_name = serializers.SerializerMethodField()
 
@@ -39,8 +42,11 @@ class GroupMembershipSerializer(RemoveNullFieldsMixin,
         return resource
 
 
-class UserGroupSerializer(RemoveNullFieldsMixin,
-                          DynamicFieldsMixin, serializers.ModelSerializer):
+class UserGroupSerializer(
+    RemoveNullFieldsMixin,
+    DynamicFieldsMixin,
+    UserResourceSerializer
+):
     memberships = GroupMembershipSerializer(
         source='groupmembership_set',
         many=True,
@@ -52,7 +58,9 @@ class UserGroupSerializer(RemoveNullFieldsMixin,
         model = UserGroup
         fields = ('id', 'title', 'description', 'display_picture', 'role',
                   'memberships', 'global_crisis_monitoring',
-                  'custom_project_fields')
+                  'custom_project_fields', 'created_at', 'modified_at',
+                  'created_by', 'modified_by'
+                )
 
     def create(self, validated_data):
         user_group = super().create(validated_data)

@@ -1,8 +1,9 @@
 from django.contrib.auth.models import User
 from django.db import models
 
+from user_resource.models import UserResource
 
-class UserGroup(models.Model):
+class UserGroup(UserResource):
     """
     User group model
     """

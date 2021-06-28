@@ -1,4 +1,5 @@
 from django.contrib import admin
+from reversion.admin import VersionAdmin
 
 from .models import (
     Analysis,
@@ -15,7 +16,7 @@ class AnalysisAdmin(admin.ModelAdmin):
 
 
 @admin.register(AnalysisPillar)
-class AnalysisPillarAdmin(admin.ModelAdmin):
+class AnalysisPillarAdmin(VersionAdmin):
     pass
 
 
