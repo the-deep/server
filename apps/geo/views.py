@@ -15,7 +15,10 @@ from rest_framework import (
 from rest_framework.decorators import action
 import django_filters
 
-from deep.permissions import ModifyPermission
+from deep.permissions import (
+    ModifyPermission,
+    IsProjectMember
+)
 from user_resource.filters import UserResourceFilterSet
 
 from project.models import Project
@@ -23,8 +26,9 @@ from .models import Region, AdminLevel, GeoArea
 from .serializers import (
     AdminLevelSerializer,
     RegionSerializer,
+    GeoAreaSerializer
 )
-
+from .filter_set import GeoAreaFilterSet
 from geo.tasks import load_geo_areas
 
 
@@ -241,5 +245,27 @@ class GeoOptionsView(views.APIView):
             if not region.geo_options:
                 region.calc_cache()
             result[str(region.id)] = region.geo_options
-
         return response.Response(result)
+
+
+class GeoAreaView(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, IsProjectMember]
+    serializer_class = GeoAreaSerializer
+    filterset_class = GeoAreaFilterSet
+
+    def get_queryset(self):
+        return GeoArea.objects.filter(
+            admin_level__region__project=self.kwargs['project_id']
+        ).annotate(
+            label=models.functions.Concat(
+                models.F('admin_level__title'),
+                models.Value('/'),
+                models.F('title'),
+                output_field=models.fields.CharField()
+            ),
+            region=models.F('admin_level__region_id'),
+            region_title=models.F('admin_level__region__title'),
+            admin_level_level=models.F('admin_level__level'),
+            admin_level_title=models.F('admin_level__title'),
+            key=models.F('id')
+        ).distinct()

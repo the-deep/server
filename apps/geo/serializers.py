@@ -5,7 +5,11 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
-from geo.models import Region, AdminLevel  # , GeoShape
+from geo.models import (
+    Region,
+    AdminLevel,
+    GeoArea
+)
 from geo.tasks import load_geo_areas
 from project.models import Project
 from gallery.serializers import SimpleFileSerializer
@@ -121,3 +125,17 @@ class AdminLevelSerializer(RemoveNullFieldsMixin,
             transaction.on_commit(lambda: load_geo_areas.delay(region.id))
 
         return admin_level
+
+
+class GeoAreaSerializer(serializers.ModelSerializer):
+    label = serializers.CharField()
+    key = serializers.CharField()
+    region = serializers.CharField()
+    region_title = serializers.CharField()
+    admin_level_level = serializers.CharField()
+    admin_level_title = serializers.CharField()
+    class Meta:
+        model = GeoArea
+        fields = ['key', 'label', 'region', 'title',
+                  'region_title', 'admin_level_level', 'admin_level_title',
+                  'parent']
