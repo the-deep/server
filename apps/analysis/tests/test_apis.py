@@ -347,7 +347,7 @@ class TestAnalysisAPIs(TestCase):
         project.add_member(user)
         self.create_entry(project=project)
         self.create_entry(project=project)
-        analysis = self.create(Analysis, title='Test Analysis')
+        analysis = self.create(Analysis, title='Test Analysis', project=project)
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
         data = {
             'main_statement': 'Some main statement',
@@ -365,7 +365,7 @@ class TestAnalysisAPIs(TestCase):
         self.authenticate(user)
         response = self.client.post(url, data)
         self.assert_201(response)
-        id = response.data['id']
+        response_id = response.data['id']
         statement_id = response.data['analytical_statements'][0]['id']
         self.assertEqual(response.data['version_id'], 1)
         # try to patch some changes in analytical_statements
@@ -383,7 +383,8 @@ class TestAnalysisAPIs(TestCase):
                 },
             ]
         }
-        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{id}/'
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{response_id}/'
+        self.authenticate(user)
         response = self.client.patch(url, data)
         self.assert_200(response)
         # after the sucessfull patch the version should change
@@ -393,9 +394,9 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        entry1 = self.create(Entry)
-        entry2 = self.create(Entry)
-        analysis = self.create(Analysis, title='Test Analysis')
+        entry1 = self.create_entry(project=project)
+        entry2 = self.create_entry(project=project)
+        analysis = self.create(Analysis, title='Test Analysis', project=project)
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
         data = {
             'main_statement': 'Some main statement',
@@ -480,6 +481,7 @@ class TestAnalysisAPIs(TestCase):
             ]
         }
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{response_id}/'
+        self.authenticate(user)
         response = self.client.patch(url, data)
         self.assert_400(response)
         self.assertEqual(
