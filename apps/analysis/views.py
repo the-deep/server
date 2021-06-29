@@ -1,3 +1,5 @@
+from django.shortcuts import get_object_or_404
+
 from rest_framework.decorators import action
 from rest_framework import (
     exceptions,
@@ -125,6 +127,12 @@ class AnalysisPillarEntryViewSet(EntryFilterView):
         queryset = super().get_queryset()
         filters = self.get_entries_filters()
         analysis_pillar_id = self.kwargs['analysis_pillar_id']
+        analysis_pillar = get_object_or_404(AnalysisPillar, id=self.kwargs['analysis_pillar_id'])
+        # filtering out the entries whose lead published_on date is less than analysis end_date
+        queryset = queryset.filter(
+            project=analysis_pillar.analysis.project,
+            lead__published_on__lte=analysis_pillar.analysis.end_date
+        )
         discarded_entries_qs = DiscardedEntry.objects.filter(analysis_pillar=analysis_pillar_id).values('entry')
         if filters.get('discarded'):
             return queryset.filter(id__in=discarded_entries_qs)

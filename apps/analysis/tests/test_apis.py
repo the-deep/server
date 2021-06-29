@@ -872,19 +872,26 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        analysis = self.create(Analysis, project=project)
+        project2 = self.create_project()
+        project2.add_member(user)
+        now = timezone.now()
+        analysis = self.create(Analysis, project=project, end_date=now)
         pillar = self.create(AnalysisPillar, analysis=analysis)
-        entry1 = self.create(Entry, project=project)
-        self.create(Entry, project=project)
-        self.create(Entry, project=project)
-        self.create(Entry, project=project)
+        lead1 = self.create_lead(project=project, title='TESTA', published_on=now + relativedelta(days=2))
+        lead2 = self.create_lead(project=project, title='TESTA', published_on=now + relativedelta(days=-4))
+        lead3 = self.create_lead(project=project, title='TESTA', published_on=now + relativedelta(days=-2))
+        entry1 = self.create(Entry, project=project, lead=lead2)
+        self.create(Entry, project=project, lead=lead2)
+        self.create(Entry, project=project, lead=lead3)
+        self.create(Entry, project=project, lead=lead1)
+        self.create(Entry, project=project2, lead=lead3)
 
         # Check the entry count
         analysis_pillar_entries_url = f'/api/v1/analysis-pillar/{pillar.id}/entries/'
         self.authenticate(user)
         response = self.client.post(analysis_pillar_entries_url)
         self.assert_200(response)
-        self.assertEqual(len(response.data['results']), 4)  # this should list all the entries present
+        self.assertEqual(len(response.data['results']), 3)  # this should list all the entries present
 
         # now try to discard the entry from the discarded entries api
         data = {
@@ -903,7 +910,7 @@ class TestAnalysisAPIs(TestCase):
 
         # try checking the entries that are not discarded
         self.authenticate(user)
-        response = self.post_filter_test(analysis_pillar_entries_url, {'discarded': False}, count=3)
+        response = self.post_filter_test(analysis_pillar_entries_url, {'discarded': False}, count=2)
         response_id = [res['id'] for res in response.data['results']]
         self.assertNotIn(entry1.id, response_id)
 
