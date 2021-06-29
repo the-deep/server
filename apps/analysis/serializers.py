@@ -119,6 +119,10 @@ class AnalysisSerializer(
 
     def validate(self, data):
         data['project_id'] = int(self.context['view'].kwargs['project_id'])
+        if data['start_date'] > data['end_date']:
+            raise serializers.ValidationError(
+                {'end_date': 'End date must occur after start date'}
+            )
         return data
 
 

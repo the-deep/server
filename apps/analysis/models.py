@@ -24,6 +24,8 @@ class Analysis(UserResource, ProjectEntityMixin):
         Project,
         on_delete=models.CASCADE,
     )
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField()
 
     def __str__(self):
         return self.title
