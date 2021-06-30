@@ -64,6 +64,11 @@ class RegionSerializer(RemoveNullFieldsMixin,
             raise serializers.ValidationError('Invalid project')
         return project.id
 
+    def validate(self, data):
+        if self.instance and self.instance.published == True:
+            raise serializers.ValidationError({'published': 'Published once set True cannot be revert back'})
+        return data
+
     def create(self, validated_data):
         project = validated_data.pop('project', None)
         region = super().create(validated_data)
