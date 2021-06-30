@@ -27,10 +27,13 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
+        now = timezone.now()
         url = f'/api/v1/projects/{project.id}/analysis/'
         data = {
             'title': 'Test Analysis',
             'team_lead': user.id,
+            'start_date': (now + relativedelta(days=2)).date(),
+            'end_date': (now + relativedelta(days=22)).date(),
         }
         self.authenticate(user)
         response = self.client.post(url, data)
@@ -61,10 +64,13 @@ class TestAnalysisAPIs(TestCase):
         self.create_user()
         project = self.create_project()
         project.add_member(user)
+        now = timezone.now()
         url = f'/api/v1/projects/{project.id}/analysis/'
         data = {
             'title': 'Test Analysis',
             'team_lead': user.id,
+            'start_date': (now + relativedelta(days=2)).date(),
+            'end_date': (now + relativedelta(days=22)).date(),
             'analysis_pillar': [{
                 'main_statement': 'Some main statement',
                 'information_gap': 'Some information gap',
@@ -691,6 +697,39 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(response.data['analytical_statements'][0]['analytical_entries'][0]['entry'],
                          statement_entry2.entry.id)
 
+    def test_post_entry_in_analytical_statement_with_publication_date_greater_than_analysis_end_date(self):
+        user = self.create_user()
+        project = self.create_project()
+        project.add_member(user)
+        now = timezone.now()
+        lead = self.create_lead(project=project, published_on=now + relativedelta(days=3))
+        entry1 = self.create_entry(project=project, lead=lead)
+        analysis = self.create(Analysis, project=project, title='Test Analysis', end_date=now + relativedelta(days=2))
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statements': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "client_id": "1",
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "client_id": "1",
+                            "entry": entry1.id,
+                        }
+                    ],
+                }
+            ]
+        }
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_400(response)
+
     def test_pillar_overview_in_analysis(self):
         user = self.create_user()
         user2 = self.create_user()
@@ -799,8 +838,11 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        entry = self.create_entry(project=project)
-        analysis = self.create(Analysis, project=project)
+        now = timezone.now()
+        lead = self.create_lead(project=project, published_on=now)
+        lead1 = self.create_lead(project=project, published_on=now + relativedelta(days=5))
+        entry = self.create_entry(project=project, lead=lead)
+        analysis = self.create(Analysis, project=project, end_date=now + relativedelta(days=2))
         pillar1 = self.create(AnalysisPillar, analysis=analysis)
         data = {
             'entry': entry.id,
@@ -821,7 +863,7 @@ class TestAnalysisAPIs(TestCase):
         response = self.client.get(url)
         self.assert_403(response)
 
-        entry1 = self.create_entry()
+        entry1 = self.create_entry(project=project, lead=lead)
         data = {
             'entry': entry1.id,
             'tag': DiscardedEntry.TagType.REDUNDANT
@@ -839,6 +881,17 @@ class TestAnalysisAPIs(TestCase):
         data = {
             'entry': entry.id,
             'tag': DiscardedEntry.TagType.REDUNDANT,
+        }
+        url = f'/api/v1/analysis-pillar/{pillar1.id}/discarded-entries/'
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_400(response)
+
+        # try to post the entry with lead published date greater than the analysis end_date
+        entry2 = self.create_entry(project=project, lead=lead1)
+        data = {
+            'entry': entry2.id,
+            'tag': DiscardedEntry.TagType.REDUNDANT
         }
         url = f'/api/v1/analysis-pillar/{pillar1.id}/discarded-entries/'
         self.authenticate(user)

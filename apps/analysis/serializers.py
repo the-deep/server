@@ -28,6 +28,16 @@ class AnlyticalEntriesSerializer(UserResourceSerializer):
         fields = ('id', 'client_id', 'order', 'entry')
         read_only_fields = ('analytical_statement',)
 
+    def validate(self, data):
+        analysis_id = self.context['view'].kwargs.get('analysis_id')
+        analysis = get_object_or_404(Analysis, id=analysis_id)
+        analysis_end_date = analysis.end_date
+        if data['entry'].lead.published_on > analysis_end_date:
+            raise serializers.ValidationError(
+                f'Entry lead published_on cannot be greater than analysis end_date {analysis_end_date}'
+            )
+        return data
+
 
 class AnalyticalStatementSerializer(
     RemoveNullFieldsMixin,
@@ -70,6 +80,12 @@ class DiscardedEntrySerializer(serializers.ModelSerializer):
         analysis_pillar = get_object_or_404(AnalysisPillar, id=data['analysis_pillar_id'])
         if data['entry'].project != analysis_pillar.analysis.project:
             raise serializers.ValidationError('Analysis pillar project doesnot match Entry project')
+        # validating the entry for the lead published_on greater than analysis end date
+        analysis_end_date = analysis_pillar.analysis.end_date
+        if data['entry'].lead.published_on > analysis_end_date:
+            raise serializers.ValidationError(
+                f'Entry lead published_on cannot be greater than analysis end_date {analysis_end_date}'
+            )
         return data
 
 
@@ -119,7 +135,7 @@ class AnalysisSerializer(
 
     def validate(self, data):
         data['project_id'] = int(self.context['view'].kwargs['project_id'])
-        if data['start_date'] > data['end_date']:
+        if data['end_date'] and data['start_date'] > data['end_date']:
             raise serializers.ValidationError(
                 {'end_date': 'End date must occur after start date'}
             )
