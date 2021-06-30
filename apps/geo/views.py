@@ -219,7 +219,8 @@ class GeoAreaView(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return GeoArea.objects.filter(
-            admin_level__region__project=self.kwargs['project_id']
+            admin_level__region__project=self.kwargs['project_id'],
+            admin_level__region__published=True
         ).annotate(
             label=models.functions.Concat(
                 models.F('admin_level__title'),
