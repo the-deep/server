@@ -94,14 +94,20 @@ class Analysis(UserResource, ProjectEntityMixin):
                     dragged_entries=models.functions.Coalesce(models.Subquery(
                         AnalyticalStatement.objects.filter(
                             analysis_pillar=models.OuterRef('pk')
-                        ).order_by().values('analysis_pillar').annotate(count=models.Count('entries', distinct=True))
+                        ).order_by().values('analysis_pillar').annotate(count=models.Count(
+                            'entries',
+                            distinct=True,
+                            filter=models.Q(entries__lead_id__published_on__lte=models.OuterRef('analysis__end_date'))))
                         .values('count')[:1],
                         output_field=models.IntegerField(),
                     ), 0),
                     discarded_entries=models.functions.Coalesce(models.Subquery(
                         DiscardedEntry.objects.filter(
                             analysis_pillar=models.OuterRef('pk')
-                        ).order_by().values('analysis_pillar').annotate(count=models.Count('entry', distinct=True))
+                        ).order_by().values('analysis_pillar').annotate(count=models.Count(
+                            'entry',
+                            distinct=True,
+                            filter=models.Q(entry__lead_id__published_on__lte=models.OuterRef('analysis__end_date'))))
                         .values('count')[:1],
                         output_field=models.IntegerField(),
                     ), 0),
@@ -116,7 +122,10 @@ class Analysis(UserResource, ProjectEntityMixin):
                 AnalyticalStatement.objects.filter(
                     analysis_pillar__analysis=models.OuterRef('pk')
                 ).order_by().values('analysis_pillar__analysis')
-                .annotate(count=models.Count('entries', distinct=True))
+                .annotate(count=models.Count(
+                    'entries',
+                    distinct=True,
+                    filter=models.Q(entries__lead_id__published_on__lte=models.OuterRef('end_date'))))
                 .values('count')[:1],
                 output_field=models.IntegerField(),
             ), 0)
@@ -125,7 +134,10 @@ class Analysis(UserResource, ProjectEntityMixin):
                 DiscardedEntry.objects.filter(
                     analysis_pillar__analysis=models.OuterRef('pk')
                 ).order_by().values('analysis_pillar__analysis')
-                .annotate(count=models.Count('entry', distinct=True))
+                .annotate(count=models.Count(
+                    'entry',
+                    distinct=True,
+                    filter=models.Q(entry__lead_id__published_on__lte=models.OuterRef('end_date'))))
                 .values('count')[:1],
                 output_field=models.IntegerField(),
             ), 0)
@@ -201,7 +213,10 @@ class AnalysisPillar(UserResource):
                     models.Subquery(
                         AnalyticalStatement.objects.filter(
                             analysis_pillar=models.OuterRef('pk')
-                        ).order_by().values('analysis_pillar').annotate(count=models.Count('entries', distinct=True))
+                        ).order_by().values('analysis_pillar').annotate(count=models.Count(
+                            'entries',
+                            distinct=True,
+                            filter=models.Q(entries__lead_id__published_on__lte=models.OuterRef('analysis__end_date'))))
                         .values('count')[:1],
                         output_field=models.IntegerField(),
                     ), 0),
@@ -209,7 +224,10 @@ class AnalysisPillar(UserResource):
                     models.Subquery(
                         DiscardedEntry.objects.filter(
                             analysis_pillar=models.OuterRef('pk')
-                        ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count('entry', distinct=True))
+                        ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count(
+                            'entry',
+                            distinct=True,
+                            filter=models.Q(entry__lead_id__published_on__lte=models.OuterRef('analysis__end_date'))))
                         .values('count')[:1],
                         output_field=models.IntegerField(),
                     ), 0),
