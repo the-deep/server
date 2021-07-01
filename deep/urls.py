@@ -2,7 +2,7 @@
 """
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic.base import RedirectView
-from django.conf.urls import url, include, static
+from django.conf.urls import re_path, include, static
 from django.views.static import serve
 from django.contrib.auth import views as auth_views
 from django.contrib import admin
@@ -376,175 +376,173 @@ if not settings.DEBUG:
     admin.site.__class__ = OTPAdminSite
 
 urlpatterns = [
-    url(r'^$', FrontendView.as_view()),
-    url(r'^admin/', admin.site.urls),
+    re_path(r'^$', FrontendView.as_view()),
+    re_path(r'^admin/', admin.site.urls),
 
-    url(r'^api-docs(?P<format>\.json|\.yaml)$',
-        api_schema_view.without_ui(cache_timeout=settings.OPEN_API_DOCS_TIMEOUT), name='schema-json'),
-    url(r'^api-docs/$', api_schema_view.with_ui('swagger', cache_timeout=settings.OPEN_API_DOCS_TIMEOUT),
-        name='schema-swagger-ui'),
-    url(r'^redoc/$', api_schema_view.with_ui('redoc', cache_timeout=settings.OPEN_API_DOCS_TIMEOUT),
-        name='schema-redoc'),
+    re_path(r'^api-docs(?P<format>\.json|\.yaml)$',
+            api_schema_view.without_ui(cache_timeout=settings.OPEN_API_DOCS_TIMEOUT), name='schema-json'),
+    re_path(r'^api-docs/$', api_schema_view.with_ui('swagger', cache_timeout=settings.OPEN_API_DOCS_TIMEOUT),
+            name='schema-swagger-ui'),
+    re_path(r'^redoc/$', api_schema_view.with_ui('redoc', cache_timeout=settings.OPEN_API_DOCS_TIMEOUT),
+            name='schema-redoc'),
 
     # JWT Authentication
-    url(get_api_path(r'token/$'),
-        TokenObtainPairView.as_view()),
+    re_path(get_api_path(r'token/$'),
+            TokenObtainPairView.as_view()),
 
-    url(get_api_path(r'token/hid/$'),
-        HIDTokenObtainPairView.as_view()),
+    re_path(get_api_path(r'token/hid/$'),
+            HIDTokenObtainPairView.as_view()),
 
-    url(get_api_path(r'token/refresh/$'),
-        TokenRefreshView.as_view()),
+    re_path(get_api_path(r'token/refresh/$'),
+            TokenRefreshView.as_view()),
 
     # Gallery
-    url(r'^file/(?P<file_id>\d+)/$', FileView.as_view(), name='file'),
+    re_path(r'^file/(?P<file_id>\d+)/$', FileView.as_view(), name='file'),
     path(
         'private-file/<uuid:uuid>/<filename:filename>',
         PrivateFileView.as_view(),
         name='gallery_private_url',
     ),
-    url(
+    re_path(
         r'^public-file/(?P<fidb64>[0-9A-Za-z]+)/(?P<token>.+)/(?P<filename>.*)$',
         PublicFileView.as_view(),
         name='gallery_public_url',
     ),
 
     # Activate User
-    url(r'^user/activate/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
-        user_activate_confirm,
-        name='user_activate_confirm'),
+    re_path(r'^user/activate/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
+            user_activate_confirm,
+            name='user_activate_confirm'),
 
     # Unsubscribe User Email
-    url(r'^user/unsubscribe/email/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/'
-        '(?P<email_type>[A-Za-z_]+)/$',
-        unsubscribe_email,
-        name='unsubscribe_email'),
+    re_path(r'^user/unsubscribe/email/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/'
+            '(?P<email_type>[A-Za-z_]+)/$',
+            unsubscribe_email,
+            name='unsubscribe_email'),
     # Project Request Accept
-    url(r'^project/join-request/'
-        '(?P<uidb64>[0-9A-Za-z]+)-(?P<pidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
-        accept_project_confirm,
-        name='accept_project_confirm'),
+    re_path(r'^project/join-request/'
+            '(?P<uidb64>[0-9A-Za-z]+)-(?P<pidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
+            accept_project_confirm,
+            name='accept_project_confirm'),
 
     # password reset API
-    url(get_api_path(r'password/reset/$'),
-        PasswordResetView.as_view()),
+    re_path(get_api_path(r'password/reset/$'),
+            PasswordResetView.as_view()),
 
     # Password Reset
-    url(r'^password/reset/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
-        auth_views.PasswordResetConfirmView.as_view(
-            success_url='{}://{}/login/'.format(
-                settings.HTTP_PROTOCOL, settings.DEEPER_FRONTEND_HOST,
-            )
-        ),
-        name='password_reset_confirm'),
+    re_path(r'^password/reset/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
+            auth_views.PasswordResetConfirmView.as_view(
+                success_url='{}://{}/login/'.format(
+                    settings.HTTP_PROTOCOL, settings.DEEPER_FRONTEND_HOST,
+                )
+            ),
+            name='password_reset_confirm'),
 
     # Attribute options for various models
-    url(get_api_path(r'lead-options/$'),
-        LeadOptionsView.as_view()),
-    url(get_api_path(r'assessment-options/$'),
-        AssessmentOptionsView.as_view()),
-    url(get_api_path(r'entry-options/$'),
-        EntryOptionsView.as_view()),
-    url(get_api_path(r'project-options/$'),
-        ProjectOptionsView.as_view()),
-    url(get_api_path(r'discarded-entry-options/$'),
-        DiscardedEntryOptionsView.as_view()),
+    re_path(get_api_path(r'lead-options/$'),
+            LeadOptionsView.as_view()),
+    re_path(get_api_path(r'assessment-options/$'),
+            AssessmentOptionsView.as_view()),
+    re_path(get_api_path(r'entry-options/$'),
+            EntryOptionsView.as_view()),
+    re_path(get_api_path(r'project-options/$'),
+            ProjectOptionsView.as_view()),
+    re_path(get_api_path(r'discarded-entry-options/$'),
+            DiscardedEntryOptionsView.as_view()),
 
     # Triggering api
-    url(get_api_path(r'lead-extraction-trigger/(?P<lead_id>\d+)/$'),
-        LeadExtractionTriggerView.as_view()),
+    re_path(get_api_path(r'lead-extraction-trigger/(?P<lead_id>\d+)/$'),
+            LeadExtractionTriggerView.as_view()),
 
-    url(get_api_path(r'file-extraction-trigger/$'),
-        FileExtractionTriggerView.as_view()),
+    re_path(get_api_path(r'file-extraction-trigger/$'),
+            FileExtractionTriggerView.as_view()),
 
-    url(get_api_path(r'meta-extraction/(?P<file_id>\d+)/$'),
-        MetaExtractionView.as_view()),
+    re_path(get_api_path(r'meta-extraction/(?P<file_id>\d+)/$'),
+            MetaExtractionView.as_view()),
 
-    url(get_api_path(r'geo-areas-load-trigger/(?P<region_id>\d+)/$'),
-        GeoAreasLoadTriggerView.as_view()),
+    re_path(get_api_path(r'geo-areas-load-trigger/(?P<region_id>\d+)/$'),
+            GeoAreasLoadTriggerView.as_view()),
 
-    url(get_api_path(r'export-trigger/$'),
-        ExportTriggerView.as_view()),
+    re_path(get_api_path(r'export-trigger/$'),
+            ExportTriggerView.as_view()),
 
-    url(get_api_path(r'tabular-extraction-trigger/(?P<book_id>\d+)/$'),
-        TabularExtractionTriggerView.as_view()),
+    re_path(get_api_path(r'tabular-extraction-trigger/(?P<book_id>\d+)/$'),
+            TabularExtractionTriggerView.as_view()),
 
-    url(get_api_path(r'tabular-geo-extraction-trigger/(?P<field_id>\d+)/$'),
-        TabularGeoProcessTriggerView.as_view()),
+    re_path(get_api_path(r'tabular-geo-extraction-trigger/(?P<field_id>\d+)/$'),
+            TabularGeoProcessTriggerView.as_view()),
 
     # Website fetch api
-    url(get_api_path(r'lead-website-fetch/$'), LeadWebsiteFetch.as_view()),
+    re_path(get_api_path(r'lead-website-fetch/$'), LeadWebsiteFetch.as_view()),
 
-    url(get_api_path(r'web-info-data/$'), WebInfoDataView.as_view()),
-    url(get_api_path(r'web-info-extract/$'), WebInfoExtractView.as_view()),
+    re_path(get_api_path(r'web-info-data/$'), WebInfoDataView.as_view()),
+    re_path(get_api_path(r'web-info-extract/$'), WebInfoExtractView.as_view()),
 
     # Questionnaire utils api
-    url(get_api_path(r'xlsform-to-xform/$'), XFormView.as_view()),
-    url(get_api_path(r'import-to-kobotoolbox/$'), KoboToolboxExport.as_view()),
+    re_path(get_api_path(r'xlsform-to-xform/$'), XFormView.as_view()),
+    re_path(get_api_path(r'import-to-kobotoolbox/$'), KoboToolboxExport.as_view()),
 
     # Lead copy
-    url(get_api_path(r'lead-copy/$'), LeadCopyView.as_view()),
+    re_path(get_api_path(r'lead-copy/$'), LeadCopyView.as_view()),
     # Assessment copy
-    url(get_api_path(r'assessment-copy/$'), AssessmentCopyView.as_view()),
+    re_path(get_api_path(r'assessment-copy/$'), AssessmentCopyView.as_view()),
 
     # Filter apis
-    url(get_api_path(r'entries/filter/'), EntryFilterView.as_view()),
-    url(
+    re_path(get_api_path(r'entries/filter/'), EntryFilterView.as_view()),
+    re_path(
         get_api_path(r'analysis-pillar/(?P<analysis_pillar_id>\d+)/entries'),
         AnalysisPillarEntryViewSet.as_view(),
         name='analysis_pillar_entries',
     ),
 
-    url(get_api_path(
+    re_path(get_api_path(
         r'projects/(?P<project_id>\d+)/category-editor/classify/'
     ), CategoryEditorClassifyView.as_view()),
 
     # Source query api
-    url(get_api_path(
+    re_path(get_api_path(
         r'connector-sources/(?P<source_type>[-\w]+)/(?P<query>[-\w]+)/',
     ), SourceQueryView.as_view()),
 
     # Geojson api
-    url(get_api_path(r'admin-levels/(?P<admin_level_id>\d+)/geojson/$'),
-        GeoJsonView.as_view()),
-    url(get_api_path(r'admin-levels/(?P<admin_level_id>\d+)/geojson/bounds/$'),
-        GeoBoundsView.as_view()),
-    url(get_api_path(r'geo-options/$'),
-        GeoOptionsView.as_view()),
+    re_path(get_api_path(r'admin-levels/(?P<admin_level_id>\d+)/geojson/$'),
+            GeoJsonView.as_view()),
+    re_path(get_api_path(r'admin-levels/(?P<admin_level_id>\d+)/geojson/bounds/$'),
+            GeoBoundsView.as_view()),
+    re_path(get_api_path(r'geo-options/$'),
+            GeoOptionsView.as_view()),
 
     # Clone apis
-    url(get_api_path(r'clone-region/(?P<region_id>\d+)/$'),
-        RegionCloneView.as_view()),
-    url(get_api_path(r'clone-analysis-framework/(?P<af_id>\d+)/$'),
-        AnalysisFrameworkCloneView.as_view()),
-    url(get_api_path(r'clone-category-editor/(?P<ce_id>\d+)/$'),
-        CategoryEditorCloneView.as_view()),
+    re_path(get_api_path(r'clone-region/(?P<region_id>\d+)/$'),
+            RegionCloneView.as_view()),
+    re_path(get_api_path(r'clone-analysis-framework/(?P<af_id>\d+)/$'),
+            AnalysisFrameworkCloneView.as_view()),
+    re_path(get_api_path(r'clone-category-editor/(?P<ce_id>\d+)/$'),
+            CategoryEditorCloneView.as_view()),
 
     # Combined API View
-    url(get_api_path(r'combined/$'), CombinedView.as_view()),
+    re_path(get_api_path(r'combined/$'), CombinedView.as_view()),
 
     # Viewsets
-    url(get_api_path(''), include(router.urls)),
+    re_path(get_api_path(''), include(router.urls)),
 
     # DRF auth, TODO: logout
-    url(r'^api-auth/', include('rest_framework.urls',
-                               namespace='rest_framework')),
+    re_path(r'^api-auth/', include('rest_framework.urls',
+                                   namespace='rest_framework')),
 
-    url(r'^project-viz/(?P<project_stat_id>\d+)/(?P<token>[0-9a-f-]+)/$',
-        ProjectPublicVizView.as_view(), name='project-stat-viz-public'),
+    re_path(r'^project-viz/(?P<project_stat_id>\d+)/(?P<token>[0-9a-f-]+)/$',
+            ProjectPublicVizView.as_view(), name='project-stat-viz-public'),
 
     # NOTE: For debuging email templates
-    url(r'^pr-email/$', PasswordReset.as_view()),
-    url(r'^aa-email/$', AccountActivate.as_view()),
-    url(r'^pj-email/$', ProjectJoinRequest.as_view()),
-    url(r'^ec-email/$', EntryCommentEmail.as_view()),
-    url(r'^render-debug/$', RenderChart.as_view()),
+    re_path(r'^pr-email/$', PasswordReset.as_view()),
+    re_path(r'^aa-email/$', AccountActivate.as_view()),
+    re_path(r'^pj-email/$', ProjectJoinRequest.as_view()),
+    re_path(r'^ec-email/$', EntryCommentEmail.as_view()),
+    re_path(r'^render-debug/$', RenderChart.as_view()),
 
-    url(r'^favicon.ico$',
-        RedirectView.as_view(
-            url=get_frontend_url('favicon.ico'),
-        ),
-        name="favicon"),
+    re_path(r'^favicon.ico$',
+            RedirectView.as_view(url=get_frontend_url('favicon.ico')),
+            name="favicon"),
 ] + static.static(
     settings.MEDIA_URL, view=xframe_options_exempt(serve),
     document_root=settings.MEDIA_ROOT)
@@ -553,9 +551,8 @@ if settings.DEBUG:
     import debug_toolbar
     if 'debug_toolbar' in settings.INSTALLED_APPS:
         urlpatterns += [
-            url('__debug__/', include(debug_toolbar.urls)),
+            re_path('__debug__/', include(debug_toolbar.urls)),
         ]
-
 
 handler404 = Api_404View.as_view()
 

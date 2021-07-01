@@ -290,6 +290,22 @@ class Lead(UserResource, ProjectEntityMixin):
             'assessments': Assessment.objects.filter(lead__project_id=project_id, lead__in=lead_ids).count(),
         }
 
+    @classmethod
+    def get_emm_summary(cls, lead_qs):
+        # Aggregate emm data
+        emm_entities = EMMEntity.objects\
+            .filter(lead__in=lead_qs).values('name')\
+            .annotate(total_count=models.Count('name'))\
+            .order_by('-total_count').values('name', 'total_count')
+        emm_triggers = LeadEMMTrigger.objects\
+            .filter(lead__in=lead_qs).values('emm_keyword', 'emm_risk_factor')\
+            .annotate(total_count=models.Sum('count'))\
+            .order_by('-total_count').values('emm_keyword', 'emm_risk_factor', 'total_count')
+        return {
+            'emm_entities': emm_entities,
+            'emm_triggers': emm_triggers,
+        }
+
 
 class LeadPreview(models.Model):
     STATUS_CLASSIFICATION_NONE = 'none'  # For leads which are not texts
