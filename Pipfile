@@ -37,7 +37,6 @@ google-api-python-client = "==2.9.0"
 graphene-django = "==2.15.0"
 graphene-graphiql-explorer = "==0.0.1"
 graphene-django-extras = "==0.4.9"
-ipython = "*"
 kombu = "==5.1.0"
 lxml = "==4.6.3"
 matplotlib = "==3.4.2"
@@ -62,19 +61,19 @@ sentry-sdk = "1.1.0"
 tldextract = "==3.1.0"
 user-agents = "==2.2.0"
 wordcloud = "==1.8.1"
-django-autofixture = {ref = "0472a494485dd597d598e20d9e1c6c47cf0eadb7", git = "https://github.com/volrath/django-autofixture.git"}
-django-fixture-magic = {ref = "466fa35c075009e4a1974f6e588471dd9e720e53", git = "https://github.com/davedash/django-fixture-magic.git"}
 Markdown = "==3.3.4"
 Pillow = "==8.2.0"
 PyJWT = "==2.1.0"
 Pygments = "==2.9.0"
 Shapely = "==1.7.1"
 Django = "==3.2.4"
-django-silk = "==4.1.0"
-pytest-django = "==4.4.0"
-mypy = "*"
+ipython = "*"
 
 [dev-packages]
+pytest-django = "==4.4.0"
+django-debug-toolbar = "*"
+django-autofixture = {ref = "0472a494485dd597d598e20d9e1c6c47cf0eadb7", git = "https://github.com/volrath/django-autofixture.git"}
+django-fixture-magic = {ref = "466fa35c075009e4a1974f6e588471dd9e720e53", git = "https://github.com/davedash/django-fixture-magic.git"}
 # mypy = "*"
 # django-stubs = '*'
 # flake8 = '*'
