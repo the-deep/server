@@ -97,7 +97,7 @@ class Analysis(UserResource, ProjectEntityMixin):
                         ).order_by().values('analysis_pillar').annotate(count=models.Count(
                             'entries',
                             distinct=True,
-                            filter=models.Q(entries__lead_id__published_on__lte=models.OuterRef('analysis__end_date'))))
+                            filter=models.Q(entries__lead__published_on__lte=models.OuterRef('analysis__end_date'))))
                         .values('count')[:1],
                         output_field=models.IntegerField(),
                     ), 0),
@@ -107,7 +107,7 @@ class Analysis(UserResource, ProjectEntityMixin):
                         ).order_by().values('analysis_pillar').annotate(count=models.Count(
                             'entry',
                             distinct=True,
-                            filter=models.Q(entry__lead_id__published_on__lte=models.OuterRef('analysis__end_date'))))
+                            filter=models.Q(entry__lead__published_on__lte=models.OuterRef('analysis__end_date'))))
                         .values('count')[:1],
                         output_field=models.IntegerField(),
                     ), 0),
@@ -125,7 +125,7 @@ class Analysis(UserResource, ProjectEntityMixin):
                 .annotate(count=models.Count(
                     'entries',
                     distinct=True,
-                    filter=models.Q(entries__lead_id__published_on__lte=models.OuterRef('end_date'))))
+                    filter=models.Q(entries__lead__published_on__lte=models.OuterRef('end_date'))))
                 .values('count')[:1],
                 output_field=models.IntegerField(),
             ), 0)
@@ -137,7 +137,7 @@ class Analysis(UserResource, ProjectEntityMixin):
                 .annotate(count=models.Count(
                     'entry',
                     distinct=True,
-                    filter=models.Q(entry__lead_id__published_on__lte=models.OuterRef('end_date'))))
+                    filter=models.Q(entry__lead__published_on__lte=models.OuterRef('end_date'))))
                 .values('count')[:1],
                 output_field=models.IntegerField(),
             ), 0)
@@ -216,7 +216,7 @@ class AnalysisPillar(UserResource):
                         ).order_by().values('analysis_pillar').annotate(count=models.Count(
                             'entries',
                             distinct=True,
-                            filter=models.Q(entries__lead_id__published_on__lte=models.OuterRef('analysis__end_date'))))
+                            filter=models.Q(entries__lead__published_on__lte=models.OuterRef('analysis__end_date'))))
                         .values('count')[:1],
                         output_field=models.IntegerField(),
                     ), 0),
@@ -227,7 +227,7 @@ class AnalysisPillar(UserResource):
                         ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count(
                             'entry',
                             distinct=True,
-                            filter=models.Q(entry__lead_id__published_on__lte=models.OuterRef('analysis__end_date'))))
+                            filter=models.Q(entry__lead__published_on__lte=models.OuterRef('analysis__end_date'))))
                         .values('count')[:1],
                         output_field=models.IntegerField(),
                     ), 0),

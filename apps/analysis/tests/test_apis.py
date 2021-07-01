@@ -199,6 +199,103 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(AnalyticalStatementEntry.objects.filter(
                          analytical_statement__analysis_pillar__analysis=analysis).count(), entry_count + 2)
 
+    def test_end_date_analysis_greater_than_lead_published_on(self):
+        """
+        Test for lead published datea after the analsysis end_date
+        """
+        user = self.create_user()
+        project = self.create_project()
+        project.add_member(user)
+        now = timezone.now()
+        lead = self.create_lead(project=project, published_on=now + relativedelta(days=6))
+        entry = self.create_entry(project=project, lead=lead)
+        analysis = self.create(Analysis, project=project, title='Test Analysis', end_date=now + relativedelta(days=4))
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statements': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "client_id": "1",
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "client_id": "1",
+                            "entry": entry.id,
+                        },
+                    ]
+                }
+            ]
+        }
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_400(response)
+
+    def test_analysis_end_date_change(self):
+        user = self.create_user()
+        project = self.create_project()
+        project.add_member(user)
+        now = timezone.now()
+        lead = self.create_lead(project=project, published_on=now + relativedelta(days=2))
+        entry = self.create_entry(project=project, lead=lead)
+        analysis = self.create(Analysis, project=project, title='Test Analysis', end_date=now + relativedelta(days=4))
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statements': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "client_id": "1",
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "client_id": "1",
+                            "entry": entry.id,
+                        },
+                    ]
+                }
+            ]
+        }
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        # try to change the analysis end_date and try to patch at the pillar
+        analysis.end_date = now + relativedelta(days=1)
+        analysis.save()
+        pillar_id = response.data['id']
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{pillar_id}/'
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statements': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "client_id": "1",
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "client_id": "1",
+                            "entry": entry.id,
+                        },
+                    ]
+                }
+            ]
+        }
+        self.authenticate(user)
+        response = self.client.patch(url, data)
+        self.assert_400(response)
+
     def test_create_analytical_statement(self):
         statement_count = AnalyticalStatement.objects.count()
         user = self.create_user()
@@ -445,7 +542,7 @@ class TestAnalysisAPIs(TestCase):
         self.assert_201(response)
         response_id = response.data['id']
 
-        # now ty to delete an entry
+        # now try to delete an entry
         Entry.objects.filter(id=entry2.id).delete()
         # try to patch
         data = {
@@ -505,16 +602,16 @@ class TestAnalysisAPIs(TestCase):
         project.add_member(user)
 
         now = timezone.now()
-        lead1 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-1))
-        lead2 = self.create_lead(project=project, published_on=now, created_at=now)
-        lead3 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-2))
-        lead4 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-2))
-        lead5 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-2))
-        lead6 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-2))
-        self.create_lead(project=project, created_at=now + relativedelta(days=-2))
-        lead8 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
-        lead9 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
-        self.create_lead(project=project, created_at=now + relativedelta(days=-3))
+        lead1 = self.create_lead(project=project, published_on=now)
+        lead2 = self.create_lead(project=project, published_on=now + relativedelta(days=-1))
+        lead3 = self.create_lead(project=project, published_on=now + relativedelta(days=-3))
+        lead4 = self.create_lead(project=project, published_on=now + relativedelta(days=5))
+        lead5 = self.create_lead(project=project, published_on=now + relativedelta(days=2))
+        lead6 = self.create_lead(project=project, published_on=now + relativedelta(days=-3))
+        self.create_lead(project=project, published_on=now + relativedelta(days=-2))
+        lead8 = self.create_lead(project=project, published_on=now + relativedelta(days=-2))
+        lead9 = self.create_lead(project=project, published_on=now + relativedelta(days=-2))
+        self.create_lead(project=project, published_on=now + relativedelta(days=-3))
         entry = self.create_entry(lead=lead1, project=project)
         entry1 = self.create_entry(lead=lead2, project=project)
         entry2 = self.create_entry(lead=lead3, project=project)
@@ -526,8 +623,20 @@ class TestAnalysisAPIs(TestCase):
         entry8 = self.create_entry(lead=lead9, project=project)
         entry9 = self.create_entry(lead=lead2, project=project)
 
-        analysis1 = self.create(Analysis, title='Test Analysis', team_lead=user, project=project)
-        analysis2 = self.create(Analysis, title='Not for test', team_lead=user, project=project)
+        analysis1 = self.create(
+            Analysis,
+            title='Test Analysis',
+            team_lead=user,
+            project=project,
+            end_date=now + relativedelta(days=4)
+        )
+        analysis2 = self.create(
+            Analysis,
+            title='Not for test',
+            team_lead=user,
+            project=project,
+            end_date=now + relativedelta(days=7)
+        )
         pillar1 = self.create(AnalysisPillar, analysis=analysis1, title='title1', assignee=user)
         pillar2 = self.create(AnalysisPillar, analysis=analysis1, title='title2', assignee=user)
         pillar3 = self.create(AnalysisPillar, analysis=analysis1, title='title3', assignee=user2)
@@ -590,12 +699,13 @@ class TestAnalysisAPIs(TestCase):
             data[1]['pillars'][2]['assignee_details']['display_name'], pillar1.assignee.profile.get_display_name()
         )
         self.assertEqual(
-            data[1]['publication_date']['start_date'], lead1.published_on.strftime('%Y-%m-%d')
+            data[1]['publication_date']['start_date'], lead6.published_on.strftime('%Y-%m-%d')
         )  # since we use lead that has entry created for
-        self.assertEqual(data[1]['publication_date']['end_date'], lead1.published_on.strftime('%Y-%m-%d'))
+        self.assertEqual(data[1]['publication_date']['end_date'], lead5.published_on.strftime('%Y-%m-%d'))
         self.assertEqual(data[1]['pillars'][0]['analyzed_entries'], 3)  # discrded + analyzed entry
         self.assertEqual(data[1]['pillars'][1]['analyzed_entries'], 2)  # discrded + analyzed entry
-        self.assertEqual(data[1]['analyzed_entries'], 9)
+        # here considering the entry whose lead published date less than analysis end_date
+        self.assertEqual(data[1]['analyzed_entries'], 8)
         self.assertEqual(data[1]['analyzed_sources'], 6)  # have `distinct=True`
         self.assertEqual(data[1]['total_entries'], 10)
         self.assertEqual(data[1]['total_sources'], 8)  # taking lead that has entry more than one
@@ -696,39 +806,6 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(response.data['analytical_statements'][0]['id'], analytical_statement.id)
         self.assertEqual(response.data['analytical_statements'][0]['analytical_entries'][0]['entry'],
                          statement_entry2.entry.id)
-
-    def test_post_entry_in_analytical_statement_with_publication_date_greater_than_analysis_end_date(self):
-        user = self.create_user()
-        project = self.create_project()
-        project.add_member(user)
-        now = timezone.now()
-        lead = self.create_lead(project=project, published_on=now + relativedelta(days=3))
-        entry1 = self.create_entry(project=project, lead=lead)
-        analysis = self.create(Analysis, project=project, title='Test Analysis', end_date=now + relativedelta(days=2))
-        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
-        data = {
-            'main_statement': 'Some main statement',
-            'information_gap': 'Some information gap',
-            'assignee': user.id,
-            'title': 'Some title',
-            'analytical_statements': [
-                {
-                    "statement": "coffee",
-                    "order": 1,
-                    "client_id": "1",
-                    "analytical_entries": [
-                        {
-                            "order": 1,
-                            "client_id": "1",
-                            "entry": entry1.id,
-                        }
-                    ],
-                }
-            ]
-        }
-        self.authenticate(user)
-        response = self.client.post(url, data)
-        self.assert_400(response)
 
     def test_pillar_overview_in_analysis(self):
         user = self.create_user()
