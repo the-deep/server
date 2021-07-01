@@ -32,9 +32,11 @@ class AnlyticalEntriesSerializer(UserResourceSerializer):
         analysis_id = self.context['view'].kwargs.get('analysis_id')
         analysis = get_object_or_404(Analysis, id=analysis_id)
         analysis_end_date = analysis.end_date
-        if data['entry'].lead.published_on > analysis_end_date:
+        entry = data.get('entry')
+        lead_published = entry.lead.published_on
+        if analysis_end_date and lead_published and lead_published > analysis_end_date:
             raise serializers.ValidationError(
-                f'Entry lead published_on cannot be greater than analysis end_date {analysis_end_date}'
+                f'Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis_end_date}'
             )
         return data
 
