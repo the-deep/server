@@ -1458,6 +1458,44 @@ class LeadTests(TestCase):
         }
         assert expected_triggers == result_triggers
 
+    def test_lead_summary_get(self):
+        lead1 = self.create_lead()
+        lead2 = self.create_lead()
+        self.create_entry(lead=lead1)
+        self.create_entry(lead=lead1, verified=True)
+        self.create_entry(lead=lead2)
+
+        url = '/api/v1/leads/summary/'
+        self.authenticate()
+        resp = self.client.get(url)
+        self.assert_200(resp)
+
+        self.assertEqual(resp.data['total'], 2)
+        self.assertEqual(resp.data['total_entries'], 3)
+        self.assertEqual(resp.data['total_verified_entries'], 1)
+        self.assertEqual(resp.data['total_unverified_entries'], 2)
+        assert 'emm_entities' in resp.data
+        assert 'emm_triggers' in resp.data
+
+    def test_lead_summary_post(self):
+        lead1 = self.create_lead()
+        lead2 = self.create_lead()
+        self.create_entry(lead=lead1)
+        self.create_entry(lead=lead1, verified=True)
+        self.create_entry(lead=lead2)
+
+        url = '/api/v1/leads/summary/'
+        self.authenticate()
+        resp = self.client.post(url, data={}, format='json')
+        self.assert_200(resp)
+
+        self.assertEqual(resp.data['total'], 2)
+        self.assertEqual(resp.data['total_entries'], 3)
+        self.assertEqual(resp.data['total_verified_entries'], 1)
+        self.assertEqual(resp.data['total_unverified_entries'], 2)
+        assert 'emm_entities' in resp.data
+        assert 'emm_triggers' in resp.data
+
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:
 # source, country, date, website
