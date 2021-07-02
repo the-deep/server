@@ -22,7 +22,7 @@ from .models import (
 )
 
 
-class AnlyticalEntriesSerializer(UserResourceSerializer):
+class AnalyticalEntriesSerializer(UserResourceSerializer):
     class Meta:
         model = AnalyticalStatementEntry
         fields = ('id', 'client_id', 'order', 'entry')
@@ -35,9 +35,9 @@ class AnlyticalEntriesSerializer(UserResourceSerializer):
         entry = data.get('entry')
         lead_published = entry.lead.published_on
         if analysis_end_date and lead_published and lead_published > analysis_end_date:
-            raise serializers.ValidationError(
-                f'Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis_end_date}'
-            )
+            raise serializers.ValidationError({
+                'entry': f'Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis_end_date}',
+            })
         return data
 
 
@@ -48,7 +48,7 @@ class AnalyticalStatementSerializer(
     NestedCreateMixin,
     NestedUpdateMixin,
 ):
-    analytical_entries = AnlyticalEntriesSerializer(source='analyticalstatemententry_set', many=True, required=False)
+    analytical_entries = AnalyticalEntriesSerializer(source='analyticalstatemententry_set', many=True, required=False)
 
     class Meta:
         model = AnalyticalStatement
@@ -80,14 +80,15 @@ class DiscardedEntrySerializer(serializers.ModelSerializer):
     def validate(self, data):
         data['analysis_pillar_id'] = int(self.context['analysis_pillar_id'])
         analysis_pillar = get_object_or_404(AnalysisPillar, id=data['analysis_pillar_id'])
-        if data['entry'].project != analysis_pillar.analysis.project:
+        entry = data.get('entry')
+        if entry.project != analysis_pillar.analysis.project:
             raise serializers.ValidationError('Analysis pillar project doesnot match Entry project')
         # validating the entry for the lead published_on greater than analysis end date
         analysis_end_date = analysis_pillar.analysis.end_date
-        if data['entry'].lead.published_on > analysis_end_date:
-            raise serializers.ValidationError(
-                f'Entry lead published_on cannot be greater than analysis end_date {analysis_end_date}'
-            )
+        if entry.lead.published_on > analysis_end_date:
+            raise serializers.ValidationError({
+                'entry': f'Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis_end_date}',
+            })
         return data
 
 
@@ -129,6 +130,7 @@ class AnalysisSerializer(
 ):
     analysis_pillar = AnalysisPillarSerializer(many=True, source='analysispillar_set', required=False)
     team_lead_details = NanoUserSerializer(source='team_lead', read_only=True)
+    start_date = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = Analysis
@@ -137,7 +139,9 @@ class AnalysisSerializer(
 
     def validate(self, data):
         data['project_id'] = int(self.context['view'].kwargs['project_id'])
-        if data['end_date'] and data['start_date'] > data['end_date']:
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        if start_date and start_date > end_date:
             raise serializers.ValidationError(
                 {'end_date': 'End date must occur after start date'}
             )
