@@ -30,11 +30,63 @@ class Analysis(UserResource, ProjectEntityMixin):
     def __str__(self):
         return self.title
 
-    def clone_analysis(self):
+    def clone_analysis(self, title):
         analysis_cloned = copy.deepcopy(self)
+
+        def _get_clone_ready(obj, analysis_cloned):
+            obj.pk = None
+            obj.client_id = None
+            obj.analysis = analysis_cloned
+            return obj
+
+        def _get_clone_pillar(obj, analysis_pillar):
+            obj.pk = None
+            obj.client_id = None
+            obj.analysis_pillar = analysis_pillar
+            return obj
+
+        def _get_clone_statement(obj, analytical_statement):
+            obj.pk = None
+            obj.client_id = None
+            obj.analytical_statement = analytical_statement
+            return obj
+
+        def _get_clone_discarded(obj, analysis_pillar):
+            obj.pk = None
+            obj.analysis_pillar = analysis_pillar
+            return obj
+
         analysis_cloned.pk = None
-        analysis_cloned.title = f'{self.title} (cloned)'
+        analysis_cloned.client_id = None
+        analysis_cloned.title = title
         analysis_cloned.save()
+        analysis_pillars = self.analysispillar_set.all()
+        AnalysisPillar.objects.bulk_create([
+            _get_clone_ready(analysis_pillar, analysis_cloned) for analysis_pillar in analysis_pillars
+        ])
+
+        for analysis_pillar in analysis_pillars:
+            analytical_statements = AnalyticalStatement.objects.filter(
+                analysis_pillar__analysis=self
+            )
+            print(analytical_statements, "hello")
+            AnalyticalStatement.objects.bulk_create(
+                [_get_clone_pillar(analytical_statement, analysis_pillar) for analytical_statement in analytical_statements]
+            )
+            for analytical_statement in analytical_statements:
+                entries = AnalyticalStatementEntry.objects.filter(
+                    analytical_statement__analysis_pillar__analysis=self
+                )
+                AnalyticalStatementEntry.objects.bulk_create(
+                    [_get_clone_statement(entry, analytical_statement) for entry in entries]
+                )
+            # clone for the discarded entry
+            discarded_entries = DiscardedEntry.objects.filter(
+                analysis_pillar__analysis=self
+            )
+            DiscardedEntry.objects.bulk_create(
+                [_get_clone_discarded(discarded_entry, analysis_pillar) for discarded_entry in discarded_entries]
+            )
         return analysis_cloned
 
     @classmethod

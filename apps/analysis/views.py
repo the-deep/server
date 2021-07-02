@@ -67,11 +67,21 @@ class AnalysisViewSet(viewsets.ModelViewSet):
     def clone_analysis(self, request, project_id, pk=None, version=None):
         analysis = self.get_object()
         cloned_title = request.data.get('title').strip()
+        end_date = request.data.get('end_date')
+        start_date = request.data.get('start_date')
         if not cloned_title:
             raise exceptions.ValidationError({
                 'title': 'Title should be present',
             })
-        new_analysis = analysis.clone_analysis()
+        if not end_date:
+            raise exceptions.ValidationError({
+                'end_date': 'End date should be present',
+            })
+        if not start_date:
+            raise exceptions.ValidationError({
+                'start_date': 'Start date should be present',
+            })
+        new_analysis = analysis.clone_analysis(cloned_title)
         serializer = AnalysisSerializer(
             new_analysis,
             context={'request': request},
