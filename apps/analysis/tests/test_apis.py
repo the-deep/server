@@ -1,7 +1,8 @@
 from dateutil.relativedelta import relativedelta
-from django.utils import timezone
 
+from django.utils import timezone
 from django.conf import settings
+
 from rest_framework.exceptions import ErrorDetail
 
 from deep.tests import TestCase
@@ -27,10 +28,13 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
+        now = timezone.now()
         url = f'/api/v1/projects/{project.id}/analysis/'
         data = {
             'title': 'Test Analysis',
             'team_lead': user.id,
+            'start_date': (now + relativedelta(days=2)).date(),
+            'end_date': (now + relativedelta(days=22)).date(),
         }
         self.authenticate(user)
         response = self.client.post(url, data)
@@ -61,10 +65,13 @@ class TestAnalysisAPIs(TestCase):
         self.create_user()
         project = self.create_project()
         project.add_member(user)
+        now = timezone.now()
         url = f'/api/v1/projects/{project.id}/analysis/'
         data = {
             'title': 'Test Analysis',
             'team_lead': user.id,
+            'start_date': (now + relativedelta(days=2)).date(),
+            'end_date': (now + relativedelta(days=22)).date(),
             'analysis_pillar': [{
                 'main_statement': 'Some main statement',
                 'information_gap': 'Some information gap',
@@ -192,6 +199,110 @@ class TestAnalysisAPIs(TestCase):
         # checking for the entries
         self.assertEqual(AnalyticalStatementEntry.objects.filter(
                          analytical_statement__analysis_pillar__analysis=analysis).count(), entry_count + 2)
+
+    def test_end_date_analysis_greater_than_lead_published_on(self):
+        """
+        Test for a lead published date after the analysis end_date
+        """
+        user = self.create_user()
+        project = self.create_project()
+        project.add_member(user)
+        now = timezone.now()
+        lead = self.create_lead(project=project, published_on=now + relativedelta(days=6))
+        entry = self.create_entry(project=project, lead=lead)
+        analysis = self.create(Analysis, project=project, title='Test Analysis', end_date=now + relativedelta(days=4))
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statements': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "client_id": "1",
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "client_id": "1",
+                            "entry": entry.id,
+                        },
+                    ]
+                }
+            ]
+        }
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        self.assertEqual(
+            response.data['errors']['analytical_statements'][0]['analytical_entries'][0]['entry'][0],
+            ErrorDetail(
+                string=f'Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis.end_date.date()}'
+                , code='invalid'
+            ),
+        )
+
+    def test_analysis_end_date_change(self):
+        user = self.create_user()
+        project = self.create_project()
+        project.add_member(user)
+        now = timezone.now()
+        lead = self.create_lead(project=project, published_on=now + relativedelta(days=2))
+        entry = self.create_entry(project=project, lead=lead)
+        analysis = self.create(Analysis, project=project, title='Test Analysis', end_date=now + relativedelta(days=4))
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statements': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "client_id": "1",
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "client_id": "1",
+                            "entry": entry.id,
+                        },
+                    ]
+                }
+            ]
+        }
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        # try to change the analysis end_date and try to patch at the pillar
+        analysis.end_date = now + relativedelta(days=1)
+        analysis.save()
+        pillar_id = response.data['id']
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{pillar_id}/'
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statements': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "client_id": "1",
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "client_id": "1",
+                            "entry": entry.id,
+                        },
+                    ]
+                }
+            ]
+        }
+        self.authenticate(user)
+        response = self.client.patch(url, data)
+        self.assert_400(response)
 
     def test_create_analytical_statement(self):
         statement_count = AnalyticalStatement.objects.count()
@@ -439,7 +550,7 @@ class TestAnalysisAPIs(TestCase):
         self.assert_201(response)
         response_id = response.data['id']
 
-        # now ty to delete an entry
+        # now try to delete an entry
         Entry.objects.filter(id=entry2.id).delete()
         # try to patch
         data = {
@@ -499,16 +610,16 @@ class TestAnalysisAPIs(TestCase):
         project.add_member(user)
 
         now = timezone.now()
-        lead1 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-1))
-        lead2 = self.create_lead(project=project, published_on=now, created_at=now)
-        lead3 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-2))
-        lead4 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-2))
-        lead5 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-2))
-        lead6 = self.create_lead(project=project, published_on=now, created_at=now + relativedelta(days=-2))
-        self.create_lead(project=project, created_at=now + relativedelta(days=-2))
-        lead8 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
-        lead9 = self.create_lead(project=project, created_at=now + relativedelta(days=-2))
-        self.create_lead(project=project, created_at=now + relativedelta(days=-3))
+        lead1 = self.create_lead(project=project, published_on=now)
+        lead2 = self.create_lead(project=project, published_on=now + relativedelta(days=-1))
+        lead3 = self.create_lead(project=project, published_on=now + relativedelta(days=-3))
+        lead4 = self.create_lead(project=project, published_on=now + relativedelta(days=5))
+        lead5 = self.create_lead(project=project, published_on=now + relativedelta(days=2))
+        lead6 = self.create_lead(project=project, published_on=now + relativedelta(days=-3))
+        self.create_lead(project=project, published_on=now + relativedelta(days=-2))
+        lead8 = self.create_lead(project=project, published_on=now + relativedelta(days=-2))
+        lead9 = self.create_lead(project=project, published_on=now + relativedelta(days=-2))
+        self.create_lead(project=project, published_on=now + relativedelta(days=-3))
         entry = self.create_entry(lead=lead1, project=project)
         entry1 = self.create_entry(lead=lead2, project=project)
         entry2 = self.create_entry(lead=lead3, project=project)
@@ -520,8 +631,20 @@ class TestAnalysisAPIs(TestCase):
         entry8 = self.create_entry(lead=lead9, project=project)
         entry9 = self.create_entry(lead=lead2, project=project)
 
-        analysis1 = self.create(Analysis, title='Test Analysis', team_lead=user, project=project)
-        analysis2 = self.create(Analysis, title='Not for test', team_lead=user, project=project)
+        analysis1 = self.create(
+            Analysis,
+            title='Test Analysis',
+            team_lead=user,
+            project=project,
+            end_date=now + relativedelta(days=4)
+        )
+        analysis2 = self.create(
+            Analysis,
+            title='Not for test',
+            team_lead=user,
+            project=project,
+            end_date=now + relativedelta(days=7)
+        )
         pillar1 = self.create(AnalysisPillar, analysis=analysis1, title='title1', assignee=user)
         pillar2 = self.create(AnalysisPillar, analysis=analysis1, title='title2', assignee=user)
         pillar3 = self.create(AnalysisPillar, analysis=analysis1, title='title3', assignee=user2)
@@ -584,12 +707,13 @@ class TestAnalysisAPIs(TestCase):
             data[1]['pillars'][2]['assignee_details']['display_name'], pillar1.assignee.profile.get_display_name()
         )
         self.assertEqual(
-            data[1]['publication_date']['start_date'], lead1.published_on.strftime('%Y-%m-%d')
+            data[1]['publication_date']['start_date'], lead6.published_on.strftime('%Y-%m-%d')
         )  # since we use lead that has entry created for
-        self.assertEqual(data[1]['publication_date']['end_date'], lead1.published_on.strftime('%Y-%m-%d'))
+        self.assertEqual(data[1]['publication_date']['end_date'], lead5.published_on.strftime('%Y-%m-%d'))
         self.assertEqual(data[1]['pillars'][0]['analyzed_entries'], 3)  # discrded + analyzed entry
         self.assertEqual(data[1]['pillars'][1]['analyzed_entries'], 2)  # discrded + analyzed entry
-        self.assertEqual(data[1]['analyzed_entries'], 9)
+        # here considering the entry whose lead published date less than analysis end_date
+        self.assertEqual(data[1]['analyzed_entries'], 8)
         self.assertEqual(data[1]['analyzed_sources'], 6)  # have `distinct=True`
         self.assertEqual(data[1]['total_entries'], 10)
         self.assertEqual(data[1]['total_sources'], 8)  # taking lead that has entry more than one
@@ -799,8 +923,11 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        entry = self.create_entry(project=project)
-        analysis = self.create(Analysis, project=project)
+        now = timezone.now()
+        lead = self.create_lead(project=project, published_on=now)
+        lead1 = self.create_lead(project=project, published_on=now + relativedelta(days=5))
+        entry = self.create_entry(project=project, lead=lead)
+        analysis = self.create(Analysis, project=project, end_date=now + relativedelta(days=2))
         pillar1 = self.create(AnalysisPillar, analysis=analysis)
         data = {
             'entry': entry.id,
@@ -821,7 +948,7 @@ class TestAnalysisAPIs(TestCase):
         response = self.client.get(url)
         self.assert_403(response)
 
-        entry1 = self.create_entry()
+        entry1 = self.create_entry(project=project, lead=lead)
         data = {
             'entry': entry1.id,
             'tag': DiscardedEntry.TagType.REDUNDANT
@@ -839,6 +966,17 @@ class TestAnalysisAPIs(TestCase):
         data = {
             'entry': entry.id,
             'tag': DiscardedEntry.TagType.REDUNDANT,
+        }
+        url = f'/api/v1/analysis-pillar/{pillar1.id}/discarded-entries/'
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_400(response)
+
+        # try to post the entry with lead published date greater than the analysis end_date
+        entry2 = self.create_entry(project=project, lead=lead1)
+        data = {
+            'entry': entry2.id,
+            'tag': DiscardedEntry.TagType.REDUNDANT
         }
         url = f'/api/v1/analysis-pillar/{pillar1.id}/discarded-entries/'
         self.authenticate(user)
@@ -872,19 +1010,26 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        analysis = self.create(Analysis, project=project)
+        project2 = self.create_project()
+        project2.add_member(user)
+        now = timezone.now()
+        analysis = self.create(Analysis, project=project, end_date=now)
         pillar = self.create(AnalysisPillar, analysis=analysis)
-        entry1 = self.create(Entry, project=project)
-        self.create(Entry, project=project)
-        self.create(Entry, project=project)
-        self.create(Entry, project=project)
+        lead1 = self.create_lead(project=project, title='TESTA', published_on=now + relativedelta(days=2))
+        lead2 = self.create_lead(project=project, title='TESTA', published_on=now + relativedelta(days=-4))
+        lead3 = self.create_lead(project=project, title='TESTA', published_on=now + relativedelta(days=-2))
+        entry1 = self.create(Entry, project=project, lead=lead2)
+        self.create(Entry, project=project, lead=lead2)
+        self.create(Entry, project=project, lead=lead3)
+        self.create(Entry, project=project, lead=lead1)
+        self.create(Entry, project=project2, lead=lead3)
 
         # Check the entry count
         analysis_pillar_entries_url = f'/api/v1/analysis-pillar/{pillar.id}/entries/'
         self.authenticate(user)
         response = self.client.post(analysis_pillar_entries_url)
         self.assert_200(response)
-        self.assertEqual(len(response.data['results']), 4)  # this should list all the entries present
+        self.assertEqual(len(response.data['results']), 3)  # this should list all the entries present
 
         # now try to discard the entry from the discarded entries api
         data = {
@@ -903,7 +1048,7 @@ class TestAnalysisAPIs(TestCase):
 
         # try checking the entries that are not discarded
         self.authenticate(user)
-        response = self.post_filter_test(analysis_pillar_entries_url, {'discarded': False}, count=3)
+        response = self.post_filter_test(analysis_pillar_entries_url, {'discarded': False}, count=2)
         response_id = [res['id'] for res in response.data['results']]
         self.assertNotIn(entry1.id, response_id)
 
