@@ -305,20 +305,6 @@ class AnalysisFrameworkTests(TestCase):
         response = self.client.post(url, data)
         self.assert_403(response)
 
-    def test_create_private_framework(self):
-        project = self.create(Project, role=self.admin_role)
-
-        url = '/api/v1/analysis-frameworks/'
-        data = {
-            'title': 'Test AnalysisFramework Title',
-            'project': project.id,
-            'is_private': True,
-        }
-
-        self.authenticate()
-        response = self.client.post(url, data)
-        self.assert_403(response)
-
     def test_change_is_private_field(self):
         """Even the owner should be unable to change privacy"""
         private_framework = self.create(AnalysisFramework, is_private=True)

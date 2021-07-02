@@ -7,7 +7,8 @@ from django.views.static import serve
 from django.contrib.auth import views as auth_views
 from django.contrib import admin
 from django.conf import settings
-from django.urls import path, register_converter
+from django.urls import path, register_converter, re_path
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import routers
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
@@ -15,6 +16,7 @@ from drf_yasg import openapi
 from django_otp.admin import OTPAdminSite
 
 from . import converters
+from deep.views import CustomGraphQLView
 
 # import autofixture
 
@@ -371,6 +373,8 @@ def get_api_path(path):
     return '{}{}'.format(API_PREFIX, path)
 
 
+CustomGraphQLView.graphiql_template = "graphene_graphiql_explorer/graphiql.html"
+
 # Enable OTP in Production
 if not settings.DEBUG:
     admin.site.__class__ = OTPAdminSite
@@ -543,9 +547,14 @@ urlpatterns = [
     re_path(r'^favicon.ico$',
             RedirectView.as_view(url=get_frontend_url('favicon.ico')),
             name="favicon"),
+] + [
+    # graphql patterns
+    re_path('^graphiql/?$', csrf_exempt(CustomGraphQLView.as_view(graphiql=True))),
+    re_path('^graphql/?$', csrf_exempt(CustomGraphQLView.as_view())),
 ] + static.static(
     settings.MEDIA_URL, view=xframe_options_exempt(serve),
-    document_root=settings.MEDIA_ROOT)
+    document_root=settings.MEDIA_ROOT
+)
 
 if settings.DEBUG:
     import debug_toolbar

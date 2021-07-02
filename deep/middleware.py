@@ -10,9 +10,8 @@ from django.core.files.storage import get_storage_class
 
 from utils.date_extractor import str_to_date
 
+
 logger = logging.getLogger(__name__)
-
-
 _threadlocal = threading.local()
 
 

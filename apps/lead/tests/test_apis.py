@@ -861,6 +861,7 @@ class LeadTests(TestCase):
         lead1_copy = Lead.objects.filter(title=lead1_title).exclude(
             Q(pk=lead1.pk) | Q(project=project2d)
         ).get()
+        lead1_copy.refresh_from_db()
         self.assertEqual(
             lead1_copy.images.count(),
             lead1.images.count(),
