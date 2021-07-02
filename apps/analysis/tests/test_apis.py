@@ -1,7 +1,8 @@
 from dateutil.relativedelta import relativedelta
-from django.utils import timezone
 
+from django.utils import timezone
 from django.conf import settings
+
 from rest_framework.exceptions import ErrorDetail
 
 from deep.tests import TestCase
@@ -201,7 +202,7 @@ class TestAnalysisAPIs(TestCase):
 
     def test_end_date_analysis_greater_than_lead_published_on(self):
         """
-        Test for lead published datea after the analsysis end_date
+        Test for a lead published date after the analysis end_date
         """
         user = self.create_user()
         project = self.create_project()
@@ -234,6 +235,13 @@ class TestAnalysisAPIs(TestCase):
         self.authenticate(user)
         response = self.client.post(url, data)
         self.assert_400(response)
+        self.assertEqual(
+            response.data['errors']['analytical_statements'][0]['analytical_entries'][0]['entry'][0],
+            ErrorDetail(
+                string=f'Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis.end_date.date()}'
+                , code='invalid'
+            ),
+        )
 
     def test_analysis_end_date_change(self):
         user = self.create_user()
