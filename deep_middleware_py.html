@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for deep/middleware.py: 72%</title>
+    <title>Coverage for deep/middleware.py: 70%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -18,15 +18,15 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>deep/middleware.py</b> :
-            <span class="pc_cov">72%</span>
+            <span class="pc_cov">70%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
             68 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">52 run</button>
-            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">16 missing</button>
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">51 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">17 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
-            <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">2 partial</button>
+            <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">3 partial</button>
         </h2>
     </div>
 </div>
@@ -162,9 +162,9 @@
     <p id="t107" class="pln"><span class="n"><a href="#t107">107</a></span><span class="t"><span class="str">    """</span>&nbsp;</span><span class="r"></span></p>
     <p id="t108" class="pln"><span class="n"><a href="#t108">108</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t109" class="run"><span class="n"><a href="#t109">109</a></span><span class="t">    <span class="nam">request</span> <span class="op">=</span> <span class="nam">getattr</span><span class="op">(</span><span class="nam">_threadlocal</span><span class="op">,</span> <span class="str">"request"</span><span class="op">,</span> <span class="key">None</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t110" class="run"><span class="n"><a href="#t110">110</a></span><span class="t">    <span class="key">if</span> <span class="nam">callable</span><span class="op">(</span><span class="nam">request</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t110" class="par run show_par"><span class="n"><a href="#t110">110</a></span><span class="t">    <span class="key">if</span> <span class="nam">callable</span><span class="op">(</span><span class="nam">request</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">110&#x202F;&#x219B;&#x202F;112</span><span class="annotate long">line 110 didn't jump to line 112, because the condition on line 110 was never false</span></span></p>
     <p id="t111" class="run"><span class="n"><a href="#t111">111</a></span><span class="t">        <span class="key">return</span> <span class="nam">request</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t112" class="run"><span class="n"><a href="#t112">112</a></span><span class="t">    <span class="key">return</span> <span class="nam">request</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t112" class="mis show_mis"><span class="n"><a href="#t112">112</a></span><span class="t">    <span class="key">return</span> <span class="nam">request</span>&nbsp;</span><span class="r"></span></p>
     <p id="t113" class="pln"><span class="n"><a href="#t113">113</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t114" class="pln"><span class="n"><a href="#t114">114</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t115" class="run"><span class="n"><a href="#t115">115</a></span><span class="t"><span class="key">def</span> <span class="nam">get_current_user</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -178,7 +178,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-07-01 05:33 +0000
+            created at 2021-07-02 11:02 +0000
         </p>
     </div>
 </div>
