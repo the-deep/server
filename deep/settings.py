@@ -117,6 +117,8 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'jsoneditor',
     'drf_yasg',  # API Documentation
+    'graphene_django',
+    'graphene_graphiql_explorer',
 ] + [
     '{}.{}.apps.{}Config'.format(
         APPS_DIR.split('/')[-1],
@@ -642,3 +644,32 @@ if DEBUG and 'DOCKER_HOST_IP' in os.environ:
     INSTALLED_APPS += ['debug_toolbar']
     MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
     INTERNAL_IPS = [os.environ['DOCKER_HOST_IP']]
+
+# WHITELIST following nodes from authentication checks
+GRAPHENE_NODES_WHITELIST = (
+    '__schema',
+    '__type',
+    '__typename',
+    # custom nodes...
+    'login',
+)
+
+# https://docs.graphene-python.org/projects/django/en/latest/settings/
+GRAPHENE = {
+    'ATOMIC_MUTATIONS': True,
+    'SCHEMA': 'deep.schema.schema',
+    'SCHEMA_OUTPUT': 'schema.json',  # defaults to schema.json,
+    'SCHEMA_INDENT': 2,  # Defaults to None (displays all data on a single   line)
+    'MIDDLEWARE': [
+        'utils.graphene.middleware.WhiteListMiddleware',
+    ],
+}
+
+GRAPHENE_DJANGO_EXTRAS = {
+    'DEFAULT_PAGINATION_CLASS': 'graphene_django_extras.paginations.PageGraphqlPagination',
+    'DEFAULT_PAGE_SIZE': 20,
+    'MAX_PAGE_SIZE': 50,
+}
+
+if DEEP_ENVIRONMENT in ['production']:
+    GRAPHENE['MIDDLEWARE'].append('deep.middleware.DisableIntrospectionSchemaMiddleware')

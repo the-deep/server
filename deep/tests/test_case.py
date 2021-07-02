@@ -44,6 +44,7 @@ class TestCase(test.APITestCase):
         # This should be called here to access roles later
         self.create_project_roles()
         self.deep_test_files_path = []
+        super().setUp()
 
     def tearDown(self):
         _set_middleware_current_request(None)

@@ -169,7 +169,9 @@ class AnalysisFrameworkMembershipSerializer(
         return super().delete(instance)
 
 
-class AnalysisFrameworkSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceSerializer):
+class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
+                                  DynamicFieldsMixin,
+                                  UserResourceSerializer):
     """
     Analysis Framework Model Serializer
     """
