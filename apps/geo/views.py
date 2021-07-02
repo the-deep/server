@@ -79,6 +79,22 @@ class RegionViewSet(viewsets.ModelViewSet):
             for id, geom in geoms
         ])
 
+    @action(
+        detail=True,
+        url_path='publish',
+        methods=['post'],
+        serializer_class=RegionSerializer,
+        permission_classes=[permissions.IsAuthenticated]
+    )
+    def get_published(self, request, pk=None, version=None):
+        region = self.get_object()
+        if not region.can_publish(self.request.user):
+            raise exceptions.ValidationError('Can be published by user who created it')
+        region.is_published = True
+        region.save(update_fields=['is_published'])
+        serializer = RegionSerializer(region, partial=True, context={'request': request})
+        return response.Response(serializer.data)
+
 
 class RegionCloneView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -220,7 +236,7 @@ class GeoAreaView(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         return GeoArea.objects.filter(
             admin_level__region__project=self.kwargs['project_id'],
-            admin_level__region__published=True
+            admin_level__region__is_published=True
         ).annotate(
             label=models.functions.Concat(
                 models.F('admin_level__title'),
