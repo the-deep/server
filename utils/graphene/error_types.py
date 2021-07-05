@@ -7,6 +7,7 @@ from graphene.utils.str_converters import to_snake_case
 from graphene_django.utils.utils import _camelize_django_str
 
 ARRAY_NON_MEMBER_ERRORS = 'nonMemberErrors'
+CustomErrorType = GenericScalar
 
 
 class ArrayNestedErrorType(ObjectType):
