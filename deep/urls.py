@@ -2,7 +2,7 @@
 """
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic.base import RedirectView
-from django.conf.urls import re_path, include, static
+from django.conf.urls import include, static
 from django.views.static import serve
 from django.contrib.auth import views as auth_views
 from django.contrib import admin
