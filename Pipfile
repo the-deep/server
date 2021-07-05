@@ -68,6 +68,7 @@ Pygments = "==2.9.0"
 Shapely = "==1.7.1"
 Django = "==3.2.4"
 ipython = "*"
+factory-boy = "*"
 
 [dev-packages]
 pytest-django = "==4.4.0"
