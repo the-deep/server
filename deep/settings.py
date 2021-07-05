@@ -645,6 +645,39 @@ if DEBUG and 'DOCKER_HOST_IP' in os.environ:
     MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
     INTERNAL_IPS = [os.environ['DOCKER_HOST_IP']]
 
+
+# https://docs.djangoproject.com/en/3.1/ref/settings/#std:setting-APPEND_SLASH
+APPEND_SLASH = False
+
+# Security Header configuration
+SESSION_COOKIE_NAME = f'deep-{DEEP_ENVIRONMENT}-sessionid'
+CSRF_COOKIE_NAME = f'deep-{DEEP_ENVIRONMENT}-csrftoken'
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+CSP_DEFAULT_SRC = ["'self'"]
+SECURE_REFERRER_POLICY = 'same-origin'
+if HTTP_PROTOCOL == 'https':
+    SESSION_COOKIE_NAME = f'__Secure-{SESSION_COOKIE_NAME}'
+    CSRF_COOKIE_NAME = f'__Secure-{CSRF_COOKIE_NAME}'
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 30  # TODO: Increase this slowly
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = True
+
+# https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-CSRF_USE_SESSIONS
+CSRF_USE_SESSIONS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'False').lower() == 'true'
+# https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-SESSION_COOKIE_DOMAIN
+SESSION_COOKIE_DOMAIN = os.environ.get('SESSION_COOKIE_DOMAIN', 'localhost')
+# https://docs.djangoproject.com/en/3.2/ref/settings/#csrf-cookie-domain
+CSRF_COOKIE_DOMAIN = os.environ.get('CSRF_COOKIE_DOMAIN', 'localhost')
+
+
 # WHITELIST following nodes from authentication checks
 GRAPHENE_NODES_WHITELIST = (
     '__schema',

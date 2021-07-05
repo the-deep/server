@@ -184,6 +184,7 @@ class GrapheneMutation(graphene.Mutation):
     errors = graphene.List(graphene.NonNull(GenericScalar))
     ok = graphene.Boolean()
 
+    # Graphene standard method
     @classmethod
     def get_queryset(cls, info, **kwargs):
         return cls.filter_queryset(
@@ -250,6 +251,7 @@ class GrapheneMutation(graphene.Mutation):
         instance = serializer.save()
         return cls(result=instance, errors=None, ok=True)
 
+    # Graphene standard method
     @classmethod
     def mutate(cls, root, info, **kwargs):
         cls.check_permissions(info, **kwargs)
