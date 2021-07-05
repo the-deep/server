@@ -36,10 +36,8 @@ class TokenObtainPairSerializer(serializers.Serializer):
     def deactivate_account(self, user):
         if user.profile.login_attempts == settings.MAX_LOGIN_ATTEMPTS:
             send_account_activation(user)
-        # if user.is_active:
-        #     user.is_active = False
-        #     user.save()
-        #     send_account_activation(user)
+            user.profile.login_attempts += 1
+            user.profile.save()
         raise UserInactiveError(
             message='Account is deactivated, check your email')
 
