@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth import authenticate
+from django.conf import settings
 from django.db import transaction
 
 from drf_dynamic_fields import DynamicFieldsMixin
@@ -22,6 +24,9 @@ from gallery.models import File
 
 from jwt_auth.captcha import validate_hcaptcha
 from jwt_auth.errors import UserNotFoundError
+
+from .utils import send_account_activation
+from .validators import CustomMaximumLengthValidator
 
 
 class NanoUserSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
@@ -281,3 +286,65 @@ class UserNotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'name', 'email')
+
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+    hcaptcha_response = serializers.CharField(write_only=True, required=False)
+
+    @classmethod
+    def is_captcha_required(cls, user=None, email=None):
+        _user = user or User.objects.filter(email=email).first()
+        return (
+            _user is not None and
+            _user.profile.login_attempts >= settings.MAX_LOGIN_ATTEMPTS_FOR_CAPTCHA
+        )
+
+    def validate_password(self, password):
+        # this will now only handle max-length in the login
+        CustomMaximumLengthValidator().validate(password=password)
+        return password
+
+    def validate(self, data):
+        def _set_user_login_attempts(user, login_attempts):
+            user.profile.login_attempts = login_attempts
+            user.profile.save(update_fields=['login_attempts'])
+
+        # NOTE: authenticate only works for active users
+        # NOTE: username should be equal to email
+        authenticate_user = authenticate(username=data['email'], password=data['password'])
+        captcha = data.get('hcaptcha_response')
+        user = User.objects.filter(email=data['email']).first()
+
+        # User doesn't exists in the system.
+        if user is None:
+            raise serializers.ValidationError('No active account found with the given credentials')
+
+        # Validate captcha if required for requested user
+        if self.is_captcha_required(user=user):
+            if not captcha:
+                raise serializers.ValidationError({'hcaptcha_response': 'Captcha is required'})
+            if not validate_hcaptcha(captcha, raise_on_error=False):
+                raise serializers.ValidationError({'hcaptcha_response': 'Invalid captcha! Please, Try Again'})
+
+        # Let user retry until max login attempts is reached
+        if user.profile.login_attempts < settings.MAX_LOGIN_ATTEMPTS:
+            if authenticate_user is None:
+                _set_user_login_attempts(user, user.profile.login_attempts + 1)
+                raise serializers.ValidationError(
+                    'No active account found with the given credentials.'
+                    f' You have {settings.MAX_LOGIN_ATTEMPTS - user.profile.login_attempts} login attempts remaining'
+                )
+        else:
+            # Lock account after to many attempts
+            if user.profile.login_attempts == settings.MAX_LOGIN_ATTEMPTS:
+                # Send email before locking account.
+                _set_user_login_attempts(user, user.profile.login_attempts + 1)
+                send_account_activation(user)
+            raise serializers.ValidationError('Account is locked, check your email.')
+
+        # Clear login_attempts after success authentication
+        if user.profile.login_attempts > 0:
+            _set_user_login_attempts(user, 0)
+        return {'user': authenticate_user}
