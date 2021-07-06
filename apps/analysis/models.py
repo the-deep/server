@@ -1,6 +1,7 @@
 import copy
 
 from django.db import models
+from django.shortcuts import get_object_or_404
 from django_enumfield import enum
 from django.db.models.functions import JSONObject
 from django.db import connection as django_db_connection
@@ -26,20 +27,30 @@ class Analysis(UserResource, ProjectEntityMixin):
     )
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField()
+    # added to keep the track of cloned analysis
+    cloned_from = models.ForeignKey(
+        'Analysis',
+        on_delete=models.CASCADE,
+        null=True, blank=True
+    )
 
     def __str__(self):
         return self.title
 
-    def clone_analysis(self, title, end_date):
+    def clone_analysis(self, title, end_date, start_date):
         analysis_cloned = copy.deepcopy(self)
 
         def _get_clone_pillar(obj, analysis_cloned):
+            instance = get_object_or_404(AnalysisPillar, pk=obj.pk)
+            obj.cloned_from = instance
             obj.pk = None
             obj.client_id = None
             obj.analysis = analysis_cloned
             return obj
 
         def _get_clone_pillar_statement(obj, analysis_pillar):
+            instance = get_object_or_404(AnalyticalStatement, pk=obj.pk)
+            obj.cloned_from = instance
             obj.pk = None
             obj.client_id = None
             obj.analysis_pillar = analysis_pillar
@@ -60,12 +71,13 @@ class Analysis(UserResource, ProjectEntityMixin):
         analysis_cloned.client_id = None
         analysis_cloned.title = title
         analysis_cloned.end_date = end_date
+        analysis_cloned.start_date = start_date
+        analysis_cloned.cloned_from = self
         analysis_cloned.save()
         analysis_pillars = self.analysispillar_set.all()
         AnalysisPillar.objects.bulk_create([
             _get_clone_pillar(analysis_pillar, analysis_cloned) for analysis_pillar in analysis_pillars
         ])
-
         for analysis_pillar in analysis_pillars:
             analytical_statements = AnalyticalStatement.objects.filter(
                 analysis_pillar__analysis=self
@@ -237,6 +249,12 @@ class AnalysisPillar(UserResource):
         Analysis,
         on_delete=models.CASCADE
     )
+    # added to keep the track of cloned analysispillar
+    cloned_from = models.ForeignKey(
+        'AnalysisPillar',
+        on_delete=models.CASCADE,
+        null=True, blank=True
+    )
 
     def __str__(self):
         return self.title
@@ -341,6 +359,12 @@ class AnalyticalStatement(UserResource):
     )
     include_in_report = models.BooleanField(default=False)
     order = models.IntegerField()
+    # added to keep the track of cloned analysisstatement
+    cloned_from = models.ForeignKey(
+        'AnalyticalStatement',
+        on_delete=models.CASCADE,
+        null=True, blank=True
+    )
 
     class Meta:
         ordering = ('order',)

@@ -71,7 +71,8 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         if input_serializer.is_valid():
             title = input_serializer.validated_data['title']
             end_date = input_serializer.validated_data['end_date']
-            new_analysis = analysis.clone_analysis(title, end_date)
+            start_date = input_serializer.validated_data['start_date']
+            new_analysis = analysis.clone_analysis(title, end_date, start_date)
             serializer = AnalysisSerializer(
                 new_analysis,
                 context={'request': request},

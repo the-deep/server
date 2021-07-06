@@ -150,7 +150,7 @@ class AnalysisSerializer(
 
 class AnalysisCloneInputSerializer(serializers.Serializer):
     title = serializers.CharField(required=True, write_only=True)
-    start_date = serializers.DateField(required=False, write_only=True)
+    start_date = serializers.DateField(required=True, write_only=True)
     end_date = serializers.DateField(required=True, write_only=True)
 
     def validate(self, data):

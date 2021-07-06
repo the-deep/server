@@ -772,6 +772,11 @@ class TestAnalysisAPIs(TestCase):
         self.authenticate(user)
         response = self.client.post(url, data)
         self.assert_400(response)
+        assert 'end_date' in response.data
+        self.assertEqual(
+            response.data['end_date'],
+            [ErrorDetail(string='This field is required.', code='required')]
+        )
 
         # try to post with start_date greater than end_date
         data = {
@@ -782,13 +787,19 @@ class TestAnalysisAPIs(TestCase):
         self.authenticate(user)
         response = self.client.post(url, data)
         self.assert_400(response)
+        self.assertEqual(
+            response.data['end_date'],
+            [ErrorDetail(string='End date must occur after start date', code='invalid')]
+        )
 
-        data.pop('start_date')
+        data['start_date'] = '2020-09-10'
         self.authenticate(user)
         response = self.client.post(url, data)
         self.assert_201(response)
         self.assertNotEqual(response.data['id'], analysis.id)
         self.assertEqual(response.data['title'], data['title'])
+        self.assertEqual(response.data['cloned_from'], analysis.id)
+        self.assertEqual(response.data['analysis_pillar'][0]['cloned_from'], pillar.id)
         # test if the nested fields are cloned or not
         self.assertEqual(
             Analysis.objects.count(),
