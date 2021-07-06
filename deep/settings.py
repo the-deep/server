@@ -686,6 +686,8 @@ GRAPHENE_NODES_WHITELIST = (
     '__typename',
     # custom nodes...
     'login',
+    'register',
+    'resetPassword',
 )
 
 # https://docs.graphene-python.org/projects/django/en/latest/settings/
