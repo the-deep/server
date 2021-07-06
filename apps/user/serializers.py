@@ -114,6 +114,13 @@ class UserSerializer(RemoveNullFieldsMixin, WriteOnlyOnCreateSerializerMixin,
                   'display_picture_url', 'language', 'email_opt_outs')
         write_only_on_create_fields = ('email', 'username')
 
+    @classmethod
+    def update_or_create_profile(cls, user, profile_data):
+        profile, created = Profile.objects.update_or_create(
+            user=user, defaults=profile_data
+        )
+        return profile
+
     def validate_hcaptcha_response(self, captcha):
         validate_hcaptcha(captcha)
 
@@ -139,12 +146,6 @@ class UserSerializer(RemoveNullFieldsMixin, WriteOnlyOnCreateSerializerMixin,
             user.save()
         user.profile = self.update_or_create_profile(user, profile_data)
         return user
-
-    def update_or_create_profile(self, user, profile_data):
-        profile, created = Profile.objects.update_or_create(
-            user=user, defaults=profile_data
-        )
-        return profile
 
 
 class FeatureSerializer(RemoveNullFieldsMixin,
@@ -265,7 +266,7 @@ class PasswordChangeSerializer(serializers.Serializer):
         validate_password(password)
         return password
 
-    def save(self, **kwargs):
+    def save(self):
         user = self.context['request'].user
         user.set_password(self.validated_data['new_password'])
         user.save()
@@ -278,11 +279,13 @@ class PasswordChangeSerializer(serializers.Serializer):
                 device_type=device_type)
         )
 
+# ----------------------- NEW GRAPHQL SCHEME Serializers ----------------------------------
+
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField()
     password = serializers.CharField(write_only=True)
-    hcaptcha_response = serializers.CharField(write_only=True, required=False)
+    captcha = serializers.CharField(write_only=True, required=False)
 
     @classmethod
     def is_captcha_required(cls, user=None, email=None):
@@ -305,7 +308,7 @@ class LoginSerializer(serializers.Serializer):
         # NOTE: authenticate only works for active users
         # NOTE: username should be equal to email
         authenticate_user = authenticate(username=data['email'], password=data['password'])
-        captcha = data.get('hcaptcha_response')
+        captcha = data.get('captcha')
         user = User.objects.filter(email=data['email']).first()
 
         # User doesn't exists in the system.
@@ -315,9 +318,9 @@ class LoginSerializer(serializers.Serializer):
         # Validate captcha if required for requested user
         if self.is_captcha_required(user=user):
             if not captcha:
-                raise serializers.ValidationError({'hcaptcha_response': 'Captcha is required'})
+                raise serializers.ValidationError({'captcha': 'Captcha is required'})
             if not validate_hcaptcha(captcha, raise_on_error=False):
-                raise serializers.ValidationError({'hcaptcha_response': 'Invalid captcha! Please, Try Again'})
+                raise serializers.ValidationError({'captcha': 'Invalid captcha! Please, Try Again'})
 
         # Let user retry until max login attempts is reached
         if user.profile.login_attempts < settings.MAX_LOGIN_ATTEMPTS:
@@ -339,3 +342,54 @@ class LoginSerializer(serializers.Serializer):
         if user.profile.login_attempts > 0:
             _set_user_login_attempts(user, 0)
         return {'user': authenticate_user}
+
+
+class CaptchaSerializerMixin(serializers.ModelSerializer):
+    captcha = serializers.CharField(write_only=True, required=True)
+
+    def validate_captcha(self, captcha):
+        if not validate_hcaptcha(captcha, raise_on_error=False):
+            raise serializers.ValidationError('Invalid captcha! Please, Try Again')
+
+
+class RegisterSerializer(CaptchaSerializerMixin, serializers.ModelSerializer):
+    email = serializers.EmailField(write_only=True, required=True)
+    organization = serializers.CharField(write_only=True, required=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'email', 'first_name', 'last_name',
+            'organization', 'captcha',
+        )
+
+    # Only this method is used for Register
+    def create(self, validated_data):
+        validated_data.pop('captcha')
+        profile_data = {
+            'organization': validated_data.pop('organization')
+        }
+        user = super().create(validated_data)
+        user.profile = UserSerializer.update_or_create_profile(user, profile_data)
+        transaction.on_commit(
+            lambda: send_password_reset(user=user, welcome=True)
+        )
+        return user
+
+
+# TODO: Rename this later to PasswordResetSerializer
+class GqPasswordResetSerializer(CaptchaSerializerMixin, serializers.ModelSerializer):
+    email = serializers.EmailField(write_only=True, required=True)
+
+    class Meta:
+        model = User
+        fields = ('email', 'captcha')
+
+    def validate_email(self, email):
+        if user := User.objects.filter(email=email.lower()).first():
+            return user
+        raise serializers.ValidationError('There is no user with that email.')
+
+    def save(self):
+        user = self.validated_data["email"]  # validate_email returning user instance
+        send_password_reset(user=user)
