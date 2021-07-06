@@ -8,7 +8,6 @@ from jwt_auth.token import AccessToken, RefreshToken
 
 import datetime
 from django.utils import timezone
-from django.db import DEFAULT_DB_ALIAS, connections
 from django.conf import settings
 
 from deep.middleware import _set_current_request as _set_middleware_current_request
@@ -314,33 +313,8 @@ class TestCase(test.APITestCase):
         self.assertEqual(len(r_data['results']), count, f'Filters: {filters}')
         return response
 
-    @classmethod
-    def captureOnCommitCallbacks(cls, *, using=DEFAULT_DB_ALIAS, execute=False):
-        return _CaptureOnCommitCallbacksContext(using=using, execute=execute)
-
     def get_aware_datetime(self, *args, **kwargs):
         return timezone.make_aware(datetime.datetime(*args, **kwargs))
 
     def get_aware_datetime_str(self, *args, **kwargs):
         return self.get_aware_datetime(*args, **kwargs).strftime('%Y-%m-%d%z')
-
-
-class _CaptureOnCommitCallbacksContext:
-    def __init__(self, *, using=DEFAULT_DB_ALIAS, execute=False):
-        self.using = using
-        self.execute = execute
-        self.callbacks = None
-
-    def __enter__(self):
-        if self.callbacks is not None:
-            raise RuntimeError("Cannot re-enter captureOnCommitCallbacks()")
-        self.start_count = len(connections[self.using].run_on_commit)
-        self.callbacks = []
-        return self.callbacks
-
-    def __exit__(self, exc_type, exc_valuei, exc_traceback):
-        run_on_commit = connections[self.using].run_on_commit[self.start_count:]
-        self.callbacks[:] = [func for sids, func in run_on_commit]
-        if exc_type is None and self.execute:
-            for callback in self.callbacks:
-                callback()

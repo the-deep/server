@@ -1,4 +1,5 @@
 import os
+import json
 import shutil
 from unittest.mock import patch
 
@@ -47,6 +48,7 @@ class CommonSetupClassMixin:
     DEFAULT_FILE_STORAGE=TEST_FILE_STORAGE,
     CACHES=TEST_CACHES,
     AUTH_PASSWORD_VALIDATORS=TEST_AUTH_PASSWORD_VALIDATORS,
+    CELERY_TASK_ALWAYS_EAGER=True,
 )
 class GraphqlTestCase(CommonSetupClassMixin, DeepTestCase, GraphQLTestCase):
     GRAPHQL_SCHEMA = 'deep.schema.schema'
@@ -62,6 +64,16 @@ class GraphqlTestCase(CommonSetupClassMixin, DeepTestCase, GraphQLTestCase):
         self.client.force_login(user)
 
         return access.encode(), refresh.encode()
+
+    def assertResponseErrors(self, resp, msg=None):
+        """
+        Assert that the call went through correctly but with error. 200 means the syntax is ok,
+        if there are `errors`, the call wasn't fine.
+        :resp HttpResponse: Response
+        """
+        content = json.loads(resp.content)
+        self.assertEqual(resp.status_code, 200, msg or content)
+        self.assertIn("errors", list(content.keys()), msg or content)
 
 
 class ImmediateOnCommitMixin(object):
