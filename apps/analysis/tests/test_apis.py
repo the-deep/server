@@ -309,7 +309,7 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        entry = self.create(Entry)
+        entry = self.create_entry(project=project)
         analysis = self.create(Analysis, title='Test Analysis', project=project)
         pillar = self.create(AnalysisPillar, analysis=analysis)
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/{pillar.id}/analytical-statement/'
@@ -338,7 +338,7 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        entry = self.create(Entry)
+        entry = self.create_entry(project=project)
         analysis = self.create(Analysis, project=project)
 
         data = {
@@ -397,8 +397,8 @@ class TestAnalysisAPIs(TestCase):
         user = self.create_user()
         project = self.create_project()
         project.add_member(user)
-        entries_list = [self.create(Entry) for _ in range(settings.ANALYTICAL_ENTRIES_COUNT)]
-        entries_list_one_more = [self.create(Entry) for _ in range(settings.ANALYTICAL_ENTRIES_COUNT + 1)]
+        entries_list = [self.create_entry(project=project) for _ in range(settings.ANALYTICAL_ENTRIES_COUNT)]
+        entries_list_one_more = [self.create(project=project) for _ in range(settings.ANALYTICAL_ENTRIES_COUNT + 1)]
         analysis = self.create(Analysis, project=project)
 
         data = {
