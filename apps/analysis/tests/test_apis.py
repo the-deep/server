@@ -699,6 +699,7 @@ class TestAnalysisAPIs(TestCase):
         self.assert_200(response)
         data = response.data['results']
         self.assertEqual(data[1]['team_lead'], user.id)
+        self.assertEqual(data[1]['end_date'], analysis1.end_date.strftime('%Y-%m-%d'))
         self.assertEqual(data[1]['team_lead_details']['id'], user.id)
         self.assertEqual(data[1]['team_lead_details']['display_name'], user.profile.get_display_name())
         self.assertEqual(data[1]['pillars'][0]['id'], pillar3.id)

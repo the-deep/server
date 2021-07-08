@@ -1,7 +1,6 @@
 import copy
 
 from django.db import models
-from django.shortcuts import get_object_or_404
 from django_enumfield import enum
 from django.db.models.functions import JSONObject
 from django.db import connection as django_db_connection
@@ -30,7 +29,7 @@ class Analysis(UserResource, ProjectEntityMixin):
     # added to keep the track of cloned analysis
     cloned_from = models.ForeignKey(
         'Analysis',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True, blank=True
     )
 
@@ -40,31 +39,29 @@ class Analysis(UserResource, ProjectEntityMixin):
     def clone_analysis(self, title, end_date, start_date):
         analysis_cloned = copy.deepcopy(self)
 
-        def _get_clone_pillar(obj, analysis_cloned):
-            instance = get_object_or_404(AnalysisPillar, pk=obj.pk)
-            obj.cloned_from = instance
+        def _get_clone_pillar(obj, analysis_cloned_id):
+            obj.cloned_from_id = obj.pk
             obj.pk = None
             obj.client_id = None
-            obj.analysis = analysis_cloned
+            obj.analysis_id = analysis_cloned_id
             return obj
 
-        def _get_clone_pillar_statement(obj, analysis_pillar):
-            instance = get_object_or_404(AnalyticalStatement, pk=obj.pk)
-            obj.cloned_from = instance
+        def _get_clone_pillar_statement(obj, analysis_pillar_id):
+            obj.cloned_from_id = obj.pk
             obj.pk = None
             obj.client_id = None
-            obj.analysis_pillar = analysis_pillar
+            obj.analysis_pillar_id = analysis_pillar_id
             return obj
 
-        def _get_clone_statement_entry(obj, analytical_statement):
+        def _get_clone_statement_entry(obj, analytical_statement_id):
             obj.pk = None
             obj.client_id = None
-            obj.analytical_statement = analytical_statement
+            obj.analytical_statement_id = analytical_statement_id
             return obj
 
-        def _get_clone_discarded_entry(obj, analysis_pillar):
+        def _get_clone_discarded_entry(obj, analysis_pillar_id):
             obj.pk = None
-            obj.analysis_pillar = analysis_pillar
+            obj.analysis_pillar_id = analysis_pillar_id
             return obj
 
         analysis_cloned.pk = None
@@ -74,32 +71,54 @@ class Analysis(UserResource, ProjectEntityMixin):
         analysis_cloned.start_date = start_date
         analysis_cloned.cloned_from = self
         analysis_cloned.save()
-        analysis_pillars = self.analysispillar_set.all()
-        AnalysisPillar.objects.bulk_create([
-            _get_clone_pillar(analysis_pillar, analysis_cloned) for analysis_pillar in analysis_pillars
-        ])
-        for analysis_pillar in analysis_pillars:
-            analytical_statements = AnalyticalStatement.objects.filter(
-                analysis_pillar__analysis=self
-            )
-            AnalyticalStatement.objects.bulk_create(
-                [_get_clone_pillar_statement(analytical_statement, analysis_pillar) for analytical_statement in analytical_statements]
-            )
-            for analytical_statement in analytical_statements:
-                entries = AnalyticalStatementEntry.objects.filter(
-                    analytical_statement__analysis_pillar__analysis=self
+        # Clone pillars
+        cloned_pillars = [
+           _get_clone_pillar(analysis_pillar, analysis_cloned.pk)
+           for analysis_pillar in self.analysispillar_set.all()
+        ]
+        cloned_pillar_id_map = {
+            pillar.cloned_from_id: pillar.id
+            for pillar in AnalysisPillar.objects.bulk_create(cloned_pillars)
+        }
+
+        # Clone discarded entries
+        DiscardedEntry.objects.bulk_create(
+            [
+                _get_clone_discarded_entry(
+                    discarded_entry,
+                    cloned_pillar_id_map[discarded_entry.analysis_pillar_id],
                 )
-                AnalyticalStatementEntry.objects.bulk_create(
-                    [_get_clone_statement_entry(entry, analytical_statement) for entry in entries]
-                )
-            # clone for the discarded entry
-            discarded_entries = DiscardedEntry.objects.filter(
-                analysis_pillar__analysis=self
+                for discarded_entry in DiscardedEntry.objects.filter(analysis_pillar__analysis=self)
+            ]
+        )
+
+        # Clone statements
+        cloned_statements = [
+            _get_clone_pillar_statement(
+                statement,
+                cloned_pillar_id_map[statement.analysis_pillar_id],  # Use newly cloned pillar id
             )
-            DiscardedEntry.objects.bulk_create(
-                [_get_clone_discarded_entry(discarded_entry, analysis_pillar) for discarded_entry in discarded_entries]
+            for statement in AnalyticalStatement.objects.filter(analysis_pillar__analysis=self)
+        ]
+        cloned_statement_id_map = {
+            statement.cloned_from_id: statement.id
+            for statement in AnalyticalStatement.objects.bulk_create(cloned_statements)
+        }
+
+        # Clone statement entries
+        cloned_statement_entries = [
+            _get_clone_statement_entry(
+                statement_entry,
+                cloned_statement_id_map[statement_entry.analytical_statement_id],  # Use newly cloned statement id
             )
+            for statement_entry in AnalyticalStatementEntry.objects.filter(
+               analytical_statement__analysis_pillar__analysis=self
+            )
+        ]
+        AnalyticalStatementEntry.objects.bulk_create(cloned_statement_entries)
+
         return analysis_cloned
+
 
     @classmethod
     def get_analyzed_sources(cls, analysis_list):
@@ -252,7 +271,7 @@ class AnalysisPillar(UserResource):
     # added to keep the track of cloned analysispillar
     cloned_from = models.ForeignKey(
         'AnalysisPillar',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True, blank=True
     )
 
@@ -362,7 +381,7 @@ class AnalyticalStatement(UserResource):
     # added to keep the track of cloned analysisstatement
     cloned_from = models.ForeignKey(
         'AnalyticalStatement',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True, blank=True
     )
 
