@@ -88,9 +88,13 @@ class Profile(models.Model):
         except IndexError:
             return []
 
+    @staticmethod
+    def get_display_name_for_user(user):
+        # TODO: Maybe something like this? return f'{name} #{user.id}'
+        return user.get_full_name() if user.first_name else user.username
+
     def get_display_name(self):
-        return self.user.get_full_name() if self.user.first_name \
-            else self.user.username
+        return self.get_display_name_for_user(self.user)
 
     def unsubscribe_email(self, email_type):
         if (
@@ -112,6 +116,11 @@ class Profile(models.Model):
     def get_fallback_language(self):
         return None
         # return settings.LANGUAGE_CODE
+
+
+# TODO: Use Abstract User Model (Merge profile to User Table)
+User.get_display_name = Profile.get_display_name_for_user
+User.display_name = property(Profile.get_display_name_for_user)
 
 
 def get_for_project(project):

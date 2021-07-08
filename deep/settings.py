@@ -647,7 +647,7 @@ if DEBUG and 'DOCKER_HOST_IP' in os.environ:
 
 
 # https://docs.djangoproject.com/en/3.1/ref/settings/#std:setting-APPEND_SLASH
-APPEND_SLASH = False
+APPEND_SLASH = True
 
 # Security Header configuration
 SESSION_COOKIE_NAME = f'deep-{DEEP_ENVIRONMENT}-sessionid'
@@ -699,6 +699,8 @@ GRAPHENE = {
         'utils.graphene.middleware.WhiteListMiddleware',
     ],
 }
+if DEBUG:
+    GRAPHENE['MIDDLEWARE'].append('graphene_django.debug.DjangoDebugMiddleware')
 
 GRAPHENE_DJANGO_EXTRAS = {
     'DEFAULT_PAGINATION_CLASS': 'graphene_django_extras.paginations.PageGraphqlPagination',
