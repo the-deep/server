@@ -148,6 +148,21 @@ class AnalysisSerializer(
         return data
 
 
+class AnalysisCloneInputSerializer(serializers.Serializer):
+    title = serializers.CharField(required=True, write_only=True)
+    start_date = serializers.DateField(required=True, write_only=True)
+    end_date = serializers.DateField(required=True, write_only=True)
+
+    def validate(self, data):
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        if start_date and start_date > end_date:
+            raise serializers.ValidationError(
+                {'end_date': 'End date must occur after start date'}
+            )
+        return data
+
+
 class AnalysisSummaryPillarSerializer(serializers.ModelSerializer):
     analyzed_entries = serializers.IntegerField()
     assignee_details = NanoUserSerializer(source='assignee')
@@ -176,6 +191,7 @@ class AnalysisSummarySerializer(serializers.ModelSerializer):
         fields = (
             'id', 'title', 'team_lead', 'team_lead_details',
             'publication_date', 'pillars',
+            'end_date', 'start_date',
             'analyzed_entries', 'analyzed_sources', 'total_entries',
             'total_sources', 'created_at', 'modified_at',
         )
