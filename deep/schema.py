@@ -1,4 +1,6 @@
 import graphene
+from graphene_django.debug import DjangoDebug
+from django.conf import settings
 
 from analysis_framework import mutation as af_mutations, schema as af_schema
 from user import mutation as user_mutations, schema as user_schema
@@ -9,7 +11,8 @@ class Query(
     user_schema.Query,
     graphene.ObjectType
 ):
-    pass
+    if settings.DEBUG:
+        _debug = graphene.Field(DjangoDebug, name='_debug')
 
 
 class Mutation(
