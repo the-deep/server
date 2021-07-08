@@ -26,6 +26,7 @@ from .serializers import (
     AnalysisSummarySerializer,
     AnalysisPillarSummarySerializer,
     DiscardedEntrySerializer,
+    AnalysisCloneInputSerializer
 )
 from .filter_set import (
     AnalysisFilterSet,
@@ -61,25 +62,30 @@ class AnalysisViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        url_path='clone-analysis',
+        url_path='clone',
         methods=['post']
     )
     def clone_analysis(self, request, project_id, pk=None, version=None):
         analysis = self.get_object()
-        cloned_title = request.data.get('title').strip()
-        if not cloned_title:
-            raise exceptions.ValidationError({
-                'title': 'Title should be present',
-            })
-        new_analysis = analysis.clone_analysis()
-        serializer = AnalysisSerializer(
-            new_analysis,
-            context={'request': request},
-        )
-        return response.Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED,
-        )
+        input_serializer = AnalysisCloneInputSerializer(data=request.data)
+        if input_serializer.is_valid():
+            title = input_serializer.validated_data['title']
+            end_date = input_serializer.validated_data['end_date']
+            start_date = input_serializer.validated_data['start_date']
+            new_analysis = analysis.clone_analysis(title, end_date, start_date)
+            serializer = AnalysisSerializer(
+                new_analysis,
+                context={'request': request},
+            )
+            return response.Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            return response.Response(
+                input_serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class AnalysisPillarViewSet(viewsets.ModelViewSet):

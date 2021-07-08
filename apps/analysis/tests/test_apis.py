@@ -699,6 +699,7 @@ class TestAnalysisAPIs(TestCase):
         self.assert_200(response)
         data = response.data['results']
         self.assertEqual(data[1]['team_lead'], user.id)
+        self.assertEqual(data[1]['end_date'], analysis1.end_date.strftime('%Y-%m-%d'))
         self.assertEqual(data[1]['team_lead_details']['id'], user.id)
         self.assertEqual(data[1]['team_lead_details']['display_name'], user.profile.get_display_name())
         self.assertEqual(data[1]['pillars'][0]['id'], pillar3.id)
@@ -740,19 +741,87 @@ class TestAnalysisAPIs(TestCase):
         user2 = self.create_user()
         project = self.create_project()
         project.add_member(user)
+        entry = self.create_entry(project=project)
+        entry1 = self.create_entry(project=project)
         analysis = self.create(Analysis, project=project, title="Test Clone")
+        pillar = self.create(AnalysisPillar, analysis=analysis, title='title1', assignee=user)
+        analytical_statement = self.create(
+            AnalyticalStatement,
+            analysis_pillar=pillar,
+            statement='Hello from here',
+            client_id='1'
+        )
+        self.create(
+            AnalyticalStatementEntry,
+            analytical_statement=analytical_statement,
+            entry=entry,
+            order=1,
+            client_id='1'
+        )
+        self.create(
+            DiscardedEntry,
+            entry=entry1,
+            analysis_pillar=pillar,
+            tag=DiscardedEntry.TagType.REDUNDANT
+        )
 
-        url = url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/clone-analysis/'
+        url = url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/clone/'
+        # try to post with no end_date
         data = {
             'title': 'cloned_title',
         }
         self.authenticate(user)
         response = self.client.post(url, data)
+        self.assert_400(response)
+        assert 'end_date' in response.data
+        self.assertEqual(
+            response.data['end_date'],
+            [ErrorDetail(string='This field is required.', code='required')]
+        )
+
+        # try to post with start_date greater than end_date
+        data = {
+            'title': 'cloned_title',
+            'end_date': '2020-10-01',
+            'start_date': '2020-10-20'
+        }
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        self.assertEqual(
+            response.data['end_date'],
+            [ErrorDetail(string='End date must occur after start date', code='invalid')]
+        )
+
+        data['start_date'] = '2020-09-10'
+        self.authenticate(user)
+        response = self.client.post(url, data)
         self.assert_201(response)
-
         self.assertNotEqual(response.data['id'], analysis.id)
-        self.assertEqual(response.data['title'], f'{analysis.title} (cloned)')
-
+        self.assertEqual(response.data['title'], data['title'])
+        self.assertEqual(response.data['cloned_from'], analysis.id)
+        self.assertEqual(response.data['analysis_pillar'][0]['cloned_from'], pillar.id)
+        # test if the nested fields are cloned or not
+        self.assertEqual(
+            Analysis.objects.count(),
+            2
+        )  # need to be cloned and created by user
+        self.assertEqual(
+            AnalysisPillar.objects.count(),
+            2
+        )
+        self.assertEqual(
+            AnalyticalStatement.objects.count(),
+            2
+        )
+        self.assertEqual(
+            AnalyticalStatementEntry.objects.count(),
+            2
+        )
+        self.assertEqual(
+            DiscardedEntry.objects.count(),
+            2
+        )
         # authenticating with user that is not project member
         self.authenticate(user2)
         response = self.client.post(url, data)
