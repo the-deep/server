@@ -3,6 +3,8 @@ from django.conf import settings
 
 from utils.graphene.tests import GraphqlTestCase
 
+from gallery.factories import FileFactory
+from project.factories import ProjectFactory
 from user.models import User
 from user.factories import UserFactory
 from user.utils import (
@@ -33,18 +35,13 @@ class TestUserSchema(GraphqlTestCase):
 
     def test_login(self):
         # Try with random user
-        mutation_input = dict(email='xyz@xyz.com', password='pasword-xyz')
-        response = self.query(self.login_mutation, input_data=mutation_input)
-        self.assertResponseNoErrors(response)
-        content = response.json()
-        self.assertFalse(content['data']['login']['ok'], content)
+        minput = dict(email='xyz@xyz.com', password='pasword-xyz')
+        self.query_check(self.login_mutation, minput=minput, okay=False)
 
         # Try with real user
-        user = UserFactory.create(email=mutation_input['email'])
-        response = self.query(self.login_mutation, input_data=dict(email=user.email, password=user.password_text))
-        self.assertResponseNoErrors(response)
-        content = response.json()
-        self.assertTrue(content['data']['login']['ok'], content)
+        user = UserFactory.create(email=minput['email'])
+        minput = dict(email=user.email, password=user.password_text)
+        content = self.query_check(self.login_mutation, minput=minput, okay=True)
         # FIXME: Maybe ['id'] should be string?
         self.assertEqual(content['data']['login']['result']['id'], str(user.id), content)
         self.assertEqual(content['data']['login']['result']['email'], user.email, content)
@@ -57,31 +54,28 @@ class TestUserSchema(GraphqlTestCase):
         - Test account block behaviour
         """
         def _invalid_login():
-            response = self.query(
+            content = self.query_check(
                 self.login_mutation,
-                input_data=dict(
+                minput=dict(
                     email=user.email,
                     password='wrong-password',
                     captcha='captcha',
                 ),
+                okay=False,
             )
-            self.assertResponseNoErrors(response)
-            content = response.json()
             user.refresh_from_db()
-            self.assertFalse(content['data']['login']['ok'], content)
+            return content
 
-        def _valid_login():
-            response = self.query(
+        def _valid_login(okay):
+            return self.query_check(
                 self.login_mutation,
-                input_data=dict(
+                minput=dict(
                     email=user.email,
                     password=user.password_text,
                     captcha='captcha',
                 ),
+                okay=okay,
             )
-            self.assertResponseNoErrors(response)
-            content = response.json()
-            return content
 
         captch_requests_mock.post.return_value.json.return_value = {'success': False}
         user = UserFactory.create()
@@ -112,20 +106,18 @@ class TestUserSchema(GraphqlTestCase):
 
         # Still can't login (with right password).
         captch_requests_mock.post.return_value.json.return_value = {'success': True}
-        content = _valid_login()
-        self.assertFalse(content['data']['login']['ok'], content)
+        content = _valid_login(okay=False)
 
         # mock activation link logic
         user.profile.login_attempts = 0
         user.profile.save(update_fields=['login_attempts'])
 
-        content = _valid_login()
-        self.assertTrue(content['data']['login']['ok'], content)
+        content = _valid_login(okay=True)
 
     @mock.patch('jwt_auth.captcha.requests')
     @mock.patch('user.serializers.send_password_reset', side_effect=send_password_reset)
     def test_register(self, send_password_reset_mock, captch_requests_mock):
-        register_mutation = '''
+        query = '''
             mutation Mutation($input: RegisterInputType!) {
               register(data: $input) {
                 ok
@@ -135,7 +127,7 @@ class TestUserSchema(GraphqlTestCase):
             }
         '''
         # input without email
-        mutation_input = dict(
+        minput = dict(
             email='invalid-email',
             firstName='john',
             lastName='cena',
@@ -143,34 +135,26 @@ class TestUserSchema(GraphqlTestCase):
             captcha='captcha',
         )
 
-        def _call_register():
-            response = self.query(register_mutation, input_data=mutation_input)
-            self.assertResponseNoErrors(response)
-            return response.json()
-
         # With invalid captcha
         captch_requests_mock.post.return_value.json.return_value = {'success': False}
-        content = _call_register()
-        self.assertFalse(content['data']['register']['ok'], content)
+        content = self.query_check(query, minput=minput, okay=False)
 
         # With valid captcha now
         captch_requests_mock.post.return_value.json.return_value = {'success': True}
         # With invalid email
-        content = _call_register()
-        self.assertFalse(content['data']['register']['ok'], content)
+        content = self.query_check(query, minput=minput, okay=False)
         self.assertTrue(len(content['data']['register']['errors']) == 1, content)
 
         # With valid input
-        mutation_input['email'] = 'john@cena.com'
+        minput['email'] = 'john@cena.com'
         with self.captureOnCommitCallbacks(execute=True):
-            content = _call_register()
-        self.assertTrue(content['data']['register']['ok'], content)
+            content = self.query_check(query, minput=minput, okay=True)
         # Make sure password reset message is send
-        user = User.objects.get(email=mutation_input['email'])
+        user = User.objects.get(email=minput['email'])
         send_password_reset_mock.assert_called_once_with(user=user, welcome=True)
 
     def test_logout(self):
-        me_query = '''
+        query = '''
             query Query {
               me {
                 id
@@ -185,30 +169,23 @@ class TestUserSchema(GraphqlTestCase):
               }
             }
         '''
-
+        # # Without Login session
+        content = self.query_check(query, assert_for_error=True)
         # # Login
         self.force_login()
         # Query Me (Success)
-        response = self.query(me_query)
-        content = response.json()
+        content = self.query_check(query)
         self.assertEqual(content['data']['me']['id'], str(self.user.id), content)
         self.assertEqual(content['data']['me']['email'], self.user.email, content)
-
         # # Logout
-        response = self.query(logout_mutation)
-        self.assertResponseNoErrors(response)
-        content = response.json()
-        self.assertTrue(content['data']['logout']['ok'], content)
-
-        # Query Me (with error)
-        response = self.query(me_query)
-        content = response.json()
-        self.assertIsNotNone(content['errors'], content)
+        self.query_check(logout_mutation, okay=True)
+        # Query Me (with error again)
+        content = self.query_check(query, assert_for_error=True)
 
     @mock.patch('jwt_auth.captcha.requests')
     @mock.patch('user.serializers.send_password_reset', side_effect=send_password_reset)
     def test_password_reset(self, send_password_reset_mock, captch_requests_mock):
-        password_rest_mutation = '''
+        query = '''
             mutation Mutation($input: ResetPasswordInputType!) {
               resetPassword(data: $input) {
                 ok
@@ -218,40 +195,31 @@ class TestUserSchema(GraphqlTestCase):
             }
         '''
         # input without email
-        mutation_input = dict(
+        minput = dict(
             email='invalid-email',
             captcha='captcha',
         )
 
-        def _call_password_reset():
-            response = self.query(password_rest_mutation, input_data=mutation_input)
-            self.assertResponseNoErrors(response)
-            return response.json()
-
         # With invalid captcha
         captch_requests_mock.post.return_value.json.return_value = {'success': False}
-        content = _call_password_reset()
-        self.assertFalse(content['data']['resetPassword']['ok'], content)
+        content = self.query_check(query, minput=minput, okay=False)
 
         # With valid captcha now
         captch_requests_mock.post.return_value.json.return_value = {'success': True}
         # With invalid email
-        content = _call_password_reset()
-        self.assertFalse(content['data']['resetPassword']['ok'], content)
+        content = self.query_check(query, minput=minput, okay=False)
         self.assertTrue(len(content['data']['resetPassword']['errors']) == 1, content)
 
         # With unknown user email
-        mutation_input['email'] = 'john@cena.com'
-        content = _call_password_reset()
-        self.assertFalse(content['data']['resetPassword']['ok'], content)
+        minput['email'] = 'john@cena.com'
+        content = self.query_check(query, minput=minput, okay=False)
         self.assertTrue(len(content['data']['resetPassword']['errors']) == 1, content)
 
         # With known user email
-        UserFactory.create(email=mutation_input['email'])
-        content = _call_password_reset()
-        self.assertTrue(content['data']['resetPassword']['ok'], content)
+        UserFactory.create(email=minput['email'])
+        content = self.query_check(query, minput=minput, okay=True)
         # Make sure password reset message is send
-        user = User.objects.get(email=mutation_input['email'])
+        user = User.objects.get(email=minput['email'])
         send_password_reset_mock.assert_called_once_with(user=user)
 
     @mock.patch(
@@ -259,7 +227,7 @@ class TestUserSchema(GraphqlTestCase):
         side_effect=send_password_changed_notification.delay,
     )
     def test_password_change(self, send_password_changed_notification_mock):
-        password_rest_mutation = '''
+        query = '''
             mutation Mutation($input: PasswordChangeInputType!) {
               changePassword(data: $input) {
                 ok
@@ -268,33 +236,19 @@ class TestUserSchema(GraphqlTestCase):
             }
         '''
         # input without email
-        mutation_input = dict(oldPassword='', newPassword='new-password-123')
-
-        def _call_password_change(assert_for_error=False):
-            response = self.query(password_rest_mutation, input_data=mutation_input)
-            if assert_for_error:
-                self.assertResponseErrors(response)
-            else:
-                self.assertResponseNoErrors(response)
-            return response.json()
-
-        # Without authentication
-        content = _call_password_change(assert_for_error=True)
-
-        # Without authentication
+        minput = dict(oldPassword='', newPassword='new-password-123')
+        # Without authentication --
+        content = self.query_check(query, minput=minput, assert_for_error=True)
+        # With authentication
         user = UserFactory.create()
         self.force_login(user)
-
-        # With invalid old password
-        content = _call_password_change()
-        self.assertFalse(content['data']['changePassword']['ok'], content)
+        # With invalid old password --
+        content = self.query_check(query, minput=minput, okay=False)
         self.assertTrue(len(content['data']['changePassword']['errors']) == 1, content)
-
-        # With valid password
-        mutation_input['oldPassword'] = user.password_text
+        # With valid password --
+        minput['oldPassword'] = user.password_text
         with self.captureOnCommitCallbacks(execute=True):
-            content = _call_password_change()
-        self.assertTrue(content['data']['changePassword']['ok'], content)
+            content = self.query_check(query, minput=minput, okay=True)
         # Make sure password reset message is send
         send_password_changed_notification_mock.assert_called_once()
         send_password_changed_notification_mock.assert_called_once_with(
@@ -302,3 +256,41 @@ class TestUserSchema(GraphqlTestCase):
             client_ip='127.0.0.1',
             device_type=None,
         )
+
+    def test_update_me(self):
+        query = '''
+            mutation Mutation($input: UserMeInputType!) {
+              updateMe(data: $input) {
+                ok
+                errors
+              }
+            }
+        '''
+        user = UserFactory.create()
+        project = ProjectFactory.create()
+        gallery_file = FileFactory.create()
+
+        # With invalid attributes
+        minput = dict(
+            emailOptOuts=["news_and_updates", "join_requests", "haha-hunu"],  # Invalid options
+            displayPicture=gallery_file.pk,  # File without access
+            lastActiveProject=project.pk,  # Non-member Project
+            language="en-us",
+            firstName="Admin",
+            lastName="Deep",
+            organization="DFS",
+        )
+        # Without authentication -----
+        content = self.query_check(query, minput=minput, assert_for_error=True)
+        # With authentication -----
+        self.force_login(user)
+        content = self.query_check(query, minput=minput, okay=False)
+        self.assertTrue(len(content['data']['updateMe']['errors']) == 3, content)
+        # With valid -----
+        minput['emailOptOuts'] = ["news_and_updates", "join_requests"]  # Remove invalid option
+        # Add ownership to file
+        gallery_file.created_by = user
+        gallery_file.save()
+        # Add user to project
+        project.add_member(user)
+        content = self.query_check(query, minput=minput, okay=True)
