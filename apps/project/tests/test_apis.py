@@ -22,6 +22,7 @@ from analysis_framework.models import (
     Widget,
 )
 from lead.models import LeadGroup
+from geo.models import Region
 from project.tasks import (
     _generate_project_viz_stats,
     _generate_project_stats_cache,
@@ -66,6 +67,8 @@ class ProjectApiTest(TestCase):
         self.ug2.add_member(self.user2)
         self.ug2.add_member(self.user3)
         self.org1 = self.create(Organization, title='Test Organization')
+        self.region1 = self.create(Region, title='ACU')
+        self.region2 = self.create(Region, title='NSW')
 
     def test_create_project(self):
         project_count = Project.objects.count()
@@ -863,6 +866,55 @@ class ProjectApiTest(TestCase):
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
+        self.assertIn('regions', response.data)
+        self.assertIn(self.region2.id, [item['key'] for item in response.data['regions']])
+        self.assertIn(self.region2.title, [item['value'] for item in response.data['regions']])
+        self.assertEqual(
+            set([item['key'] for item in response.data['regions']]),
+            set([self.region1.id, self.region2.id])
+        )
+        self.assertIn('user_groups', response.data)
+        self.assertIn(self.ug1.id, [item['key'] for item in response.data['user_groups']])
+        self.assertIn(self.ug1.title, [item['value'] for item in response.data['user_groups']])
+        self.assertEqual(
+            set([item['key'] for item in response.data['user_groups']]),
+            set([self.ug1.id, self.ug2.id])
+        )
+
+    def test_particular_project_in_project_options(self):
+        user = self.create_user()
+        project = self.create(Project, title="QANTAS")
+        project.add_member(user)
+        region1 = self.create(Region, title="NEPAL")
+        region2 = self.create(Region, title="IRELAND")
+        project.regions.set([region1, region2])
+        usergroup1 = self.create(UserGroup, title="BACKEND")
+        usergroup1.add_member(user)
+        usergroup2 = self.create(UserGroup, title="FRONTEND")
+        usergroup2.add_member(user)
+        ProjectUserGroupMembership.objects.create(project=project, usergroup=usergroup1)
+        ProjectUserGroupMembership.objects.create(project=project, usergroup=usergroup2)
+
+        url = f'/api/v1/project-options/?project={project.id}'
+
+        self.authenticate(user)
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertIn(region2.id, [item['key'] for item in response.data['regions']])
+        self.assertIn(region2.title, [item['value'] for item in response.data['regions']])
+        # here response consists of the regions for the user
+        # which are public or project__member or created_by
+        self.assertEqual(
+            set([item['key'] for item in response.data['regions']]),
+            set([region2.id, region1.id, self.region1.id, self.region2.id])
+        )
+        self.assertIn('user_groups', response.data)
+        self.assertIn(usergroup2.id, [item['key'] for item in response.data['user_groups']])
+        self.assertIn(usergroup2.title, [item['value'] for item in response.data['user_groups']])
+        self.assertEqual(
+            set([item['key'] for item in response.data['user_groups']]),
+            set([usergroup1.id, usergroup2.id])
+        )
 
     def test_project_status_in_project_options(self):
         choices = dict(make_hashable(Project.STATUS_CHOICES))
