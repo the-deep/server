@@ -149,13 +149,17 @@ class ProjectMembershipSerializer(RemoveNullFieldsMixin,
         return project
 
     def project_member_validation(self, project, member):
-        if ProjectMembership.objects.filter(project=project).filter(member=member).exists():
+        if ProjectMembership.objects.filter(
+            project=project,
+            member=member
+        ).exists():
             raise serializers.ValidationError({'member': 'Member already exist'})
 
     def validate(self, data):
         data['project_id'] = int(self.context['view'].kwargs['project_id'])
         member = data.get('member')
-        self.project_member_validation(data['project_id'], member)
+        if not self.instance:
+            self.project_member_validation(data['project_id'], member)
         role = data.get('role')
         if not role:
             return data
