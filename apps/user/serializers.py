@@ -402,3 +402,54 @@ class GqPasswordResetSerializer(CaptchaSerializerMixin, serializers.ModelSeriali
     def save(self):
         user = self.validated_data["email"]  # validate_email returning user instance
         send_password_reset(user=user)
+
+
+class UserMeSerializer(serializers.ModelSerializer):
+    organization = serializers.CharField(source='profile.organization', allow_blank=True, required=False)
+    language = serializers.CharField(source='profile.language', allow_null=True, required=False)
+    email_opt_outs = serializers.ListField(source='profile.email_opt_outs', required=False)
+    last_active_project = serializers.PrimaryKeyRelatedField(
+        source='profile.last_active_project',
+        queryset=Project.objects.all(),
+        allow_null=True,
+        required=False,
+    )
+    display_picture = serializers.PrimaryKeyRelatedField(
+        source='profile.display_picture',
+        queryset=File.objects.all(),
+        allow_null=True,
+        required=False,
+    )
+
+    class Meta:
+        model = User
+        fields = (
+            'id', 'first_name', 'last_name', 'organization', 'display_picture',
+            'language', 'email_opt_outs', 'last_active_project'
+        )
+
+    def validate_last_active_project(self, project):
+        if project and not project.is_member(self.context['request'].user):
+            raise serializers.ValidationError('Invalid project')
+        return project
+
+    def validate_email_opt_outs(self, email_opt_outs):
+        if email_opt_outs:
+            invalid_options = [opt for opt in email_opt_outs if opt not in Profile.EMAIL_CONDITIONS_TYPES]
+            if invalid_options:
+                raise serializers.ValidationError('Invalid email opt outs: %s' % (','.join(invalid_options)))
+        return email_opt_outs
+
+    def validate_display_picture(self, display_picture):
+        if display_picture and display_picture.created_by != self.context['request'].user:
+            raise serializers.ValidationError('Display picture not found!')
+        return display_picture
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile', None)
+        user = super().update(instance, validated_data)
+        if 'password' in validated_data:
+            user.set_password(validated_data['password'])
+            user.save()
+        user.profile = UserSerializer.update_or_create_profile(user, profile_data)
+        return user
