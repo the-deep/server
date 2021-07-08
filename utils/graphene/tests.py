@@ -75,6 +75,24 @@ class GraphqlTestCase(CommonSetupClassMixin, DeepTestCase, GraphQLTestCase):
         self.assertEqual(resp.status_code, 200, msg or content)
         self.assertIn("errors", list(content.keys()), msg or content)
 
+    def query_check(self, query, minput=None, assert_for_error=False, okay=None) -> dict:
+        if minput:
+            response = self.query(query, input_data=minput)
+        else:
+            response = self.query(query)
+        content = response.json()
+        if assert_for_error:
+            self.assertResponseErrors(response)
+        else:
+            self.assertResponseNoErrors(response)
+            if okay is not None:
+                for datum in content['data'].values():
+                    if okay:
+                        self.assertTrue(datum['ok'], content)
+                    else:
+                        self.assertFalse(datum['ok'], content)
+        return content
+
 
 class ImmediateOnCommitMixin(object):
     """
