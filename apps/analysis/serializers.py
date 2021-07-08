@@ -191,6 +191,7 @@ class AnalysisSummarySerializer(serializers.ModelSerializer):
         fields = (
             'id', 'title', 'team_lead', 'team_lead_details',
             'publication_date', 'pillars',
+            'end_date', 'start_date',
             'analyzed_entries', 'analyzed_sources', 'total_entries',
             'total_sources', 'created_at', 'modified_at',
         )
