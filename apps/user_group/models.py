@@ -3,6 +3,7 @@ from django.db import models
 
 from user_resource.models import UserResource
 
+
 class UserGroup(UserResource):
     """
     User group model

@@ -462,20 +462,34 @@ else:
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
+        'formatters': {
+            'colored_verbose': {
+                '()': 'colorlog.ColoredFormatter',
+                'format': "%(log_color)s%(levelname)-8s%(red)s%(module)-30s%(reset)s %(blue)s%(message)s"
+            },
+        },
         'handlers': {
             'console': {
                 'level': 'INFO',
                 'class': 'logging.StreamHandler',
             },
+            'colored_console': {
+                'level': 'INFO',
+                'class': 'logging.StreamHandler',
+                'formatter': 'colored_verbose'
+            },
         },
         'loggers': {
-            'django': {
-                'handlers': ['console'],
-                'level': 'INFO',
-                'propagate': True,
+            **{
+                app: {
+                    'handlers': ['colored_console'],
+                    'level': 'INFO',
+                    'propagate': True,
+                }
+                for app in LOCAL_APPS + ['deep', 'utils', 'celery', 'django']
             },
             'profiling': {
-                'handlers': ['console'],
+                'handlers': ['colored_console'],
                 'level': 'DEBUG',
                 'propagate': True,
             },
@@ -694,8 +708,10 @@ GRAPHENE = {
     'ATOMIC_MUTATIONS': True,
     'SCHEMA': 'deep.schema.schema',
     'SCHEMA_OUTPUT': 'schema.json',  # defaults to schema.json,
+    'CAMELCASE_ERRORS': False,
     'SCHEMA_INDENT': 2,  # Defaults to None (displays all data on a single   line)
     'MIDDLEWARE': [
+        'utils.sentry.SentryGrapheneMiddleware',  # Doesn't work right now
         'utils.graphene.middleware.WhiteListMiddleware',
     ],
 }
