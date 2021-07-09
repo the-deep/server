@@ -48,7 +48,7 @@ class UserType(DjangoObjectType):
         # NOTE: only passing this for current user.
         # TODO: Need to merge profile to user before enabling this for all users to avoid N+1 issue.
         # 3 table join is required right now.
-        return info.context.request.build_absolute_uri(
+        return root.profile.display_picture_id and info.context.request.build_absolute_uri(
             URLCachedFileField.name_to_representation(
                 root.profile.display_picture.file.url
             )
