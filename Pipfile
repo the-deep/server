@@ -34,9 +34,9 @@ feedparser = "==6.0.8"
 flower = { git = "https://github.com/mher/flower.git", rev = "7ee34cb5fc039bbeb208a54f113713edbb4809ce" }
 geopandas = "==0.9.0"
 google-api-python-client = "==2.9.0"
-graphene-django = "==2.15.0"
+graphene-django = "==3.0.0b7"
 graphene-graphiql-explorer = "==0.0.1"
-graphene-django-extras = "==0.4.9"
+graphene-django-extras = "==0.5.2"
 kombu = "==5.1.0"
 lxml = "==4.6.3"
 matplotlib = "==3.4.2"
@@ -69,6 +69,7 @@ Shapely = "==1.7.1"
 Django = "==3.2.4"
 ipython = "*"
 factory-boy = "*"
+colorlog = "*"
 
 [dev-packages]
 pytest-django = "==4.4.0"
@@ -82,3 +83,6 @@ django-fixture-magic = {ref = "466fa35c075009e4a1974f6e588471dd9e720e53", git = 
 
 [requires]
 python_version = "3.8.10"
+
+[pipenv]
+allow_prereleases = true
