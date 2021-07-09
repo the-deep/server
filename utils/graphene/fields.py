@@ -40,11 +40,12 @@ class CustomDjangoListField(DjangoListField):
     """
     @staticmethod
     def list_resolver(
-            django_object_type, resolver, root, info, **args
+        django_object_type, resolver, default_manager, root, info, **args
     ):
         queryset = maybe_queryset(resolver(root, info, **args))
         if queryset is None:
-            queryset = QuerySet.none()
+            # queryset = maybe_queryset(default_manager)
+            queryset = default_manager.none()
 
         if isinstance(queryset, QuerySet):
             if hasattr(django_object_type, 'get_queryset'):
@@ -116,6 +117,7 @@ class CustomPaginatedListObjectField(DjangoFilterPaginateListField):
             ordering = kwargs.pop(self.pagination.ordering_param, None) or self.pagination.ordering
             ordering = ','.join([to_snake_case(each) for each in ordering.strip(',').replace(' ', '').split(',')])
             self.pagination.ordering = ordering
+            kwargs.get('pageSize') is None and kwargs.pop('pageSize')  # FIXME: Not sure why pageSize None is coming from.
             qs = self.pagination.paginate_queryset(qs, **kwargs)
 
         return CustomDjangoListObjectBase(
@@ -196,7 +198,6 @@ class DjangoPaginatedListObjectField(DjangoFilterPaginateListField):
     def list_resolver(
             self, manager, filterset_class, filtering_args, root, info, **kwargs
     ):
-
         filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
         if self.accessor:
             qs = getattr(root, self.accessor)
@@ -204,7 +205,7 @@ class DjangoPaginatedListObjectField(DjangoFilterPaginateListField):
                 qs = qs.all()
             qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
         else:
-            qs = self.get_queryset(manager, info, **kwargs)
+            qs = self.get_queryset(manager, root, info, **kwargs)
             qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
             if root and is_valid_django_model(root._meta.model):
                 extra_filters = get_extra_filters(root, manager.model)
@@ -215,6 +216,7 @@ class DjangoPaginatedListObjectField(DjangoFilterPaginateListField):
             ordering = kwargs.pop(self.pagination.ordering_param, None) or self.pagination.ordering
             ordering = ','.join([to_snake_case(each) for each in ordering.strip(',').replace(' ', '').split(',')])
             self.pagination.ordering = ordering
+            kwargs.get('pageSize') is None and kwargs.pop('pageSize')  # FIXME: Not sure why pageSize None is coming from.
             qs = self.pagination.paginate_queryset(qs, **kwargs)
 
         return CustomDjangoListObjectBase(
