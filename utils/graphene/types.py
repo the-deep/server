@@ -88,8 +88,6 @@ class CustomDjangoListObjectType(DjangoListObjectType):
     class Meta:
         abstract = True
 
-    base_type = None
-
     @classmethod
     def __init_subclass_with_meta__(
         cls,
@@ -123,7 +121,7 @@ class CustomDjangoListObjectType(DjangoListObjectType):
 
         results_field_name = results_field_name or "results"
 
-        baseType = cls.base_type or get_global_registry().get_type_for_model(model)
+        baseType = get_global_registry().get_type_for_model(model)
 
         if not baseType:
             factory_kwargs = {
