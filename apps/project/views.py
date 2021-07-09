@@ -848,11 +848,11 @@ class ProjectOptionsView(views.APIView):
 
         if (fields is None or 'regions' in fields):
             if projects:
-                regions1 = _filter_by_projects(Region.objects, projects).distinct()
+                project_regions = _filter_by_projects(Region.objects, projects).distinct()
             else:
-                regions1 = Region.objects.none().distinct()
-            regions2 = Region.get_for(request.user)
-            regions = Region.objects.filter(id__in=(regions1 | regions2).values('id')).distinct()
+                project_regions = Region.objects.none()
+            user_regions = Region.get_for(request.user)
+            regions = Region.objects.filter(id__in=(project_regions | user_regions).values('id')).distinct()
             # regions = regions1.union(regions2).distinct()
 
             options['regions'] = [
@@ -864,12 +864,12 @@ class ProjectOptionsView(views.APIView):
 
         if (fields is None or 'user_groups' in fields):
             if projects:
-                user_groups1 = _filter_by_projects(UserGroup.objects, projects).distinct()
+                project_user_groups = _filter_by_projects(UserGroup.objects, projects).distinct()
             else:
-                user_groups1 = UserGroup.objects.none().distinct()
-            user_groups2 = UserGroup.get_modifiable_for(request.user)\
+                project_user_groups = UserGroup.objects.none()
+            user_user_groups = UserGroup.get_modifiable_for(request.user)\
                 .distinct()
-            user_groups = UserGroup.objects.filter(id__in=(user_groups1 | user_groups2).values('id')).distinct()
+            user_groups = UserGroup.objects.filter(id__in=(project_user_groups | user_user_groups).values('id')).distinct()
             # user_groups = user_groups1.union(user_groups2)
 
             options['user_groups'] = user_groups.distinct().annotate(
