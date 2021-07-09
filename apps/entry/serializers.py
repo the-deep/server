@@ -249,7 +249,11 @@ class EntrySerializer(RemoveNullFieldsMixin,
 
         # If gallery file is provided make sure user owns the file
         if image:
-            if not image.is_public and image.created_by != self.context['request'].user:
+            if (
+                (self.instance and self.instance.image) != image and
+                not image.is_public and
+                image.created_by != self.context['request'].user
+            ):
                 raise serializers.ValidationError({
                     'image': f'You don\'t have permission to attach image: {image}',
                 })
