@@ -31,11 +31,11 @@ class UserGroup(UserResource):
     def get_for(user):
         return UserGroup.objects.all()
 
-    @staticmethod
-    def get_for_member(user):
-        return UserGroup.objects.filter(
-            members=user
-        ).distinct()
+    @classmethod
+    def get_for_member(cls, user, exclude=False):
+        if exclude:
+            return cls.objects.exclude(members=user).distinct()
+        return cls.objects.filter(members=user).distinct()
 
     @staticmethod
     def get_modifiable_for(user):
