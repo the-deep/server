@@ -75,11 +75,11 @@ class GraphqlTestCase(CommonSetupClassMixin, DeepTestCase, GraphQLTestCase):
         self.assertEqual(resp.status_code, 200, msg or content)
         self.assertIn("errors", list(content.keys()), msg or content)
 
-    def query_check(self, query, minput=None, assert_for_error=False, okay=None) -> dict:
+    def query_check(self, query, minput=None, assert_for_error=False, okay=None, **kwargs) -> dict:
         if minput:
-            response = self.query(query, input_data=minput)
+            response = self.query(query, input_data=minput, **kwargs)
         else:
-            response = self.query(query)
+            response = self.query(query, **kwargs)
         content = response.json()
         if assert_for_error:
             self.assertResponseErrors(response)
