@@ -712,7 +712,8 @@ GRAPHENE = {
     'CAMELCASE_ERRORS': False,
     'SCHEMA_INDENT': 2,  # Defaults to None (displays all data on a single   line)
     'MIDDLEWARE': [
-        'utils.sentry.SentryGrapheneMiddleware',  # Doesn't work right now
+        'utils.graphene.middleware.DisableIntrospectionSchemaMiddleware',
+        'utils.sentry.SentryGrapheneMiddleware',
         'utils.graphene.middleware.WhiteListMiddleware',
     ],
 }
