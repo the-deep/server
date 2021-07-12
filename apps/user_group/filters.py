@@ -1,6 +1,8 @@
 import django_filters
 
-from .models import UserGroup
+from .models import (
+    UserGroup,
+)
 
 
 class UserGroupFilterSet(django_filters.FilterSet):
@@ -13,5 +15,10 @@ class UserGroupFilterSet(django_filters.FilterSet):
 
     def filter_with_membership(self, queryset, name, value):
         if value is not None:
-            queryset = queryset.filter(is_current_user_member=value)
+            queryset = queryset.filter(
+                id__in=UserGroup.get_for_member(
+                    self.request.user,
+                    exclude=not value,
+                )
+            )
         return queryset

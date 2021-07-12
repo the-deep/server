@@ -22,9 +22,9 @@ class WhiteListMiddleware:
 
 class DisableIntrospectionSchemaMiddleware:
     """
-    This middleware should be used in production.
+    This middleware disables request with __schema in production.
     """
     def resolve(self, next, root, info, **args):
-        if info.field_name == '__schema':
+        if info.field_name == '__schema' and not settings.DEBUG:
             return None
         return next(root, info, **args)
