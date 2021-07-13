@@ -9,6 +9,7 @@ from celery.schedules import crontab
 from utils import sentry
 
 
+# os.environ['DJANGO_ALLOW_ASYNC_UNSAFE'] = 'true'
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APPS_DIR = os.path.join(BASE_DIR, 'apps')
