@@ -10,7 +10,18 @@ from django.urls import resolve
 from django.views.generic import View
 from django.conf import settings
 from django.template.response import TemplateResponse
-from graphene_django.views import GraphQLView
+from graphene_django.views import (
+    GraphQLView,
+    HttpError,
+    HttpResponseBadRequest,
+    ExecutionResult,
+    parse,
+    get_operation_ast,
+    HttpResponseNotAllowed,
+    OperationType,
+    validate,
+)
+from asgiref.sync import async_to_sync
 
 from deep.graphene_context import GQLContext
 from user.models import User, Profile
@@ -175,3 +186,46 @@ class EntryCommentEmail(View):
 class CustomGraphQLView(GraphQLView):
     def get_context(self, request):
         return GQLContext(request)
+
+    def execute_graphql_request(
+        self, request, data, query, variables, operation_name, show_graphiql=False
+    ):
+        if not query:
+            if show_graphiql:
+                return None
+            raise HttpError(HttpResponseBadRequest("Must provide query string."))
+
+        try:
+            document = parse(query)
+        except Exception as e:
+            return ExecutionResult(errors=[e])
+
+        if request.method.lower() == "get":
+            operation_ast = get_operation_ast(document, operation_name)
+            if operation_ast and operation_ast.operation != OperationType.QUERY:
+                if show_graphiql:
+                    return None
+
+                raise HttpError(
+                    HttpResponseNotAllowed(
+                        ["POST"],
+                        "Can only perform a {} operation from a POST request.".format(
+                            operation_ast.operation.value
+                        ),
+                    )
+                )
+
+        validation_errors = validate(self.schema.graphql_schema, document)
+        if validation_errors:
+            return ExecutionResult(data=None, errors=validation_errors)
+
+        execute = async_to_sync(self.schema.execute_async)
+        response = execute(
+            source=query,
+            root_value=self.get_root_value(request),
+            variable_values=variables,
+            operation_name=operation_name,
+            context_value=self.get_context(request),
+            middleware=self.get_middleware(request),
+        )
+        return response
