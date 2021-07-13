@@ -13,7 +13,7 @@ class UserGroupType(DjangoObjectType):
         model = UserGroup
         fields = '__all__'
 
-    def resolve_members(root, info, **kwargs):
+    def resolve_members(root, info):
         return info.context.dl_user_group_members.load(root.id)
 
 
