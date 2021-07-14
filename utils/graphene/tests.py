@@ -86,7 +86,9 @@ class GraphqlTestCase(CommonSetupClassMixin, DeepTestCase, GraphQLTestCase):
         else:
             self.assertResponseNoErrors(response)
             if okay is not None:
-                for datum in content['data'].values():
+                for key, datum in content['data'].items():
+                    if key == '__typename':
+                        continue
                     if okay:
                         self.assertTrue(datum['ok'], content)
                     else:
