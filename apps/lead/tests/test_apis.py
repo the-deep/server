@@ -1028,6 +1028,27 @@ class LeadTests(TestCase):
         response = self.client.get(f'{url}&exists={LeadFilterSet.ASSESSMENT_DOES_NOT_EXIST}')
         assert response.json()['count'] == 1, 'Lead count should be 1 for lead without assessment'
 
+    def test_lead_assignee_filter(self):
+        user1 = self.create_user()
+        user2 = self.create_user()
+        user3 = self.create_user()
+        project = self.create_project()
+        self.create_lead(project=project, assignee=[user1, user2])
+        self.create_lead(project=project, assignee=[user1])
+        self.create_lead(project=project, assignee=[user2])
+        url = f'/api/v1/leads/?assignee={user1.id}'
+
+        self.authenticate()
+        response = self.client.get(url)
+        assert len(response.data['results']) == 2
+
+        # filter by user who is not assignee in any of the lead
+        url = f'/api/v1/leads/?assignee={user3.id}'
+
+        self.authenticate()
+        response = self.client.get(url)
+        assert len(response.data['results']) == 0
+
     def test_lead_authoring_organization_type_filter(self):
         url = '/api/v1/leads/?authoring_organization_types={}'
 
