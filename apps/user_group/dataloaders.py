@@ -1,7 +1,8 @@
 from collections import defaultdict
-from asgiref.sync import sync_to_async
+from promise import Promise
+from django.utils.functional import cached_property
 
-from deep.dataloaders import DataLoaderWithContext
+from deep.dataloaders import DataLoaderWithContext, WithContextMixin
 
 from .models import (
     UserGroup,
@@ -9,21 +10,36 @@ from .models import (
 )
 
 
-class UserGroupMembersLoader(DataLoaderWithContext):
-    # https://github.com/graphql-python/graphene-django/issues/705#issuecomment-670511313
-    @sync_to_async
-    def fetch_from_db(self, keys):
+class UserGroupMembershipsLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
         membership_qs = GroupMembership.objects.filter(
             # Only fetch for user_group where current user is member + ids (keys)
             group__in=UserGroup.get_for_member(self.context.user).filter(id__in=keys)
-        ).select_related('member')
+        ).select_related('member', 'added_by')
         # Membership map
-        members_map = defaultdict(list)
+        memberships_map = defaultdict(list)
         for membership in membership_qs:
-            members_map[membership.group_id].append(membership.member)
+            memberships_map[membership.group_id].append(membership)
+        return Promise.resolve([memberships_map[key] for key in keys])
 
-        print(keys, members_map)
-        return [members_map[key] for key in keys]
 
-    async def batch_load_fn(self, keys):
-        return await self.fetch_from_db(keys)
+class UserGroupCurrentUserRoleLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        membership_qs = GroupMembership.objects\
+            .filter(group__in=keys, member=self.context.user)\
+            .values_list('group_id', 'role')
+        # Role map
+        role_map = {}
+        for group_id, role in membership_qs:
+            role_map[group_id] = role
+        return Promise.resolve([role_map.get(key) for key in keys])
+
+
+class DataLoaders(WithContextMixin):
+    @cached_property
+    def memberships(self):
+        return UserGroupMembershipsLoader(context=self.context)
+
+    @cached_property
+    def current_user_role(self):
+        return UserGroupCurrentUserRoleLoader(context=self.context)
