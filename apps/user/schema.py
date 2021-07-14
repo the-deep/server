@@ -1,11 +1,15 @@
+import time
+
 from typing import Union, List
 
 import graphene
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
+from django.utils import timezone
 
 from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
+from jwt_auth.token import AccessToken
 
 from .models import User
 from .filters import UserFilterSet
@@ -16,6 +20,11 @@ def only_me(func):
         if root == info.context.user:
             return func(root, info, *args, **kwargs)
     return wrapper
+
+
+class JwtTokenType(graphene.ObjectType):
+    access_token = graphene.String()
+    expires_in = graphene.String()
 
 
 class UserType(DjangoObjectType):
@@ -35,6 +44,7 @@ class UserType(DjangoObjectType):
     language = graphene.String()
     last_active_project = graphene.ID()
     email_opt_outs = graphene.List(graphene.String)
+    jwt_token = graphene.Field(JwtTokenType)
 
     @staticmethod
     @only_me
@@ -53,7 +63,7 @@ class UserType(DjangoObjectType):
         return root.profile.last_active_project_id
 
     @staticmethod
-    @only_me
+    @only_me  # NOTE: Before removing this add a dataloader
     def resolve_organization(root, info, **kwargs) -> Union[str, None]:
         return root.profile.organization
 
@@ -76,6 +86,15 @@ class UserType(DjangoObjectType):
     @only_me
     def resolve_last_login(root, info, **kwargs) -> Union[str, None]:
         return root.last_login
+
+    @staticmethod
+    @only_me
+    def resolve_jwt_token(root, info, **kwargs) -> Union[JwtTokenType, None]:
+        access_token = AccessToken.for_user(info.context.user)  # Only for current user
+        return JwtTokenType(
+            access_token=access_token,
+            expires_in=time.mktime((timezone.now() + AccessToken.lifetime).timetuple()),
+        )
 
 
 class UserListType(CustomDjangoListObjectType):
