@@ -1,3 +1,7 @@
+from dateutil.relativedelta import relativedelta
+
+from django.utils import timezone
+
 from deep.tests import TestCase
 
 from project.models import Project
@@ -269,3 +273,55 @@ class AssessmentTests(TestCase):
             current_ary_count = Assessment.objects.filter(project_id=project.pk).count()
             # assert new_ary_count == current_ary_count, f'Project: {project.title} Assessment new count is different'
             assert new_ary_count == current_ary_count, f'Project: {project.title} {project.pk} Assessment new count is different'
+
+    def test_filter_assessment(self):
+        now = timezone.now()
+        lead = self.create_lead()
+        lead1 = self.create_lead()
+        lead2 = self.create_lead()
+        lead3 = self.create_lead()
+        lead4 = self.create_lead()
+        project = self.create_project()
+        self.update_obj(self.create(Assessment, lead=lead, project=project), created_at=now + relativedelta(days=+2))
+        self.update_obj(self.create(Assessment, lead=lead1, project=project), created_at=now + relativedelta(days=+3))
+        self.update_obj(self.create(Assessment, lead=lead2, project=project), created_at=now + relativedelta(days=+4))
+        self.update_obj(self.create(Assessment, lead=lead3, project=project), created_at=now + relativedelta(days=-2))
+        self.update_obj(self.create(Assessment, lead=lead4, project=project), created_at=now)
+
+        params = {'created_at__gt': now.strftime('%Y-%m-%d%z')}
+        url = f'/api/v1/assessments/'
+        self.authenticate()
+        respose = self.client.get(url, params)
+        self.assert_200(respose)
+        self.assertEqual(len(respose.data['results']), 4)
+
+    def test_assessment_options(self):
+        url = '/api/v1/assessment-options/'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertIn('created_by', response.data)
+        self.assertIn('project', response.data)
+
+    def test_assessment_options_in_project(self):
+        user1 = self.create_user()
+        user2 = self.create_user()
+        project1 = self.create(Project)
+        project1.add_member(user1)
+        project2 = self.create(Project)
+        project2.add_member(user2)
+        project2.add_member(user1)
+
+        # filter by project
+        url = f'/api/v1/assessment-options/?project={project2.id}'
+        self.authenticate(user1)
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertIn(project2.id, [item['key'] for item in response.data['project']])
+        self.assertIn(project2.title, [item['value'] for item in response.data['project']])
+        # gives the member of the project
+        self.assertIn(user1.id, [item['key'] for item in response.data['created_by']])
+        self.assertEqual(
+            set([item['key'] for item in response.data['created_by']]),
+            set([user1.id, user2.id])
+        )
