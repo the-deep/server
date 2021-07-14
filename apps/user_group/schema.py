@@ -1,20 +1,45 @@
-from graphene_django import DjangoObjectType
+import graphene
+
+from graphene_django import DjangoObjectType, DjangoListField
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 
-from .models import UserGroup
+from .models import UserGroup, GroupMembership
 from .filters import UserGroupFilterSet
+
+
+class GroupMembershipType(DjangoObjectType):
+    class Meta:
+        model = GroupMembership
+        fields = ('id', 'member', 'role', 'joined_at', 'added_by',)
 
 
 class UserGroupType(DjangoObjectType):
     class Meta:
         model = UserGroup
-        fields = '__all__'
+        fields = (
+            'id',
+            'title',
+            'description',
+            'created_at',
+            'created_by',
+            'modified_at',
+            'modified_by',
+            'client_id',
+            'custom_project_fields',
+            'global_crisis_monitoring',
+        )
 
-    def resolve_members(root, info):
-        return info.context.dl_user_group_members.load(root.id)
+    memberships = DjangoListField(GroupMembershipType)
+    current_user_role = graphene.String()
+
+    def resolve_memberships(root, info):
+        return info.context.dl.user_group.memberships.load(root.id)
+
+    def resolve_current_user_role(root, info):
+        return info.context.dl.user_group.current_user_role.load(root.id)
 
 
 class UserGroupListType(CustomDjangoListObjectType):
