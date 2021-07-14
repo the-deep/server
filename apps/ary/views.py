@@ -1,6 +1,8 @@
 import copy
+from django.db import models
 from django.contrib.auth.models import User
 from django.http import Http404
+
 from rest_framework import (
     filters,
     mixins,
@@ -166,22 +168,19 @@ class AssessmentOptionsView(views.APIView):
 
         options = {}
 
-        def _filter_by_projects(qs, projects):
-            for p in projects:
-                qs = qs.filter(project=p)
-            return qs
-
         if (fields is None or 'created_by' in fields):
-            created_by = _filter_by_projects(User.objects, projects)
+            assessment_qs = Assessment.objects.filter(project__in=projects)
             options['created_by'] = [
                 {
                     'key': user.id,
                     'value': user.profile.get_display_name(),
-                } for user in created_by.distinct()
+                }
+                for user in User.objects.filter(
+                    pk__in=assessment_qs.distinct().values('created_by')
+                ).select_related('profile')
             ]
 
         if (fields is None or 'project' in fields):
-            projects = Project.get_for_member(request.user)
             options['project'] = [
                 {
                     'key': project.id,
