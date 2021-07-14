@@ -1,6 +1,7 @@
 import os
-import sentry_sdk
+
 import logging
+import sentry_sdk
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
@@ -9,7 +10,7 @@ from sentry_sdk.integrations.redis import RedisIntegration
 from billiard.exceptions import Terminated
 logger = logging.getLogger(__name__)
 
-IGNORED_ERRORS = [Terminated]
+IGNORED_ERRORS = [Terminated, 'graphql.execution.utils']
 
 
 class InvalidGitRepository(Exception):
@@ -89,7 +90,9 @@ class SentryGrapheneMiddleware(object):
     """
     Properly capture errors during query execution and send them to Sentry.
     Then raise the error again and let Graphene handle it.
+    https://medium.com/open-graphql/monitoring-graphene-django-python-graphql-api-using-sentry-c0b0c07a344f
     """
+    # TODO: This need further work (Use this in GraphqlView instead of middleware)
 
     def on_error(self, root, info, **args):
         def _on_error(error):
@@ -109,7 +112,4 @@ class SentryGrapheneMiddleware(object):
         return _on_error
 
     def resolve(self, next, root, info, **args):
-        try:
-            return next(root, info, **args)
-        except Exception as e:
-            self.on_error(root, info, **args)(e)
+        return next(root, info, **args).catch(self.on_error(root, info, **args))
