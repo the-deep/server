@@ -1038,14 +1038,15 @@ class LeadTests(TestCase):
         self.create_lead(project=project, assignee=[user2])
         url = f'/api/v1/leads/?assignee={user1.id}'
 
+        # authenticate user
         self.authenticate()
+
+        # filter by user who is assignee in some leads
         response = self.client.get(url)
         assert len(response.data['results']) == 2
 
         # filter by user who is not assignee in any of the lead
         url = f'/api/v1/leads/?assignee={user3.id}'
-
-        self.authenticate()
         response = self.client.get(url)
         assert len(response.data['results']) == 0
 

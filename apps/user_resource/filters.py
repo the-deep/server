@@ -8,7 +8,7 @@ class UserResourceFilterSet(django_filters.FilterSet):
         lookup_expr='lte',
         input_formats=['%Y-%m-%d%z']
     )
-    created_at__gt = django_filters.DateFilter(
+    created_at__gte = django_filters.DateFilter(
         field_name='created_at',
         lookup_expr='gte',
         input_formats=['%Y-%m-%d%z']

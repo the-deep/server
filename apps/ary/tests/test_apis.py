@@ -288,7 +288,7 @@ class AssessmentTests(TestCase):
         self.update_obj(self.create(Assessment, lead=lead3, project=project), created_at=now + relativedelta(days=-2))
         self.update_obj(self.create(Assessment, lead=lead4, project=project), created_at=now)
 
-        params = {'created_at__gt': now.strftime('%Y-%m-%d%z')}
+        params = {'created_at__gte': now.strftime('%Y-%m-%d%z')}
         url = f'/api/v1/assessments/'
         self.authenticate()
         respose = self.client.get(url, params)
@@ -306,22 +306,42 @@ class AssessmentTests(TestCase):
     def test_assessment_options_in_project(self):
         user1 = self.create_user()
         user2 = self.create_user()
+        lead1 = self.create_lead()
+        lead2 = self.create_lead()
+        lead3 = self.create_lead()
         project1 = self.create(Project)
         project1.add_member(user1)
         project2 = self.create(Project)
-        project2.add_member(user2)
         project2.add_member(user1)
+        project2.add_member(user2)
+        self.create(Assessment, lead=lead1, project=project2, created_by=user1)
+        self.create(Assessment, lead=lead2, project=project2, created_by=user2)
+        self.create(Assessment, lead=lead3, project=project1, created_by=user2)
 
-        # filter by project
+        # filter by project2
         url = f'/api/v1/assessment-options/?project={project2.id}'
         self.authenticate(user1)
         response = self.client.get(url)
         self.assert_200(response)
-        self.assertIn(project2.id, [item['key'] for item in response.data['project']])
-        self.assertIn(project2.title, [item['value'] for item in response.data['project']])
-        # gives the member of the project
-        self.assertIn(user1.id, [item['key'] for item in response.data['created_by']])
+        projects = response.data['project']
+        self.assertEqual(len(projects), 1)
+        self.assertEqual(projects[0]['key'], project2.id, projects)
+        self.assertEqual(projects[0]['value'], project2.title, projects)
+        # gives all the assessment that the user has created for the project
         self.assertEqual(
             set([item['key'] for item in response.data['created_by']]),
             set([user1.id, user2.id])
         )
+
+        # filter by project1
+        url = f'/api/v1/assessment-options/?project={project1.id}'
+        self.authenticate(user1)
+        response = self.client.get(url)
+        self.assert_200(response)
+        projects = response.data['project']
+        self.assertEqual(len(projects), 1)
+        self.assertEqual(projects[0]['key'], project1.id, projects)
+        self.assertEqual(projects[0]['value'], project1.title, projects)
+        # gives all the assessment that the user has created for the project
+        self.assertEqual(user2.id, response.data['created_by'][0]['key'])
+        self.assertEqual(len(response.data['created_by']), 1)
