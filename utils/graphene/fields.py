@@ -40,12 +40,11 @@ class CustomDjangoListField(DjangoListField):
     """
     @staticmethod
     def list_resolver(
-        django_object_type, resolver, default_manager, root, info, **args
+        django_object_type, resolver, root, info, **args
     ):
         queryset = maybe_queryset(resolver(root, info, **args))
         if queryset is None:
-            # queryset = maybe_queryset(default_manager)
-            queryset = default_manager.none()
+            queryset = QuerySet.none()  # FIXME: This will throw error
 
         if isinstance(queryset, QuerySet):
             if hasattr(django_object_type, 'get_queryset'):
@@ -116,8 +115,8 @@ class CustomPaginatedListObjectField(DjangoFilterPaginateListField):
         if getattr(self, "pagination", None):
             ordering = kwargs.pop(self.pagination.ordering_param, None) or self.pagination.ordering
             ordering = ','.join([to_snake_case(each) for each in ordering.strip(',').replace(' ', '').split(',')])
+            'pageSize' in kwargs and kwargs['pageSize'] is None and kwargs.pop('pageSize')
             self.pagination.ordering = ordering
-            kwargs.get('pageSize') is None and kwargs.pop('pageSize')  # FIXME: Not sure why pageSize None is coming from.
             qs = self.pagination.paginate_queryset(qs, **kwargs)
 
         return CustomDjangoListObjectBase(
@@ -125,7 +124,7 @@ class CustomPaginatedListObjectField(DjangoFilterPaginateListField):
             results=maybe_queryset(qs),
             results_field_name=self.type._meta.results_field_name,
             page=kwargs.get('page', 1) if hasattr(self.pagination, 'page') else None,
-            pageSize=kwargs.get(
+            pageSize=kwargs.get(  # TODO: Need to add cutoff to send max page size instead of requested
                 'pageSize',
                 graphql_api_settings.DEFAULT_PAGE_SIZE
             ) if hasattr(self.pagination, 'page') else None
@@ -205,7 +204,7 @@ class DjangoPaginatedListObjectField(DjangoFilterPaginateListField):
                 qs = qs.all()
             qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
         else:
-            qs = self.get_queryset(manager, root, info, **kwargs)
+            qs = self.get_queryset(manager, info, **kwargs)
             qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
             if root and is_valid_django_model(root._meta.model):
                 extra_filters = get_extra_filters(root, manager.model)
@@ -216,7 +215,7 @@ class DjangoPaginatedListObjectField(DjangoFilterPaginateListField):
             ordering = kwargs.pop(self.pagination.ordering_param, None) or self.pagination.ordering
             ordering = ','.join([to_snake_case(each) for each in ordering.strip(',').replace(' ', '').split(',')])
             self.pagination.ordering = ordering
-            kwargs.get('pageSize') is None and kwargs.pop('pageSize')  # FIXME: Not sure why pageSize None is coming from.
+            'pageSize' in kwargs and kwargs['pageSize'] is None and kwargs.pop('pageSize')
             qs = self.pagination.paginate_queryset(qs, **kwargs)
 
         return CustomDjangoListObjectBase(
@@ -224,7 +223,7 @@ class DjangoPaginatedListObjectField(DjangoFilterPaginateListField):
             results=maybe_queryset(qs),
             results_field_name=self.type._meta.results_field_name,
             page=kwargs.get('page', 1) if hasattr(self.pagination, 'page_query_param') else None,
-            pageSize=kwargs.get(
+            pageSize=kwargs.get(  # TODO: Need to add cutoff to send max page size instead of requested
                 'pageSize',
                 graphql_api_settings.DEFAULT_PAGE_SIZE
             ) if hasattr(self.pagination, 'page_size_query_param') else None

@@ -47,8 +47,10 @@ def convert_serializer_field_to_id(field):
 
 @get_graphene_type_from_serializer_field.register(serializers.ChoiceField)
 def convert_serializer_field_to_enum(field):
-    enum_type = type(list(field.choices.values())[-1])
-    return ENUM_TO_GRAPHENE_ENUM_MAP.get(enum_type.__name__, graphene.String)
+    # TODO: Explore object type with {value: ENUM_VALUE, label: ENUM_LABEL}
+    return graphene.String
+    # enum_type = type(list(field.choices.values())[-1])
+    # TODO: return ENUM_TO_GRAPHENE_ENUM_MAP.get(enum_type.__name__, graphene.String)
 
 
 def convert_serializer_field(field, is_input=True, convert_choices_to_enum=True):
