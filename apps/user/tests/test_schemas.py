@@ -1,5 +1,6 @@
 from unittest import mock
 from django.conf import settings
+from django.utils import timezone
 
 from utils.graphene.tests import GraphqlTestCase
 
@@ -143,7 +144,7 @@ class TestUserSchema(GraphqlTestCase):
         captch_requests_mock.post.return_value.json.return_value = {'success': True}
         # With invalid email
         content = self.query_check(query, minput=minput, okay=False)
-        self.assertTrue(len(content['data']['register']['errors']) == 1, content)
+        self.assertEqual(len(content['data']['register']['errors']), 1, content)
 
         # With valid input
         minput['email'] = 'john@cena.com'
@@ -208,12 +209,12 @@ class TestUserSchema(GraphqlTestCase):
         captch_requests_mock.post.return_value.json.return_value = {'success': True}
         # With invalid email
         content = self.query_check(query, minput=minput, okay=False)
-        self.assertTrue(len(content['data']['resetPassword']['errors']) == 1, content)
+        self.assertEqual(len(content['data']['resetPassword']['errors']), 1, content)
 
         # With unknown user email
         minput['email'] = 'john@cena.com'
         content = self.query_check(query, minput=minput, okay=False)
-        self.assertTrue(len(content['data']['resetPassword']['errors']) == 1, content)
+        self.assertEqual(len(content['data']['resetPassword']['errors']), 1, content)
 
         # With known user email
         UserFactory.create(email=minput['email'])
@@ -244,7 +245,7 @@ class TestUserSchema(GraphqlTestCase):
         self.force_login(user)
         # With invalid old password --
         content = self.query_check(query, minput=minput, okay=False)
-        self.assertTrue(len(content['data']['changePassword']['errors']) == 1, content)
+        self.assertEqual(len(content['data']['changePassword']['errors']), 1, content)
         # With valid password --
         minput['oldPassword'] = user.password_text
         with self.captureOnCommitCallbacks(execute=True):
@@ -285,7 +286,7 @@ class TestUserSchema(GraphqlTestCase):
         # With authentication -----
         self.force_login(user)
         content = self.query_check(query, minput=minput, okay=False)
-        self.assertTrue(len(content['data']['updateMe']['errors']) == 3, content)
+        self.assertEqual(len(content['data']['updateMe']['errors']), 3, content)
         # With valid -----
         minput['emailOptOuts'] = ["news_and_updates", "join_requests"]  # Remove invalid option
         # Add ownership to file
@@ -294,3 +295,113 @@ class TestUserSchema(GraphqlTestCase):
         # Add user to project
         project.add_member(user)
         content = self.query_check(query, minput=minput, okay=True)
+
+    def test_update_me_only_fields(self):
+        query = '''
+            query UserQuery($id: ID!) {
+              me {
+                id
+                displayName
+                jwtToken {
+                  accessToken
+                  expiresIn
+                }
+                organization
+                lastName
+                lastLogin
+                lastActiveProject
+                language
+                isActive
+                firstName
+                emailOptOuts
+                email
+                displayPictureUrl
+                displayPicture
+              }
+              user(id: $id) {
+                organization
+                lastName
+                lastLogin
+                lastActiveProject
+                language
+                jwtToken {
+                  expiresIn
+                  accessToken
+                }
+                isActive
+                id
+                firstName
+                emailOptOuts
+                email
+                displayPictureUrl
+                displayPicture
+                displayName
+              }
+              users {
+                results {
+                  organization
+                  lastName
+                  lastLogin
+                  lastActiveProject
+                  language
+                  jwtToken {
+                    expiresIn
+                    accessToken
+                  }
+                  isActive
+                  id
+                  firstName
+                  emailOptOuts
+                  email
+                  displayPictureUrl
+                  displayPicture
+                  displayName
+                }
+                page
+                pageSize
+              }
+            }
+        '''
+
+        User.objects.all().delete()  # Clear all users if exists
+        project = ProjectFactory.create()
+        display_picture = FileFactory.create()
+        # Create some users
+        user = UserFactory.create(  # Will use this as requesting user
+            organization='Deep',
+            language='en-us',
+            email_opt_outs=['join_requests'],
+            last_login=timezone.now(),
+            last_active_project=project,
+            display_picture=display_picture,
+        )
+        # Other users
+        for i in range(0, 3):
+            other_last_user = UserFactory.create(
+                organization=f'Deep {i}',
+                language='en-us',
+                email_opt_outs=['join_requests'],
+                last_login=timezone.now(),
+                last_active_project=project,
+                display_picture=display_picture,
+            )
+
+        # This fields are only meant for `Me`
+        only_me_fields = [
+            'displayPicture', 'lastActiveProject', 'organization', 'language', 'emailOptOuts',
+            'email', 'lastLogin', 'jwtToken',
+        ]
+        # Without authentication -----
+        content = self.query_check(query, assert_for_error=True, variables={'id': str(other_last_user.pk)})
+
+        # With authentication -----
+        self.force_login(user)
+        content = self.query_check(query, variables={'id': str(other_last_user.pk)})
+        self.assertEqual(len(content['data']['users']['results']), 4, content)  # 1 me + 3 others
+        for field in only_me_fields:
+            self.assertNotEqual(
+                content['data']['me'][field], None, (field, content['data']['me'][field])
+            )  # Should be None
+            self.assertEqual(
+                content['data']['user'][field], None, (field, content['data']['user'][field])
+            )  # Shouldn't be None
