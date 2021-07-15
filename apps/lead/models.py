@@ -118,6 +118,7 @@ class Lead(UserResource, ProjectEntityMixin):
 
     emm_entities = models.ManyToManyField('EMMEntity', blank=True)
     assignments = GenericRelation(Assignment, related_query_name='lead')
+    is_assessment_lead  = models.BooleanField(default=False)
 
     def __str__(self):
         return '{}'.format(self.title)

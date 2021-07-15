@@ -219,6 +219,10 @@ class LeadSerializer(
             data, self.instance,
             File.objects.filter(pk=attachment_id).first()
         )
+        if self.instance and self.instance.is_assessment_lead:
+            raise serializers.ValidationError(
+                {'is_assessment_lead': 'Lead Assessment once set can\'t be changed. Please contact Admin'}
+            )
         return data
 
     # TODO: Probably also validate assignee to valid list of users
