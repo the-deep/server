@@ -1,4 +1,9 @@
+import logging
+from datetime import date
+
 from django.db.models import Q
+
+from rest_framework.exceptions import ErrorDetail
 
 from deep.tests import TestCase
 
@@ -34,8 +39,6 @@ from lead.models import (
 )
 from user_group.models import UserGroup, GroupMembership
 
-import logging
-from datetime import date
 
 logger = logging.getLogger(__name__)
 
@@ -1623,6 +1626,32 @@ class LeadTests(TestCase):
         self.assertEqual(
             lead5.get_authoring_organizations_type_display(),
             ''
+        )
+
+    def test_is_assessment_lead(self):
+        project = self.create_project()
+        lead = self.create(
+            Lead,
+            project=project,
+            is_assessment_lead=True
+        )
+
+        url = f'/api/v1/leads/{lead.id}/'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        # try to change the `is_assessment_lead`
+        data = {
+            'is_assessment_lead': False
+        }
+        url = f'/api/v1/leads/{lead.id}/'
+        self.authenticate()
+        response = self.client.patch(url, data)
+        self.assert_400(response)
+        self.assertEqual(
+            response.data['errors']['is_assessment_lead'],
+            [ErrorDetail(string='Lead Assessment once set can\'t be changed. Please contact Admin', code='invalid')]
         )
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:
