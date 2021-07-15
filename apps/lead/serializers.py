@@ -26,6 +26,7 @@ from .models import (
     LeadEMMTrigger,
     EMMEntity,
 )
+from ary.models import Assessment
 
 
 def check_if_url_exists(url, user=None, project=None, exception_id=None, return_lead=False):
@@ -213,16 +214,19 @@ class LeadSerializer(
             attachment,
         )
 
+    def validate_is_assessment_lead(self, value):
+        # Allow setting True
+        # For False make sure there are no assessment attached.
+        if value is False and hasattr(self.instance, 'assessment'):
+            raise serializers.ValidationError('Lead already has an assessment.')
+        return value
+
     def validate(self, data):
         attachment_id = self.get_initial().get('attachment', {}).get('id')
         LeadSerializer.add_update__validate(
             data, self.instance,
             File.objects.filter(pk=attachment_id).first()
         )
-        if self.instance and self.instance.is_assessment_lead:
-            raise serializers.ValidationError(
-                {'is_assessment_lead': 'Lead Assessment once set can\'t be changed. Please contact Admin'}
-            )
         return data
 
     # TODO: Probably also validate assignee to valid list of users
