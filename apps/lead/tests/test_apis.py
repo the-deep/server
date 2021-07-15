@@ -38,6 +38,7 @@ from lead.models import (
     LeadGroup,
 )
 from user_group.models import UserGroup, GroupMembership
+from ary.models import Assessment
 
 
 logger = logging.getLogger(__name__)
@@ -1641,7 +1642,8 @@ class LeadTests(TestCase):
         response = self.client.get(url)
         self.assert_200(response)
 
-        # try to change the `is_assessment_lead`
+        # now create Assessment for the lead
+        self.create(Assessment, lead=lead)
         data = {
             'is_assessment_lead': False
         }
@@ -1651,8 +1653,19 @@ class LeadTests(TestCase):
         self.assert_400(response)
         self.assertEqual(
             response.data['errors']['is_assessment_lead'],
-            [ErrorDetail(string='Lead Assessment once set can\'t be changed. Please contact Admin', code='invalid')]
+            [ErrorDetail(string='Lead already has an assessment.', code='invalid')]
         )
+
+        # here delete the assessment that has lead
+        Assessment.objects.filter(lead=lead).delete()
+        data = {
+            'is_assessment_lead': False
+        }
+        url = f'/api/v1/leads/{lead.id}/'
+        self.authenticate()
+        response = self.client.patch(url, data)
+        self.assert_200(response)
+
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:
 # source, country, date, website

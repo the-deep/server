@@ -25,7 +25,7 @@ class TestCustomMigrationsLogic(TestCase):
         self.create(Assessment, lead=lead_3)
 
         # Apply migration logic
-        migration_file.set_lead_is_assessment_(Lead, Assessment)
+        migration_file._set_lead_is_assessment(Lead)
 
         assert Lead.objects.count() == 4
         # should set the lead which have assesmment to `is_assessment_lead=True`

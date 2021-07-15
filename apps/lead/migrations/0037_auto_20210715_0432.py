@@ -3,20 +3,14 @@
 from django.db import migrations
 
 
-def set_lead_is_assessment_(Lead, Assessment):
-    assessments = Assessment.objects.all()
-    leads = Lead.objects.filter(
-        assessment__in=assessments
-    )
-    for lead in leads:
-        lead.is_assessment_lead = True
-        lead.save(update_fields=['is_assessment_lead'])
+def _set_lead_is_assessment(Lead):
+    # Set is_assessment_lead True for lead already having assessment.
+    Lead.objects.filter(assessment__isnull=False).update(is_assessment_lead=True)
 
 
 def set_lead_is_assessment(apps, schema_editor):
     Lead = apps.get_model('lead', 'Lead')
-    Assessment = apps.get_model('ary', 'Assessment')
-    set_lead_is_assessment_(Lead, Assessment)
+    _set_lead_is_assessment(Lead)
 
 
 class Migration(migrations.Migration):
