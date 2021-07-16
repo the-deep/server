@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for deep/permissions.py: 85%</title>
+    <title>Coverage for deep/permissions.py: 87%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -18,15 +18,15 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>deep/permissions.py</b> :
-            <span class="pc_cov">85%</span>
+            <span class="pc_cov">87%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
             90 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">80 run</button>
-            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">10 missing</button>
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">81 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">9 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
-            <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">7 partial</button>
+            <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">6 partial</button>
         </h2>
     </div>
 </div>
@@ -183,8 +183,8 @@
     <p id="t128" class="run"><span class="n"><a href="#t128">128</a></span><span class="t"><span class="key">class</span> <span class="nam">CreateAssessmentPermission</span><span class="op">(</span><span class="nam">permissions</span><span class="op">.</span><span class="nam">BasePermission</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t129" class="pln"><span class="n"><a href="#t129">129</a></span><span class="t">    <span class="str">"""Permission class to check if user can create Lead"""</span>&nbsp;</span><span class="r"></span></p>
     <p id="t130" class="run"><span class="n"><a href="#t130">130</a></span><span class="t">    <span class="key">def</span> <span class="nam">has_permission</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">request</span><span class="op">,</span> <span class="nam">view</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t131" class="par run show_par"><span class="n"><a href="#t131">131</a></span><span class="t">        <span class="key">if</span> <span class="nam">request</span><span class="op">.</span><span class="nam">method</span> <span class="op">!=</span> <span class="str">'POST'</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">131&#x202F;&#x219B;&#x202F;132</span><span class="annotate long">line 131 didn't jump to line 132, because the condition on line 131 was never true</span></span></p>
-    <p id="t132" class="mis show_mis"><span class="n"><a href="#t132">132</a></span><span class="t">            <span class="key">return</span> <span class="key">True</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t131" class="run"><span class="n"><a href="#t131">131</a></span><span class="t">        <span class="key">if</span> <span class="nam">request</span><span class="op">.</span><span class="nam">method</span> <span class="op">!=</span> <span class="str">'POST'</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t132" class="run"><span class="n"><a href="#t132">132</a></span><span class="t">            <span class="key">return</span> <span class="key">True</span>&nbsp;</span><span class="r"></span></p>
     <p id="t133" class="pln"><span class="n"><a href="#t133">133</a></span><span class="t">        <span class="com"># Check project and all</span>&nbsp;</span><span class="r"></span></p>
     <p id="t134" class="run"><span class="n"><a href="#t134">134</a></span><span class="t">        <span class="nam">project_id</span> <span class="op">=</span> <span class="nam">request</span><span class="op">.</span><span class="nam">data</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'project'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t135" class="pln"><span class="n"><a href="#t135">135</a></span><span class="t">        <span class="com"># If there is no project id, the serializers will give 400 error, no need to forbid here</span>&nbsp;</span><span class="r"></span></p>
@@ -240,7 +240,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-07-09 06:21 +0000
+            created at 2021-07-16 02:31 +0000
         </p>
     </div>
 </div>
