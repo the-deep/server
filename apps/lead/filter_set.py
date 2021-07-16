@@ -73,7 +73,6 @@ class LeadFilterSet(django_filters.FilterSet):
     )
     assignee = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all(),
-        lookup_expr='in',
         widget=django_filters.widgets.CSVWidget,
     )
     classified_doc_id = NumberInFilter(
