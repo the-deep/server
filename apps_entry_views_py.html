@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/entry/views.py: 81%</title>
+    <title>Coverage for apps/entry/views.py: 83%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -18,15 +18,15 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>apps/entry/views.py</b> :
-            <span class="pc_cov">81%</span>
+            <span class="pc_cov">83%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
             223 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">192 run</button>
-            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">31 missing</button>
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">194 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">29 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
-            <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">11 partial</button>
+            <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">9 partial</button>
         </h2>
     </div>
 </div>
@@ -470,8 +470,8 @@
     <p id="t415" class="run"><span class="n"><a href="#t415">415</a></span><span class="t">        <span class="nam">fields_query</span> <span class="op">=</span> <span class="nam">request</span><span class="op">.</span><span class="nam">GET</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'fields'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t416" class="pln"><span class="n"><a href="#t416">416</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t417" class="run"><span class="n"><a href="#t417">417</a></span><span class="t">        <span class="nam">projects</span> <span class="op">=</span> <span class="nam">Project</span><span class="op">.</span><span class="nam">get_for_member</span><span class="op">(</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t418" class="par run show_par"><span class="n"><a href="#t418">418</a></span><span class="t">        <span class="key">if</span> <span class="nam">project_query</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">418&#x202F;&#x219B;&#x202F;419</span><span class="annotate long">line 418 didn't jump to line 419, because the condition on line 418 was never true</span></span></p>
-    <p id="t419" class="mis show_mis"><span class="n"><a href="#t419">419</a></span><span class="t">            <span class="nam">projects</span> <span class="op">=</span> <span class="nam">projects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">id__in</span><span class="op">=</span><span class="nam">project_query</span><span class="op">.</span><span class="nam">split</span><span class="op">(</span><span class="str">','</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t418" class="run"><span class="n"><a href="#t418">418</a></span><span class="t">        <span class="key">if</span> <span class="nam">project_query</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t419" class="run"><span class="n"><a href="#t419">419</a></span><span class="t">            <span class="nam">projects</span> <span class="op">=</span> <span class="nam">projects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">id__in</span><span class="op">=</span><span class="nam">project_query</span><span class="op">.</span><span class="nam">split</span><span class="op">(</span><span class="str">','</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t420" class="pln"><span class="n"><a href="#t420">420</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t421" class="run"><span class="n"><a href="#t421">421</a></span><span class="t">        <span class="nam">fields</span> <span class="op">=</span> <span class="key">None</span>&nbsp;</span><span class="r"></span></p>
     <p id="t422" class="par run show_par"><span class="n"><a href="#t422">422</a></span><span class="t">        <span class="key">if</span> <span class="nam">fields_query</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">422&#x202F;&#x219B;&#x202F;423</span><span class="annotate long">line 422 didn't jump to line 423, because the condition on line 422 was never true</span></span></p>
@@ -505,8 +505,8 @@
     <p id="t450" class="pln"><span class="n"><a href="#t450">450</a></span><span class="t">        <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
     <p id="t451" class="pln"><span class="n"><a href="#t451">451</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t452" class="run"><span class="n"><a href="#t452">452</a></span><span class="t">        <span class="key">def</span> <span class="nam">_filter_by_projects</span><span class="op">(</span><span class="nam">qs</span><span class="op">,</span> <span class="nam">projects</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t453" class="par run show_par"><span class="n"><a href="#t453">453</a></span><span class="t">            <span class="key">for</span> <span class="nam">p</span> <span class="key">in</span> <span class="nam">projects</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">453&#x202F;&#x219B;&#x202F;454</span><span class="annotate long">line 453 didn't jump to line 454, because the loop on line 453 never started</span></span></p>
-    <p id="t454" class="mis show_mis"><span class="n"><a href="#t454">454</a></span><span class="t">                <span class="nam">qs</span> <span class="op">=</span> <span class="nam">qs</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">project</span><span class="op">=</span><span class="nam">p</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t453" class="run"><span class="n"><a href="#t453">453</a></span><span class="t">            <span class="key">for</span> <span class="nam">p</span> <span class="key">in</span> <span class="nam">projects</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t454" class="run"><span class="n"><a href="#t454">454</a></span><span class="t">                <span class="nam">qs</span> <span class="op">=</span> <span class="nam">qs</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">project</span><span class="op">=</span><span class="nam">p</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t455" class="run"><span class="n"><a href="#t455">455</a></span><span class="t">            <span class="key">return</span> <span class="nam">qs</span>&nbsp;</span><span class="r"></span></p>
     <p id="t456" class="pln"><span class="n"><a href="#t456">456</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t457" class="par run show_par"><span class="n"><a href="#t457">457</a></span><span class="t">        <span class="key">if</span> <span class="nam">fields</span> <span class="key">is</span> <span class="key">None</span> <span class="key">or</span> <span class="str">'created_by'</span> <span class="key">in</span> <span class="nam">fields</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">457&#x202F;&#x219B;&#x202F;466</span><span class="annotate long">line 457 didn't jump to line 466, because the condition on line 457 was never false</span></span></p>
@@ -642,7 +642,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-07-16 02:31 +0000
+            created at 2021-07-19 11:24 +0000
         </p>
     </div>
 </div>
