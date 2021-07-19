@@ -20,7 +20,20 @@ class UserDisplayPictureLoader(DataLoaderWithContext):
         return Promise.resolve([display_picture_map.get(key) for key in keys])
 
 
+class UserOrganizationLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        organization_qs = User.objects.filter(pk__in=keys).values_list('id', 'profile__organization')
+        organization_map = {
+            user_id: organization for user_id, organization in organization_qs
+        }
+        return Promise.resolve([organization_map.get(key) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     @cached_property
     def display_picture(self):
         return UserDisplayPictureLoader(context=self.context)
+
+    @cached_property
+    def organization(self):
+        return UserOrganizationLoader(context=self.context)

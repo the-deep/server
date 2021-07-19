@@ -94,7 +94,7 @@ class ProjectAdmin(VersionAdmin):
         'analysis_framework', 'assessment_template', 'category_editor',
         'created_by', 'modified_by', 'regions',
     )
-    list_filter = ('assessment_template',)
+    list_filter = ('assessment_template', 'is_private',)
     actions = [trigger_project_stat_cache_calc()]
     inlines = [ProjectMembershipInline,
                ProjectUserGroupMembershipInline,

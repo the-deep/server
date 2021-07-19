@@ -296,7 +296,7 @@ class TestUserSchema(GraphqlTestCase):
         project.add_member(user)
         content = self.query_check(query, minput=minput, okay=True)
 
-    def test_update_me_only_fields(self):
+    def test_me_only_fields(self):
         query = '''
             query UserQuery($id: ID!) {
               me {
@@ -321,41 +321,23 @@ class TestUserSchema(GraphqlTestCase):
               user(id: $id) {
                 organization
                 lastName
-                lastLogin
-                lastActiveProject
                 language
-                jwtToken {
-                  expiresIn
-                  accessToken
-                }
                 isActive
                 id
                 firstName
-                emailOptOuts
-                email
                 displayPictureUrl
-                displayPicture
                 displayName
               }
               users {
                 results {
-                  organization
-                  lastName
-                  lastLogin
-                  lastActiveProject
-                  language
-                  jwtToken {
-                    expiresIn
-                    accessToken
-                  }
-                  isActive
-                  id
-                  firstName
-                  emailOptOuts
-                  email
-                  displayPictureUrl
-                  displayPicture
-                  displayName
+                    organization
+                    lastName
+                    language
+                    isActive
+                    id
+                    firstName
+                    displayPictureUrl
+                    displayName
                 }
                 page
                 pageSize
@@ -388,7 +370,7 @@ class TestUserSchema(GraphqlTestCase):
 
         # This fields are only meant for `Me`
         only_me_fields = [
-            'displayPicture', 'lastActiveProject', 'organization', 'language', 'emailOptOuts',
+            'displayPicture', 'lastActiveProject', 'language', 'emailOptOuts',
             'email', 'lastLogin', 'jwtToken',
         ]
         # Without authentication -----
@@ -400,8 +382,8 @@ class TestUserSchema(GraphqlTestCase):
         self.assertEqual(len(content['data']['users']['results']), 4, content)  # 1 me + 3 others
         for field in only_me_fields:
             self.assertNotEqual(
-                content['data']['me'][field], None, (field, content['data']['me'][field])
+                content['data']['me'].get(field), None, (field, content['data']['me'][field])
             )  # Should be None
             self.assertEqual(
-                content['data']['user'][field], None, (field, content['data']['user'][field])
+                content['data']['user'].get(field), None, (field, content['data']['user'].get(field))
             )  # Shouldn't be None

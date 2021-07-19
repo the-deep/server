@@ -24,12 +24,16 @@ RUN /tmp/remote2_syslog_init.sh
 
 WORKDIR /code
 
-COPY Pipfile Pipfile.lock /code/
+COPY pyproject.toml poetry.lock /code/
 
 # Upgrade pip and install python packages for code
-RUN pip install --upgrade --no-cache-dir pip pipenv \
-    && pipenv install --dev --system --deploy \
-    && pip uninstall -y pipenv virtualenv-clone virtualenv
+RUN pip install --upgrade --no-cache-dir pip poetry \
+    && poetry --version \
+    # Configure to use system instead of virtualenvs
+    && poetry config virtualenvs.create false \
+    && poetry install --no-root \
+    # Remove installer
+    && pip uninstall -y poetry virtualenv-clone virtualenv
 
 COPY . /code/
 
