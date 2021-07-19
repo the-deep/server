@@ -471,6 +471,12 @@ class ProjectUserGroupSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'usergroup': 'Usergroup already exist in the project'})
         return data
 
+    def create(self, validated_data):
+        user_group = super().create(validated_data)
+        user_group.added_by = self.context['request'].user
+        user_group.save()
+        return user_group
+
 
 class ProjectRecentActivitySerializer(serializers.Serializer):
     id = serializers.IntegerField()
