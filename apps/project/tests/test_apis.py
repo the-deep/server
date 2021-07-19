@@ -1403,38 +1403,97 @@ class ProjectApiTest(TestCase):
         project1 = self.create_project(title='Project 1')
         project2 = self.create_project(title='Project 2')
         project3 = self.create_project(title='Project 3')
+        project4 = self.create_project(title='Project 4')
+        project5 = self.create_project(title='Project 5')
         project1.add_member(user)
         project2.add_member(user)
         project3.add_member(user)
+        project4.add_member(user)
+        project5.add_member(user)
 
         lead1 = self.create_lead(project=project1)
         lead2 = self.create_lead(project=project1)
         lead3 = self.create_lead(project=project2)
         lead4 = self.create_lead(project=project3)
+        lead5 = self.create_lead(project=project4)
+        lead6 = self.create_lead(project=project4)
+        lead7 = self.create_lead(project=project5)
         self.create_lead(project=project1)
+        self.create_lead(project=project5)
+
 
         now = timezone.now()
-        self.update_obj(self.create_entry(lead=lead1, verified=True), created_at=now + relativedelta(months=-3, days=-1))
-        self.update_obj(self.create_entry(lead=lead1, verified=True), created_at=now + relativedelta(months=-2))
-        self.update_obj(self.create_entry(lead=lead2, verified=False), created_at=now + relativedelta(months=-3))
-        self.update_obj(self.create_entry(lead=lead2, verified=True), created_at=now + relativedelta(months=-3))
-        self.update_obj(self.create_entry(lead=lead2, verified=True), created_at=now + relativedelta(months=-3))
-        self.update_obj(self.create_entry(lead=lead3, verified=True), created_at=now + relativedelta(days=-10))
-        self.update_obj(self.create_entry(lead=lead3, verified=True), created_at=now + relativedelta(days=-20))
-        self.update_obj(self.create_entry(lead=lead3, verified=True), created_at=now + relativedelta(days=-30))
-        self.update_obj(self.create_entry(lead=lead3, verified=True), created_at=now + relativedelta(days=-40))
-        self.update_obj(self.create_entry(lead=lead4, verified=False), created_at=now + relativedelta(months=-3, days=-1))
+        self.update_obj(
+            self.create_entry(lead=lead1, verified=True, created_by=user),
+            created_at=now + relativedelta(months=-3, days=-1)
+        )
+        self.update_obj(
+            self.create_entry(lead=lead1, verified=True, created_by=user),
+            created_at=now + relativedelta(months=-2)
+        )
+        self.update_obj(
+            self.create_entry(lead=lead2, verified=False, created_by=user),
+            created_at=now + relativedelta(months=-3)
+        )
+        self.update_obj(
+            self.create_entry(lead=lead2, verified=True, created_by=user),
+            created_at=now + relativedelta(months=-3)
+        )
+        self.update_obj(
+            self.create_entry(lead=lead2, verified=True, created_by=user),
+            created_at=now + relativedelta(months=-3)
+        )
+        self.update_obj(
+            self.create_entry(lead=lead3, verified=True, created_by=user),
+            created_at=now + relativedelta(days=-10)
+        )
+        self.update_obj(
+            self.create_entry(lead=lead3, verified=True, created_by=user),
+            created_at=now + relativedelta(days=-20)
+        )
+        self.update_obj(
+            self.create_entry(lead=lead3, verified=True, created_by=user),
+            created_at=now + relativedelta(days=-30)
+        )
+        self.update_obj(
+            self.create_entry(lead=lead3, verified=True, created_by=user),
+            created_at=now + relativedelta(days=-40)
+        )
+        self.update_obj(
+            self.create_entry(lead=lead4, verified=False, created_by=user),
+            created_at=now + relativedelta(months=-3, days=-1)
+        )
+        self.update_obj(
+            self.create_entry(lead=lead5, verified=True, created_by=user),
+            created_at=now + relativedelta(months=-3)
+        )
+        self.update_obj(
+            self.create_entry(lead=lead5, verified=True, created_by=user),
+            created_at=now + relativedelta(months=-2)
+        )
+        self.update_obj(
+            self.create_entry(lead=lead6, verified=True, created_by=user),
+            created_at=now + relativedelta(months=-3, days=-1)
+        )
+        self.update_obj(
+            self.create_entry(lead=lead7, verified=True, created_by=user),
+            created_at=now + relativedelta(months=-3)
+        )
 
         self.authenticate(user)
         url = '/api/v1/projects-stat/summary/'
         response = self.client.get(url)
         self.assert_200(response)
-        self.assertEqual(response.data['projects_count'], 3)
-        self.assertEqual(response.data['total_leads_count'], 5)
-        self.assertEqual(response.data['total_leads_tagged_count'], 4)
-        self.assertEqual(response.data['total_leads_tagged_and_verified_count'], 2)
-        self.assertEqual(len(response.data['recent_entries_activity']['projects']), 2)
-        self.assertEqual(len(response.data['recent_entries_activity']['activities']), 5)
+        self.assertEqual(response.data['projects_count'], 5)
+        self.assertEqual(response.data['total_leads_count'], 9)
+        self.assertEqual(response.data['total_leads_tagged_count'], 7)
+        self.assertEqual(response.data['total_leads_tagged_and_verified_count'], 5)
+        self.assertEqual(len(response.data['recent_entries_activity']['projects']), 3)
+        self.assertEqual(response.data['recent_entries_activity']['projects'][0]['id'], project1.id)
+        self.assertEqual(response.data['recent_entries_activity']['projects'][0]['count'], 1)
+        self.assertEqual(response.data['recent_entries_activity']['projects'][1]['id'], project2.id)
+        self.assertEqual(response.data['recent_entries_activity']['projects'][1]['count'], 4)
+        self.assertEqual(len(response.data['recent_entries_activity']['activities']), 6)
 
     def test_project_recent_api(self):
         user = self.create_user()
