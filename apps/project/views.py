@@ -683,20 +683,9 @@ class ProjectStatViewSet(ProjectViewSet):
         url_path='recent'
     )
     def get_recent_projects(self, request, *args, **kwargs):
-        projects_id = Project.get_change_attribute_project(request.user)
         # Only pull project data for which user is member of
         qs = self.get_queryset().filter(Project.get_query_for_member(request.user))
-        current_users_project_id = set(qs.filter(pk__in=projects_id).values_list('pk', flat=True))
-        recent_projects_id = [pk for pk in projects_id if pk in current_users_project_id][:3]
-        projects_map = {
-            project.pk: project
-            for project in qs.filter(pk__in=recent_projects_id)
-        }
-        # Maintain the order
-        recent_projects = [
-            projects_map[id]
-            for id in recent_projects_id if projects_map.get(id)
-        ]
+        recent_projects = Project.get_recent_active_projects(request.user, qs)
         return response.Response(
             self.get_serializer_class()(
                 recent_projects,
@@ -723,9 +712,7 @@ class ProjectStatViewSet(ProjectViewSet):
         ).filter(entries_count__gt=0, entries_count=models.F('verified_entries_count')).count()
 
         # Entries activity
-        projects_id = Project.get_change_attribute_project(request.user)
-        current_users_project_id = set(projects.filter(pk__in=projects_id).values_list('pk', flat=True))
-        recent_projects_id = [pk for pk in projects_id if pk in current_users_project_id][:3]
+        recent_projects_id = Project.get_recent_active_projects(request.user)
         recent_entries = Entry.objects.filter(
             project__in=recent_projects_id,
             created_at__gte=(timezone.now() + relativedelta(months=-3))

@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 
 from user.models import User
+from project.models import Project
 
 
 class Notification(models.Model):
@@ -44,7 +45,7 @@ class Notification(models.Model):
 
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(
-        'project.Project',
+        Project,
         on_delete=models.CASCADE,
         blank=True,
         null=True,
@@ -92,7 +93,7 @@ class Assignment(models.Model):
         related_name='created_for',
     )
     project = models.ForeignKey(
-        'project.Project',
+        Project,
         on_delete=models.CASCADE,
     )
     is_done = models.BooleanField(default=False)

@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models, transaction
 
+from project.models import Project
 from project.permissions import PROJECT_PERMISSIONS
 from project.mixins import ProjectEntityMixin
 from notification.models import Assignment
@@ -13,7 +14,7 @@ from gallery.models import File
 
 class LeadGroup(UserResource):
     title = models.CharField(max_length=255, blank=True)
-    project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
@@ -109,7 +110,7 @@ class Lead(UserResource, ProjectEntityMixin):
         null=True, blank=True, default=None,
     )
 
-    project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
 
     authors = models.ManyToManyField(Organization, blank=True)

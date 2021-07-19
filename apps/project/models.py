@@ -14,8 +14,6 @@ from analysis_framework.models import AnalysisFramework
 from category_editor.models import CategoryEditor
 from project.permissions import PROJECT_PERMISSIONS, PROJECT_PERMISSION_MODEL_MAP
 from organization.models import Organization
-from entry.models import Entry
-from lead.models import Lead
 
 from django.utils import timezone
 from datetime import timedelta
@@ -180,8 +178,12 @@ class Project(UserResource):
         ]
 
     @staticmethod
-    def get_change_attribute_project(user):
+    def get_recent_active_projects(user, qs=None, max=3):
+        # NOTE: to avoid circular import
+        from entry.models import Entry
+        from lead.models import Lead
         # NOTE: Django ORM union don't allow annotation
+        # TODO: Need to refactor this
         with django_db_connection.cursor() as cursor:
             select_sql = [
                 f'''
@@ -203,7 +205,26 @@ class Project(UserResource):
                 f'SELECT DISTINCT(entities."project"), MAX("date") as "date" FROM ({union_sql}) as entities'
                 f' GROUP BY entities."project" ORDER BY "date" DESC'
             )
-            return [pk for pk, _ in cursor.fetchall()]
+            recent_projects_id = [pk for pk, _ in cursor.fetchall()]
+        if qs is None:
+            qs = Project.get_for_member(user)
+        # only the projects user is member among the recent projects
+        current_users_project_id = set(qs.filter(pk__in=recent_projects_id).values_list('pk', flat=True))
+        recent_projects_id = [
+            pk
+            for pk in recent_projects_id
+            if pk in current_users_project_id # filter out user project
+        ][:max]
+        projects_map = {
+            project.pk: project
+            for project in qs.filter(pk__in=recent_projects_id)
+        }
+        # Maintain the order
+        recent_projects = [
+            projects_map[id]
+            for id in recent_projects_id if projects_map.get(id)
+        ]
+        return recent_projects
 
     @staticmethod
     def get_for_public(requestUser, user):
