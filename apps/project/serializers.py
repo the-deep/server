@@ -472,10 +472,10 @@ class ProjectUserGroupSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        user_group = super().create(validated_data)
-        user_group.added_by = self.context['request'].user
-        user_group.save()
-        return user_group
+        project_user_group_membership = super().create(validated_data)
+        project_user_group_membership.added_by = self.context['request'].user
+        project_user_group_membership.save(update_fields=['added_by'])
+        return project_user_group_membership
 
 
 class ProjectRecentActivitySerializer(serializers.Serializer):
