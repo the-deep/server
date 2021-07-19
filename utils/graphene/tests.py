@@ -10,6 +10,8 @@ from django.test import TestCase, override_settings
 # from django_dramatiq.test import DramatiqTestCase
 from graphene_django.utils import GraphQLTestCase
 from jwt_auth.token import AccessToken, RefreshToken
+from project.permissions import get_project_permissions_value
+from project.models import ProjectRole
 
 from deep.tests.test_case import TestCase as DeepTestCase
 
@@ -54,6 +56,7 @@ class GraphqlTestCase(CommonSetupClassMixin, DeepTestCase, GraphQLTestCase):
     GRAPHQL_SCHEMA = 'deep.schema.schema'
 
     def force_login(self, user=None):
+        # TODO: Use session cookiee authentication
         user = user or self.user
         access = AccessToken.for_user(user)
         refresh = RefreshToken.for_access_token(access)
@@ -94,6 +97,36 @@ class GraphqlTestCase(CommonSetupClassMixin, DeepTestCase, GraphQLTestCase):
                     else:
                         self.assertFalse(datum['ok'], content)
         return content
+
+    def create_project_roles(self):
+        # Remove roles if already exist. Right now, we just have global roles
+        ProjectRole.objects.all().delete()
+
+        def _create_role(title, is_default_role=False):
+            # NOTE: Graphql endpoints will use static permission (Will remove dynamic permission in future)
+            # TODO: Migrate current dynamic permission to static ones.
+            return ProjectRole.objects.create(
+                title=title,
+                lead_permissions=get_project_permissions_value('lead', '__all__'),
+                entry_permissions=get_project_permissions_value('entry', '__all__'),
+                setup_permissions=get_project_permissions_value('setup', '__all__'),
+                export_permissions=get_project_permissions_value('export', '__all__'),
+                assessment_permissions=get_project_permissions_value('assessment', '__all__'),
+                is_creator_role=True,
+                level=1,
+                is_default_role=is_default_role,
+            )
+
+        # TODO: Add test for each permission actions
+        # Follow deep.permissions.py PERMISSION_MAP for permitted actions.
+        self.role_viewer_non_confidential = _create_role('Viewer (Non Confidential)')
+        self.role_viewer = _create_role('Viewer')
+        self.role_reader = _create_role('Reader (Non Confidential)')
+        self.role_reader = _create_role('Reader')
+        self.role_sourcer = _create_role('Sourcer')
+        self.role_analyst = _create_role('Analyst', is_default_role=True)
+        self.role_admin = _create_role('Admin')
+        self.role_clairvoyant_one = _create_role('Clairvoyant One')
 
 
 class ImmediateOnCommitMixin(object):

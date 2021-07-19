@@ -1,5 +1,9 @@
 import logging
+from enum import Enum, auto, unique
+
+from typing import List, Callable
 from django.db.models import F
+from django.core.exceptions import PermissionDenied
 from rest_framework import permissions
 
 from project.models import Project, ProjectRole
@@ -180,3 +184,92 @@ class IsProjectMember(permissions.BasePermission):
         if type(obj) == Project:
             return obj.members.filter(id=request.user.id).exists()
         return True
+
+
+# ---------------------------- GRAPHQL Permissions ------------------------------
+
+class ProjectPermissions():
+
+    @unique
+    class Permission(Enum):
+        # ------ Project (0) ------
+        UPDATE_PROJECT = auto()
+        # ------ Lead (200) ------
+        CREATE_LEAD = auto()
+        VIEW_ONLY_UNPROTECTED_LEAD = auto()
+        VIEW_ALL_LEAD = auto()
+        UPDATE_LEAD = auto()
+        DELETE_LEAD = auto()
+        # ------ Entry (100) ------
+        CREATE_ENTRY = auto()
+        VIEW_ONLY_UNPROTECTED_ENTRY = auto()
+        VIEW_ALL_ENTRY = auto()
+        UPDATE_ENTRY = auto()
+        DELETE_ENTRY = auto()
+
+    VIEWER_NON_CONFIDENTIAL = [
+        Permission.VIEW_ONLY_UNPROTECTED_ENTRY,
+        Permission.VIEW_ONLY_UNPROTECTED_LEAD,
+    ]
+    VIEWER = [
+        Permission.VIEW_ALL_ENTRY,
+        Permission.VIEW_ALL_LEAD,
+    ]
+    READER_NON_CONFIDENTIAL = [
+        *VIEWER_NON_CONFIDENTIAL,
+        # Add export permission here
+    ]
+    READER = [
+        *VIEWER,
+        # Add export permission here
+    ]
+    SOURCER = [
+        Permission.CREATE_LEAD,
+        Permission.VIEW_ALL_LEAD,
+        Permission.UPDATE_LEAD,
+        Permission.DELETE_LEAD,
+    ]
+    ANALYST = [
+        *READER,
+        Permission.CREATE_LEAD,
+        Permission.UPDATE_LEAD,
+        Permission.DELETE_LEAD,
+        Permission.CREATE_ENTRY,
+        Permission.UPDATE_ENTRY,
+        Permission.DELETE_ENTRY,
+    ]
+    ADMIN = [*ANALYST]
+    CLAIRVOYANT_ONE = [*ADMIN]
+
+    # NOTE: Key are already defined in production.
+    # TODO: Will need to create this role locally to work.
+    PERMISSION_MAP = {
+        'Viewer (Non Confidential)': VIEWER_NON_CONFIDENTIAL,
+        'Viewer': VIEWER,
+        'Reader (Non Confidential)': READER_NON_CONFIDENTIAL,
+        'Reader': READER,
+        'Sourcer': SOURCER,
+        'Analyst': ANALYST,
+        'Admin': ADMIN,
+        'Clairvoyant One': CLAIRVOYANT_ONE,
+    }
+
+    PERMISSION_DENIED_MESSAGE = 'You do not have permission to perform this action.'
+
+    @classmethod
+    def get_permissions(cls, role):
+        return cls.PERMISSION_MAP.get(role) or []
+
+    @staticmethod
+    def check_permission(info, *perms):
+        if info.context.permissions:
+            return all([perm in info.context.permissions for perm in perms])
+
+    @classmethod
+    def check_permission_dec(cls, *perms: List[str]) -> Callable[..., Callable]:
+        def wrapped(func):
+            def wrapped_func(root, info, *args, **kwargs):
+                if not cls.check_permission(info, perms):
+                    raise PermissionDenied(cls.PERMISSION_DENIED_MESSAGE)
+                return func(root, info, *args, **kwargs)
+        return wrapped

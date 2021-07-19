@@ -204,7 +204,7 @@ class DjangoPaginatedListObjectField(DjangoFilterPaginateListField):
                 qs = qs.all()
             qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
         else:
-            qs = self.get_queryset(manager, info, **kwargs)
+            qs = self.get_queryset(manager, root, info, **kwargs)
             qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
             if root and is_valid_django_model(root._meta.model):
                 extra_filters = get_extra_filters(root, manager.model)

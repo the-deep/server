@@ -11,7 +11,7 @@ from .serializers import (
     PasswordChangeSerializer,
     UserMeSerializer,
 )
-from .schema import UserType
+from .schema import UserMeType
 
 
 LoginInputType = generate_input_type_for_serializer('LoginInputType', LoginSerializer)
@@ -25,7 +25,7 @@ class Login(graphene.Mutation):
     class Arguments:
         data = LoginInputType(required=True)
 
-    result = graphene.Field(UserType)
+    result = graphene.Field(UserMeType)
     errors = graphene.List(graphene.NonNull(CustomErrorType))
     ok = graphene.Boolean(required=True)
     captcha_required = graphene.Boolean(required=True, default_value=False)
@@ -125,7 +125,7 @@ class UpdateMe(graphene.Mutation):
 
     errors = graphene.List(graphene.NonNull(CustomErrorType))
     ok = graphene.Boolean()
-    result = graphene.Field(UserType)
+    result = graphene.Field(UserMeType)
 
     @staticmethod
     def mutate(root, info, data):
