@@ -371,12 +371,48 @@ class EntryTests(TestCase):
         attribute2 = attributes[str(widget2.pk)]
         self.assertEqual(attribute2['data']['e'], 'f')
 
-    def test_options(self):
+    def test_entry_options(self):
         url = '/api/v1/entry-options/'
 
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
+        self.assertIn('created_by', response.data)
+
+    def test_entry_options_in_project(self):
+        user1 = self.create_user()
+        user2 = self.create_user()
+        lead1 = self.create_lead()
+        lead2 = self.create_lead()
+        lead3 = self.create_lead()
+        project1 = self.create(Project)
+        project1.add_member(user1)
+        project2 = self.create(Project)
+        project2.add_member(user1)
+        project2.add_member(user2)
+        self.create(Entry, lead=lead1, project=project2, created_by=user1)
+        self.create(Entry, lead=lead2, project=project2, created_by=user2)
+        self.create(Entry, lead=lead3, project=project1, created_by=user2)
+
+        # filter by project2
+        url = f'/api/v1/entry-options/?project={project2.id}'
+        self.authenticate(user1)
+        response = self.client.get(url)
+        self.assert_200(response)
+        # gives all the member of the project
+        self.assertEqual(
+            set([item['key'] for item in response.data['created_by']]),
+            set([user1.id, user2.id])
+        )
+
+        # filter by project1
+        url = f'/api/v1/entry-options/?project={project1.id}'
+        self.authenticate(user1)
+        response = self.client.get(url)
+        self.assert_200(response)
+       # gives all the member of the project
+        self.assertEqual(user1.id, response.data['created_by'][0]['key'])
+        self.assertEqual(len(response.data['created_by']), 1)
 
     def filter_test(self, params, count=1):
         url = '/api/v1/entries/?{}'.format(params)

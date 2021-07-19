@@ -587,6 +587,7 @@ class ProjectApiTest(TestCase):
         self.authenticate()
         response = self.client.post(url, data)
         self.assert_201(response)
+        self.assertEqual(response.data['added_by'], self.user.id)
 
     def test_add_user_to_usergroup(self):
         project = self.create(
