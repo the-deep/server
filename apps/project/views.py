@@ -3,7 +3,6 @@ import uuid
 
 from dateutil.relativedelta import relativedelta
 import django_filters
-from django.db import connection as django_db_connection
 from django.conf import settings
 from django.http import Http404
 from django.db import transaction, models
@@ -684,33 +683,11 @@ class ProjectStatViewSet(ProjectViewSet):
         url_path='recent'
     )
     def get_recent_projects(self, request, *args, **kwargs):
-        # NOTE: Django ORM union don't allow annotation
-        with django_db_connection.cursor() as cursor:
-            select_sql = [
-                f'''
-                    SELECT
-                        tb."project_id" AS "project",
-                        MAX(tb."{field}_at") AS "date"
-                    FROM "{Model._meta.db_table}" AS tb
-                    WHERE tb."{field}_by_id" = {request.user.pk}
-                    GROUP BY tb."project_id"
-                ''' for Model, field in [
-                    (Lead, 'created'),
-                    (Lead, 'modified'),
-                    (Entry, 'created'),
-                    (Entry, 'modified'),
-                ]
-            ]
-            union_sql = '(' + ') UNION ('.join(select_sql) + ')'
-            cursor.execute(
-                f'SELECT DISTINCT(entities."project"), MAX("date") as "date" FROM ({union_sql}) as entities'
-                f' GROUP BY entities."project" ORDER BY "date" DESC'
-            )
-            recent_projects_id = [pk for pk, _ in cursor.fetchall()]
+        projects_id = Project.get_change_attribute_project(request.user)
         # Only pull project data for which user is member of
         qs = self.get_queryset().filter(Project.get_query_for_member(request.user))
-        current_users_project_id = set(qs.filter(pk__in=recent_projects_id).values_list('pk', flat=True))
-        recent_projects_id = [pk for pk in recent_projects_id if pk in current_users_project_id][:3]
+        current_users_project_id = set(qs.filter(pk__in=projects_id).values_list('pk', flat=True))
+        recent_projects_id = [pk for pk in projects_id if pk in current_users_project_id][:3]
         projects_map = {
             project.pk: project
             for project in qs.filter(pk__in=recent_projects_id)
@@ -744,9 +721,13 @@ class ProjectStatViewSet(ProjectViewSet):
                 'entry', filter=models.Q(entry__verified=True)
             ),
         ).filter(entries_count__gt=0, entries_count=models.F('verified_entries_count')).count()
+
         # Entries activity
+        projects_id = Project.get_change_attribute_project(request.user)
+        current_users_project_id = set(projects.filter(pk__in=projects_id).values_list('pk', flat=True))
+        recent_projects_id = [pk for pk in projects_id if pk in current_users_project_id][:3]
         recent_entries = Entry.objects.filter(
-            project__in=projects,
+            project__in=recent_projects_id,
             created_at__gte=(timezone.now() + relativedelta(months=-3))
         )
         recent_entries_activity = {

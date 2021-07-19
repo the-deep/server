@@ -4,6 +4,7 @@ from django.db.models.functions import Cast
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.db import models
+from django.db import connection as django_db_connection
 
 from deep.models import ProcessStatus
 from user_resource.models import UserResource
@@ -13,6 +14,8 @@ from analysis_framework.models import AnalysisFramework
 from category_editor.models import CategoryEditor
 from project.permissions import PROJECT_PERMISSIONS, PROJECT_PERMISSION_MODEL_MAP
 from organization.models import Organization
+from entry.models import Entry
+from lead.models import Lead
 
 from django.utils import timezone
 from datetime import timedelta
@@ -175,6 +178,32 @@ class Project(UserResource):
             }
             for item in leads_qs.union(entry_qs).union(entry_comment_qs).order_by('-created_at')[:30]
         ]
+
+    @staticmethod
+    def get_change_attribute_project(user):
+        # NOTE: Django ORM union don't allow annotation
+        with django_db_connection.cursor() as cursor:
+            select_sql = [
+                f'''
+                    SELECT
+                        tb."project_id" AS "project",
+                        MAX(tb."{field}_at") AS "date"
+                    FROM "{Model._meta.db_table}" AS tb
+                    WHERE tb."{field}_by_id" = {user.pk}
+                    GROUP BY tb."project_id"
+                ''' for Model, field in [
+                    (Lead, 'created'),
+                    (Lead, 'modified'),
+                    (Entry, 'created'),
+                    (Entry, 'modified'),
+                ]
+            ]
+            union_sql = '(' + ') UNION ('.join(select_sql) + ')'
+            cursor.execute(
+                f'SELECT DISTINCT(entities."project"), MAX("date") as "date" FROM ({union_sql}) as entities'
+                f' GROUP BY entities."project" ORDER BY "date" DESC'
+            )
+            return [pk for pk, _ in cursor.fetchall()]
 
     @staticmethod
     def get_for_public(requestUser, user):
