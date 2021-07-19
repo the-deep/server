@@ -188,7 +188,7 @@ class TestCase(test.APITestCase):
             level=100,
         )
         self.view_only_role = ProjectRole.objects.create(
-            title='ViewOnly',
+            title='Viewer',
             lead_permissions=get_project_permissions_value(
                 'lead', ['view']
             ),
@@ -318,3 +318,15 @@ class TestCase(test.APITestCase):
 
     def get_aware_datetime_str(self, *args, **kwargs):
         return self.get_aware_datetime(*args, **kwargs).strftime('%Y-%m-%d%z')
+
+    def assertListIds(
+        self,
+        current_list, excepted_list, message,
+        get_excepted_list_id=lambda x: str(x.id),
+        get_current_list_id=lambda x: str(x['id']),
+    ):
+        self.assertEqual(
+            set([get_current_list_id(item) for item in current_list]),
+            set([get_excepted_list_id(item) for item in excepted_list]),
+            message,
+        )

@@ -32,6 +32,31 @@ class UserType(DjangoObjectType):
         model = User
         fields = (
             'id', 'first_name', 'last_name', 'is_active',
+        )
+
+    display_name = graphene.String()
+    # Profile fields
+    display_picture_url = graphene.String()
+    organization = graphene.String()
+    language = graphene.String()
+
+    @staticmethod
+    def resolve_display_picture_url(root, info, **kwargs) -> Union[str, None]:
+        # TODO: Need to merge profile to user before enabling this for all users to avoid N+1 issue.
+        # 3 table join is required right now.
+        return info.context.dl.user.display_picture.load(root.id)
+
+    @staticmethod
+    def resolve_organization(root, info, **kwargs) -> Union[str, None]:
+        return info.context.dl.user.organization.load(root.id)
+
+
+class UserMeType(DjangoObjectType):
+    class Meta:
+        model = User
+        skip_registry = True
+        fields = (
+            'id', 'first_name', 'last_name', 'is_active',
             'email', 'last_login',
         )
 
@@ -52,18 +77,11 @@ class UserType(DjangoObjectType):
         return root.profile.display_picture_id
 
     @staticmethod
-    def resolve_display_picture_url(root, info, **kwargs) -> Union[str, None]:
-        # TODO: Need to merge profile to user before enabling this for all users to avoid N+1 issue.
-        # 3 table join is required right now.
-        return info.context.dl.user.display_picture.load(root.id)
-
-    @staticmethod
     @only_me
     def resolve_last_active_project(root, info, **kwargs) -> Union[int, None]:
         return root.profile.last_active_project_id
 
     @staticmethod
-    @only_me  # NOTE: Before removing this add a dataloader
     def resolve_organization(root, info, **kwargs) -> Union[str, None]:
         return root.profile.organization
 
@@ -104,7 +122,7 @@ class UserListType(CustomDjangoListObjectType):
 
 
 class Query:
-    me = graphene.Field(UserType)
+    me = graphene.Field(UserMeType)
     user = DjangoObjectField(UserType)
     users = DjangoPaginatedListObjectField(
         UserListType,
