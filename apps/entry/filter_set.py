@@ -280,6 +280,12 @@ def get_filtered_entries(user, queries):
         query_and = queries.get(
             filter.key + '__and'
         )
+        query_exclude = queries.get(
+            filter.key + '_exclude'
+        )
+        query_exclude_and = queries.get(
+            filter.key + '_exclude_and'
+        )
 
         if filter.filter_type == Filter.NUMBER:
             if query:
@@ -328,7 +334,7 @@ def get_filtered_entries(user, queries):
 
         elif filter.filter_type == Filter.LIST:
             # query and query_and are mutual exclusive and query_and has higher priority
-            query = query_and or query
+            query = query_and or query_exclude_and or query_exclude or query
             if query and not isinstance(query, list):
                 query = query.split(',')
 
@@ -338,6 +344,18 @@ def get_filtered_entries(user, queries):
                     entries = entries.filter(
                         filterdata__filter=filter,
                         filterdata__values__contains=query,
+                    )
+                # Use contains (AND) filter if query_and was defined (Exclude)
+                elif query_exclude_and:
+                    entries = entries.exclude(
+                        filterdata__filter=filter,
+                        filterdata__values__contains=query,
+                    )
+                # Use overlap (OR) filter if query is only defined (Exclude)
+                elif query_exclude:
+                    entries = entries.exclude(
+                        filterdata__filter=filter,
+                        filterdata__values__overlap=query,
                     )
                 # Use overlap (OR) filter if query is only defined
                 elif query:

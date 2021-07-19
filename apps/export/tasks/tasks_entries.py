@@ -1,3 +1,4 @@
+import copy
 from django.db import models
 
 from analysis_framework.models import Exportable
@@ -18,7 +19,7 @@ def export_entries(export):
     export_type = export.export_type
     is_preview = export.is_preview
 
-    filters = export.filters
+    filters = copy.deepcopy(export.filters)
     # remove lead so that it can be used to include or exclude
     lead_ids = filters.pop('lead', [])
     include_leads = filters.pop('include_leads', True)
