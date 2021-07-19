@@ -1421,64 +1421,98 @@ class ProjectApiTest(TestCase):
         self.create_lead(project=project1)
         self.create_lead(project=project5)
 
-
+        data = [
+            {
+                "lead": lead1,
+                "verified": True,
+                "months": -3,
+                "days": -1
+            },
+            {
+                "lead": lead1,
+                "verified": True,
+                "months": -2,
+                "days": -1
+            },
+            {
+                "lead": lead2,
+                "verified": False,
+                "months": -3,
+                "days": -1
+            },
+            {
+                "lead": lead2,
+                "verified": True,
+                "months": -3,
+                "days": -1
+            },
+            {
+                "lead": lead2,
+                "verified": True,
+                "months": -3,
+                "days": -1
+            },
+            {
+                "lead": lead3,
+                "verified": True,
+                "months": -1,
+                "days": -10
+            },
+            {
+                "lead": lead3,
+                "verified": True,
+                "months": -1,
+                "days": -20
+            },
+            {
+                "lead": lead3,
+                "verified": True,
+                "months": -1,
+                "days": -30
+            },
+            {
+                "lead": lead3,
+                "verified": True,
+                "months": -1,
+                "days": -40
+            },
+            {
+                "lead": lead4,
+                "verified": False,
+                "months": -3,
+                "days": -1
+            },
+            {
+                "lead": lead5,
+                "verified": True,
+                "months": -3,
+                "days": -1,
+            },
+            {
+                "lead": lead5,
+                "verified": True,
+                "months": -2,
+                "days": -1,
+            },
+            {
+                "lead": lead6,
+                "verified": True,
+                "months": -3,
+                "days": -1
+            },
+            {
+                "lead": lead7,
+                "verified": True,
+                "months": -3,
+                "days": 0,
+            },
+        ]
         now = timezone.now()
-        self.update_obj(
-            self.create_entry(lead=lead1, verified=True, created_by=user),
-            created_at=now + relativedelta(months=-3, days=-1)
-        )
-        self.update_obj(
-            self.create_entry(lead=lead1, verified=True, created_by=user),
-            created_at=now + relativedelta(months=-2)
-        )
-        self.update_obj(
-            self.create_entry(lead=lead2, verified=False, created_by=user),
-            created_at=now + relativedelta(months=-3)
-        )
-        self.update_obj(
-            self.create_entry(lead=lead2, verified=True, created_by=user),
-            created_at=now + relativedelta(months=-3)
-        )
-        self.update_obj(
-            self.create_entry(lead=lead2, verified=True, created_by=user),
-            created_at=now + relativedelta(months=-3)
-        )
-        self.update_obj(
-            self.create_entry(lead=lead3, verified=True, created_by=user),
-            created_at=now + relativedelta(days=-10)
-        )
-        self.update_obj(
-            self.create_entry(lead=lead3, verified=True, created_by=user),
-            created_at=now + relativedelta(days=-20)
-        )
-        self.update_obj(
-            self.create_entry(lead=lead3, verified=True, created_by=user),
-            created_at=now + relativedelta(days=-30)
-        )
-        self.update_obj(
-            self.create_entry(lead=lead3, verified=True, created_by=user),
-            created_at=now + relativedelta(days=-40)
-        )
-        self.update_obj(
-            self.create_entry(lead=lead4, verified=False, created_by=user),
-            created_at=now + relativedelta(months=-3, days=-1)
-        )
-        self.update_obj(
-            self.create_entry(lead=lead5, verified=True, created_by=user),
-            created_at=now + relativedelta(months=-3)
-        )
-        self.update_obj(
-            self.create_entry(lead=lead5, verified=True, created_by=user),
-            created_at=now + relativedelta(months=-2)
-        )
-        self.update_obj(
-            self.create_entry(lead=lead6, verified=True, created_by=user),
-            created_at=now + relativedelta(months=-3, days=-1)
-        )
-        self.update_obj(
-            self.create_entry(lead=lead7, verified=True, created_by=user),
-            created_at=now + relativedelta(months=-3)
-        )
+        for item in data:
+            self.update_obj(
+                self.create_entry(lead=item['lead'], verified=item['verified'], created_by=user),
+                created_at=now + relativedelta(months=item['months'], days=item['days'])
+            )
 
         self.authenticate(user)
         url = '/api/v1/projects-stat/summary/'
