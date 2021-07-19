@@ -131,6 +131,24 @@ class Project(UserResource):
         return Project.objects.exclude(Q(is_private=True) & ~Q(members=user))
 
     @classmethod
+    def get_for_gq(cls, user):
+        """
+        Used by graphql schema
+        """
+        return cls.objects\
+            .annotate(
+                # NOTE: This is used by permission module
+                current_user_role=models.Subquery(
+                    ProjectMembership.objects.filter(
+                        project=models.OuterRef('pk'),
+                        member=user,
+                    ).order_by('role__title').values('role__title')[:1],
+                    output_field=models.CharField()
+                )
+                # NOTE: Exclude if project is private + user is not a member
+            ).exclude(is_private=True, current_user_role__isnull=True)
+
+    @classmethod
     def get_recent_activities(cls, user):
         from entry.models import Entry, EntryComment
         from lead.models import Lead

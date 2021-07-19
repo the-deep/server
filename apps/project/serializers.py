@@ -1,5 +1,4 @@
 from django.db import models
-from django.core.files import File
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
