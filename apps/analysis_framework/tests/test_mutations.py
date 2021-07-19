@@ -56,7 +56,7 @@ class TestAnalysisFrameworkCreateUpdate(GraphqlTestCase):
         )
 
     def test_create_private_framework_unauthorized(self):
-        project = self.create(Project, role=self.admin_role)
+        project = self.create(Project, role=self.role_admin)
         self.input = dict(
             title='new title',
             isPrivate=True,
@@ -74,7 +74,7 @@ class TestAnalysisFrameworkCreateUpdate(GraphqlTestCase):
         self.assertIn('permission', content['errors'][0]['message'])
 
     def test_invalid_create_framework_privately_in_public_project(self):
-        project = self.create(Project, role=self.admin_role, is_private=False)
+        project = self.create(Project, role=self.role_admin, is_private=False)
         self.assertEqual(project.is_private, False)
 
         self.input = dict(

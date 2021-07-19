@@ -1,9 +1,12 @@
-[[source]]
-url = "https://pypi.org/simple"
-verify_ssl = true
-name = "pypi"
+[tool.poetry]
+name = "deep-server"
+version = "0.1.0"
+description = ""
+authors = ["deep-dev <dev@thedeep.io>"]
+license = "GNU Affero General Public License v3.0"
 
-[packages]
+[tool.poetry.dependencies]
+python = "^3.8"
 beautifulsoup4 = "==4.9.3"
 boto3 = "==1.17.98"
 celery = {version = "==5.1.1", extras = ["redis"]}
@@ -31,12 +34,12 @@ django-utils-six = "2.0"  # Require by autofixture
 drf-dynamic-fields = "==0.3.1"
 drf-yasg = {version = "==1.20.0", extras = ["validation"]}
 feedparser = "==6.0.8"
-flower = { git = "https://github.com/mher/flower.git", rev = "7ee34cb5fc039bbeb208a54f113713edbb4809ce" }
+flower = { git = "https://github.com/mher/flower.git", branch = "7ee34cb5fc039bbeb208a54f113713edbb4809ce" }
 geopandas = "==0.9.0"
 google-api-python-client = "==2.9.0"
 graphene-django = ">=2,<3"
 graphene-graphiql-explorer = "*"
-graphene-django-extras = ">=0.4,<0.5"
+graphene-django-extras = { git = "https://github.com/the-deep/graphene-django-extras.git", branch = "v0.4.9-patch.1" }
 kombu = "==5.1.0"
 lxml = "==4.6.3"
 matplotlib = "==3.4.2"
@@ -71,18 +74,17 @@ ipython = "*"
 factory-boy = "*"
 colorlog = "*"
 
-[dev-packages]
+
+[tool.poetry.dev-dependencies]
 pytest-django = "==4.4.0"
 django-debug-toolbar = "*"
-django-autofixture = {ref = "0472a494485dd597d598e20d9e1c6c47cf0eadb7", git = "https://github.com/volrath/django-autofixture.git"}
-django-fixture-magic = {ref = "466fa35c075009e4a1974f6e588471dd9e720e53", git = "https://github.com/davedash/django-fixture-magic.git"}
+django-autofixture = {branch = "0472a494485dd597d598e20d9e1c6c47cf0eadb7", git = "https://github.com/volrath/django-autofixture.git"}
+django-fixture-magic = {branch = "466fa35c075009e4a1974f6e588471dd9e720e53", git = "https://github.com/davedash/django-fixture-magic.git"}
 # mypy = "*"
 # django-stubs = '*'
 # flake8 = '*'
 # pylint = '*'
 
-[requires]
-python_version = "3.8.10"
-
-[pipenv]
-# allow_prereleases = true
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
