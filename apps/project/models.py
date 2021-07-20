@@ -253,13 +253,14 @@ class Project(UserResource):
             .exclude(models.Q(is_private=True) & ~models.Q(members=requestUser))
 
     @staticmethod
-    def get_for_member(user, annotated=False):
+    def get_for_member(user, annotated=False, exclude=False):
         # FIXME: get viewable projects
         # Also, pick only required fields instead of annotating everytime.
         project = Project.get_annotated() if annotated else Project.objects
-        return project.filter(
-            Project.get_query_for_member(user)
-        ).distinct()
+        filter_query = Project.get_query_for_member(user)
+        if exclude:
+            return project.exclude(filter_query).distinct()
+        return project.filter(filter_query).distinct()
 
     @staticmethod
     def get_query_for_member(user):
