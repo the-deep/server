@@ -1,3 +1,4 @@
+import json
 import logging
 import requests
 import threading
@@ -7,6 +8,17 @@ from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.files.storage import get_storage_class
+
+from graphiql_debug_toolbar.middleware import (
+    set_content_length,
+    get_payload,
+)
+from graphiql_debug_toolbar.serializers import CallableJSONEncoder
+from django.template.loader import render_to_string
+from debug_toolbar.toolbar import DebugToolbar
+from debug_toolbar.middleware import _HTML_TYPES
+from debug_toolbar.middleware import get_show_toolbar
+from debug_toolbar.middleware import DebugToolbarMiddleware as BaseMiddleware
 
 from utils.date_extractor import str_to_date
 
@@ -117,3 +129,45 @@ def get_current_user():
     if isinstance(current_user, AnonymousUser):
         return None
     return current_user
+
+
+class DebugToolbarMiddleware(BaseMiddleware):
+    # https://github.com/flavors/django-graphiql-debug-toolbar/issues/9
+    # https://gist.github.com/ulgens/e166ad31ec71e6b1f0777a8d81ce48ae
+    def __call__(self, request):
+        if not get_show_toolbar()(request) or request.is_ajax():
+            return self.get_response(request)
+
+        content_type = request.content_type
+        html_type = content_type in _HTML_TYPES
+
+        if html_type:
+            response = super().__call__(request)
+            template = render_to_string('graphiql_debug_toolbar/base.html')
+            response.write(template)
+            set_content_length(response)
+
+            return response
+
+        toolbar = DebugToolbar(request, self.get_response)
+
+        for panel in toolbar.enabled_panels:
+            panel.enable_instrumentation()
+        try:
+            response = toolbar.process_request(request)
+        finally:
+            for panel in reversed(toolbar.enabled_panels):
+                panel.disable_instrumentation()
+
+        response = self.generate_server_timing_header(
+            response,
+            toolbar.enabled_panels,
+        )
+
+        try:
+            payload = get_payload(request, response, toolbar)
+        except:  # NOQA
+            return self.get_response(request)
+        response.content = json.dumps(payload, cls=CallableJSONEncoder)
+        set_content_length(response)
+        return response
