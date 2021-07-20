@@ -1,7 +1,7 @@
 from functools import partial
 
 from django.db.models import QuerySet
-from graphene import NonNull
+import graphene
 from graphene.types.structures import Structure
 from graphene.utils.str_converters import to_snake_case
 from graphene_django.filter.utils import get_filtering_args_from_filterset
@@ -15,6 +15,7 @@ from graphene_django_extras.settings import graphql_api_settings
 from graphene_django_extras.utils import get_extra_filters
 
 from utils.graphene.pagination import OrderingOnlyArgumentPagination
+from deep.serializers import URLCachedFileField
 
 
 class CustomDjangoListObjectBase(DjangoListObjectBase):
@@ -54,7 +55,7 @@ class CustomDjangoListField(DjangoListField):
 
     def get_resolver(self, parent_resolver):
         _type = self.type
-        if isinstance(_type, NonNull):
+        if isinstance(_type, graphene.NonNull):
             _type = _type.of_type
         object_type = _type.of_type.of_type
         return partial(
@@ -209,6 +210,7 @@ class DjangoPaginatedListObjectField(DjangoFilterPaginateListField):
             if root and is_valid_django_model(root._meta.model):
                 extra_filters = get_extra_filters(root, manager.model)
                 qs = qs.filter(**extra_filters)
+        # TODO: Duplicate count (self.pagination.paginate_queryset also calls count)
         count = qs.count()
 
         if getattr(self, "pagination", None):
@@ -240,3 +242,20 @@ def get_filtering_args_from_non_model_filterset(filterset_class):
         field_type.description = filter_field.label
         args[name] = field_type
     return args
+
+
+class FileField(graphene.ObjectType):
+    """
+    # TODO: Check if we can register this to Django FileField
+    https://github.com/graphql-python/graphene-django/issues/249
+    """
+    name = graphene.String()
+    url = graphene.String()
+
+    def resolve_name(root, info, **kwargs) -> str:
+        return root.name
+
+    def resolve_url(root, info, **kwargs) -> str:
+        return info.context.request.build_absolute_uri(
+            URLCachedFileField.name_to_representation(root)
+        )
