@@ -1,4 +1,5 @@
 import graphene
+from typing import Union, List
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
@@ -6,8 +7,10 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import ProjectPermissions as PP
+from organization.models import Organization
+from organization.schema import OrganizationType
 
-from .models import Lead
+from .models import Lead, LeadPreview
 from .filter_set import LeadGQFilterSet
 
 
@@ -21,22 +24,54 @@ def get_lead_qs(info):
     return Lead.objects.none()
 
 
+class LeadPreviewType(DjangoObjectType):
+    class Meta:
+        model = LeadPreview
+        fields = (
+            'text_extract',
+            'thumbnail',
+            'thumbnail_height',
+            'thumbnail_width',
+            'word_count',
+            'page_count',
+            # 'classified_doc_id',
+            # 'classification_status',
+        )
+
+
+class VerifiedStatType(graphene.ObjectType):
+    total_count = graphene.Int()
+    verified_count = graphene.Int()
+
+
 class LeadType(DjangoObjectType):
     class Meta:
         model = Lead
         fields = (
-            'id', 'project', 'lead_group',
-            'title', 'assignee', 'published_on',
-            'authors', 'source',
+            'id', 'title', 'created_by', 'created_at', 'modified_by', 'modified_at',
+            'project', 'lead_group', 'assignee', 'published_on', 'authors', 'source',
             'source_type', 'priority', 'confidentiality', 'status',
             'text', 'url', 'website', 'attachment', 'emm_entities'
         )
 
     project = graphene.ID(source='project_id')
+    lead_preview = graphene.Field(LeadPreviewType)
+    source = graphene.Field(OrganizationType)
+    authors = graphene.List(OrganizationType)
+    verified_stat = graphene.Field(VerifiedStatType)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
         return get_lead_qs(info)
+
+    @staticmethod
+    def resolve_lead_preview(root, info, **kwargs) -> Union[int, None]:
+        return info.context.dl.lead.lead_preview.load(root.pk)
+
+    @staticmethod
+    def resolve_verified_stat(root, info, **kwargs):
+        # TODO: Use entry filter here as well
+        return info.context.dl.lead.verified_stat.load(root.pk)
 
 
 class LeadListType(CustomDjangoListObjectType):
