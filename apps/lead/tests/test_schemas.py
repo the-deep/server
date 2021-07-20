@@ -1,5 +1,6 @@
 from utils.graphene.tests import GraphqlTestCase
 
+from organization.factories import OrganizationTypeFactory, OrganizationFactory
 from user.factories import UserFactory
 from lead.factories import LeadFactory
 from project.factories import ProjectFactory
@@ -121,3 +122,90 @@ class TestLeadSchema(GraphqlTestCase):
         content = _query_check()
         self.assertEqual(content['data']['project']['leads']['totalCount'], 11, content)
         self.assertListIds(content['data']['project']['leads']['results'], confidential_leads + normal_leads, content)
+
+    def test_leads_fields_query(self):
+        """
+        Test leads field value
+        """
+        query = '''
+            query MyQuery ($id: ID!) {
+              project(id: $id) {
+                leads(ordering: "id") {
+                  page
+                  pageSize
+                  totalCount
+                  results {
+                    id
+                    status
+                    createdAt
+                    title
+                    publishedOn
+                    priority
+                    verifiedStat {
+                      totalCount
+                      verifiedCount
+                    }
+                    authors {
+                      id
+                      mergedAs {
+                        id
+                        title
+                        logo {
+                          id
+                          file {
+                            name
+                            url
+                          }
+                        }
+                      }
+                    }
+                    source {
+                      id
+                      logo {
+                        id
+                        file {
+                          name
+                          url
+                        }
+                      }
+                      mergedAs {
+                        id
+                        title
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        '''
+
+        project = ProjectFactory.create()
+        org_type = OrganizationTypeFactory.create()
+        org1 = OrganizationFactory.create(organization_type=org_type)
+        org2 = OrganizationFactory.create(organization_type=org_type, parent=org1)
+        org3 = OrganizationFactory.create(organization_type=org_type)
+        # User with role
+        user = UserFactory.create()
+        project.add_member(user)
+        # Create lead
+        lead1 = LeadFactory.create(project=project, source=org1)
+        lead2 = LeadFactory.create(project=project, source=org2, authors=[org1, org3])
+
+        # -- With login
+        self.force_login(user)
+
+        # --- member user (only unprotected leads)
+        self.force_login(user)
+        content = self.query_check(query, variables={'id': project.id})
+        results = content['data']['project']['leads']['results']
+        # Count check
+        self.assertEqual(content['data']['project']['leads']['totalCount'], 2, content)
+        self.assertListIds(results, [lead1, lead2], content)
+        self.assertEqual(len(results[0]['authors']), 0, content)
+        # Source check
+        self.assertEqual(results[0]['source']['id'], str(org1.id), content)
+        self.assertEqual(results[0]['source']['logo']['file']['name'], str(org1.logo.file.name), content)
+        self.assertEqual(results[0]['source']['logo']['file']['url'], self.get_media_url(org1.logo.file.name), content)
+        # Authors check
+        self.assertListIds(results[1]['authors'], [org1, org3], content)
+        self.assertEqual(results[1]['source']['mergedAs']['id'], str(org1.id), content)

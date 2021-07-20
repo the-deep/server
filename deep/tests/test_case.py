@@ -330,3 +330,6 @@ class TestCase(test.APITestCase):
             set([get_excepted_list_id(item) for item in excepted_list]),
             message,
         )
+
+    def get_media_url(self, file):
+        return f'http://testserver/media/{file}'
