@@ -23,6 +23,19 @@ class ProjectFilterSet(UserResourceFilterSet):
             },
         }
 
+    is_current_user_member = django_filters.BooleanFilter(
+        field_name='is_current_user_member', method='filter_with_membership')
+
+    def filter_with_membership(self, queryset, name, value):
+        if value is not None:
+            queryset = queryset.filter(
+                id__in=Project.get_for_member(
+                    self.request.user,
+                    exclude=not value,
+                )
+            )
+        return queryset
+
 
 class ProjectMembershipFilterSet(UserResourceFilterSet):
     class Meta:
