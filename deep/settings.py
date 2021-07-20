@@ -655,8 +655,10 @@ DEBUG_TOOLBAR_PANELS = [
 ]
 
 if DEBUG and 'DOCKER_HOST_IP' in os.environ:
-    INSTALLED_APPS += ['debug_toolbar']
-    MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
+    # https://github.com/flavors/django-graphiql-debug-toolbar#installation
+    # FIXME: If mutation are triggered twice https://github.com/flavors/django-graphiql-debug-toolbar/pull/12/files
+    INSTALLED_APPS += ['debug_toolbar', 'graphiql_debug_toolbar']
+    MIDDLEWARE = ['graphiql_debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
     INTERNAL_IPS = [os.environ['DOCKER_HOST_IP']]
 
 
