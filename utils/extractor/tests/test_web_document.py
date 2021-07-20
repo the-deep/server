@@ -1,4 +1,4 @@
-from os.path import (join, isfile)
+import os
 import logging
 import json
 
@@ -25,8 +25,8 @@ class WebDocumentTest(TestCase):
     Html, Pdf, Pptx and docx
     """
     def setUp(self):
-        self.path = join(settings.TEST_DIR, 'documents_urls')
-        with open(join(self.path, 'pages.json'), 'r') as pages:
+        self.path = os.path.join(settings.TEST_DIR, 'documents_urls')
+        with open(os.path.join(self.path, 'pages.json'), 'r') as pages:
             self.pages = json.load(pages)
         makedirs(self.path)
 
@@ -40,7 +40,7 @@ class WebDocumentTest(TestCase):
             logger.warning(traceback.format_exc())
             return
 
-        path = join(self.path, '.'.join(url.split('/')[-1:]))
+        path = os.path.join(self.path, '.'.join(url.split('/')[-1:]))
 
         extracted = get_or_write_file(path + '.txt', text)
 
@@ -58,14 +58,16 @@ class WebDocumentTest(TestCase):
 
     def thumbnail(self, url, file_type):
         try:
-            thumbnail = WebDocument(url).get_thumbnail()
+            # thumbnail = WebDocument(url).get_thumbnail()
+            WebDocument(url).get_thumbnail()
         except Exception:
             import traceback
             logger.warning('\n' + ('*' * 30))
             logger.warning('THUMBNAIL ERROR: WEBDOCUMENT: {}'.format(file_type.upper()))
             logger.warning(traceback.format_exc())
             return
-        self.assertTrue(isfile(thumbnail.name))
+        # TODO: Thumbnail is a depricated feature. Remove this later
+        # self.assertTrue(os.path.isfile(thumbnail.name))
 
     def test_html(self):
         """
