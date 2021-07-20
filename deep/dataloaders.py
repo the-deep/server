@@ -1,12 +1,26 @@
-from promise.dataloader import DataLoader
+from django.utils.functional import cached_property
+
+from utils.graphene.dataloaders import WithContextMixin
+
+from user.dataloaders import DataLoaders as UserDataLoaders
+from user_group.dataloaders import DataLoaders as UserGroupDataLoaders
+from lead.dataloaders import DataLoaders as LeadDataLoaders
+from organization.dataloaders import DataLoaders as OrganizationDataLoaders
 
 
-class WithContextMixin():
-    def __init__(self, *args, **kwargs):
-        self.context = kwargs.pop('context')
-        super().__init__(*args, **kwargs)
+class GlobalDataLoaders(WithContextMixin):
+    @cached_property
+    def user_group(self):
+        return UserGroupDataLoaders(context=self.context)
 
+    @cached_property
+    def user(self):
+        return UserDataLoaders(context=self.context)
 
-class DataLoaderWithContext(WithContextMixin, DataLoader):
-    # def batch_load_fn  TODO: Add logging for errors traceback
-    pass
+    @cached_property
+    def lead(self):
+        return LeadDataLoaders(context=self.context)
+
+    @cached_property
+    def organization(self):
+        return OrganizationDataLoaders(context=self.context)
