@@ -655,7 +655,7 @@ DEBUG_TOOLBAR_PANELS = [
     "debug_toolbar.panels.profiling.ProfilingPanel",
 ]
 
-if DEBUG and 'DOCKER_HOST_IP' in os.environ:
+if DEBUG and 'DOCKER_HOST_IP' in os.environ and not TESTING:
     # https://github.com/flavors/django-graphiql-debug-toolbar#installation
     # FIXME: If mutation are triggered twice https://github.com/flavors/django-graphiql-debug-toolbar/pull/12/files
     INSTALLED_APPS += ['debug_toolbar', 'graphiql_debug_toolbar']
