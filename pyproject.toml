@@ -78,6 +78,7 @@ colorlog = "*"
 [tool.poetry.dev-dependencies]
 pytest-django = "==4.4.0"
 django-debug-toolbar = "*"
+django-graphiql-debug-toolbar = "*"
 django-autofixture = {branch = "0472a494485dd597d598e20d9e1c6c47cf0eadb7", git = "https://github.com/volrath/django-autofixture.git"}
 django-fixture-magic = {branch = "466fa35c075009e4a1974f6e588471dd9e720e53", git = "https://github.com/davedash/django-fixture-magic.git"}
 # mypy = "*"

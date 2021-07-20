@@ -1,7 +1,7 @@
 from promise import Promise
 from django.utils.functional import cached_property
 
-from deep.dataloaders import DataLoaderWithContext, WithContextMixin
+from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 from deep.serializers import URLCachedFileField
 
 from .models import User
