@@ -98,3 +98,47 @@ class TestProjectSchema(GraphqlTestCase):
         self.assertEqual(content['data']['projects']['totalCount'], 2, content)
         self.assertEqual(content['data']['projects']['results'][0]['id'], str(public_project.pk), content)
         self.assertEqual(content['data']['projects']['results'][1]['id'], str(private_project.pk), content)
+
+
+class TestProjectFilterSchema(GraphqlTestCase):
+    def test_project_query_filter(self):
+        query = '''
+            query MyQuery ($isCurrentUserMember: Boolean!) {
+              projects(isCurrentUserMember: $isCurrentUserMember) {
+                page
+                pageSize
+                totalCount
+                results {
+                  id
+                  title
+                  isPrivate
+                  currentUserRole
+                }
+              }
+            }
+        '''
+
+        user = UserFactory.create()
+        project1 = ProjectFactory.create()
+        project2 = ProjectFactory.create(is_private=True)
+        project3 = ProjectFactory.create()
+        ProjectFactory.create(is_private=True)
+
+        # Add user to project1 only (one normal + one private)
+        project1.add_member(user)
+        project2.add_member(user)
+
+        # -- Without login
+        self.query_check(query, variables={'isCurrentUserMember': True}, assert_for_error=True)
+
+        # -- With login
+        self.force_login(user)
+
+        # project without membership
+        content = self.query_check(query, variables={'isCurrentUserMember': True})
+        self.assertEqual(content['data']['projects']['totalCount'], 2, content)
+        self.assertListIds(content['data']['projects']['results'], [project1, project2], content)
+        # project with membership
+        content = self.query_check(query, variables={'isCurrentUserMember': False})
+        self.assertEqual(content['data']['projects']['totalCount'], 1, content)  # Private will not show here
+        self.assertListIds(content['data']['projects']['results'], [project3], content)
