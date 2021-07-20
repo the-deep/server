@@ -15,3 +15,11 @@ class LeadFactory(DjangoModelFactory):
 
     class Meta:
         model = Lead
+
+    @factory.post_generation
+    def authors(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for author in extracted:
+                self.authors.add(author)

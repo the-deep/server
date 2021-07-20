@@ -1,13 +1,12 @@
 import graphene
-from typing import Union, List
+from typing import Union
 from django.db.models import QuerySet
-from graphene_django import DjangoObjectType
+from graphene_django import DjangoObjectType, DjangoListField
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import ProjectPermissions as PP
-from organization.models import Organization
 from organization.schema import OrganizationType
 
 from .models import Lead, LeadPreview
@@ -49,7 +48,7 @@ class LeadType(DjangoObjectType):
         model = Lead
         fields = (
             'id', 'title', 'created_by', 'created_at', 'modified_by', 'modified_at',
-            'project', 'lead_group', 'assignee', 'published_on', 'authors', 'source',
+            'project', 'lead_group', 'assignee', 'published_on',
             'source_type', 'priority', 'confidentiality', 'status',
             'text', 'url', 'website', 'attachment', 'emm_entities'
         )
@@ -57,7 +56,7 @@ class LeadType(DjangoObjectType):
     project = graphene.ID(source='project_id')
     lead_preview = graphene.Field(LeadPreviewType)
     source = graphene.Field(OrganizationType)
-    authors = graphene.List(OrganizationType)
+    authors = DjangoListField(OrganizationType)
     verified_stat = graphene.Field(VerifiedStatType)
 
     @staticmethod
