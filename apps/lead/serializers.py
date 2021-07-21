@@ -378,3 +378,98 @@ class LeadOptionsSerializer(serializers.Serializer):
     emm_risk_factors = EmmTagSerializer(many=True)
     has_emm_leads = serializers.BooleanField()
     organization_types = KeyValueSerializer(many=True)
+
+
+# ------------------- Graphql Serializers ----------------------------------------
+class LeadGqSerializer(WriteOnlyOnCreateSerializerMixin, UserResourceSerializer):
+    """
+    Lead Model Serializer for Graphql (NOTE: Don't use this on DRF Views)
+    """
+    assignee = SingleValueThayMayBeListField(required=False)
+    # attachment = serializers.PrimaryKeyRelatedField(
+    #     queryset=File.objects.all(),
+    #     allow_null=True,
+    #     required=False,
+    # )
+    # NOTE: Right now this is send to client through connector and then return back to server (Only needed on create)
+    emm_triggers = LeadEMMTriggerSerializer(many=True, required=False)
+    emm_entities = EMMEntitySerializer(many=True, required=False)
+
+    class Meta:
+        model = Lead
+        fields = (
+            'title',
+            'attachment',
+            'status',
+            'assignee',
+            'confidentiality',
+            'source_type',
+            'priority',
+            'published_on',
+            'text',
+            'url',
+            'website',
+            'source',
+            'authors',
+            'emm_triggers',
+            'emm_entities',
+        )
+        write_only_on_create_fields = ['emm_triggers', 'emm_entities']
+
+    def validate_attachment(self, attachment):
+        if attachment and attachment.created_by != self.context['request'].user:
+            raise serializers.ValidationError('Attachment not found!')
+        return attachment
+
+    def validate(self, data):
+        """
+        This validator makes sure there is no duplicate leads in a project
+        """
+        # Using active project here.
+        data['project'] = project = self.context['request'].active_project
+        if self.instance and self.instance.project != project:
+            raise serializers.ValidationError('Invalid access')
+
+        attachment = data.get('attachment', self.instance and self.instance.attachment)
+        source_type = data.get('source_type', self.instance and self.instance.source_type)
+        text = data.get('text', self.instance and self.instance.text)
+        url = data.get('url', self.instance and self.instance.url)
+        raise_or_return_existing_lead(
+            project, self.instance, source_type, url, text, attachment,
+            return_lead=False,  # Raise exception
+        )
+        return data
+
+    def create(self, validated_data):
+        assignee_field = validated_data.pop('assignee', None)
+        assignee_id = assignee_field and assignee_field.get('id', None)
+        assignee = assignee_id and get_object_or_404(User, id=assignee_id)
+        # Pop out emm values from validated_data
+        emm_triggers = validated_data.pop('emm_triggers', [])
+        emm_entities = validated_data.pop('emm_entities', [])
+        # Create new lead
+        lead = super().create(validated_data)
+        # Save emm entities
+        for entity in emm_entities:
+            entity = EMMEntity.objects.filter(name=entity['name']).first()
+            if entity is None:
+                continue
+            lead.emm_entities.add(entity)
+        # Save emm triggers
+        for trigger in emm_triggers:
+            LeadEMMTrigger.objects.create(**trigger, lead=lead)
+        # Save Assignee
+        if assignee:
+            lead.assignee.add(assignee)
+        return lead
+
+    def update(self, instance, validated_data):
+        assignee_field = validated_data.pop('assignee', None)
+        assignee_id = assignee_field and assignee_field.get('id', None)
+        assignee = assignee_id and get_object_or_404(User, id=assignee_id)
+        lead = super().update(instance, validated_data)
+        if assignee_field:
+            lead.assignee.clear()
+            if assignee:
+                lead.assignee.add(assignee)
+        return lead
