@@ -165,7 +165,7 @@ class DiscardedEntryOptionsView(views.APIView):
         options = [
             {
                 'key': tag.value,
-                'value': tag.name.title()
+                'value': tag.label,
             } for tag in DiscardedEntry.TagType
         ]
         return response.Response(options)
