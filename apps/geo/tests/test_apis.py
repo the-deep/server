@@ -47,6 +47,35 @@ class RegionTests(TestCase):
         new_region = Region.objects.get(id=response.data['id'])
         self.assertTrue(new_region in project.regions.all())
 
+    def test_region_filter_not_in_project(self):
+        project_1 = self.create(Project, role=self.admin_role)
+        project_2 = self.create(Project, role=self.admin_role)
+        region_1 = self.create(Region)
+        region_2 = self.create(Region)
+        region_3 = self.create(Region)
+        project_1.regions.add(region_1)
+        project_1.regions.add(region_2)
+        project_2.regions.add(region_3)
+
+        # filter regions in project
+        url = f'/api/v1/regions/?project={project_1.id}'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(
+            set(rg['id'] for rg in response.data['results']),
+            set([region_1.id, region_2.id])
+        )
+
+        # filter the region that are not in project
+        url = f'/api/v1/regions/?exclude_project={project_1.id}'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['id'], region_3.id)
+
     def test_trigger_api(self):
         region = self.create(Region)
         url = '/api/v1/geo-areas-load-trigger/{}/'.format(region.id)
