@@ -505,7 +505,8 @@ else:
         r"^https://\w+\.thedeep\.io$",
     ]
 
-CORS_URLS_REGEX = r'(^/api/.*$)|(^/media/.*$)'
+CORS_URLS_REGEX = r'(^/api/.*$)|(^/media/.*$)|(^/graphql$)'
+CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_METHODS = (
     'DELETE',
