@@ -4,6 +4,7 @@ from django.db.models.functions import Cast
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.db import models
+from django.db import connection as django_db_connection
 
 from deep.models import ProcessStatus
 from user_resource.models import UserResource
@@ -175,6 +176,55 @@ class Project(UserResource):
             }
             for item in leads_qs.union(entry_qs).union(entry_comment_qs).order_by('-created_at')[:30]
         ]
+
+    @staticmethod
+    def get_recent_active_projects(user, qs=None, max=3):
+        # NOTE: to avoid circular import
+        from entry.models import Entry
+        from lead.models import Lead
+        # NOTE: Django ORM union don't allow annotation
+        # TODO: Need to refactor this
+        with django_db_connection.cursor() as cursor:
+            select_sql = [
+                f'''
+                    SELECT
+                        tb."project_id" AS "project",
+                        MAX(tb."{field}_at") AS "date"
+                    FROM "{Model._meta.db_table}" AS tb
+                    WHERE tb."{field}_by_id" = {user.pk}
+                    GROUP BY tb."project_id"
+                ''' for Model, field in [
+                    (Lead, 'created'),
+                    (Lead, 'modified'),
+                    (Entry, 'created'),
+                    (Entry, 'modified'),
+                ]
+            ]
+            union_sql = '(' + ') UNION ('.join(select_sql) + ')'
+            cursor.execute(
+                f'SELECT DISTINCT(entities."project"), MAX("date") as "date" FROM ({union_sql}) as entities'
+                f' GROUP BY entities."project" ORDER BY "date" DESC'
+            )
+            recent_projects_id = [pk for pk, _ in cursor.fetchall()]
+        if qs is None:
+            qs = Project.get_for_member(user)
+        # only the projects user is member among the recent projects
+        current_users_project_id = set(qs.filter(pk__in=recent_projects_id).values_list('pk', flat=True))
+        recent_projects_id = [
+            pk
+            for pk in recent_projects_id
+            if pk in current_users_project_id # filter out user project
+        ][:max]
+        projects_map = {
+            project.pk: project
+            for project in qs.filter(pk__in=recent_projects_id)
+        }
+        # Maintain the order
+        recent_projects = [
+            projects_map[id]
+            for id in recent_projects_id if projects_map.get(id)
+        ]
+        return recent_projects
 
     @staticmethod
     def get_for_public(requestUser, user):
