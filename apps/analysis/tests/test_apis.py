@@ -724,6 +724,9 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(data[0]['pillars'][0]['id'], pillar4.id)
         self.assertEqual(data[0]['analyzed_entries'], 4)
         self.assertEqual(data[0]['analyzed_sources'], 4)
+        # Should be same in each analysis of the project
+        self.assertEqual(data[1]['total_entries'], 10)
+        self.assertEqual(data[1]['total_sources'], 8)
 
         # try to post to api
         data = {'team_lead': user.id}
