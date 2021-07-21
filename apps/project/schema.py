@@ -11,7 +11,21 @@ from .models import Project
 from .filter_set import ProjectFilterSet
 
 
+class ProjectTypeMixin():
+    # NOTE: This is a custom feature
+    # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
+    @staticmethod
+    def get_custom_node(queryset, info, id):
+        try:
+            project = Project.get_for_gq(info.context.user).get(pk=id)
+            info.context.set_active_project(project)
+            return project
+        except Project.DoesNotExist:
+            return None
+
+
 class ProjectType(
+    ProjectTypeMixin,
     # -- Start --Project scopped entities
     LeadQuery,
     # --  End  --Project scopped entities
@@ -28,17 +42,6 @@ class ProjectType(
         )
 
     current_user_role = graphene.String()
-
-    # NOTE: This is a custom feature
-    # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
-    @staticmethod
-    def get_custom_node(queryset, info, id):
-        try:
-            project = Project.get_for_gq(info.context.user).get(pk=id)
-            info.context.set_active_project(project)
-            return project
-        except Project.DoesNotExist:
-            return None
 
 
 class ProjectListType(CustomDjangoListObjectType):
