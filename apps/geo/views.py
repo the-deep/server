@@ -3,6 +3,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.gdal.error import GDALException
 from django.conf import settings
 from django.db import models
+
 from rest_framework import (
     exceptions,
     filters,
@@ -19,8 +20,6 @@ from deep.permissions import (
     ModifyPermission,
     IsProjectMember
 )
-from user_resource.filters import UserResourceFilterSet
-
 from project.models import Project
 from .models import Region, AdminLevel, GeoArea
 from .serializers import (
@@ -28,28 +27,12 @@ from .serializers import (
     RegionSerializer,
     GeoAreaSerializer
 )
-from .filter_set import GeoAreaFilterSet
+from .filter_set import (
+    GeoAreaFilterSet,
+    AdminLevelFilterSet,
+    RegionFilterSet
+)
 from geo.tasks import load_geo_areas
-
-
-class RegionFilterSet(UserResourceFilterSet):
-    """
-    Region filter set
-
-    Filter by code, title and public fields
-    """
-    class Meta:
-        model = Region
-        fields = ['id', 'code', 'title', 'public', 'project',
-                  'created_at', 'created_by', 'modified_at', 'modified_by']
-        filter_overrides = {
-            models.CharField: {
-                'filter_class': django_filters.CharFilter,
-                'extra': lambda f: {
-                    'lookup_expr': 'icontains',
-                },
-            },
-        }
 
 
 class RegionViewSet(viewsets.ModelViewSet):
@@ -123,25 +106,6 @@ class RegionCloneView(views.APIView):
 
         return response.Response(serializer.data,
                                  status=status.HTTP_201_CREATED)
-
-
-class AdminLevelFilterSet(django_filters.rest_framework.FilterSet):
-    """
-    AdminLevel filter set
-
-    Filter by title, region and parent
-    """
-    class Meta:
-        model = AdminLevel
-        fields = ['id', 'title', 'region', 'parent']
-        filter_overrides = {
-            models.CharField: {
-                'filter_class': django_filters.CharFilter,
-                'extra': lambda f: {
-                    'lookup_expr': 'icontains',
-                },
-            },
-        }
 
 
 class AdminLevelViewSet(viewsets.ModelViewSet):
