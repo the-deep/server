@@ -242,7 +242,6 @@ class LeadFilterSet(django_filters.FilterSet):
 class LeadGroupFilterSet(UserResourceFilterSet):
     project = django_filters.ModelMultipleChoiceFilter(
         queryset=Project.objects.all(),
-        lookup_expr='in',
         widget=django_filters.widgets.CSVWidget,
     )
 
