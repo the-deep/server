@@ -92,7 +92,7 @@ class SimpleExportableSerializer(RemoveNullFieldsMixin,
 
 
 class AnalysisFrameworkRoleSerializer(
-    RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer,
+    RemoveNullFieldsMixin, serializers.ModelSerializer,
 ):
     class Meta:
         model = AnalysisFrameworkRole
