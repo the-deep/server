@@ -151,20 +151,17 @@ class Analysis(UserResource, ProjectEntityMixin):
             }
 
     @classmethod
-    def annotate_for_analysis_summary(cls, project_id, queryset, user, filters=None):
+    def annotate_for_analysis_summary(cls, project_id, queryset, user):
         """
         This is used by AnalysisSummarySerializer and AnalysisViewSet.get_summary
         """
-        # NOTE: Models aren't loaded yet, so lazy importing.
-        from entry.filter_set import get_filtered_entries
-
-        entries_filter_data = (filters or {}).get('entries_filter_data', {})
-        total_entries = get_filtered_entries(user, entries_filter_data).count()
+        # NOTE: Using the entries  and lead in the project for total entries and leads in analysis level
         total_sources = Lead.objects\
             .filter(project=project_id)\
             .annotate(entries_count=models.Count('entry'))\
             .filter(entries_count__gt=0)\
             .count()
+        total_entries = Entry.objects.filter(project=project_id).count()
 
         # Prefetch for AnalysisSummaryPillarSerializer.
         analysispillar_prefetch = models.Prefetch(
