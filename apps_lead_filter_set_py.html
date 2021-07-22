@@ -297,28 +297,27 @@
     <p id="t242" class="run"><span class="n"><a href="#t242">242</a></span><span class="t"><span class="key">class</span> <span class="nam">LeadGroupFilterSet</span><span class="op">(</span><span class="nam">UserResourceFilterSet</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t243" class="run"><span class="n"><a href="#t243">243</a></span><span class="t">    <span class="nam">project</span> <span class="op">=</span> <span class="nam">django_filters</span><span class="op">.</span><span class="nam">ModelMultipleChoiceFilter</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t244" class="pln"><span class="n"><a href="#t244">244</a></span><span class="t">        <span class="nam">queryset</span><span class="op">=</span><span class="nam">Project</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t245" class="pln"><span class="n"><a href="#t245">245</a></span><span class="t">        <span class="nam">lookup_expr</span><span class="op">=</span><span class="str">'in'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t246" class="pln"><span class="n"><a href="#t246">246</a></span><span class="t">        <span class="nam">widget</span><span class="op">=</span><span class="nam">django_filters</span><span class="op">.</span><span class="nam">widgets</span><span class="op">.</span><span class="nam">CSVWidget</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t247" class="pln"><span class="n"><a href="#t247">247</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t248" class="pln"><span class="n"><a href="#t248">248</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t249" class="run"><span class="n"><a href="#t249">249</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t250" class="run"><span class="n"><a href="#t250">250</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">LeadGroup</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t251" class="run"><span class="n"><a href="#t251">251</a></span><span class="t">        <span class="nam">fields</span> <span class="op">=</span> <span class="op">[</span><span class="str">'id'</span><span class="op">,</span> <span class="str">'title'</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t252" class="pln"><span class="n"><a href="#t252">252</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t253" class="run"><span class="n"><a href="#t253">253</a></span><span class="t">        <span class="nam">filter_overrides</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t254" class="pln"><span class="n"><a href="#t254">254</a></span><span class="t">            <span class="nam">models</span><span class="op">.</span><span class="nam">CharField</span><span class="op">:</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t255" class="pln"><span class="n"><a href="#t255">255</a></span><span class="t">                <span class="str">'filter_class'</span><span class="op">:</span> <span class="nam">django_filters</span><span class="op">.</span><span class="nam">CharFilter</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t256" class="pln"><span class="n"><a href="#t256">256</a></span><span class="t">                <span class="str">'extra'</span><span class="op">:</span> <span class="key">lambda</span> <span class="nam">f</span><span class="op">:</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t257" class="pln"><span class="n"><a href="#t257">257</a></span><span class="t">                    <span class="str">'lookup_expr'</span><span class="op">:</span> <span class="str">'icontains'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t258" class="pln"><span class="n"><a href="#t258">258</a></span><span class="t">                <span class="op">}</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t259" class="pln"><span class="n"><a href="#t259">259</a></span><span class="t">            <span class="op">}</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t260" class="pln"><span class="n"><a href="#t260">260</a></span><span class="t">        <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t245" class="pln"><span class="n"><a href="#t245">245</a></span><span class="t">        <span class="nam">widget</span><span class="op">=</span><span class="nam">django_filters</span><span class="op">.</span><span class="nam">widgets</span><span class="op">.</span><span class="nam">CSVWidget</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t246" class="pln"><span class="n"><a href="#t246">246</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t247" class="pln"><span class="n"><a href="#t247">247</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t248" class="run"><span class="n"><a href="#t248">248</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t249" class="run"><span class="n"><a href="#t249">249</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">LeadGroup</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t250" class="run"><span class="n"><a href="#t250">250</a></span><span class="t">        <span class="nam">fields</span> <span class="op">=</span> <span class="op">[</span><span class="str">'id'</span><span class="op">,</span> <span class="str">'title'</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t251" class="pln"><span class="n"><a href="#t251">251</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t252" class="run"><span class="n"><a href="#t252">252</a></span><span class="t">        <span class="nam">filter_overrides</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t253" class="pln"><span class="n"><a href="#t253">253</a></span><span class="t">            <span class="nam">models</span><span class="op">.</span><span class="nam">CharField</span><span class="op">:</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t254" class="pln"><span class="n"><a href="#t254">254</a></span><span class="t">                <span class="str">'filter_class'</span><span class="op">:</span> <span class="nam">django_filters</span><span class="op">.</span><span class="nam">CharFilter</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t255" class="pln"><span class="n"><a href="#t255">255</a></span><span class="t">                <span class="str">'extra'</span><span class="op">:</span> <span class="key">lambda</span> <span class="nam">f</span><span class="op">:</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t256" class="pln"><span class="n"><a href="#t256">256</a></span><span class="t">                    <span class="str">'lookup_expr'</span><span class="op">:</span> <span class="str">'icontains'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t257" class="pln"><span class="n"><a href="#t257">257</a></span><span class="t">                <span class="op">}</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t258" class="pln"><span class="n"><a href="#t258">258</a></span><span class="t">            <span class="op">}</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t259" class="pln"><span class="n"><a href="#t259">259</a></span><span class="t">        <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
 </div>
 <div id="footer">
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-07-22 07:37 +0000
+            created at 2021-07-22 14:40 +0000
         </p>
     </div>
 </div>
