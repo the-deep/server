@@ -1132,12 +1132,12 @@ class TestAnalysisAPIs(TestCase):
             DiscardedEntry.TagType.REDUNDANT)
         self.assertEqual(
             response.data[0]['value'],
-            DiscardedEntry.TagType.REDUNDANT.name.title()
+            DiscardedEntry.TagType.REDUNDANT.label
         )
         self.assertEqual(
             response.data[1]['key'],
             DiscardedEntry.TagType.TOO_OLD)
         self.assertEqual(
             response.data[1]['value'],
-            DiscardedEntry.TagType.TOO_OLD.name.title()
+            DiscardedEntry.TagType.TOO_OLD.label
         )
