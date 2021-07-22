@@ -1519,6 +1519,53 @@ class LeadTests(TestCase):
         assert 'emm_entities' in resp.data
         assert 'emm_triggers' in resp.data
 
+    def test_lead_group_post(self):
+        project = self.create_project()
+        data = {
+            'project': project.id,
+            'title': 'Test Lead Group Title'
+        }
+        url = '/api/v1/lead-groups/'
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_201(response)
+        self.assertEqual(response.data['title'], data['title'])
+        self.assertEqual(response.data['project'], data['project'])
+
+    def test_lead_group_get(self):
+        project_1 = self.create_project()
+        project_2 = self.create_project()
+        leadg_1 = self.create(LeadGroup, project=project_1, title='test1')
+        leadg_2 = self.create(LeadGroup, project=project_1, title='test2')
+        self.create(LeadGroup, project=project_2, title='test3')
+        self.create(LeadGroup, project=project_2, title='test4')
+
+        url = '/api/v1/lead-groups/'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(len(response.data), 4)
+
+        # test for project filter
+        url = f'/api/v1/lead-groups/?project={project_1.id}'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(
+            set(lg['id'] for lg in response.data['results']),
+            set([leadg_1.id, leadg_2.id])
+        )
+
+        # test for the search field `title`
+        url = f'/api/v1/lead-groups/?search=test1'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['id'], leadg_1.id)
+
+
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:
 # source, country, date, website
