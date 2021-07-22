@@ -54,7 +54,7 @@ class RegionFilterSet(UserResourceFilterSet):
 
     def exclude_project_region_filter(self, qs, name, value):
         if value:
-            return qs.filter(~models.Q(project__in=value)).distinct()
+            return qs.exclude(project__in=value).distinct()
         return qs
 
 
