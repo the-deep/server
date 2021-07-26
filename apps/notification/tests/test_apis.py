@@ -1,3 +1,4 @@
+import pytest
 from datetime import timedelta
 
 from deep.tests import TestCase
@@ -227,6 +228,10 @@ class TestNotificationAPIs(TestCase):
         assert data['unseen_requests'] == 0
 
 
+# XXX:
+#     apps/leads/tests/test_schemas.py::TestLeadBulkMutationSchema->BulkGrapheneMutation
+#     is causing issue, so running this before all.
+@pytest.mark.run(order=1)
 class TestAssignmentApi(TestCase):
     """ Api test for assignment model"""
 
@@ -302,7 +307,8 @@ class TestAssignmentApi(TestCase):
         self.assert_200(response)
 
         data = response.data
-        assert data['count'] == 1
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['content_object_type'], 'lead')
         self.assertEqual(response.data['results'][0]['content_object_details']['id'], lead.id)
         self.assertEqual(response.data['results'][0]['content_object_details']['title'], 'Changed')  # the new title
 

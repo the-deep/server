@@ -449,3 +449,8 @@ def is_valid_number(value):
     except (TypeError, ValueError):
         return False
     return True
+
+
+def to_camelcase(snake_str):
+    components = snake_str.split('_')
+    return components[0] + "".join(x.title() for x in components[1:])

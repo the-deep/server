@@ -139,7 +139,10 @@ class DebugToolbarMiddleware(BaseMiddleware):
             return self.get_response(request)
 
         content_type = request.content_type
-        html_type = content_type in _HTML_TYPES
+        html_type = content_type in _HTML_TYPES or (
+            # FIXME: This will show debug toolbar widget
+            request.method == 'GET' and request.path == '/graphiql'
+        )
 
         if html_type:
             response = super().__call__(request)

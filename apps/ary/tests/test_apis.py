@@ -204,9 +204,9 @@ class AssessmentTests(TestCase):
         project4d = self.create(Project, title='project4d', role=self.view_only_role)
 
         lead1s = self.create(
-            Lead, title='lead1s', source_type=Lead.WEBSITE, url='https://random-source-11010', project=project1s)
+            Lead, title='lead1s', source_type=Lead.SourceType.WEBSITE, url='https://random-source-11010', project=project1s)
         lead2s = self.create(
-            Lead, title='lead2s', source_type=Lead.WEBSITE, url='https://random-source-11011', project=project2s)
+            Lead, title='lead2s', source_type=Lead.SourceType.WEBSITE, url='https://random-source-11011', project=project2s)
         lead3s = self.create(Lead, title='lead3s', project=project3s)
         lead4s = self.create(Lead, title='lead4s', project=project4s)
 

@@ -1,12 +1,16 @@
-from utils.graphene.tests import GraphqlTestCase
+from utils.graphene.tests import GraphQLTestCase
 
 from analysis_framework.models import AnalysisFramework
-from project.models import Project
+
+from user.factories import UserFactory
+from analysis_framework.factories import AnalysisFrameworkFactory
+from project.factories import ProjectFactory
 
 
-class TestAnalysisFrameworkCreateUpdate(GraphqlTestCase):
+class TestAnalysisFrameworkCreateUpdate(GraphQLTestCase):
     def setUp(self):
         super().setUp()
+        self.user = UserFactory.create()
         self.create_mutation = '''
         mutation Mutation($input: AnalysisFrameworkInputType!) {
           createAnalysisFramework(data: $input) {
@@ -40,7 +44,7 @@ class TestAnalysisFrameworkCreateUpdate(GraphqlTestCase):
         self.input = dict(
             title='new title'
         )
-        self.force_login()
+        self.force_login(self.user)
 
         response = self.query(
             self.create_mutation,
@@ -56,13 +60,14 @@ class TestAnalysisFrameworkCreateUpdate(GraphqlTestCase):
         )
 
     def test_create_private_framework_unauthorized(self):
-        project = self.create(Project, role=self.role_admin)
+        project = ProjectFactory.create()
+        project.add_member(self.user)
         self.input = dict(
             title='new title',
             isPrivate=True,
             project=project.id,
         )
-        self.force_login()
+        self.force_login(self.user)
         response = self.query(
             self.create_mutation,
             input_data=self.input
@@ -74,7 +79,8 @@ class TestAnalysisFrameworkCreateUpdate(GraphqlTestCase):
         self.assertIn('permission', content['errors'][0]['message'])
 
     def test_invalid_create_framework_privately_in_public_project(self):
-        project = self.create(Project, role=self.role_admin, is_private=False)
+        project = ProjectFactory.create(is_private=False)
+        project.add_member(self.user)
         self.assertEqual(project.is_private, False)
 
         self.input = dict(
@@ -82,7 +88,7 @@ class TestAnalysisFrameworkCreateUpdate(GraphqlTestCase):
             isPrivate=True,
             project=project.id,
         )
-        self.force_login()
+        self.force_login(self.user)
 
         response = self.query(
             self.create_mutation,
@@ -94,8 +100,8 @@ class TestAnalysisFrameworkCreateUpdate(GraphqlTestCase):
 
     def test_change_is_private_field(self):
         """Even the owner should be unable to change privacy"""
-        private_framework = self.create(AnalysisFramework, is_private=True)
-        public_framework = self.create(AnalysisFramework, is_private=False)
+        private_framework = AnalysisFrameworkFactory.create(is_private=True)
+        public_framework = AnalysisFrameworkFactory.create(is_private=False)
         user = self.user
         private_framework.add_member(
             user,
@@ -113,8 +119,8 @@ class TestAnalysisFrameworkCreateUpdate(GraphqlTestCase):
         self.assertIn('permission', content['errors'][0]['message'])
 
     def test_change_other_fields(self):
-        private_framework = self.create(AnalysisFramework, is_private=True)
-        public_framework = self.create(AnalysisFramework, is_private=False)
+        private_framework = AnalysisFrameworkFactory.create(is_private=True)
+        public_framework = AnalysisFrameworkFactory.create(is_private=False)
         user = self.user
         private_framework.add_member(
             user,

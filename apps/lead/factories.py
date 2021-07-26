@@ -4,7 +4,7 @@ from factory.django import DjangoModelFactory
 
 from project.factories import ProjectFactory
 from gallery.factories import FileFactory
-from .models import Lead
+from .models import Lead, EMMEntity
 
 
 class LeadFactory(DjangoModelFactory):
@@ -23,3 +23,10 @@ class LeadFactory(DjangoModelFactory):
         if extracted:
             for author in extracted:
                 self.authors.add(author)
+
+
+class EmmEntityFactory(DjangoModelFactory):
+    name = factory.Sequence(lambda n: f'emm-name-{n}')
+
+    class Meta:
+        model = EMMEntity

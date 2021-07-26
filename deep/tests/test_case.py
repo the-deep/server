@@ -46,6 +46,7 @@ class TestCase(test.APITestCase):
         super().setUp()
 
     def tearDown(self):
+        super().tearDown()
         _set_middleware_current_request(None)
         for file_path in self.deep_test_files_path:
             if os.path.isfile(file_path):
@@ -318,18 +319,3 @@ class TestCase(test.APITestCase):
 
     def get_aware_datetime_str(self, *args, **kwargs):
         return self.get_aware_datetime(*args, **kwargs).strftime('%Y-%m-%d%z')
-
-    def assertListIds(
-        self,
-        current_list, excepted_list, message,
-        get_excepted_list_id=lambda x: str(x.id),
-        get_current_list_id=lambda x: str(x['id']),
-    ):
-        self.assertEqual(
-            set([get_current_list_id(item) for item in current_list]),
-            set([get_excepted_list_id(item) for item in excepted_list]),
-            message,
-        )
-
-    def get_media_url(self, file):
-        return f'http://testserver/media/{file}'

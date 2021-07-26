@@ -22,7 +22,9 @@ class FileFactory(DjangoModelFactory):
     )
     # is_public = factory.Iterator([True, False])
     mime_type = factory.Faker('mime_type')
-    metadata = factory.Dict({'md5_hash': 'random-hash'})
+    metadata = factory.Dict({
+        'md5_hash': factory.Sequence(lambda n: f'random-hash-{n}'),
+    })
 
     @factory.post_generation
     def addresses(self, create, extracted, **kwargs):

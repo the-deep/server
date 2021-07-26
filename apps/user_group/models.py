@@ -42,7 +42,7 @@ class UserGroup(UserResource):
         return UserGroup.objects.filter(
             groupmembership__in=GroupMembership.objects.filter(
                 member=user,
-                role='admin',
+                role=GroupMembership.Role.ADMIN,
             )
         ).distinct()
 
@@ -56,13 +56,14 @@ class UserGroup(UserResource):
         return GroupMembership.objects.filter(
             group=self,
             member=user,
-            role='admin',
+            role=GroupMembership.Role.ADMIN,
         ).exists()
 
-    def add_member(self, user, role='normal', added_by=None):
+    def add_member(self, user, role=None, added_by=None):
+        _role = role or GroupMembership.Role.NORMAL
         return GroupMembership.objects.create(
             member=user,
-            role=role,
+            role=_role,
             group=self,
             added_by=added_by or user,
         )
@@ -72,15 +73,13 @@ class GroupMembership(models.Model):
     """
     User group-Member relationship attributes
     """
-    ROLES = [
-        ('normal', 'Normal'),
-        ('admin', 'Admin'),
-    ]
+    class Role(models.TextChoices):
+        NORMAL = 'normal', 'Normal'
+        ADMIN = 'admin', 'Admin'
 
     member = models.ForeignKey(User, on_delete=models.CASCADE)
     group = models.ForeignKey(UserGroup, on_delete=models.CASCADE)
-    role = models.CharField(max_length=96, choices=ROLES,
-                            default='normal')
+    role = models.CharField(max_length=96, choices=Role.choices, default=Role.NORMAL)
     joined_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(
         User, on_delete=models.CASCADE,
