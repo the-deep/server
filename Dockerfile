@@ -1,5 +1,7 @@
 FROM python:3.8-slim-buster
 
+LABEL maintainer="Deep Dev dev@thedeep.com"
+
 ENV PYTHONUNBUFFERED 1
 ARG ORCA_VERSION=1.2.1
 

@@ -8,18 +8,14 @@ from rest_framework.compat import uritemplate
 
 from deep.serializers import RecursiveSerializer
 from user.models import User
+from utils.common import to_camelcase
 from .utils import is_list_view, is_custom_action
 from . import schema
 
 
-def to_camel_case(snake_str):
-    components = snake_str.split('_')
-    return components[0] + "".join(x.title() for x in components[1:])
-
-
 def format_field_name(field_name, required, camelcase):
     if camelcase:
-        field_name = to_camel_case(field_name)
+        field_name = to_camelcase(field_name)
     if required:
         field_name += '*'
     return field_name
@@ -28,7 +24,7 @@ def format_field_name(field_name, required, camelcase):
 def field_to_schema(field, camelcase=True):
     # title = force_text(field.label) if field.label else ''
     # if camelcase:
-    #     title = to_camel_case(title)
+    #     title = to_camelcase(title)
     # description = force_text(field.help_text) if field.help_text else ''
 
     if isinstance(field, RecursiveSerializer):
@@ -232,7 +228,7 @@ class ViewSchema:
 
             required = field.required and method != 'PATCH'
             out_field = Field(
-                title=to_camel_case(field.field_name),
+                title=to_camelcase(field.field_name),
                 required=required,
                 schema=field_to_schema(field),
             )

@@ -1,10 +1,10 @@
-from utils.graphene.tests import GraphqlTestCase
+from utils.graphene.tests import GraphQLTestCase
 
 from user.factories import UserFactory
 from project.factories import ProjectFactory
 
 
-class TestProjectSchema(GraphqlTestCase):
+class TestProjectSchema(GraphQLTestCase):
     def test_project_query(self):
         """
         Test private + non-private project behaviour
@@ -100,7 +100,7 @@ class TestProjectSchema(GraphqlTestCase):
         self.assertEqual(content['data']['projects']['results'][1]['id'], str(private_project.pk), content)
 
 
-class TestProjectFilterSchema(GraphqlTestCase):
+class TestProjectFilterSchema(GraphQLTestCase):
     def test_project_query_filter(self):
         query = '''
             query MyQuery ($isCurrentUserMember: Boolean!) {

@@ -1,19 +1,21 @@
 import os
 import json
+import pytz
 import shutil
+import datetime
+from enum import Enum
 from unittest.mock import patch
 
+from snapshottest.django import TestCase as SnapShotTextCase
+from django.core import management
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 # dramatiq test case: setupclass is not properly called
 # from django_dramatiq.test import DramatiqTestCase
-from graphene_django.utils import GraphQLTestCase
-from jwt_auth.token import AccessToken, RefreshToken
+from graphene_django.utils import GraphQLTestCase as BaseGraphQLTestCase
 from project.permissions import get_project_permissions_value
 from project.models import ProjectRole
-
-from deep.tests.test_case import TestCase as DeepTestCase
 
 User = get_user_model()
 TEST_MEDIA_ROOT = 'media-temp'
@@ -52,21 +54,27 @@ class CommonSetupClassMixin:
     AUTH_PASSWORD_VALIDATORS=TEST_AUTH_PASSWORD_VALIDATORS,
     CELERY_TASK_ALWAYS_EAGER=True,
 )
-class GraphqlTestCase(CommonSetupClassMixin, DeepTestCase, GraphQLTestCase):
+class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
+    """
+    GraphQLTestCase with custom helper methods
+    """
+
     GRAPHQL_SCHEMA = 'deep.schema.schema'
 
-    def force_login(self, user=None):
-        # TODO: Use session cookiee authentication
-        user = user or self.user
-        access = AccessToken.for_user(user)
-        refresh = RefreshToken.for_access_token(access)
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(access.encode())
-        )
-        # set the session as well
+    def setUp(self):
+        super().setUp()
+        self.create_project_roles()
+
+    def force_login(self, user):
         self.client.force_login(user)
 
-        return access.encode(), refresh.encode()
+    def genum(self, _enum: Enum):
+        """
+        Return appropriate enum value.
+        """
+        if isinstance(_enum.value, int):
+            return f'A_{_enum.value}'
+        return _enum.name
 
     def assertResponseErrors(self, resp, msg=None):
         """
@@ -78,7 +86,7 @@ class GraphqlTestCase(CommonSetupClassMixin, DeepTestCase, GraphQLTestCase):
         self.assertEqual(resp.status_code, 200, msg or content)
         self.assertIn("errors", list(content.keys()), msg or content)
 
-    def query_check(self, query, minput=None, assert_for_error=False, okay=None, **kwargs) -> dict:
+    def query_check(self, query, minput=None, mnested=None, assert_for_error=False, okay=None, **kwargs) -> dict:
         if minput:
             response = self.query(query, input_data=minput, **kwargs)
         else:
@@ -89,13 +97,18 @@ class GraphqlTestCase(CommonSetupClassMixin, DeepTestCase, GraphQLTestCase):
         else:
             self.assertResponseNoErrors(response)
             if okay is not None:
-                for key, datum in content['data'].items():
+                _content = content['data']
+                if mnested:
+                    for key in mnested:
+                        _content = _content[key]
+                for key, datum in _content.items():
                     if key == '__typename':
                         continue
+                    okay_response = datum.get('ok')
                     if okay:
-                        self.assertTrue(datum['ok'], content)
+                        self.assertTrue(okay_response, content)
                     else:
-                        self.assertFalse(datum['ok'], content)
+                        self.assertFalse(okay_response, content)
         return content
 
     def create_project_roles(self):
@@ -128,30 +141,66 @@ class GraphqlTestCase(CommonSetupClassMixin, DeepTestCase, GraphQLTestCase):
         self.role_admin = _create_role('Admin')
         self.role_clairvoyant_one = _create_role('Clairvoyant One')
 
+    def assertListIds(
+        self,
+        current_list, excepted_list, message,
+        get_current_list_id=lambda x: str(x['id']),
+        get_excepted_list_id=lambda x: str(x.id),
+    ):
+        self.assertEqual(
+            set([get_current_list_id(item) for item in current_list]),
+            set([get_excepted_list_id(item) for item in excepted_list]),
+            message,
+        )
 
-class ImmediateOnCommitMixin(object):
+    def assertIdEqual(self, excepted, real, message=None):
+        return self.assertEqual(str(excepted), str(real), message)
+
+    def assertCustomDictEqual(self, excepted, real, message=None, ignore_keys=[], only_keys=[]):
+        def _filter_by_keys(_dict, keys, exclude=False):
+            def _include(key):
+                if exclude:
+                    return key not in keys
+                return key in keys
+            return {
+                key: value
+                for key, value in _dict.items()
+                if _include(key)
+            }
+
+        if only_keys:
+            assert _filter_by_keys(excepted, keys=only_keys) == _filter_by_keys(real, keys=only_keys), message
+        elif ignore_keys:
+            assert _filter_by_keys(excepted, keys=ignore_keys, exclude=True) \
+                == _filter_by_keys(real, keys=ignore_keys, exclude=True),\
+                message
+        else:
+            assert excepted == real, message
+
+    def get_media_url(self, file):
+        return f'http://testserver/media/{file}'
+
+
+class GraphQLSnapShotTestCase(GraphQLTestCase, SnapShotTextCase):
     """
-    Note: shamelessly copied from https://code.djangoproject.com/ticket/30457
-
-    Will be redundant in immediate_on_commit function is actually implemented in Django 3.2
-    Check this PR: https://github.com/django/django/pull/12944
+    This TestCase can be used with `self.assertMatchSnapshot`.
+    Make sure to only include snapshottests as we are using database flush.
     """
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
+    maxDiff = None
+    factories_used = []
 
-        def immediate_on_commit(func, using=None):
-            func()
-        # Context manager executing transaction.on_commit() hooks immediately
-        # This is required when using a subclass of django.test.TestCase as all tests are wrapped in
-        # a transaction that never gets committed.
-        cls.on_commit_mgr = patch('django.db.transaction.on_commit', side_effect=immediate_on_commit)
-        cls.on_commit_mgr.__enter__()
+    def setUp(self):
+        # XXX: This is hacky way to make sure id aren't changed in snapshot. This makes the test slower.
+        management.call_command("flush", "--no-input")
+        for factory in self.factories_used:
+            factory.reset_sequence()
+        super().setUp()
+        self.now_patcher = patch('django.utils.timezone.now')
+        self.now_patcher.start().return_value = datetime.datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
 
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        cls.on_commit_mgr.__exit__()
+    def tearDown(self):
+        self.now_patcher.stop()
+        super().tearDown()
 
 
 @override_settings(
@@ -161,5 +210,5 @@ class ImmediateOnCommitMixin(object):
     CACHES=TEST_CACHES,
     AUTH_PASSWORD_VALIDATORS=TEST_AUTH_PASSWORD_VALIDATORS,
 )
-class CommonTestCase(CommonSetupClassMixin, ImmediateOnCommitMixin, TestCase):
+class CommonTestCase(CommonSetupClassMixin, TestCase):
     pass

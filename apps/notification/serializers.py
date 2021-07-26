@@ -75,7 +75,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id',
             'created_at',
-            'project_details', 'created_by_details', 'content_object_details'
+            'project_details', 'created_by_details', 'content_object_details', 'content_type'
         ]
         fields = read_only_fields + ['is_done']
 

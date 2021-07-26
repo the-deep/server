@@ -138,7 +138,7 @@ class EMM(RssFeed):
 
             leads_infos.append({
                 'id': random_key(),
-                'source_type': Lead.EMM,
+                'source_type': Lead.SourceType.EMM,
                 'emm_triggers': [LeadEMMTrigger(**x) for x in item_triggers],
                 'emm_entities': item_entities,
                 **lead_info,

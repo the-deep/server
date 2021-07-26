@@ -194,7 +194,7 @@ def classify_lead(lead):
         )
         return False
 
-    preview.classification_status = LeadPreview.STATUS_CLASSIFICATION_INITIATED
+    preview.classification_status = LeadPreview.ClassificationStatus.INITIATED
     preview.save()
     data = {
         'deeper': 1,
@@ -202,14 +202,13 @@ def classify_lead(lead):
         'text': preview.text_extract,
     }
     try:
-        response = requests.post(DEEPL_CLASSIFY_URL,
-                                    data=data)
+        response = requests.post(DEEPL_CLASSIFY_URL, data=data)
     except requests.exceptions.ConnectionError:
-        preview.classification_status = LeadPreview.STATUS_CLASSIFICATION_FAILED
+        preview.classification_status = LeadPreview.ClassificationStatus.FAILED
         preview.save()
         return False
     if response.status_code != 200 and response.status_code != 201:
-        preview.classification_status = LeadPreview.STATUS_CLASSIFICATION_ERRORED
+        preview.classification_status = LeadPreview.ClassificationStatus.ERRORED
         preview.save()
         raise Exception(
             "Status code {} from DEEPL Server response {}".format(
@@ -220,7 +219,7 @@ def classify_lead(lead):
         response_data = response.json()
         classified_doc_id = response_data.get('id')
 
-        preview.classification_status = LeadPreview.STATUS_CLASSIFICATION_COMPLETED
+        preview.classification_status = LeadPreview.ClassificationStatus.COMPLETED
 
         preview.classified_doc_id = classified_doc_id
         preview.save()
@@ -301,9 +300,9 @@ def get_unclassified_leads(limit=10):
         ~Q(leadpreview__text_extract__regex=r'^\W*$'),
         leadpreview__classified_doc_id=None,
         leadpreview__classification_status__in=[
-            LeadPreview.STATUS_CLASSIFICATION_FAILED,
-            LeadPreview.STATUS_CLASSIFICATION_NONE,
-            LeadPreview.STATUS_CLASSIFICATION_INITIATED,
+            LeadPreview.ClassificationStatus.FAILED,
+            LeadPreview.ClassificationStatus.NONE,
+            LeadPreview.ClassificationStatus.INITIATED,
         ],
     ).annotate(
         text_len=Length('leadpreview__text_extract')
