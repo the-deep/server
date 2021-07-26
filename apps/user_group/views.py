@@ -1,13 +1,15 @@
+from django.db import models
 
 from rest_framework import (
     permissions,
     viewsets,
 )
 from rest_framework.decorators import action
-from django.db import models
 
-from deep.permissions import ModifyPermission
-
+from deep.permissions import (
+    ModifyPermission,
+    IsUserGroupMember
+)
 from utils.db.functions import StrPos
 from .models import (
     GroupMembership,
@@ -37,6 +39,19 @@ class UserGroupViewSet(viewsets.ModelViewSet):
         user_groups = UserGroup.get_for_member(user)
 
         self.page = self.paginate_queryset(user_groups)
+        serializer = self.get_serializer(self.page, many=True)
+        return self.get_paginated_response(serializer.data)
+
+    @action(
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated, IsUserGroupMember],
+        serializer_class=GroupMembershipSerializer,
+        url_path='memberships',
+    )
+    def get_usergroup_member(self, request, pk, version=None):
+        user_group = self.get_object()
+        members = GroupMembership.get_member_for_user_group(user_group)
+        self.page = self.paginate_queryset(members)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)
 

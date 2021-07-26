@@ -181,3 +181,28 @@ class UserGroupApiTest(TestCase):
         final_memberships = ProjectMembership.objects.filter(project=project)
         final_membership_count = final_memberships.count()
         self.assertEqual(final_membership_count, 1)
+
+    def test_user_group_memberships(self):
+        test_user1 = self.create_user()
+        test_user2 = self.create_user()
+        user_group1 = self.create(UserGroup)
+        user_group2 = self.create(UserGroup)
+        GroupMembership.objects.create(member=test_user1, group=user_group1)
+        GroupMembership.objects.create(member=test_user2, group=user_group1)
+        GroupMembership.objects.create(member=test_user1, group=user_group2)
+
+        url = f'/api/v1/user-groups/{user_group1.id}/memberships/'
+        self.authenticate(test_user1)
+        response = self.client.get(url)
+        self.assert_200(response)
+        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(
+            set(members['member'] for members in response.data['results']),
+            set([test_user1.id, test_user2.id])
+        )
+
+        # request by user who is not member of usergroup
+        url = f'/api/v1/user-groups/{user_group2.id}/memberships/'
+        self.authenticate(test_user2)
+        response = self.client.get(url)
+        self.assert_403(response)
