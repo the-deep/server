@@ -1,11 +1,10 @@
 import logging
 from enum import Enum, auto, unique
 
-from typing import List, Callable
 from django.db.models import F
-from django.core.exceptions import PermissionDenied
 from rest_framework import permissions
 
+from deep.exceptions import PermissionDeniedException
 from project.models import Project, ProjectRole
 from project.permissions import PROJECT_PERMISSIONS
 from lead.models import Lead
@@ -203,20 +202,34 @@ class ProjectPermissions():
 
     @unique
     class Permission(Enum):
-        # ------ Project (0) ------
+        # ---------------------- Project
         UPDATE_PROJECT = auto()
-        # ------ Lead (200) ------
+        # ---------------------- Lead
         CREATE_LEAD = auto()
         VIEW_ONLY_UNPROTECTED_LEAD = auto()
         VIEW_ALL_LEAD = auto()
         UPDATE_LEAD = auto()
         DELETE_LEAD = auto()
-        # ------ Entry (100) ------
+        # ---------------------- Entry
         CREATE_ENTRY = auto()
         VIEW_ONLY_UNPROTECTED_ENTRY = auto()
         VIEW_ALL_ENTRY = auto()
         UPDATE_ENTRY = auto()
         DELETE_ENTRY = auto()
+
+    __error_message__ = {
+        Permission.UPDATE_PROJECT: "You don't have permission to update project",
+        Permission.CREATE_LEAD: "You don't have permission to create lead",
+        Permission.VIEW_ONLY_UNPROTECTED_LEAD: "You don't have permission to view lead",
+        Permission.VIEW_ALL_LEAD: "You don't have permission to view confidential lead",
+        Permission.UPDATE_LEAD: "You don't have permission to update lead",
+        Permission.DELETE_LEAD: "You don't have permission to delete lead",
+        Permission.CREATE_ENTRY: "You don't have permission to create entry",
+        Permission.VIEW_ONLY_UNPROTECTED_ENTRY: "You don't have permission to view entry",
+        Permission.VIEW_ALL_ENTRY: "You don't have permission to view confidential entry",
+        Permission.UPDATE_ENTRY: "You don't have permission to update entry",
+        Permission.DELETE_ENTRY: "You don't have permission to delete entry",
+    }
 
     VIEWER_NON_CONFIDENTIAL = [
         Permission.VIEW_ONLY_UNPROTECTED_ENTRY,
@@ -265,22 +278,17 @@ class ProjectPermissions():
         'Clairvoyant One': CLAIRVOYANT_ONE,
     }
 
-    PERMISSION_DENIED_MESSAGE = 'You do not have permission to perform this action.'
+    DEFAULT_PERMISSION_DENIED_MESSAGE = PermissionDeniedException.default_message
 
     @classmethod
     def get_permissions(cls, role):
         return cls.PERMISSION_MAP.get(role) or []
 
+    @classmethod
+    def get_permission_message(cls, permission):
+        return cls.__error_message__.get(permission, cls.DEFAULT_PERMISSION_DENIED_MESSAGE)
+
     @staticmethod
     def check_permission(info, *perms):
         if info.context.permissions:
             return all([perm in info.context.permissions for perm in perms])
-
-    @classmethod
-    def check_permission_dec(cls, *perms: List[str]) -> Callable[..., Callable]:
-        def wrapped(func):
-            def wrapped_func(root, info, *args, **kwargs):
-                if not cls.check_permission(info, perms):
-                    raise PermissionDenied(cls.PERMISSION_DENIED_MESSAGE)
-                return func(root, info, *args, **kwargs)
-        return wrapped

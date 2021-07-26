@@ -181,7 +181,7 @@ class WorldFoodProgramme(Source):
                 'title': title.strip(),
                 'url': url,
                 'source': 'WFP Assessments',
-                'source_type': Lead.WEBSITE,
+                'source_type': Lead.SourceType.WEBSITE,
                 'website': 'www.wfp.org'
             }
             results.append(data)

@@ -92,7 +92,7 @@ class ResearchResourceCenter(Source):
                 'url': url,
                 'source': "Research Resource Center",
                 'author': "Research Resource Center",
-                'source_type': Lead.WEBSITE,
+                'source_type': Lead.SourceType.WEBSITE,
                 'website': self.URL
             }
             results.append(data)
