@@ -3,6 +3,7 @@ from django.db import models
 
 from user_resource.models import UserResource
 
+
 class UserGroup(UserResource):
     """
     User group model
@@ -103,3 +104,9 @@ class GroupMembership(models.Model):
 
     def can_modify(self, user):
         return self.group.can_modify(user)
+
+    @staticmethod
+    def get_member_for_user_group(user_group):
+        return GroupMembership.objects.filter(
+            group=user_group
+        ).distinct()

@@ -7,6 +7,7 @@ from project.permissions import PROJECT_PERMISSIONS
 from lead.models import Lead
 from entry.models import Entry
 from analysis.models import AnalysisPillar
+from user_group.models import UserGroup
 
 logger = logging.getLogger(__name__)
 
@@ -179,4 +180,14 @@ class IsProjectMember(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if type(obj) == Project:
             return obj.members.filter(id=request.user.id).exists()
+        return True
+
+
+class IsUserGroupMember(permissions.BasePermission):
+    message = 'Only allowed for UserGroup members'
+
+    def has_permission(self, request, view):
+        user_group_id = view.kwargs.get('pk')
+        if user_group_id:
+            return UserGroup.get_for_member(request.user).filter(id=user_group_id).exists()
         return True
