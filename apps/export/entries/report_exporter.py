@@ -585,7 +585,7 @@ class ReportExporter:
         # Add source (with url if available)
         para.add_hyperlink(url, source) if url else para.add_run(source)
         # Add (confidential) to source without ,
-        lead.confidentiality == Lead.CONFIDENTIAL and para.add_run(' (confidential)')
+        lead.confidentiality == Lead.Confidentiality.CONFIDENTIAL and para.add_run(' (confidential)')
         # Add lead title if available
         lead.title and para.add_run(f", {lead.title}")
         # Finally add date
@@ -823,7 +823,7 @@ class ReportExporter:
             else:
                 para.add_run('Missing url.')
 
-            if lead.confidentiality == Lead.CONFIDENTIAL:
+            if lead.confidentiality == Lead.Confidentiality.CONFIDENTIAL:
                 para.add_run(' (confidential)')
 
             self.doc.add_paragraph()

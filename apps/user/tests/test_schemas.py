@@ -2,7 +2,7 @@ from unittest import mock
 from django.conf import settings
 from django.utils import timezone
 
-from utils.graphene.tests import GraphqlTestCase
+from utils.graphene.tests import GraphQLTestCase
 
 from gallery.factories import FileFactory
 from project.factories import ProjectFactory
@@ -15,7 +15,7 @@ from user.utils import (
 )
 
 
-class TestUserSchema(GraphqlTestCase):
+class TestUserSchema(GraphQLTestCase):
     def setUp(self):
         # This is used in 2 test
         self.login_mutation = '''
@@ -170,14 +170,15 @@ class TestUserSchema(GraphqlTestCase):
               }
             }
         '''
+        user = UserFactory.create()
         # # Without Login session
         content = self.query_check(query, assert_for_error=True)
         # # Login
-        self.force_login()
+        self.force_login(user)
         # Query Me (Success)
         content = self.query_check(query)
-        self.assertEqual(content['data']['me']['id'], str(self.user.id), content)
-        self.assertEqual(content['data']['me']['email'], self.user.email, content)
+        self.assertEqual(content['data']['me']['id'], str(user.id), content)
+        self.assertEqual(content['data']['me']['email'], user.email, content)
         # # Logout
         self.query_check(logout_mutation, okay=True)
         # Query Me (with error again)

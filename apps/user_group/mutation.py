@@ -23,7 +23,7 @@ class CreateUserGroup(GrapheneMutation):
     model = UserGroup
     serializer_class = UserGroupSerializer
     result = graphene.Field(UserGroupType)
-    permission_classes = []  # TODO: Add permission check and test
+    permissions = []  # TODO: Add permission check and test
 
 
 class UpdateUserGroup(GrapheneMutation):
@@ -33,7 +33,7 @@ class UpdateUserGroup(GrapheneMutation):
     model = UserGroup
     serializer_class = UserGroupSerializer
     result = graphene.Field(UserGroupType)
-    permission_classes = []  # TODO: Add permission check and test
+    permissions = []  # TODO: Add permission check and test
 
 
 class DeleteUserGroup(DeleteMutation):
@@ -41,10 +41,10 @@ class DeleteUserGroup(DeleteMutation):
         id = graphene.ID(required=True)
     model = UserGroup
     result = graphene.Field(UserGroupType)
-    permission_classes = []  # TODO: Add permission check and test
+    permissions = []  # TODO: Add permission check and test
 
 
 class Mutation():
-    create_user_group = CreateUserGroup.Field()
-    update_user_group = UpdateUserGroup.Field()
-    delete_user_group = DeleteUserGroup.Field()
+    user_group_create = CreateUserGroup.Field()
+    user_group_update = UpdateUserGroup.Field()
+    user_group_delete = DeleteUserGroup.Field()

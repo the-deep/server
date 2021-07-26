@@ -3,12 +3,16 @@ import graphene
 from utils.graphene.mutation import (
     generate_input_type_for_serializer,
     GrapheneMutation,
+    BulkGrapheneMutation,
     DeleteMutation,
 )
+from deep.permissions import ProjectPermissions as PP
 
 from .models import Lead
 from .schema import LeadType
-from .serializers import LeadGqSerializer as LeadSerializer
+from .serializers import (
+    LeadGqSerializer as LeadSerializer,
+)
 
 
 LeadInputType = generate_input_type_for_serializer(
@@ -17,32 +21,54 @@ LeadInputType = generate_input_type_for_serializer(
 )
 
 
-class CreateLead(GrapheneMutation):
+class LeadMutationMixin():
+    @classmethod
+    def filter_queryset(cls, qs, info):
+        return qs.filter(project=info.context.active_project)
+
+
+class CreateLead(LeadMutationMixin, GrapheneMutation):
     class Arguments:
         data = LeadInputType(required=True)
     model = Lead
     serializer_class = LeadSerializer
     result = graphene.Field(LeadType)
-    permission_classes = []  # TODO: Add permission check and test
+    permissions = [PP.Permission.CREATE_LEAD]
 
 
-class UpdateLead(GrapheneMutation):
+class UpdateLead(LeadMutationMixin, GrapheneMutation):
     class Arguments:
         data = LeadInputType(required=True)
         id = graphene.ID(required=True)
     model = Lead
     serializer_class = LeadSerializer
     result = graphene.Field(LeadType)
+    permissions = [PP.Permission.UPDATE_LEAD]
 
 
-class DeleteLead(DeleteMutation):
+class DeleteLead(LeadMutationMixin, DeleteMutation):
     class Arguments:
         id = graphene.ID(required=True)
     model = Lead
     result = graphene.Field(LeadType)
+    permissions = [PP.Permission.DELETE_LEAD]
+
+
+class BulkLeadInputType(LeadInputType):
+    id = graphene.ID()
+
+
+class BulkLead(LeadMutationMixin, BulkGrapheneMutation):
+    class Arguments:
+        items = graphene.List(BulkLeadInputType, required=True)
+    model = Lead
+    serializer_class = LeadSerializer
+    result = graphene.List(LeadType)
+    permissions = [PP.Permission.CREATE_LEAD]
 
 
 class Mutation():
-    create_lead = CreateLead.Field()
-    update_lead = UpdateLead.Field()
-    delete_lead = DeleteLead.Field()
+    lead_create = CreateLead.Field()
+    lead_update = UpdateLead.Field()
+    lead_delete = DeleteLead.Field()
+    lead_bulk = BulkLead.Field()
