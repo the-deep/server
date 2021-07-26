@@ -8,8 +8,15 @@ from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import ProjectPermissions as PP
 from organization.schema import OrganizationType
+from user.models import User
+from user.schema import UserType
 
-from .models import Lead, LeadPreview
+from .models import (
+    Lead,
+    LeadPreview,
+    LeadEMMTrigger,
+    EMMEntity,
+)
 from .filter_set import LeadGQFilterSet
 
 
@@ -19,7 +26,7 @@ def get_lead_qs(info):
     if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
         return lead_qs
     elif PP.check_permission(info, PP.Permission.VIEW_ONLY_UNPROTECTED_LEAD):
-        return lead_qs.filter(confidentiality=Lead.UNPROTECTED)
+        return lead_qs.filter(confidentiality=Lead.Confidentiality.UNPROTECTED)
     return Lead.objects.none()
 
 
@@ -38,6 +45,18 @@ class LeadPreviewType(DjangoObjectType):
         )
 
 
+class LeadEmmTriggerType(DjangoObjectType):
+    class Meta:
+        model = LeadEMMTrigger
+        fields = ('id', 'emm_keyword', 'emm_risk_factor', 'count')
+
+
+class EmmEntityType(DjangoObjectType):
+    class Meta:
+        model = EMMEntity
+        fields = ('id', 'name')
+
+
 class VerifiedStatType(graphene.ObjectType):
     total_count = graphene.Int()
     verified_count = graphene.Int()
@@ -50,7 +69,7 @@ class LeadType(DjangoObjectType):
             'id', 'title', 'created_by', 'created_at', 'modified_by', 'modified_at',
             'project', 'lead_group', 'assignee', 'published_on',
             'source_type', 'priority', 'confidentiality', 'status',
-            'text', 'url', 'website', 'attachment', 'emm_entities'
+            'text', 'url', 'website', 'attachment',
         )
 
     project = graphene.ID(source='project_id')
@@ -58,10 +77,19 @@ class LeadType(DjangoObjectType):
     source = graphene.Field(OrganizationType)
     authors = DjangoListField(OrganizationType)
     verified_stat = graphene.Field(VerifiedStatType)
+    assignee = graphene.Field(UserType)
+    # EMM Fields
+    emm_entities = DjangoListField(EmmEntityType)
+    emm_triggers = DjangoListField(LeadEmmTriggerType)
+    client_id = graphene.String()
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
         return get_lead_qs(info)
+
+    @staticmethod
+    def resolve_assignee(root, info, **kwargs) -> Union[User, None]:
+        return root.get_assignee()
 
     @staticmethod
     def resolve_lead_preview(root, info, **kwargs) -> Union[int, None]:

@@ -33,8 +33,8 @@ class TestEntryPermissions(TestCase):
         )
         project = self.create(Project, role=view_unprotected_role)
 
-        lead1 = self.create(Lead, project=project, confidentiality=Lead.UNPROTECTED)
-        lead_confidential = self.create(Lead, project=project, confidentiality=Lead.CONFIDENTIAL)
+        lead1 = self.create(Lead, project=project, confidentiality=Lead.Confidentiality.UNPROTECTED)
+        lead_confidential = self.create(Lead, project=project, confidentiality=Lead.Confidentiality.CONFIDENTIAL)
 
         entry1 = self.create(Entry, lead=lead1, project=project)
         entry_confidential = self.create(Entry, lead=lead_confidential, project=project)

@@ -30,7 +30,7 @@ def remove_null(d):
     }
 
 
-class RemoveNullFieldsMixin:
+class RemoveNullFieldsMixin():
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         return remove_null(rep)
@@ -135,3 +135,24 @@ class WriteOnlyOnCreateSerializerMixin():
             for field in write_only_on_create_fields:
                 fields[field].read_only = True
         return fields
+
+
+class TempClientIdMixin():
+    """
+    ClientId for serializer level only, not storing to the database.
+    """
+    client_id = serializers.CharField(required=False)
+
+    def create(self, validated_data):
+        client_id = validated_data.pop('client_id', None)
+        instance = super().create(validated_data)
+        if instance and not hasattr(instance, 'client_id'):
+            instance.client_id = client_id
+        return instance
+
+    def update(self, instance, validated_data):
+        client_id = validated_data.pop('client_id', None)
+        instance = super().update(instance, validated_data)
+        if instance and not hasattr(instance, 'client_id'):
+            instance.client_id = client_id
+        return instance
