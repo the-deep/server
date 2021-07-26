@@ -167,7 +167,7 @@ class AcapsBriefingNotes(Source):
                     'published_on': date.date(),
                     'url': link['href'],
                     'source': 'Briefing Notes',
-                    'source_type': Lead.WEBSITE,
+                    'source_type': Lead.SourceType.WEBSITE,
                     'website': 'www.acaps.org/special-reports'
                 }
                 results.append(data)

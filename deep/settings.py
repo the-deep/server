@@ -45,6 +45,8 @@ TESTING = any([
     ]
     # Provided by pytest-xdist
 ]) or os.environ.get('PYTEST_XDIST_WORKER') is not None
+TEST_RUNNER = 'snapshottest.django.TestRunner'
+TEST_DIR = os.path.join(BASE_DIR, 'deep/test_files')
 
 PROFILE = os.environ.get('PROFILE', 'false').lower() == 'true'
 
@@ -367,8 +369,6 @@ CACHES = {
         "KEY_PREFIX": "dj_cache-",
     },
 }
-
-TEST_DIR = os.path.join(BASE_DIR, 'deep/test_files')
 
 # RELIEF WEB
 RELIEFWEB_APPNAME = 'thedeep.io'
@@ -696,6 +696,7 @@ SESSION_COOKIE_DOMAIN = os.environ.get('SESSION_COOKIE_DOMAIN', 'localhost')
 CSRF_COOKIE_DOMAIN = os.environ.get('CSRF_COOKIE_DOMAIN', 'localhost')
 
 
+# Graphene configs
 # WHITELIST following nodes from authentication checks
 GRAPHENE_NODES_WHITELIST = (
     '__schema',

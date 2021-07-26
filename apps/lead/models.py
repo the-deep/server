@@ -50,59 +50,31 @@ class Lead(UserResource, ProjectEntityMixin):
     A lead belongs to one project.
     """
 
-    # Confidentiality choices
-    UNPROTECTED = 'unprotected'
-    CONFIDENTIAL = 'confidential'
+    class Confidentiality(models.TextChoices):
+        UNPROTECTED = 'unprotected', 'Unprotected'
+        CONFIDENTIAL = 'confidential', 'Confidential'
 
-    CONFIDENTIALITIES = (
-        (UNPROTECTED, 'Unprotected'),
-        (CONFIDENTIAL, 'Confidential'),
-    )
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        PROCESSED = 'processed', 'Processed'
+        VALIDATED = 'validated', 'Validated'
 
-    # Status of a lead that can be pending, processed or deleted.
-    PENDING = 'pending'
-    PROCESSED = 'processed'
-    VALIDATED = 'validated'
+    class Priority(models.IntegerChoices):
+        HIGH = 300, 'High'
+        MEDIUM = 200, 'Medium'
+        LOW = 100, 'Low'
 
-    STATUSES = (
-        (PENDING, 'Pending'),
-        (PROCESSED, 'Processed'),
-        (VALIDATED, 'Validated')
-    )
+    class SourceType(models.TextChoices):
+        TEXT = 'text', 'Text'
+        DISK = 'disk', 'Disk'
+        WEBSITE = 'website', 'Website'
+        DROPBOX = 'dropbox', 'Dropbox'
+        GOOGLE_DRIVE = 'google-drive', 'Google Drive'
 
-    LOW = 100
-    MEDIUM = 200
-    HIGH = 300
-
-    PRIORITIES = (
-        (HIGH, 'High'),
-        (MEDIUM, 'Medium'),
-        (LOW, 'Low'),
-    )
-
-    # Type of lead source
-    TEXT = 'text'
-    DISK = 'disk'
-    WEBSITE = 'website'
-    DROPBOX = 'dropbox'
-    GOOGLE_DRIVE = 'google-drive'
-    RSS = 'rss'
-    EMM = 'emm'
-    WEB_API = 'api'
-    UNKNOWN = 'unknown'
-
-    SOURCE_TYPES = (
-        (TEXT, 'Text'),
-        (DISK, 'Disk'),
-        (WEBSITE, 'Website'),
-        (DROPBOX, 'Dropbox'),
-        (GOOGLE_DRIVE, 'Google Drive'),
-
-        (RSS, 'RSS Feed'),
-        (EMM, 'EMM'),
-        (WEB_API, 'Web API'),
-        (UNKNOWN, 'Unknown'),
-    )
+        RSS = 'rss', 'RSS Feed'
+        EMM = 'emm', 'EMM'
+        WEB_API = 'api', 'Web API'
+        UNKNOWN = 'unknown', 'Unknown'
 
     lead_group = models.ForeignKey(
         LeadGroup,
@@ -128,19 +100,10 @@ class Lead(UserResource, ProjectEntityMixin):
     author_raw = models.CharField(max_length=255, blank=True)
     source_raw = models.CharField(max_length=255, blank=True)
 
-    source_type = models.CharField(max_length=30,
-                                   choices=SOURCE_TYPES,
-                                   default=UNKNOWN)
-
-    priority = models.IntegerField(choices=PRIORITIES,
-                                   default=LOW)
-
-    confidentiality = models.CharField(max_length=30,
-                                       choices=CONFIDENTIALITIES,
-                                       default=UNPROTECTED)
-    status = models.CharField(max_length=30,
-                              choices=STATUSES,
-                              default=PENDING)
+    source_type = models.CharField(max_length=30, choices=SourceType.choices, default=SourceType.UNKNOWN)
+    priority = models.IntegerField(choices=Priority.choices, default=Priority.LOW)
+    confidentiality = models.CharField(max_length=30, choices=Confidentiality.choices, default=Confidentiality.UNPROTECTED)
+    status = models.CharField(max_length=30, choices=Status.choices, default=Status.PENDING)
 
     assignee = models.ManyToManyField(User, blank=True)
     published_on = models.DateField(default=None, null=True, blank=True)
@@ -178,9 +141,10 @@ class Lead(UserResource, ProjectEntityMixin):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        from lead.tasks import extract_from_lead
 
         if not settings.TESTING:
+            from lead.tasks import extract_from_lead
+
             d1 = self.__initial
             d2 = self.get_dict()
             if not d1 or d1.get('text') != d2.get('text') or \
@@ -221,7 +185,7 @@ class Lead(UserResource, ProjectEntityMixin):
             # If view only unprotected, filter leads with confidentiality not confidential
             (
                 models.Q(view_unprotected=view_unprotected_perm_value) &
-                ~models.Q(confidentiality=Lead.CONFIDENTIAL)
+                ~models.Q(confidentiality=Lead.Confidentiality.CONFIDENTIAL)
             ) |
             # Or, return nothing if view_all is not present
             models.Q(view_all=view_perm_value)
@@ -307,27 +271,22 @@ class Lead(UserResource, ProjectEntityMixin):
 
 
 class LeadPreview(models.Model):
-    STATUS_CLASSIFICATION_NONE = 'none'  # For leads which are not texts
-    STATUS_CLASSIFICATION_INITIATED = 'initiated'
-    STATUS_CLASSIFICATION_COMPLETED = 'completed'
-    STATUS_CLASSIFICATION_FAILED = 'failed'  # Somehow Failed due to connection error
-    STATUS_CLASSIFICATION_ERRORED = 'errored'  # If errored, no point in retrying
-
-    CHOICES_CLASSIFICATION = (
-        (STATUS_CLASSIFICATION_NONE, 'None'),
-        (STATUS_CLASSIFICATION_INITIATED, 'Initiated'),
-        (STATUS_CLASSIFICATION_COMPLETED, 'Completed'),
-        (STATUS_CLASSIFICATION_FAILED, 'Failed'),
-        (STATUS_CLASSIFICATION_ERRORED, 'Errored'),
-    )
+    class ClassificationStatus(models.TextChoices):
+        NONE = 'none', 'None'  # For leads which are not texts
+        INITIATED = 'initiated', 'Initiated'
+        COMPLETED = 'completed', 'Completed'
+        FAILED = 'failed', 'Failed'  # Somehow Failed due to connection error
+        ERRORED = 'errored', 'Errored'  # If errored, no point in retrying
 
     lead = models.OneToOneField(Lead, on_delete=models.CASCADE)
     text_extract = models.TextField(blank=True)
 
-    thumbnail = models.ImageField(upload_to='lead-thumbnail/',
-                                  default=None, null=True, blank=True,
-                                  height_field='thumbnail_height',
-                                  width_field='thumbnail_width')
+    thumbnail = models.ImageField(
+        upload_to='lead-thumbnail/',
+        default=None, null=True, blank=True,
+        height_field='thumbnail_height',
+        width_field='thumbnail_width'
+    )
     thumbnail_height = models.IntegerField(default=None, null=True, blank=True)
     thumbnail_width = models.IntegerField(default=None, null=True, blank=True)
     word_count = models.IntegerField(default=None, null=True, blank=True)
@@ -337,8 +296,8 @@ class LeadPreview(models.Model):
                                             null=True, blank=True)
     classification_status = models.CharField(
         max_length=20,
-        choices=CHOICES_CLASSIFICATION,
-        default=STATUS_CLASSIFICATION_NONE,
+        choices=ClassificationStatus.choices,
+        default=ClassificationStatus.NONE,
     )
 
     def __str__(self):

@@ -9,7 +9,7 @@ license = "GNU Affero General Public License v3.0"
 python = "^3.8"
 beautifulsoup4 = "==4.9.3"
 boto3 = "==1.17.98"
-celery = {version = "==5.1.1", extras = ["redis"]}
+celery = { version = "==5.1.1", extras = ["redis"] }
 # coreapi = "==2.3.3"
 # dateparser = "==0.7.0"
 # decorator = "==4.3.2"
@@ -23,7 +23,7 @@ django-enumfield = "==2.0.2"
 django-filter = "==2.4.0"
 django-jsoneditor = "==0.1.6"
 django-ordered-model = "==3.4.3"
-django-otp = {version = "==1.0.6", extras = ["qrcode"]}
+django-otp = { version = "==1.0.6", extras = ["qrcode"] }
 django-premailer = "==0.2.0"
 django-redis = "==5.0.0"
 django-reversion = "==3.0.9"
@@ -32,7 +32,7 @@ django-ses = "==2.0.0"
 django-storages = "==1.11.1"
 django-utils-six = "2.0"  # Require by autofixture
 drf-dynamic-fields = "==0.3.1"
-drf-yasg = {version = "==1.20.0", extras = ["validation"]}
+drf-yasg = { version = "==1.20.0", extras = ["validation"] }
 feedparser = "==6.0.8"
 flower = { git = "https://github.com/mher/flower.git", branch = "7ee34cb5fc039bbeb208a54f113713edbb4809ce" }
 geopandas = "==0.9.0"
@@ -74,17 +74,30 @@ ipython = "*"
 factory-boy = "*"
 colorlog = "*"
 
-
 [tool.poetry.dev-dependencies]
-pytest-django = "==4.4.0"
+pytest-profiling = "*"
+pytest-ordering = "*"
+pytest-django = "*"
+pytest-icdiff = "*"
+snapshottest = "*"
 django-debug-toolbar = "*"
 django-graphiql-debug-toolbar = "*"
-django-autofixture = {branch = "0472a494485dd597d598e20d9e1c6c47cf0eadb7", git = "https://github.com/volrath/django-autofixture.git"}
-django-fixture-magic = {branch = "466fa35c075009e4a1974f6e588471dd9e720e53", git = "https://github.com/davedash/django-fixture-magic.git"}
+django-stubs = { version = "*", allow-prereleases = true }
+django-autofixture = { branch = "0472a494485dd597d598e20d9e1c6c47cf0eadb7", git = "https://github.com/volrath/django-autofixture.git" }
+django-fixture-magic = { branch = "466fa35c075009e4a1974f6e588471dd9e720e53", git = "https://github.com/davedash/django-fixture-magic.git" }
 # mypy = "*"
-# django-stubs = '*'
-# flake8 = '*'
-# pylint = '*'
+# flake8 = "*"
+# pylint = "*"
+
+[tool.pyright]
+extraPaths = ["apps"]
+exclude = ["**/node_modules",
+    "**/__pycache__",
+    "apps/experimental",
+    "apps/typestubs"
+]
+reportMissingImports = true
+reportMissingTypeStubs = false
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -1,12 +1,10 @@
 import graphene
-from rest_framework import permissions
 
 from analysis_framework.models import AnalysisFramework
 from analysis_framework.serializers import (
     AnalysisFrameworkSerializer,
 )
 from analysis_framework.schema import AnalysisFrameworkType
-from deep.permissions import ModifyPermission
 from utils.graphene.mutation import (
     generate_input_type_for_serializer,
     GrapheneMutation,
@@ -29,7 +27,7 @@ class UpdateAnalysisFramework(GrapheneMutation):
     # class vars
     serializer_class = AnalysisFrameworkSerializer
     model = AnalysisFramework
-    permission_classes = [permissions.IsAuthenticated, ModifyPermission]
+    permissions = []  # TODO:
 
 
 class CreateAnalysisFramework(GrapheneMutation):
@@ -41,7 +39,7 @@ class CreateAnalysisFramework(GrapheneMutation):
     # class vars
     serializer_class = AnalysisFrameworkSerializer
     model = AnalysisFramework
-    permission_classes = [permissions.IsAuthenticated, ModifyPermission]
+    permissions = []  # TODO:
 
 
 class DeleteAnalysisFramework(DeleteMutation):
@@ -52,7 +50,7 @@ class DeleteAnalysisFramework(DeleteMutation):
     result = graphene.Field(AnalysisFrameworkType)
     # class vars
     model = AnalysisFramework
-    permission_classes = [permissions.IsAuthenticated, ModifyPermission]
+    permissions = []  # TODO:
 
 
 class Mutation(object):

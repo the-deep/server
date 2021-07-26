@@ -59,15 +59,15 @@ class LeadFilterSet(django_filters.FilterSet):
         method='project_filter',
     )
     confidentiality = django_filters.MultipleChoiceFilter(
-        choices=Lead.CONFIDENTIALITIES,
+        choices=Lead.Confidentiality.choices,
         widget=django_filters.widgets.CSVWidget,
     )
     status = django_filters.MultipleChoiceFilter(
-        choices=Lead.STATUSES,
+        choices=Lead.Status.choices,
         widget=django_filters.widgets.CSVWidget,
     )
     priority = django_filters.MultipleChoiceFilter(
-        choices=Lead.PRIORITIES,
+        choices=Lead.Priority.choices,
         widget=django_filters.widgets.CSVWidget,
     )
     assignee = django_filters.ModelMultipleChoiceFilter(

@@ -295,7 +295,7 @@ class ReliefWeb(Source):
                 'published_on': fields['date']['original'],
                 'url': url,
                 'source': 'reliefweb',
-                'source_type': Lead.WEBSITE,
+                'source_type': Lead.SourceType.WEBSITE,
                 'author': fields['source'][0]['name'],
                 'website': 'www.reliefweb.int',
             }
