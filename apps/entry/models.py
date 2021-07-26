@@ -155,7 +155,7 @@ class Entry(UserResource, ProjectEntityMixin):
             # lead confidentiality not confidential
             (
                 models.Q(view_unprotected=view_unprotected_perm_value) &
-                ~models.Q(lead__confidentiality=Lead.CONFIDENTIAL)
+                ~models.Q(lead__confidentiality=Lead.Confidentiality.CONFIDENTIAL)
             ) |
             # Or, return nothing if view_all is not present
             models.Q(view_all=view_perm_value)
@@ -181,7 +181,7 @@ class Entry(UserResource, ProjectEntityMixin):
             # if create_only_unprotected is true, then fetch non confidential entries
             (
                 models.Q(create_only_unprotected=export_unprotected_perm_value) &
-                ~models.Q(lead__confidentiality=Lead.CONFIDENTIAL)
+                ~models.Q(lead__confidentiality=Lead.Confidentiality.CONFIDENTIAL)
             ) |
             models.Q(create_all=export_perm_value)
         )

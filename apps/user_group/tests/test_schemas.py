@@ -1,11 +1,11 @@
-from utils.graphene.tests import GraphqlTestCase
+from utils.graphene.tests import GraphQLTestCase
 
 from user.factories import UserFactory
 from user_group.factories import UserGroupFactory
-from user_group.models import UserGroup
+from user_group.models import UserGroup, GroupMembership
 
 
-class TestUserGroupSchema(GraphqlTestCase):
+class TestUserGroupSchema(GraphQLTestCase):
     def test_user_groups_query(self):
         # Try with random user
         query = '''
@@ -56,16 +56,16 @@ class TestUserGroupSchema(GraphqlTestCase):
         # Try with real user
         ug_with_membership = UserGroupFactory.create(members=[user, another_user])
         ug_with_admin_membership = UserGroupFactory.create()
-        ug_with_admin_membership.add_member(user, role='admin')
+        ug_with_admin_membership.add_member(user, role=GroupMembership.Role.ADMIN)
         ug_without_membership = UserGroupFactory.create(members=[another_user])
 
         results = self.query_check(query)['data']['userGroups']['results']
         self.assertEqual(len(results), 3, results)
         for index, (user_group, memberships_count, current_user_role) in enumerate([
             # as normal member
-            (ug_with_membership, 2, 'normal'),
+            (ug_with_membership, 2, GroupMembership.Role.NORMAL),
             # as admin member
-            (ug_with_admin_membership, 1, 'admin'),
+            (ug_with_admin_membership, 1, GroupMembership.Role.ADMIN),
             # as non member
             (ug_without_membership, 0, None),
         ]):
@@ -124,12 +124,12 @@ class TestUserGroupSchema(GraphqlTestCase):
         ug_with_membership = UserGroupFactory.create(members=[user, another_user])
         content = self.query_check(query, variables={'id': str(ug_with_membership.pk)})
         self.assertEqual(len(content['data']['userGroup']['memberships']), 2, content)
-        self.assertEqual(content['data']['userGroup']['currentUserRole'], 'normal', content)
+        self.assertEqual(content['data']['userGroup']['currentUserRole'], GroupMembership.Role.NORMAL, content)
 
     def test_user_group_create_mutation(self):
         query = '''
             mutation MyMutation($input: UserGroupInputType!) {
-              createUserGroup(data: $input) {
+              userGroupCreate(data: $input) {
                 ok
                 errors
                 result {
@@ -166,7 +166,7 @@ class TestUserGroupSchema(GraphqlTestCase):
             title='New user group from mutation',
             memberships=[dict(
                 member=str(another_user.pk),
-                role='normal',
+                role=self.genum(GroupMembership.Role.NORMAL),
             )],
         )
         self.query_check(query, minput=minput, assert_for_error=True)
@@ -175,7 +175,7 @@ class TestUserGroupSchema(GraphqlTestCase):
         # TODO: Add permission check
         # content = self.query_check(query, minput=minput, okay=False)
         # Response with new user group
-        result = self.query_check(query, minput=minput, okay=True)['data']['createUserGroup']['result']
+        result = self.query_check(query, minput=minput, okay=True)['data']['userGroupCreate']['result']
         self.assertEqual(result['title'], minput['title'], result)
         self.assertEqual(len(result['memberships']), 2, result)
         # Another user as normal member
@@ -184,13 +184,13 @@ class TestUserGroupSchema(GraphqlTestCase):
         self.assertEqual(result['memberships'][0]['addedBy']['id'], str(user.pk), result)  # Current user
         # Current user as admin
         self.assertEqual(result['memberships'][1]['member']['id'], str(user.pk), result)
-        self.assertEqual(result['memberships'][1]['role'], 'admin'.upper(), result)  # FIXME: why upper()
+        self.assertEqual(result['memberships'][1]['role'], self.genum(GroupMembership.Role.ADMIN), result)
         self.assertEqual(result['memberships'][1]['addedBy'], None, result)  # Automate
 
     def test_user_group_update_mutation(self):
         query = '''
             mutation MyMutation($input: UserGroupInputType! $id: ID!) {
-              updateUserGroup(data: $input id: $id) {
+              userGroupUpdate(data: $input id: $id) {
                 ok
                 errors
                 result {
@@ -225,7 +225,7 @@ class TestUserGroupSchema(GraphqlTestCase):
         another_user = UserFactory.create()
         new_another_user = UserFactory.create()
         ug = UserGroupFactory.create(title='User-Group 101', members=[another_user], created_by=user)
-        ug.add_member(user, role='admin')
+        ug.add_member(user, role=GroupMembership.Role.ADMIN)
         minput = dict(
             title='User-Group 101 (Updated)',
         )
@@ -237,20 +237,21 @@ class TestUserGroupSchema(GraphqlTestCase):
         # Response with new user group
         result = self.query_check(
             query, minput=minput, okay=True, variables={'id': str(ug.pk)}
-        )['data']['updateUserGroup']['result']
+        )['data']['userGroupUpdate']['result']
 
         self.assertEqual(result['title'], minput['title'], result)
         self.assertEqual(len(result['memberships']), 2, result)
 
-        minput.update(dict(
-            memberships=[
-                dict(member=str(new_another_user.pk), role='admin'),
-            ]
-        ))
+        minput['memberships'] = [
+            dict(
+                member=str(new_another_user.pk),
+                role=self.genum(GroupMembership.Role.ADMIN),
+            ),
+        ]
         result = self.query_check(
             query, minput=minput, okay=True,
             variables={'id': str(ug.pk)}
-        )['data']['updateUserGroup']['result']
+        )['data']['userGroupUpdate']['result']
         self.assertEqual(len(result['memberships']), 2, result)
         # New another user added as normal member (and another_user no longer exists in the group)
         self.assertEqual(result['memberships'][0]['member']['id'], minput['memberships'][0]['member'], result)
@@ -258,13 +259,13 @@ class TestUserGroupSchema(GraphqlTestCase):
         self.assertEqual(result['memberships'][0]['addedBy']['id'], str(user.pk), result)  # Current user
         # Make sure admin (created_by) user is not removed even if not provided while updating
         self.assertEqual(result['memberships'][1]['member']['id'], str(user.pk), result)
-        self.assertEqual(result['memberships'][1]['role'], 'admin'.upper(), result)  # FIXME: why upper()
+        self.assertEqual(result['memberships'][1]['role'], self.genum(GroupMembership.Role.ADMIN), result)
         self.assertEqual(result['memberships'][1]['addedBy'], None, result)  # Automate
 
     def test_user_group_delete_mutation(self):
         query = '''
             mutation MyMutation($id: ID!) {
-              deleteUserGroup(id: $id) {
+              userGroupDelete(id: $id) {
                 ok
                 errors
                 result {
@@ -276,14 +277,14 @@ class TestUserGroupSchema(GraphqlTestCase):
         '''
         user = UserFactory.create()
         ug = UserGroupFactory.create(title='User-Group 101')
-        ug.add_member(user, role='admin')
+        ug.add_member(user, role=GroupMembership.Role.ADMIN)
         self.query_check(query, assert_for_error=True, variables={'id': str(ug.pk)})
 
         self.force_login(user)
         # TODO: Add permission check
         # content = self.query_check(query, okay=False, variables={'id': str(ug.pk)})
         # Response with new user group
-        result = self.query_check(query, okay=True, variables={'id': str(ug.pk)})['data']['deleteUserGroup']['result']
+        result = self.query_check(query, okay=True, variables={'id': str(ug.pk)})['data']['userGroupDelete']['result']
 
         # New another user added as normal member (and another_user no longer exists in the group)
         self.assertEqual(result['id'], str(ug.id), result)

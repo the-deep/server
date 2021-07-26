@@ -315,21 +315,21 @@ class LeadOptionsView(views.APIView):
             {
                 'key': c[0],
                 'value': c[1],
-            } for c in Lead.CONFIDENTIALITIES
+            } for c in Lead.Confidentiality.choices
         ]
 
         options['status'] = [
             {
                 'key': s[0],
                 'value': s[1],
-            } for s in Lead.STATUSES
+            } for s in Lead.Status.choices
         ]
 
         options['priority'] = [
             {
                 'key': s[0],
                 'value': s[1],
-            } for s in Lead.PRIORITIES
+            } for s in Lead.Priority.choices
         ]
 
         options['project'] = [
@@ -412,19 +412,19 @@ class LeadOptionsView(views.APIView):
                 {
                     'key': c[0],
                     'value': c[1],
-                } for c in Lead.CONFIDENTIALITIES
+                } for c in Lead.Confidentiality.choices
             ],
             'status': [
                 {
                     'key': s[0],
                     'value': s[1],
-                } for s in Lead.STATUSES
+                } for s in Lead.Status.choices
             ],
             'priority': [
                 {
                     'key': s[0],
                     'value': s[1],
-                } for s in Lead.PRIORITIES
+                } for s in Lead.Priority.choices
             ],
 
             # Dynamic Options
