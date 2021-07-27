@@ -5,6 +5,7 @@ from deep.serializers import RemoveNullFieldsMixin
 from user_group.models import UserGroup, GroupMembership
 from user_resource.serializers import UserResourceSerializer
 
+
 class SimpleUserGroupSerializer(RemoveNullFieldsMixin,
                                 serializers.ModelSerializer):
     class Meta:
