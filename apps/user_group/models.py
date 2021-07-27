@@ -33,9 +33,9 @@ class UserGroup(UserResource):
 
     @staticmethod
     def get_for_member(user):
-        return UserGroup.objects.annotate(
-            members_count=models.Count('members', distinct=True)
-        ).filter(members=user).distinct()
+        return UserGroup.objects.filter(
+            members=user
+        ).distinct()
 
     @staticmethod
     def get_modifiable_for(user):

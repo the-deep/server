@@ -36,7 +36,18 @@ class UserGroupViewSet(viewsets.ModelViewSet):
     )
     def get_for_member(self, request, version=None):
         user = self.request.GET.get('user', self.request.user)
-        user_groups = UserGroup.get_for_member(user)
+        user_groups = UserGroup.get_for_member(user).annotate(
+            members_count=models.functions.Coalesce(
+                models.Subquery(
+                    GroupMembership.objects.filter(
+                        group=models.OuterRef('pk')
+                    ).order_by().values('group').annotate(count=models.Count(
+                        'member',
+                        distinct=True))
+                    .values('count')[:1],
+                    output_field=models.IntegerField(),
+                ), 0)
+        )
         self.page = self.paginate_queryset(user_groups)
         serializer = self.get_serializer(self.page, many=True)
         return self.get_paginated_response(serializer.data)

@@ -63,8 +63,10 @@ class UserGroupApiTest(TestCase):
         response = self.client.get(url)
         self.assert_200(response)
         self.assertEqual(response.data['count'], 2)
-        self.assertEqual(response.data['results'][0]['id'], user_group1.id)
-
+        self.assertEqual(
+            set([user_group['id'] for user_group in response.data['results']]),
+            set([user_group1.id, user_group2.id])
+        )
         url = '/api/v1/user-groups/member-of/?user={}'.format(test_user1.id)
         response = self.client.get(url)
         self.assert_200(response)
