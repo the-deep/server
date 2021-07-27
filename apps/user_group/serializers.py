@@ -54,14 +54,16 @@ class UserGroupSerializer(
         required=False,
     )
     role = serializers.SerializerMethodField()
+    members_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = UserGroup
-        fields = ('id', 'title', 'description', 'display_picture', 'role',
-                  'memberships', 'global_crisis_monitoring',
-                  'custom_project_fields', 'created_at', 'modified_at',
-                  'created_by', 'modified_by'
-                )
+        fields = (
+            'id', 'title', 'description', 'display_picture', 'role',
+            'memberships', 'global_crisis_monitoring',
+            'custom_project_fields', 'created_at', 'modified_at',
+            'created_by', 'modified_by', 'members_count'
+        )
 
     def create(self, validated_data):
         user_group = super().create(validated_data)
