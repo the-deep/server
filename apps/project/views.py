@@ -614,25 +614,24 @@ class ProjectViewSet(viewsets.ModelViewSet):
             .filter(entries_count__gt=0)\
             .count()
         entries_total = Entry.objects.filter(project=project).count()
-        entries_dragged = AnalyticalStatement.objects\
-            .filter(analysis_pillar__analysis__project=project)\
-            .values('entries')\
-            .distinct().count()
+        entries_dragged = AnalyticalStatementEntry.objects\
+            .filter(analytical_statement__analysis_pillar__analysis__project=project)\
+            .order_by().values('entry').distinct()
         entries_discarded = DiscardedEntry.objects\
             .filter(analysis_pillar__analysis__project=project)\
-            .values('entry')\
-            .distinct().count()
+            .order_by().values('entry').distinct()
+        total_analyzed_entries = entries_discarded.union(entries_dragged).count()
 
         sources_discarded = DiscardedEntry.objects\
             .filter(analysis_pillar__analysis__project=project)\
             .order_by().values('entry__lead_id').distinct()
-        sources_dragged = AnalyticalStatement.objects\
-            .filter(analysis_pillar__analysis__project=project)\
-            .order_by().values('entries__lead_id').distinct()
+        sources_dragged = AnalyticalStatementEntry.objects\
+            .filter(analytical_statement__analysis_pillar__analysis__project=project)\
+            .order_by().values('entry__lead_id').distinct()
         total_analyzed_sources = sources_dragged.union(sources_discarded).count()
 
         lead_qs = Lead.objects\
-            .filter(project=project, authors__isnull=False)\
+            .filter(project=project, authors__organization_type__isnull=False)\
             .annotate(
                 entries_count=models.functions.Coalesce(models.Subquery(
                     AnalyticalStatementEntry.objects.filter(
@@ -645,16 +644,21 @@ class ProjectViewSet(viewsets.ModelViewSet):
         authoring_organizations = Lead.objects\
             .filter(id__in=lead_qs)\
             .order_by('authors__organization_type').values('authors__organization_type')\
-            .annotate(count=models.Count('id')).values(
+            .annotate(
+                count=models.Count('id'),
+                organization_type_title=models.functions.Coalesce(
+                    models.F('authors__organization_type__title'),
+                    models.Value(''),
+                )).values(
                 'count',
+                'organization_type_title',
                 organization_type_id=models.F('authors__organization_type'),
-                organization_type_title=models.F('authors__organization_type__title')
             )
 
         return response.Response({
             'analysis_list': analysis_list,
             'entries_total': entries_total,
-            'analyzed_entries_count': entries_dragged + entries_discarded,
+            'analyzed_entries_count': total_analyzed_entries,
             'sources_total': total_sources,
             'analyzed_source_count': total_analyzed_sources,
             'authoring_organizations': authoring_organizations

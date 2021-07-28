@@ -36,7 +36,7 @@ class Analysis(UserResource, ProjectEntityMixin):
     def __str__(self):
         return self.title
 
-    def clone_analysis(self, title, end_date, start_date):
+    def clone_analysis(self, title, end_date):
         analysis_cloned = copy.deepcopy(self)
 
         def _get_clone_pillar(obj, analysis_cloned_id):
@@ -68,7 +68,6 @@ class Analysis(UserResource, ProjectEntityMixin):
         analysis_cloned.client_id = None
         analysis_cloned.title = title
         analysis_cloned.end_date = end_date
-        analysis_cloned.start_date = start_date
         analysis_cloned.cloned_from = self
         analysis_cloned.save()
         # Clone pillars
@@ -119,7 +118,6 @@ class Analysis(UserResource, ProjectEntityMixin):
 
         return analysis_cloned
 
-
     @classmethod
     def get_analyzed_sources(cls, analysis_list):
         # NOTE: Used by AnalysisSummarySerializer, AnalysisViewSet.get_summary
@@ -148,6 +146,42 @@ class Analysis(UserResource, ProjectEntityMixin):
             return {
                 analysis_id: lead_count
                 for analysis_id, lead_count in cursor.fetchall()
+            }
+
+    @classmethod
+    def get_analyzed_entries(cls, analysis_list):
+        # NOTE: Used by AnalysisSummarySerializer, AnalysisViewSet.get_summary
+        analysis_ids = [analysis.id for analysis in analysis_list]
+        if len(analysis_ids) == 0:
+            return {}
+
+        entries_dragged = AnalyticalStatementEntry.objects\
+            .filter(
+                analytical_statement__analysis_pillar__analysis__in=analysis_ids,
+                entry__lead__published_on__lte=models.F('analytical_statement__analysis_pillar__analysis__end_date')
+            )\
+            .order_by().values('analytical_statement__analysis_pillar__analysis', 'entry')
+        entries_discarded = DiscardedEntry.objects\
+            .filter(
+                analysis_pillar__analysis__in=analysis_ids,
+                entry__lead__published_on__lte=models.F('analysis_pillar__analysis__end_date')
+            )\
+            .order_by().values('analysis_pillar__analysis', 'entry')
+        union_query = entries_dragged.union(entries_discarded).query
+
+        # NOTE: Django ORM union isn't allowed inside annotation
+        with django_db_connection.cursor() as cursor:
+            raw_sql = f'''
+                SELECT
+                    u.analysis_id,
+                    COUNT(DISTINCT(u.entry_id))
+                FROM ({union_query}) as u
+                GROUP BY u.analysis_id
+            '''
+            cursor.execute(raw_sql)
+            return {
+                analysis_id: entry_count
+                for analysis_id, entry_count in cursor.fetchall()
             }
 
     @classmethod
@@ -196,31 +230,6 @@ class Analysis(UserResource, ProjectEntityMixin):
             ),
         )
 
-        # Subqueries
-        dragged_entries_subquery = models.functions.Coalesce(
-            models.Subquery(
-                AnalyticalStatement.objects.filter(
-                    analysis_pillar__analysis=models.OuterRef('pk')
-                ).order_by().values('analysis_pillar__analysis')
-                .annotate(count=models.Count(
-                    'entries',
-                    distinct=True,
-                    filter=models.Q(entries__lead__published_on__lte=models.OuterRef('end_date'))))
-                .values('count')[:1],
-                output_field=models.IntegerField(),
-            ), 0)
-        discarded_entries_subquery = models.functions.Coalesce(
-            models.Subquery(
-                DiscardedEntry.objects.filter(
-                    analysis_pillar__analysis=models.OuterRef('pk')
-                ).order_by().values('analysis_pillar__analysis')
-                .annotate(count=models.Count(
-                    'entry',
-                    distinct=True,
-                    filter=models.Q(entry__lead__published_on__lte=models.OuterRef('end_date'))))
-                .values('count')[:1],
-                output_field=models.IntegerField(),
-            ), 0)
         publication_date_subquery = models.Subquery(
             AnalyticalStatementEntry.objects.filter(
                 analytical_statement__analysis_pillar__analysis=models.OuterRef('pk'),
@@ -243,12 +252,9 @@ class Analysis(UserResource, ProjectEntityMixin):
             analysispillar_prefetch,
         ).annotate(
             team_lead_name=models.F('team_lead__username'),
-            dragged_entries=dragged_entries_subquery,
-            discarded_entries=discarded_entries_subquery,
             total_entries=models.Value(total_entries, output_field=models.IntegerField()),
             total_sources=models.Value(total_sources, output_field=models.IntegerField()),
             publication_date=publication_date_subquery,
-            analyzed_entries=models.F('dragged_entries') + models.F('discarded_entries')
         )
 
 
