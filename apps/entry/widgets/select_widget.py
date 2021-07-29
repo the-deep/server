@@ -1,4 +1,6 @@
-WIDGET_ID = 'selectWidget'
+from analysis_framework.widgets.select_widget import WIDGET_ID
+
+
 # NOTE: Please update the data version when you update the data format
 DATA_VERSION = 1
 

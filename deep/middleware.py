@@ -140,8 +140,8 @@ class DebugToolbarMiddleware(BaseMiddleware):
 
         content_type = request.content_type
         html_type = content_type in _HTML_TYPES or (
-            # FIXME: This will show debug toolbar widget
-            request.method == 'GET' and request.path == '/graphiql'
+            # XXX: This will show debug toolbar widget
+            request.method == 'GET' and request.path in ['/graphiql']
         )
 
         if html_type:

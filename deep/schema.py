@@ -2,6 +2,9 @@ import graphene
 from graphene_django.debug import DjangoDebug
 from django.conf import settings
 
+# Importing for initialization (Make sure to import this before apps.<>)
+from . import graphene_converter  # type: ignore # noqa F401
+
 from project import schema as pj_schema, mutation as pj_mutation
 from analysis_framework import mutation as af_mutation, schema as af_schema
 from user import mutation as user_mutation, schema as user_schema

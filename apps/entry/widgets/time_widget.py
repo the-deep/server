@@ -1,4 +1,6 @@
-WIDGET_ID = 'timeWidget'
+from analysis_framework.widgets.time_widget import WIDGET_ID
+
+
 # NOTE: Please update the data version when you update the data format
 DATA_VERSION = 1
 

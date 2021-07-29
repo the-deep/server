@@ -8,5 +8,5 @@ class WithContextMixin():
 
 
 class DataLoaderWithContext(WithContextMixin, DataLoader):
-    # def batch_load_fn  TODO: Add logging for errors traceback
+    # def batch_load_fn  TODO: Add logging for errors traceback (for graphene v3)
     pass

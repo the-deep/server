@@ -1,3 +1,6 @@
+WIDGET_ID = 'multiselectWidget'
+
+
 def get_filters(widget, data):
     return [{
         'filter_type': 'list',
