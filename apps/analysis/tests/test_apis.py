@@ -1,4 +1,5 @@
 from dateutil.relativedelta import relativedelta
+from mock import patch
 
 from django.utils import timezone
 from django.conf import settings
@@ -6,7 +7,7 @@ from django.conf import settings
 from rest_framework.exceptions import ErrorDetail
 
 from deep.tests import TestCase
-
+from deep.number_generator import client_id_generator
 from entry.models import Entry
 from analysis.models import (
     Analysis,
@@ -751,7 +752,8 @@ class TestAnalysisAPIs(TestCase):
         response = self.client.get(url)
         self.assert_403(response)
 
-    def test_clone_analysis(self):
+    @patch('analysis.models.client_id_generator', side_effect=client_id_generator)
+    def test_clone_analysis(self, client_id_mock_func):
         user = self.create_user()
         user2 = self.create_user()
         project = self.create_project()
@@ -816,6 +818,7 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(response.data['title'], data['title'])
         self.assertEqual(response.data['cloned_from'], analysis.id)
         self.assertEqual(response.data['analysis_pillar'][0]['cloned_from'], pillar.id)
+        assert client_id_mock_func.called
         # test if the nested fields are cloned or not
         self.assertEqual(
             Analysis.objects.count(),
