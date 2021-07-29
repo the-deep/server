@@ -1,4 +1,6 @@
-WIDGET_ID = 'textWidget'
+from analysis_framework.widgets.text_widget import WIDGET_ID
+
+
 DATA_VERSION = 1
 
 

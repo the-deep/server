@@ -1,3 +1,6 @@
+WIDGET_ID = 'scaleWidget'
+
+
 def get_filters(widget, data):
     scale_units = data.get('scale_units', [])
     filter_options = [

@@ -6,6 +6,7 @@ import datetime
 from enum import Enum
 from unittest.mock import patch
 
+from factory import random as factory_random
 from snapshottest.django import TestCase as SnapShotTextCase
 from django.core import management
 from django.conf import settings
@@ -192,6 +193,7 @@ class GraphQLSnapShotTestCase(GraphQLTestCase, SnapShotTextCase):
     def setUp(self):
         # XXX: This is hacky way to make sure id aren't changed in snapshot. This makes the test slower.
         management.call_command("flush", "--no-input")
+        factory_random.reseed_random(42)
         for factory in self.factories_used:
             factory.reset_sequence()
         super().setUp()

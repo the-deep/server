@@ -12,19 +12,12 @@ from .models import Project
 from .filter_set import ProjectFilterSet
 
 
-class ProjectType(
-    # -- Start --Project scopped entities
-    LeadQuery,
-    ExportQuery,
-    # --  End  --Project scopped entities
-    DjangoObjectType,
-):
+class ProjectType(DjangoObjectType):
     class Meta:
         model = Project
         fields = (
             'id', 'title', 'description', 'start_date', 'end_date',
-            'members', 'regions', 'user_groups', 'analysis_framework',
-            'category_editor', 'assessment_template', 'data',
+            'regions', 'analysis_framework', 'assessment_template',
             'is_default', 'is_private', 'is_visualization_enabled', 'status',
             'organizations', 'stats_cache',
         )
@@ -43,6 +36,25 @@ class ProjectType(
             return None
 
 
+class ProjectDetailType(
+    # -- Start --Project scopped entities
+    LeadQuery,
+    ExportQuery,
+    # --  End  --Project scopped entities
+    ProjectType,
+):
+    class Meta:
+        model = Project
+        skip_registry = True
+        fields = (
+            'id', 'title', 'description', 'start_date', 'end_date',
+            'members', 'regions', 'user_groups', 'analysis_framework',
+            'category_editor', 'assessment_template', 'data',
+            'is_default', 'is_private', 'is_visualization_enabled', 'status',
+            'organizations', 'stats_cache',
+        )
+
+
 class ProjectListType(CustomDjangoListObjectType):
     class Meta:
         model = Project
@@ -50,7 +62,7 @@ class ProjectListType(CustomDjangoListObjectType):
 
 
 class Query:
-    project = DjangoObjectField(ProjectType)
+    project = DjangoObjectField(ProjectDetailType)
     projects = DjangoPaginatedListObjectField(
         ProjectListType,
         pagination=PageGraphqlPagination(

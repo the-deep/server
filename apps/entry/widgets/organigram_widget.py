@@ -1,4 +1,5 @@
-WIDGET_ID = 'organigramWidget'
+from analysis_framework.widgets.organigram_widget import WIDGET_ID
+
 DATA_VERSION = 1
 
 

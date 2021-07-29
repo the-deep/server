@@ -1,3 +1,6 @@
+WIDGET_ID = 'matrix2dWidget'
+
+
 def get_filters(widget, data):
     dimension_options = []
     dimensions = data.get('dimensions', [])

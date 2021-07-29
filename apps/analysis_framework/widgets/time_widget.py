@@ -1,3 +1,6 @@
+WIDGET_ID = 'timeWidget'
+
+
 def get_filters(widget, data):
     return [{
         'filter_type': 'number',
