@@ -1,4 +1,5 @@
-WIDGET_ID = 'numberMatrixWidget'
+from analysis_framework.widgets.number_matrix_widget import WIDGET_ID
+
 DATA_VERSION = 1
 
 

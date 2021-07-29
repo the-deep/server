@@ -7,7 +7,9 @@ from analysis_framework.utils import update_widgets
 
 
 def update_matrix1d(apps, schema_editor):
-    update_widgets('matrix1dWidget')
+    # NOTE: NOT REQUIRED NOW
+    # update_widgets('matrix1dWidget')
+    pass
 
 
 class Migration(migrations.Migration):

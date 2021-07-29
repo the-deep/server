@@ -1,8 +1,6 @@
 from typing import Type
 from collections import OrderedDict
 
-from django.db import transaction
-from django.db.models import JSONField
 from django.core.exceptions import PermissionDenied
 import graphene
 import graphene_django
@@ -11,19 +9,12 @@ from graphene_django.registry import get_global_registry
 from graphene_django.rest_framework.serializer_converter import (
     get_graphene_type_from_serializer_field,
 )
-from graphene_django_extras.converter import convert_django_field
 from rest_framework import serializers
 
 from utils.graphene.error_types import mutation_is_not_valid
 # from utils.common import to_camelcase
 # from deep.enums import ENUM_TO_GRAPHENE_ENUM_MAP
 from deep.permissions import ProjectPermissions as PP
-
-
-@convert_django_field.register(JSONField)
-def convert_json_field_to_scalar(field, registry=None):
-    # https://github.com/graphql-python/graphene-django/issues/303#issuecomment-339939955
-    return GenericScalar()
 
 
 @get_graphene_type_from_serializer_field.register(serializers.ListSerializer)

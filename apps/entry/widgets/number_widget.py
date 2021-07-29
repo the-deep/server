@@ -1,4 +1,6 @@
-WIDGET_ID = 'numberWidget'
+from analysis_framework.widgets.number_widget import WIDGET_ID
+
+
 DATA_VERSION = 1
 
 
