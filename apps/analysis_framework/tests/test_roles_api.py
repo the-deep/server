@@ -30,8 +30,16 @@ class TestAnalysisFrameworkRoles(TestCase):
             created_by=self.user,
         )
         # Add widgets
-        self.private_widget = self.create(Widget, analysis_framework=self.private_framework)
-        self.public_widget = self.create(Widget, analysis_framework=self.public_framework)
+        self.private_widget = self.create(
+            Widget, analysis_framework=self.private_framework,
+            widget_id=Widget.WidgetType.TEXT,
+            key='text-widget-001',
+        )
+        self.public_widget = self.create(
+            Widget, analysis_framework=self.public_framework,
+            widget_id=Widget.WidgetType.TEXT,
+            key='text-widget-002',
+        )
 
     def test_get_private_roles(self):
         url = '/api/v1/private-framework-roles/'
