@@ -317,6 +317,7 @@ class AnalysisFrameworkPermissions(BasePermissions):
         CAN_CLONE_FRAMEWORK = auto()
         CAN_EDIT_FRAMEWORK = auto()
         CAN_USE_IN_OTHER_PROJECTS = auto()
+        DELETE_FRAMEWORK = auto()
 
     __error_message__ = {
         Permission.CAN_ADD_USER: "You don't have permission to add user",

@@ -10,6 +10,8 @@ from .models import (
     AnalysisFramework,
     Section,
     Widget,
+    AnalysisFrameworkMembership,
+    AnalysisFrameworkRole,
 )
 
 
@@ -24,7 +26,7 @@ class SectionType(DjangoObjectType):
 
     class Meta:
         model = Section
-        fields = ('id', 'title', 'order',)
+        fields = ('id', 'title', 'order', 'tooltip')
 
     @staticmethod
     def resolve_widgets(root, info):
@@ -48,9 +50,22 @@ class AnalysisFrameworkType(DjangoObjectType):
             return None
 
 
+class AnalysisFrameworkRoleType(DjangoObjectType):
+    class Meta:
+        model = AnalysisFrameworkRole
+        only_fields = ('id', 'title',)
+
+
+class AnalysisFrameworkMembership(DjangoObjectType):
+    class Meta:
+        model = AnalysisFrameworkMembership
+        only_fields = ('id', 'member', 'role', 'joined_at', 'added_by')
+
+
 class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     primary_tagging = DjangoListField(SectionType)  # With section
     secondary_tagging = DjangoListField(WidgetType)  # Without section
+    members = DjangoListField(AnalysisFrameworkMembership)
 
     class Meta:
         model = AnalysisFramework
@@ -64,6 +79,12 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     @staticmethod
     def resolve_secondary_tagging(root, info):
         return info.context.dl.analysis_framework.secondary_widgets.load(root.id)
+
+    @staticmethod
+    def resolve_members(root, info):
+        if root.current_user_role is not None:
+            return info.context.dl.analysis_framework.members.load(root.id)
+        return []  # NOTE: Always return empty array FIXME: without empty everything is returned
 
 
 class AnalysisFrameworkListType(CustomDjangoListObjectType):

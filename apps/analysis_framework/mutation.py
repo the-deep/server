@@ -1,33 +1,24 @@
 import graphene
 
-from analysis_framework.models import AnalysisFramework
-from analysis_framework.serializers import (
-    AnalysisFrameworkSerializer,
-)
-from analysis_framework.schema import AnalysisFrameworkType
+from deep.permissions import AnalysisFrameworkPermissions as AfP
+
 from utils.graphene.mutation import (
     generate_input_type_for_serializer,
     GrapheneMutation,
     DeleteMutation,
 )
 
+from .models import AnalysisFramework
+from .serializers import (
+    AnalysisFrameworkSerializer,
+)
+from .schema import AnalysisFrameworkType
+
 
 AnalysisFrameworkInputType = generate_input_type_for_serializer(
     'AnalysisFrameworkInputType',
     serializer_class=AnalysisFrameworkSerializer
 )
-
-
-class UpdateAnalysisFramework(GrapheneMutation):
-    class Arguments:
-        data = AnalysisFrameworkInputType(required=True)
-        id = graphene.ID(required=True)
-
-    result = graphene.Field(AnalysisFrameworkType)
-    # class vars
-    serializer_class = AnalysisFrameworkSerializer
-    model = AnalysisFramework
-    permissions = []  # TODO:
 
 
 class CreateAnalysisFramework(GrapheneMutation):
@@ -39,7 +30,19 @@ class CreateAnalysisFramework(GrapheneMutation):
     # class vars
     serializer_class = AnalysisFrameworkSerializer
     model = AnalysisFramework
-    permissions = []  # TODO:
+    permissions = []
+
+
+class UpdateAnalysisFramework(GrapheneMutation):
+    class Arguments:
+        data = AnalysisFrameworkInputType(required=True)
+        id = graphene.ID(required=True)
+
+    result = graphene.Field(AnalysisFrameworkType)
+    # class vars
+    serializer_class = AnalysisFrameworkSerializer
+    model = AnalysisFramework
+    permissions = [AfP.Permission.CAN_EDIT_FRAMEWORK]
 
 
 class DeleteAnalysisFramework(DeleteMutation):
@@ -50,7 +53,7 @@ class DeleteAnalysisFramework(DeleteMutation):
     result = graphene.Field(AnalysisFrameworkType)
     # class vars
     model = AnalysisFramework
-    permissions = []  # TODO:
+    permissions = [AfP.Permission.DELETE_FRAMEWORK]
 
 
 class Mutation(object):
