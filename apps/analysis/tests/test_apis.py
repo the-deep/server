@@ -613,7 +613,7 @@ class TestAnalysisAPIs(TestCase):
         lead1 = self.create_lead(project=project, published_on=now)
         lead2 = self.create_lead(project=project, published_on=now + relativedelta(days=-1))
         lead3 = self.create_lead(project=project, published_on=now + relativedelta(days=-3))
-        lead4 = self.create_lead(project=project, published_on=now + relativedelta(days=5))
+        lead4 = self.create_lead(project=project, published_on=now + relativedelta(days=2))
         lead5 = self.create_lead(project=project, published_on=now + relativedelta(days=2))
         lead6 = self.create_lead(project=project, published_on=now + relativedelta(days=-3))
         self.create_lead(project=project, published_on=now + relativedelta(days=-2))
@@ -627,9 +627,9 @@ class TestAnalysisAPIs(TestCase):
         entry4 = self.create_entry(lead=lead5, project=project)
         entry5 = self.create_entry(lead=lead6, project=project)
         entry6 = self.create_entry(lead=lead6, project=project)
-        self.create_entry(lead=lead8, project=project)
         entry8 = self.create_entry(lead=lead9, project=project)
         entry9 = self.create_entry(lead=lead2, project=project)
+        entry10 = self.create_entry(lead=lead8, project=project)
 
         analysis1 = self.create(
             Analysis,
@@ -651,9 +651,16 @@ class TestAnalysisAPIs(TestCase):
 
         pillar4 = self.create(AnalysisPillar, analysis=analysis2, title='title3', assignee=user2)
 
+        # lets analyze all the entries here
         analytical_statement1 = self.create(AnalyticalStatement, analysis_pillar=pillar1)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry1)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry2)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry4)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry5)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry6)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry8)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement1, entry=entry10)
         # lets discard some entry here
         DiscardedEntry.objects.create(
             analysis_pillar=pillar1,
@@ -668,6 +675,8 @@ class TestAnalysisAPIs(TestCase):
 
         analytical_statement2 = self.create(AnalyticalStatement, analysis_pillar=pillar2)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry4)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry8)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement2, entry=entry10)
         DiscardedEntry.objects.create(
             analysis_pillar=pillar2,
             entry=entry5,
@@ -677,6 +686,8 @@ class TestAnalysisAPIs(TestCase):
         analytical_statement3 = self.create(AnalyticalStatement, analysis_pillar=pillar3)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry5)
         self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry6)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry8)
+        self.create(AnalyticalStatementEntry, analytical_statement=analytical_statement3, entry=entry10)
         DiscardedEntry.objects.create(
             analysis_pillar=pillar3,
             entry=entry2,
@@ -711,11 +722,12 @@ class TestAnalysisAPIs(TestCase):
             data[1]['publication_date']['start_date'], lead6.published_on.strftime('%Y-%m-%d')
         )  # since we use lead that has entry created for
         self.assertEqual(data[1]['publication_date']['end_date'], lead5.published_on.strftime('%Y-%m-%d'))
-        self.assertEqual(data[1]['pillars'][0]['analyzed_entries'], 3)  # discrded + analyzed entry
-        self.assertEqual(data[1]['pillars'][1]['analyzed_entries'], 2)  # discrded + analyzed entry
+        self.assertEqual(data[1]['pillars'][0]['analyzed_entries'], 5)  # discrded + analyzed entry
+        self.assertEqual(data[1]['pillars'][1]['analyzed_entries'], 4)  # discrded + analyzed entry
         # here considering the entry whose lead published date less than analysis end_date
-        self.assertEqual(data[1]['analyzed_entries'], 8)
-        self.assertEqual(data[1]['analyzed_sources'], 6)  # have `distinct=True`
+        # also when analyzed all entries in ceratin pillar and not all in next pillar
+        self.assertEqual(data[1]['analyzed_entries'], 10)
+        self.assertEqual(data[1]['analyzed_sources'], 8)  # have `distinct=True`
         self.assertEqual(data[1]['total_entries'], 10)
         self.assertEqual(data[1]['total_sources'], 8)  # taking lead that has entry more than one
         self.assertEqual(data[0]['team_lead'], user.id)
@@ -796,7 +808,7 @@ class TestAnalysisAPIs(TestCase):
             [ErrorDetail(string='End date must occur after start date', code='invalid')]
         )
 
-        data['start_date'] = '2020-09-10'
+        data.pop('start_date')
         self.authenticate(user)
         response = self.client.post(url, data)
         self.assert_201(response)
