@@ -2,7 +2,6 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework.decorators import action
 from rest_framework import (
-    exceptions,
     permissions,
     views,
     response,
@@ -56,6 +55,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         # NOTE: Calculating here and passing as context since we can't calculate union in subquery in Django for now
         context = {
             'analyzed_sources': Analysis.get_analyzed_sources(page),
+            'analyzed_entries': Analysis.get_analyzed_entries(page)
         }
         serializer = AnalysisSummarySerializer(page, many=True, context=context, partial=True)
         return self.get_paginated_response(serializer.data)
@@ -71,8 +71,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         if input_serializer.is_valid():
             title = input_serializer.validated_data['title']
             end_date = input_serializer.validated_data['end_date']
-            start_date = input_serializer.validated_data['start_date']
-            new_analysis = analysis.clone_analysis(title, end_date, start_date)
+            new_analysis = analysis.clone_analysis(title, end_date)
             serializer = AnalysisSerializer(
                 new_analysis,
                 context={'request': request},

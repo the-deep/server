@@ -150,7 +150,7 @@ class AnalysisSerializer(
 
 class AnalysisCloneInputSerializer(serializers.Serializer):
     title = serializers.CharField(required=True, write_only=True)
-    start_date = serializers.DateField(required=True, write_only=True)
+    start_date = serializers.DateField(write_only=True, required=False, allow_null=True)
     end_date = serializers.DateField(required=True, write_only=True)
 
     def validate(self, data):
@@ -178,7 +178,7 @@ class AnalysisSummarySerializer(serializers.ModelSerializer):
     """
     total_entries = serializers.IntegerField()
     total_sources = serializers.IntegerField()
-    analyzed_entries = serializers.IntegerField()
+    analyzed_entries = serializers.SerializerMethodField()
 
     publication_date = serializers.JSONField()
     team_lead_details = NanoUserSerializer(source='team_lead', read_only=True)
@@ -198,6 +198,9 @@ class AnalysisSummarySerializer(serializers.ModelSerializer):
 
     def get_analyzed_sources(self, analysis):
         return self.context['analyzed_sources'].get(analysis.pk)
+
+    def get_analyzed_entries(self, analysis):
+        return self.context['analyzed_entries'].get(analysis.pk)
 
 
 class AnalysisPillarSummaryAnalyticalStatementSerializer(serializers.ModelSerializer):
