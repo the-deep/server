@@ -8,6 +8,7 @@ from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 from .models import (
     Widget,
     Section,
+    AnalysisFrameworkMembership,
 )
 
 
@@ -48,6 +49,17 @@ class SectionLoader(DataLoaderWithContext):
         return Promise.resolve([_map[key] for key in keys])
 
 
+class MembershipLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = AnalysisFrameworkMembership.objects\
+            .filter(framework__in=keys)\
+            .select_related('role', 'member', 'added_by')
+        _map = defaultdict(list)
+        for section in qs:
+            _map[section.framework_id].append(section)
+        return Promise.resolve([_map[key] for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     # @cached_property
     # def widgets(self):
@@ -64,3 +76,7 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def sections_widgets(self):
         return SectionWidgetLoader(context=self.context)
+
+    @cached_property
+    def members(self):
+        return MembershipLoader(context=self.context)

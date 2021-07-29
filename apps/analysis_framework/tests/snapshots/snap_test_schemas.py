@@ -7,37 +7,22 @@ from snapshottest import Snapshot
 
 snapshots = Snapshot()
 
-snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_widgets 1'] = {
+snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query 1'] = {
     'data': {
         'analysisFramework': {
             'currentUserRole': None,
-            'description': 'Each cause bill scientist nation opportunity all behavior discussion own night respond red information last everything thank serve civil.',
+            'description': 'Quality throughout beautiful instead ahead despite measure ago current practice nation determine operation speak.',
             'id': '1',
             'isPrivate': False,
+            'members': [
+            ],
             'primaryTagging': [
                 {
                     'id': '2',
                     'order': 1,
                     'title': 'Section-1',
+                    'tooltip': 'Some tooltip info 102',
                     'widgets': [
-                        {
-                            'id': '7',
-                            'key': 'widget-key-4',
-                            'order': 16,
-                            'properties': {
-                            },
-                            'title': 'Widget-4',
-                            'widgetId': 'DATEWIDGET'
-                        },
-                        {
-                            'id': '6',
-                            'key': 'widget-key-3',
-                            'order': 17,
-                            'properties': {
-                            },
-                            'title': 'Widget-3',
-                            'widgetId': 'SELECTWIDGET'
-                        },
                         {
                             'id': '5',
                             'key': 'widget-key-2',
@@ -45,7 +30,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_widgets 1'] = {
                             'properties': {
                             },
                             'title': 'Widget-2',
-                            'widgetId': 'GEOWIDGET'
+                            'widgetId': 'DATEWIDGET'
                         },
                         {
                             'id': '4',
@@ -54,7 +39,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_widgets 1'] = {
                             'properties': {
                             },
                             'title': 'Widget-1',
-                            'widgetId': 'TIMEWIDGET'
+                            'widgetId': 'MULTISELECTWIDGET'
                         },
                         {
                             'id': '3',
@@ -63,7 +48,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_widgets 1'] = {
                             'properties': {
                             },
                             'title': 'Widget-0',
-                            'widgetId': 'DATEWIDGET'
+                            'widgetId': 'TEXTWIDGET'
                         }
                     ]
                 },
@@ -71,18 +56,19 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_widgets 1'] = {
                     'id': '3',
                     'order': 2,
                     'title': 'Section-2',
+                    'tooltip': 'Some tooltip info 103',
                     'widgets': [
                         {
-                            'id': '8',
+                            'id': '6',
                             'key': 'widget-key-0',
                             'order': 0,
                             'properties': {
                             },
                             'title': 'Widget-0',
-                            'widgetId': 'GEOWIDGET'
+                            'widgetId': 'SCALEWIDGET'
                         },
                         {
-                            'id': '9',
+                            'id': '7',
                             'key': 'widget-key-1',
                             'order': 1,
                             'properties': {
@@ -91,13 +77,22 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_widgets 1'] = {
                             'widgetId': 'CONDITIONALWIDGET'
                         },
                         {
-                            'id': '10',
+                            'id': '8',
                             'key': 'widget-key-2',
                             'order': 2,
                             'properties': {
                             },
                             'title': 'Widget-2',
-                            'widgetId': 'SELECTWIDGET'
+                            'widgetId': 'MATRIX1DWIDGET'
+                        },
+                        {
+                            'id': '9',
+                            'key': 'widget-key-3',
+                            'order': 3,
+                            'properties': {
+                            },
+                            'title': 'Widget-3',
+                            'widgetId': 'MULTISELECTWIDGET'
                         }
                     ]
                 },
@@ -105,6 +100,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_widgets 1'] = {
                     'id': '1',
                     'order': 3,
                     'title': 'Section-0',
+                    'tooltip': 'Some tooltip info 101',
                     'widgets': [
                         {
                             'id': '1',
@@ -122,50 +118,235 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_widgets 1'] = {
                             'properties': {
                             },
                             'title': 'Widget-1',
-                            'widgetId': 'DATERANGEWIDGET'
+                            'widgetId': 'SELECTWIDGET'
                         }
                     ]
                 }
             ],
             'secondaryTagging': [
                 {
-                    'id': '14',
+                    'id': '13',
                     'key': 'widget-key-3',
                     'order': 17,
                     'properties': {
                     },
                     'title': 'Widget-3',
-                    'widgetId': 'SCALEWIDGET'
+                    'widgetId': 'TIMERANGEWIDGET'
                 },
                 {
-                    'id': '13',
+                    'id': '12',
                     'key': 'widget-key-2',
                     'order': 18,
                     'properties': {
                     },
                     'title': 'Widget-2',
-                    'widgetId': 'DATEWIDGET'
+                    'widgetId': 'MATRIX1DWIDGET'
                 },
                 {
-                    'id': '12',
+                    'id': '11',
                     'key': 'widget-key-1',
                     'order': 19,
                     'properties': {
                     },
                     'title': 'Widget-1',
-                    'widgetId': 'MULTISELECTWIDGET'
+                    'widgetId': 'GEOWIDGET'
                 },
                 {
-                    'id': '11',
+                    'id': '10',
                     'key': 'widget-key-0',
                     'order': 20,
                     'properties': {
                     },
                     'title': 'Widget-0',
-                    'widgetId': 'TEXTWIDGET'
+                    'widgetId': 'NUMBERWIDGET'
                 }
             ],
-            'title': 'AF-6'
+            'title': 'AF-3'
+        }
+    }
+}
+
+snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query 2'] = {
+    'data': {
+        'analysisFramework': {
+            'currentUserRole': 'Default(Public)',
+            'description': 'Quality throughout beautiful instead ahead despite measure ago current practice nation determine operation speak.',
+            'id': '1',
+            'isPrivate': False,
+            'members': [
+                {
+                    'addedBy': None,
+                    'id': '1',
+                    'joinedAt': '2021-01-01T00:00:00.123456+00:00',
+                    'member': {
+                        'displayName': 'Joshua Walker',
+                        'id': '2'
+                    },
+                    'role': {
+                        'id': '1',
+                        'title': 'Default(Public)'
+                    }
+                },
+                {
+                    'addedBy': None,
+                    'id': '2',
+                    'joinedAt': '2021-01-01T00:00:00.123456+00:00',
+                    'member': {
+                        'displayName': 'Danielle Johnson',
+                        'id': '1'
+                    },
+                    'role': {
+                        'id': '1',
+                        'title': 'Default(Public)'
+                    }
+                }
+            ],
+            'primaryTagging': [
+                {
+                    'id': '2',
+                    'order': 1,
+                    'title': 'Section-1',
+                    'tooltip': 'Some tooltip info 102',
+                    'widgets': [
+                        {
+                            'id': '5',
+                            'key': 'widget-key-2',
+                            'order': 18,
+                            'properties': {
+                            },
+                            'title': 'Widget-2',
+                            'widgetId': 'DATEWIDGET'
+                        },
+                        {
+                            'id': '4',
+                            'key': 'widget-key-1',
+                            'order': 19,
+                            'properties': {
+                            },
+                            'title': 'Widget-1',
+                            'widgetId': 'MULTISELECTWIDGET'
+                        },
+                        {
+                            'id': '3',
+                            'key': 'widget-key-0',
+                            'order': 20,
+                            'properties': {
+                            },
+                            'title': 'Widget-0',
+                            'widgetId': 'TEXTWIDGET'
+                        }
+                    ]
+                },
+                {
+                    'id': '3',
+                    'order': 2,
+                    'title': 'Section-2',
+                    'tooltip': 'Some tooltip info 103',
+                    'widgets': [
+                        {
+                            'id': '6',
+                            'key': 'widget-key-0',
+                            'order': 0,
+                            'properties': {
+                            },
+                            'title': 'Widget-0',
+                            'widgetId': 'SCALEWIDGET'
+                        },
+                        {
+                            'id': '7',
+                            'key': 'widget-key-1',
+                            'order': 1,
+                            'properties': {
+                            },
+                            'title': 'Widget-1',
+                            'widgetId': 'CONDITIONALWIDGET'
+                        },
+                        {
+                            'id': '8',
+                            'key': 'widget-key-2',
+                            'order': 2,
+                            'properties': {
+                            },
+                            'title': 'Widget-2',
+                            'widgetId': 'MATRIX1DWIDGET'
+                        },
+                        {
+                            'id': '9',
+                            'key': 'widget-key-3',
+                            'order': 3,
+                            'properties': {
+                            },
+                            'title': 'Widget-3',
+                            'widgetId': 'MULTISELECTWIDGET'
+                        }
+                    ]
+                },
+                {
+                    'id': '1',
+                    'order': 3,
+                    'title': 'Section-0',
+                    'tooltip': 'Some tooltip info 101',
+                    'widgets': [
+                        {
+                            'id': '1',
+                            'key': 'widget-key-0',
+                            'order': 0,
+                            'properties': {
+                            },
+                            'title': 'Widget-0',
+                            'widgetId': 'CONDITIONALWIDGET'
+                        },
+                        {
+                            'id': '2',
+                            'key': 'widget-key-1',
+                            'order': 1,
+                            'properties': {
+                            },
+                            'title': 'Widget-1',
+                            'widgetId': 'SELECTWIDGET'
+                        }
+                    ]
+                }
+            ],
+            'secondaryTagging': [
+                {
+                    'id': '13',
+                    'key': 'widget-key-3',
+                    'order': 17,
+                    'properties': {
+                    },
+                    'title': 'Widget-3',
+                    'widgetId': 'TIMERANGEWIDGET'
+                },
+                {
+                    'id': '12',
+                    'key': 'widget-key-2',
+                    'order': 18,
+                    'properties': {
+                    },
+                    'title': 'Widget-2',
+                    'widgetId': 'MATRIX1DWIDGET'
+                },
+                {
+                    'id': '11',
+                    'key': 'widget-key-1',
+                    'order': 19,
+                    'properties': {
+                    },
+                    'title': 'Widget-1',
+                    'widgetId': 'GEOWIDGET'
+                },
+                {
+                    'id': '10',
+                    'key': 'widget-key-0',
+                    'order': 20,
+                    'properties': {
+                    },
+                    'title': 'Widget-0',
+                    'widgetId': 'NUMBERWIDGET'
+                }
+            ],
+            'title': 'AF-3'
         }
     }
 }
