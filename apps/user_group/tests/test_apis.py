@@ -49,24 +49,32 @@ class UserGroupApiTest(TestCase):
         self.assertEqual(response.data['results'][0]['created_by'], user.id)
 
     def test_member_of(self):
-        user_group = self.create(UserGroup, role='admin')
-        test_user = self.create(User)
+        user_group1 = self.create(UserGroup, role='admin')
+        user_group2 = self.create(UserGroup, role='admin')
+        test_user1 = self.create(User)
+        test_user2 = self.create(User)
+        GroupMembership.objects.create(member=test_user1, group=user_group1)
+        GroupMembership.objects.create(member=test_user2, group=user_group1)
+        GroupMembership.objects.create(member=test_user2, group=user_group2)
 
         url = '/api/v1/user-groups/member-of/'
 
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
-
-        self.assertEqual(response.data['count'], 1)
-        self.assertEqual(response.data['results'][0]['id'], user_group.id)
-
-        url = '/api/v1/user-groups/member-of/?user={}'.format(test_user.id)
-
+        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(
+            set([user_group['id'] for user_group in response.data['results']]),
+            set([user_group1.id, user_group2.id])
+        )
+        url = '/api/v1/user-groups/member-of/?user={}'.format(test_user1.id)
         response = self.client.get(url)
         self.assert_200(response)
-
-        self.assertEqual(response.data['count'], 0)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], user_group1.id)
+        # check for the member count
+        # NOTE: count 3 since a member is created whenever a usergroup is created
+        self.assertEqual(response.data['results'][0]['members_count'], 3)
 
     def test_search_user_group_without_exclusion(self):
         project = self.create(Project)
