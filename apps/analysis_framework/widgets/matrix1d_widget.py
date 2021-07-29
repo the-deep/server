@@ -1,3 +1,6 @@
+WIDGET_ID = 'matrix1dWidget'
+
+
 def get_filters(widget, data):
     rows = data.get('rows', [])
     filter_options = []

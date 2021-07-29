@@ -91,10 +91,12 @@ django-fixture-magic = { branch = "466fa35c075009e4a1974f6e588471dd9e720e53", gi
 
 [tool.pyright]
 extraPaths = ["apps"]
-exclude = ["**/node_modules",
+exclude = [
+    "**/node_modules",
     "**/__pycache__",
     "apps/experimental",
-    "apps/typestubs"
+    "apps/typestubs",
+    "**/snap_test_*.py",
 ]
 reportMissingImports = true
 reportMissingTypeStubs = false

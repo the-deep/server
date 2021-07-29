@@ -1,7 +1,10 @@
+from typing import Union
+
 from django.db import models
 from user_resource.models import UserResource
 from user.models import User
 from organization.models import Organization
+from .widgets import store as widgets_store
 
 
 class AnalysisFramework(UserResource):
@@ -29,6 +32,11 @@ class AnalysisFramework(UserResource):
         upload_to='af-preview-image/', max_length=255, null=True, blank=True, default=None,
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.widget_set: models.QuerySet[Widget]
+        self.filter_set: models.QuerySet[Filter]
+
     def __str__(self):
         return self.title
 
@@ -48,8 +56,8 @@ class AnalysisFramework(UserResource):
         analysis_framework.modified_by = user
         analysis_framework.save()
 
-        [widget.clone_to(analysis_framework) for widget
-         in self.widget_set.all()]
+        for widget in self.widget_set.all():
+            widget.clone_to(analysis_framework)
 
         return analysis_framework
 
@@ -60,10 +68,32 @@ class AnalysisFramework(UserResource):
             ~models.Q(project__members=user)
         )
 
-    def can_get(self, user):
+    @classmethod
+    def get_for_gq(cls, user, only_member=False):
+        visible_afs = cls.objects\
+            .annotate(
+                # NOTE: This is used by permission module
+                current_user_role=models.Subquery(
+                    AnalysisFrameworkMembership.objects.filter(
+                        framework=models.OuterRef('pk'),
+                        member=user,
+                    ).order_by('role__title').values('role__title')[:1],
+                    output_field=models.CharField()
+                )
+                # NOTE: Exclude if af is private + user is not a member and user is not member of project using af
+            ).exclude(
+                models.Q(is_private=True) &
+                models.Q(current_user_role__isnull=True) &
+                ~models.Q(project__members=user)
+            )
+        if only_member:
+            return visible_afs.filter(current_user_role__isnull=False)
+        return visible_afs
+
+    def can_get(self, _: User):
         return True
 
-    def can_modify(self, user):
+    def can_modify(self, user: User):
         """
         Analysis framework can be modified by a user if:
         * user created the framework, or
@@ -95,7 +125,7 @@ class AnalysisFramework(UserResource):
     def get_or_create_owner_role(self):
         permission_fields = self.get_owner_permissions()
         privacy_label = 'Private' if self.is_private else 'Public'
-        role, created = AnalysisFrameworkRole.objects.get_or_create(
+        role, _ = AnalysisFrameworkRole.objects.get_or_create(
             **permission_fields,
             is_private_role=self.is_private,
             defaults={
@@ -108,7 +138,7 @@ class AnalysisFramework(UserResource):
         permission_fields = self.get_editor_permissions()
         privacy_label = 'Private' if self.is_private else 'Public'
 
-        role, created = AnalysisFrameworkRole.objects.get_or_create(
+        role, _ = AnalysisFrameworkRole.objects.get_or_create(
             **permission_fields,
             is_private_role=self.is_private,
             defaults={
@@ -120,7 +150,7 @@ class AnalysisFramework(UserResource):
     def get_or_create_default_role(self):
         permission_fields = self.get_default_permissions()
         privacy_label = 'Private' if self.is_private else 'Public'
-        role, created = AnalysisFrameworkRole.objects.get_or_create(
+        role, _ = AnalysisFrameworkRole.objects.get_or_create(
             is_default_role=True,
             is_private_role=self.is_private,
             defaults={
@@ -174,17 +204,49 @@ class AnalysisFramework(UserResource):
         return self.filter_set.filter(widget_key__in=current_widgets_key).all()
 
 
+class Section(models.Model):
+    """
+    Section to group widgets
+    """
+    analysis_framework_id: Union[int, None]
+    analysis_framework = models.ForeignKey(AnalysisFramework, on_delete=models.CASCADE)
+    title = models.CharField(max_length=100)
+    order = models.IntegerField(default=1)
+
+    def __str__(self):
+        return f'{self.analysis_framework_id}#{self.title}'
+
+
 class Widget(models.Model):
     """
     Widget inserted into a framework
     """
-    analysis_framework = models.ForeignKey(
-        AnalysisFramework, on_delete=models.CASCADE,
-    )
+    class WidgetType(models.TextChoices):
+        DATE = widgets_store.date_widget.WIDGET_ID
+        DATE_RANGE = widgets_store.date_range_widget.WIDGET_ID
+        TIME = widgets_store.time_widget.WIDGET_ID
+        TIME_RANGE = widgets_store.time_range_widget.WIDGET_ID
+        NUMBER = widgets_store.number_widget.WIDGET_ID
+        SCALE = widgets_store.scale_widget.WIDGET_ID
+        GEO = widgets_store.geo_widget.WIDGET_ID
+        SELECT = widgets_store.select_widget.WIDGET_ID
+        MULTISELECT = widgets_store.multiselect_widget.WIDGET_ID
+        ORGANIGRAM = widgets_store.organigram_widget.WIDGET_ID
+        MATRIX1D = widgets_store.matrix1d_widget.WIDGET_ID
+        MATRIX2D = widgets_store.matrix2d_widget.WIDGET_ID
+        NUMBER_MATRIX = widgets_store.number_matrix_widget.WIDGET_ID
+        CONDITIONAL = widgets_store.conditional_widget.WIDGET_ID
+        TEXT = widgets_store.text_widget.WIDGET_ID
+        EXCERPT = 'excerptWidget', 'Excerpt #DEPRICATED'  # TODO:DEPRICATED
+
+    analysis_framework = models.ForeignKey(AnalysisFramework, on_delete=models.CASCADE)
     key = models.CharField(max_length=100, default=None, blank=True, null=True)
-    widget_id = models.CharField(max_length=100, db_index=True)
+    widget_id = models.CharField(choices=WidgetType.choices, max_length=100, db_index=True)
     title = models.CharField(max_length=255)
     properties = models.JSONField(default=None, blank=True, null=True)
+    order = models.IntegerField(default=1)
+    # NOTE: With section: Primary Tagging, without section: Secondary Tagging
+    section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -228,17 +290,11 @@ class Filter(models.Model):
     """
     A filter for a widget in an analysis framework
     """
-    TEXT = 'text'
-    NUMBER = 'number'
-    LIST = 'list'
-    INTERSECTS = 'intersects'
-
-    FILTER_TYPES = (
-        (TEXT, 'Text'),
-        (NUMBER, 'Number'),
-        (LIST, 'List'),
-        (INTERSECTS, 'Intersection between two numbers'),
-    )
+    class FilterType(models.TextChoices):
+        TEXT = 'text', 'Text'
+        NUMBER = 'number', 'Number'
+        LIST = 'list', 'List'
+        INTERSECTS = 'intersects', 'Intersection between two numbers'
 
     analysis_framework = models.ForeignKey(
         AnalysisFramework, on_delete=models.CASCADE,
@@ -247,8 +303,7 @@ class Filter(models.Model):
     widget_key = models.CharField(max_length=100)
     title = models.CharField(max_length=255)
     properties = models.JSONField(default=None, blank=True, null=True)
-    filter_type = models.CharField(max_length=20, choices=FILTER_TYPES,
-                                   default=LIST)
+    filter_type = models.CharField(max_length=20, choices=FilterType.choices, default=FilterType.LIST)
 
     class Meta:
         ordering = ['title', 'widget_key', 'key']

@@ -483,7 +483,7 @@ class ComprehensiveEntriesViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = EntryFilterSet
 
     def get_queryset(self):
-        ignore_widget_type = ['excerptWidget']
+        ignore_widget_type = [Widget.WidgetType.EXCERPT.value]
         prefetch_related_fields = [
             models.Prefetch(
                 'attribute_set',
