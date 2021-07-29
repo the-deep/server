@@ -10,6 +10,8 @@ PROFILE_FIELDS = ['display_picture', 'organization', 'language', 'email_opt_outs
 
 
 class UserFactory(DjangoModelFactory):
+    first_name = factory.Faker('first_name')
+    last_name = factory.Faker('last_name')
     email = factory.Sequence(lambda n: f'{n}@xyz.com')
     username = factory.LazyAttribute(lambda user: user.email)
     password_text = fuzzy.FuzzyText(length=15)

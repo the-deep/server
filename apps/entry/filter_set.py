@@ -287,7 +287,7 @@ def get_filtered_entries(user, queries):
             filter.key + '_exclude_and'
         )
 
-        if filter.filter_type == Filter.NUMBER:
+        if filter.filter_type == Filter.FilterType.NUMBER:
             if query:
                 entries = entries.filter(
                     filterdata__filter=filter,
@@ -304,14 +304,14 @@ def get_filtered_entries(user, queries):
                     filterdata__number__gte=query_gt,
                 )
 
-        elif filter.filter_type == Filter.TEXT:
+        elif filter.filter_type == Filter.FilterType.TEXT:
             if query:
                 entries = entries.filter(
                     filterdata__filter=filter,
                     filterdata__text__icontains=query,
                 )
 
-        elif filter.filter_type == Filter.INTERSECTS:
+        elif filter.filter_type == Filter.FilterType.INTERSECTS:
             if query:
                 entries = entries.filter(
                     filterdata__filter=filter,
@@ -332,7 +332,7 @@ def get_filtered_entries(user, queries):
                 )
                 entries = entries.filter(q, filterdata__filter=filter)
 
-        elif filter.filter_type == Filter.LIST:
+        elif filter.filter_type == Filter.FilterType.LIST:
             # query and query_and are mutual exclusive and query_and has higher priority
             query = query_and or query_exclude_and or query_exclude or query
             if query and not isinstance(query, list):

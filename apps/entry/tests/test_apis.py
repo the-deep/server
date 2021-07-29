@@ -446,7 +446,7 @@ class EntryTests(TestCase):
             widget_key='test_filter',
             key='test_filter',
             title='Test Filter',
-            filter_type=Filter.NUMBER,
+            filter_type=Filter.FilterType.NUMBER,
         )
         self.create(FilterData, entry=entry, filter=filter, number=500)
 
@@ -461,7 +461,7 @@ class EntryTests(TestCase):
             widget_key='test_list_filter',
             key='test_list_filter',
             title='Test List Filter',
-            filter_type=Filter.LIST,
+            filter_type=Filter.FilterType.LIST,
         )
         self.create(FilterData, entry=entry, filter=filter,
                     values=['abc', 'def', 'ghi'])
