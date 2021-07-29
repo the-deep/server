@@ -7,7 +7,7 @@ from utils.graphene.mutation import (
 )
 
 from .models import UserGroup
-from .schema import UserGroupType
+from .schema import UserGroupDetailType
 from .serializers import UserGroupGqSerializer as UserGroupSerializer
 
 
@@ -22,7 +22,7 @@ class CreateUserGroup(GrapheneMutation):
         data = UserGroupInputType(required=True)
     model = UserGroup
     serializer_class = UserGroupSerializer
-    result = graphene.Field(UserGroupType)
+    result = graphene.Field(UserGroupDetailType)
     permissions = []  # TODO: Add permission check and test
 
 
@@ -32,7 +32,7 @@ class UpdateUserGroup(GrapheneMutation):
         id = graphene.ID(required=True)
     model = UserGroup
     serializer_class = UserGroupSerializer
-    result = graphene.Field(UserGroupType)
+    result = graphene.Field(UserGroupDetailType)
     permissions = []  # TODO: Add permission check and test
 
 
@@ -40,7 +40,7 @@ class DeleteUserGroup(DeleteMutation):
     class Arguments:
         id = graphene.ID(required=True)
     model = UserGroup
-    result = graphene.Field(UserGroupType)
+    result = graphene.Field(UserGroupDetailType)
     permissions = []  # TODO: Add permission check and test
 
 
