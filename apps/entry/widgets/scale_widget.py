@@ -1,4 +1,6 @@
-WIDGET_ID = 'scaleWidget'
+from analysis_framework.widgets.scale_widget import WIDGET_ID
+
+
 # NOTE: Please update the data version when you update the data format
 DATA_VERSION = 1
 

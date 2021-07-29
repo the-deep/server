@@ -5,3 +5,4 @@ exclude = .git,__pycache__,old,build,dist,*/migrations/*.py
 max-complexity = 10
 per-file-ignores =
     /**/tests/*_mock_data.py: E501
+    **/snap_test_*.py: E501

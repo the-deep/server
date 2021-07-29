@@ -198,7 +198,35 @@ class IsUserGroupMember(permissions.BasePermission):
 
 # ---------------------------- GRAPHQL Permissions ------------------------------
 
-class ProjectPermissions():
+class BasePermissions():
+
+    # ------------ Define this after using this as base -----------
+    @unique
+    class Permission(Enum):
+        pass
+    __error_message__ = {}
+    PERMISSION_MAP = {}
+    CONTEXT_PERMISSION_ATTR = ''
+    # ------------ Define this after using this as base -----------
+
+    DEFAULT_PERMISSION_DENIED_MESSAGE = PermissionDeniedException.default_message
+
+    @classmethod
+    def get_permissions(cls, role):
+        return cls.PERMISSION_MAP.get(role) or []
+
+    @classmethod
+    def get_permission_message(cls, permission):
+        return cls.__error_message__.get(permission, cls.DEFAULT_PERMISSION_DENIED_MESSAGE)
+
+    @classmethod
+    def check_permission(cls, info, *perms):
+        permissions = getattr(info.context, cls.CONTEXT_PERMISSION_ATTR)
+        if permissions:
+            return all([perm in permissions for perm in perms])
+
+
+class ProjectPermissions(BasePermissions):
 
     @unique
     class Permission(Enum):
@@ -278,17 +306,46 @@ class ProjectPermissions():
         'Clairvoyant One': CLAIRVOYANT_ONE,
     }
 
-    DEFAULT_PERMISSION_DENIED_MESSAGE = PermissionDeniedException.default_message
+    CONTEXT_PERMISSION_ATTR = 'project_permissions'
 
-    @classmethod
-    def get_permissions(cls, role):
-        return cls.PERMISSION_MAP.get(role) or []
 
-    @classmethod
-    def get_permission_message(cls, permission):
-        return cls.__error_message__.get(permission, cls.DEFAULT_PERMISSION_DENIED_MESSAGE)
+class AnalysisFrameworkPermissions(BasePermissions):
 
-    @staticmethod
-    def check_permission(info, *perms):
-        if info.context.permissions:
-            return all([perm in info.context.permissions for perm in perms])
+    @unique
+    class Permission(Enum):
+        CAN_ADD_USER = auto()
+        CAN_CLONE_FRAMEWORK = auto()
+        CAN_EDIT_FRAMEWORK = auto()
+        CAN_USE_IN_OTHER_PROJECTS = auto()
+
+    __error_message__ = {
+        Permission.CAN_ADD_USER: "You don't have permission to add user",
+        Permission.CAN_CLONE_FRAMEWORK: "You don't have permission to clone framework",
+        Permission.CAN_EDIT_FRAMEWORK: "You don't have permission to edit framework",
+        Permission.CAN_USE_IN_OTHER_PROJECTS: "You don't have permission to use in other projects",
+    }
+
+    DEFAULT = [
+        Permission.CAN_CLONE_FRAMEWORK,
+        Permission.CAN_USE_IN_OTHER_PROJECTS,
+    ]
+    EDITOR = [*DEFAULT, Permission.CAN_EDIT_FRAMEWORK]
+    OWNER = [*EDITOR, Permission.CAN_ADD_USER]
+    # Private roles (doesn't have clone permission)
+    PRIVATE_VIEWER = [Permission.CAN_USE_IN_OTHER_PROJECTS]
+    PRIVATE_EDITOR = [*PRIVATE_VIEWER, Permission.CAN_EDIT_FRAMEWORK]
+    PRIVATE_OWNER = [*PRIVATE_EDITOR, Permission.CAN_ADD_USER]
+
+    # NOTE: Key are already defined in production.
+    # TODO: Will need to create this role locally to work.
+    PERMISSION_MAP = {
+        'Editor': EDITOR,
+        'Owner': OWNER,
+        'Default': DEFAULT,
+        'Private Editor': PRIVATE_EDITOR,
+        'Private Owner': PRIVATE_OWNER,
+        'Private Viewer': PRIVATE_VIEWER,
+
+    }
+
+    CONTEXT_PERMISSION_ATTR = 'af_permissions'

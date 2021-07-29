@@ -251,14 +251,6 @@ class LeadFilterSet(django_filters.FilterSet):
         return qs
 
 
-class LeadGQFilterSet(LeadFilterSet):
-    ordering = None
-
-    @property
-    def qs(self):
-        return super().qs.distinct()
-
-
 class LeadGroupFilterSet(UserResourceFilterSet):
     project = django_filters.ModelMultipleChoiceFilter(
         queryset=Project.objects.all(),
@@ -277,3 +269,12 @@ class LeadGroupFilterSet(UserResourceFilterSet):
                 },
             },
         }
+
+
+# ------------------------------ Graphql filters -----------------------------------
+class LeadGQFilterSet(LeadFilterSet):
+    ordering = None
+
+    @property
+    def qs(self):
+        return super().qs.distinct()
