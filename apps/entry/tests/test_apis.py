@@ -76,8 +76,8 @@ class EntryTests(TestCase):
         geo_widget = self.create(
             Widget,
             analysis_framework=lead.project.analysis_framework,
-            widget_id='geoWidget',
-            key='geoWidget-1312321321',
+            widget_id=Widget.WidgetType.GEO,
+            key='geoWidget-101',
         )
 
         url = '/api/v1/entries/'
@@ -163,6 +163,8 @@ class EntryTests(TestCase):
         widget = self.create(
             Widget,
             analysis_framework=lead.project.analysis_framework,
+            widget_id=Widget.WidgetType.TEXT,
+            key='text-102',
         )
 
         url = '/api/v1/entries/'
@@ -210,6 +212,8 @@ class EntryTests(TestCase):
         widget = self.create(
             Widget,
             analysis_framework=lead.project.analysis_framework,
+            widget_id=Widget.WidgetType.TEXT,
+            key='text-103',
         )
 
         url = '/api/v1/entries/'
@@ -254,6 +258,8 @@ class EntryTests(TestCase):
         widget = self.create(
             Widget,
             analysis_framework=lead.project.analysis_framework,
+            widget_id=Widget.WidgetType.TEXT,
+            key='text-104',
         )
 
         user = self.create(User)
@@ -335,10 +341,14 @@ class EntryTests(TestCase):
         widget1 = self.create(
             Widget,
             analysis_framework=entry.lead.project.analysis_framework,
+            widget_id=Widget.WidgetType.TEXT,
+            key='text-105',
         )
         widget2 = self.create(
             Widget,
             analysis_framework=entry.lead.project.analysis_framework,
+            widget_id=Widget.WidgetType.TEXT,
+            key='text-106',
         )
         self.create(
             Attribute,

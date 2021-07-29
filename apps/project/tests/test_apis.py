@@ -1282,7 +1282,7 @@ class ProjectApiTest(TestCase):
         invalid_stat_config = {}
         valid_stat_config = {}
 
-        for widget_identifier, data_identifier, config_kwargs in [
+        for index, (widget_identifier, data_identifier, config_kwargs) in enumerate([
             ('widget_1d', 'matrix1dWidget', {}),
             ('widget_2d', 'matrix2dWidget', {}),
             ('geo_widget', 'geoWidget', {}),
@@ -1299,9 +1299,11 @@ class ProjectApiTest(TestCase):
             ('reliability_widget', 'scaleWidget', {}),
             ('affected_groups_widget', 'multiselectWidget', {}),
             ('specific_needs_groups_widget', 'multiselectWidget', {}),
-        ]:
+        ]):
             widget = self.create(
                 Widget, analysis_framework=af,
+                widget_id=data_identifier,
+                key=f'{data_identifier}-{index}',
                 properties={'data': w_data[data_identifier]},
             )
             self.create(Attribute, entry=entry, widget=widget, data=a_data[data_identifier])
