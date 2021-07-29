@@ -22,17 +22,22 @@ class ComprehensiveEntryApiTest(TestCase):
     TODO: Add test for normal lookup for exportable and filter data
     """
 
-    def create_widget(self, data):
+    _counter = 0
+
+    def create_widget(self, widget_id, data):
         project = self.create_project()
         widget = self.create(
             Widget,
             analysis_framework=project.analysis_framework,
             properties={'data': data},
+            widget_id=widget_id,
+            key=f'{widget_id}-{self._counter}'
         )
+        self._counter += 1
         return widget
 
-    def create_attribute(self, widget_data, attr_data):
-        widget = self.create_widget(widget_data)
+    def create_attribute(self, widget_id, widget_data, attr_data):
+        widget = self.create_widget(widget_id, widget_data)
         attribute = self.create(
             Attribute,
             widget=widget,
@@ -48,7 +53,7 @@ class ComprehensiveEntryApiTest(TestCase):
 
     def assertAttributeValue(self, widgets_meta, widget_id, widget_data, attr_data, expected_c_response):
         expected_c_response = expected_c_response or {}
-        widget, attribute = self.create_attribute(widget_data, attr_data)
+        widget, attribute = self.create_attribute(widget_id, widget_data, attr_data)
         widget_data = widget.properties and widget.properties.get('data')
         data = attribute.data or {}
         c_resposne = self.get_data_selector(widget_id)(

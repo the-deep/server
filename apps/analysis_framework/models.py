@@ -240,6 +240,7 @@ class Widget(models.Model):
         EXCERPT = 'excerptWidget', 'Excerpt #DEPRICATED'  # TODO:DEPRICATED
 
     analysis_framework = models.ForeignKey(AnalysisFramework, on_delete=models.CASCADE)
+    # FIXME: key shouldn't be null (Filter/Exportable have non-nullable key)
     key = models.CharField(max_length=100, default=None, blank=True, null=True)
     widget_id = models.CharField(choices=WidgetType.choices, max_length=100, db_index=True)
     title = models.CharField(max_length=255)
