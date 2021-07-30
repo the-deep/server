@@ -1106,8 +1106,8 @@ class TestAnalysisAPIs(TestCase):
         lead2 = self.create_lead(project=project, title='TESTA', published_on=now + relativedelta(days=-4))
         lead3 = self.create_lead(project=project, title='TESTA', published_on=now + relativedelta(days=-2))
         entry1 = self.create(Entry, project=project, lead=lead2)
-        self.create(Entry, project=project, lead=lead2)
-        self.create(Entry, project=project, lead=lead3)
+        entry2 = self.create(Entry, project=project, lead=lead2)
+        entry3 = self.create(Entry, project=project, lead=lead3)
         self.create(Entry, project=project, lead=lead1)
         self.create(Entry, project=project2, lead=lead3)
 
@@ -1138,6 +1138,14 @@ class TestAnalysisAPIs(TestCase):
         response = self.post_filter_test(analysis_pillar_entries_url, {'discarded': False}, count=2)
         response_id = [res['id'] for res in response.data['results']]
         self.assertNotIn(entry1.id, response_id)
+
+        # try to exclude some entries
+        self.authenticate(user)
+        data = {
+            'exclude_entries': [entry2.id, entry3.id]
+        }
+        response = self.post_filter_test(analysis_pillar_entries_url, data, count=0)
+        self.assert_200(response)
 
     def test_discardedentry_options(self):
         url = '/api/v1/discarded-entry-options/'
