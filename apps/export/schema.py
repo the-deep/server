@@ -18,7 +18,7 @@ def get_export_qs(info):
     )
 
 
-class ExportGQLType(DjangoObjectType):
+class UserExportType(DjangoObjectType):
     class Meta:
         model = Export
         fields = (
@@ -26,19 +26,22 @@ class ExportGQLType(DjangoObjectType):
             'export_type', 'filters', 'mime_type', 'file', 'exported_by',
             'exported_at', 'pending', 'status', 'is_deleted', 'is_archived'
         )
-    project = graphene.ID(source='project_id')
+
+    @staticmethod
+    def get_custom_queryset(queryset, info, **kwargs):
+        return get_export_qs(info)
 
 
-class ExportListType(CustomDjangoListObjectType):
+class UserExportListType(CustomDjangoListObjectType):
     class Meta:
         model = Export
         filterset_class = ExportGQLFilterSet
 
 
 class Query:
-    export = DjangoObjectField(ExportGQLType)
+    export = DjangoObjectField(UserExportType)
     exports = DjangoPaginatedListObjectField(
-        ExportListType,
+        UserExportListType,
         pagination=PageGraphqlPagination(
             page_size_query_param='pageSize'
         )
