@@ -6,6 +6,7 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from lead.schema import Query as LeadQuery
+from export.schema import Query as ExportQuery
 
 from .models import Project
 from .filter_set import ProjectFilterSet
@@ -14,6 +15,7 @@ from .filter_set import ProjectFilterSet
 class ProjectType(
     # -- Start --Project scopped entities
     LeadQuery,
+    ExportQuery,
     # --  End  --Project scopped entities
     DjangoObjectType,
 ):
