@@ -489,4 +489,4 @@ class ExcelExporter:
 
         buffer = self.wb.save()
         filename = generate_filename('Entries Export', 'xlsx')
-        return filename, Export.XLSX, EXCEL_MIME_TYPE, ContentFile(buffer)
+        return filename, Export.Format.XLSX, EXCEL_MIME_TYPE, ContentFile(buffer)
