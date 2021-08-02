@@ -24,9 +24,13 @@ class TestExportQuerySchema(GraphQLTestCase):
         '''
 
         project = ProjectFactory.create()
+        project2 = ProjectFactory.create()
         user = UserFactory.create()
+        user2 = UserFactory.create()
         project.add_member(user, role=self.role_viewer_non_confidential)
+        project2.add_member(user2, role=self.role_viewer_non_confidential)
         export = ExportFactory.create(project=project, exported_by=user)
+        other_export = ExportFactory.create(project=project2, exported_by=user2)
 
         def _query_check(export, **kwargs):
             return self.query_check(query, variables={'projectId': project.id, 'exportId': export.id}, **kwargs)
@@ -39,6 +43,10 @@ class TestExportQuerySchema(GraphQLTestCase):
         content = _query_check(export)
         self.assertNotEqual(content['data']['project']['export'], None, content)
         self.assertEqual(content['data']['project']['export']['id'], str(export.id))
+
+        self.force_login(user)
+        content = _query_check(other_export)
+        self.assertEqual(content['data']['project']['export'], None, content)
 
     def test_exports_query(self):
         query = '''
@@ -165,6 +173,7 @@ class TestExportQuerySchema(GraphQLTestCase):
         self.assertEqual(len(content['data']['project']['exports']['results']), 4, content)
 
         def _query_check(**kwargs):
+            # TODO: Use self.genum() instead of .value.
             return self.query_check(
                 query,
                 variables={
