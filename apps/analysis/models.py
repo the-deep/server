@@ -7,6 +7,7 @@ from django.db import connection as django_db_connection
 from django.utils.translation import gettext_lazy as _
 
 from project.mixins import ProjectEntityMixin
+from deep.number_generator import client_id_generator
 from user.models import User
 from project.models import Project
 from entry.models import Entry
@@ -42,20 +43,20 @@ class Analysis(UserResource, ProjectEntityMixin):
         def _get_clone_pillar(obj, analysis_cloned_id):
             obj.cloned_from_id = obj.pk
             obj.pk = None
-            obj.client_id = None
+            obj.client_id = client_id_generator()
             obj.analysis_id = analysis_cloned_id
             return obj
 
         def _get_clone_pillar_statement(obj, analysis_pillar_id):
             obj.cloned_from_id = obj.pk
             obj.pk = None
-            obj.client_id = None
+            obj.client_id = client_id_generator()
             obj.analysis_pillar_id = analysis_pillar_id
             return obj
 
         def _get_clone_statement_entry(obj, analytical_statement_id):
             obj.pk = None
-            obj.client_id = None
+            obj.client_id = client_id_generator()
             obj.analytical_statement_id = analytical_statement_id
             return obj
 
@@ -65,7 +66,7 @@ class Analysis(UserResource, ProjectEntityMixin):
             return obj
 
         analysis_cloned.pk = None
-        analysis_cloned.client_id = None
+        analysis_cloned.client_id = client_id_generator()
         analysis_cloned.title = title
         analysis_cloned.end_date = end_date
         analysis_cloned.cloned_from = self

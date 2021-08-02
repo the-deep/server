@@ -1,4 +1,5 @@
 from dateutil.relativedelta import relativedelta
+from mock import patch
 
 from django.utils import timezone
 from django.conf import settings
@@ -6,7 +7,7 @@ from django.conf import settings
 from rest_framework.exceptions import ErrorDetail
 
 from deep.tests import TestCase
-
+from deep.number_generator import client_id_generator
 from entry.models import Entry
 from analysis.models import (
     Analysis,
@@ -751,7 +752,8 @@ class TestAnalysisAPIs(TestCase):
         response = self.client.get(url)
         self.assert_403(response)
 
-    def test_clone_analysis(self):
+    @patch('analysis.models.client_id_generator', side_effect=client_id_generator)
+    def test_clone_analysis(self, client_id_mock_func):
         user = self.create_user()
         user2 = self.create_user()
         project = self.create_project()
@@ -816,6 +818,7 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(response.data['title'], data['title'])
         self.assertEqual(response.data['cloned_from'], analysis.id)
         self.assertEqual(response.data['analysis_pillar'][0]['cloned_from'], pillar.id)
+        assert client_id_mock_func.called
         # test if the nested fields are cloned or not
         self.assertEqual(
             Analysis.objects.count(),
@@ -1103,8 +1106,8 @@ class TestAnalysisAPIs(TestCase):
         lead2 = self.create_lead(project=project, title='TESTA', published_on=now + relativedelta(days=-4))
         lead3 = self.create_lead(project=project, title='TESTA', published_on=now + relativedelta(days=-2))
         entry1 = self.create(Entry, project=project, lead=lead2)
-        self.create(Entry, project=project, lead=lead2)
-        self.create(Entry, project=project, lead=lead3)
+        entry2 = self.create(Entry, project=project, lead=lead2)
+        entry3 = self.create(Entry, project=project, lead=lead3)
         self.create(Entry, project=project, lead=lead1)
         self.create(Entry, project=project2, lead=lead3)
 
@@ -1135,6 +1138,14 @@ class TestAnalysisAPIs(TestCase):
         response = self.post_filter_test(analysis_pillar_entries_url, {'discarded': False}, count=2)
         response_id = [res['id'] for res in response.data['results']]
         self.assertNotIn(entry1.id, response_id)
+
+        # try to exclude some entries
+        self.authenticate(user)
+        data = {
+            'exclude_entries': [entry2.id, entry3.id]
+        }
+        response = self.post_filter_test(analysis_pillar_entries_url, data, count=0)
+        self.assert_200(response)
 
     def test_discardedentry_options(self):
         url = '/api/v1/discarded-entry-options/'
