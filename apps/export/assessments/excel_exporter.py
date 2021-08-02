@@ -192,7 +192,7 @@ class ExcelExporter:
 
         buffer = self.wb.save()
         filename = generate_filename('Assessments Export', 'xlsx')
-        return filename, Export.XLSX, EXCEL_MIME_TYPE, ContentFile(buffer)
+        return filename, Export.Format.XLSX, EXCEL_MIME_TYPE, ContentFile(buffer)
 
 
 class NewExcelExporter:
@@ -295,4 +295,4 @@ class NewExcelExporter:
 
         buffer = self.wb.save()
         filename = generate_filename('Assessments Export', 'xlsx')
-        return filename, Export.XLSX, EXCEL_MIME_TYPE, ContentFile(buffer)
+        return filename, Export.Format.XLSX, EXCEL_MIME_TYPE, ContentFile(buffer)
