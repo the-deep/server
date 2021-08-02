@@ -1,6 +1,7 @@
 import django_filters
 
 from project.models import Project
+from utils.graphene.filters import StringListFilter
 from .models import Export
 
 
@@ -19,7 +20,7 @@ class ExportFilterSet(django_filters.rest_framework.FilterSet):
     )
 
     status = django_filters.MultipleChoiceFilter(
-        choices=Export.STATUS_CHOICES,
+        choices=Export.Status.choices,
         widget=django_filters.widgets.CSVWidget
     )
 
@@ -47,4 +48,23 @@ class ExportFilterSet(django_filters.rest_framework.FilterSet):
 
         for ordering in orderings:
             qs = qs.order_by(ordering)
+        return qs
+
+
+class ExportGQLFilterSet(django_filters.rest_framework.FilterSet):
+    type = StringListFilter(method='filter_by_type')
+    status = StringListFilter(method='filter_by_status')
+
+    class Meta:
+        model = Export
+        fields = ()
+
+    def filter_by_type(self, qs, name, value):
+        if value:
+            return qs.filter(type__in=value).distinct()
+        return qs
+
+    def filter_by_status(self, qs, name, value):
+        if value:
+            return qs.filter(status__in=value).distinct()
         return qs
