@@ -839,7 +839,7 @@ class ReportExporter:
             call(['libreoffice', '--headless', '--convert-to', 'pdf', temp_doc.name, '--outdir', settings.TEMP_DIR])
             filename = generate_filename('Entries General Export', 'pdf')
             file = File(open(temp_pdf, 'rb'))
-            export_format = Export.PDF
+            export_format = Export.Format.PDF
             export_mime_type = PDF_MIME_TYPE
 
             # Cleanup
@@ -851,7 +851,7 @@ class ReportExporter:
 
             filename = generate_filename('Entries General Export', 'docx')
             file = ContentFile(buffer)
-            export_format = Export.DOCX
+            export_format = Export.Format.DOCX
             export_mime_type = DOCX_MIME_TYPE
 
         return filename, export_format, export_mime_type, file

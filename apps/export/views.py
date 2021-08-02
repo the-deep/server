@@ -46,9 +46,9 @@ class ExportViewSet(viewsets.ModelViewSet):
     )
     def cancel(self, request, pk=None, version=None):
         export = self.get_object()
-        if export.status in [Export.PENDING, Export.STARTED]:
+        if export.status in [Export.Status.PENDING, Export.Status.STARTED]:
             celery_app.control.revoke(export.get_task_id(clear=True), terminate=True)
-            export.status = Export.CANCELED
+            export.status = Export.Status.CANCELED
         export.save()
         return self.retrieve(request, pk=pk)
 
@@ -78,11 +78,11 @@ class ExportTriggerView(views.APIView):
             project = None
 
         if export_item == 'entry':
-            type = Export.ENTRIES
+            type = Export.DataType.ENTRIES
         elif export_item == 'assessment':
-            type = Export.ASSESSMENTS
+            type = Export.DataType.ASSESSMENTS
         elif export_item == 'planned_assessment':
-            type = Export.PLANNED_ASSESSMENTS
+            type = Export.DataType.PLANNED_ASSESSMENTS
         else:
             return response.Response(
                 {'export_item': 'Invalid export item name'},

@@ -119,17 +119,17 @@ class ExportTests(TestCase):
         self.assert_404(response)
 
     def test_export_filter_by_status(self):
-        self.create(Export, exported_by=self.user, status=Export.SUCCESS)
-        self.create(Export, exported_by=self.user, status=Export.SUCCESS)
-        self.create(Export, exported_by=self.user, status=Export.PENDING)
-        self.create(Export, exported_by=self.user, status=Export.FAILURE)
+        self.create(Export, exported_by=self.user, status=Export.Status.SUCCESS)
+        self.create(Export, exported_by=self.user, status=Export.Status.SUCCESS)
+        self.create(Export, exported_by=self.user, status=Export.Status.PENDING)
+        self.create(Export, exported_by=self.user, status=Export.Status.FAILURE)
 
         self.authenticate()
-        response = self.client.get(f'/api/v1/exports/?status={Export.PENDING}')
+        response = self.client.get(f'/api/v1/exports/?status={Export.Status.PENDING.value}')
         assert response.json()['count'] == 1
         response = self.client.get('/api/v1/exports/')
         assert response.json()['count'] == 4
-        response = self.client.get(f'/api/v1/exports/?status={Export.PENDING},{Export.FAILURE}')
+        response = self.client.get(f'/api/v1/exports/?status={Export.Status.PENDING.value},{Export.Status.FAILURE.value}')
         assert response.json()['count'] == 2
 
     def test_export_filter_by_type(self):
@@ -169,11 +169,11 @@ class ExportTests(TestCase):
 
     def test_export_cancel(self):
         for initial_status, final_status in [
-                (Export.PENDING, Export.CANCELED),
-                (Export.STARTED, Export.CANCELED),
-                (Export.SUCCESS, Export.SUCCESS),
-                (Export.FAILURE, Export.FAILURE),
-                (Export.CANCELED, Export.CANCELED),
+                (Export.Status.PENDING, Export.Status.CANCELED),
+                (Export.Status.STARTED, Export.Status.CANCELED),
+                (Export.Status.SUCCESS, Export.Status.SUCCESS),
+                (Export.Status.FAILURE, Export.Status.FAILURE),
+                (Export.Status.CANCELED, Export.Status.CANCELED),
         ]:
             export = self.create(Export, status=initial_status, exported_by=self.user, is_archived=False)
             url = '/api/v1/exports/{}/cancel/'.format(export.id)
