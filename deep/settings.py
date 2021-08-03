@@ -703,6 +703,7 @@ GRAPHENE_NODES_WHITELIST = (
     '__typename',
     # custom nodes...
     'login',
+    'loginWithHid',
     'register',
     'resetPassword',
 )
