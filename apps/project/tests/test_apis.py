@@ -1282,11 +1282,12 @@ class ProjectApiTest(TestCase):
         invalid_stat_config = {}
         valid_stat_config = {}
 
-        for index, (widget_identifier, data_identifier, config_kwargs) in enumerate([
-            ('widget_1d', 'matrix1dWidget', {}),
-            ('widget_2d', 'matrix2dWidget', {}),
-            ('geo_widget', 'geoWidget', {}),
+        for index, (title, widget_identifier, data_identifier, config_kwargs) in enumerate([
+            ('widget 1d', 'widget_1d', 'matrix1dWidget', {}),
+            ('widget 2d', 'widget_2d', 'matrix2dWidget', {}),
+            ('geo widget', 'geo_widget', 'geoWidget', {}),
             (
+                'severity widget',
                 'severity_widget',
                 'conditionalWidget',
                 {
@@ -1296,14 +1297,15 @@ class ProjectApiTest(TestCase):
                     'widget_type': 'scaleWidget',
                 },
             ),
-            ('reliability_widget', 'scaleWidget', {}),
-            ('affected_groups_widget', 'multiselectWidget', {}),
-            ('specific_needs_groups_widget', 'multiselectWidget', {}),
+            ('reliability widget', 'reliability_widget', 'scaleWidget', {}),
+            ('affected groups widget', 'affected_groups_widget', 'multiselectWidget', {}),
+            ('specific needs groups widget', 'specific_needs_groups_widget', 'multiselectWidget', {}),
         ]):
             widget = self.create(
                 Widget,
                 analysis_framework=af,
                 section=None,
+                title=title,
                 widget_id=data_identifier,
                 key=f'{data_identifier}-{index}',
                 properties={'data': w_data[data_identifier]},

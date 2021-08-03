@@ -495,14 +495,40 @@ snapshots['TestAnalysisFrameworkMutation::test_analysis_framework_update success
     }
 }
 
-snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query 1'] = {
+snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with-membership'] = {
     'data': {
         'analysisFramework': {
-            'currentUserRole': None,
+            'currentUserRole': 'Default',
             'description': 'Quality throughout beautiful instead ahead despite measure ago current practice nation determine operation speak.',
             'id': '1',
             'isPrivate': False,
             'members': [
+                {
+                    'addedBy': None,
+                    'id': '1',
+                    'joinedAt': '2021-01-01T00:00:00.123456+00:00',
+                    'member': {
+                        'displayName': 'Joshua Walker',
+                        'id': '2'
+                    },
+                    'role': {
+                        'id': '3',
+                        'title': 'Default'
+                    }
+                },
+                {
+                    'addedBy': None,
+                    'id': '2',
+                    'joinedAt': '2021-01-01T00:00:00.123456+00:00',
+                    'member': {
+                        'displayName': 'Danielle Johnson',
+                        'id': '1'
+                    },
+                    'role': {
+                        'id': '3',
+                        'title': 'Default'
+                    }
+                }
             ],
             'primaryTagging': [
                 {
@@ -654,7 +680,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query 1'] 
     }
 }
 
-snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query 2'] = {
+snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query without-membership'] = {
     'data': {
         'analysisFramework': {
             'currentUserRole': None,
