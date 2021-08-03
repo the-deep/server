@@ -332,6 +332,37 @@ class TestUserSchema(GraphQLTestCase):
         project.add_member(user)
         content = self.query_check(query, minput=minput, okay=True)
 
+    def test_me_last_active_project(self):
+        query = '''
+            query Query {
+              me {
+                lastActiveProject {
+                    id
+                    title
+                }
+              }
+            }
+        '''
+
+        user = UserFactory.create()
+        project1 = ProjectFactory.create()
+        project2 = ProjectFactory.create()
+
+        # --- Login
+        self.force_login(user)
+        # --- Without any project membership
+        content = self.query_check(query)
+        self.assertEqual(content['data']['me']['lastActiveProject'], None, content)
+        # --- With a project membership + But no lastActiveProject set in profile
+        project1.add_member(user)
+        content = self.query_check(query)
+        self.assertIdEqual(content['data']['me']['lastActiveProject']['id'], project1.pk, content)
+        # --- With a project membership + lastActiveProject is set in profile
+        project2.add_member(user)
+        user.last_active_project = project2
+        content = self.query_check(query)
+        self.assertIdEqual(content['data']['me']['lastActiveProject']['id'], project2.pk, content)
+
     def test_me_only_fields(self):
         query = '''
             query UserQuery($id: ID!) {
@@ -345,7 +376,6 @@ class TestUserSchema(GraphQLTestCase):
                 organization
                 lastName
                 lastLogin
-                lastActiveProject
                 language
                 isActive
                 firstName
@@ -353,6 +383,10 @@ class TestUserSchema(GraphQLTestCase):
                 email
                 displayPictureUrl
                 displayPicture
+                lastActiveProject {
+                    id
+                    title
+                }
               }
               user(id: $id) {
                 organization

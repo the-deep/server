@@ -26,6 +26,11 @@ class ProjectType(DjangoObjectType):
         )
 
     current_user_role = graphene.String()
+    allowed_permissions = graphene.List(
+        graphene.NonNull(
+            graphene.Enum.from_enum(PP.Permission),
+        ), required=True
+    )
 
     # NOTE: This is a custom feature
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
@@ -38,6 +43,12 @@ class ProjectType(DjangoObjectType):
         except Project.DoesNotExist:
             return None
 
+    @staticmethod
+    def resolve_allowed_permissions(root, info) -> List[str]:
+        return PP.get_permissions(
+            root.get_current_user_role(info.context.request.user)
+        )
+
 
 class ProjectDetailType(
     # -- Start --Project scopped entities
@@ -46,12 +57,6 @@ class ProjectDetailType(
     # --  End  --Project scopped entities
     ProjectType,
 ):
-    allowed_permissions = graphene.List(
-        graphene.NonNull(
-            graphene.Enum.from_enum(PP.Permission),
-        ), required=True
-    )
-
     class Meta:
         model = Project
         skip_registry = True
@@ -61,12 +66,7 @@ class ProjectDetailType(
             'category_editor', 'assessment_template', 'data',
             'is_default', 'is_private', 'is_visualization_enabled', 'status',
             'organizations', 'stats_cache',
-            'allowed_permissions',
         )
-
-    @staticmethod
-    def resolve_allowed_permissions(root, info) -> List[str]:
-        return info.context.project_permissions
 
 
 class ProjectListType(CustomDjangoListObjectType):

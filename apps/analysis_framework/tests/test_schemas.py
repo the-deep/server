@@ -198,12 +198,12 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
 
         # Let's save/compare snapshot (without membership)
         response = _query_check()
-        self.assertMatchSnapshot(response)
+        self.assertMatchSnapshot(response, 'without-membership')
 
         # Let's save/compare snapshot (with membership)
         af.add_member(user)
         response = _query_check()
-        self.assertMatchSnapshot(response)
+        self.assertMatchSnapshot(response, 'with-membership')
 
 
 class TestAnalysisFrameworkMutation(GraphQLSnapShotTestCase):
@@ -663,15 +663,17 @@ class TestAnalysisFrameworkCreateUpdate(GraphQLTestCase):
         '''
         self.update_mutation = '''
         mutation UpdateMutation($input: AnalysisFrameworkInputType!, $id: ID!) {
-          analysisFrameworkUpdate(data: $input, id: $id) {
-            ok
-            errors
-            result {
-              id
-              title
-              isPrivate
-              description
-            }
+            analysisFramework (id: $id ) {
+              analysisFrameworkUpdate(data: $input) {
+                ok
+                errors
+                result {
+                  id
+                  title
+                  isPrivate
+                  description
+                }
+              }
           }
         }
         '''
@@ -782,10 +784,8 @@ class TestAnalysisFrameworkCreateUpdate(GraphQLTestCase):
         )
         private_framework.refresh_from_db()
         content = response.json()
-        self.assertEqual(content['data']['analysisFrameworkUpdate'], None, content)
-        # TODO: Complete this
-        return
-        self.assertTrue(content['data']['analysisFrameworkUpdate']['ok'], content)
+        self.assertNotEqual(content['data']['analysisFramework']['analysisFrameworkUpdate'], None, content)
+        self.assertTrue(content['data']['analysisFramework']['analysisFrameworkUpdate']['ok'], content)
         self.assertEqual(
             private_framework.title,
             self.input['title']
@@ -803,7 +803,8 @@ class TestAnalysisFrameworkCreateUpdate(GraphQLTestCase):
         )
         public_framework.refresh_from_db()
         content = response.json()
-        self.assertTrue(content['data']['analysisFrameworkUpdate']['ok'], content)
+        self.assertNotEqual(content['data']['analysisFramework']['analysisFrameworkUpdate'], None, content)
+        self.assertTrue(content['data']['analysisFramework']['analysisFrameworkUpdate']['ok'], content)
         self.assertEqual(
             public_framework.title,
             self.input['title']
