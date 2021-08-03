@@ -2,9 +2,9 @@ import graphene
 
 from utils.graphene.mutation import (
     generate_input_type_for_serializer,
-    GrapheneMutation,
-    BulkGrapheneMutation,
-    DeleteMutation,
+    PsGrapheneMutation,
+    PsBulkGrapheneMutation,
+    PsDeleteMutation,
 )
 from deep.permissions import ProjectPermissions as PP
 
@@ -27,7 +27,7 @@ class LeadMutationMixin():
         return qs.filter(project=info.context.active_project)
 
 
-class CreateLead(LeadMutationMixin, GrapheneMutation):
+class CreateLead(LeadMutationMixin, PsGrapheneMutation):
     class Arguments:
         data = LeadInputType(required=True)
     model = Lead
@@ -36,7 +36,7 @@ class CreateLead(LeadMutationMixin, GrapheneMutation):
     permissions = [PP.Permission.CREATE_LEAD]
 
 
-class UpdateLead(LeadMutationMixin, GrapheneMutation):
+class UpdateLead(LeadMutationMixin, PsGrapheneMutation):
     class Arguments:
         data = LeadInputType(required=True)
         id = graphene.ID(required=True)
@@ -46,7 +46,7 @@ class UpdateLead(LeadMutationMixin, GrapheneMutation):
     permissions = [PP.Permission.UPDATE_LEAD]
 
 
-class DeleteLead(LeadMutationMixin, DeleteMutation):
+class DeleteLead(LeadMutationMixin, PsDeleteMutation):
     class Arguments:
         id = graphene.ID(required=True)
     model = Lead
@@ -58,12 +58,14 @@ class BulkLeadInputType(LeadInputType):
     id = graphene.ID()
 
 
-class BulkLead(LeadMutationMixin, BulkGrapheneMutation):
+class BulkLead(LeadMutationMixin, PsBulkGrapheneMutation):
     class Arguments:
         items = graphene.List(BulkLeadInputType, required=True)
+
+    deleted_result = result = graphene.List(LeadType)
+    # class vars
     model = Lead
     serializer_class = LeadSerializer
-    result = graphene.List(LeadType)
     permissions = [PP.Permission.CREATE_LEAD]
 
 

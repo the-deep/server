@@ -77,16 +77,24 @@ class Profile(models.Model):
     def __str__(self):
         return str(self.user)
 
-    def get_accessible_features(self):
+    @staticmethod
+    def get_user_accessible_features(user):
         try:
-            user_domain = (self.user.email or self.user.username).split('@')[1]
+            user_domain = (user.email or user.username).split('@')[1]
             return Feature.objects.filter(
                 Q(is_available_for_all=True) |
-                Q(users=self.user) |
+                Q(users=user) |
                 Q(email_domains__domain_name__exact=user_domain)
             )
         except IndexError:
-            return []
+            return Feature.objects.none()
+
+    def get_accessible_features(self):
+        return self.get_user_accessible_features(self.user)
+
+    @staticmethod
+    def have_feature_access_for_user(user, feature):
+        return Profile.get_user_accessible_features(user).filter(key=feature).exists()
 
     @staticmethod
     def get_display_name_for_user(user):
@@ -121,6 +129,7 @@ class Profile(models.Model):
 # TODO: Use Abstract User Model (Merge profile to User Table)
 User.get_display_name = Profile.get_display_name_for_user
 User.display_name = property(Profile.get_display_name_for_user)
+User.have_feature_access = Profile.have_feature_access_for_user
 
 
 def get_for_project(project):
