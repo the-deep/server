@@ -13,17 +13,21 @@ class GQLContext:
         # Project
         self.active_project = self.request.active_project = None
         self.project_permissions = []
-        # Analysis Framework
+        # AnalysisFramework
         self.active_af = self.request.active_af = None
         self.af_permissions = []
 
     def set_active_project(self, project):
         self.active_project = self.request.active_project = project
-        self.project_permissions = PP.get_permissions(project.current_user_role)
+        self.project_permissions = PP.get_permissions(
+            project.get_current_user_role(self.request.user)
+        )
 
     def set_active_af(self, af):
         self.active_af = self.request.active_af = af
-        self.af_permissions = AfP.get_permissions(af.current_user_role)
+        self.af_permissions = AfP.get_permissions(
+            af.get_current_user_role(self.request.user)
+        )
 
     @property
     def user(self):

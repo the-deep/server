@@ -4,7 +4,7 @@ from django.db.models import QuerySet
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
-from utils.graphene.types import CustomDjangoListObjectType
+from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import ProjectPermissions as PP
 from organization.schema import OrganizationType
@@ -62,7 +62,7 @@ class VerifiedStatType(graphene.ObjectType):
     verified_count = graphene.Int()
 
 
-class LeadType(DjangoObjectType):
+class LeadType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Lead
         fields = (
@@ -70,6 +70,7 @@ class LeadType(DjangoObjectType):
             'project', 'lead_group', 'assignee', 'published_on',
             'source_type', 'priority', 'confidentiality', 'status',
             'text', 'url', 'website', 'attachment',
+            'client_id',
         )
 
     project = graphene.ID(source='project_id')
@@ -81,7 +82,6 @@ class LeadType(DjangoObjectType):
     # EMM Fields
     emm_entities = DjangoListField(EmmEntityType)
     emm_triggers = DjangoListField(LeadEmmTriggerType)
-    client_id = graphene.String()
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):

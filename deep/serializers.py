@@ -1,14 +1,9 @@
 from django.core.files.storage import FileSystemStorage, get_storage_class
+from django.core.exceptions import FieldDoesNotExist
 from django.core.cache import cache
 from rest_framework import serializers
 
 from deep.middleware import get_s3_signed_url_ttl
-from .writable_nested_serializers import ( # noqa F401
-    ListToDictField,
-    NestedCreateMixin,
-    NestedUpdateMixin,
-    UniqueFieldsMixin,
-)
 
 StorageClass = get_storage_class()
 
@@ -137,22 +132,29 @@ class WriteOnlyOnCreateSerializerMixin():
         return fields
 
 
-class TempClientIdMixin():
+class TempClientIdMixin(serializers.ModelSerializer):
     """
     ClientId for serializer level only, not storing to the database.
     """
     client_id = serializers.CharField(required=False)
 
+    def _get_temp_client_id(self, validated_data):
+        try:
+            self.Meta.model._meta.get_field('client_id')
+            return None
+        except FieldDoesNotExist:
+            return validated_data.pop('client_id', None)
+
     def create(self, validated_data):
-        client_id = validated_data.pop('client_id', None)
+        client_id = self._get_temp_client_id(validated_data)
         instance = super().create(validated_data)
-        if instance and not hasattr(instance, 'client_id'):
+        if client_id:
             instance.client_id = client_id
         return instance
 
     def update(self, instance, validated_data):
-        client_id = validated_data.pop('client_id', None)
+        client_id = self._get_temp_client_id(validated_data)
         instance = super().update(instance, validated_data)
-        if instance and not hasattr(instance, 'client_id'):
+        if client_id:
             instance.client_id = client_id
         return instance
