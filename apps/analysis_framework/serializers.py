@@ -250,7 +250,7 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
         # Check if user has access to private project feature
         user = self.context['request'].user
         private_access = user.profile.get_accessible_features().filter(
-            key=Feature.PRIVATE_PROJECT
+            key=Feature.FeatureKey.PRIVATE_PROJECT
         ).exists()
 
         if private and not private_access:
@@ -324,7 +324,7 @@ class AnalysisFrameworkGqlSerializer(TempClientIdMixin, UserResourceSerializer):
                 })
             return value
         # Requires feature access for Private project (New AF)
-        if value and not self.context['request'].user.have_feature_access(Feature.PRIVATE_PROJECT):
+        if value and not self.context['request'].user.have_feature_access(Feature.FeatureKey.PRIVATE_PROJECT):
             raise exceptions.PermissionDenied({
                 "is_private": "You don't have permission to create/update private framework"
             })
