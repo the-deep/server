@@ -13,6 +13,10 @@ from user.utils import (
     send_password_reset,
     send_account_activation,
 )
+from utils.hid.tests.test_hid import (
+    HIDIntegrationTest,
+    HID_EMAIL
+)
 
 
 class TestUserSchema(GraphQLTestCase):
@@ -114,6 +118,37 @@ class TestUserSchema(GraphQLTestCase):
         user.profile.save(update_fields=['login_attempts'])
 
         content = _valid_login(okay=True)
+
+    @mock.patch('utils.hid.hid.requests')
+    def test_login_with_hid(self, mock_requests):
+        query = '''
+            mutation Mutation($input: HIDLoginInputType!) {
+                loginWithHid(data: $input) {
+                    ok
+                    errors
+                    result {
+                        id
+                        displayName
+                        email
+                        lastLogin
+                    }
+                }
+            }
+        '''
+        mock_return_value = HIDIntegrationTest()._setup_mock_hid_requests(mock_requests)
+        minput = dict(accessToken='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+        content = self.query_check(query, minput=minput, okay=True)
+        self.assertEqual(content['data']['loginWithHid']['result']['email'], HID_EMAIL)
+
+        # let the response be `400` and look for the error
+        mock_return_value.status_code = 400
+        content = self.query_check(query, minput=minput, assert_for_error=True)
+        mock_return_value.status_code = 200
+
+        # pass not verified email
+        mock_return_value.json.return_value['email_verified'] = False
+        self.query_check(query, minput=minput, assert_for_error=True)
+        mock_return_value.json.return_value['email_verified'] = True
 
     @mock.patch('jwt_auth.captcha.requests')
     @mock.patch('user.serializers.send_password_reset', side_effect=send_password_reset)
@@ -388,3 +423,4 @@ class TestUserSchema(GraphQLTestCase):
             self.assertEqual(
                 content['data']['user'].get(field), None, (field, content['data']['user'].get(field))
             )  # Shouldn't be None
+
