@@ -1,6 +1,5 @@
 from typing import Union
 
-from functools import lru_cache
 from django.db import models
 
 from user_resource.models import UserResource
@@ -92,7 +91,6 @@ class AnalysisFramework(UserResource):
             return visible_afs.filter(current_user_role__isnull=False)
         return visible_afs
 
-    @lru_cache
     def get_current_user_role(self, user):
         """
         Return current_user_role from instance (if get_for_gq is used or generate)
@@ -101,10 +99,15 @@ class AnalysisFramework(UserResource):
             self.current_user_role: Union[str, None]
             return self.current_user_role
         # If not available generate
-        memberships = AnalysisFrameworkMembership.objects\
-            .filter(framework=self, member=user)\
+        self.current_user_role = None
+        memberships = list(
+            AnalysisFrameworkMembership.objects
+            .filter(framework=self, member=user)
             .values_list('role__title', flat=True)
-        return memberships and memberships[0]
+        )
+        if memberships:
+            self.current_user_role = memberships[0]
+        return self.current_user_role
 
     def can_get(self, _: User):
         return True

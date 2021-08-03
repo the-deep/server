@@ -51,6 +51,11 @@ class AnalysisFrameworkType(ClientIdMixin, DjangoObjectType):
         )
 
     current_user_role = graphene.String()
+    allowed_permissions = graphene.List(
+        graphene.NonNull(
+            graphene.Enum.from_enum(AfP.Permission),
+        ), required=True
+    )
 
     @staticmethod
     def get_custom_node(_, info, id):
@@ -64,6 +69,12 @@ class AnalysisFrameworkType(ClientIdMixin, DjangoObjectType):
     @staticmethod
     def resolve_current_user_role(root, info, **_) -> Union[str, None]:
         return root.get_current_user_role(info.context.request.user)
+
+    @staticmethod
+    def resolve_allowed_permissions(root, info) -> List[str]:
+        return AfP.get_permissions(
+            root.get_current_user_role(info.context.request.user)
+        )
 
 
 class AnalysisFrameworkRoleType(DjangoObjectType):
@@ -79,12 +90,6 @@ class AnalysisFrameworkMembershipType(ClientIdMixin, DjangoObjectType):
 
 
 class AnalysisFrameworkDetailType(AnalysisFrameworkType):
-    allowed_permissions = graphene.List(
-        graphene.NonNull(
-            graphene.Enum.from_enum(AfP.Permission),
-        ), required=True
-    )
-
     primary_tagging = DjangoListField(SectionType)  # With section
     secondary_tagging = DjangoListField(WidgetType)  # Without section
     members = DjangoListField(AnalysisFrameworkMembershipType)
@@ -110,10 +115,6 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
         if root.get_current_user_role(info.context.request.user) is not None:
             return info.context.dl.analysis_framework.members.load(root.id)
         return []  # NOTE: Always return empty array FIXME: without empty everything is returned
-
-    @staticmethod
-    def resolve_allowed_permissions(root, info) -> List[str]:
-        return info.context.af_permissions
 
 
 class AnalysisFrameworkListType(CustomDjangoListObjectType):

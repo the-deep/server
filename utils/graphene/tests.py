@@ -150,13 +150,13 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
         # Remove roles if already exist. Right now, we just have global roles
         AnalysisFrameworkRole.objects.all().delete()
 
-        def _create_role(title, permissions=dict, is_private=False, is_default_role=False):
+        def _create_role(title, permissions=dict, is_private_role=False, is_default_role=False):
             # NOTE: Graphql endpoints will use static permission (Will remove dynamic permission in future)
             # TODO: Migrate current dynamic permission to static ones.
             return AnalysisFrameworkRole.objects.create(
                 title=title,
                 **permissions,
-                is_private_role=is_private,
+                is_private_role=is_private_role,
                 is_default_role=is_default_role,
             )
 
@@ -165,16 +165,18 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
         #   (which is mapped to get the permission statically for graphql endpoints)
         # Follow deep.permissions.py PERMISSION_MAP for permitted actions.
         public_temp_af = AnalysisFramework()
-        private_temp_af = AnalysisFramework()
+        private_temp_af = AnalysisFramework(is_private=True)
+
         self.af_editor = _create_role('Editor', permissions=public_temp_af.get_editor_permissions())
         self.af_owner = _create_role('Owner', permissions=public_temp_af.get_owner_permissions())
         self.af_default = _create_role('Default', permissions=public_temp_af.get_default_permissions(), is_default_role=True)
         self.af_private_editor = _create_role(
-            'Private Editor', permissions=private_temp_af.get_editor_permissions(), is_private=True)
+            'Private Editor', permissions=private_temp_af.get_editor_permissions(), is_private_role=True)
         self.af_private_owner = _create_role(
-            'Private Owner', permissions=private_temp_af.get_owner_permissions(), is_private=True)
+            'Private Owner', permissions=private_temp_af.get_owner_permissions(), is_private_role=True)
         self.af_private_viewer = _create_role(
-            'Private Viewer', permissions=private_temp_af.get_default_permissions(), is_private=True, is_default_role=True)
+            'Private Viewer', permissions=private_temp_af.get_default_permissions(), is_private_role=True,
+            is_default_role=True)
 
     def assertListIds(
         self,
