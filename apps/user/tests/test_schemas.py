@@ -6,8 +6,8 @@ from utils.graphene.tests import GraphQLTestCase
 
 from gallery.factories import FileFactory
 from project.factories import ProjectFactory
-from user.models import User
-from user.factories import UserFactory
+from user.models import User, Feature
+from user.factories import UserFactory, FeatureFactory
 from user.utils import (
     send_password_changed_notification,
     send_password_reset,
@@ -362,6 +362,37 @@ class TestUserSchema(GraphQLTestCase):
         user.last_active_project = project2
         content = self.query_check(query)
         self.assertIdEqual(content['data']['me']['lastActiveProject']['id'], project2.pk, content)
+
+    def test_me_allowed_features(self):
+        query = '''
+            query MyQuery {
+              me {
+                accessibleFeatures {
+                  title
+                  key
+                  featureType
+                }
+              }
+            }
+        '''
+
+        feature1 = FeatureFactory.create(key=Feature.FeatureKey.ANALYSIS)
+        feature2 = FeatureFactory.create(key=Feature.FeatureKey.POLYGON_SUPPORT_GEO)
+        FeatureFactory.create()
+        user = UserFactory.create()
+
+        # --- Login
+        self.force_login(user)
+        # --- Without any features
+        content = self.query_check(query)
+        self.assertEqual(len(content['data']['me']['accessibleFeatures']), 0, content)
+        # --- With a project membership + But no lastActiveProject set in profile
+        feature1.users.add(user)
+        feature2.users.add(user)
+        content = self.query_check(query)
+        self.assertEqual(len(content['data']['me']['accessibleFeatures']), 2, content)
+        self.assertEqual(content['data']['me']['accessibleFeatures'][0]['key'], self.genum(feature2.key), content)
+        self.assertEqual(content['data']['me']['accessibleFeatures'][1]['key'], self.genum(feature1.key), content)
 
     def test_me_only_fields(self):
         query = '''

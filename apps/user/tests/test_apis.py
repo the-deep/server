@@ -210,8 +210,8 @@ class UserApiTests(TestCase):
         user_dummy = self.create(User, email='dummy@test.com')
 
         test_domain = self.create(EmailDomain, title='Togglecorp', domain_name='togglecorp.com')
-        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
-                    key=Feature.PRIVATE_PROJECT, title='Private project',
+        self.create(Feature, feature_type=Feature.FeatureType.GENERAL_ACCESS,
+                    key=Feature.FeatureKey.PRIVATE_PROJECT, title='Private project',
                     email_domains=[test_domain], users=[user_dummy])
 
         self.authenticate(user_fhx)
@@ -229,8 +229,8 @@ class UserApiTests(TestCase):
     def test_user_preference_feature_avialable_for_all(self):
         user_fhx = self.create(User, email='fhx@togglecorp.com')
 
-        feature = self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
-                              key=Feature.PRIVATE_PROJECT, title='Private project',
+        feature = self.create(Feature, feature_type=Feature.FeatureType.GENERAL_ACCESS,
+                              key=Feature.FeatureKey.PRIVATE_PROJECT, title='Private project',
                               email_domains=[], users=[], is_available_for_all=False)
 
         self.authenticate(user_fhx)

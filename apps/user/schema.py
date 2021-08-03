@@ -12,7 +12,7 @@ from utils.graphene.fields import DjangoPaginatedListObjectField
 from jwt_auth.token import AccessToken
 
 from project.models import Project
-from .models import User
+from .models import User, Feature
 from .filters import UserFilterSet
 
 
@@ -26,6 +26,12 @@ def only_me(func):
 class JwtTokenType(graphene.ObjectType):
     access_token = graphene.String()
     expires_in = graphene.String()
+
+
+class UserFeatureAccessType(DjangoObjectType):
+    class Meta:
+        model = Feature
+        fields = ('key', 'title', 'feature_type')
 
 
 class UserType(DjangoObjectType):
@@ -71,6 +77,7 @@ class UserMeType(DjangoObjectType):
     email_opt_outs = graphene.List(graphene.String)
     jwt_token = graphene.Field(JwtTokenType)
     last_active_project = graphene.Field('project.schema.ProjectType')
+    accessible_features = graphene.List(graphene.NonNull(UserFeatureAccessType), required=True)
 
     @staticmethod
     @only_me
@@ -116,6 +123,11 @@ class UserMeType(DjangoObjectType):
             access_token=access_token,
             expires_in=time.mktime((timezone.now() + AccessToken.lifetime).timetuple()),
         )
+
+    @staticmethod
+    @only_me
+    def resolve_accessible_features(root, info, **kwargs) -> Union[Feature, None]:
+        return root.get_accessible_features()
 
 
 class UserListType(CustomDjangoListObjectType):

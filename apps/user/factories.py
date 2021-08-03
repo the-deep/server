@@ -2,7 +2,7 @@ import factory
 from factory import fuzzy
 from factory.django import DjangoModelFactory
 
-from .models import User
+from .models import User, Feature
 from .serializers import UserSerializer
 
 
@@ -31,3 +31,11 @@ class UserFactory(DjangoModelFactory):
         user.profile.refresh_from_db()
         user.password_text = password_text
         return user
+
+
+class FeatureFactory(DjangoModelFactory):
+    title = factory.PostGeneration(lambda feature, *args, **kwargs: f'Feature {feature.key}')
+    feature_type = fuzzy.FuzzyChoice(Feature.FeatureType.choices, getter=lambda c: c[0])
+
+    class Meta:
+        model = Feature
