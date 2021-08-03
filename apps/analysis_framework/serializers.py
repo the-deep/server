@@ -316,7 +316,15 @@ class AnalysisFrameworkGqlSerializer(TempClientIdMixin, UserResourceSerializer):
         fields = ('__all__')
 
     def validate_is_private(self, value):
-        if value is True and not self.context['request'].user.have_feature_access(Feature.PRIVATE_PROJECT):
+        # Changing AF Privacy is not allowed (Existing AF)
+        if self.instance:
+            if self.instance.is_private != value:
+                raise exceptions.PermissionDenied({
+                    "is_private": "You don't have permission to change framework's privacy"
+                })
+            return value
+        # Requires feature access for Private project (New AF)
+        if value and not self.context['request'].user.have_feature_access(Feature.PRIVATE_PROJECT):
             raise exceptions.PermissionDenied({
                 "is_private": "You don't have permission to create/update private framework"
             })
@@ -359,6 +367,8 @@ class AnalysisFrameworkGqlSerializer(TempClientIdMixin, UserResourceSerializer):
         # Create a owner role
         owner_role = instance.get_or_create_owner_role()
         instance.add_member(self.context['request'].user, owner_role)
+        # NOTE: Set current_user_role value. (get_current_user_role)
+        instance.current_user_role = owner_role.title
         return instance
 
     def update(self, instance, validated_data):
@@ -370,7 +380,7 @@ class AnalysisFrameworkGqlSerializer(TempClientIdMixin, UserResourceSerializer):
             self._delete_old_secondary_taggings(instance, secondary_tagging)
             self._save_secondary_taggings(instance, secondary_tagging)
         # Create a owner role for created_by if it's removed
-        if not instance.members.filter(id=instance.created_by_id).exists():
+        if instance.created_by_id and not instance.members.filter(id=instance.created_by_id).exists():
             owner_role = instance.get_or_create_owner_role()
             instance.add_member(instance.created_by, owner_role)
         return instance
