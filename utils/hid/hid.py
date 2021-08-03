@@ -96,7 +96,7 @@ class HumanitarianId:
             if r.status_code == 200:
                 data = r.json()
                 if not data['email_verified']:
-                    raise HIDEmailNotVerifiedException()
+                    raise HIDEmailNotVerifiedException('Email is not verified in HID')
                 return data
             raise HIDFetchFailedException('HID Get Token Failed!! \n{}'.format(r.json()))
-        raise InvalidHIDConfigurationException()
+        raise InvalidHIDConfigurationException('Invalid HID Configuration')
