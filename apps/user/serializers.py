@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
@@ -12,6 +14,7 @@ from deep.serializers import (
     URLCachedFileField,
     WriteOnlyOnCreateSerializerMixin,
 )
+from utils.hid import hid
 from user.models import Profile, Feature
 from user.utils import (
     send_password_reset,
@@ -27,6 +30,8 @@ from jwt_auth.errors import UserNotFoundError
 
 from .utils import send_account_activation
 from .validators import CustomMaximumLengthValidator
+
+logger = logging.getLogger(__name__)
 
 
 class NanoUserSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
@@ -444,3 +449,22 @@ class UserMeSerializer(serializers.ModelSerializer):
             user.save()
         user.profile = UserSerializer.update_or_create_profile(user, profile_data)
         return user
+
+
+class HIDLoginSerializer(serializers.Serializer):
+    access_token = serializers.CharField(required=True)
+    expires_in = serializers.IntegerField(required=False)
+    token_type = serializers.CharField(required=False)
+    state = serializers.IntegerField(required=False)
+
+    def validate(self, data):
+        humanitarian_id = hid.HumanitarianId(data['access_token'])
+
+        try:
+            user = humanitarian_id.get_user()
+        except hid.HIDBaseException as e:
+            raise serializers.ValidationError(e.message)
+        except Exception:
+            logger.error('HID error', exc_info=True)
+            raise serializers.ValidationError('Unexpected Error')
+        return {'user': user}
