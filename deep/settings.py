@@ -716,8 +716,8 @@ GRAPHENE = {
     'ATOMIC_MUTATIONS': True,
     'SCHEMA': 'deep.schema.schema',
     'SCHEMA_OUTPUT': 'schema.json',  # defaults to schema.json,
-    'CAMELCASE_ERRORS': False,
-    'SCHEMA_INDENT': 2,  # Defaults to None (displays all data on a single   line)
+    'CAMELCASE_ERRORS': True,
+    'SCHEMA_INDENT': 2,  # Defaults to None (displays all data on a single line)
     'MIDDLEWARE': [
         'utils.graphene.middleware.DisableIntrospectionSchemaMiddleware',
         'utils.sentry.SentryGrapheneMiddleware',

@@ -73,6 +73,7 @@ Django = ">=3.2,<3.3"
 ipython = "*"
 factory-boy = "*"
 colorlog = "*"
+drf-writable-nested = "*"
 
 [tool.poetry.dev-dependencies]
 pytest-profiling = "*"

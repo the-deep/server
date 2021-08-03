@@ -1,10 +1,14 @@
 import graphene
 from graphene_django import DjangoObjectType
+from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
+from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.types import CustomDjangoListObjectType
 from gallery.schema import GalleryFileType
 from gallery.models import File
 
 from .models import Organization, OrganizationType as _OrganizationType
+from .filters import OrganizationFilterSet
 
 
 class OrganizationTypeType(DjangoObjectType):
@@ -52,3 +56,19 @@ class OrganizationType(DjangoObjectType):
 
     def resolve_logo(root, info, **kwargs) -> File:
         return info.context.dl.organization.logo.load(root.pk)
+
+
+class OrganizationListType(CustomDjangoListObjectType):
+    class Meta:
+        model = Organization
+        filterset_class = OrganizationFilterSet
+
+
+class Query:
+    organization = DjangoObjectField(OrganizationType)
+    organizations = DjangoPaginatedListObjectField(
+        OrganizationListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )

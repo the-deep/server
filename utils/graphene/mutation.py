@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, List
 from collections import OrderedDict
 
 from django.core.exceptions import PermissionDenied
@@ -14,7 +14,10 @@ from rest_framework import serializers
 from utils.graphene.error_types import mutation_is_not_valid
 # from utils.common import to_camelcase
 # from deep.enums import ENUM_TO_GRAPHENE_ENUM_MAP
-from deep.permissions import ProjectPermissions as PP
+from deep.permissions import (
+    ProjectPermissions as PP,
+    AnalysisFrameworkPermissions as AfP,
+)
 
 
 @get_graphene_type_from_serializer_field.register(serializers.ListSerializer)
@@ -39,6 +42,10 @@ def convert_serializer_field_to_many_related_id(field):
 def convert_serializer_field_to_id(field):
     return graphene.ID
 
+
+@get_graphene_type_from_serializer_field.register(serializers.JSONField)
+def convert_serializer_field_to_jsonstring(field):
+    return GenericScalar
 
 # TODO: https://github.com/graphql-python/graphene-django/blob/623d0f219ebeaf2b11de4d7f79d84da8508197c8/graphene_django/converter.py#L83-L94  # noqa: E501
 # https://github.com/graphql-python/graphene-django/blob/623d0f219ebeaf2b11de4d7f79d84da8508197c8/graphene_django/rest_framework/serializer_converter.py#L155-L159  # noqa: E501
@@ -194,11 +201,9 @@ class BaseGrapheneMutation(graphene.Mutation):
         obj = cls.get_queryset(info).get(id=kwargs['id'])
         return obj
 
-    @classmethod
-    def check_permissions(cls, info):
-        for permission in cls.permissions:
-            if not PP.check_permission(info, permission):
-                raise PermissionDenied(PP.get_permission_message(permission))
+    # @classmethod
+    # def check_permissions(cls, info, **kwargs):
+    #     raise Exception('This needs to be implemented in inheritances class')
 
     @classmethod
     def _save_item(cls, item, info, **kwargs):
@@ -224,7 +229,7 @@ class BaseGrapheneMutation(graphene.Mutation):
     # Graphene standard method
     @classmethod
     def mutate(cls, root, info, **kwargs):
-        cls.check_permissions(info)
+        cls.check_permissions(info, **kwargs)
         return cls.perform_mutate(root, info, **kwargs)
 
 
@@ -243,16 +248,28 @@ class BulkGrapheneMutation(BaseGrapheneMutation):
 
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
-        items = kwargs['items']
+        items = kwargs.get('items') or []
+        delete_ids = kwargs.get('delete_ids')
         all_errors = []
         all_instances = []
+        all_deleted_instances = []
         # Create/Update
         for item in items:
             id = item.get('id')
             instance, errors = cls._save_item(item, info, id=id, **kwargs)
             all_errors.append(errors)
             all_instances.append(instance)
-        return cls(result=all_instances, errors=all_errors)
+        if delete_ids:
+            # Delete (NOTE: define get_valid_delete_items when used)
+            delete_items = cls.get_valid_delete_items(info, delete_ids)
+            for item in delete_items:
+                old_id = item.pk
+                item.delete()
+                # add old id so that client can use it if required
+                item.pk = old_id
+                all_deleted_instances.append(item)
+            # cls.model.filter(pk__in=validated_delete_ids).delete()
+        return cls(result=all_instances, errors=all_errors, deleted_result=all_deleted_instances)
 
 
 class DeleteMutation(GrapheneMutation):
@@ -266,3 +283,43 @@ class DeleteMutation(GrapheneMutation):
         # add old id so that client can use it if required
         instance.id = old_id
         return cls(result=instance, errors=None, ok=True)
+
+
+class ProjectScopeMixin():
+    permissions: List[str]
+
+    @classmethod
+    def check_permissions(cls, info, **_):
+        for permission in cls.permissions:
+            if not PP.check_permission(info, permission):
+                raise PermissionDenied(PP.get_permission_message(permission))
+
+
+class PsGrapheneMutation(ProjectScopeMixin, GrapheneMutation):
+    pass
+
+
+class PsBulkGrapheneMutation(ProjectScopeMixin, BulkGrapheneMutation):
+    pass
+
+
+class PsDeleteMutation(ProjectScopeMixin, DeleteMutation):
+    pass
+
+
+class AfScopeMixin():
+    permissions: List[str]
+
+    @classmethod
+    def check_permissions(cls, info, **_):
+        for permission in cls.permissions:
+            if not AfP.check_permission(info, permission):
+                raise PermissionDenied(AfP.get_permission_message(permission))
+
+
+class AfGrapheneMutation(AfScopeMixin, GrapheneMutation):
+    pass
+
+
+class AfBulkGrapheneMutation(AfScopeMixin, BulkGrapheneMutation):
+    pass
