@@ -31,7 +31,8 @@ class ComprehensiveEntryApiTest(TestCase):
             analysis_framework=project.analysis_framework,
             properties={'data': data},
             widget_id=widget_id,
-            key=f'{widget_id}-{self._counter}'
+            key=f'{widget_id}-{self._counter}',
+            title=f'{widget_id}-{self._counter} (Title)',
         )
         self._counter += 1
         return widget

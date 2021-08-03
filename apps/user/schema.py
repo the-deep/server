@@ -11,6 +11,7 @@ from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from jwt_auth.token import AccessToken
 
+from project.models import Project
 from .models import User
 from .filters import UserFilterSet
 
@@ -67,9 +68,9 @@ class UserMeType(DjangoObjectType):
     display_picture_url = graphene.String()
     organization = graphene.String()
     language = graphene.String()
-    last_active_project = graphene.ID()
     email_opt_outs = graphene.List(graphene.String)
     jwt_token = graphene.Field(JwtTokenType)
+    last_active_project = graphene.Field('project.schema.ProjectType')
 
     @staticmethod
     @only_me
@@ -79,7 +80,9 @@ class UserMeType(DjangoObjectType):
     @staticmethod
     @only_me
     def resolve_last_active_project(root, info, **kwargs) -> Union[int, None]:
-        return root.profile.last_active_project_id
+        return root.profile.last_active_project or (
+            Project.get_for_gq(info.context.user, only_member=True).order_by('-id').first()
+        )
 
     @staticmethod
     def resolve_organization(root, info, **kwargs) -> Union[str, None]:
