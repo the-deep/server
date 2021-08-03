@@ -1,15 +1,13 @@
 import logging
 
 from drf_dynamic_fields import DynamicFieldsMixin
+from drf_writable_nested.mixins import UniqueFieldsMixin
 from rest_framework import serializers
 
-from deep.serializers import (
-    RemoveNullFieldsMixin,
-    ListToDictField,
-    UniqueFieldsMixin,
-)
+from deep.writable_nested_serializers import ListToDictField
+from deep.serializers import RemoveNullFieldsMixin
 from organization.serializers import SimpleOrganizationSerializer
-from user_resource.serializers import UserResourceSerializer
+from user_resource.serializers import UserResourceSerializer, DeprecatedUserResourceSerializer
 from gallery.models import File
 from gallery.serializers import FileSerializer, SimpleFileSerializer
 from project.models import Project
@@ -186,7 +184,7 @@ class EntryLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
 
 
 class EntrySerializer(RemoveNullFieldsMixin,
-                      DynamicFieldsMixin, UserResourceSerializer):
+                      DynamicFieldsMixin, DeprecatedUserResourceSerializer):
     attributes = ListToDictField(
         child=SimpleAttributeSerializer(many=True),
         key='widget',

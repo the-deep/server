@@ -464,7 +464,7 @@ class ProjectApiTest(TestCase):
         data = {
             'organizations': [
                 {'organization': org4.id, 'organization_type': ProjectOrganization.DONOR},
-                {'organization': org5.id, 'organizatino_type': ProjectOrganization.GOVERNMENT},
+                {'organization': org5.id, 'organization_type': ProjectOrganization.GOVERNMENT},
             ],
         }
 
@@ -1301,7 +1301,9 @@ class ProjectApiTest(TestCase):
             ('specific_needs_groups_widget', 'multiselectWidget', {}),
         ]):
             widget = self.create(
-                Widget, analysis_framework=af,
+                Widget,
+                analysis_framework=af,
+                section=None,
                 widget_id=data_identifier,
                 key=f'{data_identifier}-{index}',
                 properties={'data': w_data[data_identifier]},

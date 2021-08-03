@@ -44,12 +44,12 @@ class _CustomErrorType(ObjectType):
 
 def serializer_error_to_error_types(errors: dict, initial_data: dict = None) -> List:
     initial_data = initial_data or dict()
-    client_id = initial_data.get('client_id')
+    node_client_id = initial_data.get('client_id')
     error_types = list()
     for field, value in errors.items():
         if isinstance(value, dict):
             error_types.append(_CustomErrorType(
-                client_id=client_id,
+                client_id=node_client_id,
                 field=_camelize_django_str(field),
                 object_errors=serializer_error_to_error_types(value)
             ))
@@ -58,7 +58,7 @@ def serializer_error_to_error_types(errors: dict, initial_data: dict = None) -> 
                 if isinstance(initial_data.get(field), list):
                     # we have found an array input with top level error
                     error_types.append(_CustomErrorType(
-                        client_id=client_id,
+                        client_id=node_client_id,
                         field=_camelize_django_str(field),
                         array_errors=[ArrayNestedErrorType(
                             client_id=ARRAY_NON_MEMBER_ERRORS,
@@ -67,7 +67,7 @@ def serializer_error_to_error_types(errors: dict, initial_data: dict = None) -> 
                     ))
                 else:
                     error_types.append(_CustomErrorType(
-                        client_id=client_id,
+                        client_id=node_client_id,
                         field=_camelize_django_str(field),
                         messages=''.join(str(msg) for msg in value)
                     ))
@@ -84,7 +84,7 @@ def serializer_error_to_error_types(errors: dict, initial_data: dict = None) -> 
                         object_errors=serializer_error_to_error_types(array_item, initial_data[field][pos])
                     ))
                 error_types.append(_CustomErrorType(
-                    client_id=client_id,
+                    client_id=node_client_id,
                     field=_camelize_django_str(field),
                     array_errors=array_errors
                 ))

@@ -1,3 +1,5 @@
+from typing import List
+
 import graphene
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
@@ -5,6 +7,7 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
+from deep.permissions import ProjectPermissions as PP
 from lead.schema import Query as LeadQuery
 from export.schema import Query as ExportQuery
 
@@ -43,6 +46,12 @@ class ProjectDetailType(
     # --  End  --Project scopped entities
     ProjectType,
 ):
+    allowed_permissions = graphene.List(
+        graphene.NonNull(
+            graphene.Enum.from_enum(PP.Permission),
+        ), required=True
+    )
+
     class Meta:
         model = Project
         skip_registry = True
@@ -52,7 +61,12 @@ class ProjectDetailType(
             'category_editor', 'assessment_template', 'data',
             'is_default', 'is_private', 'is_visualization_enabled', 'status',
             'organizations', 'stats_cache',
+            'allowed_permissions',
         )
+
+    @staticmethod
+    def resolve_allowed_permissions(root, info) -> List[str]:
+        return info.context.project_permissions
 
 
 class ProjectListType(CustomDjangoListObjectType):

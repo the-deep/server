@@ -229,7 +229,7 @@ class BasePermissions():
 class ProjectPermissions(BasePermissions):
 
     @unique
-    class Permission(Enum):
+    class Permission(Enum):  # TODO: Not sure how auto() works, if different server have different values.
         # ---------------------- Project
         UPDATE_PROJECT = auto()
         # ---------------------- Lead
@@ -244,6 +244,8 @@ class ProjectPermissions(BasePermissions):
         VIEW_ALL_ENTRY = auto()
         UPDATE_ENTRY = auto()
         DELETE_ENTRY = auto()
+
+    Permission.__name__ = 'ProjectPermission'
 
     __error_message__ = {
         Permission.UPDATE_PROJECT: "You don't have permission to update project",
@@ -318,6 +320,8 @@ class AnalysisFrameworkPermissions(BasePermissions):
         CAN_EDIT_FRAMEWORK = auto()
         CAN_USE_IN_OTHER_PROJECTS = auto()
         DELETE_FRAMEWORK = auto()
+
+    Permission.__name__ = 'AnalysisFrameworkPermission'
 
     __error_message__ = {
         Permission.CAN_ADD_USER: "You don't have permission to add user",

@@ -2,12 +2,12 @@ import time
 from django.db import transaction
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
-
-from deep.serializers import (
-    RemoveNullFieldsMixin,
+from drf_writable_nested.serializers import (
     NestedCreateMixin,
-    NestedUpdateMixin
+    NestedUpdateMixin,
 )
+
+from deep.serializers import RemoveNullFieldsMixin
 
 from user_resource.serializers import UserResourceSerializer
 

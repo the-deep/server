@@ -1,6 +1,8 @@
 from typing import Union
 
+from functools import lru_cache
 from django.db import models
+
 from user_resource.models import UserResource
 from user.models import User
 from organization.models import Organization
@@ -89,6 +91,20 @@ class AnalysisFramework(UserResource):
         if only_member:
             return visible_afs.filter(current_user_role__isnull=False)
         return visible_afs
+
+    @lru_cache
+    def get_current_user_role(self, user):
+        """
+        Return current_user_role from instance (if get_for_gq is used or generate)
+        """
+        if hasattr(self, 'current_user_role'):
+            self.current_user_role: Union[str, None]
+            return self.current_user_role
+        # If not available generate
+        memberships = AnalysisFrameworkMembership.objects\
+            .filter(framework=self, member=user)\
+            .values_list('role__title', flat=True)
+        return memberships and memberships[0]
 
     def can_get(self, _: User):
         return True
@@ -252,6 +268,8 @@ class Widget(models.Model):
     is_deleted = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
+        if self.section:
+            self.analysis_framework_id = self.section.analysis_framework_id
         super().save(*args, **kwargs)
         from .utils import update_widget
         update_widget(self)

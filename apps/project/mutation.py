@@ -30,4 +30,4 @@ class ProjectMutationType(
 
 class Mutation():
     project = DjangoObjectField(ProjectMutationType)
-    # TODO: For project mutation make sure AF permission is checked when using.
+    # TODO: For project mutation make sure AF permission is checked when using. (Public and Private logics)

@@ -1,10 +1,13 @@
+from typing import Union, List
+
 import graphene
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from django.db.models import QuerySet
 
-from utils.graphene.types import CustomDjangoListObjectType
+from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
+from deep.permissions import AnalysisFrameworkPermissions as AfP
 
 from .models import (
     AnalysisFramework,
@@ -15,28 +18,37 @@ from .models import (
 )
 
 
-class WidgetType(DjangoObjectType):
+class WidgetType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Widget
-        fields = ('id', 'key', 'title', 'widget_id', 'order', 'properties')
+        fields = (
+            'id', 'key', 'title', 'widget_id', 'order', 'properties',
+            'client_id',
+        )
 
 
-class SectionType(DjangoObjectType):
+class SectionType(ClientIdMixin, DjangoObjectType):
     widgets = DjangoListField(WidgetType)
 
     class Meta:
         model = Section
-        fields = ('id', 'title', 'order', 'tooltip')
+        fields = (
+            'id', 'title', 'order', 'tooltip',
+            'client_id',
+        )
 
     @staticmethod
     def resolve_widgets(root, info):
         return info.context.dl.analysis_framework.sections_widgets.load(root.id)
 
 
-class AnalysisFrameworkType(DjangoObjectType):
+class AnalysisFrameworkType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = AnalysisFramework
-        only_fields = ('id', 'title', 'description', 'is_private')
+        only_fields = (
+            'id', 'title', 'description', 'is_private',
+            'client_id',
+        )
 
     current_user_role = graphene.String()
 
@@ -49,6 +61,10 @@ class AnalysisFrameworkType(DjangoObjectType):
         except AnalysisFramework.DoesNotExist:
             return None
 
+    @staticmethod
+    def resolve_current_user_role(root, info, **_) -> Union[str, None]:
+        return root.get_current_user_role(info.context.request.user)
+
 
 class AnalysisFrameworkRoleType(DjangoObjectType):
     class Meta:
@@ -56,21 +72,30 @@ class AnalysisFrameworkRoleType(DjangoObjectType):
         only_fields = ('id', 'title',)
 
 
-class AnalysisFrameworkMembership(DjangoObjectType):
+class AnalysisFrameworkMembershipType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = AnalysisFrameworkMembership
         only_fields = ('id', 'member', 'role', 'joined_at', 'added_by')
 
 
 class AnalysisFrameworkDetailType(AnalysisFrameworkType):
+    allowed_permissions = graphene.List(
+        graphene.NonNull(
+            graphene.Enum.from_enum(AfP.Permission),
+        ), required=True
+    )
+
     primary_tagging = DjangoListField(SectionType)  # With section
     secondary_tagging = DjangoListField(WidgetType)  # Without section
-    members = DjangoListField(AnalysisFrameworkMembership)
+    members = DjangoListField(AnalysisFrameworkMembershipType)
 
     class Meta:
         model = AnalysisFramework
         skip_registry = True
-        only_fields = ('id', 'title', 'description', 'is_private')
+        only_fields = (
+            'id', 'title', 'description', 'is_private',
+            'client_id',
+        )
 
     @staticmethod
     def resolve_primary_tagging(root, info):
@@ -82,9 +107,13 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
 
     @staticmethod
     def resolve_members(root, info):
-        if root.current_user_role is not None:
+        if root.get_current_user_role(info.context.request.user) is not None:
             return info.context.dl.analysis_framework.members.load(root.id)
         return []  # NOTE: Always return empty array FIXME: without empty everything is returned
+
+    @staticmethod
+    def resolve_allowed_permissions(root, info) -> List[str]:
+        return info.context.af_permissions
 
 
 class AnalysisFrameworkListType(CustomDjangoListObjectType):
