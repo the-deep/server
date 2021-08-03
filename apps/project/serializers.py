@@ -250,7 +250,7 @@ class ProjectSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceS
         is_private = validated_data.get('is_private', False)
 
         private_access = member.profile.get_accessible_features().filter(
-            key=Feature.PRIVATE_PROJECT
+            key=Feature.FeatureKey.PRIVATE_PROJECT
         ).exists()
 
         if is_private and not private_access:

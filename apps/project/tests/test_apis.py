@@ -135,8 +135,8 @@ class ProjectApiTest(TestCase):
 
     def test_get_projects(self):
         user_fhx = self.create(User)
-        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
-                    key=Feature.PRIVATE_PROJECT, title='Private project',
+        self.create(Feature, feature_type=Feature.FeatureType.GENERAL_ACCESS,
+                    key=Feature.FeatureKey.PRIVATE_PROJECT, title='Private project',
                     users=[user_fhx], email_domains=[])
         self.authenticate(user_fhx)
 
@@ -200,8 +200,8 @@ class ProjectApiTest(TestCase):
         }
 
         user_fhx = self.create(User, email='fhx@togglecorp.com')
-        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
-                    key=Feature.PRIVATE_PROJECT, title='Private project',
+        self.create(Feature, feature_type=Feature.FeatureType.GENERAL_ACCESS,
+                    key=Feature.FeatureKey.PRIVATE_PROJECT, title='Private project',
                     users=[user_fhx], email_domains=[])
 
         self.authenticate(user_fhx)
@@ -226,8 +226,8 @@ class ProjectApiTest(TestCase):
         user_fhx = self.create(User, email='fhx@togglecorp.com')
         user_dummy = self.create(User, email='dummy@test.com')
 
-        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
-                    key=Feature.PRIVATE_PROJECT, title='Private project',
+        self.create(Feature, feature_type=Feature.FeatureType.GENERAL_ACCESS,
+                    key=Feature.FeatureKey.PRIVATE_PROJECT, title='Private project',
                     users=[user_dummy], email_domains=[])
 
         self.authenticate(user_fhx)
@@ -238,8 +238,8 @@ class ProjectApiTest(TestCase):
 
     def test_get_private_project_detail_unauthorized(self):
         user_fhx = self.create(User, email='fhx@togglecorp.com')
-        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
-                    key=Feature.PRIVATE_PROJECT, title='Private project',
+        self.create(Feature, feature_type=Feature.FeatureType.GENERAL_ACCESS,
+                    key=Feature.FeatureKey.PRIVATE_PROJECT, title='Private project',
                     users=[user_fhx], email_domains=[])
 
         self.authenticate(user_fhx)
