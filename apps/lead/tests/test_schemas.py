@@ -31,8 +31,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
         non_member_user = UserFactory.create()
         member_user = UserFactory.create()
         confidential_member_user = UserFactory.create()
-        project.add_member(member_user, role=self.role_viewer_non_confidential)
-        project.add_member(confidential_member_user, role=self.role_viewer)
+        project.add_member(member_user, role=self.project_role_viewer_non_confidential)
+        project.add_member(confidential_member_user, role=self.project_role_viewer)
         normal_lead = LeadFactory.create(project=project)  # It's UNPROTECTED by default
         confidential_lead = LeadFactory.create(project=project, confidentiality=Lead.Confidentiality.CONFIDENTIAL)
 
@@ -92,8 +92,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
         non_member_user = UserFactory.create()
         member_user = UserFactory.create()
         confidential_member_user = UserFactory.create()
-        project.add_member(member_user, role=self.role_viewer_non_confidential)
-        project.add_member(confidential_member_user, role=self.role_viewer)
+        project.add_member(member_user, role=self.project_role_viewer_non_confidential)
+        project.add_member(confidential_member_user, role=self.project_role_viewer)
         # Create 10 (5 confidential, 5 non-protected) dummy leads
         normal_leads = LeadFactory.create_batch(5, project=project)  # It's UNPROTECTED by default
         confidential_leads = LeadFactory.create_batch(6, project=project, confidentiality=Lead.Confidentiality.CONFIDENTIAL)
@@ -260,8 +260,8 @@ class TestLeadMutationSchema(GraphQLTestCase):
         self.non_member_user = UserFactory.create()
         self.readonly_member_user = UserFactory.create()
         self.member_user = UserFactory.create()
-        self.project.add_member(self.readonly_member_user, role=self.role_viewer_non_confidential)
-        self.project.add_member(self.member_user, role=self.role_analyst)
+        self.project.add_member(self.readonly_member_user, role=self.project_role_viewer_non_confidential)
+        self.project.add_member(self.member_user, role=self.project_role_analyst)
 
     def test_lead_create(self):
         """
@@ -555,7 +555,7 @@ class TestLeadBulkMutationSchema(GraphQLSnapShotTestCase):
         project = ProjectFactory.create()
         # User with role
         user = UserFactory.create()
-        project.add_member(user, role=self.role_analyst)
+        project.add_member(user, role=self.project_role_analyst)
         lead1 = LeadFactory.create(project=project)
         lead2 = LeadFactory.create(project=project, source_type=Lead.SourceType.WEBSITE, url='https://example.com/path')
 

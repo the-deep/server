@@ -1,16 +1,15 @@
-from deep.serializers import (
-    NestedCreateMixin,
-    NestedUpdateMixin,
-)
+from drf_writable_nested.serializers import WritableNestedModelSerializer
 from rest_framework import serializers
 from reversion.models import Version
 import reversion
 
+from deep.writable_nested_serializers import (
+    NestedCreateMixin,
+    NestedUpdateMixin,
+)
 
-class UserResourceSerializer(NestedCreateMixin,
-                             NestedUpdateMixin,
-                             serializers.ModelSerializer):
 
+class UserResourceBaseSerializer(serializers.Serializer):
     created_at = serializers.DateTimeField(read_only=True)
     modified_at = serializers.DateTimeField(read_only=True)
     created_by = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -56,3 +55,16 @@ class UserResourceSerializer(NestedCreateMixin,
             if not (request.method == 'POST' and self.context.get('post_is_used_for_filter', False)):
                 version_id += 1
         return version_id
+
+
+class UserResourceSerializer(UserResourceBaseSerializer, WritableNestedModelSerializer):
+    pass
+
+
+class DeprecatedUserResourceSerializer(
+    UserResourceBaseSerializer,
+    NestedCreateMixin,
+    NestedUpdateMixin,
+    serializers.ModelSerializer,
+):
+    pass

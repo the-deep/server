@@ -9,8 +9,6 @@ from django.core.exceptions import FieldDoesNotExist
 from django.db.models.fields.related import ForeignObjectRel
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
-from rest_framework.validators import UniqueValidator
 
 
 class ListToDictField(serializers.Field):
@@ -50,83 +48,6 @@ class ListToDictField(serializers.Field):
                 **value,
             })
         return list_data
-
-
-class UniqueFieldsMixin(serializers.ModelSerializer):
-    """
-    Moves `UniqueValidator`'s from the validation stage to the save stage.
-    It solves the problem with nested validation for unique fields on update.
-
-    If you want more details, you can read related issues and articles:
-    https://github.com/beda-software/drf-writable-nested/issues/1
-    http://www.django-rest-framework.org/api-guide/validators/#updating-nested-serializers
-
-    Example of usage:
-    ```
-        class Child(models.Model):
-        field = models.CharField(unique=True)
-
-
-    class Parent(models.Model):
-        child = models.ForeignKey('Child')
-
-
-    class ChildSerializer(UniqueFieldsMixin, serializers.ModelSerializer):
-        class Meta:
-            model = Child
-
-
-    class ParentSerializer(NestedUpdateMixin, serializers.ModelSerializer):
-        child = ChildSerializer()
-
-        class Meta:
-            model = Parent
-    ```
-
-    Note: `UniqueFieldsMixin` must be applied only on the serializer
-    which has unique fields.
-
-    Note: When you are using both mixins
-    (`UniqueFieldsMixin` and `NestedCreateMixin` or `NestedUpdateMixin`)
-    you should put `UniqueFieldsMixin` ahead.
-    """
-    _unique_fields = []
-
-    def get_fields(self):
-        self._unique_fields = []
-
-        fields = super(UniqueFieldsMixin, self).get_fields()
-        for field_name, field in fields.items():
-            is_unique = any([isinstance(validator, UniqueValidator)
-                             for validator in field.validators])
-            if is_unique:
-                self._unique_fields.append(field_name)
-                field.validators = [
-                    validator for validator in field.validators
-                    if not isinstance(validator, UniqueValidator)]
-
-        return fields
-
-    def _validate_unique_fields(self, validated_data):
-        for field_name in self._unique_fields:
-            unique_validator = UniqueValidator(self.Meta.model.objects.all())
-            try:
-                # `set_context` removed on DRF >= 3.11, pass in via __call__ instead
-                if hasattr(unique_validator, 'set_context'):
-                    unique_validator.set_context(self.fields[field_name])
-                    unique_validator(validated_data[field_name])
-                else:
-                    unique_validator(validated_data[field_name], self.fields[field_name])
-            except ValidationError as exc:
-                raise ValidationError({field_name: exc.detail})
-
-    def create(self, validated_data):
-        self._validate_unique_fields(validated_data)
-        return super(UniqueFieldsMixin, self).create(validated_data)
-
-    def update(self, instance, validated_data):
-        self._validate_unique_fields(validated_data)
-        return super(UniqueFieldsMixin, self).update(instance, validated_data)
 
 
 class BaseNestedModelSerializer(serializers.ModelSerializer):
