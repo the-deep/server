@@ -1,5 +1,9 @@
+import django_filters
+
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
+
+from .models import Organization
 
 
 class IsFromReliefWeb(admin.SimpleListFilter):
@@ -26,3 +30,9 @@ class IsFromReliefWeb(admin.SimpleListFilter):
             return queryset.filter(relief_web_id__isnull=True)
         else:
             return queryset.all()
+
+
+class OrganizationFilterSet(django_filters.FilterSet):
+    class Meta:
+        model = Organization
+        fields = ['id']
