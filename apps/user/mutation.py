@@ -10,11 +10,13 @@ from .serializers import (
     GqPasswordResetSerializer as ResetPasswordSerializer,
     PasswordChangeSerializer,
     UserMeSerializer,
+    HIDLoginSerializer
 )
 from .schema import UserMeType
 
 
 LoginInputType = generate_input_type_for_serializer('LoginInputType', LoginSerializer)
+HIDLoginInputType = generate_input_type_for_serializer('HIDLoginInputType', HIDLoginSerializer)
 RegisterInputType = generate_input_type_for_serializer('RegisterInputType', RegisterSerializer)
 ResetPasswordInputType = generate_input_type_for_serializer('ResetPasswordInputType', ResetPasswordSerializer)
 PasswordChangeInputType = generate_input_type_for_serializer('PasswordChangeInputType', PasswordChangeSerializer)
@@ -42,6 +44,29 @@ class Login(graphene.Mutation):
         if user := serializer.validated_data.get('user'):
             login(info.context.request, user)
         return Login(
+            result=user,
+            errors=None,
+            ok=True
+        )
+
+
+class LoginWithHID(graphene.Mutation):
+    class Arguments:
+        data = HIDLoginInputType(required=True)
+
+    result = graphene.Field(UserMeType)
+    errors = graphene.List(graphene.NonNull(CustomErrorType))
+    ok = graphene.Boolean(required=True)
+
+    @staticmethod
+    def mutate(root, info, data):
+        serializer = HIDLoginSerializer(data=data, context={'request': info.context.request})
+        print(serializer)
+        if errors := mutation_is_not_valid(serializer):
+            return LoginWithHID(errors=errors, ok=False)
+        if user := serializer.validated_data.get('user'):
+            login(info.context.request, user)
+        return LoginWithHID(
             result=user,
             errors=None,
             ok=True
@@ -142,6 +167,7 @@ class UpdateMe(graphene.Mutation):
 
 class Mutation():
     login = Login.Field()
+    login_with_hid = LoginWithHID.Field()
     logout = Logout.Field()
     register = Register.Field()
     reset_password = ResetPassword.Field()
