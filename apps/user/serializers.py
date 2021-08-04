@@ -461,10 +461,11 @@ class HIDLoginSerializer(serializers.Serializer):
         humanitarian_id = hid.HumanitarianId(data['access_token'])
 
         try:
-            user = humanitarian_id.get_user()
+            return {
+                'user': humanitarian_id.get_user()
+            }
         except hid.HIDBaseException as e:
             raise serializers.ValidationError(e.message)
         except Exception:
             logger.error('HID error', exc_info=True)
             raise serializers.ValidationError('Unexpected Error')
-        return {'user': user}
