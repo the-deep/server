@@ -1,3 +1,5 @@
+from unittest import mock
+
 import factory
 
 from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
@@ -206,7 +208,7 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
         self.assertMatchSnapshot(response, 'with-membership')
 
 
-class TestAnalysisFrameworkMutation(GraphQLSnapShotTestCase):
+class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
     def setUp(self):
         super().setUp()
         self.create_query = '''
@@ -641,6 +643,77 @@ class TestAnalysisFrameworkMutation(GraphQLSnapShotTestCase):
         # ----------------- All valid input
         response = _query_check()['data']['analysisFramework']['analysisFrameworkMembershipBulk']
         self.assertMatchSnapshot(response, 'try 2')
+
+    @mock.patch('analysis_framework.serializers.AfWidgetLimit')
+    def test_widgets_limit(self, AfWidgetLimitMock):
+        query = '''
+            mutation MyMutation ($input: AnalysisFrameworkInputType!) {
+              __typename
+              analysisFrameworkCreate(data: $input) {
+                ok
+                errors
+                result {
+                  id
+                }
+              }
+            }
+        '''
+
+        user = UserFactory.create()
+
+        minput = dict(
+            title='AF (TEST)',
+            clientId='af-client-101',
+            primaryTagging=[
+                dict(
+                    title=f'Section {i}',
+                    clientId=f'section-{i}',
+                    order=i,
+                    tooltip=f'Tooltip for section {i}',
+                    widgets=[
+                        dict(
+                            clientId=f'section-text-{j}-client-id',
+                            title=f'Section-Text-{j}',
+                            widgetId=self.genum(Widget.WidgetType.TEXT),
+                            key=f'section-text-{j}',
+                            order=j,
+                        )
+                        for j in range(0, 4)
+                    ],
+                ) for i in range(0, 2)
+            ],
+            secondaryTagging=[
+                dict(
+                    clientId=f'section-text-{j}-client-id',
+                    title=f'Section-Text-{j}',
+                    widgetId=self.genum(Widget.WidgetType.TEXT),
+                    key=f'section-text-{j}',
+                    order=j,
+                )
+                for j in range(0, 4)
+            ],
+        )
+
+        self.force_login(user)
+
+        def _query_check(**kwargs):
+            return self.query_check(query, minput=minput, **kwargs)['data']['analysisFrameworkCreate']
+
+        # Let's change the limit to lower value for easy testing :P
+        AfWidgetLimitMock.MAX_SECTIONS_ALLOWED = 1
+        AfWidgetLimitMock.MAX_WIDGETS_ALLOWED_PER_SECTION = 2
+        AfWidgetLimitMock.MAX_WIDGETS_ALLOWED_IN_SECONDARY_TAGGING = 2
+        response = _query_check(okay=False)
+        self.assertMatchSnapshot(response, 'failure-widget-level')
+        # Let's change the limit to lower value for easy testing :P
+        AfWidgetLimitMock.MAX_WIDGETS_ALLOWED_IN_SECONDARY_TAGGING = 10
+        AfWidgetLimitMock.MAX_WIDGETS_ALLOWED_PER_SECTION = 10
+        response = _query_check(okay=False)
+        self.assertMatchSnapshot(response, 'failure-section-level')
+        # Let's change the limit to higher value
+        # Let's change the limit to higher value
+        AfWidgetLimitMock.MAX_SECTIONS_ALLOWED = 5
+        _query_check(okay=True)
 
 
 class TestAnalysisFrameworkCreateUpdate(GraphQLTestCase):
