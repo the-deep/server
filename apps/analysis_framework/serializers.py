@@ -285,6 +285,20 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
 
 
 # ------------------ Graphql seriazliers -----------------------------------
+def validate_items_limit(items, limit, error_message='Only %d items are allowed. Provided: %d'):
+    if items:
+        count = len(items)
+        print(count, limit)
+        if count > limit:
+            raise serializers.ValidationError(error_message % (limit, count))
+
+
+class AfWidgetLimit():
+    MAX_SECTIONS_ALLOWED = 5
+    MAX_WIDGETS_ALLOWED_PER_SECTION = 10
+    MAX_WIDGETS_ALLOWED_IN_SECONDARY_TAGGING = 50
+
+
 class WidgetGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
     class Meta:
         model = Widget
@@ -305,6 +319,11 @@ class SectionGqlSerializer(TempClientIdMixin, WritableNestedModelSerializer):
             'widgets',
             'client_id',
         )
+
+    def validate_widgets(self, items):
+        # Check max limit for widgets
+        validate_items_limit(items, AfWidgetLimit.MAX_WIDGETS_ALLOWED_PER_SECTION)
+        return items
 
 
 class AnalysisFrameworkGqlSerializer(TempClientIdMixin, UserResourceSerializer):
@@ -329,6 +348,16 @@ class AnalysisFrameworkGqlSerializer(TempClientIdMixin, UserResourceSerializer):
                 "is_private": "You don't have permission to create/update private framework"
             })
         return value
+
+    def validate_primary_tagging(self, items):
+        # Check max limit for sections
+        validate_items_limit(items, AfWidgetLimit.MAX_SECTIONS_ALLOWED)
+        return items
+
+    def validate_secondary_tagging(self, items):
+        # Check max limit for secondary_tagging
+        validate_items_limit(items, AfWidgetLimit.MAX_WIDGETS_ALLOWED_IN_SECONDARY_TAGGING)
+        return items
 
     def _delete_old_secondary_taggings(self, af, secondary_tagging):
         current_ids = [
