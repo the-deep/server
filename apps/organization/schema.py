@@ -2,8 +2,9 @@ import graphene
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
-from utils.graphene.fields import DjangoPaginatedListObjectField
 from utils.graphene.types import CustomDjangoListObjectType
+from utils.graphene.fields import DjangoPaginatedListObjectField
+
 from gallery.schema import GalleryFileType
 from gallery.models import File
 
@@ -20,6 +21,12 @@ class OrganizationTypeType(DjangoObjectType):
             'short_name',
             'description',
         )
+
+
+class OrganizationTypeListType(CustomDjangoListObjectType):
+    class Meta:
+        model = _OrganizationType
+        filterset_class = []
 
 
 class MergedAsOrganizationType(DjangoObjectType):
@@ -72,3 +79,13 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
+    organization_types = DjangoPaginatedListObjectField(
+        OrganizationTypeListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+
+    @staticmethod
+    def resolve_organization_types(root, info, **kwargs):
+        return _OrganizationType.objects.all()
