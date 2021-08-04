@@ -6,7 +6,13 @@ from project.factories import ProjectFactory
 from gallery.factories import FileFactory
 
 from lead.models import Lead
-from lead.factories import LeadFactory, EmmEntityFactory
+from lead.factories import (
+  LeadEMMTriggerFactory,
+  LeadFactory,
+  EmmEntityFactory,
+  LeadGroupFactory,
+  LeadEMMTrigger
+)
 
 
 class TestLeadQuerySchema(GraphQLTestCase):
@@ -210,6 +216,94 @@ class TestLeadQuerySchema(GraphQLTestCase):
         # Authors check
         self.assertListIds(results[1]['authors'], [org1, org3], content)
         self.assertIdEqual(results[1]['source']['mergedAs']['id'], org1.id, content)
+
+    def test_lead_options_query(self):
+        """
+        Test leads field value
+        """
+        query = '''
+            query MyQuery ($id: ID!) {
+              project(id: $id) {
+                leadGroups {
+                  results {
+                    id
+                    title
+                  }
+                  totalCount
+                }
+                emmEntities {
+                  results {
+                    id
+                    name
+                  }
+                  totalCount
+                }
+                leadEmmTriggers {
+                  results {
+                    count
+                    emmKeyword
+                    emmRiskFactor
+                    id
+                  }
+                  totalCount
+                }
+              }
+            }
+        '''
+        project = ProjectFactory.create()
+        project2 = ProjectFactory.create()
+        user = UserFactory.create()
+        project.add_member(user)
+
+        lead_group1 = LeadGroupFactory.create(project=project)
+        lead_group2 = LeadGroupFactory.create(project=project)
+        lead_group3 = LeadGroupFactory.create(project=project2)
+
+        emm_entity_1 = EmmEntityFactory.create()
+        emm_entity_2 = EmmEntityFactory.create()
+        emm_entity_3 = EmmEntityFactory.create()
+
+        lead1 = LeadFactory.create(project=project, emm_entities=[emm_entity_1, emm_entity_2])
+        lead2 = LeadFactory.create(project=project, emm_entities=[emm_entity_1])
+        lead3 = LeadFactory.create(project=project2, emm_entities=[emm_entity_3])
+
+        lead_emm_trigger1 = LeadEMMTriggerFactory.create(lead=lead1)
+        lead_emm_trigger2 = LeadEMMTriggerFactory.create(lead=lead2)
+        lead_emm_trigger3 = LeadEMMTriggerFactory.create(lead=lead3)
+
+        self.force_login(user)
+        # test for lead group
+        content = self.query_check(query, variables={'id': project.id})
+        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 2)
+        self.assertEqual(
+          set(result['id'] for result in content['data']['project']['leadGroups']['results']),
+          set([str(lead_group1.id), str(lead_group2.id)])
+        )
+
+        # with diffrent project
+        content = self.query_check(query, variables={'id': project2.id})
+        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 1)
+        self.assertEqual(content['data']['project']['leadGroups']['results'][0]['id'], str(lead_group3.id))
+
+        # test for emm_entities
+        content = self.query_check(query, variables={'id': project.id})
+        self.assertEqual(content['data']['project']['emmEntities']['totalCount'], 2)
+        self.assertEqual(
+          set(result['id'] for result in content['data']['project']['emmEntities']['results']),
+          set([str(emm_entity_1.id), str(emm_entity_2.id)])
+        )
+
+        # test for lead_emm_trigger
+        content = self.query_check(query, variables={'id': project.id})
+        self.assertEqual(content['data']['project']['leadEmmTriggers']['totalCount'], 2)
+        self.assertEqual(
+          set(result['id'] for result in content['data']['project']['leadEmmTriggers']['results']),
+          set([str(lead_emm_trigger1.id), str(lead_emm_trigger2.id)])
+        )
+
+        content = self.query_check(query, variables={'id': project2.id})
+        self.assertEqual(content['data']['project']['leadEmmTriggers']['totalCount'], 1)
+        self.assertEqual(content['data']['project']['leadEmmTriggers']['results'][0]['id'], str(lead_emm_trigger3.id))
 
 
 class TestLeadMutationSchema(GraphQLTestCase):
