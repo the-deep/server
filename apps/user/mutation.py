@@ -61,7 +61,6 @@ class LoginWithHID(graphene.Mutation):
     @staticmethod
     def mutate(root, info, data):
         serializer = HIDLoginSerializer(data=data, context={'request': info.context.request})
-        print(serializer)
         if errors := mutation_is_not_valid(serializer):
             return LoginWithHID(errors=errors, ok=False)
         if user := serializer.validated_data.get('user'):
