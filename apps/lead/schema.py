@@ -1,5 +1,6 @@
 import graphene
 from typing import Union
+from django.db import models
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
@@ -13,6 +14,7 @@ from user.schema import UserType
 
 from .models import (
     Lead,
+    LeadGroup,
     LeadPreview,
     LeadEMMTrigger,
     EMMEntity,
@@ -28,6 +30,18 @@ def get_lead_qs(info):
     elif PP.check_permission(info, PP.Permission.VIEW_ONLY_UNPROTECTED_LEAD):
         return lead_qs.filter(confidentiality=Lead.Confidentiality.UNPROTECTED)
     return Lead.objects.none()
+
+
+def get_lead_group_qs(info):
+    return LeadGroup.objects.filter(project=info.context.active_project)
+
+
+def get_emm_entities_qs(info):
+    return EMMEntity.objects.filter(lead__project=info.context.active_project).distinct()
+
+
+def get_lead_emm_entities_qs(info):
+    return LeadEMMTrigger.objects.filter(lead__project=info.context.active_project)
 
 
 class LeadPreviewType(DjangoObjectType):
@@ -50,16 +64,60 @@ class LeadEmmTriggerType(DjangoObjectType):
         model = LeadEMMTrigger
         fields = ('id', 'emm_keyword', 'emm_risk_factor', 'count')
 
+    @staticmethod
+    def get_custom_queryset(queryset, info, **kwargs):
+        return get_lead_emm_entities_qs(info)
+
+
+class LeadEmmTriggerListType(CustomDjangoListObjectType):
+    class Meta:
+        model = LeadEMMTrigger
+        filterset_class = []
+
 
 class EmmEntityType(DjangoObjectType):
     class Meta:
         model = EMMEntity
         fields = ('id', 'name')
 
+    @staticmethod
+    def get_custom_queryset(queryset, info, **kwargs):
+        return get_emm_entities_qs(info)
+
+
+class EmmEntityListType(CustomDjangoListObjectType):
+    class Meta:
+        model = EMMEntity
+        filterset_class = []
+
+
+class EmmKeyWordType(graphene.ObjectType):
+    emm_keywords = graphene.String()
+
+
+class EmmKeyRiskFactorType(graphene.ObjectType):
+    emm_risk_factors = graphene.String()
+
 
 class VerifiedStatType(graphene.ObjectType):
     total_count = graphene.Int()
     verified_count = graphene.Int()
+
+
+class LeadGroupType(DjangoObjectType):
+    class Meta:
+        model = LeadGroup
+        fields = ('id', 'title')
+
+    @staticmethod
+    def get_custom_queryset(queryset, info, **kwargs):
+        return get_lead_group_qs(info)
+
+
+class LeadGroupListType(CustomDjangoListObjectType):
+    class Meta:
+        model = LeadGroup
+        filterset_class = []
 
 
 class LeadType(ClientIdMixin, DjangoObjectType):
@@ -79,6 +137,7 @@ class LeadType(ClientIdMixin, DjangoObjectType):
     authors = DjangoListField(OrganizationType)
     verified_stat = graphene.Field(VerifiedStatType)
     assignee = graphene.Field(UserType)
+    lead_group = graphene.Field(LeadGroupType)
     # EMM Fields
     emm_entities = DjangoListField(EmmEntityType)
     emm_triggers = DjangoListField(LeadEmmTriggerType)
@@ -115,7 +174,63 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
+    lead_group = DjangoObjectField(LeadGroupType)
+    lead_groups = DjangoPaginatedListObjectField(
+        LeadGroupListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+    emm_entities = DjangoPaginatedListObjectField(
+        EmmEntityListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+    lead_emm_triggers = DjangoPaginatedListObjectField(
+        LeadEmmTriggerListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+    # TODO: Add Pagination
+    emm_keywords = graphene.List(EmmKeyWordType)
+    emm_risk_factors = graphene.List(EmmKeyRiskFactorType)
 
     @staticmethod
     def resolve_leads(root, info, **kwargs) -> QuerySet:
         return get_lead_qs(info)
+
+    @staticmethod
+    def resolve_lead_groups(root, info, **kwargs) -> QuerySet:
+        return get_lead_group_qs(info)
+
+    @staticmethod
+    def resolve_emm_entities(root, info, **kwargs) -> QuerySet:
+        return get_emm_entities_qs(info)
+
+    @staticmethod
+    def resolve_lead_emm_triggers(root, info, **kwargs) -> QuerySet:
+        return get_lead_emm_entities_qs(info)
+
+    @staticmethod
+    def resolve_emm_keywords(root, info, **kwargs):
+        return LeadEMMTrigger.objects.filter(
+                lead__project=info.context.active_project
+            ).values('emm_keyword').annotate(
+                total_count=models.Sum('count'),
+                key=models.F('emm_keyword'),
+                label=models.F('emm_keyword')
+            ).order_by('emm_keyword')
+
+    @staticmethod
+    def resolve_emm_risk_factors(root, info, **kwargs):
+        return LeadEMMTrigger.objects.filter(
+                ~models.Q(emm_risk_factor=''),
+                ~models.Q(emm_risk_factor=None),
+                lead__project=info.context.active_project,
+            ).values('emm_risk_factor').annotate(
+                total_count=models.Sum('count'),
+                key=models.F('emm_risk_factor'),
+                label=models.F('emm_risk_factor'),
+            ).order_by('emm_risk_factor')
