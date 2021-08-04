@@ -899,3 +899,53 @@ class TestAnalysisFrameworkCreateUpdate(GraphQLTestCase):
         )
         content = response.json()
         return content
+
+    def test_af_modified_at(self):
+        create_mutation = '''
+        mutation Mutation($input: AnalysisFrameworkInputType!) {
+          analysisFrameworkCreate(data: $input) {
+            ok
+            errors
+            result {
+              id
+              title
+              isPrivate
+              description
+              modifiedAt
+            }
+          }
+        }
+        '''
+        update_mutation = '''
+        mutation UpdateMutation($input: AnalysisFrameworkInputType!, $id: ID!) {
+            analysisFramework (id: $id ) {
+              analysisFrameworkUpdate(data: $input) {
+                ok
+                errors
+                result {
+                  id
+                  title
+                  isPrivate
+                  description
+                  modifiedAt
+                }
+              }
+          }
+        }
+        '''
+
+        self.force_login(self.user)
+
+        # Create
+        minput = dict(title='new title')
+        af_response = self.query_check(create_mutation, minput=minput)['data']['analysisFrameworkCreate']['result']
+        af_id = af_response['id']
+        af_modified_at = af_response['modifiedAt']
+
+        # Update
+        minput = dict(title='new updated title')
+        updated_af_response = self.query_check(
+            update_mutation, minput=minput, variables={'id': af_id}
+        )['data']['analysisFramework']['analysisFrameworkUpdate']['result']
+        # Make sure modifiedAt is higher now
+        assert updated_af_response['modifiedAt'] > af_modified_at
