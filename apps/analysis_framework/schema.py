@@ -47,6 +47,7 @@ class AnalysisFrameworkType(ClientIdMixin, DjangoObjectType):
         model = AnalysisFramework
         only_fields = (
             'id', 'title', 'description', 'is_private',
+            'created_by', 'created_at', 'modified_by', 'modified_at',
             'client_id',
         )
 
@@ -99,6 +100,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
         skip_registry = True
         only_fields = (
             'id', 'title', 'description', 'is_private',
+            'created_by', 'created_at', 'modified_by', 'modified_at',
             'client_id',
         )
 
