@@ -1,5 +1,5 @@
 from dateutil.relativedelta import relativedelta
-from mock import patch
+from unittest.mock import patch
 
 from django.utils import timezone
 from django.conf import settings
