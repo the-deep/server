@@ -199,8 +199,8 @@ class LeadViewSet(viewsets.ModelViewSet):
         return response.Response({
             'total': qs.count(),
             'total_entries': Entry.objects.filter(lead__in=qs).count(),
-            'total_verified_entries': Entry.objects.filter(lead__in=qs, verified=True).count(),
-            'total_unverified_entries': Entry.objects.filter(lead__in=qs, verified=False).count(),
+            'total_controlled_entries': Entry.objects.filter(lead__in=qs, controlled=True).count(),
+            'total_uncontrolled_entries': Entry.objects.filter(lead__in=qs, controlled=False).count(),
             **emm_info,
         })
 
