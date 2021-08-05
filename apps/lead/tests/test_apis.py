@@ -19,6 +19,7 @@ from organization.serializers import SimpleOrganizationSerializer
 from lead.filter_set import LeadFilterSet
 from lead.serializers import SimpleLeadGroupSerializer
 from entry.models import (
+    Entry,
     ProjectEntryLabel,
     LeadEntryGroup,
     EntryGroupLabel,
@@ -1135,20 +1136,22 @@ class LeadTests(TestCase):
         response = self.client.post(url, post_data)
         assert response.json()['count'] == 0, 'There are not supposed to be leads with entries'
 
-        entry1 = self.create(Entry, project=project, lead=lead1, controlled=True,
-                             entry_type=Entry.EXCERPT)
+        entry1 = self.create(Entry, project=project, lead=lead1, controlled=True, entry_type=Entry.EXCERPT)
         self.create(Entry, project=project, lead=lead1, controlled=True, entry_type=Entry.EXCERPT)
+
         post_data = {'entries_filter': [('controlled', True)]}
         response = self.client.post(url, post_data)
         assert response.json()['count'] == 3
-        assert set([each['filteredEntriesCount'] for each in response.json()['results']]) == set([0, 0, 2]),\
+        assert set([each['filteredEntriesCount'] for each in response.json()['results']]) \
+            == set([0, 0, 2]),\
             response.json()
 
-        entry2 = self.create(Entry, project=project, lead=lead2, controlled=False,
-                             entry_type=Entry.IMAGE)
+        entry2 = self.create(Entry, project=project, lead=lead2, controlled=False, entry_type=Entry.IMAGE)
         self.create(Entry, project=project, lead=lead3, controlled=False, entry_type=Entry.DATA_SERIES)
-        post_data = {'custom_filters': 'exclude_empty_filtered_entries',
-                     'entries_filter': [('controlled', True)]}
+        post_data = {
+            'custom_filters': 'exclude_empty_filtered_entries',
+            'entries_filter': [('controlled', True)]
+        }
         response = self.client.post(url, post_data)
         assert response.json()['count'] == 1
         assert response.data['results'][0]['id'] == lead1.id, response.data
@@ -1163,10 +1166,8 @@ class LeadTests(TestCase):
 
         # filter by project_entry_labels
         # Labels
-        label1 = self.create(ProjectEntryLabel, project=project, title='Label 1', order=1,
-                             color='#23f23a')
-        label2 = self.create(ProjectEntryLabel, project=project, title='Label 2', order=2,
-                             color='#23f23a')
+        label1 = self.create(ProjectEntryLabel, project=project, title='Label 1', order=1, color='#23f23a')
+        label2 = self.create(ProjectEntryLabel, project=project, title='Label 2', order=2, color='#23f23a')
         self.create(ProjectEntryLabel, project=project, title='Label 3', order=3, color='#23f23a')
 
         # Groups
@@ -1481,7 +1482,7 @@ class LeadTests(TestCase):
         lead1 = self.create_lead()
         lead2 = self.create_lead()
         self.create_entry(lead=lead1)
-        self.create_entry(lead=lead1, verified=True)
+        self.create_entry(lead=lead1, controlled=True)
         self.create_entry(lead=lead2)
 
         url = '/api/v1/leads/summary/'
@@ -1491,8 +1492,8 @@ class LeadTests(TestCase):
 
         self.assertEqual(resp.data['total'], 2)
         self.assertEqual(resp.data['total_entries'], 3)
-        self.assertEqual(resp.data['total_verified_entries'], 1)
-        self.assertEqual(resp.data['total_unverified_entries'], 2)
+        self.assertEqual(resp.data['total_controlled_entries'], 1)
+        self.assertEqual(resp.data['total_uncontrolled_entries'], 2)
         assert 'emm_entities' in resp.data
         assert 'emm_triggers' in resp.data
 
@@ -1500,7 +1501,7 @@ class LeadTests(TestCase):
         lead1 = self.create_lead()
         lead2 = self.create_lead()
         self.create_entry(lead=lead1)
-        self.create_entry(lead=lead1, verified=True)
+        self.create_entry(lead=lead1, controlled=True)
         self.create_entry(lead=lead2)
 
         url = '/api/v1/leads/summary/'
@@ -1510,8 +1511,8 @@ class LeadTests(TestCase):
 
         self.assertEqual(resp.data['total'], 2)
         self.assertEqual(resp.data['total_entries'], 3)
-        self.assertEqual(resp.data['total_verified_entries'], 1)
-        self.assertEqual(resp.data['total_unverified_entries'], 2)
+        self.assertEqual(resp.data['total_controlled_entries'], 1)
+        self.assertEqual(resp.data['total_uncontrolled_entries'], 2)
         assert 'emm_entities' in resp.data
         assert 'emm_triggers' in resp.data
 
