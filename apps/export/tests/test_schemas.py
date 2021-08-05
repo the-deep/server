@@ -27,8 +27,8 @@ class TestExportQuerySchema(GraphQLTestCase):
         project2 = ProjectFactory.create()
         user = UserFactory.create()
         user2 = UserFactory.create()
-        project.add_member(user, role=self.role_viewer_non_confidential)
-        project2.add_member(user2, role=self.role_viewer_non_confidential)
+        project.add_member(user, role=self.project_role_viewer_non_confidential)
+        project2.add_member(user2, role=self.project_role_viewer_non_confidential)
         export = ExportFactory.create(project=project, exported_by=user)
         other_export = ExportFactory.create(project=project2, exported_by=user2)
 
@@ -68,8 +68,8 @@ class TestExportQuerySchema(GraphQLTestCase):
         project2 = ProjectFactory.create()
         user = UserFactory.create()
         user2 = UserFactory.create()
-        project.add_member(user, role=self.role_viewer_non_confidential)
-        project2.add_member(user2, role=self.role_viewer_non_confidential)
+        project.add_member(user, role=self.project_role_viewer_non_confidential)
+        project2.add_member(user2, role=self.project_role_viewer_non_confidential)
         ExportFactory.create_batch(6, project=project, exported_by=user)
         ExportFactory.create_batch(8, project=project2, exported_by=user2)
 
@@ -109,7 +109,7 @@ class TestExportQuerySchema(GraphQLTestCase):
         '''
         project = ProjectFactory.create()
         user = UserFactory.create()
-        project.add_member(user, role=self.role_viewer_non_confidential)
+        project.add_member(user, role=self.project_role_viewer_non_confidential)
         ExportFactory.create_batch(6, project=project, exported_by=user, type=Export.DataType.ENTRIES)
         ExportFactory.create_batch(2, project=project, exported_by=user, type=Export.DataType.ASSESSMENTS)
 
@@ -149,7 +149,7 @@ class TestExportQuerySchema(GraphQLTestCase):
         '''
         project = ProjectFactory.create()
         user = UserFactory.create()
-        project.add_member(user, role=self.role_viewer_non_confidential)
+        project.add_member(user, role=self.project_role_viewer_non_confidential)
         ExportFactory.create_batch(4, project=project, exported_by=user, status=Export.Status.PENDING)
         ExportFactory.create_batch(2, project=project, exported_by=user, status=Export.Status.STARTED)
         ExportFactory.create_batch(3, project=project, exported_by=user, status=Export.Status.SUCCESS)
