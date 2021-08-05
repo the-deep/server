@@ -288,7 +288,6 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
 def validate_items_limit(items, limit, error_message='Only %d items are allowed. Provided: %d'):
     if items:
         count = len(items)
-        print(count, limit)
         if count > limit:
             raise serializers.ValidationError(error_message % (limit, count))
 
