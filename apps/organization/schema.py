@@ -79,13 +79,10 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
+    organization_type = DjangoObjectField(OrganizationTypeType)
     organization_types = DjangoPaginatedListObjectField(
         OrganizationTypeListType,
         pagination=PageGraphqlPagination(
             page_size_query_param='pageSize'
         )
     )
-
-    @staticmethod
-    def resolve_organization_types(root, info, **kwargs):
-        return _OrganizationType.objects.all()

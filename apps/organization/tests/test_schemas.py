@@ -28,5 +28,6 @@ class TestOrganizationTypeQuery(GraphQLTestCase):
         self.query_check(query, assert_for_error=True)
 
         self.force_login(user)
-        content = self.query_check(query, assert_for_error=False)
+        content = self.query_check(query)
         self.assertEqual(len(content['data']['organizationTypes']['results']), 3, content)
+        self.assertEqual(content['data']['organizationTypes']['totalCount'], 3, content)
