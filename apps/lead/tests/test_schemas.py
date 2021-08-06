@@ -10,8 +10,7 @@ from lead.factories import (
   LeadEMMTriggerFactory,
   LeadFactory,
   EmmEntityFactory,
-  LeadGroupFactory,
-  LeadEMMTrigger
+  LeadGroupFactory
 )
 
 
@@ -252,8 +251,10 @@ class TestLeadQuerySchema(GraphQLTestCase):
         '''
         project = ProjectFactory.create()
         project2 = ProjectFactory.create()
-        user = UserFactory.create()
-        project.add_member(user)
+        member_user = UserFactory.create()
+        confidential_member_user = UserFactory.create()
+        project.add_member(member_user, role=self.project_role_viewer_non_confidential)
+        project.add_member(confidential_member_user, role=self.project_role_viewer)
 
         lead_group1 = LeadGroupFactory.create(project=project)
         lead_group2 = LeadGroupFactory.create(project=project)
@@ -263,15 +264,19 @@ class TestLeadQuerySchema(GraphQLTestCase):
         emm_entity_2 = EmmEntityFactory.create()
         emm_entity_3 = EmmEntityFactory.create()
 
-        lead1 = LeadFactory.create(project=project, emm_entities=[emm_entity_1, emm_entity_2])
+        lead1 = LeadFactory.create(
+          project=project, emm_entities=[emm_entity_1, emm_entity_2],
+          confidentiality=Lead.Confidentiality.CONFIDENTIAL)
         lead2 = LeadFactory.create(project=project, emm_entities=[emm_entity_1])
-        lead3 = LeadFactory.create(project=project2, emm_entities=[emm_entity_3])
+        lead3 = LeadFactory.create(project=project, emm_entities=[emm_entity_3])
+        lead4 = LeadFactory.create(project=project2, emm_entities=[emm_entity_3])
 
-        lead_emm_trigger1 = LeadEMMTriggerFactory.create(lead=lead1)
-        lead_emm_trigger2 = LeadEMMTriggerFactory.create(lead=lead2)
-        lead_emm_trigger3 = LeadEMMTriggerFactory.create(lead=lead3)
+        LeadEMMTriggerFactory.create(lead=lead1)
+        LeadEMMTriggerFactory.create(lead=lead2)
+        LeadEMMTriggerFactory.create(lead=lead3)
+        LeadEMMTriggerFactory.create(lead=lead4)
 
-        self.force_login(user)
+        self.force_login(member_user)
         # test for lead group
         content = self.query_check(query, variables={'id': project.id})
         self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 2)
@@ -280,30 +285,34 @@ class TestLeadQuerySchema(GraphQLTestCase):
           set([str(lead_group1.id), str(lead_group2.id)])
         )
 
-        # with diffrent project
+        # with different project
         content = self.query_check(query, variables={'id': project2.id})
         self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 1)
         self.assertEqual(content['data']['project']['leadGroups']['results'][0]['id'], str(lead_group3.id))
 
         # test for emm_entities
+        # login with member_user
         content = self.query_check(query, variables={'id': project.id})
         self.assertEqual(content['data']['project']['emmEntities']['totalCount'], 2)
-        self.assertEqual(
-          set(result['id'] for result in content['data']['project']['emmEntities']['results']),
-          set([str(emm_entity_1.id), str(emm_entity_2.id)])
-        )
+
+        # login with confidential_member_user
+        self.force_login(confidential_member_user)
+        content = self.query_check(query, variables={'id': project.id})
+        self.assertEqual(content['data']['project']['emmEntities']['totalCount'], 3)
 
         # test for lead_emm_trigger
+        # login with confidential_member_user
+        content = self.query_check(query, variables={'id': project.id})
+        self.assertEqual(content['data']['project']['leadEmmTriggers']['totalCount'], 3)
+
+        # login with member_user
+        self.force_login(member_user)
         content = self.query_check(query, variables={'id': project.id})
         self.assertEqual(content['data']['project']['leadEmmTriggers']['totalCount'], 2)
-        self.assertEqual(
-          set(result['id'] for result in content['data']['project']['leadEmmTriggers']['results']),
-          set([str(lead_emm_trigger1.id), str(lead_emm_trigger2.id)])
-        )
 
+        # test for project that user is not member
         content = self.query_check(query, variables={'id': project2.id})
-        self.assertEqual(content['data']['project']['leadEmmTriggers']['totalCount'], 1)
-        self.assertEqual(content['data']['project']['leadEmmTriggers']['results'][0]['id'], str(lead_emm_trigger3.id))
+        self.assertEqual(content['data']['project']['leadEmmTriggers']['totalCount'], 0)
 
 
 class TestLeadMutationSchema(GraphQLTestCase):
