@@ -37,11 +37,21 @@ def get_lead_group_qs(info):
 
 
 def get_emm_entities_qs(info):
-    return EMMEntity.objects.filter(lead__project=info.context.active_project).distinct()
+    emm_entity_qs = EMMEntity.objects.filter(lead__project=info.context.active_project).distinct()
+    if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
+        return emm_entity_qs
+    elif PP.check_permission(info, PP.Permission.VIEW_ONLY_UNPROTECTED_LEAD):
+        return emm_entity_qs.filter(lead__confidentiality=Lead.Confidentiality.UNPROTECTED)
+    return EMMEntity.objects.none()
 
 
 def get_lead_emm_entities_qs(info):
-    return LeadEMMTrigger.objects.filter(lead__project=info.context.active_project)
+    lead_emm_qs = LeadEMMTrigger.objects.filter(lead__project=info.context.active_project)
+    if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
+        return lead_emm_qs
+    elif PP.check_permission(info, PP.Permission.VIEW_ONLY_UNPROTECTED_LEAD):
+        return lead_emm_qs.filter(lead__confidentiality=Lead.Confidentiality.UNPROTECTED)
+    return LeadEMMTrigger.objects.none()
 
 
 class LeadPreviewType(DjangoObjectType):
