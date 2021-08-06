@@ -8,7 +8,6 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import ProjectPermissions as PP
-from organization.models import OrganizationType
 from lead.schema import Query as LeadQuery
 from export.schema import Query as ExportQuery
 
@@ -32,10 +31,6 @@ class ProjectType(DjangoObjectType):
             graphene.Enum.from_enum(PP.Permission),
         ), required=True
     )
-
-    @staticmethod
-    def resolve_organization_type(root, info, **kwargs):
-        return OrganizationType.objects.all()
 
     # NOTE: This is a custom feature
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
