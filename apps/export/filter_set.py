@@ -23,6 +23,21 @@ class ExportFilterSet(django_filters.rest_framework.FilterSet):
         widget=django_filters.widgets.CSVWidget
     )
 
+    type = django_filters.MultipleChoiceFilter(
+        choices=Export.DATA_TYPES,
+        widget=django_filters.widgets.CSVWidget
+    )
+    exported_at__lt = django_filters.DateFilter(
+        field_name='exported_at',
+        lookup_expr='lte',
+        input_formats=['%Y-%m-%d%z']
+    )
+    exported_at__gte = django_filters.DateFilter(
+        field_name='exported_at',
+        lookup_expr='gte',
+        input_formats=['%Y-%m-%d%z']
+    )
+
     class Meta:
         model = Export
         fields = ['is_archived']

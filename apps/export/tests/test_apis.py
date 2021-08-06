@@ -1,3 +1,6 @@
+from dateutil.relativedelta import relativedelta
+
+from django.utils import timezone
 from django.core.cache import cache
 
 from deep.tests import TestCase
@@ -128,6 +131,33 @@ class ExportTests(TestCase):
         assert response.json()['count'] == 4
         response = self.client.get(f'/api/v1/exports/?status={Export.PENDING},{Export.FAILURE}')
         assert response.json()['count'] == 2
+
+    def test_export_filter_by_type(self):
+        self.create(Export, exported_by=self.user, type=Export.ENTRIES)
+        self.create(Export, exported_by=self.user, type=Export.ASSESSMENTS)
+        self.create(Export, exported_by=self.user, type=Export.ASSESSMENTS)
+        self.create(Export, exported_by=self.user, type=Export.PLANNED_ASSESSMENTS)
+
+        self.authenticate()
+        response = self.client.get(f'/api/v1/exports/?type={Export.ASSESSMENTS}')
+        assert response.json()['count'] == 2
+        response = self.client.get(f'/api/v1/exports/?type={Export.ASSESSMENTS},{Export.ENTRIES}')
+        assert response.json()['count'] == 3
+
+    def test_export_filter_by_exported_at(self):
+        now = timezone.now()
+        self.update_obj(self.create(Export, exported_by=self.user), exported_at=now + relativedelta(days=+2))
+        self.update_obj(self.create(Export, exported_by=self.user), exported_at=now + relativedelta(days=+3))
+        self.update_obj(self.create(Export, exported_by=self.user), exported_at=now + relativedelta(days=+4))
+        self.update_obj(self.create(Export, exported_by=self.user), exported_at=now + relativedelta(days=-2))
+        self.update_obj(self.create(Export, exported_by=self.user), exported_at=now)
+
+        params = {'exported_at__gte': now.strftime('%Y-%m-%d%z')}
+        url = '/api/v1/exports/'
+        self.authenticate()
+        respose = self.client.get(url, params)
+        self.assert_200(respose)
+        self.assertEqual(len(respose.data['results']), 4)
 
     def test_export_filter_by_archived(self):
         self.create(Export, exported_by=self.user, is_archived=False)
