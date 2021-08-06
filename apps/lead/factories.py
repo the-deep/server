@@ -47,14 +47,12 @@ class EmmEntityFactory(DjangoModelFactory):
 
 class LeadGroupFactory(DjangoModelFactory):
     title = factory.Sequence(lambda n: f'LeadGroup-{n}')
-    project = factory.SubFactory(ProjectFactory)
 
     class Meta:
         model = LeadGroup
 
 
 class LeadEMMTriggerFactory(DjangoModelFactory):
-    lead = factory.SubFactory(LeadFactory)
     emm_keyword = factory.Sequence(lambda n: f'emm_keyword-{n}')
     emm_risk_factor = factory.Sequence(lambda n: f'emm_risk_factor-{n}')
 
