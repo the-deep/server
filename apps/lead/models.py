@@ -136,7 +136,7 @@ class Lead(UserResource, ProjectEntityMixin):
         return {
             'text': self.text,
             'url': self.url,
-            'attachment': self.attachment,
+            'attachment_id': self.attachment_id,
         }
 
     def save(self, *args, **kwargs):
@@ -149,7 +149,7 @@ class Lead(UserResource, ProjectEntityMixin):
             d2 = self.get_dict()
             if not d1 or d1.get('text') != d2.get('text') or \
                     d1.get('url') != d2.get('url') or \
-                    d1.get('attachment') != d2.get('attachment'):
+                    d1.get('attachment_id') != d2.get('attachment_id'):
                 transaction.on_commit(lambda: extract_from_lead.delay(self.id))
 
     @classmethod

@@ -794,7 +794,9 @@ class LeadTests(TestCase):
         lead4 = self.create(Lead, project=project4s)
 
         # For duplicate url validation check
-        self.create(Lead, title=lead1_title, project=project2d, source_type=Lead.SourceType.WEBSITE, url='http://example.com')
+        self.create(
+            Lead, title=lead1_title, project=project2d, source_type=Lead.SourceType.WEBSITE, url='http://example.com'
+        )
 
         # Generating Foreign elements for lead1
         self.create(LeadPreview, lead=lead1, text_extract=lead1_text_extract)
@@ -1136,8 +1138,8 @@ class LeadTests(TestCase):
         response = self.client.post(url, post_data)
         assert response.json()['count'] == 0, 'There are not supposed to be leads with entries'
 
-        entry1 = self.create(Entry, project=project, lead=lead1, controlled=True, entry_type=Entry.EXCERPT)
-        self.create(Entry, project=project, lead=lead1, controlled=True, entry_type=Entry.EXCERPT)
+        entry1 = self.create(Entry, project=project, lead=lead1, controlled=True, entry_type=Entry.TagType.EXCERPT)
+        self.create(Entry, project=project, lead=lead1, controlled=True, entry_type=Entry.TagType.EXCERPT)
 
         post_data = {'entries_filter': [('controlled', True)]}
         response = self.client.post(url, post_data)
@@ -1146,8 +1148,8 @@ class LeadTests(TestCase):
             == set([0, 0, 2]),\
             response.json()
 
-        entry2 = self.create(Entry, project=project, lead=lead2, controlled=False, entry_type=Entry.IMAGE)
-        self.create(Entry, project=project, lead=lead3, controlled=False, entry_type=Entry.DATA_SERIES)
+        entry2 = self.create(Entry, project=project, lead=lead2, controlled=False, entry_type=Entry.TagType.IMAGE)
+        self.create(Entry, project=project, lead=lead3, controlled=False, entry_type=Entry.TagType.DATA_SERIES)
         post_data = {
             'custom_filters': 'exclude_empty_filtered_entries',
             'entries_filter': [('controlled', True)]
@@ -1158,7 +1160,7 @@ class LeadTests(TestCase):
         assert response.json()['results'][0]['filteredEntriesCount'] == 2, response.json()
 
         post_data['entries_filter'] = []
-        post_data['entries_filter'].append(('entry_type', [Entry.EXCERPT, Entry.IMAGE]))
+        post_data['entries_filter'].append(('entry_type', [Entry.TagType.EXCERPT, Entry.TagType.IMAGE]))
         response = self.client.post(url, post_data)
         self.assertEqual(response.json()['count'], 2, response.json())
         # there should be 1 image entry and 2 excerpt entries
@@ -1555,7 +1557,7 @@ class LeadTests(TestCase):
         )
 
         # test for the search field `title`
-        url = f'/api/v1/lead-groups/?search=test1'
+        url = '/api/v1/lead-groups/?search=test1'
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
