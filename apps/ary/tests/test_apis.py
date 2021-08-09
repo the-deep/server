@@ -272,7 +272,8 @@ class AssessmentTests(TestCase):
         for project, _, new_ary_count in ary_stats:
             current_ary_count = Assessment.objects.filter(project_id=project.pk).count()
             # assert new_ary_count == current_ary_count, f'Project: {project.title} Assessment new count is different'
-            assert new_ary_count == current_ary_count, f'Project: {project.title} {project.pk} Assessment new count is different'
+            assert new_ary_count == current_ary_count,\
+                f'Project: {project.title} {project.pk} Assessment new count is different'
 
     def test_filter_assessment(self):
         now = timezone.now()
@@ -289,7 +290,7 @@ class AssessmentTests(TestCase):
         self.update_obj(self.create(Assessment, lead=lead4, project=project), created_at=now)
 
         params = {'created_at__gte': now.strftime('%Y-%m-%d%z')}
-        url = f'/api/v1/assessments/'
+        url = '/api/v1/assessments/'
         self.authenticate()
         respose = self.client.get(url, params)
         self.assert_200(respose)

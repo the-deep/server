@@ -151,8 +151,7 @@ class TestGeoAreaApi(TestCase):
         admin_level2 = self.create(AdminLevel, region=region)
         admin_level3 = self.create(AdminLevel, region=region1)
         geo_area1 = self.create(GeoArea, admin_level=admin_level1, title='me')
-        self.create(GeoArea, admin_level=admin_level2,
-                                parent=geo_area1)
+        self.create(GeoArea, admin_level=admin_level2, parent=geo_area1)
         self.create(GeoArea, admin_level=admin_level3)
 
         url = f'/api/v1/projects/{project.id}/geo-area/'
@@ -162,9 +161,7 @@ class TestGeoAreaApi(TestCase):
         self.assert_200(response)
         self.assertEqual(response.data['count'], 2)
         # test for the label
-        self.assertEqual(response.data['results'][0]['label'],
-                         '{}/{}'.format(admin_level1.title,
-                                          geo_area1.title))
+        self.assertEqual(response.data['results'][0]['label'], '{}/{}'.format(admin_level1.title, geo_area1.title))
 
         # test for the not project member
         self.authenticate(user2)
@@ -185,7 +182,8 @@ class TestGeoAreaApi(TestCase):
         self.assert_200(response)
         self.assertEqual(response.data['count'], 1)
 
-        url = f'/api/v1/projects/{project.id}/geo-area/?label=acd'  # passing the label that is not either region or geoarea title
+        # Passing the label that is not either region or geoarea title
+        url = f'/api/v1/projects/{project.id}/geo-area/?label=acd'
         self.authenticate(user1)
         response = self.client.get(url)
         self.assert_200(response)

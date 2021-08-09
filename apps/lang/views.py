@@ -16,7 +16,7 @@ class LanguageViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None, version=None):
         code = pk
         languages = settings.LANGUAGES
-        language = next((l for l in languages if l[0] == code), None)
+        language = next((_lang for _lang in languages if _lang[0] == code), None)
 
         def get_links(collection):
             return collection.links.filter(language=code)
@@ -26,8 +26,8 @@ class LanguageViewSet(viewsets.ViewSet):
             'title': language[1],
             'strings': String.objects.filter(language=code),
             'links': {
-                l.key: get_links(l)
-                for l in LinkCollection.objects.all()
+                link_collection.key: get_links(link_collection)
+                for link_collection in LinkCollection.objects.all()
             },
         }
 
@@ -35,8 +35,11 @@ class LanguageViewSet(viewsets.ViewSet):
 
     def list(self, request, version=None):
         languages = [
-            {'code': l[0], 'title': l[1]}
-            for l in settings.LANGUAGES
+            {
+                'code': _lang[0],
+                'title': _lang[1],
+            }
+            for _lang in settings.LANGUAGES
         ]
         serializer = LanguageSerializer(
             languages,

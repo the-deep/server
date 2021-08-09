@@ -1,9 +1,8 @@
-from django.db import models, transaction
+from django.db import models
 from django.dispatch import receiver
 
 from user.models import User
 from project.models import (
-    Project,
     ProjectMembership,
     ProjectUserGroupMembership,
     ProjectJoinRequest,

@@ -14,7 +14,6 @@ from entry.models import (
     # Entry Group
     ProjectEntryLabel,
     LeadEntryGroup,
-    EntryGroupLabel,
 )
 
 

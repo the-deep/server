@@ -1,5 +1,3 @@
-import graphene
-
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination

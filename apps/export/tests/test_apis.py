@@ -1,5 +1,3 @@
-from django.core.cache import cache
-
 from deep.tests import TestCase
 from project.models import Project
 from export.models import Export

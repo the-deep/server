@@ -140,7 +140,7 @@ class OrganizationAdmin(admin.ModelAdmin):
             object_id=object.pk,
             object_repr=object_repr,
             action_flag=CHANGE,
-            change_message=f'Merged organization',
+            change_message='Merged organization',
         )
 
     def get_merged_objects(self, objs, request):
