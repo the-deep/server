@@ -14,10 +14,22 @@ from rest_framework import serializers
 from utils.graphene.error_types import mutation_is_not_valid
 # from utils.common import to_camelcase
 # from deep.enums import ENUM_TO_GRAPHENE_ENUM_MAP
+from deep.serializers import IntegerIDField
 from deep.permissions import (
     ProjectPermissions as PP,
     AnalysisFrameworkPermissions as AfP,
 )
+
+
+@get_graphene_type_from_serializer_field.register(serializers.ManyRelatedField)
+def convert_serializer_field_to_many_related_id(field):
+    return (graphene.List, graphene.NonNull(graphene.ID))
+
+
+@get_graphene_type_from_serializer_field.register(serializers.PrimaryKeyRelatedField)
+@get_graphene_type_from_serializer_field.register(IntegerIDField)
+def convert_serializer_field_to_id(field):
+    return graphene.ID
 
 
 @get_graphene_type_from_serializer_field.register(serializers.ListSerializer)

@@ -7,7 +7,7 @@ from snapshottest import Snapshot
 
 snapshots = Snapshot()
 
-snapshots['TestLeadBulkMutationSchema::test_lead_bulk 1'] = {
+snapshots['TestLeadBulkMutationSchema::test_lead_bulk success'] = {
     'errors': [
         None,
         None,
@@ -36,12 +36,12 @@ snapshots['TestLeadBulkMutationSchema::test_lead_bulk 1'] = {
         },
         None,
         {
-            'clientId': None,
+            'clientId': '1',
             'id': '1',
             'title': 'Lead title 3'
         },
         {
-            'clientId': None,
+            'clientId': '2',
             'id': '2',
             'title': 'Lead title 4'
         }

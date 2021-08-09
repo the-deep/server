@@ -22,17 +22,14 @@ from organization.models import OrganizationType
 
 # We don't use UserResourceFilterSet since created_at and modified_at
 # are overridden below
-class EntryFilterMixin(django_filters.filterset.BaseFilterSet):
+class EntryFilterMixin(django_filters.filterset.FilterSet):
     """
     Entry filter set
     Basic filtering with lead, excerpt, lead title and dates
     """
-    RESOLVED = 'resolved'
-    UNRESOLVED = 'unresolved'
-    COMMENT_STATUS = (
-        (RESOLVED, 'Resolved'),
-        (UNRESOLVED, 'Unresolved'),
-    )
+    class CommentStatus(models.TextChoices):
+        RESOLVED = 'resolved', 'Resolved',
+        UNRESOLVED = 'unresolved', 'Unresolved',
 
     lead = django_filters.ModelMultipleChoiceFilter(
         queryset=Lead.objects.all(),
@@ -100,8 +97,7 @@ class EntryFilterMixin(django_filters.filterset.BaseFilterSet):
     )
 
     comment_status = django_filters.ChoiceFilter(
-        label='Comment Status',
-        choices=COMMENT_STATUS, method='comment_status_filter',
+        label='Comment Status', choices=CommentStatus.choices, method='comment_status_filter',
     )
     comment_assignee = django_filters.ModelMultipleChoiceFilter(
         label='Comment Assignees',
@@ -133,35 +129,13 @@ class EntryFilterMixin(django_filters.filterset.BaseFilterSet):
         queryset=OrganizationType.objects.all(),
     )
 
-    class Meta:
-        model = Entry
-        fields = {
-            **{
-                x: ['exact'] for x in [
-                    'id', 'excerpt', 'lead__title', 'created_at',
-                    'created_by', 'modified_at', 'modified_by', 'project',
-                    'verified',
-                ]
-            },
-            'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
-            # 'lead_published_on': ['exact', 'lt', 'gt', 'lte', 'gte'],
-        }
-        filter_overrides = {
-            models.CharField: {
-                'filter_class': django_filters.CharFilter,
-                'extra': lambda f: {
-                    'lookup_expr': 'icontains',
-                },
-            },
-        }
-
     def comment_status_filter(self, queryset, name, value):
-        if value == self.UNRESOLVED:
+        if value == self.CommentStatus.UNRESOLVED:
             return queryset.filter(
                 entrycomment__is_resolved=False,
                 entrycomment__parent__isnull=True,
             )
-        elif value == self.RESOLVED:
+        elif value == self.CommentStatus.RESOLVED:
             return queryset.filter(
                 entrycomment__is_resolved=True,
                 entrycomment__parent__isnull=True,
@@ -223,7 +197,27 @@ class EntryFilterMixin(django_filters.filterset.BaseFilterSet):
 
 
 class EntryFilterSet(EntryFilterMixin, django_filters.rest_framework.FilterSet):
-    pass
+    class Meta:
+        model = Entry
+        fields = {
+            **{
+                x: ['exact'] for x in [
+                    'id', 'excerpt', 'lead__title', 'created_at',
+                    'created_by', 'modified_at', 'modified_by', 'project',
+                    'verified',
+                ]
+            },
+            'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            # 'lead_published_on': ['exact', 'lt', 'gt', 'lte', 'gte'],
+        }
+        filter_overrides = {
+            models.CharField: {
+                'filter_class': django_filters.CharFilter,
+                'extra': lambda _: {
+                    'lookup_expr': 'icontains',
+                },
+            },
+        }
 
 
 class EntryCommentFilterSet(django_filters.FilterSet):

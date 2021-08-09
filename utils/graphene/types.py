@@ -17,10 +17,15 @@ from utils.graphene.options import CustomObjectTypeOptions
 
 
 class ClientIdMixin(graphene.ObjectType):
-    client_id = graphene.String()
+    client_id = graphene.String(required=True)
 
-    def resolve_client_id(root, info):
-        return getattr(root, 'client_id', root.id)
+    @staticmethod
+    def resolve_client_id(root, _):
+        # NOTE: We should always provide non-null client_id
+        client_id = getattr(root, 'client_id', None) or root.id
+        if client_id is not None:
+            return client_id
+        raise Exception("Client id shouldn't be None")
 
 
 class CustomListObjectType(ObjectType):
