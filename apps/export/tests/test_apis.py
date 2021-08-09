@@ -133,10 +133,9 @@ class ExportTests(TestCase):
         assert response.json()['count'] == 2
 
     def test_export_filter_by_type(self):
-        self.create(Export, exported_by=self.user, type=Export.ENTRIES)
-        self.create(Export, exported_by=self.user, type=Export.ASSESSMENTS)
-        self.create(Export, exported_by=self.user, type=Export.ASSESSMENTS)
-        self.create(Export, exported_by=self.user, type=Export.PLANNED_ASSESSMENTS)
+        types = [Export.ENTRIES, Export.ASSESSMENTS, Export.ASSESSMENTS, Export.PLANNED_ASSESSMENTS]
+        for type in types:
+            self.create(Export, exported_by=self.user, type=type)
 
         self.authenticate()
         response = self.client.get(f'/api/v1/exports/?type={Export.ASSESSMENTS}')
@@ -146,10 +145,9 @@ class ExportTests(TestCase):
 
     def test_export_filter_by_exported_at(self):
         now = timezone.now()
-        self.update_obj(self.create(Export, exported_by=self.user), exported_at=now + relativedelta(days=+2))
-        self.update_obj(self.create(Export, exported_by=self.user), exported_at=now + relativedelta(days=+3))
-        self.update_obj(self.create(Export, exported_by=self.user), exported_at=now + relativedelta(days=+4))
-        self.update_obj(self.create(Export, exported_by=self.user), exported_at=now + relativedelta(days=-2))
+        days = [2, 3, 4, -2]
+        for day in days:
+            self.update_obj(self.create(Export, exported_by=self.user), exported_at=now + relativedelta(days=day))
         self.update_obj(self.create(Export, exported_by=self.user), exported_at=now)
 
         params = {'exported_at__gte': now.strftime('%Y-%m-%d%z')}
