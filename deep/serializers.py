@@ -161,3 +161,11 @@ class TempClientIdMixin(serializers.ModelSerializer):
         if temp_client_id:
             instance.client_id = temp_client_id
         return instance
+
+
+class IntegerIDField(serializers.IntegerField):
+    """
+    This field is created to override the graphene conversion of the integerfield
+    check out utils/graphene/mutation.py
+    """
+    pass

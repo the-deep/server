@@ -5,7 +5,7 @@ from rest_framework import serializers, exceptions
 from drf_writable_nested.serializers import WritableNestedModelSerializer
 from django.db.models import Q
 
-from deep.serializers import RemoveNullFieldsMixin, TempClientIdMixin
+from deep.serializers import RemoveNullFieldsMixin, TempClientIdMixin, IntegerIDField
 from user_resource.serializers import UserResourceSerializer
 from questionnaire.serializers import FrameworkQuestionSerializer
 from user.models import User, Feature
@@ -299,6 +299,8 @@ class AfWidgetLimit():
 
 
 class WidgetGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
+    id = IntegerIDField(required=False)
+
     class Meta:
         model = Widget
         fields = (
@@ -309,6 +311,7 @@ class WidgetGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
 
 # TODO: Using WritableNestedModelSerializer here, let's use this everywhere instead of using custom serializer.
 class SectionGqlSerializer(TempClientIdMixin, WritableNestedModelSerializer):
+    id = IntegerIDField(required=False)
     widgets = WidgetGqlSerializer(source='widget_set', many=True, required=False)
 
     class Meta:
@@ -325,13 +328,18 @@ class SectionGqlSerializer(TempClientIdMixin, WritableNestedModelSerializer):
         return items
 
 
-class AnalysisFrameworkGqlSerializer(TempClientIdMixin, UserResourceSerializer):
+class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
     primary_tagging = SectionGqlSerializer(source='section_set', many=True, required=False)
     secondary_tagging = WidgetGqlSerializer(many=True, write_only=False, required=False)
+    client_id = None  # Inherited from UserResourceSerializer
 
     class Meta:
         model = AnalysisFramework
-        fields = ('__all__')
+        fields = (
+            'title', 'description', 'is_private', 'members', 'properties', 'organization', 'preview_image',
+            'created_at', 'created_by', 'modified_at', 'modified_by',
+            'primary_tagging', 'secondary_tagging',
+        )
 
     def validate_is_private(self, value):
         # Changing AF Privacy is not allowed (Existing AF)
@@ -373,7 +381,6 @@ class AnalysisFrameworkGqlSerializer(TempClientIdMixin, UserResourceSerializer):
     def _save_secondary_taggings(self, af, secondary_tagging):
         # Create secondary tagging widgets (Primary/Section widgets are created using WritableNestedModelSerializer)
         for widget_data in secondary_tagging:
-            widget_data.pop('client_id', None)  # Temporary field from TempClientIdMixin
             id = widget_data.get('id')
             widget = None
             if id:
@@ -415,6 +422,7 @@ class AnalysisFrameworkGqlSerializer(TempClientIdMixin, UserResourceSerializer):
 
 
 class AnalysisFrameworkMembershipGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
+    id = IntegerIDField(required=False)
     role = serializers.PrimaryKeyRelatedField(required=False, queryset=AnalysisFrameworkRole.objects.all())
 
     class Meta:
