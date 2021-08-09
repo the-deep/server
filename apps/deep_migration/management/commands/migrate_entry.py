@@ -131,10 +131,10 @@ class Command(MigrationCommand):
 
         if data.get('excerpt'):
             entry.excerpt = data['excerpt']
-            entry.entry_type = Entry.EXCERPT
+            entry.entry_type = Entry.TagType.EXCERPT
         elif data.get('image'):
             entry.image_raw = data['image']
-            entry.entry_type = Entry.IMAGE
+            entry.entry_type = Entry.TagType.IMAGE
 
         entry.created_by = get_user(entry_data['created_by'])
         entry.modified_by = entry.created_by

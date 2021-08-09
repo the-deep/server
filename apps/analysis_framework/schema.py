@@ -42,11 +42,12 @@ class SectionType(ClientIdMixin, DjangoObjectType):
         return info.context.dl.analysis_framework.sections_widgets.load(root.id)
 
 
+# NOTE: We have AnalysisFrameworkDetailType for detailed AF Type.
 class AnalysisFrameworkType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = AnalysisFramework
         only_fields = (
-            'id', 'title', 'description', 'is_private',
+            'id', 'title', 'description', 'is_private', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
             'client_id',
         )
@@ -99,7 +100,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
         model = AnalysisFramework
         skip_registry = True
         only_fields = (
-            'id', 'title', 'description', 'is_private',
+            'id', 'title', 'description', 'is_private', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
             'client_id',
         )

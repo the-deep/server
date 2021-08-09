@@ -369,13 +369,13 @@ class ExcelExporter:
         return get_hyperlink(link, field.title)
 
     def get_entry_data(self, entry):
-        if entry.entry_type == Entry.EXCERPT:
+        if entry.entry_type == Entry.TagType.EXCERPT:
             return entry.excerpt
 
-        if entry.entry_type == Entry.IMAGE:
+        if entry.entry_type == Entry.TagType.IMAGE:
             return entry.get_image_url()
 
-        if entry.entry_type == Entry.DATA_SERIES:
+        if entry.entry_type == Entry.TagType.DATA_SERIES:
             try:
                 return self.get_data_series(entry)
             except Exception:

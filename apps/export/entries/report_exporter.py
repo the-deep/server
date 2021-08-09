@@ -527,7 +527,7 @@ class ReportExporter:
 
         # Excerpt can also be image
         excerpt = (
-            entry.excerpt if entry.entry_type == Entry.EXCERPT
+            entry.excerpt if entry.entry_type == Entry.TagType.EXCERPT
             else ''
         )
         para.add_run(excerpt)
@@ -549,10 +549,10 @@ class ReportExporter:
 
         image = None
         image_text = None
-        if entry.entry_type == Entry.IMAGE:
+        if entry.entry_type == Entry.TagType.IMAGE:
             image = (entry.image and entry.image.file) or entry.image_raw
             # para.add_run().add_image(entry.image_raw)
-        elif entry.entry_type == Entry.DATA_SERIES and entry.tabular_field:
+        elif entry.entry_type == Entry.TagType.DATA_SERIES and entry.tabular_field:
             image = viz_renderer.get_entry_image(entry)
             h_stats = (entry.tabular_field.cache or {}).get('health_stats', {})
 
