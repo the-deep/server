@@ -29,7 +29,10 @@ jobs:
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.ref }}
+          # TODO: Remove this later (${{ runner.os }}-buildx-refs/pull/887/merge)
           restore-keys: |
+            ${{ runner.os }}-buildx-refs/pull/887/merge
+            ${{ runner.os }}-buildx-refs/develop
             ${{ runner.os }}-buildx-
 
       - name: 🐳 Build image
