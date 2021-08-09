@@ -67,7 +67,7 @@ class EntryTests(TestCase):
         )
 
         entry = self.create_entry(
-            tabular_field=field, entry_type=Entry.DATA_SERIES
+            tabular_field=field, entry_type=Entry.TagType.DATA_SERIES
         )
         return entry, field
 
@@ -112,14 +112,14 @@ class EntryTests(TestCase):
     def test_filter_entries_by_type(self):
         lead = self.create_lead()
 
-        self.create_entry(lead=lead, entry_type=Entry.EXCERPT)
-        self.create_entry(lead=lead, entry_type=Entry.IMAGE)
-        self.create_entry(lead=lead, entry_type=Entry.DATA_SERIES)
+        self.create_entry(lead=lead, entry_type=Entry.TagType.EXCERPT)
+        self.create_entry(lead=lead, entry_type=Entry.TagType.IMAGE)
+        self.create_entry(lead=lead, entry_type=Entry.TagType.DATA_SERIES)
 
         self.authenticate()
-        self.post_filter_test({'entry_type': [Entry.EXCERPT, Entry.IMAGE]}, Entry.objects.filter(entry_type__in=[Entry.EXCERPT, Entry.IMAGE]).count())  # noqa: E501
-        self.post_filter_test({'entry_type': [Entry.EXCERPT]}, Entry.objects.filter(entry_type__in=[Entry.EXCERPT]).count())
-        self.post_filter_test({'entry_type': [Entry.IMAGE, Entry.DATA_SERIES]}, Entry.objects.filter(entry_type__in=[Entry.IMAGE, Entry.DATA_SERIES]).count())  # noqa: E501
+        self.post_filter_test({'entry_type': [Entry.TagType.EXCERPT, Entry.TagType.IMAGE]}, Entry.objects.filter(entry_type__in=[Entry.TagType.TagType.EXCERPT, Entry.TagType.IMAGE]).count())  # noqa: E501
+        self.post_filter_test({'entry_type': [Entry.TagType.EXCERPT]}, Entry.objects.filter(entry_type__in=[Entry.TagType.EXCERPT]).count())
+        self.post_filter_test({'entry_type': [Entry.TagType.IMAGE, Entry.TagType.DATA_SERIES]}, Entry.objects.filter(entry_type__in=[Entry.TagType.IMAGE, Entry.TagType.DATA_SERIES]).count())  # noqa: E501
 
     def test_search_filter_entry_group_label(self):
         lead = self.create_lead()

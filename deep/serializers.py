@@ -134,27 +134,30 @@ class WriteOnlyOnCreateSerializerMixin():
 
 class TempClientIdMixin(serializers.ModelSerializer):
     """
-    ClientId for serializer level only, not storing to the database.
+    ClientId for serializer level only, storing to database is optional (if field exists).
     """
     client_id = serializers.CharField(required=False)
 
     def _get_temp_client_id(self, validated_data):
         try:
             self.Meta.model._meta.get_field('client_id')
+            # We return None here if Model have a field `client_id`
             return None
         except FieldDoesNotExist:
+            # We remove `client_id` from validated_data and return temp client_id
+            # If we don't remove `client_id` from validated_data, then serializer will throw error on update/create
             return validated_data.pop('client_id', None)
 
     def create(self, validated_data):
-        client_id = self._get_temp_client_id(validated_data)
+        temp_client_id = self._get_temp_client_id(validated_data)
         instance = super().create(validated_data)
-        if client_id:
-            instance.client_id = client_id
+        if temp_client_id:
+            instance.client_id = temp_client_id
         return instance
 
     def update(self, instance, validated_data):
-        client_id = self._get_temp_client_id(validated_data)
+        temp_client_id = self._get_temp_client_id(validated_data)
         instance = super().update(instance, validated_data)
-        if client_id:
-            instance.client_id = client_id
+        if temp_client_id:
+            instance.client_id = temp_client_id
         return instance

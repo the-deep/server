@@ -10,6 +10,7 @@ from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import ProjectPermissions as PP
 from organization.schema import OrganizationType
 from user.models import User
+
 from user.schema import UserType
 
 from .models import (
@@ -130,6 +131,7 @@ class LeadGroupListType(CustomDjangoListObjectType):
         filterset_class = []
 
 
+# LeadDetailType is defined for detailed (nested) attributes.
 class LeadType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Lead
@@ -141,7 +143,6 @@ class LeadType(ClientIdMixin, DjangoObjectType):
             'client_id',
         )
 
-    project = graphene.ID(source='project_id')
     lead_preview = graphene.Field(LeadPreviewType)
     source = graphene.Field(OrganizationType)
     authors = DjangoListField(OrganizationType)
@@ -170,6 +171,25 @@ class LeadType(ClientIdMixin, DjangoObjectType):
         return info.context.dl.lead.verified_stat.load(root.pk)
 
 
+class LeadDetailType(LeadType):
+    class Meta:
+        model = Lead
+        skip_registry = True
+        fields = (
+            'id', 'title', 'created_by', 'created_at', 'modified_by', 'modified_at',
+            'project', 'lead_group', 'assignee', 'published_on',
+            'source_type', 'priority', 'confidentiality', 'status',
+            'text', 'url', 'website', 'attachment',
+            'client_id',
+        )
+
+    entries = graphene.List(graphene.NonNull('entry.schema.EntryType'))
+
+    @staticmethod
+    def resolve_entries(root, info, **kwargs):
+        return root.entry_set.all()
+
+
 class LeadListType(CustomDjangoListObjectType):
     class Meta:
         model = Lead
@@ -177,7 +197,7 @@ class LeadListType(CustomDjangoListObjectType):
 
 
 class Query:
-    lead = DjangoObjectField(LeadType)
+    lead = DjangoObjectField(LeadDetailType)
     leads = DjangoPaginatedListObjectField(
         LeadListType,
         pagination=PageGraphqlPagination(
