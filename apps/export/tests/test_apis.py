@@ -1,7 +1,6 @@
 from dateutil.relativedelta import relativedelta
 
 from django.utils import timezone
-from django.core.cache import cache
 
 from deep.tests import TestCase
 from project.models import Project

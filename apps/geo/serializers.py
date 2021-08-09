@@ -134,8 +134,11 @@ class GeoAreaSerializer(serializers.ModelSerializer):
     region_title = serializers.CharField()
     admin_level_level = serializers.CharField()
     admin_level_title = serializers.CharField()
+
     class Meta:
         model = GeoArea
-        fields = ['key', 'label', 'region', 'title',
-                  'region_title', 'admin_level_level', 'admin_level_title',
-                  'parent']
+        fields = (
+            'key', 'label', 'region', 'title',
+            'region_title', 'admin_level_level', 'admin_level_title',
+            'parent'
+        )

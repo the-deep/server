@@ -393,7 +393,9 @@ def make_colormap(seq):
 def excel_to_python_date_format(excel_format):
     # TODO: support all formats
     # First replace excel's locale identifiers such as [$-409] by empty string
-    python_format = re.sub('(\[\\$-\d+\])', '', excel_format.upper()).\
+    python_format = re.sub(
+        '(\[\\$-\d+\])', '', excel_format.upper()  # noqa: W605
+    ).\
         replace('\\', '').\
         replace('YYYY', '%Y').\
         replace('YY', '%y').\

@@ -239,8 +239,10 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(
             response.data['errors']['analytical_statements'][0]['analytical_entries'][0]['entry'][0],
             ErrorDetail(
-                string=f'Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis.end_date.date()}'
-                , code='invalid'
+                string=(
+                    f'Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis.end_date.date()}'
+                ),
+                code='invalid',
             ),
         )
 

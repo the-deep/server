@@ -48,7 +48,6 @@ from entry.models import Entry
 from entry.views import ComprehensiveEntriesViewSet
 from analysis.models import (
     Analysis,
-    AnalyticalStatement,
     AnalyticalStatementEntry,
     DiscardedEntry
 )

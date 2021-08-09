@@ -73,8 +73,8 @@ class Analysis(UserResource, ProjectEntityMixin):
         analysis_cloned.save()
         # Clone pillars
         cloned_pillars = [
-           _get_clone_pillar(analysis_pillar, analysis_cloned.pk)
-           for analysis_pillar in self.analysispillar_set.all()
+            _get_clone_pillar(analysis_pillar, analysis_cloned.pk)
+            for analysis_pillar in self.analysispillar_set.all()
         ]
         cloned_pillar_id_map = {
             pillar.cloned_from_id: pillar.id
@@ -112,7 +112,7 @@ class Analysis(UserResource, ProjectEntityMixin):
                 cloned_statement_id_map[statement_entry.analytical_statement_id],  # Use newly cloned statement id
             )
             for statement_entry in AnalyticalStatementEntry.objects.filter(
-               analytical_statement__analysis_pillar__analysis=self
+                analytical_statement__analysis_pillar__analysis=self
             )
         ]
         AnalyticalStatementEntry.objects.bulk_create(cloned_statement_entries)
