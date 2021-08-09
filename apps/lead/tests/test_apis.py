@@ -794,7 +794,9 @@ class LeadTests(TestCase):
         lead4 = self.create(Lead, project=project4s)
 
         # For duplicate url validation check
-        self.create(Lead, title=lead1_title, project=project2d, source_type=Lead.SourceType.WEBSITE, url='http://example.com')
+        self.create(
+            Lead, title=lead1_title, project=project2d, source_type=Lead.SourceType.WEBSITE, url='http://example.com'
+        )
 
         # Generating Foreign elements for lead1
         self.create(LeadPreview, lead=lead1, text_extract=lead1_text_extract)
@@ -1138,8 +1140,7 @@ class LeadTests(TestCase):
 
         entry1 = self.create(Entry, project=project, lead=lead1, verified=True,
                              entry_type=Entry.TagType.EXCERPT)
-        entry11 = self.create(Entry, project=project, lead=lead1, verified=True,
-                              entry_type=Entry.TagType.EXCERPT)
+        self.create(Entry, project=project, lead=lead1, verified=True, entry_type=Entry.TagType.EXCERPT)
         post_data = {'entries_filter': [('verified', True)]}
         response = self.client.post(url, post_data)
         assert response.json()['count'] == 3
@@ -1148,8 +1149,7 @@ class LeadTests(TestCase):
 
         entry2 = self.create(Entry, project=project, lead=lead2, verified=False,
                              entry_type=Entry.TagType.IMAGE)
-        entry3 = self.create(Entry, project=project, lead=lead3, verified=False,
-                             entry_type=Entry.TagType.DATA_SERIES)
+        self.create(Entry, project=project, lead=lead3, verified=False, entry_type=Entry.TagType.DATA_SERIES)
         post_data = {'custom_filters': 'exclude_empty_filtered_entries',
                      'entries_filter': [('verified', True)]}
         response = self.client.post(url, post_data)
@@ -1170,8 +1170,7 @@ class LeadTests(TestCase):
                              color='#23f23a')
         label2 = self.create(ProjectEntryLabel, project=project, title='Label 2', order=2,
                              color='#23f23a')
-        label3 = self.create(ProjectEntryLabel, project=project, title='Label 3', order=3,
-                             color='#23f23a')
+        self.create(ProjectEntryLabel, project=project, title='Label 3', order=3, color='#23f23a')
 
         # Groups
         group11 = self.create(LeadEntryGroup, lead=lead1, title='Group 1', order=1)
@@ -1558,7 +1557,7 @@ class LeadTests(TestCase):
         )
 
         # test for the search field `title`
-        url = f'/api/v1/lead-groups/?search=test1'
+        url = '/api/v1/lead-groups/?search=test1'
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
