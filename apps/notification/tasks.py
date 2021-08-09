@@ -46,7 +46,10 @@ def send_entry_review_comment_email(user_id, comment_id, notification_type):
     )
 
 
-def send_notifications_for_commit(comment_pk, meta):
+def send_notifications_for_comment(comment_pk, meta):
+    """
+    This is for new Entry Review Comment
+    """
     comment = EntryReviewComment.objects.get(pk=comment_pk)
 
     text_changed = meta.pop('text_changed')

@@ -8,7 +8,7 @@ from project.serializers import ProjectNotificationSerializer
 from entry.models import Entry
 from project.models import ProjectMembership
 from notification.models import Notification
-from notification.tasks import send_notifications_for_commit
+from notification.tasks import send_notifications_for_comment
 
 from .models import (
     EntryReviewComment,
@@ -137,7 +137,7 @@ class EntryReviewCommentSerializer(serializers.ModelSerializer):
         if text and text_changed:
             self._add_comment_text(instance, text)
         transaction.on_commit(
-            lambda: send_notifications_for_commit(instance.pk, notify_meta)
+            lambda: send_notifications_for_comment(instance.pk, notify_meta)
         )
         return instance
 
