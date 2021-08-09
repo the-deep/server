@@ -102,6 +102,24 @@ exclude = [
 reportMissingImports = true
 reportMissingTypeStubs = false
 
+[tool.black]
+line-length = 125
+py36 = true
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | docs
+)/
+'''
+extend-exclude = '^.*\b(migrations)\b.*$'
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

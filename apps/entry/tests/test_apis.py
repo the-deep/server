@@ -117,9 +117,24 @@ class EntryTests(TestCase):
         self.create_entry(lead=lead, entry_type=Entry.TagType.DATA_SERIES)
 
         self.authenticate()
-        self.post_filter_test({'entry_type': [Entry.TagType.EXCERPT, Entry.TagType.IMAGE]}, Entry.objects.filter(entry_type__in=[Entry.TagType.TagType.EXCERPT, Entry.TagType.IMAGE]).count())  # noqa: E501
-        self.post_filter_test({'entry_type': [Entry.TagType.EXCERPT]}, Entry.objects.filter(entry_type__in=[Entry.TagType.EXCERPT]).count())
-        self.post_filter_test({'entry_type': [Entry.TagType.IMAGE, Entry.TagType.DATA_SERIES]}, Entry.objects.filter(entry_type__in=[Entry.TagType.IMAGE, Entry.TagType.DATA_SERIES]).count())  # noqa: E501
+        self.post_filter_test(
+            # Filter
+            {'entry_type': [Entry.TagType.EXCERPT, Entry.TagType.IMAGE]},
+            # Count
+            Entry.objects.filter(entry_type__in=[Entry.TagType.EXCERPT, Entry.TagType.IMAGE]).count()
+        )
+        self.post_filter_test(
+            # Filter
+            {'entry_type': [Entry.TagType.EXCERPT]},
+            # Count
+            Entry.objects.filter(entry_type__in=[Entry.TagType.EXCERPT]).count()
+        )
+        self.post_filter_test(
+            # Filter
+            {'entry_type': [Entry.TagType.IMAGE, Entry.TagType.DATA_SERIES]},
+            # Count
+            Entry.objects.filter(entry_type__in=[Entry.TagType.IMAGE, Entry.TagType.DATA_SERIES]).count()
+        )
 
     def test_search_filter_entry_group_label(self):
         lead = self.create_lead()

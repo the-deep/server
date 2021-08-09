@@ -223,7 +223,6 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                   description
                   currentUserRole
                   title
-                  clientId
                   primaryTagging {
                     id
                     order
@@ -257,7 +256,6 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         self.organization1 = OrganizationFactory.create()
         self.invalid_minput = dict(
             title='',
-            clientId='af-client-101',
             description='Af description',
             isPrivate=False,
             organization=str(self.organization1.id),
@@ -334,7 +332,6 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
 
         self.valid_minput = dict(
             title='AF (TEST)',
-            clientId='af-client-101',
             description='Af description',
             isPrivate=False,
             organization=str(self.organization1.id),
@@ -441,7 +438,6 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                       description
                       currentUserRole
                       title
-                      clientId
                       primaryTagging {
                         id
                         order
@@ -504,11 +500,11 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         new_af_response['title'] = 'Updated AF (TEST)'
         new_af_response['description'] = 'Updated Af description'
         new_af_response['primaryTagging'][0]['title'] = 'Updated Section 102'
-        new_af_response['primaryTagging'][0]['widgets'][0]['id'] = None  # Remove/Create a widget
+        new_af_response['primaryTagging'][0]['widgets'][0].pop('id')  # Remove/Create a widget
         new_af_response['primaryTagging'][0]['widgets'][1]['title'] = 'Updated-Section-2-Text-101'  # Remove a widget
-        new_af_response['primaryTagging'][1]['id'] = None  # Remove/Create second ordered section (but use current widgets)
+        new_af_response['primaryTagging'][1].pop('id')  # Remove/Create second ordered section (but use current widgets)
         new_af_response['secondaryTagging'].pop(0)  # Remove another widget
-        new_af_response['secondaryTagging'][0]['id'] = None  # Remove/Create another widget
+        new_af_response['secondaryTagging'][0].pop('id')  # Remove/Create another widget
         # ----------------- Let's try to update
         response = _query_check(new_af_id, new_af_response, okay=True)
         self.assertMatchSnapshot(response, 'success')
@@ -663,7 +659,6 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
 
         minput = dict(
             title='AF (TEST)',
-            clientId='af-client-101',
             primaryTagging=[
                 dict(
                     title=f'Section {i}',

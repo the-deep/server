@@ -7,6 +7,7 @@ from rest_framework import serializers
 from deep.serializers import (
     RemoveNullFieldsMixin,
     TempClientIdMixin,
+    IntegerIDField,
     URLCachedFileField,
     IdListField,
     StringListField,
@@ -388,6 +389,7 @@ class LeadGqSerializer(TempClientIdMixin, UserResourceSerializer):
     """
     Lead Model Serializer for Graphql (NOTE: Don't use this on DRF Views)
     """
+    id = IntegerIDField(required=False)
     # TODO: Make assigne Foreign key from M2M Field
     assignee = SingleValueThayMayBeListField(required=False)
     # NOTE: Right now this is send to client through connector and then return back to server (Only needed on create)
