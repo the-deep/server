@@ -24,6 +24,6 @@ class Command(BaseCommand):
         print('\nNOTE: that only 50 leads will be classified at a time.\n')
 
         for i, lead in enumerate(leads):
-            print('Classifying lead', lead.id, 'Lead Count:', i+1) 
+            print('Classifying lead', lead.id, 'Lead Count:', i + 1)
             classify_lead(lead)
             print('Complete!!\n')

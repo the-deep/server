@@ -1,4 +1,7 @@
-from os.path import (join, isfile)
+from os.path import (
+    join,
+    # isfile,
+)
 import json
 import logging
 

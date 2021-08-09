@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 
 from connector.models import ConnectorSource
 from connector.sources.store import source_store
-from utils.common import replace_ns, kebabcase_to_titlecase
+from utils.common import kebabcase_to_titlecase
 
 
 class Command(BaseCommand):

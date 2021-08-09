@@ -21,17 +21,6 @@ from deep.permissions import (
 )
 
 
-@get_graphene_type_from_serializer_field.register(serializers.ManyRelatedField)
-def convert_serializer_field_to_many_related_id(field):
-    return (graphene.List, graphene.NonNull(graphene.ID))
-
-
-@get_graphene_type_from_serializer_field.register(serializers.PrimaryKeyRelatedField)
-@get_graphene_type_from_serializer_field.register(IntegerIDField)
-def convert_serializer_field_to_id(field):
-    return graphene.ID
-
-
 @get_graphene_type_from_serializer_field.register(serializers.ListSerializer)
 def convert_list_serializer_to_field(field):
     child_type = get_graphene_type_from_serializer_field(field.child)
@@ -50,6 +39,7 @@ def convert_serializer_field_to_many_related_id(field):
 
 
 @get_graphene_type_from_serializer_field.register(serializers.PrimaryKeyRelatedField)
+@get_graphene_type_from_serializer_field.register(IntegerIDField)
 # @get_graphene_type_from_serializer_field.register(IntegerIDField)
 def convert_serializer_field_to_id(field):
     return graphene.ID

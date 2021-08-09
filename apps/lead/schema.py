@@ -246,21 +246,21 @@ class Query:
     @staticmethod
     def resolve_emm_keywords(root, info, **kwargs):
         return LeadEMMTrigger.objects.filter(
-                lead__project=info.context.active_project
-            ).values('emm_keyword').annotate(
-                total_count=models.Sum('count'),
-                key=models.F('emm_keyword'),
-                label=models.F('emm_keyword')
-            ).order_by('emm_keyword')
+            lead__project=info.context.active_project
+        ).values('emm_keyword').annotate(
+            total_count=models.Sum('count'),
+            key=models.F('emm_keyword'),
+            label=models.F('emm_keyword')
+        ).order_by('emm_keyword')
 
     @staticmethod
     def resolve_emm_risk_factors(root, info, **kwargs):
         return LeadEMMTrigger.objects.filter(
-                ~models.Q(emm_risk_factor=''),
-                ~models.Q(emm_risk_factor=None),
-                lead__project=info.context.active_project,
-            ).values('emm_risk_factor').annotate(
-                total_count=models.Sum('count'),
-                key=models.F('emm_risk_factor'),
-                label=models.F('emm_risk_factor'),
-            ).order_by('emm_risk_factor')
+            ~models.Q(emm_risk_factor=''),
+            ~models.Q(emm_risk_factor=None),
+            lead__project=info.context.active_project,
+        ).values('emm_risk_factor').annotate(
+            total_count=models.Sum('count'),
+            key=models.F('emm_risk_factor'),
+            label=models.F('emm_risk_factor'),
+        ).order_by('emm_risk_factor')
