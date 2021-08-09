@@ -391,8 +391,8 @@ class TestUserSchema(GraphQLTestCase):
         feature2.users.add(user)
         content = self.query_check(query)
         self.assertEqual(len(content['data']['me']['accessibleFeatures']), 2, content)
-        self.assertEqual(content['data']['me']['accessibleFeatures'][0]['key'], self.genum(feature2.key), content)
-        self.assertEqual(content['data']['me']['accessibleFeatures'][1]['key'], self.genum(feature1.key), content)
+        self.assertEqual(content['data']['me']['accessibleFeatures'][0]['key'], self.genum(feature1.key), content)
+        self.assertEqual(content['data']['me']['accessibleFeatures'][1]['key'], self.genum(feature2.key), content)
 
     def test_me_only_fields(self):
         query = '''

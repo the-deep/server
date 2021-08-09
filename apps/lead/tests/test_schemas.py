@@ -7,10 +7,10 @@ from gallery.factories import FileFactory
 
 from lead.models import Lead
 from lead.factories import (
-  LeadEMMTriggerFactory,
-  LeadFactory,
-  EmmEntityFactory,
-  LeadGroupFactory
+    LeadEMMTriggerFactory,
+    LeadFactory,
+    EmmEntityFactory,
+    LeadGroupFactory
 )
 
 
@@ -265,8 +265,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
         emm_entity_3 = EmmEntityFactory.create()
 
         lead1 = LeadFactory.create(
-          project=project, emm_entities=[emm_entity_1, emm_entity_2],
-          confidentiality=Lead.Confidentiality.CONFIDENTIAL)
+            project=project, emm_entities=[emm_entity_1, emm_entity_2],
+            confidentiality=Lead.Confidentiality.CONFIDENTIAL)
         lead2 = LeadFactory.create(project=project, emm_entities=[emm_entity_1])
         lead3 = LeadFactory.create(project=project, emm_entities=[emm_entity_3])
         lead4 = LeadFactory.create(project=project2, emm_entities=[emm_entity_3])
@@ -281,8 +281,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
         content = self.query_check(query, variables={'id': project.id})
         self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 2)
         self.assertEqual(
-          set(result['id'] for result in content['data']['project']['leadGroups']['results']),
-          set([str(lead_group1.id), str(lead_group2.id)])
+            set(result['id'] for result in content['data']['project']['leadGroups']['results']),
+            set([str(lead_group1.id), str(lead_group2.id)])
         )
 
         # with different project
@@ -683,6 +683,5 @@ class TestLeadBulkMutationSchema(GraphQLSnapShotTestCase):
         # --- with login
         self.force_login(user)
         response = _query_check()['data']['project']['leadBulk']
-        return
-        self.assertMatchSnapshot(response)
+        self.assertMatchSnapshot(response, 'success')
         self.assertEqual(lead_count + 2, Lead.objects.count())
