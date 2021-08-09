@@ -1137,9 +1137,9 @@ class LeadTests(TestCase):
         assert response.json()['count'] == 0, 'There are not supposed to be leads with entries'
 
         entry1 = self.create(Entry, project=project, lead=lead1, verified=True,
-                             entry_type=Entry.EXCERPT)
+                             entry_type=Entry.TagType.EXCERPT)
         entry11 = self.create(Entry, project=project, lead=lead1, verified=True,
-                              entry_type=Entry.EXCERPT)
+                              entry_type=Entry.TagType.EXCERPT)
         post_data = {'entries_filter': [('verified', True)]}
         response = self.client.post(url, post_data)
         assert response.json()['count'] == 3
@@ -1147,9 +1147,9 @@ class LeadTests(TestCase):
             response.json()
 
         entry2 = self.create(Entry, project=project, lead=lead2, verified=False,
-                             entry_type=Entry.IMAGE)
+                             entry_type=Entry.TagType.IMAGE)
         entry3 = self.create(Entry, project=project, lead=lead3, verified=False,
-                             entry_type=Entry.DATA_SERIES)
+                             entry_type=Entry.TagType.DATA_SERIES)
         post_data = {'custom_filters': 'exclude_empty_filtered_entries',
                      'entries_filter': [('verified', True)]}
         response = self.client.post(url, post_data)
@@ -1158,7 +1158,7 @@ class LeadTests(TestCase):
         assert response.json()['results'][0]['filteredEntriesCount'] == 2, response.json()
 
         post_data['entries_filter'] = []
-        post_data['entries_filter'].append(('entry_type', [Entry.EXCERPT, Entry.IMAGE]))
+        post_data['entries_filter'].append(('entry_type', [Entry.TagType.EXCERPT, Entry.TagType.IMAGE]))
         response = self.client.post(url, post_data)
         self.assertEqual(response.json()['count'], 2, response.json())
         # there should be 1 image entry and 2 excerpt entries

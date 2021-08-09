@@ -4,6 +4,7 @@ from datetime import datetime
 from django.db import models
 from django.contrib.auth.models import User
 import django_filters
+from graphene_django.filter.filterset import GrapheneFilterSetMixin
 
 from deep.filter_set import DjangoFilterCSVWidget
 from analysis_framework.models import Filter
@@ -21,7 +22,7 @@ from organization.models import OrganizationType
 
 # We don't use UserResourceFilterSet since created_at and modified_at
 # are overridden below
-class EntryFilterSet(django_filters.rest_framework.FilterSet):
+class EntryFilterMixin(django_filters.filterset.BaseFilterSet):
     """
     Entry filter set
     Basic filtering with lead, excerpt, lead title and dates
@@ -221,6 +222,10 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
         return qs.distinct()
 
 
+class EntryFilterSet(EntryFilterMixin, django_filters.rest_framework.FilterSet):
+    pass
+
+
 class EntryCommentFilterSet(django_filters.FilterSet):
     class Meta:
         model = EntryComment
@@ -402,3 +407,10 @@ def get_created_at_filters(query_params):
         else:
             parsed_query[k] = v
     return parsed_query
+
+
+# ----------------------------- Graphql Filters ---------------------------------------
+class EntryGQFilterSet(GrapheneFilterSetMixin, EntryFilterMixin, django_filters.FilterSet):
+    class Meta:
+        model = Entry
+        fields = '__all__'

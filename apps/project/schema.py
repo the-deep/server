@@ -8,8 +8,11 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import ProjectPermissions as PP
+
 from lead.schema import Query as LeadQuery
+from entry.schema import Query as EntryQuery
 from export.schema import Query as ExportQuery
+from analysis_framework.schema import AnalysisFrameworkDetailType
 
 from .models import Project
 from .filter_set import ProjectFilterSet
@@ -53,6 +56,7 @@ class ProjectType(DjangoObjectType):
 class ProjectDetailType(
     # -- Start --Project scopped entities
     LeadQuery,
+    EntryQuery,
     ExportQuery,
     # --  End  --Project scopped entities
     ProjectType,
@@ -67,6 +71,8 @@ class ProjectDetailType(
             'is_default', 'is_private', 'is_visualization_enabled', 'status',
             'organizations', 'stats_cache',
         )
+
+    analysis_framework = graphene.Field(AnalysisFrameworkDetailType)
 
 
 class ProjectListType(CustomDjangoListObjectType):
