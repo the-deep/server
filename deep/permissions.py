@@ -240,8 +240,7 @@ class ProjectPermissions(BasePermissions):
         DELETE_LEAD = auto()
         # ---------------------- Entry
         CREATE_ENTRY = auto()
-        VIEW_ONLY_UNPROTECTED_ENTRY = auto()
-        VIEW_ALL_ENTRY = auto()
+        VIEW_ENTRY = auto()
         UPDATE_ENTRY = auto()
         DELETE_ENTRY = auto()
 
@@ -255,18 +254,17 @@ class ProjectPermissions(BasePermissions):
         Permission.UPDATE_LEAD: "You don't have permission to update lead",
         Permission.DELETE_LEAD: "You don't have permission to delete lead",
         Permission.CREATE_ENTRY: "You don't have permission to create entry",
-        Permission.VIEW_ONLY_UNPROTECTED_ENTRY: "You don't have permission to view entry",
-        Permission.VIEW_ALL_ENTRY: "You don't have permission to view confidential entry",
+        Permission.VIEW_ENTRY: "You don't have permission to view entry",
         Permission.UPDATE_ENTRY: "You don't have permission to update entry",
         Permission.DELETE_ENTRY: "You don't have permission to delete entry",
     }
 
     VIEWER_NON_CONFIDENTIAL = [
-        Permission.VIEW_ONLY_UNPROTECTED_ENTRY,
+        Permission.VIEW_ENTRY,
         Permission.VIEW_ONLY_UNPROTECTED_LEAD,
     ]
     VIEWER = [
-        Permission.VIEW_ALL_ENTRY,
+        Permission.VIEW_ENTRY,
         Permission.VIEW_ALL_LEAD,
     ]
     READER_NON_CONFIDENTIAL = [

@@ -1275,7 +1275,7 @@ class ProjectApiTest(TestCase):
         lead = self.create(Lead, project=project)
         entry = self.create(
             Entry,
-            project=project, analysis_framework=af, lead=lead, entry_type=Entry.EXCERPT,
+            project=project, analysis_framework=af, lead=lead, entry_type=Entry.TagType.EXCERPT,
         )
 
         # Create widgets, attributes and configs

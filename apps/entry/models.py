@@ -28,15 +28,10 @@ class Entry(UserResource, ProjectEntityMixin):
     and contain several attributes.
     """
 
-    EXCERPT = 'excerpt'
-    IMAGE = 'image'
-    DATA_SERIES = 'dataSeries'  # NOTE: data saved as tabular_field id
-
-    ENTRY_TYPES = (
-        (EXCERPT, 'Excerpt'),
-        (IMAGE, 'Image'),
-        (DATA_SERIES, 'Data Series'),
-    )
+    class TagType(models.TextChoices):
+        EXCERPT = 'excerpt', 'Excerpt',
+        IMAGE = 'image', 'Image',
+        DATA_SERIES = 'dataSeries', 'Data Series'  # NOTE: data saved as tabular_field id
 
     lead = models.ForeignKey(Lead, on_delete=models.CASCADE)
     project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
@@ -46,18 +41,11 @@ class Entry(UserResource, ProjectEntityMixin):
     )
     information_date = models.DateField(default=None, null=True, blank=True)
 
-    entry_type = models.CharField(
-        max_length=10,
-        choices=ENTRY_TYPES,
-        default=EXCERPT,
-    )
+    entry_type = models.CharField(max_length=10, choices=TagType.choices, default=TagType.EXCERPT)
     excerpt = models.TextField(blank=True)
     image = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True)
     image_raw = models.TextField(blank=True)
-    tabular_field = models.ForeignKey(
-        'tabular.Field', on_delete=models.CASCADE,
-        null=True, blank=True,
-    )
+    tabular_field = models.ForeignKey('tabular.Field', on_delete=models.CASCADE, null=True, blank=True)
 
     dropped_excerpt = models.TextField(blank=True)
     highlight_hidden = models.BooleanField(default=False)
@@ -107,7 +95,7 @@ class Entry(UserResource, ProjectEntityMixin):
         return ret
 
     def __str__(self):
-        if self.entry_type == Entry.IMAGE:
+        if self.entry_type == Entry.TagType.IMAGE:
             return 'Image ({})'.format(self.lead.title)
         else:
             return '"{}" ({})'.format(
