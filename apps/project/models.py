@@ -433,7 +433,7 @@ class ProjectUserGroupMembership(models.Model):
         null=True, blank=True, default=None,
         related_name='added_project_usergroups',
     )
-    # Represents additional permission like QA
+    # Represents additional permission like QA (UserGroup level, we define additionaly in UserMembersip level as well)
     badges = ArrayField(enum.EnumField(ProjectMembership.BadgeType), default=list, blank=True)
 
     class Meta:

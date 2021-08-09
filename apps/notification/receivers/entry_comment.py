@@ -17,7 +17,10 @@ from notification.tasks import send_entry_comment_email
 logger = logging.getLogger(__name__)
 
 
-def send_notifications_for_commit(comment_pk, notification_meta):
+def send_notifications_for_comment(comment_pk, notification_meta):
+    """
+    This is for old EntryComment (TODO: Remove this later)
+    """
     comment = EntryComment.objects.get(pk=comment_pk)
 
     notification_meta = {
@@ -56,7 +59,7 @@ def create_entry_commit_notification(sender, instance, **kwargs):
 
     if instance.is_resolved and old_comment.is_resolved != instance.is_resolved:  # Comment is Resolved
         meta['notification_type'] = Notification.ENTRY_COMMENT_RESOLVED
-        transaction.on_commit(lambda: send_notifications_for_commit(instance.pk, meta))
+        transaction.on_commit(lambda: send_notifications_for_comment(instance.pk, meta))
         instance.receiver_notification_already_send = True
 
 
@@ -74,7 +77,7 @@ def create_entry_commit_notification_post(sender, instance, action, **kwargs):
 
     meta['notification_type'] = Notification.ENTRY_COMMENT_ASSIGNEE_CHANGE
     instance.receiver_notification_already_send = True
-    transaction.on_commit(lambda: send_notifications_for_commit(instance.pk, meta))
+    transaction.on_commit(lambda: send_notifications_for_comment(instance.pk, meta))
 
 
 @receiver(post_save, sender=EntryCommentText)
@@ -92,4 +95,4 @@ def create_entry_commit_text_notification(sender, instance, created, **kwargs):
             Notification.ENTRY_COMMENT_REPLY_MODIFY if comment.parent else Notification.ENTRY_COMMENT_MODIFY
         )
 
-    transaction.on_commit(lambda: send_notifications_for_commit(comment.pk, meta))
+    transaction.on_commit(lambda: send_notifications_for_comment(comment.pk, meta))
