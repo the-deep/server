@@ -488,4 +488,3 @@ class TestUserSchema(GraphQLTestCase):
             self.assertEqual(
                 content['data']['user'].get(field), None, (field, content['data']['user'].get(field))
             )  # Shouldn't be None
-

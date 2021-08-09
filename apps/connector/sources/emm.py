@@ -4,7 +4,7 @@ from lxml import etree
 
 from django.db import transaction
 
-from utils.common import random_key, get_ns_tag, LogTime
+from utils.common import random_key, get_ns_tag
 from rest_framework import serializers
 
 from lead.models import Lead, LeadEMMTrigger, EMMEntity

@@ -351,7 +351,7 @@ class AnalysisFrameworkTests(TestCase):
         data = {
             'role': framework.get_or_create_owner_role().id,
             'member': user2.id,
-            'framework':framework.id
+            'framework': framework.id
         }
         self.authenticate(user)
         url = '/api/v1/framework-memberships/'

@@ -19,6 +19,7 @@ def get_location_title(val):
     instance = GeoArea.objects.filter(id=val).first()
     return instance and instance.title
 
+
 def get_model_attr_or_none(Model, attr):
     def _get_attr(val):
         instance = Model.objects.filter(id=val).first()

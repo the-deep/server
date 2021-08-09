@@ -435,7 +435,7 @@ class EntryTests(TestCase):
         self.authenticate(user1)
         response = self.client.get(url)
         self.assert_200(response)
-       # gives all the member of the project
+        # gives all the member of the project
         self.assertEqual(user1.id, response.data['created_by'][0]['key'])
         self.assertEqual(len(response.data['created_by']), 1)
 

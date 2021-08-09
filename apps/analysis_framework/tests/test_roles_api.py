@@ -293,7 +293,7 @@ class TestAnalysisFrameworkRoles(TestCase):
         return self.client.post(clone_url, data=data)
 
     def _add_user_test(self, framework, user, status=201, role=None):
-        add_user_url = f'/api/v1/framework-memberships/'
+        add_user_url = '/api/v1/framework-memberships/'
         role = (role and role.id) or framework.get_or_create_editor_role().id,
         new_user = self.create(User)
         add_member_data = {
