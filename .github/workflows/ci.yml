@@ -24,18 +24,13 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@master
 
-      # - name: Docker Login
-      #   run: |
-      #     # docker login
-      #     echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
-
       - name: 🐳 Cache Docker layers
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-single-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ github.ref }}
           restore-keys: |
-            ${{ runner.os }}-single-buildx
+            ${{ runner.os }}-buildx-
 
       - name: 🐳 Build image
         uses: docker/build-push-action@v2
