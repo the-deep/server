@@ -25,7 +25,7 @@ class ExportFilterSet(django_filters.rest_framework.FilterSet):
     )
 
     type = django_filters.MultipleChoiceFilter(
-        choices=Export.DATA_TYPES,
+        choices=Export.DataType.choices,
         widget=django_filters.widgets.CSVWidget
     )
     exported_at__lt = django_filters.DateFilter(
