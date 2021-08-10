@@ -132,14 +132,19 @@ class ExportTests(TestCase):
         assert response.json()['count'] == 2
 
     def test_export_filter_by_type(self):
-        types = [Export.ENTRIES, Export.ASSESSMENTS, Export.ASSESSMENTS, Export.PLANNED_ASSESSMENTS]
+        types = [
+            Export.DataType.ENTRIES,
+            Export.DataType.ASSESSMENTS,
+            Export.DataType.ASSESSMENTS,
+            Export.DataType.PLANNED_ASSESSMENTS,
+        ]
         for type in types:
             self.create(Export, exported_by=self.user, type=type)
 
         self.authenticate()
-        response = self.client.get(f'/api/v1/exports/?type={Export.ASSESSMENTS}')
+        response = self.client.get(f'/api/v1/exports/?type={Export.DataType.ASSESSMENTS}')
         assert response.json()['count'] == 2
-        response = self.client.get(f'/api/v1/exports/?type={Export.ASSESSMENTS},{Export.ENTRIES}')
+        response = self.client.get(f'/api/v1/exports/?type={Export.DataType.ASSESSMENTS},{Export.DataType.ENTRIES}')
         assert response.json()['count'] == 3
 
     def test_export_filter_by_exported_at(self):
