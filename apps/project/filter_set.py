@@ -1,7 +1,9 @@
 from django.db import models
 import django_filters
 
+from utils.graphene.filters import StringListFilter, IDListFilter
 from user_resource.filters import UserResourceFilterSet
+
 from .models import (
     Project,
     ProjectMembership,
@@ -67,3 +69,46 @@ def get_filtered_projects(user, queries, annotate=False):
         projects = projects.order_by(ordering)
 
     return projects.distinct()
+
+
+class ProjectGqlFilterSet(UserResourceFilterSet):
+    status = StringListFilter(method='filter_by_status')
+    organizations = IDListFilter(method='filter_organizations')
+    analysis_frameworks = IDListFilter(method='filter_analysisframeworks')
+    search = django_filters.CharFilter(method='filter_title')
+    is_current_user_member = django_filters.BooleanFilter(
+        field_name='is_current_user_member', method='filter_with_membership')
+
+    class Meta:
+        model = Project
+        fields = ()
+
+    def filter_by_status(self, qs, name, value):
+        if not value:
+            return qs
+        return qs.filter(status__in=value).distinct()
+
+    def filter_organizations(self, qs, name, value):
+        if not value:
+            return qs
+        return qs.filter(organizations__in=value).distinct()
+
+    def filter_analysisframeworks(self, qs, name, value):
+        if not value:
+            return qs
+        return qs.filter(analysis_framework__in=value).distinct()
+
+    def filter_title(self, qs, name, value):
+        if not value:
+            return qs
+        return qs.filter(title__icontains=value).distinct()
+
+    def filter_with_membership(self, queryset, name, value):
+        if value is not None:
+            queryset = queryset.filter(
+                id__in=Project.get_for_member(
+                    self.request.user,
+                    exclude=not value,
+                )
+            )
+        return queryset

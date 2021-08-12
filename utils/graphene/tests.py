@@ -214,6 +214,12 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
         else:
             assert excepted == real, message
 
+    def assertQuerySetEqual(self, l1, l2):
+        return self.assertEqual(
+            sorted([each.id for each in l1]),
+            sorted([each.id for each in l2]),
+        )
+
     def get_media_url(self, file):
         return f'http://testserver/media/{file}'
 
