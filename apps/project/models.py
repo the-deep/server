@@ -27,13 +27,9 @@ class Project(UserResource):
     """
 
     # Status Choices
-    ACTIVE = 'active'
-    INACTIVE = 'inactive'
-
-    STATUS_CHOICES = (
-        (ACTIVE, 'Active'),
-        (INACTIVE, 'Inactive')
-    )
+    class Status(models.TextChoices):
+        ACTIVE = 'active', 'Active'
+        INACTIVE = 'inactive', 'Inactive'
 
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -76,9 +72,7 @@ class Project(UserResource):
 
     is_visualization_enabled = models.BooleanField(default=False)
 
-    status = models.CharField(max_length=30,
-                              choices=STATUS_CHOICES,
-                              default=INACTIVE)
+    status = models.CharField(max_length=30, choices=Status.choices, default=Status.INACTIVE)
 
     organizations = models.ManyToManyField(
         Organization,
@@ -135,6 +129,10 @@ class Project(UserResource):
         """
         Used by graphql schema
         """
+        # NOTE: to avoid circular import
+        from lead.models import Lead
+        from entry.models import Entry
+
         visible_projects = cls.objects\
             .annotate(
                 # NOTE: This is used by permission module
@@ -144,7 +142,26 @@ class Project(UserResource):
                         member=user,
                     ).order_by('role__title').values('role__title')[:1],
                     output_field=models.CharField()
-                )
+                ),
+                sources_count=models.functions.Coalesce(models.Subquery(
+                    Lead.objects.filter(
+                        project=models.OuterRef('pk')
+                    ).order_by().values('project').annotate(count=models.Count(
+                        'id',
+                        distinct=True
+                    )).values('count')[:1],
+                    output_field=models.IntegerField(),
+                ), 0),
+                entries_count=models.functions.Coalesce(models.Subquery(
+                    Entry.objects.filter(
+                        project=models.OuterRef('pk')
+                    ).order_by().values('project').annotate(count=models.Count(
+                        'id',
+                        distinct=True
+                    )).values('count')[:1],
+                    output_field=models.IntegerField(),
+                ), 0),
+                members_count=models.Count('members', distinct=True),
                 # NOTE: Exclude if project is private + user is not a member
             ).exclude(is_private=True, current_user_role__isnull=True)
         if only_member:

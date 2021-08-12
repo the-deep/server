@@ -857,7 +857,7 @@ class ProjectOptionsView(views.APIView):
             {
                 'key': value,
                 'value': label
-            } for value, label in Project.STATUS_CHOICES
+            } for value, label in Project.Status.choices
         ]
         return response.Response(options)
 

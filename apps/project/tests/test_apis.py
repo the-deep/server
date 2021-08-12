@@ -918,7 +918,7 @@ class ProjectApiTest(TestCase):
         )
 
     def test_project_status_in_project_options(self):
-        choices = dict(make_hashable(Project.STATUS_CHOICES))
+        choices = dict(make_hashable(Project.Status.choices))
 
         url = '/api/v1/project-options/'
 
@@ -926,10 +926,10 @@ class ProjectApiTest(TestCase):
         response = self.client.get(url)
         self.assert_200(response)
         self.assertIn('project_status', response.data)
-        self.assertEqual(response.data['project_status'][0]['key'], Project.ACTIVE)
-        self.assertEqual(response.data['project_status'][0]['value'], choices[Project.ACTIVE])
-        self.assertEqual(response.data['project_status'][1]['key'], Project.INACTIVE)
-        self.assertEqual(response.data['project_status'][1]['value'], choices[Project.INACTIVE])
+        self.assertEqual(response.data['project_status'][0]['key'], Project.Status.ACTIVE)
+        self.assertEqual(response.data['project_status'][0]['value'], choices[Project.Status.ACTIVE])
+        self.assertEqual(response.data['project_status'][1]['key'], Project.Status.INACTIVE)
+        self.assertEqual(response.data['project_status'][1]['value'], choices[Project.Status.INACTIVE])
 
     def test_join_request(self):
         project = self.create(Project, role=self.admin_role)

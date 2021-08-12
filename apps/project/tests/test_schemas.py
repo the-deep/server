@@ -9,7 +9,9 @@ from lead.factories import LeadFactory
 from entry.factories import EntryFactory
 from project.factories import ProjectFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
+
 from project.tasks import _generate_project_stats_cache
+from project.models import ProjectJoinRequest
 
 
 class TestProjectSchema(GraphQLTestCase):
@@ -45,6 +47,10 @@ class TestProjectSchema(GraphQLTestCase):
                     date
                   }
                 }
+                membersCount
+                userStatus
+                sourcesCount
+                entriesCount
               }
             }
         '''
@@ -115,7 +121,34 @@ class TestProjectSchema(GraphQLTestCase):
         # Generate project cache
         _generate_project_stats_cache()
 
+        user2 = UserFactory.create()
+        user3 = UserFactory.create()
+        request_user = UserFactory.create()
+        non_member_user = UserFactory.create()
+
+        public_project = ProjectFactory.create()
         private_project = ProjectFactory.create(is_private=True)
+        ProjectJoinRequest.objects.create(project=public_project, requested_by=request_user,
+                                          status='pending', role=self.project_role_admin)
+
+        # add some project member
+        public_project.add_member(user)
+        public_project.add_member(user2)
+        public_project.add_member(user3)
+
+        # add some lead for the project
+        LeadFactory.create(project=public_project)
+        LeadFactory.create(project=public_project)
+        LeadFactory.create(project=public_project)
+        LeadFactory.create(project=public_project)
+        LeadFactory.create(project=private_project)
+
+        # add some entry for the project
+        EntryFactory.create(project=public_project)
+        EntryFactory.create(project=public_project)
+        EntryFactory.create(project=public_project)
+        EntryFactory.create(project=public_project)
+        EntryFactory.create(project=private_project)
 
         # -- Without login
         self.query_check(query, assert_for_error=True, variables={'id': public_project.id})
@@ -132,7 +165,6 @@ class TestProjectSchema(GraphQLTestCase):
 
         # --- member user
         # ---- (public-project)
-        public_project.add_member(user)
         content = self.query_check(query, variables={'id': public_project.id})
         self.assertNotEqual(content['data']['project'], None, content)
         self.assertEqual(content['data']['project']['stats']['numberOfLeads'], 5, content)
@@ -141,11 +173,31 @@ class TestProjectSchema(GraphQLTestCase):
         self.assertEqual(content['data']['project']['stats']['numberOfEntries'], 9, content)
         self.assertEqual(len(content['data']['project']['stats']['leadsActivity']), 2, content)
         self.assertEqual(len(content['data']['project']['stats']['entriesActivity']), 3, content)
+        self.assertEqual(content['data']['project']['membersCount'], 3)
+        self.assertEqual(content['data']['project']['sourcesCount'], 4)
+        self.assertEqual(content['data']['project']['entriesCount'], 4)
+        self.assertEqual(content['data']['project']['userStatus'], 'member')
+
+        # login with request user
+        self.force_login(request_user)
+        content = self.query_check(query, variables={'id': public_project.id})
+        self.assertNotEqual(content['data']['project'], None, content)
+        self.assertEqual(content['data']['project']['userStatus'], 'pending')
+
+        # login with non_member
+        self.force_login(non_member_user)
+        content = self.query_check(query, variables={'id': public_project.id})
+        self.assertNotEqual(content['data']['project'], None, content)
+        self.assertEqual(content['data']['project']['userStatus'], 'non_member')
 
         # ---- (private-project)
+        self.force_login(user)
         private_project.add_member(user)
         content = self.query_check(query, variables={'id': private_project.id})
         self.assertNotEqual(content['data']['project'], None, content)
+        self.assertEqual(content['data']['project']['membersCount'], 1)
+        self.assertEqual(content['data']['project']['sourcesCount'], 1)
+        self.assertEqual(content['data']['project']['entriesCount'], 1)
 
     def test_projects_query(self):
         """
