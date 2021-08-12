@@ -101,7 +101,12 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
         only_fields = (
             'id', 'title', 'description', 'is_private', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
+            'preview_image'
         )
+
+    def resolve_preview_image(root, info, **kwargs):
+        if root.preview_image:
+            return info.context.request.build_absolute_uri(root.preview_image.url)
 
     @staticmethod
     def resolve_primary_tagging(root, info):
