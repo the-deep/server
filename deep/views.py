@@ -12,6 +12,7 @@ from django.views.generic import View
 from django.conf import settings
 from django.template.response import TemplateResponse
 from graphene_django.views import GraphQLView
+from graphene_file_upload.django import FileUploadGraphQLView
 
 from deep.graphene_context import GQLContext
 from deep.exceptions import PermissionDeniedException
@@ -198,7 +199,7 @@ class EntryReviewCommentEmail(View):
             request, 'entry/review_comment_notification_email.html', context)
 
 
-class CustomGraphQLView(GraphQLView):
+class CustomGraphQLView(FileUploadGraphQLView):
     def get_context(self, request):
         return GQLContext(request)
 
