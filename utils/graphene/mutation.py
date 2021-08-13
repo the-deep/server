@@ -10,6 +10,7 @@ from graphene_django.rest_framework.serializer_converter import (
     get_graphene_type_from_serializer_field,
 )
 from rest_framework import serializers
+from graphene_file_upload.scalars import Upload
 
 from utils.graphene.error_types import mutation_is_not_valid
 # from utils.common import to_camelcase
@@ -65,6 +66,8 @@ def convert_serializer_field(field, is_input=True, convert_choices_to_enum=True)
 
     if isinstance(field, serializers.ChoiceField) and not convert_choices_to_enum:
         graphql_type = graphene.String
+    elif isinstance(field, serializers.FileField):
+        graphql_type = Upload
     else:
         graphql_type = get_graphene_type_from_serializer_field(field)
 
