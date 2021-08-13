@@ -74,6 +74,7 @@ ipython = "*"
 factory-boy = "*"
 colorlog = "*"
 drf-writable-nested = "*"
+graphene-file-upload = "^1.3.0"
 
 [tool.poetry.dev-dependencies]
 pytest-profiling = "*"
