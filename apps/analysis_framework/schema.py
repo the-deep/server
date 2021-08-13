@@ -49,6 +49,7 @@ class AnalysisFrameworkType(DjangoObjectType):
         only_fields = (
             'id', 'title', 'description', 'is_private', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
+            'preview_image',
         )
 
     current_user_role = graphene.String()
@@ -102,6 +103,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
         only_fields = (
             'id', 'title', 'description', 'is_private', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
+            'preview_image',
         )
 
     @staticmethod
