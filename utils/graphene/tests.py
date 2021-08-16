@@ -217,6 +217,12 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
     def get_media_url(self, file):
         return f'http://testserver/media/{file}'
 
+    def update_obj(self, obj, **fields):
+        for key, value in fields.items():
+            setattr(obj, key, value)
+        obj.save()
+        return obj
+
 
 class GraphQLSnapShotTestCase(GraphQLTestCase, SnapShotTextCase):
     """

@@ -259,3 +259,15 @@ class FileField(graphene.ObjectType):
         return info.context.request.build_absolute_uri(
             URLCachedFileField.name_to_representation(root)
         )
+
+
+class DateCountType(graphene.ObjectType):
+    date = graphene.String()
+    count = graphene.Int()
+
+
+class EntityDataType(graphene.ObjectType):
+    id = graphene.String()
+    name = graphene.String()
+    user_id = graphene.String()
+    count = graphene.Int()
