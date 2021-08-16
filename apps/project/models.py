@@ -133,7 +133,7 @@ class Project(UserResource):
         return Project.objects.exclude(Q(is_private=True) & ~Q(members=user))
 
     @classmethod
-    def get_for_gq(cls, user, only_member=False):
+    def get_for_gq(cls, user, only_member=False, annotated=False):
         """
         Used by graphql schema
         """
@@ -151,6 +151,21 @@ class Project(UserResource):
             ).exclude(is_private=True, current_user_role__isnull=True)
         if only_member:
             return visible_projects.filter(current_user_role__isnull=False)
+        if annotated:
+            gql_annotate = {
+                key: Cast(KeyTextTransform(key, 'stats_cache'), models.IntegerField())
+                for key in [
+                    ('number_of_leads'),
+                    ('number_of_leads_tagged'),
+                    ('number_of_leads_tagged_and_verified'),
+                    ('number_of_entries'),
+                    ('number_of_users'),
+                    # NOTE: Used for sorting in discover projects
+                    ('leads_activity'),
+                    ('entries_activity'),
+                ]
+            }
+            return visible_projects.annotate(**gql_annotate)
         return visible_projects
 
     def get_current_user_role(self, user):
