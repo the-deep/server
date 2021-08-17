@@ -11,7 +11,7 @@ from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import (
     DjangoPaginatedListObjectField,
     DateCountType,
-    EntityDataType
+    UserEntityCountType
 )
 from deep.permissions import ProjectPermissions as PP
 
@@ -19,6 +19,8 @@ from lead.schema import Query as LeadQuery
 from entry.schema import Query as EntryQuery
 from export.schema import Query as ExportQuery
 from analysis_framework.schema import AnalysisFrameworkDetailType
+from lead.models import Lead
+from entry.models import Entry
 
 from .models import Project, ProjectMembership
 from .filter_set import ProjectFilterSet
@@ -49,6 +51,24 @@ def get_top_entity_contributor(project, Entity):
     ]
 
 
+class ProjectStatType(graphene.ObjectType):
+    number_of_leads = graphene.Field(graphene.Int)
+    number_of_leads_tagged = graphene.Field(graphene.Int)
+    number_of_leads_tagged_and_verified = graphene.Field(graphene.Int)
+    number_of_entries = graphene.Field(graphene.Int)
+    number_of_users = graphene.Field(graphene.Int)
+    leads_activity = graphene.List(DateCountType)
+    entries_activity = graphene.List(DateCountType)
+
+    @staticmethod
+    def resolve_leads_activity(root, info, **kwargs):
+        return (root.stats_cache or {}).get('leads_activities') or []
+
+    @staticmethod
+    def resolve_entries_activity(root, info, **kwargs):
+        return (root.stats_cache or {}).get('entries_activities') or []
+
+
 class ProjectType(DjangoObjectType):
     class Meta:
         model = Project
@@ -65,23 +85,14 @@ class ProjectType(DjangoObjectType):
             graphene.Enum.from_enum(PP.Permission),
         ), required=True
     )
-    number_of_leads = graphene.Field(graphene.Int)
-    number_of_leads_tagged = graphene.Field(graphene.Int)
-    number_of_leads_tagged_and_verified = graphene.Field(graphene.Int)
-    number_of_entries = graphene.Field(graphene.Int)
-    number_of_users = graphene.Field(graphene.Int)
-    leads_activity = graphene.List(DateCountType)
-    entries_activity = graphene.List(DateCountType)
-    activity_log = generic.GenericScalar()
-    top_sourcers = graphene.List(EntityDataType)
-    top_taggers = graphene.List(EntityDataType)
+    stats = graphene.Field(ProjectStatType)
 
     # NOTE: This is a custom feature
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
     @staticmethod
     def get_custom_node(_, info, id):
         try:
-            project = Project.get_for_gq(info.context.user, annotated=True).get(pk=id)
+            project = Project.get_for_gq(info.context.user).get(pk=id)
             info.context.set_active_project(project)
             return project
         except Project.DoesNotExist:
@@ -94,26 +105,8 @@ class ProjectType(DjangoObjectType):
         )
 
     @staticmethod
-    def resolve_leads_activity(root, info, **kwargs):
-        return (root.stats_cache or {}).get('leads_activities') or []
-
-    @staticmethod
-    def resolve_entries_activity(root, info, **kwargs):
-        return (root.stats_cache or {}).get('entries_activities') or []
-
-    @staticmethod
-    def resolve_activity_log(root, info, **kwargs):
-        return list(project_activity_log(root))
-
-    @staticmethod
-    def resolve_top_sourcers(root, info, **kwargs):
-        from lead.models import Lead
-        return get_top_entity_contributor(root, Lead)
-
-    @staticmethod
-    def resolve_top_taggers(root, info, **kwargs):
-        from entry.models import Entry
-        return get_top_entity_contributor(root, Entry)
+    def resolve_stats(root, info, **kwargs):
+        return info.context.dl.project.project_stat.load(root.pk)
 
 
 class ProjectDetailType(
@@ -136,6 +129,21 @@ class ProjectDetailType(
         )
 
     analysis_framework = graphene.Field(AnalysisFrameworkDetailType)
+    activity_log = generic.GenericScalar()  # TODO: Need to define type
+    top_sourcers = graphene.List(UserEntityCountType)
+    top_taggers = graphene.List(UserEntityCountType)
+
+    @staticmethod
+    def resolve_activity_log(root, info, **kwargs):
+        return list(project_activity_log(root))
+
+    @staticmethod
+    def resolve_top_sourcers(root, info, **kwargs):
+        return get_top_entity_contributor(root, Lead)
+
+    @staticmethod
+    def resolve_top_taggers(root, info, **kwargs):
+        return get_top_entity_contributor(root, Entry)
 
 
 class ProjectListType(CustomDjangoListObjectType):
@@ -152,16 +160,16 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
-    recent_projects = graphene.List(ProjectType)
+    recent_projects = graphene.List(ProjectDetailType)
 
     # NOTE: This is a custom feature, see https://github.com/the-deep/graphene-django-extras
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
     @staticmethod
     def resolve_projects(root, info, **kwargs) -> QuerySet:
-        return Project.get_for_gq(info.context.user, annotated=True).distinct()
+        return Project.get_for_gq(info.context.user).distinct()
 
     @staticmethod
     def resolve_recent_projects(root, info, **kwargs) -> QuerySet:
         # only the recent project of the user member of
-        queryset = Project.get_for_gq(info.context.user, annotated=True, only_member=True)
+        queryset = Project.get_for_gq(info.context.user, only_member=True)
         return Project.get_recent_active_projects(info.context.user, queryset)
