@@ -8,6 +8,7 @@ from user.factories import UserFactory
 from lead.factories import LeadFactory
 from entry.factories import EntryFactory
 from project.factories import ProjectFactory
+from analysis_framework.factories import AnalysisFrameworkFactory
 from project.tasks import _generate_project_stats_cache
 
 
@@ -30,27 +31,27 @@ class TestProjectSchema(GraphQLTestCase):
                 endDate
                 description
                 data
-                entriesActivity {
-                  count
-                  date
-                }
-                numberOfLeads
-                numberOfLeadsTagged
-                numberOfLeadsTaggedAndVerified
-                numberOfEntries
-                leadsActivity {
-                  count
-                  date
+                stats {
+                  entriesActivity {
+                    count
+                    date
+                  }
+                  numberOfLeads
+                  numberOfLeadsTagged
+                  numberOfLeadsTaggedAndVerified
+                  numberOfEntries
+                  leadsActivity {
+                    count
+                    date
+                  }
                 }
               }
             }
         '''
 
         user = UserFactory.create()
-        public_project = ProjectFactory.create()
-        public_project2 = ProjectFactory.create()
-        public_project3 = ProjectFactory.create()
-
+        public_project, public_project2, public_project3 = ProjectFactory.create_batch(3)
+        analysis_framework = AnalysisFrameworkFactory.create()
         now = timezone.now()
         lead1_1 = self.update_obj(LeadFactory.create(project=public_project), created_at=now + relativedelta(months=-1))
         lead1_2 = self.update_obj(LeadFactory.create(project=public_project), created_at=now + relativedelta(months=-2))
@@ -99,16 +100,17 @@ class TestProjectSchema(GraphQLTestCase):
         now = timezone.now()
         for item in data:
             self.update_obj(
-                EntryFactory.create(lead=item['lead'], verified=item['verified'], project=public_project),
+                EntryFactory.create(lead=item['lead'], verified=item['verified'],
+                                    project=public_project, analysis_framework=analysis_framework),
                 created_at=now + relativedelta(months=item['months'])
             )
-        EntryFactory.create(lead=lead1_3, project=public_project, verified=True)
-        EntryFactory.create(lead=lead1_4, project=public_project, verified=True)
+        EntryFactory.create(lead=lead1_3, project=public_project, verified=True, analysis_framework=analysis_framework)
+        EntryFactory.create(lead=lead1_4, project=public_project, verified=True, analysis_framework=analysis_framework)
 
         lead2 = LeadFactory.create(project=public_project2)
         lead3 = LeadFactory.create(project=public_project3)
-        EntryFactory.create(lead=lead2, project=public_project2, verified=False)
-        EntryFactory.create(lead=lead3, project=public_project3, verified=False)
+        EntryFactory.create(lead=lead2, project=public_project2, verified=False, analysis_framework=analysis_framework)
+        EntryFactory.create(lead=lead3, project=public_project3, verified=False, analysis_framework=analysis_framework)
 
         # Generate project cache
         _generate_project_stats_cache()
@@ -133,12 +135,12 @@ class TestProjectSchema(GraphQLTestCase):
         public_project.add_member(user)
         content = self.query_check(query, variables={'id': public_project.id})
         self.assertNotEqual(content['data']['project'], None, content)
-        self.assertEqual(content['data']['project']['numberOfLeads'], 5, content)
-        self.assertEqual(content['data']['project']['numberOfLeadsTagged'], 4, content)
-        self.assertEqual(content['data']['project']['numberOfLeadsTaggedAndVerified'], 2, content)
-        self.assertEqual(content['data']['project']['numberOfEntries'], 9, content)
-        self.assertEqual(len(content['data']['project']['leadsActivity']), 2, content)
-        self.assertEqual(len(content['data']['project']['entriesActivity']), 3, content)
+        self.assertEqual(content['data']['project']['stats']['numberOfLeads'], 5, content)
+        self.assertEqual(content['data']['project']['stats']['numberOfLeadsTagged'], 4, content)
+        self.assertEqual(content['data']['project']['stats']['numberOfLeadsTaggedAndVerified'], 2, content)
+        self.assertEqual(content['data']['project']['stats']['numberOfEntries'], 9, content)
+        self.assertEqual(len(content['data']['project']['stats']['leadsActivity']), 2, content)
+        self.assertEqual(len(content['data']['project']['stats']['entriesActivity']), 3, content)
 
         # ---- (private-project)
         private_project.add_member(user)
@@ -205,17 +207,17 @@ class TestProjectSchema(GraphQLTestCase):
           '''
 
         user = UserFactory.create()
-        public_project1 = ProjectFactory.create(title="P1")
-        public_project2 = ProjectFactory.create(title="P2")
-        public_project3 = ProjectFactory.create(title="P3")
-        public_project4 = ProjectFactory.create(title="P4")
+        analysis_framework = AnalysisFrameworkFactory.create()
+        public_project1, public_project2, public_project3, public_project4 = ProjectFactory.create_batch(4)
         public_project1.add_member(user)
         public_project2.add_member(user)
         public_project3.add_member(user)
 
         lead1 = LeadFactory.create(project=public_project1, created_by=user)
         LeadFactory.create(project=public_project2, created_by=user)
-        EntryFactory.create(lead=lead1, verified=False, created_by=user, project=public_project1)
+        EntryFactory.create(lead=lead1, verified=False,
+                            created_by=user, project=public_project1,
+                            analysis_framework=analysis_framework)
         LeadFactory.create(project=public_project3, created_by=user)
         LeadFactory.create(project=public_project4, created_by=user)
         # -- Without login
