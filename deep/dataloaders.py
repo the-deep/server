@@ -2,6 +2,7 @@ from django.utils.functional import cached_property
 
 from utils.graphene.dataloaders import WithContextMixin
 
+from project.dataloaders import DataLoaders as ProjectDataLoaders
 from user.dataloaders import DataLoaders as UserDataLoaders
 from user_group.dataloaders import DataLoaders as UserGroupDataLoaders
 from lead.dataloaders import DataLoaders as LeadDataLoaders
@@ -34,3 +35,7 @@ class GlobalDataLoaders(WithContextMixin):
     @cached_property
     def analysis_framework(self):
         return AfDataloaders(context=self.context)
+
+    @cached_property
+    def project(self):
+        return ProjectDataLoaders(context=self.context)
