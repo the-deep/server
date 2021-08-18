@@ -6,7 +6,7 @@ from django.db.models.functions import Cast
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
-from project.models import Project
+from project.models import Project, ProjectJoinRequest
 
 
 class ProjectStatLoader(DataLoaderWithContext):
@@ -29,8 +29,26 @@ class ProjectStatLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key) for key in keys])
 
 
+class ProjectJoinStatusLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        join_status_qs = ProjectJoinRequest.objects.filter(
+            project__in=keys,
+            requested_by=self.context.request.user,
+            status='pending',
+        ).values_list('project_id', flat=True)
+        _map = {
+            project_id: 'True'
+            for project_id in join_status_qs
+        }
+        return Promise.resolve([_map.get(key, 'False') for key in keys])
+
+
 class DataLoaders(WithContextMixin):
 
     @cached_property
     def project_stat(self):
         return ProjectStatLoader(context=self.context)
+
+    @cached_property
+    def join_status(self):
+        return ProjectJoinStatusLoader(context=self.context)
