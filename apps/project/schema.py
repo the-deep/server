@@ -22,7 +22,12 @@ from analysis_framework.schema import AnalysisFrameworkDetailType
 from lead.models import Lead
 from entry.models import Entry
 
-from .models import Project, ProjectMembership
+from .models import (
+    Project,
+    ProjectMembership,
+    ProjectJoinRequest,
+)
+
 from .filter_set import ProjectGqlFilterSet
 from .activity import project_activity_log
 
@@ -151,6 +156,19 @@ class ProjectDetailType(
         return get_top_entity_contributor(root, Entry)
 
 
+class ProjectJoinRequestType(DjangoObjectType):
+    class Meta:
+        model = ProjectJoinRequest
+        fields = (
+            'id',
+            'data',
+            'requested_by',
+            'responded_by',
+            'project',
+            'status'
+        )
+
+
 class ProjectListType(CustomDjangoListObjectType):
     class Meta:
         model = Project
@@ -169,6 +187,7 @@ class Query:
 
     # NOTE: This is a custom feature, see https://github.com/the-deep/graphene-django-extras
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
+
     @staticmethod
     def resolve_projects(root, info, **kwargs) -> QuerySet:
         return Project.get_for_gq(info.context.user).distinct()

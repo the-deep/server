@@ -498,11 +498,10 @@ class ProjectJoinRequest(models.Model):
     Join requests to projects and their responses
     """
 
-    STATUSES = (
-        ('pending', 'Pending'),
-        ('accepted', 'Accepted'),
-        ('rejected', 'Rejected'),
-    )
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        ACCEPTED = 'accepted', 'Accepted'
+        REJECTED = 'rejected', 'Rejected'
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     requested_by = models.ForeignKey(
@@ -510,8 +509,8 @@ class ProjectJoinRequest(models.Model):
         related_name='project_join_requests',
     )
     requested_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=48, choices=STATUSES,
-                              default='pending')
+    status = models.CharField(max_length=48, choices=Status.choices,
+                              default=Status.PENDING)
     role = models.ForeignKey('project.ProjectRole', on_delete=models.CASCADE)
     responded_by = models.ForeignKey(
         User, on_delete=models.CASCADE,
