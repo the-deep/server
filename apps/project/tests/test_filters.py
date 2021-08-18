@@ -16,21 +16,17 @@ class TestProjectFilter(GraphQLTestCase):
         self.filter_class = ProjectGqlFilterSet
 
     def test_organization_filter(self):
-        org1 = OrganizationFactory.create()
-        org2 = OrganizationFactory.create()
-        org3 = OrganizationFactory.create()
-        p1 = ProjectFactory.create()
+        org1, org2, org3 = OrganizationFactory.create_batch(3)
+        p1, p2, p3 = ProjectFactory.create_batch(3)
         p1.organizations.set([org2, org1])
-        p2 = ProjectFactory.create()
         p2.organizations.set([org2, org3])
-        p3 = ProjectFactory.create()
         p3.organizations.add(org1)
 
         obtained = self.filter_class(data=dict(
             organizations=[str(org3.id), str(org2.id)]
         )).qs
         expected = [p2, p1]
-        self.assertQuerySetEqual(
+        self.assertQuerySetIdEqual(
             expected,
             obtained
         )
@@ -43,7 +39,7 @@ class TestProjectFilter(GraphQLTestCase):
             search='w'
         )).qs
         expected = [p2, p3]
-        self.assertQuerySetEqual(
+        self.assertQuerySetIdEqual(
             expected,
             obtained
         )
@@ -57,7 +53,7 @@ class TestProjectFilter(GraphQLTestCase):
             ]
         )).qs
         expected = [p1]
-        self.assertQuerySetEqual(
+        self.assertQuerySetIdEqual(
             expected,
             obtained
         )
@@ -68,7 +64,7 @@ class TestProjectFilter(GraphQLTestCase):
             ]
         )).qs
         expected = [p1, p2]
-        self.assertQuerySetEqual(
+        self.assertQuerySetIdEqual(
             expected,
             obtained
         )
@@ -85,7 +81,7 @@ class TestProjectFilter(GraphQLTestCase):
             analysis_frameworks=[str(af1.id), str(af2.id)]
         )).qs
         expected = [p2, p1]
-        self.assertQuerySetEqual(
+        self.assertQuerySetIdEqual(
             expected,
             obtained
         )
