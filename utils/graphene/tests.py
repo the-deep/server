@@ -214,7 +214,7 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
         else:
             assert excepted == real, message
 
-    def assertQuerySetEqual(self, l1, l2):
+    def assertQuerySetIdEqual(self, l1, l2):
         return self.assertEqual(
             sorted([each.id for each in l1]),
             sorted([each.id for each in l2]),

@@ -42,15 +42,14 @@ class TestProjectSchema(GraphQLTestCase):
                   numberOfLeadsTagged
                   numberOfLeadsTaggedAndVerified
                   numberOfEntries
+                  number_of_users
                   leadsActivity {
                     count
                     date
                   }
                 }
-                membersCount
                 userStatus
-                sourcesCount
-                entriesCount
+                pendingMembership
               }
             }
         '''
@@ -125,11 +124,13 @@ class TestProjectSchema(GraphQLTestCase):
         user3 = UserFactory.create()
         request_user = UserFactory.create()
         non_member_user = UserFactory.create()
-
+        analysis_framework = AnalysisFrameworkFactory.create()
         public_project = ProjectFactory.create()
         private_project = ProjectFactory.create(is_private=True)
-        ProjectJoinRequest.objects.create(project=public_project, requested_by=request_user,
-                                          status='pending', role=self.project_role_admin)
+        ProjectJoinRequest.objects.create(
+            project=public_project, requested_by=request_user,
+            status='pending', role=self.project_role_admin
+        )
 
         # add some project member
         public_project.add_member(user)
@@ -137,18 +138,15 @@ class TestProjectSchema(GraphQLTestCase):
         public_project.add_member(user3)
 
         # add some lead for the project
-        LeadFactory.create(project=public_project)
-        LeadFactory.create(project=public_project)
-        LeadFactory.create(project=public_project)
-        LeadFactory.create(project=public_project)
+        lead = LeadFactory.create(project=public_project)
+        LeadFactory.create_batch(3, project=public_project)
         LeadFactory.create(project=private_project)
 
         # add some entry for the project
-        EntryFactory.create(project=public_project)
-        EntryFactory.create(project=public_project)
-        EntryFactory.create(project=public_project)
-        EntryFactory.create(project=public_project)
-        EntryFactory.create(project=private_project)
+        EntryFactory.create_batch(4, project=public_project,
+                                  analysis_framework=analysis_framework,
+                                  lead=lead)
+        EntryFactory.create(project=private_project, analysis_framework=analysis_framework, lead=lead)
 
         # -- Without login
         self.query_check(query, assert_for_error=True, variables={'id': public_project.id})
@@ -163,8 +161,15 @@ class TestProjectSchema(GraphQLTestCase):
         content = self.query_check(query, variables={'id': private_project.id})
         self.assertEqual(content['data']['project'], None, content)
 
+        # login with non_member
+        self.force_login(non_member_user)
+        content = self.query_check(query, variables={'id': public_project.id})
+        self.assertNotEqual(content['data']['project'], None, content)
+        self.assertEqual(content['data']['project']['pendingMembership'], 'False')
+
         # --- member user
         # ---- (public-project)
+        self.force_login(user)
         content = self.query_check(query, variables={'id': public_project.id})
         self.assertNotEqual(content['data']['project'], None, content)
         self.assertEqual(content['data']['project']['stats']['numberOfLeads'], 5, content)
@@ -176,28 +181,21 @@ class TestProjectSchema(GraphQLTestCase):
         self.assertEqual(content['data']['project']['membersCount'], 3)
         self.assertEqual(content['data']['project']['sourcesCount'], 4)
         self.assertEqual(content['data']['project']['entriesCount'], 4)
-        self.assertEqual(content['data']['project']['userStatus'], 'member')
 
         # login with request user
         self.force_login(request_user)
         content = self.query_check(query, variables={'id': public_project.id})
         self.assertNotEqual(content['data']['project'], None, content)
-        self.assertEqual(content['data']['project']['userStatus'], 'pending')
-
-        # login with non_member
-        self.force_login(non_member_user)
-        content = self.query_check(query, variables={'id': public_project.id})
-        self.assertNotEqual(content['data']['project'], None, content)
-        self.assertEqual(content['data']['project']['userStatus'], 'non_member')
+        self.assertEqual(content['data']['project']['pendingMembership'], 'True')
 
         # ---- (private-project)
         self.force_login(user)
         private_project.add_member(user)
         content = self.query_check(query, variables={'id': private_project.id})
         self.assertNotEqual(content['data']['project'], None, content)
-        self.assertEqual(content['data']['project']['membersCount'], 1)
-        self.assertEqual(content['data']['project']['sourcesCount'], 1)
-        self.assertEqual(content['data']['project']['entriesCount'], 1)
+        self.assertEqual(content['data']['project']['projectStats']['membersCount'], 1)
+        self.assertEqual(content['data']['project']['projectStats']['sourcesCount'], 1)
+        self.assertEqual(content['data']['project']['projectStats']['entriesCount'], 1)
 
     def test_projects_query(self):
         """

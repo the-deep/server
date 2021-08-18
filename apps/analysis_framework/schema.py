@@ -6,7 +6,7 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from django.db.models import QuerySet
 
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
-from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.fields import DjangoPaginatedListObjectField, FileField
 from deep.permissions import AnalysisFrameworkPermissions as AfP
 
 from .models import (
@@ -94,6 +94,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     primary_tagging = DjangoListField(SectionType)  # With section
     secondary_tagging = DjangoListField(WidgetType)  # Without section
     members = DjangoListField(AnalysisFrameworkMembershipType)
+    preview_image = graphene.Field(FileField)
 
     class Meta:
         model = AnalysisFramework
@@ -101,12 +102,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
         only_fields = (
             'id', 'title', 'description', 'is_private', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
-            'preview_image'
         )
-
-    def resolve_preview_image(root, info, **kwargs):
-        if root.preview_image:
-            return info.context.request.build_absolute_uri(root.preview_image.url)
 
     @staticmethod
     def resolve_primary_tagging(root, info):
