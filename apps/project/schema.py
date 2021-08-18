@@ -69,6 +69,12 @@ class ProjectStatType(graphene.ObjectType):
         return (root.stats_cache or {}).get('entries_activities') or []
 
 
+class ProjectStatsType(graphene.ObjectType):
+    members_count = graphene.Field(graphene.Int)
+    sources_count = graphene.Field(graphene.Int)
+    entries_count = graphene.Field(graphene.Int)
+
+
 class ProjectType(DjangoObjectType):
     class Meta:
         model = Project
@@ -76,7 +82,7 @@ class ProjectType(DjangoObjectType):
             'id', 'title', 'description', 'start_date', 'end_date',
             'regions', 'analysis_framework', 'assessment_template',
             'is_default', 'is_private', 'is_visualization_enabled', 'status',
-            'organizations', 'stats_cache', 'created_at'
+            'organizations', 'stats_cache'
         )
 
     current_user_role = graphene.String()
@@ -86,11 +92,7 @@ class ProjectType(DjangoObjectType):
         ), required=True
     )
     stats = graphene.Field(ProjectStatType)
-
-    members_count = graphene.Field(graphene.Int)
-    sources_count = graphene.Field(graphene.Int)
-    entries_count = graphene.Field(graphene.Int)
-    user_status = graphene.Field(graphene.String)
+    pending_membership = graphene.Field(graphene.String, required=True)
 
     # NOTE: This is a custom feature
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
@@ -109,21 +111,12 @@ class ProjectType(DjangoObjectType):
             root.get_current_user_role(info.context.request.user)
         )
 
-    @staticmethod
     def resolve_stats(root, info, **kwargs):
         return info.context.dl.project.project_stat.load(root.pk)
 
-    def resolve_user_status(root, info):
-        if Project.objects.filter(id=root.id, members=info.context.request.user).exists():
-            return 'member'
-        elif ProjectJoinRequest.objects.filter(
-            project=root,
-            requested_by=info.context.request.user,
-            status='pending'
-        ).exists():
-            return 'pending'
-        else:
-            return 'non_member'
+    @staticmethod
+    def resolve_pending_membership(root, info):
+        return info.context.dl.project.join_status.load(root.pk)
 
 
 class ProjectDetailType(
@@ -142,7 +135,8 @@ class ProjectDetailType(
             'members', 'regions', 'user_groups', 'analysis_framework',
             'category_editor', 'assessment_template', 'data',
             'is_default', 'is_private', 'is_visualization_enabled', 'status',
-            'organizations', 'stats_cache',
+            'organizations', 'stats_cache', 'created_at', 'created_by',
+            'modified_at', 'modified_by'
         )
 
     analysis_framework = graphene.Field(AnalysisFrameworkDetailType)
