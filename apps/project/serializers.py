@@ -1,4 +1,8 @@
 from django.db import models
+from django.shortcuts import get_object_or_404
+from django.db import transaction
+from django.utils.translation import gettext
+
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
@@ -11,6 +15,7 @@ from analysis_framework.models import AnalysisFrameworkMembership
 from user.models import Feature
 from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
+from user.utils import send_project_join_request_emails
 from user_group.serializers import SimpleUserGroupSerializer
 from user_resource.serializers import UserResourceSerializer
 from ary.models import AssessmentTemplate
@@ -29,6 +34,8 @@ from organization.serializers import (
 
 from .permissions import PROJECT_PERMISSIONS
 from .activity import project_activity_log
+
+MIN_LENGTH = 50
 
 
 class SimpleProjectSerializer(RemoveNullFieldsMixin,
@@ -496,3 +503,53 @@ class ProjectRecentActivitySerializer(serializers.Serializer):
     def get_created_by_display_picture(self, instance):
         name = instance['created_by_display_picture']
         return name and self.context['request'].build_absolute_uri(URLCachedFileField.name_to_representation(name))
+
+
+# -------Graphql Serializer
+class ProjectJoinGqSerializer(serializers.ModelSerializer):
+    project = serializers.CharField(required=True)
+    reason = serializers.CharField(source='data.reason', required=True)
+    role = serializers.CharField(required=False)
+    requested_by = serializers.CharField(read_only=True)
+    responded_by = serializers.CharField(read_only=True)
+    status = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = ProjectJoinRequest
+        fields = (
+            'id',
+            'reason',
+            'role',
+            'requested_by',
+            'responded_by',
+            'project',
+            'status',
+            'data'
+        )
+
+    def create(self, validated_data):
+        validated_data['requested_by'] = self.context['request'].user
+        validated_data['status'] = ProjectJoinRequest.Status.PENDING
+        validated_data['role_id'] = ProjectRole.get_default_role().id
+        instance = super().create(validated_data)
+        transaction.on_commit(
+            lambda: send_project_join_request_emails.delay(instance.id)
+        )
+        return instance
+
+    def validate_project(self, project):
+        project = get_object_or_404(Project, id=project)
+        if project.is_private:
+            raise serializers.ValidationError("Cannot join private project")
+        if ProjectMembership.objects.filter(project=project, member=self.context['request'].user).exists():
+            raise serializers.ValidationError("Already a member")
+        return project
+
+    def validate_reason(self, reason):
+        if len(reason) <= MIN_LENGTH:
+            raise serializers.ValidationError(gettext("Must be at least %s characters") % MIN_LENGTH)
+        return reason
+
+
+class ProjectJoinCancelGqSerializer(serializers.Serializer):
+    project = serializers.CharField(required=True)
