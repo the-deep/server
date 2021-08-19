@@ -2,6 +2,7 @@ import django_filters
 
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
+from django.db import models
 
 from .models import Organization
 
@@ -33,6 +34,17 @@ class IsFromReliefWeb(admin.SimpleListFilter):
 
 
 class OrganizationFilterSet(django_filters.FilterSet):
+    search = django_filters.CharFilter(method='search_filter')
+
     class Meta:
         model = Organization
         fields = ['id']
+
+    def search_filter(self, qs, _, value):
+        if value:
+            return qs.filter(
+                models.Q(title__icontains=value) |
+                models.Q(short_name__icontains=value) |
+                models.Q(long_name__icontains=value)
+            ).distinct()
+        return qs

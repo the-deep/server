@@ -231,7 +231,7 @@ class Section(models.Model):
     analysis_framework = models.ForeignKey(AnalysisFramework, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     order = models.IntegerField(default=1)
-    tooltip = models.TextField(blank=True)
+    tooltip = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f'{self.analysis_framework_id}#{self.title}'
@@ -259,6 +259,10 @@ class Widget(models.Model):
         TEXT = widgets_store.text_widget.WIDGET_ID
         EXCERPT = 'excerptWidget', 'Excerpt #DEPRICATED'  # TODO:DEPRICATED
 
+    class WidthType(models.TextChoices):
+        FULL = 'full', 'Full'
+        HALF = 'half', 'Half'
+
     analysis_framework = models.ForeignKey(AnalysisFramework, on_delete=models.CASCADE)
     # FIXME: key shouldn't be null (Filter/Exportable have non-nullable key)
     key = models.CharField(max_length=100, default=None, blank=True, null=True)
@@ -266,6 +270,7 @@ class Widget(models.Model):
     title = models.CharField(max_length=255)
     properties = models.JSONField(default=None, blank=True, null=True)
     order = models.IntegerField(default=1)
+    width = models.CharField(max_length=10, choices=WidthType.choices, default=WidthType.FULL)
     # NOTE: With section: Primary Tagging, without section: Secondary Tagging
     section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True, blank=True)
     is_deleted = models.BooleanField(default=False)

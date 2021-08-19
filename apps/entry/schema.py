@@ -36,7 +36,7 @@ def get_entry_qs(info):
 
 class EntryGroupLabelType(graphene.ObjectType):
     """
-    TODO: Data is generated from entry_project_labels [EntryProjectLabelsLoader]
+    NOTE: Data is generated from entry_project_labels [EntryProjectLabelsLoader]
     """
     label_id = graphene.ID(required=True)
     label_title = graphene.String(required=True)
