@@ -573,9 +573,11 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         member_user2 = UserFactory.create()
         member_user3 = UserFactory.create()
         member_user4 = UserFactory.create()
+        member_user5 = UserFactory.create()
         af = AnalysisFrameworkFactory.create(created_by=creater_user)
         membership1, _ = af.add_member(member_user1)
         membership2, _ = af.add_member(member_user2)
+        af.add_member(member_user5)
         creater_user_membership, _ = af.add_member(creater_user, role=self.af_owner)
         user_membership, _ = af.add_member(user, role=self.af_owner)
         af.add_member(low_permission_user)
@@ -595,10 +597,10 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                     role=self.af_owner.pk,
                     id=membership2.pk,
                 ),
-                # Try adding already existing member (Invalid on try 1, valid on try 2)
+                # Try adding already existing member
                 dict(
-                    member=member_user1.pk,
-                    clientId="member-user-1",
+                    member=member_user5.pk,
+                    clientId="member-user-5",
                     role=self.af_default.pk,
                 ),
                 # Try adding new member (Valid on try 1, invalid on try 2)
@@ -637,6 +639,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         response = _query_check()['data']['analysisFramework']['analysisFrameworkMembershipBulk']
         self.assertMatchSnapshot(response, 'try 1')
         # ----------------- All valid input
+        minput['afMembership'].pop(1)
         response = _query_check()['data']['analysisFramework']['analysisFrameworkMembershipBulk']
         self.assertMatchSnapshot(response, 'try 2')
 

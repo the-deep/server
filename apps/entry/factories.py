@@ -4,7 +4,7 @@ from factory.django import DjangoModelFactory
 
 from gallery.factories import FileFactory
 
-from .models import Entry
+from .models import Entry, Attribute
 
 
 class EntryFactory(DjangoModelFactory):
@@ -14,3 +14,10 @@ class EntryFactory(DjangoModelFactory):
 
     class Meta:
         model = Entry
+
+
+class EntryAttriuteFactory(DjangoModelFactory):
+    pass
+
+    class Meta:
+        model = Attribute

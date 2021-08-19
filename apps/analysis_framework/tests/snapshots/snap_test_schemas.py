@@ -128,14 +128,14 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                 'isPrivate': False,
                 'primaryTagging': [
                     {
-                        'clientId': '2',
+                        'clientId': 'section-102',
                         'id': '2',
                         'order': 1,
                         'title': 'Section 102',
                         'tooltip': 'Tooltip for section 102',
                         'widgets': [
                             {
-                                'clientId': '3',
+                                'clientId': 'section-2-text-101-client-id',
                                 'id': '3',
                                 'key': 'section-2-text-101',
                                 'order': 1,
@@ -145,7 +145,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 'widgetId': 'TEXTWIDGET'
                             },
                             {
-                                'clientId': '4',
+                                'clientId': 'section-2-text-102-client-id',
                                 'id': '4',
                                 'key': 'section-2-text-102',
                                 'order': 2,
@@ -157,14 +157,14 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                         ]
                     },
                     {
-                        'clientId': '1',
+                        'clientId': 'section-101',
                         'id': '1',
                         'order': 2,
                         'title': 'Section 101',
                         'tooltip': 'Tooltip for section 101',
                         'widgets': [
                             {
-                                'clientId': '1',
+                                'clientId': 'section-text-101-client-id',
                                 'id': '1',
                                 'key': 'section-text-101',
                                 'order': 1,
@@ -174,7 +174,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 'widgetId': 'TEXTWIDGET'
                             },
                             {
-                                'clientId': '2',
+                                'clientId': 'section-text-102-client-id',
                                 'id': '2',
                                 'key': 'section-text-102',
                                 'order': 2,
@@ -188,7 +188,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                 ],
                 'secondaryTagging': [
                     {
-                        'clientId': '5',
+                        'clientId': 'select-widget-101-client-id',
                         'id': '5',
                         'key': 'select-widget-101-key',
                         'order': 1,
@@ -198,7 +198,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                         'widgetId': 'SELECTWIDGET'
                     },
                     {
-                        'clientId': '6',
+                        'clientId': 'multi-select-widget-102-client-id',
                         'id': '6',
                         'key': 'multi-select-widget-102-key',
                         'order': 2,
@@ -236,7 +236,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
         [
             {
                 'arrayErrors': None,
-                'clientId': 'member-user-1',
+                'clientId': 'member-user-5',
                 'field': 'member',
                 'messages': 'User is already a member!',
                 'objectErrors': None
@@ -267,7 +267,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                 'id': '2'
             },
             'clientId': 'member-user-3',
-            'id': '6',
+            'id': '7',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
                 'displayName': 'Jennifer Miles',
@@ -284,7 +284,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                 'id': '2'
             },
             'clientId': 'member-user-4',
-            'id': '7',
+            'id': '8',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
                 'displayName': 'Robert Cole',
@@ -302,7 +302,6 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
     'deletedResult': [
     ],
     'errors': [
-        None,
         None,
         [
             {
@@ -338,23 +337,6 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                 'title': 'Owner'
             }
         },
-        {
-            'addedBy': {
-                'displayName': 'Donald Garcia',
-                'id': '2'
-            },
-            'clientId': 'member-user-1',
-            'id': '8',
-            'joinedAt': '2021-01-01T00:00:00.123456+00:00',
-            'member': {
-                'displayName': 'Clayton Hall',
-                'id': '5'
-            },
-            'role': {
-                'id': '3',
-                'title': 'Default'
-            }
-        },
         None,
         None
     ]
@@ -376,12 +358,12 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                     {
                         'arrayErrors': [
                             {
-                                'clientId': '2',
+                                'clientId': 'section-102',
                                 'messages': None,
                                 'objectErrors': [
                                     {
                                         'arrayErrors': None,
-                                        'clientId': '2',
+                                        'clientId': 'section-102',
                                         'field': 'title',
                                         'messages': 'This field may not be blank.',
                                         'objectErrors': None
@@ -416,14 +398,14 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                     'isPrivate': False,
                     'primaryTagging': [
                         {
-                            'clientId': '2',
+                            'clientId': 'section-102',
                             'id': '2',
                             'order': 1,
                             'title': 'Updated Section 102',
                             'tooltip': 'Tooltip for section 102',
                             'widgets': [
                                 {
-                                    'clientId': '7',
+                                    'clientId': 'section-2-text-101-client-id',
                                     'id': '7',
                                     'key': 'section-2-text-101',
                                     'order': 1,
@@ -433,7 +415,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                     'widgetId': 'TEXTWIDGET'
                                 },
                                 {
-                                    'clientId': '4',
+                                    'clientId': 'section-2-text-102-client-id',
                                     'id': '4',
                                     'key': 'section-2-text-102',
                                     'order': 2,
@@ -445,14 +427,14 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             ]
                         },
                         {
-                            'clientId': '3',
+                            'clientId': 'section-101',
                             'id': '3',
                             'order': 2,
                             'title': 'Section 101',
                             'tooltip': 'Tooltip for section 101',
                             'widgets': [
                                 {
-                                    'clientId': '1',
+                                    'clientId': 'section-text-101-client-id',
                                     'id': '1',
                                     'key': 'section-text-101',
                                     'order': 1,
@@ -462,7 +444,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                     'widgetId': 'TEXTWIDGET'
                                 },
                                 {
-                                    'clientId': '2',
+                                    'clientId': 'section-text-102-client-id',
                                     'id': '2',
                                     'key': 'section-text-102',
                                     'order': 2,
@@ -476,7 +458,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                     ],
                     'secondaryTagging': [
                         {
-                            'clientId': '8',
+                            'clientId': 'multi-select-widget-102-client-id',
                             'id': '8',
                             'key': 'multi-select-widget-102-key',
                             'order': 2,
