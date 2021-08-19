@@ -360,14 +360,17 @@ CELERY_BEAT_SCHEDULE = {
 
 DJANGO_CACHE_REDIS_URL = os.environ.get('DJANGO_CACHE_REDIS_URL', 'redis://redis:6379/2')
 CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": DJANGO_CACHE_REDIS_URL,
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': DJANGO_CACHE_REDIS_URL,
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
-        "KEY_PREFIX": "dj_cache-",
+        'KEY_PREFIX': 'dj_cache-',
     },
+    'local-memory': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
 }
 
 # RELIEF WEB
@@ -466,7 +469,7 @@ else:
         'formatters': {
             'colored_verbose': {
                 '()': 'colorlog.ColoredFormatter',
-                'format': "%(log_color)s%(levelname)-8s%(red)s%(module)-30s%(reset)s %(blue)s%(message)s"
+                'format': "%(log_color)s%(levelname)-8s%(red)s%(module)-8s%(reset)s %(asctime)s %(blue)s%(message)s"
             },
         },
         'handlers': {

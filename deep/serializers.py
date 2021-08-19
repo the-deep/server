@@ -3,6 +3,7 @@ from django.core.exceptions import FieldDoesNotExist
 from django.core.cache import cache
 from rest_framework import serializers
 
+from deep.caches import local_cache
 from deep.middleware import get_s3_signed_url_ttl
 
 StorageClass = get_storage_class()
@@ -138,6 +139,10 @@ class TempClientIdMixin(serializers.ModelSerializer):
     """
     client_id = serializers.CharField(required=False)
 
+    @staticmethod
+    def get_cache_key(instance):
+        return f'{type(instance).__name__}-{instance.id}'
+
     def _get_temp_client_id(self, validated_data):
         try:
             self.Meta.model._meta.get_field('client_id')
@@ -153,6 +158,7 @@ class TempClientIdMixin(serializers.ModelSerializer):
         instance = super().create(validated_data)
         if temp_client_id:
             instance.client_id = temp_client_id
+            local_cache.set(self.get_cache_key(instance), temp_client_id, 60)
         return instance
 
     def update(self, instance, validated_data):
@@ -160,6 +166,7 @@ class TempClientIdMixin(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         if temp_client_id:
             instance.client_id = temp_client_id
+            local_cache.set(self.get_cache_key(instance), temp_client_id, 60)
         return instance
 
 

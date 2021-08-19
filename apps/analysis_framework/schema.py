@@ -22,7 +22,7 @@ class WidgetType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Widget
         fields = (
-            'id', 'key', 'title', 'widget_id', 'order', 'properties',
+            'id', 'key', 'title', 'widget_id', 'order', 'width', 'properties',
             'client_id',
         )
 

@@ -3,11 +3,13 @@ from graphene_django_extras import DjangoObjectField
 from django.core.exceptions import PermissionDenied
 
 from lead.mutation import Mutation as LeadMutation
+from entry.mutation import Mutation as EntryMutation
 from .models import Project
 
 
 class ProjectMutationType(
     LeadMutation,
+    EntryMutation,
     DjangoObjectType
 ):
     """
