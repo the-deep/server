@@ -58,7 +58,22 @@ class UserResourceBaseSerializer(serializers.Serializer):
 
 
 class UserResourceSerializer(UserResourceBaseSerializer, WritableNestedModelSerializer):
-    pass
+    def _get_prefetch_related_instances_qs(self, qs):
+        return qs
+
+    # https://github.com/beda-software/drf-writable-nested/blob/master/drf_writable_nested/mixins.py#L124-L135
+    # This only handles M2M relations.
+    def _prefetch_related_instances(self, field, related_data):
+        model_class = field.Meta.model
+        pk_list = self._extract_related_pks(field, related_data)
+
+        qs = self._get_prefetch_related_instances_qs(model_class.objects)  # Modification added
+        instances = {
+            str(related_instance.pk): related_instance
+            for related_instance in qs.filter(pk__in=pk_list)
+        }
+
+        return instances
 
 
 class DeprecatedUserResourceSerializer(

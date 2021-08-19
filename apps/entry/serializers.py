@@ -3,9 +3,14 @@ import logging
 from drf_dynamic_fields import DynamicFieldsMixin
 from drf_writable_nested.mixins import UniqueFieldsMixin
 from rest_framework import serializers
+from django.utils.functional import cached_property
 
 from deep.writable_nested_serializers import ListToDictField
-from deep.serializers import RemoveNullFieldsMixin
+from deep.serializers import (
+    RemoveNullFieldsMixin,
+    TempClientIdMixin,
+    IntegerIDField,
+)
 from organization.serializers import SimpleOrganizationSerializer
 from user_resource.serializers import UserResourceSerializer, DeprecatedUserResourceSerializer
 from gallery.models import File
@@ -79,8 +84,7 @@ class ExportDataSerializer(RemoveNullFieldsMixin,
         return entry
 
 
-class SimpleAttributeSerializer(RemoveNullFieldsMixin,
-                                serializers.ModelSerializer):
+class SimpleAttributeSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Attribute
         fields = ('id', 'data', 'widget',)
@@ -544,3 +548,147 @@ class SimpleEntrySerializer(serializers.ModelSerializer):
         fields = ('id', 'excerpt', 'dropped_excerpt',
                   'image', 'image_details', 'entry_type',
                   'tabular_field', 'tabular_field_data')
+
+
+# --------------------- Graphql Serializers ----------------------------------------
+class AttributeGqSerializer(TempClientIdMixin, serializers.ModelSerializer):
+    id = IntegerIDField(required=False)
+
+    class Meta:
+        model = Attribute
+        fields = (
+            'id', 'data', 'widget',
+            'client_id',  # From TempClientIdMixin
+        )
+
+    def validate(self, validated_data):
+        if self.instance:  # For update, remove widget on save
+            # Don't allow changing widget if instance is provided
+            validated_data.pop('widget', None)
+        else:  # For create, make sure widget is in active AF
+            active_af = self.context['request'].active_project.analysis_framework
+            if not active_af:
+                raise serializers.ValidationError({
+                    'widget': 'There is not active Framework attached',
+                })
+            if not active_af.widget_set.filter(pk=validated_data['widget'].pk).exists():
+                raise serializers.ValidationError({
+                    'widget': "Given widget doesn't exists in Active Framework",
+                })
+        return validated_data
+
+
+class EntryGqSerializer(TempClientIdMixin, UserResourceSerializer):
+    id = IntegerIDField(required=False)
+    attributes = AttributeGqSerializer(source='attribute_set', required=False, many=True)
+    lead_image = serializers.PrimaryKeyRelatedField(
+        required=False,
+        write_only=True,
+        queryset=LeadPreviewImage.objects.all()
+    )
+
+    class Meta:
+        model = Entry
+        fields = (
+            'id',
+            'lead',
+            'order',
+            'information_date',
+            'entry_type',
+            'image',
+            'image_raw',
+            'lead_image',
+            'tabular_field',
+            'excerpt',
+            'dropped_excerpt',
+            'highlight_hidden',
+            'attributes',
+            'client_id',
+        )
+
+    @cached_property
+    def project(self):
+        project = self.context['request'].active_project
+        # This is a rare case, just to make sure this is validated
+        if self.instance and self.instance.project != project:
+            raise serializers.ValidationError('Invalid access')
+        return project
+
+    # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
+    # This makes sure only scoped (individual entry) instances (attributes) are updated.
+    def _get_prefetch_related_instances_qs(self, qs):
+        if self.instance:
+            return qs.filter(entry=self.instance)
+        return qs.none()  # On create throw error if existing id is provided
+
+    def validate_lead(self, lead):
+        if lead.project_id != self.project.pk:
+            raise serializers.ValidationError("Don't have access to this lead")
+        if self.instance and lead != self.instance.lead:
+            raise serializers.ValidationError('Changing lead is not allowed')
+        return lead
+
+    def validate(self, data):
+        """
+        - Lead image is copied to deep gallery files
+        - Raw image (base64) are saved as deep gallery files
+        """
+        request = self.context['request']
+        image = data.get('image')
+        image_raw = data.pop('image_raw', None)
+        lead_image = data.pop('lead_image', None)
+
+        # ---------------- Lead
+        lead = data['lead']
+        if self.instance and lead != self.instance.lead:
+            raise serializers.ValidationError({
+                'lead': 'Changing lead is not allowed'
+            })
+
+        # ---------------- Project
+        if not self.instance:  # For create only
+            data['project'] = self.context['request'].active_project
+
+        # -------------- Active AF id from project
+        active_af_id = self.project.analysis_framework_id
+        if self.instance:  # For update, only check
+            # Validate for cross AF
+            if active_af_id != self.instance.analysis_framework_id:
+                raise serializers.ValidationError(
+                    "Entry's original Framework is different from project's framework. Conflict detected.",
+                )
+        else:  # For update, set entry's AF with active AF
+            data['analysis_framework_id'] = active_af_id
+
+        # ---------------- Set/validate image properly
+        # If gallery file is provided make sure user owns the file
+        if image:
+            if (
+                (self.instance and self.instance.image) != image and
+                not image.is_public and
+                image.created_by != request.user
+            ):
+                raise serializers.ValidationError({
+                    'image': f'You don\'t have permission to attach image: {image}',
+                })
+        # If lead image is provided make sure lead are same
+        elif lead_image:
+            if lead_image.lead != lead:
+                raise serializers.ValidationError({
+                    'lead_image': f'You don\'t have permission to attach lead image: {lead_image}',
+                })
+            data['image'] = lead_image.clone_as_deep_file(request.user)
+        elif image_raw:
+            generated_image = base64_to_deep_image(image_raw, lead, request.user)
+            if type(generated_image) == File:
+                data['image'] = generated_image
+
+        return data
+
+    def update(self, instance, validated_data):
+        # once altered, unverify the entry if its verified
+        if instance and instance.verified:
+            validated_data['verified'] = False
+            validated_data['verification_last_changed_by'] = self.context['request'].user
+        entry = super().update(instance, validated_data)
+        return entry

@@ -249,20 +249,22 @@ class BulkGrapheneMutation(BaseGrapheneMutation):
     errors = graphene.List(graphene.List(graphene.NonNull(GenericScalar)))
 
     @classmethod
+    def get_valid_delete_items(cls, info, delete_ids):
+        """
+        # Overide if needed (NOTE: define get_valid_delete_items when used)
+        It will use filter_queryset if defined (Better to use filter_queryset)
+        """
+        return cls.get_queryset(info).filter(pk__in=delete_ids)
+
+    @classmethod
     def perform_mutate(cls, root, info, **kwargs):
         items = kwargs.get('items') or []
         delete_ids = kwargs.get('delete_ids')
         all_errors = []
         all_instances = []
         all_deleted_instances = []
-        # Create/Update
-        for item in items:
-            id = item.get('id')
-            instance, errors = cls._save_item(item, info, id=id, **kwargs)
-            all_errors.append(errors)
-            all_instances.append(instance)
+        # Bulk Delete
         if delete_ids:
-            # Delete (NOTE: define get_valid_delete_items when used)
             delete_items = cls.get_valid_delete_items(info, delete_ids)
             for item in delete_items:
                 old_id = item.pk
@@ -271,6 +273,12 @@ class BulkGrapheneMutation(BaseGrapheneMutation):
                 item.pk = old_id
                 all_deleted_instances.append(item)
             # cls.model.filter(pk__in=validated_delete_ids).delete()
+        # Bulk Create/Update
+        for item in items:
+            id = item.get('id')
+            instance, errors = cls._save_item(item, info, id=id, **kwargs)
+            all_errors.append(errors)
+            all_instances.append(instance)
         return cls(result=all_instances, errors=all_errors, deleted_result=all_deleted_instances)
 
 

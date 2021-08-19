@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from factory import random as factory_random
 from snapshottest.django import TestCase as SnapShotTextCase
+from django.utils import timezone
 from django.core import management
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -222,6 +223,18 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
             setattr(obj, key, value)
         obj.save()
         return obj
+
+    def get_datetime_str(self, datetime):
+        return datetime.strftime('%Y-%m-%d%z')
+
+    def get_date_str(self, datetime):
+        return datetime.strftime('%Y-%m-%d')
+
+    def get_aware_datetime(self, *args, **kwargs):
+        return timezone.make_aware(datetime.datetime(*args, **kwargs))
+
+    def get_aware_datetime_str(self, *args, **kwargs):
+        return self.get_datetime_str(self.get_aware_datetime(*args, **kwargs))
 
 
 class GraphQLSnapShotTestCase(GraphQLTestCase, SnapShotTextCase):

@@ -304,7 +304,7 @@ class WidgetGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
     class Meta:
         model = Widget
         fields = (
-            'id', 'key', 'widget_id', 'title', 'properties', 'order',
+            'id', 'key', 'widget_id', 'title', 'properties', 'order', 'width',
             'client_id',
         )
 
@@ -322,6 +322,14 @@ class SectionGqlSerializer(TempClientIdMixin, WritableNestedModelSerializer):
             'client_id',
         )
 
+    # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
+    # This makes sure only scoped (individual AF) instances (widgets) are updated.
+    # TODO: Check this
+    def _get_prefetch_related_instances_qs(self, qs):
+        if self.instance:
+            return qs.filter(analysis_framework=self.instance.analysis_framework_id)
+        return qs.none()  # On create throw error if existing id is provided
+
     def validate_widgets(self, items):
         # Check max limit for widgets
         validate_items_limit(items, AfWidgetLimit.MAX_WIDGETS_ALLOWED_PER_SECTION)
@@ -336,10 +344,18 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
     class Meta:
         model = AnalysisFramework
         fields = (
-            'title', 'description', 'is_private', 'members', 'properties', 'organization', 'preview_image',
+            'title', 'description', 'is_private', 'properties', 'organization', 'preview_image',
             'created_at', 'created_by', 'modified_at', 'modified_by',
             'primary_tagging', 'secondary_tagging',
         )
+
+    # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
+    # This makes sure only scoped (individual AF) instances (widgets) are updated.
+    # For Secondary tagging
+    def _get_prefetch_related_instances_qs(self, qs):
+        if self.instance:
+            return qs.filter(analysis_framework=self.instance)
+        return qs.none()  # On create throw error if existing id is provided
 
     def validate_is_private(self, value):
         # Changing AF Privacy is not allowed (Existing AF)
