@@ -290,7 +290,10 @@ class ProjectPermissions(BasePermissions):
         Permission.UPDATE_ENTRY,
         Permission.DELETE_ENTRY,
     ]
-    ADMIN = [*ANALYST]
+    ADMIN = [
+        *ANALYST,
+        Permission.UPDATE_PROJECT,
+    ]
     CLAIRVOYANT_ONE = [*ADMIN]
 
     # NOTE: Key are already defined in production.
