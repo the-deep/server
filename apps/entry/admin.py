@@ -55,12 +55,12 @@ class EntryAdmin(VersionAdmin):
     list_filter = ('project', 'created_by', 'created_at')
     autocomplete_fields = (
         'lead', 'project', 'created_by', 'modified_by', 'analysis_framework', 'tabular_field',
-        'image', 'controlled_changed_by',
+        'image', 'controlled_changed_by', 'verified_by',
     )
     ordering = ('project', 'created_by', 'created_at')
 
     def get_queryset(self, request):
-        return Entry.objects.prefetch_related('project', 'created_by', 'lead')
+        return Entry.objects.select_related('project', 'created_by', 'lead')
 
     def get_inline_instances(self, request, obj=None):
         inlines = []
