@@ -69,12 +69,6 @@ class ProjectStatType(graphene.ObjectType):
         return (root.stats_cache or {}).get('entries_activities') or []
 
 
-class ProjectStatsType(graphene.ObjectType):
-    members_count = graphene.Field(graphene.Int)
-    sources_count = graphene.Field(graphene.Int)
-    entries_count = graphene.Field(graphene.Int)
-
-
 class ProjectType(DjangoObjectType):
     class Meta:
         model = Project
@@ -82,7 +76,7 @@ class ProjectType(DjangoObjectType):
             'id', 'title', 'description', 'start_date', 'end_date',
             'regions', 'analysis_framework', 'assessment_template',
             'is_default', 'is_private', 'is_visualization_enabled', 'status',
-            'organizations', 'stats_cache'
+            'organizations',
         )
 
     current_user_role = graphene.String()
@@ -92,7 +86,7 @@ class ProjectType(DjangoObjectType):
         ), required=True
     )
     stats = graphene.Field(ProjectStatType)
-    pending_membership = graphene.Field(graphene.String, required=True)
+    membership_pending = graphene.Boolean(required=True)
 
     # NOTE: This is a custom feature
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
@@ -115,7 +109,7 @@ class ProjectType(DjangoObjectType):
         return info.context.dl.project.project_stat.load(root.pk)
 
     @staticmethod
-    def resolve_pending_membership(root, info):
+    def resolve_membership_pending(root, info):
         return info.context.dl.project.join_status.load(root.pk)
 
 
@@ -135,7 +129,7 @@ class ProjectDetailType(
             'members', 'regions', 'user_groups', 'analysis_framework',
             'category_editor', 'assessment_template', 'data',
             'is_default', 'is_private', 'is_visualization_enabled', 'status',
-            'organizations', 'stats_cache', 'created_at', 'created_by',
+            'organizations', 'created_at', 'created_by',
             'modified_at', 'modified_by'
         )
 
