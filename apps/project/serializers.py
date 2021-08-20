@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.utils.translation import gettext
@@ -7,7 +8,7 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
-from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
+from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField, IntegerIDField
 from geo.models import Region
 from geo.serializers import SimpleRegionSerializer
 from entry.models import Lead, Entry
@@ -551,5 +552,58 @@ class ProjectJoinGqSerializer(serializers.ModelSerializer):
         return reason
 
 
-class ProjectJoinCancelGqSerializer(serializers.Serializer):
-    project = serializers.CharField(required=True)
+class ProjectAcceptRejectSerializer(serializers.ModelSerializer):
+    id = IntegerIDField(required=False)
+    status = serializers.CharField(required=True)
+    role = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+
+    class Meta:
+        model = ProjectJoinRequest
+        fields = ('id', 'status', 'role')
+
+    @staticmethod
+    def _accept_request(responded_by, join_request, role):
+        if not role or role == 'normal':
+            role = ProjectRole.get_default_role()
+        elif role == 'admin':
+            role = ProjectRole.get_default_admin_role()
+        else:
+            role_qs = ProjectRole.objects.filter(id=role)
+            if not role_qs.exists():
+                raise serializers.ValidationError('Role doesnot exist')
+            role = role_qs.first()
+
+        join_request.status = 'accepted'
+        join_request.responded_by = responded_by
+        join_request.responded_at = timezone.now()
+        join_request.role = role
+        join_request.save()
+
+        ProjectMembership.objects.update_or_create(
+            project=join_request.project,
+            member=join_request.requested_by,
+            defaults={
+                'role': role,
+                'added_by': responded_by,
+            },
+        )
+
+    @staticmethod
+    def _reject_request(responded_by, join_request):
+        join_request.status = 'rejected'
+        join_request.responded_by = responded_by
+        join_request.responded_at = timezone.now()
+        join_request.save()
+
+    def update(self, instance, validated_data):
+        validated_data['project'] = self.context['request'].active_project
+        role = validated_data.pop('role', None)
+        if instance.status in ['accepted', 'rejected']:
+            raise serializers.ValidationError(
+                'This request has already been {}'.format(instance.status)
+            )
+        if validated_data['status'] == 'accepted':
+            ProjectAcceptRejectSerializer._accept_request(self.context['request'].user, instance, role)
+        elif validated_data['status'] == 'rejected':
+            ProjectAcceptRejectSerializer._reject_request(self.context['request'].user, instance)
+        return super().update(instance, validated_data)
