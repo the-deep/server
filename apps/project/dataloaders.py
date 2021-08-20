@@ -37,10 +37,10 @@ class ProjectJoinStatusLoader(DataLoaderWithContext):
             status='pending',
         ).values_list('project_id', flat=True)
         _map = {
-            project_id: 'True'
+            project_id: True
             for project_id in join_status_qs
         }
-        return Promise.resolve([_map.get(key, 'False') for key in keys])
+        return Promise.resolve([_map.get(key, False) for key in keys])
 
 
 class DataLoaders(WithContextMixin):

@@ -25,7 +25,6 @@ class TestProjectSchema(GraphQLTestCase):
                 title
                 currentUserRole
                 startDate
-                statsCache
                 status
                 isVisualizationEnabled
                 isPrivate
@@ -47,8 +46,7 @@ class TestProjectSchema(GraphQLTestCase):
                     date
                   }
                 }
-                userStatus
-                pendingMembership
+                membershipPending
               }
             }
         '''
@@ -116,13 +114,7 @@ class TestProjectSchema(GraphQLTestCase):
         EntryFactory.create(lead=lead2, project=public_project2, verified=False, analysis_framework=analysis_framework)
         EntryFactory.create(lead=lead3, project=public_project3, verified=False, analysis_framework=analysis_framework)
 
-        # Generate project cache
-        _generate_project_stats_cache()
-
-        user2 = UserFactory.create()
-        user3 = UserFactory.create()
-        request_user = UserFactory.create()
-        non_member_user = UserFactory.create()
+        user2, user3, request_user, non_member_user = UserFactory.create_batch(4)
         analysis_framework = AnalysisFrameworkFactory.create()
         public_project = ProjectFactory.create()
         private_project = ProjectFactory.create(is_private=True)
@@ -148,6 +140,9 @@ class TestProjectSchema(GraphQLTestCase):
         )
         EntryFactory.create(project=private_project, analysis_framework=analysis_framework, lead=lead)
 
+        # Generate project cache
+        _generate_project_stats_cache()
+
         # -- Without login
         self.query_check(query, assert_for_error=True, variables={'id': public_project.id})
         self.query_check(query, assert_for_error=True, variables={'id': private_project.id})
@@ -165,26 +160,26 @@ class TestProjectSchema(GraphQLTestCase):
         self.force_login(non_member_user)
         content = self.query_check(query, variables={'id': public_project.id})
         self.assertNotEqual(content['data']['project'], None, content)
-        self.assertEqual(content['data']['project']['pendingMembership'], 'False')
+        self.assertEqual(content['data']['project']['membershipPending'], False)
 
         # --- member user
         # ---- (public-project)
         self.force_login(user)
         content = self.query_check(query, variables={'id': public_project.id})
         self.assertNotEqual(content['data']['project'], None, content)
-        self.assertEqual(content['data']['project']['stats']['numberOfLeads'], 5, content)
-        self.assertEqual(content['data']['project']['stats']['numberOfLeadsTagged'], 4, content)
-        self.assertEqual(content['data']['project']['stats']['numberOfLeadsTaggedAndVerified'], 2, content)
-        self.assertEqual(content['data']['project']['stats']['numberOfEntries'], 9, content)
+        self.assertEqual(content['data']['project']['stats']['numberOfLeads'], 4, content)
+        self.assertEqual(content['data']['project']['stats']['numberOfLeadsTagged'], 1, content)
+        self.assertEqual(content['data']['project']['stats']['numberOfLeadsTaggedAndVerified'], 0, content)
+        self.assertEqual(content['data']['project']['stats']['numberOfEntries'], 4, content)
         self.assertEqual(content['data']['project']['stats']['numberOfUsers'], 3, content)
-        self.assertEqual(len(content['data']['project']['stats']['leadsActivity']), 2, content)
-        self.assertEqual(len(content['data']['project']['stats']['entriesActivity']), 3, content)
+        self.assertEqual(len(content['data']['project']['stats']['leadsActivity']), 1, content)
+        self.assertEqual(len(content['data']['project']['stats']['entriesActivity']), 1, content)
 
         # login with request user
         self.force_login(request_user)
         content = self.query_check(query, variables={'id': public_project.id})
         self.assertNotEqual(content['data']['project'], None, content)
-        self.assertEqual(content['data']['project']['pendingMembership'], 'True')
+        self.assertEqual(content['data']['project']['membershipPending'], True)
 
         # ---- (private-project)
         self.force_login(user)
