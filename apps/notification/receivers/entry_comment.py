@@ -5,22 +5,22 @@ from django.db.models.signals import (
     post_save,
     pre_save,
     m2m_changed,
-    post_delete
 )
 from django.db import transaction
 from django.conf import settings
 
-from deep.middleware import get_current_user
 from entry.models import EntryComment, EntryCommentText
 from entry.serializers import EntryCommentSerializer
-from notification.models import Notification, Assignment
+from notification.models import Notification
 from notification.tasks import send_entry_comment_email
-from lead.models import Lead
 
 logger = logging.getLogger(__name__)
 
 
-def send_notifications_for_commit(comment_pk, notification_meta):
+def send_notifications_for_comment(comment_pk, notification_meta):
+    """
+    This is for old EntryComment (TODO: Remove this later)
+    """
     comment = EntryComment.objects.get(pk=comment_pk)
 
     notification_meta = {
@@ -59,7 +59,7 @@ def create_entry_commit_notification(sender, instance, **kwargs):
 
     if instance.is_resolved and old_comment.is_resolved != instance.is_resolved:  # Comment is Resolved
         meta['notification_type'] = Notification.ENTRY_COMMENT_RESOLVED
-        transaction.on_commit(lambda: send_notifications_for_commit(instance.pk, meta))
+        transaction.on_commit(lambda: send_notifications_for_comment(instance.pk, meta))
         instance.receiver_notification_already_send = True
 
 
@@ -77,7 +77,7 @@ def create_entry_commit_notification_post(sender, instance, action, **kwargs):
 
     meta['notification_type'] = Notification.ENTRY_COMMENT_ASSIGNEE_CHANGE
     instance.receiver_notification_already_send = True
-    transaction.on_commit(lambda: send_notifications_for_commit(instance.pk, meta))
+    transaction.on_commit(lambda: send_notifications_for_comment(instance.pk, meta))
 
 
 @receiver(post_save, sender=EntryCommentText)
@@ -95,70 +95,4 @@ def create_entry_commit_text_notification(sender, instance, created, **kwargs):
             Notification.ENTRY_COMMENT_REPLY_MODIFY if comment.parent else Notification.ENTRY_COMMENT_MODIFY
         )
 
-    transaction.on_commit(lambda: send_notifications_for_commit(comment.pk, meta))
-
-
-@receiver(m2m_changed, sender=Lead.assignee.through)
-def lead_assignment_signal(sender, instance, action, **kwargs):
-    pk_set = kwargs.get('pk_set', [])
-    # Gets the username from the request with a middleware helper
-    user = get_current_user()
-    if action == 'post_add' and pk_set and user:
-        for receiver_user in pk_set:
-            if Assignment.objects.filter(lead__id=instance.id,
-                                         created_for_id=receiver_user,
-                                         project=instance.project).exists():
-                continue
-            Assignment.objects.create(
-                content_object=instance,
-                created_for_id=receiver_user,
-                project=instance.project,
-                created_by=user,)
-
-    elif action == 'post_remove' and pk_set and user:
-        for receiver_user in pk_set:
-            Assignment.objects.filter(
-                lead__id=instance.id,
-                created_for_id=receiver_user,
-            ).delete()
-
-    # handling `post_clear` since single assignee is passed
-    # though the api
-    elif action == 'post_clear':
-        Assignment.objects.filter(lead__id=instance.id).delete()
-
-
-@receiver(m2m_changed, sender=EntryComment.assignees.through)
-def entrycomment_assignment_signal(sender, instance, action, **kwargs):
-    pk_set = kwargs.get('pk_set', [])
-    # Gets the username from the request with a middleware helper
-    user = get_current_user()
-    if action == 'post_add' and pk_set and user:
-        for receiver_user in pk_set:
-            if Assignment.objects.filter(entry_comment__id=instance.id,
-                                         created_for_id=receiver_user,
-                                         project=instance.entry.project).exists():
-                continue
-            Assignment.objects.create(
-                content_object=instance,
-                created_for_id=receiver_user,
-                project=instance.entry.project,
-                created_by=user,
-            )
-
-    elif action == 'post_remove' and pk_set and user:
-        for receiver_user in pk_set:
-            Assignment.objects.filter(
-                entry_comment__id=instance.id,
-                created_for_id=receiver_user,
-            ).delete()
-
-
-@receiver(post_delete, sender=Lead)
-@receiver(post_delete, sender=EntryComment)
-def delete_related_assignment(sender, instance, *args, **kwargs):
-    pk = instance.id
-    if type(instance) == Lead:
-        Assignment.objects.filter(lead__id=pk).delete()
-    elif type(instance) == EntryComment:
-        Assignment.objects.filter(entry_comment__id=pk).delete()
+    transaction.on_commit(lambda: send_notifications_for_comment(comment.pk, meta))

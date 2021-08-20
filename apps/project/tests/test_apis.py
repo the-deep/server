@@ -173,7 +173,9 @@ class ProjectApiTest(TestCase):
         project = self.create(Project)
 
         project.add_member(user1)
-        ProjectUserGroupMembership.objects.create(project=project, usergroup=usergroup)
+        ProjectUserGroupMembership.objects.create(
+            project=project, usergroup=usergroup, badges=[ProjectMembership.BadgeType.QA]
+        )
 
         url = f'/api/v1/projects/{project.id}/members/'
 
@@ -1424,85 +1426,85 @@ class ProjectApiTest(TestCase):
         data = [
             {
                 "lead": lead1,
-                "verified": True,
+                "controlled": True,
                 "months": -3,
                 "days": -1
             },
             {
                 "lead": lead1,
-                "verified": True,
+                "controlled": True,
                 "months": -2,
                 "days": -1
             },
             {
                 "lead": lead2,
-                "verified": False,
+                "controlled": False,
                 "months": -3,
                 "days": -1
             },
             {
                 "lead": lead2,
-                "verified": True,
+                "controlled": True,
                 "months": -3,
                 "days": -1
             },
             {
                 "lead": lead2,
-                "verified": True,
+                "controlled": True,
                 "months": -3,
                 "days": -1
             },
             {
                 "lead": lead3,
-                "verified": True,
+                "controlled": True,
                 "months": -1,
                 "days": -10
             },
             {
                 "lead": lead3,
-                "verified": True,
+                "controlled": True,
                 "months": -1,
                 "days": -20
             },
             {
                 "lead": lead3,
-                "verified": True,
+                "controlled": True,
                 "months": -1,
                 "days": -30
             },
             {
                 "lead": lead3,
-                "verified": True,
+                "controlled": True,
                 "months": -1,
                 "days": -40
             },
             {
                 "lead": lead4,
-                "verified": False,
+                "controlled": False,
                 "months": -3,
                 "days": -1
             },
             {
                 "lead": lead5,
-                "verified": True,
+                "controlled": True,
                 "months": -3,
                 "days": -1,
             },
             {
                 "lead": lead5,
-                "verified": True,
+                "controlled": True,
                 "months": -2,
                 "days": -1,
             },
             {
                 "lead": lead6,
-                "verified": True,
+                "controlled": True,
                 "months": -3,
                 "days": -1
             },
             {
                 "lead": lead7,
-                "verified": True,
+                "controlled": True,
                 "months": -3,
                 "days": 0,
             },
@@ -1510,7 +1512,7 @@ class ProjectApiTest(TestCase):
         now = timezone.now()
         for item in data:
             self.update_obj(
-                self.create_entry(lead=item['lead'], verified=item['verified'], created_by=user),
+                self.create_entry(lead=item['lead'], controlled=item['controlled'], created_by=user),
                 created_at=now + relativedelta(months=item['months'], days=item['days'])
             )
 
@@ -1521,7 +1523,7 @@ class ProjectApiTest(TestCase):
         self.assertEqual(response.data['projects_count'], 5)
         self.assertEqual(response.data['total_leads_count'], 9)
         self.assertEqual(response.data['total_leads_tagged_count'], 7)
-        self.assertEqual(response.data['total_leads_tagged_and_verified_count'], 5)
+        self.assertEqual(response.data['total_leads_tagged_and_controlled_count'], 5)
         self.assertEqual(len(response.data['recent_entries_activity']['projects']), 3)
         self.assertEqual(response.data['recent_entries_activity']['projects'][0]['id'], project1.id)
         self.assertEqual(response.data['recent_entries_activity']['projects'][0]['count'], 1)
@@ -1542,7 +1544,7 @@ class ProjectApiTest(TestCase):
 
         lead1 = self.create_lead(project=project1, created_by=user)
         lead2 = self.create_lead(project=project2, created_by=user)
-        self.create_entry(lead=lead1, verified=False, created_by=user)
+        self.create_entry(lead=lead1, controlled=False, created_by=user)
         self.create_lead(project=project3, created_by=user)
         self.create_lead(project=project4, created_by=user)
 
@@ -1578,20 +1580,20 @@ class ProjectApiTest(TestCase):
         lead1_4 = self.update_obj(self.create_lead(project=project1), created_at=now + relativedelta(months=-1))
         self.update_obj(self.create_lead(project=project1), created_at=now + relativedelta(months=-1))
 
-        self.update_obj(self.create_entry(lead=lead1_1, verified=False), created_at=now + relativedelta(months=-1))
-        self.update_obj(self.create_entry(lead=lead1_1, verified=False), created_at=now + relativedelta(months=-1))
-        self.update_obj(self.create_entry(lead=lead1_2, verified=True), created_at=now + relativedelta(months=-3))
-        self.update_obj(self.create_entry(lead=lead1_2, verified=False), created_at=now + relativedelta(months=-2))
-        self.update_obj(self.create_entry(lead=lead1_2, verified=True), created_at=now + relativedelta(months=-2))
-        self.update_obj(self.create_entry(lead=lead1_3, verified=True), created_at=now + relativedelta(months=-3))
-        self.update_obj(self.create_entry(lead=lead1_3, verified=True), created_at=now + relativedelta(months=-3))
-        self.create_entry(lead=lead1_3, verified=True)
-        self.create_entry(lead=lead1_4, verified=True)
+        self.update_obj(self.create_entry(lead=lead1_1, controlled=False), created_at=now + relativedelta(months=-1))
+        self.update_obj(self.create_entry(lead=lead1_1, controlled=False), created_at=now + relativedelta(months=-1))
+        self.update_obj(self.create_entry(lead=lead1_2, controlled=True), created_at=now + relativedelta(months=-3))
+        self.update_obj(self.create_entry(lead=lead1_2, controlled=False), created_at=now + relativedelta(months=-2))
+        self.update_obj(self.create_entry(lead=lead1_2, controlled=True), created_at=now + relativedelta(months=-2))
+        self.update_obj(self.create_entry(lead=lead1_3, controlled=True), created_at=now + relativedelta(months=-3))
+        self.update_obj(self.create_entry(lead=lead1_3, controlled=True), created_at=now + relativedelta(months=-3))
+        self.create_entry(lead=lead1_3, controlled=True)
+        self.create_entry(lead=lead1_4, controlled=True)
 
         lead2 = self.create_lead(project=project2)
         lead3 = self.create_lead(project=project3)
-        self.create_entry(lead=lead2, verified=False)
-        self.create_entry(lead=lead3, verified=False)
+        self.create_entry(lead=lead2, controlled=False)
+        self.create_entry(lead=lead3, controlled=False)
 
         # Run the caching process
         _generate_project_stats_cache()
@@ -1608,7 +1610,7 @@ class ProjectApiTest(TestCase):
         self.assertEqual(project_1_data['id'], project1.pk)
         self.assertEqual(project_1_data['number_of_leads'], 5)
         self.assertEqual(project_1_data['number_of_leads_tagged'], 4)
-        self.assertEqual(project_1_data['number_of_leads_tagged_and_verified'], 2)
+        self.assertEqual(project_1_data['number_of_leads_tagged_and_controlled'], 2)
         self.assertEqual(project_1_data['number_of_entries'], 9)
         self.assertEqual(len(project_1_data['leads_activity']), 2)
         self.assertEqual(len(project_1_data['entries_activity']), 3)

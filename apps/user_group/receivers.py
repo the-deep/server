@@ -33,6 +33,7 @@ def refresh_group_membership_updated(sender, instance, **kwargs):
                     user,
                     role=project_group_membership.role,
                     linked_group=user_group,
+                    badges=project_group_membership.badges,
                 )
 
         remove_memberships = ProjectMembership.objects.filter(

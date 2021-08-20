@@ -16,6 +16,7 @@ from deep.graphene_context import GQLContext
 from user.models import User, Profile
 from project.models import Project
 from entry.models import EntryComment
+from quality_assurance.models import EntryReviewComment, CommentType
 from notification.models import Notification
 
 
@@ -162,14 +163,37 @@ class EntryCommentEmail(View):
         )
         context = get_basic_email_context()
         context.update({
-            'email_type': 'entry_comment',
-
+            'email_type': Profile.E_EMAIL_COMMENT,
             'notification_type': Notification.ENTRY_COMMENT_ASSIGNEE_CHANGE,
             'Notification': Notification,
             'comment': comment,
         })
         return TemplateResponse(
             request, 'entry/comment_notification_email.html', context)
+
+
+class EntryReviewCommentEmail(View):
+    """
+    Template view for entry review commit email
+    NOTE: Use Only For Debug
+    """
+    def get(self, request):
+        comment_id = request.GET.get('comment_id')
+        notification_type = request.GET.get('notification_type', Notification.ENTRY_REVIEW_COMMENT_ADD)
+        comment = (
+            EntryReviewComment.objects.get(pk=comment_id)
+            if comment_id else EntryReviewComment.objects.first()
+        )
+        context = get_basic_email_context()
+        context.update({
+            'email_type': Profile.E_EMAIL_COMMENT,
+            'notification_type': notification_type,
+            'CommentType': CommentType,
+            'Notification': Notification,
+            'comment': comment,
+        })
+        return TemplateResponse(
+            request, 'entry/review_comment_notification_email.html', context)
 
 
 class CustomGraphQLView(GraphQLView):
