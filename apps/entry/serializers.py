@@ -707,5 +707,4 @@ class EntryGqSerializer(TempClientIdMixin, UserResourceSerializer):
         if instance and instance.verified:
             validated_data['verified'] = False
             validated_data['verification_last_changed_by'] = self.context['request'].user
-        entry = super().update(instance, validated_data)
-        return entry
+        return super().update(instance, validated_data)
