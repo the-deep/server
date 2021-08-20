@@ -7,13 +7,13 @@ from project.models import (
     ProjectMembership,
     ProjectRole,
 )
-from project.serializers import ProjectJoinGqSerializer
+from project.serializers import ProjectJoinRequestSerializer
 
 
 @receiver(post_save, sender=ProjectJoinRequest)
 def create_notification(sender, instance, created, **kwargs):
     admins = instance.project.get_admins()
-    data = ProjectJoinGqSerializer(instance).data
+    data = ProjectJoinRequestSerializer(instance).data
     if (created):
         for admin in admins:
             Notification.objects.create(
@@ -61,7 +61,7 @@ def update_notification_for_join_request(sender, instance, **kwargs):
         notification.save()
 
     admins = instance.project.get_admins()
-    data = ProjectJoinGqSerializer(instance).data
+    data = ProjectJoinRequestSerializer(instance).data
     data['status'] = 'aborted'
     for admin in admins:
         Notification.objects.create(
@@ -101,7 +101,7 @@ def remove_notifications_for_former_project_admin(
                     receiver=instance.member,
                     notification_type=Notification.PROJECT_JOIN_REQUEST,
                     project=instance.project,
-                    data=ProjectJoinGqSerializer(
+                    data=ProjectJoinRequestSerializer(
                         old_project_join_request).data,
                 )
     except ProjectMembership.DoesNotExist:
@@ -123,6 +123,6 @@ def create_notifications_for_new_project_admin(
                     receiver=instance.member,
                     notification_type=Notification.PROJECT_JOIN_REQUEST,
                     project=instance.project,
-                    data=ProjectJoinGqSerializer(
+                    data=ProjectJoinRequestSerializer(
                         old_project_join_request).data,
                 )
