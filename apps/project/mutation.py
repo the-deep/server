@@ -6,14 +6,19 @@ from graphene_django_extras import DjangoObjectField
 
 from django.core.exceptions import PermissionDenied
 
-from utils.graphene.mutation import generate_input_type_for_serializer
+from utils.graphene.mutation import (
+    generate_input_type_for_serializer,
+    PsGrapheneMutation,
+)
 from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
+
+from deep.permissions import ProjectPermissions as PP
 
 from lead.mutation import Mutation as LeadMutation
 from entry.mutation import Mutation as EntryMutation
 
 from .models import Project, ProjectJoinRequest
-from .serializers import ProjectJoinGqSerializer, ProjectJoinCancelGqSerializer
+from .serializers import ProjectJoinGqSerializer, ProjectAcceptRejectSerializer
 from .schema import ProjectJoinRequestType
 
 
@@ -22,32 +27,45 @@ ProjectJoinRequestInputType = generate_input_type_for_serializer(
     serializer_class=ProjectJoinGqSerializer,
 )
 
-ProjectJoinCancelInputType = generate_input_type_for_serializer(
-    'ProjectJoinCancelInputType',
-    serializer_class=ProjectJoinCancelGqSerializer,
+ProjectAcceptRejectInputType = generate_input_type_for_serializer(
+    'ProjectAcceptRejectInputType',
+    serializer_class=ProjectAcceptRejectSerializer,
 )
 
 
-class DeleteProjectJoin(graphene.Mutation):
+class ProjectAcceptReject(PsGrapheneMutation):
+
     class Arguments:
-        data = ProjectJoinCancelInputType(required=True)
+        data = ProjectAcceptRejectInputType(required=True)
+        id = graphene.ID(required=True)
+
+    model = ProjectJoinRequest
+    serializer_class = ProjectAcceptRejectSerializer
+    result = graphene.Field(ProjectJoinRequestType)
+    permissions = [PP.Permission.UPDATE_PROJECT]
+
+
+class DeleteProjectJoinRequest(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
 
     errors = graphene.List(graphene.NonNull(CustomErrorType))
     ok = graphene.Boolean()
     result = graphene.Field(ProjectJoinRequestType)
 
     @staticmethod
-    def mutate(root, info, data):
+    def mutate(root, info, id):
         try:
             instance = ProjectJoinRequest.objects.get(requested_by=info.context.user,
                                                       status=ProjectJoinRequest.Status.PENDING,
-                                                      project=data['project'])
+                                                      id=id)
         except ProjectJoinRequest.DoesNotExist:
-            return DeleteProjectJoin(errors=[
+            return DeleteProjectJoinRequest(errors=[
                 dict(field='nonFieldErrors', messages=gettext('ProjectJoinRequest does not exist.'))
             ], ok=False)
         instance.delete()
-        return DeleteProjectJoin(result=instance, errors=None, ok=True)
+        instance.id = id
+        return DeleteProjectJoinRequest(result=instance, errors=None, ok=True)
 
 
 class CreateProjectJoin(graphene.Mutation):
@@ -80,6 +98,8 @@ class ProjectMutationType(
         skip_registry = True
         fields = ('id', 'title')
 
+    accept_reject_project = ProjectAcceptReject.Field()
+
     @staticmethod
     def get_custom_node(_, info, id):
         try:
@@ -92,6 +112,6 @@ class ProjectMutationType(
 
 class Mutation(object):
     join_project = CreateProjectJoin.Field()
-    cancel_project_join = DeleteProjectJoin.Field()
+    delete_project_join = DeleteProjectJoinRequest.Field()
     project = DjangoObjectField(ProjectMutationType)
     # TODO: For project mutation make sure AF permission is checked when using. (Public and Private logics)

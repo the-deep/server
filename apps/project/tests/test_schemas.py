@@ -13,8 +13,12 @@ from project.factories import ProjectFactory, ProjectJoinRequestFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
 
 from project.tasks import _generate_project_stats_cache
-from project.models import ProjectRole
 from notification.models import Notification
+from project.models import (
+    ProjectRole,
+    ProjectJoinRequest,
+    ProjectMembership
+)
 
 
 class TestProjectSchema(GraphQLTestCase):
@@ -360,14 +364,19 @@ class TestProjectJoinMutation(GraphQLTestCase):
         "
         minput = dict(project=project.id, reason=reason)
         self.force_login(user)
-        old_count = Notification.objects.filter(receiver=admin_user).count()
+        old_count = Notification.objects.filter(receiver=admin_user, project=project,
+                                                notification_type=Notification.PROJECT_JOIN_REQUEST).count()
         with self.captureOnCommitCallbacks(execute=True):
             content = self.query_check(self.project_join_mutation, minput=minput, okay=True)
             self.assertEqual(content['data']['joinProject']['result']['requestedBy']['id'], str(user.id), content)
             self.assertEqual(content['data']['joinProject']['result']['project']['id'], str(project.id), content)
         send_project_join_request_emails_mock.assert_called_once()
         # confirm that the notification is also created
-        self.assertEqual(Notification.objects.filter(receiver=admin_user).count(), old_count + 1)
+        self.assertEqual(
+            Notification.objects.filter(receiver=admin_user, project=project,
+                                        notification_type=Notification.PROJECT_JOIN_REQUEST).count(),
+            old_count + 1
+        )
         notification = Notification.objects.filter(receiver=admin_user)
         self.assertEqual(notification[0].project, project)
         self.assertEqual(notification[0].notification_type, Notification.PROJECT_JOIN_REQUEST)
@@ -413,11 +422,11 @@ class TestProjectJoinMutation(GraphQLTestCase):
         self.assertEqual(len(content['data']['joinProject']['errors']), 1, content)
 
 
-class TestProjectJoinCancelMutation(GraphQLTestCase):
+class TestProjectJoinDeleteMutation(GraphQLTestCase):
     def setUp(self):
-        self.project_join__cancel_mutation = '''
-            mutation Mutation($input: ProjectJoinCancelInputType!) {
-              cancelProjectJoin(data: $input) {
+        self.project_join_delete_mutation = '''
+            mutation Mutation($id: ID!) {
+              deleteProjectJoin(id: $id) {
                 ok
                 errors
                 result {
@@ -435,17 +444,102 @@ class TestProjectJoinCancelMutation(GraphQLTestCase):
         '''
         super().setUp()
 
-    def test_cancel_project_join_request(self):
-        project = ProjectFactory.create()
+    def test_delete_project_join_request(self):
         user = UserFactory.create()
-        ProjectJoinRequestFactory.create(requested_by=user,
-                                         project=project, role=ProjectRole.get_default_role())
-        minput = dict(project=project.id)
-        self.force_login(user)
-        self.query_check(self.project_join__cancel_mutation, minput=minput, okay=True)
+        project = ProjectFactory.create()
+        join_request = ProjectJoinRequestFactory.create(requested_by=user,
+                                                        project=project,
+                                                        role=ProjectRole.get_default_role(),
+                                                        status=ProjectJoinRequest.Status.PENDING)
+        old_join_request_count = ProjectJoinRequest.objects.filter(requested_by=user).count()
 
-        # try to cancel the project for which join request is not created
-        project2 = ProjectFactory.create()
-        minput = dict(project=project2.id)
         self.force_login(user)
-        self.query_check(self.project_join__cancel_mutation, minput=minput, okay=False)
+        self.query_check(self.project_join_delete_mutation, variables={'id': join_request.id}, okay=True)
+        self.assertEqual(ProjectJoinRequest.objects.filter(requested_by=user).count(), old_join_request_count - 1)
+
+
+class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
+    def setUp(self):
+        self.projet_accept_reject_mutation = '''
+            mutation MyMutation ($projectId: ID! $joinRequestId: ID! $input: ProjectAcceptRejectInputType!) {
+              project(id: $projectId) {
+                acceptRejectProject(id: $joinRequestId, data: $input) {
+                  ok
+                  errors
+                  result {
+                    data
+                    project {
+                      id
+                    }
+                    status
+                    requestedBy {
+                      id
+                    }
+                    respondedBy {
+                      id
+                    }
+                  }
+                }
+              }
+            }
+        '''
+        super().setUp()
+
+    def test_project_join_request_accept(self):
+        user = UserFactory.create()
+        user2 = UserFactory.create()
+        project = ProjectFactory.create()
+        project.add_member(user, role=self.project_role_admin)
+        join_request = ProjectJoinRequestFactory.create(requested_by=user2,
+                                                        project=project,
+                                                        role=ProjectRole.get_default_role(),
+                                                        status=ProjectJoinRequest.Status.PENDING)
+        minput = dict(status='accepted', role='normal')
+
+        # without login
+        self.query_check(
+            self.projet_accept_reject_mutation,
+            minput=minput,
+            variables={'projectId': project.id, 'joinRequestId': join_request.id},
+            assert_for_error=True
+        )
+
+        # with login
+        self.force_login(user)
+        content = self.query_check(self.projet_accept_reject_mutation, minput=minput,
+                                   variables={'projectId': project.id, 'joinRequestId': join_request.id})
+        self.assertEqual(
+            content['data']['project']['acceptRejectProject']['result']['requestedBy']['id'],
+            str(user2.id), content
+        )
+        self.assertEqual(
+            content['data']['project']['acceptRejectProject']['result']['respondedBy']['id'],
+            str(user.id), content
+        )
+        self.assertEqual(content['data']['project']['acceptRejectProject']['result']['status'], 'ACCEPTED', content)
+        # make sure memberships is created
+        self.assertIn(user2.id, ProjectMembership.objects.filter(project=project).values_list('member', flat=True))
+
+    def test_project_join_request_reject(self):
+        user = UserFactory.create()
+        user2 = UserFactory.create()
+        project = ProjectFactory.create()
+        project.add_member(user, role=self.project_role_admin)
+        join_request = ProjectJoinRequestFactory.create(requested_by=user2,
+                                                        project=project,
+                                                        role=ProjectRole.get_default_role(),
+                                                        status=ProjectJoinRequest.Status.PENDING)
+        minput = dict(status='rejected')
+        # without login
+        self.query_check(
+            self.projet_accept_reject_mutation,
+            minput=minput,
+            variables={'projectId': project.id, 'joinRequestId': join_request.id},
+            assert_for_error=True
+        )
+
+        # with login
+        self.force_login(user)
+        content = self.query_check(self.projet_accept_reject_mutation, minput=minput,
+                                   variables={'projectId': project.id, 'joinRequestId': join_request.id})
+        self.assertEqual(content['data']['project']['acceptRejectProject']['result']['status'], 'REJECTED', content)
