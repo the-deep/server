@@ -1,7 +1,8 @@
+from unittest import mock
 from dateutil.relativedelta import relativedelta
 
 from django.utils import timezone
-from unittest import mock
+from factory import fuzzy
 
 from utils.graphene.tests import GraphQLTestCase
 from user.utils import send_project_join_request_emails
@@ -348,50 +349,37 @@ class TestProjectJoinMutation(GraphQLTestCase):
         '''
         super().setUp()
 
-    @mock.patch('project.serializers.send_project_join_request_emails.delay',
-                side_effect=send_project_join_request_emails.delay)
+    @mock.patch(
+        'project.serializers.send_project_join_request_emails.delay',
+        side_effect=send_project_join_request_emails.delay
+    )
     def test_valid_project_join(self, send_project_join_request_emails_mock):
         user = UserFactory.create()
         admin_user = UserFactory.create()
         project = ProjectFactory.create()
         project.add_member(admin_user, role=ProjectRole.get_default_admin_role())
-        reason = "\
-          You gotta be crazy, you gotta have a real need\
-          You gotta sleep on your toes, and when you're on the street\
-          You gotta be able to pick out the easy meat with your eyes closed\
-          And then moving in silently, down wind and out of sight\
-          You gotta strike when the moment is right without thinking\
-        "
+        reason = fuzzy.FuzzyText(length=100).fuzz()
         minput = dict(project=project.id, reason=reason)
         self.force_login(user)
-        old_count = Notification.objects.filter(receiver=admin_user, project=project,
-                                                notification_type=Notification.PROJECT_JOIN_REQUEST).count()
+        notification_qs = Notification.objects.filter(
+            receiver=admin_user,
+            project=project,
+            notification_type=Notification.PROJECT_JOIN_REQUEST
+        )
+        old_count = notification_qs.count()
         with self.captureOnCommitCallbacks(execute=True):
             content = self.query_check(self.project_join_mutation, minput=minput, okay=True)
-            self.assertEqual(content['data']['joinProject']['result']['requestedBy']['id'], str(user.id), content)
-            self.assertEqual(content['data']['joinProject']['result']['project']['id'], str(project.id), content)
+        self.assertEqual(content['data']['joinProject']['result']['requestedBy']['id'], str(user.id), content)
+        self.assertEqual(content['data']['joinProject']['result']['project']['id'], str(project.id), content)
         send_project_join_request_emails_mock.assert_called_once()
         # confirm that the notification is also created
-        self.assertEqual(
-            Notification.objects.filter(receiver=admin_user, project=project,
-                                        notification_type=Notification.PROJECT_JOIN_REQUEST).count(),
-            old_count + 1
-        )
-        notification = Notification.objects.filter(receiver=admin_user)
-        self.assertEqual(notification[0].project, project)
-        self.assertEqual(notification[0].notification_type, Notification.PROJECT_JOIN_REQUEST)
+        assert notification_qs.count() > old_count
 
     def test_already_member_project(self):
         user = UserFactory.create()
         project = ProjectFactory.create()
         project.add_member(user)
-        reason = "\
-          You gotta be crazy, you gotta have a real need\
-          You gotta sleep on your toes, and when you're on the street\
-          You gotta be able to pick out the easy meat with your eyes closed\
-          And then moving in silently, down wind and out of sight\
-          You gotta strike when the moment is right without thinking\
-        "
+        reason = fuzzy.FuzzyText(length=100).fuzz()
         minput = dict(project=project.id, reason=reason)
         self.force_login(user)
         content = self.query_check(self.project_join_mutation, minput=minput, okay=False)
@@ -399,23 +387,31 @@ class TestProjectJoinMutation(GraphQLTestCase):
 
     def test_project_join_reason_length(self):
         user = UserFactory.create()
-        project = ProjectFactory.create()
-        reason = "You gotta be crazy, you gotta have a real need"
-        minput = dict(project=project.id, reason=reason)
+        project1, project2 = ProjectFactory.create_batch(2)
+        reason = fuzzy.FuzzyText(length=49).fuzz()
+        minput = dict(project=project1.id, reason=reason)
         self.force_login(user)
+        # Invalid
         content = self.query_check(self.project_join_mutation, minput=minput, okay=False)
         self.assertEqual(len(content['data']['joinProject']['errors']), 1, content)
+        # Invalid
+        minput['reason'] = fuzzy.FuzzyText(length=501).fuzz()
+        content = self.query_check(self.project_join_mutation, minput=minput, okay=False)
+        self.assertEqual(len(content['data']['joinProject']['errors']), 1, content)
+        # Valid (Project 1) max=500
+        minput['reason'] = fuzzy.FuzzyText(length=500).fuzz()
+        content = self.query_check(self.project_join_mutation, minput=minput, okay=True)
+        self.assertEqual(content['data']['joinProject']['errors'], None, content)
+        # Valid (Project 2) min=50
+        minput['reason'] = fuzzy.FuzzyText(length=50).fuzz()
+        minput['project'] = project2.pk
+        content = self.query_check(self.project_join_mutation, minput=minput, okay=True)
+        self.assertEqual(content['data']['joinProject']['errors'], None, content)
 
     def test_join_private_project(self):
         user = UserFactory.create()
         project = ProjectFactory.create(is_private=True)
-        reason = "\
-          You gotta be crazy, you gotta have a real need\
-          You gotta sleep on your toes, and when you're on the street\
-          You gotta be able to pick out the easy meat with your eyes closed\
-          And then moving in silently, down wind and out of sight\
-          You gotta strike when the moment is right without thinking\
-        "
+        reason = fuzzy.FuzzyText(length=50).fuzz()
         minput = dict(project=project.id, reason=reason)
         self.force_login(user)
         content = self.query_check(self.project_join_mutation, minput=minput, okay=False)
@@ -447,15 +443,18 @@ class TestProjectJoinDeleteMutation(GraphQLTestCase):
     def test_delete_project_join_request(self):
         user = UserFactory.create()
         project = ProjectFactory.create()
-        join_request = ProjectJoinRequestFactory.create(requested_by=user,
-                                                        project=project,
-                                                        role=ProjectRole.get_default_role(),
-                                                        status=ProjectJoinRequest.Status.PENDING)
-        old_join_request_count = ProjectJoinRequest.objects.filter(requested_by=user).count()
+        join_request = ProjectJoinRequestFactory.create(
+            requested_by=user,
+            project=project,
+            role=ProjectRole.get_default_role(),
+            status=ProjectJoinRequest.Status.PENDING,
+        )
+        join_request_qs = ProjectJoinRequest.objects.filter(requested_by=user)
+        old_join_request_count = join_request_qs.count()
 
         self.force_login(user)
         self.query_check(self.project_join_delete_mutation, variables={'id': join_request.id}, okay=True)
-        self.assertEqual(ProjectJoinRequest.objects.filter(requested_by=user).count(), old_join_request_count - 1)
+        self.assertEqual(join_request_qs.count(), old_join_request_count - 1)
 
 
 class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):

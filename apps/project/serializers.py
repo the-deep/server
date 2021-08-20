@@ -36,8 +36,6 @@ from organization.serializers import (
 from .permissions import PROJECT_PERMISSIONS
 from .activity import project_activity_log
 
-MIN_LENGTH = 50
-
 
 class SimpleProjectSerializer(RemoveNullFieldsMixin,
                               serializers.ModelSerializer):
@@ -508,6 +506,9 @@ class ProjectRecentActivitySerializer(serializers.Serializer):
 
 # -------Graphql Serializer
 class ProjectJoinGqSerializer(serializers.ModelSerializer):
+    DESCRIPTION_MIN_LENGTH = 50
+    DESCRIPTION_MAX_LENGTH = 500
+
     project = serializers.CharField(required=True)
     reason = serializers.CharField(source='data.reason', required=True)
     role = serializers.CharField(required=False)
@@ -547,8 +548,12 @@ class ProjectJoinGqSerializer(serializers.ModelSerializer):
         return project
 
     def validate_reason(self, reason):
-        if len(reason) <= MIN_LENGTH:
-            raise serializers.ValidationError(gettext("Must be at least %s characters") % MIN_LENGTH)
+        if not (self.DESCRIPTION_MIN_LENGTH <= len(reason) <= self.DESCRIPTION_MAX_LENGTH):
+            raise serializers.ValidationError(
+                gettext("Must be at least %s characters and at most %s characters") % (
+                    self.DESCRIPTION_MIN_LENGTH, self.DESCRIPTION_MAX_LENGTH,
+                )
+            )
         return reason
 
 
