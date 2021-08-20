@@ -50,7 +50,7 @@ class TestEntryQuery(GraphQLTestCase):
                         name
                       }
                     }
-                    verified
+                    controlled
                   }
                 }
               }
@@ -106,7 +106,7 @@ class TestEntryQuery(GraphQLTestCase):
                             name
                           }
                         }
-                        verified
+                        controlled
                 }
               }
             }
@@ -178,7 +178,7 @@ class TestEntryQuery(GraphQLTestCase):
                         name
                       }
                     }
-                    verified
+                    controlled
               }
             }
         }

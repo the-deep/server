@@ -147,9 +147,9 @@ class TestLeadQuerySchema(GraphQLTestCase):
                     title
                     publishedOn
                     priority
-                    verifiedStat {
+                    controlledStat {
                       totalCount
-                      verifiedCount
+                      controlledCount
                     }
                     authors {
                       id

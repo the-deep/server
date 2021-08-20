@@ -38,7 +38,7 @@ class TestProjectSchema(GraphQLTestCase):
                   }
                   numberOfLeads
                   numberOfLeadsTagged
-                  numberOfLeadsTaggedAndVerified
+                  numberOfLeadsTaggedAndControlled
                   numberOfEntries
                   numberOfUsers
                   leadsActivity {
@@ -64,37 +64,37 @@ class TestProjectSchema(GraphQLTestCase):
         data = [
             {
                 "lead": lead1_1,
-                "verified": False,
+                "controlled": False,
                 "months": -1,
             },
             {
                 "lead": lead1_1,
-                "verified": False,
+                "controlled": False,
                 "months": -3,
             },
             {
                 "lead": lead1_2,
-                "verified": True,
+                "controlled": True,
                 "months": -3,
             },
             {
                 "lead": lead1_2,
-                "verified": False,
+                "controlled": False,
                 "months": -2,
             },
             {
                 "lead": lead1_2,
-                "verified": True,
+                "controlled": True,
                 "months": -2,
             },
             {
                 "lead": lead1_3,
-                "verified": True,
+                "controlled": True,
                 "months": -3,
             },
             {
                 "lead": lead1_3,
-                "verified": True,
+                "controlled": True,
                 "months": -3,
             },
 
@@ -102,17 +102,17 @@ class TestProjectSchema(GraphQLTestCase):
         now = timezone.now()
         for item in data:
             self.update_obj(
-                EntryFactory.create(lead=item['lead'], verified=item['verified'],
+                EntryFactory.create(lead=item['lead'], controlled=item['controlled'],
                                     project=public_project, analysis_framework=analysis_framework),
                 created_at=now + relativedelta(months=item['months'])
             )
-        EntryFactory.create(lead=lead1_3, project=public_project, verified=True, analysis_framework=analysis_framework)
-        EntryFactory.create(lead=lead1_4, project=public_project, verified=True, analysis_framework=analysis_framework)
+        EntryFactory.create(lead=lead1_3, project=public_project, controlled=True, analysis_framework=analysis_framework)
+        EntryFactory.create(lead=lead1_4, project=public_project, controlled=True, analysis_framework=analysis_framework)
 
         lead2 = LeadFactory.create(project=public_project2)
         lead3 = LeadFactory.create(project=public_project3)
-        EntryFactory.create(lead=lead2, project=public_project2, verified=False, analysis_framework=analysis_framework)
-        EntryFactory.create(lead=lead3, project=public_project3, verified=False, analysis_framework=analysis_framework)
+        EntryFactory.create(lead=lead2, project=public_project2, controlled=False, analysis_framework=analysis_framework)
+        EntryFactory.create(lead=lead3, project=public_project3, controlled=False, analysis_framework=analysis_framework)
 
         user2, user3, request_user, non_member_user = UserFactory.create_batch(4)
         analysis_framework = AnalysisFrameworkFactory.create()
@@ -169,7 +169,7 @@ class TestProjectSchema(GraphQLTestCase):
         self.assertNotEqual(content['data']['project'], None, content)
         self.assertEqual(content['data']['project']['stats']['numberOfLeads'], 4, content)
         self.assertEqual(content['data']['project']['stats']['numberOfLeadsTagged'], 1, content)
-        self.assertEqual(content['data']['project']['stats']['numberOfLeadsTaggedAndVerified'], 0, content)
+        self.assertEqual(content['data']['project']['stats']['numberOfLeadsTaggedAndControlled'], 0, content)
         self.assertEqual(content['data']['project']['stats']['numberOfEntries'], 4, content)
         self.assertEqual(content['data']['project']['stats']['numberOfUsers'], 3, content)
         self.assertEqual(len(content['data']['project']['stats']['leadsActivity']), 1, content)
@@ -255,7 +255,7 @@ class TestProjectSchema(GraphQLTestCase):
 
         lead1 = LeadFactory.create(project=public_project1, created_by=user)
         LeadFactory.create(project=public_project2, created_by=user)
-        EntryFactory.create(lead=lead1, verified=False,
+        EntryFactory.create(lead=lead1, controlled=False,
                             created_by=user, project=public_project1,
                             analysis_framework=analysis_framework)
         LeadFactory.create(project=public_project3, created_by=user)

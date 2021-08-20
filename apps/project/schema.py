@@ -54,7 +54,7 @@ def get_top_entity_contributor(project, Entity):
 class ProjectStatType(graphene.ObjectType):
     number_of_leads = graphene.Field(graphene.Int)
     number_of_leads_tagged = graphene.Field(graphene.Int)
-    number_of_leads_tagged_and_verified = graphene.Field(graphene.Int)
+    number_of_leads_tagged_and_controlled = graphene.Field(graphene.Int)
     number_of_entries = graphene.Field(graphene.Int)
     number_of_users = graphene.Field(graphene.Int)
     leads_activity = graphene.List(DateCountType)
