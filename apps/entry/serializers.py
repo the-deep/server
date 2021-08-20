@@ -246,7 +246,7 @@ class EntrySerializer(RemoveNullFieldsMixin,
         - Raw image (base64) are saved as deep gallery files
         """
         request = self.context['request']
-        lead = data.get('lead') or self.instance.lead
+        lead = data.get('lead') or (self.instance and self.instance.lead)
         image = data.get('image')
         image_raw = data.pop('image_raw', None)
         lead_image = data.pop('lead_image', None)
@@ -703,8 +703,8 @@ class EntryGqSerializer(TempClientIdMixin, UserResourceSerializer):
         return data
 
     def update(self, instance, validated_data):
-        # once altered, unverify the entry if its verified
-        if instance and instance.verified:
-            validated_data['verified'] = False
+        # once altered, unverify the entry if its controlled
+        if instance and instance.controlled:
+            validated_data['controlled'] = False
             validated_data['verification_last_changed_by'] = self.context['request'].user
         return super().update(instance, validated_data)
