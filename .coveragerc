@@ -6,6 +6,9 @@ concurrency = multiprocessing
 omit = */migrations/*
         */management/*
         analysis_framework/widgets/*
+        apps/bulk_data_migration/v1_2/*
+        deep/s3_storages.py
+        sitecustomize.py
         entry/widgets/*
         __init.py__
         */wsgi.py
@@ -14,6 +17,7 @@ omit = */migrations/*
         **/apps.py
         **/urls.py
         **/tests.py
+        **/test_*.py
         export/*
 
 [report]
