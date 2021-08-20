@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.crypto import constant_time_compare
@@ -52,3 +54,9 @@ class DeepTokenGenerator(PasswordResetTokenGenerator):
         raise Exception(
             "No _make_hash_value defined for Class: " + type(self).__name__
         )
+
+    def _num_days(self, dt):
+        return (dt - date(2001, 1, 1)).days
+
+    def _today(self):
+        return date.today()
