@@ -39,6 +39,12 @@ class SimpleProjectSerializer(RemoveNullFieldsMixin,
         fields = ('id', 'title', 'is_private')
 
 
+class ProjectNotificationSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ('id', 'title')
+
+
 class ProjectRoleSerializer(RemoveNullFieldsMixin,
                             DynamicFieldsMixin,
                             serializers.ModelSerializer):
@@ -390,7 +396,7 @@ class ProjectMemberViewSerializer(ProjectSerializer):
 class ProjectStatSerializer(ProjectSerializer):
     number_of_leads = serializers.IntegerField(read_only=True)
     number_of_leads_tagged = serializers.IntegerField(read_only=True)
-    number_of_leads_tagged_and_verified = serializers.IntegerField(read_only=True)
+    number_of_leads_tagged_and_controlled = serializers.IntegerField(read_only=True)
     number_of_entries = serializers.IntegerField(read_only=True)
 
     leads_activity = serializers.ReadOnlyField(source='get_leads_activity')

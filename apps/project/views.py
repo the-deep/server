@@ -708,13 +708,12 @@ class ProjectStatViewSet(ProjectViewSet):
         # Lead stats
         leads = Lead.objects.filter(project__in=projects)
         total_leads_tagged_count = leads.annotate(entries_count=models.Count('entry')).filter(entries_count__gt=0).count()
-        total_leads_tagged_and_verified_count = leads.annotate(
+        total_leads_tagged_and_controlled_count = leads.annotate(
             entries_count=models.Count('entry'),
-            verified_entries_count=models.Count(
-                'entry', filter=models.Q(entry__verified=True)
+            controlled_entries_count=models.Count(
+                'entry', filter=models.Q(entry__controlled=True)
             ),
-        ).filter(entries_count__gt=0, entries_count=models.F('verified_entries_count')).count()
-
+        ).filter(entries_count__gt=0, entries_count=models.F('controlled_entries_count')).count()
         # Entries activity
         recent_projects_id = Project.get_recent_active_projects(request.user)
         recent_entries = Entry.objects.filter(
@@ -738,7 +737,7 @@ class ProjectStatViewSet(ProjectViewSet):
             'projects_count': projects.count(),
             'total_leads_count': leads.count(),
             'total_leads_tagged_count': total_leads_tagged_count,
-            'total_leads_tagged_and_verified_count': total_leads_tagged_and_verified_count,
+            'total_leads_tagged_and_controlled_count': total_leads_tagged_and_controlled_count,
             'recent_entries_activity': recent_entries_activity,
         })
 

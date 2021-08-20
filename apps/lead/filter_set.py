@@ -1,5 +1,4 @@
 from django.db import models
-from django.core.exceptions import FieldError
 import django_filters
 
 from deep.filter_set import DjangoFilterCSVWidget
@@ -36,10 +35,10 @@ class LeadFilterSet(django_filters.FilterSet):
         (ASSESSMENT_DOES_NOT_EXIST, 'Assessment does not exist'),
     )
     EXCLUDE_EMPTY_FILTERED_ENTRIES = 'exclude_empty_filtered_entries'
-    EXCLUDE_EMPTY_VERIFIED_FILTERED_ENTRIES = 'exclude_empty_verified_filtered_entries'
+    EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES = 'exclude_empty_controlled_filtered_entries'
     FILTERED_ENTRIES_CHOICE = (
         (EXCLUDE_EMPTY_FILTERED_ENTRIES, 'exclude empty filtered entries'),
-        (EXCLUDE_EMPTY_VERIFIED_FILTERED_ENTRIES , 'exclude empty verified filtered entries'),
+        (EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES, 'exclude empty controlled filtered entries'),
     )
 
     search = django_filters.CharFilter(method='search_filter')
@@ -234,8 +233,8 @@ class LeadFilterSet(django_filters.FilterSet):
         # NOTE: check annotations at Lead.get_for
         if value == self.EXCLUDE_EMPTY_FILTERED_ENTRIES:
             return qs.filter(filtered_entries_count__gte=1)
-        elif value == self.EXCLUDE_EMPTY_VERIFIED_FILTERED_ENTRIES:
-            return qs.filter(verified_filtered_entries_count__gte=1)
+        elif value == self.EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES:
+            return qs.filter(controlled_filtered_entries_count__gte=1)
         return qs
 
 
