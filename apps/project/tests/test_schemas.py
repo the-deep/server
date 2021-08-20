@@ -7,11 +7,10 @@ from utils.graphene.tests import GraphQLTestCase
 from user.factories import UserFactory
 from lead.factories import LeadFactory
 from entry.factories import EntryFactory
-from project.factories import ProjectFactory
+from project.factories import ProjectFactory, ProjectJoinRequestFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
 
 from project.tasks import _generate_project_stats_cache
-from project.models import ProjectJoinRequest
 
 
 class TestProjectSchema(GraphQLTestCase):
@@ -42,7 +41,7 @@ class TestProjectSchema(GraphQLTestCase):
                   numberOfLeadsTagged
                   numberOfLeadsTaggedAndVerified
                   numberOfEntries
-                  number_of_users
+                  numberOfUsers
                   leadsActivity {
                     count
                     date
@@ -127,7 +126,7 @@ class TestProjectSchema(GraphQLTestCase):
         analysis_framework = AnalysisFrameworkFactory.create()
         public_project = ProjectFactory.create()
         private_project = ProjectFactory.create(is_private=True)
-        ProjectJoinRequest.objects.create(
+        ProjectJoinRequestFactory.create(
             project=public_project, requested_by=request_user,
             status='pending', role=self.project_role_admin
         )
@@ -143,9 +142,10 @@ class TestProjectSchema(GraphQLTestCase):
         LeadFactory.create(project=private_project)
 
         # add some entry for the project
-        EntryFactory.create_batch(4, project=public_project,
-                                  analysis_framework=analysis_framework,
-                                  lead=lead)
+        EntryFactory.create_batch(
+            4,
+            project=public_project, analysis_framework=analysis_framework, lead=lead
+        )
         EntryFactory.create(project=private_project, analysis_framework=analysis_framework, lead=lead)
 
         # -- Without login
@@ -176,11 +176,9 @@ class TestProjectSchema(GraphQLTestCase):
         self.assertEqual(content['data']['project']['stats']['numberOfLeadsTagged'], 4, content)
         self.assertEqual(content['data']['project']['stats']['numberOfLeadsTaggedAndVerified'], 2, content)
         self.assertEqual(content['data']['project']['stats']['numberOfEntries'], 9, content)
+        self.assertEqual(content['data']['project']['stats']['numberOfUsers'], 3, content)
         self.assertEqual(len(content['data']['project']['stats']['leadsActivity']), 2, content)
         self.assertEqual(len(content['data']['project']['stats']['entriesActivity']), 3, content)
-        self.assertEqual(content['data']['project']['membersCount'], 3)
-        self.assertEqual(content['data']['project']['sourcesCount'], 4)
-        self.assertEqual(content['data']['project']['entriesCount'], 4)
 
         # login with request user
         self.force_login(request_user)
@@ -193,9 +191,6 @@ class TestProjectSchema(GraphQLTestCase):
         private_project.add_member(user)
         content = self.query_check(query, variables={'id': private_project.id})
         self.assertNotEqual(content['data']['project'], None, content)
-        self.assertEqual(content['data']['project']['projectStats']['membersCount'], 1)
-        self.assertEqual(content['data']['project']['projectStats']['sourcesCount'], 1)
-        self.assertEqual(content['data']['project']['projectStats']['entriesCount'], 1)
 
     def test_projects_query(self):
         """
