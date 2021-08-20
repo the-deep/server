@@ -34,9 +34,9 @@ class TestProjectFilter(GraphQLTestCase):
     def test_search_filter(self):
         ProjectFactory.create(title='one')
         p2 = ProjectFactory.create(title='two')
-        p3 = ProjectFactory.create(title='towo')
+        p3 = ProjectFactory.create(title='twoo')
         obtained = self.filter_class(data=dict(
-            search='w'
+            search='tw'
         )).qs
         expected = [p2, p3]
         self.assertQuerySetIdEqual(
@@ -70,9 +70,7 @@ class TestProjectFilter(GraphQLTestCase):
         )
 
     def test_analysis_framework_filter(self):
-        af1 = AnalysisFrameworkFactory.create()
-        af2 = AnalysisFrameworkFactory.create()
-        af3 = AnalysisFrameworkFactory.create()
+        af1, af2, af3 = AnalysisFrameworkFactory.create_batch(3)
         p1 = ProjectFactory.create(analysis_framework=af1)
         p2 = ProjectFactory.create(analysis_framework=af2)
         ProjectFactory.create(analysis_framework=af3)
