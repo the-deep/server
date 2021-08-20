@@ -470,7 +470,7 @@
     <p id="t415" class="mis show_mis"><span class="n"><a href="#t415">415</a></span><span class="t">            <span class="nam">rows</span><span class="op">.</span><span class="nam">add_value_list</span><span class="op">(</span><span class="op">[</span>&nbsp;</span><span class="r"></span></p>
     <p id="t416" class="pln"><span class="n"><a href="#t416">416</a></span><span class="t">                <span class="nam">entry</span><span class="op">.</span><span class="nam">created_by</span><span class="op">.</span><span class="nam">profile</span><span class="op">.</span><span class="nam">get_display_name</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t417" class="pln"><span class="n"><a href="#t417">417</a></span><span class="t">                <span class="nam">format_date</span><span class="op">(</span><span class="nam">entry</span><span class="op">.</span><span class="nam">created_at</span><span class="op">.</span><span class="nam">date</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t418" class="pln"><span class="n"><a href="#t418">418</a></span><span class="t">                <span class="str">'Verified'</span> <span class="key">if</span> <span class="nam">entry</span><span class="op">.</span><span class="nam">verified</span> <span class="key">else</span> <span class="str">'Unverified'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t418" class="pln"><span class="n"><a href="#t418">418</a></span><span class="t">                <span class="str">'Controlled'</span> <span class="key">if</span> <span class="nam">entry</span><span class="op">.</span><span class="nam">controlled</span> <span class="key">else</span> <span class="str">'Uncontrolled'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t419" class="pln"><span class="n"><a href="#t419">419</a></span><span class="t">                <span class="str">f'{lead.id}'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t420" class="pln"><span class="n"><a href="#t420">420</a></span><span class="t">                <span class="nam">lead</span><span class="op">.</span><span class="nam">title</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t421" class="pln"><span class="n"><a href="#t421">421</a></span><span class="t">                <span class="nam">lead</span><span class="op">.</span><span class="nam">url</span> <span class="key">or</span> <span class="op">(</span><span class="nam">lead</span><span class="op">.</span><span class="nam">attachment</span> <span class="key">and</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">attachment</span><span class="op">.</span><span class="nam">get_file_url</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -550,7 +550,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-08-20 05:35 +0000
+            created at 2021-08-20 09:41 +0000
         </p>
     </div>
 </div>
