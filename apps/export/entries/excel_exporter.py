@@ -191,15 +191,16 @@ class ExcelExporter:
 
         if export_type == 'nested':
             children = data.get('children')
-            if export_data:
-                for i, child in enumerate(children):
-                    if i >= len(export_data):
-                        continue
-                    self.add_entries_from_excel_data(
-                        rows,
-                        child,
-                        export_data[i],
-                    )
+            for i, child in enumerate(children):
+                if export_data is None or i >= len(export_data):
+                    _export_data = None
+                else:
+                    _export_data = export_data[i]
+                self.add_entries_from_excel_data(
+                    rows,
+                    child,
+                    _export_data,
+                )
 
         elif export_type == 'multiple':
             col_span = len(data.get('titles'))
