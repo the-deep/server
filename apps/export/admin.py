@@ -38,3 +38,6 @@ class ExportAdmin(ModelAdmin):
     list_filter = ('type', 'export_type', 'format', 'pending', 'is_preview', 'status',)
     actions = [trigger_retry]
     autocomplete_fields = ('project', 'exported_by',)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('exported_by', 'project')
