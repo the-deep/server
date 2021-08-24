@@ -277,6 +277,13 @@ class Lead(UserResource, ProjectEntityMixin):
             return self.author and self.author.data.title
         return self.author_raw
 
+    def get_authoring_organizations_type_display(self):
+        if self.authors.exists():
+            return ','.join([author.get_organization_type_display() for author in self.authors.all()])
+        elif self.author:
+            return self.author.organization_type and self.author.organization_type.title
+        return
+
     @classmethod
     def get_associated_entities(cls, project_id, lead_ids):
         """
