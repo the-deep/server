@@ -57,6 +57,7 @@ class ExcelExporter:
             'Lead Id',
             'Lead Title',
             'Lead URL',
+            'Authoring Organizations Type',
             'Author',
             'Source',
             'Lead Priority',
@@ -402,7 +403,6 @@ class ExcelExporter:
 
             lead = entry.lead
             assignee = entry.lead.get_assignee()
-
             author = lead.get_authors_display()
             source = lead.get_source_display()
             published_on = (lead.published_on and lead.published_on.strftime(EXPORT_DATE_FORMAT)) or ''
@@ -420,6 +420,7 @@ class ExcelExporter:
                 f'{lead.id}',
                 lead.title,
                 lead.url or (lead.attachment and lead.attachment.get_file_url()),
+                lead.get_authoring_organizations_type_display(),
                 lead.get_authors_display(),
                 lead.get_source_display(),
                 lead.get_priority_display(),
