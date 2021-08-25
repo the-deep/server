@@ -16,7 +16,10 @@ class TestPreviewImage(GraphQLFileUploadTestCase, GraphQLTestCase):
                 result {
                   id
                   title
-                  previewImage
+                  previewImage {
+                      name
+                      url
+                  }
                 }
               }
             }
@@ -25,7 +28,10 @@ class TestPreviewImage(GraphQLFileUploadTestCase, GraphQLTestCase):
         query RetrieveAFQuery {
           analysisFramework(id: %s) {
             id
-            previewImage
+            previewImage {
+                name
+                url
+            }
           }
         }
         """
@@ -54,16 +60,22 @@ class TestPreviewImage(GraphQLFileUploadTestCase, GraphQLTestCase):
             )
         content = response.json()
         self.assertResponseNoErrors(response)
+
         # Test can upload image
         af_id = content['data']['analysisFrameworkCreate']['result']['id']
         self.assertTrue(content['data']['analysisFrameworkCreate']['ok'], content)
-        self.assertTrue(content['data']['analysisFrameworkCreate']['result']['previewImage'])
-        preview_image_name = content['data']['analysisFrameworkCreate']['result']['previewImage']
+        self.assertTrue(content['data']['analysisFrameworkCreate']['result']['previewImage']["name"])
+        preview_image_name = content['data']['analysisFrameworkCreate']['result']['previewImage']["name"]
+        preview_image_url = content['data']['analysisFrameworkCreate']['result']['previewImage']["url"]
         self.assertTrue(preview_image_name.endswith('.png'))
+        self.assertTrue(preview_image_url.endswith(preview_image_name))
 
         # Test can retrive image
         response = self.query(self.retrieve_af_query % af_id)
+        self.assertResponseNoErrors(response)
         content = response.json()
-        self.assertTrue(content['data']['analysisFramework']['previewImage'])
-        preview_image_name = content['data']['analysisFramework']['previewImage']
+        self.assertTrue(content['data']['analysisFramework']['previewImage']["name"])
+        preview_image_name = content['data']['analysisFramework']['previewImage']["name"]
+        preview_image_url = content['data']['analysisFramework']['previewImage']["url"]
         self.assertTrue(preview_image_name.endswith('.png'))
+        self.assertTrue(preview_image_url.endswith(preview_image_name))
