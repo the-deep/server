@@ -31,5 +31,5 @@ class AnalysisFrameworkGqFilterSet(UserResourceFilterSet):
 
     def search_filter(self, qs, _, value):
         if value:
-            return qs.filter(models.Q(title__icontains=value)).distinct()
+            return qs.filter(models.Q(title__icontains=value))
         return qs
