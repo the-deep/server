@@ -10,6 +10,14 @@ class ProjectFactory(DjangoModelFactory):
 
     title = factory.Sequence(lambda n: f'Project-{n}')
 
+    @factory.post_generation
+    def regions(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for region in extracted:
+                self.regions.add(region)
+
 
 class ProjectJoinRequestFactory(DjangoModelFactory):
     class Meta:
