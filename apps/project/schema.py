@@ -3,7 +3,7 @@ from typing import List
 import graphene
 from django.db import models
 from django.db.models import QuerySet
-from graphene_django import DjangoObjectType
+from graphene_django import DjangoObjectType, DjangoListField
 from graphene.types import generic
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
@@ -19,6 +19,7 @@ from lead.schema import Query as LeadQuery
 from entry.schema import Query as EntryQuery
 from export.schema import Query as ExportQuery
 from analysis_framework.schema import AnalysisFrameworkDetailType
+from geo.schema import RegionType
 from lead.models import Lead
 from entry.models import Entry
 
@@ -81,7 +82,8 @@ class ProjectType(DjangoObjectType):
             'id', 'title', 'description', 'start_date', 'end_date',
             'regions', 'analysis_framework', 'assessment_template',
             'is_default', 'is_private', 'is_visualization_enabled', 'status',
-            'organizations',
+            'organizations', 'created_at', 'created_by',
+            'modified_at', 'modified_by'
         )
 
     current_user_role = graphene.String()
@@ -92,6 +94,7 @@ class ProjectType(DjangoObjectType):
     )
     stats = graphene.Field(ProjectStatType)
     membership_pending = graphene.Boolean(required=True)
+    regions = DjangoListField(RegionType)
 
     # NOTE: This is a custom feature
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
