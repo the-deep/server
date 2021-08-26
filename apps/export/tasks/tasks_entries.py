@@ -55,9 +55,10 @@ def export_entries(export):
     queryset = Entry.get_exportable_queryset(queryset)\
         .prefetch_related(
             'lead__authors',
+            'lead__authors__organization_type',
+            # Also organization parents
             'lead__authors__parent',
             'lead__authors__parent__organization_type',
-            'lead__authors__organization_type'
         )
 
     search = filters.get('search')

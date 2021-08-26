@@ -1565,6 +1565,60 @@ class LeadTests(TestCase):
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['id'], leadg_1.id)
 
+    def test_authors_and_authoring_organization_type(self):
+        project = self.create_project(title="lead_test_project")
+        organization_type1 = self.create(OrganizationType, title="National")
+        organization_type2 = self.create(OrganizationType, title="International")
+        organization_type3 = self.create(OrganizationType, title="Government")
+
+        organization1 = self.create(Organization, organization_type=organization_type1)
+        organization2 = self.create(Organization, organization_type=organization_type2)
+        organization3 = self.create(Organization, organization_type=organization_type3)
+        organization4 = self.create(Organization, parent=organization1)
+        organization5 = self.create(Organization, organization_type=organization_type1)
+
+        # create lead
+        lead1 = self.create_lead(project=project, authors=[organization3, organization2])
+        lead2 = self.create_lead(project=project, authors=[organization4])
+        # just provide author for this
+        lead3 = self.create_lead(project=project, author=organization1)
+        # lead that have authors with same organization_type
+        lead4 = self.create_lead(project=project, authors=[organization5, organization1])
+
+        # test for authors
+        self.assertEqual(
+            set(lead1.get_authors_display()),
+            set(','.join([organization2.title, organization3.title]))
+        )
+        self.assertEqual(
+            lead2.get_authors_display(),
+            organization1.title  # organization1 since lead2 authors have parent
+        )
+        self.assertEqual(
+            lead3.get_authors_display(),
+            organization1.title
+        )
+        self.assertEqual(
+            set(lead4.get_authors_display()),
+            set(','.join([organization1.title, organization5.title]))
+        )
+        # test for authoring_oragnizations_type
+        self.assertEqual(
+            set(lead1.get_authoring_organizations_type_display()),
+            set(','.join([organization_type2.title, organization_type3.title]))
+        )
+        self.assertEqual(
+            lead2.get_authoring_organizations_type_display(),
+            organization_type1.title  # organization_type1 since lead2 authors have parent
+        )
+        self.assertEqual(
+            lead3.get_authoring_organizations_type_display(),
+            organization_type1.title
+        )
+        self.assertEqual(
+            lead4.get_authoring_organizations_type_display(),
+            organization_type1.title  # organization_type1 since both authors have same organization_type
+        )
 
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:

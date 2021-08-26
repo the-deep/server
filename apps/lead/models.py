@@ -270,21 +270,24 @@ class Lead(UserResource, ProjectEntityMixin):
         return self.source_raw
 
     def get_authors_display(self):
-        if self.authors.exists():
-            # TODO: Optimize query
-            return ', '.join([author.data.title for author in self.authors.all()])
+        authors = self.authors.all()
+        if authors:
+            return ','.join([
+                author.data.title for author in authors
+            ])
         elif self.author:
             # TODO: Remove (Legacy)
             return self.author and self.author.data.title
         return self.author_raw
 
     def get_authoring_organizations_type_display(self):
-        if self.authors.exists():
+        authors = self.authors.all()
+        if authors:
             return ','.join(set([
-                author.get_organization_type_display() for author in self.authors.all()
+                author.get_organization_type_display() for author in authors
             ]))
         elif self.author:
-            return self.author.organization_type and self.author.organization_type.title
+            return self.author.data.organization_type and self.author.data.organization_type.title
         return
 
     @classmethod
