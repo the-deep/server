@@ -6,7 +6,7 @@ from geo.models import Region
 
 
 class RegionFactory(DjangoModelFactory):
-    code = fuzzy.FuzzyText(length=10)
+    code = fuzzy.FuzzyText(length=3)
     title = factory.Sequence(lambda n: f'Region-{n}')
 
     class Meta:
