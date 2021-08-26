@@ -195,11 +195,7 @@ class TestProjectSchema(GraphQLTestCase):
         self.assertEqual(len(content['data']['project']['stats']['leadsActivity']), 1, content)
         self.assertEqual(len(content['data']['project']['stats']['entriesActivity']), 1, content)
         self.assertEqual(len(content['data']['project']['regions']), 2, content)
-        self.assertEqual(
-            set([item['id'] for item in content['data']['project']['regions']]),
-            set([str(region1.id), str(region2.id)]),
-            content
-        )
+        self.assertListIds(content['data']['project']['regions'], [region1, region2], content)
 
         # login with request user
         self.force_login(request_user)
@@ -213,11 +209,7 @@ class TestProjectSchema(GraphQLTestCase):
         content = self.query_check(query, variables={'id': private_project.id})
         self.assertNotEqual(content['data']['project'], None, content)
         self.assertEqual(len(content['data']['project']['regions']), 1, content)
-        self.assertEqual(
-            set([item['id'] for item in content['data']['project']['regions']]),
-            set([str(region3.id)]),
-            content
-        )
+        self.assertListIds(content['data']['project']['regions'], [region3], content)
 
     def test_projects_query(self):
         """
