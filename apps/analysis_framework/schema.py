@@ -16,6 +16,7 @@ from .models import (
     AnalysisFrameworkMembership,
     AnalysisFrameworkRole,
 )
+from .filter_set import AnalysisFrameworkGqFilterSet
 
 
 class WidgetType(ClientIdMixin, DjangoObjectType):
@@ -124,7 +125,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
 class AnalysisFrameworkListType(CustomDjangoListObjectType):
     class Meta:
         model = AnalysisFramework
-        filter_fields = ['id']
+        filterset_class = AnalysisFrameworkGqFilterSet
 
 
 class Query:

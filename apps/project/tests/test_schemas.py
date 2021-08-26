@@ -12,6 +12,7 @@ from lead.factories import LeadFactory
 from entry.factories import EntryFactory
 from project.factories import ProjectFactory, ProjectJoinRequestFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
+from geo.factories import RegionFactory
 
 from project.tasks import _generate_project_stats_cache
 from notification.models import Notification
@@ -56,6 +57,10 @@ class TestProjectSchema(GraphQLTestCase):
                   }
                 }
                 membershipPending
+                regions {
+                  id
+                  title
+                }
               }
             }
         '''
@@ -149,6 +154,12 @@ class TestProjectSchema(GraphQLTestCase):
         )
         EntryFactory.create(project=private_project, analysis_framework=analysis_framework, lead=lead)
 
+        # lets add some regions to project
+        region1, region2, region3 = RegionFactory.create_batch(3)
+        public_project.regions.add(region1)
+        public_project.regions.add(region2)
+        private_project.regions.add(region3)
+
         # Generate project cache
         _generate_project_stats_cache()
 
@@ -183,6 +194,8 @@ class TestProjectSchema(GraphQLTestCase):
         self.assertEqual(content['data']['project']['stats']['numberOfUsers'], 3, content)
         self.assertEqual(len(content['data']['project']['stats']['leadsActivity']), 1, content)
         self.assertEqual(len(content['data']['project']['stats']['entriesActivity']), 1, content)
+        self.assertEqual(len(content['data']['project']['regions']), 2, content)
+        self.assertListIds(content['data']['project']['regions'], [region1, region2], content)
 
         # login with request user
         self.force_login(request_user)
@@ -195,6 +208,8 @@ class TestProjectSchema(GraphQLTestCase):
         private_project.add_member(user)
         content = self.query_check(query, variables={'id': private_project.id})
         self.assertNotEqual(content['data']['project'], None, content)
+        self.assertEqual(len(content['data']['project']['regions']), 1, content)
+        self.assertListIds(content['data']['project']['regions'], [region3], content)
 
     def test_projects_query(self):
         """

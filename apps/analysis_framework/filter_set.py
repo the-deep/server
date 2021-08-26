@@ -20,3 +20,16 @@ class AnalysisFrameworkFilterSet(UserResourceFilterSet):
                 },
             },
         }
+
+
+class AnalysisFrameworkGqFilterSet(UserResourceFilterSet):
+    search = django_filters.CharFilter(method='search_filter')
+
+    class Meta:
+        model = AnalysisFramework
+        fields = ['id']
+
+    def search_filter(self, qs, _, value):
+        if value:
+            return qs.filter(models.Q(title__icontains=value))
+        return qs
