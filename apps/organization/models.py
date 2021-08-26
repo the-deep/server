@@ -71,6 +71,4 @@ class Organization(UserResource):
         )
 
     def get_organization_type_display(self):
-        if self.parent:
-            return self.parent.organization_type.title
-        return self.organization_type.title
+        return self.data.organization_type.title

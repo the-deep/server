@@ -279,7 +279,9 @@ class Lead(UserResource, ProjectEntityMixin):
 
     def get_authoring_organizations_type_display(self):
         if self.authors.exists():
-            return ','.join([author.get_organization_type_display() for author in self.authors.all()])
+            return ','.join(set([
+                author.get_organization_type_display() for author in self.authors.all()
+            ]))
         elif self.author:
             return self.author.organization_type and self.author.organization_type.title
         return
