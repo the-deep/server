@@ -1573,6 +1573,8 @@ class LeadTests(TestCase):
         organization3 = self.create(Organization, organization_type=organization_type3)
         organization4 = self.create(Organization, parent=organization1)
         organization5 = self.create(Organization, organization_type=organization_type1)
+        # organization without organization_type
+        organization6 = self.create(Organization)
 
         # create lead
         lead1 = self.create_lead(project=project, authors=[organization3, organization2])
@@ -1581,7 +1583,7 @@ class LeadTests(TestCase):
         lead3 = self.create_lead(project=project, author=organization1)
         # lead that have authors with same organization_type
         lead4 = self.create_lead(project=project, authors=[organization5, organization1])
-
+        lead5 = self.create_lead(project=project, authors=[organization6])
         # test for authors
         self.assertEqual(
             set(lead1.get_authors_display()),
@@ -1616,7 +1618,10 @@ class LeadTests(TestCase):
             lead4.get_authoring_organizations_type_display(),
             organization_type1.title  # organization_type1 since both authors have same organization_type
         )
-
+        self.assertEqual(
+            lead5.get_authoring_organizations_type_display(),
+            ''
+        )
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:
 # source, country, date, website
