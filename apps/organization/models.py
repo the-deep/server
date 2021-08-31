@@ -69,3 +69,6 @@ class Organization(UserResource):
         return f'{self.pk} : ({self.short_name}) {self.title} ' + (
             '(MERGED)' if self.parent else ''
         )
+
+    def get_organization_type_display(self):
+        return self.data.organization_type.title
