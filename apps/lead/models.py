@@ -283,7 +283,7 @@ class Lead(UserResource, ProjectEntityMixin):
         authors = self.authors.all()
         if authors:
             return ','.join(set([
-                author.get_organization_type_display() for author in authors
+                author.get_organization_type_display() for author in authors if author.data.organization_type
             ]))
         elif self.author:
             return self.author.data.organization_type and self.author.data.organization_type.title
