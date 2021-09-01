@@ -191,7 +191,7 @@ class LeadViewSet(viewsets.ModelViewSet):
             qs = self.filter_queryset(self.get_queryset())
         elif request.method == 'POST':
             raw_filter_data = request.data
-            filter_data = self._get_processed_filter_data(raw_filter_data)
+            filter_data = LeadFilterSet.get_processed_filter_data(raw_filter_data)
             qs = LeadFilterSet(data=filter_data, queryset=self.get_queryset()).qs
         emm_info = Lead.get_emm_summary(qs)
         if emm_info_only:
@@ -219,7 +219,7 @@ class LeadViewSet(viewsets.ModelViewSet):
     )
     def leads_filter(self, request, version=None):
         raw_filter_data = request.data
-        filter_data = self._get_processed_filter_data(raw_filter_data)
+        filter_data = LeadFilterSet.get_processed_filter_data(raw_filter_data)
 
         queryset = self.get_queryset()
         qs = LeadFilterSet(data=filter_data, queryset=queryset).qs
@@ -232,18 +232,6 @@ class LeadViewSet(viewsets.ModelViewSet):
         response = self.get_paginated_response(serializer.data)
 
         return response
-
-    def _get_processed_filter_data(self, raw_filter_data):
-        """Make json data usable by filterset class.
-        This basically processes list query_params and joins them to comma separated string.
-        """
-        filter_data = {}
-        for key, value in raw_filter_data.items():
-            if isinstance(value, list):
-                filter_data[key] = ','.join([str(x) for x in value])
-            else:
-                filter_data[key] = value
-        return filter_data
 
 
 class LeadBulkDeleteViewSet(viewsets.GenericViewSet):
