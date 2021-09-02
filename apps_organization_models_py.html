@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/organization/models.py: 67%</title>
+    <title>Coverage for apps/organization/models.py: 95%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -18,13 +18,13 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>apps/organization/models.py</b> :
-            <span class="pc_cov">67%</span>
+            <span class="pc_cov">95%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            32 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">24 run</button>
-            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">8 missing</button>
+            34 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">32 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">2 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">0 partial</button>
         </h2>
@@ -111,25 +111,28 @@
     <p id="t56" class="pln"><span class="n"><a href="#t56">56</a></span><span class="t">        <span class="str">"""</span>&nbsp;</span><span class="r"></span></p>
     <p id="t57" class="pln"><span class="n"><a href="#t57">57</a></span><span class="t"><span class="str">        Get merged organization if merged</span>&nbsp;</span><span class="r"></span></p>
     <p id="t58" class="pln"><span class="n"><a href="#t58">58</a></span><span class="t"><span class="str">        """</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t59" class="mis show_mis"><span class="n"><a href="#t59">59</a></span><span class="t">        <span class="key">if</span> <span class="nam">hasattr</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="str">'_data'</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t60" class="mis show_mis"><span class="n"><a href="#t60">60</a></span><span class="t">            <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">_data</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t59" class="run"><span class="n"><a href="#t59">59</a></span><span class="t">        <span class="key">if</span> <span class="nam">hasattr</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="str">'_data'</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t60" class="run"><span class="n"><a href="#t60">60</a></span><span class="t">            <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">_data</span>&nbsp;</span><span class="r"></span></p>
     <p id="t61" class="pln"><span class="n"><a href="#t61">61</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t62" class="mis show_mis"><span class="n"><a href="#t62">62</a></span><span class="t">        <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">parent_id</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t63" class="mis show_mis"><span class="n"><a href="#t63">63</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">_data</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">parent</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t62" class="run"><span class="n"><a href="#t62">62</a></span><span class="t">        <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">parent_id</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t63" class="run"><span class="n"><a href="#t63">63</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">_data</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">parent</span>&nbsp;</span><span class="r"></span></p>
     <p id="t64" class="pln"><span class="n"><a href="#t64">64</a></span><span class="t">        <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t65" class="mis show_mis"><span class="n"><a href="#t65">65</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">_data</span> <span class="op">=</span> <span class="nam">self</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t66" class="mis show_mis"><span class="n"><a href="#t66">66</a></span><span class="t">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">_data</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t65" class="run"><span class="n"><a href="#t65">65</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">_data</span> <span class="op">=</span> <span class="nam">self</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t66" class="run"><span class="n"><a href="#t66">66</a></span><span class="t">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">_data</span>&nbsp;</span><span class="r"></span></p>
     <p id="t67" class="pln"><span class="n"><a href="#t67">67</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t68" class="run"><span class="n"><a href="#t68">68</a></span><span class="t">    <span class="key">def</span> <span class="nam">__str__</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t69" class="mis show_mis"><span class="n"><a href="#t69">69</a></span><span class="t">        <span class="key">return</span> <span class="str">f'{self.pk} : ({self.short_name}) {self.title} '</span> <span class="op">+</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t70" class="pln"><span class="n"><a href="#t70">70</a></span><span class="t">            <span class="str">'(MERGED)'</span> <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">parent</span> <span class="key">else</span> <span class="str">''</span>&nbsp;</span><span class="r"></span></p>
     <p id="t71" class="pln"><span class="n"><a href="#t71">71</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t72" class="pln"><span class="n"><a href="#t72">72</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t73" class="run"><span class="n"><a href="#t73">73</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_organization_type_display</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t74" class="run"><span class="n"><a href="#t74">74</a></span><span class="t">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">data</span><span class="op">.</span><span class="nam">organization_type</span><span class="op">.</span><span class="nam">title</span>&nbsp;</span><span class="r"></span></p>
 </div>
 <div id="footer">
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-08-24 04:21 +0000
+            created at 2021-09-02 04:12 +0000
         </p>
     </div>
 </div>
