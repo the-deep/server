@@ -34,6 +34,7 @@ def export_entries(export):
     queryset = get_filtered_entries(user, entries_filter_data)
 
     filters['entries_filter_data'] = entries_filter_data
+    filters = LeadFilterSet.get_processed_filter_data(filters)
     if not include_leads:
         all_leads = Lead.get_for(
             user,
