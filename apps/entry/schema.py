@@ -8,6 +8,7 @@ from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import ProjectPermissions as PP
 from lead.models import Lead
+from quality_assurance.schema import EntryReviewCommentType
 
 from analysis_framework.models import Widget
 from analysis_framework.enums import WidgetWidgetTypeEnum
@@ -28,7 +29,7 @@ def get_entry_qs(info):
         # Filter by project's active analysis_framework (Only show active AF's entries)
         analysis_framework=info.context.active_project.analysis_framework,
     )
-    # Generate querset according to permission
+    # Generate queryset according to permission
     if PP.check_permission(info, PP.Permission.VIEW_ENTRY):
         if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
             return entry_qs
@@ -92,13 +93,15 @@ class EntryType(ClientIdMixin, DjangoObjectType):
             'id',
             'lead', 'project', 'analysis_framework', 'information_date', 'order',
             'excerpt', 'dropped_excerpt', 'image', 'tabular_field', 'highlight_hidden',
-            'controlled', 'controlled_changed_by',
+            'controlled', 'controlled_changed_by', 'verified_by',
             'client_id',
         )
 
     entry_type = graphene.Field(graphene.NonNull(EntryTagTypeEnum))
     attributes = graphene.List(graphene.NonNull(AttributeType))
     project_labels = graphene.List(graphene.NonNull(EntryGroupLabelType))
+    review_comments = graphene.List(graphene.NonNull(EntryReviewCommentType))
+
     # project_labels TODO:
     # tabular_field TODO:
 
@@ -113,6 +116,10 @@ class EntryType(ClientIdMixin, DjangoObjectType):
     @staticmethod
     def resolve_attributes(root, info, **kwargs):
         return info.context.dl.entry.entry_attributes.load(root.pk)
+
+    @staticmethod
+    def resolve_review_comments(root, info, **kwargs):
+        return info.context.dl.entry.review_comments.load(root.pk)
 
 
 class EntryListType(CustomDjangoListObjectType):
