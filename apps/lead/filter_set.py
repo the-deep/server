@@ -153,6 +153,19 @@ class LeadFilterSet(django_filters.FilterSet):
             },
         }
 
+    @staticmethod
+    def get_processed_filter_data(raw_filter_data):
+        """Make json data usable by filterset class.
+        This basically processes list query_params and joins them to comma separated string.
+        """
+        filter_data = {}
+        for key, value in raw_filter_data.items():
+            if isinstance(value, list):
+                filter_data[key] = ','.join([str(x) for x in value])
+            else:
+                filter_data[key] = value
+        return filter_data
+
     def search_filter(self, qs, name, value):
         # NOTE: This exists to make it compatible with post filter
         if not value:
