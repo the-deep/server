@@ -9,6 +9,7 @@ from lead.dataloaders import DataLoaders as LeadDataLoaders
 from entry.dataloaders import DataLoaders as EntryDataloaders
 from organization.dataloaders import DataLoaders as OrganizationDataLoaders
 from analysis_framework.dataloaders import DataLoaders as AfDataloaders
+from quality_assurance.dataloaders import DataLoaders as QADataLoaders
 
 
 class GlobalDataLoaders(WithContextMixin):
@@ -39,3 +40,7 @@ class GlobalDataLoaders(WithContextMixin):
     @cached_property
     def project(self):
         return ProjectDataLoaders(context=self.context)
+
+    @cached_property
+    def quality_assurance(self):
+        return QADataLoaders(context=self.context)
