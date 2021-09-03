@@ -3,7 +3,6 @@ from factory import fuzzy
 from factory.django import DjangoModelFactory
 
 from gallery.factories import FileFactory
-from user.factories import UserFactory
 
 from .models import Entry, Attribute
 
@@ -12,8 +11,6 @@ class EntryFactory(DjangoModelFactory):
     entry_type = fuzzy.FuzzyChoice(Entry.TagType)
     excerpt = fuzzy.FuzzyText(length=100)
     image = factory.SubFactory(FileFactory)
-    controlled_changed_by = factory.SubFactory(UserFactory)
-    controlled = False
 
     class Meta:
         model = Entry
