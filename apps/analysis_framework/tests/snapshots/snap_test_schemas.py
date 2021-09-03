@@ -921,6 +921,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'title': 'Project-0'
                 }
             ],
+            'title': 'AF-0'
         }
     }
 }
