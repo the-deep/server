@@ -15,6 +15,7 @@ from .models import (
     Entry,
     Attribute,
 )
+from .enums import EntryTagTypeEnum
 from .filter_set import EntryGQFilterSet
 
 
@@ -77,11 +78,12 @@ class EntryType(ClientIdMixin, DjangoObjectType):
         fields = (
             'id',
             'lead', 'project', 'analysis_framework', 'information_date', 'order',
-            'entry_type', 'excerpt', 'dropped_excerpt', 'image', 'image_raw', 'tabular_field', 'highlight_hidden',
+            'excerpt', 'dropped_excerpt', 'image', 'image_raw', 'tabular_field', 'highlight_hidden',
             'controlled', 'controlled_changed_by',
             'client_id',
         )
 
+    entry_type = graphene.Field(graphene.NonNull(EntryTagTypeEnum))
     attributes = graphene.List(graphene.NonNull(AttributeType))
     project_labels = graphene.List(graphene.NonNull(EntryGroupLabelType))
     # project_labels TODO:
