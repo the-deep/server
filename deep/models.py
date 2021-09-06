@@ -73,17 +73,3 @@ class FieldOption(models.Model):
 
     class Meta:
         abstract = True
-
-
-class ProcessStatus():
-    PENDING = 'pending'
-    STARTED = 'started'
-    SUCCESS = 'success'
-    FAILURE = 'failure'
-
-    STATUS_CHOICES = (
-        (PENDING, 'Pending'),
-        (STARTED, 'Started'),
-        (SUCCESS, 'Success'),
-        (FAILURE, 'Failure'),
-    )

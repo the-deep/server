@@ -10,7 +10,6 @@ from django.utils import timezone
 from django.db import models
 from redis_store import redis
 
-from deep.models import ProcessStatus
 from ary.stats import get_project_ary_entry_stats
 from lead.models import Lead
 from entry.models import Entry
@@ -31,11 +30,11 @@ STATS_WAIT_TIMEOUT = ProjectStats.THRESHOLD_SECONDS
 def _generate_project_viz_stats(project_id):
     project = Project.objects.get(pk=project_id)
     project_stats, _ = ProjectStats.objects.get_or_create(project=project)
-    project_stats.status = ProcessStatus.STARTED
+    project_stats.status = ProjectStats.Status.STARTED
     project_stats.save()
     try:
         stats, stats_confidential = get_project_ary_entry_stats(project)
-        project_stats.status = ProcessStatus.SUCCESS
+        project_stats.status = ProjectStats.Status.SUCCESS
         project_stats.modified_at = timezone.now()
         project_stats.file.save(
             f'project-stats-{project_id}.json',
@@ -52,7 +51,7 @@ def _generate_project_viz_stats(project_id):
         project_stats.save()
     except Exception:
         logger.warning(f'Ary Stats Generation Failed ({project_id})!!', exc_info=True)
-        project_stats.status = ProcessStatus.FAILURE
+        project_stats.status = ProjectStats.Status.FAILURE
         project_stats.save()
 
 

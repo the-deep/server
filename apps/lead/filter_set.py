@@ -1,17 +1,31 @@
-from django.db import models
 import django_filters
+import graphene
+from django.db import models
+from graphene_django.filter.utils import get_filtering_args_from_filterset
 
 from deep.filter_set import DjangoFilterCSVWidget
 from user_resource.filters import UserResourceFilterSet
+from utils.graphene.filters import (
+    NumberInFilter,
+    MultipleInputFilter,
+    SimpleInputFilter,
+    IDListFilter,
+)
+from utils.graphene.enums import convert_enum_to_graphene_enum
+
 from project.models import Project
 from organization.models import OrganizationType
 from user.models import User
+from entry.filter_set import get_filtered_entries, EntryGQFilterSet
+from entry.schema import EntryListType
+
 from .models import Lead, LeadGroup
-
-
-class NumberInFilter(django_filters.BaseInFilter,
-                     django_filters.NumberFilter):
-    pass
+from .enums import (
+    LeadConfidentialityEnum,
+    LeadStatusEnum,
+    LeadPriorityEnum,
+    LeadSourceTypeEnum,
+)
 
 
 class LeadFilterSet(django_filters.FilterSet):
@@ -24,22 +38,18 @@ class LeadFilterSet(django_filters.FilterSet):
     'in' lookup expressions and CSVWidget.
     """
 
-    ENTRIES_EXIST = 'entries_exists'
-    ASSESSMENT_EXISTS = 'assessment_exists'
-    ENTRIES_DO_NOT_EXIST = 'entries_do_not_exist'
-    ASSESSMENT_DOES_NOT_EXIST = 'assessment_does_not_exist'
-    EXISTS_CHOICE = (
-        (ENTRIES_EXIST, 'Entry Exists'),
-        (ASSESSMENT_EXISTS, 'Assessment Exists'),
-        (ENTRIES_DO_NOT_EXIST, 'Entries do not exist'),
-        (ASSESSMENT_DOES_NOT_EXIST, 'Assessment does not exist'),
-    )
-    EXCLUDE_EMPTY_FILTERED_ENTRIES = 'exclude_empty_filtered_entries'
-    EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES = 'exclude_empty_controlled_filtered_entries'
-    FILTERED_ENTRIES_CHOICE = (
-        (EXCLUDE_EMPTY_FILTERED_ENTRIES, 'exclude empty filtered entries'),
-        (EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES, 'exclude empty controlled filtered entries'),
-    )
+    class Exists(models.TextChoices):
+        ENTRIES_EXIST = 'entries_exists', 'Entry Exists'
+        ASSESSMENT_EXISTS = 'assessment_exists', 'Assessment Exists'
+        ENTRIES_DO_NOT_EXIST = 'entries_do_not_exist', 'Entries do not exist'
+        ASSESSMENT_DOES_NOT_EXIST = 'assessment_does_not_exist', 'Assessment does not exist'
+
+    class CustomFilter(models.TextChoices):
+        EXCLUDE_EMPTY_FILTERED_ENTRIES = 'exclude_empty_filtered_entries', 'exclude empty filtered entries'
+        EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES = (
+            'exclude_empty_controlled_filtered_entries',
+            'exclude empty controlled filtered entries',
+        )
 
     search = django_filters.CharFilter(method='search_filter')
 
@@ -99,7 +109,7 @@ class LeadFilterSet(django_filters.FilterSet):
     )
     exists = django_filters.ChoiceFilter(
         label='Exists Choice',
-        choices=EXISTS_CHOICE, method='exists_filter',
+        choices=Exists.choices, method='exists_filter',
     )
 
     emm_entities = django_filters.CharFilter(
@@ -126,7 +136,7 @@ class LeadFilterSet(django_filters.FilterSet):
     # used in export
     custom_filters = django_filters.ChoiceFilter(
         label='Filtered Exists Choice',
-        choices=FILTERED_ENTRIES_CHOICE, method='filtered_exists_filter',
+        choices=CustomFilter.choices, method='filtered_exists_filter',
     )
 
     class Meta:
@@ -151,6 +161,19 @@ class LeadFilterSet(django_filters.FilterSet):
                 },
             },
         }
+
+    @staticmethod
+    def get_processed_filter_data(raw_filter_data):
+        """Make json data usable by filterset class.
+        This basically processes list query_params and joins them to comma separated string.
+        """
+        filter_data = {}
+        for key, value in raw_filter_data.items():
+            if isinstance(value, list):
+                filter_data[key] = ','.join([str(x) for x in value])
+            else:
+                filter_data[key] = value
+        return filter_data
 
     def search_filter(self, qs, name, value):
         # NOTE: This exists to make it compatible with post filter
@@ -181,13 +204,13 @@ class LeadFilterSet(django_filters.FilterSet):
         return qs.filter(project_id__in=project_ids)
 
     def exists_filter(self, qs, name, value):
-        if value == self.ENTRIES_EXIST:
+        if value == self.Exists.ENTRIES_EXIST:
             return qs.filter(entry__isnull=False)
-        elif value == self.ASSESSMENT_EXISTS:
+        elif value == self.Exists.ASSESSMENT_EXISTS:
             return qs.filter(assessment__isnull=False)
-        elif value == self.ENTRIES_DO_NOT_EXIST:
+        elif value == self.Exists.ENTRIES_DO_NOT_EXIST:
             return qs.filter(entry__isnull=True)
-        elif value == self.ASSESSMENT_DOES_NOT_EXIST:
+        elif value == self.Exists.ASSESSMENT_DOES_NOT_EXIST:
             return qs.filter(assessment__isnull=True)
         return qs
 
@@ -226,16 +249,22 @@ class LeadFilterSet(django_filters.FilterSet):
                     'authors__organization_type'
                 )
             )
-            return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
+            if type(value[0]) == OrganizationType:
+                return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
+            return qs.filter(organization_types__in=value).distinct()
         return qs
 
     def filtered_exists_filter(self, qs, name, value):
         # NOTE: check annotations at Lead.get_for
-        if value == self.EXCLUDE_EMPTY_FILTERED_ENTRIES:
+        if value == self.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES:
             return qs.filter(filtered_entries_count__gte=1)
-        elif value == self.EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES:
+        elif value == self.CustomFilter.EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES:
             return qs.filter(controlled_filtered_entries_count__gte=1)
         return qs
+
+    @property
+    def qs(self):
+        return super().qs.distinct()
 
 
 class LeadGroupFilterSet(UserResourceFilterSet):
@@ -261,7 +290,58 @@ class LeadGroupFilterSet(UserResourceFilterSet):
 # ------------------------------ Graphql filters -----------------------------------
 class LeadGQFilterSet(LeadFilterSet):
     ordering = None
+    project = None
+    assignee = None
+    priority = None
+    confidentiality = None
+    status = None
 
-    @property
-    def qs(self):
-        return super().qs.distinct()
+    source_types = MultipleInputFilter(LeadSourceTypeEnum, field_name='source_type')
+    priorities = MultipleInputFilter(LeadPriorityEnum, field_name='priority')
+    confidentialities = MultipleInputFilter(LeadConfidentialityEnum, field_name='confidentiality')
+    statuses = MultipleInputFilter(LeadStatusEnum, field_name='status')
+    status = MultipleInputFilter(LeadStatusEnum)
+    assignees = IDListFilter(field_name='assignee')
+    authoring_organization_types = IDListFilter(method='authoring_organization_types_filter')
+    # Filter-only enum filter
+    exists = SimpleInputFilter(
+        convert_enum_to_graphene_enum(LeadFilterSet.Exists, name='LeadExistsEnum'),
+        label='Exists Choice', method='exists_filter',
+    )
+    custom_filters = SimpleInputFilter(
+        convert_enum_to_graphene_enum(LeadFilterSet.CustomFilter, name='LeadCustomFilterEnum'),
+        label='Filtered Exists Choice', method='filtered_exists_filter',
+    )
+    entries_filter_data = SimpleInputFilter(
+        type(
+            'LeadEntriesFilterData',
+            (graphene.InputObjectType,),
+            get_filtering_args_from_filterset(EntryGQFilterSet, EntryListType)
+        ),
+        method='filtered_entries_filter_data'
+    )
+
+    def filtered_entries_filter_data(self, qs, name, value):
+        # NOTE: This filter data is used by filtered_exists_filter
+        return qs
+
+    def filtered_exists_filter(self, qs, name, value):
+        entries_filter_data = self.data.get('entries_filter_data') or {}
+
+        def _get_annotate(**filters):
+            return models.functions.Coalesce(
+                models.Subquery(
+                    get_filtered_entries(self.request.user, entries_filter_data).filter(
+                        lead=models.OuterRef('pk'),
+                        **filters,
+                    ).values('lead').order_by().annotate(
+                        count=models.Count('id')
+                    ).values('count')[:1], output_field=models.IntegerField()
+                ), 0
+            )
+
+        if value == self.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES:
+            return qs.annotate(filtered_entries_count=_get_annotate()).filter(filtered_entries_count__gte=1)
+        elif value == self.CustomFilter.EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES:
+            return qs.annotate(filtered_entries_count=_get_annotate(controlled=True)).filter(filtered_entries_count__gte=1)
+        return qs

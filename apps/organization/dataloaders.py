@@ -6,6 +6,8 @@ from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
 from gallery.models import File
 
+from .models import Organization
+
 
 class LogoLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
@@ -19,7 +21,20 @@ class LogoLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key) for key in keys])
 
 
+class OrganizationLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = Organization.objects.filter(id__in=keys)
+        _map = {
+            org.pk: org for org in qs
+        }
+        return Promise.resolve([_map.get(key) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     @cached_property
     def logo(self):
         return LogoLoader(context=self.context)
+
+    @cached_property
+    def organization(self):
+        return OrganizationLoader(context=self.context)

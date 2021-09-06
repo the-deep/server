@@ -1,13 +1,16 @@
 from django.db import models
 import django_filters
 
-from utils.graphene.filters import StringListFilter, IDListFilter
+from utils.graphene.filters import SimpleInputFilter, IDListFilter
 from user_resource.filters import UserResourceFilterSet
 
 from .models import (
     Project,
     ProjectMembership,
     ProjectUserGroupMembership,
+)
+from .enums import (
+    ProjectStatusEnum,
 )
 
 
@@ -72,9 +75,10 @@ def get_filtered_projects(user, queries, annotate=False):
 
 
 class ProjectGqlFilterSet(UserResourceFilterSet):
-    status = StringListFilter(method='filter_by_status')
-    organizations = IDListFilter(method='filter_organizations')
-    analysis_frameworks = IDListFilter(method='filter_analysisframeworks')
+    status = SimpleInputFilter(ProjectStatusEnum)
+    organizations = IDListFilter(field_name='organization')
+    analysis_frameworks = IDListFilter(field_name='analysis_framework')
+    regions = IDListFilter(distinct=True)
     search = django_filters.CharFilter(method='filter_title')
     is_current_user_member = django_filters.BooleanFilter(
         field_name='is_current_user_member', method='filter_with_membership')
@@ -82,21 +86,6 @@ class ProjectGqlFilterSet(UserResourceFilterSet):
     class Meta:
         model = Project
         fields = ()
-
-    def filter_by_status(self, qs, name, value):
-        if not value:
-            return qs
-        return qs.filter(status__in=value).distinct()
-
-    def filter_organizations(self, qs, name, value):
-        if not value:
-            return qs
-        return qs.filter(organizations__in=value).distinct()
-
-    def filter_analysisframeworks(self, qs, name, value):
-        if not value:
-            return qs
-        return qs.filter(analysis_framework__in=value).distinct()
 
     def filter_title(self, qs, name, value):
         if not value:

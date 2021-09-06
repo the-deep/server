@@ -26,7 +26,7 @@ def export_task(export_id, force=False):
             logger.warning(f'Export status is {export.get_status_display()}')
             return 'SKIPPED'
 
-        export.status = Export.STARTED
+        export.status = Export.Status.STARTED
         export.save()
 
         filename, export_format, mime_type, file = EXPORTER_TYPE[export.type](export)

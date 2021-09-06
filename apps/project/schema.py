@@ -26,6 +26,12 @@ from .models import (
     Project,
     ProjectMembership,
     ProjectJoinRequest,
+    ProjectOrganization,
+)
+from .enums import (
+    ProjectStatusEnum,
+    ProjectJoinRequestStatusEnum,
+    ProjectOrganizationTypeEnum,
 )
 
 from .filter_set import ProjectGqlFilterSet
@@ -74,15 +80,27 @@ class ProjectStatType(graphene.ObjectType):
         return (root.stats_cache or {}).get('entries_activities') or []
 
 
+class ProjectOrganizationType(DjangoObjectType):
+    class Meta:
+        model = ProjectOrganization
+        fields = ('id', 'organization',)
+
+    organization_type = graphene.Field(graphene.NonNull(ProjectOrganizationTypeEnum))
+
+    @staticmethod
+    def resolve_organization(root, info):
+        return info.context.dl.organization.organization.load(root.organization_id)
+
+
 class ProjectType(DjangoObjectType):
     class Meta:
         model = Project
         fields = (
             'id', 'title', 'description', 'start_date', 'end_date',
-            'regions', 'analysis_framework', 'assessment_template',
-            'is_default', 'is_private', 'is_visualization_enabled', 'status',
-            'organizations', 'created_at', 'created_by',
-            'modified_at', 'modified_by'
+            'analysis_framework', 'assessment_template',
+            'is_default', 'is_private', 'is_visualization_enabled',
+            'created_at', 'created_by',
+            'modified_at', 'modified_by',
         )
 
     current_user_role = graphene.String()
@@ -94,6 +112,8 @@ class ProjectType(DjangoObjectType):
     stats = graphene.Field(ProjectStatType)
     membership_pending = graphene.Boolean(required=True)
     regions = DjangoListField(RegionType)
+    status = graphene.Field(graphene.NonNull(ProjectStatusEnum))
+    organizations = graphene.List(graphene.NonNull(ProjectOrganizationType))
 
     # NOTE: This is a custom feature
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
@@ -118,6 +138,14 @@ class ProjectType(DjangoObjectType):
     @staticmethod
     def resolve_membership_pending(root, info):
         return info.context.dl.project.join_status.load(root.pk)
+
+    @staticmethod
+    def resolve_organizations(root, info):
+        return info.context.dl.project.organizations.load(root.pk)
+
+    def resolve_regions(root, info, **kwargs):
+        # NOTE: This is prefetched by graphene-django-extras
+        return root.regions.all()
 
 
 class AnalysisFrameworkVisibleProjectType(DjangoObjectType):
@@ -147,10 +175,10 @@ class ProjectDetailType(
         skip_registry = True
         fields = (
             'id', 'title', 'description', 'start_date', 'end_date',
-            'members', 'regions', 'user_groups', 'analysis_framework',
+            'members', 'user_groups', 'analysis_framework',
             'category_editor', 'assessment_template', 'data',
-            'is_default', 'is_private', 'is_visualization_enabled', 'status',
-            'organizations', 'created_at', 'created_by',
+            'is_default', 'is_private', 'is_visualization_enabled',
+            'created_at', 'created_by',
             'modified_at', 'modified_by'
         )
 
@@ -181,8 +209,9 @@ class ProjectJoinRequestType(DjangoObjectType):
             'requested_by',
             'responded_by',
             'project',
-            'status'
         )
+
+    status = graphene.Field(graphene.NonNull(ProjectJoinRequestStatusEnum))
 
 
 class ProjectListType(CustomDjangoListObjectType):

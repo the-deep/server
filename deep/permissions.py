@@ -243,6 +243,10 @@ class ProjectPermissions(BasePermissions):
         VIEW_ENTRY = auto()
         UPDATE_ENTRY = auto()
         DELETE_ENTRY = auto()
+        # ---------------------- Export
+        CREATE_EXPORT = auto()
+        # ---------------------- Export
+        CAN_QUALITY_CONTROL = auto()
 
     Permission.__name__ = 'ProjectPermission'
 
@@ -257,6 +261,8 @@ class ProjectPermissions(BasePermissions):
         Permission.VIEW_ENTRY: "You don't have permission to view entry",
         Permission.UPDATE_ENTRY: "You don't have permission to update entry",
         Permission.DELETE_ENTRY: "You don't have permission to delete entry",
+        Permission.CREATE_EXPORT: "You don't have permission to create entry",
+        Permission.CAN_QUALITY_CONTROL: "You don't have permission to Quality Control",
     }
 
     VIEWER_NON_CONFIDENTIAL = [
@@ -269,6 +275,7 @@ class ProjectPermissions(BasePermissions):
     ]
     READER_NON_CONFIDENTIAL = [
         *VIEWER_NON_CONFIDENTIAL,
+        Permission.CREATE_EXPORT,
         # Add export permission here
     ]
     READER = [
@@ -283,6 +290,7 @@ class ProjectPermissions(BasePermissions):
     ]
     ANALYST = [
         *READER,
+        Permission.CAN_QUALITY_CONTROL,  # TODO: This should be drived from BadgeType
         Permission.CREATE_LEAD,
         Permission.UPDATE_LEAD,
         Permission.DELETE_LEAD,

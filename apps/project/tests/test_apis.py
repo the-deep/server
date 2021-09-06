@@ -78,7 +78,7 @@ class ProjectApiTest(TestCase):
             'title': 'Test project',
             'data': {'testKey': 'testValue'},
             'organizations': [
-                {'organization': self.org1.id, 'organization_type': ProjectOrganization.DONOR},
+                {'organization': self.org1.id, 'organization_type': ProjectOrganization.Type.DONOR},
             ],
         }
 
@@ -97,7 +97,7 @@ class ProjectApiTest(TestCase):
             'title': 'Test project',
             'data': {'testKey': 'testValue'},
             'organizations': [
-                {'organization': self.org1.id, 'organization_type': ProjectOrganization.DONOR},
+                {'organization': self.org1.id, 'organization_type': ProjectOrganization.Type.DONOR},
             ],
             'has_assessments': True
         }
@@ -449,9 +449,9 @@ class ProjectApiTest(TestCase):
         data = {
             'title': 'TestProject',
             'organizations': [
-                {'organization': org1.id, 'organization_type': ProjectOrganization.DONOR},
-                {'organization': org2.id, 'organization_type': ProjectOrganization.GOVERNMENT},
-                {'organization': org3.id, 'organization_type': ProjectOrganization.GOVERNMENT},
+                {'organization': org1.id, 'organization_type': ProjectOrganization.Type.DONOR},
+                {'organization': org2.id, 'organization_type': ProjectOrganization.Type.GOVERNMENT},
+                {'organization': org3.id, 'organization_type': ProjectOrganization.Type.GOVERNMENT},
             ],
         }
 
@@ -463,8 +463,8 @@ class ProjectApiTest(TestCase):
 
         data = {
             'organizations': [
-                {'organization': org4.id, 'organization_type': ProjectOrganization.DONOR},
-                {'organization': org5.id, 'organization_type': ProjectOrganization.GOVERNMENT},
+                {'organization': org4.id, 'organization_type': ProjectOrganization.Type.DONOR},
+                {'organization': org5.id, 'organization_type': ProjectOrganization.Type.GOVERNMENT},
             ],
         }
 

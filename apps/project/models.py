@@ -10,7 +10,6 @@ from django.db import models
 from django.db import connection as django_db_connection
 from django_enumfield import enum
 
-from deep.models import ProcessStatus
 from user_resource.models import UserResource
 from geo.models import Region
 from user_group.models import UserGroup
@@ -369,15 +368,14 @@ class ProjectOrganization(models.Model):
     DONOR = 'donor'
     GOVERNMENT = 'government'
 
-    ORGANIZATION_TYPES = (
-        (LEAD_ORGANIZATION, 'Lead Organization'),
-        (INTERNATIONAL_PARTNER, 'International Partner'),
-        (NATIONAL_PARTNER, 'National Partner'),
-        (DONOR, 'Donor'),
-        (GOVERNMENT, 'Government'),
-    )
+    class Type(models.TextChoices):
+        LEAD_ORGANIZATION = 'lead_organization', 'Lead Organization'
+        INTERNATIONAL_PARTNER = 'international_partner', 'International Partner'
+        NATIONAL_PARTNER = 'national_partner', 'National Partner'
+        DONOR = 'donor', 'Donor'
+        GOVERNMENT = 'government', 'Government'
 
-    organization_type = models.CharField(max_length=30, choices=ORGANIZATION_TYPES)
+    organization_type = models.CharField(max_length=30, choices=Type.choices)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
@@ -509,8 +507,7 @@ class ProjectJoinRequest(models.Model):
         related_name='project_join_requests',
     )
     requested_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=48, choices=Status.choices,
-                              default=Status.PENDING)
+    status = models.CharField(max_length=48, choices=Status.choices, default=Status.PENDING)
     role = models.ForeignKey('project.ProjectRole', on_delete=models.CASCADE)
     responded_by = models.ForeignKey(
         User, on_delete=models.CASCADE,
@@ -609,13 +606,17 @@ class ProjectRole(models.Model):
 
 
 class ProjectStats(models.Model):
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        STARTED = 'started', 'Started'
+        SUCCESS = 'success', 'Success'
+        FAILURE = 'failure', 'Failure'
+
     THRESHOLD_SECONDS = 60 * 20
 
     project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name='entry_stats')
     modified_at = models.DateTimeField(auto_now=True)
-    status = models.CharField(
-        max_length=30, choices=ProcessStatus.STATUS_CHOICES, default=ProcessStatus.PENDING,
-    )
+    status = models.CharField(max_length=30, choices=Status.choices, default=Status.PENDING)
     file = models.FileField(upload_to='project-stats/', max_length=255, null=True, blank=True)
     confidential_file = models.FileField(upload_to='project-stats/', max_length=255, null=True, blank=True)
 
@@ -646,7 +647,7 @@ class ProjectStats(models.Model):
     def is_ready(self):
         time_threshold = timezone.now() - timedelta(seconds=self.THRESHOLD_SECONDS)
         if (
-                self.status == ProcessStatus.SUCCESS and
+                self.status == ProjectStats.Status.SUCCESS and
                 self.modified_at > time_threshold and
                 self.file
         ):

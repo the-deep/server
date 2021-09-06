@@ -148,12 +148,12 @@ def get_project_entries_stats(project, skip_geo_data=False):
 
     # Sample config
     default_config = {
-        'widget_1d': {
+        'widget_1d': [{
             'pk': 2679,
-        },
-        'widget_2d': {
+        }],
+        'widget_2d': [{
             'pk': 2676,
-        },
+        }],
         'geo_widget': {
             'pk': 2677,
         },

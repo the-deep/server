@@ -20,6 +20,12 @@ from .models import (
     LeadEMMTrigger,
     EMMEntity,
 )
+from .enums import (
+    LeadConfidentialityEnum,
+    LeadStatusEnum,
+    LeadPriorityEnum,
+    LeadSourceTypeEnum,
+)
 from .filter_set import LeadGQFilterSet
 
 
@@ -138,10 +144,15 @@ class LeadType(ClientIdMixin, DjangoObjectType):
         fields = (
             'id', 'title', 'created_by', 'created_at', 'modified_by', 'modified_at',
             'project', 'lead_group', 'assignee', 'published_on',
-            'source_type', 'priority', 'confidentiality', 'status',
             'text', 'url', 'website', 'attachment',
             'client_id',
         )
+
+    # Enums
+    source_type = graphene.Field(LeadSourceTypeEnum)
+    priority = graphene.Field(LeadPriorityEnum)
+    confidentiality = graphene.Field(LeadConfidentialityEnum)
+    status = graphene.Field(LeadStatusEnum)
 
     lead_preview = graphene.Field(LeadPreviewType)
     source = graphene.Field(OrganizationType)
@@ -178,7 +189,6 @@ class LeadDetailType(LeadType):
         fields = (
             'id', 'title', 'created_by', 'created_at', 'modified_by', 'modified_at',
             'project', 'lead_group', 'assignee', 'published_on',
-            'source_type', 'priority', 'confidentiality', 'status',
             'text', 'url', 'website', 'attachment',
             'client_id',
         )
