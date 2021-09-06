@@ -1,8 +1,14 @@
 import django_filters
 
 from project.models import Project
-from utils.graphene.filters import StringListFilter
+from utils.graphene.filters import MultipleInputFilter
+
 from .models import Export
+from .enums import (
+    ExportDataTypeEnum,
+    ExportFormatEnum,
+    ExportStatusEnum,
+)
 
 
 class ExportFilterSet(django_filters.rest_framework.FilterSet):
@@ -52,19 +58,10 @@ class ExportFilterSet(django_filters.rest_framework.FilterSet):
 
 
 class ExportGQLFilterSet(django_filters.rest_framework.FilterSet):
-    type = StringListFilter(method='filter_by_type')
-    status = StringListFilter(method='filter_by_status')
+    type = MultipleInputFilter(ExportDataTypeEnum)
+    format = MultipleInputFilter(ExportFormatEnum)
+    status = MultipleInputFilter(ExportStatusEnum)
 
     class Meta:
         model = Export
         fields = ()
-
-    def filter_by_type(self, qs, name, value):
-        if value:
-            return qs.filter(type__in=value).distinct()
-        return qs
-
-    def filter_by_status(self, qs, name, value):
-        if value:
-            return qs.filter(status__in=value).distinct()
-        return qs

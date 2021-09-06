@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from promise import Promise
 from django.utils.functional import cached_property
 from django.db import models
@@ -6,7 +8,11 @@ from django.db.models.functions import Cast
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
-from project.models import Project, ProjectJoinRequest
+from .models import (
+    Project,
+    ProjectJoinRequest,
+    ProjectOrganization,
+)
 
 
 class ProjectStatLoader(DataLoaderWithContext):
@@ -43,6 +49,15 @@ class ProjectJoinStatusLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key, False) for key in keys])
 
 
+class OrganizationsLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = ProjectOrganization.objects.filter(project__in=keys)
+        _map = defaultdict(list)
+        for org in qs.all():
+            _map[org.project_id].append(org)
+        return Promise.resolve([_map.get(key) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
 
     @cached_property
@@ -52,3 +67,11 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def join_status(self):
         return ProjectJoinStatusLoader(context=self.context)
+
+    @cached_property
+    def organizations(self):
+        return OrganizationsLoader(context=self.context)
+
+    @cached_property
+    def organization_type_organization(self):
+        return OrganizationsLoader(context=self.context)

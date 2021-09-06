@@ -1013,21 +1013,21 @@ class LeadTests(TestCase):
         # Entries exists filter test
         self.create_entry(lead=lead1)
         self.create_entry(lead=lead2)
-        response = self.client.get(f'{url}&exists={LeadFilterSet.ENTRIES_EXIST}')
+        response = self.client.get(f'{url}&exists={LeadFilterSet.Exists.ENTRIES_EXIST}')
         assert response.json()['count'] == 2, 'Lead count should be 2 for lead with entries'
 
         # Entries do not exist filter test
-        response = self.client.get(f'{url}&exists={LeadFilterSet.ENTRIES_DO_NOT_EXIST}')
+        response = self.client.get(f'{url}&exists={LeadFilterSet.Exists.ENTRIES_DO_NOT_EXIST}')
         assert response.json()['count'] == 1, 'Lead count should be 1 for lead without entries'
 
         # Assessment exists filter test
         self.create_assessment(lead=lead1)
         self.create_assessment(lead=lead3)
-        response = self.client.get(f'{url}&exists={LeadFilterSet.ASSESSMENT_EXISTS}')
+        response = self.client.get(f'{url}&exists={LeadFilterSet.Exists.ASSESSMENT_EXISTS}')
         assert response.json()['count'] == 2, 'Lead count should be 2 for lead with assessment'
 
         # Assessment does not exist filter test
-        response = self.client.get(f'{url}&exists={LeadFilterSet.ASSESSMENT_DOES_NOT_EXIST}')
+        response = self.client.get(f'{url}&exists={LeadFilterSet.Exists.ASSESSMENT_DOES_NOT_EXIST}')
         assert response.json()['count'] == 1, 'Lead count should be 1 for lead without assessment'
 
     def test_lead_assignee_filter(self):
@@ -1134,7 +1134,7 @@ class LeadTests(TestCase):
         response = self.client.post(url, post_data)
         assert response.json()['count'] == 3
 
-        post_data = {'custom_filters': 'exclude_empty_filtered_entries'}
+        post_data = {'custom_filters': LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES}
         response = self.client.post(url, post_data)
         assert response.json()['count'] == 0, 'There are not supposed to be leads with entries'
 
@@ -1151,7 +1151,7 @@ class LeadTests(TestCase):
         entry2 = self.create(Entry, project=project, lead=lead2, controlled=False, entry_type=Entry.TagType.IMAGE)
         self.create(Entry, project=project, lead=lead3, controlled=False, entry_type=Entry.TagType.DATA_SERIES)
         post_data = {
-            'custom_filters': 'exclude_empty_filtered_entries',
+            'custom_filters': LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES,
             'entries_filter': [('controlled', True)]
         }
         response = self.client.post(url, post_data)

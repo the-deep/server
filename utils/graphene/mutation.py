@@ -8,13 +8,15 @@ from graphene.types.generic import GenericScalar
 from graphene_django.registry import get_global_registry
 from graphene_django.rest_framework.serializer_converter import (
     get_graphene_type_from_serializer_field,
+    convert_choices_to_named_enum_with_descriptions,
 )
 from rest_framework import serializers
 from graphene_file_upload.scalars import Upload
 
 from utils.graphene.error_types import mutation_is_not_valid
+from utils.graphene.enums import get_enum_name_from_django_field
 # from utils.common import to_camelcase
-# from deep.enums import ENUM_TO_GRAPHENE_ENUM_MAP
+from deep.enums import ENUM_TO_GRAPHENE_ENUM_MAP
 from deep.serializers import IntegerIDField
 from deep.permissions import (
     ProjectPermissions as PP,
@@ -50,11 +52,14 @@ def convert_serializer_field_to_id(field):
 def convert_serializer_field_to_jsonstring(field):
     return GenericScalar
 
+
 # TODO: https://github.com/graphql-python/graphene-django/blob/623d0f219ebeaf2b11de4d7f79d84da8508197c8/graphene_django/converter.py#L83-L94  # noqa: E501
 # https://github.com/graphql-python/graphene-django/blob/623d0f219ebeaf2b11de4d7f79d84da8508197c8/graphene_django/rest_framework/serializer_converter.py#L155-L159  # noqa: E501
-# @get_graphene_type_from_serializer_field.register(serializers.ChoiceField)
-# def convert_serializer_field_to_enum(field):
-#     return ENUM_TO_GRAPHENE_ENUM_MAP.get(name, graphene.String)
+@get_graphene_type_from_serializer_field.register(serializers.ChoiceField)
+def convert_serializer_field_to_enum(field):
+    name = field.field_name or field.source or "Choices"
+    custom_name = get_enum_name_from_django_field(field)
+    return ENUM_TO_GRAPHENE_ENUM_MAP.get(custom_name) or convert_choices_to_named_enum_with_descriptions(name, field.choices)
 
 
 def convert_serializer_field(field, is_input=True, convert_choices_to_enum=True):
