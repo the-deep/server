@@ -17,7 +17,7 @@ from analysis_framework.factories import (
 
 
 class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
-    factories_used = [AnalysisFrameworkFactory, SectionFactory, WidgetFactory]
+    factories_used = [AnalysisFrameworkFactory, SectionFactory, WidgetFactory, ProjectFactory]
 
     def test_analysis_framework_list(self):
         query = '''

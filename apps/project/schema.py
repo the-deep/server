@@ -120,6 +120,17 @@ class ProjectType(DjangoObjectType):
         return info.context.dl.project.join_status.load(root.pk)
 
 
+class AnalysisFrameworkVisibleProjectType(DjangoObjectType):
+    class Meta:
+        model = Project
+        skip_registry = True
+        fields = (
+            'id',
+            'title',
+            'is_private'
+        )
+
+
 class ProjectDetailType(
     # -- Start --Project scopped entities
     LeadQuery,
