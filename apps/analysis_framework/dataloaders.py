@@ -2,8 +2,10 @@ from collections import defaultdict
 
 from promise import Promise
 from django.utils.functional import cached_property
+from django.db import models
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
+from project.models import Project
 
 from .models import (
     Widget,
@@ -60,6 +62,17 @@ class MembershipLoader(DataLoaderWithContext):
         return Promise.resolve([_map[key] for key in keys])
 
 
+class VisibleProjects(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        project_qs = Project.objects\
+            .filter(analysis_framework__in=keys)\
+            .exclude(models.Q(is_private=True) & ~models.Q(members=self.context.request.user))
+        _map = defaultdict(list)
+        for project in project_qs:
+            _map[project.analysis_framework_id].append(project)
+        return Promise.resolve([_map[key] for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     # @cached_property
     # def widgets(self):
@@ -80,3 +93,7 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def members(self):
         return MembershipLoader(context=self.context)
+
+    @cached_property
+    def visible_projects(self):
+        return VisibleProjects(context=self.context)

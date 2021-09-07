@@ -529,6 +529,7 @@ class ProjectJoinRequest(models.Model):
 
     class Meta:
         ordering = ('-requested_at',)
+        unique_together = ('project', 'requested_by')
 
 
 class ProjectRole(models.Model):
