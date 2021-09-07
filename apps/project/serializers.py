@@ -545,6 +545,8 @@ class ProjectJoinGqSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Cannot join private project")
         if ProjectMembership.objects.filter(project=project, member=self.context['request'].user).exists():
             raise serializers.ValidationError("Already a member")
+        if ProjectJoinRequest.objects.filter(project=project, requested_by=self.context['request'].user).exists():
+            raise serializers.ValidationError("Already sent join request for project %s" % project.id)
         return project
 
     def validate_reason(self, reason):
