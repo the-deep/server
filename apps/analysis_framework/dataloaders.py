@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from promise import Promise
 from django.utils.functional import cached_property
+from django.db import models
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 from project.models import Project
@@ -9,6 +10,7 @@ from project.models import Project
 from .models import (
     Widget,
     Section,
+    Filter,
     AnalysisFrameworkMembership,
 )
 
@@ -50,6 +52,22 @@ class SectionLoader(DataLoaderWithContext):
         return Promise.resolve([_map[key] for key in keys])
 
 
+class FilterLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = Filter.objects.filter(analysis_framework__in=keys).order_by('id').annotate(
+            widget_type=models.Subquery(
+                Widget.objects.filter(
+                    key=models.OuterRef('widget_key'),
+                    analysis_framework=models.OuterRef('analysis_framework'),
+                ).values('widget_id')[:1], output_field=models.CharField()
+            )
+        ).filter(widget_type__isnull=False)  # Remove if widget_type is empty (meaning widget doesn't exists)
+        _map = defaultdict(list)
+        for _filter in qs:
+            _map[_filter.analysis_framework_id].append(_filter)
+        return Promise.resolve([_map[key] for key in keys])
+
+
 class MembershipLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         qs = AnalysisFrameworkMembership.objects\
@@ -72,10 +90,6 @@ class VisibleProjects(DataLoaderWithContext):
 
 
 class DataLoaders(WithContextMixin):
-    # @cached_property
-    # def widgets(self):
-    #     return WidgetLoader(context=self.context)
-
     @cached_property
     def secondary_widgets(self):
         return SecondaryWidgetLoader(context=self.context)
@@ -87,6 +101,10 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def sections_widgets(self):
         return SectionWidgetLoader(context=self.context)
+
+    @cached_property
+    def filters(self):
+        return FilterLoader(context=self.context)
 
     @cached_property
     def members(self):

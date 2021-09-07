@@ -16,8 +16,8 @@ from django.test import TestCase, override_settings
 # dramatiq test case: setupclass is not properly called
 # from django_dramatiq.test import DramatiqTestCase
 from graphene_django.utils import GraphQLTestCase as BaseGraphQLTestCase
-from graphene_django.converter import convert_choice_name
 
+from deep.middleware import _set_current_request
 from analysis_framework.models import AnalysisFramework, AnalysisFrameworkRole
 from project.permissions import get_project_permissions_value
 from project.models import ProjectRole
@@ -78,7 +78,7 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
         """
         Return appropriate enum value.
         """
-        return convert_choice_name(_enum.value)
+        return _enum.name
 
     def assertResponseErrors(self, resp, msg=None):
         """
@@ -241,6 +241,10 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
 
     def get_aware_datetime_str(self, *args, **kwargs):
         return self.get_datetime_str(self.get_aware_datetime(*args, **kwargs))
+
+    def tearDown(self):
+        _set_current_request()  # Clear request
+        super().tearDown()
 
 
 class GraphQLSnapShotTestCase(GraphQLTestCase, SnapShotTextCase):

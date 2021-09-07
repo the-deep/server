@@ -1013,7 +1013,7 @@ class LeadTests(TestCase):
         # Entries exists filter test
         self.create_entry(lead=lead1)
         self.create_entry(lead=lead2)
-        response = self.client.get(f'{url}&exists={LeadFilterSet.Exists.ENTRIES_EXIST}')
+        response = self.client.get(f'{url}&exists={LeadFilterSet.Exists.ENTRIES_EXISTS}')
         assert response.json()['count'] == 2, 'Lead count should be 2 for lead with entries'
 
         # Entries do not exist filter test

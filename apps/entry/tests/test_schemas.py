@@ -38,7 +38,6 @@ class TestEntryQuery(GraphQLTestCase):
                     clientId
                     droppedExcerpt
                     highlightHidden
-                    imageRaw
                     informationDate
                     image {
                       id
@@ -94,7 +93,6 @@ class TestEntryQuery(GraphQLTestCase):
                         clientId
                         droppedExcerpt
                         highlightHidden
-                        imageRaw
                         informationDate
                         image {
                           id
@@ -166,7 +164,6 @@ class TestEntryQuery(GraphQLTestCase):
                     clientId
                     droppedExcerpt
                     highlightHidden
-                    imageRaw
                     informationDate
                     image {
                       id

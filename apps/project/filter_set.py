@@ -76,7 +76,7 @@ def get_filtered_projects(user, queries, annotate=False):
 
 class ProjectGqlFilterSet(UserResourceFilterSet):
     status = SimpleInputFilter(ProjectStatusEnum)
-    organizations = IDListFilter(field_name='organization')
+    organizations = IDListFilter(distinct=True)
     analysis_frameworks = IDListFilter(field_name='analysis_framework')
     regions = IDListFilter(distinct=True)
     search = django_filters.CharFilter(method='filter_title')

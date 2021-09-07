@@ -3,6 +3,11 @@ from graphene_django.debug import DjangoDebug
 from django.conf import settings
 
 # Importing for initialization (Make sure to import this before apps.<>)
+"""
+FYI, NOTE
+Make sure use string import outside graphene files.
+For eg: In filters.py use 'entry.schema.EntryListType' instead of `from entry.schema import EntryListType'
+"""
 from . import graphene_converter  # type: ignore # noqa F401
 
 from project import schema as pj_schema, mutation as pj_mutation

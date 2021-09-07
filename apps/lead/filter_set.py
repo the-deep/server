@@ -17,7 +17,7 @@ from project.models import Project
 from organization.models import OrganizationType
 from user.models import User
 from entry.filter_set import get_filtered_entries, EntryGQFilterSet
-from entry.schema import EntryListType
+# from entry.schema import EntryListType
 
 from .models import Lead, LeadGroup
 from .enums import (
@@ -39,7 +39,7 @@ class LeadFilterSet(django_filters.FilterSet):
     """
 
     class Exists(models.TextChoices):
-        ENTRIES_EXIST = 'entries_exists', 'Entry Exists'
+        ENTRIES_EXISTS = 'entries_exists', 'Entry Exists'
         ASSESSMENT_EXISTS = 'assessment_exists', 'Assessment Exists'
         ENTRIES_DO_NOT_EXIST = 'entries_do_not_exist', 'Entries do not exist'
         ASSESSMENT_DOES_NOT_EXIST = 'assessment_does_not_exist', 'Assessment does not exist'
@@ -144,7 +144,7 @@ class LeadFilterSet(django_filters.FilterSet):
         fields = {
             **{
                 x: ['exact']
-                for x in ['id', 'title', 'text', 'url', 'website']
+                for x in ['id', 'text', 'url', 'website']
             },
             'emm_entities': ['exact'],
             # 'emm_keywords': ['exact'],
@@ -204,7 +204,7 @@ class LeadFilterSet(django_filters.FilterSet):
         return qs.filter(project_id__in=project_ids)
 
     def exists_filter(self, qs, name, value):
-        if value == self.Exists.ENTRIES_EXIST:
+        if value == self.Exists.ENTRIES_EXISTS:
             return qs.filter(entry__isnull=False)
         elif value == self.Exists.ASSESSMENT_EXISTS:
             return qs.filter(assessment__isnull=False)
@@ -293,14 +293,12 @@ class LeadGQFilterSet(LeadFilterSet):
     project = None
     assignee = None
     priority = None
-    confidentiality = None
     status = None
 
     source_types = MultipleInputFilter(LeadSourceTypeEnum, field_name='source_type')
     priorities = MultipleInputFilter(LeadPriorityEnum, field_name='priority')
-    confidentialities = MultipleInputFilter(LeadConfidentialityEnum, field_name='confidentiality')
+    confidentiality = SimpleInputFilter(LeadConfidentialityEnum)
     statuses = MultipleInputFilter(LeadStatusEnum, field_name='status')
-    status = MultipleInputFilter(LeadStatusEnum)
     assignees = IDListFilter(field_name='assignee')
     authoring_organization_types = IDListFilter(method='authoring_organization_types_filter')
     # Filter-only enum filter
@@ -316,7 +314,7 @@ class LeadGQFilterSet(LeadFilterSet):
         type(
             'LeadEntriesFilterData',
             (graphene.InputObjectType,),
-            get_filtering_args_from_filterset(EntryGQFilterSet, EntryListType)
+            get_filtering_args_from_filterset(EntryGQFilterSet, 'entry.schema.EntryListType')
         ),
         method='filtered_entries_filter_data'
     )
