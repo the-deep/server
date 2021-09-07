@@ -47,21 +47,24 @@ class ProjectAcceptReject(PsGrapheneMutation):
 
 class DeleteProjectJoinRequest(graphene.Mutation):
     class Arguments:
-        id = graphene.ID(required=True)
+        project_id = graphene.ID(required=True)
 
     errors = graphene.List(graphene.NonNull(CustomErrorType))
     ok = graphene.Boolean()
     result = graphene.Field(ProjectJoinRequestType)
 
     @staticmethod
-    def mutate(root, info, id):
+    def mutate(root, info, project_id):
         try:
             instance = ProjectJoinRequest.objects.get(requested_by=info.context.user,
                                                       status=ProjectJoinRequest.Status.PENDING,
-                                                      id=id)
+                                                      project=project_id)
         except ProjectJoinRequest.DoesNotExist:
             return DeleteProjectJoinRequest(errors=[
-                dict(field='nonFieldErrors', messages=gettext('ProjectJoinRequest does not exist.'))
+                dict(
+                    field='nonFieldErrors',
+                    messages=gettext('ProjectJoinRequest does not exist for project(id:%s)' % project_id)
+                )
             ], ok=False)
         instance.delete()
         instance.id = id
