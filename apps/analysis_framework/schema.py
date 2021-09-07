@@ -14,8 +14,14 @@ from .models import (
     AnalysisFramework,
     Section,
     Widget,
+    Filter,
     AnalysisFrameworkMembership,
     AnalysisFrameworkRole,
+)
+from .enums import (
+    WidgetWidgetTypeEnum,
+    WidgetWidthTypeEnum,
+    WidgetFilterTypeEnum,
 )
 from .filter_set import AnalysisFrameworkGqFilterSet
 
@@ -24,9 +30,13 @@ class WidgetType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Widget
         fields = (
-            'id', 'key', 'title', 'widget_id', 'order', 'width', 'properties',
+            'id', 'title', 'order', 'properties',
             'client_id',
         )
+
+    widget_id = graphene.Field(WidgetWidgetTypeEnum, required=True)
+    width = graphene.Field(WidgetWidthTypeEnum, required=True)
+    key = graphene.String(required=True)
 
 
 class SectionType(ClientIdMixin, DjangoObjectType):
@@ -87,6 +97,20 @@ class AnalysisFrameworkRoleType(DjangoObjectType):
         only_fields = ('id', 'title',)
 
 
+class AnalysisFrameworkFilterType(DjangoObjectType):
+    class Meta:
+        model = Filter
+        only_fields = ('title', 'properties',)
+
+    key = graphene.String(required=True)
+    widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
+    filter_type = graphene.Field(WidgetFilterTypeEnum, required=True)
+
+    @staticmethod
+    def resolve_widget_type(root, info, **kwargs):
+        return root.widget_type  # NOTE: This is added from AnalysisFrameworkDetailType.resolve_filters dataloader
+
+
 class AnalysisFrameworkMembershipType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = AnalysisFrameworkMembership
@@ -97,6 +121,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     primary_tagging = DjangoListField(SectionType)  # With section
     secondary_tagging = DjangoListField(WidgetType)  # Without section
     members = DjangoListField(AnalysisFrameworkMembershipType)
+    filters = DjangoListField(AnalysisFrameworkFilterType)
     preview_image = graphene.Field(FileField)
     visible_projects = DjangoListField(AnalysisFrameworkVisibleProjectType)
 
@@ -116,6 +141,10 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     @staticmethod
     def resolve_secondary_tagging(root, info):
         return info.context.dl.analysis_framework.secondary_widgets.load(root.id)
+
+    @staticmethod
+    def resolve_filters(root, info):
+        return info.context.dl.analysis_framework.filters.load(root.id)
 
     @staticmethod
     def resolve_members(root, info):

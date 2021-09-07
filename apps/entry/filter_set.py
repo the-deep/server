@@ -1,9 +1,12 @@
+
 from functools import reduce
 from datetime import datetime
 
 from django.db import models
 from django.contrib.auth.models import User
 import django_filters
+import graphene
+from graphene.types.generic import GenericScalar
 from graphene_django.filter.filterset import GrapheneFilterSetMixin
 
 from utils.graphene.filters import IDListFilter, MultipleInputFilter
@@ -258,28 +261,18 @@ class EntryCommentFilterSet(django_filters.FilterSet):
         fields = ('created_by', 'is_resolved', 'resolved_at')
 
 
-def _get_filtered_entries(entries, filters, queries):
+def get_filtered_entries_using_af_filter(entries, filters, queries):
     # NOTE: lets not use `.distinct()` in this function as it is used by a subquery in `lead/models.py`.
     for filter in filters:
         # For each filter, see if there is a query for that filter
         # and then perform filtering based on that query.
 
         query = queries.get(filter.key)
-        query_lt = queries.get(
-            filter.key + '__lt'
-        )
-        query_gt = queries.get(
-            filter.key + '__gt'
-        )
-        query_and = queries.get(
-            filter.key + '__and'
-        )
-        query_exclude = queries.get(
-            filter.key + '_exclude'
-        )
-        query_exclude_and = queries.get(
-            filter.key + '_exclude_and'
-        )
+        query_lt = queries.get(filter.key + '__lt')
+        query_gt = queries.get(filter.key + '__gt')
+        query_and = queries.get(filter.key + '__and')
+        query_exclude = queries.get(filter.key + '_exclude')
+        query_exclude_and = queries.get(filter.key + '_exclude_and')
 
         if filter.filter_type == Filter.FilterType.NUMBER:
             if query:
@@ -398,7 +391,7 @@ def get_filtered_entries(user, queries):
     filterset.is_valid()  # This needs to be called
     entries = filterset.qs
 
-    return _get_filtered_entries(entries, filters, queries)
+    return get_filtered_entries_using_af_filter(entries, filters, queries)
 
 
 def parse_date(val):
@@ -438,6 +431,12 @@ def get_created_at_filters(query_params):
     return parsed_query
 
 
+# TODO: Add validation here for value using filter_key?
+class EntryFilterDataType(graphene.InputObjectType):
+    filter_key = graphene.ID(required=True)
+    value = GenericScalar(required=True)
+
+
 # ----------------------------- Graphql Filters ---------------------------------------
 class EntryGQFilterSet(GrapheneFilterSetMixin, EntryFilterMixin, django_filters.FilterSet):
     lead = None
@@ -457,13 +456,15 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, EntryFilterMixin, django_filters.
     lead_priorities = MultipleInputFilter(LeadPriorityEnum, field_name='lead__priority')
     lead_confidentialities = MultipleInputFilter(LeadConfidentialityEnum, field_name='lead__confidentiality')
 
+    filterable_data = MultipleInputFilter(EntryFilterDataType, method='filterable_data_filter')
+
     class Meta:
         model = Entry
         fields = {
             **{
                 x: ['exact'] for x in [
                     'id', 'excerpt', 'created_at',
-                    'created_by', 'modified_at', 'modified_by', 'project',
+                    'created_by', 'modified_at', 'modified_by',
                     'controlled',
                 ]
             },
@@ -478,3 +479,20 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, EntryFilterMixin, django_filters.
                 },
             },
         }
+
+    def filterable_data_filter(self, queryset, _, value):
+        if value:
+            active_af_id = (
+                self.data.get('analysis_framework_id') or
+                (self.request and self.request.active_project.analysis_framework_id)
+            )
+            if active_af_id is None:
+                # This needs to be defined
+                raise Exception('`analysis_framework_id` is not defined')
+            filters = Filter.objects.filter(analysis_framework_id=active_af_id).all()
+            return get_filtered_entries_using_af_filter(
+                queryset,
+                filters,
+                {v['filter_key']: v['value'] for v in value},
+            )
+        return queryset

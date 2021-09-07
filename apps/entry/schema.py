@@ -2,14 +2,14 @@ import graphene
 
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
-from graphene_django.rest_framework.serializer_converter import convert_choices_to_named_enum_with_descriptions
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import ProjectPermissions as PP
-from analysis_framework.models import Widget
 from lead.models import Lead
+
+from analysis_framework.enums import WidgetWidgetTypeEnum
 
 from .models import (
     Entry,
@@ -57,11 +57,7 @@ class AttributeType(ClientIdMixin, DjangoObjectType):
         )
 
     widget = graphene.ID(required=True)
-    widget_type = graphene.Field(
-        # XXX: Hack way to provide enums. Fix this later
-        convert_choices_to_named_enum_with_descriptions('AttributeWidgetType', Widget.WidgetType.choices),
-        required=True,
-    )
+    widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
 
     @staticmethod
     def resolve_widget(root, info, **kwargs):
@@ -78,7 +74,7 @@ class EntryType(ClientIdMixin, DjangoObjectType):
         fields = (
             'id',
             'lead', 'project', 'analysis_framework', 'information_date', 'order',
-            'excerpt', 'dropped_excerpt', 'image', 'image_raw', 'tabular_field', 'highlight_hidden',
+            'excerpt', 'dropped_excerpt', 'image', 'tabular_field', 'highlight_hidden',
             'controlled', 'controlled_changed_by',
             'client_id',
         )

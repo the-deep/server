@@ -49,7 +49,7 @@ def convert_serializer_field_to_id(field):
 
 
 @get_graphene_type_from_serializer_field.register(serializers.JSONField)
-def convert_serializer_field_to_jsonstring(field):
+def convert_serializer_field_to_generic_scalar(field):
     return GenericScalar
 
 

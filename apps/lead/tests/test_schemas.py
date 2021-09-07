@@ -6,6 +6,10 @@ from project.factories import ProjectFactory
 from gallery.factories import FileFactory
 
 from lead.models import Lead
+from lead.filter_set import LeadFilterSet
+from entry.factories import EntryFactory
+from ary.factories import AssessmentFactory
+from analysis_framework.factories import AnalysisFrameworkFactory
 from lead.factories import (
     LeadEMMTriggerFactory,
     LeadFactory,
@@ -70,6 +74,189 @@ class TestLeadQuerySchema(GraphQLTestCase):
         self.assertNotEqual(content['data']['project']['lead'], None, content)
         content = _query_check(confidential_lead)
         self.assertNotEqual(content['data']['project']['lead'], None, content)
+
+    def test_lead_query_filter(self):
+        query = '''
+            query MyQuery (
+                $projectId: ID!
+                # lead Arguments
+                $assignees: [ID]
+                $authoringOrganizationTypes: [ID]
+                $classifiedDocId: [Float]
+                $confidentiality: LeadConfidentialityEnum
+                $createdAt: DateTime
+                $createdAt_Gt: DateTime
+                $createdAt_Gte: DateTime
+                $createdAt_Lt: DateTime
+                $createdAt_Lte: DateTime
+                $customFilters: LeadCustomFilterEnum
+                $emmEntities: String
+                $emmKeywords: String
+                $emmRiskFactors: String
+                $entriesFilterData: LeadEntriesFilterData
+                $exists: LeadExistsEnum
+                $priorities: [LeadPriorityEnum!]
+                $publishedOn: Date
+                $publishedOn_Gt: Date
+                $publishedOn_Gte: Date
+                $publishedOn_Lt: Date
+                $publishedOn_Lte: Date
+                $search: String
+                $sourceTypes: [LeadSourceTypeEnum!]
+                $statuses: [LeadStatusEnum!]
+                $text: String
+                $url: String
+                $website: String
+            ) {
+              project(id: $projectId) {
+                leads (
+                    assignees: $assignees
+                    authoringOrganizationTypes: $authoringOrganizationTypes
+                    classifiedDocId: $classifiedDocId
+                    confidentiality: $confidentiality
+                    createdAt: $createdAt
+                    createdAt_Gt: $createdAt_Gt
+                    createdAt_Gte: $createdAt_Gte
+                    createdAt_Lt: $createdAt_Lt
+                    createdAt_Lte: $createdAt_Lte
+                    customFilters: $customFilters
+                    emmEntities: $emmEntities
+                    emmKeywords: $emmKeywords
+                    emmRiskFactors: $emmRiskFactors
+                    exists: $exists
+                    priorities: $priorities
+                    publishedOn: $publishedOn
+                    publishedOn_Gt: $publishedOn_Gt
+                    publishedOn_Gte: $publishedOn_Gte
+                    publishedOn_Lt: $publishedOn_Lt
+                    publishedOn_Lte: $publishedOn_Lte
+                    search: $search
+                    sourceTypes: $sourceTypes
+                    statuses: $statuses
+                    text: $text
+                    url: $url
+                    website: $website
+                    entriesFilterData: $entriesFilterData
+                ) {
+                  results {
+                    id
+                  }
+                }
+              }
+            }
+        '''
+
+        af = AnalysisFrameworkFactory.create()
+        project = ProjectFactory.create(analysis_framework=af)
+        org_type1, org_type2 = OrganizationTypeFactory.create_batch(2)
+        org1 = OrganizationFactory.create(organization_type=org_type1)
+        org2 = OrganizationFactory.create(organization_type=org_type2)
+        org3 = OrganizationFactory.create(organization_type=org_type2)
+        # User with role
+        user = UserFactory.create()
+        member1 = UserFactory.create()
+        member2 = UserFactory.create()
+        project.add_member(user, role=self.project_role_viewer)
+        project.add_member(member1, role=self.project_role_viewer)
+        project.add_member(member2, role=self.project_role_viewer)
+        lead1 = LeadFactory.create(
+            project=project,
+            title='Test 1',
+            source_type=Lead.SourceType.TEXT,
+            confidentiality=Lead.Confidentiality.CONFIDENTIAL,
+            authors=[org1, org2],
+            assignee=[member1],
+            priority=Lead.Priority.HIGH,
+            status=Lead.Status.PROCESSED,
+        )
+        lead2 = LeadFactory.create(
+            project=project,
+            source_type=Lead.SourceType.TEXT,
+            title='Test 2',
+            assignee=[member2],
+            authors=[org2, org3],
+            priority=Lead.Priority.HIGH,
+        )
+        lead3 = LeadFactory.create(
+            project=project,
+            source_type=Lead.SourceType.WEBSITE,
+            url='https://wwwexample.com/sample-1',
+            title='Sample 1',
+            confidentiality=Lead.Confidentiality.CONFIDENTIAL,
+            authors=[org1, org3],
+            priority=Lead.Priority.LOW,
+        )
+        lead4 = LeadFactory.create(
+            project=project,
+            title='Sample 2',
+            authors=[org1],
+            priority=Lead.Priority.MEDIUM,
+        )
+        lead5 = LeadFactory.create(
+            project=project,
+            title='Sample 3',
+            status=Lead.Status.VALIDATED,
+            assignee=[member2],
+        )
+
+        EntryFactory.create(project=project, analysis_framework=af, lead=lead4, controlled=False)
+        EntryFactory.create(project=project, analysis_framework=af, lead=lead5, controlled=True)
+        AssessmentFactory.create(project=project, lead=lead1)
+        AssessmentFactory.create(project=project, lead=lead2)
+
+        def _query_check(filters, **kwargs):
+            return self.query_check(query, variables={'projectId': project.id, **filters}, **kwargs)
+
+        # -- With login
+        self.force_login(user)
+
+        for filter_data, expected_leads in [
+            ({'search': 'test'}, [lead1, lead2]),
+            ({'confidentiality': self.genum(Lead.Confidentiality.CONFIDENTIAL)}, [lead1, lead3]),
+            ({'assignees': [member2.pk]}, [lead2, lead5]),
+            ({'assignees': [member1.pk, member2.pk]}, [lead1, lead2, lead5]),
+            ({'authoringOrganizationTypes': [org_type2.pk]}, [lead1, lead2, lead3]),
+            ({'authoringOrganizationTypes': [org_type1.pk, org_type2.pk]}, [lead1, lead2, lead3, lead4]),
+            ({'priorities': [self.genum(Lead.Priority.HIGH)]}, [lead1, lead2]),
+            ({'priorities': [self.genum(Lead.Priority.LOW), self.genum(Lead.Priority.HIGH)]}, [lead1, lead2, lead3, lead5]),
+            ({'sourceTypes': [self.genum(Lead.SourceType.WEBSITE)]}, [lead3]),
+            (
+                {'sourceTypes': [self.genum(Lead.SourceType.TEXT), self.genum(Lead.SourceType.WEBSITE)]},
+                [lead1, lead2, lead3]
+            ),
+            ({'statuses': [self.genum(Lead.Status.PENDING)]}, [lead2, lead3, lead4]),
+            ({'statuses': [self.genum(Lead.Status.PROCESSED), self.genum(Lead.Status.VALIDATED)]}, [lead1, lead5]),
+            ({'exists': self.genum(LeadFilterSet.Exists.ENTRIES_EXISTS)}, [lead4, lead5]),
+            ({'exists': self.genum(LeadFilterSet.Exists.ENTRIES_DO_NOT_EXIST)}, [lead1, lead2, lead3]),
+            ({'exists': self.genum(LeadFilterSet.Exists.ASSESSMENT_EXISTS)}, [lead1, lead2]),
+            ({'exists': self.genum(LeadFilterSet.Exists.ASSESSMENT_DOES_NOT_EXIST)}, [lead3, lead4, lead5]),
+            # TODO: Add some `customFilters` test with entriesFilterData
+            ({'customFilters': self.genum(LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES)}, [lead5]),
+            ({'customFilters': self.genum(LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES)}, [lead4, lead5]),
+            # TODO:
+            # ({'emmEntities': []}, []),
+            # ({'emmKeywords': []}, []),
+            # ({'emmRiskFactors': []}, []),
+            # TODO: Common filters
+            # ({'publishedOn': []}, []),
+            # ({'publishedOn_Gt': []}, []),
+            # ({'publishedOn_Gte': []}, []),
+            # ({'publishedOn_Lt': []}, []),
+            # ({'publishedOn_Lte': []}, []),
+            # ({'text': []}, []),
+            # ({'url': []}, []),
+            # ({'website': []}, []),
+            # ({'createdAt': []}, []),
+            # ({'createdAt_Gt': []}, []),
+            # ({'createdAt_Gte': []}, []),
+            # ({'createdAt_Lt': []}, []),
+            # ({'createdAt_Lte': []}, []),
+        ]:
+            content = _query_check(filter_data)
+            self.assertListIds(
+                content['data']['project']['leads']['results'], expected_leads,
+                {'response': content, 'filter': filter_data}
+            )
 
     def test_leads_query(self):
         """

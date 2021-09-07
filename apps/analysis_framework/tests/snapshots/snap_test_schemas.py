@@ -142,7 +142,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 'properties': {
                                 },
                                 'title': 'Section-2-Text-101',
-                                'widgetId': 'TEXTWIDGET'
+                                'widgetId': 'TEXT'
                             },
                             {
                                 'clientId': 'section-2-text-102-client-id',
@@ -152,7 +152,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 'properties': {
                                 },
                                 'title': 'Section-2-Text-102',
-                                'widgetId': 'TEXTWIDGET'
+                                'widgetId': 'TEXT'
                             }
                         ]
                     },
@@ -171,7 +171,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 'properties': {
                                 },
                                 'title': 'Section-Text-101',
-                                'widgetId': 'TEXTWIDGET'
+                                'widgetId': 'TEXT'
                             },
                             {
                                 'clientId': 'section-text-102-client-id',
@@ -181,7 +181,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 'properties': {
                                 },
                                 'title': 'Section-Text-102',
-                                'widgetId': 'TEXTWIDGET'
+                                'widgetId': 'TEXT'
                             }
                         ]
                     }
@@ -195,7 +195,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                         'properties': {
                         },
                         'title': 'Select-Widget-1',
-                        'widgetId': 'SELECTWIDGET'
+                        'widgetId': 'SELECT'
                     },
                     {
                         'clientId': 'multi-select-widget-102-client-id',
@@ -205,7 +205,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                         'properties': {
                         },
                         'title': 'multi-select-Widget-2',
-                        'widgetId': 'MULTISELECTWIDGET'
+                        'widgetId': 'MULTISELECT'
                     }
                 ],
                 'title': 'AF (TEST)'
@@ -412,7 +412,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                     'properties': {
                                     },
                                     'title': 'Section-2-Text-101',
-                                    'widgetId': 'TEXTWIDGET'
+                                    'widgetId': 'TEXT'
                                 },
                                 {
                                     'clientId': 'section-2-text-102-client-id',
@@ -422,7 +422,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                     'properties': {
                                     },
                                     'title': 'Updated-Section-2-Text-101',
-                                    'widgetId': 'TEXTWIDGET'
+                                    'widgetId': 'TEXT'
                                 }
                             ]
                         },
@@ -441,7 +441,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                     'properties': {
                                     },
                                     'title': 'Section-Text-101',
-                                    'widgetId': 'TEXTWIDGET'
+                                    'widgetId': 'TEXT'
                                 },
                                 {
                                     'clientId': 'section-text-102-client-id',
@@ -451,7 +451,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                     'properties': {
                                     },
                                     'title': 'Section-Text-102',
-                                    'widgetId': 'TEXTWIDGET'
+                                    'widgetId': 'TEXT'
                                 }
                             ]
                         }
@@ -465,7 +465,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             'properties': {
                             },
                             'title': 'multi-select-Widget-2',
-                            'widgetId': 'MULTISELECTWIDGET'
+                            'widgetId': 'MULTISELECT'
                         }
                     ],
                     'title': 'Updated AF (TEST)'
@@ -610,7 +610,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-2',
-                            'widgetId': 'DATEWIDGET'
+                            'widgetId': 'DATE'
                         },
                         {
                             'id': '4',
@@ -619,7 +619,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-1',
-                            'widgetId': 'MULTISELECTWIDGET'
+                            'widgetId': 'MULTISELECT'
                         },
                         {
                             'id': '3',
@@ -628,7 +628,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-0',
-                            'widgetId': 'TEXTWIDGET'
+                            'widgetId': 'TEXT'
                         }
                     ]
                 },
@@ -645,7 +645,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-0',
-                            'widgetId': 'SCALEWIDGET'
+                            'widgetId': 'SCALE'
                         },
                         {
                             'id': '7',
@@ -654,7 +654,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-1',
-                            'widgetId': 'CONDITIONALWIDGET'
+                            'widgetId': 'CONDITIONAL'
                         },
                         {
                             'id': '8',
@@ -663,7 +663,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-2',
-                            'widgetId': 'MATRIX1DWIDGET'
+                            'widgetId': 'MATRIX1D'
                         },
                         {
                             'id': '9',
@@ -672,7 +672,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-3',
-                            'widgetId': 'MULTISELECTWIDGET'
+                            'widgetId': 'MULTISELECT'
                         }
                     ]
                 },
@@ -689,7 +689,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-0',
-                            'widgetId': 'CONDITIONALWIDGET'
+                            'widgetId': 'CONDITIONAL'
                         },
                         {
                             'id': '2',
@@ -698,7 +698,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-1',
-                            'widgetId': 'SELECTWIDGET'
+                            'widgetId': 'SELECT'
                         }
                     ]
                 }
@@ -711,7 +711,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'properties': {
                     },
                     'title': 'Widget-3',
-                    'widgetId': 'TIMERANGEWIDGET'
+                    'widgetId': 'TIME_RANGE'
                 },
                 {
                     'id': '12',
@@ -720,7 +720,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'properties': {
                     },
                     'title': 'Widget-2',
-                    'widgetId': 'MATRIX1DWIDGET'
+                    'widgetId': 'MATRIX1D'
                 },
                 {
                     'id': '11',
@@ -729,7 +729,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'properties': {
                     },
                     'title': 'Widget-1',
-                    'widgetId': 'GEOWIDGET'
+                    'widgetId': 'GEO'
                 },
                 {
                     'id': '10',
@@ -738,7 +738,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'properties': {
                     },
                     'title': 'Widget-0',
-                    'widgetId': 'NUMBERWIDGET'
+                    'widgetId': 'NUMBER'
                 }
             ],
             'title': 'AF-0',
@@ -779,7 +779,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-2',
-                            'widgetId': 'DATEWIDGET'
+                            'widgetId': 'DATE'
                         },
                         {
                             'id': '4',
@@ -788,7 +788,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-1',
-                            'widgetId': 'MULTISELECTWIDGET'
+                            'widgetId': 'MULTISELECT'
                         },
                         {
                             'id': '3',
@@ -797,7 +797,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-0',
-                            'widgetId': 'TEXTWIDGET'
+                            'widgetId': 'TEXT'
                         }
                     ]
                 },
@@ -814,7 +814,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-0',
-                            'widgetId': 'SCALEWIDGET'
+                            'widgetId': 'SCALE'
                         },
                         {
                             'id': '7',
@@ -823,7 +823,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-1',
-                            'widgetId': 'CONDITIONALWIDGET'
+                            'widgetId': 'CONDITIONAL'
                         },
                         {
                             'id': '8',
@@ -832,7 +832,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-2',
-                            'widgetId': 'MATRIX1DWIDGET'
+                            'widgetId': 'MATRIX1D'
                         },
                         {
                             'id': '9',
@@ -841,7 +841,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-3',
-                            'widgetId': 'MULTISELECTWIDGET'
+                            'widgetId': 'MULTISELECT'
                         }
                     ]
                 },
@@ -858,7 +858,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-0',
-                            'widgetId': 'CONDITIONALWIDGET'
+                            'widgetId': 'CONDITIONAL'
                         },
                         {
                             'id': '2',
@@ -867,7 +867,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-1',
-                            'widgetId': 'SELECTWIDGET'
+                            'widgetId': 'SELECT'
                         }
                     ]
                 }
@@ -880,7 +880,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'properties': {
                     },
                     'title': 'Widget-3',
-                    'widgetId': 'TIMERANGEWIDGET'
+                    'widgetId': 'TIME_RANGE'
                 },
                 {
                     'id': '12',
@@ -889,7 +889,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'properties': {
                     },
                     'title': 'Widget-2',
-                    'widgetId': 'MATRIX1DWIDGET'
+                    'widgetId': 'MATRIX1D'
                 },
                 {
                     'id': '11',
@@ -898,7 +898,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'properties': {
                     },
                     'title': 'Widget-1',
-                    'widgetId': 'GEOWIDGET'
+                    'widgetId': 'GEO'
                 },
                 {
                     'id': '10',
@@ -907,7 +907,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'properties': {
                     },
                     'title': 'Widget-0',
-                    'widgetId': 'NUMBERWIDGET'
+                    'widgetId': 'NUMBER'
                 }
             ],
             'title': 'AF-0',

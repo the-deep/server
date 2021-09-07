@@ -30,6 +30,15 @@ class LeadFactory(DjangoModelFactory):
                 self.authors.add(author)
 
     @factory.post_generation
+    def assignee(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for assignee in extracted:
+                self.assignee.add(assignee)
+                break  # Only add one assignee
+
+    @factory.post_generation
     def emm_entities(self, create, extracted, **kwargs):
         if not create:
             return
