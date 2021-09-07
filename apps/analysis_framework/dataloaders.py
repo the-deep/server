@@ -2,7 +2,6 @@ from collections import defaultdict
 
 from promise import Promise
 from django.utils.functional import cached_property
-from django.db import models
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 from project.models import Project
@@ -64,9 +63,8 @@ class MembershipLoader(DataLoaderWithContext):
 
 class VisibleProjects(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        project_qs = Project.objects\
-            .filter(analysis_framework__in=keys)\
-            .exclude(models.Q(is_private=True) & ~models.Q(members=self.context.request.user))
+        project_qs = Project.get_for_gq(self.context.request.user)\
+            .filter(analysis_framework__in=keys)
         _map = defaultdict(list)
         for project in project_qs:
             _map[project.analysis_framework_id].append(project)

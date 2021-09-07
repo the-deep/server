@@ -8,7 +8,7 @@ from django.db.models import QuerySet
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField, FileField
 from deep.permissions import AnalysisFrameworkPermissions as AfP
-from project.schema import ProjectType
+from project.schema import AnalysisFrameworkVisibleProjectType
 
 from .models import (
     AnalysisFramework,
@@ -98,7 +98,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     secondary_tagging = DjangoListField(WidgetType)  # Without section
     members = DjangoListField(AnalysisFrameworkMembershipType)
     preview_image = graphene.Field(FileField)
-    visible_projects = DjangoListField(ProjectType)
+    visible_projects = DjangoListField(AnalysisFrameworkVisibleProjectType)
 
     class Meta:
         model = AnalysisFramework
