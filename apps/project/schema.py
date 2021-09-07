@@ -18,7 +18,6 @@ from deep.permissions import ProjectPermissions as PP
 from lead.schema import Query as LeadQuery
 from entry.schema import Query as EntryQuery
 from export.schema import Query as ExportQuery
-from analysis_framework.schema import AnalysisFrameworkDetailType
 from geo.schema import RegionType
 from lead.models import Lead
 from entry.models import Entry
@@ -129,6 +128,9 @@ class ProjectDetailType(
     # --  End  --Project scopped entities
     ProjectType,
 ):
+    # NOTE: To avoid circular import
+    from analysis_framework.schema import AnalysisFrameworkDetailType
+
     class Meta:
         model = Project
         skip_registry = True

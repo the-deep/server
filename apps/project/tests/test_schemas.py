@@ -432,6 +432,22 @@ class TestProjectJoinMutation(GraphQLTestCase):
         content = self.query_check(self.project_join_mutation, minput=minput, okay=False)
         self.assertEqual(len(content['data']['joinProject']['errors']), 1, content)
 
+    def test_already_request_sent_for_project(self):
+        user = UserFactory.create()
+        project = ProjectFactory.create()
+        # lets create a join request for the project
+        ProjectJoinRequestFactory.create(
+            requested_by=user,
+            project=project,
+            role=ProjectRole.get_default_role(),
+            status=ProjectJoinRequest.Status.PENDING,
+        )
+        reason = fuzzy.FuzzyText(length=50).fuzz()
+        minput = dict(project=project.id, reason=reason)
+        self.force_login(user)
+        content = self.query_check(self.project_join_mutation, minput=minput, okay=False)
+        self.assertEqual(len(content['data']['joinProject']['errors']), 1, content)
+
 
 class TestProjectJoinDeleteMutation(GraphQLTestCase):
     def setUp(self):
