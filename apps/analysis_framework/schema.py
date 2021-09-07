@@ -8,6 +8,7 @@ from django.db.models import QuerySet
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField, FileField
 from deep.permissions import AnalysisFrameworkPermissions as AfP
+from project.schema import ProjectType
 
 from .models import (
     AnalysisFramework,
@@ -97,6 +98,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     secondary_tagging = DjangoListField(WidgetType)  # Without section
     members = DjangoListField(AnalysisFrameworkMembershipType)
     preview_image = graphene.Field(FileField)
+    visible_projects = DjangoListField(ProjectType)
 
     class Meta:
         model = AnalysisFramework
@@ -120,6 +122,10 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
         if root.get_current_user_role(info.context.request.user) is not None:
             return info.context.dl.analysis_framework.members.load(root.id)
         return []  # NOTE: Always return empty array FIXME: without empty everything is returned
+
+    @staticmethod
+    def resolve_visible_projects(root, info):
+        return info.context.dl.analysis_framework.visible_projects.load(root.id)
 
 
 class AnalysisFrameworkListType(CustomDjangoListObjectType):

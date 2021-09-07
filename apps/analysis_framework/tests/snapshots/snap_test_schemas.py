@@ -741,7 +741,17 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'widgetId': 'NUMBERWIDGET'
                 }
             ],
-            'title': 'AF-3'
+            'title': 'AF-0',
+            'visibleProjects': [
+                {
+                    'id': '2',
+                    'title': 'Project-2'
+                },
+                {
+                    'id': '1',
+                    'title': 'Project-1'
+                }
+            ],
         }
     }
 }
@@ -900,7 +910,17 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'widgetId': 'NUMBERWIDGET'
                 }
             ],
-            'title': 'AF-3'
+            'title': 'AF-0',
+            'visibleProjects': [
+                {
+                    'id': '2',
+                    'title': 'Project-2'
+                },
+                {
+                    'id': '1',
+                    'title': 'Project-1'
+                }
+            ],
         }
     }
 }
