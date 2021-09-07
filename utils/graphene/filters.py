@@ -100,5 +100,6 @@ MultipleInputFilter = _get_multiple_input_filter
 
 # Generic Filters
 IDListFilter = _get_id_list_filter
+# IDListFilter = _generate_list_filter_class(graphene.ID)
 StringListFilter = _generate_list_filter_class(graphene.String)
 GenericFilter = _generate_filter_class(GenericScalar)

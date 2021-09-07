@@ -7,9 +7,6 @@ from analysis_framework.factories import AnalysisFrameworkFactory
 from project.filter_set import ProjectGqlFilterSet
 from project.models import Project
 
-ACTIVE = Project.Status.ACTIVE
-INACTIVE = Project.Status.INACTIVE
-
 
 class TestProjectFilter(GraphQLTestCase):
     def setUp(self) -> None:
@@ -23,7 +20,7 @@ class TestProjectFilter(GraphQLTestCase):
         p3.organizations.add(org1)
 
         obtained = self.filter_class(data=dict(
-            organizations=[str(org3.id), str(org2.id)]
+            organizations=[org3.pk, org2.pk]
         )).qs
         expected = [p2, p1]
         self.assertQuerySetIdEqual(
@@ -45,25 +42,16 @@ class TestProjectFilter(GraphQLTestCase):
         )
 
     def test_status_filter(self):
-        p1 = ProjectFactory.create(status=ACTIVE)
-        p2 = ProjectFactory.create(status=INACTIVE)
-        obtained = self.filter_class(data=dict(
-            status=[
-                ACTIVE.value
-            ]
-        )).qs
-        expected = [p1]
+        p1, p2 = ProjectFactory.create_batch(2, status=Project.Status.ACTIVE)
+        p3 = ProjectFactory.create(status=Project.Status.INACTIVE)
+        obtained = self.filter_class(data=dict(status=Project.Status.ACTIVE.value)).qs
+        expected = [p1, p2]
         self.assertQuerySetIdEqual(
             expected,
             obtained
         )
-        obtained = self.filter_class(data=dict(
-            status=[
-                ACTIVE.value,
-                INACTIVE.value,
-            ]
-        )).qs
-        expected = [p1, p2]
+        obtained = self.filter_class(data=dict(status=Project.Status.INACTIVE.value)).qs
+        expected = [p3]
         self.assertQuerySetIdEqual(
             expected,
             obtained
@@ -76,7 +64,7 @@ class TestProjectFilter(GraphQLTestCase):
         ProjectFactory.create(analysis_framework=af3)
 
         obtained = self.filter_class(data=dict(
-            analysis_frameworks=[str(af1.id), str(af2.id)]
+            analysis_frameworks=[af1.id, af2.id]
         )).qs
         expected = [p2, p1]
         self.assertQuerySetIdEqual(

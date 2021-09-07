@@ -93,7 +93,7 @@ class TestExportQuerySchema(GraphQLTestCase):
 
     def test_exports_type_filter(self):
         query = '''
-            query MyQuery ($id: ID!, $type: [String!]) {
+            query MyQuery ($id: ID!, $type: [ExportDataTypeEnum!]) {
               project(id: $id) {
                 exports(type: $type){
                   page
@@ -118,7 +118,7 @@ class TestExportQuerySchema(GraphQLTestCase):
                 query,
                 variables={
                     'id': project.id,
-                    'type': [Export.DataType.ENTRIES.value]
+                    'type': [self.genum(Export.DataType.ENTRIES)]
                 },
                 **kwargs)
 
@@ -133,7 +133,7 @@ class TestExportQuerySchema(GraphQLTestCase):
 
     def test_exports_status_filter(self):
         query = '''
-            query MyQuery ($id: ID!, $status: [String!]) {
+            query MyQuery ($id: ID!, $status: [ExportStatusEnum!]) {
               project(id: $id) {
                 exports(status: $status){
                   page
@@ -159,7 +159,7 @@ class TestExportQuerySchema(GraphQLTestCase):
                 query,
                 variables={
                     'id': project.id,
-                    'status': [Export.Status.PENDING.value]
+                    'status': [self.genum(Export.Status.PENDING)]
                 },
                 **kwargs)
 
@@ -173,12 +173,11 @@ class TestExportQuerySchema(GraphQLTestCase):
         self.assertEqual(len(content['data']['project']['exports']['results']), 4, content)
 
         def _query_check(**kwargs):
-            # TODO: Use self.genum() instead of .value.
             return self.query_check(
                 query,
                 variables={
                     'id': project.id,
-                    'status': [Export.Status.PENDING.value, Export.Status.STARTED.value]
+                    'status': [self.genum(Export.Status.PENDING), self.genum(Export.Status.STARTED)]
                 },
                 **kwargs)
 
