@@ -26,7 +26,6 @@ from .models import (
     LeadEMMTrigger,
     EMMEntity,
 )
-from ary.models import Assessment
 
 
 def check_if_url_exists(url, user=None, project=None, exception_id=None, return_lead=False):
