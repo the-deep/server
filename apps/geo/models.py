@@ -6,7 +6,6 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.gis.db import models
 from django.core.serializers import serialize
 from django.contrib.gis.gdal import Envelope
-from django.core.exceptions import ValidationError
 
 from user_resource.models import UserResource
 from gallery.models import File
@@ -107,16 +106,18 @@ class Region(UserResource):
         from project.models import ProjectMembership, ProjectRole
         return (
             # Either created by user
-            not self.is_published and ((self.created_by == user) or
-            # Or is public and user is superuser
-            (self.public and user.is_superuser) or
-            # Or is private and user is admin of one of the projects
-            # with this region
-            (not self.public and ProjectMembership.objects.filter(
-                project__regions=self,
-                member=user,
-                role__in=ProjectRole.get_admin_roles(),
-            ).exists()))
+            not self.is_published and (
+                (self.created_by == user) or
+                # Or is public and user is superuser
+                (self.public and user.is_superuser) or
+                # Or is private and user is admin of one of the projects
+                # with this region
+                (not self.public and ProjectMembership.objects.filter(
+                    project__regions=self,
+                    member=user,
+                    role__in=ProjectRole.get_admin_roles(),
+                ).exists())
+            )
         )
 
     def can_publish(self, user):
