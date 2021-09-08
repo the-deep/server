@@ -451,9 +451,9 @@ class TestProjectJoinMutation(GraphQLTestCase):
 
 class TestProjectJoinDeleteMutation(GraphQLTestCase):
     def setUp(self):
-        self.project_join_delete_mutation = '''
+        self.project_join_request_delete_mutation = '''
             mutation Mutation($projectId: ID!) {
-              deleteProjectJoin(projectId: $projectId) {
+              projectJoinRequestDelete(projectId: $projectId) {
                 ok
                 errors
                 result {
@@ -484,7 +484,7 @@ class TestProjectJoinDeleteMutation(GraphQLTestCase):
         old_join_request_count = join_request_qs.count()
 
         self.force_login(user)
-        self.query_check(self.project_join_delete_mutation, variables={'projectId': project.id}, okay=True)
+        self.query_check(self.project_join_request_delete_mutation, variables={'projectId': project.id}, okay=True)
         self.assertEqual(join_request_qs.count(), old_join_request_count - 1)
 
 
