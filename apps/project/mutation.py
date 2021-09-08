@@ -45,7 +45,7 @@ class ProjectAcceptReject(PsGrapheneMutation):
     permissions = [PP.Permission.UPDATE_PROJECT]
 
 
-class DeleteProjectJoinRequest(graphene.Mutation):
+class ProjectJoinRequestDelete(graphene.Mutation):
     class Arguments:
         project_id = graphene.ID(required=True)
 
@@ -60,7 +60,7 @@ class DeleteProjectJoinRequest(graphene.Mutation):
                                                       status=ProjectJoinRequest.Status.PENDING,
                                                       project=project_id)
         except ProjectJoinRequest.DoesNotExist:
-            return DeleteProjectJoinRequest(errors=[
+            return ProjectJoinRequestDelete(errors=[
                 dict(
                     field='nonFieldErrors',
                     messages=gettext('ProjectJoinRequest does not exist for project(id:%s)' % project_id)
@@ -68,7 +68,7 @@ class DeleteProjectJoinRequest(graphene.Mutation):
             ], ok=False)
         instance.delete()
         instance.id = id
-        return DeleteProjectJoinRequest(result=instance, errors=None, ok=True)
+        return ProjectJoinRequestDelete(result=instance, errors=None, ok=True)
 
 
 class CreateProjectJoin(graphene.Mutation):
@@ -115,6 +115,6 @@ class ProjectMutationType(
 
 class Mutation(object):
     join_project = CreateProjectJoin.Field()
-    delete_project_join = DeleteProjectJoinRequest.Field()
+    project_join_request_delete = ProjectJoinRequestDelete.Field()
     project = DjangoObjectField(ProjectMutationType)
     # TODO: For project mutation make sure AF permission is checked when using. (Public and Private logics)
