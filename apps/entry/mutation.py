@@ -68,7 +68,8 @@ class BulkEntry(EntryMutationMixin, PsBulkGrapheneMutation):
         items = graphene.List(graphene.NonNull(BulkEntryInputType))
         delete_ids = graphene.List(graphene.NonNull(graphene.ID))
 
-    deleted_result = result = graphene.List(EntryType)
+    result = graphene.List(EntryType)
+    deleted_result = graphene.List(graphene.NonNull(EntryType))
     # class vars
     model = Entry
     serializer_class = EntrySerializer

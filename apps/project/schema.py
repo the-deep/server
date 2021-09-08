@@ -68,8 +68,8 @@ class ProjectStatType(graphene.ObjectType):
     number_of_leads_tagged_and_controlled = graphene.Field(graphene.Int)
     number_of_entries = graphene.Field(graphene.Int)
     number_of_users = graphene.Field(graphene.Int)
-    leads_activity = graphene.List(DateCountType)
-    entries_activity = graphene.List(DateCountType)
+    leads_activity = graphene.List(graphene.NonNull(DateCountType))
+    entries_activity = graphene.List(graphene.NonNull(DateCountType))
 
     @staticmethod
     def resolve_leads_activity(root, info, **kwargs):
@@ -104,7 +104,11 @@ class ProjectType(DjangoObjectType):
         )
 
     current_user_role = graphene.String()
-    allowed_permissions = graphene.List(graphene.Enum.from_enum(PP.Permission), required=True)
+    allowed_permissions = graphene.List(
+        graphene.NonNull(
+            graphene.Enum.from_enum(PP.Permission),
+        ), required=True
+    )
     stats = graphene.Field(ProjectStatType)
     membership_pending = graphene.Boolean(required=True)
     regions = DjangoListField(RegionType)
@@ -181,8 +185,8 @@ class ProjectDetailType(
 
     analysis_framework = graphene.Field(AnalysisFrameworkDetailType)
     activity_log = generic.GenericScalar()  # TODO: Need to define type
-    top_sourcers = graphene.List(UserEntityCountType)
-    top_taggers = graphene.List(UserEntityCountType)
+    top_sourcers = graphene.List(graphene.NonNull(UserEntityCountType))
+    top_taggers = graphene.List(graphene.NonNull(UserEntityCountType))
 
     @staticmethod
     def resolve_activity_log(root, info, **kwargs):
@@ -225,7 +229,7 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
-    recent_projects = graphene.List(ProjectDetailType)
+    recent_projects = graphene.List(graphene.NonNull(ProjectDetailType))
 
     # NOTE: This is a custom feature, see https://github.com/the-deep/graphene-django-extras
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2

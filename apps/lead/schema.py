@@ -234,8 +234,8 @@ class Query:
         )
     )
     # TODO: Add Pagination
-    emm_keywords = graphene.List(EmmKeyWordType)
-    emm_risk_factors = graphene.List(EmmKeyRiskFactorType)
+    emm_keywords = graphene.List(graphene.NonNull(EmmKeyWordType))
+    emm_risk_factors = graphene.List(graphene.NonNull(EmmKeyRiskFactorType))
 
     @staticmethod
     def resolve_leads(root, info, **kwargs) -> QuerySet:

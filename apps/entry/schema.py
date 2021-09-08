@@ -61,6 +61,7 @@ class AttributeType(ClientIdMixin, DjangoObjectType):
     widget = graphene.ID(required=True)
     widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
     # NOTE: This requires region_title and admin_level_title to be annotated
+    # NOTE: Some item can be null (if missing from database)
     geo_selected_options = graphene.List(ProjectGeoAreaType)
 
     @staticmethod

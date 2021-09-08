@@ -359,7 +359,6 @@ class AnalysisFrameworkPermissions(BasePermissions):
         'Private Editor': PRIVATE_EDITOR,
         'Private Owner': PRIVATE_OWNER,
         'Private Viewer': PRIVATE_VIEWER,
-
     }
 
     CONTEXT_PERMISSION_ATTR = 'af_permissions'
