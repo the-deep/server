@@ -1,6 +1,5 @@
 from django.db import models
 
-from connector.sources.store import get_sources
 from user_resource.models import UserResource
 
 from utils.common import is_valid_regex

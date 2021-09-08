@@ -1,10 +1,13 @@
 from django.shortcuts import get_object_or_404
+from django.utils.functional import cached_property
 from django.db import transaction
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
 from deep.serializers import (
     RemoveNullFieldsMixin,
+    TempClientIdMixin,
+    IntegerIDField,
     URLCachedFileField,
     IdListField,
     StringListField,
@@ -48,12 +51,12 @@ def raise_or_return_existing_lead(project, lead, source_type, url, text, attachm
     existing_lead = None
     error_message = None
 
-    if source_type == Lead.WEBSITE:
+    if source_type == Lead.SourceType.WEBSITE:
         existing_lead = check_if_url_exists(url, None, project, lead and lead.pk, return_lead=return_lead)
         error_message = f'A lead with this URL has already been added to Project: {project}'
     elif (
         attachment and attachment.metadata and
-        source_type in [Lead.DISK, Lead.DROPBOX, Lead.GOOGLE_DRIVE]
+        source_type in [Lead.SourceType.DISK, Lead.SourceType.DROPBOX, Lead.SourceType.GOOGLE_DRIVE]
     ):
         # For attachment types, check if file already used (using file hash)
         existing_lead = Lead.objects.filter(
@@ -61,7 +64,7 @@ def raise_or_return_existing_lead(project, lead, source_type, url, text, attachm
             attachment__metadata__md5_hash=attachment.metadata.get('md5_hash'),
         ).exclude(pk=lead and lead.pk).first()
         error_message = f'A lead with this file has already been added to Project: {project}'
-    elif source_type == Lead.TEXT:
+    elif source_type == Lead.SourceType.TEXT:
         existing_lead = Lead.objects.filter(
             project=project,
             text=text,
@@ -226,14 +229,15 @@ class LeadSerializer(
         assignee = assignee_id and get_object_or_404(User, id=assignee_id)
 
         emm_triggers = validated_data.pop('emm_triggers', [])
-        emm_entities = validated_data.pop('emm_entities', [])
+        emm_entities_names = [
+            entity['name']
+            for entity in validated_data.pop('emm_entities', [])
+            if isinstance(entity, dict) and 'name' in entity
+        ]
 
         lead = super().create(validated_data)
 
-        for entity in emm_entities:
-            entity = EMMEntity.objects.filter(name=entity['name']).first()
-            if entity is None:
-                continue
+        for entity in EMMEntity.objects.filter(name__in=emm_entities_names):
             lead.emm_entities.add(entity)
         lead.save()
 
@@ -251,8 +255,8 @@ class LeadSerializer(
         assignee = assignee_id and get_object_or_404(User, id=assignee_id)
 
         # We do not update triggers and entities
-        validated_data.pop('emm_entities', [])
-        validated_data.pop('emm_triggers', [])
+        validated_data.pop('emm_entities', None)
+        validated_data.pop('emm_triggers', None)
 
         lead = super().update(instance, validated_data)
 
@@ -378,3 +382,108 @@ class LeadOptionsSerializer(serializers.Serializer):
     emm_risk_factors = EmmTagSerializer(many=True)
     has_emm_leads = serializers.BooleanField()
     organization_types = KeyValueSerializer(many=True)
+
+
+# ------------------- Graphql Serializers ----------------------------------------
+class LeadGqSerializer(TempClientIdMixin, UserResourceSerializer):
+    """
+    Lead Model Serializer for Graphql (NOTE: Don't use this on DRF Views)
+    """
+    id = IntegerIDField(required=False)
+    # TODO: Make assigne Foreign key from M2M Field
+    assignee = SingleValueThayMayBeListField(required=False)
+    # NOTE: Right now this is send to client through connector and then return back to server (Only needed on create)
+    emm_triggers = LeadEMMTriggerSerializer(many=True, required=False)
+    emm_entities = EMMEntitySerializer(many=True, required=False)
+
+    class Meta:
+        model = Lead
+        fields = (
+            'id',
+            'title',
+            'attachment',
+            'status',
+            'assignee',
+            'confidentiality',
+            'source_type',
+            'priority',
+            'published_on',
+            'text',
+            'url',
+            'website',
+            'source',
+            'authors',
+            'emm_triggers',
+            'emm_entities',
+            'client_id',  # From TempClientIdMixin
+        )
+
+    @cached_property
+    def project(self):
+        project = self.context['request'].active_project
+        # This is a rare case, just to make sure this is validated
+        if self.instance and self.instance.project != project:
+            raise serializers.ValidationError('Invalid access')
+        return project
+
+    def validate_attachment(self, attachment):
+        if attachment and attachment.created_by != self.context['request'].user:
+            raise serializers.ValidationError('Attachment not found!')
+        return attachment
+
+    def validate_assignee(self, assignee_id):
+        assignee = self.project.get_all_members().filter(id=assignee_id).first()
+        if assignee is None:
+            raise serializers.ValidationError('Only project members can be assigneed')
+        return assignee
+
+    def validate(self, data):
+        """
+        This validator makes sure there is no duplicate leads in a project
+        """
+        # Using active project here.
+        data['project'] = self.project
+        attachment = data.get('attachment', self.instance and self.instance.attachment)
+        source_type = data.get('source_type', self.instance and self.instance.source_type)
+        text = data.get('text', self.instance and self.instance.text)
+        url = data.get('url', self.instance and self.instance.url)
+        raise_or_return_existing_lead(
+            data['project'], self.instance, source_type, url, text, attachment,
+            return_lead=False,  # Raise exception
+        )
+        return data
+
+    def create(self, validated_data):
+        assignee = validated_data.pop('assignee', None)
+        # Pop out emm values from validated_data
+        emm_triggers = validated_data.pop('emm_triggers', [])
+        emm_entities = validated_data.pop('emm_entities', [])
+        # Create new lead
+        lead = super().create(validated_data)
+        # Save emm entities
+        for entity in emm_entities:
+            entity = EMMEntity.objects.filter(name=entity['name']).first()
+            if entity is None:
+                continue
+            lead.emm_entities.add(entity)
+        # Save emm triggers
+        for trigger in emm_triggers:
+            LeadEMMTrigger.objects.create(**trigger, lead=lead)
+        # Save Assignee
+        if assignee:
+            lead.assignee.add(assignee)
+        return lead
+
+    def update(self, instance, validated_data):
+        has_assignee = 'assignee' in validated_data  # For parital updates
+        assignee = validated_data.pop('assignee', None)
+        # Pop out emm values from validated_data (Only allowed in creation)
+        validated_data.pop('emm_triggers', [])
+        validated_data.pop('emm_entities', [])
+        # Save lead
+        lead = super().update(instance, validated_data)
+        if has_assignee:
+            lead.assignee.clear()
+            if assignee:
+                lead.assignee.add(assignee)
+        return lead

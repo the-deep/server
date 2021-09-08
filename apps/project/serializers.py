@@ -1,10 +1,14 @@
 from django.db import models
-from django.core.files import File
+from django.utils import timezone
+from django.shortcuts import get_object_or_404
+from django.db import transaction
+from django.utils.translation import gettext
+
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
-from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
+from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField, IntegerIDField
 from geo.models import Region
 from geo.serializers import SimpleRegionSerializer
 from entry.models import Lead, Entry
@@ -12,6 +16,7 @@ from analysis_framework.models import AnalysisFrameworkMembership
 from user.models import Feature
 from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
+from user.utils import send_project_join_request_emails
 from user_group.serializers import SimpleUserGroupSerializer
 from user_resource.serializers import UserResourceSerializer
 from ary.models import AssessmentTemplate
@@ -251,7 +256,7 @@ class ProjectSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceS
         is_private = validated_data.get('is_private', False)
 
         private_access = member.profile.get_accessible_features().filter(
-            key=Feature.PRIVATE_PROJECT
+            key=Feature.FeatureKey.PRIVATE_PROJECT
         ).exists()
 
         if is_private and not private_access:
@@ -497,3 +502,115 @@ class ProjectRecentActivitySerializer(serializers.Serializer):
     def get_created_by_display_picture(self, instance):
         name = instance['created_by_display_picture']
         return name and self.context['request'].build_absolute_uri(URLCachedFileField.name_to_representation(name))
+
+
+# -------Graphql Serializer
+class ProjectJoinGqSerializer(serializers.ModelSerializer):
+    DESCRIPTION_MIN_LENGTH = 50
+    DESCRIPTION_MAX_LENGTH = 500
+
+    project = serializers.CharField(required=True)
+    reason = serializers.CharField(source='data.reason', required=True)
+    role = serializers.CharField(required=False)
+    requested_by = serializers.CharField(read_only=True)
+    responded_by = serializers.CharField(read_only=True)
+    status = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = ProjectJoinRequest
+        fields = (
+            'id',
+            'reason',
+            'role',
+            'requested_by',
+            'responded_by',
+            'project',
+            'status',
+            'data'
+        )
+
+    def create(self, validated_data):
+        validated_data['requested_by'] = self.context['request'].user
+        validated_data['status'] = ProjectJoinRequest.Status.PENDING
+        validated_data['role_id'] = ProjectRole.get_default_role().id
+        instance = super().create(validated_data)
+        transaction.on_commit(
+            lambda: send_project_join_request_emails.delay(instance.id)
+        )
+        return instance
+
+    def validate_project(self, project):
+        project = get_object_or_404(Project, id=project)
+        if project.is_private:
+            raise serializers.ValidationError("Cannot join private project")
+        if ProjectMembership.objects.filter(project=project, member=self.context['request'].user).exists():
+            raise serializers.ValidationError("Already a member")
+        if ProjectJoinRequest.objects.filter(project=project, requested_by=self.context['request'].user).exists():
+            raise serializers.ValidationError("Already sent join request for project %s" % project.id)
+        return project
+
+    def validate_reason(self, reason):
+        if not (self.DESCRIPTION_MIN_LENGTH <= len(reason) <= self.DESCRIPTION_MAX_LENGTH):
+            raise serializers.ValidationError(
+                gettext("Must be at least %s characters and at most %s characters") % (
+                    self.DESCRIPTION_MIN_LENGTH, self.DESCRIPTION_MAX_LENGTH,
+                )
+            )
+        return reason
+
+
+class ProjectAcceptRejectSerializer(serializers.ModelSerializer):
+    id = IntegerIDField(required=False)
+    status = serializers.CharField(required=True)
+    role = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+
+    class Meta:
+        model = ProjectJoinRequest
+        fields = ('id', 'status', 'role')
+
+    @staticmethod
+    def _accept_request(responded_by, join_request, role):
+        if not role or role == 'normal':
+            role = ProjectRole.get_default_role()
+        elif role == 'admin':
+            role = ProjectRole.get_default_admin_role()
+        else:
+            role_qs = ProjectRole.objects.filter(id=role)
+            if not role_qs.exists():
+                raise serializers.ValidationError('Role doesnot exist')
+            role = role_qs.first()
+
+        join_request.status = 'accepted'
+        join_request.responded_by = responded_by
+        join_request.responded_at = timezone.now()
+        join_request.role = role
+        join_request.save()
+
+        ProjectMembership.objects.update_or_create(
+            project=join_request.project,
+            member=join_request.requested_by,
+            defaults={
+                'role': role,
+                'added_by': responded_by,
+            },
+        )
+
+    @staticmethod
+    def _reject_request(responded_by, join_request):
+        join_request.status = 'rejected'
+        join_request.responded_by = responded_by
+        join_request.responded_at = timezone.now()
+        join_request.save()
+
+    def update(self, instance, validated_data):
+        validated_data['project'] = self.context['request'].active_project
+        role = validated_data.pop('role', None)
+        if instance.status in ['accepted', 'rejected']:
+            raise serializers.ValidationError(
+                'This request has already been {}'.format(instance.status)
+            )
+        if validated_data['status'] == 'accepted':
+            ProjectAcceptRejectSerializer._accept_request(self.context['request'].user, instance, role)
+        elif validated_data['status'] == 'rejected':
+            ProjectAcceptRejectSerializer._reject_request(self.context['request'].user, instance)
+        return super().update(instance, validated_data)

@@ -527,7 +527,7 @@ class ReportExporter:
 
         # Excerpt can also be image
         excerpt = (
-            entry.excerpt if entry.entry_type == Entry.EXCERPT
+            entry.excerpt if entry.entry_type == Entry.TagType.EXCERPT
             else ''
         )
         para.add_run(excerpt)
@@ -549,10 +549,10 @@ class ReportExporter:
 
         image = None
         image_text = None
-        if entry.entry_type == Entry.IMAGE:
+        if entry.entry_type == Entry.TagType.IMAGE:
             image = (entry.image and entry.image.file) or entry.image_raw
             # para.add_run().add_image(entry.image_raw)
-        elif entry.entry_type == Entry.DATA_SERIES and entry.tabular_field:
+        elif entry.entry_type == Entry.TagType.DATA_SERIES and entry.tabular_field:
             image = viz_renderer.get_entry_image(entry)
             h_stats = (entry.tabular_field.cache or {}).get('health_stats', {})
 
@@ -585,7 +585,7 @@ class ReportExporter:
         # Add source (with url if available)
         para.add_hyperlink(url, source) if url else para.add_run(source)
         # Add (confidential) to source without ,
-        lead.confidentiality == Lead.CONFIDENTIAL and para.add_run(' (confidential)')
+        lead.confidentiality == Lead.Confidentiality.CONFIDENTIAL and para.add_run(' (confidential)')
         # Add lead title if available
         lead.title and para.add_run(f", {lead.title}")
         # Finally add date
@@ -823,7 +823,7 @@ class ReportExporter:
             else:
                 para.add_run('Missing url.')
 
-            if lead.confidentiality == Lead.CONFIDENTIAL:
+            if lead.confidentiality == Lead.Confidentiality.CONFIDENTIAL:
                 para.add_run(' (confidential)')
 
             self.doc.add_paragraph()
@@ -839,7 +839,7 @@ class ReportExporter:
             call(['libreoffice', '--headless', '--convert-to', 'pdf', temp_doc.name, '--outdir', settings.TEMP_DIR])
             filename = generate_filename('Entries General Export', 'pdf')
             file = File(open(temp_pdf, 'rb'))
-            export_format = Export.PDF
+            export_format = Export.Format.PDF
             export_mime_type = PDF_MIME_TYPE
 
             # Cleanup
@@ -851,7 +851,7 @@ class ReportExporter:
 
             filename = generate_filename('Entries General Export', 'docx')
             file = ContentFile(buffer)
-            export_format = Export.DOCX
+            export_format = Export.Format.DOCX
             export_mime_type = DOCX_MIME_TYPE
 
         return filename, export_format, export_mime_type, file

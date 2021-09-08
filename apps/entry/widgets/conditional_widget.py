@@ -1,4 +1,4 @@
-WIDGET_ID = 'conditionalWidget'
+from analysis_framework.widgets.conditional_widget import WIDGET_ID  # type: ignore  # noqa:F401
 
 
 class Dummy:

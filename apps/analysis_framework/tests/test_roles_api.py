@@ -30,8 +30,16 @@ class TestAnalysisFrameworkRoles(TestCase):
             created_by=self.user,
         )
         # Add widgets
-        self.private_widget = self.create(Widget, analysis_framework=self.private_framework)
-        self.public_widget = self.create(Widget, analysis_framework=self.public_framework)
+        self.private_widget = self.create(
+            Widget, analysis_framework=self.private_framework,
+            widget_id=Widget.WidgetType.TEXT,
+            key='text-widget-001',
+        )
+        self.public_widget = self.create(
+            Widget, analysis_framework=self.public_framework,
+            widget_id=Widget.WidgetType.TEXT,
+            key='text-widget-002',
+        )
 
     def test_get_private_roles(self):
         url = '/api/v1/private-framework-roles/'
@@ -285,7 +293,7 @@ class TestAnalysisFrameworkRoles(TestCase):
         return self.client.post(clone_url, data=data)
 
     def _add_user_test(self, framework, user, status=201, role=None):
-        add_user_url = f'/api/v1/framework-memberships/'
+        add_user_url = '/api/v1/framework-memberships/'
         role = (role and role.id) or framework.get_or_create_editor_role().id,
         new_user = self.create(User)
         add_member_data = {

@@ -149,7 +149,8 @@ def _generate_geo_areas(admin_level, parent):
     # So instead of doing it with lot of other intesive tasks in this
     # process, leave it to be done for the first time when the
     # admin level get request is called.
-    # admin_level.calc_cache(False)
+    # FIXME: Improve memory consumption.
+    admin_level.calc_cache(save=False)
     admin_level.save()
 
 

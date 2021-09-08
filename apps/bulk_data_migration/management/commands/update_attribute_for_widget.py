@@ -1,12 +1,10 @@
 from datetime import datetime, timedelta
-import os
 import time
 
 from django.core.management.base import BaseCommand
 from django.db.models import (
     Q,
     Max,
-    Min,
     OuterRef,
     Subquery,
     DateTimeField,
@@ -18,7 +16,6 @@ from entry.utils import update_entry_attribute
 from entry.widgets.store import widget_store
 from entry.widgets import conditional_widget
 from lead.models import Lead
-from project.models import Project
 
 HIGH = 3
 MEDIUM = 2

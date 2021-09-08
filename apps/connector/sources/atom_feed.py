@@ -40,7 +40,7 @@ class AtomFeed(RssFeed):
 
         for item in limited_items:
             data = {
-                'source_type': Lead.RSS,
+                'source_type': Lead.SourceType.RSS,
                 **{
                     lead_field: _get_field_value(item, params.get(param_key))
                     for lead_field, param_key in self.option_lead_field_map.items()

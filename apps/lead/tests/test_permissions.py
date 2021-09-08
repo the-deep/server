@@ -84,8 +84,8 @@ class TestLeadPermissions(TestCase):
         )
         project = self.create(Project, role=view_unprotected_role)
 
-        lead1 = self.create_lead(project=project, confidentiality=Lead.UNPROTECTED)
-        lead_confidential = self.create_lead(project=project, confidentiality=Lead.CONFIDENTIAL)
+        lead1 = self.create_lead(project=project, confidentiality=Lead.Confidentiality.UNPROTECTED)
+        lead_confidential = self.create_lead(project=project, confidentiality=Lead.Confidentiality.CONFIDENTIAL)
 
         url = '/api/v1/leads/'
         self.authenticate()
@@ -119,8 +119,8 @@ class TestLeadPermissions(TestCase):
             'project': project.id,
             'source': self.source.pk,
             'author': self.author.pk,
-            'confidentiality': Lead.UNPROTECTED,
-            'status': Lead.PENDING,
+            'confidentiality': Lead.Confidentiality.UNPROTECTED,
+            'status': Lead.Status.PENDING,
             'text': 'Alien shapeship has been spotted in the sky',
             'assignee': self.user.id,
         }
@@ -137,8 +137,8 @@ class TestLeadPermissions(TestCase):
             'project': project.id,
             'source': self.source.pk,
             'author': self.author.pk,
-            'confidentiality': Lead.UNPROTECTED,
-            'status': Lead.PENDING,
+            'confidentiality': Lead.Confidentiality.UNPROTECTED,
+            'status': Lead.Status.PENDING,
             'text': 'Alien shapeship has been spotted in the sky',
             'assignee': self.user.id,
         }

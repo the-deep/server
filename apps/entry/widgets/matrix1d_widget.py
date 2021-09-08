@@ -1,4 +1,5 @@
-WIDGET_ID = 'matrix1dWidget'
+from analysis_framework.widgets.matrix1d_widget import WIDGET_ID
+
 DATA_VERSION = 1
 
 

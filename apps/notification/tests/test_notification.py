@@ -1,7 +1,6 @@
-from mock import patch
+from unittest.mock import patch
 
 from deep.tests import TestCase
-
 from user.models import User
 from notification.models import Notification, Assignment
 from project.models import ProjectJoinRequest, Project

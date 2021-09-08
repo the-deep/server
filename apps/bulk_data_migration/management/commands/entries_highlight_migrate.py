@@ -8,7 +8,6 @@ from lead.models import Lead
 from entry.models import Entry
 
 
-
 class Command(BaseCommand):
     help = 'Check if entry text is in lead text and populate dropped_text accordingly.'
 
@@ -18,11 +17,11 @@ class Command(BaseCommand):
             leadpreview__text_extract__isnull=False
         )
         leads_count = leads.count()
-        total_chunks = math.ceil(leads_count/chunk_size)
+        total_chunks = math.ceil(leads_count / chunk_size)
         n = 1
         for lead in leads.iterator(chunk_size=chunk_size):
             print(f'Updating entries from lead chunk {n} of {total_chunks}')
-            lead.entry_set.filter(entry_type=Entry.EXCERPT).annotate(
+            lead.entry_set.filter(entry_type=Entry.TagType.EXCERPT).annotate(
                 index=StrIndex('lead__leadpreview__text_extract', F('excerpt'))
             ).filter(index__gt=0).update(
                 dropped_excerpt=F('excerpt')

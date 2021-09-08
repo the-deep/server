@@ -393,7 +393,9 @@ def make_colormap(seq):
 def excel_to_python_date_format(excel_format):
     # TODO: support all formats
     # First replace excel's locale identifiers such as [$-409] by empty string
-    python_format = re.sub('(\[\\$-\d+\])', '', excel_format.upper()).\
+    python_format = re.sub(
+        '(\[\\$-\d+\])', '', excel_format.upper()  # noqa: W605
+    ).\
         replace('\\', '').\
         replace('YYYY', '%Y').\
         replace('YY', '%y').\
@@ -449,3 +451,8 @@ def is_valid_number(value):
     except (TypeError, ValueError):
         return False
     return True
+
+
+def to_camelcase(snake_str):
+    components = snake_str.split('_')
+    return components[0] + "".join(x.title() for x in components[1:])

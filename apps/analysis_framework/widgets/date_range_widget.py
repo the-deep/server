@@ -1,3 +1,6 @@
+WIDGET_ID = 'dateRangeWidget'
+
+
 def get_filters(widget, data):
     return [{
         'filter_type': 'intersects',

@@ -78,7 +78,7 @@ class ProjectApiTest(TestCase):
             'title': 'Test project',
             'data': {'testKey': 'testValue'},
             'organizations': [
-                {'organization': self.org1.id, 'organization_type': ProjectOrganization.DONOR},
+                {'organization': self.org1.id, 'organization_type': ProjectOrganization.Type.DONOR},
             ],
         }
 
@@ -97,7 +97,7 @@ class ProjectApiTest(TestCase):
             'title': 'Test project',
             'data': {'testKey': 'testValue'},
             'organizations': [
-                {'organization': self.org1.id, 'organization_type': ProjectOrganization.DONOR},
+                {'organization': self.org1.id, 'organization_type': ProjectOrganization.Type.DONOR},
             ],
             'has_assessments': True
         }
@@ -135,8 +135,8 @@ class ProjectApiTest(TestCase):
 
     def test_get_projects(self):
         user_fhx = self.create(User)
-        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
-                    key=Feature.PRIVATE_PROJECT, title='Private project',
+        self.create(Feature, feature_type=Feature.FeatureType.GENERAL_ACCESS,
+                    key=Feature.FeatureKey.PRIVATE_PROJECT, title='Private project',
                     users=[user_fhx], email_domains=[])
         self.authenticate(user_fhx)
 
@@ -200,8 +200,8 @@ class ProjectApiTest(TestCase):
         }
 
         user_fhx = self.create(User, email='fhx@togglecorp.com')
-        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
-                    key=Feature.PRIVATE_PROJECT, title='Private project',
+        self.create(Feature, feature_type=Feature.FeatureType.GENERAL_ACCESS,
+                    key=Feature.FeatureKey.PRIVATE_PROJECT, title='Private project',
                     users=[user_fhx], email_domains=[])
 
         self.authenticate(user_fhx)
@@ -226,8 +226,8 @@ class ProjectApiTest(TestCase):
         user_fhx = self.create(User, email='fhx@togglecorp.com')
         user_dummy = self.create(User, email='dummy@test.com')
 
-        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
-                    key=Feature.PRIVATE_PROJECT, title='Private project',
+        self.create(Feature, feature_type=Feature.FeatureType.GENERAL_ACCESS,
+                    key=Feature.FeatureKey.PRIVATE_PROJECT, title='Private project',
                     users=[user_dummy], email_domains=[])
 
         self.authenticate(user_fhx)
@@ -238,8 +238,8 @@ class ProjectApiTest(TestCase):
 
     def test_get_private_project_detail_unauthorized(self):
         user_fhx = self.create(User, email='fhx@togglecorp.com')
-        self.create(Feature, feature_type=Feature.GENERAL_ACCESS,
-                    key=Feature.PRIVATE_PROJECT, title='Private project',
+        self.create(Feature, feature_type=Feature.FeatureType.GENERAL_ACCESS,
+                    key=Feature.FeatureKey.PRIVATE_PROJECT, title='Private project',
                     users=[user_fhx], email_domains=[])
 
         self.authenticate(user_fhx)
@@ -449,9 +449,9 @@ class ProjectApiTest(TestCase):
         data = {
             'title': 'TestProject',
             'organizations': [
-                {'organization': org1.id, 'organization_type': ProjectOrganization.DONOR},
-                {'organization': org2.id, 'organization_type': ProjectOrganization.GOVERNMENT},
-                {'organization': org3.id, 'organization_type': ProjectOrganization.GOVERNMENT},
+                {'organization': org1.id, 'organization_type': ProjectOrganization.Type.DONOR},
+                {'organization': org2.id, 'organization_type': ProjectOrganization.Type.GOVERNMENT},
+                {'organization': org3.id, 'organization_type': ProjectOrganization.Type.GOVERNMENT},
             ],
         }
 
@@ -463,8 +463,8 @@ class ProjectApiTest(TestCase):
 
         data = {
             'organizations': [
-                {'organization': org4.id, 'organization_type': ProjectOrganization.DONOR},
-                {'organization': org5.id, 'organizatino_type': ProjectOrganization.GOVERNMENT},
+                {'organization': org4.id, 'organization_type': ProjectOrganization.Type.DONOR},
+                {'organization': org5.id, 'organization_type': ProjectOrganization.Type.GOVERNMENT},
             ],
         }
 
@@ -920,7 +920,7 @@ class ProjectApiTest(TestCase):
         )
 
     def test_project_status_in_project_options(self):
-        choices = dict(make_hashable(Project.STATUS_CHOICES))
+        choices = dict(make_hashable(Project.Status.choices))
 
         url = '/api/v1/project-options/'
 
@@ -928,10 +928,10 @@ class ProjectApiTest(TestCase):
         response = self.client.get(url)
         self.assert_200(response)
         self.assertIn('project_status', response.data)
-        self.assertEqual(response.data['project_status'][0]['key'], Project.ACTIVE)
-        self.assertEqual(response.data['project_status'][0]['value'], choices[Project.ACTIVE])
-        self.assertEqual(response.data['project_status'][1]['key'], Project.INACTIVE)
-        self.assertEqual(response.data['project_status'][1]['value'], choices[Project.INACTIVE])
+        self.assertEqual(response.data['project_status'][0]['key'], Project.Status.ACTIVE)
+        self.assertEqual(response.data['project_status'][0]['value'], choices[Project.Status.ACTIVE])
+        self.assertEqual(response.data['project_status'][1]['key'], Project.Status.INACTIVE)
+        self.assertEqual(response.data['project_status'][1]['value'], choices[Project.Status.INACTIVE])
 
     def test_join_request(self):
         project = self.create(Project, role=self.admin_role)
@@ -1275,18 +1275,19 @@ class ProjectApiTest(TestCase):
         lead = self.create(Lead, project=project)
         entry = self.create(
             Entry,
-            project=project, analysis_framework=af, lead=lead, entry_type=Entry.EXCERPT,
+            project=project, analysis_framework=af, lead=lead, entry_type=Entry.TagType.EXCERPT,
         )
 
         # Create widgets, attributes and configs
         invalid_stat_config = {}
         valid_stat_config = {}
 
-        for widget_identifier, data_identifier, config_kwargs in [
-            ('widget_1d', 'matrix1dWidget', {}),
-            ('widget_2d', 'matrix2dWidget', {}),
-            ('geo_widget', 'geoWidget', {}),
+        for index, (title, widget_identifier, data_identifier, config_kwargs) in enumerate([
+            ('widget 1d', 'widget_1d', 'matrix1dWidget', {}),
+            ('widget 2d', 'widget_2d', 'matrix2dWidget', {}),
+            ('geo widget', 'geo_widget', 'geoWidget', {}),
             (
+                'severity widget',
                 'severity_widget',
                 'conditionalWidget',
                 {
@@ -1296,12 +1297,17 @@ class ProjectApiTest(TestCase):
                     'widget_type': 'scaleWidget',
                 },
             ),
-            ('reliability_widget', 'scaleWidget', {}),
-            ('affected_groups_widget', 'multiselectWidget', {}),
-            ('specific_needs_groups_widget', 'multiselectWidget', {}),
-        ]:
+            ('reliability widget', 'reliability_widget', 'scaleWidget', {}),
+            ('affected groups widget', 'affected_groups_widget', 'multiselectWidget', {}),
+            ('specific needs groups widget', 'specific_needs_groups_widget', 'multiselectWidget', {}),
+        ]):
             widget = self.create(
-                Widget, analysis_framework=af,
+                Widget,
+                analysis_framework=af,
+                section=None,
+                title=title,
+                widget_id=data_identifier,
+                key=f'{data_identifier}-{index}',
                 properties={'data': w_data[data_identifier]},
             )
             self.create(Attribute, entry=entry, widget=widget, data=a_data[data_identifier])

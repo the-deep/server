@@ -428,19 +428,19 @@ class EntryOptionsView(views.APIView):
                 {
                     'key': s[0],
                     'value': s[1],
-                } for s in Lead.STATUSES
+                } for s in Lead.Status.choices
             ],
             'lead_priority': [
                 {
                     'key': s[0],
                     'value': s[1],
-                } for s in Lead.PRIORITIES
+                } for s in Lead.Priority.choices
             ],
             'lead_confidentiality': [
                 {
                     'key': s[0],
                     'value': s[1],
-                } for s in Lead.CONFIDENTIALITIES
+                } for s in Lead.Confidentiality.choices
             ],
             'organization_types': [
                 {
@@ -483,7 +483,7 @@ class ComprehensiveEntriesViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = EntryFilterSet
 
     def get_queryset(self):
-        ignore_widget_type = ['excerptWidget']
+        ignore_widget_type = [Widget.WidgetType.EXCERPT.value]
         prefetch_related_fields = [
             models.Prefetch(
                 'attribute_set',

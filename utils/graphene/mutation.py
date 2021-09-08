@@ -1,6 +1,6 @@
+from typing import Type, List
 from collections import OrderedDict
 
-from django.db.models import JSONField
 from django.core.exceptions import PermissionDenied
 import graphene
 import graphene_django
@@ -8,18 +8,20 @@ from graphene.types.generic import GenericScalar
 from graphene_django.registry import get_global_registry
 from graphene_django.rest_framework.serializer_converter import (
     get_graphene_type_from_serializer_field,
+    convert_choices_to_named_enum_with_descriptions,
 )
-from graphene_django_extras.converter import convert_django_field
 from rest_framework import serializers
+from graphene_file_upload.scalars import Upload
 
 from utils.graphene.error_types import mutation_is_not_valid
-# from apps.contrib.serializers import IntegerIDField
-
-
-@convert_django_field.register(JSONField)
-def convert_json_field_to_scalar(field, registry=None):
-    # https://github.com/graphql-python/graphene-django/issues/303#issuecomment-339939955
-    return GenericScalar()
+from utils.graphene.enums import get_enum_name_from_django_field
+# from utils.common import to_camelcase
+from deep.enums import ENUM_TO_GRAPHENE_ENUM_MAP
+from deep.serializers import IntegerIDField
+from deep.permissions import (
+    ProjectPermissions as PP,
+    AnalysisFrameworkPermissions as AfP,
+)
 
 
 @get_graphene_type_from_serializer_field.register(serializers.ListSerializer)
@@ -40,15 +42,24 @@ def convert_serializer_field_to_many_related_id(field):
 
 
 @get_graphene_type_from_serializer_field.register(serializers.PrimaryKeyRelatedField)
+@get_graphene_type_from_serializer_field.register(IntegerIDField)
 # @get_graphene_type_from_serializer_field.register(IntegerIDField)
 def convert_serializer_field_to_id(field):
     return graphene.ID
 
 
+@get_graphene_type_from_serializer_field.register(serializers.JSONField)
+def convert_serializer_field_to_generic_scalar(field):
+    return GenericScalar
+
+
+# TODO: https://github.com/graphql-python/graphene-django/blob/623d0f219ebeaf2b11de4d7f79d84da8508197c8/graphene_django/converter.py#L83-L94  # noqa: E501
+# https://github.com/graphql-python/graphene-django/blob/623d0f219ebeaf2b11de4d7f79d84da8508197c8/graphene_django/rest_framework/serializer_converter.py#L155-L159  # noqa: E501
 @get_graphene_type_from_serializer_field.register(serializers.ChoiceField)
 def convert_serializer_field_to_enum(field):
-    enum_type = type(list(field.choices.values())[-1])
-    return ENUM_TO_GRAPHENE_ENUM_MAP.get(enum_type.__name__, graphene.String)
+    name = field.field_name or field.source or "Choices"
+    custom_name = get_enum_name_from_django_field(field)
+    return ENUM_TO_GRAPHENE_ENUM_MAP.get(custom_name) or convert_choices_to_named_enum_with_descriptions(name, field.choices)
 
 
 def convert_serializer_field(field, is_input=True, convert_choices_to_enum=True):
@@ -60,6 +71,8 @@ def convert_serializer_field(field, is_input=True, convert_choices_to_enum=True)
 
     if isinstance(field, serializers.ChoiceField) and not convert_choices_to_enum:
         graphql_type = graphene.String
+    elif isinstance(field, serializers.FileField):
+        graphql_type = Upload
     else:
         graphql_type = get_graphene_type_from_serializer_field(field)
 
@@ -164,7 +177,7 @@ def fields_for_serializer(
 def generate_input_type_for_serializer(
     name: str,
     serializer_class,
-) -> graphene.InputObjectType:
+) -> Type[graphene.InputObjectType]:
     data_members = fields_for_serializer(
         serializer_class(),
         only_fields=[],
@@ -179,84 +192,107 @@ graphene_django.rest_framework.serializer_converter.convert_serializer_field = c
 graphene_django.rest_framework.serializer_converter.convert_serializer_to_input_type = convert_serializer_to_input_type
 
 
-class GrapheneMutation(graphene.Mutation):
+class BaseGrapheneMutation(graphene.Mutation):
     # output fields
     errors = graphene.List(graphene.NonNull(GenericScalar))
-    ok = graphene.Boolean()
 
     @classmethod
-    def get_queryset(cls, info, **kwargs):
-        return cls.filter_queryset(
-            cls.model._meta.default_manager.all(),
-            info,
-            **kwargs
-        )
-
-    @classmethod
-    def get_object(cls, info, **kwargs):
-        obj = cls.get_queryset(info, **kwargs).get(id=kwargs['id'])
-        cls.check_object_permissions(info, obj, **kwargs)
-        return obj
-
-    @classmethod
-    def filter_queryset(cls, qs, info, **kwargs):
+    def filter_queryset(cls, qs, info):
         # customize me in the mutation if required
         return qs
 
+    # Graphene standard method
     @classmethod
-    def get_permissions(cls):
-        # NOTE: we will be using the permissions classes of the rest framework
-        return [permission() for permission in cls.permission_classes]
+    def get_queryset(cls, info):
+        return cls.filter_queryset(cls.model._meta.default_manager.all(), info)
 
     @classmethod
-    def check_permissions(cls, info, **kwargs):
-        rest_view = None
-        for permission in cls.get_permissions():
-            if not permission.has_permission(info.context.request, rest_view):
-                raise PermissionDenied(
-                    message=getattr(permission, 'message', None),
-                    code=getattr(permission, 'code', None)
-                )
+    def get_object(cls, info, **kwargs):
+        obj = cls.get_queryset(info).get(id=kwargs['id'])
+        return obj
+
+    # @classmethod
+    # def check_permissions(cls, info, **kwargs):
+    #     raise Exception('This needs to be implemented in inheritances class')
 
     @classmethod
-    def check_object_permissions(cls, info, obj, **kwargs):
-        rest_view = None
-        for permission in cls.get_permissions():
-            if not permission.has_object_permission(info.context.request, rest_view, obj):
-                raise PermissionDenied(
-                    message=getattr(permission, 'message', None),
-                    code=getattr(permission, 'code', None)
-                )
-
-    @classmethod
-    def perform_mutate(cls, root, info, **kwargs):
-        data = kwargs['data']
-        id = kwargs.get('id')
+    def _save_item(cls, item, info, **kwargs):
+        id = kwargs.pop('id', None)
         if id:
             serializer = cls.serializer_class(
-                instance=cls.get_object(info, **kwargs),
-                data=data,
+                instance=cls.get_object(info, id=id, **kwargs),
+                data=item,
                 context={'request': info.context},
                 partial=True,
             )
         else:
             serializer = cls.serializer_class(
-                data=data,
+                data=item,
                 context={'request': info.context}
             )
         errors = mutation_is_not_valid(serializer)
         if errors:
-            return cls(errors=errors, ok=False)
+            return None, errors
         instance = serializer.save()
-        return cls(result=instance, errors=None, ok=True)
+        return instance, None
 
+    # Graphene standard method
     @classmethod
     def mutate(cls, root, info, **kwargs):
         cls.check_permissions(info, **kwargs)
         return cls.perform_mutate(root, info, **kwargs)
 
 
+class GrapheneMutation(BaseGrapheneMutation):
+    ok = graphene.Boolean()
+
+    @classmethod
+    def perform_mutate(cls, root, info, **kwargs):
+        data = kwargs['data']
+        instance, errors = cls._save_item(data, info, **kwargs)
+        return cls(result=instance, errors=errors, ok=not errors)
+
+
+class BulkGrapheneMutation(BaseGrapheneMutation):
+    errors = graphene.List(graphene.List(graphene.NonNull(GenericScalar)))
+
+    @classmethod
+    def get_valid_delete_items(cls, info, delete_ids):
+        """
+        # Overide if needed (NOTE: define get_valid_delete_items when used)
+        It will use filter_queryset if defined (Better to use filter_queryset)
+        """
+        return cls.get_queryset(info).filter(pk__in=delete_ids)
+
+    @classmethod
+    def perform_mutate(cls, root, info, **kwargs):
+        items = kwargs.get('items') or []
+        delete_ids = kwargs.get('delete_ids')
+        all_errors = []
+        all_instances = []
+        all_deleted_instances = []
+        # Bulk Delete
+        if delete_ids:
+            delete_items = cls.get_valid_delete_items(info, delete_ids)
+            for item in delete_items:
+                old_id = item.pk
+                item.delete()
+                # add old id so that client can use it if required
+                item.pk = old_id
+                all_deleted_instances.append(item)
+            # cls.model.filter(pk__in=validated_delete_ids).delete()
+        # Bulk Create/Update
+        for item in items:
+            id = item.get('id')
+            instance, errors = cls._save_item(item, info, id=id, **kwargs)
+            all_errors.append(errors)
+            all_instances.append(instance)
+        return cls(result=all_instances, errors=all_errors, deleted_result=all_deleted_instances)
+
+
 class DeleteMutation(GrapheneMutation):
+    ok = graphene.Boolean()
+
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
         instance = cls.get_object(info, **kwargs)
@@ -265,3 +301,43 @@ class DeleteMutation(GrapheneMutation):
         # add old id so that client can use it if required
         instance.id = old_id
         return cls(result=instance, errors=None, ok=True)
+
+
+class ProjectScopeMixin():
+    permissions: List[str]
+
+    @classmethod
+    def check_permissions(cls, info, **_):
+        for permission in cls.permissions:
+            if not PP.check_permission(info, permission):
+                raise PermissionDenied(PP.get_permission_message(permission))
+
+
+class PsGrapheneMutation(ProjectScopeMixin, GrapheneMutation):
+    pass
+
+
+class PsBulkGrapheneMutation(ProjectScopeMixin, BulkGrapheneMutation):
+    pass
+
+
+class PsDeleteMutation(ProjectScopeMixin, DeleteMutation):
+    pass
+
+
+class AfScopeMixin():
+    permissions: List[str]
+
+    @classmethod
+    def check_permissions(cls, info, **_):
+        for permission in cls.permissions:
+            if not AfP.check_permission(info, permission):
+                raise PermissionDenied(AfP.get_permission_message(permission))
+
+
+class AfGrapheneMutation(AfScopeMixin, GrapheneMutation):
+    pass
+
+
+class AfBulkGrapheneMutation(AfScopeMixin, BulkGrapheneMutation):
+    pass

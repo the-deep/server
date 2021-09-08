@@ -1,6 +1,5 @@
 from deep.tests import TestCase
 from user.models import User
-from django.core.exceptions import ValidationError
 
 
 class JwtApiTests(TestCase):

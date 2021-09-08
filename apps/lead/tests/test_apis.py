@@ -78,8 +78,8 @@ class LeadTests(TestCase):
             'project': project.id,
             'source': self.source.pk,
             'author': self.author.pk,
-            'confidentiality': Lead.UNPROTECTED,
-            'status': Lead.PENDING,
+            'confidentiality': Lead.Confidentiality.UNPROTECTED,
+            'status': Lead.Status.PENDING,
             'text': 'Alien shapeship has been spotted in the sky',
             'assignee': assignee or self.user.id,
         }
@@ -94,7 +94,7 @@ class LeadTests(TestCase):
         self.assertEqual(r_data['assignee'], self.user.id)
 
         # low is default priority
-        self.assertEqual(r_data['priority'], Lead.LOW)
+        self.assertEqual(r_data['priority'], Lead.Priority.LOW)
 
     def test_lead_create_with_status_validated(self, assignee=None):
         lead_begining = Lead.objects.count()
@@ -106,8 +106,8 @@ class LeadTests(TestCase):
             'project': project.id,
             'source': self.source.pk,
             'author': self.author.pk,
-            'confidentiality': Lead.UNPROTECTED,
-            'status': Lead.VALIDATED,
+            'confidentiality': Lead.Confidentiality.UNPROTECTED,
+            'status': Lead.Status.VALIDATED,
             'text': 'Alien shapeship has been spotted in the sky',
             'assignee': assignee or self.user.id,
         }
@@ -170,11 +170,11 @@ class LeadTests(TestCase):
             'project': project.id,
             'source': self.source.pk,
             'author': self.author.pk,
-            'confidentiality': Lead.UNPROTECTED,
-            'status': Lead.PENDING,
+            'confidentiality': Lead.Confidentiality.UNPROTECTED,
+            'status': Lead.Status.PENDING,
             'text': 'Alien shapeship has been spotted in the sky',
             'assignee': assignee or self.user.id,
-            'priority': Lead.HIGH,
+            'priority': Lead.Priority.HIGH,
         }
 
         self.authenticate()
@@ -187,7 +187,7 @@ class LeadTests(TestCase):
         self.assertEqual(r_data['assignee'], self.user.id)
 
         # low is default priority
-        self.assertEqual(r_data['priority'], Lead.HIGH)
+        self.assertEqual(r_data['priority'], Lead.Priority.HIGH)
 
     def test_create_lead_with_emm(self):
         entity1 = self.create(EMMEntity, name='entity1')
@@ -203,8 +203,8 @@ class LeadTests(TestCase):
             'project': project.id,
             'source': self.source.pk,
             'author': self.author.pk,
-            'confidentiality': Lead.UNPROTECTED,
-            'status': Lead.PENDING,
+            'confidentiality': Lead.Confidentiality.UNPROTECTED,
+            'status': Lead.Status.PENDING,
             'text': 'Alien shapeship has been spotted in the sky',
             'assignee': self.user.id,
             'emm_entities': [
@@ -255,8 +255,8 @@ class LeadTests(TestCase):
             'project': project.id,
             'source': self.source.pk,
             'author': self.author.pk,
-            'confidentiality': Lead.UNPROTECTED,
-            'status': Lead.PENDING,
+            'confidentiality': Lead.Confidentiality.UNPROTECTED,
+            'status': Lead.Status.PENDING,
             'text': 'Alien shapeship has been spotted in the sky',
             'assignee': assignee or self.user.id,
         }
@@ -285,8 +285,8 @@ class LeadTests(TestCase):
             'project': project.id,
             'source': self.source.pk,
             'author': self.author.pk,
-            'confidentiality': Lead.UNPROTECTED,
-            'status': Lead.PENDING,
+            'confidentiality': Lead.Confidentiality.UNPROTECTED,
+            'status': Lead.Status.PENDING,
             'text': 'Alien shapeship has been spotted in the sky',
             'assignee': assignee or self.user.id,
         }
@@ -380,13 +380,13 @@ class LeadTests(TestCase):
         # Default options
         DEFAULT_OPTIONS = {
             'confidentiality': [
-                {'key': c[0], 'value': c[1]} for c in Lead.CONFIDENTIALITIES
+                {'key': c[0], 'value': c[1]} for c in Lead.Confidentiality.choices
             ],
             'status': [
-                {'key': s[0], 'value': s[1]} for s in Lead.STATUSES
+                {'key': s[0], 'value': s[1]} for s in Lead.Status.choices
             ],
             'priority': [
-                {'key': s[0], 'value': s[1]} for s in Lead.PRIORITIES
+                {'key': s[0], 'value': s[1]} for s in Lead.Priority.choices
             ],
         }
 
@@ -679,8 +679,8 @@ class LeadTests(TestCase):
             'project': [project1.id, project2.id],
             'source': self.source.pk,
             'author': self.author.pk,
-            'confidentiality': Lead.UNPROTECTED,
-            'status': Lead.PENDING,
+            'confidentiality': Lead.Confidentiality.UNPROTECTED,
+            'status': Lead.Status.PENDING,
             'text': 'this is some random text',
             'assignee': self.user.id,
         }
@@ -786,7 +786,7 @@ class LeadTests(TestCase):
 
         # Generate Leads
         lead1 = self.create(
-            Lead, title=lead1_title, project=project1s, source_type=Lead.WEBSITE, url='http://example.com'
+            Lead, title=lead1_title, project=project1s, source_type=Lead.SourceType.WEBSITE, url='http://example.com'
         )
         lead1.authors.set([author, author2])
         lead2 = self.create(Lead, project=project2s)
@@ -794,7 +794,9 @@ class LeadTests(TestCase):
         lead4 = self.create(Lead, project=project4s)
 
         # For duplicate url validation check
-        self.create(Lead, title=lead1_title, project=project2d, source_type=Lead.WEBSITE, url='http://example.com')
+        self.create(
+            Lead, title=lead1_title, project=project2d, source_type=Lead.SourceType.WEBSITE, url='http://example.com'
+        )
 
         # Generating Foreign elements for lead1
         self.create(LeadPreview, lead=lead1, text_extract=lead1_text_extract)
@@ -889,9 +891,9 @@ class LeadTests(TestCase):
             'project': project.pk,
             'source': self.source.pk,
             'author': self.author.pk,
-            'source_type': Lead.DISK,
-            'confidentiality': Lead.UNPROTECTED,
-            'status': Lead.PENDING,
+            'source_type': Lead.SourceType.DISK,
+            'confidentiality': Lead.Confidentiality.UNPROTECTED,
+            'status': Lead.Status.PENDING,
             'attachment': {'id': file.pk},
             'assignee': self.user.id,
         }
@@ -909,9 +911,9 @@ class LeadTests(TestCase):
             'project': project.pk,
             'source': self.source.pk,
             'author': self.author.pk,
-            'source_type': Lead.TEXT,
-            'confidentiality': Lead.UNPROTECTED,
-            'status': Lead.PENDING,
+            'source_type': Lead.SourceType.TEXT,
+            'confidentiality': Lead.Confidentiality.UNPROTECTED,
+            'status': Lead.Status.PENDING,
             'text': 'duplication test 101',
             'assignee': self.user.id,
         }
@@ -927,30 +929,30 @@ class LeadTests(TestCase):
         project = self.create(Project)
         project.add_member(self.user)
 
-        self.create_lead(project=project, priority=Lead.HIGH)
-        self.create_lead(project=project, priority=Lead.MEDIUM)
-        self.create_lead(project=project, priority=Lead.HIGH)
-        self.create_lead(project=project, priority=Lead.LOW)
+        self.create_lead(project=project, priority=Lead.Priority.HIGH)
+        self.create_lead(project=project, priority=Lead.Priority.MEDIUM)
+        self.create_lead(project=project, priority=Lead.Priority.HIGH)
+        self.create_lead(project=project, priority=Lead.Priority.LOW)
 
         url = '/api/v1/leads/?ordering=priority'
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
         leads = response.data['results']
-        assert leads[0]['priority'] == Lead.LOW
-        assert leads[1]['priority'] == Lead.MEDIUM
-        assert leads[2]['priority'] == Lead.HIGH
-        assert leads[3]['priority'] == Lead.HIGH
+        assert leads[0]['priority'] == Lead.Priority.LOW
+        assert leads[1]['priority'] == Lead.Priority.MEDIUM
+        assert leads[2]['priority'] == Lead.Priority.HIGH
+        assert leads[3]['priority'] == Lead.Priority.HIGH
 
         url = '/api/v1/leads/?ordering=-priority'
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
         leads = response.data['results']
-        assert leads[0]['priority'] == Lead.HIGH
-        assert leads[1]['priority'] == Lead.HIGH
-        assert leads[2]['priority'] == Lead.MEDIUM
-        assert leads[3]['priority'] == Lead.LOW
+        assert leads[0]['priority'] == Lead.Priority.HIGH
+        assert leads[1]['priority'] == Lead.Priority.HIGH
+        assert leads[2]['priority'] == Lead.Priority.MEDIUM
+        assert leads[3]['priority'] == Lead.Priority.LOW
 
     def test_lead_order_by_page_count(self):
         # Create lead and lead_previews
@@ -995,11 +997,11 @@ class LeadTests(TestCase):
         lead1 = self.create_lead(project=project)
         lead2 = self.create_lead(project=project)
         lead3 = self.create_lead(project=project)
-        lead4 = self.create_lead(project=project2, priority=Lead.HIGH)
+        lead4 = self.create_lead(project=project2, priority=Lead.Priority.HIGH)
 
         self.authenticate()
 
-        response = self.client.get(f'/api/v1/leads/?project={project2.pk}&priority={Lead.HIGH}')
+        response = self.client.get(f'/api/v1/leads/?project={project2.pk}&priority={Lead.Priority.HIGH}')
         assert response.json()['results'][0]['id'] == lead4.pk
 
         url = f'/api/v1/leads/?project={project.pk}'
@@ -1011,21 +1013,21 @@ class LeadTests(TestCase):
         # Entries exists filter test
         self.create_entry(lead=lead1)
         self.create_entry(lead=lead2)
-        response = self.client.get(f'{url}&exists={LeadFilterSet.ENTRIES_EXIST}')
+        response = self.client.get(f'{url}&exists={LeadFilterSet.Exists.ENTRIES_EXISTS}')
         assert response.json()['count'] == 2, 'Lead count should be 2 for lead with entries'
 
         # Entries do not exist filter test
-        response = self.client.get(f'{url}&exists={LeadFilterSet.ENTRIES_DO_NOT_EXIST}')
+        response = self.client.get(f'{url}&exists={LeadFilterSet.Exists.ENTRIES_DO_NOT_EXIST}')
         assert response.json()['count'] == 1, 'Lead count should be 1 for lead without entries'
 
         # Assessment exists filter test
         self.create_assessment(lead=lead1)
         self.create_assessment(lead=lead3)
-        response = self.client.get(f'{url}&exists={LeadFilterSet.ASSESSMENT_EXISTS}')
+        response = self.client.get(f'{url}&exists={LeadFilterSet.Exists.ASSESSMENT_EXISTS}')
         assert response.json()['count'] == 2, 'Lead count should be 2 for lead with assessment'
 
         # Assessment does not exist filter test
-        response = self.client.get(f'{url}&exists={LeadFilterSet.ASSESSMENT_DOES_NOT_EXIST}')
+        response = self.client.get(f'{url}&exists={LeadFilterSet.Exists.ASSESSMENT_DOES_NOT_EXIST}')
         assert response.json()['count'] == 1, 'Lead count should be 1 for lead without assessment'
 
     def test_lead_assignee_filter(self):
@@ -1132,12 +1134,12 @@ class LeadTests(TestCase):
         response = self.client.post(url, post_data)
         assert response.json()['count'] == 3
 
-        post_data = {'custom_filters': 'exclude_empty_filtered_entries'}
+        post_data = {'custom_filters': LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES}
         response = self.client.post(url, post_data)
         assert response.json()['count'] == 0, 'There are not supposed to be leads with entries'
 
-        entry1 = self.create(Entry, project=project, lead=lead1, controlled=True, entry_type=Entry.EXCERPT)
-        self.create(Entry, project=project, lead=lead1, controlled=True, entry_type=Entry.EXCERPT)
+        entry1 = self.create(Entry, project=project, lead=lead1, controlled=True, entry_type=Entry.TagType.EXCERPT)
+        self.create(Entry, project=project, lead=lead1, controlled=True, entry_type=Entry.TagType.EXCERPT)
 
         post_data = {'entries_filter': [('controlled', True)]}
         response = self.client.post(url, post_data)
@@ -1146,10 +1148,10 @@ class LeadTests(TestCase):
             == set([0, 0, 2]),\
             response.json()
 
-        entry2 = self.create(Entry, project=project, lead=lead2, controlled=False, entry_type=Entry.IMAGE)
-        self.create(Entry, project=project, lead=lead3, controlled=False, entry_type=Entry.DATA_SERIES)
+        entry2 = self.create(Entry, project=project, lead=lead2, controlled=False, entry_type=Entry.TagType.IMAGE)
+        self.create(Entry, project=project, lead=lead3, controlled=False, entry_type=Entry.TagType.DATA_SERIES)
         post_data = {
-            'custom_filters': 'exclude_empty_filtered_entries',
+            'custom_filters': LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES,
             'entries_filter': [('controlled', True)]
         }
         response = self.client.post(url, post_data)
@@ -1158,7 +1160,7 @@ class LeadTests(TestCase):
         assert response.json()['results'][0]['filteredEntriesCount'] == 2, response.json()
 
         post_data['entries_filter'] = []
-        post_data['entries_filter'].append(('entry_type', [Entry.EXCERPT, Entry.IMAGE]))
+        post_data['entries_filter'].append(('entry_type', [Entry.TagType.EXCERPT, Entry.TagType.IMAGE]))
         response = self.client.post(url, post_data)
         self.assertEqual(response.json()['count'], 2, response.json())
         # there should be 1 image entry and 2 excerpt entries
@@ -1555,7 +1557,7 @@ class LeadTests(TestCase):
         )
 
         # test for the search field `title`
-        url = f'/api/v1/lead-groups/?search=test1'
+        url = '/api/v1/lead-groups/?search=test1'
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)

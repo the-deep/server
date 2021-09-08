@@ -45,6 +45,8 @@ TESTING = any([
     ]
     # Provided by pytest-xdist
 ]) or os.environ.get('PYTEST_XDIST_WORKER') is not None
+TEST_RUNNER = 'snapshottest.django.TestRunner'
+TEST_DIR = os.path.join(BASE_DIR, 'deep/test_files')
 
 PROFILE = os.environ.get('PROFILE', 'false').lower() == 'true'
 
@@ -358,17 +360,18 @@ CELERY_BEAT_SCHEDULE = {
 
 DJANGO_CACHE_REDIS_URL = os.environ.get('DJANGO_CACHE_REDIS_URL', 'redis://redis:6379/2')
 CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": DJANGO_CACHE_REDIS_URL,
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': DJANGO_CACHE_REDIS_URL,
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
-        "KEY_PREFIX": "dj_cache-",
+        'KEY_PREFIX': 'dj_cache-',
     },
+    'local-memory': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
 }
-
-TEST_DIR = os.path.join(BASE_DIR, 'deep/test_files')
 
 # RELIEF WEB
 RELIEFWEB_APPNAME = 'thedeep.io'
@@ -463,20 +466,34 @@ else:
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
+        'formatters': {
+            'colored_verbose': {
+                '()': 'colorlog.ColoredFormatter',
+                'format': "%(log_color)s%(levelname)-8s%(red)s%(module)-8s%(reset)s %(asctime)s %(blue)s%(message)s"
+            },
+        },
         'handlers': {
             'console': {
                 'level': 'INFO',
                 'class': 'logging.StreamHandler',
             },
+            'colored_console': {
+                'level': 'INFO',
+                'class': 'logging.StreamHandler',
+                'formatter': 'colored_verbose'
+            },
         },
         'loggers': {
-            'django': {
-                'handlers': ['console'],
-                'level': 'INFO',
-                'propagate': True,
+            **{
+                app: {
+                    'handlers': ['colored_console'],
+                    'level': 'INFO',
+                    'propagate': True,
+                }
+                for app in LOCAL_APPS + ['deep', 'utils', 'celery', 'django']
             },
             'profiling': {
-                'handlers': ['console'],
+                'handlers': ['colored_console'],
                 'level': 'DEBUG',
                 'propagate': True,
             },
@@ -492,7 +509,8 @@ else:
         r"^https://\w+\.thedeep\.io$",
     ]
 
-CORS_URLS_REGEX = r'(^/api/.*$)|(^/media/.*$)'
+CORS_URLS_REGEX = r'(^/api/.*$)|(^/media/.*$)|(^/graphql$)'
+CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_METHODS = (
     'DELETE',
@@ -641,11 +659,49 @@ DEBUG_TOOLBAR_PANELS = [
     "debug_toolbar.panels.profiling.ProfilingPanel",
 ]
 
-if DEBUG and 'DOCKER_HOST_IP' in os.environ:
-    INSTALLED_APPS += ['debug_toolbar']
-    MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
-    INTERNAL_IPS = [os.environ['DOCKER_HOST_IP']]
+if DEBUG and 'DOCKER_HOST_IP' in os.environ and not TESTING:
+    # https://github.com/flavors/django-graphiql-debug-toolbar#installation
+    # FIXME: If mutation are triggered twice https://github.com/flavors/django-graphiql-debug-toolbar/pull/12/files
+    # FIXME: All request are triggered twice. Creating multiple entries in admin panel as well.
+    # INSTALLED_APPS += ['debug_toolbar', 'graphiql_debug_toolbar']
+    # MIDDLEWARE = ['deep.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
+    # INTERNAL_IPS = [os.environ['DOCKER_HOST_IP']]
+    pass
 
+
+# https://docs.djangoproject.com/en/3.1/ref/settings/#std:setting-APPEND_SLASH
+APPEND_SLASH = True
+
+# Security Header configuration
+SESSION_COOKIE_NAME = f'deep-{DEEP_ENVIRONMENT}-sessionid'
+CSRF_COOKIE_NAME = f'deep-{DEEP_ENVIRONMENT}-csrftoken'
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+CSP_DEFAULT_SRC = ["'self'"]
+SECURE_REFERRER_POLICY = 'same-origin'
+if HTTP_PROTOCOL == 'https':
+    SESSION_COOKIE_NAME = f'__Secure-{SESSION_COOKIE_NAME}'
+    CSRF_COOKIE_NAME = f'__Secure-{CSRF_COOKIE_NAME}'
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 30  # TODO: Increase this slowly
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = True
+
+# https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-CSRF_USE_SESSIONS
+CSRF_USE_SESSIONS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'False').lower() == 'true'
+# https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-SESSION_COOKIE_DOMAIN
+SESSION_COOKIE_DOMAIN = os.environ.get('SESSION_COOKIE_DOMAIN', 'localhost')
+# https://docs.djangoproject.com/en/3.2/ref/settings/#csrf-cookie-domain
+CSRF_COOKIE_DOMAIN = os.environ.get('CSRF_COOKIE_DOMAIN', 'localhost')
+
+
+# Graphene configs
 # WHITELIST following nodes from authentication checks
 GRAPHENE_NODES_WHITELIST = (
     '__schema',
@@ -653,6 +709,9 @@ GRAPHENE_NODES_WHITELIST = (
     '__typename',
     # custom nodes...
     'login',
+    'loginWithHid',
+    'register',
+    'resetPassword',
 )
 
 # https://docs.graphene-python.org/projects/django/en/latest/settings/
@@ -660,11 +719,16 @@ GRAPHENE = {
     'ATOMIC_MUTATIONS': True,
     'SCHEMA': 'deep.schema.schema',
     'SCHEMA_OUTPUT': 'schema.json',  # defaults to schema.json,
-    'SCHEMA_INDENT': 2,  # Defaults to None (displays all data on a single   line)
+    'CAMELCASE_ERRORS': True,
+    'SCHEMA_INDENT': 2,  # Defaults to None (displays all data on a single line)
     'MIDDLEWARE': [
+        'utils.graphene.middleware.DisableIntrospectionSchemaMiddleware',
+        'utils.sentry.SentryGrapheneMiddleware',
         'utils.graphene.middleware.WhiteListMiddleware',
     ],
 }
+if DEBUG:
+    GRAPHENE['MIDDLEWARE'].append('graphene_django.debug.DjangoDebugMiddleware')
 
 GRAPHENE_DJANGO_EXTRAS = {
     'DEFAULT_PAGINATION_CLASS': 'graphene_django_extras.paginations.PageGraphqlPagination',

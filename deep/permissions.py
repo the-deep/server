@@ -1,7 +1,10 @@
 import logging
+from enum import Enum, auto, unique
+
 from django.db.models import F
 from rest_framework import permissions
 
+from deep.exceptions import PermissionDeniedException
 from project.models import Project, ProjectRole
 from project.permissions import PROJECT_PERMISSIONS
 from lead.models import Lead
@@ -191,3 +194,172 @@ class IsUserGroupMember(permissions.BasePermission):
         if user_group_id:
             return UserGroup.get_for_member(request.user).filter(id=user_group_id).exists()
         return True
+
+
+# ---------------------------- GRAPHQL Permissions ------------------------------
+
+class BasePermissions():
+
+    # ------------ Define this after using this as base -----------
+    @unique
+    class Permission(Enum):
+        pass
+    __error_message__ = {}
+    PERMISSION_MAP = {}
+    CONTEXT_PERMISSION_ATTR = ''
+    # ------------ Define this after using this as base -----------
+
+    DEFAULT_PERMISSION_DENIED_MESSAGE = PermissionDeniedException.default_message
+
+    @classmethod
+    def get_permissions(cls, role):
+        return cls.PERMISSION_MAP.get(role) or []
+
+    @classmethod
+    def get_permission_message(cls, permission):
+        return cls.__error_message__.get(permission, cls.DEFAULT_PERMISSION_DENIED_MESSAGE)
+
+    @classmethod
+    def check_permission(cls, info, *perms):
+        permissions = getattr(info.context, cls.CONTEXT_PERMISSION_ATTR)
+        if permissions:
+            return all([perm in permissions for perm in perms])
+
+
+class ProjectPermissions(BasePermissions):
+
+    @unique
+    class Permission(Enum):  # TODO: Not sure how auto() works, if different server have different values.
+        # ---------------------- Project
+        UPDATE_PROJECT = auto()
+        # ---------------------- Lead
+        CREATE_LEAD = auto()
+        VIEW_ONLY_UNPROTECTED_LEAD = auto()
+        VIEW_ALL_LEAD = auto()
+        UPDATE_LEAD = auto()
+        DELETE_LEAD = auto()
+        # ---------------------- Entry
+        CREATE_ENTRY = auto()
+        VIEW_ENTRY = auto()
+        UPDATE_ENTRY = auto()
+        DELETE_ENTRY = auto()
+        # ---------------------- Export
+        CREATE_EXPORT = auto()
+        # ---------------------- Export
+        CAN_QUALITY_CONTROL = auto()
+
+    Permission.__name__ = 'ProjectPermission'
+
+    __error_message__ = {
+        Permission.UPDATE_PROJECT: "You don't have permission to update project",
+        Permission.CREATE_LEAD: "You don't have permission to create lead",
+        Permission.VIEW_ONLY_UNPROTECTED_LEAD: "You don't have permission to view lead",
+        Permission.VIEW_ALL_LEAD: "You don't have permission to view confidential lead",
+        Permission.UPDATE_LEAD: "You don't have permission to update lead",
+        Permission.DELETE_LEAD: "You don't have permission to delete lead",
+        Permission.CREATE_ENTRY: "You don't have permission to create entry",
+        Permission.VIEW_ENTRY: "You don't have permission to view entry",
+        Permission.UPDATE_ENTRY: "You don't have permission to update entry",
+        Permission.DELETE_ENTRY: "You don't have permission to delete entry",
+        Permission.CREATE_EXPORT: "You don't have permission to create entry",
+        Permission.CAN_QUALITY_CONTROL: "You don't have permission to Quality Control",
+    }
+
+    VIEWER_NON_CONFIDENTIAL = [
+        Permission.VIEW_ENTRY,
+        Permission.VIEW_ONLY_UNPROTECTED_LEAD,
+    ]
+    VIEWER = [
+        Permission.VIEW_ENTRY,
+        Permission.VIEW_ALL_LEAD,
+    ]
+    READER_NON_CONFIDENTIAL = [
+        *VIEWER_NON_CONFIDENTIAL,
+        Permission.CREATE_EXPORT,
+        # Add export permission here
+    ]
+    READER = [
+        *VIEWER,
+        # Add export permission here
+    ]
+    SOURCER = [
+        Permission.CREATE_LEAD,
+        Permission.VIEW_ALL_LEAD,
+        Permission.UPDATE_LEAD,
+        Permission.DELETE_LEAD,
+    ]
+    ANALYST = [
+        *READER,
+        Permission.CAN_QUALITY_CONTROL,  # TODO: This should be drived from BadgeType
+        Permission.CREATE_LEAD,
+        Permission.UPDATE_LEAD,
+        Permission.DELETE_LEAD,
+        Permission.CREATE_ENTRY,
+        Permission.UPDATE_ENTRY,
+        Permission.DELETE_ENTRY,
+    ]
+    ADMIN = [
+        *ANALYST,
+        Permission.UPDATE_PROJECT,
+    ]
+    CLAIRVOYANT_ONE = [*ADMIN]
+
+    # NOTE: Key are already defined in production.
+    # TODO: Will need to create this role locally to work.
+    PERMISSION_MAP = {
+        'Viewer (Non Confidential)': VIEWER_NON_CONFIDENTIAL,
+        'Viewer': VIEWER,
+        'Reader (Non Confidential)': READER_NON_CONFIDENTIAL,
+        'Reader': READER,
+        'Sourcer': SOURCER,
+        'Analyst': ANALYST,
+        'Admin': ADMIN,
+        'Clairvoyant One': CLAIRVOYANT_ONE,
+    }
+
+    CONTEXT_PERMISSION_ATTR = 'project_permissions'
+
+
+class AnalysisFrameworkPermissions(BasePermissions):
+
+    @unique
+    class Permission(Enum):
+        CAN_ADD_USER = auto()
+        CAN_CLONE_FRAMEWORK = auto()
+        CAN_EDIT_FRAMEWORK = auto()
+        CAN_USE_IN_OTHER_PROJECTS = auto()
+        DELETE_FRAMEWORK = auto()
+
+    Permission.__name__ = 'AnalysisFrameworkPermission'
+
+    __error_message__ = {
+        Permission.CAN_ADD_USER: "You don't have permission to add user",
+        Permission.CAN_CLONE_FRAMEWORK: "You don't have permission to clone framework",
+        Permission.CAN_EDIT_FRAMEWORK: "You don't have permission to edit framework",
+        Permission.CAN_USE_IN_OTHER_PROJECTS: "You don't have permission to use in other projects",
+    }
+
+    DEFAULT = [
+        Permission.CAN_CLONE_FRAMEWORK,
+        Permission.CAN_USE_IN_OTHER_PROJECTS,
+    ]
+    EDITOR = [*DEFAULT, Permission.CAN_EDIT_FRAMEWORK]
+    OWNER = [*EDITOR, Permission.CAN_ADD_USER]
+    # Private roles (doesn't have clone permission)
+    PRIVATE_VIEWER = [Permission.CAN_USE_IN_OTHER_PROJECTS]
+    PRIVATE_EDITOR = [*PRIVATE_VIEWER, Permission.CAN_EDIT_FRAMEWORK]
+    PRIVATE_OWNER = [*PRIVATE_EDITOR, Permission.CAN_ADD_USER]
+
+    # NOTE: Key are already defined in production.
+    # TODO: Will need to create this role locally to work.
+    PERMISSION_MAP = {
+        'Editor': EDITOR,
+        'Owner': OWNER,
+        'Default': DEFAULT,
+        'Private Editor': PRIVATE_EDITOR,
+        'Private Owner': PRIVATE_OWNER,
+        'Private Viewer': PRIVATE_VIEWER,
+
+    }
+
+    CONTEXT_PERMISSION_ATTR = 'af_permissions'

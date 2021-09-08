@@ -1,181 +1,81 @@
-from utils.graphene.tests import GraphqlTestCase
+import json
+from django.core.files.temp import NamedTemporaryFile
+from utils.graphene.tests import GraphQLTestCase
+from user.factories import UserFactory
+from graphene_file_upload.django.testing import GraphQLFileUploadTestCase
 
-from analysis_framework.models import AnalysisFramework
-from project.models import Project
 
-
-class TestAnalysisFrameworkCreateUpdate(GraphqlTestCase):
-    def setUp(self):
-        super().setUp()
-        self.create_mutation = '''
-        mutation Mutation($input: AnalysisFrameworkInputType!) {
-          createAnalysisFramework(data: $input) {
-            ok
-            errors
-            result {
-              id
-              title
-              isPrivate
-              description
+class TestPreviewImage(GraphQLFileUploadTestCase, GraphQLTestCase):
+    def setUp(self) -> None:
+        self.user = UserFactory.create()
+        self.upload_mutation = """
+            mutation Mutation($data: AnalysisFrameworkInputType!) {
+              analysisFrameworkCreate(data: $data) {
+                ok
+                errors
+                result {
+                  id
+                  title
+                  previewImage {
+                      name
+                      url
+                  }
+                }
+              }
+            }
+        """
+        self.retrieve_af_query = """
+        query RetrieveAFQuery {
+          analysisFramework(id: %s) {
+            id
+            previewImage {
+                name
+                url
             }
           }
         }
-        '''
-        self.update_mutation = '''
-        mutation UpdateMutation($input: AnalysisFrameworkInputType!, $id: ID!) {
-          updateAnalysisFramework(data: $input, id: $id) {
-            ok
-            errors
-            result {
-              id
-              title
-              isPrivate
-              description
-            }
-          }
+        """
+        self.variables = {
+            "data": {"title": 'test', "previewImage": None}
         }
-        '''
+        self.force_login(self.user)
 
-    def test_create_analysis_framework(self):
-        self.input = dict(
-            title='new title'
-        )
-        self.force_login()
-
-        response = self.query(
-            self.create_mutation,
-            input_data=self.input
-        )
+    def test_upload_preview_image(self):
+        file_text = b'preview image text'
+        with NamedTemporaryFile(suffix='.png') as t_file:
+            t_file.write(file_text)
+            t_file.seek(0)
+            response = self._client.post(
+                '/graphql',
+                data={
+                    'operations': json.dumps({
+                        'query': self.upload_mutation,
+                        'variables': self.variables
+                    }),
+                    't_file': t_file,
+                    'map': json.dumps({
+                        't_file': ['variables.data.previewImage']
+                    })
+                }
+            )
+        content = response.json()
         self.assertResponseNoErrors(response)
 
+        # Test can upload image
+        af_id = content['data']['analysisFrameworkCreate']['result']['id']
+        self.assertTrue(content['data']['analysisFrameworkCreate']['ok'], content)
+        self.assertTrue(content['data']['analysisFrameworkCreate']['result']['previewImage']["name"])
+        preview_image_name = content['data']['analysisFrameworkCreate']['result']['previewImage']["name"]
+        preview_image_url = content['data']['analysisFrameworkCreate']['result']['previewImage']["url"]
+        self.assertTrue(preview_image_name.endswith('.png'))
+        self.assertTrue(preview_image_url.endswith(preview_image_name))
+
+        # Test can retrive image
+        response = self.query(self.retrieve_af_query % af_id)
+        self.assertResponseNoErrors(response)
         content = response.json()
-        self.assertTrue(content['data']['createAnalysisFramework']['ok'], content)
-        self.assertEqual(
-            content['data']['createAnalysisFramework']['result']['title'],
-            self.input['title']
-        )
-
-    def test_create_private_framework_unauthorized(self):
-        project = self.create(Project, role=self.admin_role)
-        self.input = dict(
-            title='new title',
-            isPrivate=True,
-            project=project.id,
-        )
-        self.force_login()
-        response = self.query(
-            self.create_mutation,
-            input_data=self.input
-        )
-        content = response.json()
-        self.assertIsNotNone(content['errors'][0]['message'])
-        # The actual message is
-        # You don't have permissions to create private framework
-        self.assertIn('permission', content['errors'][0]['message'])
-
-    def test_invalid_create_framework_privately_in_public_project(self):
-        project = self.create(Project, role=self.admin_role, is_private=False)
-        self.assertEqual(project.is_private, False)
-
-        self.input = dict(
-            title='new title',
-            isPrivate=True,
-            project=project.id,
-        )
-        self.force_login()
-
-        response = self.query(
-            self.create_mutation,
-            input_data=self.input
-        )
-        content = response.json()
-        self.assertIsNotNone(content['errors'][0]['message'])
-        self.assertIn('permission', content['errors'][0]['message'])
-
-    def test_change_is_private_field(self):
-        """Even the owner should be unable to change privacy"""
-        private_framework = self.create(AnalysisFramework, is_private=True)
-        public_framework = self.create(AnalysisFramework, is_private=False)
-        user = self.user
-        private_framework.add_member(
-            user,
-            private_framework.get_or_create_owner_role()
-        )
-        public_framework.add_member(
-            user,
-            public_framework.get_or_create_owner_role()
-        )
-        content = self._change_framework_privacy(public_framework, user)
-        self.assertIsNotNone(content['errors'][0]['message'])
-        self.assertIn('permission', content['errors'][0]['message'])
-        content = self._change_framework_privacy(private_framework, user)
-        self.assertIsNotNone(content['errors'][0]['message'])
-        self.assertIn('permission', content['errors'][0]['message'])
-
-    def test_change_other_fields(self):
-        private_framework = self.create(AnalysisFramework, is_private=True)
-        public_framework = self.create(AnalysisFramework, is_private=False)
-        user = self.user
-        private_framework.add_member(
-            user,
-            private_framework.get_or_create_owner_role()
-        )
-        public_framework.add_member(
-            user,
-            public_framework.get_or_create_owner_role()
-        )
-
-        self.force_login(user)
-
-        # private framework update
-        self.input = dict(
-            title='new title updated',
-            isPrivate=private_framework.is_private,
-        )
-        response = self.query(
-            self.update_mutation,
-            input_data=self.input,
-            variables={'id': private_framework.id},
-        )
-        private_framework.refresh_from_db()
-        content = response.json()
-        self.assertTrue(content['data']['updateAnalysisFramework']['ok'], content)
-        self.assertEqual(
-            private_framework.title,
-            self.input['title']
-        )
-
-        # public framework update
-        self.input = dict(
-            title='public title updated',
-            isPrivate=public_framework.is_private,
-        )
-        response = self.query(
-            self.update_mutation,
-            input_data=self.input,
-            variables={'id': public_framework.id},
-        )
-        public_framework.refresh_from_db()
-        content = response.json()
-        self.assertTrue(content['data']['updateAnalysisFramework']['ok'], content)
-        self.assertEqual(
-            public_framework.title,
-            self.input['title']
-        )
-
-    def _change_framework_privacy(self, framework, user):
-        self.force_login(user)
-
-        changed_privacy = not framework.is_private
-        self.input = dict(
-            title='new title',
-            isPrivate=changed_privacy,
-            # other fields not cared for now
-        )
-        response = self.query(
-            self.update_mutation,
-            input_data=self.input,
-            variables={'id': framework.id},
-        )
-        content = response.json()
-        return content
+        self.assertTrue(content['data']['analysisFramework']['previewImage']["name"])
+        preview_image_name = content['data']['analysisFramework']['previewImage']["name"]
+        preview_image_url = content['data']['analysisFramework']['previewImage']["url"]
+        self.assertTrue(preview_image_name.endswith('.png'))
+        self.assertTrue(preview_image_url.endswith(preview_image_name))

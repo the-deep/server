@@ -116,7 +116,7 @@ class PDNA(Source):
                             'source': 'PDNA portal',
                             'author': 'PDNA portal',
                             'published_on': published_on,
-                            'source_type': Lead.WEBSITE,
+                            'source_type': Lead.SourceType.WEBSITE,
                             'website': self.website
                         }
                         results.append(data)

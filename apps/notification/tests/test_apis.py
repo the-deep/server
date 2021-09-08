@@ -1,3 +1,4 @@
+import pytest
 from datetime import timedelta
 
 from deep.tests import TestCase
@@ -227,6 +228,10 @@ class TestNotificationAPIs(TestCase):
         assert data['unseen_requests'] == 0
 
 
+# XXX:
+#     apps/leads/tests/test_schemas.py::TestLeadBulkMutationSchema->BulkGrapheneMutation
+#     is causing issue, so running this before all.
+@pytest.mark.run(order=1)
 class TestAssignmentApi(TestCase):
     """ Api test for assignment model"""
 
@@ -302,7 +307,8 @@ class TestAssignmentApi(TestCase):
         self.assert_200(response)
 
         data = response.data
-        assert data['count'] == 1
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['content_object_type'], 'lead')
         self.assertEqual(response.data['results'][0]['content_object_details']['id'], lead.id)
         self.assertEqual(response.data['results'][0]['content_object_details']['title'], 'Changed')  # the new title
 
@@ -390,9 +396,9 @@ class TestAssignmentApi(TestCase):
 
     def test_create_assignment_on_entry_comment_text_change(self):
         project = self.create_project()
-        project1 = self.create_project()
+        self.create_project()
         user1 = self.create(User)
-        user2 = self.create(User)
+        self.create(User)
         entry = self.create_entry(project=project)
         entry.project.add_member(user1)
 
@@ -442,7 +448,7 @@ class TestAssignmentApi(TestCase):
 
     def test_assignment_create_on_entry_comment_assignee_change(self):
         project = self.create_project()
-        project1 = self.create_project()
+        self.create_project()
         user1 = self.create(User)
         user2 = self.create(User)
         entry = self.create_entry(project=project)

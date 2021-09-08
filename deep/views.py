@@ -1,4 +1,5 @@
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, PermissionDenied
+from django.core.exceptions import PermissionDenied as DjPermissionDenied
 from rest_framework import (
     views,
     status,
@@ -11,8 +12,10 @@ from django.views.generic import View
 from django.conf import settings
 from django.template.response import TemplateResponse
 from graphene_django.views import GraphQLView
+from graphene_file_upload.django import FileUploadGraphQLView
 
 from deep.graphene_context import GQLContext
+from deep.exceptions import PermissionDeniedException
 from user.models import User, Profile
 from project.models import Project
 from entry.models import EntryComment
@@ -196,6 +199,22 @@ class EntryReviewCommentEmail(View):
             request, 'entry/review_comment_notification_email.html', context)
 
 
-class CustomGraphQLView(GraphQLView):
+class CustomGraphQLView(FileUploadGraphQLView):
     def get_context(self, request):
         return GQLContext(request)
+
+    @staticmethod
+    def format_error(error):
+        formatted_error = GraphQLView.format_error(error)
+        original_error = getattr(error, 'original_error', None)
+        extensions = {}
+        if original_error:
+            if hasattr(original_error, 'code'):
+                extensions['code'] = str(error.original_error.code)
+            elif type(original_error) in [PermissionDenied, DjPermissionDenied]:
+                extensions['code'] = str(PermissionDeniedException.code)
+                formatted_error['message'] = str(PermissionDeniedException.default_message)
+            else:
+                extensions['errorCode'] = str(status.HTTP_500_INTERNAL_SERVER_ERROR)
+        formatted_error['extensions'] = extensions
+        return formatted_error

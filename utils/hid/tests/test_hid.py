@@ -1,7 +1,6 @@
 import requests
 import logging
-
-from mock import patch
+from unittest.mock import patch
 
 # from rest_framework import status
 from django.test import TestCase

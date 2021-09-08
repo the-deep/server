@@ -1,4 +1,7 @@
-from os.path import (join, isfile)
+from os.path import (
+    join,
+    # isfile,
+)
 import json
 import logging
 
@@ -51,7 +54,8 @@ class FileDocumentTest(TestCase):
         doc = open(join(self.documents, file_path), 'rb')
 
         try:
-            thumbnail = FileDocument(
+            # thumbnail = FileDocument(
+            FileDocument(
                 doc,
                 doc.name.split('/')[-1]
             ).get_thumbnail()
@@ -60,7 +64,8 @@ class FileDocumentTest(TestCase):
             logger.warning('{}: FILEDOCUMENT: {}'.format(ERROR_TYPE, doc.name), exc_info=True)
             return
 
-        self.assertTrue(isfile(thumbnail.name))
+        # TODO: Thumbnail is a depricated feature. Remove this later
+        # self.assertTrue(os.path.isfile(thumbnail.name))
 
     def test_docx(self):
         """

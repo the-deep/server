@@ -3,16 +3,14 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
+from drf_writable_nested import UniqueFieldsMixin, NestedCreateMixin
 
+from deep.writable_nested_serializers import NestedUpdateMixin as CustomNestedUpdateMixin
+from deep.serializers import RemoveNullFieldsMixin
 from user_resource.serializers import UserResourceSerializer
-
 from user.serializers import NanoUserSerializer
 from entry.serializers import SimpleEntrySerializer
-from deep.serializers import (
-    RemoveNullFieldsMixin,
-    NestedCreateMixin,
-    NestedUpdateMixin
-)
+
 from .models import (
     Analysis,
     AnalysisPillar,
@@ -22,7 +20,7 @@ from .models import (
 )
 
 
-class AnalyticalEntriesSerializer(UserResourceSerializer):
+class AnalyticalEntriesSerializer(UniqueFieldsMixin, UserResourceSerializer):
     class Meta:
         model = AnalyticalStatementEntry
         fields = ('id', 'client_id', 'order', 'entry')
@@ -44,9 +42,10 @@ class AnalyticalEntriesSerializer(UserResourceSerializer):
 class AnalyticalStatementSerializer(
     RemoveNullFieldsMixin,
     DynamicFieldsMixin,
-    UserResourceSerializer,
     NestedCreateMixin,
-    NestedUpdateMixin,
+    # XXX: This is a custom mixin where we delete first and then create to avoid duplicate key value
+    CustomNestedUpdateMixin,
+    serializers.ModelSerializer,
 ):
     analytical_entries = AnalyticalEntriesSerializer(source='analyticalstatemententry_set', many=True, required=False)
 
@@ -96,8 +95,6 @@ class AnalysisPillarSerializer(
     RemoveNullFieldsMixin,
     DynamicFieldsMixin,
     UserResourceSerializer,
-    NestedCreateMixin,
-    NestedUpdateMixin,
 ):
     assignee_details = NanoUserSerializer(source='assignee', read_only=True)
     analysis_title = serializers.CharField(source='analysis.title', read_only=True)
@@ -125,8 +122,6 @@ class AnalysisSerializer(
     RemoveNullFieldsMixin,
     DynamicFieldsMixin,
     UserResourceSerializer,
-    NestedCreateMixin,
-    NestedUpdateMixin,
 ):
     analysis_pillar = AnalysisPillarSerializer(many=True, source='analysispillar_set', required=False)
     team_lead_details = NanoUserSerializer(source='team_lead', read_only=True)
