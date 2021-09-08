@@ -9,7 +9,9 @@ from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import ProjectPermissions as PP
 from lead.models import Lead
 
+from analysis_framework.models import Widget
 from analysis_framework.enums import WidgetWidgetTypeEnum
+from geo.schema import ProjectGeoAreaType
 
 from .models import (
     Entry,
@@ -58,14 +60,23 @@ class AttributeType(ClientIdMixin, DjangoObjectType):
 
     widget = graphene.ID(required=True)
     widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
+    # NOTE: This requires region_title and admin_level_title to be annotated
+    geo_selected_options = graphene.List(ProjectGeoAreaType)
 
     @staticmethod
-    def resolve_widget(root, info, **kwargs):
+    def resolve_widget(root, info, **_):
         return root.widget_id
 
     @staticmethod
-    def resolve_widget_type(root, info, **kwargs):
+    def resolve_widget_type(root, info, **_):
         return root.widget_type  # This is added from EntryType.resolve_attributes dataloader
+
+    @staticmethod
+    def resolve_geo_selected_options(root, info, **_):
+        if root.widget_type == Widget.WidgetType.GEO and root.data and root.data.get('value'):
+            return info.context.dl.entry.attribute_geo_selected_options.load(
+                tuple(root.data['value'])  # needs to be hashable
+            )
 
 
 class EntryType(ClientIdMixin, DjangoObjectType):

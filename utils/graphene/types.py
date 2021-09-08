@@ -112,6 +112,7 @@ class CustomDjangoListObjectType(DjangoListObjectType):
     def __init_subclass_with_meta__(
         cls,
         model=None,
+        base_type=None,
         registry=None,
         results_field_name=None,
         pagination=None,
@@ -141,7 +142,7 @@ class CustomDjangoListObjectType(DjangoListObjectType):
 
         results_field_name = results_field_name or "results"
 
-        baseType = get_global_registry().get_type_for_model(model)
+        baseType = base_type or get_global_registry().get_type_for_model(model)
 
         if not baseType:
             factory_kwargs = {

@@ -5,6 +5,7 @@ parallel = true
 concurrency = multiprocessing
 omit = */migrations/*
         */management/*
+        */snaphosts/*
         analysis_framework/widgets/*
         apps/bulk_data_migration/v1_2/*
         deep/s3_storages.py
