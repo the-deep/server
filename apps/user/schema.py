@@ -74,7 +74,7 @@ class UserMeType(DjangoObjectType):
     display_picture_url = graphene.String()
     organization = graphene.String()
     language = graphene.String()
-    email_opt_outs = graphene.List(graphene.String)
+    email_opt_outs = graphene.List(graphene.NonNull(graphene.String))
     jwt_token = graphene.Field(JwtTokenType)
     last_active_project = graphene.Field('project.schema.ProjectType')
     accessible_features = graphene.List(graphene.NonNull(UserFeatureAccessType), required=True)
