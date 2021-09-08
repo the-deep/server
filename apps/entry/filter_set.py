@@ -1,4 +1,3 @@
-
 from functools import reduce
 from datetime import datetime
 
@@ -9,7 +8,8 @@ import graphene
 from graphene.types.generic import GenericScalar
 from graphene_django.filter.filterset import GrapheneFilterSetMixin
 
-from utils.graphene.filters import IDListFilter, MultipleInputFilter
+from utils.graphene.filters import IDListFilter, MultipleInputFilter, SimpleInputFilter
+from utils.graphene.enums import convert_enum_to_graphene_enum
 from deep.filter_set import DjangoFilterCSVWidget
 from analysis_framework.models import Filter
 from lead.models import Lead
@@ -445,6 +445,10 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, EntryFilterMixin, django_filters.
     comment_created_by = None
 
     leads = IDListFilter(field_name='lead')
+    comment_status = SimpleInputFilter(
+        convert_enum_to_graphene_enum(EntryFilterMixin.CommentStatus, name='EntryFilterCommentStatusEnum'),
+        label='Comment Status', method='comment_status_filter',
+    )
     entry_types = MultipleInputFilter(EntryTagTypeEnum, field_name='entry_type')
     project_entry_labels = IDListFilter(label='Project Entry Labels', method='project_entry_labels_filter')
     authoring_organization_types = IDListFilter(method='authoring_organization_types_filter')

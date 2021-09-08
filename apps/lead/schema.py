@@ -149,10 +149,10 @@ class LeadType(ClientIdMixin, DjangoObjectType):
         )
 
     # Enums
-    source_type = graphene.Field(LeadSourceTypeEnum)
-    priority = graphene.Field(LeadPriorityEnum)
-    confidentiality = graphene.Field(LeadConfidentialityEnum)
-    status = graphene.Field(LeadStatusEnum)
+    source_type = graphene.Field(LeadSourceTypeEnum, required=True)
+    priority = graphene.Field(LeadPriorityEnum, required=True)
+    confidentiality = graphene.Field(LeadConfidentialityEnum, required=True)
+    status = graphene.Field(LeadStatusEnum, required=True)
 
     lead_preview = graphene.Field(LeadPreviewType)
     source = graphene.Field(OrganizationType)
