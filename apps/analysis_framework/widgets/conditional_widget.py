@@ -1,3 +1,6 @@
+WIDGET_ID = 'conditionalWidget'
+
+
 class DummyWidget:
     def __init__(self, kwargs):
         for key, value in kwargs.items():

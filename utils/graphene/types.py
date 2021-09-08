@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+import graphene
+
 from django.db.models import QuerySet
 from graphene import ObjectType, Field, Int
 # we will use graphene_django registry over the one from graphene_django_extras
@@ -10,8 +12,26 @@ from graphene_django_extras import DjangoListObjectType, DjangoObjectType
 from graphene_django_extras.base_types import factory_type
 from graphene_django_extras.types import DjangoObjectOptions
 
+from deep.serializers import TempClientIdMixin
+from deep.caches import local_cache
 from utils.graphene.fields import CustomDjangoListField
 from utils.graphene.options import CustomObjectTypeOptions
+
+
+class ClientIdMixin(graphene.ObjectType):
+    client_id = graphene.String(required=True)
+
+    @staticmethod
+    def resolve_client_id(root, _):
+        # NOTE: We should always provide non-null client_id
+        client_id = (
+            getattr(root, 'client_id', None) or
+            local_cache.get(TempClientIdMixin.get_cache_key(root)) or
+            root.id
+        )
+        if client_id is not None:
+            return client_id
+        raise Exception("Client id shouldn't be None")
 
 
 class CustomListObjectType(ObjectType):

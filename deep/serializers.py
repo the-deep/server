@@ -1,14 +1,10 @@
 from django.core.files.storage import FileSystemStorage, get_storage_class
+from django.core.exceptions import FieldDoesNotExist
 from django.core.cache import cache
 from rest_framework import serializers
 
+from deep.caches import local_cache
 from deep.middleware import get_s3_signed_url_ttl
-from .writable_nested_serializers import ( # noqa F401
-    ListToDictField,
-    NestedCreateMixin,
-    NestedUpdateMixin,
-    UniqueFieldsMixin,
-)
 
 StorageClass = get_storage_class()
 
@@ -30,7 +26,7 @@ def remove_null(d):
     }
 
 
-class RemoveNullFieldsMixin:
+class RemoveNullFieldsMixin():
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         return remove_null(rep)
@@ -135,3 +131,48 @@ class WriteOnlyOnCreateSerializerMixin():
             for field in write_only_on_create_fields:
                 fields[field].read_only = True
         return fields
+
+
+class TempClientIdMixin(serializers.ModelSerializer):
+    """
+    ClientId for serializer level only, storing to database is optional (if field exists).
+    """
+    client_id = serializers.CharField(required=False)
+
+    @staticmethod
+    def get_cache_key(instance):
+        return f'{type(instance).__name__}-{instance.id}'
+
+    def _get_temp_client_id(self, validated_data):
+        try:
+            self.Meta.model._meta.get_field('client_id')
+            # We return None here if Model have a field `client_id`
+            return None
+        except FieldDoesNotExist:
+            # We remove `client_id` from validated_data and return temp client_id
+            # If we don't remove `client_id` from validated_data, then serializer will throw error on update/create
+            return validated_data.pop('client_id', None)
+
+    def create(self, validated_data):
+        temp_client_id = self._get_temp_client_id(validated_data)
+        instance = super().create(validated_data)
+        if temp_client_id:
+            instance.client_id = temp_client_id
+            local_cache.set(self.get_cache_key(instance), temp_client_id, 60)
+        return instance
+
+    def update(self, instance, validated_data):
+        temp_client_id = self._get_temp_client_id(validated_data)
+        instance = super().update(instance, validated_data)
+        if temp_client_id:
+            instance.client_id = temp_client_id
+            local_cache.set(self.get_cache_key(instance), temp_client_id, 60)
+        return instance
+
+
+class IntegerIDField(serializers.IntegerField):
+    """
+    This field is created to override the graphene conversion of the integerfield
+    check out utils/graphene/mutation.py
+    """
+    pass

@@ -4,16 +4,28 @@ from datetime import datetime
 from django.db import models
 from django.contrib.auth.models import User
 import django_filters
+import graphene
+from graphene.types.generic import GenericScalar
+from graphene_django.filter.filterset import GrapheneFilterSetMixin
 
+from utils.graphene.filters import IDListFilter, MultipleInputFilter, SimpleInputFilter
+from utils.graphene.enums import convert_enum_to_graphene_enum
 from deep.filter_set import DjangoFilterCSVWidget
 from analysis_framework.models import Filter
 from lead.models import Lead
-from entry.models import (
+from organization.models import OrganizationType
+
+from lead.enums import (
+    LeadStatusEnum,
+    LeadPriorityEnum,
+    LeadConfidentialityEnum,
+)
+from .models import (
     Entry,
     EntryComment,
     ProjectEntryLabel,
 )
-from organization.models import OrganizationType
+from .enums import EntryTagTypeEnum
 
 
 # TODO: Find out whether we need to call timezone.make_aware
@@ -21,17 +33,14 @@ from organization.models import OrganizationType
 
 # We don't use UserResourceFilterSet since created_at and modified_at
 # are overridden below
-class EntryFilterSet(django_filters.rest_framework.FilterSet):
+class EntryFilterMixin(django_filters.filterset.FilterSet):
     """
     Entry filter set
     Basic filtering with lead, excerpt, lead title and dates
     """
-    RESOLVED = 'resolved'
-    UNRESOLVED = 'unresolved'
-    COMMENT_STATUS = (
-        (RESOLVED, 'Resolved'),
-        (UNRESOLVED, 'Unresolved'),
-    )
+    class CommentStatus(models.TextChoices):
+        RESOLVED = 'resolved', 'Resolved',
+        UNRESOLVED = 'unresolved', 'Unresolved',
 
     lead = django_filters.ModelMultipleChoiceFilter(
         queryset=Lead.objects.all(),
@@ -93,14 +102,13 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
 
     )
     lead_assignee = django_filters.ModelMultipleChoiceFilter(
-        label='Comment Assignees',
+        label='Lead Assignees',
         queryset=User.objects.all(),
         field_name='lead__assignee',
     )
 
     comment_status = django_filters.ChoiceFilter(
-        label='Comment Status',
-        choices=COMMENT_STATUS, method='comment_status_filter',
+        label='Comment Status', choices=CommentStatus.choices, method='comment_status_filter',
     )
     comment_assignee = django_filters.ModelMultipleChoiceFilter(
         label='Comment Assignees',
@@ -155,12 +163,12 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
         }
 
     def comment_status_filter(self, queryset, name, value):
-        if value == self.UNRESOLVED:
+        if value == self.CommentStatus.UNRESOLVED:
             return queryset.filter(
                 entrycomment__is_resolved=False,
                 entrycomment__parent__isnull=True,
             )
-        elif value == self.RESOLVED:
+        elif value == self.CommentStatus.RESOLVED:
             return queryset.filter(
                 entrycomment__is_resolved=True,
                 entrycomment__parent__isnull=True,
@@ -209,7 +217,9 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
                     'lead__authors__organization_type'
                 )
             )
-            return qs.filter(organization_types__in=[ot.id for ot in value])
+            if type(value[0]) == OrganizationType:
+                return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
+            return qs.filter(organization_types__in=value).distinct()
         return qs
 
     @property
@@ -221,73 +231,50 @@ class EntryFilterSet(django_filters.rest_framework.FilterSet):
         return qs.distinct()
 
 
+class EntryFilterSet(EntryFilterMixin, django_filters.rest_framework.FilterSet):
+    class Meta:
+        model = Entry
+        fields = {
+            **{
+                x: ['exact'] for x in [
+                    'id', 'excerpt', 'lead__title', 'created_at',
+                    'created_by', 'modified_at', 'modified_by', 'project',
+                    'controlled',
+                ]
+            },
+            'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            # 'lead_published_on': ['exact', 'lt', 'gt', 'lte', 'gte'],
+        }
+        filter_overrides = {
+            models.CharField: {
+                'filter_class': django_filters.CharFilter,
+                'extra': lambda _: {
+                    'lookup_expr': 'icontains',
+                },
+            },
+        }
+
+
 class EntryCommentFilterSet(django_filters.FilterSet):
     class Meta:
         model = EntryComment
         fields = ('created_by', 'is_resolved', 'resolved_at')
 
 
-def get_filtered_entries(user, queries):
-    # NOTE: lets not use `.distinct()` in this function as it is used by a
-    # subquery in `lead/models.py`.
-    entries = Entry.get_for(user)
-    entries_id = queries.get('entries_id')
-    project = queries.get('project')
-
-    if entries_id:
-        entries = entries.filter(id__in=entries_id)
-
-    if project:
-        entries = entries.filter(lead__project__id=project)
-
-    lead_status = queries.get('lead_status')
-    if lead_status:
-        entries = entries.filter(lead__status__in=lead_status)
-
-    lead_priority = queries.get('lead_priority')
-    if lead_priority:
-        entries = entries.filter(lead__priority__in=lead_priority)
-
-    entry_type = queries.get('entry_type')
-    if entry_type:
-        entries = entries.filter(entry_type__in=entry_type)
-
-    lead_confidentiality = queries.get('lead_confidentiality')
-    if lead_confidentiality:
-        entries = entries.filter(lead__confidentiality__in=lead_confidentiality)
-
-    # Filter by filterset
-    updated_queries = get_created_at_filters(queries)
-    filterset = EntryFilterSet(data=updated_queries, queryset=entries)
-    filterset.is_valid()  # This needs to be called
-    entries = filterset.qs
-
-    filters = Filter.get_for(user)
-    if project:
-        filters = filters.filter(analysis_framework__project__id=project)
-
+def get_filtered_entries_using_af_filter(entries, filters, queries):
+    # NOTE: lets not use `.distinct()` in this function as it is used by a subquery in `lead/models.py`.
     for filter in filters:
         # For each filter, see if there is a query for that filter
         # and then perform filtering based on that query.
 
         query = queries.get(filter.key)
-        query_lt = queries.get(
-            filter.key + '__lt'
-        )
-        query_gt = queries.get(
-            filter.key + '__gt'
-        )
-        query_and = queries.get(
-            filter.key + '__and'
-        )
-        query_exclude = queries.get(
-            filter.key + '_exclude'
-        )
-        query_exclude_and = queries.get(
-            filter.key + '_exclude_and'
-        )
+        query_lt = queries.get(filter.key + '__lt')
+        query_gt = queries.get(filter.key + '__gt')
+        query_and = queries.get(filter.key + '__and')
+        query_exclude = queries.get(filter.key + '_exclude')
+        query_exclude_and = queries.get(filter.key + '_exclude_and')
 
-        if filter.filter_type == Filter.NUMBER:
+        if filter.filter_type == Filter.FilterType.NUMBER:
             if query:
                 entries = entries.filter(
                     filterdata__filter=filter,
@@ -304,14 +291,14 @@ def get_filtered_entries(user, queries):
                     filterdata__number__gte=query_gt,
                 )
 
-        elif filter.filter_type == Filter.TEXT:
+        elif filter.filter_type == Filter.FilterType.TEXT:
             if query:
                 entries = entries.filter(
                     filterdata__filter=filter,
                     filterdata__text__icontains=query,
                 )
 
-        elif filter.filter_type == Filter.INTERSECTS:
+        elif filter.filter_type == Filter.FilterType.INTERSECTS:
             if query:
                 entries = entries.filter(
                     filterdata__filter=filter,
@@ -332,7 +319,7 @@ def get_filtered_entries(user, queries):
                 )
                 entries = entries.filter(q, filterdata__filter=filter)
 
-        elif filter.filter_type == Filter.LIST:
+        elif filter.filter_type == Filter.FilterType.LIST:
             # query and query_and are mutual exclusive and query_and has higher priority
             query = query_and or query_exclude_and or query_exclude or query
             if query and not isinstance(query, list):
@@ -365,6 +352,46 @@ def get_filtered_entries(user, queries):
                     )
 
     return entries.order_by('-lead__created_by', 'lead', 'created_by')
+
+
+def get_filtered_entries(user, queries):
+    # NOTE: lets not use `.distinct()` in this function as it is used by a
+    # subquery in `lead/models.py`.
+    entries = Entry.get_for(user)
+    filters = Filter.get_for(user)
+
+    project = queries.get('project')
+    if project:
+        entries = entries.filter(lead__project__id=project)
+        filters = filters.filter(analysis_framework__project__id=project)
+
+    entries_id = queries.get('entries_id')
+    if entries_id:
+        entries = entries.filter(id__in=entries_id)
+
+    entry_type = queries.get('entry_type')
+    if entry_type:
+        entries = entries.filter(entry_type__in=entry_type)
+
+    lead_status = queries.get('lead_status')
+    if lead_status:
+        entries = entries.filter(lead__status__in=lead_status)
+
+    lead_priority = queries.get('lead_priority')
+    if lead_priority:
+        entries = entries.filter(lead__priority__in=lead_priority)
+
+    lead_confidentiality = queries.get('lead_confidentiality')
+    if lead_confidentiality:
+        entries = entries.filter(lead__confidentiality__in=lead_confidentiality)
+
+    # Filter by filterset
+    updated_queries = get_created_at_filters(queries)
+    filterset = EntryFilterSet(data=updated_queries, queryset=entries)
+    filterset.is_valid()  # This needs to be called
+    entries = filterset.qs
+
+    return get_filtered_entries_using_af_filter(entries, filters, queries)
 
 
 def parse_date(val):
@@ -402,3 +429,74 @@ def get_created_at_filters(query_params):
         else:
             parsed_query[k] = v
     return parsed_query
+
+
+# TODO: Add validation here for value using filter_key?
+class EntryFilterDataType(graphene.InputObjectType):
+    filter_key = graphene.ID(required=True)
+    value = GenericScalar(required=True)
+
+
+# ----------------------------- Graphql Filters ---------------------------------------
+class EntryGQFilterSet(GrapheneFilterSetMixin, EntryFilterMixin, django_filters.FilterSet):
+    lead = None
+    lead_assignee = None
+    comment_assignee = None
+    comment_created_by = None
+
+    leads = IDListFilter(field_name='lead')
+    comment_status = SimpleInputFilter(
+        convert_enum_to_graphene_enum(EntryFilterMixin.CommentStatus, name='EntryFilterCommentStatusEnum'),
+        label='Comment Status', method='comment_status_filter',
+    )
+    entry_types = MultipleInputFilter(EntryTagTypeEnum, field_name='entry_type')
+    project_entry_labels = IDListFilter(label='Project Entry Labels', method='project_entry_labels_filter')
+    authoring_organization_types = IDListFilter(method='authoring_organization_types_filter')
+    entries_id = IDListFilter(field_name='id')
+    # Lead fields
+    lead_title = django_filters.CharFilter(lookup_expr='icontains', field_name='lead__title')
+    lead_assignees = IDListFilter(label='Lead Assignees', field_name='lead__assignee')
+    lead_statuses = MultipleInputFilter(LeadStatusEnum, field_name='lead__status')
+    lead_priorities = MultipleInputFilter(LeadPriorityEnum, field_name='lead__priority')
+    lead_confidentialities = MultipleInputFilter(LeadConfidentialityEnum, field_name='lead__confidentiality')
+
+    filterable_data = MultipleInputFilter(EntryFilterDataType, method='filterable_data_filter')
+
+    class Meta:
+        model = Entry
+        fields = {
+            **{
+                x: ['exact'] for x in [
+                    'id', 'excerpt', 'created_at',
+                    'created_by', 'modified_at', 'modified_by',
+                    'controlled',
+                ]
+            },
+            'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            # 'lead_published_on': ['exact', 'lt', 'gt', 'lte', 'gte'],
+        }
+        filter_overrides = {
+            models.CharField: {
+                'filter_class': django_filters.CharFilter,
+                'extra': lambda f: {
+                    'lookup_expr': 'icontains',
+                },
+            },
+        }
+
+    def filterable_data_filter(self, queryset, _, value):
+        if value:
+            active_af_id = (
+                self.data.get('analysis_framework_id') or
+                (self.request and self.request.active_project.analysis_framework_id)
+            )
+            if active_af_id is None:
+                # This needs to be defined
+                raise Exception('`analysis_framework_id` is not defined')
+            filters = Filter.objects.filter(analysis_framework_id=active_af_id).all()
+            return get_filtered_entries_using_af_filter(
+                queryset,
+                filters,
+                {v['filter_key']: v['value'] for v in value},
+            )
+        return queryset

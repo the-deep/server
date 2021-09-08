@@ -42,7 +42,7 @@ class AuthenticationFailedError(Exception):
     message = 'No active account found with the given credentials'
 
     def __init__(self, login_attempts=None):
-        if (login_attempts):
+        if login_attempts:
             remaining = settings.MAX_LOGIN_ATTEMPTS - login_attempts
             self.message +=\
                 '. You have {} login attempts remaining'.format(

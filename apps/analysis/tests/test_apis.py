@@ -1,5 +1,5 @@
 from dateutil.relativedelta import relativedelta
-from mock import patch
+from unittest.mock import patch
 
 from django.utils import timezone
 from django.conf import settings
@@ -129,12 +129,12 @@ class TestAnalysisAPIs(TestCase):
                     "analytical_entries": [
                         {
                             "order": 1,
-                            "client_id": "1",
+                            "client_id": "1-1",
                             "entry": entry1.id,
                         },
                         {
                             "order": 2,
-                            "client_id": "2",
+                            "client_id": "1-2",
                             "entry": entry2.id
                         }
                     ],
@@ -146,7 +146,7 @@ class TestAnalysisAPIs(TestCase):
                     "analytical_entries": [
                         {
                             "order": 1,
-                            "client_id": "1",
+                            "client_id": "2-1",
                             "entry": entry1.id,
                         }
                     ],
@@ -168,16 +168,16 @@ class TestAnalysisAPIs(TestCase):
                 {
                     'statement': "tea",
                     'order': 1,
-                    "client_id": "1",
+                    "client_id": "2-1",
                     "analytical_entries": [
                         {
                             "order": 1,
-                            "client_id": "1",
+                            "client_id": "2-1-1",
                             "entry": entry1.id,
                         },
                         {
                             "order": 2,
-                            "client_id": "2",
+                            "client_id": "2-1-2",
                             "entry": entry2.id
                         }
                     ],
@@ -239,8 +239,10 @@ class TestAnalysisAPIs(TestCase):
         self.assertEqual(
             response.data['errors']['analytical_statements'][0]['analytical_entries'][0]['entry'][0],
             ErrorDetail(
-                string=f'Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis.end_date.date()}'
-                , code='invalid'
+                string=(
+                    f'Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis.end_date.date()}'
+                ),
+                code='invalid',
             ),
         )
 
@@ -351,15 +353,15 @@ class TestAnalysisAPIs(TestCase):
                 {
                     "statement": "coffee",
                     "order": 1,
-                    "client_id": "1",
+                    "client_id": f"client-id-{index}",
                     "analytical_entries": [
                         {
                             "order": 1,
-                            "client_id": "1",
+                            "client_id": f"client-id-{index}",
                             "entry": entry.id,
                         }
                     ]
-                } for _ in range(settings.ANALYTICAL_STATEMENT_COUNT)
+                } for index in range(settings.ANALYTICAL_STATEMENT_COUNT)
             ]
         }
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
@@ -377,15 +379,15 @@ class TestAnalysisAPIs(TestCase):
                 {
                     "statement": "coffee",
                     "order": 1,
-                    "client_id": "1",
+                    "client_id": f"client-id-{index}-new",
                     "analytical_entries": [
                         {
                             "order": 1,
-                            "client_id": "1",
+                            "client_id": f"client-id-{index}-new",
                             "entry": entry.id,
                         }
                     ]
-                } for _ in range(settings.ANALYTICAL_STATEMENT_COUNT + 1)
+                } for index in range(settings.ANALYTICAL_STATEMENT_COUNT + 1)
             ]
         }
         url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'

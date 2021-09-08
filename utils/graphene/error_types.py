@@ -7,15 +7,16 @@ from graphene.utils.str_converters import to_snake_case
 from graphene_django.utils.utils import _camelize_django_str
 
 ARRAY_NON_MEMBER_ERRORS = 'nonMemberErrors'
+CustomErrorType = GenericScalar
 
 
 class ArrayNestedErrorType(ObjectType):
-    key = graphene.String(required=True)
+    client_id = graphene.String(required=True)
     messages = graphene.String(required=False)
     object_errors = graphene.List(graphene.NonNull(GenericScalar))
 
     def keys(self):
-        return ['key', 'messages', 'objectErrors']
+        return ['clientId', 'messages', 'objectErrors']
 
     def __getitem__(self, key):
         key = to_snake_case(key)
@@ -25,13 +26,14 @@ class ArrayNestedErrorType(ObjectType):
 
 
 class _CustomErrorType(ObjectType):
+    client_id = graphene.String()
     field = graphene.String(required=True)
     messages = graphene.String(required=False)
     object_errors = graphene.List(graphene.NonNull(GenericScalar))
     array_errors = graphene.List(graphene.NonNull(ArrayNestedErrorType))
 
     def keys(self):
-        return ['field', 'messages', 'objectErrors', 'arrayErrors']
+        return ['clientId', 'field', 'messages', 'objectErrors', 'arrayErrors']
 
     def __getitem__(self, key):
         key = to_snake_case(key)
@@ -42,10 +44,12 @@ class _CustomErrorType(ObjectType):
 
 def serializer_error_to_error_types(errors: dict, initial_data: dict = None) -> List:
     initial_data = initial_data or dict()
+    node_client_id = initial_data.get('client_id')
     error_types = list()
     for field, value in errors.items():
         if isinstance(value, dict):
             error_types.append(_CustomErrorType(
+                client_id=node_client_id,
                 field=_camelize_django_str(field),
                 object_errors=serializer_error_to_error_types(value)
             ))
@@ -54,14 +58,16 @@ def serializer_error_to_error_types(errors: dict, initial_data: dict = None) -> 
                 if isinstance(initial_data.get(field), list):
                     # we have found an array input with top level error
                     error_types.append(_CustomErrorType(
+                        client_id=node_client_id,
                         field=_camelize_django_str(field),
                         array_errors=[ArrayNestedErrorType(
-                            key=ARRAY_NON_MEMBER_ERRORS,
+                            client_id=ARRAY_NON_MEMBER_ERRORS,
                             messages=''.join(str(msg) for msg in value)
                         )]
                     ))
                 else:
                     error_types.append(_CustomErrorType(
+                        client_id=node_client_id,
                         field=_camelize_django_str(field),
                         messages=''.join(str(msg) for msg in value)
                     ))
@@ -71,13 +77,14 @@ def serializer_error_to_error_types(errors: dict, initial_data: dict = None) -> 
                     if not array_item:
                         # array item might not have error
                         continue
-                    # fetch array.item.uuid from the initial data
-                    key = initial_data[field][pos].get('uuid', f'NOT_FOUND_{pos}')
+                    # fetch array.item.client_id from the initial data
+                    client_id = initial_data[field][pos].get('client_id', f'NOT_FOUND_{pos}')
                     array_errors.append(ArrayNestedErrorType(
-                        key=key,
+                        client_id=client_id,
                         object_errors=serializer_error_to_error_types(array_item, initial_data[field][pos])
                     ))
                 error_types.append(_CustomErrorType(
+                    client_id=node_client_id,
                     field=_camelize_django_str(field),
                     array_errors=array_errors
                 ))

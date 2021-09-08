@@ -203,7 +203,7 @@ class HumanitarianResponse(Source):
                     'source': 'Humanitarian Response',
                     'author': 'Humanitarian Response',
                     'website': self.URL,
-                    'source_type': Lead.WEBSITE
+                    'source_type': Lead.SourceType.WEBSITE
                 }
                 results.append(data)
             except Exception as e:

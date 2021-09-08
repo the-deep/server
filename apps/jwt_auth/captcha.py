@@ -20,6 +20,8 @@ def _validate_hcaptcha(captcha):
     return response_json['success']
 
 
-def validate_hcaptcha(captcha):
-    if not _validate_hcaptcha(captcha):
+def validate_hcaptcha(captcha, raise_on_error=True):
+    is_valid = _validate_hcaptcha(captcha)
+    if not is_valid and raise_on_error:
         raise InvalidCaptchaError
+    return is_valid

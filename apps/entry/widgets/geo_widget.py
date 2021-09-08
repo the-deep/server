@@ -1,6 +1,7 @@
 from utils.common import is_valid_number
+from analysis_framework.widgets.geo_widget import WIDGET_ID
 
-WIDGET_ID = 'geoWidget'
+
 DATA_VERSION = 1
 
 

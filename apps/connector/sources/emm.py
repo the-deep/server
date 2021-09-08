@@ -4,7 +4,7 @@ from lxml import etree
 
 from django.db import transaction
 
-from utils.common import random_key, get_ns_tag, LogTime
+from utils.common import random_key, get_ns_tag
 from rest_framework import serializers
 
 from lead.models import Lead, LeadEMMTrigger, EMMEntity
@@ -138,7 +138,7 @@ class EMM(RssFeed):
 
             leads_infos.append({
                 'id': random_key(),
-                'source_type': Lead.EMM,
+                'source_type': Lead.SourceType.EMM,
                 'emm_triggers': [LeadEMMTrigger(**x) for x in item_triggers],
                 'emm_entities': item_entities,
                 **lead_info,

@@ -1,4 +1,6 @@
 import os
+
+import logging
 import sentry_sdk
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -6,8 +8,9 @@ from sentry_sdk.integrations.redis import RedisIntegration
 
 # Celery Terminated Exception: The worker processing a job has been terminated by user request.
 from billiard.exceptions import Terminated
+logger = logging.getLogger(__name__)
 
-IGNORED_ERRORS = [Terminated]
+IGNORED_ERRORS = [Terminated, 'graphql.execution.utils']
 
 
 class InvalidGitRepository(Exception):
@@ -81,3 +84,32 @@ def init_sentry(app_type, tags={}, **config):
         scope.set_tag('app_type', app_type)
         for tag, value in tags.items():
             scope.set_tag(tag, value)
+
+
+class SentryGrapheneMiddleware(object):
+    """
+    Properly capture errors during query execution and send them to Sentry.
+    Then raise the error again and let Graphene handle it.
+    https://medium.com/open-graphql/monitoring-graphene-django-python-graphql-api-using-sentry-c0b0c07a344f
+    """
+    # TODO: This need further work (Use this in GraphqlView instead of middleware)
+
+    def on_error(self, root, info, **args):
+        def _on_error(error):
+            with sentry_sdk.configure_scope() as scope:
+                user = info.context.user
+                if user and user.id:
+                    scope.user = {
+                        'id': user.id,
+                        'email': user.email,
+                    }
+                    scope.set_extra('is_superuser', user.is_superuser)
+                scope.set_tag('kind', info.operation.operation)
+            sentry_sdk.capture_exception(error)
+            # log to console
+            logger.error(error, exc_info=True)
+            raise error
+        return _on_error
+
+    def resolve(self, next, root, info, **args):
+        return next(root, info, **args).catch(self.on_error(root, info, **args))

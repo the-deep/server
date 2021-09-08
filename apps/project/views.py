@@ -32,7 +32,6 @@ from deep.permissions import (
     IsProjectMember,
 )
 from deep.serializers import URLCachedFileField
-from deep.models import ProcessStatus
 from deep.paginations import SmallSizeSetPagination
 from tabular.models import Field
 
@@ -48,7 +47,6 @@ from entry.models import Entry
 from entry.views import ComprehensiveEntriesViewSet
 from analysis.models import (
     Analysis,
-    AnalyticalStatement,
     AnalyticalStatementEntry,
     DiscardedEntry
 )
@@ -127,15 +125,15 @@ def _get_viz_data(request, project, can_view_confidential, token=None):
 
     if stats.is_ready():
         return stats_meta, status.HTTP_200_OK
-    elif stats.status == ProcessStatus.FAILURE:
+    elif stats.status == ProjectStats.Status.FAILURE:
         return {
             'error': 'Failed to generate stats, Contact Admin',
             **stats_meta,
         }, status.HTTP_200_OK
     transaction.on_commit(lambda: generate_viz_stats.delay(project.pk))
     # NOTE: Not changing modified_at if already pending
-    if stats.status != ProcessStatus.PENDING:
-        stats.status = ProcessStatus.PENDING
+    if stats.status != ProjectStats.Status.PENDING:
+        stats.status = ProjectStats.Status.PENDING
         stats.save()
     return {
         'message': 'Processing the request, try again later',
@@ -808,7 +806,7 @@ class ProjectOptionsView(views.APIView):
                 {
                     'key': s[0],
                     'value': s[1],
-                } for s in ProjectOrganization.ORGANIZATION_TYPES
+                } for s in ProjectOrganization.Type.choices
             ],
         }
 
@@ -857,7 +855,7 @@ class ProjectOptionsView(views.APIView):
             {
                 'key': value,
                 'value': label
-            } for value, label in Project.STATUS_CHOICES
+            } for value, label in Project.Status.choices
         ]
         return response.Response(options)
 

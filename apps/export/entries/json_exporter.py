@@ -75,4 +75,4 @@ class JsonExporter:
         json_data = json.dumps(self.data, sort_keys=True, indent=2,
                                cls=DjangoJSONEncoder).encode('utf-8')
 
-        return filename, Export.JSON, JSON_MIME_TYPE, ContentFile(json_data)
+        return filename, Export.Format.JSON, JSON_MIME_TYPE, ContentFile(json_data)

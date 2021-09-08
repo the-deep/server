@@ -259,13 +259,13 @@ def get_project_ary_entry_stats(project):
         # confidential data (if lead is confidential)
         lead_source_data = {}
         if (
-            lead.source_type in [Lead.DISK, Lead.DROPBOX, Lead.GOOGLE_DRIVE] and
+            lead.source_type in [Lead.SourceType.DISK, Lead.SourceType.DROPBOX, Lead.SourceType.GOOGLE_DRIVE] and
             lead.attachment and lead.attachment.file
         ):
             lead_source_data['attachment'] = lead.attachment.file.url
-        elif lead.source_type == Lead.WEBSITE:
+        elif lead.source_type == Lead.SourceType.WEBSITE:
             lead_source_data['url'] = lead.url
-        elif lead.source_type == Lead.TEXT:
+        elif lead.source_type == Lead.SourceType.TEXT:
             lead_source_data['text'] = lead.text
 
         ary_data = {
@@ -350,7 +350,7 @@ def get_project_ary_entry_stats(project):
         confidential_data.append(ary_data)
 
         # Hide source data from confidential leads for unrestricted users
-        if ary.lead.confidentiality == Lead.CONFIDENTIAL:
+        if ary.lead.confidentiality == Lead.Confidentiality.CONFIDENTIAL:
             public_data.append({
                 **ary_data,
                 'lead': lead_data,  # No source data

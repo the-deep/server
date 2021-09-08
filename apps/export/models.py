@@ -11,51 +11,29 @@ class Export(models.Model):
 
     Represents an exported file along with few other attributes
     """
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        STARTED = 'started', 'Started'
+        SUCCESS = 'success', 'Success'
+        FAILURE = 'failure', 'Failure'
+        CANCELED = 'canceled', 'Canceled'
 
-    PENDING = 'pending'
-    STARTED = 'started'
-    SUCCESS = 'success'
-    FAILURE = 'failure'
-    CANCELED = 'canceled'
+    class Format(models.TextChoices):
+        XLSX = 'xlsx', 'xlsx'
+        DOCX = 'docx', 'docx'
+        PDF = 'pdf', 'pdf'
+        JSON = 'json', 'json'
 
-    STATUS_CHOICES = (
-        (PENDING, 'Pending'),
-        (STARTED, 'Started'),
-        (SUCCESS, 'Success'),
-        (FAILURE, 'Failure'),
-        (CANCELED, 'Canceled'),
-    )
+    class DataType(models.TextChoices):
+        ENTRIES = 'entries', 'Entries'
+        ASSESSMENTS = 'assessments', 'Assessments'
+        PLANNED_ASSESSMENTS = 'planned_assessments', 'Planned Assessments'
 
-    XLSX = 'xlsx'
-    DOCX = 'docx'
-    PDF = 'pdf'
-    JSON = 'json'
+    class ExportTpe(models.TextChoices):
+        EXCEL = 'excel', 'Excel'
+        REPORT = 'report', 'Report'
+        JSON = 'json', 'Json'
 
-    FORMATS = (
-        (XLSX, 'xlsx'),
-        (DOCX, 'docx'),
-        (PDF, 'pdf'),
-        (JSON, 'json')
-    )
-
-    ENTRIES = 'entries'
-    ASSESSMENTS = 'assessments'
-    PLANNED_ASSESSMENTS = 'planned_assessments'
-
-    DATA_TYPES = (
-        (ENTRIES, 'Entries'),
-        (ASSESSMENTS, 'Assessments'),
-        (PLANNED_ASSESSMENTS, 'Planned Assessments'),
-    )
-
-    EXCEL = 'excel'
-    REPORT = 'report'
-
-    EXPORT_TYPES = (
-        (EXCEL, 'Excel'),
-        (REPORT, 'Report'),
-        (JSON, 'Json'),
-    )
     EXPORT_TASK_CACHE_KEY = 'EXPORT-{id}-TASK-ID'
 
     # Number of entries to proccess if is_preview is True
@@ -67,9 +45,9 @@ class Export(models.Model):
 
     title = models.CharField(max_length=255, blank=True)
 
-    format = models.CharField(max_length=100, choices=FORMATS, blank=True)
-    type = models.CharField(max_length=99, choices=DATA_TYPES, blank=True)
-    export_type = models.CharField(max_length=100, choices=EXPORT_TYPES, blank=True)
+    format = models.CharField(max_length=100, choices=Format.choices, blank=True)
+    type = models.CharField(max_length=99, choices=DataType.choices, blank=True)
+    export_type = models.CharField(max_length=100, choices=ExportTpe.choices, blank=True)
     filters = models.JSONField(default=dict, blank=True, null=True,)
 
     mime_type = models.CharField(max_length=200, blank=True)
@@ -79,7 +57,7 @@ class Export(models.Model):
     exported_at = models.DateTimeField(auto_now_add=True)
 
     pending = models.BooleanField(default=True)
-    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default=PENDING)
+    status = models.CharField(max_length=30, choices=Status.choices, default=Status.PENDING)
     is_deleted = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False)
 

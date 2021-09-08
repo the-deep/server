@@ -1,3 +1,6 @@
+WIDGET_ID = 'organigramWidget'
+
+
 def get_values_for_organ(organ, parent_label=None):
     label = organ.get('title', '')
     if parent_label:

@@ -1,6 +1,6 @@
 import botocore
 from django.db.models.functions import Cast
-from django.contrib.postgres.fields.jsonb import KeyTransform, KeyTextTransform
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.core.management.base import BaseCommand
 from django.db.models import Q, IntegerField
 

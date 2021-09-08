@@ -6,8 +6,7 @@ from user_group.models import UserGroup, GroupMembership
 from user_resource.serializers import UserResourceSerializer
 
 
-class SimpleUserGroupSerializer(RemoveNullFieldsMixin,
-                                serializers.ModelSerializer):
+class SimpleUserGroupSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = UserGroup
         fields = ('id', 'title')
@@ -85,3 +84,69 @@ class UserGroupSerializer(
         if membership:
             return membership.role
         return 'null'
+
+
+# ------------------------ Graphql mutation serializers -------------------------------
+
+
+class GroupMembershipGqSerializer(
+    RemoveNullFieldsMixin,
+    DynamicFieldsMixin,
+    serializers.ModelSerializer
+):
+    class Meta:
+        model = GroupMembership
+        fields = ('id', 'member', 'role',)
+
+    # Validations
+    def validate_group(self, group):
+        # TODO: Use permission check in mutation
+        if not group.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('Invalid user group')
+        return group
+
+    def create(self, validated_data):
+        resource = super().create(validated_data)
+        resource.added_by = self.context['request'].user
+        resource.save()
+        return resource
+
+
+class UserGroupGqSerializer(
+    RemoveNullFieldsMixin,
+    DynamicFieldsMixin,
+    UserResourceSerializer
+):
+    memberships = GroupMembershipGqSerializer(
+        source='groupmembership_set',
+        many=True,
+        required=False,
+    )
+
+    class Meta:
+        model = UserGroup
+        fields = (
+            'id', 'title', 'description', 'display_picture', 'global_crisis_monitoring', 'custom_project_fields',
+            'memberships',
+        )
+
+    def create(self, validated_data):
+        user_group = super().create(validated_data)
+        GroupMembership.objects.create(
+            group=user_group,
+            member=self.context['request'].user,
+            role='admin'
+        )
+        return user_group
+
+    def update(self, instance, validated_data):
+        user_group = super().update(instance, validated_data)
+        # TODO: Don't allow bulk membership upgrade (Add mutation to add each member)
+        # FIXME: Adding created_by as admin if removed after update
+        if user_group.created_by and not user_group.members.filter(pk=user_group.created_by_id).exists():
+            GroupMembership.objects.create(
+                group=user_group,
+                member=user_group.created_by,
+                role='admin'
+            )
+        return user_group

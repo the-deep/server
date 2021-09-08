@@ -67,7 +67,7 @@ class EntryTests(TestCase):
         )
 
         entry = self.create_entry(
-            tabular_field=field, entry_type=Entry.DATA_SERIES
+            tabular_field=field, entry_type=Entry.TagType.DATA_SERIES
         )
         return entry, field
 
@@ -76,8 +76,8 @@ class EntryTests(TestCase):
         geo_widget = self.create(
             Widget,
             analysis_framework=lead.project.analysis_framework,
-            widget_id='geoWidget',
-            key='geoWidget-1312321321',
+            widget_id=Widget.WidgetType.GEO,
+            key='geoWidget-101',
         )
 
         url = '/api/v1/entries/'
@@ -112,14 +112,29 @@ class EntryTests(TestCase):
     def test_filter_entries_by_type(self):
         lead = self.create_lead()
 
-        self.create_entry(lead=lead, entry_type=Entry.EXCERPT)
-        self.create_entry(lead=lead, entry_type=Entry.IMAGE)
-        self.create_entry(lead=lead, entry_type=Entry.DATA_SERIES)
+        self.create_entry(lead=lead, entry_type=Entry.TagType.EXCERPT)
+        self.create_entry(lead=lead, entry_type=Entry.TagType.IMAGE)
+        self.create_entry(lead=lead, entry_type=Entry.TagType.DATA_SERIES)
 
         self.authenticate()
-        self.post_filter_test({'entry_type': [Entry.EXCERPT, Entry.IMAGE]}, Entry.objects.filter(entry_type__in=[Entry.EXCERPT, Entry.IMAGE]).count())  # noqa: E501
-        self.post_filter_test({'entry_type': [Entry.EXCERPT]}, Entry.objects.filter(entry_type__in=[Entry.EXCERPT]).count())
-        self.post_filter_test({'entry_type': [Entry.IMAGE, Entry.DATA_SERIES]}, Entry.objects.filter(entry_type__in=[Entry.IMAGE, Entry.DATA_SERIES]).count())  # noqa: E501
+        self.post_filter_test(
+            # Filter
+            {'entry_type': [Entry.TagType.EXCERPT, Entry.TagType.IMAGE]},
+            # Count
+            Entry.objects.filter(entry_type__in=[Entry.TagType.EXCERPT, Entry.TagType.IMAGE]).count()
+        )
+        self.post_filter_test(
+            # Filter
+            {'entry_type': [Entry.TagType.EXCERPT]},
+            # Count
+            Entry.objects.filter(entry_type__in=[Entry.TagType.EXCERPT]).count()
+        )
+        self.post_filter_test(
+            # Filter
+            {'entry_type': [Entry.TagType.IMAGE, Entry.TagType.DATA_SERIES]},
+            # Count
+            Entry.objects.filter(entry_type__in=[Entry.TagType.IMAGE, Entry.TagType.DATA_SERIES]).count()
+        )
 
     def test_search_filter_entry_group_label(self):
         lead = self.create_lead()
@@ -163,6 +178,8 @@ class EntryTests(TestCase):
         widget = self.create(
             Widget,
             analysis_framework=lead.project.analysis_framework,
+            widget_id=Widget.WidgetType.TEXT,
+            key='text-102',
         )
 
         url = '/api/v1/entries/'
@@ -210,6 +227,8 @@ class EntryTests(TestCase):
         widget = self.create(
             Widget,
             analysis_framework=lead.project.analysis_framework,
+            widget_id=Widget.WidgetType.TEXT,
+            key='text-103',
         )
 
         url = '/api/v1/entries/'
@@ -254,6 +273,8 @@ class EntryTests(TestCase):
         widget = self.create(
             Widget,
             analysis_framework=lead.project.analysis_framework,
+            widget_id=Widget.WidgetType.TEXT,
+            key='text-104',
         )
 
         user = self.create(User)
@@ -335,10 +356,14 @@ class EntryTests(TestCase):
         widget1 = self.create(
             Widget,
             analysis_framework=entry.lead.project.analysis_framework,
+            widget_id=Widget.WidgetType.TEXT,
+            key='text-105',
         )
         widget2 = self.create(
             Widget,
             analysis_framework=entry.lead.project.analysis_framework,
+            widget_id=Widget.WidgetType.TEXT,
+            key='text-106',
         )
         self.create(
             Attribute,
@@ -410,7 +435,7 @@ class EntryTests(TestCase):
         self.authenticate(user1)
         response = self.client.get(url)
         self.assert_200(response)
-       # gives all the member of the project
+        # gives all the member of the project
         self.assertEqual(user1.id, response.data['created_by'][0]['key'])
         self.assertEqual(len(response.data['created_by']), 1)
 
@@ -446,7 +471,7 @@ class EntryTests(TestCase):
             widget_key='test_filter',
             key='test_filter',
             title='Test Filter',
-            filter_type=Filter.NUMBER,
+            filter_type=Filter.FilterType.NUMBER,
         )
         self.create(FilterData, entry=entry, filter=filter, number=500)
 
@@ -461,7 +486,7 @@ class EntryTests(TestCase):
             widget_key='test_list_filter',
             key='test_list_filter',
             title='Test List Filter',
-            filter_type=Filter.LIST,
+            filter_type=Filter.FilterType.LIST,
         )
         self.create(FilterData, entry=entry, filter=filter,
                     values=['abc', 'def', 'ghi'])

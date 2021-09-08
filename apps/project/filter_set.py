@@ -1,11 +1,16 @@
 from django.db import models
 import django_filters
 
+from utils.graphene.filters import SimpleInputFilter, IDListFilter
 from user_resource.filters import UserResourceFilterSet
+
 from .models import (
     Project,
     ProjectMembership,
     ProjectUserGroupMembership,
+)
+from .enums import (
+    ProjectStatusEnum,
 )
 
 
@@ -22,6 +27,19 @@ class ProjectFilterSet(UserResourceFilterSet):
                 },
             },
         }
+
+    is_current_user_member = django_filters.BooleanFilter(
+        field_name='is_current_user_member', method='filter_with_membership')
+
+    def filter_with_membership(self, queryset, name, value):
+        if value is not None:
+            queryset = queryset.filter(
+                id__in=Project.get_for_member(
+                    self.request.user,
+                    exclude=not value,
+                )
+            )
+        return queryset
 
 
 class ProjectMembershipFilterSet(UserResourceFilterSet):
@@ -54,3 +72,32 @@ def get_filtered_projects(user, queries, annotate=False):
         projects = projects.order_by(ordering)
 
     return projects.distinct()
+
+
+class ProjectGqlFilterSet(UserResourceFilterSet):
+    status = SimpleInputFilter(ProjectStatusEnum)
+    organizations = IDListFilter(distinct=True)
+    analysis_frameworks = IDListFilter(field_name='analysis_framework')
+    regions = IDListFilter(distinct=True)
+    search = django_filters.CharFilter(method='filter_title')
+    is_current_user_member = django_filters.BooleanFilter(
+        field_name='is_current_user_member', method='filter_with_membership')
+
+    class Meta:
+        model = Project
+        fields = ()
+
+    def filter_title(self, qs, name, value):
+        if not value:
+            return qs
+        return qs.filter(title__icontains=value).distinct()
+
+    def filter_with_membership(self, queryset, name, value):
+        if value is not None:
+            queryset = queryset.filter(
+                id__in=Project.get_for_member(
+                    self.request.user,
+                    exclude=not value,
+                )
+            )
+        return queryset

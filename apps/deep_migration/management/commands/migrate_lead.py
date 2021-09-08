@@ -29,15 +29,15 @@ def get_project(project_id):
 
 
 CONFIDENTIALITY_MAP = {
-    'UNP': Lead.UNPROTECTED,
-    'PRO': Lead.PROTECTED,
-    'RES': Lead.RESTRICTED,
-    'CON': Lead.CONFIDENTIAL,
+    'UNP': Lead.Confidentiality.UNPROTECTED,
+    'PRO': Lead.Confidentiality.PROTECTED,
+    'RES': Lead.Confidentiality.RESTRICTED,
+    'CON': Lead.Confidentiality.CONFIDENTIAL,
 }
 
 STATUS_MAP = {
-    'PEN': Lead.PENDING,
-    'PRO': Lead.PROTECTED,
+    'PEN': Lead.Status.PENDING,
+    'PRO': Lead.Status.PROTECTED,
 }
 
 
@@ -99,16 +99,16 @@ class Command(MigrationCommand):
         lead.modified_by = lead.created_by
 
         if data.get('description'):
-            lead.source_type = Lead.TEXT
+            lead.source_type = Lead.SourceType.TEXT
             lead.text = data['description']
 
         elif data.get('url'):
-            lead.source_type = Lead.WEBSITE
+            lead.source_type = Lead.SourceType.WEBSITE
             lead.website = data['website']
             lead.url = data['url']
 
         elif data.get('attachment'):
-            lead.source_type = Lead.DISK
+            lead.source_type = Lead.SourceType.DISK
             lead.attachment = get_migrated_gallery_file(
                 data['attachment']['url']
             )

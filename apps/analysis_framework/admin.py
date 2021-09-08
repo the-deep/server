@@ -1,13 +1,5 @@
 from django.contrib import admin
 from deep.admin import linkify
-from analysis_framework.models import (
-    AnalysisFramework,
-    AnalysisFrameworkRole,
-    AnalysisFrameworkMembership,
-    Widget, Filter,
-    Exportable,
-)
-
 from questionnaire.models import (
     FrameworkQuestion,
 )
@@ -17,6 +9,16 @@ from deep.admin import (
     StackedInline,
     query_buttons,
     ModelAdmin as JFModelAdmin,
+)
+
+from .models import (
+    AnalysisFramework,
+    AnalysisFrameworkRole,
+    AnalysisFrameworkMembership,
+    Section,
+    Widget,
+    Filter,
+    Exportable,
 )
 
 
@@ -42,6 +44,10 @@ class FrameworkQuestionInline(StackedInline):
     model = FrameworkQuestion
 
 
+class SectionInline(StackedInline):
+    model = Section
+
+
 class AFRelatedAdmin(JFModelAdmin):
     search_fields = ('title',)
     list_display = (
@@ -56,17 +62,16 @@ class AFRelatedAdmin(JFModelAdmin):
         return False
 
 
-for model in [Widget, Filter, Exportable, FrameworkQuestion]:
+for model in [Section, Widget, Filter, Exportable, FrameworkQuestion]:
     admin.site.register(model, AFRelatedAdmin)
 
 
 @admin.register(AnalysisFramework)
 class AnalysisFrameworkAdmin(VersionAdmin):
     readonly_fields = ['is_private']
-    inlines = [AnalysisFrameworkMemebershipInline]
+    inlines = [AnalysisFrameworkMemebershipInline, SectionInline, WidgetInline]
     search_fields = ('title',)
     custom_inlines = [
-        ('widget', WidgetInline),
         ('filter', FilterInline),
         ('exportable', ExportableInline),
         ('framework_question', FrameworkQuestionInline),

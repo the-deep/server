@@ -1,3 +1,6 @@
+WIDGET_ID = 'geoWidget'
+
+
 def get_filters(widget, data):
     return [{
         'filter_type': 'list',

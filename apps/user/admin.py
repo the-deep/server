@@ -3,7 +3,7 @@ from django.db import models
 from django.contrib.auth.admin import UserAdmin
 from .models import (
     Profile, User, Feature, EmailDomain,
-    gen_auth_proxy_model, OTP_MODELS, OTP_PROXY_MODELS
+    OTP_MODELS, OTP_PROXY_MODELS
 )
 
 

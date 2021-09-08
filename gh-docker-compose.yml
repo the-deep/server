@@ -1,0 +1,22 @@
+version: '3.2'
+
+services:
+    db:
+      image: postgis/postgis:10-3.1
+      environment:
+        POSTGRES_PASSWORD: postgres
+
+    redis:
+      image: redis:latest
+
+    server:
+      image: $DOCKER_IMAGE_SERVER
+      environment:
+        CI: "true"
+        # https://github.com/pytest-dev/pytest/issues/7443
+        PYTEST_ADDOPTS: "--color=yes"
+      volumes:
+        - .:/code
+      depends_on:
+        - db
+        - redis

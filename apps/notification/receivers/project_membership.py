@@ -14,7 +14,6 @@ from project.serializers import ProjectJoinRequestSerializer
 def create_notification(sender, instance, created, **kwargs):
     admins = instance.project.get_admins()
     data = ProjectJoinRequestSerializer(instance).data
-
     if (created):
         for admin in admins:
             Notification.objects.create(

@@ -53,14 +53,13 @@ def export_entries(export):
     queryset = queryset.prefetch_related(
         'entrygrouplabel_set'
     )
-    queryset = Entry.get_exportable_queryset(queryset)\
-        .prefetch_related(
-            'lead__authors',
-            'lead__authors__organization_type',
-            # Also organization parents
-            'lead__authors__parent',
-            'lead__authors__parent__organization_type',
-        )
+    queryset = Entry.get_exportable_queryset(queryset).prefetch_related(
+        'lead__authors',
+        'lead__authors__organization_type',
+        # Also organization parents
+        'lead__authors__parent',
+        'lead__authors__parent__organization_type',
+    )
 
     search = filters.get('search')
     if search:
@@ -87,14 +86,14 @@ def export_entries(export):
         show_entry_widget_data=filters.get('report_show_entry_widget_data', True),
     )
 
-    if export_type == Export.EXCEL:
+    if export_type == Export.ExportTpe.EXCEL:
         decoupled = filters.get('decoupled', True)
         export_data = ExcelExporter(queryset, decoupled, project_id, is_preview=is_preview)\
             .load_exportables(exportables, regions)\
             .add_entries(queryset)\
             .export()
 
-    elif export_type == Export.REPORT:
+    elif export_type == Export.ExportTpe.REPORT:
         report_structure = filters.get('report_structure')
         report_levels = filters.get('report_levels')
         text_widget_ids = filters.get('text_widget_ids') or []
@@ -114,7 +113,7 @@ def export_entries(export):
             .export(pdf=pdf)
         )
 
-    elif export_type == Export.JSON:
+    elif export_type == Export.ExportTpe.JSON:
         export_data = JsonExporter(is_preview=is_preview)\
             .load_exportables(exportables)\
             .add_entries(queryset)\

@@ -77,20 +77,32 @@ class Profile(models.Model):
     def __str__(self):
         return str(self.user)
 
-    def get_accessible_features(self):
+    @staticmethod
+    def get_user_accessible_features(user):
         try:
-            user_domain = (self.user.email or self.user.username).split('@')[1]
+            user_domain = (user.email or user.username).split('@')[1]
             return Feature.objects.filter(
                 Q(is_available_for_all=True) |
-                Q(users=self.user) |
+                Q(users=user) |
                 Q(email_domains__domain_name__exact=user_domain)
-            )
+            ).order_by('key')
         except IndexError:
-            return []
+            return Feature.objects.none()
+
+    def get_accessible_features(self):
+        return self.get_user_accessible_features(self.user)
+
+    @staticmethod
+    def have_feature_access_for_user(user, feature):
+        return Profile.get_user_accessible_features(user).filter(key=feature).exists()
+
+    @staticmethod
+    def get_display_name_for_user(user):
+        # TODO: Maybe something like this? return f'{name} #{user.id}'
+        return user.get_full_name() if user.first_name else user.username
 
     def get_display_name(self):
-        return self.user.get_full_name() if self.user.first_name \
-            else self.user.username
+        return self.get_display_name_for_user(self.user)
 
     def unsubscribe_email(self, email_type):
         if (
@@ -114,6 +126,13 @@ class Profile(models.Model):
         # return settings.LANGUAGE_CODE
 
 
+# TODO: Use Abstract User Model (Merge profile to User Table)
+User.get_display_name = Profile.get_display_name_for_user
+User.display_name = property(Profile.get_display_name_for_user)
+User.have_feature_access = Profile.have_feature_access_for_user
+User.get_accessible_features = Profile.get_user_accessible_features
+
+
 def get_for_project(project):
     return User.objects.prefetch_related('profile').filter(
         models.Q(projectmembership__project=project) |
@@ -134,33 +153,25 @@ class EmailDomain(models.Model):
 
 
 class Feature(models.Model):
-    GENERAL_ACCESS = 'general_access'
-    EXPERIMENTAL = 'experimental'
-    EARLY_ACCESS = 'early_access'
+    class FeatureType(models.TextChoices):
+        GENERAL_ACCESS = 'general_access', 'General access'
+        EXPERIMENTAL = 'experimental', 'Experimental'
+        EARLY_ACCESS = 'early_access', 'Early access'
 
-    FEATURE_TYPES = (
-        (GENERAL_ACCESS, 'General access'),
-        (EXPERIMENTAL, 'Experimental'),
-        (EARLY_ACCESS, 'Early access'),
-    )
+    class FeatureKey(models.TextChoices):
+        PRIVATE_PROJECT = 'private_project', 'Private projects'
+        TABULAR = 'tabular', 'Tabular'
+        ZOOMABLE_IMAGE = 'zoomable_image', 'Zoomable image'
+        POLYGON_SUPPORT_GEO = 'polygon_support_geo', 'Polygon support geo'
+        ENTRY_VISUALIZATION_CONFIGURATION = 'entry_visualization_configuration', 'Entry visualization configuration'
+        # Deprecated keys
+        QUALITY_CONTROL = 'quality_control', 'Quality Control (Deprecated)'
+        NEW_UI = 'new_ui', 'New UI (Deprecated)'
+        ANALYSIS = 'analysis', 'Analysis (Deprecated)'
 
-    PRIVATE_PROJECT = 'private_project'
-    TABULAR = 'tabular'
-    ZOOMABLE_IMAGE = 'zoomable_image'
-    POLYGON_SUPPORT_GEO = 'polygon_support_geo'
-    ENTRY_VISUALIZATION_CONFIGURATION = 'entry_visualization_configuration'
-
-    FEATURE_KEYS = (
-        (PRIVATE_PROJECT, 'Private projects'),
-        (TABULAR, 'Tabular'),
-        (ZOOMABLE_IMAGE, 'Zoomable image'),
-        (POLYGON_SUPPORT_GEO, 'Polygon support geo'),
-        (ENTRY_VISUALIZATION_CONFIGURATION, 'Entry visualization configuration'),
-    )
-
-    key = models.CharField(max_length=255, unique=True, choices=FEATURE_KEYS)
+    key = models.CharField(max_length=255, unique=True, choices=FeatureKey.choices)
     title = models.CharField(max_length=255)
-    feature_type = models.CharField(max_length=128, choices=FEATURE_TYPES, default=GENERAL_ACCESS)
+    feature_type = models.CharField(max_length=128, choices=FeatureType.choices, default=FeatureType.GENERAL_ACCESS)
 
     users = models.ManyToManyField(User, blank=True)
     email_domains = models.ManyToManyField(EmailDomain, blank=True)

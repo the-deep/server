@@ -1,8 +1,9 @@
 from datetime import datetime
 
+from analysis_framework.widgets.date_widget import WIDGET_ID
+
 
 ONE_DAY = 24 * 60 * 60
-WIDGET_ID = 'dateWidget'
 # NOTE: Please update the data version when you update the data format
 # this is tallied against the version stored in the export json data
 DATA_VERSION = 1
@@ -41,6 +42,7 @@ def update_attribute(widget, data, widget_data):
             }
         },
     }
+
 
 def get_comprehensive_data(_, *args):
     return _get_date(*args)[0]
