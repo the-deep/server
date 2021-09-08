@@ -18,7 +18,7 @@ from deep.permissions import ProjectPermissions as PP
 from lead.schema import Query as LeadQuery
 from entry.schema import Query as EntryQuery
 from export.schema import Query as ExportQuery
-from geo.schema import RegionType
+from geo.schema import RegionType, ProjectScopeQuery as GeoQuery
 from lead.models import Lead
 from entry.models import Entry
 
@@ -160,6 +160,7 @@ class ProjectDetailType(
     LeadQuery,
     EntryQuery,
     ExportQuery,
+    GeoQuery,
     # --  End  --Project scopped entities
     ProjectType,
 ):
