@@ -60,9 +60,10 @@ class BulkLeadInputType(LeadInputType):
 
 class BulkLead(LeadMutationMixin, PsBulkGrapheneMutation):
     class Arguments:
-        items = graphene.List(BulkLeadInputType, required=True)
+        items = graphene.List(graphene.NonNull(BulkLeadInputType), required=True)
 
-    deleted_result = result = graphene.List(LeadType)
+    result = graphene.List(LeadType)
+    deleted_result = graphene.List(graphene.NonNull(LeadType))
     # class vars
     model = Lead
     serializer_class = LeadSerializer
