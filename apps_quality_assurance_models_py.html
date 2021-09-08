@@ -22,8 +22,8 @@
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            53 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">51 run</button>
+            55 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">53 run</button>
             <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">2 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">2 partial</button>
@@ -98,7 +98,7 @@
     <p id="t43" class="run"><span class="n"><a href="#t43">43</a></span><span class="t">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">created_by</span> <span class="op">==</span> <span class="nam">user</span>&nbsp;</span><span class="r"></span></p>
     <p id="t44" class="pln"><span class="n"><a href="#t44">44</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t45" class="run"><span class="n"><a href="#t45">45</a></span><span class="t">    <span class="op">@</span><span class="nam">classmethod</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t46" class="pln"><span class="n"><a href="#t46">46</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_for</span><span class="op">(</span><span class="nam">cls</span><span class="op">,</span> <span class="nam">user</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t46" class="run"><span class="n"><a href="#t46">46</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_for</span><span class="op">(</span><span class="nam">cls</span><span class="op">,</span> <span class="nam">user</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t47" class="run"><span class="n"><a href="#t47">47</a></span><span class="t">        <span class="key">return</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t48" class="pln"><span class="n"><a href="#t48">48</a></span><span class="t">            <span class="nam">cls</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">select_related</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t49" class="pln"><span class="n"><a href="#t49">49</a></span><span class="t">                <span class="str">'entry'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -117,7 +117,7 @@
     <p id="t62" class="pln"><span class="n"><a href="#t62">62</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t63" class="pln"><span class="n"><a href="#t63">63</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t64" class="run"><span class="n"><a href="#t64">64</a></span><span class="t">    <span class="op">@</span><span class="nam">property</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t65" class="pln"><span class="n"><a href="#t65">65</a></span><span class="t">    <span class="key">def</span> <span class="nam">text</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t65" class="run"><span class="n"><a href="#t65">65</a></span><span class="t">    <span class="key">def</span> <span class="nam">text</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t66" class="run"><span class="n"><a href="#t66">66</a></span><span class="t">        <span class="nam">last_comment_text</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">comment_texts</span><span class="op">.</span><span class="nam">order_by</span><span class="op">(</span><span class="str">'-id'</span><span class="op">)</span><span class="op">.</span><span class="nam">first</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t67" class="par run show_par"><span class="n"><a href="#t67">67</a></span><span class="t">        <span class="key">if</span> <span class="nam">last_comment_text</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">67&#x202F;&#x219B;&#x202F;exit</span><span class="annotate long">line 67 didn't return from function 'text', because the condition on line 67 was never false</span></span></p>
     <p id="t68" class="run"><span class="n"><a href="#t68">68</a></span><span class="t">            <span class="key">return</span> <span class="nam">last_comment_text</span><span class="op">.</span><span class="nam">text</span>&nbsp;</span><span class="r"></span></p>
@@ -173,7 +173,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-09-02 04:12 +0000
+            created at 2021-09-08 10:11 +0000
         </p>
     </div>
 </div>

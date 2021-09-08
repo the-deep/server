@@ -59,7 +59,7 @@
     <p id="t4" class="pln"><span class="n"><a href="#t4">4</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t5" class="run"><span class="n"><a href="#t5">5</a></span><span class="t"><span class="key">from</span> <span class="nam">django</span><span class="op">.</span><span class="nam">db</span> <span class="key">import</span> <span class="nam">transaction</span>&nbsp;</span><span class="r"></span></p>
     <p id="t6" class="pln"><span class="n"><a href="#t6">6</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t7" class="run"><span class="n"><a href="#t7">7</a></span><span class="t"><span class="key">from</span> <span class="nam">utils</span><span class="op">.</span><span class="nam">common</span> <span class="key">import</span> <span class="nam">random_key</span><span class="op">,</span> <span class="nam">get_ns_tag</span><span class="op">,</span> <span class="nam">LogTime</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t7" class="run"><span class="n"><a href="#t7">7</a></span><span class="t"><span class="key">from</span> <span class="nam">utils</span><span class="op">.</span><span class="nam">common</span> <span class="key">import</span> <span class="nam">random_key</span><span class="op">,</span> <span class="nam">get_ns_tag</span>&nbsp;</span><span class="r"></span></p>
     <p id="t8" class="run"><span class="n"><a href="#t8">8</a></span><span class="t"><span class="key">from</span> <span class="nam">rest_framework</span> <span class="key">import</span> <span class="nam">serializers</span>&nbsp;</span><span class="r"></span></p>
     <p id="t9" class="pln"><span class="n"><a href="#t9">9</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t10" class="run"><span class="n"><a href="#t10">10</a></span><span class="t"><span class="key">from</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Lead</span><span class="op">,</span> <span class="nam">LeadEMMTrigger</span><span class="op">,</span> <span class="nam">EMMEntity</span>&nbsp;</span><span class="r"></span></p>
@@ -193,7 +193,7 @@
     <p id="t138" class="pln"><span class="n"><a href="#t138">138</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t139" class="mis show_mis"><span class="n"><a href="#t139">139</a></span><span class="t">            <span class="nam">leads_infos</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="op">{</span>&nbsp;</span><span class="r"></span></p>
     <p id="t140" class="pln"><span class="n"><a href="#t140">140</a></span><span class="t">                <span class="str">'id'</span><span class="op">:</span> <span class="nam">random_key</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t141" class="pln"><span class="n"><a href="#t141">141</a></span><span class="t">                <span class="str">'source_type'</span><span class="op">:</span> <span class="nam">Lead</span><span class="op">.</span><span class="nam">EMM</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t141" class="pln"><span class="n"><a href="#t141">141</a></span><span class="t">                <span class="str">'source_type'</span><span class="op">:</span> <span class="nam">Lead</span><span class="op">.</span><span class="nam">SourceType</span><span class="op">.</span><span class="nam">EMM</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t142" class="pln"><span class="n"><a href="#t142">142</a></span><span class="t">                <span class="str">'emm_triggers'</span><span class="op">:</span> <span class="op">[</span><span class="nam">LeadEMMTrigger</span><span class="op">(</span><span class="op">**</span><span class="nam">x</span><span class="op">)</span> <span class="key">for</span> <span class="nam">x</span> <span class="key">in</span> <span class="nam">item_triggers</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t143" class="pln"><span class="n"><a href="#t143">143</a></span><span class="t">                <span class="str">'emm_entities'</span><span class="op">:</span> <span class="nam">item_entities</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t144" class="pln"><span class="n"><a href="#t144">144</a></span><span class="t">                <span class="op">**</span><span class="nam">lead_info</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -282,7 +282,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-09-02 04:12 +0000
+            created at 2021-09-08 10:11 +0000
         </p>
     </div>
 </div>

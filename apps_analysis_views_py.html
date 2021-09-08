@@ -22,8 +22,8 @@
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            78 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">77 run</button>
+            79 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">78 run</button>
             <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">1 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">0 partial</button>
@@ -157,7 +157,7 @@
     <p id="t102" class="pln"><span class="n"><a href="#t102">102</a></span><span class="t">        <span class="nam">detail</span><span class="op">=</span><span class="key">False</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t103" class="pln"><span class="n"><a href="#t103">103</a></span><span class="t">        <span class="nam">url_path</span><span class="op">=</span><span class="str">'summary'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t104" class="pln"><span class="n"><a href="#t104">104</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t105" class="pln"><span class="n"><a href="#t105">105</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_summary</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">request</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t105" class="run"><span class="n"><a href="#t105">105</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_summary</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">request</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t106" class="run"><span class="n"><a href="#t106">106</a></span><span class="t">        <span class="nam">queryset</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">filter_queryset</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">get_queryset</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t107" class="run"><span class="n"><a href="#t107">107</a></span><span class="t">        <span class="nam">queryset</span> <span class="op">=</span> <span class="nam">AnalysisPillar</span><span class="op">.</span><span class="nam">annotate_for_analysis_pillar_summary</span><span class="op">(</span><span class="nam">queryset</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t108" class="run"><span class="n"><a href="#t108">108</a></span><span class="t">        <span class="nam">page</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">paginate_queryset</span><span class="op">(</span><span class="nam">queryset</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -232,7 +232,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-09-02 04:12 +0000
+            created at 2021-09-08 10:11 +0000
         </p>
     </div>
 </div>

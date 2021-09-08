@@ -142,7 +142,7 @@
     <p id="t87" class="run"><span class="n"><a href="#t87">87</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_queryset</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t88" class="run"><span class="n"><a href="#t88">88</a></span><span class="t">        <span class="key">return</span> <span class="nam">Assignment</span><span class="op">.</span><span class="nam">get_for</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">)</span><span class="op">.</span><span class="nam">select_related</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t89" class="pln"><span class="n"><a href="#t89">89</a></span><span class="t">            <span class="str">'project'</span><span class="op">,</span> <span class="str">'created_by'</span><span class="op">,</span> <span class="str">'content_type'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t90" class="pln"><span class="n"><a href="#t90">90</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t90" class="pln"><span class="n"><a href="#t90">90</a></span><span class="t">        <span class="op">)</span><span class="op">.</span><span class="nam">order_by</span><span class="op">(</span><span class="str">'-created_at'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t91" class="pln"><span class="n"><a href="#t91">91</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t92" class="run"><span class="n"><a href="#t92">92</a></span><span class="t">    <span class="op">@</span><span class="nam">action</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t93" class="pln"><span class="n"><a href="#t93">93</a></span><span class="t">        <span class="nam">detail</span><span class="op">=</span><span class="key">False</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -161,7 +161,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-09-02 04:12 +0000
+            created at 2021-09-08 10:11 +0000
         </p>
     </div>
 </div>

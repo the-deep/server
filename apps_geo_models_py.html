@@ -22,9 +22,9 @@
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            126 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">100 run</button>
-            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">26 missing</button>
+            129 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">102 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">27 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">5 partial</button>
         </h2>
@@ -143,7 +143,7 @@
     <p id="t88" class="run"><span class="n"><a href="#t88">88</a></span><span class="t">        <span class="key">return</span> <span class="nam">region</span>&nbsp;</span><span class="r"></span></p>
     <p id="t89" class="pln"><span class="n"><a href="#t89">89</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t90" class="run"><span class="n"><a href="#t90">90</a></span><span class="t">    <span class="op">@</span><span class="nam">staticmethod</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t91" class="pln"><span class="n"><a href="#t91">91</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_for</span><span class="op">(</span><span class="nam">user</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t91" class="run"><span class="n"><a href="#t91">91</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_for</span><span class="op">(</span><span class="nam">user</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t92" class="run"><span class="n"><a href="#t92">92</a></span><span class="t">        <span class="key">return</span> <span class="nam">Region</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t93" class="pln"><span class="n"><a href="#t93">93</a></span><span class="t">            <span class="nam">models</span><span class="op">.</span><span class="nam">Q</span><span class="op">(</span><span class="nam">public</span><span class="op">=</span><span class="key">True</span><span class="op">)</span> <span class="op">|</span>&nbsp;</span><span class="r"></span></p>
     <p id="t94" class="pln"><span class="n"><a href="#t94">94</a></span><span class="t">            <span class="nam">models</span><span class="op">.</span><span class="nam">Q</span><span class="op">(</span><span class="nam">created_by</span><span class="op">=</span><span class="nam">user</span><span class="op">)</span> <span class="op">|</span>&nbsp;</span><span class="r"></span></p>
@@ -272,8 +272,8 @@
     <p id="t217" class="pln"><span class="n"><a href="#t217">217</a></span><span class="t">                <span class="nam">json</span><span class="op">.</span><span class="nam">dumps</span><span class="op">(</span><span class="op">{</span><span class="str">'bounds'</span><span class="op">:</span> <span class="nam">bounds</span><span class="op">}</span><span class="op">,</span> <span class="nam">cls</span><span class="op">=</span><span class="nam">DjangoJSONEncoder</span><span class="op">)</span><span class="op">.</span><span class="nam">encode</span><span class="op">(</span><span class="str">'utf-8'</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t218" class="pln"><span class="n"><a href="#t218">218</a></span><span class="t">            <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t219" class="pln"><span class="n"><a href="#t219">219</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t220" class="par run show_par"><span class="n"><a href="#t220">220</a></span><span class="t">        <span class="key">if</span> <span class="nam">save</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">220&#x202F;&#x219B;&#x202F;exit</span><span class="annotate long">line 220 didn't return from function 'calc_cache', because the condition on line 220 was never false</span></span></p>
-    <p id="t221" class="run"><span class="n"><a href="#t221">221</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">save</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t220" class="par run show_par"><span class="n"><a href="#t220">220</a></span><span class="t">        <span class="key">if</span> <span class="nam">save</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">220&#x202F;&#x219B;&#x202F;221</span><span class="annotate long">line 220 didn't jump to line 221, because the condition on line 220 was never true</span></span></p>
+    <p id="t221" class="mis show_mis"><span class="n"><a href="#t221">221</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">save</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t222" class="pln"><span class="n"><a href="#t222">222</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t223" class="run"><span class="n"><a href="#t223">223</a></span><span class="t">    <span class="key">def</span> <span class="nam">clone_to</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">region</span><span class="op">,</span> <span class="nam">parent</span><span class="op">=</span><span class="key">None</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t224" class="mis show_mis"><span class="n"><a href="#t224">224</a></span><span class="t">        <span class="nam">admin_level</span> <span class="op">=</span> <span class="nam">AdminLevel</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
@@ -305,7 +305,7 @@
     <p id="t250" class="pln"><span class="n"><a href="#t250">250</a></span><span class="t">    <span class="com"># Admin level permissions are same as region permissions</span>&nbsp;</span><span class="r"></span></p>
     <p id="t251" class="pln"><span class="n"><a href="#t251">251</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t252" class="run"><span class="n"><a href="#t252">252</a></span><span class="t">    <span class="op">@</span><span class="nam">staticmethod</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t253" class="pln"><span class="n"><a href="#t253">253</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_for</span><span class="op">(</span><span class="nam">user</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t253" class="run"><span class="n"><a href="#t253">253</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_for</span><span class="op">(</span><span class="nam">user</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t254" class="mis show_mis"><span class="n"><a href="#t254">254</a></span><span class="t">        <span class="key">return</span> <span class="nam">AdminLevel</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t255" class="pln"><span class="n"><a href="#t255">255</a></span><span class="t">            <span class="nam">models</span><span class="op">.</span><span class="nam">Q</span><span class="op">(</span><span class="nam">region__public</span><span class="op">=</span><span class="key">True</span><span class="op">)</span> <span class="op">|</span>&nbsp;</span><span class="r"></span></p>
     <p id="t256" class="pln"><span class="n"><a href="#t256">256</a></span><span class="t">            <span class="nam">models</span><span class="op">.</span><span class="nam">Q</span><span class="op">(</span><span class="nam">region__created_by</span><span class="op">=</span><span class="nam">user</span><span class="op">)</span> <span class="op">|</span>&nbsp;</span><span class="r"></span></p>
@@ -356,7 +356,7 @@
     <p id="t301" class="pln"><span class="n"><a href="#t301">301</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t302" class="pln"><span class="n"><a href="#t302">302</a></span><span class="t">    <span class="com"># Permissions are same as region</span>&nbsp;</span><span class="r"></span></p>
     <p id="t303" class="run"><span class="n"><a href="#t303">303</a></span><span class="t">    <span class="op">@</span><span class="nam">staticmethod</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t304" class="pln"><span class="n"><a href="#t304">304</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_for</span><span class="op">(</span><span class="nam">user</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t304" class="run"><span class="n"><a href="#t304">304</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_for</span><span class="op">(</span><span class="nam">user</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t305" class="mis show_mis"><span class="n"><a href="#t305">305</a></span><span class="t">        <span class="key">return</span> <span class="nam">AdminLevel</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t306" class="pln"><span class="n"><a href="#t306">306</a></span><span class="t">            <span class="nam">models</span><span class="op">.</span><span class="nam">Q</span><span class="op">(</span><span class="nam">admin_level__region__public</span><span class="op">=</span><span class="key">True</span><span class="op">)</span> <span class="op">|</span>&nbsp;</span><span class="r"></span></p>
     <p id="t307" class="pln"><span class="n"><a href="#t307">307</a></span><span class="t">            <span class="nam">models</span><span class="op">.</span><span class="nam">Q</span><span class="op">(</span><span class="nam">admin_level__region__created_by</span><span class="op">=</span><span class="nam">user</span><span class="op">)</span> <span class="op">|</span>&nbsp;</span><span class="r"></span></p>
@@ -377,7 +377,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-09-02 04:12 +0000
+            created at 2021-09-08 10:11 +0000
         </p>
     </div>
 </div>

@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/tabular/tasks.py: 31%</title>
+    <title>Coverage for apps/tabular/tasks.py: 34%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -18,12 +18,12 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>apps/tabular/tasks.py</b> :
-            <span class="pc_cov">31%</span>
+            <span class="pc_cov">34%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            128 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">46 run</button>
+            134 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">52 run</button>
             <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">82 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">0 partial</button>
@@ -98,7 +98,7 @@
     <p id="t43" class="pln"><span class="n"><a href="#t43">43</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t44" class="pln"><span class="n"><a href="#t44">44</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t45" class="run"><span class="n"><a href="#t45">45</a></span><span class="t"><span class="op">@</span><span class="nam">LogTime</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t46" class="pln"><span class="n"><a href="#t46">46</a></span><span class="t"><span class="key">def</span> <span class="nam">auto_detect_and_update_fields</span><span class="op">(</span><span class="nam">book</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t46" class="run"><span class="n"><a href="#t46">46</a></span><span class="t"><span class="key">def</span> <span class="nam">auto_detect_and_update_fields</span><span class="op">(</span><span class="nam">book</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t47" class="pln"><span class="n"><a href="#t47">47</a></span><span class="t">    <span class="com"># TODO: Find some ways to lazily calculate geos_names, geos_codes</span>&nbsp;</span><span class="r"></span></p>
     <p id="t48" class="run"><span class="n"><a href="#t48">48</a></span><span class="t">    <span class="nam">geos_names</span> <span class="op">=</span> <span class="nam">get_geos_dict</span><span class="op">(</span><span class="nam">book</span><span class="op">.</span><span class="nam">project</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t49" class="run"><span class="n"><a href="#t49">49</a></span><span class="t">    <span class="nam">geos_codes</span> <span class="op">=</span> <span class="nam">get_geos_codes_from_geos_names</span><span class="op">(</span><span class="nam">geos_names</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -184,7 +184,7 @@
     <p id="t129" class="pln"><span class="n"><a href="#t129">129</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t130" class="run"><span class="n"><a href="#t130">130</a></span><span class="t"><span class="op">@</span><span class="nam">shared_task</span>&nbsp;</span><span class="r"></span></p>
     <p id="t131" class="run"><span class="n"><a href="#t131">131</a></span><span class="t"><span class="op">@</span><span class="nam">redis_lock</span><span class="op">(</span><span class="str">'tabular_generate_column_image__{0}'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t132" class="pln"><span class="n"><a href="#t132">132</a></span><span class="t"><span class="key">def</span> <span class="nam">tabular_generate_column_image</span><span class="op">(</span><span class="nam">field_id</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t132" class="run"><span class="n"><a href="#t132">132</a></span><span class="t"><span class="key">def</span> <span class="nam">tabular_generate_column_image</span><span class="op">(</span><span class="nam">field_id</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t133" class="mis show_mis"><span class="n"><a href="#t133">133</a></span><span class="t">    <span class="nam">field</span> <span class="op">=</span> <span class="nam">Field</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">pk</span><span class="op">=</span><span class="nam">field_id</span><span class="op">)</span><span class="op">.</span><span class="nam">first</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t134" class="mis show_mis"><span class="n"><a href="#t134">134</a></span><span class="t">    <span class="key">if</span> <span class="nam">field</span> <span class="key">is</span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t135" class="mis show_mis"><span class="n"><a href="#t135">135</a></span><span class="t">        <span class="nam">logger</span><span class="op">.</span><span class="nam">warning</span><span class="op">(</span><span class="str">'Field ({}) doesn\'t exists'</span><span class="op">.</span><span class="nam">format</span><span class="op">(</span><span class="nam">field_id</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -194,7 +194,7 @@
     <p id="t139" class="pln"><span class="n"><a href="#t139">139</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t140" class="pln"><span class="n"><a href="#t140">140</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t141" class="run"><span class="n"><a href="#t141">141</a></span><span class="t"><span class="op">@</span><span class="nam">shared_task</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t142" class="pln"><span class="n"><a href="#t142">142</a></span><span class="t"><span class="key">def</span> <span class="nam">tabular_generate_columns_image</span><span class="op">(</span><span class="nam">fields_id</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t142" class="run"><span class="n"><a href="#t142">142</a></span><span class="t"><span class="key">def</span> <span class="nam">tabular_generate_columns_image</span><span class="op">(</span><span class="nam">fields_id</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t143" class="mis show_mis"><span class="n"><a href="#t143">143</a></span><span class="t">    <span class="key">for</span> <span class="nam">field</span> <span class="key">in</span> <span class="nam">Field</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">pk__in</span><span class="op">=</span><span class="nam">fields_id</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t144" class="mis show_mis"><span class="n"><a href="#t144">144</a></span><span class="t">        <span class="nam">calc_preprocessed_data</span><span class="op">(</span><span class="nam">field</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t145" class="mis show_mis"><span class="n"><a href="#t145">145</a></span><span class="t">    <span class="key">for</span> <span class="nam">field</span> <span class="key">in</span> <span class="nam">Field</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">pk__in</span><span class="op">=</span><span class="nam">fields_id</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -203,7 +203,7 @@
     <p id="t148" class="pln"><span class="n"><a href="#t148">148</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t149" class="run"><span class="n"><a href="#t149">149</a></span><span class="t"><span class="op">@</span><span class="nam">shared_task</span>&nbsp;</span><span class="r"></span></p>
     <p id="t150" class="run"><span class="n"><a href="#t150">150</a></span><span class="t"><span class="op">@</span><span class="nam">LogTime</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t151" class="pln"><span class="n"><a href="#t151">151</a></span><span class="t"><span class="key">def</span> <span class="nam">tabular_extract_book</span><span class="op">(</span><span class="nam">book_pk</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t151" class="run"><span class="n"><a href="#t151">151</a></span><span class="t"><span class="key">def</span> <span class="nam">tabular_extract_book</span><span class="op">(</span><span class="nam">book_pk</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t152" class="mis show_mis"><span class="n"><a href="#t152">152</a></span><span class="t">    <span class="nam">key</span> <span class="op">=</span> <span class="str">'tabular_extract_book_{}'</span><span class="op">.</span><span class="nam">format</span><span class="op">(</span><span class="nam">book_pk</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t153" class="mis show_mis"><span class="n"><a href="#t153">153</a></span><span class="t">    <span class="nam">lock</span> <span class="op">=</span> <span class="nam">redis</span><span class="op">.</span><span class="nam">get_lock</span><span class="op">(</span><span class="nam">key</span><span class="op">,</span> <span class="num">60</span> <span class="op">*</span> <span class="num">60</span> <span class="op">*</span> <span class="num">24</span><span class="op">)</span>  <span class="com"># Lock lifetime 24 hours</span>&nbsp;</span><span class="r"></span></p>
     <p id="t154" class="mis show_mis"><span class="n"><a href="#t154">154</a></span><span class="t">    <span class="nam">have_lock</span> <span class="op">=</span> <span class="nam">lock</span><span class="op">.</span><span class="nam">acquire</span><span class="op">(</span><span class="nam">blocking</span><span class="op">=</span><span class="key">False</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -228,7 +228,7 @@
     <p id="t173" class="pln"><span class="n"><a href="#t173">173</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t174" class="pln"><span class="n"><a href="#t174">174</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t175" class="run"><span class="n"><a href="#t175">175</a></span><span class="t"><span class="op">@</span><span class="nam">shared_task</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t176" class="pln"><span class="n"><a href="#t176">176</a></span><span class="t"><span class="key">def</span> <span class="nam">tabular_extract_geo</span><span class="op">(</span><span class="nam">geodata_pk</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t176" class="run"><span class="n"><a href="#t176">176</a></span><span class="t"><span class="key">def</span> <span class="nam">tabular_extract_geo</span><span class="op">(</span><span class="nam">geodata_pk</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t177" class="mis show_mis"><span class="n"><a href="#t177">177</a></span><span class="t">    <span class="nam">key</span> <span class="op">=</span> <span class="str">'tabular_meta_extract_geo_{}'</span><span class="op">.</span><span class="nam">format</span><span class="op">(</span><span class="nam">geodata_pk</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t178" class="mis show_mis"><span class="n"><a href="#t178">178</a></span><span class="t">    <span class="nam">lock</span> <span class="op">=</span> <span class="nam">redis</span><span class="op">.</span><span class="nam">get_lock</span><span class="op">(</span><span class="nam">key</span><span class="op">,</span> <span class="num">60</span> <span class="op">*</span> <span class="num">60</span> <span class="op">*</span> <span class="num">24</span><span class="op">)</span>  <span class="com"># Lock lifetime 24 hours</span>&nbsp;</span><span class="r"></span></p>
     <p id="t179" class="mis show_mis"><span class="n"><a href="#t179">179</a></span><span class="t">    <span class="nam">have_lock</span> <span class="op">=</span> <span class="nam">lock</span><span class="op">.</span><span class="nam">acquire</span><span class="op">(</span><span class="nam">blocking</span><span class="op">=</span><span class="key">False</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -252,7 +252,7 @@
     <p id="t197" class="pln"><span class="n"><a href="#t197">197</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t198" class="pln"><span class="n"><a href="#t198">198</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t199" class="run"><span class="n"><a href="#t199">199</a></span><span class="t"><span class="op">@</span><span class="nam">shared_task</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t200" class="pln"><span class="n"><a href="#t200">200</a></span><span class="t"><span class="key">def</span> <span class="nam">remaining_tabular_generate_columns_image</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t200" class="run"><span class="n"><a href="#t200">200</a></span><span class="t"><span class="key">def</span> <span class="nam">remaining_tabular_generate_columns_image</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t201" class="pln"><span class="n"><a href="#t201">201</a></span><span class="t">    <span class="str">"""</span>&nbsp;</span><span class="r"></span></p>
     <p id="t202" class="pln"><span class="n"><a href="#t202">202</a></span><span class="t"><span class="str">    Scheduled task</span>&nbsp;</span><span class="r"></span></p>
     <p id="t203" class="pln"><span class="n"><a href="#t203">203</a></span><span class="t"><span class="str">    NOTE: Only use it through schedular</span>&nbsp;</span><span class="r"></span></p>
@@ -274,7 +274,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-09-02 04:12 +0000
+            created at 2021-09-08 10:11 +0000
         </p>
     </div>
 </div>

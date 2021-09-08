@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/user/utils.py: 73%</title>
+    <title>Coverage for apps/user/utils.py: 80%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -18,13 +18,13 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>apps/user/utils.py</b> :
-            <span class="pc_cov">73%</span>
+            <span class="pc_cov">80%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            72 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">56 run</button>
-            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">16 missing</button>
+            74 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">63 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">11 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">5 partial</button>
         </h2>
@@ -174,11 +174,11 @@
     <p id="t119" class="pln"><span class="n"><a href="#t119">119</a></span><span class="t"><span class="str">    Generate a one-use only link for account activation and send it to the</span>&nbsp;</span><span class="r"></span></p>
     <p id="t120" class="pln"><span class="n"><a href="#t120">120</a></span><span class="t"><span class="str">    user.</span>&nbsp;</span><span class="r"></span></p>
     <p id="t121" class="pln"><span class="n"><a href="#t121">121</a></span><span class="t"><span class="str">    """</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t122" class="mis show_mis"><span class="n"><a href="#t122">122</a></span><span class="t">    <span class="nam">context</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t122" class="run"><span class="n"><a href="#t122">122</a></span><span class="t">    <span class="nam">context</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
     <p id="t123" class="pln"><span class="n"><a href="#t123">123</a></span><span class="t">        <span class="str">'uid'</span><span class="op">:</span> <span class="nam">urlsafe_base64_encode</span><span class="op">(</span><span class="nam">force_bytes</span><span class="op">(</span><span class="nam">user</span><span class="op">.</span><span class="nam">pk</span><span class="op">)</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t124" class="pln"><span class="n"><a href="#t124">124</a></span><span class="t">        <span class="str">'token'</span><span class="op">:</span> <span class="nam">default_token_generator</span><span class="op">.</span><span class="nam">make_token</span><span class="op">(</span><span class="nam">user</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t125" class="pln"><span class="n"><a href="#t125">125</a></span><span class="t">    <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t126" class="mis show_mis"><span class="n"><a href="#t126">126</a></span><span class="t">    <span class="nam">send_mail_to_user</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t126" class="run"><span class="n"><a href="#t126">126</a></span><span class="t">    <span class="nam">send_mail_to_user</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t127" class="pln"><span class="n"><a href="#t127">127</a></span><span class="t">        <span class="nam">user</span><span class="op">,</span> <span class="nam">Profile</span><span class="op">.</span><span class="nam">E_ACCOUNT_ACTIVATION</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t128" class="pln"><span class="n"><a href="#t128">128</a></span><span class="t">        <span class="nam">context</span><span class="op">=</span><span class="nam">context</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t129" class="pln"><span class="n"><a href="#t129">129</a></span><span class="t">        <span class="nam">subject_template_name</span><span class="op">=</span><span class="str">'registration/user_activation_subject.txt'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -187,7 +187,7 @@
     <p id="t132" class="pln"><span class="n"><a href="#t132">132</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t133" class="pln"><span class="n"><a href="#t133">133</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t134" class="run"><span class="n"><a href="#t134">134</a></span><span class="t"><span class="op">@</span><span class="nam">shared_task</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t135" class="pln"><span class="n"><a href="#t135">135</a></span><span class="t"><span class="key">def</span> <span class="nam">send_project_join_request_emails</span><span class="op">(</span><span class="nam">join_request_id</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t135" class="run"><span class="n"><a href="#t135">135</a></span><span class="t"><span class="key">def</span> <span class="nam">send_project_join_request_emails</span><span class="op">(</span><span class="nam">join_request_id</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t136" class="pln"><span class="n"><a href="#t136">136</a></span><span class="t">    <span class="str">"""</span>&nbsp;</span><span class="r"></span></p>
     <p id="t137" class="pln"><span class="n"><a href="#t137">137</a></span><span class="t"><span class="str">    Email Notification For Project Join</span>&nbsp;</span><span class="r"></span></p>
     <p id="t138" class="pln"><span class="n"><a href="#t138">138</a></span><span class="t"><span class="str">    """</span>&nbsp;</span><span class="r"></span></p>
@@ -239,14 +239,14 @@
     <p id="t184" class="pln"><span class="n"><a href="#t184">184</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t185" class="pln"><span class="n"><a href="#t185">185</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t186" class="run"><span class="n"><a href="#t186">186</a></span><span class="t"><span class="op">@</span><span class="nam">shared_task</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t187" class="pln"><span class="n"><a href="#t187">187</a></span><span class="t"><span class="key">def</span> <span class="nam">send_password_changed_notification</span><span class="op">(</span><span class="nam">user_id</span><span class="op">,</span> <span class="nam">client_ip</span><span class="op">,</span> <span class="nam">device_type</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t188" class="mis show_mis"><span class="n"><a href="#t188">188</a></span><span class="t">    <span class="nam">user</span> <span class="op">=</span> <span class="nam">User</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">pk</span><span class="op">=</span><span class="nam">user_id</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t189" class="mis show_mis"><span class="n"><a href="#t189">189</a></span><span class="t">    <span class="nam">context</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t187" class="run"><span class="n"><a href="#t187">187</a></span><span class="t"><span class="key">def</span> <span class="nam">send_password_changed_notification</span><span class="op">(</span><span class="nam">user_id</span><span class="op">,</span> <span class="nam">client_ip</span><span class="op">,</span> <span class="nam">device_type</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t188" class="run"><span class="n"><a href="#t188">188</a></span><span class="t">    <span class="nam">user</span> <span class="op">=</span> <span class="nam">User</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">pk</span><span class="op">=</span><span class="nam">user_id</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t189" class="run"><span class="n"><a href="#t189">189</a></span><span class="t">    <span class="nam">context</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
     <p id="t190" class="pln"><span class="n"><a href="#t190">190</a></span><span class="t">        <span class="str">'time'</span><span class="op">:</span> <span class="nam">datetime</span><span class="op">.</span><span class="nam">datetime</span><span class="op">.</span><span class="nam">now</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t191" class="pln"><span class="n"><a href="#t191">191</a></span><span class="t">        <span class="str">'location'</span><span class="op">:</span> <span class="nam">client_ip</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t192" class="pln"><span class="n"><a href="#t192">192</a></span><span class="t">        <span class="str">'device'</span><span class="op">:</span> <span class="nam">device_type</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t193" class="pln"><span class="n"><a href="#t193">193</a></span><span class="t">    <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t194" class="mis show_mis"><span class="n"><a href="#t194">194</a></span><span class="t">    <span class="nam">send_mail_to_user</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t194" class="run"><span class="n"><a href="#t194">194</a></span><span class="t">    <span class="nam">send_mail_to_user</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t195" class="pln"><span class="n"><a href="#t195">195</a></span><span class="t">        <span class="nam">user</span><span class="op">,</span> <span class="nam">email_type</span><span class="op">=</span><span class="nam">Profile</span><span class="op">.</span><span class="nam">E_PASSWORD_CHANGED</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t196" class="pln"><span class="n"><a href="#t196">196</a></span><span class="t">        <span class="nam">context</span><span class="op">=</span><span class="nam">context</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t197" class="pln"><span class="n"><a href="#t197">197</a></span><span class="t">        <span class="nam">subject_template_name</span><span class="op">=</span><span class="str">'password_changed/subject.txt'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -257,7 +257,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-09-02 04:12 +0000
+            created at 2021-09-08 10:11 +0000
         </p>
     </div>
 </div>

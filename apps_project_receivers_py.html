@@ -22,8 +22,8 @@
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            26 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">24 run</button>
+            29 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">27 run</button>
             <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">2 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">1 partial</button>
@@ -65,7 +65,7 @@
     <p id="t10" class="pln"><span class="n"><a href="#t10">10</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t11" class="pln"><span class="n"><a href="#t11">11</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t12" class="run"><span class="n"><a href="#t12">12</a></span><span class="t"><span class="op">@</span><span class="nam">receiver</span><span class="op">(</span><span class="nam">models</span><span class="op">.</span><span class="nam">signals</span><span class="op">.</span><span class="nam">post_save</span><span class="op">,</span> <span class="nam">sender</span><span class="op">=</span><span class="nam">ProjectUserGroupMembership</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t13" class="pln"><span class="n"><a href="#t13">13</a></span><span class="t"><span class="key">def</span> <span class="nam">refresh_project_memberships_usergroup_modified</span><span class="op">(</span><span class="nam">sender</span><span class="op">,</span> <span class="nam">instance</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t13" class="run"><span class="n"><a href="#t13">13</a></span><span class="t"><span class="key">def</span> <span class="nam">refresh_project_memberships_usergroup_modified</span><span class="op">(</span><span class="nam">sender</span><span class="op">,</span> <span class="nam">instance</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t14" class="run"><span class="n"><a href="#t14">14</a></span><span class="t">    <span class="nam">project</span> <span class="op">=</span> <span class="nam">instance</span><span class="op">.</span><span class="nam">project</span>&nbsp;</span><span class="r"></span></p>
     <p id="t15" class="run"><span class="n"><a href="#t15">15</a></span><span class="t">    <span class="nam">user_group</span> <span class="op">=</span> <span class="nam">instance</span><span class="op">.</span><span class="nam">usergroup</span>&nbsp;</span><span class="r"></span></p>
     <p id="t16" class="pln"><span class="n"><a href="#t16">16</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -82,7 +82,7 @@
     <p id="t27" class="pln"><span class="n"><a href="#t27">27</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t28" class="pln"><span class="n"><a href="#t28">28</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t29" class="run"><span class="n"><a href="#t29">29</a></span><span class="t"><span class="op">@</span><span class="nam">receiver</span><span class="op">(</span><span class="nam">models</span><span class="op">.</span><span class="nam">signals</span><span class="op">.</span><span class="nam">pre_delete</span><span class="op">,</span> <span class="nam">sender</span><span class="op">=</span><span class="nam">ProjectUserGroupMembership</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t30" class="pln"><span class="n"><a href="#t30">30</a></span><span class="t"><span class="key">def</span> <span class="nam">refresh_project_memberships_usergroup_removed</span><span class="op">(</span><span class="nam">sender</span><span class="op">,</span> <span class="nam">instance</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t30" class="run"><span class="n"><a href="#t30">30</a></span><span class="t"><span class="key">def</span> <span class="nam">refresh_project_memberships_usergroup_removed</span><span class="op">(</span><span class="nam">sender</span><span class="op">,</span> <span class="nam">instance</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t31" class="run"><span class="n"><a href="#t31">31</a></span><span class="t">    <span class="nam">project</span> <span class="op">=</span> <span class="nam">instance</span><span class="op">.</span><span class="nam">project</span>&nbsp;</span><span class="r"></span></p>
     <p id="t32" class="run"><span class="n"><a href="#t32">32</a></span><span class="t">    <span class="nam">user_group</span> <span class="op">=</span> <span class="nam">instance</span><span class="op">.</span><span class="nam">usergroup</span>&nbsp;</span><span class="r"></span></p>
     <p id="t33" class="pln"><span class="n"><a href="#t33">33</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -105,7 +105,7 @@
     <p id="t50" class="pln"><span class="n"><a href="#t50">50</a></span><span class="t"><span class="com"># Whenever a member is saved, if there is a pending request to join</span>&nbsp;</span><span class="r"></span></p>
     <p id="t51" class="pln"><span class="n"><a href="#t51">51</a></span><span class="t"><span class="com"># same project by same user, accept that request.</span>&nbsp;</span><span class="r"></span></p>
     <p id="t52" class="run"><span class="n"><a href="#t52">52</a></span><span class="t"><span class="op">@</span><span class="nam">receiver</span><span class="op">(</span><span class="nam">models</span><span class="op">.</span><span class="nam">signals</span><span class="op">.</span><span class="nam">post_save</span><span class="op">,</span> <span class="nam">sender</span><span class="op">=</span><span class="nam">ProjectMembership</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t53" class="pln"><span class="n"><a href="#t53">53</a></span><span class="t"><span class="key">def</span> <span class="nam">on_membership_saved</span><span class="op">(</span><span class="nam">sender</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t53" class="run"><span class="n"><a href="#t53">53</a></span><span class="t"><span class="key">def</span> <span class="nam">on_membership_saved</span><span class="op">(</span><span class="nam">sender</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t54" class="pln"><span class="n"><a href="#t54">54</a></span><span class="t">    <span class="com"># if kwargs.get('created'):</span>&nbsp;</span><span class="r"></span></p>
     <p id="t55" class="run"><span class="n"><a href="#t55">55</a></span><span class="t">    <span class="nam">instance</span> <span class="op">=</span> <span class="nam">kwargs</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'instance'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t56" class="run"><span class="n"><a href="#t56">56</a></span><span class="t">    <span class="nam">ProjectJoinRequest</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
@@ -122,7 +122,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-09-02 04:12 +0000
+            created at 2021-09-08 10:11 +0000
         </p>
     </div>
 </div>

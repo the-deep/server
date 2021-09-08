@@ -69,7 +69,7 @@
     <p id="t14" class="run"><span class="n"><a href="#t14">14</a></span><span class="t">        <span class="key">return</span>&nbsp;</span><span class="r"></span></p>
     <p id="t15" class="pln"><span class="n"><a href="#t15">15</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t16" class="run"><span class="n"><a href="#t16">16</a></span><span class="t">    <span class="nam">widget_module</span> <span class="op">=</span> <span class="nam">widget_store</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">widget</span><span class="op">.</span><span class="nam">widget_id</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t17" class="run"><span class="n"><a href="#t17">17</a></span><span class="t">    <span class="key">if</span> <span class="nam">widget_module</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t17" class="par run show_par"><span class="n"><a href="#t17">17</a></span><span class="t">    <span class="key">if</span> <span class="nam">widget_module</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">17&#x202F;&#x219B;&#x202F;exit</span><span class="annotate long">line 17 didn't return from function 'update_entry_attribute', because the condition on line 17 was never false</span></span></p>
     <p id="t18" class="run"><span class="n"><a href="#t18">18</a></span><span class="t">        <span class="nam">widget_data</span> <span class="op">=</span> <span class="nam">widget</span><span class="op">.</span><span class="nam">properties</span> <span class="key">and</span> <span class="nam">widget</span><span class="op">.</span><span class="nam">properties</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'data'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t19" class="run"><span class="n"><a href="#t19">19</a></span><span class="t">        <span class="nam">update_info</span> <span class="op">=</span> <span class="nam">widget_module</span><span class="op">.</span><span class="nam">update_attribute</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t20" class="pln"><span class="n"><a href="#t20">20</a></span><span class="t">            <span class="nam">widget</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -80,7 +80,7 @@
     <p id="t25" class="run"><span class="n"><a href="#t25">25</a></span><span class="t">        <span class="nam">filter_data_list</span> <span class="op">=</span> <span class="nam">update_info</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'filter_data'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t26" class="run"><span class="n"><a href="#t26">26</a></span><span class="t">        <span class="nam">export_data</span> <span class="op">=</span> <span class="nam">update_info</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'export_data'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t27" class="pln"><span class="n"><a href="#t27">27</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t28" class="par run show_par"><span class="n"><a href="#t28">28</a></span><span class="t">        <span class="key">if</span> <span class="nam">filter_data_list</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">28&#x202F;&#x219B;&#x202F;36</span><span class="annotate long">line 28 didn't jump to line 36, because the condition on line 28 was never false</span></span></p>
+    <p id="t28" class="run"><span class="n"><a href="#t28">28</a></span><span class="t">        <span class="key">if</span> <span class="nam">filter_data_list</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t29" class="run"><span class="n"><a href="#t29">29</a></span><span class="t">            <span class="key">for</span> <span class="nam">filter_data</span> <span class="key">in</span> <span class="nam">filter_data_list</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t30" class="run"><span class="n"><a href="#t30">30</a></span><span class="t">                <span class="nam">set_filter_data</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t31" class="pln"><span class="n"><a href="#t31">31</a></span><span class="t">                    <span class="nam">entry</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -129,7 +129,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-09-02 04:12 +0000
+            created at 2021-09-08 10:11 +0000
         </p>
     </div>
 </div>

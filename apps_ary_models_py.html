@@ -22,8 +22,8 @@
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            369 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">192 run</button>
+            374 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">197 run</button>
             <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">177 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">2 partial</button>
@@ -79,7 +79,7 @@
     <p id="t24" class="mis show_mis"><span class="n"><a href="#t24">24</a></span><span class="t">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">title</span>&nbsp;</span><span class="r"></span></p>
     <p id="t25" class="pln"><span class="n"><a href="#t25">25</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t26" class="run"><span class="n"><a href="#t26">26</a></span><span class="t">    <span class="op">@</span><span class="nam">staticmethod</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t27" class="pln"><span class="n"><a href="#t27">27</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_for</span><span class="op">(</span><span class="nam">user</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t27" class="run"><span class="n"><a href="#t27">27</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_for</span><span class="op">(</span><span class="nam">user</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t28" class="pln"><span class="n"><a href="#t28">28</a></span><span class="t">        <span class="com"># TODO restrict to users of ACAPS project</span>&nbsp;</span><span class="r"></span></p>
     <p id="t29" class="run"><span class="n"><a href="#t29">29</a></span><span class="t">        <span class="key">return</span> <span class="nam">AssessmentTemplate</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t30" class="pln"><span class="n"><a href="#t30">30</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -456,7 +456,7 @@
     <p id="t401" class="mis show_mis"><span class="n"><a href="#t401">401</a></span><span class="t">        <span class="key">return</span> <span class="nam">schema</span>&nbsp;</span><span class="r"></span></p>
     <p id="t402" class="pln"><span class="n"><a href="#t402">402</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t403" class="run"><span class="n"><a href="#t403">403</a></span><span class="t">    <span class="op">@</span><span class="nam">staticmethod</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t404" class="pln"><span class="n"><a href="#t404">404</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_actual_value</span><span class="op">(</span><span class="nam">schema</span><span class="op">,</span> <span class="nam">value</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t404" class="run"><span class="n"><a href="#t404">404</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_actual_value</span><span class="op">(</span><span class="nam">schema</span><span class="op">,</span> <span class="nam">value</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t405" class="mis show_mis"><span class="n"><a href="#t405">405</a></span><span class="t">        <span class="nam">value_function</span> <span class="op">=</span> <span class="nam">FIELDS_KEYS_VALUE_EXTRACTORS</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">schema</span><span class="op">[</span><span class="str">'name'</span><span class="op">]</span><span class="op">,</span> <span class="nam">identity</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t406" class="mis show_mis"><span class="n"><a href="#t406">406</a></span><span class="t">        <span class="key">if</span> <span class="nam">schema</span><span class="op">[</span><span class="str">'type'</span><span class="op">]</span> <span class="op">==</span> <span class="nam">Field</span><span class="op">.</span><span class="nam">SELECT</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t407" class="pln"><span class="n"><a href="#t407">407</a></span><span class="t">            <span class="com"># value should not be list but just in case it is a list</span>&nbsp;</span><span class="r"></span></p>
@@ -473,7 +473,7 @@
     <p id="t418" class="mis show_mis"><span class="n"><a href="#t418">418</a></span><span class="t">        <span class="key">return</span> <span class="nam">actual_value</span>&nbsp;</span><span class="r"></span></p>
     <p id="t419" class="pln"><span class="n"><a href="#t419">419</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t420" class="run"><span class="n"><a href="#t420">420</a></span><span class="t">    <span class="op">@</span><span class="nam">staticmethod</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t421" class="pln"><span class="n"><a href="#t421">421</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_data_from_schema</span><span class="op">(</span><span class="nam">schema</span><span class="op">,</span> <span class="nam">raw_data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t421" class="run"><span class="n"><a href="#t421">421</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_data_from_schema</span><span class="op">(</span><span class="nam">schema</span><span class="op">,</span> <span class="nam">raw_data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t422" class="mis show_mis"><span class="n"><a href="#t422">422</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">raw_data</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t423" class="mis show_mis"><span class="n"><a href="#t423">423</a></span><span class="t">            <span class="key">return</span> <span class="op">{</span><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
     <p id="t424" class="pln"><span class="n"><a href="#t424">424</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -744,7 +744,7 @@
     <p id="t689" class="mis show_mis"><span class="n"><a href="#t689">689</a></span><span class="t">        <span class="key">return</span> <span class="nam">schema</span>&nbsp;</span><span class="r"></span></p>
     <p id="t690" class="pln"><span class="n"><a href="#t690">690</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t691" class="run"><span class="n"><a href="#t691">691</a></span><span class="t">    <span class="op">@</span><span class="nam">staticmethod</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t692" class="pln"><span class="n"><a href="#t692">692</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_actual_value</span><span class="op">(</span><span class="nam">schema</span><span class="op">,</span> <span class="nam">value</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t692" class="run"><span class="n"><a href="#t692">692</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_actual_value</span><span class="op">(</span><span class="nam">schema</span><span class="op">,</span> <span class="nam">value</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t693" class="mis show_mis"><span class="n"><a href="#t693">693</a></span><span class="t">        <span class="nam">value_function</span> <span class="op">=</span> <span class="nam">FIELDS_KEYS_VALUE_EXTRACTORS</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">schema</span><span class="op">[</span><span class="str">'name'</span><span class="op">]</span><span class="op">,</span> <span class="nam">identity</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t694" class="mis show_mis"><span class="n"><a href="#t694">694</a></span><span class="t">        <span class="key">if</span> <span class="nam">schema</span><span class="op">[</span><span class="str">'type'</span><span class="op">]</span> <span class="op">==</span> <span class="nam">Field</span><span class="op">.</span><span class="nam">SELECT</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t695" class="pln"><span class="n"><a href="#t695">695</a></span><span class="t">            <span class="com"># value should not be list but just in case it is a list</span>&nbsp;</span><span class="r"></span></p>
@@ -761,7 +761,7 @@
     <p id="t706" class="mis show_mis"><span class="n"><a href="#t706">706</a></span><span class="t">        <span class="key">return</span> <span class="nam">actual_value</span>&nbsp;</span><span class="r"></span></p>
     <p id="t707" class="pln"><span class="n"><a href="#t707">707</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t708" class="run"><span class="n"><a href="#t708">708</a></span><span class="t">    <span class="op">@</span><span class="nam">staticmethod</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t709" class="pln"><span class="n"><a href="#t709">709</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_data_from_schema</span><span class="op">(</span><span class="nam">schema</span><span class="op">,</span> <span class="nam">raw_data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t709" class="run"><span class="n"><a href="#t709">709</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_data_from_schema</span><span class="op">(</span><span class="nam">schema</span><span class="op">,</span> <span class="nam">raw_data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t710" class="mis show_mis"><span class="n"><a href="#t710">710</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">raw_data</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t711" class="mis show_mis"><span class="n"><a href="#t711">711</a></span><span class="t">            <span class="key">return</span> <span class="op">{</span><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
     <p id="t712" class="pln"><span class="n"><a href="#t712">712</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -805,7 +805,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-09-02 04:12 +0000
+            created at 2021-09-08 10:11 +0000
         </p>
     </div>
 </div>

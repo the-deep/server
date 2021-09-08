@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for utils/graphene/pagination.py: 44%</title>
+    <title>Coverage for utils/graphene/pagination.py: 30%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -18,13 +18,13 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>utils/graphene/pagination.py</b> :
-            <span class="pc_cov">44%</span>
+            <span class="pc_cov">30%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
             21 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">12 run</button>
-            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">9 missing</button>
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">8 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">13 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">0 partial</button>
         </h2>
@@ -70,11 +70,11 @@
     <p id="t15" class="pln"><span class="n"><a href="#t15">15</a></span><span class="t">        <span class="nam">ordering_param</span><span class="op">=</span><span class="str">"ordering"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t16" class="pln"><span class="n"><a href="#t16">16</a></span><span class="t">    <span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t17" class="pln"><span class="n"><a href="#t17">17</a></span><span class="t">        <span class="com"># Default ordering value: ""</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t18" class="run"><span class="n"><a href="#t18">18</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">ordering</span> <span class="op">=</span> <span class="nam">ordering</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t18" class="mis show_mis"><span class="n"><a href="#t18">18</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">ordering</span> <span class="op">=</span> <span class="nam">ordering</span>&nbsp;</span><span class="r"></span></p>
     <p id="t19" class="pln"><span class="n"><a href="#t19">19</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t20" class="pln"><span class="n"><a href="#t20">20</a></span><span class="t">        <span class="com"># A string or comma delimited string values that indicate the default ordering when obtaining lists of objects.</span>&nbsp;</span><span class="r"></span></p>
     <p id="t21" class="pln"><span class="n"><a href="#t21">21</a></span><span class="t">        <span class="com"># Uses Django order_by syntax</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t22" class="run"><span class="n"><a href="#t22">22</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">ordering_param</span> <span class="op">=</span> <span class="nam">ordering_param</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t22" class="mis show_mis"><span class="n"><a href="#t22">22</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">ordering_param</span> <span class="op">=</span> <span class="nam">ordering_param</span>&nbsp;</span><span class="r"></span></p>
     <p id="t23" class="pln"><span class="n"><a href="#t23">23</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t24" class="run"><span class="n"><a href="#t24">24</a></span><span class="t">    <span class="key">def</span> <span class="nam">to_dict</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t25" class="mis show_mis"><span class="n"><a href="#t25">25</a></span><span class="t">        <span class="key">return</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
@@ -83,14 +83,14 @@
     <p id="t28" class="pln"><span class="n"><a href="#t28">28</a></span><span class="t">        <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
     <p id="t29" class="pln"><span class="n"><a href="#t29">29</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t30" class="run"><span class="n"><a href="#t30">30</a></span><span class="t">    <span class="key">def</span> <span class="nam">to_graphql_fields</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t31" class="run"><span class="n"><a href="#t31">31</a></span><span class="t">        <span class="nam">argument_dict</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t31" class="mis show_mis"><span class="n"><a href="#t31">31</a></span><span class="t">        <span class="nam">argument_dict</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
     <p id="t32" class="pln"><span class="n"><a href="#t32">32</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">ordering_param</span><span class="op">:</span> <span class="nam">String</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t33" class="pln"><span class="n"><a href="#t33">33</a></span><span class="t">                <span class="nam">description</span><span class="op">=</span><span class="str">"A string or comma delimited string values that indicate the "</span>&nbsp;</span><span class="r"></span></p>
     <p id="t34" class="pln"><span class="n"><a href="#t34">34</a></span><span class="t">                <span class="str">"default ordering when obtaining lists of objects."</span>&nbsp;</span><span class="r"></span></p>
     <p id="t35" class="pln"><span class="n"><a href="#t35">35</a></span><span class="t">            <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t36" class="pln"><span class="n"><a href="#t36">36</a></span><span class="t">        <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
     <p id="t37" class="pln"><span class="n"><a href="#t37">37</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t38" class="run"><span class="n"><a href="#t38">38</a></span><span class="t">        <span class="key">return</span> <span class="nam">argument_dict</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t38" class="mis show_mis"><span class="n"><a href="#t38">38</a></span><span class="t">        <span class="key">return</span> <span class="nam">argument_dict</span>&nbsp;</span><span class="r"></span></p>
     <p id="t39" class="pln"><span class="n"><a href="#t39">39</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t40" class="run"><span class="n"><a href="#t40">40</a></span><span class="t">    <span class="key">def</span> <span class="nam">paginate_queryset</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">qs</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t41" class="mis show_mis"><span class="n"><a href="#t41">41</a></span><span class="t">        <span class="nam">order</span> <span class="op">=</span> <span class="nam">kwargs</span><span class="op">.</span><span class="nam">pop</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">ordering_param</span><span class="op">,</span> <span class="key">None</span><span class="op">)</span> <span class="key">or</span> <span class="nam">self</span><span class="op">.</span><span class="nam">ordering</span>&nbsp;</span><span class="r"></span></p>
@@ -108,7 +108,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-09-02 04:12 +0000
+            created at 2021-09-08 10:11 +0000
         </p>
     </div>
 </div>
