@@ -6,6 +6,7 @@ from django.db import models
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
+from geo.schema import get_geo_area_queryset_for_project_geo_area_type
 from .models import (
     Attribute,
     EntryGroupLabel,
@@ -34,6 +35,26 @@ class EntryProjectLabelsLoader(DataLoaderWithContext):
         return Promise.resolve([group_labels.get(key) for key in keys])
 
 
+class AttributeGeoSelectedOptionsLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        geo_area_qs = get_geo_area_queryset_for_project_geo_area_type().filter(
+            id__in={id for ids in keys for id in ids}
+        )
+        geo_area_map = {
+            str(geo_area.id): geo_area
+            for geo_area in geo_area_qs
+        }
+        return Promise.resolve(
+            [
+                [
+                    geo_area_map.get(str(id))
+                    for id in ids
+                ]
+                for ids in keys
+            ]
+        )
+
+
 class DataLoaders(WithContextMixin):
     @cached_property
     def entry_attributes(self):
@@ -42,3 +63,7 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def entry_project_labels(self):
         return EntryProjectLabelsLoader(context=self.context)
+
+    @cached_property
+    def attribute_geo_selected_options(self):
+        return AttributeGeoSelectedOptionsLoader(context=self.context)

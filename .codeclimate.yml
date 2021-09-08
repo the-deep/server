@@ -51,6 +51,7 @@ plugins:
 
 exclude_patterns:
 - "**/migrations/*"
+- "**/snapshots/*"
 - "**/tests/*"
 - "**/wsgi.py"
 - "manage.py"

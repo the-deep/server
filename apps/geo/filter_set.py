@@ -1,5 +1,6 @@
 import django_filters
 from django.db import models
+from django.db.models.functions import Concat
 
 from geo.models import (
     AdminLevel,
@@ -75,3 +76,30 @@ class AdminLevelFilterSet(django_filters.rest_framework.FilterSet):
                 },
             },
         }
+
+
+# ------------------------------ Graphql filters -----------------------------------
+class GeoAreaGqlFilterSet(django_filters.rest_framework.FilterSet):
+    search = django_filters.CharFilter(
+        label='Geo Area Label search',
+        method='geo_area_label'
+    )
+
+    class Meat:
+        model = GeoArea
+        fields = ()
+
+    def geo_area_label(self, queryset, name, value):
+        if value:
+            return queryset.annotate(
+                # TODO: Improve this search
+                label=Concat(
+                    models.F('admin_level__region__title'),
+                    models.Value(' '),
+                    models.F('admin_level__title'),
+                    models.Value(' '),
+                    models.F('title'),
+                    output_field=models.fields.CharField()
+                ),
+            ).filter(label__icontains=value)
+        return queryset
