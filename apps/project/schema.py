@@ -104,15 +104,11 @@ class ProjectType(DjangoObjectType):
         )
 
     current_user_role = graphene.String()
-    allowed_permissions = graphene.List(
-        graphene.NonNull(
-            graphene.Enum.from_enum(PP.Permission),
-        ), required=True
-    )
+    allowed_permissions = graphene.List(graphene.Enum.from_enum(PP.Permission), required=True)
     stats = graphene.Field(ProjectStatType)
     membership_pending = graphene.Boolean(required=True)
     regions = DjangoListField(RegionType)
-    status = graphene.Field(graphene.NonNull(ProjectStatusEnum))
+    status = graphene.Field(ProjectStatusEnum, required=True)
     organizations = graphene.List(graphene.NonNull(ProjectOrganizationType))
 
     # NOTE: This is a custom feature
@@ -211,7 +207,7 @@ class ProjectJoinRequestType(DjangoObjectType):
             'project',
         )
 
-    status = graphene.Field(graphene.NonNull(ProjectJoinRequestStatusEnum))
+    status = graphene.Field(ProjectJoinRequestStatusEnum, required=True)
 
 
 class ProjectListType(CustomDjangoListObjectType):
