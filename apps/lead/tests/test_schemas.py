@@ -210,6 +210,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         # -- With login
         self.force_login(user)
 
+        # TODO: Add direct test for filter_set as well (is used within export)
         for filter_data, expected_leads in [
             ({'search': 'test'}, [lead1, lead2]),
             ({'confidentiality': self.genum(Lead.Confidentiality.CONFIDENTIAL)}, [lead1, lead3]),
