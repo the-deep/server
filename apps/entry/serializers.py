@@ -598,10 +598,22 @@ class AttributeGqSerializer(TempClientIdMixin, serializers.ModelSerializer):
 class EntryGqSerializer(TempClientIdMixin, UserResourceSerializer):
     id = IntegerIDField(required=False)
     attributes = AttributeGqSerializer(source='attribute_set', required=False, many=True)
+    image_raw = serializers.CharField(
+        required=False,
+        write_only=True,
+        help_text=(
+            'This is used to add raw base64 images.'
+            ' This will be changed into gallery image and supplied back in image field.'
+        )
+    )
     lead_image = serializers.PrimaryKeyRelatedField(
         required=False,
         write_only=True,
-        queryset=LeadPreviewImage.objects.all()
+        queryset=LeadPreviewImage.objects.all(),
+        help_text=(
+            'This is used to add images from Lead Preview Images.'
+            ' This will be changed into gallery image and supplied back in image field.'
+        )
     )
 
     class Meta:
