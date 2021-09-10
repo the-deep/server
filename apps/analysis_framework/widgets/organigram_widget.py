@@ -18,8 +18,10 @@ def get_values_for_organ(organ, parent_label=None):
 
 
 def get_filters(widget, data):
+    from analysis_framework.models import Filter  # To avoid circular import
+
     return [{
-        'filter_type': 'list',
+        'filter_type': Filter.FilterType.LIST,
         'properties': {
             'type': 'multiselect',
             'options': get_values_for_organ(data, None) if data else [],

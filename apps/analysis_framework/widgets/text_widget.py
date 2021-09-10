@@ -2,8 +2,10 @@ WIDGET_ID = 'textWidget'
 
 
 def get_filters(widget, data):
+    from analysis_framework.models import Filter  # To avoid circular import
+
     return [{
-        'filter_type': 'text',
+        'filter_type': Filter.FilterType.TEXT,
         'properties': {
             'type': 'text',
         },
