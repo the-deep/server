@@ -86,14 +86,14 @@ def export_entries(export):
         show_entry_widget_data=filters.get('report_show_entry_widget_data', True),
     )
 
-    if export_type == Export.ExportTpe.EXCEL:
+    if export_type == Export.ExportType.EXCEL:
         decoupled = filters.get('decoupled', True)
         export_data = ExcelExporter(queryset, decoupled, project_id, is_preview=is_preview)\
             .load_exportables(exportables, regions)\
             .add_entries(queryset)\
             .export()
 
-    elif export_type == Export.ExportTpe.REPORT:
+    elif export_type == Export.ExportType.REPORT:
         report_structure = filters.get('report_structure')
         report_levels = filters.get('report_levels')
         text_widget_ids = filters.get('text_widget_ids') or []
@@ -113,7 +113,7 @@ def export_entries(export):
             .export(pdf=pdf)
         )
 
-    elif export_type == Export.ExportTpe.JSON:
+    elif export_type == Export.ExportType.JSON:
         export_data = JsonExporter(is_preview=is_preview)\
             .load_exportables(exportables)\
             .add_entries(queryset)\

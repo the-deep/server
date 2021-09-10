@@ -1,13 +1,15 @@
-__all__ = ['CommentTypeEnum']
-
-import graphene
-
-from quality_assurance.models import CommentType
-
-from utils.graphene.enums import enum_description
-
-CommentTypeEnum = graphene.Enum.from_enum(CommentType, description=enum_description)
-
-enum_map = dict(
-    COMMENT_TYPE=CommentTypeEnum
+from utils.graphene.enums import (
+    convert_enum_to_graphene_enum,
+    get_enum_name_from_django_field,
 )
+
+from quality_assurance.models import CommentType, BaseReviewComment
+
+ReviewCommentTypeEnum = convert_enum_to_graphene_enum(CommentType, name='ReviewCommentTypeEnum')
+
+enum_map = {
+    get_enum_name_from_django_field(field): enum
+    for field, enum in (
+        (BaseReviewComment.comment_type, ReviewCommentTypeEnum),
+    )
+}
