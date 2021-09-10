@@ -2,8 +2,10 @@ WIDGET_ID = 'timeRangeWidget'
 
 
 def get_filters(widget, data):
+    from analysis_framework.models import Filter  # To avoid circular import
+
     return [{
-        'filter_type': 'intersects',
+        'filter_type': Filter.FilterType.INTERSECTS,
         'properties': {
             'type': 'time',
         },

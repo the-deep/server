@@ -2,6 +2,8 @@ WIDGET_ID = 'scaleWidget'
 
 
 def get_filters(widget, data):
+    from analysis_framework.models import Filter  # To avoid circular import
+
     scale_units = data.get('scale_units', [])
     filter_options = [
         {
@@ -11,7 +13,7 @@ def get_filters(widget, data):
     ]
 
     return [{
-        'filter_type': 'list',
+        'filter_type': Filter.FilterType.LIST,
         'properties': {
             'type': 'multiselect-range',
             'options': filter_options
