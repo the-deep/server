@@ -29,7 +29,7 @@ class Export(models.Model):
         ASSESSMENTS = 'assessments', 'Assessments'
         PLANNED_ASSESSMENTS = 'planned_assessments', 'Planned Assessments'
 
-    class ExportTpe(models.TextChoices):
+    class ExportType(models.TextChoices):
         EXCEL = 'excel', 'Excel'
         REPORT = 'report', 'Report'
         JSON = 'json', 'Json'
@@ -47,7 +47,7 @@ class Export(models.Model):
 
     format = models.CharField(max_length=100, choices=Format.choices, blank=True)
     type = models.CharField(max_length=99, choices=DataType.choices, blank=True)
-    export_type = models.CharField(max_length=100, choices=ExportTpe.choices, blank=True)
+    export_type = models.CharField(max_length=100, choices=ExportType.choices, blank=True)
     filters = models.JSONField(default=dict, blank=True, null=True,)
 
     mime_type = models.CharField(max_length=200, blank=True)

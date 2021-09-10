@@ -7,7 +7,7 @@ from deep.permissions import ProjectPermissions as PP
 from lead.models import Lead
 
 from quality_assurance.models import EntryReviewComment, EntryReviewCommentText
-from .enums import CommentTypeEnum
+from .enums import ReviewCommentTypeEnum
 
 
 def get_entry_comment_qs(info):
@@ -48,7 +48,7 @@ class EntryReviewCommentType(DjangoObjectType):
             'mentioned_users'
         )
 
-    comment_type = graphene.Field(CommentTypeEnum)
+    comment_type = graphene.Field(ReviewCommentTypeEnum, required=True)
     text = graphene.String()
 
 

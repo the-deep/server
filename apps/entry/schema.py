@@ -5,10 +5,11 @@ from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
-from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.fields import DjangoPaginatedListObjectField, DjangoListField
 from deep.permissions import ProjectPermissions as PP
 from lead.models import Lead
 from quality_assurance.schema import EntryReviewCommentType
+from user.schema import UserType
 
 from analysis_framework.models import Widget
 from analysis_framework.enums import WidgetWidgetTypeEnum
@@ -93,13 +94,14 @@ class EntryType(ClientIdMixin, DjangoObjectType):
             'id',
             'lead', 'project', 'analysis_framework', 'information_date', 'order',
             'excerpt', 'dropped_excerpt', 'image', 'tabular_field', 'highlight_hidden',
-            'controlled', 'controlled_changed_by', 'verified_by',
+            'controlled', 'controlled_changed_by',
             'client_id',
         )
 
     entry_type = graphene.Field(graphene.NonNull(EntryTagTypeEnum))
     attributes = graphene.List(graphene.NonNull(AttributeType))
     project_labels = graphene.List(graphene.NonNull(EntryGroupLabelType))
+    verified_by = DjangoListField(UserType)
     review_comments = graphene.List(graphene.NonNull(EntryReviewCommentType))
 
     # project_labels TODO:
