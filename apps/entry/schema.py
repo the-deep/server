@@ -76,7 +76,12 @@ class AttributeType(ClientIdMixin, DjangoObjectType):
     def resolve_geo_selected_options(root, info, **_):
         if root.widget_type == Widget.WidgetType.GEO and root.data and root.data.get('value'):
             return info.context.dl.entry.attribute_geo_selected_options.load(
-                tuple(root.data['value'])  # needs to be hashable
+                # TODO: Need to migrate out dict (custom polygon) from 'value'.
+                tuple([
+                    v
+                    for v in root.data['value']
+                    if type(v) in [str, int]
+                ])  # needs to be hashable
             )
 
 

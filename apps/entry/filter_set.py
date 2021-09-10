@@ -4,6 +4,7 @@ from datetime import datetime
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.postgres.aggregates.general import ArrayAgg
 import django_filters
 import graphene
 from graphene_django.filter.filterset import GrapheneFilterSetMixin
@@ -263,8 +264,18 @@ class EntryCommentFilterSet(django_filters.FilterSet):
         fields = ('created_by', 'is_resolved', 'resolved_at')
 
 
-def get_filtered_entries_using_af_filter(entries, filters, queries, new_query_structure=False):
+def get_filtered_entries_using_af_filter(
+    entries, filters, queries,
+    project=None, new_query_structure=False,
+):
     queries = copy.deepcopy(queries)
+
+    region_max_level = 0
+    if project:
+        region_max_level = project.regions\
+            .annotate(adminlevel_count=models.Count('adminlevel'))\
+            .aggregate(max_level=models.Max('adminlevel_count'))['max_level'] or 0
+
     if type(queries) == list:
         queries = {
             q['filter_key']: q
@@ -275,10 +286,6 @@ def get_filtered_entries_using_af_filter(entries, filters, queries, new_query_st
     for _filter in filters:
         # For each filter, see if there is a query for that filter
         # and then perform filtering based on that query.
-
-        query = queries.get(_filter.key)
-        if not query:
-            continue
 
         use_exclude = False
         use_and_operator = False
@@ -305,6 +312,10 @@ def get_filtered_entries_using_af_filter(entries, filters, queries, new_query_st
                 use_and_operator = True
             value_list = value
         else:
+            query = queries.get(_filter.key)
+            if not query:
+                continue
+
             value = query.get('value')
             value_gte = query.get('value_gte')
             value_lte = query.get('value_lte')
@@ -316,7 +327,6 @@ def get_filtered_entries_using_af_filter(entries, filters, queries, new_query_st
             use_and_operator = query.get('use_and_operator')
             include_sub_regions = query.get('include_sub_regions')
 
-        print(_filter, value_list)
         if not any([value, value_gte, value_lte, value_list]):
             continue
 
@@ -326,16 +336,17 @@ def get_filtered_entries_using_af_filter(entries, filters, queries, new_query_st
                     filterdata__filter=_filter,
                     filterdata__number=value,
                 )
-            if value_lte:
-                entries = entries.filter(
-                    filterdata__filter=_filter,
-                    filterdata__number__lte=value_lte,
-                )
-            if value_gte:
-                entries = entries.filter(
-                    filterdata__filter=_filter,
-                    filterdata__number__gte=value_gte,
-                )
+            else:
+                if value_lte:
+                    entries = entries.filter(
+                        filterdata__filter=_filter,
+                        filterdata__number__lte=value_lte,
+                    )
+                if value_gte:
+                    entries = entries.filter(
+                        filterdata__filter=_filter,
+                        filterdata__number__gte=value_gte,
+                    )
 
         elif _filter.filter_type == Filter.FilterType.TEXT:
             if value:
@@ -371,9 +382,14 @@ def get_filtered_entries_using_af_filter(entries, filters, queries, new_query_st
 
             if value_list:
                 # Fetch sub-regions if required
-                if include_sub_regions and _filter.widget_type == Widget.WidgetType.GEO:
-                    # TODO: Calculate level using project's regions max admin level's level
-                    value = GeoArea.get_sub_childrens(value, level=2)
+                if region_max_level and include_sub_regions and _filter.widget_type == Widget.WidgetType.GEO:
+                    # XXX: simple values('id') doesn't work. Better way?
+                    value_list = GeoArea.\
+                        get_sub_childrens(value_list, level=region_max_level)\
+                        .filter(admin_level__region__project=project)\
+                        .order_by().values('admin_level__region__project')\
+                        .annotate(ids=ArrayAgg('id'))\
+                        .values('ids')
 
                 query_filter = models.Q(
                     filterdata__filter=_filter,
@@ -473,17 +489,16 @@ def get_created_at_filters(query_params):
     return parsed_query
 
 
-# TODO: Add validation here for value using filter_key?
 class EntryFilterDataType(graphene.InputObjectType):
     """
     Behaviour for each type:
-    - NUMBER (All are applied if provided)
+    - NUMBER (value or (value_lte or value_gte) are applied if provided)
         - value (exact match)
         - value_lte (lt match)
         - value_gte (gt match)
     - TEXT
         - value (icontains match)
-    - INTERSECTS (Both are applied if provided)
+    - INTERSECTS (Both are applied if provided) (For date range, send <timestamp/day>)
         - value (exact match)
         - value_lte, value_gte (range match if both are provided)
     - LIST
@@ -555,7 +570,10 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, EntryFilterMixin, django_filters.
                 self.data.get('analysis_framework_id') or
                 (self.request and self.request.active_project.analysis_framework_id)
             )
-            if active_af_id is None:
+            active_project = (
+                (self.request and self.request.active_project)
+            )
+            if active_project is None or active_af_id is None:
                 # This needs to be defined
                 raise Exception('`analysis_framework_id` is not defined')
             filters = Filter.qs_with_widget_type().filter(analysis_framework_id=active_af_id).all()
@@ -564,5 +582,6 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, EntryFilterMixin, django_filters.
                 filters,
                 value,
                 new_query_structure=True,
+                project=active_project,
             )
         return queryset

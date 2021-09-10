@@ -1,14 +1,18 @@
-from utils.graphene.tests import GraphQLTestCase
+import datetime
 
 from lead.models import Lead
 
 from entry.models import Entry
+from analysis_framework.models import Widget
 
+from utils.common import ONE_DAY
+from utils.graphene.tests import GraphQLTestCase
 from user.factories import UserFactory
+from geo.factories import RegionFactory, AdminLevelFactory, GeoAreaFactory
 from project.factories import ProjectFactory
 from lead.factories import LeadFactory
-from entry.factories import EntryFactory
-from analysis_framework.factories import AnalysisFrameworkFactory
+from entry.factories import EntryFactory, EntryAttriuteFactory
+from analysis_framework.factories import AnalysisFrameworkFactory, WidgetFactory
 from organization.factories import OrganizationFactory, OrganizationTypeFactory
 
 
@@ -408,4 +412,387 @@ class TestEntryQuery(GraphQLTestCase):
                 {'response': content, 'filter': filter_data}
             )
 
-    # TODO: ({'filterableData': []}, []),
+
+class TestEntryFilterDataQuery(GraphQLTestCase):
+    def _get_date_in_number(self, string):
+        return int(datetime.datetime.strptime(string, '%Y-%m-%d').timestamp() / ONE_DAY)
+
+    def setUp(self):
+        super().setUp()
+        self.entries_query = '''
+            query MyQuery ($projectId: ID!  $filterableData: [EntryFilterDataType!]) {
+              project(id: $projectId) {
+                entries (filterableData: $filterableData) {
+                  results {
+                    id
+                  }
+                }
+              }
+            }
+        '''
+
+        # AnalysisFramework setup
+        self.af = AnalysisFrameworkFactory.create()
+        region = RegionFactory.create()
+        # -- Admin levels
+        admin_level1 = AdminLevelFactory.create(region=region, level=1)
+        admin_level2 = AdminLevelFactory.create(region=region, level=2)
+        admin_level3 = AdminLevelFactory.create(region=region, level=3)
+        # -- GeoAreas (with parent relations)
+        self.geo_area_1 = GeoAreaFactory.create(admin_level=admin_level1)
+        self.geo_area_2_1 = GeoAreaFactory.create(admin_level=admin_level2, parent=self.geo_area_1)
+        self.geo_area_2_2 = GeoAreaFactory.create(admin_level=admin_level2, parent=self.geo_area_1)
+        self.geo_area_2_3 = GeoAreaFactory.create(admin_level=admin_level2, parent=self.geo_area_1)
+        self.geo_area_3_1 = GeoAreaFactory.create(admin_level=admin_level3, parent=self.geo_area_2_1)
+        self.geo_area_3_2 = GeoAreaFactory.create(admin_level=admin_level3, parent=self.geo_area_2_2)
+        self.geo_area_3_3 = GeoAreaFactory.create(admin_level=admin_level3, parent=self.geo_area_2_3)
+
+        # For LIST Filter
+        self.widget_multiselect = WidgetFactory.create(
+            analysis_framework=self.af,
+            key='multiselect-widget-101',
+            title='Multiselect Widget',
+            widget_id=Widget.WidgetType.MULTISELECT,
+            properties={
+                'data': {
+                    'options': [
+                        {
+                            'key': 'key-101',
+                            'label': 'Key label 101'
+                        },
+                        {
+                            'key': 'key-102',
+                            'label': 'Key label 102'
+                        },
+                        {
+                            'key': 'key-103',
+                            'label': 'Key label 103'
+                        },
+                        {
+                            'key': 'key-104',
+                            'label': 'Key label 104'
+                        },
+                    ]
+                },
+            },
+        )
+        # For Number Filter
+        self.widget_number = WidgetFactory.create(
+            analysis_framework=self.af,
+            key='number-widget-101',
+            title='Number Widget',
+            widget_id=Widget.WidgetType.NUMBER,
+        )
+        # For INTERSECTS Filter
+        self.widget_date_range = WidgetFactory.create(
+            analysis_framework=self.af,
+            key='date-range-widget-101',
+            title='DateRange Widget',
+            widget_id=Widget.WidgetType.DATE_RANGE,
+        )
+        # For TEXT Filter
+        self.widget_text = WidgetFactory.create(
+            analysis_framework=self.af,
+            key='text-widget-101',
+            title='Text Widget',
+            widget_id=Widget.WidgetType.TEXT,
+        )
+        self.widget_geo = WidgetFactory.create(
+            analysis_framework=self.af,
+            key='geo-widget-101',
+            title='GEO Widget',
+            widget_id=Widget.WidgetType.GEO,
+        )
+
+        self.project = ProjectFactory.create(analysis_framework=self.af)
+        self.project.regions.add(region)
+        # User with role
+        self.user = UserFactory.create()
+        self.project.add_member(self.user, role=self.project_role_viewer)
+        self.lead1 = LeadFactory.create(project=self.project)
+        self.lead2 = LeadFactory.create(project=self.project)
+        self.lead3 = LeadFactory.create(project=self.project)
+        self.entry_create_kwargs = dict(project=self.project, analysis_framework=self.af)
+
+    def test(self):
+        entry1_1 = EntryFactory.create(**self.entry_create_kwargs, lead=self.lead1)
+        entry2_1 = EntryFactory.create(**self.entry_create_kwargs, lead=self.lead2)
+        entry3_1 = EntryFactory.create(**self.entry_create_kwargs, lead=self.lead3)
+        entry3_2 = EntryFactory.create(**self.entry_create_kwargs, lead=self.lead3)
+
+        # Create attributes for multiselect (LIST Filter)
+        EntryAttriuteFactory.create(entry=entry1_1, widget=self.widget_multiselect, data={'value': ['key-101', 'key-102']})
+        EntryAttriuteFactory.create(entry=entry2_1, widget=self.widget_multiselect, data={'value': ['key-102', 'key-103']})
+        # Create attributes for time (NUMBER Filter)
+        EntryAttriuteFactory.create(entry=entry1_1, widget=self.widget_number, data={'value': 10001})
+        EntryAttriuteFactory.create(entry=entry3_1, widget=self.widget_number, data={'value': 10002})
+        # Create attributes for date range (INTERSECTS Filter)
+        EntryAttriuteFactory.create(
+            entry=entry2_1,
+            widget=self.widget_date_range,
+            data={'value': {'from': '2020-01-10', 'to': '2020-01-20'}},
+        )
+        EntryAttriuteFactory.create(
+            entry=entry3_1,
+            widget=self.widget_date_range,
+            data={'value': {'from': '2020-01-10', 'to': '2020-02-20'}},
+        )
+        EntryAttriuteFactory.create(
+            entry=entry3_2,
+            widget=self.widget_date_range,
+            data={'value': {'from': '2020-01-15', 'to': '2020-01-10'}},
+        )
+        # Create attributes for text (TEXT Filter)
+        EntryAttriuteFactory.create(entry=entry1_1, widget=self.widget_text, data={'value': 'This is a test 1'})
+        EntryAttriuteFactory.create(entry=entry3_1, widget=self.widget_text, data={'value': 'This is a test 2'})
+        # Create attributes for GEO (LIST Filter)
+        EntryAttriuteFactory.create(
+            entry=entry1_1, widget=self.widget_geo,
+            data={'value': [self.geo_area_3_2.pk]}  # Leaf tagged
+        )
+        EntryAttriuteFactory.create(
+            entry=entry2_1, widget=self.widget_geo,
+            data={'value': [self.geo_area_1.pk]}  # Root tagged
+        )
+        EntryAttriuteFactory.create(
+            entry=entry3_1, widget=self.widget_geo,
+            data={'value': [self.geo_area_2_1.pk]}  # Middle child tagged
+        )
+        EntryAttriuteFactory.create(
+            entry=entry3_2, widget=self.widget_geo,
+            data={'value': [self.geo_area_1.pk, self.geo_area_3_2.pk]}  # Middle child tagged + leaf node
+        )
+
+        def _query_check(filterableData):
+            return self.query_check(
+                self.entries_query,
+                variables={'projectId': self.project.id, 'filterableData': filterableData},
+            )
+
+        # -- With login
+        self.force_login(self.user)
+
+        for filter_name, filter_data, expected_entries in [
+            # NUMBER Filter Cases
+            (
+                'number-filter-1',
+                [
+                    {
+                        'filterKey': self.widget_number.key,
+                        'value': '10001',
+                        'valueGte': '10002',  # This is ignored when value is provided
+                        'valueLte': '10005',  # This is ignored when value is provided
+                    },
+                ],
+                [entry1_1]
+            ),
+            (
+                'number-filter-2',
+                [
+                    {
+                        'filterKey': self.widget_number.key,
+                        'valueGte': '10001',
+                        'valueLte': '10005',
+                    },
+                ],
+                [entry1_1, entry3_1]
+            ),
+            (
+                'number-filter-3',
+                [
+                    {
+                        'filterKey': self.widget_number.key,
+                        'valueLte': '10001',
+                    },
+                ],
+                [entry1_1]
+            ),
+            (
+                'number-filter-4',
+                [
+                    {
+                        'filterKey': self.widget_number.key,
+                        'valueGte': '10002',
+                    },
+                ],
+                [entry3_1]
+            ),
+
+            # TEXT Filter Cases
+            (
+                'text-filter-1',
+                [
+                    {
+                        'filterKey': self.widget_text.key,
+                        'value': 'This is a test',
+                        'valueGte': '10002',  # This is ignored
+                    },
+                ],
+                [entry1_1, entry3_1]
+            ),
+            (
+                'text-filter-2',
+                [
+                    {
+                        'filterKey': self.widget_text.key,
+                        'value': 'This is a test 1',
+                        'valueLte': '10002',  # This is ignored
+                    },
+                ],
+                [entry1_1]
+            ),
+
+            # INTERSECTS TODO: May need more test cases
+            (
+                'intersect-filter-1',
+                [
+                    {
+                        'filterKey': self.widget_date_range.key,
+                        'value': self._get_date_in_number('2020-01-10'),
+                        # 'valueLte': self._get_date_in_number('2020-01-01'),  # TODO:
+                        # 'valueGte': self._get_date_in_number('2020-01-30'),  # TODO:
+                    },
+                ],
+                [entry2_1, entry3_1]
+            ),
+            (
+                'intersect-filter-2',
+                [
+                    {
+                        'filterKey': self.widget_date_range.key,
+                        'valueGte': self._get_date_in_number('2020-01-01'),
+                        'valueLte': self._get_date_in_number('2020-01-30'),
+                    },
+                ],
+                [entry2_1, entry3_1, entry3_2]
+            ),
+            (
+                'intersect-filter-3',
+                [
+                    {
+                        'filterKey': self.widget_date_range.key,
+                        'valueGte': self._get_date_in_number('2020-01-30'),  # Only one is ignored
+                    },
+                ],
+                [entry1_1, entry2_1, entry3_1, entry3_2]
+            ),
+
+            # LIST Filter
+            (
+                'list-filter-1',
+                [
+                    {
+                        'filterKey': self.widget_multiselect.key,
+                        'value': '13',  # This is ignored
+                    },
+                ],
+                [entry1_1, entry2_1, entry3_1, entry3_2]
+            ),
+            (
+                'list-filter-2',
+                [
+                    {
+                        'filterKey': self.widget_multiselect.key,
+                        'valueList': ['key-101', 'key-102'],
+                    },
+                ],
+                [entry1_1, entry2_1]
+            ),
+            (
+                'list-filter-3',
+                [
+                    {
+                        'filterKey': self.widget_multiselect.key,
+                        'valueList': ['key-101', 'key-102'],
+                        'useAndOperator': True,
+                    },
+                ],
+                [entry1_1]
+            ),
+            (
+                'list-filter-4',
+                [
+                    {
+                        'filterKey': self.widget_multiselect.key,
+                        'valueList': ['key-101', 'key-102'],
+                        'useAndOperator': True,
+                        'useExclude': True,
+                    },
+                ],
+                [entry2_1, entry3_1, entry3_2],
+            ),
+            (
+                'list-filter-5',
+                [
+                    {
+                        'filterKey': self.widget_multiselect.key,
+                        'valueList': ['key-101', 'key-102'],
+                        'useExclude': True,
+                    },
+                ],
+                [entry3_1, entry3_2],
+            ),
+
+            # GEO (LIST) Filter
+            (
+                'geo-filter-1',
+                [
+                    {
+                        'filterKey': self.widget_geo.key,
+                        'valueList': [self.geo_area_1.pk],
+                    },
+                ],
+                [entry2_1, entry3_2],
+            ),
+            (
+                'geo-filter-2',
+                [
+                    {
+                        'filterKey': self.widget_geo.key,
+                        'valueList': [self.geo_area_1.pk],
+                        'includeSubRegions': True,
+                    },
+                ],
+                [entry1_1, entry2_1, entry3_1, entry3_2],
+            ),
+            (
+                'geo-filter-3',
+                [
+                    {
+                        'filterKey': self.widget_geo.key,
+                        'valueList': [self.geo_area_1.pk],
+                        'includeSubRegions': True,
+                        'useExclude': True,
+                    },
+                ],
+                [],
+            ),
+            (
+                'geo-filter-4',
+                [
+                    {
+                        'filterKey': self.widget_geo.key,
+                        'valueList': [self.geo_area_2_2.pk],
+                        'includeSubRegions': True,
+                    },
+                ],
+                [entry1_1, entry3_2],
+            ),
+            (
+                'geo-filter-5',
+                [
+                    {
+                        'filterKey': self.widget_geo.key,
+                        'valueList': [self.geo_area_2_2.pk],
+                        'includeSubRegions': True,
+                        'useExclude': True,
+                    },
+                ],
+                [entry2_1, entry3_1],
+            )
+        ]:
+            content = _query_check(filter_data)
+            self.assertListIds(
+                content['data']['project']['entries']['results'], expected_entries,
+                {'response': content, 'filter': filter_data, 'filter_name': filter_name}
+            )
