@@ -303,10 +303,10 @@ class GeoArea(models.Model):
 
     @classmethod
     def get_sub_childrens(cls, value: List[Union[str, int]], level=1):
-        filters = models.Q(id__in=value)
         if value:
+            filters = models.Q(id__in=list(value))
             for i in range(level - 1):
-                filters |= models.Q({f"{'parent__'*i}parent__in": value})
+                filters |= models.Q(**{f"{'parent__'*i}parent__in": value})
             return cls.objects.filter(filters)
         return cls.objects.none()
 

@@ -450,7 +450,7 @@ class EntryTests(TestCase):
         self.assertEqual(len(r_data['results']), count)
 
     def post_filter_test(self, filters, count=1, skip_auth=False):
-        return super().post_filter_test('/api/v1/entries/filter/', filters, count=count, skip_auth=False)
+        return super().post_filter_test('/api/v1/entries/filter/', filters, count=count, skip_auth=skip_auth)
 
     def both_filter_test(self, filters, count=1):
         self.filter_test(filters, count)
