@@ -74,10 +74,11 @@ class BulkAnalysisFrameworkMembershipInputType(AnalysisFrameworkMembershipInputT
 
 class BulkUpdateAnalysisFrameworkMembership(AfBulkGrapheneMutation):
     class Arguments:
-        items = graphene.List(graphene.NonNull(BulkAnalysisFrameworkMembershipInputType), required=True)
+        items = graphene.List(graphene.NonNull(BulkAnalysisFrameworkMembershipInputType))
         delete_ids = graphene.List(graphene.NonNull(graphene.ID))
 
-    deleted_result = result = graphene.List(graphene.NonNull(AnalysisFrameworkMembershipType))
+    result = graphene.List(AnalysisFrameworkMembershipType)
+    deleted_result = graphene.List(graphene.NonNull(AnalysisFrameworkMembershipType))
     # class vars
     serializer_class = AnalysisFrameworkMembershipSerializer
     model = AnalysisFrameworkMembership

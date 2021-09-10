@@ -1,9 +1,8 @@
 from datetime import datetime
 
+from utils.common import ONE_DAY
 from analysis_framework.widgets.date_range_widget import WIDGET_ID
 
-
-ONE_DAY = 24 * 60 * 60
 # NOTE: Please update the data version when you update the data format
 DATA_VERSION = 1
 

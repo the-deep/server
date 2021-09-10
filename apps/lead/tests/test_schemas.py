@@ -830,7 +830,7 @@ class TestLeadBulkMutationSchema(GraphQLSnapShotTestCase):
 
     def test_lead_bulk(self):
         query = '''
-        mutation MyMutation ($projectId: ID! $input: [BulkLeadInputType]!) {
+        mutation MyMutation ($projectId: ID! $input: [BulkLeadInputType!]) {
           project(id: $projectId) {
             leadBulk(items: $input) {
               errors

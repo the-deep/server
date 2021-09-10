@@ -26,6 +26,8 @@ DEFAULT_HEADERS = {
     'User-Agent': USER_AGENT,
 }
 
+ONE_DAY = 24 * 60 * 60
+
 logger = logging.getLogger(__name__)
 
 
