@@ -2,8 +2,9 @@ WIDGET_ID = 'dateWidget'
 
 
 def get_filters(widget, data):
+    from analysis_framework.models import Filter  # To avoid circular import
     return [{
-        'filter_type': 'number',
+        'filter_type': Filter.FilterType.NUMBER,
         'properties': {
             'type': 'date',
         },

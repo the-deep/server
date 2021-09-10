@@ -2,6 +2,8 @@ WIDGET_ID = 'matrix2dWidget'
 
 
 def get_filters(widget, data):
+    from analysis_framework.models import Filter  # To avoid circular import
+
     dimension_options = []
     dimensions = data.get('dimensions', [])
 
@@ -42,7 +44,7 @@ def get_filters(widget, data):
 
     return [{
         'title': '{} Dimensions'.format(widget.title),
-        'filter_type': 'list',
+        'filter_type': Filter.FilterType.LIST,
         'key': '{}-dimensions'.format(widget.key),
         'properties': {
             'type': 'multiselect',
@@ -50,7 +52,7 @@ def get_filters(widget, data):
         },
     }, {
         'title': '{} Sectors'.format(widget.title),
-        'filter_type': 'list',
+        'filter_type': Filter.FilterType.LIST,
         'key': '{}-sectors'.format(widget.key),
         'properties': {
             'type': 'multiselect',

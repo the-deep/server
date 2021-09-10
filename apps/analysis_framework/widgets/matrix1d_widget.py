@@ -2,6 +2,8 @@ WIDGET_ID = 'matrix1dWidget'
 
 
 def get_filters(widget, data):
+    from analysis_framework.models import Filter  # To avoid circular import
+
     rows = data.get('rows', [])
     filter_options = []
     for row in rows:
@@ -21,7 +23,7 @@ def get_filters(widget, data):
             })
 
     return [{
-        'filter_type': 'list',
+        'filter_type': Filter.FilterType.LIST,
         'properties': {
             'type': 'multiselect',
             'options': filter_options,
