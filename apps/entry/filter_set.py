@@ -1,3 +1,4 @@
+import copy
 from functools import reduce
 from datetime import datetime
 
@@ -5,7 +6,6 @@ from django.db import models
 from django.contrib.auth.models import User
 import django_filters
 import graphene
-from graphene.types.generic import GenericScalar
 from graphene_django.filter.filterset import GrapheneFilterSetMixin
 
 from utils.graphene.filters import IDListFilter, MultipleInputFilter, SimpleInputFilter
@@ -14,6 +14,8 @@ from deep.filter_set import DjangoFilterCSVWidget
 from analysis_framework.models import Filter
 from lead.models import Lead
 from organization.models import OrganizationType
+from analysis_framework.models import Widget
+from geo.models import GeoArea
 
 from lead.enums import (
     LeadStatusEnum,
@@ -261,95 +263,135 @@ class EntryCommentFilterSet(django_filters.FilterSet):
         fields = ('created_by', 'is_resolved', 'resolved_at')
 
 
-def get_filtered_entries_using_af_filter(entries, filters, queries):
+def get_filtered_entries_using_af_filter(entries, filters, queries, new_query_structure=False):
+    queries = copy.deepcopy(queries)
+    if type(queries) == list:
+        queries = {
+            q['filter_key']: q
+            for q in queries
+        }
+
     # NOTE: lets not use `.distinct()` in this function as it is used by a subquery in `lead/models.py`.
-    for filter in filters:
+    for _filter in filters:
         # For each filter, see if there is a query for that filter
         # and then perform filtering based on that query.
 
-        query = queries.get(filter.key)
-        query_lt = queries.get(filter.key + '__lt')
-        query_gt = queries.get(filter.key + '__gt')
-        query_and = queries.get(filter.key + '__and')
-        query_exclude = queries.get(filter.key + '_exclude')
-        query_exclude_and = queries.get(filter.key + '_exclude_and')
+        query = queries.get(_filter.key)
+        if not query:
+            continue
 
-        if filter.filter_type == Filter.FilterType.NUMBER:
-            if query:
+        use_exclude = False
+        use_and_operator = False
+        include_sub_regions = False
+
+        if not new_query_structure:
+            value = queries.get(_filter.key)
+            value_lte = queries.get(_filter.key + '__lt')
+            value_gte = queries.get(_filter.key + '__gt')
+            value_and = queries.get(_filter.key + '__and')
+            if value_and:
+                value = value_and
+                use_and_operator = True
+                use_exclude = False
+            value_exclude = queries.get(_filter.key + '_exclude')
+            if value_exclude:
+                value = value_exclude
+                use_and_operator = False
+                use_exclude = True
+            value_exclude_and = queries.get(_filter.key + '_exclude_and')
+            if value_exclude_and:
+                value = value_exclude
+                use_exclude = True
+                use_and_operator = True
+            value_list = value
+        else:
+            value = query.get('value')
+            value_gte = query.get('value_gte')
+            value_lte = query.get('value_lte')
+            value_list = [
+                v for v in query.get('value_list') or []
+                if v is not None
+            ]
+            use_exclude = query.get('use_exclude')
+            use_and_operator = query.get('use_and_operator')
+            include_sub_regions = query.get('include_sub_regions')
+
+        print(_filter, value_list)
+        if not any([value, value_gte, value_lte, value_list]):
+            continue
+
+        if _filter.filter_type == Filter.FilterType.NUMBER:
+            if value:
                 entries = entries.filter(
-                    filterdata__filter=filter,
-                    filterdata__number=query,
+                    filterdata__filter=_filter,
+                    filterdata__number=value,
                 )
-            if query_lt:
+            if value_lte:
                 entries = entries.filter(
-                    filterdata__filter=filter,
-                    filterdata__number__lte=query_lt,
+                    filterdata__filter=_filter,
+                    filterdata__number__lte=value_lte,
                 )
-            if query_gt:
+            if value_gte:
                 entries = entries.filter(
-                    filterdata__filter=filter,
-                    filterdata__number__gte=query_gt,
+                    filterdata__filter=_filter,
+                    filterdata__number__gte=value_gte,
                 )
 
-        elif filter.filter_type == Filter.FilterType.TEXT:
-            if query:
+        elif _filter.filter_type == Filter.FilterType.TEXT:
+            if value:
                 entries = entries.filter(
-                    filterdata__filter=filter,
-                    filterdata__text__icontains=query,
+                    filterdata__filter=_filter,
+                    filterdata__text__icontains=value,
                 )
 
-        elif filter.filter_type == Filter.FilterType.INTERSECTS:
-            if query:
+        elif _filter.filter_type == Filter.FilterType.INTERSECTS:
+            if value:
                 entries = entries.filter(
-                    filterdata__filter=filter,
-                    filterdata__from_number__lte=query,
-                    filterdata__to_number__gte=query,
+                    filterdata__filter=_filter,
+                    filterdata__from_number__lte=value,
+                    filterdata__to_number__gte=value,
                 )
 
-            if query_lt and query_gt:
+            if value_lte and value_gte:
                 q = models.Q(
-                    filterdata__from_number__lte=query_lt,
-                    filterdata__to_number__gte=query_lt,
+                    filterdata__from_number__lte=value_lte,
+                    filterdata__to_number__gte=value_lte,
                 ) | models.Q(
-                    filterdata__from_number__lte=query_gt,
-                    filterdata__to_number__gte=query_gt,
+                    filterdata__from_number__lte=value_gte,
+                    filterdata__to_number__gte=value_gte,
                 ) | models.Q(
-                    filterdata__from_number__gte=query_gt,
-                    filterdata__to_number__lte=query_lt,
+                    filterdata__from_number__gte=value_gte,
+                    filterdata__to_number__lte=value_lte,
                 )
-                entries = entries.filter(q, filterdata__filter=filter)
+                entries = entries.filter(q, filterdata__filter=_filter)
 
-        elif filter.filter_type == Filter.FilterType.LIST:
-            # query and query_and are mutual exclusive and query_and has higher priority
-            query = query_and or query_exclude_and or query_exclude or query
-            if query and not isinstance(query, list):
-                query = query.split(',')
+        elif _filter.filter_type == Filter.FilterType.LIST:
+            if value_list and not isinstance(value_list, list):
+                value_list = value_list.split(',')
 
-            if query and len(query) > 0:
-                # Use contains (AND) filter if query_and was defined
-                if query_and:
-                    entries = entries.filter(
-                        filterdata__filter=filter,
-                        filterdata__values__contains=query,
+            if value_list:
+                # Fetch sub-regions if required
+                if include_sub_regions and _filter.widget_type == Widget.WidgetType.GEO:
+                    # TODO: Calculate level using project's regions max admin level's level
+                    value = GeoArea.get_sub_childrens(value, level=2)
+
+                query_filter = models.Q(
+                    filterdata__filter=_filter,
+                    # This will use <OR> filter
+                    filterdata__values__overlap=value_list,
+                )
+                if use_and_operator:
+                    query_filter = models.Q(
+                        filterdata__filter=_filter,
+                        # This will use <AND> filter
+                        filterdata__values__contains=value_list,
                     )
-                # Use contains (AND) filter if query_and was defined (Exclude)
-                elif query_exclude_and:
-                    entries = entries.exclude(
-                        filterdata__filter=filter,
-                        filterdata__values__contains=query,
-                    )
-                # Use overlap (OR) filter if query is only defined (Exclude)
-                elif query_exclude:
-                    entries = entries.exclude(
-                        filterdata__filter=filter,
-                        filterdata__values__overlap=query,
-                    )
-                # Use overlap (OR) filter if query is only defined
-                elif query:
-                    entries = entries.filter(
-                        filterdata__filter=filter,
-                        filterdata__values__overlap=query,
-                    )
+                # Use filter to exclude entries
+                if use_exclude:
+                    entries = entries.exclude(query_filter)
+                # Use filter to include entries
+                else:
+                    entries = entries.filter(query_filter)
 
     return entries.order_by('-lead__created_by', 'lead', 'created_by')
 
@@ -358,7 +400,7 @@ def get_filtered_entries(user, queries):
     # NOTE: lets not use `.distinct()` in this function as it is used by a
     # subquery in `lead/models.py`.
     entries = Entry.get_for(user)
-    filters = Filter.get_for(user)
+    filters = Filter.get_for(user, with_widget_type=True)
 
     project = queries.get('project')
     if project:
@@ -433,8 +475,31 @@ def get_created_at_filters(query_params):
 
 # TODO: Add validation here for value using filter_key?
 class EntryFilterDataType(graphene.InputObjectType):
+    """
+    Behaviour for each type:
+    - NUMBER (All are applied if provided)
+        - value (exact match)
+        - value_lte (lt match)
+        - value_gte (gt match)
+    - TEXT
+        - value (icontains match)
+    - INTERSECTS (Both are applied if provided)
+        - value (exact match)
+        - value_lte, value_gte (range match if both are provided)
+    - LIST
+        - value_list (This is used to filter value)
+        - include_sub_regions (Includes sub-regions as value_list <using value_list to generate>)
+        - use_and_operator (Use AND to filter)
+        - use_exclude (Exclude entry using filter value)
+    """
     filter_key = graphene.ID(required=True)
-    value = GenericScalar(required=True)
+    value = graphene.String(description='Valid for single value widgets')
+    value_gte = graphene.String(description='Valid for range or single value widgets')
+    value_lte = graphene.String(description='Valid for range or single value widgets')
+    value_list = graphene.List(graphene.NonNull(graphene.String), description='Valid for list value widgets')
+    use_exclude = graphene.Boolean(description='Only for array values')
+    use_and_operator = graphene.Boolean(description='Used AND instead of OR')
+    include_sub_regions = graphene.Boolean(description='Only valid for GEO widget values')
 
 
 # ----------------------------- Graphql Filters ---------------------------------------
@@ -493,10 +558,11 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, EntryFilterMixin, django_filters.
             if active_af_id is None:
                 # This needs to be defined
                 raise Exception('`analysis_framework_id` is not defined')
-            filters = Filter.objects.filter(analysis_framework_id=active_af_id).all()
+            filters = Filter.qs_with_widget_type().filter(analysis_framework_id=active_af_id).all()
             return get_filtered_entries_using_af_filter(
                 queryset,
                 filters,
-                {v['filter_key']: v['value'] for v in value},
+                value,
+                new_query_structure=True,
             )
         return queryset

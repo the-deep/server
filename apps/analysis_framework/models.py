@@ -340,6 +340,19 @@ class Filter(models.Model):
     def __str__(self):
         return '{} ({})'.format(self.title, self.key)
 
+    @classmethod
+    def qs_with_widget_type(cls):
+        # TODO: maybe use properties?
+        # Return filter queryset with addtional field `widget_type`
+        return cls.objects.annotate(
+            widget_type=models.Subquery(
+                Widget.objects.filter(
+                    key=models.OuterRef('widget_key'),
+                    analysis_framework=models.OuterRef('analysis_framework'),
+                ).values('widget_id')[:1], output_field=models.CharField()
+            )
+        )
+
     def clone_to(self, analysis_framework):
         filter = Filter(
             analysis_framework=analysis_framework,
@@ -352,13 +365,16 @@ class Filter(models.Model):
         filter.save()
         return filter
 
-    @staticmethod
-    def get_for(user):
+    @classmethod
+    def get_for(cls, user, with_widget_type=False):
         """
         Filter can only be accessed by users who have access to
         AnalysisFramework which has access to it's project
         """
-        return Filter.objects.filter(
+        qs = cls.objects
+        if with_widget_type:
+            qs = cls.qs_with_widget_type()
+        return qs.filter(
             models.Q(analysis_framework__project=None) |
             models.Q(analysis_framework__project__members=user) |
             models.Q(analysis_framework__project__user_groups__members=user)

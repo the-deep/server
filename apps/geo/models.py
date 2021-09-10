@@ -1,4 +1,6 @@
 import json
+
+from typing import List, Union
 from django.core.files.base import ContentFile
 from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.gis.db import models
@@ -298,6 +300,15 @@ class GeoArea(models.Model):
             child_geoarea.clone_to(admin_level, geo_area)
 
         return geo_area
+
+    @classmethod
+    def get_sub_childrens(cls, value: List[Union[str, int]], level=1):
+        filters = models.Q(id__in=value)
+        if value:
+            for i in range(level - 1):
+                filters |= models.Q({f"{'parent__'*i}parent__in": value})
+            return cls.objects.filter(filters)
+        return cls.objects.none()
 
     # Permissions are same as region
     @staticmethod
