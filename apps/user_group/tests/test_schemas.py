@@ -63,9 +63,9 @@ class TestUserGroupSchema(GraphQLTestCase):
         self.assertEqual(len(results), 3, results)
         for index, (user_group, memberships_count, current_user_role) in enumerate([
             # as normal member
-            (ug_with_membership, 2, GroupMembership.Role.NORMAL),
+            (ug_with_membership, 2, self.genum(GroupMembership.Role.NORMAL)),
             # as admin member
-            (ug_with_admin_membership, 1, GroupMembership.Role.ADMIN),
+            (ug_with_admin_membership, 1, self.genum(GroupMembership.Role.ADMIN)),
             # as non member
             (ug_without_membership, 0, None),
         ]):
@@ -124,7 +124,7 @@ class TestUserGroupSchema(GraphQLTestCase):
         ug_with_membership = UserGroupFactory.create(members=[user, another_user])
         content = self.query_check(query, variables={'id': str(ug_with_membership.pk)})
         self.assertEqual(len(content['data']['userGroup']['memberships']), 2, content)
-        self.assertEqual(content['data']['userGroup']['currentUserRole'], GroupMembership.Role.NORMAL, content)
+        self.assertEqual(content['data']['userGroup']['currentUserRole'], self.genum(GroupMembership.Role.NORMAL), content)
 
     def test_user_group_create_mutation(self):
         query = '''
@@ -180,7 +180,7 @@ class TestUserGroupSchema(GraphQLTestCase):
         self.assertEqual(len(result['memberships']), 2, result)
         # Another user as normal member
         self.assertEqual(result['memberships'][0]['member']['id'], minput['memberships'][0]['member'], result)
-        self.assertEqual(result['memberships'][0]['role'], minput['memberships'][0]['role'].upper(), result)  # noqa:E501 FIXME: why upper()
+        self.assertEqual(result['memberships'][0]['role'], minput['memberships'][0]['role'], result)
         self.assertEqual(result['memberships'][0]['addedBy']['id'], str(user.pk), result)  # Current user
         # Current user as admin
         self.assertEqual(result['memberships'][1]['member']['id'], str(user.pk), result)

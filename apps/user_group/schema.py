@@ -8,12 +8,15 @@ from utils.graphene.fields import DjangoPaginatedListObjectField
 
 from .models import UserGroup, GroupMembership
 from .filters import UserGroupFilterSet
+from .enums import GroupMembershipRoleEnum
 
 
 class GroupMembershipType(DjangoObjectType):
     class Meta:
         model = GroupMembership
-        fields = ('id', 'member', 'role', 'joined_at', 'added_by',)
+        fields = ('id', 'member', 'joined_at', 'added_by',)
+
+    role = graphene.Field(GroupMembershipRoleEnum, required=True)
 
 
 class UserGroupType(DjangoObjectType):
@@ -32,7 +35,7 @@ class UserGroupType(DjangoObjectType):
             'global_crisis_monitoring',
         )
 
-    current_user_role = graphene.String()
+    current_user_role = graphene.Field(GroupMembershipRoleEnum)
 
     @staticmethod
     def resolve_current_user_role(root, info):
