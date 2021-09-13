@@ -289,8 +289,8 @@
     <p id="t234" class="pln"><span class="n"><a href="#t234">234</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t235" class="pln"><span class="n"><a href="#t235">235</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t236" class="pln"><span class="n"><a href="#t236">236</a></span><span class="t">    <span class="com"># TODO: Add Pagination</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t237" class="run"><span class="n"><a href="#t237">237</a></span><span class="t">    <span class="nam">emm_keywords</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">List</span><span class="op">(</span><span class="nam">EmmKeyWordType</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t238" class="run"><span class="n"><a href="#t238">238</a></span><span class="t">    <span class="nam">emm_risk_factors</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">List</span><span class="op">(</span><span class="nam">EmmKeyRiskFactorType</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t237" class="run"><span class="n"><a href="#t237">237</a></span><span class="t">    <span class="nam">emm_keywords</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">List</span><span class="op">(</span><span class="nam">graphene</span><span class="op">.</span><span class="nam">NonNull</span><span class="op">(</span><span class="nam">EmmKeyWordType</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t238" class="run"><span class="n"><a href="#t238">238</a></span><span class="t">    <span class="nam">emm_risk_factors</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">List</span><span class="op">(</span><span class="nam">graphene</span><span class="op">.</span><span class="nam">NonNull</span><span class="op">(</span><span class="nam">EmmKeyRiskFactorType</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t239" class="pln"><span class="n"><a href="#t239">239</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t240" class="run"><span class="n"><a href="#t240">240</a></span><span class="t">    <span class="op">@</span><span class="nam">staticmethod</span>&nbsp;</span><span class="r"></span></p>
     <p id="t241" class="run"><span class="n"><a href="#t241">241</a></span><span class="t">    <span class="key">def</span> <span class="nam">resolve_leads</span><span class="op">(</span><span class="nam">root</span><span class="op">,</span> <span class="nam">info</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span> <span class="op">-></span> <span class="nam">QuerySet</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -334,7 +334,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-09-08 10:11 +0000
+            created at 2021-09-13 06:04 +0000
         </p>
     </div>
 </div>

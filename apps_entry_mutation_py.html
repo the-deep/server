@@ -22,8 +22,8 @@
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            47 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">47 run</button>
+            48 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">48 run</button>
             <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">0 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">0 partial</button>
@@ -123,24 +123,25 @@
     <p id="t68" class="run"><span class="n"><a href="#t68">68</a></span><span class="t">        <span class="nam">items</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">List</span><span class="op">(</span><span class="nam">graphene</span><span class="op">.</span><span class="nam">NonNull</span><span class="op">(</span><span class="nam">BulkEntryInputType</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t69" class="run"><span class="n"><a href="#t69">69</a></span><span class="t">        <span class="nam">delete_ids</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">List</span><span class="op">(</span><span class="nam">graphene</span><span class="op">.</span><span class="nam">NonNull</span><span class="op">(</span><span class="nam">graphene</span><span class="op">.</span><span class="nam">ID</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t70" class="pln"><span class="n"><a href="#t70">70</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t71" class="run"><span class="n"><a href="#t71">71</a></span><span class="t">    <span class="nam">deleted_result</span> <span class="op">=</span> <span class="nam">result</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">List</span><span class="op">(</span><span class="nam">EntryType</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t72" class="pln"><span class="n"><a href="#t72">72</a></span><span class="t">    <span class="com"># class vars</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t73" class="run"><span class="n"><a href="#t73">73</a></span><span class="t">    <span class="nam">model</span> <span class="op">=</span> <span class="nam">Entry</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t74" class="run"><span class="n"><a href="#t74">74</a></span><span class="t">    <span class="nam">serializer_class</span> <span class="op">=</span> <span class="nam">EntrySerializer</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t75" class="run"><span class="n"><a href="#t75">75</a></span><span class="t">    <span class="nam">permissions</span> <span class="op">=</span> <span class="op">[</span><span class="nam">PP</span><span class="op">.</span><span class="nam">Permission</span><span class="op">.</span><span class="nam">CREATE_ENTRY</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t76" class="pln"><span class="n"><a href="#t76">76</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t71" class="run"><span class="n"><a href="#t71">71</a></span><span class="t">    <span class="nam">result</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">List</span><span class="op">(</span><span class="nam">EntryType</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t72" class="run"><span class="n"><a href="#t72">72</a></span><span class="t">    <span class="nam">deleted_result</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">List</span><span class="op">(</span><span class="nam">graphene</span><span class="op">.</span><span class="nam">NonNull</span><span class="op">(</span><span class="nam">EntryType</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t73" class="pln"><span class="n"><a href="#t73">73</a></span><span class="t">    <span class="com"># class vars</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t74" class="run"><span class="n"><a href="#t74">74</a></span><span class="t">    <span class="nam">model</span> <span class="op">=</span> <span class="nam">Entry</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t75" class="run"><span class="n"><a href="#t75">75</a></span><span class="t">    <span class="nam">serializer_class</span> <span class="op">=</span> <span class="nam">EntrySerializer</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t76" class="run"><span class="n"><a href="#t76">76</a></span><span class="t">    <span class="nam">permissions</span> <span class="op">=</span> <span class="op">[</span><span class="nam">PP</span><span class="op">.</span><span class="nam">Permission</span><span class="op">.</span><span class="nam">CREATE_ENTRY</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p id="t77" class="pln"><span class="n"><a href="#t77">77</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t78" class="run"><span class="n"><a href="#t78">78</a></span><span class="t"><span class="key">class</span> <span class="nam">Mutation</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t79" class="run"><span class="n"><a href="#t79">79</a></span><span class="t">    <span class="nam">entry_create</span> <span class="op">=</span> <span class="nam">CreateEntry</span><span class="op">.</span><span class="nam">Field</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t80" class="run"><span class="n"><a href="#t80">80</a></span><span class="t">    <span class="nam">entry_update</span> <span class="op">=</span> <span class="nam">UpdateEntry</span><span class="op">.</span><span class="nam">Field</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t81" class="run"><span class="n"><a href="#t81">81</a></span><span class="t">    <span class="nam">entry_delete</span> <span class="op">=</span> <span class="nam">DeleteEntry</span><span class="op">.</span><span class="nam">Field</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t82" class="run"><span class="n"><a href="#t82">82</a></span><span class="t">    <span class="nam">entry_bulk</span> <span class="op">=</span> <span class="nam">BulkEntry</span><span class="op">.</span><span class="nam">Field</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t78" class="pln"><span class="n"><a href="#t78">78</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t79" class="run"><span class="n"><a href="#t79">79</a></span><span class="t"><span class="key">class</span> <span class="nam">Mutation</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t80" class="run"><span class="n"><a href="#t80">80</a></span><span class="t">    <span class="nam">entry_create</span> <span class="op">=</span> <span class="nam">CreateEntry</span><span class="op">.</span><span class="nam">Field</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t81" class="run"><span class="n"><a href="#t81">81</a></span><span class="t">    <span class="nam">entry_update</span> <span class="op">=</span> <span class="nam">UpdateEntry</span><span class="op">.</span><span class="nam">Field</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t82" class="run"><span class="n"><a href="#t82">82</a></span><span class="t">    <span class="nam">entry_delete</span> <span class="op">=</span> <span class="nam">DeleteEntry</span><span class="op">.</span><span class="nam">Field</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t83" class="run"><span class="n"><a href="#t83">83</a></span><span class="t">    <span class="nam">entry_bulk</span> <span class="op">=</span> <span class="nam">BulkEntry</span><span class="op">.</span><span class="nam">Field</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </div>
 <div id="footer">
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-09-08 10:11 +0000
+            created at 2021-09-13 06:04 +0000
         </p>
     </div>
 </div>

@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/entry/enums.py: 100%</title>
+    <title>Coverage for apps/user_group/enums.py: 100%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -17,7 +17,7 @@
 <body class="pyfile">
 <div id="header">
     <div class="content">
-        <h1>Coverage for <b>apps/entry/enums.py</b> :
+        <h1>Coverage for <b>apps/user_group/enums.py</b> :
             <span class="pc_cov">100%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
@@ -58,14 +58,14 @@
     <p id="t3" class="pln"><span class="n"><a href="#t3">3</a></span><span class="t">    <span class="nam">get_enum_name_from_django_field</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t4" class="pln"><span class="n"><a href="#t4">4</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t5" class="pln"><span class="n"><a href="#t5">5</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t6" class="run"><span class="n"><a href="#t6">6</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Entry</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t6" class="run"><span class="n"><a href="#t6">6</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">GroupMembership</span>&nbsp;</span><span class="r"></span></p>
     <p id="t7" class="pln"><span class="n"><a href="#t7">7</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t8" class="run"><span class="n"><a href="#t8">8</a></span><span class="t"><span class="nam">EntryTagTypeEnum</span> <span class="op">=</span> <span class="nam">convert_enum_to_graphene_enum</span><span class="op">(</span><span class="nam">Entry</span><span class="op">.</span><span class="nam">TagType</span><span class="op">,</span> <span class="nam">name</span><span class="op">=</span><span class="str">'EntryTagTypeEnum'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t8" class="run"><span class="n"><a href="#t8">8</a></span><span class="t"><span class="nam">GroupMembershipRoleEnum</span> <span class="op">=</span> <span class="nam">convert_enum_to_graphene_enum</span><span class="op">(</span><span class="nam">GroupMembership</span><span class="op">.</span><span class="nam">Role</span><span class="op">,</span> <span class="nam">name</span><span class="op">=</span><span class="str">'GroupMembershipRoleEnum'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t9" class="pln"><span class="n"><a href="#t9">9</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t10" class="run"><span class="n"><a href="#t10">10</a></span><span class="t"><span class="nam">enum_map</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
     <p id="t11" class="pln"><span class="n"><a href="#t11">11</a></span><span class="t">    <span class="nam">get_enum_name_from_django_field</span><span class="op">(</span><span class="nam">field</span><span class="op">)</span><span class="op">:</span> <span class="nam">enum</span>&nbsp;</span><span class="r"></span></p>
     <p id="t12" class="pln"><span class="n"><a href="#t12">12</a></span><span class="t">    <span class="key">for</span> <span class="nam">field</span><span class="op">,</span> <span class="nam">enum</span> <span class="key">in</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t13" class="pln"><span class="n"><a href="#t13">13</a></span><span class="t">        <span class="op">(</span><span class="nam">Entry</span><span class="op">.</span><span class="nam">entry_type</span><span class="op">,</span> <span class="nam">EntryTagTypeEnum</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t13" class="pln"><span class="n"><a href="#t13">13</a></span><span class="t">        <span class="op">(</span><span class="nam">GroupMembership</span><span class="op">.</span><span class="nam">role</span><span class="op">,</span> <span class="nam">GroupMembershipRoleEnum</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t14" class="pln"><span class="n"><a href="#t14">14</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t15" class="pln"><span class="n"><a href="#t15">15</a></span><span class="t"><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
 </div>
