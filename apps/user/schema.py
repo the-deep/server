@@ -10,7 +10,6 @@ from django.utils import timezone
 from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from jwt_auth.token import AccessToken
-from deep.serializers import URLCachedFileField
 
 from project.models import Project
 from .models import User, Feature
@@ -88,11 +87,7 @@ class UserMeType(DjangoObjectType):
     @staticmethod
     @only_me
     def resolve_display_picture_url(root, info, **kwargs) -> Union[str, None]:
-        display_picture = root.profile.display_picture.file
-        if display_picture:
-            return info.context.request.build_absolute_uri(
-                URLCachedFileField.name_to_representation(display_picture)
-            )
+        return info.context.dl.user.display_picture.load(root.id)
 
     @staticmethod
     @only_me
