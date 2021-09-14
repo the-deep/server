@@ -5,16 +5,16 @@ from analysis_framework.widgets.select_widget import WIDGET_ID
 DATA_VERSION = 1
 
 
-def _get_label_list(widget, data, widget_data):
+def _get_label_list(widget, data, widget_properties):
     values = data.get('value')
     values = [values] if values is not None else []
 
-    options = widget_data.get('options', [])
+    options = widget_properties.get('options', [])
     label_list = []
     for item in values:
         option = next((
             o for o in options
-            if o.get('key') == item
+            if o.get('clientId') == item
         ), None)
         if option:
             label_list.append(option.get('label') or 'Unknown')
@@ -22,8 +22,8 @@ def _get_label_list(widget, data, widget_data):
     return label_list, values
 
 
-def update_attribute(widget, data, widget_data):
-    label_list, values = _get_label_list(widget, data, widget_data)
+def update_attribute(widget, data, widget_properties):
+    label_list, values = _get_label_list(widget, data, widget_properties)
 
     return {
         'filter_data': [{

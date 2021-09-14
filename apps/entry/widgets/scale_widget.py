@@ -5,14 +5,14 @@ from analysis_framework.widgets.scale_widget import WIDGET_ID
 DATA_VERSION = 1
 
 
-def _get_scale(widget, data, widget_data):
+def _get_scale(widget, data, widget_properties):
     selected_scale = data.get('value')
     selected_scales = [selected_scale] if selected_scale is not None else []
 
-    scale_units = widget_data.get('scale_units', [])
+    scale_units = widget_properties.get('options', [])
     scale = next((
         s for s in scale_units
-        if s['key'] == selected_scale
+        if s['clientId'] == selected_scale
     ), None)
     scale = scale or {}
     return {
@@ -27,8 +27,8 @@ def _get_scale(widget, data, widget_data):
     }, selected_scales
 
 
-def update_attribute(widget, data, widget_data):
-    scale, selected_scales = _get_scale(widget, data, widget_data)
+def update_attribute(widget, data, widget_properties):
+    scale, selected_scales = _get_scale(widget, data, widget_properties)
 
     return {
         # Note: Please change the DATA_VERSION when you change the data format
@@ -56,9 +56,9 @@ def update_attribute(widget, data, widget_data):
     }
 
 
-def get_comprehensive_data(widgets_meta, widget, data, widget_data):
-    scale, selected_scales = _get_scale(widget, data, widget_data)
-    scale_units = widget_data.get('scale_units', [])
+def get_comprehensive_data(widgets_meta, widget, data, widget_properties):
+    scale, selected_scales = _get_scale(widget, data, widget_properties)
+    scale_units = widget_properties.get('options', [])
 
     if widgets_meta.get(widget.pk) is None:
         widgets_meta[widget.pk] = {
@@ -72,6 +72,6 @@ def get_comprehensive_data(widgets_meta, widget, data, widget_data):
         'label': scale['label'],
         'index': ([
             (i + 1) for i, v in enumerate(scale_units)
-            if v['key'] == selected_scales[0]
+            if v['clientId'] == selected_scales[0]
         ] or [None])[0] if selected_scales else None,
     }

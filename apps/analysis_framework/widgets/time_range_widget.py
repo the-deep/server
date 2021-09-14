@@ -1,7 +1,7 @@
 WIDGET_ID = 'timeRangeWidget'
 
 
-def get_filters(widget, data):
+def get_filters(widget, properties):
     from analysis_framework.models import Filter  # To avoid circular import
 
     return [{
@@ -12,7 +12,7 @@ def get_filters(widget, data):
     }]
 
 
-def get_exportable(widget, data):
+def get_exportable(widget, properties):
     return {
         'excel': {
             'type': 'multiple',

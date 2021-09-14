@@ -7,10 +7,10 @@ from analysis_framework.widgets.date_range_widget import WIDGET_ID
 DATA_VERSION = 1
 
 
-def _get_date(widget, data, widget_data):
+def _get_date(widget, data, widget_properties):
     value = data.get('value', {})
-    from_value = value.get('from')
-    to_value = value.get('to')
+    from_value = value.get('startDate')  # TODO: use from
+    to_value = value.get('endDate')  # TODO: use to
 
     from_date = from_value and datetime.strptime(from_value, '%Y-%m-%d')
     to_date = to_value and datetime.strptime(to_value, '%Y-%m-%d')
@@ -28,8 +28,8 @@ def _get_date(widget, data, widget_data):
     )
 
 
-def update_attribute(widget, data, widget_data):
-    (from_number, to_number), (from_date, to_date) = _get_date(widget, data, widget_data)
+def update_attribute(widget, data, widget_properties):
+    (from_number, to_number), (from_date, to_date) = _get_date(widget, data, widget_properties)
 
     return {
         # NOTE: Please update the data version when you update the data format
