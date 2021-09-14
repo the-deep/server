@@ -4,7 +4,7 @@ from analysis_framework.widgets.text_widget import WIDGET_ID
 DATA_VERSION = 1
 
 
-def _get_text(widget, data, widget_data):
+def _get_text(widget, data, widget_properties):
     return str(
         data.get('value') or ''
     )

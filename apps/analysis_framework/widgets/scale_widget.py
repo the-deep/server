@@ -1,15 +1,27 @@
 WIDGET_ID = 'scaleWidget'
 
 
-def get_filters(widget, data):
+"""
+properties:
+    options: [
+        clientId: string  # TODO: Change this to key or any other name
+        label: string
+        tooltip?: string
+        order: number
+        color: string
+    ]
+"""
+
+
+def get_filters(widget, properties):
     from analysis_framework.models import Filter  # To avoid circular import
 
-    scale_units = data.get('scale_units', [])
+    options = properties.get('options', [])
     filter_options = [
         {
-            'label': s.get('label'),
-            'key': s.get('key'),
-        } for s in scale_units
+            'label': option.get('label'),
+            'key': option.get('clientId'),
+        } for option in options
     ]
 
     return [{

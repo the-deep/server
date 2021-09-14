@@ -1,45 +1,83 @@
 WIDGET_ID = 'matrix2dWidget'
 
 
-def get_filters(widget, data):
+"""
+PROPERTIES:
+    rows: [
+        clientId: string    # TODO: Change this to key or any other name
+        label: string
+        tooltip?: string
+        order: number
+        color: string
+        subRows: [
+            clientId: string  # TODO: Change this to key or any other name
+            label: string
+            tooltip?: string
+            order: number
+        ]
+    ]
+    columns: [
+        clientId: string  # TODO: Change this to key or any other name
+        label: string
+        tooltip?: string
+        order: number
+        subColumns: [
+            clientId: string  # TODO: Change this to key or any other name
+            label: string
+            tooltip?: string
+            order: number
+        ]
+    ]
+}
+"""
+
+
+def get_filters(widget, properties):
+    """
+    Old <-> New
+    dimensions <-> rows
+    subdimensions <-> subRows
+    sectors <-> columns
+    subsectors <-> subColumns
+    """
     from analysis_framework.models import Filter  # To avoid circular import
 
     dimension_options = []
-    dimensions = data.get('dimensions', [])
+    dimensions = properties.get('rows', [])
 
     for dimension in dimensions:
         dimension_options.append({
-            'label': dimension.get('title'),
-            'key': dimension.get('id'),
+            'label': dimension.get('label'),
+            'key': dimension.get('clientId'),
         })
 
-        subdimensions = dimension.get('subdimensions', [])
+        subdimensions = dimension.get('subRows', [])
         for subdimension in subdimensions:
             dimension_options.append({
                 'label': '{} / {}'.format(
-                    dimension.get('title'),
-                    subdimension.get('title'),
+                    dimension.get('label'),
+                    subdimension.get('label'),
                 ),
-                'key': subdimension.get('id'),
+                'key': subdimension.get('clientId'),
             })
 
     sector_options = []
-    sectors = data.get('sectors', [])
+    sectors = properties.get('columns', [])
 
     for sector in sectors:
         sector_options.append({
-            'label': sector.get('title'),
-            'key': sector.get('id'),
+            'label': sector.get('label'),
+            'key': sector.get('clientId'),
         })
 
-        subsectors = sector.get('subsectors', [])
+        subsectors = sector.get('subColumns', [])
         for subsector in subsectors:
             sector_options.append({
                 'label': '{} / {}'.format(
-                    sector.get('title'),
-                    subsector.get('title'),
+                    sector.get('label'),
+                    subsector.get('label'),
                 ),
-                'key': subsector.get('id'),
+                'key': subsector.get('clientId'),
             })
 
     return [{
@@ -61,7 +99,7 @@ def get_filters(widget, data):
     }]
 
 
-def get_exportable(widget, data):
+def get_exportable(widget, properties):
     excel = {
         'type': 'multiple',
         'titles': [
@@ -75,29 +113,29 @@ def get_exportable(widget, data):
     report = {
         'levels': [
             {
-                'id': sector.get('id'),
-                'title': sector.get('title'),
+                'id': sector.get('clientId'),
+                'title': sector.get('label'),
                 'sublevels': [
                     {
                         'id': '{}-{}'.format(
-                            sector.get('id'),
-                            dimension.get('id'),
+                            sector.get('clientId'),
+                            dimension.get('clientId'),
                         ),
-                        'title': dimension.get('title'),
+                        'title': dimension.get('label'),
                         'sublevels': [
                             {
                                 'id': '{}-{}-{}'.format(
-                                    sector.get('id'),
-                                    dimension.get('id'),
-                                    subdimension.get('id'),
+                                    sector.get('clientId'),
+                                    dimension.get('clientId'),
+                                    subdimension.get('clientId'),
                                 ),
-                                'title': subdimension.get('title'),
+                                'title': subdimension.get('label'),
                             } for subdimension
-                            in dimension.get('subdimensions', [])
+                            in dimension.get('subRows', [])
                         ]
-                    } for dimension in data.get('dimensions', [])
+                    } for dimension in properties.get('rows', [])
                 ],
-            } for sector in data.get('sectors', [])
+            } for sector in properties.get('columns', [])
         ],
     }
 

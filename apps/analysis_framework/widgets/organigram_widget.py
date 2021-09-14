@@ -1,42 +1,56 @@
 WIDGET_ID = 'organigramWidget'
 
+"""
+properties:
+    options:
+        clientId: string  # TODO: Change this to key or any other name
+        label: string
+        tooltip?: string
+        order: number
+        children: [...parent structure]
+"""
+
 
 def get_values_for_organ(organ, parent_label=None):
-    label = organ.get('title', '')
+    label = organ.get('label', '')
     if parent_label:
         label = '{} / {}'.format(parent_label, label)
 
     values = [{
-        'key': organ.get('key'),
+        'key': organ.get('clientId'),
         'label': label,
     }]
 
-    for organ in organ.get('organs'):
-        values.extend(get_values_for_organ(organ, label))
+    for organ in organ.get('children'):
+        values.extend(
+            get_values_for_organ(organ, label)
+        )
 
     return values
 
 
-def get_filters(widget, data):
+def get_filters(widget, properties):
     from analysis_framework.models import Filter  # To avoid circular import
 
     return [{
         'filter_type': Filter.FilterType.LIST,
         'properties': {
             'type': 'multiselect',
-            'options': get_values_for_organ(data, None) if data else [],
+            'options': get_values_for_organ(properties, None) if properties else [],
         },
     }]
 
 
-def get_exportable(widget, data):
+def get_exportable(widget, properties):
     def _get_depth(organ, level=1):
-        child_organs = organ.get('organs') or []
+        child_organs = organ.get('children') or []
         if len(child_organs) == 0:
             return level
         depths = []
         for c_organ in child_organs:
-            depths.append(_get_depth(c_organ, level=level + 1))
+            depths.append(
+                _get_depth(c_organ, level=level + 1)
+            )
         return max(depths)
 
     return {
@@ -44,7 +58,9 @@ def get_exportable(widget, data):
             'type': 'multiple',
             'titles': [
                 f'{widget.title} - Level {level}'
-                for level in range(_get_depth(data))
+                for level in range(
+                    _get_depth(properties)
+                )
             ],
         },
     }

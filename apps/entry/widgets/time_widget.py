@@ -15,15 +15,15 @@ def parse_time(time_string):
     }
 
 
-def _get_time(widget, data, widget_data):
+def _get_time(widget, data, widget_properties):
     value = data.get('value')
     time = value and parse_time(value)
     # NOTE: Please update the data version when you update the data format
     return time and time['time_val'], value and time['time_str']
 
 
-def update_attribute(widget, data, widget_data):
-    time_val, time_str = _get_time(widget, data, widget_data)
+def update_attribute(widget, data, widget_properties):
+    time_val, time_str = _get_time(widget, data, widget_properties)
 
     return {
         # NOTE: Please update the data version when you update the data format

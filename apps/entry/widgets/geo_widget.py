@@ -43,9 +43,18 @@ def get_valid_geo_ids(raw_values, extract_polygon_title=False):
     return geo_areas
 
 
-def update_attribute(widget, data, widget_data):
+def update_attribute(widget, data, widget_properties):
+    """
+    data: { value: [], polygons: [], points: [] }
+    """
+
+    all_values = [
+        *(data.get('value') or []),
+        *(data.get('polygons') or []),
+        *(data.get('points') or [])
+    ]
     values, polygons = get_valid_geo_ids(
-        data.get('value') or [],
+        all_values,
         extract_polygon_title=True,
     )
 
@@ -89,7 +98,7 @@ def _get_geo_area_parents(geo_areas, admin_levels, geo_area):
     return parents
 
 
-def get_comprehensive_data(widgets_meta, widget, data, widget_data):
+def get_comprehensive_data(widgets_meta, widget, data, widget_properties):
     geo_areas = widgets_meta['geo-widget']['geo_areas']
     admin_levels = widgets_meta['geo-widget']['admin_levels']
 
