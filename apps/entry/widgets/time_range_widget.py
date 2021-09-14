@@ -16,10 +16,10 @@ def parse_time(time_string):
     }
 
 
-def _get_time(widget, data, widget_data):
+def _get_time(widget, data, widget_properties):
     value = data.get('value') or {}
-    from_value = value.get('from')
-    to_value = value.get('to')
+    from_value = value.get('startTime')  # TODO: use from
+    to_value = value.get('endTime')  # TODO: use to
 
     from_time = from_value and parse_time(from_value)
     to_time = to_value and parse_time(to_value)
@@ -33,14 +33,14 @@ def _get_time(widget, data, widget_data):
     )
 
 
-def update_attribute(widget, data, widget_data):
+def update_attribute(widget, data, widget_properties):
     (
         from_number,
         to_number,
     ), (
         from_time,
         to_time,
-    ) = _get_time(widget, data, widget_data)
+    ) = _get_time(widget, data, widget_properties)
 
     return {
         # NOTE: Please update the data version when you update the data format

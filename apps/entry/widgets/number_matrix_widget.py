@@ -2,6 +2,8 @@ from analysis_framework.widgets.number_matrix_widget import WIDGET_ID
 
 DATA_VERSION = 1
 
+# NOTE: THIS IS REMOVED FROM NEW UI
+
 
 def update_attribute(widget, _data, widget_data):
     data = (_data or {}).get('value') or {}

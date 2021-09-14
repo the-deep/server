@@ -22,34 +22,34 @@ def _get_parent_nodes(node_mapping, node_key):
 
 def _get_selected_nodes_with_parent(node, selected_ids, node_mapping=None):
     node_mapping = node_mapping or {}
-    organs = node.get('organs', [])
+    organs = node.get('options', [])
 
-    if 'key' not in node:
+    if 'clientId' not in node:
         return []
 
-    if node['key'] not in node_mapping:
-        node_mapping[node['key']] = {
-            'key': node['key'],
-            'title': node.get('title'),
+    if node['clientId'] not in node_mapping:
+        node_mapping[node['clientId']] = {
+            'key': node['clientId'],
+            'title': node.get('label'),
         }
 
     selected = []
-    if node['key'] in selected_ids:
+    if node['clientId'] in selected_ids:
         selected.append({
-            'key': node['key'],
-            'title': node['title'],
-            'parents': _get_parent_nodes(node_mapping, node['key']),
+            'key': node['clientId'],
+            'title': node['label'],
+            'parents': _get_parent_nodes(node_mapping, node['clientId']),
         })
 
     for organ in organs:
-        if 'key' not in organ:
+        if 'clientId' not in organ:
             continue
 
-        node_mapping[organ['key']] = {
-            'key': organ['key'],
-            'title': organ['title'],
-            'parent_node': node['key'],
-            'parent_title': node['title'],
+        node_mapping[organ['clientId']] = {
+            'key': organ['clientId'],
+            'title': organ['label'],
+            'parent_node': node['clientId'],
+            'parent_title': node['label'],
         }
         selected.extend(
             _get_selected_nodes_with_parent(

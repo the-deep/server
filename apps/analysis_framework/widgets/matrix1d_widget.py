@@ -1,25 +1,44 @@
 WIDGET_ID = 'matrix1dWidget'
 
 
-def get_filters(widget, data):
+"""
+PROPERTIES:
+    rows: [
+        clientId: string  # TODO: Change this to key or any other name
+        label: string
+        tooltip?: string
+        order: number
+        color: string
+        cells: [
+            clientId: string  # TODO: Change this to key or any other name
+            label: string
+            tooltip?: string
+            order: number
+        ]
+    ]
+}
+"""
+
+
+def get_filters(widget, properties):
     from analysis_framework.models import Filter  # To avoid circular import
 
-    rows = data.get('rows', [])
+    rows = properties.get('rows', [])
     filter_options = []
     for row in rows:
         filter_options.append({
-            'label': row.get('title'),
-            'key': row.get('key'),
+            'label': row.get('label'),
+            'key': row.get('clientId'),
         })
         cells = row.get('cells', [])
 
         for cell in cells:
             filter_options.append({
                 'label': '{} / {}'.format(
-                    row.get('title'),
+                    row.get('label'),
                     cell.get('value'),
                 ),
-                'key': cell.get('key'),
+                'key': cell.get('clientId'),
             })
 
     return [{
@@ -31,8 +50,8 @@ def get_filters(widget, data):
     }]
 
 
-def get_exportable(widget, data):
-    rows = data.get('rows', [])
+def get_exportable(widget, properties):
+    rows = properties.get('rows', [])
     excel = {
         'type': 'multiple',
         'titles': [
@@ -44,11 +63,11 @@ def get_exportable(widget, data):
     report = {
         'levels': [
             {
-                'id': row.get('key'),
-                'title': row.get('title'),
+                'id': row.get('clientId'),
+                'title': row.get('label'),
                 'sublevels': [
                     {
-                        'id': '{}-{}'.format(row.get('key'), cell.get('key')),
+                        'id': '{}-{}'.format(row.get('clientId'), cell.get('clientId')),
                         'title': cell.get('value'),
                     } for cell in row.get('cells', [])
                 ],

@@ -1,7 +1,9 @@
 WIDGET_ID = 'numberMatrixWidget'
 
 
-def get_filters(widget, data):
+# NOTE: THIS IS REMOVED FROM NEW UI
+
+def get_filters(widget, properties):
     from analysis_framework.models import Filter  # To avoid circular import
 
     return [{
@@ -12,12 +14,12 @@ def get_filters(widget, data):
     }]
 
 
-def get_exportable(widget, data):
+def get_exportable(widget, properties):
     titles = []
 
-    row_headers = data.get('row_headers', [])
+    row_headers = properties.get('row_headers', [])
     for row_header in row_headers:
-        column_headers = data.get('column_headers', [])
+        column_headers = properties.get('column_headers', [])
         for column_header in column_headers:
             titles.append('{} - {}'.format(
                 row_header.get('title'),

@@ -9,7 +9,7 @@ ONE_DAY = 24 * 60 * 60
 DATA_VERSION = 1
 
 
-def _get_date(widget, data, widget_data):
+def _get_date(widget, data, widget_properties):
     value = data.get('value')
 
     date = value and datetime.strptime(value, '%Y-%m-%d')
@@ -18,8 +18,8 @@ def _get_date(widget, data, widget_data):
     return date and date.strftime('%d-%m-%Y'), number
 
 
-def update_attribute(widget, data, widget_data):
-    date, number = _get_date(widget, data, widget_data)
+def update_attribute(widget, data, widget_properties):
+    date, number = _get_date(widget, data, widget_properties)
 
     return {
         # NOTE: Please update the data version when you update the data format
