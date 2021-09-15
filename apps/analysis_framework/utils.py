@@ -3,11 +3,14 @@ from .widgets.store import widget_store
 
 
 def update_widget(widget):
-    widget_data = widget.properties and widget.properties.get('data')
+    widget_properties = widget.properties or {}
     widget_module = widget_store.get(widget.widget_id)
 
+    if widget_module is None:
+        raise Exception(f'Unknown widget type: {widget.widet_id}')
+
     if hasattr(widget_module, 'get_filters'):
-        filters = widget_module.get_filters(widget, widget_data or {}) or []
+        filters = widget_module.get_filters(widget, widget_properties) or []
         for filter in filters:
             filter['title'] = filter.get('title', widget.title)
             Filter.objects.update_or_create(
@@ -18,7 +21,7 @@ def update_widget(widget):
             )
 
     if hasattr(widget_module, 'get_exportable'):
-        exportable = widget_module.get_exportable(widget, widget_data or {})
+        exportable = widget_module.get_exportable(widget, widget_properties)
         if exportable:
             Exportable.objects.update_or_create(
                 analysis_framework=widget.analysis_framework,
