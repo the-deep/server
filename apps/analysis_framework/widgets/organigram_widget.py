@@ -21,7 +21,7 @@ def get_values_for_organ(organ, parent_label=None):
         'label': label,
     }]
 
-    for organ in organ.get('children'):
+    for organ in organ.get('children') or []:
         values.extend(
             get_values_for_organ(organ, label)
         )

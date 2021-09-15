@@ -36,7 +36,7 @@ def get_filters(widget, properties):
             filter_options.append({
                 'label': '{} / {}'.format(
                     row.get('label'),
-                    cell.get('value'),
+                    cell.get('label'),
                 ),
                 'key': cell.get('clientId'),
             })
@@ -68,7 +68,7 @@ def get_exportable(widget, properties):
                 'sublevels': [
                     {
                         'id': '{}-{}'.format(row.get('clientId'), cell.get('clientId')),
-                        'title': cell.get('value'),
+                        'title': cell.get('label'),
                     } for cell in row.get('cells', [])
                 ],
             } for row in rows
