@@ -15,11 +15,10 @@ def update_entry_attribute(attribute):
 
     widget_module = widget_store.get(widget.widget_id)
     if widget_module:
-        widget_data = widget.properties and widget.properties.get('data')
         update_info = widget_module.update_attribute(
             widget,
             data,
-            widget_data or {},
+            widget.properties or {},
         )
 
         filter_data_list = update_info.get('filter_data')
