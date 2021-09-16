@@ -71,6 +71,7 @@ class ProjectUserGroupMembershipInline(admin.TabularInline):
 
 class ProjectOrganizationInline(admin.TabularInline):
     model = ProjectOrganization
+    autocomplete_fields = ('organization',)
 
 
 class ProjectJoinRequestInline(admin.TabularInline):

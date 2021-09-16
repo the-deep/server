@@ -9,9 +9,9 @@ def _get_scale(widget, data, widget_properties):
     selected_scale = data.get('value')
     selected_scales = [selected_scale] if selected_scale is not None else []
 
-    scale_units = widget_properties.get('options', [])
+    options = widget_properties.get('options', [])
     scale = next((
-        s for s in scale_units
+        s for s in options
         if s['clientId'] == selected_scale
     ), None)
     scale = scale or {}
@@ -58,12 +58,17 @@ def update_attribute(widget, data, widget_properties):
 
 def get_comprehensive_data(widgets_meta, widget, data, widget_properties):
     scale, selected_scales = _get_scale(widget, data, widget_properties)
-    scale_units = widget_properties.get('options', [])
+    options = widget_properties.get('options', [])
 
-    if widgets_meta.get(widget.pk) is None:
+    if widgets_meta.get(widget.pk) is None:  # To avoid calculating meta at each attribute
+        widgets_meta[widget.pk] = {}
+        min_option, max_option = {}, {}
+        if options:
+            min_option, max_option = {**options[0]}, {**options[len(options) - 1]}
+            min_option['key'], max_option['key'] = min_option.pop('clientId'), max_option.pop('clientId')
         widgets_meta[widget.pk] = {
-            'min': scale_units[0] if scale_units else None,
-            'max': scale_units[len(scale_units) - 1] if scale_units else None,
+            'min': min_option,
+            'max': max_option,
         }
 
     return {
@@ -71,7 +76,7 @@ def get_comprehensive_data(widgets_meta, widget, data, widget_properties):
         'scale': scale,
         'label': scale['label'],
         'index': ([
-            (i + 1) for i, v in enumerate(scale_units)
+            (i + 1) for i, v in enumerate(options)
             if v['clientId'] == selected_scales[0]
         ] or [None])[0] if selected_scales else None,
     }

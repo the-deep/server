@@ -1,64 +1,48 @@
 # NOTE: This structure and value are set through https://github.com/the-deep/client
-WIDGET_DATA = {
+WIDGET_PROPERTIES = {
     'selectWidget': {
-        'title': 'My Select',
         'options': [
-            {'key': 'option-1', 'label': 'Option 1'},
-            {'key': 'option-2', 'label': 'Option 2'},
-            {'key': 'option-3', 'label': 'Option 3'}
+            {'clientId': 'option-1', 'label': 'Option 1'},
+            {'clientId': 'option-2', 'label': 'Option 2'},
+            {'clientId': 'option-3', 'label': 'Option 3'}
         ]
     },
     'multiselectWidget': {
-        'title': 'My Multi Select',
         'options': [
-            {'key': 'option-1', 'label': 'Option 1'},
-            {'key': 'option-2', 'label': 'Option 2'},
-            {'key': 'option-3', 'label': 'Option 3'}
+            {'clientId': 'option-1', 'label': 'Option 1'},
+            {'clientId': 'option-2', 'label': 'Option 2'},
+            {'clientId': 'option-3', 'label': 'Option 3'}
         ]
     },
     'scaleWidget': {
-        'title': 'My Scale',
-        'default_scale_unit': 'scale-1',
-        'scale_units': [
-            {'key': 'scale-1', 'color': '#470000', 'label': 'Scale 1'},
-            {'key': 'scale-2', 'color': '#a40000', 'label': 'Scale 2'},
-            {'key': 'scale-3', 'color': '#d40000', 'label': 'Scale 3'}
+        'defaultValue': 'scale-1',
+        'options': [
+            {'clientId': 'scale-1', 'color': '#470000', 'label': 'Scale 1'},
+            {'clientId': 'scale-2', 'color': '#a40000', 'label': 'Scale 2'},
+            {'clientId': 'scale-3', 'color': '#d40000', 'label': 'Scale 3'}
         ]
     },
-    'numberMatrixWidget': {
-        'title': 'My Number Matrix',
-        'row_headers': [
-            {'key': 'row-1', 'title': 'Row 1'},
-            {'key': 'row-2', 'title': 'Row 2'},
-            {'key': 'row-3', 'title': 'Row 3'},
-        ],
-        'column_headers': [
-            {'key': 'col-1', 'title': 'Col 1'},
-            {'key': 'col-2', 'title': 'Col 2'},
-            {'key': 'col-3', 'title': 'Col 3'},
-        ],
-    },
     'organigramWidget': {
-        'key': 'base',
-        'title': 'Base Node',
-        'organs': [{
-            'key': 'node-1',
-            'title': 'Node 1',
-            'organs': [{
-                'key': 'node-2',
-                'title': 'Node 2',
-                'organs': [
-                    {'key': 'node-3', 'title': 'Node 3', 'organs': []},
-                    {'key': 'node-4', 'title': 'Node 4', 'organs': []},
-                    {'key': 'node-5', 'title': 'Node 5', 'organs': []},
+        'clientId': 'base',
+        'label': 'Base Node',
+        'children': [{
+            'clientId': 'node-1',
+            'label': 'Node 1',
+            'children': [{
+                'clientId': 'node-2',
+                'label': 'Node 2',
+                'children': [
+                    {'clientId': 'node-3', 'label': 'Node 3', 'children': []},
+                    {'clientId': 'node-4', 'label': 'Node 4', 'children': []},
+                    {'clientId': 'node-5', 'label': 'Node 5', 'children': []},
                     {
-                        'key': 'node-6',
-                        'title': 'Node 6',
-                        'organs': [{
-                            'key': 'node-7',
-                            'title': 'Node 7',
-                            'organs': [
-                                {'key': 'node-8', 'title': 'Node 8', 'organs': []}
+                        'clientId': 'node-6',
+                        'label': 'Node 6',
+                        'children': [{
+                            'clientId': 'node-7',
+                            'label': 'Node 7',
+                            'children': [
+                                {'clientId': 'node-8', 'label': 'Node 8', 'children': []}
                             ]
                         }]
                     }
@@ -68,183 +52,146 @@ WIDGET_DATA = {
     },
 
     'matrix1dWidget': {
-        'title': 'My Matrix1d',
         'rows': [
             {
-                'key': 'pillar-1',
+                'clientId': 'pillar-1',
                 'cells': [
-                    {'key': 'subpillar-1', 'value': 'Politics', 'tooltip': ''},
-                    {'key': 'subpillar-2', 'value': 'Security', 'tooltip': 'Secure is good'},
-                    {'key': 'subpillar-3', 'value': 'Legal  & Policy'},
-                    {'key': 'subpillar-4', 'value': 'Demography'},
-                    {'key': 'subpillar-5', 'value': 'Economy'},
-                    {'key': 'subpillar-5', 'value': 'Socio Cultural'},
-                    {'key': 'subpillar-7', 'value': 'Environment'},
+                    {'clientId': 'subpillar-1', 'label': 'Politics', 'tooltip': ''},
+                    {'clientId': 'subpillar-2', 'label': 'Security', 'tooltip': 'Secure is good'},
+                    {'clientId': 'subpillar-3', 'label': 'Legal  & Policy'},
+                    {'clientId': 'subpillar-4', 'label': 'Demography'},
+                    {'clientId': 'subpillar-5', 'label': 'Economy'},
+                    {'clientId': 'subpillar-5', 'label': 'Socio Cultural'},
+                    {'clientId': 'subpillar-7', 'label': 'Environment'},
                 ],
                 'color': '#c26b27',
-                'title': 'Context',
+                'label': 'Context',
                 'tooltip': 'Information about the environment in which humanitarian actors operates and the crisis happen', # noqa E501
             }, {
-                'key': 'pillar-2',
+                'clientId': 'pillar-2',
                 'cells': [
-                    {'key': 'subpillar-8', 'value': 'Affected Groups'},
-                    {'key': 'subpillar-9', 'value': 'Population Movement'},
-                    {'key': 'subpillar-10', 'value': 'Push/Pull Factors'},
-                    {'key': 'subpillar-11', 'value': 'Casualties'},
+                    {'clientId': 'subpillar-8', 'label': 'Affected Groups'},
+                    {'clientId': 'subpillar-9', 'label': 'Population Movement'},
+                    {'clientId': 'subpillar-10', 'label': 'Push/Pull Factors'},
+                    {'clientId': 'subpillar-11', 'label': 'Casualties'},
                 ],
                 'color': '#efaf78',
-                'title': 'Humanitarian Profile',
+                'label': 'Humanitarian Profile',
                 'tooltip': 'Information related to the population affected, including affected residents and displaced people', # noqa E501
             }, {
-                'key': 'pillar-3',
+                'clientId': 'pillar-3',
                 'cells': [
-                    {'key': 'subpillar-12', 'value': 'Relief to Beneficiaries'},
-                    {'key': 'subpillar-13', 'value': 'Beneficiaries to Relief'},
-                    {'key': 'subpillar-14', 'value': 'Physical Constraints'},
-                    {'key': 'subpillar-15', 'value': 'Humanitarian Access Gaps'},
+                    {'clientId': 'subpillar-12', 'label': 'Relief to Beneficiaries'},
+                    {'clientId': 'subpillar-13', 'label': 'Beneficiaries to Relief'},
+                    {'clientId': 'subpillar-14', 'label': 'Physical Constraints'},
+                    {'clientId': 'subpillar-15', 'label': 'Humanitarian Access Gaps'},
                 ],
                 'color': '#b9b2a5',
-                'title': 'Humanitarian Access',
+                'label': 'Humanitarian Access',
                 'tooltip': 'Information related to restrictions and constraints in accessing or being accessed by people in need', # noqa E501
             }, {
-                'key': 'pillar-4',
+                'clientId': 'pillar-4',
                 'cells': [
-                    {'key': 'subpillar-16', 'value': 'Communication Means & Channels'},
-                    {'key': 'subpillar-17', 'value': 'Information Challenges'},
-                    {'key': 'subpillar-18', 'value': 'Information Needs & Gaps'},
+                    {'clientId': 'subpillar-16', 'label': 'Communication Means & Channels'},
+                    {'clientId': 'subpillar-17', 'label': 'Information Challenges'},
+                    {'clientId': 'subpillar-18', 'label': 'Information Needs & Gaps'},
                 ],
                 'color': '#9bd65b',
-                'title': 'Information',
+                'label': 'Information',
                 'tooltip': 'Information about information, including communication means, information challenges and information needs', # noqa E501
             }]
     },
 
     'matrix2dWidget': {
-        'title': 'My Matrix2d',
-        'sectors': [
-            {'id': 'sector-9', 'title': 'Cross', 'tooltip': 'Cross sectoral information', 'subsectors': []},
-            {'id': 'sector-0', 'title': 'Food', 'tooltip': '...', 'subsectors': []},
-            {'id': 'sector-1', 'title': 'Livelihoods', 'tooltip': '...', 'subsectors': []},
-            {'id': 'sector-2', 'title': 'Health', 'tooltip': '...', 'subsectors': []},
-            {'id': 'sector-3', 'title': 'Nutrition', 'tooltip': '...', 'subsectors': []},
+        'columns': [
+            {'clientId': 'sector-9', 'label': 'Cross', 'tooltip': 'Cross sectoral information', 'subColumns': []},
+            {'clientId': 'sector-0', 'label': 'Food', 'tooltip': '...', 'subColumns': []},
+            {'clientId': 'sector-1', 'label': 'Livelihoods', 'tooltip': '...', 'subColumns': []},
+            {'clientId': 'sector-2', 'label': 'Health', 'tooltip': '...', 'subColumns': []},
+            {'clientId': 'sector-3', 'label': 'Nutrition', 'tooltip': '...', 'subColumns': []},
             {
-                'id': 'sector-4',
-                'title': 'WASH',
+                'clientId': 'sector-4',
+                'label': 'WASH',
                 'tooltip': '...',
-                'subsectors': [
-                    {'id': 'subsector-1', 'title': 'Water'},
-                    {'id': 'subsector-2', 'title': 'Sanitation'},
-                    {'id': 'subsector-3', 'title': 'Hygiene'},
-                    {'id': 'subsector-4', 'title': 'Waste management', 'tooltip': ''},
-                    {'id': 'subsector-5', 'title': 'Vector control', 'tooltip': ''}
+                'subColumns': [
+                    {'clientId': 'subsector-1', 'label': 'Water'},
+                    {'clientId': 'subsector-2', 'label': 'Sanitation'},
+                    {'clientId': 'subsector-3', 'label': 'Hygiene'},
+                    {'clientId': 'subsector-4', 'label': 'Waste management', 'tooltip': ''},
+                    {'clientId': 'subsector-5', 'label': 'Vector control', 'tooltip': ''}
                 ]
             },
-            {'id': 'sector-5', 'title': 'Shelter', 'tooltip': '...', 'subsectors': []},
+            {'clientId': 'sector-5', 'label': 'Shelter', 'tooltip': '...', 'subColumns': []},
             {
-                'id': 'sector-7',
-                'title': 'Education',
+                'clientId': 'sector-7',
+                'label': 'Education',
                 'tooltip': '.....',
-                'subsectors': [
-                    {'id': 'subsector-6', 'title': 'Learning Environment', 'tooltip': ''},
-                    {'id': 'subsector-7', 'title': 'Teaching and Learning', 'tooltip': ''},
-                    {'id': 'subsector-8', 'title': 'Teachers and Education Personnel', 'tooltip': ''},
+                'subColumns': [
+                    {'clientId': 'subsector-6', 'label': 'Learning Environment', 'tooltip': ''},
+                    {'clientId': 'subsector-7', 'label': 'Teaching and Learning', 'tooltip': ''},
+                    {'clientId': 'subsector-8', 'label': 'Teachers and Education Personnel', 'tooltip': ''},
                 ]
             },
-            {'id': 'sector-8', 'title': 'Protection', 'tooltip': '', 'subsectors': []},
-            {'id': 'sector-10', 'title': 'Agriculture', 'tooltip': '...', 'subsectors': []},
-            {'id': 'sector-11', 'title': 'Logistics', 'tooltip': '...', 'subsectors': []}
+            {'clientId': 'sector-8', 'label': 'Protection', 'tooltip': '', 'subColumns': []},
+            {'clientId': 'sector-10', 'label': 'Agriculture', 'tooltip': '...', 'subColumns': []},
+            {'clientId': 'sector-11', 'label': 'Logistics', 'tooltip': '...', 'subColumns': []}
         ],
-        'dimensions': [
+        'rows': [
             {
-                'id': 'dimension-0',
+                'clientId': 'dimension-0',
                 'color': '#eae285',
-                'title': 'Scope & Scale',
+                'label': 'Scope & Scale',
                 'tooltip': 'Information about the direct and indirect impact of the disaster or crisis',
-                'subdimensions': [
-                    {'id': 'subdimension-0', 'title': 'Drivers/Aggravating Factors', 'tooltip': '...'},
-                    {'id': 'subdimension-3', 'title': 'System Disruption', 'tooltip': '...'},
-                    {'id': 'subdimension-4', 'title': 'Damages & Losses', 'tooltip': '...'},
-                    {'id': 'subdimension-6', 'title': 'Lessons Learnt', 'tooltip': '...'}
+                'subRows': [
+                    {'clientId': 'subdimension-0', 'label': 'Drivers/Aggravating Factors', 'tooltip': '...'},
+                    {'clientId': 'subdimension-3', 'label': 'System Disruption', 'tooltip': '...'},
+                    {'clientId': 'subdimension-4', 'label': 'Damages & Losses', 'tooltip': '...'},
+                    {'clientId': 'subdimension-6', 'label': 'Lessons Learnt', 'tooltip': '...'}
                 ]
             },
             {
-                'id': 'dimension-1',
+                'clientId': 'dimension-1',
                 'color': '#fba855',
-                'title': 'Humanitarian Conditions',
+                'label': 'Humanitarian Conditions',
                 'tooltip': '...',
-                'subdimensions': [
-                    {'id': 'subdimension-1', 'title': 'Living Standards', 'tooltip': '...'},
-                    {'id': 'us9kizxxwha7cpgb', 'title': 'Coping Mechanisms', 'tooltip': ''},
-                    {'id': 'subdimension-7', 'title': 'Physical & mental wellbeing', 'tooltip': '..'},
-                    {'id': 'subdimension-8', 'title': 'Risks & Vulnerabilities', 'tooltip': '...'},
-                    {'id': 'ejve4vklgge9ysxm', 'title': 'People with Specific Needs', 'tooltip': ''},
-                    {'id': 'subdimension-10', 'title': 'Unmet Needs', 'tooltip': '...'},
-                    {'id': 'subdimension-16', 'title': 'Lessons Learnt', 'tooltip': '...'},
+                'subRows': [
+                    {'clientId': 'subdimension-1', 'label': 'Living Standards', 'tooltip': '...'},
+                    {'clientId': 'us9kizxxwha7cpgb', 'label': 'Coping Mechanisms', 'tooltip': ''},
+                    {'clientId': 'subdimension-7', 'label': 'Physical & mental wellbeing', 'tooltip': '..'},
+                    {'clientId': 'subdimension-8', 'label': 'Risks & Vulnerabilities', 'tooltip': '...'},
+                    {'clientId': 'ejve4vklgge9ysxm', 'label': 'People with Specific Needs', 'tooltip': ''},
+                    {'clientId': 'subdimension-10', 'label': 'Unmet Needs', 'tooltip': '...'},
+                    {'clientId': 'subdimension-16', 'label': 'Lessons Learnt', 'tooltip': '...'},
                 ]
             },
             {
-                'id': 'dimension-2',
+                'clientId': 'dimension-2',
                 'color': '#92c5f6',
-                'title': 'Capacities & Response',
+                'label': 'Capacities & Response',
                 'tooltip': '...',
-                'subdimensions': [
-                    {'id': '7iiastsikxackbrt', 'title': 'System Functionality', 'tooltip': '...'},
-                    {'id': 'subdimension-11', 'title': 'Government', 'tooltip': '...'},
-                    {'id': 'drk4j92jwvmck7dc', 'title': 'LNGO', 'tooltip': '...'},
-                    {'id': 'subdimension-12', 'title': 'International', 'tooltip': '...'},
-                    {'id': 'subdimension-14', 'title': 'Response Gaps', 'tooltip': '...'},
-                    {'id': 'subdimension-15', 'title': 'Lessons Learnt', 'tooltip': '...'},
+                'subRows': [
+                    {'clientId': '7iiastsikxackbrt', 'label': 'System Functionality', 'tooltip': '...'},
+                    {'clientId': 'subdimension-11', 'label': 'Government', 'tooltip': '...'},
+                    {'clientId': 'drk4j92jwvmck7dc', 'label': 'LNGO', 'tooltip': '...'},
+                    {'clientId': 'subdimension-12', 'label': 'International', 'tooltip': '...'},
+                    {'clientId': 'subdimension-14', 'label': 'Response Gaps', 'tooltip': '...'},
+                    {'clientId': 'subdimension-15', 'label': 'Lessons Learnt', 'tooltip': '...'},
                 ]
             }
         ]
     },
 
-    'conditionalWidget': {
-        'widgets': [{
-            'widget': {
-                'key': 'scalewidget-1',
-                'title': 'Severity',
-                'widget_id': 'scaleWidget',
-                'properties': {
-                    'data': {
-                        'scale_units': [
-                            {'key': 'scale-1', 'color': '#fef0d9', 'label': 'No problem/Minor Problem'},
-                            {'key': 'scale-2', 'color': '#fdcc8a', 'label': 'Of Concern'},
-                            {'key': 'scale-3', 'color': '#fc8d59', 'label': 'Major'},
-                            {'key': 'scale-4', 'color': '#e34a33', 'label': 'Severe'},
-                            {'key': 'scale-5', 'color': '#b30000', 'label': 'Critical'},
-                        ],
-                    }
-                }
-            },
-            'conditions': {
-                'list': [{}],
-                'operator': 'AND',
-            }
-        }]
-    },
-
     'dateWidget': {
-        'title': 'My Date',
         'information_date_selected': False,
     },
-    'dateRangeWidget': {
-        'title': 'My Date Range',
-    },
-    'timeWidget': {
-        'title': 'My Time',
-    },
-    'timeRangeWidget': {
-        'title': 'My Time Range',
-    },
     'numberWidget': {
-        'title': 'My Number',
         'maxValue': 0,
         'minvalue': 12,
     },
-    'textWidget': {
-        'title': 'My Text',
-    },
+    'dateRangeWidget': {},
+    'timeWidget': {},
+    'timeRangeWidget': {},
+    'textWidget': {},
 }
 
 # NOTE: This structure and value are set through https://github.com/the-deep/client
@@ -293,7 +240,7 @@ ATTRIBUTE_DATA = {
     }],
 
     'dateRangeWidget': [{
-        'data': {'value': {'from': '2012-06-25', 'to': '2019-06-22'}},
+        'data': {'value': {'startDate': '2012-06-25', 'endDate': '2019-06-22'}},
         'c_response': {
             'from': '25-06-2012',
             'to': '22-06-2019',
@@ -322,50 +269,6 @@ ATTRIBUTE_DATA = {
     }, {
         'data': {'value': None},
         'c_response': '',
-    }],
-
-    'numberMatrixWidget': [{
-        'data': {
-            'value': {
-                'row-3': {
-                    'col-3': 12312,
-                    'col-1': 123,
-                },
-                'row-2': {
-                    'col-2': 123,
-                },
-            },
-        },
-        'c_response': [{
-            'value': 12312,
-            'row': {'id': 'row-3', 'title': 'Row 3'},
-            'column': {'id': 'col-3', 'title': 'Col 3'},
-        }, {
-            'value': 123,
-            'row': {'id': 'row-3', 'title': 'Row 3'},
-            'column': {'id': 'col-1', 'title': 'Col 1'},
-        }, {
-            'value': 123,
-            'row': {'id': 'row-2', 'title': 'Row 2'},
-            'column': {'id': 'col-2', 'title': 'Col 2'},
-        }],
-    }, {
-        'data': {
-            'value': {
-                'row-3': {
-                    'col-3': 12312,
-                    'col-9': 123,
-                },
-                'row-2': {
-                    'col-10': 123,
-                },
-            },
-        },
-        'c_response': [{
-            'value': 12312,
-            'row': {'id': 'row-3', 'title': 'Row 3'},
-            'column': {'id': 'col-3', 'title': 'Col 3'},
-        }],
     }],
 
     'matrix1dWidget': [{
@@ -481,7 +384,7 @@ ATTRIBUTE_DATA = {
     }],
 
     'timeRangeWidget': [{
-        'data': {'value': {'from': '18:05:00', 'to': '23:05:00'}},
+        'data': {'value': {'startTime': '18:05:00', 'endTime': '23:05:00'}},
         'c_response': {
             'from': '18:05',
             'to': '23:05',
@@ -516,41 +419,5 @@ ATTRIBUTE_DATA = {
             'title': 'Node 1',
             'parents': [{'key': 'base', 'title': 'Base Node'}],
         }],
-    }],
-
-    'conditionalWidget': [{
-        'data': {
-            'value': {
-                'selected_widget_key': 'scalewidget-1',
-                'scalewidget-1': {
-                    'data': {
-                        'value': 'scale-3',
-                    }
-                }
-            }
-        },
-        'c_response': {
-            'id': 'scalewidget-1',
-            'type': 'scaleWidget',
-            'title': 'Severity',
-            'value': {
-                'max': {'key': 'scale-5', 'color': '#b30000', 'label': 'Critical'},
-                'min': {'key': 'scale-1', 'color': '#fef0d9', 'label': 'No problem/Minor Problem'},
-                'label': 'Major',
-                'index': 3,
-            },
-        },
-    }, {
-        'data': {
-            'value': {
-                'selected_widget_key': 'scalewidget-2',
-                'scalewidget-1': {
-                    'data': {
-                        'value': 'scale-3',
-                    }
-                }
-            }
-        },
-        'c_response': None,
     }],
 }

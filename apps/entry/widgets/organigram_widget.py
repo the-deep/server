@@ -22,7 +22,7 @@ def _get_parent_nodes(node_mapping, node_key):
 
 def _get_selected_nodes_with_parent(node, selected_ids, node_mapping=None):
     node_mapping = node_mapping or {}
-    organs = node.get('options', [])
+    organs = node.get('children', [])
 
     if 'clientId' not in node:
         return []
@@ -59,9 +59,9 @@ def _get_selected_nodes_with_parent(node, selected_ids, node_mapping=None):
     return selected
 
 
-def update_attribute(widget, data, widget_data):
+def update_attribute(widget, data, widget_properties):
     values = data.get('value', [])
-    base_node = widget_data.get('key')
+    base_node = widget_properties.get('key')
 
     selected_nodes_with_parents = [
         [
@@ -72,7 +72,7 @@ def update_attribute(widget, data, widget_data):
             ][::-1],
             node['title'],
         ]
-        for node in _get_selected_nodes_with_parent(widget_data, set(values))
+        for node in _get_selected_nodes_with_parent(widget_properties, set(values))
     ]
 
     return {
@@ -96,6 +96,6 @@ def update_attribute(widget, data, widget_data):
     }
 
 
-def get_comprehensive_data(_, widget, data, widget_data):
+def get_comprehensive_data(_, widget, data, widget_properties):
     values = data.get('value', [])
-    return _get_selected_nodes_with_parent(widget_data, set(values))
+    return _get_selected_nodes_with_parent(widget_properties, set(values))

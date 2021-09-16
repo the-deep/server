@@ -24,7 +24,7 @@ class EntryFactory(DjangoModelFactory):
                 self.verified_by.add(verified_by_user)
 
 
-class EntryAttriuteFactory(DjangoModelFactory):
+class EntryAttributeFactory(DjangoModelFactory):
     pass
 
     class Meta:
