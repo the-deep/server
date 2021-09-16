@@ -5,7 +5,7 @@ from utils.graphene.tests import GraphQLSnapShotTestCase
 from entry.models import Entry
 
 from user.factories import UserFactory
-from entry.factories import EntryFactory, EntryAttriuteFactory
+from entry.factories import EntryFactory, EntryAttributeFactory
 from project.factories import ProjectFactory
 from lead.factories import LeadFactory
 from analysis_framework.factories import AnalysisFrameworkFactory, WidgetFactory
@@ -330,7 +330,7 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
             2,
             project=self.project, lead=self.lead, analysis_framework=self.project.analysis_framework
         )
-        entry2_att1 = EntryAttriuteFactory.create(entry=entry2, widget=self.widget1, data=self.dummy_data)
+        entry2_att1 = EntryAttributeFactory.create(entry=entry2, widget=self.widget1, data=self.dummy_data)
 
         minput = dict(
             deleteIds=[entry1.pk],

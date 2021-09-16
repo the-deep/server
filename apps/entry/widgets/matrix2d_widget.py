@@ -5,8 +5,8 @@ DATA_VERSION = 2
 
 def update_attribute(widget, data, widget_properties):
     data = (data or {}).get('value', {})
-    dimensions = widget_properties.get('rows', [])
-    sectors = widget_properties.get('columns', [])
+    rows = widget_properties.get('rows', [])
+    columns = widget_properties.get('columns', [])
 
     filter1_values = []
     filter2_values = []
@@ -14,69 +14,69 @@ def update_attribute(widget, data, widget_properties):
     excel_values = []
     report_values = []
 
-    for key, dimension in data.items():
+    for key, row in data.items():
         dim_exists = False
 
-        dimension_data = next((
-            d for d in dimensions
+        row_data = next((
+            d for d in rows
             if d.get('clientId') == key
         ), {})
-        subdimensions = dimension_data.get('subRows', [])
+        sub_rows = row_data.get('subRows', [])
 
-        if dimension is None:
+        if row is None:
             continue
 
-        for sub_key, subdimension in dimension.items():
+        for sub_key, sub_row in row.items():
             subdim_exists = False
 
-            subdimension_data = next((
-                s for s in subdimensions
+            sub_row_data = next((
+                s for s in sub_rows
                 if s.get('clientId') == sub_key
             ), {})
 
-            if dimension is None:
+            if row is None:
                 continue
 
-            for sector_key, subsectors in subdimension.items():
-                if subsectors is not None:
-                    if isinstance(subsectors, bool):
-                        subsectors = []
+            for column_key, sub_columns in sub_row.items():
+                if sub_columns is not None:
+                    if isinstance(sub_columns, bool):
+                        sub_columns = []
 
                     dim_exists = True
                     subdim_exists = True
 
-                    if sector_key not in filter2_values:
-                        filter2_values.append(sector_key)
-                    filter2_values.extend(subsectors)
+                    if column_key not in filter2_values:
+                        filter2_values.append(column_key)
+                    filter2_values.extend(sub_columns)
 
-                    sector_data = next((
-                        s for s in sectors
-                        if s.get('clientId') == sector_key
+                    column_data = next((
+                        s for s in columns
+                        if s.get('clientId') == column_key
                     ), {})
 
                     def get_ss_title(ss):
                         return next((
                             ssd.get('label') for ssd
-                            in sector_data.get('subColumns', [])
+                            in column_data.get('subColumns', [])
                             if ssd.get('clientId') == ss
                         ), '')
 
                     excel_values.append([
-                        dimension_data.get('label'),
-                        subdimension_data.get('label'),
-                        sector_data.get('label'),
-                        [get_ss_title(ss) for ss in subsectors],
+                        row.get('label'),
+                        sub_row_data.get('label'),
+                        column_data.get('label'),
+                        [get_ss_title(ss) for ss in sub_columns],
                     ])
 
-                    # Without subsectors {sector}-{dimension}-{sub-dimension}
+                    # Without sub_columns {column}-{row}-{sub-row}
                     report_values.append(
-                        '{}-{}-{}'.format(sector_key, key, sub_key)
+                        '{}-{}-{}'.format(column_key, key, sub_key)
                     )
-                    # With subsectors {sector}-{sub-sector}-{dimension}-{sub-dimension}
+                    # With sub_columns {column}-{sub-column}-{row}-{sub-row}
                     report_values.extend(
                         [
-                            '{}-{}-{}-{}'.format(sector_key, ss, key, sub_key)
-                            for ss in subsectors
+                            '{}-{}-{}-{}'.format(column_key, ss, key, sub_key)
+                            for ss in sub_columns
                         ]
                     )
 
@@ -88,11 +88,11 @@ def update_attribute(widget, data, widget_properties):
     return {
         'filter_data': [
             {
-                'key': '{}-dimensions'.format(widget.key),
+                'key': '{}-rows'.format(widget.key),
                 'values': filter1_values,
             },
             {
-                'key': '{}-sectors'.format(widget.key),
+                'key': '{}-columns'.format(widget.key),
                 'values': filter2_values,
             },
         ],
@@ -140,10 +140,10 @@ def _get_headers(widgets_meta, widget, widget_properties):
     sector_header_map = {}
     subsector_header_map = {}
 
-    for sector in widget_properties.get('sectors', []):
+    for sector in widget_properties.get('columns', []):
         subsector_keys = []
         sector_header_map[sector['clientId']] = sector
-        for subsector in sector['subsectors']:
+        for subsector in sector['subColumns']:
             subsector_header_map[subsector['clientId']] = subsector
             subsector_keys.append(subsector['clientId'])
         sector_header_map[sector['clientId']]['subsector_keys'] = subsector_keys

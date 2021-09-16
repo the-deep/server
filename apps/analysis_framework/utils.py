@@ -23,15 +23,6 @@ def update_widget(widget):
                 defaults=filter,
             )
 
-    # Remove obsolute filters
-    Filter.objects.filter(
-        # Only look at current widget key + AF
-        analysis_framework=widget.analysis_framework,
-        widget_key=widget.key,
-    ).exclude(
-        key__in=new_filter_keys,
-    ).delete()
-
     new_exportable_keys = []
     if hasattr(widget_module, 'get_exportable'):
         exportable = widget_module.get_exportable(widget, widget_properties)
@@ -44,14 +35,6 @@ def update_widget(widget):
                     'data': exportable,
                 },
             )
-
-    # Remove obsolute Exportables
-    Exportable.objects.filter(
-        # Only look at current AF
-        analysis_framework=widget.analysis_framework,
-    ).exclude(
-        widget_key__in=new_exportable_keys,
-    ).delete()
 
 
 def update_widgets(widget_id=None, **widget_filters):
