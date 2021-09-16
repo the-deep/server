@@ -32,11 +32,14 @@ def get_values_for_organ(organ, parent_label=None):
 def get_filters(widget, properties):
     from analysis_framework.models import Filter  # To avoid circular import
 
+    options = []
+    if properties:
+        options = get_values_for_organ(properties, None)
     return [{
         'filter_type': Filter.FilterType.LIST,
         'properties': {
             'type': 'multiselect',
-            'options': get_values_for_organ(properties, None) if properties else [],
+            'options': options,
         },
     }]
 

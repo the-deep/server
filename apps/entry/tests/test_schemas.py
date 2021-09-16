@@ -11,7 +11,7 @@ from user.factories import UserFactory
 from geo.factories import RegionFactory, AdminLevelFactory, GeoAreaFactory
 from project.factories import ProjectFactory
 from lead.factories import LeadFactory
-from entry.factories import EntryFactory, EntryAttriuteFactory
+from entry.factories import EntryFactory, EntryAttributeFactory
 from analysis_framework.factories import AnalysisFrameworkFactory, WidgetFactory
 from organization.factories import OrganizationFactory, OrganizationTypeFactory
 
@@ -457,19 +457,19 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                 'data': {
                     'options': [
                         {
-                            'key': 'key-101',
+                            'clientId': 'key-101',
                             'label': 'Key label 101'
                         },
                         {
-                            'key': 'key-102',
+                            'clientId': 'key-102',
                             'label': 'Key label 102'
                         },
                         {
-                            'key': 'key-103',
+                            'clientId': 'key-103',
                             'label': 'Key label 103'
                         },
                         {
-                            'key': 'key-104',
+                            'clientId': 'key-104',
                             'label': 'Key label 104'
                         },
                     ]
@@ -521,44 +521,44 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
         entry3_2 = EntryFactory.create(**self.entry_create_kwargs, lead=self.lead3)
 
         # Create attributes for multiselect (LIST Filter)
-        EntryAttriuteFactory.create(entry=entry1_1, widget=self.widget_multiselect, data={'value': ['key-101', 'key-102']})
-        EntryAttriuteFactory.create(entry=entry2_1, widget=self.widget_multiselect, data={'value': ['key-102', 'key-103']})
+        EntryAttributeFactory.create(entry=entry1_1, widget=self.widget_multiselect, data={'value': ['key-101', 'key-102']})
+        EntryAttributeFactory.create(entry=entry2_1, widget=self.widget_multiselect, data={'value': ['key-102', 'key-103']})
         # Create attributes for time (NUMBER Filter)
-        EntryAttriuteFactory.create(entry=entry1_1, widget=self.widget_number, data={'value': 10001})
-        EntryAttriuteFactory.create(entry=entry3_1, widget=self.widget_number, data={'value': 10002})
+        EntryAttributeFactory.create(entry=entry1_1, widget=self.widget_number, data={'value': 10001})
+        EntryAttributeFactory.create(entry=entry3_1, widget=self.widget_number, data={'value': 10002})
         # Create attributes for date range (INTERSECTS Filter)
-        EntryAttriuteFactory.create(
+        EntryAttributeFactory.create(
             entry=entry2_1,
             widget=self.widget_date_range,
-            data={'value': {'from': '2020-01-10', 'to': '2020-01-20'}},
+            data={'value': {'startDate': '2020-01-10', 'endDate': '2020-01-20'}},
         )
-        EntryAttriuteFactory.create(
+        EntryAttributeFactory.create(
             entry=entry3_1,
             widget=self.widget_date_range,
-            data={'value': {'from': '2020-01-10', 'to': '2020-02-20'}},
+            data={'value': {'startDate': '2020-01-10', 'endDate': '2020-02-20'}},
         )
-        EntryAttriuteFactory.create(
+        EntryAttributeFactory.create(
             entry=entry3_2,
             widget=self.widget_date_range,
-            data={'value': {'from': '2020-01-15', 'to': '2020-01-10'}},
+            data={'value': {'startDate': '2020-01-15', 'endDate': '2020-01-10'}},
         )
         # Create attributes for text (TEXT Filter)
-        EntryAttriuteFactory.create(entry=entry1_1, widget=self.widget_text, data={'value': 'This is a test 1'})
-        EntryAttriuteFactory.create(entry=entry3_1, widget=self.widget_text, data={'value': 'This is a test 2'})
+        EntryAttributeFactory.create(entry=entry1_1, widget=self.widget_text, data={'value': 'This is a test 1'})
+        EntryAttributeFactory.create(entry=entry3_1, widget=self.widget_text, data={'value': 'This is a test 2'})
         # Create attributes for GEO (LIST Filter)
-        EntryAttriuteFactory.create(
+        EntryAttributeFactory.create(
             entry=entry1_1, widget=self.widget_geo,
             data={'value': [self.geo_area_3_2.pk]}  # Leaf tagged
         )
-        EntryAttriuteFactory.create(
+        EntryAttributeFactory.create(
             entry=entry2_1, widget=self.widget_geo,
             data={'value': [self.geo_area_1.pk]}  # Root tagged
         )
-        EntryAttriuteFactory.create(
+        EntryAttributeFactory.create(
             entry=entry3_1, widget=self.widget_geo,
             data={'value': [self.geo_area_2_1.pk]}  # Middle child tagged
         )
-        EntryAttriuteFactory.create(
+        EntryAttributeFactory.create(
             entry=entry3_2, widget=self.widget_geo,
             data={'value': [self.geo_area_1.pk, self.geo_area_3_2.pk]}  # Middle child tagged + leaf node
         )
