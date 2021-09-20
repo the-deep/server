@@ -22,8 +22,8 @@
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            6 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">6 run</button>
+            7 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">7 run</button>
             <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">0 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">0 partial</button>
@@ -63,21 +63,23 @@
     <p id="t8" class="run"><span class="n"><a href="#t8">8</a></span><span class="t"><span class="nam">ExportFormatEnum</span> <span class="op">=</span> <span class="nam">convert_enum_to_graphene_enum</span><span class="op">(</span><span class="nam">Export</span><span class="op">.</span><span class="nam">Format</span><span class="op">,</span> <span class="nam">name</span><span class="op">=</span><span class="str">'ExportFormatEnum'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t9" class="run"><span class="n"><a href="#t9">9</a></span><span class="t"><span class="nam">ExportStatusEnum</span> <span class="op">=</span> <span class="nam">convert_enum_to_graphene_enum</span><span class="op">(</span><span class="nam">Export</span><span class="op">.</span><span class="nam">Status</span><span class="op">,</span> <span class="nam">name</span><span class="op">=</span><span class="str">'ExportStatusEnum'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t10" class="run"><span class="n"><a href="#t10">10</a></span><span class="t"><span class="nam">ExportDataTypeEnum</span> <span class="op">=</span> <span class="nam">convert_enum_to_graphene_enum</span><span class="op">(</span><span class="nam">Export</span><span class="op">.</span><span class="nam">DataType</span><span class="op">,</span> <span class="nam">name</span><span class="op">=</span><span class="str">'ExportDataTypeEnum'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t11" class="pln"><span class="n"><a href="#t11">11</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t12" class="run"><span class="n"><a href="#t12">12</a></span><span class="t"><span class="nam">enum_map</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t13" class="pln"><span class="n"><a href="#t13">13</a></span><span class="t">    <span class="nam">get_enum_name_from_django_field</span><span class="op">(</span><span class="nam">field</span><span class="op">)</span><span class="op">:</span> <span class="nam">enum</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t14" class="pln"><span class="n"><a href="#t14">14</a></span><span class="t">    <span class="key">for</span> <span class="nam">field</span><span class="op">,</span> <span class="nam">enum</span> <span class="key">in</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t15" class="pln"><span class="n"><a href="#t15">15</a></span><span class="t">        <span class="op">(</span><span class="nam">Export</span><span class="op">.</span><span class="nam">format</span><span class="op">,</span> <span class="nam">ExportFormatEnum</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t16" class="pln"><span class="n"><a href="#t16">16</a></span><span class="t">        <span class="op">(</span><span class="nam">Export</span><span class="op">.</span><span class="nam">status</span><span class="op">,</span> <span class="nam">ExportStatusEnum</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t17" class="pln"><span class="n"><a href="#t17">17</a></span><span class="t">        <span class="op">(</span><span class="nam">Export</span><span class="op">.</span><span class="nam">type</span><span class="op">,</span> <span class="nam">ExportDataTypeEnum</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t18" class="pln"><span class="n"><a href="#t18">18</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t19" class="pln"><span class="n"><a href="#t19">19</a></span><span class="t"><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t11" class="run"><span class="n"><a href="#t11">11</a></span><span class="t"><span class="nam">ExportExportTypeEnum</span> <span class="op">=</span> <span class="nam">convert_enum_to_graphene_enum</span><span class="op">(</span><span class="nam">Export</span><span class="op">.</span><span class="nam">ExportType</span><span class="op">,</span> <span class="nam">name</span><span class="op">=</span><span class="str">'ExportExportTypeEnum'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t12" class="pln"><span class="n"><a href="#t12">12</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t13" class="run"><span class="n"><a href="#t13">13</a></span><span class="t"><span class="nam">enum_map</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t14" class="pln"><span class="n"><a href="#t14">14</a></span><span class="t">    <span class="nam">get_enum_name_from_django_field</span><span class="op">(</span><span class="nam">field</span><span class="op">)</span><span class="op">:</span> <span class="nam">enum</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t15" class="pln"><span class="n"><a href="#t15">15</a></span><span class="t">    <span class="key">for</span> <span class="nam">field</span><span class="op">,</span> <span class="nam">enum</span> <span class="key">in</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t16" class="pln"><span class="n"><a href="#t16">16</a></span><span class="t">        <span class="op">(</span><span class="nam">Export</span><span class="op">.</span><span class="nam">format</span><span class="op">,</span> <span class="nam">ExportFormatEnum</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t17" class="pln"><span class="n"><a href="#t17">17</a></span><span class="t">        <span class="op">(</span><span class="nam">Export</span><span class="op">.</span><span class="nam">status</span><span class="op">,</span> <span class="nam">ExportStatusEnum</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t18" class="pln"><span class="n"><a href="#t18">18</a></span><span class="t">        <span class="op">(</span><span class="nam">Export</span><span class="op">.</span><span class="nam">type</span><span class="op">,</span> <span class="nam">ExportDataTypeEnum</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t19" class="pln"><span class="n"><a href="#t19">19</a></span><span class="t">        <span class="op">(</span><span class="nam">Export</span><span class="op">.</span><span class="nam">export_type</span><span class="op">,</span> <span class="nam">ExportExportTypeEnum</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t20" class="pln"><span class="n"><a href="#t20">20</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t21" class="pln"><span class="n"><a href="#t21">21</a></span><span class="t"><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
 </div>
 <div id="footer">
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-09-20 05:15 +0000
+            created at 2021-09-20 07:41 +0000
         </p>
     </div>
 </div>

@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/entry/models.py: 88%</title>
+    <title>Coverage for apps/entry/models.py: 87%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -18,15 +18,15 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>apps/entry/models.py</b> :
-            <span class="pc_cov">88%</span>
+            <span class="pc_cov">87%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
             193 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">171 run</button>
-            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">22 missing</button>
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">170 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">23 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
-            <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">3 partial</button>
+            <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">4 partial</button>
         </h2>
     </div>
 </div>
@@ -150,8 +150,8 @@
     <p id="t95" class="run"><span class="n"><a href="#t95">95</a></span><span class="t">        <span class="key">return</span> <span class="nam">ret</span>&nbsp;</span><span class="r"></span></p>
     <p id="t96" class="pln"><span class="n"><a href="#t96">96</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t97" class="run"><span class="n"><a href="#t97">97</a></span><span class="t">    <span class="key">def</span> <span class="nam">__str__</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t98" class="run"><span class="n"><a href="#t98">98</a></span><span class="t">        <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">entry_type</span> <span class="op">==</span> <span class="nam">Entry</span><span class="op">.</span><span class="nam">TagType</span><span class="op">.</span><span class="nam">IMAGE</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t99" class="run"><span class="n"><a href="#t99">99</a></span><span class="t">            <span class="key">return</span> <span class="str">'Image ({})'</span><span class="op">.</span><span class="nam">format</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">lead</span><span class="op">.</span><span class="nam">title</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t98" class="par run show_par"><span class="n"><a href="#t98">98</a></span><span class="t">        <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">entry_type</span> <span class="op">==</span> <span class="nam">Entry</span><span class="op">.</span><span class="nam">TagType</span><span class="op">.</span><span class="nam">IMAGE</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">98&#x202F;&#x219B;&#x202F;99</span><span class="annotate long">line 98 didn't jump to line 99, because the condition on line 98 was never true</span></span></p>
+    <p id="t99" class="mis show_mis"><span class="n"><a href="#t99">99</a></span><span class="t">            <span class="key">return</span> <span class="str">'Image ({})'</span><span class="op">.</span><span class="nam">format</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">lead</span><span class="op">.</span><span class="nam">title</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t100" class="pln"><span class="n"><a href="#t100">100</a></span><span class="t">        <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t101" class="run"><span class="n"><a href="#t101">101</a></span><span class="t">            <span class="key">return</span> <span class="str">'"{}" ({})'</span><span class="op">.</span><span class="nam">format</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p id="t102" class="pln"><span class="n"><a href="#t102">102</a></span><span class="t">                <span class="nam">self</span><span class="op">.</span><span class="nam">excerpt</span><span class="op">[</span><span class="op">:</span><span class="num">30</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -472,7 +472,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-09-20 05:15 +0000
+            created at 2021-09-20 07:41 +0000
         </p>
     </div>
 </div>
