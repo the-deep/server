@@ -5,6 +5,7 @@ from rest_framework import (
     response,
 )
 
+from django.views.decorators.clickjacking import xframe_options_exempt
 from django.http import JsonResponse
 from django.urls import resolve
 from django.views.generic import View
@@ -71,6 +72,7 @@ class ProjectPublicVizView(View):
     """
     View for public viz view without user authentication
     """
+    @xframe_options_exempt
     def get(self, request, project_stat_id, token):
         from project.views import _get_viz_data
 
