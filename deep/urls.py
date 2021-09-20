@@ -16,7 +16,6 @@ from drf_yasg import openapi
 from django_otp.admin import OTPAdminSite
 
 from . import converters
-from deep.views import CustomGraphQLView
 
 # import autofixture
 
@@ -148,16 +147,17 @@ from export.views import (
     ExportViewSet,
 )
 from deep.views import (
-    get_frontend_url,
+    AccountActivate,
     Api_404View,
     CombinedView,
+    CustomGraphQLView,
+    EntryCommentEmail,
+    EntryReviewCommentEmail,
     FrontendView,
     PasswordReset,
     ProjectJoinRequest,
     ProjectPublicVizView,
-    EntryCommentEmail,
-    EntryReviewCommentEmail,
-    AccountActivate,
+    get_frontend_url,
 )
 from organization.views import (
     OrganizationViewSet,
@@ -388,7 +388,7 @@ if not settings.DEBUG:
     admin.site.__class__ = OTPAdminSite
 
 urlpatterns = [
-    re_path(r'^$', FrontendView.as_view()),
+    re_path(r'^$', FrontendView.as_view(), name='server-frontend'),
     re_path(r'^admin/', admin.site.urls),
 
     re_path(r'^api-docs(?P<format>\.json|\.yaml)$',
