@@ -2,7 +2,7 @@
 """
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic.base import RedirectView
-from django.conf.urls import re_path, include, static
+from django.conf.urls import include, static
 from django.views.static import serve
 from django.contrib.auth import views as auth_views
 from django.contrib import admin
@@ -380,7 +380,7 @@ if not settings.DEBUG:
     admin.site.__class__ = OTPAdminSite
 
 urlpatterns = [
-    re_path(r'^$', FrontendView.as_view()),
+    re_path(r'^$', FrontendView.as_view(), name='server-frontend'),
     re_path(r'^admin/', admin.site.urls),
 
     re_path(r'^api-docs(?P<format>\.json|\.yaml)$',
