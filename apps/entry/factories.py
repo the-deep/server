@@ -15,6 +15,14 @@ class EntryFactory(DjangoModelFactory):
     class Meta:
         model = Entry
 
+    @factory.post_generation
+    def verified_by(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for verified_by_user in extracted:
+                self.verified_by.add(verified_by_user)
+
 
 class EntryAttriuteFactory(DjangoModelFactory):
     pass

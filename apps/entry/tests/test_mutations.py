@@ -380,7 +380,6 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
                 **kwargs
             )
 
-        print(entry1, entry2)
         # -- Without login
         _query_check(assert_for_error=True)
 
