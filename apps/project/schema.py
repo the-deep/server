@@ -7,7 +7,7 @@ from graphene_django import DjangoObjectType, DjangoListField
 from graphene.types import generic
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
-from utils.graphene.types import CustomDjangoListObjectType
+from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import (
     DjangoPaginatedListObjectField,
     DateCountType,
@@ -26,6 +26,7 @@ from entry.models import Entry
 from .models import (
     Project,
     ProjectMembership,
+    ProjectUserGroupMembership,
     ProjectJoinRequest,
     ProjectOrganization,
 )
@@ -91,6 +92,24 @@ class ProjectOrganizationType(DjangoObjectType):
     @staticmethod
     def resolve_organization(root, info):
         return info.context.dl.organization.organization.load(root.organization_id)
+
+
+class ProjectMembershipType(ClientIdMixin, DjangoObjectType):
+    class Meta:
+        model = ProjectMembership
+        fields = (
+            'id', 'member', 'linked_group',
+            'role', 'joined_at', 'added_by', 'badges',
+        )
+
+
+class ProjectUserGroupMembershipType(ClientIdMixin, DjangoObjectType):
+    class Meta:
+        model = ProjectUserGroupMembership
+        fields = (
+            'id', 'usergroup',
+            'role', 'joined_at', 'added_by', 'badges',
+        )
 
 
 class ProjectType(DjangoObjectType):
@@ -177,18 +196,31 @@ class ProjectDetailType(
         model = Project
         skip_registry = True
         fields = (
-            'id', 'title', 'description', 'start_date', 'end_date',
-            'members', 'user_groups', 'analysis_framework',
+            'id', 'title', 'description', 'start_date', 'end_date', 'analysis_framework',
             'category_editor', 'assessment_template', 'data',
             'is_default', 'is_private', 'is_visualization_enabled',
             'created_at', 'created_by',
             'modified_at', 'modified_by'
         )
 
+    user_members = DjangoListField(ProjectMembershipType)
+    user_group_members = DjangoListField(ProjectUserGroupMembershipType)
     analysis_framework = graphene.Field(AnalysisFrameworkDetailType)
     activity_log = generic.GenericScalar()  # TODO: Need to define type
     top_sourcers = graphene.List(graphene.NonNull(UserEntityCountType))
     top_taggers = graphene.List(graphene.NonNull(UserEntityCountType))
+
+    @staticmethod
+    def resolve_user_members(root, info, **kwargs):
+        if root.get_current_user_role(info.context.request.user) is not None:
+            return ProjectMembership.objects.filter(project=root).all()
+        return []  # NOTE: Always return empty array FIXME: without empty everything is returned
+
+    @staticmethod
+    def resolve_user_group_members(root, info, **kwargs):
+        if root.get_current_user_role(info.context.request.user) is not None:
+            return ProjectUserGroupMembership.objects.filter(project=root).all()
+        return []  # NOTE: Always return empty array FIXME: without empty everything is returned
 
     @staticmethod
     def resolve_activity_log(root, info, **kwargs):

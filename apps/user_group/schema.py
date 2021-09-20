@@ -45,6 +45,7 @@ class UserGroupType(DjangoObjectType):
 class UserGroupDetailType(UserGroupType):
     class Meta:
         model = UserGroup
+        skip_registry = True
         fields = (
             'id',
             'title',

@@ -8,7 +8,6 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.db import models
 from django.db import connection as django_db_connection
-from django_enumfield import enum
 
 from user_resource.models import UserResource
 from geo.models import Region
@@ -387,11 +386,8 @@ class ProjectMembership(models.Model):
     """
     Project-Member relationship attributes
     """
-    class BadgeType(enum.Enum):
-        QA = 0
-        __labels__ = {
-            QA: 'Quality Assurance',
-        }
+    class BadgeType(models.IntegerChoices):
+        QA = 0, 'Quality Assurance'
 
     member = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
@@ -413,7 +409,7 @@ class ProjectMembership(models.Model):
         related_name='added_project_memberships',
     )
     # Represents additional permission like QA
-    badges = ArrayField(enum.EnumField(BadgeType), default=list, blank=True)
+    badges = ArrayField(models.IntegerField(choices=BadgeType.choices), default=list, blank=True)
 
     class Meta:
         unique_together = ('member', 'project')
@@ -468,7 +464,7 @@ class ProjectUserGroupMembership(models.Model):
         related_name='added_project_usergroups',
     )
     # Represents additional permission like QA (UserGroup level, we define additionaly in UserMembersip level as well)
-    badges = ArrayField(enum.EnumField(ProjectMembership.BadgeType), default=list, blank=True)
+    badges = ArrayField(models.IntegerField(choices=ProjectMembership.BadgeType.choices), default=list, blank=True)
 
     class Meta:
         unique_together = ('usergroup', 'project')

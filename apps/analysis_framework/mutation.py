@@ -28,12 +28,12 @@ from .schema import (
 
 AnalysisFrameworkInputType = generate_input_type_for_serializer(
     'AnalysisFrameworkInputType',
-    serializer_class=AnalysisFrameworkSerializer
+    serializer_class=AnalysisFrameworkSerializer,
 )
 
 AnalysisFrameworkMembershipInputType = generate_input_type_for_serializer(
     'AnalysisFrameworkMembershipInputType',
-    serializer_class=AnalysisFrameworkMembershipSerializer
+    serializer_class=AnalysisFrameworkMembershipSerializer,
 )
 
 

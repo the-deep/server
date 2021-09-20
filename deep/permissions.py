@@ -232,6 +232,7 @@ class ProjectPermissions(BasePermissions):
     class Permission(Enum):  # TODO: Not sure how auto() works, if different server have different values.
         # ---------------------- Project
         UPDATE_PROJECT = auto()
+        CAN_ADD_MEMBER = auto()
         # ---------------------- Lead
         CREATE_LEAD = auto()
         VIEW_ONLY_UNPROTECTED_LEAD = auto()
@@ -245,13 +246,14 @@ class ProjectPermissions(BasePermissions):
         DELETE_ENTRY = auto()
         # ---------------------- Export
         CREATE_EXPORT = auto()
-        # ---------------------- Export
+        # ---------------------- QA
         CAN_QUALITY_CONTROL = auto()
 
     Permission.__name__ = 'ProjectPermission'
 
     __error_message__ = {
         Permission.UPDATE_PROJECT: "You don't have permission to update project",
+        Permission.CAN_ADD_MEMBER: "You don't have permission to add member to project",
         Permission.CREATE_LEAD: "You don't have permission to create lead",
         Permission.VIEW_ONLY_UNPROTECTED_LEAD: "You don't have permission to view lead",
         Permission.VIEW_ALL_LEAD: "You don't have permission to view confidential lead",
@@ -301,6 +303,7 @@ class ProjectPermissions(BasePermissions):
     ADMIN = [
         *ANALYST,
         Permission.UPDATE_PROJECT,
+        Permission.CAN_ADD_MEMBER,
     ]
     CLAIRVOYANT_ONE = [*ADMIN]
 
