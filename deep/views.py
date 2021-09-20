@@ -1,11 +1,12 @@
 from rest_framework.exceptions import NotFound, PermissionDenied
-from django.core.exceptions import PermissionDenied as DjPermissionDenied
 from rest_framework import (
     views,
     status,
     response,
 )
 
+from django.core.exceptions import PermissionDenied as DjPermissionDenied
+from django.views.decorators.clickjacking import xframe_options_exempt
 from django.http import JsonResponse
 from django.urls import resolve
 from django.views.generic import View
@@ -75,6 +76,7 @@ class ProjectPublicVizView(View):
     """
     View for public viz view without user authentication
     """
+    @xframe_options_exempt
     def get(self, request, project_stat_id, token):
         from project.views import _get_viz_data
 
