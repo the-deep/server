@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.utils.translation import gettext
@@ -8,7 +9,12 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
-from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField, IntegerIDField
+from deep.serializers import (
+    RemoveNullFieldsMixin,
+    URLCachedFileField,
+    IntegerIDField,
+    TempClientIdMixin,
+)
 from geo.models import Region
 from geo.serializers import SimpleRegionSerializer
 from entry.models import Lead, Entry
@@ -614,3 +620,80 @@ class ProjectAcceptRejectSerializer(serializers.ModelSerializer):
         elif validated_data['status'] == 'rejected':
             ProjectAcceptRejectSerializer._reject_request(self.context['request'].user, instance)
         return super().update(instance, validated_data)
+
+
+class ProjectMembershipGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
+    id = IntegerIDField(required=False)
+    role = serializers.PrimaryKeyRelatedField(required=False, queryset=ProjectRole.objects.all())
+
+    class Meta:
+        model = ProjectMembership
+        fields = (
+            'id', 'member', 'role', 'badges',
+            'client_id',
+        )
+
+    @cached_property
+    def project(self):
+        project = self.context['request'].active_project
+        # This is a rare case, just to make sure this is validated
+        if self.instance and self.instance.project != project:
+            raise serializers.ValidationError('Invalid access')
+        return project
+
+    def validate_member(self, member):
+        current_members = ProjectMembership.objects.filter(project=self.project, member=member)
+        if current_members.exclude(pk=self.instance and self.instance.pk).exists():
+            raise serializers.ValidationError('User is already a member!')
+        return member
+
+    def validate_role(self, role):
+        user_role = ProjectMembership.objects.get(
+            project=self.project,
+            member=self.context['request'].user,
+        ).role
+        if role.level < user_role.level:
+            raise serializers.ValidationError('Access is denied for higher role assignment.')
+        return role
+
+    def create(self, validated_data):
+        validated_data['added_by'] = self.context['request'].user
+        validated_data['project'] = self.project
+        return super().create(validated_data)
+
+
+class ProjectUserGroupMembershipGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
+    class Meta:
+        model = ProjectUserGroupMembership
+        fields = (
+            'id', 'usergroup', 'role', 'badges',
+            'client_id',
+        )
+
+    @cached_property
+    def project(self):
+        project = self.context['request'].active_project
+        # This is a rare case, just to make sure this is validated
+        if self.instance and self.instance.project != project:
+            raise serializers.ValidationError('Invalid access')
+        return project
+
+    def validate_usergroup(self, usergroup):
+        current_members = ProjectUserGroupMembership.objects.filter(project=self.project, usergroup=usergroup)
+        if current_members.exclude(pk=self.instance and self.instance.pk).exists():
+            raise serializers.ValidationError('UserGroup already a member!')
+        return usergroup
+
+    def validate_role(self, role):
+        user_role = ProjectUserGroupMembership.objects.get(
+            project=self.project,
+            member=self.context['request'].user,
+        ).role
+        if role.level < user_role.level:
+            raise serializers.ValidationError('Access is denied for higher role assignment.')
+        return role
+
+    def create(self, validated_data):
+        validated_data['project'] = self.project
+        validated_data['added_by'] = self.context['request'].user
+        return super().create(validated_data)
