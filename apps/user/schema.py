@@ -86,6 +86,11 @@ class UserMeType(DjangoObjectType):
 
     @staticmethod
     @only_me
+    def resolve_display_picture_url(root, info, **kwargs) -> Union[str, None]:
+        return info.context.dl.user.display_picture.load(root.id)
+
+    @staticmethod
+    @only_me
     def resolve_last_active_project(root, info, **kwargs) -> Union[int, None]:
         return root.profile.last_active_project or (
             Project.get_for_gq(info.context.user, only_member=True).order_by('-id').first()
