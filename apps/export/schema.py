@@ -1,3 +1,5 @@
+import graphene
+
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
@@ -7,6 +9,12 @@ from utils.graphene.fields import DjangoPaginatedListObjectField
 
 from .models import Export
 from .filter_set import ExportGQLFilterSet
+from .enums import (
+    ExportDataTypeEnum,
+    ExportFormatEnum,
+    ExportStatusEnum,
+    ExportExportTypeEnum
+)
 
 
 def get_export_qs(info):
@@ -20,10 +28,15 @@ class UserExportType(DjangoObjectType):
     class Meta:
         model = Export
         fields = (
-            'id', 'project', 'is_preview', 'title', 'format', 'type',
-            'export_type', 'filters', 'mime_type', 'file', 'exported_by',
-            'exported_at', 'pending', 'status', 'is_deleted', 'is_archived'
+            'id', 'project', 'is_preview', 'title',
+            'filters', 'mime_type', 'file', 'exported_by',
+            'exported_at', 'pending', 'is_deleted', 'is_archived'
         )
+
+    format = graphene.Field(graphene.NonNull(ExportFormatEnum))
+    type = graphene.Field(graphene.NonNull(ExportDataTypeEnum))
+    status = graphene.Field(graphene.NonNull(ExportStatusEnum))
+    export_type = graphene.Field(graphene.NonNull(ExportExportTypeEnum))
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
