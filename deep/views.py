@@ -76,7 +76,7 @@ class ProjectPublicVizView(View):
     def get(self, request, project_stat_id, token):
         from project.views import _get_viz_data
 
-        json_only = request.GET.get('format', 'html').upper() == 'json'
+        json_only = 'json' in request.GET.get('format', ['html'])
         project = Project.objects.get(entry_stats__id=project_stat_id)
         context, status_code = _get_viz_data(request, project, False, token)
         context['project_title'] = project.title
