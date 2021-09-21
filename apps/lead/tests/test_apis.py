@@ -1,4 +1,9 @@
+import logging
+from datetime import date
+
 from django.db.models import Q
+
+from rest_framework.exceptions import ErrorDetail
 
 from deep.tests import TestCase
 
@@ -33,9 +38,8 @@ from lead.models import (
     LeadGroup,
 )
 from user_group.models import UserGroup, GroupMembership
+from ary.models import Assessment
 
-import logging
-from datetime import date
 
 logger = logging.getLogger(__name__)
 
@@ -1624,6 +1628,44 @@ class LeadTests(TestCase):
             lead5.get_authoring_organizations_type_display(),
             ''
         )
+
+    def test_is_assessment_lead(self):
+        project = self.create_project()
+        lead = self.create(
+            Lead,
+            project=project,
+            is_assessment_lead=True
+        )
+
+        url = f'/api/v1/leads/{lead.id}/'
+        self.authenticate()
+        response = self.client.get(url)
+        self.assert_200(response)
+
+        # now create Assessment for the lead
+        self.create(Assessment, lead=lead)
+        data = {
+            'is_assessment_lead': False
+        }
+        url = f'/api/v1/leads/{lead.id}/'
+        self.authenticate()
+        response = self.client.patch(url, data)
+        self.assert_400(response)
+        self.assertEqual(
+            response.data['errors']['is_assessment_lead'],
+            [ErrorDetail(string='Lead already has an assessment.', code='invalid')]
+        )
+
+        # here delete the assessment that has lead
+        Assessment.objects.filter(lead=lead).delete()
+        data = {
+            'is_assessment_lead': False
+        }
+        url = f'/api/v1/leads/{lead.id}/'
+        self.authenticate()
+        response = self.client.patch(url, data)
+        self.assert_200(response)
+
 # Data to use for testing web info extractor
 # Including, url of the page and its attributes:
 # source, country, date, website
