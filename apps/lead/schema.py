@@ -144,7 +144,7 @@ class LeadType(ClientIdMixin, DjangoObjectType):
         model = Lead
         fields = (
             'id', 'title', 'created_by', 'created_at', 'modified_by', 'modified_at',
-            'project', 'lead_group', 'assignee', 'published_on',
+            'is_assessment_lead', 'project', 'lead_group', 'assignee', 'published_on',
             'text', 'url', 'website', 'attachment',
             'client_id',
         )
@@ -193,7 +193,7 @@ class LeadDetailType(LeadType):
         skip_registry = True
         fields = (
             'id', 'title', 'created_by', 'created_at', 'modified_by', 'modified_at',
-            'project', 'lead_group', 'assignee', 'published_on',
+            'is_assessment_lead', 'project', 'lead_group', 'assignee', 'published_on',
             'text', 'url', 'website', 'attachment',
             'client_id',
         )
