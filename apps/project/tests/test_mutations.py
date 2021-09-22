@@ -2,16 +2,19 @@ from unittest import mock
 
 from factory import fuzzy
 
-from utils.graphene.tests import GraphQLTestCase
+from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
 from user.utils import send_project_join_request_emails
 from notification.models import Notification
 from project.models import (
+    get_default_role_id,
     ProjectRole,
     ProjectJoinRequest,
-    ProjectMembership
+    ProjectMembership,
+    ProjectUserGroupMembership,
 )
 
 from user.factories import UserFactory
+from user_group.factories import UserGroupFactory
 from project.factories import ProjectFactory, ProjectJoinRequestFactory
 
 
@@ -247,3 +250,161 @@ class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
         content = self.query_check(self.projet_accept_reject_mutation, minput=minput,
                                    variables={'projectId': project.id, 'joinRequestId': join_request.id})
         self.assertEqual(content['data']['project']['acceptRejectProject']['result']['status'], 'REJECTED', content)
+
+
+class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
+
+    def test_user_membership_bulk(self):
+        query = '''
+          mutation MyMutation(
+              $id: ID!,
+              $projectMembership: [BulkProjectMembershipInputType!],
+              $projectMembershipDelete: [ID!]!
+          ) {
+          project(id: $id) {
+            id
+            title
+            projectUserMembershipBulk(items: $projectMembership, deleteIds: $projectMembershipDelete) {
+              errors
+              result {
+                id
+                clientId
+                joinedAt
+                addedBy {
+                  id
+                  displayName
+                }
+                role {
+                  id
+                  title
+                }
+                member {
+                  id
+                  displayName
+                }
+                badges
+              }
+              deletedResult {
+                id
+                clientId
+                joinedAt
+                member {
+                  id
+                  displayName
+                }
+                role {
+                  id
+                  title
+                  level
+                }
+                addedBy {
+                  id
+                  displayName
+                }
+                badges
+              }
+            }
+          }
+        }
+        '''
+        creater_user = UserFactory.create()
+        user = UserFactory.create()
+        low_permission_user = UserFactory.create()
+        non_member_user = UserFactory.create()
+
+        (
+            member_user0,
+            member_user1,
+            member_user2,
+            member_user3,
+            member_user4,
+            member_user5,
+            member_user6,
+        ) = UserFactory.create_batch(7)
+
+        project = ProjectFactory.create(created_by=creater_user)
+        membership1 = project.add_member(member_user1, badges=[ProjectMembership.BadgeType.QA])
+        membership2 = project.add_member(member_user2)
+        project.add_member(member_user5)
+        creater_user_membership = project.add_member(creater_user, role=self.project_role_clairvoyant_one)
+        another_clairvoyant_user = project.add_member(member_user0, role=self.project_role_clairvoyant_one)
+        user_membership = project.add_member(user, role=self.project_role_clairvoyant_one)
+        project.add_member(low_permission_user)
+
+        minput = dict(
+            projectMembershipDelete=[
+                str(membership1.pk),  # This will be only on try 1
+                # This shouldn't be on any response (requester + creater)
+                str(user_membership.pk),
+                str(creater_user_membership.pk),
+                str(another_clairvoyant_user.pk),
+            ],
+            projectMembership=[
+                # Try updating membership (Valid on try 1, invalid on try 2)
+                dict(
+                    member=member_user2.pk,
+                    clientId="member-user-2",
+                    role=self.project_role_clairvoyant_one.pk,
+                    id=membership2.pk,
+                    badges=[self.genum(ProjectMembership.BadgeType.QA)],
+                ),
+                # Try adding already existing member
+                dict(
+                    member=member_user5.pk,
+                    clientId="member-user-5",
+                    role=self.project_role_analyst.pk,
+                ),
+                # Try adding new member (Valid on try 1, invalid on try 2)
+                dict(
+                    member=member_user3.pk,
+                    clientId="member-user-3",
+                    role=self.project_role_analyst.pk,
+                ),
+                # Try adding new member (without giving role) -> this should use default role
+                # Valid on try 1, invalid on try 2
+                dict(
+                    member=member_user4.pk,
+                    clientId="member-user-4",
+                ),
+            ],
+        )
+
+        def _query_check(**kwargs):
+            return self.query_check(
+                query,
+                mnested=['project'],
+                variables={'id': project.id, **minput},
+                **kwargs,
+            )
+        # ---------- Without login
+        _query_check(assert_for_error=True)
+        # ---------- With login (with non-member)
+        self.force_login(non_member_user)
+        _query_check(assert_for_error=True)
+        # ---------- With login (with low-permission member)
+        self.force_login(non_member_user)
+        _query_check(assert_for_error=True)
+        # ---------- With login (with higher permission)
+        self.force_login(user)
+        # ----------------- Some Invalid input
+        response = _query_check()['data']['project']['projectUserMembershipBulk']
+        self.assertMatchSnapshot(response, 'try 1')
+        # ----------------- Another try
+        minput['projectMembership'].pop(1)
+        minput['projectMembership'].extend([
+            # Invalid (changing member)
+            dict(
+                member=member_user6.pk,
+                clientId="member-user-2",
+                role=self.project_role_clairvoyant_one.pk,
+                id=membership2.pk,
+            ),
+            dict(
+                member=member_user2.pk,
+                clientId="member-user-2",
+                role=self.project_role_admin.pk,
+                id=membership2.pk,
+            ),
+        ])
+        response = _query_check()['data']['project']['projectUserMembershipBulk']
+        self.assertMatchSnapshot(response, 'try 2')
