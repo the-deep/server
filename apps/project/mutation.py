@@ -139,10 +139,10 @@ class BulkUpdateProjectMembership(PsBulkGrapheneMutation):
         if user_membership:
             return ProjectMembership.objects.filter(
                 pk__in=delete_ids,  # id's provided
-                project=project,  # For active AF
+                project=project,  # For active Project
                 role__level__gt=user_membership.role.level,  # Only allow for lower level roles.
             ).exclude(
-                # Exclude yourself and owner of the AF
+                # Exclude yourself and owner of the Project
                 member__in=[info.context.user, project.created_by]
             )
         return ProjectMembership.objects.none()
@@ -170,11 +170,8 @@ class BulkUpdateProjectUserGroupMembership(PsBulkGrapheneMutation):
         if user_membership:
             return ProjectUserGroupMembership.objects.filter(
                 pk__in=delete_ids,  # id's provided
-                project=project,  # For active AF
+                project=project,  # For active Project
                 role__level__gt=user_membership.role.level,  # Only allow for lower level roles.
-            ).exclude(
-                # Exclude yourself and owner of the AF
-                member__in=[info.context.user, project.created_by]
             )
         return ProjectUserGroupMembership.objects.none()
 
