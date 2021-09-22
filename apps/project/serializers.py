@@ -641,20 +641,39 @@ class ProjectMembershipGqlSerializer(TempClientIdMixin, serializers.ModelSeriali
             raise serializers.ValidationError('Invalid access')
         return project
 
+    @cached_property
+    def current_user_role(self):
+        return ProjectMembership.objects.get(
+            project=self.project,
+            member=self.context['request'].user,
+        ).role
+
     def validate_member(self, member):
+        if self.instance:  # Update
+            if self.instance.member != member:
+                # Changing member not allowed
+                raise serializers.ValidationError('Changing member is not allowed!')
+            return member
+        # Create
         current_members = ProjectMembership.objects.filter(project=self.project, member=member)
         if current_members.exclude(pk=self.instance and self.instance.pk).exists():
             raise serializers.ValidationError('User is already a member!')
         return member
 
-    def validate_role(self, role):
-        user_role = ProjectMembership.objects.get(
-            project=self.project,
-            member=self.context['request'].user,
-        ).role
-        if role.level < user_role.level:
+    def validate_role(self, new_role):
+        # Make sure higher role are never allowed
+        if new_role.level < self.current_user_role.level:
             raise serializers.ValidationError('Access is denied for higher role assignment.')
-        return role
+        if (
+            self.instance and  # For Update
+            self.instance.role != new_role and  # For changed role
+            (
+                self.instance.role.level == self.current_user_role.level and  # Requesting user role == current member role
+                self.instance.role.level < new_role.level  # New role is lower then current role
+            )
+        ):
+            raise serializers.ValidationError('Changing same level role is not allowed!')
+        return new_role
 
     def create(self, validated_data):
         validated_data['added_by'] = self.context['request'].user
@@ -678,20 +697,38 @@ class ProjectUserGroupMembershipGqlSerializer(TempClientIdMixin, serializers.Mod
             raise serializers.ValidationError('Invalid access')
         return project
 
+    @cached_property
+    def current_user_role(self):
+        return ProjectMembership.objects.get(
+            project=self.project,
+            member=self.context['request'].user,
+        ).role
+
     def validate_usergroup(self, usergroup):
-        current_members = ProjectUserGroupMembership.objects.filter(project=self.project, usergroup=usergroup)
+        if self.instance:  # Update
+            if self.instance.usergroup != usergroup:
+                # Changing usergroup not allowed
+                raise serializers.ValidationError('Changing usergroup is not allowed!')
+            return usergroup
+        # Create
+        current_members = ProjectMembership.objects.filter(project=self.project, usergroup=usergroup)
         if current_members.exclude(pk=self.instance and self.instance.pk).exists():
             raise serializers.ValidationError('UserGroup already a member!')
         return usergroup
 
-    def validate_role(self, role):
-        user_role = ProjectUserGroupMembership.objects.get(
-            project=self.project,
-            member=self.context['request'].user,
-        ).role
-        if role.level < user_role.level:
+    def validate_role(self, new_role):
+        if new_role.level < self.current_user_role.level:
             raise serializers.ValidationError('Access is denied for higher role assignment.')
-        return role
+        if (
+            self.instance and  # Update
+            self.instance.role != new_role and  # Role is changed
+            (
+                self.instance.role.level == self.current_user_role.level and  # Requesting user role == current member role
+                self.instance.role.level < new_role.level  # New role is lower then current role
+            )
+        ):
+            raise serializers.ValidationError('Changing same level role is not allowed!')
+        return new_role
 
     def create(self, validated_data):
         validated_data['project'] = self.project
