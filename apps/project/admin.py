@@ -158,6 +158,7 @@ class ProjectAdmin(VersionAdmin):
 
 @admin.register(ProjectRole)
 class ProjectRoleAdmin(admin.ModelAdmin):
+    list_display = ('title', 'level',)
     form = ProjectRoleForm
 
 

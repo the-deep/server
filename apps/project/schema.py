@@ -25,6 +25,7 @@ from entry.models import Entry
 
 from .models import (
     Project,
+    ProjectRole,
     ProjectMembership,
     ProjectUserGroupMembership,
     ProjectJoinRequest,
@@ -34,6 +35,7 @@ from .enums import (
     ProjectStatusEnum,
     ProjectJoinRequestStatusEnum,
     ProjectOrganizationTypeEnum,
+    ProjectMembershipBadgeTypeEnum,
 )
 
 from .filter_set import ProjectGqlFilterSet
@@ -94,13 +96,21 @@ class ProjectOrganizationType(DjangoObjectType):
         return info.context.dl.organization.organization.load(root.organization_id)
 
 
+class ProjectRoleType(DjangoObjectType):
+    class Meta:
+        model = ProjectRole
+        only_fields = ('id', 'title', 'level')
+
+
 class ProjectMembershipType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = ProjectMembership
         fields = (
             'id', 'member', 'linked_group',
-            'role', 'joined_at', 'added_by', 'badges',
+            'role', 'joined_at', 'added_by',
         )
+
+    badges = graphene.List(graphene.NonNull(ProjectMembershipBadgeTypeEnum))
 
 
 class ProjectUserGroupMembershipType(ClientIdMixin, DjangoObjectType):
@@ -108,8 +118,10 @@ class ProjectUserGroupMembershipType(ClientIdMixin, DjangoObjectType):
         model = ProjectUserGroupMembership
         fields = (
             'id', 'usergroup',
-            'role', 'joined_at', 'added_by', 'badges',
+            'role', 'joined_at', 'added_by',
         )
+
+    badges = graphene.List(graphene.NonNull(ProjectMembershipBadgeTypeEnum))
 
 
 class ProjectType(DjangoObjectType):
