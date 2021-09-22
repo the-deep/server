@@ -54,7 +54,7 @@
         }
 
         window.addEventListener("load", async function() {
-            if ('{{status}}' == 'pending') {
+            if ('{{status}}' == 'pending' || '{{status}}' != 'started') {
                 let retry = 0;
                 const max_retry = 20;
                 while (retry < max_retry) {
@@ -64,7 +64,7 @@
 
                     const iframe = document.getElementById('viz-frame');
                     const error_div = document.getElementById('error');
-                    if (response_json.status != 'pending') {
+                    if (response_json.status != 'pending' && response_json.status != 'started') {
                         if (response_json.status === 'success') {
                             iframe.src = `https://the-deep.github.io/deepviz-entries/?dataUrl=${encodeURIComponent(response_json.data)}`;
                             iframe.style.display = 'block';
