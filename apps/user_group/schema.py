@@ -39,33 +39,15 @@ class UserGroupType(DjangoObjectType):
 
     current_user_role = graphene.Field(GroupMembershipRoleEnum)
     current_user_role_display = EnumDescription(source='get_current_user_role_display')
+    memberships = DjangoListField(GroupMembershipType)
 
     @staticmethod
     def resolve_current_user_role(root, info):
         return info.context.dl.user_group.current_user_role.load(root.id)
 
-
-class UserGroupDetailType(UserGroupType):
-    class Meta:
-        model = UserGroup
-        skip_registry = True
-        fields = (
-            'id',
-            'title',
-            'description',
-            'created_at',
-            'created_by',
-            'modified_at',
-            'modified_by',
-            'client_id',
-            'custom_project_fields',
-            'global_crisis_monitoring',
-        )
-
-    memberships = DjangoListField(GroupMembershipType)
-
     @staticmethod
     def resolve_memberships(root, info):
+        # Only for groups with current user as members are fetched. (Logic in dataloader)
         return info.context.dl.user_group.memberships.load(root.id)
 
 
@@ -76,7 +58,7 @@ class UserGroupListType(CustomDjangoListObjectType):
 
 
 class Query:
-    user_group = DjangoObjectField(UserGroupDetailType)
+    user_group = DjangoObjectField(UserGroupType)
     user_groups = DjangoPaginatedListObjectField(
         UserGroupListType,
         pagination=PageGraphqlPagination(

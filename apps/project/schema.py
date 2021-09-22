@@ -39,7 +39,11 @@ from .enums import (
     ProjectMembershipBadgeTypeEnum,
 )
 
-from .filter_set import ProjectGqlFilterSet
+from .filter_set import (
+    ProjectGqlFilterSet,
+    ProjectMembershipGqlFilterSet,
+    ProjectUserGroupMembershipGqlFilterSet,
+)
 from .activity import project_activity_log
 
 
@@ -194,6 +198,18 @@ class AnalysisFrameworkVisibleProjectType(DjangoObjectType):
         )
 
 
+class ProjectMembershipListType(CustomDjangoListObjectType):
+    class Meta:
+        model = ProjectMembership
+        filterset_class = ProjectMembershipGqlFilterSet
+
+
+class ProjectUserGroupMembershipListType(CustomDjangoListObjectType):
+    class Meta:
+        model = ProjectUserGroupMembership
+        filterset_class = ProjectUserGroupMembershipGqlFilterSet
+
+
 class ProjectDetailType(
     # -- Start --Project scopped entities
     LeadQuery,
@@ -218,12 +234,23 @@ class ProjectDetailType(
             'modified_at', 'modified_by'
         )
 
-    user_members = DjangoListField(ProjectMembershipType)
-    user_group_members = DjangoListField(ProjectUserGroupMembershipType)
     analysis_framework = graphene.Field(AnalysisFrameworkDetailType)
     activity_log = generic.GenericScalar()  # TODO: Need to define type
     top_sourcers = graphene.List(graphene.NonNull(UserEntityCountType))
     top_taggers = graphene.List(graphene.NonNull(UserEntityCountType))
+
+    user_members = DjangoPaginatedListObjectField(
+        ProjectMembershipListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+    user_group_members = DjangoPaginatedListObjectField(
+        ProjectUserGroupMembershipListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
 
     @staticmethod
     def resolve_user_members(root, info, **kwargs):
