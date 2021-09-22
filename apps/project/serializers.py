@@ -711,8 +711,8 @@ class ProjectUserGroupMembershipGqlSerializer(TempClientIdMixin, serializers.Mod
                 raise serializers.ValidationError('Changing usergroup is not allowed!')
             return usergroup
         # Create
-        current_members = ProjectMembership.objects.filter(project=self.project, usergroup=usergroup)
-        if current_members.exclude(pk=self.instance and self.instance.pk).exists():
+        current_usergroup_members = ProjectUserGroupMembership.objects.filter(project=self.project, usergroup=usergroup)
+        if current_usergroup_members.exclude(pk=self.instance and self.instance.pk).exists():
             raise serializers.ValidationError('UserGroup already a member!')
         return usergroup
 

@@ -254,7 +254,7 @@ class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
 
 class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
 
-    def test_user_membership_bulk(self):
+    def _user_membership_bulk(self, user_role):
         query = '''
           mutation MyMutation(
               $id: ID!,
@@ -328,7 +328,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         project.add_member(member_user5)
         creater_user_membership = project.add_member(creater_user, role=self.project_role_clairvoyant_one)
         another_clairvoyant_user = project.add_member(member_user0, role=self.project_role_clairvoyant_one)
-        user_membership = project.add_member(user, role=self.project_role_clairvoyant_one)
+        user_membership = project.add_member(user, role=user_role)
         project.add_member(low_permission_user)
 
         minput = dict(
@@ -408,3 +408,167 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         ])
         response = _query_check()['data']['project']['projectUserMembershipBulk']
         self.assertMatchSnapshot(response, 'try 2')
+
+    def test_user_membership_using_clairvoyan_one_bulk(self):
+        self._user_membership_bulk(self.project_role_clairvoyant_one)
+
+    def test_user_membership_admin_bulk(self):
+        self._user_membership_bulk(self.project_role_admin)
+
+    def _user_group_membership_bulk(self, user_role):
+        query = '''
+          mutation MyMutation(
+              $id: ID!,
+              $projectMembership: [BulkProjectUserGroupMembershipInputType!],
+              $projectMembershipDelete: [ID!]!
+          ) {
+          project(id: $id) {
+            id
+            title
+            projectUserGroupMembershipBulk(items: $projectMembership, deleteIds: $projectMembershipDelete) {
+              errors
+              result {
+                id
+                clientId
+                joinedAt
+                addedBy {
+                  id
+                  displayName
+                }
+                role {
+                  id
+                  title
+                }
+                usergroup {
+                  id
+                  title
+                }
+                badges
+              }
+              deletedResult {
+                id
+                clientId
+                joinedAt
+                usergroup {
+                  id
+                  title
+                }
+                role {
+                  id
+                  title
+                  level
+                }
+                addedBy {
+                  id
+                  displayName
+                }
+                badges
+              }
+            }
+          }
+        }
+        '''
+        project = ProjectFactory.create()
+
+        def _add_member(usergroup, role=None, badges=[]):
+            return ProjectUserGroupMembership.objects.create(
+                project=project,
+                usergroup=usergroup,
+                role_id=(role and role.id) or get_default_role_id(),
+                badges=badges,
+            )
+
+        user = UserFactory.create()
+        user_group = UserGroupFactory.create()
+        user_group.members.add(user)
+
+        (
+            member_user_group0,
+            member_user_group1,
+            member_user_group2,
+            member_user_group3,
+            member_user_group4,
+            member_user_group5,
+            member_user_group6
+        ) = UserGroupFactory.create_batch(7)
+
+        membership1 = _add_member(member_user_group1, badges=[ProjectMembership.BadgeType.QA])
+        membership2 = _add_member(member_user_group2)
+        _add_member(member_user_group5)
+        another_clairvoyant_user_group = _add_member(member_user_group0, role=self.project_role_clairvoyant_one)
+        user_group_membership = _add_member(user_group, role=user_role)
+
+        minput = dict(
+            projectMembershipDelete=[
+                str(membership1.pk),  # This will be only on try 1
+                # This shouldn't be on any response (requester + creater)
+                str(user_group_membership.pk),
+                str(another_clairvoyant_user_group.pk),
+            ],
+            projectMembership=[
+                # Try updating membership (Valid on try 1, invalid on try 2)
+                dict(
+                    usergroup=member_user_group2.pk,
+                    clientId="member-user-2",
+                    role=self.project_role_clairvoyant_one.pk,
+                    id=membership2.pk,
+                    badges=[self.genum(ProjectMembership.BadgeType.QA)],
+                ),
+                # Try adding already existing member
+                dict(
+                    usergroup=member_user_group5.pk,
+                    clientId="member-user-5",
+                    role=self.project_role_analyst.pk,
+                ),
+                # Try adding new member (Valid on try 1, invalid on try 2)
+                dict(
+                    usergroup=member_user_group3.pk,
+                    clientId="member-user-3",
+                    role=self.project_role_analyst.pk,
+                ),
+                # Try adding new member (without giving role) -> this should use default role
+                # Valid on try 1, invalid on try 2
+                dict(
+                    usergroup=member_user_group4.pk,
+                    clientId="member-user-4",
+                ),
+            ],
+        )
+
+        def _query_check(**kwargs):
+            return self.query_check(
+                query,
+                mnested=['project'],
+                variables={'id': project.id, **minput},
+                **kwargs,
+            )
+        # ---------- With login (with higher permission)
+        self.force_login(user)
+        # ----------------- Some Invalid input
+        response = _query_check()['data']['project']['projectUserGroupMembershipBulk']
+        self.assertMatchSnapshot(response, 'try 1')
+        # ----------------- Another try
+        minput['projectMembership'].pop(1)
+        minput['projectMembership'].extend([
+            # Invalid (changing member)
+            dict(
+                usergroup=member_user_group6.pk,
+                clientId="member-user-2",
+                role=self.project_role_clairvoyant_one.pk,
+                id=membership2.pk,
+            ),
+            dict(
+                usergroup=member_user_group2.pk,
+                clientId="member-user-2",
+                role=self.project_role_admin.pk,
+                id=membership2.pk,
+            ),
+        ])
+        response = _query_check()['data']['project']['projectUserGroupMembershipBulk']
+        self.assertMatchSnapshot(response, 'try 2')
+
+    def test_user_group_membership_using_clairvoyan_one_bulk(self):
+        self._user_group_membership_bulk(self.project_role_clairvoyant_one)
+
+    def test_user_group_membership_admin_bulk(self):
+        self._user_group_membership_bulk(self.project_role_admin)

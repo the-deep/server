@@ -4,7 +4,10 @@ from django.utils import timezone
 
 from utils.graphene.tests import GraphQLTestCase
 
+from project.models import ProjectUserGroupMembership
+
 from user.factories import UserFactory
+from user_group.factories import UserGroupFactory
 from lead.factories import LeadFactory
 from entry.factories import EntryFactory
 from project.factories import ProjectFactory, ProjectJoinRequestFactory
@@ -330,3 +333,77 @@ class TestProjectFilterSchema(GraphQLTestCase):
         content = self.query_check(query, variables={'isCurrentUserMember': False})
         self.assertEqual(content['data']['projects']['totalCount'], 1, content)  # Private will not show here
         self.assertListIds(content['data']['projects']['results'], [project3], content)
+
+
+class TestProjectMembersFilterSchema(GraphQLTestCase):
+    def test_project(self):
+        query = '''
+            query MyQuery ($id: ID!, $user_search: String, $usergroup_search: String) {
+              project(id: $id) {
+                userMembers(search: $user_search) {
+                  totalCount
+                  results {
+                    member {
+                      id
+                      displayName
+                    }
+                    role {
+                      id
+                      level
+                      title
+                    }
+                  }
+                }
+                userGroupMembers(search: $usergroup_search) {
+                  totalCount
+                  results {
+                    id
+                    usergroup {
+                      id
+                      title
+                    }
+                    role {
+                      id
+                      level
+                      title
+                    }
+                    badges
+                  }
+                }
+              }
+            }
+        '''
+
+        user, user1, user2, user3, _ = UserFactory.create_batch(5, first_name='Ram')
+        usergroup1, usergroup2, _ = UserGroupFactory.create_batch(3, title='UserGroup YYY')
+        usergroup4 = UserGroupFactory.create(title='UserGroup ZZZ')
+
+        user5 = UserFactory.create(first_name='Nam')
+        project = ProjectFactory.create()
+
+        # Add user to project1 only (one normal + one private)
+        project.add_member(user)
+        project.add_member(user1)
+        project.add_member(user2)
+        project.add_member(user3)
+        project.add_member(user5)
+
+        for usergroup in [usergroup1, usergroup2, usergroup4]:
+            ProjectUserGroupMembership.objects.create(project=project, usergroup=usergroup)
+
+        # -- With login
+        self.force_login(user)
+
+        # project without membership
+        content = self.query_check(query, variables={'id': project.id, 'user_search': user.first_name})
+        self.assertEqual(content['data']['project']['userMembers']['totalCount'], 4, content)
+        self.assertEqual(len(content['data']['project']['userMembers']['results']), 4, content)
+        self.assertEqual(content['data']['project']['userGroupMembers']['totalCount'], 3, content)
+        self.assertEqual(len(content['data']['project']['userGroupMembers']['results']), 3, content)
+
+        # project without membership
+        content = self.query_check(query, variables={'id': project.id, 'usergroup_search': usergroup1.title})
+        self.assertEqual(content['data']['project']['userGroupMembers']['totalCount'], 2, content)
+        self.assertEqual(len(content['data']['project']['userGroupMembers']['results']), 2, content)
+        self.assertEqual(content['data']['project']['userMembers']['totalCount'], 5, content)
+        self.assertEqual(len(content['data']['project']['userMembers']['results']), 5, content)
