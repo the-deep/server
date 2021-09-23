@@ -83,7 +83,7 @@ class LeadTests(TestCase):
             'source': self.source.pk,
             'author': self.author.pk,
             'confidentiality': Lead.Confidentiality.UNPROTECTED,
-            'status': Lead.Status.PENDING,
+            'status': Lead.Status.NOT_TAGGED,
             'text': 'Alien shapeship has been spotted in the sky',
             'assignee': assignee or self.user.id,
         }
@@ -111,7 +111,7 @@ class LeadTests(TestCase):
             'source': self.source.pk,
             'author': self.author.pk,
             'confidentiality': Lead.Confidentiality.UNPROTECTED,
-            'status': Lead.Status.VALIDATED,
+            'status': Lead.Status.TAGGED,
             'text': 'Alien shapeship has been spotted in the sky',
             'assignee': assignee or self.user.id,
         }
@@ -175,7 +175,7 @@ class LeadTests(TestCase):
             'source': self.source.pk,
             'author': self.author.pk,
             'confidentiality': Lead.Confidentiality.UNPROTECTED,
-            'status': Lead.Status.PENDING,
+            'status': Lead.Status.NOT_TAGGED,
             'text': 'Alien shapeship has been spotted in the sky',
             'assignee': assignee or self.user.id,
             'priority': Lead.Priority.HIGH,
@@ -208,7 +208,7 @@ class LeadTests(TestCase):
             'source': self.source.pk,
             'author': self.author.pk,
             'confidentiality': Lead.Confidentiality.UNPROTECTED,
-            'status': Lead.Status.PENDING,
+            'status': Lead.Status.NOT_TAGGED,
             'text': 'Alien shapeship has been spotted in the sky',
             'assignee': self.user.id,
             'emm_entities': [
@@ -260,7 +260,7 @@ class LeadTests(TestCase):
             'source': self.source.pk,
             'author': self.author.pk,
             'confidentiality': Lead.Confidentiality.UNPROTECTED,
-            'status': Lead.Status.PENDING,
+            'status': Lead.Status.NOT_TAGGED,
             'text': 'Alien shapeship has been spotted in the sky',
             'assignee': assignee or self.user.id,
         }
@@ -290,7 +290,7 @@ class LeadTests(TestCase):
             'source': self.source.pk,
             'author': self.author.pk,
             'confidentiality': Lead.Confidentiality.UNPROTECTED,
-            'status': Lead.Status.PENDING,
+            'status': Lead.Status.NOT_TAGGED,
             'text': 'Alien shapeship has been spotted in the sky',
             'assignee': assignee or self.user.id,
         }
@@ -684,7 +684,7 @@ class LeadTests(TestCase):
             'source': self.source.pk,
             'author': self.author.pk,
             'confidentiality': Lead.Confidentiality.UNPROTECTED,
-            'status': Lead.Status.PENDING,
+            'status': Lead.Status.NOT_TAGGED,
             'text': 'this is some random text',
             'assignee': self.user.id,
         }
@@ -897,7 +897,7 @@ class LeadTests(TestCase):
             'author': self.author.pk,
             'source_type': Lead.SourceType.DISK,
             'confidentiality': Lead.Confidentiality.UNPROTECTED,
-            'status': Lead.Status.PENDING,
+            'status': Lead.Status.NOT_TAGGED,
             'attachment': {'id': file.pk},
             'assignee': self.user.id,
         }
@@ -917,7 +917,7 @@ class LeadTests(TestCase):
             'author': self.author.pk,
             'source_type': Lead.SourceType.TEXT,
             'confidentiality': Lead.Confidentiality.UNPROTECTED,
-            'status': Lead.Status.PENDING,
+            'status': Lead.Status.NOT_TAGGED,
             'text': 'duplication test 101',
             'assignee': self.user.id,
         }
