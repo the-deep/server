@@ -25,6 +25,8 @@ jobs:
       uses: github/codeql-action/init@v1
       with:
         languages: python
+        # TODO: Install python dep
+        setup-python-dependencies: false
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
