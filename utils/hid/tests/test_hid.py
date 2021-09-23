@@ -140,7 +140,7 @@ class HIDIntegrationTest(TestCase):
         with self.assertRaises(KeyError):
             user = hid.HumanitarianId(access_token).get_user()
 
-        # ----------- Name attibute change test
+        # ----------- Name attribute change test
         sample_first_name = 'Xxxxxx'
         sample_last_name = 'Yyyyyy'
         # Just FN in name
