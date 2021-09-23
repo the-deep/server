@@ -354,6 +354,9 @@ class TestEntryQuery(GraphQLTestCase):
             project=project, analysis_framework=af, lead=lead3, entry_type=Entry.TagType.EXCERPT, controlled=False)
         entry4_1 = EntryFactory.create(
             project=project, analysis_framework=af, lead=lead4, entry_type=Entry.TagType.EXCERPT, controlled=False)
+        # Change lead1 status to TAGGED
+        lead1.status = Lead.Status.TAGGED
+        lead1.save(update_fields=['status'])
 
         def _query_check(filters, **kwargs):
             return self.query_check(query, variables={'projectId': project.id, **filters}, **kwargs)
@@ -387,8 +390,13 @@ class TestEntryQuery(GraphQLTestCase):
                 {'leadPriorities': [self.genum(Lead.Priority.LOW), self.genum(Lead.Priority.HIGH)]},
                 [entry1_1, entry2_1, entry3_1]
             ),
-            ({'leadStatuses': [self.genum(Lead.Status.NOT_TAGGED)]}, [entry2_1, entry3_1, entry4_1]),
-            ({'leadStatuses': [self.genum(Lead.Status.IN_PROGRESS), self.genum(Lead.Status.TAGGED)]}, [entry1_1]),
+            ({'leadStatuses': [self.genum(Lead.Status.NOT_TAGGED)]}, []),
+            ({'leadStatuses': [self.genum(Lead.Status.IN_PROGRESS)]}, [entry2_1, entry3_1, entry4_1]),
+            ({'leadStatuses': [self.genum(Lead.Status.TAGGED)]}, [entry1_1]),
+            (
+                {'leadStatuses': [self.genum(Lead.Status.IN_PROGRESS), self.genum(Lead.Status.TAGGED)]},
+                [entry1_1, entry2_1, entry3_1, entry4_1]
+            ),
             # TODO: Common filters
             # ({'excerpt': []}, []),
             # ({'modifiedAt': []}, []),
