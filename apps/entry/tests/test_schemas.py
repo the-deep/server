@@ -317,7 +317,7 @@ class TestEntryQuery(GraphQLTestCase):
             authors=[org1, org2],
             assignee=[member1],
             priority=Lead.Priority.HIGH,
-            status=Lead.Status.PROCESSED,
+            status=Lead.Status.IN_PROGRESS,
         )
         lead2 = LeadFactory.create(
             project=project,
@@ -387,8 +387,8 @@ class TestEntryQuery(GraphQLTestCase):
                 {'leadPriorities': [self.genum(Lead.Priority.LOW), self.genum(Lead.Priority.HIGH)]},
                 [entry1_1, entry2_1, entry3_1]
             ),
-            ({'leadStatuses': [self.genum(Lead.Status.PENDING)]}, [entry2_1, entry3_1, entry4_1]),
-            ({'leadStatuses': [self.genum(Lead.Status.PROCESSED), self.genum(Lead.Status.VALIDATED)]}, [entry1_1]),
+            ({'leadStatuses': [self.genum(Lead.Status.NOT_TAGGED)]}, [entry2_1, entry3_1, entry4_1]),
+            ({'leadStatuses': [self.genum(Lead.Status.IN_PROGRESS), self.genum(Lead.Status.TAGGED)]}, [entry1_1]),
             # TODO: Common filters
             # ({'excerpt': []}, []),
             # ({'modifiedAt': []}, []),

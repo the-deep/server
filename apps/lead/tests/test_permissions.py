@@ -120,7 +120,7 @@ class TestLeadPermissions(TestCase):
             'source': self.source.pk,
             'author': self.author.pk,
             'confidentiality': Lead.Confidentiality.UNPROTECTED,
-            'status': Lead.Status.PENDING,
+            'status': Lead.Status.NOT_TAGGED,
             'text': 'Alien shapeship has been spotted in the sky',
             'assignee': self.user.id,
         }
@@ -138,7 +138,7 @@ class TestLeadPermissions(TestCase):
             'source': self.source.pk,
             'author': self.author.pk,
             'confidentiality': Lead.Confidentiality.UNPROTECTED,
-            'status': Lead.Status.PENDING,
+            'status': Lead.Status.NOT_TAGGED,
             'text': 'Alien shapeship has been spotted in the sky',
             'assignee': self.user.id,
         }

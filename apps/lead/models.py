@@ -55,9 +55,10 @@ class Lead(UserResource, ProjectEntityMixin):
         CONFIDENTIAL = 'confidential', 'Confidential'
 
     class Status(models.TextChoices):
-        PENDING = 'pending', 'Pending'
-        PROCESSED = 'processed', 'Processed'
-        VALIDATED = 'validated', 'Validated'
+        # TODO: Update enum value
+        NOT_TAGGED = 'pending', 'Not Tagged'
+        IN_PROGRESS = 'processed', 'In progress'
+        TAGGED = 'validated', 'Tagged'
 
     class Priority(models.IntegerChoices):
         HIGH = 300, 'High'
@@ -103,7 +104,7 @@ class Lead(UserResource, ProjectEntityMixin):
     source_type = models.CharField(max_length=30, choices=SourceType.choices, default=SourceType.UNKNOWN)
     priority = models.IntegerField(choices=Priority.choices, default=Priority.LOW)
     confidentiality = models.CharField(max_length=30, choices=Confidentiality.choices, default=Confidentiality.UNPROTECTED)
-    status = models.CharField(max_length=30, choices=Status.choices, default=Status.PENDING)
+    status = models.CharField(max_length=30, choices=Status.choices, default=Status.NOT_TAGGED)
 
     assignee = models.ManyToManyField(User, blank=True)
     published_on = models.DateField(default=None, null=True, blank=True)

@@ -36,7 +36,7 @@ CONFIDENTIALITY_MAP = {
 }
 
 STATUS_MAP = {
-    'PEN': Lead.Status.PENDING,
+    'PEN': Lead.Status.NOT_TAGGED,
     'PRO': Lead.Status.PROTECTED,
 }
 
