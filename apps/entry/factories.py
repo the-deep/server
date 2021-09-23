@@ -15,6 +15,16 @@ class EntryFactory(DjangoModelFactory):
     class Meta:
         model = Entry
 
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        entry = model_class(*args, **kwargs)
+        if getattr(entry, 'project', None) is None:  # Use lead's project if project is not provided
+            entry.project = entry.lead.project
+        if getattr(entry, 'analysis_framework', None) is None:  # Use lead's project's AF if AF is not provided
+            entry.analysis_framework = entry.lead.project.analysis_framework
+        entry.save()
+        return entry
+
     @factory.post_generation
     def verified_by(self, create, extracted, **kwargs):
         if not create:
