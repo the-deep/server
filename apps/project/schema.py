@@ -166,10 +166,12 @@ class ProjectType(DjangoObjectType):
             return None
 
     @staticmethod
-    def resolve_allowed_permissions(root, info) -> List[str]:
-        return PP.get_permissions(
-            root.get_current_user_role(info.context.request.user)
-        )
+    def resolve_current_user_role(root, info):
+        return root.get_current_user_role(info.context.user)
+
+    @staticmethod
+    def resolve_allowed_permissions(root, info) -> List[PP.Permission]:
+        return PP.get_permissions(root, info.context.request.user)
 
     def resolve_stats(root, info, **kwargs):
         return info.context.dl.project.project_stat.load(root.pk)

@@ -4,7 +4,8 @@ from django.utils import timezone
 
 from utils.graphene.tests import GraphQLTestCase
 
-from project.models import ProjectUserGroupMembership
+from project.models import ProjectMembership, ProjectUserGroupMembership
+from deep.permissions import ProjectPermissions as PP
 
 from user.factories import UserFactory
 from user_group.factories import UserGroupFactory
@@ -289,6 +290,33 @@ class TestProjectSchema(GraphQLTestCase):
         self.assertEqual(content['data']['recentProjects'][0]['id'], str(public_project3.pk), content)
         self.assertEqual(content['data']['recentProjects'][1]['id'], str(public_project1.pk), content)
         self.assertEqual(content['data']['recentProjects'][2]['id'], str(public_project2.pk), content)
+
+    def test_project_allowed_permissions(self):
+        query = '''
+              query MyQuery {
+                projects {
+                  results {
+                   id
+                   allowedPermissions
+                  }
+                }
+              }
+        '''
+        project1, project2 = ProjectFactory.create_batch(2)
+        user = UserFactory.create()
+        project1.add_member(user, badges=[])
+        project2.add_member(user, badges=[ProjectMembership.BadgeType.QA])
+
+        self.force_login(user)
+        content_projects = self.query_check(query)['data']['projects']['results']
+        QA_PERMISSION = self.genum(PP.Permission.CAN_QUALITY_CONTROL)
+        content_projects_permissions = {
+            int(pdata['id']): pdata['allowedPermissions']
+            for pdata in content_projects
+        }
+        self.assertEqual(len(content_projects), 2, content_projects)
+        self.assertNotIn(QA_PERMISSION, content_projects_permissions[project1.pk], content_projects)
+        self.assertIn(QA_PERMISSION, content_projects_permissions[project2.pk], content_projects)
 
 
 class TestProjectFilterSchema(GraphQLTestCase):

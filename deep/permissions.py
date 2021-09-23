@@ -1,11 +1,12 @@
 import logging
+from typing import List
 from enum import Enum, auto, unique
 
 from django.db.models import F
 from rest_framework import permissions
 
 from deep.exceptions import PermissionDeniedException
-from project.models import Project, ProjectRole
+from project.models import Project, ProjectRole, ProjectMembership
 from project.permissions import PROJECT_PERMISSIONS
 from lead.models import Lead
 from entry.models import Entry
@@ -292,7 +293,6 @@ class ProjectPermissions(BasePermissions):
     ]
     ANALYST = [
         *READER,
-        Permission.CAN_QUALITY_CONTROL,  # TODO: This should be drived from BadgeType
         Permission.CREATE_LEAD,
         Permission.UPDATE_LEAD,
         Permission.DELETE_LEAD,
@@ -319,8 +319,27 @@ class ProjectPermissions(BasePermissions):
         'Admin': ADMIN,
         'Clairvoyant One': CLAIRVOYANT_ONE,
     }
+    BADGES_PERMISSION_MAP = {
+        ProjectMembership.BadgeType.QA: Permission.CAN_QUALITY_CONTROL,
+    }
 
     CONTEXT_PERMISSION_ATTR = 'project_permissions'
+
+    @classmethod
+    def get_permissions(cls, project, user) -> List[Permission]:
+        role = project.get_current_user_role(user)
+        badges = project.get_current_user_badges(user) or []
+        if role is None:
+            return []
+        badges_permissions = [
+            cls.BADGES_PERMISSION_MAP[badge]
+            for badge in badges
+            if badge in cls.BADGES_PERMISSION_MAP
+        ]
+        return [
+            *cls.PERMISSION_MAP.get(role, []),
+            *badges_permissions,
+        ]
 
 
 class AnalysisFrameworkPermissions(BasePermissions):
