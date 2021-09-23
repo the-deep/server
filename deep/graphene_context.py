@@ -19,9 +19,7 @@ class GQLContext:
 
     def set_active_project(self, project):
         self.active_project = self.request.active_project = project
-        self.project_permissions = PP.get_permissions(
-            project.get_current_user_role(self.request.user)
-        )
+        self.project_permissions = PP.get_permissions(project, self.request.user)
 
     def set_active_af(self, af):
         self.active_af = self.request.active_af = af

@@ -92,9 +92,11 @@ class UserMeType(DjangoObjectType):
     @staticmethod
     @only_me
     def resolve_last_active_project(root, info, **kwargs) -> Union[int, None]:
-        return root.profile.last_active_project or (
-            Project.get_for_gq(info.context.user, only_member=True).order_by('-id').first()
-        )
+        project = root.profile.last_active_project
+        if project and project.get_current_user_role(info.context.user):
+            return project
+        # As a fallback return last created member project
+        return Project.get_for_gq(info.context.user, only_member=True).order_by('-id').first()
 
     @staticmethod
     def resolve_organization(root, info, **kwargs) -> Union[str, None]:
