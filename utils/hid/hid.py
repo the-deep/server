@@ -45,8 +45,21 @@ class HumanitarianId:
     Handles HID Token
     """
     def __init__(self, access_token):
-        self.data = self.get_user_information_from_access_token(access_token)
-        self.user_id = self.data['sub']
+        self.data = self._process_hid_user_data(
+            self.get_user_information_from_access_token(access_token)
+        )
+        self.user_id = self.data['hid']
+
+    @staticmethod
+    def _process_hid_user_data(data):
+        first_name, *last_name = (data['name'] or '').split(' ')
+        last_name = ' '.join(last_name)
+        return dict(
+            hid=data['sub'],
+            email=data['email'],
+            first_name=first_name,
+            last_name=last_name,
+        )
 
     def get_user(self):
         profile = Profile.objects.filter(hid=self.user_id).first()
@@ -63,8 +76,8 @@ class HumanitarianId:
         """
         Sync data from HID to user
         """
-        user.first_name = self.data['given_name']
-        user.last_name = self.data['family_name']
+        user.first_name = self.data['first_name']
+        user.last_name = self.data['last_name']
         user.email = self.data['email']
         user.profile.hid = self.user_id
         user.save()
@@ -76,8 +89,8 @@ class HumanitarianId:
         username = self.data['email']
 
         user = User.objects.create_user(
-            first_name=self.data['given_name'],
-            last_name=self.data['family_name'],
+            first_name=self.data['first_name'],
+            last_name=self.data['last_name'],
             email=self.data['email'],
             username=username,
         )

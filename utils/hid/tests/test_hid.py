@@ -109,8 +109,6 @@ class HIDIntegrationTest(TestCase):
             "email_verified": True,
             "email": HID_EMAIL,
             "name": "Xxxxxx Xxxxxx",
-            "given_name": "Xxxxxx",
-            "family_name": "Xxxxxx",
             # NOTE USED
             "iss": "https://auth.humanitarian.id",
             "user_id": "",
@@ -138,10 +136,36 @@ class HIDIntegrationTest(TestCase):
             user = hid.HumanitarianId(access_token).get_user()
         mock_return_value.json.return_value['email_verified'] = True
 
-        mock_return_value.json.return_value.pop('given_name')
+        mock_return_value.json.return_value.pop('name')
         with self.assertRaises(KeyError):
             user = hid.HumanitarianId(access_token).get_user()
-        mock_return_value.json.return_value['given_name'] = 'Xxxxxx'
+
+        # ----------- Name attribute change test
+        sample_first_name = 'Xxxxxx'
+        sample_last_name = 'Yyyyyy'
+        # Just FN in name
+        mock_return_value.json.return_value['name'] = sample_first_name
+        user = hid.HumanitarianId(access_token).get_user()
+        self.assertEqual(getattr(user, 'first_name'), sample_first_name)
+        self.assertEqual(getattr(user, 'last_name'), '')
+        user.delete()
+
+        # Both FN+LN in name
+        mock_return_value.json.return_value['name'] = f'{sample_first_name} {sample_last_name}'
+        user = hid.HumanitarianId(access_token).get_user()
+        self.assertEqual(getattr(user, 'first_name'), sample_first_name)
+        self.assertEqual(getattr(user, 'last_name'), sample_last_name)
+        user.delete()
+
+        # Name = None
+        for sample_name in [None, '']:
+            mock_return_value.json.return_value['name'] = sample_name
+            user = hid.HumanitarianId(access_token).get_user()
+            self.assertEqual(getattr(user, 'first_name'), '')
+            self.assertEqual(getattr(user, 'last_name'), '')
+            user.delete()
+
+        mock_return_value.json.return_value['name'] = 'Xxxxxx Xxxxxx'
 
     @patch('utils.hid.hid.requests')
     def test_link_user(self, mock_requests):
