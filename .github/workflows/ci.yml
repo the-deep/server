@@ -45,6 +45,17 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
+      - name: 🕮 Validate latest graphql schema.
+        env:
+          DOCKER_IMAGE_SERVER: ${{ steps.prep.outputs.tagged_image }}
+        run: |
+          docker-compose -f gh-docker-compose.yml run --rm server ./manage.py graphql_schema --out schema-latest.graphql &&
+          cmp --silent schema.graphql schema-latest.graphql || {
+            echo 'The schema.graphql is not up to date with the latest changes. Please update and push latest';
+            diff schema.graphql schema-latest.graphql;
+            exit 1;
+          }
+
       - name: 🤞 Run Test 🧪 & Publish coverage to code climate
         uses: paambaati/codeclimate-action@v2.7.5
         env:
