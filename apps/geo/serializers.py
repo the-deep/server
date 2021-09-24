@@ -47,6 +47,7 @@ class RegionSerializer(RemoveNullFieldsMixin,
         write_only=True,
         required=False,
     )
+    is_published = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Region
@@ -63,6 +64,11 @@ class RegionSerializer(RemoveNullFieldsMixin,
         if not project.can_modify(self.context['request'].user):
             raise serializers.ValidationError('Invalid project')
         return project.id
+
+    def validate(self, data):
+        if self.instance and self.instance.is_published:
+            raise serializers.ValidationError('Published region can\'t be changed. Please contact Admin')
+        return data
 
     def create(self, validated_data):
         project = validated_data.pop('project', None)
