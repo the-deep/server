@@ -163,6 +163,7 @@ input BulkLeadInputType {
   publishedOn: Date
   text: String
   isAssessmentLead: Boolean
+  leadGroup: ID
   url: String
   website: String
   source: ID
@@ -635,6 +636,7 @@ input LeadInputType {
   publishedOn: Date
   text: String
   isAssessmentLead: Boolean
+  leadGroup: ID
   url: String
   website: String
   source: ID
