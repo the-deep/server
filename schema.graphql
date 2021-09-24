@@ -1,0 +1,1234 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type AnalysisFrameworkDetailType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  title: String!
+  description: String
+  isPrivate: Boolean!
+  organization: OrganizationType
+  previewImage: FileField
+  currentUserRole: String
+  allowedPermissions: [AnalysisFrameworkPermission!]!
+  primaryTagging: [SectionType!]
+  secondaryTagging: [WidgetType!]
+  members: [AnalysisFrameworkMembershipType!]
+  filters: [AnalysisFrameworkFilterType!]
+  visibleProjects: [AnalysisFrameworkVisibleProjectType!]
+}
+
+type AnalysisFrameworkFilterType {
+  title: String!
+  properties: GenericScalar
+  key: String!
+  widgetType: WidgetWidgetTypeEnum!
+  filterType: WidgetFilterTypeEnum!
+}
+
+input AnalysisFrameworkInputType {
+  title: String!
+  description: String
+  isPrivate: Boolean
+  properties: GenericScalar
+  organization: ID
+  previewImage: Upload
+  primaryTagging: [SectionGqlInputType!]
+  secondaryTagging: [WidgetGqlInputType!]
+}
+
+type AnalysisFrameworkListType {
+  results: [AnalysisFrameworkType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AnalysisFrameworkMembershipType {
+  id: ID!
+  member: UserType!
+  role: AnalysisFrameworkRoleType!
+  joinedAt: DateTime!
+  addedBy: UserType
+  clientId: String!
+}
+
+type AnalysisFrameworkMutationType {
+  id: ID!
+  title: String!
+  analysisFrameworkUpdate(data: AnalysisFrameworkInputType!): UpdateAnalysisFramework
+  analysisFrameworkMembershipBulk(deleteIds: [ID!], items: [BulkAnalysisFrameworkMembershipInputType!]): BulkUpdateAnalysisFrameworkMembership
+}
+
+enum AnalysisFrameworkPermission {
+  CAN_ADD_USER
+  CAN_CLONE_FRAMEWORK
+  CAN_EDIT_FRAMEWORK
+  CAN_USE_IN_OTHER_PROJECTS
+  DELETE_FRAMEWORK
+}
+
+type AnalysisFrameworkRoleType {
+  id: ID!
+  title: String!
+}
+
+type AnalysisFrameworkType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  title: String!
+  description: String
+  isPrivate: Boolean!
+  organization: OrganizationType
+  previewImage: String
+  currentUserRole: String
+  allowedPermissions: [AnalysisFrameworkPermission!]!
+}
+
+type AnalysisFrameworkVisibleProjectType {
+  id: ID!
+  title: String!
+  isPrivate: Boolean!
+}
+
+input AttributeGqInputType {
+  id: ID
+  data: GenericScalar
+  widget: ID!
+  clientId: String
+}
+
+type AttributeType {
+  id: ID!
+  data: GenericScalar
+  clientId: String!
+  widget: ID!
+  widgetType: WidgetWidgetTypeEnum!
+  geoSelectedOptions: [ProjectGeoAreaType]
+}
+
+input BulkAnalysisFrameworkMembershipInputType {
+  id: ID
+  member: ID!
+  role: ID
+  clientId: String
+}
+
+type BulkEntry {
+  errors: [[GenericScalar!]]
+  result: [EntryType]
+  deletedResult: [EntryType!]
+}
+
+input BulkEntryInputType {
+  id: ID
+  lead: ID!
+  order: Int
+  informationDate: Date
+  entryType: EntryTagTypeEnum
+  image: ID
+  imageRaw: String
+  leadImage: ID
+  tabularField: ID
+  excerpt: String
+  droppedExcerpt: String
+  highlightHidden: Boolean
+  attributes: [AttributeGqInputType!]
+  clientId: String
+}
+
+type BulkLead {
+  errors: [[GenericScalar!]]
+  result: [LeadType]
+  deletedResult: [LeadType!]
+}
+
+input BulkLeadInputType {
+  id: ID
+  title: String!
+  attachment: ID
+  status: LeadStatusEnum
+  assignee: String
+  confidentiality: LeadConfidentialityEnum
+  sourceType: LeadSourceTypeEnum
+  priority: LeadPriorityEnum
+  publishedOn: Date
+  text: String
+  url: String
+  website: String
+  source: ID
+  authors: [ID!]
+  emmTriggers: [LeadEMMTriggerInputType!]
+  emmEntities: [EMMEntityInputType!]
+  clientId: String
+}
+
+type BulkUpdateAnalysisFrameworkMembership {
+  errors: [[GenericScalar!]]
+  result: [AnalysisFrameworkMembershipType]
+  deletedResult: [AnalysisFrameworkMembershipType!]
+}
+
+type ChangeUserPassword {
+  errors: [GenericScalar!]
+  ok: Boolean
+}
+
+type ControlledStatType {
+  totalCount: Int
+  controlledCount: Int
+}
+
+type CreateAnalysisFramework {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisFrameworkDetailType
+}
+
+type CreateEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: EntryType
+}
+
+type CreateLead {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: LeadType
+}
+
+type CreateProjectJoin {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectJoinRequestType
+}
+
+type CreateUserGroup {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserGroupDetailType
+}
+
+scalar Date
+
+type DateCountType {
+  date: String
+  count: Int
+}
+
+scalar DateTime
+
+type DeleteEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: EntryType
+}
+
+type DeleteLead {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: LeadType
+}
+
+type DeleteUserGroup {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserGroupDetailType
+}
+
+type DjangoDebug {
+  sql: [DjangoDebugSQL]
+}
+
+type DjangoDebugSQL {
+  vendor: String!
+  alias: String!
+  sql: String
+  duration: Float!
+  rawSql: String!
+  params: String!
+  startTime: Float!
+  stopTime: Float!
+  isSlow: Boolean!
+  isSelect: Boolean!
+  transId: String
+  transStatus: String
+  isoLevel: String
+  encoding: String
+}
+
+input EMMEntityInputType {
+  name: String!
+}
+
+type EmmEntityListType {
+  results: [EmmEntityType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type EmmEntityType {
+  id: ID!
+  name: String!
+}
+
+type EmmKeyRiskFactorType {
+  emmRiskFactors: String
+}
+
+type EmmKeyWordType {
+  emmKeywords: String
+}
+
+enum EntryFilterCommentStatusEnum {
+  RESOLVED
+  UNRESOLVED
+}
+
+input EntryFilterDataType {
+  filterKey: ID!
+  value: String
+  valueGte: String
+  valueLte: String
+  valueList: [String!]
+  useExclude: Boolean
+  useAndOperator: Boolean
+  includeSubRegions: Boolean
+}
+
+type EntryGroupLabelType {
+  labelId: ID!
+  labelTitle: String!
+  labelColor: String
+  count: Int!
+  groups: [String!]!
+}
+
+input EntryInputType {
+  id: ID
+  lead: ID!
+  order: Int
+  informationDate: Date
+  entryType: EntryTagTypeEnum
+  image: ID
+  imageRaw: String
+  leadImage: ID
+  tabularField: ID
+  excerpt: String
+  droppedExcerpt: String
+  highlightHidden: Boolean
+  attributes: [AttributeGqInputType!]
+  clientId: String
+}
+
+type EntryListType {
+  results: [EntryType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type EntryReviewCommentDetailType {
+  id: ID!
+  createdBy: UserType!
+  createdAt: DateTime!
+  mentionedUsers: [UserType!]!
+  entry: EntryType!
+  commentType: ReviewCommentTypeEnum!
+  text: String
+  textHistory: [EntryReviewCommentTextType!]
+}
+
+type EntryReviewCommentTextType {
+  id: ID!
+  createdAt: DateTime!
+  text: String!
+  comment: EntryReviewCommentDetailType!
+}
+
+type EntryReviewCommentType {
+  id: ID!
+  createdBy: UserType!
+  createdAt: DateTime!
+  mentionedUsers: [UserType!]!
+  entry: EntryType!
+  commentType: ReviewCommentTypeEnum!
+  text: String
+}
+
+enum EntryTagTypeEnum {
+  EXCERPT
+  IMAGE
+  DATA_SERIES
+}
+
+type EntryType {
+  id: ID!
+  clientId: String!
+  lead: LeadType!
+  project: ProjectType!
+  order: Int!
+  analysisFramework: AnalysisFrameworkType!
+  informationDate: Date
+  excerpt: String!
+  image: GalleryFileType
+  droppedExcerpt: String!
+  highlightHidden: Boolean!
+  controlled: Boolean
+  controlledChangedBy: UserType
+  entryType: EntryTagTypeEnum!
+  attributes: [AttributeType!]
+  projectLabels: [EntryGroupLabelType!]
+  verifiedBy: [UserType!]
+  reviewComments: [EntryReviewCommentType!]
+}
+
+enum ExportDataTypeEnum {
+  ENTRIES
+  ASSESSMENTS
+  PLANNED_ASSESSMENTS
+}
+
+enum ExportExportTypeEnum {
+  EXCEL
+  REPORT
+  JSON
+}
+
+enum ExportFormatEnum {
+  XLSX
+  DOCX
+  PDF
+  JSON
+}
+
+enum ExportStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILURE
+  CANCELED
+}
+
+enum FeatureFeatureType {
+  GENERAL_ACCESS
+  EXPERIMENTAL
+  EARLY_ACCESS
+}
+
+enum FeatureKey {
+  PRIVATE_PROJECT
+  TABULAR
+  ZOOMABLE_IMAGE
+  POLYGON_SUPPORT_GEO
+  ENTRY_VISUALIZATION_CONFIGURATION
+  QUALITY_CONTROL
+  NEW_UI
+  ANALYSIS
+}
+
+type FileField {
+  name: String
+  url: String
+}
+
+type GalleryFileType {
+  id: ID!
+  title: String!
+  mimeType: String
+  metadata: GenericScalar
+  file: FileField
+}
+
+scalar GenericScalar
+
+input GroupMembershipGqInputType {
+  id: Int
+  member: ID!
+  role: GroupMembershipRoleEnum
+}
+
+enum GroupMembershipRoleEnum {
+  NORMAL
+  ADMIN
+}
+
+type GroupMembershipType {
+  id: ID!
+  member: UserType!
+  joinedAt: DateTime!
+  addedBy: UserType
+  role: GroupMembershipRoleEnum!
+}
+
+input HIDLoginInputType {
+  accessToken: String!
+  expiresIn: Int
+  tokenType: String
+  state: Int
+}
+
+type JwtTokenType {
+  accessToken: String
+  expiresIn: String
+}
+
+enum LeadConfidentialityEnum {
+  UNPROTECTED
+  CONFIDENTIAL
+}
+
+enum LeadCustomFilterEnum {
+  EXCLUDE_EMPTY_FILTERED_ENTRIES
+  EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES
+}
+
+type LeadDetailType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  clientId: String!
+  leadGroup: LeadGroupType
+  project: ProjectType!
+  title: String!
+  assignee: UserType
+  publishedOn: Date
+  text: String!
+  url: String!
+  website: String!
+  attachment: GalleryFileType
+  sourceType: LeadSourceTypeEnum!
+  priority: LeadPriorityEnum!
+  confidentiality: LeadConfidentialityEnum!
+  status: LeadStatusEnum!
+  leadPreview: LeadPreviewType
+  source: OrganizationType
+  authors: [OrganizationType!]
+  controlledStat: ControlledStatType
+  emmEntities: [EmmEntityType!]
+  emmTriggers: [LeadEmmTriggerType!]
+  entries: [EntryType!]
+}
+
+input LeadEMMTriggerInputType {
+  emmRiskFactor: String
+  emmKeyword: String!
+  count: Int
+}
+
+type LeadEmmTriggerListType {
+  results: [LeadEmmTriggerType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type LeadEmmTriggerType {
+  id: ID!
+  emmKeyword: String!
+  emmRiskFactor: String!
+  count: Int!
+}
+
+input LeadEntriesFilterData {
+  id: ID
+  excerpt: String
+  createdAt: DateTime
+  createdAt_Lt: DateTime
+  createdAt_Gt: DateTime
+  createdAt_Lte: DateTime
+  createdAt_Gte: DateTime
+  createdBy: [ID]
+  modifiedAt: DateTime
+  modifiedBy: [ID]
+  controlled: Boolean
+  leadPublishedOn: Date
+  leadPublishedOn_Gt: Date
+  leadPublishedOn_Lt: Date
+  leadPublishedOn_Gte: Date
+  leadPublishedOn_Lte: Date
+  commentStatus: EntryFilterCommentStatusEnum
+  geoCustomShape: String
+  projectEntryLabels: [ID]
+  leadGroupLabel: String
+  authoringOrganizationTypes: [ID]
+  leads: [ID]
+  entryTypes: [EntryTagTypeEnum!]
+  entriesId: [ID]
+  leadTitle: String
+  leadAssignees: [ID]
+  leadStatuses: [LeadStatusEnum!]
+  leadPriorities: [LeadPriorityEnum!]
+  leadConfidentialities: [LeadConfidentialityEnum!]
+  filterableData: [EntryFilterDataType!]
+}
+
+enum LeadExistsEnum {
+  ENTRIES_EXISTS
+  ASSESSMENT_EXISTS
+  ENTRIES_DO_NOT_EXIST
+  ASSESSMENT_DOES_NOT_EXIST
+}
+
+type LeadGroupListType {
+  results: [LeadGroupType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type LeadGroupType {
+  id: ID!
+  title: String!
+}
+
+input LeadInputType {
+  id: ID
+  title: String!
+  attachment: ID
+  status: LeadStatusEnum
+  assignee: String
+  confidentiality: LeadConfidentialityEnum
+  sourceType: LeadSourceTypeEnum
+  priority: LeadPriorityEnum
+  publishedOn: Date
+  text: String
+  url: String
+  website: String
+  source: ID
+  authors: [ID!]
+  emmTriggers: [LeadEMMTriggerInputType!]
+  emmEntities: [EMMEntityInputType!]
+  clientId: String
+}
+
+type LeadListType {
+  results: [LeadType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type LeadPreviewType {
+  textExtract: String!
+  thumbnail: String
+  thumbnailHeight: Int
+  thumbnailWidth: Int
+  wordCount: Int
+  pageCount: Int
+}
+
+enum LeadPriorityEnum {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum LeadSourceTypeEnum {
+  TEXT
+  DISK
+  WEBSITE
+  DROPBOX
+  GOOGLE_DRIVE
+  RSS
+  EMM
+  WEB_API
+  UNKNOWN
+}
+
+enum LeadStatusEnum {
+  PENDING
+  PROCESSED
+  VALIDATED
+}
+
+type LeadType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  clientId: String!
+  leadGroup: LeadGroupType
+  project: ProjectType!
+  title: String!
+  assignee: UserType
+  publishedOn: Date
+  text: String!
+  url: String!
+  website: String!
+  attachment: GalleryFileType
+  sourceType: LeadSourceTypeEnum!
+  priority: LeadPriorityEnum!
+  confidentiality: LeadConfidentialityEnum!
+  status: LeadStatusEnum!
+  leadPreview: LeadPreviewType
+  source: OrganizationType
+  authors: [OrganizationType!]
+  controlledStat: ControlledStatType
+  emmEntities: [EmmEntityType!]
+  emmTriggers: [LeadEmmTriggerType!]
+}
+
+type Login {
+  result: UserMeType
+  errors: [GenericScalar!]
+  ok: Boolean!
+  captchaRequired: Boolean!
+}
+
+input LoginInputType {
+  email: String!
+  password: String!
+  captcha: String
+}
+
+type LoginWithHID {
+  result: UserMeType
+  errors: [GenericScalar!]
+  ok: Boolean!
+}
+
+type Logout {
+  ok: Boolean
+}
+
+type MergedAsOrganizationType {
+  id: ID!
+  title: String!
+  logo: GalleryFileType
+}
+
+type Mutation {
+  joinProject(data: ProjectJoinRequestInputType!): CreateProjectJoin
+  projectJoinRequestDelete(projectId: ID!): ProjectJoinRequestDelete
+  project(id: ID!): ProjectMutationType
+  userGroupCreate(data: UserGroupInputType!): CreateUserGroup
+  userGroupUpdate(data: UserGroupInputType!, id: ID!): UpdateUserGroup
+  userGroupDelete(id: ID!): DeleteUserGroup
+  login(data: LoginInputType!): Login
+  loginWithHid(data: HIDLoginInputType!): LoginWithHID
+  logout: Logout
+  register(data: RegisterInputType!): Register
+  resetPassword(data: ResetPasswordInputType!): ResetPassword
+  changePassword(data: PasswordChangeInputType!): ChangeUserPassword
+  updateMe(data: UserMeInputType!): UpdateMe
+  analysisFrameworkCreate(data: AnalysisFrameworkInputType!): CreateAnalysisFramework
+  analysisFramework(id: ID!): AnalysisFrameworkMutationType
+}
+
+type OrganizationListType {
+  results: [OrganizationType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type OrganizationType {
+  id: ID!
+  title: String!
+  logo: GalleryFileType
+  shortName: String!
+  longName: String!
+  url: String!
+  regions: [RegionType!]!
+  organizationType: OrganizationTypeType
+  verified: Boolean!
+  mergedAs: MergedAsOrganizationType
+}
+
+type OrganizationTypeListType {
+  results: [OrganizationTypeType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type OrganizationTypeType {
+  id: ID!
+  title: String!
+  shortName: String
+  description: String!
+}
+
+input PasswordChangeInputType {
+  oldPassword: String!
+  newPassword: String!
+}
+
+type ProjectAcceptReject {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectJoinRequestType
+}
+
+input ProjectAcceptRejectInputType {
+  id: ID
+  status: String!
+  role: String
+}
+
+type ProjectDetailType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  title: String!
+  description: String!
+  startDate: Date
+  endDate: Date
+  analysisFramework: AnalysisFrameworkDetailType
+  isDefault: Boolean!
+  isPrivate: Boolean!
+  isVisualizationEnabled: Boolean!
+  members: [UserType!]!
+  userGroups: [UserGroupDetailType!]!
+  data: GenericScalar
+  currentUserRole: String
+  allowedPermissions: [ProjectPermission!]!
+  stats: ProjectStatType
+  membershipPending: Boolean!
+  regions: [RegionType!]
+  status: ProjectStatusEnum!
+  organizations: [ProjectOrganizationType!]
+  reviewComment(id: ID!): EntryReviewCommentDetailType
+  geoAreas(search: String, page: Int = 1, ordering: String, pageSize: Int): ProjectGeoAreaListType
+  export(id: ID!): UserExportType
+  exports(type: [ExportDataTypeEnum!], format: [ExportFormatEnum!], status: [ExportStatusEnum!], page: Int = 1, ordering: String, pageSize: Int): UserExportListType
+  entry(id: ID!): EntryType
+  entries(id: ID, excerpt: String, createdAt: DateTime, createdAt_Lt: DateTime, createdAt_Gt: DateTime, createdAt_Lte: DateTime, createdAt_Gte: DateTime, createdBy: [ID], modifiedAt: DateTime, modifiedBy: [ID], controlled: Boolean, leadPublishedOn: Date, leadPublishedOn_Gt: Date, leadPublishedOn_Lt: Date, leadPublishedOn_Gte: Date, leadPublishedOn_Lte: Date, commentStatus: EntryFilterCommentStatusEnum, geoCustomShape: String, projectEntryLabels: [ID], leadGroupLabel: String, authoringOrganizationTypes: [ID], leads: [ID], entryTypes: [EntryTagTypeEnum!], entriesId: [ID], leadTitle: String, leadAssignees: [ID], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], filterableData: [EntryFilterDataType!], page: Int = 1, ordering: String, pageSize: Int): EntryListType
+  lead(id: ID!): LeadDetailType
+  leads(id: Float, text: String, url: String, website: String, emmEntities: String, createdAt: DateTime, createdAt_Lt: DateTime, createdAt_Gt: DateTime, createdAt_Lte: DateTime, createdAt_Gte: DateTime, publishedOn: Date, publishedOn_Lt: Date, publishedOn_Gt: Date, publishedOn_Lte: Date, publishedOn_Gte: Date, search: String, confidentiality: LeadConfidentialityEnum, classifiedDocId: [Float], exists: LeadExistsEnum, emmKeywords: String, emmRiskFactors: String, authoringOrganizationTypes: [ID], customFilters: LeadCustomFilterEnum, sourceTypes: [LeadSourceTypeEnum!], priorities: [LeadPriorityEnum!], statuses: [LeadStatusEnum!], assignees: [ID], entriesFilterData: LeadEntriesFilterData, page: Int = 1, ordering: String, pageSize: Int): LeadListType
+  leadGroup(id: ID!): LeadGroupType
+  leadGroups(createdAt: DateTime, modifiedAt: DateTime, createdBy: ID, modifiedBy: ID, clientId: String, title: String, project: ID, page: Int = 1, ordering: String, pageSize: Int): LeadGroupListType
+  emmEntities(name: String, page: Int = 1, ordering: String, pageSize: Int): EmmEntityListType
+  leadEmmTriggers(lead: ID, emmKeyword: String, emmRiskFactor: String, count: Int, page: Int = 1, ordering: String, pageSize: Int): LeadEmmTriggerListType
+  emmKeywords: [EmmKeyWordType!]
+  emmRiskFactors: [EmmKeyRiskFactorType!]
+  activityLog: GenericScalar
+  topSourcers: [UserEntityCountType!]
+  topTaggers: [UserEntityCountType!]
+}
+
+type ProjectGeoAreaListType {
+  results: [ProjectGeoAreaType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type ProjectGeoAreaType {
+  id: ID!
+  title: String!
+  regionTitle: String!
+  adminLevelTitle: String!
+}
+
+type ProjectJoinRequestDelete {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectJoinRequestType
+}
+
+input ProjectJoinRequestInputType {
+  reason: String!
+  role: String
+  project: String!
+  data: GenericScalar
+}
+
+enum ProjectJoinRequestStatusEnum {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+type ProjectJoinRequestType {
+  id: ID!
+  project: ProjectType!
+  requestedBy: UserType!
+  respondedBy: UserType
+  data: GenericScalar
+  status: ProjectJoinRequestStatusEnum!
+}
+
+type ProjectListType {
+  results: [ProjectType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type ProjectMutationType {
+  id: ID!
+  title: String!
+  entryCreate(data: EntryInputType!): CreateEntry
+  entryUpdate(data: EntryInputType!, id: ID!): UpdateEntry
+  entryDelete(id: ID!): DeleteEntry
+  entryBulk(deleteIds: [ID!], items: [BulkEntryInputType!]): BulkEntry
+  leadCreate(data: LeadInputType!): CreateLead
+  leadUpdate(data: LeadInputType!, id: ID!): UpdateLead
+  leadDelete(id: ID!): DeleteLead
+  leadBulk(items: [BulkLeadInputType!]): BulkLead
+  acceptRejectProject(data: ProjectAcceptRejectInputType!, id: ID!): ProjectAcceptReject
+}
+
+type ProjectOrganizationType {
+  id: ID!
+  organization: OrganizationType!
+  organizationType: ProjectOrganizationTypeEnum!
+}
+
+enum ProjectOrganizationTypeEnum {
+  LEAD_ORGANIZATION
+  INTERNATIONAL_PARTNER
+  NATIONAL_PARTNER
+  DONOR
+  GOVERNMENT
+}
+
+enum ProjectPermission {
+  UPDATE_PROJECT
+  CREATE_LEAD
+  VIEW_ONLY_UNPROTECTED_LEAD
+  VIEW_ALL_LEAD
+  UPDATE_LEAD
+  DELETE_LEAD
+  CREATE_ENTRY
+  VIEW_ENTRY
+  UPDATE_ENTRY
+  DELETE_ENTRY
+  CREATE_EXPORT
+  CAN_QUALITY_CONTROL
+}
+
+type ProjectStatType {
+  numberOfLeads: Int
+  numberOfLeadsTagged: Int
+  numberOfLeadsTaggedAndControlled: Int
+  numberOfEntries: Int
+  numberOfUsers: Int
+  leadsActivity: [DateCountType!]
+  entriesActivity: [DateCountType!]
+}
+
+enum ProjectStatusEnum {
+  ACTIVE
+  INACTIVE
+}
+
+type ProjectType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  title: String!
+  description: String!
+  startDate: Date
+  endDate: Date
+  analysisFramework: AnalysisFrameworkType
+  isDefault: Boolean!
+  isPrivate: Boolean!
+  isVisualizationEnabled: Boolean!
+  currentUserRole: String
+  allowedPermissions: [ProjectPermission!]!
+  stats: ProjectStatType
+  membershipPending: Boolean!
+  regions: [RegionType!]
+  status: ProjectStatusEnum!
+  organizations: [ProjectOrganizationType!]
+}
+
+type Query {
+  organization(id: ID!): OrganizationType
+  organizations(id: Float, search: String, page: Int = 1, ordering: String, pageSize: Int): OrganizationListType
+  organizationType(id: ID!): OrganizationTypeType
+  organizationTypes(title: String, shortName: String, description: String, reliefWebId: Int, page: Int = 1, ordering: String, pageSize: Int): OrganizationTypeListType
+  userGroup(id: ID!): UserGroupDetailType
+  userGroups(id: Float, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): UserGroupListType
+  me: UserMeType
+  user(id: ID!): UserType
+  users(id: Float, page: Int = 1, ordering: String, pageSize: Int): UserListType
+  analysisFramework(id: ID!): AnalysisFrameworkDetailType
+  analysisFrameworks(id: Float, createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID], modifiedBy: [ID], search: String, page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkListType
+  project(id: ID!): ProjectDetailType
+  projects(createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID], modifiedBy: [ID], status: ProjectStatusEnum, organizations: [ID], analysisFrameworks: [ID], regions: [ID], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): ProjectListType
+  recentProjects: [ProjectDetailType!]
+  _debug: DjangoDebug
+}
+
+type RegionType {
+  id: ID!
+  title: String!
+  public: Boolean!
+  regionalGroups: GenericScalar
+  keyFigures: GenericScalar
+  populationData: GenericScalar
+  mediaSources: GenericScalar
+  geoOptions: GenericScalar
+}
+
+type Register {
+  errors: [GenericScalar!]
+  ok: Boolean!
+  captchaRequired: Boolean!
+}
+
+input RegisterInputType {
+  email: String!
+  firstName: String
+  lastName: String
+  organization: String!
+  captcha: String!
+}
+
+type ResetPassword {
+  errors: [GenericScalar!]
+  ok: Boolean!
+  captchaRequired: Boolean!
+}
+
+input ResetPasswordInputType {
+  email: String!
+  captcha: String!
+}
+
+enum ReviewCommentTypeEnum {
+  COMMENT
+  VERIFY
+  UNVERIFY
+  CONTROL
+  UNCONTROL
+}
+
+input SectionGqlInputType {
+  id: ID
+  title: String!
+  order: Int
+  tooltip: String
+  widgets: [WidgetGqlInputType!]
+  clientId: String
+}
+
+type SectionType {
+  id: ID!
+  title: String!
+  order: Int!
+  tooltip: String
+  clientId: String!
+  widgets: [WidgetType!]
+}
+
+type UpdateAnalysisFramework {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisFrameworkDetailType
+}
+
+type UpdateEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: EntryType
+}
+
+type UpdateLead {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: LeadType
+}
+
+type UpdateMe {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserMeType
+}
+
+type UpdateUserGroup {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserGroupDetailType
+}
+
+scalar Upload
+
+type UserEntityCountType {
+  id: String
+  name: String
+  userId: String
+  count: Int
+}
+
+type UserExportListType {
+  results: [UserExportType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type UserExportType {
+  id: ID!
+  project: ProjectType
+  isPreview: Boolean!
+  title: String!
+  filters: GenericScalar
+  mimeType: String!
+  file: String
+  exportedBy: UserType!
+  exportedAt: DateTime!
+  pending: Boolean!
+  isDeleted: Boolean!
+  isArchived: Boolean!
+  format: ExportFormatEnum!
+  type: ExportDataTypeEnum!
+  status: ExportStatusEnum!
+  exportType: ExportExportTypeEnum!
+}
+
+type UserFeatureAccessType {
+  key: FeatureKey!
+  title: String!
+  featureType: FeatureFeatureType!
+}
+
+type UserGroupDetailType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  clientId: String
+  title: String!
+  description: String!
+  globalCrisisMonitoring: Boolean!
+  customProjectFields: GenericScalar
+  currentUserRole: GroupMembershipRoleEnum
+  memberships: [GroupMembershipType!]
+}
+
+input UserGroupInputType {
+  title: String
+  description: String
+  displayPicture: ID
+  globalCrisisMonitoring: Boolean
+  customProjectFields: GenericScalar
+  memberships: [GroupMembershipGqInputType!]
+}
+
+type UserGroupListType {
+  results: [UserGroupDetailType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type UserListType {
+  results: [UserType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+input UserMeInputType {
+  firstName: String
+  lastName: String
+  organization: String
+  displayPicture: ID
+  language: String
+  emailOptOuts: [String!]
+  lastActiveProject: ID
+}
+
+type UserMeType {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  isActive: Boolean!
+  lastLogin: DateTime
+  email: String
+  displayName: String
+  displayPicture: ID
+  displayPictureUrl: String
+  organization: String
+  language: String
+  emailOptOuts: [String!]
+  jwtToken: JwtTokenType
+  lastActiveProject: ProjectType
+  accessibleFeatures: [UserFeatureAccessType!]!
+}
+
+type UserType {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  isActive: Boolean!
+  displayName: String
+  displayPictureUrl: String
+  organization: String
+  language: String
+}
+
+enum WidgetFilterTypeEnum {
+  TEXT
+  NUMBER
+  LIST
+  INTERSECTS
+}
+
+input WidgetGqlInputType {
+  id: ID
+  key: String
+  widgetId: WidgetWidgetTypeEnum!
+  title: String!
+  properties: GenericScalar
+  order: Int
+  width: WidgetWidthTypeEnum
+  clientId: String
+}
+
+type WidgetType {
+  id: ID!
+  title: String!
+  properties: GenericScalar
+  order: Int!
+  clientId: String!
+  widgetId: WidgetWidgetTypeEnum!
+  width: WidgetWidthTypeEnum!
+  key: String!
+}
+
+enum WidgetWidgetTypeEnum {
+  DATE
+  DATE_RANGE
+  TIME
+  TIME_RANGE
+  NUMBER
+  SCALE
+  GEO
+  SELECT
+  MULTISELECT
+  ORGANIGRAM
+  MATRIX1D
+  MATRIX2D
+  NUMBER_MATRIX
+  CONDITIONAL
+  TEXT
+  EXCERPT
+}
+
+enum WidgetWidthTypeEnum {
+  FULL
+  HALF
+}
