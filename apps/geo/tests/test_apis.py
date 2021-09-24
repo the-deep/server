@@ -26,6 +26,42 @@ class RegionTests(TestCase):
         self.assertIn(Region.objects.get(id=response.data['id']),
                       project.regions.all())
 
+    def test_region_published_status(self):
+        """
+        Once published is set to True for region don't allow it to modify
+        """
+        project = self.create(Project, role=self.admin_role)
+        region = self.create(Region, is_published=True)
+        project.regions.add(region)
+
+        data = {
+            'is_published': False
+        }
+        url = f'/api/v1/regions/{region.id}/'
+        self.authenticate()
+        response = self.client.patch(url, data)
+        self.assert_403(response)
+
+    def test_publish_region(self):
+        user = self.create_user()
+        user1 = self.create_user()
+        project = self.create(Project, role=self.admin_role)
+        region = self.create(Region, created_by=user)
+        project.regions.add(region)
+
+        url = f'/api/v1/regions/{region.id}/publish/'
+        data = {}
+
+        # authenticated with user that has not created region
+        self.authenticate(user1)
+        response = self.client.post(url, data)
+        self.assert_400(response)
+
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_200(response)
+        self.assertEqual(response.data['is_published'], True)
+
     def test_clone_region(self):
         project = self.create(Project, role=self.admin_role)
         region = self.create(Region)
@@ -136,22 +172,25 @@ class GeoOptionsApi(TestCase):
 
 class TestGeoAreaApi(TestCase):
     def test_geo_area(self):
-        region = self.create(Region)
-        region1 = self.create(Region)
+        region = self.create(Region, is_published=True)
+        region1 = self.create(Region, is_published=False)
+        region2 = self.create(Region, is_published=True)
         user1 = self.create_user()
         user2 = self.create_user()
         project = self.create(Project)
         project.add_member(user1)
-        project.regions.add(region)
+        project.regions.set([region, region1])
         project2 = self.create(Project)
         project2.add_member(user2)
-        project2.regions.add(region1)
+        project2.regions.add(region2)
 
         admin_level1 = self.create(AdminLevel, region=region, title='test')
         admin_level2 = self.create(AdminLevel, region=region)
         admin_level3 = self.create(AdminLevel, region=region1)
+        admin_level4 = self.create(AdminLevel, region=region2)
         geo_area1 = self.create(GeoArea, admin_level=admin_level1, title='me')
         self.create(GeoArea, admin_level=admin_level2, parent=geo_area1)
+        self.create(GeoArea, admin_level=admin_level4)
         self.create(GeoArea, admin_level=admin_level3)
 
         url = f'/api/v1/projects/{project.id}/geo-area/'
@@ -159,7 +198,7 @@ class TestGeoAreaApi(TestCase):
         self.authenticate(user1)
         response = self.client.get(url)
         self.assert_200(response)
-        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(response.data['count'], 2)  # geo area with region `published=True`
         # test for the label
         self.assertEqual(response.data['results'][0]['label'], '{}/{}'.format(admin_level1.title, geo_area1.title))
 
