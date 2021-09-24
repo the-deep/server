@@ -417,6 +417,7 @@ class LeadGqSerializer(TempClientIdMixin, UserResourceSerializer):
             'published_on',
             'text',
             'is_assessment_lead',
+            'lead_group',
             'url',
             'website',
             'source',
