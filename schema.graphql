@@ -661,9 +661,9 @@ enum LeadSourceTypeEnum {
 }
 
 enum LeadStatusEnum {
-  PENDING
-  PROCESSED
-  VALIDATED
+  NOT_TAGGED
+  IN_PROGRESS
+  TAGGED
 }
 
 type LeadType {
