@@ -3,6 +3,7 @@ import graphene
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
+from utils.graphene.enums import EnumDescription
 from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 
@@ -17,6 +18,7 @@ class GroupMembershipType(DjangoObjectType):
         fields = ('id', 'member', 'joined_at', 'added_by',)
 
     role = graphene.Field(GroupMembershipRoleEnum, required=True)
+    role_display = EnumDescription(source='get_role_display', required=True)
 
 
 class UserGroupType(DjangoObjectType):
@@ -36,6 +38,7 @@ class UserGroupType(DjangoObjectType):
         )
 
     current_user_role = graphene.Field(GroupMembershipRoleEnum)
+    current_user_role_display = EnumDescription(source='get_current_user_role_display')
 
     @staticmethod
     def resolve_current_user_role(root, info):

@@ -4,6 +4,7 @@ from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
+from utils.graphene.enums import EnumDescription
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField, DjangoListField
 from deep.permissions import ProjectPermissions as PP
@@ -62,6 +63,7 @@ class AttributeType(ClientIdMixin, DjangoObjectType):
 
     widget = graphene.ID(required=True)
     widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
+    widget_type_display = EnumDescription(source='get_widget_type', required=True)
     # NOTE: This requires region_title and admin_level_title to be annotated
     # NOTE: Some item can be null (if missing from database)
     geo_selected_options = graphene.List(ProjectGeoAreaType)
@@ -98,7 +100,8 @@ class EntryType(ClientIdMixin, DjangoObjectType):
             'client_id',
         )
 
-    entry_type = graphene.Field(graphene.NonNull(EntryTagTypeEnum))
+    entry_type = graphene.Field(EntryTagTypeEnum, required=True)
+    entry_type_display = EnumDescription(source='get_entry_type_display', required=True)
     attributes = graphene.List(graphene.NonNull(AttributeType))
     project_labels = graphene.List(graphene.NonNull(EntryGroupLabelType))
     verified_by = DjangoListField(UserType)

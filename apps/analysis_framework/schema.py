@@ -5,6 +5,7 @@ from graphene_django import DjangoObjectType, DjangoListField
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from django.db.models import QuerySet
 
+from utils.graphene.enums import EnumDescription
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField, FileField
 from deep.permissions import AnalysisFrameworkPermissions as AfP
@@ -35,7 +36,9 @@ class WidgetType(ClientIdMixin, DjangoObjectType):
         )
 
     widget_id = graphene.Field(WidgetWidgetTypeEnum, required=True)
+    widget_id_display = EnumDescription(source='get_widget_id_display', required=True)
     width = graphene.Field(WidgetWidthTypeEnum, required=True)
+    width_display = EnumDescription(source='get_width_display', required=True)
     key = graphene.String(required=True)
 
 
@@ -104,7 +107,9 @@ class AnalysisFrameworkFilterType(DjangoObjectType):
 
     key = graphene.String(required=True)
     widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
+    widget_type_display = EnumDescription(source='get_widget_type_display', required=True)
     filter_type = graphene.Field(WidgetFilterTypeEnum, required=True)
+    filter_type_display = EnumDescription(source='get_filter_type_display', required=True)
 
     @staticmethod
     def resolve_widget_type(root, info, **kwargs):
