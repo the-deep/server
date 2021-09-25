@@ -28,7 +28,9 @@ type AnalysisFrameworkFilterType {
   properties: GenericScalar
   key: String!
   widgetType: WidgetWidgetTypeEnum!
+  widgetTypeDisplay: EnumDescription!
   filterType: WidgetFilterTypeEnum!
+  filterTypeDisplay: EnumDescription!
 }
 
 input AnalysisFrameworkInputType {
@@ -112,6 +114,7 @@ type AttributeType {
   clientId: String!
   widget: ID!
   widgetType: WidgetWidgetTypeEnum!
+  widgetTypeDisplay: EnumDescription!
   geoSelectedOptions: [ProjectGeoAreaType]
 }
 
@@ -344,6 +347,7 @@ type EntryReviewCommentDetailType {
   mentionedUsers: [UserType!]!
   entry: EntryType!
   commentType: ReviewCommentTypeEnum!
+  commentTypeDisplay: EnumDescription!
   text: String
   textHistory: [EntryReviewCommentTextType!]
 }
@@ -362,6 +366,7 @@ type EntryReviewCommentType {
   mentionedUsers: [UserType!]!
   entry: EntryType!
   commentType: ReviewCommentTypeEnum!
+  commentTypeDisplay: EnumDescription!
   text: String
 }
 
@@ -386,11 +391,14 @@ type EntryType {
   controlled: Boolean
   controlledChangedBy: UserType
   entryType: EntryTagTypeEnum!
+  entryTypeDisplay: EnumDescription!
   attributes: [AttributeType!]
   projectLabels: [EntryGroupLabelType!]
   verifiedBy: [UserType!]
   reviewComments: [EntryReviewCommentType!]
 }
+
+scalar EnumDescription
 
 enum ExportDataTypeEnum {
   ENTRIES
@@ -468,6 +476,7 @@ type GroupMembershipType {
   joinedAt: DateTime!
   addedBy: UserType
   role: GroupMembershipRoleEnum!
+  roleDisplay: EnumDescription!
 }
 
 input HIDLoginInputType {
@@ -509,9 +518,13 @@ type LeadDetailType {
   website: String!
   attachment: GalleryFileType
   sourceType: LeadSourceTypeEnum!
+  sourceTypeDisplay: EnumDescription!
   priority: LeadPriorityEnum!
+  priorityDisplay: EnumDescription!
   confidentiality: LeadConfidentialityEnum!
+  confidentialityDisplay: EnumDescription!
   status: LeadStatusEnum!
+  statusDisplay: EnumDescription!
   leadPreview: LeadPreviewType
   source: OrganizationType
   authors: [OrganizationType!]
@@ -670,9 +683,13 @@ type LeadType {
   website: String!
   attachment: GalleryFileType
   sourceType: LeadSourceTypeEnum!
+  sourceTypeDisplay: EnumDescription!
   priority: LeadPriorityEnum!
+  priorityDisplay: EnumDescription!
   confidentiality: LeadConfidentialityEnum!
+  confidentialityDisplay: EnumDescription!
   status: LeadStatusEnum!
+  statusDisplay: EnumDescription!
   leadPreview: LeadPreviewType
   source: OrganizationType
   authors: [OrganizationType!]
@@ -802,6 +819,7 @@ type ProjectDetailType {
   membershipPending: Boolean!
   regions: [RegionType!]
   status: ProjectStatusEnum!
+  statusDisplay: EnumDescription!
   organizations: [ProjectOrganizationType!]
   reviewComment(id: ID!): EntryReviewCommentDetailType
   geoAreas(search: String, page: Int = 1, ordering: String, pageSize: Int): ProjectGeoAreaListType
@@ -889,6 +907,7 @@ type ProjectOrganizationType {
   id: ID!
   organization: OrganizationType!
   organizationType: ProjectOrganizationTypeEnum!
+  organizationTypeDisplay: EnumDescription!
 }
 
 enum ProjectOrganizationTypeEnum {
@@ -949,6 +968,7 @@ type ProjectType {
   membershipPending: Boolean!
   regions: [RegionType!]
   status: ProjectStatusEnum!
+  statusDisplay: EnumDescription!
   organizations: [ProjectOrganizationType!]
 }
 
@@ -1115,6 +1135,7 @@ type UserGroupDetailType {
   globalCrisisMonitoring: Boolean!
   customProjectFields: GenericScalar
   currentUserRole: GroupMembershipRoleEnum
+  currentUserRoleDisplay: EnumDescription
   memberships: [GroupMembershipType!]
 }
 
@@ -1205,7 +1226,9 @@ type WidgetType {
   order: Int!
   clientId: String!
   widgetId: WidgetWidgetTypeEnum!
+  widgetIdDisplay: EnumDescription!
   width: WidgetWidthTypeEnum!
+  widthDisplay: EnumDescription!
   key: String!
 }
 

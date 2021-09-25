@@ -3,6 +3,7 @@ import graphene
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
 
+from utils.graphene.enums import EnumDescription
 from deep.permissions import ProjectPermissions as PP
 from lead.models import Lead
 
@@ -49,6 +50,7 @@ class EntryReviewCommentType(DjangoObjectType):
         )
 
     comment_type = graphene.Field(ReviewCommentTypeEnum, required=True)
+    comment_type_display = EnumDescription(source='get_comment_type_display', required=True)
     text = graphene.String()
 
 
