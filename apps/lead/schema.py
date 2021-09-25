@@ -5,6 +5,7 @@ from django.db.models import QuerySet
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
+from utils.graphene.enums import EnumDescription
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import ProjectPermissions as PP
@@ -150,9 +151,13 @@ class LeadType(ClientIdMixin, DjangoObjectType):
 
     # Enums
     source_type = graphene.Field(LeadSourceTypeEnum, required=True)
+    source_type_display = EnumDescription(source='get_source_type_display', required=True)
     priority = graphene.Field(LeadPriorityEnum, required=True)
+    priority_display = EnumDescription(source='get_priority_display', required=True)
     confidentiality = graphene.Field(LeadConfidentialityEnum, required=True)
+    confidentiality_display = EnumDescription(source='get_confidentiality_display', required=True)
     status = graphene.Field(LeadStatusEnum, required=True)
+    status_display = EnumDescription(source='get_status_display', required=True)
 
     lead_preview = graphene.Field(LeadPreviewType)
     source = graphene.Field(OrganizationType)

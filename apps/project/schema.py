@@ -7,6 +7,7 @@ from graphene_django import DjangoObjectType, DjangoListField
 from graphene.types import generic
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
+from utils.graphene.enums import EnumDescription
 from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import (
     DjangoPaginatedListObjectField,
@@ -86,7 +87,8 @@ class ProjectOrganizationType(DjangoObjectType):
         model = ProjectOrganization
         fields = ('id', 'organization',)
 
-    organization_type = graphene.Field(graphene.NonNull(ProjectOrganizationTypeEnum))
+    organization_type = graphene.Field(ProjectOrganizationTypeEnum, required=True)
+    organization_type_display = EnumDescription(source='get_organization_type_display', required=True)
 
     @staticmethod
     def resolve_organization(root, info):
@@ -114,6 +116,7 @@ class ProjectType(DjangoObjectType):
     membership_pending = graphene.Boolean(required=True)
     regions = DjangoListField(RegionType)
     status = graphene.Field(ProjectStatusEnum, required=True)
+    status_display = EnumDescription(source='get_status_display', required=True)
     organizations = graphene.List(graphene.NonNull(ProjectOrganizationType))
 
     # NOTE: This is a custom feature
