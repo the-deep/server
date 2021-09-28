@@ -58,7 +58,7 @@ class EnumDescription(graphene.Scalar):
     @staticmethod
     def coerce_string(value):
         """
-        Here value shoould always be callable get_FOO_display
+        Here value should always be callable get_FOO_display
         """
         return value()
 
