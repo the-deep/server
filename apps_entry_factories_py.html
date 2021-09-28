@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/entry/factories.py: 93%</title>
+    <title>Coverage for apps/entry/factories.py: 95%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -18,12 +18,12 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>apps/entry/factories.py</b> :
-            <span class="pc_cov">93%</span>
+            <span class="pc_cov">95%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
-            21 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">20 run</button>
+            30 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">29 run</button>
             <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">1 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
             <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">1 partial</button>
@@ -70,26 +70,36 @@
     <p id="t15" class="run"><span class="n"><a href="#t15">15</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p id="t16" class="run"><span class="n"><a href="#t16">16</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">Entry</span>&nbsp;</span><span class="r"></span></p>
     <p id="t17" class="pln"><span class="n"><a href="#t17">17</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t18" class="run"><span class="n"><a href="#t18">18</a></span><span class="t">    <span class="op">@</span><span class="nam">factory</span><span class="op">.</span><span class="nam">post_generation</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t19" class="run"><span class="n"><a href="#t19">19</a></span><span class="t">    <span class="key">def</span> <span class="nam">verified_by</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">create</span><span class="op">,</span> <span class="nam">extracted</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t20" class="par run show_par"><span class="n"><a href="#t20">20</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">create</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">20&#x202F;&#x219B;&#x202F;21</span><span class="annotate long">line 20 didn't jump to line 21, because the condition on line 20 was never true</span></span></p>
-    <p id="t21" class="mis show_mis"><span class="n"><a href="#t21">21</a></span><span class="t">            <span class="key">return</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t22" class="run"><span class="n"><a href="#t22">22</a></span><span class="t">        <span class="key">if</span> <span class="nam">extracted</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t23" class="run"><span class="n"><a href="#t23">23</a></span><span class="t">            <span class="key">for</span> <span class="nam">verified_by_user</span> <span class="key">in</span> <span class="nam">extracted</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t24" class="run"><span class="n"><a href="#t24">24</a></span><span class="t">                <span class="nam">self</span><span class="op">.</span><span class="nam">verified_by</span><span class="op">.</span><span class="nam">add</span><span class="op">(</span><span class="nam">verified_by_user</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t25" class="pln"><span class="n"><a href="#t25">25</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t26" class="pln"><span class="n"><a href="#t26">26</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t27" class="run"><span class="n"><a href="#t27">27</a></span><span class="t"><span class="key">class</span> <span class="nam">EntryAttributeFactory</span><span class="op">(</span><span class="nam">DjangoModelFactory</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t28" class="pln"><span class="n"><a href="#t28">28</a></span><span class="t">    <span class="key">pass</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t29" class="pln"><span class="n"><a href="#t29">29</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t30" class="run"><span class="n"><a href="#t30">30</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t31" class="run"><span class="n"><a href="#t31">31</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">Attribute</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t18" class="run"><span class="n"><a href="#t18">18</a></span><span class="t">    <span class="op">@</span><span class="nam">classmethod</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t19" class="run"><span class="n"><a href="#t19">19</a></span><span class="t">    <span class="key">def</span> <span class="nam">_create</span><span class="op">(</span><span class="nam">cls</span><span class="op">,</span> <span class="nam">model_class</span><span class="op">,</span> <span class="op">*</span><span class="nam">args</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t20" class="run"><span class="n"><a href="#t20">20</a></span><span class="t">        <span class="nam">entry</span> <span class="op">=</span> <span class="nam">model_class</span><span class="op">(</span><span class="op">*</span><span class="nam">args</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t21" class="run"><span class="n"><a href="#t21">21</a></span><span class="t">        <span class="key">if</span> <span class="nam">getattr</span><span class="op">(</span><span class="nam">entry</span><span class="op">,</span> <span class="str">'project'</span><span class="op">,</span> <span class="key">None</span><span class="op">)</span> <span class="key">is</span> <span class="key">None</span><span class="op">:</span>  <span class="com"># Use lead's project if project is not provided</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t22" class="run"><span class="n"><a href="#t22">22</a></span><span class="t">            <span class="nam">entry</span><span class="op">.</span><span class="nam">project</span> <span class="op">=</span> <span class="nam">entry</span><span class="op">.</span><span class="nam">lead</span><span class="op">.</span><span class="nam">project</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t23" class="run"><span class="n"><a href="#t23">23</a></span><span class="t">        <span class="key">if</span> <span class="nam">getattr</span><span class="op">(</span><span class="nam">entry</span><span class="op">,</span> <span class="str">'analysis_framework'</span><span class="op">,</span> <span class="key">None</span><span class="op">)</span> <span class="key">is</span> <span class="key">None</span><span class="op">:</span>  <span class="com"># Use lead's project's AF if AF is not provided</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t24" class="run"><span class="n"><a href="#t24">24</a></span><span class="t">            <span class="nam">entry</span><span class="op">.</span><span class="nam">analysis_framework</span> <span class="op">=</span> <span class="nam">entry</span><span class="op">.</span><span class="nam">lead</span><span class="op">.</span><span class="nam">project</span><span class="op">.</span><span class="nam">analysis_framework</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t25" class="run"><span class="n"><a href="#t25">25</a></span><span class="t">        <span class="nam">entry</span><span class="op">.</span><span class="nam">save</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t26" class="run"><span class="n"><a href="#t26">26</a></span><span class="t">        <span class="key">return</span> <span class="nam">entry</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t27" class="pln"><span class="n"><a href="#t27">27</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t28" class="run"><span class="n"><a href="#t28">28</a></span><span class="t">    <span class="op">@</span><span class="nam">factory</span><span class="op">.</span><span class="nam">post_generation</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t29" class="run"><span class="n"><a href="#t29">29</a></span><span class="t">    <span class="key">def</span> <span class="nam">verified_by</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">create</span><span class="op">,</span> <span class="nam">extracted</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t30" class="par run show_par"><span class="n"><a href="#t30">30</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">create</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">30&#x202F;&#x219B;&#x202F;31</span><span class="annotate long">line 30 didn't jump to line 31, because the condition on line 30 was never true</span></span></p>
+    <p id="t31" class="mis show_mis"><span class="n"><a href="#t31">31</a></span><span class="t">            <span class="key">return</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t32" class="run"><span class="n"><a href="#t32">32</a></span><span class="t">        <span class="key">if</span> <span class="nam">extracted</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t33" class="run"><span class="n"><a href="#t33">33</a></span><span class="t">            <span class="key">for</span> <span class="nam">verified_by_user</span> <span class="key">in</span> <span class="nam">extracted</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t34" class="run"><span class="n"><a href="#t34">34</a></span><span class="t">                <span class="nam">self</span><span class="op">.</span><span class="nam">verified_by</span><span class="op">.</span><span class="nam">add</span><span class="op">(</span><span class="nam">verified_by_user</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t35" class="pln"><span class="n"><a href="#t35">35</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t36" class="pln"><span class="n"><a href="#t36">36</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t37" class="run"><span class="n"><a href="#t37">37</a></span><span class="t"><span class="key">class</span> <span class="nam">EntryAttributeFactory</span><span class="op">(</span><span class="nam">DjangoModelFactory</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t38" class="pln"><span class="n"><a href="#t38">38</a></span><span class="t">    <span class="key">pass</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t39" class="pln"><span class="n"><a href="#t39">39</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t40" class="run"><span class="n"><a href="#t40">40</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t41" class="run"><span class="n"><a href="#t41">41</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">Attribute</span>&nbsp;</span><span class="r"></span></p>
 </div>
 <div id="footer">
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
-            created at 2021-09-28 09:43 +0000
+            created at 2021-09-28 10:33 +0000
         </p>
     </div>
 </div>
