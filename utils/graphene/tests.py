@@ -119,7 +119,7 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
         # Remove roles if already exist. Right now, we just have global roles
         ProjectRole.objects.all().delete()
 
-        def _create_role(title, is_default_role=False):
+        def _create_role(title, level=1, is_default_role=False):
             # NOTE: Graphql endpoints will use static permission (Will remove dynamic permission in future)
             # TODO: Migrate current dynamic permission to static ones.
             return ProjectRole.objects.create(
@@ -130,7 +130,7 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
                 export_permissions=get_project_permissions_value('export', '__all__'),
                 assessment_permissions=get_project_permissions_value('assessment', '__all__'),
                 is_creator_role=True,
-                level=1,
+                level=level,
                 is_default_role=is_default_role,
             )
 
@@ -138,14 +138,14 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
         # NOTE: Real permission doesn't matter here, only title
         #   (which is mapped to get the permission statically for graphql endpoints)
         # Follow deep.permissions.py PERMISSION_MAP for permitted actions.
-        self.project_role_viewer_non_confidential = _create_role('Viewer (Non Confidential)')
-        self.project_role_viewer = _create_role('Viewer')
-        self.project_role_reader = _create_role('Reader (Non Confidential)')
-        self.project_role_reader = _create_role('Reader')
-        self.project_role_sourcer = _create_role('Sourcer')
-        self.project_role_analyst = _create_role('Analyst', is_default_role=True)
-        self.project_role_admin = _create_role('Admin')
-        self.project_role_clairvoyant_one = _create_role('Clairvoyant One')
+        self.project_role_viewer_non_confidential = _create_role('Viewer (Non Confidential)', level=1000)
+        self.project_role_viewer = _create_role('Viewer', level=900)
+        self.project_role_reader = _create_role('Reader (Non Confidential)', level=800)
+        self.project_role_reader = _create_role('Reader', level=400)
+        self.project_role_sourcer = _create_role('Sourcer', level=300)
+        self.project_role_analyst = _create_role('Analyst', level=200, is_default_role=True)
+        self.project_role_admin = _create_role('Admin', level=100)
+        self.project_role_clairvoyant_one = _create_role('Clairvoyant One', level=1)
 
     def create_af_roles(self):  # Create Analysis Framework Roles
         # Remove roles if already exist. Right now, we just have global roles

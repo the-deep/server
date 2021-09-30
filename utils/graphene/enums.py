@@ -4,6 +4,7 @@ import graphene
 from django_enumfield import enum
 from rest_framework import serializers
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 
 from utils.common import to_camelcase
 
@@ -28,13 +29,26 @@ def convert_enum_to_graphene_enum(enum, name=None, description=enum_description,
 
 
 def get_enum_name_from_django_field(
-    field: Union[serializers.ChoiceField, models.CharField, models.IntegerField, models.query_utils.DeferredAttribute],
+    field: Union[
+        serializers.ChoiceField,
+        models.CharField,
+        models.IntegerField,
+        ArrayField,
+        models.query_utils.DeferredAttribute,
+    ],
 ):
     model_name = None
     field_name = None
     if type(field) == serializers.ChoiceField:
-        model_name = field.parent.Meta.model.__name__
-        field_name = field.field_name
+        if type(field.parent) == serializers.ListField:
+            model_name = field.parent.parent.Meta.model.__name__
+            field_name = field.parent.field_name
+        else:
+            model_name = field.parent.Meta.model.__name__
+            field_name = field.field_name
+    elif type(field) == ArrayField:
+        model_name = field.model.__name__
+        field_name = field.base_field.name
     elif type(field) in [models.CharField, models.IntegerField]:
         model_name = field.model.__name__
         field_name = field.name

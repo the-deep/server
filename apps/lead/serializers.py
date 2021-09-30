@@ -416,6 +416,8 @@ class LeadGqSerializer(TempClientIdMixin, UserResourceSerializer):
             'priority',
             'published_on',
             'text',
+            'is_assessment_lead',
+            'lead_group',
             'url',
             'website',
             'source',
@@ -443,6 +445,13 @@ class LeadGqSerializer(TempClientIdMixin, UserResourceSerializer):
         if assignee is None:
             raise serializers.ValidationError('Only project members can be assigneed')
         return assignee
+
+    def validate_is_assessment_lead(self, value):
+        # Allow setting True
+        # For False make sure there are no assessment attached.
+        if value is False and hasattr(self.instance, 'assessment'):
+            raise serializers.ValidationError('Lead already has an assessment.')
+        return value
 
     def validate(self, data):
         """

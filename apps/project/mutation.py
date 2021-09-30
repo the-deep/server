@@ -9,6 +9,7 @@ from django.core.exceptions import PermissionDenied
 from utils.graphene.mutation import (
     generate_input_type_for_serializer,
     PsGrapheneMutation,
+    PsBulkGrapheneMutation,
 )
 from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
 
@@ -17,9 +18,19 @@ from deep.permissions import ProjectPermissions as PP
 from lead.mutation import Mutation as LeadMutation
 from entry.mutation import Mutation as EntryMutation
 
-from .models import Project, ProjectJoinRequest
-from .serializers import ProjectJoinGqSerializer, ProjectAcceptRejectSerializer
-from .schema import ProjectJoinRequestType
+from .models import (
+    Project,
+    ProjectJoinRequest,
+    ProjectMembership,
+    ProjectUserGroupMembership,
+)
+from .serializers import (
+    ProjectJoinGqSerializer,
+    ProjectAcceptRejectSerializer,
+    ProjectMembershipGqlSerializer as ProjectMembershipSerializer,
+    ProjectUserGroupMembershipGqlSerializer as ProjectUserGroupMembershipSerializer,
+)
+from .schema import ProjectJoinRequestType, ProjectMembershipType, ProjectUserGroupMembershipType
 
 
 ProjectJoinRequestInputType = generate_input_type_for_serializer(
@@ -30,6 +41,16 @@ ProjectJoinRequestInputType = generate_input_type_for_serializer(
 ProjectAcceptRejectInputType = generate_input_type_for_serializer(
     'ProjectAcceptRejectInputType',
     serializer_class=ProjectAcceptRejectSerializer,
+)
+
+ProjectMembershipInputType = generate_input_type_for_serializer(
+    'ProjectMembershipInputType',
+    serializer_class=ProjectMembershipSerializer,
+)
+
+ProjectUserGroupMembershipInputType = generate_input_type_for_serializer(
+    'ProjectUserGroupMembershipInputType',
+    serializer_class=ProjectUserGroupMembershipSerializer,
 )
 
 
@@ -88,6 +109,73 @@ class CreateProjectJoin(graphene.Mutation):
         return CreateProjectJoin(result=instance, errors=None, ok=True)
 
 
+class BulkProjectMembershipInputType(ProjectMembershipInputType):
+    id = graphene.ID()
+
+
+class BulkProjectUserGroupMembershipInputType(ProjectUserGroupMembershipInputType):
+    id = graphene.ID()
+
+
+class BulkUpdateProjectMembership(PsBulkGrapheneMutation):
+    class Arguments:
+        items = graphene.List(graphene.NonNull(BulkProjectMembershipInputType))
+        delete_ids = graphene.List(graphene.NonNull(graphene.ID))
+
+    result = graphene.List(ProjectMembershipType)
+    deleted_result = graphene.List(graphene.NonNull(ProjectMembershipType))
+    # class vars
+    serializer_class = ProjectMembershipSerializer
+    model = ProjectMembership
+    permissions = [PP.Permission.CAN_ADD_MEMBER]
+
+    @classmethod
+    def get_valid_delete_items(cls, info, delete_ids):
+        project = info.context.active_project
+        user_membership = ProjectMembership.objects.filter(
+            project=project,
+            member=info.context.user,
+        ).first()
+        if user_membership:
+            return ProjectMembership.objects.filter(
+                pk__in=delete_ids,  # id's provided
+                project=project,  # For active Project
+                role__level__gt=user_membership.role.level,  # Only allow for lower level roles.
+            ).exclude(
+                # Exclude yourself and owner of the Project
+                member__in=[info.context.user, project.created_by]
+            )
+        return ProjectMembership.objects.none()
+
+
+class BulkUpdateProjectUserGroupMembership(PsBulkGrapheneMutation):
+    class Arguments:
+        items = graphene.List(graphene.NonNull(BulkProjectUserGroupMembershipInputType))
+        delete_ids = graphene.List(graphene.NonNull(graphene.ID))
+
+    result = graphene.List(ProjectUserGroupMembershipType)
+    deleted_result = graphene.List(graphene.NonNull(ProjectUserGroupMembershipType))
+    # class vars
+    serializer_class = ProjectUserGroupMembershipSerializer
+    model = ProjectUserGroupMembership
+    permissions = [PP.Permission.CAN_ADD_MEMBER]
+
+    @classmethod
+    def get_valid_delete_items(cls, info, delete_ids):
+        project = info.context.active_project
+        user_membership = ProjectMembership.objects.filter(
+            project=project,
+            member=info.context.user,
+        ).first()
+        if user_membership:
+            return ProjectUserGroupMembership.objects.filter(
+                pk__in=delete_ids,  # id's provided
+                project=project,  # For active Project
+                role__level__gt=user_membership.role.level,  # Only allow for lower level roles.
+            )
+        return ProjectUserGroupMembership.objects.none()
+
+
 class ProjectMutationType(
     LeadMutation,
     EntryMutation,
@@ -102,6 +190,8 @@ class ProjectMutationType(
         fields = ('id', 'title')
 
     accept_reject_project = ProjectAcceptReject.Field()
+    project_user_membership_bulk = BulkUpdateProjectMembership.Field()
+    project_user_group_membership_bulk = BulkUpdateProjectUserGroupMembership.Field()
 
     @staticmethod
     def get_custom_node(_, info, id):

@@ -1,14 +1,12 @@
-from typing import Union
-
 from django.urls import reverse
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.db.models.functions import Cast
 from django.contrib.auth.models import User
-from django.db.models import Q
 from django.db import models
+from django.db.models import Q
+from django.db.models.functions import JSONObject
 from django.db import connection as django_db_connection
-from django_enumfield import enum
 
 from user_resource.models import UserResource
 from geo.models import Region
@@ -85,6 +83,17 @@ class Project(UserResource):
     # Store project stats data as cache. View project/tasks for structure
     stats_cache = models.JSONField(default=dict)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.current_user_membership_data = getattr(
+            self, 'current_user_membership_data',
+            dict(
+                user_id=None,
+                role=None,
+                badges=[],
+            )
+        )
+
     def __str__(self):
         return self.title
 
@@ -132,37 +141,67 @@ class Project(UserResource):
         """
         visible_projects = cls.objects\
             .annotate(
-                # NOTE: This is used by permission module
+                # For using within query filters
                 current_user_role=models.Subquery(
                     ProjectMembership.objects.filter(
                         project=models.OuterRef('pk'),
                         member=user,
                     ).order_by('role__title').values('role__title')[:1],
                     output_field=models.CharField()
-                )
+                ),
+            ).annotate(
+                # NOTE: This is used by permission module
+                current_user_membership_data=JSONObject(
+                    user_id=models.Value(user.id),
+                    role=models.F('current_user_role'),
+                    badges=models.Subquery(
+                        ProjectMembership.objects.filter(
+                            project=models.OuterRef('pk'),
+                            member=user,
+                        ).order_by('badges').values('badges')[:1],
+                        output_field=ArrayField(models.CharField()),
+                    ),
+                ),
                 # NOTE: Exclude if project is private + user is not a member
             ).exclude(is_private=True, current_user_role__isnull=True)
         if only_member:
             return visible_projects.filter(current_user_role__isnull=False)
         return visible_projects
 
-    def get_current_user_role(self, user):
+    def fetch_current_user_membership_data(self, user):
+        membership = ProjectMembership.objects\
+            .select_related('role')\
+            .filter(project=self, member=user).first()
+        current_user_role = None
+        badges = []
+        if membership:
+            current_user_role = membership.role.title
+            badges = membership.badges
+        self.current_user_membership_data = dict(
+            user_id=user.id,
+            role=current_user_role,
+            badges=badges,
+        )
+
+    def get_current_user_attr(self, user, attr):
         """
         Return current_user_role from instance (if get_for_gq is used or generate)
+        attr: user_id, role, badges
         """
-        if hasattr(self, 'current_user_role'):
-            self.current_user_role: Union[str, None]
-            return self.current_user_role
-        # If not available generate
-        self.current_user_role = None
-        memberships = list(
-            ProjectMembership.objects
-            .filter(project=self, member=user)
-            .values_list('role__title', flat=True)
-        )
-        if memberships:
-            self.current_user_role = memberships[0]
-        return self.current_user_role
+        if user is None:
+            return
+
+        if self.current_user_membership_data.get('user_id') == user.id:
+            return self.current_user_membership_data.get(attr)
+
+        self.fetch_current_user_membership_data(user)
+        return self.current_user_membership_data.get(attr)
+
+    def get_current_user_role(self, user):
+        return self.get_current_user_attr(user, 'role')
+
+    def get_current_user_badges(self, user):
+        return self.get_current_user_attr(user, 'badges')
 
     @classmethod
     def get_recent_activities(cls, user):
@@ -387,11 +426,8 @@ class ProjectMembership(models.Model):
     """
     Project-Member relationship attributes
     """
-    class BadgeType(enum.Enum):
-        QA = 0
-        __labels__ = {
-            QA: 'Quality Assurance',
-        }
+    class BadgeType(models.IntegerChoices):
+        QA = 0, 'Quality Assurance'
 
     member = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
@@ -413,7 +449,7 @@ class ProjectMembership(models.Model):
         related_name='added_project_memberships',
     )
     # Represents additional permission like QA
-    badges = ArrayField(enum.EnumField(BadgeType), default=list, blank=True)
+    badges = ArrayField(models.IntegerField(choices=BadgeType.choices), default=list, blank=True)
 
     class Meta:
         unique_together = ('member', 'project')
@@ -468,7 +504,7 @@ class ProjectUserGroupMembership(models.Model):
         related_name='added_project_usergroups',
     )
     # Represents additional permission like QA (UserGroup level, we define additionaly in UserMembersip level as well)
-    badges = ArrayField(enum.EnumField(ProjectMembership.BadgeType), default=list, blank=True)
+    badges = ArrayField(models.IntegerField(choices=ProjectMembership.BadgeType.choices), default=list, blank=True)
 
     class Meta:
         unique_together = ('usergroup', 'project')

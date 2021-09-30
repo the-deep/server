@@ -1,11 +1,12 @@
 import logging
+from typing import List
 from enum import Enum, auto, unique
 
 from django.db.models import F
 from rest_framework import permissions
 
 from deep.exceptions import PermissionDeniedException
-from project.models import Project, ProjectRole
+from project.models import Project, ProjectRole, ProjectMembership
 from project.permissions import PROJECT_PERMISSIONS
 from lead.models import Lead
 from entry.models import Entry
@@ -232,6 +233,7 @@ class ProjectPermissions(BasePermissions):
     class Permission(Enum):  # TODO: Not sure how auto() works, if different server have different values.
         # ---------------------- Project
         UPDATE_PROJECT = auto()
+        CAN_ADD_MEMBER = auto()
         # ---------------------- Lead
         CREATE_LEAD = auto()
         VIEW_ONLY_UNPROTECTED_LEAD = auto()
@@ -245,13 +247,14 @@ class ProjectPermissions(BasePermissions):
         DELETE_ENTRY = auto()
         # ---------------------- Export
         CREATE_EXPORT = auto()
-        # ---------------------- Export
+        # ---------------------- QA
         CAN_QUALITY_CONTROL = auto()
 
     Permission.__name__ = 'ProjectPermission'
 
     __error_message__ = {
         Permission.UPDATE_PROJECT: "You don't have permission to update project",
+        Permission.CAN_ADD_MEMBER: "You don't have permission to add member to project",
         Permission.CREATE_LEAD: "You don't have permission to create lead",
         Permission.VIEW_ONLY_UNPROTECTED_LEAD: "You don't have permission to view lead",
         Permission.VIEW_ALL_LEAD: "You don't have permission to view confidential lead",
@@ -290,7 +293,6 @@ class ProjectPermissions(BasePermissions):
     ]
     ANALYST = [
         *READER,
-        Permission.CAN_QUALITY_CONTROL,  # TODO: This should be drived from BadgeType
         Permission.CREATE_LEAD,
         Permission.UPDATE_LEAD,
         Permission.DELETE_LEAD,
@@ -301,6 +303,7 @@ class ProjectPermissions(BasePermissions):
     ADMIN = [
         *ANALYST,
         Permission.UPDATE_PROJECT,
+        Permission.CAN_ADD_MEMBER,
     ]
     CLAIRVOYANT_ONE = [*ADMIN]
 
@@ -316,8 +319,27 @@ class ProjectPermissions(BasePermissions):
         'Admin': ADMIN,
         'Clairvoyant One': CLAIRVOYANT_ONE,
     }
+    BADGES_PERMISSION_MAP = {
+        ProjectMembership.BadgeType.QA: Permission.CAN_QUALITY_CONTROL,
+    }
 
     CONTEXT_PERMISSION_ATTR = 'project_permissions'
+
+    @classmethod
+    def get_permissions(cls, project, user) -> List[Permission]:
+        role = project.get_current_user_role(user)
+        badges = project.get_current_user_badges(user) or []
+        if role is None:
+            return []
+        badges_permissions = [
+            cls.BADGES_PERMISSION_MAP[badge]
+            for badge in badges
+            if badge in cls.BADGES_PERMISSION_MAP
+        ]
+        return [
+            *cls.PERMISSION_MAP.get(role, []),
+            *badges_permissions,
+        ]
 
 
 class AnalysisFrameworkPermissions(BasePermissions):

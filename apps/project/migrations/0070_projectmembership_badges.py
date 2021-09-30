@@ -2,8 +2,7 @@
 
 import django.contrib.postgres.fields
 from django.db import migrations
-import django_enumfield.db.fields
-import project.models
+import django.db.models
 
 
 class Migration(migrations.Migration):
@@ -16,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='projectmembership',
             name='badges',
-            field=django.contrib.postgres.fields.ArrayField(base_field=django_enumfield.db.fields.EnumField(enum=project.models.ProjectMembership.BadgeType), blank=True, default=list, size=None),
+            field=django.contrib.postgres.fields.ArrayField(base_field=django.db.models.IntegerField(choices=[(0, 'Quality Assurance')]), blank=True, default=list, size=None),
         ),
     ]
