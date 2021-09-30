@@ -18,7 +18,7 @@ class LeadPreviewLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key) for key in keys])
 
 
-class ControlledStatLoader(DataLoaderWithContext):
+class EntriesCountLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         stat_qs = Entry.objects\
             .filter(lead__in=keys)\
@@ -40,5 +40,5 @@ class DataLoaders(WithContextMixin):
         return LeadPreviewLoader(context=self.context)
 
     @cached_property
-    def controlled_stat(self):
-        return ControlledStatLoader(context=self.context)
+    def entries_counts(self):
+        return EntriesCountLoader(context=self.context)
