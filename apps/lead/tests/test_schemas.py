@@ -334,9 +334,9 @@ class TestLeadQuerySchema(GraphQLTestCase):
                     title
                     publishedOn
                     priority
-                    controlledStat {
-                      totalCount
-                      controlledCount
+                    entriesCounts {
+                      total
+                      controlled
                     }
                     authors {
                       id
