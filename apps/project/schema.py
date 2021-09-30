@@ -8,7 +8,7 @@ from graphene.types import generic
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.enums import EnumDescription
-from utils.graphene.types import CustomDjangoListObjectType
+from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import (
     DjangoPaginatedListObjectField,
     DateCountType,
@@ -26,7 +26,9 @@ from entry.models import Entry
 
 from .models import (
     Project,
+    ProjectRole,
     ProjectMembership,
+    ProjectUserGroupMembership,
     ProjectJoinRequest,
     ProjectOrganization,
 )
@@ -34,9 +36,14 @@ from .enums import (
     ProjectStatusEnum,
     ProjectJoinRequestStatusEnum,
     ProjectOrganizationTypeEnum,
+    ProjectMembershipBadgeTypeEnum,
 )
 
-from .filter_set import ProjectGqlFilterSet
+from .filter_set import (
+    ProjectGqlFilterSet,
+    ProjectMembershipGqlFilterSet,
+    ProjectUserGroupMembershipGqlFilterSet,
+)
 from .activity import project_activity_log
 
 
@@ -95,6 +102,34 @@ class ProjectOrganizationType(DjangoObjectType):
         return info.context.dl.organization.organization.load(root.organization_id)
 
 
+class ProjectRoleType(DjangoObjectType):
+    class Meta:
+        model = ProjectRole
+        only_fields = ('id', 'title', 'level')
+
+
+class ProjectMembershipType(ClientIdMixin, DjangoObjectType):
+    class Meta:
+        model = ProjectMembership
+        fields = (
+            'id', 'member', 'linked_group',
+            'role', 'joined_at', 'added_by',
+        )
+
+    badges = graphene.List(graphene.NonNull(ProjectMembershipBadgeTypeEnum))
+
+
+class ProjectUserGroupMembershipType(ClientIdMixin, DjangoObjectType):
+    class Meta:
+        model = ProjectUserGroupMembership
+        fields = (
+            'id', 'usergroup',
+            'role', 'joined_at', 'added_by',
+        )
+
+    badges = graphene.List(graphene.NonNull(ProjectMembershipBadgeTypeEnum))
+
+
 class ProjectType(DjangoObjectType):
     class Meta:
         model = Project
@@ -131,10 +166,12 @@ class ProjectType(DjangoObjectType):
             return None
 
     @staticmethod
-    def resolve_allowed_permissions(root, info) -> List[str]:
-        return PP.get_permissions(
-            root.get_current_user_role(info.context.request.user)
-        )
+    def resolve_current_user_role(root, info):
+        return root.get_current_user_role(info.context.user)
+
+    @staticmethod
+    def resolve_allowed_permissions(root, info) -> List[PP.Permission]:
+        return PP.get_permissions(root, info.context.request.user)
 
     def resolve_stats(root, info, **kwargs):
         return info.context.dl.project.project_stat.load(root.pk)
@@ -163,6 +200,18 @@ class AnalysisFrameworkVisibleProjectType(DjangoObjectType):
         )
 
 
+class ProjectMembershipListType(CustomDjangoListObjectType):
+    class Meta:
+        model = ProjectMembership
+        filterset_class = ProjectMembershipGqlFilterSet
+
+
+class ProjectUserGroupMembershipListType(CustomDjangoListObjectType):
+    class Meta:
+        model = ProjectUserGroupMembership
+        filterset_class = ProjectUserGroupMembershipGqlFilterSet
+
+
 class ProjectDetailType(
     # -- Start --Project scopped entities
     LeadQuery,
@@ -180,8 +229,7 @@ class ProjectDetailType(
         model = Project
         skip_registry = True
         fields = (
-            'id', 'title', 'description', 'start_date', 'end_date',
-            'members', 'user_groups', 'analysis_framework',
+            'id', 'title', 'description', 'start_date', 'end_date', 'analysis_framework',
             'category_editor', 'assessment_template', 'data',
             'is_default', 'is_private', 'is_visualization_enabled',
             'created_at', 'created_by',
@@ -192,6 +240,31 @@ class ProjectDetailType(
     activity_log = generic.GenericScalar()  # TODO: Need to define type
     top_sourcers = graphene.List(graphene.NonNull(UserEntityCountType))
     top_taggers = graphene.List(graphene.NonNull(UserEntityCountType))
+
+    user_members = DjangoPaginatedListObjectField(
+        ProjectMembershipListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+    user_group_members = DjangoPaginatedListObjectField(
+        ProjectUserGroupMembershipListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+
+    @staticmethod
+    def resolve_user_members(root, info, **kwargs):
+        if root.get_current_user_role(info.context.request.user) is not None:
+            return ProjectMembership.objects.filter(project=root).all()
+        return []  # NOTE: Always return empty array FIXME: without empty everything is returned
+
+    @staticmethod
+    def resolve_user_group_members(root, info, **kwargs):
+        if root.get_current_user_role(info.context.request.user) is not None:
+            return ProjectUserGroupMembership.objects.filter(project=root).all()
+        return []  # NOTE: Always return empty array FIXME: without empty everything is returned
 
     @staticmethod
     def resolve_activity_log(root, info, **kwargs):

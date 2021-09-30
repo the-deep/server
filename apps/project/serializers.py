@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.utils.translation import gettext
@@ -8,7 +9,12 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
-from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField, IntegerIDField
+from deep.serializers import (
+    RemoveNullFieldsMixin,
+    URLCachedFileField,
+    IntegerIDField,
+    TempClientIdMixin,
+)
 from geo.models import Region
 from geo.serializers import SimpleRegionSerializer
 from entry.models import Lead, Entry
@@ -614,3 +620,117 @@ class ProjectAcceptRejectSerializer(serializers.ModelSerializer):
         elif validated_data['status'] == 'rejected':
             ProjectAcceptRejectSerializer._reject_request(self.context['request'].user, instance)
         return super().update(instance, validated_data)
+
+
+class ProjectMembershipGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
+    id = IntegerIDField(required=False)
+    role = serializers.PrimaryKeyRelatedField(required=False, queryset=ProjectRole.objects.all())
+
+    class Meta:
+        model = ProjectMembership
+        fields = (
+            'id', 'member', 'role', 'badges',
+            'client_id',
+        )
+
+    @cached_property
+    def project(self):
+        project = self.context['request'].active_project
+        # This is a rare case, just to make sure this is validated
+        if self.instance and self.instance.project != project:
+            raise serializers.ValidationError('Invalid access')
+        return project
+
+    @cached_property
+    def current_user_role(self):
+        return ProjectMembership.objects.get(
+            project=self.project,
+            member=self.context['request'].user,
+        ).role
+
+    def validate_member(self, member):
+        if self.instance:  # Update
+            if self.instance.member != member:
+                # Changing member not allowed
+                raise serializers.ValidationError('Changing member is not allowed!')
+            return member
+        # Create
+        current_members = ProjectMembership.objects.filter(project=self.project, member=member)
+        if current_members.exclude(pk=self.instance and self.instance.pk).exists():
+            raise serializers.ValidationError('User is already a member!')
+        return member
+
+    def validate_role(self, new_role):
+        # Make sure higher role are never allowed
+        if new_role.level < self.current_user_role.level:
+            raise serializers.ValidationError('Access is denied for higher role assignment.')
+        if (
+            self.instance and  # For Update
+            self.instance.role != new_role and  # For changed role
+            (
+                self.instance.role.level == self.current_user_role.level and  # Requesting user role == current member role
+                self.instance.role.level < new_role.level  # New role is lower then current role
+            )
+        ):
+            raise serializers.ValidationError('Changing same level role is not allowed!')
+        return new_role
+
+    def create(self, validated_data):
+        validated_data['added_by'] = self.context['request'].user
+        validated_data['project'] = self.project
+        return super().create(validated_data)
+
+
+class ProjectUserGroupMembershipGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
+    class Meta:
+        model = ProjectUserGroupMembership
+        fields = (
+            'id', 'usergroup', 'role', 'badges',
+            'client_id',
+        )
+
+    @cached_property
+    def project(self):
+        project = self.context['request'].active_project
+        # This is a rare case, just to make sure this is validated
+        if self.instance and self.instance.project != project:
+            raise serializers.ValidationError('Invalid access')
+        return project
+
+    @cached_property
+    def current_user_role(self):
+        return ProjectMembership.objects.get(
+            project=self.project,
+            member=self.context['request'].user,
+        ).role
+
+    def validate_usergroup(self, usergroup):
+        if self.instance:  # Update
+            if self.instance.usergroup != usergroup:
+                # Changing usergroup not allowed
+                raise serializers.ValidationError('Changing usergroup is not allowed!')
+            return usergroup
+        # Create
+        current_usergroup_members = ProjectUserGroupMembership.objects.filter(project=self.project, usergroup=usergroup)
+        if current_usergroup_members.exclude(pk=self.instance and self.instance.pk).exists():
+            raise serializers.ValidationError('UserGroup already a member!')
+        return usergroup
+
+    def validate_role(self, new_role):
+        if new_role.level < self.current_user_role.level:
+            raise serializers.ValidationError('Access is denied for higher role assignment.')
+        if (
+            self.instance and  # Update
+            self.instance.role != new_role and  # Role is changed
+            (
+                self.instance.role.level == self.current_user_role.level and  # Requesting user role == current member role
+                self.instance.role.level < new_role.level  # New role is lower then current role
+            )
+        ):
+            raise serializers.ValidationError('Changing same level role is not allowed!')
+        return new_role
+
+    def create(self, validated_data):
+        validated_data['project'] = self.project
+        validated_data['added_by'] = self.context['request'].user
+        return super().create(validated_data)

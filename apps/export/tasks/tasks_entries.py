@@ -34,13 +34,14 @@ def export_entries(export):
     queryset = get_filtered_entries(user, entries_filter_data)
 
     filters['entries_filter_data'] = entries_filter_data
-    filters = LeadFilterSet.get_processed_filter_data(filters)
     if not include_leads:
+        lead_filters = LeadFilterSet.get_processed_filter_data(filters)
         all_leads = Lead.get_for(
             user,
-            filters
+            lead_filters,  # This is used to generate annotate
         )
-        all_leads = LeadFilterSet(data=filters, queryset=all_leads).qs
+        # Annotate values are filter + other filters
+        all_leads = LeadFilterSet(data=lead_filters, queryset=all_leads).qs
         queryset = queryset.filter(
             lead_id__in=all_leads
         ).exclude(

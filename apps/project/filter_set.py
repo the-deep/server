@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.functions import Concat, Lower
 import django_filters
 
 from utils.graphene.filters import SimpleInputFilter, IDListFilter
@@ -74,6 +75,7 @@ def get_filtered_projects(user, queries, annotate=False):
     return projects.distinct()
 
 
+# -------------------- Graphql Filters -----------------------------------
 class ProjectGqlFilterSet(UserResourceFilterSet):
     status = SimpleInputFilter(ProjectStatusEnum)
     organizations = IDListFilter(distinct=True)
@@ -101,3 +103,38 @@ class ProjectGqlFilterSet(UserResourceFilterSet):
                 )
             )
         return queryset
+
+
+class ProjectMembershipGqlFilterSet(UserResourceFilterSet):
+    search = django_filters.CharFilter(method='filter_search')
+    members = IDListFilter(distinct=True, field_name='member')
+
+    class Meta:
+        model = ProjectMembership
+        fields = ('id',)
+
+    def filter_search(self, qs, _, value):
+        if value:
+            return qs.annotate(
+                full_name=Lower(
+                    Concat(
+                        'member__first_name', models.Value(' '), 'member__last_name', models.Value(' '), 'member__email',
+                        output_field=models.CharField(),
+                    )
+                ),
+            ).filter(full_name__icontains=value).distinct()
+        return qs
+
+
+class ProjectUserGroupMembershipGqlFilterSet(UserResourceFilterSet):
+    search = django_filters.CharFilter(method='filter_search')
+    usergroups = IDListFilter(distinct=True, field_name='usergroup')
+
+    class Meta:
+        model = ProjectUserGroupMembership
+        fields = ('id',)
+
+    def filter_search(self, qs, _, value):
+        if value:
+            return qs.filter(usergroup__title__icontains=value).distinct()
+        return qs

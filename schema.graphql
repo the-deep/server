@@ -165,6 +165,8 @@ input BulkLeadInputType {
   priority: LeadPriorityEnum
   publishedOn: Date
   text: String
+  isAssessmentLead: Boolean
+  leadGroup: ID
   url: String
   website: String
   source: ID
@@ -174,10 +176,38 @@ input BulkLeadInputType {
   clientId: String
 }
 
+input BulkProjectMembershipInputType {
+  id: ID
+  member: ID!
+  role: ID
+  badges: [ProjectMembershipBadgeTypeEnum!]
+  clientId: String
+}
+
+input BulkProjectUserGroupMembershipInputType {
+  usergroup: ID!
+  role: ID
+  badges: [ProjectMembershipBadgeTypeEnum!]
+  clientId: String
+  id: ID
+}
+
 type BulkUpdateAnalysisFrameworkMembership {
   errors: [[GenericScalar!]]
   result: [AnalysisFrameworkMembershipType]
   deletedResult: [AnalysisFrameworkMembershipType!]
+}
+
+type BulkUpdateProjectMembership {
+  errors: [[GenericScalar!]]
+  result: [ProjectMembershipType]
+  deletedResult: [ProjectMembershipType!]
+}
+
+type BulkUpdateProjectUserGroupMembership {
+  errors: [[GenericScalar!]]
+  result: [ProjectUserGroupMembershipType]
+  deletedResult: [ProjectUserGroupMembershipType!]
 }
 
 type ChangeUserPassword {
@@ -217,7 +247,7 @@ type CreateProjectJoin {
 type CreateUserGroup {
   errors: [GenericScalar!]
   ok: Boolean
-  result: UserGroupDetailType
+  result: UserGroupType
 }
 
 scalar Date
@@ -244,7 +274,7 @@ type DeleteLead {
 type DeleteUserGroup {
   errors: [GenericScalar!]
   ok: Boolean
-  result: UserGroupDetailType
+  result: UserGroupType
 }
 
 type DjangoDebug {
@@ -517,6 +547,7 @@ type LeadDetailType {
   url: String!
   website: String!
   attachment: GalleryFileType
+  isAssessmentLead: Boolean!
   sourceType: LeadSourceTypeEnum!
   sourceTypeDisplay: EnumDescription!
   priority: LeadPriorityEnum!
@@ -617,6 +648,8 @@ input LeadInputType {
   priority: LeadPriorityEnum
   publishedOn: Date
   text: String
+  isAssessmentLead: Boolean
+  leadGroup: ID
   url: String
   website: String
   source: ID
@@ -682,6 +715,7 @@ type LeadType {
   url: String!
   website: String!
   attachment: GalleryFileType
+  isAssessmentLead: Boolean!
   sourceType: LeadSourceTypeEnum!
   sourceTypeDisplay: EnumDescription!
   priority: LeadPriorityEnum!
@@ -810,8 +844,6 @@ type ProjectDetailType {
   isDefault: Boolean!
   isPrivate: Boolean!
   isVisualizationEnabled: Boolean!
-  members: [UserType!]!
-  userGroups: [UserGroupDetailType!]!
   data: GenericScalar
   currentUserRole: String
   allowedPermissions: [ProjectPermission!]!
@@ -838,6 +870,8 @@ type ProjectDetailType {
   activityLog: GenericScalar
   topSourcers: [UserEntityCountType!]
   topTaggers: [UserEntityCountType!]
+  userMembers(id: Float, createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID], modifiedBy: [ID], search: String, members: [ID], page: Int = 1, ordering: String, pageSize: Int): ProjectMembershipListType
+  userGroupMembers(id: Float, createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID], modifiedBy: [ID], search: String, usergroups: [ID], page: Int = 1, ordering: String, pageSize: Int): ProjectUserGroupMembershipListType
 }
 
 type ProjectGeoAreaListType {
@@ -889,6 +923,28 @@ type ProjectListType {
   pageSize: Int
 }
 
+enum ProjectMembershipBadgeTypeEnum {
+  QA
+}
+
+type ProjectMembershipListType {
+  results: [ProjectMembershipType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type ProjectMembershipType {
+  id: ID!
+  member: UserType!
+  role: ProjectRoleType!
+  linkedGroup: UserGroupType
+  joinedAt: DateTime!
+  addedBy: UserType
+  clientId: String!
+  badges: [ProjectMembershipBadgeTypeEnum!]
+}
+
 type ProjectMutationType {
   id: ID!
   title: String!
@@ -901,6 +957,8 @@ type ProjectMutationType {
   leadDelete(id: ID!): DeleteLead
   leadBulk(items: [BulkLeadInputType!]): BulkLead
   acceptRejectProject(data: ProjectAcceptRejectInputType!, id: ID!): ProjectAcceptReject
+  projectUserMembershipBulk(deleteIds: [ID!], items: [BulkProjectMembershipInputType!]): BulkUpdateProjectMembership
+  projectUserGroupMembershipBulk(deleteIds: [ID!], items: [BulkProjectUserGroupMembershipInputType!]): BulkUpdateProjectUserGroupMembership
 }
 
 type ProjectOrganizationType {
@@ -920,6 +978,7 @@ enum ProjectOrganizationTypeEnum {
 
 enum ProjectPermission {
   UPDATE_PROJECT
+  CAN_ADD_MEMBER
   CREATE_LEAD
   VIEW_ONLY_UNPROTECTED_LEAD
   VIEW_ALL_LEAD
@@ -931,6 +990,12 @@ enum ProjectPermission {
   DELETE_ENTRY
   CREATE_EXPORT
   CAN_QUALITY_CONTROL
+}
+
+type ProjectRoleType {
+  id: ID!
+  title: String!
+  level: Int!
 }
 
 type ProjectStatType {
@@ -972,12 +1037,29 @@ type ProjectType {
   organizations: [ProjectOrganizationType!]
 }
 
+type ProjectUserGroupMembershipListType {
+  results: [ProjectUserGroupMembershipType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type ProjectUserGroupMembershipType {
+  id: ID!
+  usergroup: UserGroupType!
+  role: ProjectRoleType!
+  joinedAt: DateTime!
+  addedBy: UserType
+  clientId: String!
+  badges: [ProjectMembershipBadgeTypeEnum!]
+}
+
 type Query {
   organization(id: ID!): OrganizationType
   organizations(id: Float, search: String, page: Int = 1, ordering: String, pageSize: Int): OrganizationListType
   organizationType(id: ID!): OrganizationTypeType
   organizationTypes(title: String, shortName: String, description: String, reliefWebId: Int, page: Int = 1, ordering: String, pageSize: Int): OrganizationTypeListType
-  userGroup(id: ID!): UserGroupDetailType
+  userGroup(id: ID!): UserGroupType
   userGroups(id: Float, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): UserGroupListType
   me: UserMeType
   user(id: ID!): UserType
@@ -1079,7 +1161,7 @@ type UpdateMe {
 type UpdateUserGroup {
   errors: [GenericScalar!]
   ok: Boolean
-  result: UserGroupDetailType
+  result: UserGroupType
 }
 
 scalar Upload
@@ -1123,7 +1205,23 @@ type UserFeatureAccessType {
   featureType: FeatureFeatureType!
 }
 
-type UserGroupDetailType {
+input UserGroupInputType {
+  title: String
+  description: String
+  displayPicture: ID
+  globalCrisisMonitoring: Boolean
+  customProjectFields: GenericScalar
+  memberships: [GroupMembershipGqInputType!]
+}
+
+type UserGroupListType {
+  results: [UserGroupType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type UserGroupType {
   id: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
@@ -1137,22 +1235,6 @@ type UserGroupDetailType {
   currentUserRole: GroupMembershipRoleEnum
   currentUserRoleDisplay: EnumDescription
   memberships: [GroupMembershipType!]
-}
-
-input UserGroupInputType {
-  title: String
-  description: String
-  displayPicture: ID
-  globalCrisisMonitoring: Boolean
-  customProjectFields: GenericScalar
-  memberships: [GroupMembershipGqInputType!]
-}
-
-type UserGroupListType {
-  results: [UserGroupDetailType!]
-  totalCount: Int
-  page: Int
-  pageSize: Int
 }
 
 type UserListType {

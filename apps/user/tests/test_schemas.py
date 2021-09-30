@@ -347,6 +347,7 @@ class TestUserSchema(GraphQLTestCase):
         user = UserFactory.create()
         project1 = ProjectFactory.create()
         project2 = ProjectFactory.create()
+        project3 = ProjectFactory.create()
 
         # --- Login
         self.force_login(user)
@@ -360,6 +361,10 @@ class TestUserSchema(GraphQLTestCase):
         # --- With a project membership + lastActiveProject is set in profile
         project2.add_member(user)
         user.last_active_project = project2
+        content = self.query_check(query)
+        self.assertIdEqual(content['data']['me']['lastActiveProject']['id'], project2.pk, content)
+        # --- With a project membership + (non-member) lastActiveProject is set in profile
+        user.last_active_project = project3
         content = self.query_check(query)
         self.assertIdEqual(content['data']['me']['lastActiveProject']['id'], project2.pk, content)
 
@@ -458,6 +463,7 @@ class TestUserSchema(GraphQLTestCase):
             last_active_project=project,
             display_picture=display_picture,
         )
+        project.add_member(user)
         # Other users
         for i in range(0, 3):
             other_last_user = UserFactory.create(
@@ -484,9 +490,9 @@ class TestUserSchema(GraphQLTestCase):
         for field in only_me_fields:
             self.assertNotEqual(
                 content['data']['me'].get(field), None, (field, content['data']['me'][field])
-            )  # Should be None
+            )  # Shouldn't be None
             self.assertEqual(
                 content['data']['user'].get(field), None, (field, content['data']['user'].get(field))
-            )  # Shouldn't be None
+            )  # Should be None
         # check for display_picture_url
         self.assertNotEqual(content['data']['me']['displayPictureUrl'], None, content)
