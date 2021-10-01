@@ -24,14 +24,24 @@ class EntriesCountLoader(DataLoaderWithContext):
             .filter(lead__in=keys)\
             .order_by('lead').values('lead')\
             .annotate(
-                total_count=models.Count('id'),
-                controlled_count=models.Count('id', filter=models.Q(controlled=True)),
-            ).values('lead_id', 'total_count', 'controlled_count')
+                total=models.functions.Coalesce(
+                    models.Count('id'),
+                    0,
+                ),
+                controlled=models.functions.Coalesce(
+                    models.Count('id', filter=models.Q(controlled=True)),
+                    0,
+                ),
+            ).values('lead_id', 'total', 'controlled')
         _map = {
             stat.pop('lead_id'): stat
             for stat in stat_qs
         }
-        return Promise.resolve([_map.get(key) for key in keys])
+        _dummy = {
+            'total': 0,
+            'controlled': 0,
+        }
+        return Promise.resolve([_map.get(key, _dummy) for key in keys])
 
 
 class DataLoaders(WithContextMixin):
