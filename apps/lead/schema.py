@@ -117,9 +117,9 @@ class EmmKeyRiskFactorType(graphene.ObjectType):
     emm_risk_factors = graphene.String()
 
 
-class ControlledStatType(graphene.ObjectType):
-    total_count = graphene.Int()
-    controlled_count = graphene.Int()
+class EntriesCountType(graphene.ObjectType):
+    total = graphene.Int()
+    controlled = graphene.Int()
 
 
 class LeadGroupType(DjangoObjectType):
@@ -162,7 +162,7 @@ class LeadType(ClientIdMixin, DjangoObjectType):
     lead_preview = graphene.Field(LeadPreviewType)
     source = graphene.Field(OrganizationType)
     authors = DjangoListField(OrganizationType)
-    controlled_stat = graphene.Field(ControlledStatType)
+    entries_counts = graphene.Field(EntriesCountType)
     assignee = graphene.Field(UserType)
     lead_group = graphene.Field(LeadGroupType)
     # EMM Fields
@@ -182,9 +182,9 @@ class LeadType(ClientIdMixin, DjangoObjectType):
         return info.context.dl.lead.lead_preview.load(root.pk)
 
     @staticmethod
-    def resolve_controlled_stat(root, info, **kwargs):
+    def resolve_entries_counts(root, info, **kwargs):
         # TODO: Use entry filter here as well
-        return info.context.dl.lead.controlled_stat.load(root.pk)
+        return info.context.dl.lead.entries_counts.load(root.pk)
 
 
 class LeadDetailType(LeadType):
