@@ -60,7 +60,7 @@ jobs:
         env:
           DOCKER_IMAGE_SERVER: ${{ steps.prep.outputs.tagged_image }}
         run: |
-          docker-compose exec server bash -c 'python3 manage.py makemigrations --check --dry-run' || {
+          docker-compose -f gh-docker-compose.yml run --rm server python3 manage.py makemigrations --check --dry-run || {
             echo 'There are some changes to be reflected in the migration. Make sure to run makemigrations';
             exit 1;
           }
