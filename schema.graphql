@@ -227,6 +227,12 @@ type CreateEntry {
   result: EntryType
 }
 
+type CreateEntryReviewComment {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: EntryReviewCommentDetailType
+}
+
 type CreateLead {
   errors: [GenericScalar!]
   ok: Boolean
@@ -375,18 +381,24 @@ type EntryReviewCommentDetailType {
   createdBy: UserType!
   createdAt: DateTime!
   mentionedUsers: [UserType!]!
-  entry: EntryType!
-  commentType: ReviewCommentTypeEnum!
+  entry: ID!
+  commentType: EntryReviewCommentTypeEnum!
   commentTypeDisplay: EnumDescription!
   text: String
   textHistory: [EntryReviewCommentTextType!]
+}
+
+input EntryReviewCommentInputType {
+  entry: ID!
+  commentType: EntryReviewCommentTypeEnum
+  text: String
+  mentionedUsers: [ID!]
 }
 
 type EntryReviewCommentTextType {
   id: ID!
   createdAt: DateTime!
   text: String!
-  comment: EntryReviewCommentDetailType!
 }
 
 type EntryReviewCommentType {
@@ -394,10 +406,18 @@ type EntryReviewCommentType {
   createdBy: UserType!
   createdAt: DateTime!
   mentionedUsers: [UserType!]!
-  entry: EntryType!
-  commentType: ReviewCommentTypeEnum!
+  commentType: EntryReviewCommentTypeEnum!
   commentTypeDisplay: EnumDescription!
   text: String
+  entry: ID!
+}
+
+enum EntryReviewCommentTypeEnum {
+  COMMENT
+  VERIFY
+  UNVERIFY
+  CONTROL
+  UNCONTROL
 }
 
 enum EntryTagTypeEnum {
@@ -426,6 +446,7 @@ type EntryType {
   projectLabels: [EntryGroupLabelType!]
   verifiedBy: [UserType!]
   reviewComments: [EntryReviewCommentType!]
+  reviewCommentsCount: Int!
 }
 
 scalar EnumDescription
@@ -951,6 +972,8 @@ type ProjectMembershipType {
 type ProjectMutationType {
   id: ID!
   title: String!
+  entryReviewCommentCreate(data: EntryReviewCommentInputType!): CreateEntryReviewComment
+  entryReviewCommentUpdate(data: EntryReviewCommentInputType!, id: ID!): UpdateEntryReviewComment
   entryCreate(data: EntryInputType!): CreateEntry
   entryUpdate(data: EntryInputType!, id: ID!): UpdateEntry
   entryDelete(id: ID!): DeleteEntry
@@ -1113,14 +1136,6 @@ input ResetPasswordInputType {
   captcha: String!
 }
 
-enum ReviewCommentTypeEnum {
-  COMMENT
-  VERIFY
-  UNVERIFY
-  CONTROL
-  UNCONTROL
-}
-
 input SectionGqlInputType {
   id: ID
   title: String!
@@ -1149,6 +1164,12 @@ type UpdateEntry {
   errors: [GenericScalar!]
   ok: Boolean
   result: EntryType
+}
+
+type UpdateEntryReviewComment {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: EntryReviewCommentDetailType
 }
 
 type UpdateLead {
