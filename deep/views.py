@@ -20,7 +20,7 @@ from deep.exceptions import PermissionDeniedException
 from user.models import User, Profile
 from project.models import Project
 from entry.models import EntryComment
-from quality_assurance.models import EntryReviewComment, CommentType
+from quality_assurance.models import EntryReviewComment
 from notification.models import Notification
 
 
@@ -193,7 +193,7 @@ class EntryReviewCommentEmail(View):
         context.update({
             'email_type': Profile.E_EMAIL_COMMENT,
             'notification_type': notification_type,
-            'CommentType': CommentType,
+            'CommentType': EntryReviewComment.CommentType,
             'Notification': Notification,
             'comment': comment,
         })

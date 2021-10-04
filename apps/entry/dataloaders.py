@@ -66,6 +66,20 @@ class ReviewCommentsLoader(DataLoaderWithContext):
         return Promise.resolve([comments.get(key) for key in keys])
 
 
+class ReviewCommentsCountLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        count_qs = EntryReviewComment.objects\
+            .filter(entry__in=keys)\
+            .order_by().values('project')\
+            .annotate(count=models.Count('id'))\
+            .values_list('project', 'count')
+        counts = {
+            project: count
+            for project, count in count_qs
+        }
+        return Promise.resolve([counts.get(key) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     @cached_property
     def entry_attributes(self):
@@ -82,3 +96,7 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def review_comments(self):
         return ReviewCommentsLoader(context=self.context)
+
+    @cached_property
+    def review_comments_count(self):
+        return ReviewCommentsCountLoader(context=self.context)

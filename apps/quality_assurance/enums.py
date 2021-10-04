@@ -3,13 +3,13 @@ from utils.graphene.enums import (
     get_enum_name_from_django_field,
 )
 
-from quality_assurance.models import CommentType, BaseReviewComment
+from quality_assurance.models import EntryReviewComment
 
-ReviewCommentTypeEnum = convert_enum_to_graphene_enum(CommentType, name='ReviewCommentTypeEnum')
+EntryReviewCommentTypeEnum = convert_enum_to_graphene_enum(EntryReviewComment.CommentType, name='EntryReviewCommentTypeEnum')
 
 enum_map = {
     get_enum_name_from_django_field(field): enum
     for field, enum in (
-        (BaseReviewComment.comment_type, ReviewCommentTypeEnum),
+        (EntryReviewComment.comment_type, EntryReviewCommentTypeEnum),
     )
 }

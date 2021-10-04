@@ -1,40 +1,19 @@
 from django.db import models
-from django_enumfield import enum
+from django.utils.functional import cached_property
 
 from entry.models import Entry
 from user.models import User
 
 
 # ---------------------------------------------- Abstract Table ---------------------------------------
-class CommentType(enum.Enum):
-    COMMENT = 0
-    VERIFY = 1
-    UNVERIFY = 2
-    CONTROL = 3
-    UNCONTROL = 4
-
-    __default__ = COMMENT
-    __labels__ = {
-        COMMENT: 'Comment',
-        VERIFY: 'Verify',
-        UNVERIFY: 'Unverify',
-        CONTROL: 'Control',
-        UNCONTROL: 'UnControl',
-    }
-
-
 class BaseReviewComment(models.Model):
     created_by = models.ForeignKey(User, related_name='%(class)s_created', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    comment_type = enum.EnumField(CommentType)
     mentioned_users = models.ManyToManyField(User, blank=True)
 
     class Meta:
         abstract = True
         ordering = ('-id',)
-
-    def __str__(self):
-        return f'{self.entry}: {self.text}'
 
     def can_delete(self, user):
         return self.can_modify(user)
@@ -61,7 +40,7 @@ class BaseReviewComment(models.Model):
             ).distinct()
         )
 
-    @property
+    @cached_property
     def text(self):
         last_comment_text = self.comment_texts.order_by('-id').first()
         if last_comment_text:
@@ -84,10 +63,21 @@ class BaseReviewCommentText(models.Model):
 # ---------------------------------------------- Non-Abstract Table -------------------------------------
 
 class EntryReviewComment(BaseReviewComment):
+    class CommentType(models.IntegerChoices):
+        COMMENT = 0, 'Comment'
+        VERIFY = 1, 'Verify'
+        UNVERIFY = 2, 'Unverify'
+        CONTROL = 3, 'Control'
+        UNCONTROL = 4, 'UnControl'
+
     entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+    comment_type = models.IntegerField(choices=CommentType.choices, default=CommentType.COMMENT)
 
     class Meta(BaseReviewComment.Meta):
         abstract = False
+
+    def __str__(self):
+        return f'{self.entry}: {self.text}'
 
     def get_related_users(self, skip_owner_user=True):
         users = list(
