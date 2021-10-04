@@ -18,20 +18,30 @@ class LeadPreviewLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key) for key in keys])
 
 
-class ControlledStatLoader(DataLoaderWithContext):
+class EntriesCountLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         stat_qs = Entry.objects\
             .filter(lead__in=keys)\
             .order_by('lead').values('lead')\
             .annotate(
-                total_count=models.Count('id'),
-                controlled_count=models.Count('id', filter=models.Q(controlled=True)),
-            ).values('lead_id', 'total_count', 'controlled_count')
+                total=models.functions.Coalesce(
+                    models.Count('id'),
+                    0,
+                ),
+                controlled=models.functions.Coalesce(
+                    models.Count('id', filter=models.Q(controlled=True)),
+                    0,
+                ),
+            ).values('lead_id', 'total', 'controlled')
         _map = {
             stat.pop('lead_id'): stat
             for stat in stat_qs
         }
-        return Promise.resolve([_map.get(key) for key in keys])
+        _dummy = {
+            'total': 0,
+            'controlled': 0,
+        }
+        return Promise.resolve([_map.get(key, _dummy) for key in keys])
 
 
 class DataLoaders(WithContextMixin):
@@ -40,5 +50,5 @@ class DataLoaders(WithContextMixin):
         return LeadPreviewLoader(context=self.context)
 
     @cached_property
-    def controlled_stat(self):
-        return ControlledStatLoader(context=self.context)
+    def entries_counts(self):
+        return EntriesCountLoader(context=self.context)

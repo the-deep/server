@@ -215,11 +215,6 @@ type ChangeUserPassword {
   ok: Boolean
 }
 
-type ControlledStatType {
-  totalCount: Int
-  controlledCount: Int
-}
-
 type CreateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
@@ -320,6 +315,11 @@ type EmmKeyRiskFactorType {
 
 type EmmKeyWordType {
   emmKeywords: String
+}
+
+type EntriesCountType {
+  total: Int
+  controlled: Int
 }
 
 enum EntryFilterCommentStatusEnum {
@@ -559,7 +559,7 @@ type LeadDetailType {
   leadPreview: LeadPreviewType
   source: OrganizationType
   authors: [OrganizationType!]
-  controlledStat: ControlledStatType
+  entriesCounts: EntriesCountType
   emmEntities: [EmmEntityType!]
   emmTriggers: [LeadEmmTriggerType!]
   entries: [EntryType!]
@@ -727,7 +727,7 @@ type LeadType {
   leadPreview: LeadPreviewType
   source: OrganizationType
   authors: [OrganizationType!]
-  controlledStat: ControlledStatType
+  entriesCounts: EntriesCountType
   emmEntities: [EmmEntityType!]
   emmTriggers: [LeadEmmTriggerType!]
 }
@@ -1292,7 +1292,7 @@ enum WidgetFilterTypeEnum {
 
 input WidgetGqlInputType {
   id: ID
-  key: String
+  key: String!
   widgetId: WidgetWidgetTypeEnum!
   title: String!
   properties: GenericScalar

@@ -334,9 +334,9 @@ class TestLeadQuerySchema(GraphQLTestCase):
                     title
                     publishedOn
                     priority
-                    controlledStat {
-                      totalCount
-                      controlledCount
+                    entriesCounts {
+                      total
+                      controlled
                     }
                     authors {
                       id
@@ -372,7 +372,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
             }
         '''
 
-        project = ProjectFactory.create()
+        af = AnalysisFrameworkFactory.create()
+        project = ProjectFactory.create(analysis_framework=af)
         org_type = OrganizationTypeFactory.create()
         org1 = OrganizationFactory.create(organization_type=org_type)
         org2 = OrganizationFactory.create(organization_type=org_type, parent=org1)
@@ -383,6 +384,12 @@ class TestLeadQuerySchema(GraphQLTestCase):
         # Create lead
         lead1 = LeadFactory.create(project=project, source=org1)
         lead2 = LeadFactory.create(project=project, source=org2, authors=[org1, org3])
+        lead3 = LeadFactory.create(project=project)
+
+        # Some entries for entriesCounts
+        EntryFactory.create_batch(2, lead=lead1, controlled=True)
+        EntryFactory.create_batch(5, lead=lead1)
+        EntryFactory.create_batch(10, lead=lead2)
 
         # -- With login
         self.force_login(user)
@@ -392,8 +399,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
         content = self.query_check(query, variables={'id': project.id})
         results = content['data']['project']['leads']['results']
         # Count check
-        self.assertEqual(content['data']['project']['leads']['totalCount'], 2, content)
-        self.assertListIds(results, [lead1, lead2], content)
+        self.assertEqual(content['data']['project']['leads']['totalCount'], 3, content)
+        self.assertListIds(results, [lead1, lead2, lead3], content)
         self.assertEqual(len(results[0]['authors']), 0, content)
         # Source check
         self.assertIdEqual(results[0]['source']['id'], org1.id, content)
@@ -402,6 +409,14 @@ class TestLeadQuerySchema(GraphQLTestCase):
         # Authors check
         self.assertListIds(results[1]['authors'], [org1, org3], content)
         self.assertIdEqual(results[1]['source']['mergedAs']['id'], org1.id, content)
+        # Entries Count check
+        for index, (total_count, controlled_count) in enumerate([
+            [7, 2],
+            [10, 0],
+            [0, 0],
+        ]):
+            self.assertEqual(results[index]['entriesCounts']['total'], total_count, content)
+            self.assertEqual(results[index]['entriesCounts']['controlled'], controlled_count, content)
 
     def test_lead_options_query(self):
         """
