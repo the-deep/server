@@ -10,7 +10,6 @@ from deep.dataloaders import GlobalDataLoaders
 class GQLContext:
     def __init__(self, request):
         self.request = request
-        self.request.gql_context = self  # To be used from serializers
         # Project
         self.active_project = self.request.active_project = None
         self.project_permissions = []
