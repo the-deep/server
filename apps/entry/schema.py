@@ -106,6 +106,7 @@ class EntryType(ClientIdMixin, DjangoObjectType):
     project_labels = graphene.List(graphene.NonNull(EntryGroupLabelType))
     verified_by = DjangoListField(UserType)
     review_comments = graphene.List(graphene.NonNull(EntryReviewCommentType))
+    review_comments_count = graphene.Int(required=True)
 
     # project_labels TODO:
     # tabular_field TODO:
@@ -113,6 +114,10 @@ class EntryType(ClientIdMixin, DjangoObjectType):
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
         return get_entry_qs(info)
+
+    @staticmethod
+    def resolve_review_comments_count(root, info, **kwargs):
+        return root.entryreviewcomment_set.count()
 
     @staticmethod
     def resolve_project_labels(root, info, **kwargs):

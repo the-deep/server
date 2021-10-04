@@ -226,6 +226,12 @@ class BasePermissions():
         if permissions:
             return all([perm in permissions for perm in perms])
 
+    @classmethod
+    def check_permission_from_serializer(cls, context, *perms):
+        permissions = getattr(context, cls.CONTEXT_PERMISSION_ATTR)
+        if permissions:
+            return all([perm in permissions for perm in perms])
+
 
 class ProjectPermissions(BasePermissions):
 
