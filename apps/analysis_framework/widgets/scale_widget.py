@@ -4,7 +4,7 @@ WIDGET_ID = 'scaleWidget'
 """
 properties:
     options: [
-        clientId: string  # TODO: Change this to key or any other name
+        key: string
         label: string
         tooltip?: string
         order: number
@@ -20,7 +20,7 @@ def get_filters(widget, properties):
     filter_options = [
         {
             'label': option.get('label'),
-            'key': option.get('clientId'),
+            'key': option.get('key'),
         } for option in options
     ]
 

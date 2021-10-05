@@ -485,19 +485,19 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                 'data': {
                     'options': [
                         {
-                            'clientId': 'key-101',
+                            'key': 'key-101',
                             'label': 'Key label 101'
                         },
                         {
-                            'clientId': 'key-102',
+                            'key': 'key-102',
                             'label': 'Key label 102'
                         },
                         {
-                            'clientId': 'key-103',
+                            'key': 'key-103',
                             'label': 'Key label 103'
                         },
                         {
-                            'clientId': 'key-104',
+                            'key': 'key-104',
                             'label': 'Key label 104'
                         },
                     ]

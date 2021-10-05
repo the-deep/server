@@ -24,31 +24,31 @@ def _get_selected_nodes_with_parent(node, selected_ids, node_mapping=None):
     node_mapping = node_mapping or {}
     organs = node.get('children', [])
 
-    if 'clientId' not in node:
+    if 'key' not in node:
         return []
 
-    if node['clientId'] not in node_mapping:
-        node_mapping[node['clientId']] = {
-            'key': node['clientId'],
+    if node['key'] not in node_mapping:
+        node_mapping[node['key']] = {
+            'key': node['key'],
             'title': node.get('label'),
         }
 
     selected = []
-    if node['clientId'] in selected_ids:
+    if node['key'] in selected_ids:
         selected.append({
-            'key': node['clientId'],
+            'key': node['key'],
             'title': node['label'],
-            'parents': _get_parent_nodes(node_mapping, node['clientId']),
+            'parents': _get_parent_nodes(node_mapping, node['key']),
         })
 
     for organ in organs:
-        if 'clientId' not in organ:
+        if 'key' not in organ:
             continue
 
-        node_mapping[organ['clientId']] = {
-            'key': organ['clientId'],
+        node_mapping[organ['key']] = {
+            'key': organ['key'],
             'title': organ['label'],
-            'parent_node': node['clientId'],
+            'parent_node': node['key'],
             'parent_title': node['label'],
         }
         selected.extend(
