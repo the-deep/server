@@ -14,7 +14,7 @@ def _get_label_list(widget, data, widget_properties):
     for item in values:
         option = next((
             o for o in options
-            if o.get('clientId') == item
+            if o.get('key') == item
         ), None)
         if option:
             label_list.append(option.get('label') or 'Unknown')

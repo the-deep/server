@@ -15,7 +15,7 @@ def update_attribute(widget, data, widget_properties):
         row_exists = False
         row_data = next((
             r for r in rows
-            if r.get('cliendId') == row_key
+            if r.get('key') == row_key
         ), {})
         cells = row_data.get('cells', [])
 
@@ -27,7 +27,7 @@ def update_attribute(widget, data, widget_properties):
                 row_exists = True
                 cell_data = next((
                     c for c in cells
-                    if c.get('cliendId') == cell_key
+                    if c.get('key') == cell_key
                 ), {})
 
                 filter_values.append(cell_key)
@@ -79,11 +79,11 @@ def _get_headers(widgets_meta, widget, widget_properties):
 
     for pillar in widget_properties.get('rows', []):
         subpillar_keys = []
-        pillar_header_map[pillar['clientId']] = pillar
+        pillar_header_map[pillar['key']] = pillar
         for subpillar in pillar['cells']:
-            subpillar_header_map[subpillar['clientId']] = subpillar
-            subpillar_keys.append(subpillar['clientId'])
-        pillar_header_map[pillar['clientId']]['subpillar_keys'] = subpillar_keys
+            subpillar_header_map[subpillar['key']] = subpillar
+            subpillar_keys.append(subpillar['key'])
+        pillar_header_map[pillar['key']]['subpillar_keys'] = subpillar_keys
     widgets_meta[widget.pk] = {
         'pillar_header_map': pillar_header_map,
         'subpillar_header_map': subpillar_header_map,
@@ -112,8 +112,8 @@ def get_comprehensive_data(widgets_meta, widget, _data, widget_properties):
             ):
                 continue
             values.append({
-                'id': subpillar_header['clientId'],
+                'id': subpillar_header['key'],
                 'value': subpillar_header['label'],
-                'row': {'id': pillar_header['clientId'], 'title': pillar_header['label']},
+                'row': {'id': pillar_header['key'], 'title': pillar_header['label']},
             })
     return values
