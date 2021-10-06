@@ -140,8 +140,8 @@ class TempClientIdMixin(serializers.ModelSerializer):
     client_id = serializers.CharField(required=False)
 
     @staticmethod
-    def get_cache_key(instance):
-        return f'{type(instance).__name__}-{instance.id}'
+    def get_cache_key(instance, request):
+        return f'{hash(request)}-{type(instance).__name__}-{instance.id}'
 
     def _get_temp_client_id(self, validated_data):
         try:
@@ -158,7 +158,7 @@ class TempClientIdMixin(serializers.ModelSerializer):
         instance = super().create(validated_data)
         if temp_client_id:
             instance.client_id = temp_client_id
-            local_cache.set(self.get_cache_key(instance), temp_client_id, 60)
+            local_cache.set(self.get_cache_key(instance, self.context['request']), temp_client_id, 60)
         return instance
 
     def update(self, instance, validated_data):
@@ -166,7 +166,7 @@ class TempClientIdMixin(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         if temp_client_id:
             instance.client_id = temp_client_id
-            local_cache.set(self.get_cache_key(instance), temp_client_id, 60)
+            local_cache.set(self.get_cache_key(instance, self.context['request']), temp_client_id, 60)
         return instance
 
 

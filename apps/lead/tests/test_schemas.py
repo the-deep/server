@@ -323,6 +323,9 @@ class TestLeadQuerySchema(GraphQLTestCase):
         query = '''
             query MyQuery ($id: ID!) {
               project(id: $id) {
+                analysisFramework {
+                    id
+                }
                 leads(ordering: "id") {
                   page
                   pageSize
@@ -372,7 +375,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
             }
         '''
 
-        af = AnalysisFrameworkFactory.create()
+        af, af_new = AnalysisFrameworkFactory.create_batch(2)
         project = ProjectFactory.create(analysis_framework=af)
         org_type = OrganizationTypeFactory.create()
         org1 = OrganizationFactory.create(organization_type=org_type)
@@ -397,6 +400,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         # --- member user (only unprotected leads)
         self.force_login(user)
         content = self.query_check(query, variables={'id': project.id})
+        self.assertIdEqual(content['data']['project']['analysisFramework']['id'], af.pk)
         results = content['data']['project']['leads']['results']
         # Count check
         self.assertEqual(content['data']['project']['leads']['totalCount'], 3, content)
@@ -417,6 +421,81 @@ class TestLeadQuerySchema(GraphQLTestCase):
         ]):
             self.assertEqual(results[index]['entriesCounts']['total'], total_count, content)
             self.assertEqual(results[index]['entriesCounts']['controlled'], controlled_count, content)
+
+        # Change AF, this will now not show old entries
+        content = self.query_check(query, variables={'id': project.id})
+        project.analysis_framework = af_new
+        project.save(update_fields=('analysis_framework',))
+        EntryFactory.create_batch(2, lead=lead1, controlled=True)
+        EntryFactory.create_batch(1, lead=lead2, controlled=False)
+        content = self.query_check(query, variables={'id': project.id})
+        self.assertIdEqual(content['data']['project']['analysisFramework']['id'], af_new.pk)
+        results = content['data']['project']['leads']['results']
+        # Entries Count check (After AF change)
+        for index, (total_count, controlled_count) in enumerate([
+            [2, 2],
+            [1, 0],
+            [0, 0],
+        ]):
+            self.assertEqual(results[index]['entriesCounts']['total'], total_count, content)
+            self.assertEqual(results[index]['entriesCounts']['controlled'], controlled_count, content)
+
+    def test_leads_entries_query(self):
+        query = '''
+            query MyQuery ($id: ID!, $leadId: ID!) {
+              project(id: $id) {
+                analysisFramework {
+                    id
+                }
+                lead(id: $leadId) {
+                    id
+                    entriesCounts {
+                      total
+                      controlled
+                    }
+                    entries {
+                        id
+                    }
+                  }
+                }
+              }
+        '''
+        af, af_new = AnalysisFrameworkFactory.create_batch(2)
+        user = UserFactory.create()
+        project = ProjectFactory.create(analysis_framework=af)
+        project.add_member(user, role=self.project_role_analyst)
+        lead = LeadFactory.create(project=project)
+
+        controlled_entries = EntryFactory.create_batch(2, lead=lead, controlled=True)
+        not_controlled_entries = EntryFactory.create_batch(3, lead=lead, controlled=False)
+
+        def _query_check():
+            return self.query_check(query, variables={'id': project.id, 'leadId': lead.id})
+
+        # -- With login
+        self.force_login(user)
+        response = _query_check()
+        self.assertIdEqual(response['data']['project']['analysisFramework']['id'], af.pk)
+        content = response['data']['project']['lead']
+        self.assertIdEqual(content['id'], lead.pk, content)
+        self.assertEqual(content['entriesCounts']['total'], 5, content)
+        self.assertEqual(content['entriesCounts']['controlled'], 2, content)
+        self.assertListIds(content['entries'], [*controlled_entries, *not_controlled_entries], content)
+
+        # Now change AF
+        project.analysis_framework = af_new
+        project.save(update_fields=('analysis_framework',))
+
+        new_controlled_entries = EntryFactory.create_batch(4, lead=lead, controlled=True)
+        new_not_controlled_entries = EntryFactory.create_batch(2, lead=lead, controlled=False)
+
+        response = _query_check()
+        self.assertIdEqual(response['data']['project']['analysisFramework']['id'], af_new.pk)
+        content = response['data']['project']['lead']
+        self.assertIdEqual(content['id'], lead.pk, content)
+        self.assertEqual(content['entriesCounts']['total'], 6, content)
+        self.assertEqual(content['entriesCounts']['controlled'], 4, content)
+        self.assertListIds(content['entries'], [*new_controlled_entries, *new_not_controlled_entries], content)
 
     def test_lead_options_query(self):
         """
