@@ -3,7 +3,7 @@ from django.db.models.functions import Concat, Lower
 import django_filters
 
 from utils.graphene.filters import SimpleInputFilter, IDListFilter
-from user_resource.filters import UserResourceFilterSet
+from user_resource.filters import UserResourceFilterSet, UserResourceGqlFilterSet
 
 from .models import (
     Project,
@@ -76,7 +76,7 @@ def get_filtered_projects(user, queries, annotate=False):
 
 
 # -------------------- Graphql Filters -----------------------------------
-class ProjectGqlFilterSet(UserResourceFilterSet):
+class ProjectGqlFilterSet(UserResourceGqlFilterSet):
     status = SimpleInputFilter(ProjectStatusEnum)
     organizations = IDListFilter(distinct=True)
     analysis_frameworks = IDListFilter(field_name='analysis_framework')
@@ -105,7 +105,7 @@ class ProjectGqlFilterSet(UserResourceFilterSet):
         return queryset
 
 
-class ProjectMembershipGqlFilterSet(UserResourceFilterSet):
+class ProjectMembershipGqlFilterSet(UserResourceGqlFilterSet):
     search = django_filters.CharFilter(method='filter_search')
     members = IDListFilter(distinct=True, field_name='member')
 
@@ -126,7 +126,7 @@ class ProjectMembershipGqlFilterSet(UserResourceFilterSet):
         return qs
 
 
-class ProjectUserGroupMembershipGqlFilterSet(UserResourceFilterSet):
+class ProjectUserGroupMembershipGqlFilterSet(UserResourceGqlFilterSet):
     search = django_filters.CharFilter(method='filter_search')
     usergroups = IDListFilter(distinct=True, field_name='usergroup')
 

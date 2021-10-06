@@ -9,6 +9,8 @@ from django.db import transaction, models
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_text
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.db.models.functions import Cast
 from django.template.response import TemplateResponse
 from rest_framework.exceptions import PermissionDenied
 from rest_framework import (
@@ -713,7 +715,10 @@ class ProjectStatViewSet(ProjectViewSet):
             ),
         ).filter(entries_count__gt=0, entries_count=models.F('controlled_entries_count')).count()
         # Entries activity
-        recent_projects_id = Project.get_recent_active_projects(request.user)
+        recent_projects_id = list(
+            projects.annotate(
+                entries_count=Cast(KeyTextTransform('entries_activity', 'stats_cache'), models.IntegerField())
+            ).filter(entries_count__gt=0).order_by('-entries_count').values_list('id', flat=True)[:3])
         recent_entries = Entry.objects.filter(
             project__in=recent_projects_id,
             created_at__gte=(timezone.now() + relativedelta(months=-3))

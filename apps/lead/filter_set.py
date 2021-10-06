@@ -295,6 +295,8 @@ class LeadGQFilterSet(LeadFilterSet):
     priority = None
     status = None
 
+    created_by = IDListFilter()
+    modified_by = IDListFilter()
     source_types = MultipleInputFilter(LeadSourceTypeEnum, field_name='source_type')
     priorities = MultipleInputFilter(LeadPriorityEnum, field_name='priority')
     confidentiality = SimpleInputFilter(LeadConfidentialityEnum)
