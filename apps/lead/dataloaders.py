@@ -20,16 +20,23 @@ class LeadPreviewLoader(DataLoaderWithContext):
 
 class EntriesCountLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
+        active_af = self.context.active_project.analysis_framework
         stat_qs = Entry.objects\
             .filter(lead__in=keys)\
             .order_by('lead').values('lead')\
             .annotate(
                 total=models.functions.Coalesce(
-                    models.Count('id'),
+                    models.Count(
+                        'id',
+                        filter=models.Q(analysis_framework=active_af)
+                    ),
                     0,
                 ),
                 controlled=models.functions.Coalesce(
-                    models.Count('id', filter=models.Q(controlled=True)),
+                    models.Count(
+                        'id',
+                        filter=models.Q(controlled=True, analysis_framework=active_af)
+                    ),
                     0,
                 ),
             ).values('lead_id', 'total', 'controlled')
