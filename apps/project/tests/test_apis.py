@@ -1522,6 +1522,9 @@ class ProjectApiTest(TestCase):
                 created_at=now + relativedelta(months=item['months'], days=item['days'])
             )
 
+        # Run the caching process
+        _generate_project_stats_cache()
+
         self.authenticate(user)
         url = '/api/v1/projects-stat/summary/'
         response = self.client.get(url)

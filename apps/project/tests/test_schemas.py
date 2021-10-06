@@ -14,6 +14,7 @@ from entry.factories import EntryFactory
 from project.factories import ProjectFactory, ProjectJoinRequestFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
 from geo.factories import RegionFactory
+from ary.factories import AssessmentTemplateFactory
 
 from project.tasks import _generate_project_stats_cache
 
@@ -205,6 +206,36 @@ class TestProjectSchema(GraphQLTestCase):
         self.assertNotEqual(content['data']['project'], None, content)
         self.assertEqual(len(content['data']['project']['regions']), 1, content)
         self.assertListIds(content['data']['project']['regions'], [region3], content)
+
+    def test_project_query_has_assesment_af(self):
+        query = '''
+            query MyQuery {
+              projects(ordering: "id") {
+                  results {
+                    id
+                    hasAnalysisFramework
+                    hasAssessmentTemplate
+                  }
+              }
+            }
+        '''
+        user = UserFactory.create()
+        analysis_framework = AnalysisFrameworkFactory.create()
+        assessment_template = AssessmentTemplateFactory.create()
+        project1 = ProjectFactory.create(analysis_framework=analysis_framework, assessment_template=assessment_template)
+        project2 = ProjectFactory.create(analysis_framework=analysis_framework,)
+        project3 = ProjectFactory.create(assessment_template=assessment_template)
+        self.force_login(user)
+
+        projects = self.query_check(query)['data']['projects']['results']
+        for index, (_id, has_af, has_ary_template) in enumerate([
+            (project1.pk, True, True),
+            (project2.pk, True, False),
+            (project3.pk, False, True),
+        ]):
+            self.assertIdEqual(projects[index]['id'], _id, projects)
+            self.assertEqual(projects[index]['hasAnalysisFramework'], has_af, projects)
+            self.assertEqual(projects[index]['hasAssessmentTemplate'], has_ary_template, projects)
 
     def test_projects_query(self):
         """

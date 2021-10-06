@@ -225,7 +225,7 @@ class TestEntryQuery(GraphQLTestCase):
         query = '''
             query MyQuery (
                 $projectId: ID!
-                $authoringOrganizationTypes: [ID]
+                $authoringOrganizationTypes: [ID!]
                 $commentStatus: EntryFilterCommentStatusEnum
                 $controlled: Boolean
                 $createdAt: DateTime
@@ -233,13 +233,13 @@ class TestEntryQuery(GraphQLTestCase):
                 $createdAt_Gte: DateTime
                 $createdAt_Lt: DateTime
                 $createdAt_Lte: DateTime
-                $createdBy: [ID]
-                $entriesId: [ID]
+                $createdBy: [ID!]
+                $entriesId: [ID!]
                 $entryTypes: [EntryTagTypeEnum!]
                 $excerpt: String
                 $filterableData: [EntryFilterDataType!]
                 $geoCustomShape: String
-                $leadAssignees: [ID]
+                $leadAssignees: [ID!]
                 $leadConfidentialities: [LeadConfidentialityEnum!]
                 $leadGroupLabel: String
                 $leadPriorities: [LeadPriorityEnum!]
@@ -248,12 +248,12 @@ class TestEntryQuery(GraphQLTestCase):
                 $leadPublishedOn_Gte: Date
                 $leadPublishedOn_Lt: Date
                 $leadPublishedOn_Lte: Date
-                $leads: [ID]
+                $leads: [ID!]
                 $leadStatuses: [LeadStatusEnum!]
                 $leadTitle: String
                 $modifiedAt: DateTime
-                $modifiedBy: [ID]
-                $projectEntryLabels: [ID]
+                $modifiedBy: [ID!]
+                $projectEntryLabels: [ID!]
             ) {
               project(id: $projectId) {
                 entries (
