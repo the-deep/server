@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union
 
 import graphene
 from graphene_django import DjangoObjectType, DjangoListField
@@ -88,9 +88,10 @@ class AnalysisFrameworkType(DjangoObjectType):
         return root.get_current_user_role(info.context.request.user)
 
     @staticmethod
-    def resolve_allowed_permissions(root, info) -> List[str]:
+    def resolve_allowed_permissions(root, info):
         return AfP.get_permissions(
-            root.get_current_user_role(info.context.request.user)
+            root.get_current_user_role(info.context.request.user),
+            is_public=not root.is_private,
         )
 
 

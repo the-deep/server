@@ -384,3 +384,9 @@ class AnalysisFrameworkPermissions(BasePermissions):
     }
 
     CONTEXT_PERMISSION_ATTR = 'af_permissions'
+
+    @classmethod
+    def get_permissions(cls, role, is_public=False):
+        if role is None and is_public:
+            return [cls.Permission.CAN_USE_IN_OTHER_PROJECTS]
+        return cls.PERMISSION_MAP.get(role) or []

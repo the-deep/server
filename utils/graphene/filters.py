@@ -10,7 +10,7 @@ class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
     pass
 
 
-def _generate_filter_class(inner_type, filter_type=None):
+def _generate_filter_class(inner_type, filter_type=None, non_null=False):
     _filter_type = filter_type or django_filters.Filter
     form_field = type(
         "{}FormField".format(inner_type.__name__),
@@ -30,7 +30,7 @@ def _generate_filter_class(inner_type, filter_type=None):
         },
     )
     convert_form_field.register(form_field)(
-        lambda _: inner_type()
+        lambda _: graphene.NonNull(inner_type) if non_null else inner_type()
     )
 
     return filter_class
@@ -92,6 +92,7 @@ def _get_id_list_filter(**kwargs):
     return _generate_filter_class(
         graphene.ID,
         filter_type=NumberInFilter,
+        non_null=True,
     )(widget=DjangoFilterCSVWidget, **kwargs)
 
 
