@@ -29,7 +29,7 @@ def get_entry_qs(info):
         # Filter by project
         project=info.context.active_project,
         # Filter by project's active analysis_framework (Only show active AF's entries)
-        analysis_framework=info.context.active_project.analysis_framework,
+        analysis_framework=info.context.active_project.analysis_framework_id,
     )
     # Generate queryset according to permission
     if PP.check_permission(info, PP.Permission.VIEW_ENTRY):
