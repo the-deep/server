@@ -79,8 +79,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
             query MyQuery (
                 $projectId: ID!
                 # lead Arguments
-                $assignees: [ID]
-                $authoringOrganizationTypes: [ID]
+                $assignees: [ID!]
+                $authoringOrganizationTypes: [ID!]
                 $classifiedDocId: [Float]
                 $confidentiality: LeadConfidentialityEnum
                 $createdAt: DateTime

@@ -1,6 +1,4 @@
-from utils.graphene.filters import (
-    IDListFilter,
-)
+from utils.graphene.filters import IDListFilter
 from django.contrib.auth.models import User
 import django_filters
 
