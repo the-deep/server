@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/project/models.py: 94%</title>
+    <title>Coverage for apps/project/models.py: 93%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -18,15 +18,15 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>apps/project/models.py</b> :
-            <span class="pc_cov">94%</span>
+            <span class="pc_cov">93%</span>
         </h1>
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
         <h2 class="stats">
             313 statements &nbsp;
-            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">296 run</button>
-            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">17 missing</button>
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">295 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">18 missing</button>
             <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
-            <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">5 partial</button>
+            <button type="button" class="par run show_par shortkey_p button_toggle_par" title="Toggle lines partially run">6 partial</button>
         </h2>
     </div>
 </div>
@@ -336,8 +336,8 @@
     <p id="t281" class="pln"><span class="n"><a href="#t281">281</a></span><span class="t">                <span class="str">f' GROUP BY entities."project" ORDER BY "date" DESC'</span>&nbsp;</span><span class="r"></span></p>
     <p id="t282" class="pln"><span class="n"><a href="#t282">282</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t283" class="run"><span class="n"><a href="#t283">283</a></span><span class="t">            <span class="nam">recent_projects_id</span> <span class="op">=</span> <span class="op">[</span><span class="nam">pk</span> <span class="key">for</span> <span class="nam">pk</span><span class="op">,</span> <span class="nam">_</span> <span class="key">in</span> <span class="nam">cursor</span><span class="op">.</span><span class="nam">fetchall</span><span class="op">(</span><span class="op">)</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t284" class="run"><span class="n"><a href="#t284">284</a></span><span class="t">        <span class="key">if</span> <span class="nam">qs</span> <span class="key">is</span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t285" class="run"><span class="n"><a href="#t285">285</a></span><span class="t">            <span class="nam">qs</span> <span class="op">=</span> <span class="nam">Project</span><span class="op">.</span><span class="nam">get_for_member</span><span class="op">(</span><span class="nam">user</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t284" class="par run show_par"><span class="n"><a href="#t284">284</a></span><span class="t">        <span class="key">if</span> <span class="nam">qs</span> <span class="key">is</span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">284&#x202F;&#x219B;&#x202F;285</span><span class="annotate long">line 284 didn't jump to line 285, because the condition on line 284 was never true</span></span></p>
+    <p id="t285" class="mis show_mis"><span class="n"><a href="#t285">285</a></span><span class="t">            <span class="nam">qs</span> <span class="op">=</span> <span class="nam">Project</span><span class="op">.</span><span class="nam">get_for_member</span><span class="op">(</span><span class="nam">user</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t286" class="pln"><span class="n"><a href="#t286">286</a></span><span class="t">        <span class="com"># only the projects user is member among the recent projects</span>&nbsp;</span><span class="r"></span></p>
     <p id="t287" class="run"><span class="n"><a href="#t287">287</a></span><span class="t">        <span class="nam">current_users_project_id</span> <span class="op">=</span> <span class="nam">set</span><span class="op">(</span><span class="nam">qs</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">pk__in</span><span class="op">=</span><span class="nam">recent_projects_id</span><span class="op">)</span><span class="op">.</span><span class="nam">values_list</span><span class="op">(</span><span class="str">'pk'</span><span class="op">,</span> <span class="nam">flat</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t288" class="run"><span class="n"><a href="#t288">288</a></span><span class="t">        <span class="nam">recent_projects_id</span> <span class="op">=</span> <span class="op">[</span>&nbsp;</span><span class="r"></span></p>
@@ -749,7 +749,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.0</a>,
-            created at 2021-10-04 15:47 +0000
+            created at 2021-10-06 09:50 +0000
         </p>
     </div>
 </div>
