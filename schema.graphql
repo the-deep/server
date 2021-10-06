@@ -472,6 +472,7 @@ enum FeatureKey {
   QUALITY_CONTROL
   NEW_UI
   ANALYSIS
+  QUESTIONNAIRE
 }
 
 type FileField {

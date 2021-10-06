@@ -7,6 +7,8 @@ from analysis_framework.models import Widget
 
 from utils.common import ONE_DAY
 from utils.graphene.tests import GraphQLTestCase
+from lead.filter_set import LeadFilterSet
+
 from user.factories import UserFactory
 from geo.factories import RegionFactory, AdminLevelFactory, GeoAreaFactory
 from project.factories import ProjectFactory
@@ -14,6 +16,8 @@ from lead.factories import LeadFactory
 from entry.factories import EntryFactory, EntryAttributeFactory
 from analysis_framework.factories import AnalysisFrameworkFactory, WidgetFactory
 from organization.factories import OrganizationFactory, OrganizationTypeFactory
+
+from lead.tests.test_schemas import TestLeadQuerySchema
 
 
 class TestEntryQuery(GraphQLTestCase):
@@ -358,8 +362,9 @@ class TestEntryQuery(GraphQLTestCase):
         lead1.status = Lead.Status.TAGGED
         lead1.save(update_fields=['status'])
 
-        def _query_check(filters, **kwargs):
-            return self.query_check(query, variables={'projectId': project.id, **filters}, **kwargs)
+        # Some leads/entries in other projects
+        other_leads = LeadFactory.create_batch(3, project=ProjectFactory.create(analysis_framework=af))
+        [EntryFactory.create_batch(3, lead=lead) for lead in other_leads]
 
         # -- With login
         self.force_login(user)
@@ -414,10 +419,25 @@ class TestEntryQuery(GraphQLTestCase):
             # ({'leadPublishedOn_Lt': []}, []),
             # ({'leadPublishedOn_Lte': []}, []),
         ]:
-            content = _query_check(filter_data)
+            # Entry filter test
+            content = self.query_check(query, variables={'projectId': project.id, **filter_data})
             self.assertListIds(
                 content['data']['project']['entries']['results'], expected_entries,
                 {'response': content, 'filter': filter_data}
+            )
+            # Lead filter test
+            expected_leads = set([entry.lead for entry in expected_entries])
+            content = self.query_check(
+                TestLeadQuerySchema.lead_filter_query,
+                variables={
+                    'projectId': project.id,
+                    'customFilters': self.genum(LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES),
+                    'entriesFilterData': filter_data,
+                }
+            )
+            self.assertListIds(
+                content['data']['project']['leads']['results'], expected_leads,
+                {'response': content, 'filter': filter_data},
             )
 
 
@@ -548,7 +568,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
         EntryAttributeFactory.create(
             entry=entry3_2,
             widget=self.widget_date_range,
-            data={'value': {'startDate': '2020-01-15', 'endDate': '2020-01-10'}},
+            data={'value': {'startDate': '2020-01-15', 'endDate': '2020-01-25'}},
         )
         # Create attributes for text (TEXT Filter)
         EntryAttributeFactory.create(entry=entry1_1, widget=self.widget_text, data={'value': 'This is a test 1'})
@@ -571,11 +591,19 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
             data={'value': [self.geo_area_1.pk, self.geo_area_3_2.pk]}  # Middle child tagged + leaf node
         )
 
-        def _query_check(filterableData):
-            return self.query_check(
-                self.entries_query,
-                variables={'projectId': self.project.id, 'filterableData': filterableData},
-            )
+        # Some entries with different AF
+        other_entry = EntryFactory.create(lead=self.lead1, analysis_framework=AnalysisFrameworkFactory.create(title='Other'))
+        EntryAttributeFactory.create(
+            entry=other_entry, widget=self.widget_multiselect, data={'value': ['key-101', 'key-102']})
+        EntryAttributeFactory.create(entry=other_entry, widget=self.widget_number, data={'value': 10002})
+        EntryAttributeFactory.create(
+            entry=other_entry, widget=self.widget_geo,
+            data={'value': [self.geo_area_3_2.pk]}  # Leaf tagged
+        )
+
+        # Some leads/entries in other projects
+        other_leads = LeadFactory.create_batch(3, project=ProjectFactory.create(analysis_framework=self.af))
+        [EntryFactory.create_batch(3, lead=lead) for lead in other_leads]
 
         # -- With login
         self.force_login(self.user)
@@ -592,7 +620,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                         'valueLte': '10005',  # This is ignored when value is provided
                     },
                 ],
-                [entry1_1]
+                [entry1_1],
             ),
             (
                 'number-filter-2',
@@ -603,7 +631,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                         'valueLte': '10005',
                     },
                 ],
-                [entry1_1, entry3_1]
+                [entry1_1, entry3_1],
             ),
             (
                 'number-filter-3',
@@ -613,7 +641,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                         'valueLte': '10001',
                     },
                 ],
-                [entry1_1]
+                [entry1_1],
             ),
             (
                 'number-filter-4',
@@ -623,7 +651,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                         'valueGte': '10002',
                     },
                 ],
-                [entry3_1]
+                [entry3_1],
             ),
 
             # TEXT Filter Cases
@@ -636,7 +664,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                         'valueGte': '10002',  # This is ignored
                     },
                 ],
-                [entry1_1, entry3_1]
+                [entry1_1, entry3_1],
             ),
             (
                 'text-filter-2',
@@ -647,7 +675,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                         'valueLte': '10002',  # This is ignored
                     },
                 ],
-                [entry1_1]
+                [entry1_1],
             ),
 
             # INTERSECTS TODO: May need more test cases
@@ -661,7 +689,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                         # 'valueGte': self._get_date_in_number('2020-01-30'),  # TODO:
                     },
                 ],
-                [entry2_1, entry3_1]
+                [entry2_1, entry3_1],
             ),
             (
                 'intersect-filter-2',
@@ -672,7 +700,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                         'valueLte': self._get_date_in_number('2020-01-30'),
                     },
                 ],
-                [entry2_1, entry3_1, entry3_2]
+                [entry2_1, entry3_1, entry3_2],
             ),
             (
                 'intersect-filter-3',
@@ -682,7 +710,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                         'valueGte': self._get_date_in_number('2020-01-30'),  # Only one is ignored
                     },
                 ],
-                [entry1_1, entry2_1, entry3_1, entry3_2]
+                [entry1_1, entry2_1, entry3_1, entry3_2],
             ),
 
             # LIST Filter
@@ -694,7 +722,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                         'value': '13',  # This is ignored
                     },
                 ],
-                [entry1_1, entry2_1, entry3_1, entry3_2]
+                [entry1_1, entry2_1, entry3_1, entry3_2],
             ),
             (
                 'list-filter-2',
@@ -704,7 +732,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                         'valueList': ['key-101', 'key-102'],
                     },
                 ],
-                [entry1_1, entry2_1]
+                [entry1_1, entry2_1],
             ),
             (
                 'list-filter-3',
@@ -715,7 +743,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                         'useAndOperator': True,
                     },
                 ],
-                [entry1_1]
+                [entry1_1],
             ),
             (
                 'list-filter-4',
@@ -799,8 +827,28 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                 [entry2_1, entry3_1],
             )
         ]:
-            content = _query_check(filter_data)
+            # Lead filter test
+            content = self.query_check(
+                self.entries_query,
+                variables={'projectId': self.project.id, 'filterableData': filter_data},
+            )
             self.assertListIds(
                 content['data']['project']['entries']['results'], expected_entries,
+                {'response': content, 'filter': filter_data, 'filter_name': filter_name}
+            )
+            # Lead filter test
+            expected_leads = set([entry.lead for entry in expected_entries])
+            content = self.query_check(
+                TestLeadQuerySchema.lead_filter_query,
+                variables={
+                    'projectId': self.project.id,
+                    'customFilters': self.genum(LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES),
+                    'entriesFilterData': {
+                        'filterableData': filter_data,
+                    }
+                }
+            )
+            self.assertListIds(
+                content['data']['project']['leads']['results'], expected_leads,
                 {'response': content, 'filter': filter_data, 'filter_name': filter_name}
             )

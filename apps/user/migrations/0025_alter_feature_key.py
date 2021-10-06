@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='feature',
             name='key',
-            field=models.CharField(choices=[('private_project', 'Private projects'), ('tabular', 'Tabular'), ('zoomable_image', 'Zoomable image'), ('polygon_support_geo', 'Polygon support geo'), ('entry_visualization_configuration', 'Entry visualization configuration'), ('quality_control', 'Quality Control (Deprecated)'), ('new_ui', 'New UI (Deprecated)'), ('analysis', 'Analysis (Deprecated)')], max_length=255, unique=True),
+            field=models.CharField(choices=[('private_project', 'Private projects'), ('tabular', 'Tabular'), ('zoomable_image', 'Zoomable image'), ('polygon_support_geo', 'Polygon support geo'), ('entry_visualization_configuration', 'Entry visualization configuration'), ('quality_control', 'Quality Control (Deprecated)'), ('new_ui', 'New UI (Deprecated)'), ('analysis', 'Analysis (Deprecated)'), ('questionnaire', 'Questionnaire Builder')], max_length=255, unique=True),
         ),
     ]

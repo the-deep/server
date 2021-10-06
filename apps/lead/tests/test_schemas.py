@@ -18,6 +18,76 @@ from lead.factories import (
 
 
 class TestLeadQuerySchema(GraphQLTestCase):
+    lead_filter_query = '''
+        query MyQuery (
+            $projectId: ID!
+            # lead Arguments
+            $assignees: [ID!]
+            $authoringOrganizationTypes: [ID!]
+            $classifiedDocId: [Float]
+            $confidentiality: LeadConfidentialityEnum
+            $createdAt: DateTime
+            $createdAt_Gt: DateTime
+            $createdAt_Gte: DateTime
+            $createdAt_Lt: DateTime
+            $createdAt_Lte: DateTime
+            $customFilters: LeadCustomFilterEnum
+            $emmEntities: String
+            $emmKeywords: String
+            $emmRiskFactors: String
+            $entriesFilterData: LeadEntriesFilterData
+            $exists: LeadExistsEnum
+            $priorities: [LeadPriorityEnum!]
+            $publishedOn: Date
+            $publishedOn_Gt: Date
+            $publishedOn_Gte: Date
+            $publishedOn_Lt: Date
+            $publishedOn_Lte: Date
+            $search: String
+            $sourceTypes: [LeadSourceTypeEnum!]
+            $statuses: [LeadStatusEnum!]
+            $text: String
+            $url: String
+            $website: String
+        ) {
+          project(id: $projectId) {
+            leads (
+                assignees: $assignees
+                authoringOrganizationTypes: $authoringOrganizationTypes
+                classifiedDocId: $classifiedDocId
+                confidentiality: $confidentiality
+                createdAt: $createdAt
+                createdAt_Gt: $createdAt_Gt
+                createdAt_Gte: $createdAt_Gte
+                createdAt_Lt: $createdAt_Lt
+                createdAt_Lte: $createdAt_Lte
+                customFilters: $customFilters
+                emmEntities: $emmEntities
+                emmKeywords: $emmKeywords
+                emmRiskFactors: $emmRiskFactors
+                exists: $exists
+                priorities: $priorities
+                publishedOn: $publishedOn
+                publishedOn_Gt: $publishedOn_Gt
+                publishedOn_Gte: $publishedOn_Gte
+                publishedOn_Lt: $publishedOn_Lt
+                publishedOn_Lte: $publishedOn_Lte
+                search: $search
+                sourceTypes: $sourceTypes
+                statuses: $statuses
+                text: $text
+                url: $url
+                website: $website
+                entriesFilterData: $entriesFilterData
+            ) {
+              results {
+                id
+              }
+            }
+          }
+        }
+    '''
+
     def test_lead_query(self):
         """
         Test private + non-private project behaviour
@@ -75,76 +145,6 @@ class TestLeadQuerySchema(GraphQLTestCase):
         self.assertNotEqual(content['data']['project']['lead'], None, content)
 
     def test_lead_query_filter(self):
-        query = '''
-            query MyQuery (
-                $projectId: ID!
-                # lead Arguments
-                $assignees: [ID!]
-                $authoringOrganizationTypes: [ID!]
-                $classifiedDocId: [Float]
-                $confidentiality: LeadConfidentialityEnum
-                $createdAt: DateTime
-                $createdAt_Gt: DateTime
-                $createdAt_Gte: DateTime
-                $createdAt_Lt: DateTime
-                $createdAt_Lte: DateTime
-                $customFilters: LeadCustomFilterEnum
-                $emmEntities: String
-                $emmKeywords: String
-                $emmRiskFactors: String
-                $entriesFilterData: LeadEntriesFilterData
-                $exists: LeadExistsEnum
-                $priorities: [LeadPriorityEnum!]
-                $publishedOn: Date
-                $publishedOn_Gt: Date
-                $publishedOn_Gte: Date
-                $publishedOn_Lt: Date
-                $publishedOn_Lte: Date
-                $search: String
-                $sourceTypes: [LeadSourceTypeEnum!]
-                $statuses: [LeadStatusEnum!]
-                $text: String
-                $url: String
-                $website: String
-            ) {
-              project(id: $projectId) {
-                leads (
-                    assignees: $assignees
-                    authoringOrganizationTypes: $authoringOrganizationTypes
-                    classifiedDocId: $classifiedDocId
-                    confidentiality: $confidentiality
-                    createdAt: $createdAt
-                    createdAt_Gt: $createdAt_Gt
-                    createdAt_Gte: $createdAt_Gte
-                    createdAt_Lt: $createdAt_Lt
-                    createdAt_Lte: $createdAt_Lte
-                    customFilters: $customFilters
-                    emmEntities: $emmEntities
-                    emmKeywords: $emmKeywords
-                    emmRiskFactors: $emmRiskFactors
-                    exists: $exists
-                    priorities: $priorities
-                    publishedOn: $publishedOn
-                    publishedOn_Gt: $publishedOn_Gt
-                    publishedOn_Gte: $publishedOn_Gte
-                    publishedOn_Lt: $publishedOn_Lt
-                    publishedOn_Lte: $publishedOn_Lte
-                    search: $search
-                    sourceTypes: $sourceTypes
-                    statuses: $statuses
-                    text: $text
-                    url: $url
-                    website: $website
-                    entriesFilterData: $entriesFilterData
-                ) {
-                  results {
-                    id
-                  }
-                }
-              }
-            }
-        '''
-
         af = AnalysisFrameworkFactory.create()
         project = ProjectFactory.create(analysis_framework=af)
         org_type1, org_type2 = OrganizationTypeFactory.create_batch(2)
@@ -203,9 +203,6 @@ class TestLeadQuerySchema(GraphQLTestCase):
         AssessmentFactory.create(project=project, lead=lead1)
         AssessmentFactory.create(project=project, lead=lead2)
 
-        def _query_check(filters, **kwargs):
-            return self.query_check(query, variables={'projectId': project.id, **filters}, **kwargs)
-
         # -- With login
         self.force_login(user)
 
@@ -230,7 +227,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
             ({'exists': self.genum(LeadFilterSet.Exists.ENTRIES_DO_NOT_EXIST)}, [lead1, lead2, lead3]),
             ({'exists': self.genum(LeadFilterSet.Exists.ASSESSMENT_EXISTS)}, [lead1, lead2]),
             ({'exists': self.genum(LeadFilterSet.Exists.ASSESSMENT_DOES_NOT_EXIST)}, [lead3, lead4, lead5]),
-            # TODO: Add some `customFilters` test with entriesFilterData
+            # NOTE: customFilters + entriesFilterData is in entry tests.
             ({'customFilters': self.genum(LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES)}, [lead5]),
             ({'customFilters': self.genum(LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES)}, [lead4, lead5]),
             # TODO:
@@ -252,7 +249,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
             # ({'createdAt_Lt': []}, []),
             # ({'createdAt_Lte': []}, []),
         ]:
-            content = _query_check(filter_data)
+            content = self.query_check(self.lead_filter_query, variables={'projectId': project.id, **filter_data})
             self.assertListIds(
                 content['data']['project']['leads']['results'], expected_leads,
                 {'response': content, 'filter': filter_data}
