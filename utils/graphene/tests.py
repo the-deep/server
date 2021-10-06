@@ -181,7 +181,7 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
 
     def assertListIds(
         self,
-        current_list, excepted_list, message,
+        current_list, excepted_list, message=None,
         get_current_list_id=lambda x: str(x['id']),
         get_excepted_list_id=lambda x: str(x.id),
     ):

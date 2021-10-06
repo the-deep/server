@@ -202,7 +202,9 @@ class LeadDetailType(LeadType):
 
     @staticmethod
     def resolve_entries(root, info, **kwargs):
-        return root.entry_set.all()
+        return root.entry_set.filter(
+            analysis_framework=info.context.active_project.analysis_framework,
+        ).all()
 
 
 class LeadListType(CustomDjangoListObjectType):
