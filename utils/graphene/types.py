@@ -22,11 +22,11 @@ class ClientIdMixin(graphene.ObjectType):
     client_id = graphene.String(required=True)
 
     @staticmethod
-    def resolve_client_id(root, _):
+    def resolve_client_id(root, info):
         # NOTE: We should always provide non-null client_id
         client_id = (
             getattr(root, 'client_id', None) or
-            local_cache.get(TempClientIdMixin.get_cache_key(root)) or
+            local_cache.get(TempClientIdMixin.get_cache_key(root, info.context)) or
             root.id
         )
         if client_id is not None:
