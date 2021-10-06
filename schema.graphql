@@ -853,6 +853,8 @@ type ProjectDetailType {
   status: ProjectStatusEnum!
   statusDisplay: EnumDescription!
   organizations: [ProjectOrganizationType!]
+  hasAnalysisFramework: Boolean!
+  hasAssessmentTemplate: Boolean!
   reviewComment(id: ID!): EntryReviewCommentDetailType
   geoAreas(search: String, page: Int = 1, ordering: String, pageSize: Int): ProjectGeoAreaListType
   export(id: ID!): UserExportType
@@ -1035,6 +1037,8 @@ type ProjectType {
   status: ProjectStatusEnum!
   statusDisplay: EnumDescription!
   organizations: [ProjectOrganizationType!]
+  hasAnalysisFramework: Boolean!
+  hasAssessmentTemplate: Boolean!
 }
 
 type ProjectUserGroupMembershipListType {

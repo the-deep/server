@@ -1,6 +1,7 @@
 from factory.django import DjangoModelFactory
 
 from .models import (
+    AssessmentTemplate,
     Assessment,
 )
 
@@ -8,3 +9,8 @@ from .models import (
 class AssessmentFactory(DjangoModelFactory):
     class Meta:
         model = Assessment
+
+
+class AssessmentTemplateFactory(DjangoModelFactory):
+    class Meta:
+        model = AssessmentTemplate
