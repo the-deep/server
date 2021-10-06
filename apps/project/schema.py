@@ -153,6 +153,8 @@ class ProjectType(DjangoObjectType):
     status = graphene.Field(ProjectStatusEnum, required=True)
     status_display = EnumDescription(source='get_status_display', required=True)
     organizations = graphene.List(graphene.NonNull(ProjectOrganizationType))
+    has_analysis_framework = graphene.Boolean(required=True)
+    has_assessment_template = graphene.Boolean(required=True)
 
     # NOTE: This is a custom feature
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
@@ -164,6 +166,14 @@ class ProjectType(DjangoObjectType):
             return project
         except Project.DoesNotExist:
             return None
+
+    @staticmethod
+    def resolve_has_analysis_framework(root, info):
+        return root.analysis_framework_id is not None
+
+    @staticmethod
+    def resolve_has_assessment_template(root, info):
+        return root.assessment_template_id is not None
 
     @staticmethod
     def resolve_current_user_role(root, info):

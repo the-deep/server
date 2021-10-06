@@ -524,6 +524,8 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, EntryFilterMixin, django_filters.
     comment_assignee = None
     comment_created_by = None
 
+    created_by = IDListFilter()
+    modified_by = IDListFilter()
     leads = IDListFilter(field_name='lead')
     comment_status = SimpleInputFilter(
         convert_enum_to_graphene_enum(EntryFilterMixin.CommentStatus, name='EntryFilterCommentStatusEnum'),
@@ -547,8 +549,7 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, EntryFilterMixin, django_filters.
         fields = {
             **{
                 x: ['exact'] for x in [
-                    'id', 'excerpt', 'created_at',
-                    'created_by', 'modified_at', 'modified_by',
+                    'id', 'excerpt', 'created_at', 'modified_at',
                     'controlled',
                 ]
             },

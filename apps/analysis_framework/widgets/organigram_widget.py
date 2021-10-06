@@ -33,8 +33,9 @@ def get_filters(widget, properties):
     from analysis_framework.models import Filter  # To avoid circular import
 
     options = []
-    if properties:
-        options = get_values_for_organ(properties, None)
+    raw_options = properties and properties.get('options')
+    if raw_options:
+        options = get_values_for_organ(raw_options, None)
     return [{
         'filter_type': Filter.FilterType.LIST,
         'properties': {
