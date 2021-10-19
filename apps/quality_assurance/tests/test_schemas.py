@@ -39,6 +39,7 @@ class TestReviewCommentQuery(GraphQLTestCase):
                             }
                             text
                         }
+                        reviewCommentsCount
                     }
                 }
             }
@@ -77,6 +78,7 @@ class TestReviewCommentQuery(GraphQLTestCase):
         # --- add-member in project
         project.add_member(user)
         content = self.query_check(query, variables={'projectId': project.id, 'entryId': entry.id})
+        self.assertEqual(content['data']['project']['entry']['reviewCommentsCount'], 2, content)
         self.assertEqual(len(content['data']['project']['entry']['reviewComments']), 2, content)
         self.assertListIds(
             content['data']['project']['entry']['reviewComments'],
@@ -92,6 +94,7 @@ class TestReviewCommentQuery(GraphQLTestCase):
         # add another review_text for same review_comment
         review_text2 = EntryReviewCommentTextFactory.create(comment=review_comment1)
         content = self.query_check(query, variables={'projectId': project.id, 'entryId': entry.id})
+        self.assertEqual(content['data']['project']['entry']['reviewCommentsCount'], 2, content)
         self.assertEqual(
             content['data']['project']['entry']['reviewComments'][1]['text'],
             review_text2.text,  # here latest text should be present
@@ -105,6 +108,7 @@ class TestReviewCommentQuery(GraphQLTestCase):
 
         # lets query for another entry
         content = self.query_check(query, variables={'projectId': project.id, 'entryId': entry1.id})
+        self.assertEqual(content['data']['project']['entry']['reviewCommentsCount'], 1, content)
         self.assertEqual(len(content['data']['project']['entry']['reviewComments']), 1, content)
 
     def test_review_comments_project_scope_query(self):

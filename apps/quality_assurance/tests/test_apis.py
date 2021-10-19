@@ -4,7 +4,6 @@ from notification.models import Notification
 from project.models import ProjectMembership
 from quality_assurance.models import (
     # EntryReviewComment,
-    CommentType,
     EntryReviewComment,
 )
 
@@ -27,7 +26,7 @@ class QualityAccuranceTests(TestCase):
         self.authenticate(user1)
         data = {
             'text': 'This is a test comment',
-            'comment_type': CommentType.COMMENT,
+            'comment_type': EntryReviewComment.CommentType.COMMENT,
             'mentioned_users': [user1.pk, user2.pk, user3.pk],
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
@@ -50,7 +49,7 @@ class QualityAccuranceTests(TestCase):
         self.authenticate(user2)
         data = {
             'text': 'This is a test comment',
-            'comment_type': CommentType.COMMENT,
+            'comment_type': EntryReviewComment.CommentType.COMMENT,
             'mentioned_users': [user1.pk, user2.pk, user3.pk],
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
@@ -64,7 +63,7 @@ class QualityAccuranceTests(TestCase):
         self.authenticate(user4)
         data = {
             'text': 'This is a test comment',
-            'comment_type': CommentType.COMMENT,
+            'comment_type': EntryReviewComment.CommentType.COMMENT,
             'mentioned_users': [user1.pk, user2.pk, user3.pk],
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
@@ -85,7 +84,7 @@ class QualityAccuranceTests(TestCase):
         self.authenticate(user1)
         data = {
             'text': 'This is a test comment',
-            'comment_type': CommentType.COMMENT,
+            'comment_type': EntryReviewComment.CommentType.COMMENT,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
@@ -99,7 +98,7 @@ class QualityAccuranceTests(TestCase):
         # Verify
         data = {
             'text': 'This is a test comment for approvable',
-            'comment_type': CommentType.VERIFY,
+            'comment_type': EntryReviewComment.CommentType.VERIFY,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
@@ -113,7 +112,7 @@ class QualityAccuranceTests(TestCase):
         self.authenticate(user2)
         data = {
             'text': 'This is a test comment',
-            'comment_type': CommentType.VERIFY,
+            'comment_type': EntryReviewComment.CommentType.VERIFY,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
@@ -122,7 +121,7 @@ class QualityAccuranceTests(TestCase):
         # Unverify
         data = {
             'text': 'This is a test comment for unapprovable',
-            'comment_type': CommentType.UNVERIFY,
+            'comment_type': EntryReviewComment.CommentType.UNVERIFY,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
@@ -133,7 +132,7 @@ class QualityAccuranceTests(TestCase):
         self.authenticate(user1)
         data = {
             'text': 'This is a test comment',
-            'comment_type': CommentType.VERIFY,
+            'comment_type': EntryReviewComment.CommentType.VERIFY,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_400(response)
@@ -144,14 +143,14 @@ class QualityAccuranceTests(TestCase):
         self.authenticate(user2)
         data = {
             'text': 'This is a test comment',
-            'comment_type': CommentType.UNVERIFY,
+            'comment_type': EntryReviewComment.CommentType.UNVERIFY,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_400(response)
         self.authenticate(user3)
         data = {
             'text': 'This is a test comment',
-            'comment_type': CommentType.UNVERIFY,
+            'comment_type': EntryReviewComment.CommentType.UNVERIFY,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_400(response)
@@ -165,7 +164,7 @@ class QualityAccuranceTests(TestCase):
         user1_membership = project.add_member(user1, role=self.normal_role)
 
         self.authenticate(user1)
-        for comment_type in [CommentType.CONTROL, CommentType.UNCONTROL]:
+        for comment_type in [EntryReviewComment.CommentType.CONTROL, EntryReviewComment.CommentType.UNCONTROL]:
             user1_membership.badges = []
             user1_membership.save()
 
@@ -195,7 +194,7 @@ class QualityAccuranceTests(TestCase):
         self.authenticate(user1)
         data = {
             'text': 'This is a test comment',
-            'comment_type': CommentType.COMMENT,
+            'comment_type': EntryReviewComment.CommentType.COMMENT,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
@@ -203,7 +202,7 @@ class QualityAccuranceTests(TestCase):
         # Control
         data = {
             'text': 'This is a test comment for control/verify',
-            'comment_type': CommentType.CONTROL,
+            'comment_type': EntryReviewComment.CommentType.CONTROL,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
@@ -214,7 +213,7 @@ class QualityAccuranceTests(TestCase):
         # Control using same user again
         data = {
             'text': 'This is a test comment to again control already verified',
-            'comment_type': CommentType.CONTROL,
+            'comment_type': EntryReviewComment.CommentType.CONTROL,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_400(response)
@@ -226,7 +225,7 @@ class QualityAccuranceTests(TestCase):
         self.authenticate(user2)
         data = {
             'text': 'This is a test comment to again control already verified',
-            'comment_type': CommentType.CONTROL,
+            'comment_type': EntryReviewComment.CommentType.CONTROL,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_400(response)
@@ -238,7 +237,7 @@ class QualityAccuranceTests(TestCase):
         self.authenticate(user2)
         data = {
             'text': 'This is a test comment for uncontrol',
-            'comment_type': CommentType.UNCONTROL,
+            'comment_type': EntryReviewComment.CommentType.UNCONTROL,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
@@ -251,7 +250,7 @@ class QualityAccuranceTests(TestCase):
             # Can't uncontrol already uncontrol
             data = {
                 'text': 'This is a test comment',
-                'comment_type': CommentType.UNVERIFY,
+                'comment_type': EntryReviewComment.CommentType.UNVERIFY,
             }
             response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
             self.assert_400(response)
@@ -274,7 +273,7 @@ class QualityAccuranceTests(TestCase):
         self.authenticate(user1)
         data = {
             'text': 'This is a comment',
-            'comment_type': CommentType.COMMENT,
+            'comment_type': EntryReviewComment.CommentType.COMMENT,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
@@ -283,7 +282,7 @@ class QualityAccuranceTests(TestCase):
             self.authenticate(user)
             data = {
                 'text': 'This is a verify comment',
-                'comment_type': CommentType.VERIFY,
+                'comment_type': EntryReviewComment.CommentType.VERIFY,
             }
             response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
             self.assert_201(response)
@@ -291,7 +290,7 @@ class QualityAccuranceTests(TestCase):
         self.authenticate(user4)
         data = {
             'text': 'This is a control comment',
-            'comment_type': CommentType.CONTROL,
+            'comment_type': EntryReviewComment.CommentType.CONTROL,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
@@ -312,7 +311,7 @@ class QualityAccuranceTests(TestCase):
             self.authenticate(user)
             data = {
                 'text': 'This is a verify comment',
-                'comment_type': CommentType.VERIFY,
+                'comment_type': EntryReviewComment.CommentType.VERIFY,
             }
             response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
             self.assert_201(response)
@@ -325,7 +324,7 @@ class QualityAccuranceTests(TestCase):
         self.authenticate(user)
         data = {
             'text': 'This is a control comment',
-            'comment_type': CommentType.CONTROL,
+            'comment_type': EntryReviewComment.CommentType.CONTROL,
         }
         response = self.client.post(f'/api/v1/entries/{entry.pk}/review-comments/', data=data)
         self.assert_201(response)
@@ -343,11 +342,11 @@ class QualityAccuranceTests(TestCase):
 
         for comment_type, text_required in [
                 (None, True),  # Default is CommentType.COMMENT
-                (CommentType.COMMENT, True),
-                (CommentType.VERIFY, False),
-                (CommentType.UNVERIFY, True),
-                (CommentType.CONTROL, False),
-                (CommentType.UNCONTROL, True),
+                (EntryReviewComment.CommentType.COMMENT, True),
+                (EntryReviewComment.CommentType.VERIFY, False),
+                (EntryReviewComment.CommentType.UNVERIFY, True),
+                (EntryReviewComment.CommentType.CONTROL, False),
+                (EntryReviewComment.CommentType.UNCONTROL, True),
         ]:
             self.authenticate(user1)
             data = {}
@@ -399,7 +398,7 @@ class QualityAccuranceTests(TestCase):
         _clear_notifications()
         data = {
             'text': 'This is a comment',
-            'comment_type': CommentType.COMMENT,
+            'comment_type': EntryReviewComment.CommentType.COMMENT,
             'mentioned_users': [user2.pk],
         }
         # Need self.captureOnCommitCallbacks as this API uses transation.on_commit
@@ -415,7 +414,7 @@ class QualityAccuranceTests(TestCase):
         _clear_notifications()
         data = {
             'text': 'This is a comment',
-            'comment_type': CommentType.COMMENT,
+            'comment_type': EntryReviewComment.CommentType.COMMENT,
             'mentioned_users': [user2.pk, user3.pk, user1.pk],
         }
         # Need self.captureOnCommitCallbacks as this API uses transation.on_commit
@@ -429,8 +428,8 @@ class QualityAccuranceTests(TestCase):
 
         # Create a commit different comment_type
         for comment_type in [
-            CommentType.VERIFY, CommentType.UNVERIFY,
-            CommentType.CONTROL, CommentType.UNCONTROL,
+            EntryReviewComment.CommentType.VERIFY, EntryReviewComment.CommentType.UNVERIFY,
+            EntryReviewComment.CommentType.CONTROL, EntryReviewComment.CommentType.UNCONTROL,
         ]:
             _clean_comments(project)
             _clear_notifications()

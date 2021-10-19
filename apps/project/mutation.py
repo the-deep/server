@@ -17,6 +17,7 @@ from deep.permissions import ProjectPermissions as PP
 
 from lead.mutation import Mutation as LeadMutation
 from entry.mutation import Mutation as EntryMutation
+from quality_assurance.mutation import Mutation as QualityAssuranceMutation
 
 from .models import (
     Project,
@@ -179,6 +180,7 @@ class BulkUpdateProjectUserGroupMembership(PsBulkGrapheneMutation):
 class ProjectMutationType(
     LeadMutation,
     EntryMutation,
+    QualityAssuranceMutation,
     DjangoObjectType
 ):
     """

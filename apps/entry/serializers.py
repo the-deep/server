@@ -3,13 +3,13 @@ import logging
 from drf_dynamic_fields import DynamicFieldsMixin
 from drf_writable_nested.mixins import UniqueFieldsMixin
 from rest_framework import serializers
-from django.utils.functional import cached_property
 
 from deep.writable_nested_serializers import ListToDictField
 from deep.serializers import (
+    IntegerIDField,
+    ProjectPropertySerializerMixin,
     RemoveNullFieldsMixin,
     TempClientIdMixin,
-    IntegerIDField,
 )
 from organization.serializers import SimpleOrganizationSerializer
 from user_resource.serializers import UserResourceSerializer, DeprecatedUserResourceSerializer
@@ -23,7 +23,7 @@ from geo.models import GeoArea, Region
 from geo.serializers import SimpleRegionSerializer
 from tabular.serializers import FieldProcessedOnlySerializer
 from user.serializers import EntryCommentUserSerializer, ComprehensiveUserSerializer, SimpleUserSerializer
-from quality_assurance.models import CommentType, EntryReviewComment
+from quality_assurance.models import EntryReviewComment
 from project.models import ProjectMembership
 
 from .widgets.store import widget_store
@@ -294,7 +294,7 @@ class EntrySerializer(RemoveNullFieldsMixin,
             review_comment = EntryReviewComment.objects.create(
                 entry=instance,
                 created_by=self.context['request'].user,
-                comment_type=CommentType.UNCONTROL,
+                comment_type=EntryReviewComment.CommentType.UNCONTROL,
             )
             review_comment.comment_texts.model.objects.create(
                 comment=review_comment,
@@ -594,7 +594,7 @@ class AttributeGqSerializer(TempClientIdMixin, serializers.ModelSerializer):
         return validated_data
 
 
-class EntryGqSerializer(TempClientIdMixin, UserResourceSerializer):
+class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserResourceSerializer):
     id = IntegerIDField(required=False)
     attributes = AttributeGqSerializer(source='attribute_set', required=False, many=True)
     image_raw = serializers.CharField(
@@ -633,14 +633,6 @@ class EntryGqSerializer(TempClientIdMixin, UserResourceSerializer):
             'attributes',
             'client_id',
         )
-
-    @cached_property
-    def project(self):
-        project = self.context['request'].active_project
-        # This is a rare case, just to make sure this is validated
-        if self.instance and self.instance.project != project:
-            raise serializers.ValidationError('Invalid access')
-        return project
 
     # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
     # This makes sure only scoped (individual entry) instances (attributes) are updated.
