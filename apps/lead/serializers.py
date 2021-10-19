@@ -1,5 +1,4 @@
 from django.shortcuts import get_object_or_404
-from django.utils.functional import cached_property
 from django.db import transaction
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
@@ -12,6 +11,7 @@ from deep.serializers import (
     IdListField,
     StringListField,
     WriteOnlyOnCreateSerializerMixin,
+    ProjectPropertySerializerMixin,
 )
 from organization.serializers import SimpleOrganizationSerializer
 from user.serializers import SimpleUserSerializer
@@ -392,7 +392,7 @@ class LeadOptionsSerializer(serializers.Serializer):
 
 
 # ------------------- Graphql Serializers ----------------------------------------
-class LeadGqSerializer(TempClientIdMixin, UserResourceSerializer):
+class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserResourceSerializer):
     """
     Lead Model Serializer for Graphql (NOTE: Don't use this on DRF Views)
     """
@@ -426,14 +426,6 @@ class LeadGqSerializer(TempClientIdMixin, UserResourceSerializer):
             'emm_entities',
             'client_id',  # From TempClientIdMixin
         )
-
-    @cached_property
-    def project(self):
-        project = self.context['request'].active_project
-        # This is a rare case, just to make sure this is validated
-        if self.instance and self.instance.project != project:
-            raise serializers.ValidationError('Invalid access')
-        return project
 
     def validate_attachment(self, attachment):
         if attachment and attachment.created_by != self.context['request'].user:

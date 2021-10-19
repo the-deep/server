@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
             name='EntryReviewComment',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('comment_type', django_enumfield.db.fields.EnumField(default=0, enum=quality_assurance.models.CommentType)),
+                ('comment_type', django.db.models.IntegerField(default=0, choices=[(0, 'Comment'), (1, 'Verify'), (2, 'Unverify'), (3, 'Control'), (4, 'UnControl')])),
                 ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='entryreviewcomment_created', to=settings.AUTH_USER_MODEL)),
                 ('entry', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='entry.Entry')),
                 ('mentioned_users', models.ManyToManyField(blank=True, to=settings.AUTH_USER_MODEL)),

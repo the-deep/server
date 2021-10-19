@@ -3,7 +3,7 @@
 from django.db import migrations, models
 
 from deep.managers import BulkCreateManager
-from quality_assurance.models import CommentType
+from quality_assurance.models import EntryReviewComment
 
 
 # NOTE: Using _ here as importlib doesn't find private functions
@@ -20,7 +20,10 @@ def migrate_entry_controlled_to_review_comment_(Entry, EntryReviewComment):
             EntryReviewComment(
                 entry_id=entry.id,
                 created_by_id=entry.controlled_changed_by_id,
-                comment_type=CommentType.VERIFY if entry.controlled else CommentType.UNVERIFY,
+                comment_type=(
+                    EntryReviewComment.CommentType.VERIFY if entry.controlled
+                    else EntryReviewComment.CommentType.UNVERIFY
+                ),
             )
         )
         verified_by_users_id = [u.id for u in entry.verified_by.all()]

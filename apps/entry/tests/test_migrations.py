@@ -3,7 +3,7 @@ import importlib
 from deep.tests import TestCase
 
 from entry.models import Entry
-from quality_assurance.models import EntryReviewComment, CommentType
+from quality_assurance.models import EntryReviewComment
 
 
 class TestCustomMigrationsLogic(TestCase):
@@ -49,13 +49,17 @@ class TestCustomMigrationsLogic(TestCase):
         assert EntryReviewComment.objects.count() == 3
         # Related review comment are created by user last action on entry.
         assert set(EntryReviewComment.objects.values_list('created_by_id', flat=True)) == set([user1.pk, user2.pk, user3.pk])
-        assert EntryReviewComment.objects.filter(comment_type=CommentType.VERIFY).count() == 2
-        assert EntryReviewComment.objects.filter(comment_type=CommentType.UNVERIFY).count() == 1
+        assert EntryReviewComment.objects.filter(comment_type=EntryReviewComment.CommentType.VERIFY).count() == 2
+        assert EntryReviewComment.objects.filter(comment_type=EntryReviewComment.CommentType.UNVERIFY).count() == 1
         assert set(
-            EntryReviewComment.objects.filter(comment_type=CommentType.VERIFY).values_list('created_by_id', flat=True)
+            EntryReviewComment.objects.filter(
+                comment_type=EntryReviewComment.CommentType.VERIFY,
+            ).values_list('created_by_id', flat=True)
         ) == set([user1.pk, user2.pk])
         assert set(
-            EntryReviewComment.objects.filter(comment_type=CommentType.UNVERIFY).values_list('created_by_id', flat=True)
+            EntryReviewComment.objects.filter(
+                comment_type=EntryReviewComment.CommentType.UNVERIFY,
+            ).values_list('created_by_id', flat=True)
         ) == set([user3.pk])
         # All controlled, controlled_changed_by should be reset.
         assert Entry.objects.filter(controlled=True).count() == 0

@@ -1,3 +1,4 @@
+from django.utils.functional import cached_property
 from django.core.files.storage import FileSystemStorage, get_storage_class
 from django.core.exceptions import FieldDoesNotExist
 from django.core.cache import cache
@@ -168,6 +169,22 @@ class TempClientIdMixin(serializers.ModelSerializer):
             instance.client_id = temp_client_id
             local_cache.set(self.get_cache_key(instance, self.context['request']), temp_client_id, 60)
         return instance
+
+
+class ProjectPropertySerializerMixin(serializers.ModelSerializer):
+    project_property_attribute = None
+
+    @cached_property
+    def project(self):
+        project = self.context['request'].active_project
+        # This is a rare case, just to make sure this is validated
+        if self.instance:
+            model_with_project = self.instance
+            if self.project_property_attribute:
+                model_with_project = getattr(self.instance, self.project_property_attribute)
+            if model_with_project is None or model_with_project.project != project:
+                raise serializers.ValidationError('Invalid access')
+        return project
 
 
 class IntegerIDField(serializers.IntegerField):

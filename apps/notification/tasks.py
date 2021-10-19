@@ -5,7 +5,7 @@ from entry.models import EntryComment
 from user.models import User, Profile
 from user.utils import send_mail_to_user
 
-from quality_assurance.models import EntryReviewComment, CommentType
+from quality_assurance.models import EntryReviewComment
 
 from .models import Notification
 
@@ -37,7 +37,7 @@ def send_entry_review_comment_email(user_id, comment_id, notification_type):
         user, Profile.E_EMAIL_COMMENT,
         context={
             'Notification': Notification,
-            'CommentType': CommentType,
+            'CommentType': EntryReviewComment.CommentType,
             'notification_type': notification_type,
             'comment': comment,
         },
