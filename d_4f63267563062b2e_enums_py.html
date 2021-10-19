@@ -58,14 +58,14 @@
     <p id="t3" class="pln"><span class="n"><a href="#t3">3</a></span><span class="t">    <span class="nam">get_enum_name_from_django_field</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t4" class="pln"><span class="n"><a href="#t4">4</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t5" class="pln"><span class="n"><a href="#t5">5</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t6" class="run"><span class="n"><a href="#t6">6</a></span><span class="t"><span class="key">from</span> <span class="nam">quality_assurance</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">CommentType</span><span class="op">,</span> <span class="nam">BaseReviewComment</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t6" class="run"><span class="n"><a href="#t6">6</a></span><span class="t"><span class="key">from</span> <span class="nam">quality_assurance</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">EntryReviewComment</span>&nbsp;</span><span class="r"></span></p>
     <p id="t7" class="pln"><span class="n"><a href="#t7">7</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p id="t8" class="run"><span class="n"><a href="#t8">8</a></span><span class="t"><span class="nam">ReviewCommentTypeEnum</span> <span class="op">=</span> <span class="nam">convert_enum_to_graphene_enum</span><span class="op">(</span><span class="nam">CommentType</span><span class="op">,</span> <span class="nam">name</span><span class="op">=</span><span class="str">'ReviewCommentTypeEnum'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t8" class="run"><span class="n"><a href="#t8">8</a></span><span class="t"><span class="nam">EntryReviewCommentTypeEnum</span> <span class="op">=</span> <span class="nam">convert_enum_to_graphene_enum</span><span class="op">(</span><span class="nam">EntryReviewComment</span><span class="op">.</span><span class="nam">CommentType</span><span class="op">,</span> <span class="nam">name</span><span class="op">=</span><span class="str">'EntryReviewCommentTypeEnum'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t9" class="pln"><span class="n"><a href="#t9">9</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p id="t10" class="run"><span class="n"><a href="#t10">10</a></span><span class="t"><span class="nam">enum_map</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
     <p id="t11" class="pln"><span class="n"><a href="#t11">11</a></span><span class="t">    <span class="nam">get_enum_name_from_django_field</span><span class="op">(</span><span class="nam">field</span><span class="op">)</span><span class="op">:</span> <span class="nam">enum</span>&nbsp;</span><span class="r"></span></p>
     <p id="t12" class="pln"><span class="n"><a href="#t12">12</a></span><span class="t">    <span class="key">for</span> <span class="nam">field</span><span class="op">,</span> <span class="nam">enum</span> <span class="key">in</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p id="t13" class="pln"><span class="n"><a href="#t13">13</a></span><span class="t">        <span class="op">(</span><span class="nam">BaseReviewComment</span><span class="op">.</span><span class="nam">comment_type</span><span class="op">,</span> <span class="nam">ReviewCommentTypeEnum</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t13" class="pln"><span class="n"><a href="#t13">13</a></span><span class="t">        <span class="op">(</span><span class="nam">EntryReviewComment</span><span class="op">.</span><span class="nam">comment_type</span><span class="op">,</span> <span class="nam">EntryReviewCommentTypeEnum</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p id="t14" class="pln"><span class="n"><a href="#t14">14</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p id="t15" class="pln"><span class="n"><a href="#t15">15</a></span><span class="t"><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
 </div>
@@ -73,7 +73,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.0.2</a>,
-            created at 2021-10-19 07:28 +0000
+            created at 2021-10-19 07:43 +0000
         </p>
     </div>
 </div>
