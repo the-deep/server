@@ -168,6 +168,7 @@ class Feature(models.Model):
         QUALITY_CONTROL = 'quality_control', 'Quality Control (Deprecated)'
         NEW_UI = 'new_ui', 'New UI (Deprecated)'
         ANALYSIS = 'analysis', 'Analysis (Deprecated)'
+        QUESTIONNAIRE = 'questionnaire', 'Questionnaire Builder'
 
     key = models.CharField(max_length=255, unique=True, choices=FeatureKey.choices)
     title = models.CharField(max_length=255)

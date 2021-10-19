@@ -16,8 +16,7 @@ from utils.graphene.enums import convert_enum_to_graphene_enum
 from project.models import Project
 from organization.models import OrganizationType
 from user.models import User
-from entry.filter_set import get_filtered_entries, EntryGQFilterSet
-# from entry.schema import EntryListType
+from entry.filter_set import EntryGQFilterSet
 
 from .models import Lead, LeadGroup
 from .enums import (
@@ -327,11 +326,18 @@ class LeadGQFilterSet(LeadFilterSet):
 
     def filtered_exists_filter(self, qs, name, value):
         entries_filter_data = self.data.get('entries_filter_data') or {}
+        if self.request is None:
+            raise Exception(f'{self.request=} should be defined')
 
         def _get_annotate(**filters):
             return models.functions.Coalesce(
                 models.Subquery(
-                    get_filtered_entries(self.request.user, entries_filter_data).filter(
+                    EntryGQFilterSet(
+                        data=entries_filter_data,
+                        request=self.request,
+                    ).qs.filter(
+                        project=self.request.active_project,
+                        analysis_framework=self.request.active_project.analysis_framework_id,
                         lead=models.OuterRef('pk'),
                         **filters,
                     ).values('lead').order_by().annotate(

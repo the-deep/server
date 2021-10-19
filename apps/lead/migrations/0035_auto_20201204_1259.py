@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='lead',
             name='status',
-            field=models.CharField(choices=[('pending', 'Pending'), ('processed', 'Processed'), ('validated', 'Validated')], default='pending', max_length=30),
+            field=models.CharField(choices=[('pending', 'Not Tagged'), ('processed', 'In progress'), ('validated', 'Tagged')], default='pending', max_length=30),
         ),
     ]
