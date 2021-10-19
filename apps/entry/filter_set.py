@@ -281,6 +281,13 @@ def get_filtered_entries_using_af_filter(
             q['filter_key']: q
             for q in queries
         }
+    elif 'filterable_data' in queries:
+        # XXX: Pass new structure.
+        queries = {
+            q['filter_key']: q
+            for q in queries['filterable_data']
+        }
+        new_query_structure = True
 
     # NOTE: lets not use `.distinct()` in this function as it is used by a subquery in `lead/models.py`.
     for _filter in filters:
@@ -418,10 +425,10 @@ def get_filtered_entries(user, queries):
     entries = Entry.get_for(user)
     filters = Filter.get_for(user, with_widget_type=True)
 
-    project = queries.get('project')
-    if project:
-        entries = entries.filter(lead__project__id=project)
-        filters = filters.filter(analysis_framework__project__id=project)
+    project_id = queries.get('project')
+    if project_id:
+        entries = entries.filter(lead__project__id=project_id)
+        filters = filters.filter(analysis_framework__project__id=project_id)
 
     entries_id = queries.get('entries_id')
     if entries_id:
@@ -559,7 +566,7 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, EntryFilterMixin, django_filters.
         filter_overrides = {
             models.CharField: {
                 'filter_class': django_filters.CharFilter,
-                'extra': lambda f: {
+                'extra': lambda _: {
                     'lookup_expr': 'icontains',
                 },
             },
@@ -567,22 +574,10 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, EntryFilterMixin, django_filters.
 
     def filterable_data_filter(self, queryset, _, value):
         if value:
-            active_af_id = (
-                self.data.get('analysis_framework_id') or
-                (self.request and self.request.active_project.analysis_framework_id)
-            )
-            active_project = (
-                (self.request and self.request.active_project)
-            )
-            if active_project is None or active_af_id is None:
+            project = self.request and self.request.active_project
+            if project is None or project.analysis_framework_id is None:
                 # This needs to be defined
-                raise Exception('`analysis_framework_id` is not defined')
-            filters = Filter.qs_with_widget_type().filter(analysis_framework_id=active_af_id).all()
-            return get_filtered_entries_using_af_filter(
-                queryset,
-                filters,
-                value,
-                new_query_structure=True,
-                project=active_project,
-            )
+                raise Exception(f'Both should be defined {project=} {project and project.analysis_framework_id=}')
+            filters = Filter.qs_with_widget_type().filter(analysis_framework_id=project.analysis_framework_id).all()
+            return get_filtered_entries_using_af_filter(queryset, filters, value, project=project, new_query_structure=True)
         return queryset
