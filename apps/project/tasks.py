@@ -2,7 +2,6 @@ import json
 import logging
 from collections import defaultdict
 
-from dateutil.relativedelta import relativedelta
 from celery import shared_task
 from django.core.files.base import ContentFile
 from django.core.serializers.json import DjangoJSONEncoder
@@ -80,7 +79,7 @@ def _generate_project_stats_cache():
         return data
 
     current_time = timezone.now()
-    threshold = current_time + relativedelta(months=-3)
+    threshold = ProjectStats.get_activity_timeframe(current_time)
 
     recent_leads = Lead.objects.filter(created_at__gte=threshold)
     recent_entries = Entry.objects.filter(created_at__gte=threshold)

@@ -458,3 +458,8 @@ def is_valid_number(value):
 def to_camelcase(snake_str):
     components = snake_str.split('_')
     return components[0] + "".join(x.title() for x in components[1:])
+
+
+def get_number_of_months_between_dates(d1, d2):
+    if d1 and d2:
+        return abs(d1.year - d2.year) * 12 + abs(d1.month - d2.month)

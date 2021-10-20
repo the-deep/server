@@ -6,11 +6,15 @@ from django.utils.functional import cached_property
 from django.db import models
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.db.models.functions import Cast
+from django.utils import timezone
 
 from deep.caches import CacheKey
+from utils.common import get_number_of_months_between_dates
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
 from lead.models import Lead
+from entry.models import Entry
+from export.models import Export
 
 from .models import (
     Project,
@@ -64,27 +68,84 @@ class OrganizationsLoader(DataLoaderWithContext):
 
 class ProjectExploreStatsLoader(WithContextMixin):
     def get_stats(self):
+        now = timezone.now()
+        # Projects -- stats_cache__entries_activity are calculated for last 3 months
+        project_count = Project.objects.count()
+        latest_active_projects_qs = Project.objects\
+            .order_by('-stats_cache__entries_activity', '-created_at')
+        latest_active_projects = latest_active_projects_qs\
+            .values(
+                'analysis_framework_id',
+                project_id=models.F('id'),
+                project_title=models.F('title'),
+                analysis_framework_title=models.F('analysis_framework__title'),
+            )[:5]
+        # All leads
         leads_qs = Lead.objects.all()
+        leads_count = leads_qs.count()
+        lead_created_at_range = leads_qs.aggregate(
+            max_created_at=models.Max('created_at'),
+            min_created_at=models.Min('created_at'),
+        )
+        # Tagged leads
+        tagged_leads_qs = leads_qs.annotate(
+            entries_count=models.Subquery(
+                Entry.objects.filter(
+                    lead=models.OuterRef('pk'),
+                ).order_by().values('lead').annotate(count=models.Count('id')).values('count')[:1],
+                output_field=models.IntegerField()
+            ),
+        ).filter(entries_count__gt=0)
+        tagged_leads_count = tagged_leads_qs.count()
+        tagged_lead_created_at_range = tagged_leads_qs.aggregate(
+            max_created_at=models.Max('created_at'),
+            min_created_at=models.Min('created_at'),
+        )
+        # Exports
+        exports_count = Export.objects.count()
+        exports_created_at_range = Export.objects.aggregate(
+            max_exported_at=models.Max('exported_at'),
+            min_exported_at=models.Min('exported_at'),
+        )
 
         return dict(
-            leads_added_weekly=leads_qs.count(),
-            daily_average_leads_tagged_per_project=0,
-            generated_exports_monthly=0,
-            top_active_projects=[
-                dict(
-                    project_id=1,
-                    project_title='Project 1',
-                    analysis_framework_id=1,
-                    analysis_framework_title='AF 1',
+            calculated_at=now,
+            leads_added_weekly=leads_count and (
+                leads_count / (
+                    (
+                        (
+                            abs(
+                                lead_created_at_range['max_created_at'] - lead_created_at_range['min_created_at']
+                            ).days
+                        ) // 7
+                    ) or 1
                 )
-            ],
+            ),
+            daily_average_leads_tagged_per_project=tagged_leads_count and (
+                tagged_leads_count / (
+                    (
+                        abs(
+                            tagged_lead_created_at_range['max_created_at'] - tagged_lead_created_at_range['min_created_at']
+                        ).days
+                    ) or 1
+                ) / (project_count or 1)
+            ),
+            generated_exports_monthly=exports_count and (
+                exports_count / (
+                    get_number_of_months_between_dates(
+                        exports_created_at_range['max_exported_at'],
+                        exports_created_at_range['min_exported_at']
+                    ) or 1
+                )
+            ),
+            top_active_projects=latest_active_projects,
         )
 
     def resolve(self):
         return cache.get_or_set(
             CacheKey.PROJECT_EXPLORE_STATS_LOADER_KEY,
             self.get_stats,
-            60 * 60 * 30,
+            60 * 60,  # 1hr
         )
 
 
