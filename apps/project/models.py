@@ -1,5 +1,6 @@
 import uuid
 
+from dateutil.relativedelta import relativedelta
 from django.urls import reverse
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
@@ -684,6 +685,11 @@ class ProjectStats(models.Model):
 
     def __str__(self):
         return str(self.project)
+
+    @staticmethod
+    def get_activity_timeframe(now=None):
+        now = now or timezone.now()
+        return now + relativedelta(months=-3)
 
     @classmethod
     def get_for(cls, user):

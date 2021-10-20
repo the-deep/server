@@ -79,15 +79,16 @@ def get_top_entity_contributor(project, Entity):
 
 
 class ProjectExploreStatType(graphene.ObjectType):
-    leads_added_weekly = graphene.Field(graphene.NonNull(graphene.Int))
-    daily_average_leads_tagged_per_project = graphene.Field(graphene.NonNull(graphene.Int))
-    generated_exports_monthly = graphene.Field(graphene.NonNull(graphene.Int))
+    calculated_at = graphene.DateTime()
+    leads_added_weekly = graphene.Int()
+    daily_average_leads_tagged_per_project = graphene.Float()
+    generated_exports_monthly = graphene.Int()
     top_active_projects = graphene.List(
         graphene.NonNull(
             type('ExploreProjectStatTopActiveProjectsType', (graphene.ObjectType,), {
                 'project_id': graphene.Field(graphene.NonNull(graphene.ID)),
                 'project_title': graphene.String(),
-                'analysis_framework_id': graphene.Field(graphene.NonNull(graphene.ID)),
+                'analysis_framework_id': graphene.ID(),
                 'analysis_framework_title': graphene.String(),
             })
         )
