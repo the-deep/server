@@ -78,6 +78,22 @@ def get_top_entity_contributor(project, Entity):
     ]
 
 
+class ProjectExploreStatType(graphene.ObjectType):
+    leads_added_weekly = graphene.Field(graphene.NonNull(graphene.Int))
+    daily_average_leads_tagged_per_project = graphene.Field(graphene.NonNull(graphene.Int))
+    generated_exports_monthly = graphene.Field(graphene.NonNull(graphene.Int))
+    top_active_projects = graphene.List(
+        graphene.NonNull(
+            type('ExploreProjectStatTopActiveProjectsType', (graphene.ObjectType,), {
+                'project_id': graphene.Field(graphene.NonNull(graphene.ID)),
+                'project_title': graphene.String(),
+                'analysis_framework_id': graphene.Field(graphene.NonNull(graphene.ID)),
+                'analysis_framework_title': graphene.String(),
+            })
+        )
+    )
+
+
 class ProjectStatType(graphene.ObjectType):
     number_of_leads = graphene.Field(graphene.Int)
     number_of_leads_tagged = graphene.Field(graphene.Int)
@@ -377,6 +393,7 @@ class Query:
     )
     recent_projects = graphene.List(graphene.NonNull(ProjectDetailType))
     projects_by_region = graphene.List(graphene.NonNull(ProjectByRegion))
+    project_explore_stats = graphene.Field(ProjectExploreStatType)
 
     # NOTE: This is a custom feature, see https://github.com/the-deep/graphene-django-extras
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
@@ -403,3 +420,7 @@ class Query:
                 )
             ),
         ).values('id', 'centroid', 'projects_id')
+
+    @staticmethod
+    def resolve_project_explore_stats(root, info, **kwargs):
+        return info.context.dl.project.resolve_explore_stats()
