@@ -452,6 +452,13 @@ type EntryType {
 
 scalar EnumDescription
 
+type ExploreProjectStatTopActiveProjectsType {
+  projectId: ID!
+  projectTitle: String
+  analysisFrameworkId: ID
+  analysisFrameworkTitle: String
+}
+
 enum ExportDataTypeEnum {
   ENTRIES
   ASSESSMENTS
@@ -909,6 +916,14 @@ type ProjectDetailType {
   vizData: ProjectVizDataType
 }
 
+type ProjectExploreStatType {
+  calculatedAt: DateTime
+  leadsAddedWeekly: Int
+  dailyAverageLeadsTaggedPerProject: Float
+  generatedExportsMonthly: Int
+  topActiveProjects: [ExploreProjectStatTopActiveProjectsType!]
+}
+
 type ProjectGeoAreaListType {
   results: [ProjectGeoAreaType!]
   totalCount: Int
@@ -1135,6 +1150,7 @@ type Query {
   projects(createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID!], modifiedBy: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): ProjectListType
   recentProjects: [ProjectDetailType!]
   projectsByRegion: [ProjectByRegion!]
+  projectExploreStats: ProjectExploreStatType
   _debug: DjangoDebug
 }
 
