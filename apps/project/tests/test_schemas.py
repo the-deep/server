@@ -2,8 +2,9 @@ from dateutil.relativedelta import relativedelta
 
 from django.utils import timezone
 from django.contrib.gis.geos import Point
+from django.core.cache import cache
 
-from utils.graphene.tests import GraphQLTestCase
+from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
 
 from project.models import (
     ProjectMembership,
@@ -11,6 +12,7 @@ from project.models import (
     ProjectStats,
 )
 from deep.permissions import ProjectPermissions as PP
+from deep.caches import CacheKey
 
 from user.factories import UserFactory
 from user_group.factories import UserGroupFactory
@@ -20,6 +22,7 @@ from project.factories import ProjectFactory, ProjectJoinRequestFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
 from geo.factories import RegionFactory
 from ary.factories import AssessmentTemplateFactory
+from export.factories import ExportFactory
 
 from project.tasks import _generate_project_stats_cache
 
@@ -653,3 +656,87 @@ class TestProjectMembersFilterSchema(GraphQLTestCase):
         self.assertEqual(len(content['data']['project']['userGroupMembers']['results']), 2, content)
         self.assertEqual(content['data']['project']['userMembers']['totalCount'], 5, content)
         self.assertEqual(len(content['data']['project']['userMembers']['results']), 5, content)
+
+
+class TestProjectExploreStats(GraphQLSnapShotTestCase):
+    def test_snapshot(self):
+        query = '''
+            query MyQuery {
+              projectExploreStats {
+                leadsAddedWeekly
+                dailyAverageLeadsTaggedPerProject
+                generatedExportsMonthly
+                topActiveProjects {
+                  projectId
+                  projectTitle
+                  analysisFrameworkId
+                  analysisFrameworkTitle
+                }
+                calculatedAt
+              }
+            }
+        '''
+
+        previous_content = content = self.query_check(query)
+        self.assertMatchSnapshot(content, 'no-data')
+
+        user = UserFactory.create()
+        analysis_framework = AnalysisFrameworkFactory.create()
+        projects = ProjectFactory.create_batch(3)
+        projects_with_af = ProjectFactory.create_batch(3, analysis_framework=analysis_framework)
+        # This shouldn't show in top projects but leads/entries count should
+        private_project = ProjectFactory.create(
+            title='Private Project', is_private=True, analysis_framework=analysis_framework)
+        now = timezone.now()
+
+        # Generate project cache
+        _generate_project_stats_cache()
+
+        content = self.query_check(query)
+        self.assertEqual(content, previous_content)  # Test for cache
+        cache.delete(CacheKey.PROJECT_EXPLORE_STATS_LOADER_KEY)  # Delete cache
+        previous_content = content = self.query_check(query)  # Pull latest data
+        self.assertMatchSnapshot(content, 'only-project')
+
+        self.update_obj(LeadFactory.create(project=projects[0]), created_at=now + relativedelta(weeks=-1))
+        self.update_obj(LeadFactory.create(project=projects[0]), created_at=now + relativedelta(weeks=-1))
+        self.update_obj(LeadFactory.create(project=projects[1]), created_at=now + relativedelta(weeks=-2))
+        self.update_obj(LeadFactory.create(project=projects[1]), created_at=now + relativedelta(weeks=-1))
+        self.update_obj(LeadFactory.create(project=projects[1]), created_at=now + relativedelta(weeks=-1))
+        self.update_obj(LeadFactory.create(project=projects[2]), created_at=now + relativedelta(weeks=-2))
+
+        lead0_1 = self.update_obj(LeadFactory.create(project=projects_with_af[0]), created_at=now + relativedelta(weeks=-1))
+        lead1_1 = self.update_obj(LeadFactory.create(project=projects_with_af[1]), created_at=now + relativedelta(weeks=-2))
+        lead1_2 = self.update_obj(LeadFactory.create(project=projects_with_af[1]), created_at=now + relativedelta(weeks=-1))
+        plead1_1 = self.update_obj(LeadFactory.create(project=private_project), created_at=now + relativedelta(weeks=-2))
+        plead1_2 = self.update_obj(LeadFactory.create(project=private_project), created_at=now + relativedelta(weeks=-1))
+        self.update_obj(LeadFactory.create(project=projects_with_af[1]), created_at=now + relativedelta(weeks=-1))
+        self.update_obj(LeadFactory.create(project=projects_with_af[2]), created_at=now + relativedelta(weeks=-3))
+
+        self.update_obj(EntryFactory.create(lead=lead0_1), created_at=now + relativedelta(weeks=-1))
+        self.update_obj(EntryFactory.create(lead=lead1_1), created_at=now + relativedelta(weeks=-1))
+        self.update_obj(EntryFactory.create(lead=lead1_2), created_at=now + relativedelta(weeks=-1))
+        self.update_obj(EntryFactory.create(lead=plead1_1), created_at=now + relativedelta(weeks=-1))
+        self.update_obj(EntryFactory.create(lead=plead1_2), created_at=now + relativedelta(weeks=-1))
+
+        # Generate project cache
+        _generate_project_stats_cache()
+
+        self.update_obj(
+            ExportFactory.create(project=projects_with_af[0], exported_by=user), exported_at=now + relativedelta(months=-1))
+        self.update_obj(
+            ExportFactory.create(project=projects_with_af[0], exported_by=user), exported_at=now + relativedelta(months=-1))
+        self.update_obj(
+            ExportFactory.create(project=projects_with_af[0], exported_by=user), exported_at=now + relativedelta(months=-2))
+        self.update_obj(
+            ExportFactory.create(project=projects_with_af[1], exported_by=user), exported_at=now + relativedelta(months=-2))
+        self.update_obj(
+            ExportFactory.create(project=projects_with_af[2], exported_by=user), exported_at=now + relativedelta(months=-3))
+        self.update_obj(
+            ExportFactory.create(project=private_project, exported_by=user), exported_at=now + relativedelta(months=-1))
+
+        content = self.query_check(query)
+        self.assertEqual(content, previous_content)  # Test for cache
+        cache.delete(CacheKey.PROJECT_EXPLORE_STATS_LOADER_KEY)  # Delete cache
+        previous_content = content = self.query_check(query)  # Pull latest data
+        self.assertMatchSnapshot(content, 'with-data')

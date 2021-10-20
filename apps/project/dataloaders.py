@@ -72,6 +72,7 @@ class ProjectExploreStatsLoader(WithContextMixin):
         # Projects -- stats_cache__entries_activity are calculated for last 3 months
         project_count = Project.objects.count()
         latest_active_projects_qs = Project.objects\
+            .filter(is_private=False)\
             .order_by('-stats_cache__entries_activity', '-created_at')
         latest_active_projects = latest_active_projects_qs\
             .values(
