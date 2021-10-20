@@ -2,6 +2,7 @@ from django.db import models
 from django.core.cache import cache
 from django.contrib.auth.models import User
 
+from deep.caches import CacheKey
 from project.models import Project
 
 
@@ -33,8 +34,6 @@ class Export(models.Model):
         EXCEL = 'excel', 'Excel'
         REPORT = 'report', 'Report'
         JSON = 'json', 'Json'
-
-    EXPORT_TASK_CACHE_KEY = 'EXPORT-{id}-TASK-ID'
 
     # Number of entries to proccess if is_preview is True
     PREVIEW_ENTRY_SIZE = 10
@@ -72,7 +71,7 @@ class Export(models.Model):
         ).distinct()
 
     def get_task_id(self, clear=False):
-        cache_key = self.EXPORT_TASK_CACHE_KEY.format(id=self.id)
+        cache_key = CacheKey.EXPORT_TASK_CACHE_KEY_FORMAT.format(self.pk)
         value = cache.get(cache_key)
         if clear:
             cache.delete(cache_key)
@@ -80,4 +79,4 @@ class Export(models.Model):
 
     def set_task_id(self, async_id):
         # Defined timeout is arbitrary now.
-        return cache.set(self.EXPORT_TASK_CACHE_KEY.format(id=self.id), async_id, 345600)
+        return cache.set(CacheKey.EXPORT_TASK_CACHE_KEY_FORMAT.format(self.pk), async_id, 345600)
