@@ -659,6 +659,8 @@ class TestProjectMembersFilterSchema(GraphQLTestCase):
 
 
 class TestProjectExploreStats(GraphQLSnapShotTestCase):
+    factories_used = [ProjectFactory, AnalysisFrameworkFactory]
+
     def test_snapshot(self):
         query = '''
             query MyQuery {
