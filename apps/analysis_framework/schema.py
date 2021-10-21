@@ -137,7 +137,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
         only_fields = (
             'id', 'title', 'description', 'is_private', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
-            'preview_image',
+            'preview_image', 'properties',
         )
 
     @staticmethod

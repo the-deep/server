@@ -26,6 +26,7 @@ from . import entry_stats_data
 
 
 class TestProjectGeneralMutation(GraphQLTestCase):
+    ENABLE_NOW_PATCHER = True
 
     @staticmethod
     def set_project_viz_configuration(project):

@@ -420,7 +420,11 @@ class TestProjectSchema(GraphQLTestCase):
 
             ], content)
 
-    def test_projects_viz(self):
+
+class TestProjectViz(GraphQLTestCase):
+    ENABLE_NOW_PATCHER = True
+
+    def test_projects_viz_node(self):
         query = '''
             query MyQuery ($id: ID!) {
               project(id: $id) {

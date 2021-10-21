@@ -66,20 +66,23 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
     """
 
     GRAPHQL_SCHEMA = 'deep.schema.schema'
+    ENABLE_NOW_PATCHER = False
 
     def setUp(self):
         super().setUp()
         self.create_project_roles()
         self.create_af_roles()
-        self.now_patcher = patch('django.utils.timezone.now')
-        self.now_datetime = datetime.datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
-        self.now_datetime_str = self.now_datetime.isoformat()
-        self.now_patcher.start().return_value = self.now_datetime
+        if self.ENABLE_NOW_PATCHER:
+            self.now_patcher = patch('django.utils.timezone.now')
+            self.now_datetime = datetime.datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
+            self.now_datetime_str = self.now_datetime.isoformat()
+            self.now_patcher.start().return_value = self.now_datetime
 
     def tearDown(self):
         _set_current_request()  # Clear request
+        if hasattr(self, 'now_patcher'):
+            self.now_patcher.stop()
         super().tearDown()
-        self.now_patcher.stop()
 
     def force_login(self, user):
         self.client.force_login(user)
@@ -276,6 +279,7 @@ class GraphQLSnapShotTestCase(GraphQLTestCase, SnapShotTextCase):
     factories_used = []
 
     def setUp(self):
+        self.ENABLE_NOW_PATCHER = True  # We need to set this or snapshot will have different dates
         # XXX: This is hacky way to make sure id aren't changed in snapshot. This makes the test slower.
         management.call_command("flush", "--no-input")
         factory_random.reseed_random(42)

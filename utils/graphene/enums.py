@@ -30,34 +30,36 @@ def convert_enum_to_graphene_enum(enum, name=None, description=enum_description,
 
 def get_enum_name_from_django_field(
     field: Union[
+        None,
         serializers.ChoiceField,
         models.CharField,
         models.IntegerField,
         ArrayField,
         models.query_utils.DeferredAttribute,
     ],
+    field_name=None,
+    model_name=None,
 ):
-    model_name = None
-    field_name = None
-    if type(field) == serializers.ChoiceField:
-        if type(field.parent) == serializers.ListField:
-            model_name = field.parent.parent.Meta.model.__name__
-            field_name = field.parent.field_name
-        else:
-            model_name = field.parent.Meta.model.__name__
-            field_name = field.field_name
-    elif type(field) == ArrayField:
-        model_name = field.model.__name__
-        field_name = field.base_field.name
-    elif type(field) in [models.CharField, models.IntegerField]:
-        model_name = field.model.__name__
-        field_name = field.name
-    elif type(field) == models.query_utils.DeferredAttribute:
-        model_name = field.field.model.__name__
-        field_name = field.field.name
+    if field_name is None and model_name is None:
+        if type(field) == serializers.ChoiceField:
+            if type(field.parent) == serializers.ListField:
+                model_name = field.parent.parent.Meta.model.__name__
+                field_name = field.parent.field_name
+            else:
+                model_name = field.parent.Meta.model.__name__
+                field_name = field.field_name
+        elif type(field) == ArrayField:
+            model_name = field.model.__name__
+            field_name = field.base_field.name
+        elif type(field) in [models.CharField, models.IntegerField]:
+            model_name = field.model.__name__
+            field_name = field.name
+        elif type(field) == models.query_utils.DeferredAttribute:
+            model_name = field.field.model.__name__
+            field_name = field.field.name
     if model_name is None or field_name is None:
         raise Exception(f'{field=} | {type(field)=}: Both {model_name=} and {field_name=} should have a value')
-    return f'{model_name}{to_camelcase(field_name)}'
+    return f'{model_name}{to_camelcase(field_name.title())}'
 
 
 class EnumDescription(graphene.Scalar):
