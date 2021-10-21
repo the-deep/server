@@ -10,6 +10,7 @@ from project.models import Project
 
 class TestProjectFilter(GraphQLTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.filter_class = ProjectGqlFilterSet
 
     def test_organization_filter(self):
