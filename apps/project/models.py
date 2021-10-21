@@ -1,6 +1,7 @@
 from django.urls import reverse
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.utils.functional import cached_property
 from django.db.models.functions import Cast
 from django.contrib.auth.models import User
 from django.db import models
@@ -96,6 +97,20 @@ class Project(UserResource):
 
     def __str__(self):
         return self.title
+
+    @property
+    def project_stats(self):
+        return ProjectStats.objects.get_or_create(project=self)[0]
+
+    @cached_property
+    def is_visualization_available(self):
+        af = self.analysis_framework
+        is_viz_enabled = self.is_visualization_enabled
+        return (
+            is_viz_enabled and
+            af.properties is not None and
+            af.properties.get('stats_config') is not None
+        )
 
     def get_all_members(self):
         return User.objects.filter(

@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.utils import timezone
 from django.utils.functional import cached_property
@@ -14,6 +16,7 @@ from deep.serializers import (
     URLCachedFileField,
     IntegerIDField,
     TempClientIdMixin,
+    ProjectPropertySerializerMixin,
 )
 from geo.models import Region
 from geo.serializers import SimpleRegionSerializer
@@ -33,6 +36,7 @@ from .models import (
     ProjectRole,
     ProjectUserGroupMembership,
     ProjectOrganization,
+    ProjectStats,
 )
 
 from organization.serializers import (
@@ -734,3 +738,35 @@ class ProjectUserGroupMembershipGqlSerializer(TempClientIdMixin, serializers.Mod
         validated_data['project'] = self.project
         validated_data['added_by'] = self.context['request'].user
         return super().create(validated_data)
+
+
+class ProjectVizConfigurationSerializer(ProjectPropertySerializerMixin, serializers.ModelSerializer):
+    class Action(models.TextChoices):
+        NEW = 'new', 'New'
+        ON = 'on', 'On'
+        OFF = 'off', 'Off'
+
+    class Meta:
+        model = ProjectStats
+        fields = ('action',)
+
+    action = serializers.ChoiceField(choices=Action.choices)
+
+    def validate(self, data):
+        if not self.project.is_visualization_available:
+            raise serializers.ValidationError('Visualization is not available for this project')
+        return data
+
+    def save(self):
+        stats = self.project.project_stats
+        action = self.validated_data and self.validated_data['action']
+        if action == self.Action.NEW:
+            stats.public_share = True
+            stats.token = uuid.uuid4()
+        elif action == self.Action.ON:
+            stats.public_share = True
+            stats.token = stats.token or uuid.uuid4()
+        elif action == self.Action.OFF:
+            stats.public_share = False
+        stats.save(update_fields=['token', 'public_share'])
+        return stats

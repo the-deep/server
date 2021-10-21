@@ -219,9 +219,13 @@ class BaseGrapheneMutation(graphene.Mutation):
         obj = cls.get_queryset(info).get(id=kwargs['id'])
         return obj
 
-    # @classmethod
-    # def check_permissions(cls, info, **kwargs):
-    #     raise Exception('This needs to be implemented in inheritances class')
+    @classmethod
+    def check_permissions(cls, info, **kwargs):
+        raise Exception('This needs to be implemented in inheritances class')
+
+    @classmethod
+    def perform_mutate(cls, root, info, **kwargs):
+        raise Exception('This needs to be implemented in inheritances class')
 
     @classmethod
     def _save_item(cls, item, info, **kwargs):
