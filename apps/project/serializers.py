@@ -1,5 +1,3 @@
-import uuid
-
 from django.db import models
 from django.utils import timezone
 from django.utils.functional import cached_property
@@ -758,15 +756,5 @@ class ProjectVizConfigurationSerializer(ProjectPropertySerializerMixin, serializ
         return data
 
     def save(self):
-        stats = self.project.project_stats
         action = self.validated_data and self.validated_data['action']
-        if action == self.Action.NEW:
-            stats.public_share = True
-            stats.token = uuid.uuid4()
-        elif action == self.Action.ON:
-            stats.public_share = True
-            stats.token = stats.token or uuid.uuid4()
-        elif action == self.Action.OFF:
-            stats.public_share = False
-        stats.save(update_fields=['token', 'public_share'])
-        return stats
+        return self.project.project_stats.update_public_share_configuration(action)

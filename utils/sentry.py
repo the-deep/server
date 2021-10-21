@@ -2,6 +2,7 @@ import os
 
 import logging
 import sentry_sdk
+from django.core.exceptions import PermissionDenied
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
@@ -10,7 +11,7 @@ from sentry_sdk.integrations.redis import RedisIntegration
 from billiard.exceptions import Terminated
 logger = logging.getLogger(__name__)
 
-IGNORED_ERRORS = [Terminated, 'graphql.execution.utils']
+IGNORED_ERRORS = [Terminated, 'graphql.execution.utils', PermissionDenied]
 
 
 class InvalidGitRepository(Exception):

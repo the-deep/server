@@ -5,7 +5,11 @@ from django.contrib.gis.geos import Point
 
 from utils.graphene.tests import GraphQLTestCase
 
-from project.models import ProjectMembership, ProjectUserGroupMembership
+from project.models import (
+    ProjectMembership,
+    ProjectUserGroupMembership,
+    ProjectStats,
+)
 from deep.permissions import ProjectPermissions as PP
 
 from user.factories import UserFactory
@@ -18,6 +22,8 @@ from geo.factories import RegionFactory
 from ary.factories import AssessmentTemplateFactory
 
 from project.tasks import _generate_project_stats_cache
+
+from .test_mutations import TestProjectGeneralMutation
 
 
 class TestProjectSchema(GraphQLTestCase):
@@ -413,6 +419,118 @@ class TestProjectSchema(GraphQLTestCase):
                 }
 
             ], content)
+
+    def test_projects_viz(self):
+        query = '''
+            query MyQuery ($id: ID!) {
+              project(id: $id) {
+                vizData {
+                  dataUrl
+                  modifiedAt
+                  publicShare
+                  publicUrl
+                  status
+                }
+                title
+                isVisualizationAvailable
+                isVisualizationEnabled
+              }
+            }
+        '''
+
+        af = AnalysisFrameworkFactory.create()
+        member_user = UserFactory.create()   # with confidential access
+        non_confidential_user = UserFactory.create()
+        non_member_user = UserFactory.create()
+        project = ProjectFactory.create(analysis_framework=af)
+        project.add_member(member_user, role=self.project_role_analyst)
+        project.add_member(non_confidential_user, role=self.project_role_viewer_non_confidential)
+
+        def _query_check(**kwargs):
+            return self.query_check(query, variables={'id': project.pk}, **kwargs)
+
+        # -- Without login
+        _query_check(assert_for_error=True)
+
+        # -- With login
+        # Before enabling viz.
+        # --- non-member user
+        self.force_login(non_member_user)
+        content = _query_check()
+        self.assertEqual(content['data']['project']['vizData'], None, content)
+        self.assertEqual(content['data']['project']['isVisualizationEnabled'], False, content)
+        self.assertEqual(content['data']['project']['isVisualizationAvailable'], False, content)
+
+        # --- member user
+        self.force_login(member_user)
+        content = _query_check()
+        self.assertEqual(content['data']['project']['vizData'], None, content)
+        self.assertEqual(content['data']['project']['isVisualizationEnabled'], False, content)
+        self.assertEqual(content['data']['project']['isVisualizationAvailable'], False, content)
+
+        # Only enabling project viz settings (not configuring AF).
+        project.is_visualization_enabled = True
+        project.save(update_fields=('is_visualization_enabled',))
+        # --- non-member user
+        self.force_login(non_member_user)
+        content = _query_check()
+        self.assertEqual(content['data']['project']['vizData'], None, content)
+        self.assertEqual(content['data']['project']['isVisualizationEnabled'], True, content)
+        self.assertEqual(content['data']['project']['isVisualizationAvailable'], False, content)
+
+        # --- member user
+        self.force_login(member_user)
+        content = _query_check()
+        self.assertEqual(content['data']['project']['vizData'], None, content)
+        self.assertEqual(content['data']['project']['isVisualizationEnabled'], True, content)
+        self.assertEqual(content['data']['project']['isVisualizationAvailable'], False, content)
+
+        # Configure/Enable viz.
+        TestProjectGeneralMutation.set_project_viz_configuration(project)
+
+        # --- non-member project
+        self.force_login(non_member_user)
+        content = _query_check()
+        self.assertEqual(content['data']['project']['vizData'], None, content)
+        self.assertEqual(content['data']['project']['isVisualizationEnabled'], True, content)
+        self.assertEqual(content['data']['project']['isVisualizationAvailable'], True, content)
+
+        # --- member project
+        self.force_login(member_user)
+        content = _query_check()
+        self.assertNotEqual(content['data']['project']['vizData'], None, content)
+        self.assertEqual(content['data']['project']['isVisualizationEnabled'], True, content)
+        self.assertEqual(content['data']['project']['isVisualizationAvailable'], True, content)
+        self.assertEqual(
+            content['data']['project']['vizData'],
+            {
+                'dataUrl': '',
+                'modifiedAt': self.now_datetime_str,
+                'publicShare': False,
+                'publicUrl': None,
+                'status': self.genum(ProjectStats.Status.PENDING),
+            },
+            content,
+        )
+
+        # Enable public share/url
+        project_stats = project.project_stats.update_public_share_configuration(ProjectStats.Action.ON)
+
+        content = _query_check()
+        self.assertNotEqual(content['data']['project']['vizData'], None, content)
+        self.assertEqual(content['data']['project']['isVisualizationEnabled'], True, content)
+        self.assertEqual(content['data']['project']['isVisualizationAvailable'], True, content)
+        self.assertEqual(
+            content['data']['project']['vizData'],
+            {
+                'dataUrl': '',
+                'modifiedAt': self.now_datetime_str,
+                'publicShare': True,
+                'publicUrl': 'http://testserver' + project_stats.get_public_url(),
+                'status': self.genum(ProjectStats.Status.PENDING),
+            },
+            content,
+        )
 
 
 class TestProjectFilterSchema(GraphQLTestCase):

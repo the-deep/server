@@ -11,11 +11,160 @@ from project.models import (
     ProjectJoinRequest,
     ProjectMembership,
     ProjectUserGroupMembership,
+    ProjectStats,
 )
 
 from user.factories import UserFactory
+from lead.factories import LeadFactory
+from entry.factories import EntryFactory, EntryAttributeFactory
+from analysis_framework.factories import AnalysisFrameworkFactory, WidgetFactory
 from user_group.factories import UserGroupFactory
 from project.factories import ProjectFactory, ProjectJoinRequestFactory
+
+from project.tasks import _generate_project_viz_stats
+from . import entry_stats_data
+
+
+class TestProjectGeneralMutation(GraphQLTestCase):
+
+    @staticmethod
+    def set_project_viz_configuration(project):
+        w_data = entry_stats_data.WIDGET_DATA
+        a_data = entry_stats_data.ATTRIBUTE_DATA
+
+        lead = LeadFactory.create(project=project)
+        entry = EntryFactory.create(lead=lead)
+        af = project.analysis_framework
+
+        # Create widgets, attributes and configs
+        invalid_stat_config = {}
+        valid_stat_config = {}
+
+        for index, (title, widget_identifier, data_identifier, config_kwargs) in enumerate([
+            ('widget 1d', 'widget_1d', 'matrix1dWidget', {}),
+            ('widget 2d', 'widget_2d', 'matrix2dWidget', {}),
+            ('geo widget', 'geo_widget', 'geoWidget', {}),
+            (
+                'severity widget',
+                'severity_widget',
+                'conditionalWidget',
+                {
+                    'is_conditional_widget': True,
+                    'selectors': ['widgets', 0, 'widget'],
+                    'widget_key': 'scalewidget-1',
+                    'widget_type': 'scaleWidget',
+                },
+            ),
+            ('reliability widget', 'reliability_widget', 'scaleWidget', {}),
+            ('affected groups widget', 'affected_groups_widget', 'multiselectWidget', {}),
+            ('specific needs groups widget', 'specific_needs_groups_widget', 'multiselectWidget', {}),
+        ]):
+            widget = WidgetFactory.create(
+                analysis_framework=af,
+                section=None,
+                title=title,
+                widget_id=data_identifier,
+                key=f'{data_identifier}-{index}',
+                properties={'data': w_data[data_identifier]},
+            )
+            EntryAttributeFactory.create(entry=entry, widget=widget, data=a_data[data_identifier])
+            valid_stat_config[widget_identifier] = {
+                'pk': widget.pk,
+                **config_kwargs,
+            }
+            invalid_stat_config[widget_identifier] = {'pk': 0}
+
+        af.properties = {'stats_config': invalid_stat_config}
+        af.save(update_fields=('properties',))
+
+        project.is_visualization_enabled = True
+        project.save(update_fields=('is_visualization_enabled',))
+
+    def test_projects_viz_configuration_update(self):
+        query = '''
+            mutation MyMutation($id: ID!, $input: ProjectVizConfigurationInputType!) {
+              project(id: $id) {
+                projectVizConfigurationUpdate(data: $input) {
+                  ok
+                  errors
+                  result {
+                    dataUrl
+                    modifiedAt
+                    publicShare
+                    publicUrl
+                    status
+                  }
+                }
+              }
+            }
+        '''
+
+        normal_user = UserFactory.create()
+        admin_user = UserFactory.create()
+        member_user = UserFactory.create()
+        af = AnalysisFrameworkFactory.create()
+        project = ProjectFactory.create(analysis_framework=af)
+
+        self.set_project_viz_configuration(project)
+        project.add_member(admin_user, role=self.project_role_admin)
+        project.add_member(member_user, role=self.project_role_analyst)
+
+        minput = dict(action=None)
+
+        def _query_check(**kwargs):
+            return self.query_check(
+                query,
+                minput=minput,
+                mnested=['project'],
+                variables={'id': project.id},
+                **kwargs,
+            )
+
+        Action = ProjectStats.Action
+        _generate_project_viz_stats(project.pk)
+        # Check permission for token generation
+        for action in [Action.NEW, Action.OFF, Action.NEW, Action.ON]:
+            for user, assertLogic in [
+                (normal_user, self.assert_403),
+                (member_user, self.assert_403),
+                (admin_user, self.assert_200),
+            ]:
+                self.force_login(user)
+                current_stats = project.project_stats
+                minput['action'] = self.genum(action)
+                if assertLogic == self.assert_200:
+                    content = _query_check(okay=True)
+                else:
+                    content = _query_check(assert_for_error=True)
+                    continue
+                response = content['data']['project']['projectVizConfigurationUpdate']['result']
+                if assertLogic == self.assert_200:
+                    if action == 'new':
+                        assert response['publicUrl'] != current_stats.token
+                        # Logout and check if response is okay
+                        self.client.logout()
+                        rest_response = self.client.get(f"{response['publicUrl']}?format=json")
+                        self.assert_200(rest_response)
+                    elif action == 'on':
+                        assert (
+                            response['publicUrl'] is not None
+                        ) or (
+                            response['publicUrl'] == current_stats.token
+                        )
+                        # Logout and check if response is not okay
+                        self.client.logout()
+                        rest_response = self.client.get(f"{response['publicUrl']}?format=json")
+                        self.assert_200(rest_response)
+                    elif action == 'off':
+                        assert (
+                            response['publicUrl'] is not None
+                        ) or (
+                            response['publicUrl'] == current_stats.token
+                        )
+                        # Logout and check if response is not okay
+                        self.client.logout()
+                        rest_response = self.client.get(f"{response['publicUrl']}?format=json")
+                        self.assert_403(rest_response)
 
 
 class TestProjectJoinMutation(GraphQLTestCase):
