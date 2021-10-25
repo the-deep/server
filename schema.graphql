@@ -1339,7 +1339,7 @@ type UserMeType {
   language: String
   emailOptOuts: [String!]
   jwtToken: JwtTokenType
-  lastActiveProject: ProjectType
+  lastActiveProject: ProjectDetailType
   accessibleFeatures: [UserFeatureAccessType!]!
 }
 
