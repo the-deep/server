@@ -76,7 +76,7 @@ class UserMeType(DjangoObjectType):
     language = graphene.String()
     email_opt_outs = graphene.List(graphene.NonNull(graphene.String))
     jwt_token = graphene.Field(JwtTokenType)
-    last_active_project = graphene.Field('project.schema.ProjectType')
+    last_active_project = graphene.Field('project.schema.ProjectDetailType')
     accessible_features = graphene.List(graphene.NonNull(UserFeatureAccessType), required=True)
 
     @staticmethod
