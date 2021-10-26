@@ -840,6 +840,8 @@ input PasswordChangeInputType {
   newPassword: String!
 }
 
+scalar PointScalar
+
 type ProjectAcceptReject {
   errors: [GenericScalar!]
   ok: Boolean
@@ -850,6 +852,11 @@ input ProjectAcceptRejectInputType {
   id: ID
   status: String!
   role: String
+}
+
+type ProjectByRegion {
+  projectsId: [ID!]
+  centroid: PointScalar
 }
 
 type ProjectDetailType {
@@ -1097,6 +1104,7 @@ type Query {
   project(id: ID!): ProjectDetailType
   projects(createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID!], modifiedBy: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): ProjectListType
   recentProjects: [ProjectDetailType!]
+  projectsByRegion: [ProjectByRegion!]
   _debug: DjangoDebug
 }
 
@@ -1108,6 +1116,7 @@ type RegionType {
   keyFigures: GenericScalar
   populationData: GenericScalar
   mediaSources: GenericScalar
+  centroid: PointScalar
   geoOptions: GenericScalar
 }
 
