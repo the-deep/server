@@ -1,6 +1,7 @@
 from dateutil.relativedelta import relativedelta
 
 from django.utils import timezone
+from django.contrib.gis.geos import Point
 
 from utils.graphene.tests import GraphQLTestCase
 
@@ -348,6 +349,70 @@ class TestProjectSchema(GraphQLTestCase):
         self.assertEqual(len(content_projects), 2, content_projects)
         self.assertNotIn(QA_PERMISSION, content_projects_permissions[project1.pk], content_projects)
         self.assertIn(QA_PERMISSION, content_projects_permissions[project2.pk], content_projects)
+
+    def test_projects_by_region(self):
+        query = '''
+            query MyQuery {
+              projectsByRegion {
+               id
+               projectsId
+                centroid
+              }
+            }
+        '''
+        user = UserFactory.create()
+        region1 = RegionFactory.create()
+        region2 = RegionFactory.create()
+        project1 = ProjectFactory.create(regions=[region1])
+        project2 = ProjectFactory.create(is_private=True, regions=[region1, region2])
+        # This two projects willn't be shown
+        ProjectFactory.create(is_private=True, regions=[region1, region2])  # private + no member access
+        ProjectFactory.create()  # no regions attached
+        project2.add_member(user)
+        self.force_login(user)
+
+        content = self.query_check(query)['data']['projectsByRegion']
+        self.assertEqual(content, [], content)
+
+        # only save region2 centroid.
+        region2.centroid = Point(1, 2)
+        region2.save(update_fields=('centroid',))
+        content = self.query_check(query)['data']['projectsByRegion']
+        self.assertEqual(
+            content, [
+                {
+                    'id': str(region2.pk),
+                    'centroid': {
+                        'coordinates': [region2.centroid.x, region2.centroid.y],
+                        'type': 'Point'
+                    },
+                    'projectsId': [str(project2.pk)]
+                }
+            ], content)
+
+        # Now save region1 centroid as well.
+        region1.centroid = Point(2, 3)
+        region1.save(update_fields=('centroid',))
+        content = self.query_check(query)['data']['projectsByRegion']
+        self.assertEqual(
+            content, [
+                {
+                    'id': str(region2.pk),
+                    'centroid': {
+                        'coordinates': [region2.centroid.x, region2.centroid.y],
+                        'type': 'Point'
+                    },
+                    'projectsId': [str(project2.pk)]
+                }, {
+                    'id': str(region1.pk),
+                    'centroid': {
+                        'coordinates': [region1.centroid.x, region1.centroid.y],
+                        'type': 'Point'
+                    },
+                    'projectsId': [str(project1.pk), str(project2.pk)]
+                }
+
+            ], content)
 
 
 class TestProjectFilterSchema(GraphQLTestCase):
