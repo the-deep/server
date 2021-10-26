@@ -294,6 +294,7 @@ class ProjectDetailType(
 
 
 class ProjectByRegion(graphene.ObjectType):
+    id = graphene.ID(required=True, description='Region\'s ID')
     projects_id = graphene.List(graphene.NonNull(graphene.ID))
     centroid = PointScalar()
 
@@ -353,4 +354,4 @@ class Query:
                     project__in=Project.get_for_gq(info.context.user)
                 )
             ),
-        ).values('id', 'title', 'centroid', 'projects_id')
+        ).values('id', 'centroid', 'projects_id')

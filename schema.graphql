@@ -855,6 +855,7 @@ input ProjectAcceptRejectInputType {
 }
 
 type ProjectByRegion {
+  id: ID!
   projectsId: [ID!]
   centroid: PointScalar
 }
