@@ -6,6 +6,8 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.gis.db import models
 from django.core.serializers import serialize
 from django.contrib.gis.gdal import Envelope
+from django.contrib.gis.db.models.aggregates import Union as PgUnion
+from django.contrib.gis.db.models.functions import Centroid
 
 from user_resource.models import UserResource
 from gallery.models import File
@@ -30,7 +32,13 @@ class Region(UserResource):
     media_sources = models.JSONField(default=None, blank=True, null=True)
 
     # cache data
+    centroid = models.PointField(blank=True, null=True)  # Admin level 0 centroid
     geo_options = models.JSONField(default=None, blank=True, null=True)
+
+    def __init__(self, *args, **kwargs):
+        self.id: Union[int, None]
+        self.adminlevel_set: models.QuerySet[AdminLevel]
+        super().__init__(*args, **kwargs)
 
     def __str__(self):
         return self.title
@@ -41,8 +49,7 @@ class Region(UserResource):
     def calc_cache(self, save=True):
         self.geo_options = [
             {
-                'label': '{} / {}'.format(geo_area.admin_level.title,
-                                          geo_area.title),
+                'label': '{} / {}'.format(geo_area.admin_level.title, geo_area.title),
                 'title': geo_area.title,
                 'key': str(geo_area.id),
                 'admin_level': geo_area.admin_level.level,
@@ -57,6 +64,10 @@ class Region(UserResource):
             ).order_by('admin_level__level').distinct()
         ]
 
+        # Calculate region centroid
+        self.centroid = GeoArea.objects\
+            .filter(admin_level__region=self)\
+            .aggregate(centroid=Centroid(PgUnion(Centroid('polygons'))))['centroid']
         if save:
             self.save()
 
