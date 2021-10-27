@@ -20,7 +20,8 @@ from .enums import (
 def get_export_qs(info):
     return Export.objects.filter(
         project=info.context.active_project,
-        exported_by=info.context.request.user
+        exported_by=info.context.request.user,
+        is_deleted=False,
     )
 
 
@@ -30,9 +31,10 @@ class UserExportType(DjangoObjectType):
         fields = (
             'id', 'project', 'is_preview', 'title',
             'filters', 'mime_type', 'file', 'exported_by',
-            'exported_at', 'pending', 'is_deleted', 'is_archived'
+            'exported_at', 'pending', 'is_archived'
         )
 
+    project = graphene.ID(source='project_id')
     format = graphene.Field(graphene.NonNull(ExportFormatEnum))
     type = graphene.Field(graphene.NonNull(ExportDataTypeEnum))
     status = graphene.Field(graphene.NonNull(ExportStatusEnum))
