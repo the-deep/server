@@ -289,11 +289,10 @@ class ProjectPermissions(BasePermissions):
     READER_NON_CONFIDENTIAL = [
         *VIEWER_NON_CONFIDENTIAL,
         Permission.CREATE_EXPORT,
-        # Add export permission here
     ]
     READER = [
         *VIEWER,
-        # Add export permission here
+        Permission.CREATE_EXPORT,
     ]
     SOURCER = [
         Permission.CREATE_LEAD,

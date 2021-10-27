@@ -19,6 +19,7 @@ from lead.mutation import Mutation as LeadMutation
 from entry.mutation import Mutation as EntryMutation
 from quality_assurance.mutation import Mutation as QualityAssuranceMutation
 from ary.mutation import Mutation as AryMutation
+from export.mutation import Mutation as ExportMutation
 
 from .models import (
     Project,
@@ -206,6 +207,7 @@ class ProjectMutationType(
     EntryMutation,
     QualityAssuranceMutation,
     AryMutation,
+    ExportMutation,
     # --End Project Scoped Mutation
     DjangoObjectType
 ):
