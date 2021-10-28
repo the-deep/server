@@ -15,6 +15,14 @@ from django.template.response import TemplateResponse
 from graphene_django.views import GraphQLView
 from graphene_file_upload.django import FileUploadGraphQLView
 
+# Importing for initialization (Make sure to import this before apps.<>)
+"""
+FYI, NOTE
+Make sure use string import outside graphene files.
+For eg: In filters.py use 'entry.schema.EntryListType' instead of `from entry.schema import EntryListType'
+"""
+from deep.graphene_converter import *  # type: ignore # noqa F401
+
 from deep.graphene_context import GQLContext
 from deep.exceptions import PermissionDeniedException
 from user.models import User, Profile
