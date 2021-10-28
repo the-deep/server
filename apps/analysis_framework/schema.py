@@ -16,6 +16,7 @@ from .models import (
     Section,
     Widget,
     Filter,
+    Exportable,
     AnalysisFrameworkMembership,
     AnalysisFrameworkRole,
 )
@@ -104,7 +105,7 @@ class AnalysisFrameworkRoleType(DjangoObjectType):
 class AnalysisFrameworkFilterType(DjangoObjectType):
     class Meta:
         model = Filter
-        only_fields = ('title', 'properties',)
+        only_fields = ('id', 'title', 'properties',)
 
     key = graphene.String(required=True)
     widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
@@ -115,6 +116,20 @@ class AnalysisFrameworkFilterType(DjangoObjectType):
     @staticmethod
     def resolve_widget_type(root, info, **kwargs):
         return root.widget_type  # NOTE: This is added from AnalysisFrameworkDetailType.resolve_filters dataloader
+
+
+class AnalysisFrameworkExportableType(DjangoObjectType):
+    class Meta:
+        model = Exportable
+        only_fields = ('id', 'inline', 'order', 'data',)
+
+    widget_key = graphene.String(required=True)
+    widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
+    widget_type_display = EnumDescription(source='get_widget_type_display', required=True)
+
+    @staticmethod
+    def resolve_widget_type(root, info, **kwargs):
+        return root.widget_type  # NOTE: This is added from AnalysisFrameworkDetailType.resolve_exportables dataloader
 
 
 class AnalysisFrameworkMembershipType(ClientIdMixin, DjangoObjectType):
@@ -128,6 +143,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     secondary_tagging = DjangoListField(WidgetType)  # Without section
     members = DjangoListField(AnalysisFrameworkMembershipType)
     filters = DjangoListField(AnalysisFrameworkFilterType)
+    exportables = DjangoListField(AnalysisFrameworkExportableType)
     preview_image = graphene.Field(FileField)
     visible_projects = DjangoListField(AnalysisFrameworkVisibleProjectType)
 
@@ -151,6 +167,10 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     @staticmethod
     def resolve_filters(root, info):
         return info.context.dl.analysis_framework.filters.load(root.id)
+
+    @staticmethod
+    def resolve_exportables(root, info):
+        return info.context.dl.analysis_framework.exportables.load(root.id)
 
     @staticmethod
     def resolve_members(root, info):
