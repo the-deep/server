@@ -14,6 +14,7 @@ from deep.serializers import (
     URLCachedFileField,
     IntegerIDField,
     TempClientIdMixin,
+    ProjectPropertySerializerMixin,
 )
 from geo.models import Region
 from geo.serializers import SimpleRegionSerializer
@@ -33,6 +34,7 @@ from .models import (
     ProjectRole,
     ProjectUserGroupMembership,
     ProjectOrganization,
+    ProjectStats,
 )
 
 from organization.serializers import (
@@ -734,3 +736,25 @@ class ProjectUserGroupMembershipGqlSerializer(TempClientIdMixin, serializers.Mod
         validated_data['project'] = self.project
         validated_data['added_by'] = self.context['request'].user
         return super().create(validated_data)
+
+
+class ProjectVizConfigurationSerializer(ProjectPropertySerializerMixin, serializers.ModelSerializer):
+    class Action(models.TextChoices):
+        NEW = 'new', 'New'
+        ON = 'on', 'On'
+        OFF = 'off', 'Off'
+
+    class Meta:
+        model = ProjectStats
+        fields = ('action',)
+
+    action = serializers.ChoiceField(choices=Action.choices)
+
+    def validate(self, data):
+        if not self.project.is_visualization_available:
+            raise serializers.ValidationError('Visualization is not available for this project')
+        return data
+
+    def save(self):
+        action = self.validated_data and self.validated_data['action']
+        return self.project.project_stats.update_public_share_configuration(action)

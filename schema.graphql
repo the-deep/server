@@ -14,6 +14,7 @@ type AnalysisFrameworkDetailType {
   isPrivate: Boolean!
   organization: OrganizationType
   previewImage: FileField
+  properties: GenericScalar
   currentUserRole: String
   allowedPermissions: [AnalysisFrameworkPermission!]!
   primaryTagging: [SectionType!]
@@ -904,6 +905,8 @@ type ProjectDetailType {
   topTaggers: [UserEntityCountType!]
   userMembers(id: Float, createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID!], modifiedBy: [ID!], search: String, members: [ID!], page: Int = 1, ordering: String, pageSize: Int): ProjectMembershipListType
   userGroupMembers(id: Float, createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID!], modifiedBy: [ID!], search: String, usergroups: [ID!], page: Int = 1, ordering: String, pageSize: Int): ProjectUserGroupMembershipListType
+  isVisualizationAvailable: Boolean!
+  vizData: ProjectVizDataType
 }
 
 type ProjectGeoAreaListType {
@@ -993,6 +996,7 @@ type ProjectMutationType {
   acceptRejectProject(data: ProjectAcceptRejectInputType!, id: ID!): ProjectAcceptReject
   projectUserMembershipBulk(deleteIds: [ID!], items: [BulkProjectMembershipInputType!]): BulkUpdateProjectMembership
   projectUserGroupMembershipBulk(deleteIds: [ID!], items: [BulkProjectUserGroupMembershipInputType!]): BulkUpdateProjectUserGroupMembership
+  projectVizConfigurationUpdate(data: ProjectVizConfigurationInputType!): UpdateProjectVizConfiguration
 }
 
 type ProjectOrganizationType {
@@ -1042,6 +1046,19 @@ type ProjectStatType {
   entriesActivity: [DateCountType!]
 }
 
+enum ProjectStatsActionEnum {
+  NEW
+  ON
+  OFF
+}
+
+enum ProjectStatsStatus {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILURE
+}
+
 enum ProjectStatusEnum {
   ACTIVE
   INACTIVE
@@ -1088,6 +1105,18 @@ type ProjectUserGroupMembershipType {
   addedBy: UserType
   clientId: String!
   badges: [ProjectMembershipBadgeTypeEnum!]
+}
+
+input ProjectVizConfigurationInputType {
+  action: ProjectStatsActionEnum!
+}
+
+type ProjectVizDataType {
+  modifiedAt: DateTime!
+  status: ProjectStatsStatus!
+  publicShare: Boolean!
+  dataUrl: String
+  publicUrl: String
 }
 
 type Query {
@@ -1192,6 +1221,12 @@ type UpdateMe {
   errors: [GenericScalar!]
   ok: Boolean
   result: UserMeType
+}
+
+type UpdateProjectVizConfiguration {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectVizDataType
 }
 
 type UpdateUserGroup {
@@ -1304,7 +1339,7 @@ type UserMeType {
   language: String
   emailOptOuts: [String!]
   jwtToken: JwtTokenType
-  lastActiveProject: ProjectType
+  lastActiveProject: ProjectDetailType
   accessibleFeatures: [UserFeatureAccessType!]!
 }
 

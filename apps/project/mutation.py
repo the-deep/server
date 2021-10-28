@@ -21,6 +21,7 @@ from quality_assurance.mutation import Mutation as QualityAssuranceMutation
 
 from .models import (
     Project,
+    ProjectStats,
     ProjectJoinRequest,
     ProjectMembership,
     ProjectUserGroupMembership,
@@ -30,8 +31,14 @@ from .serializers import (
     ProjectAcceptRejectSerializer,
     ProjectMembershipGqlSerializer as ProjectMembershipSerializer,
     ProjectUserGroupMembershipGqlSerializer as ProjectUserGroupMembershipSerializer,
+    ProjectVizConfigurationSerializer,
 )
-from .schema import ProjectJoinRequestType, ProjectMembershipType, ProjectUserGroupMembershipType
+from .schema import (
+    ProjectJoinRequestType,
+    ProjectMembershipType,
+    ProjectUserGroupMembershipType,
+    ProjectVizDataType,
+)
 
 
 ProjectJoinRequestInputType = generate_input_type_for_serializer(
@@ -52,6 +59,11 @@ ProjectMembershipInputType = generate_input_type_for_serializer(
 ProjectUserGroupMembershipInputType = generate_input_type_for_serializer(
     'ProjectUserGroupMembershipInputType',
     serializer_class=ProjectUserGroupMembershipSerializer,
+)
+
+ProjectVizConfigurationInputType = generate_input_type_for_serializer(
+    'ProjectVizConfigurationInputType',
+    serializer_class=ProjectVizConfigurationSerializer,
 )
 
 
@@ -177,6 +189,16 @@ class BulkUpdateProjectUserGroupMembership(PsBulkGrapheneMutation):
         return ProjectUserGroupMembership.objects.none()
 
 
+class UpdateProjectVizConfiguration(PsGrapheneMutation):
+    class Arguments:
+        data = ProjectVizConfigurationInputType(required=True)
+
+    result = graphene.Field(ProjectVizDataType)
+    model = ProjectStats
+    serializer_class = ProjectVizConfigurationSerializer
+    permissions = [PP.Permission.UPDATE_PROJECT]
+
+
 class ProjectMutationType(
     LeadMutation,
     EntryMutation,
@@ -194,6 +216,7 @@ class ProjectMutationType(
     accept_reject_project = ProjectAcceptReject.Field()
     project_user_membership_bulk = BulkUpdateProjectMembership.Field()
     project_user_group_membership_bulk = BulkUpdateProjectUserGroupMembership.Field()
+    project_viz_configuration_update = UpdateProjectVizConfiguration.Field()
 
     @staticmethod
     def get_custom_node(_, info, id):

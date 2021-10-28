@@ -1,6 +1,9 @@
+import uuid
+
 from django.urls import reverse
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.utils.functional import cached_property
 from django.db.models.functions import Cast
 from django.contrib.auth.models import User
 from django.db import models
@@ -96,6 +99,20 @@ class Project(UserResource):
 
     def __str__(self):
         return self.title
+
+    @property
+    def project_stats(self):
+        return ProjectStats.objects.get_or_create(project=self)[0]
+
+    @cached_property
+    def is_visualization_available(self):
+        af = self.analysis_framework
+        is_viz_enabled = self.is_visualization_enabled
+        return (
+            is_viz_enabled and
+            af.properties is not None and
+            af.properties.get('stats_config') is not None
+        )
 
     def get_all_members(self):
         return User.objects.filter(
@@ -648,6 +665,11 @@ class ProjectStats(models.Model):
         SUCCESS = 'success', 'Success'
         FAILURE = 'failure', 'Failure'
 
+    class Action(models.TextChoices):
+        NEW = 'new', 'New'
+        ON = 'on', 'On'
+        OFF = 'off', 'Off'
+
     THRESHOLD_SECONDS = 60 * 20
 
     project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name='entry_stats')
@@ -669,6 +691,19 @@ class ProjectStats(models.Model):
             models.Q(project__members=user) |
             models.Q(project__user_groups__members=user)
         ).distinct()
+
+    def update_public_share_configuration(self, action: Action, commit=True):
+        if action == self.Action.NEW:
+            self.public_share = True
+            self.token = uuid.uuid4()
+        elif action == self.Action.ON:
+            self.public_share = True
+            self.token = self.token or uuid.uuid4()
+        elif action == self.Action.OFF:
+            self.public_share = False
+        if commit:
+            self.save(update_fields=('public_share', 'token',))
+        return self
 
     def get_public_url(self, request=None):
         if self.token:
