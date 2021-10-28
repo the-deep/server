@@ -37,10 +37,22 @@ type AnalysisFrameworkDetailType {
   secondaryTagging: [WidgetType!]
   members: [AnalysisFrameworkMembershipType!]
   filters: [AnalysisFrameworkFilterType!]
+  exportables: [AnalysisFrameworkExportableType!]
   visibleProjects: [AnalysisFrameworkVisibleProjectType!]
 }
 
+type AnalysisFrameworkExportableType {
+  id: ID!
+  inline: Boolean!
+  order: Int!
+  data: GenericScalar
+  widgetKey: String!
+  widgetType: WidgetWidgetTypeEnum!
+  widgetTypeDisplay: EnumDescription!
+}
+
 type AnalysisFrameworkFilterType {
+  id: ID!
   title: String!
   properties: GenericScalar
   key: String!
@@ -306,6 +318,12 @@ type BulkUpdateProjectUserGroupMembership {
   deletedResult: [ProjectUserGroupMembershipType!]
 }
 
+type CancelUserExport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserExportType
+}
+
 type ChangeUserPassword {
   errors: [GenericScalar!]
   ok: Boolean
@@ -339,6 +357,12 @@ type CreateProjectJoin {
   errors: [GenericScalar!]
   ok: Boolean
   result: ProjectJoinRequestType
+}
+
+type CreateUserExport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserExportType
 }
 
 type CreateUserGroup {
@@ -378,6 +402,12 @@ type DeleteLeadGroup {
   errors: [GenericScalar!]
   ok: Boolean
   result: LeadGroupType
+}
+
+type DeleteUserExport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserExportType
 }
 
 type DeleteUserGroup {
@@ -568,6 +598,14 @@ type ExploreProjectStatTopActiveProjectsType {
   projectTitle: String
   analysisFrameworkId: ID
   analysisFrameworkTitle: String
+}
+
+input ExportCreateInputType {
+  type: ExportDataTypeEnum!
+  format: ExportFormatEnum!
+  exportType: ExportExportTypeEnum!
+  isPreview: Boolean
+  filters: GenericScalar
 }
 
 enum ExportDataTypeEnum {
@@ -1170,6 +1208,9 @@ type ProjectMembershipType {
 type ProjectMutationType {
   id: ID!
   title: String!
+  exportCreate(data: ExportCreateInputType!): CreateUserExport
+  exportCancel(id: ID!): CancelUserExport
+  exportDelete(id: ID!): DeleteUserExport
   assessmentDelete(id: ID!): DeleteAssessment
   entryReviewCommentCreate(data: EntryReviewCommentInputType!): CreateEntryReviewComment
   entryReviewCommentUpdate(data: EntryReviewCommentInputType!, id: ID!): UpdateEntryReviewComment
@@ -1493,16 +1534,15 @@ type UserExportListType {
 
 type UserExportType {
   id: ID!
-  project: ProjectType
+  project: ID
   isPreview: Boolean!
   title: String!
-  filters: GenericScalar
-  mimeType: String!
-  file: String
+  filters: GenericScalar!
   exportedBy: UserType!
   exportedAt: DateTime!
+  mimeType: String!
+  file: String
   pending: Boolean!
-  isDeleted: Boolean!
   isArchived: Boolean!
   format: ExportFormatEnum!
   type: ExportDataTypeEnum!
