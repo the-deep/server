@@ -3,10 +3,12 @@ from typing import List
 import graphene
 from django.db import models
 from django.db.models import QuerySet
+from django.contrib.postgres.aggregates.general import ArrayAgg
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene.types import generic
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
+from utils.graphene.geo_scalars import PointScalar
 from utils.graphene.enums import EnumDescription
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import (
@@ -24,6 +26,7 @@ from quality_assurance.schema import Query as QualityAssuranceQuery
 
 from lead.models import Lead
 from entry.models import Entry
+from geo.models import Region
 
 from .models import (
     Project,
@@ -290,6 +293,12 @@ class ProjectDetailType(
         return get_top_entity_contributor(root, Entry)
 
 
+class ProjectByRegion(graphene.ObjectType):
+    id = graphene.ID(required=True, description='Region\'s ID')
+    projects_id = graphene.List(graphene.NonNull(graphene.ID))
+    centroid = PointScalar()
+
+
 class ProjectJoinRequestType(DjangoObjectType):
     class Meta:
         model = ProjectJoinRequest
@@ -319,6 +328,7 @@ class Query:
         )
     )
     recent_projects = graphene.List(graphene.NonNull(ProjectDetailType))
+    projects_by_region = graphene.List(graphene.NonNull(ProjectByRegion))
 
     # NOTE: This is a custom feature, see https://github.com/the-deep/graphene-django-extras
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
@@ -332,3 +342,16 @@ class Query:
         # only the recent project of the user member of
         queryset = Project.get_for_gq(info.context.user, only_member=True)
         return Project.get_recent_active_projects(info.context.user, queryset)
+
+    @staticmethod
+    def resolve_projects_by_region(root, info, **kwargs):
+        # TODO: Cache this
+        return Region.objects.filter(centroid__isnull=False).order_by('centroid').annotate(
+            projects_id=ArrayAgg(
+                'project',
+                ordering='project',
+                filter=models.Q(
+                    project__in=Project.get_for_gq(info.context.user)
+                )
+            ),
+        ).values('id', 'centroid', 'projects_id')
