@@ -16,6 +16,7 @@ from django.test import TestCase, override_settings
 # dramatiq test case: setupclass is not properly called
 # from django_dramatiq.test import DramatiqTestCase
 from graphene_django.utils import GraphQLTestCase as BaseGraphQLTestCase
+from rest_framework import status
 
 from deep.middleware import _set_current_request
 from analysis_framework.models import AnalysisFramework, AnalysisFrameworkRole
@@ -65,11 +66,23 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
     """
 
     GRAPHQL_SCHEMA = 'deep.schema.schema'
+    ENABLE_NOW_PATCHER = False
 
     def setUp(self):
         super().setUp()
         self.create_project_roles()
         self.create_af_roles()
+        if self.ENABLE_NOW_PATCHER:
+            self.now_patcher = patch('django.utils.timezone.now')
+            self.now_datetime = datetime.datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
+            self.now_datetime_str = self.now_datetime.isoformat()
+            self.now_patcher.start().return_value = self.now_datetime
+
+    def tearDown(self):
+        _set_current_request()  # Clear request
+        if hasattr(self, 'now_patcher'):
+            self.now_patcher.stop()
+        super().tearDown()
 
     def force_login(self, user):
         self.client.force_login(user)
@@ -242,9 +255,19 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
     def get_aware_datetime_str(self, *args, **kwargs):
         return self.get_datetime_str(self.get_aware_datetime(*args, **kwargs))
 
-    def tearDown(self):
-        _set_current_request()  # Clear request
-        super().tearDown()
+    # Some Rest helper functions
+    def assert_http_code(self, response, status_code):
+        error_resp = getattr(response, 'data', None)
+        mesg = error_resp
+        if type(error_resp) is dict and 'errors' in error_resp:
+            mesg = error_resp['errors']
+        return self.assertEqual(response.status_code, status_code, mesg)
+
+    def assert_403(self, response):
+        self.assert_http_code(response, status.HTTP_403_FORBIDDEN)
+
+    def assert_200(self, response):
+        self.assert_http_code(response, status.HTTP_200_OK)
 
 
 class GraphQLSnapShotTestCase(GraphQLTestCase, SnapShotTextCase):
@@ -256,17 +279,15 @@ class GraphQLSnapShotTestCase(GraphQLTestCase, SnapShotTextCase):
     factories_used = []
 
     def setUp(self):
+        self.ENABLE_NOW_PATCHER = True  # We need to set this or snapshot will have different dates
         # XXX: This is hacky way to make sure id aren't changed in snapshot. This makes the test slower.
         management.call_command("flush", "--no-input")
         factory_random.reseed_random(42)
         for factory in self.factories_used:
             factory.reset_sequence()
         super().setUp()
-        self.now_patcher = patch('django.utils.timezone.now')
-        self.now_patcher.start().return_value = datetime.datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
 
     def tearDown(self):
-        self.now_patcher.stop()
         super().tearDown()
 
 

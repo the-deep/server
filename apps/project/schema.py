@@ -1,7 +1,7 @@
 from typing import List
 
 import graphene
-from django.db import models
+from django.db import transaction, models
 from django.db.models import QuerySet
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from graphene_django import DjangoObjectType, DjangoListField
@@ -17,6 +17,7 @@ from utils.graphene.fields import (
     UserEntityCountType
 )
 from deep.permissions import ProjectPermissions as PP
+from deep.serializers import URLCachedFileField
 
 from lead.schema import Query as LeadQuery
 from entry.schema import Query as EntryQuery
@@ -35,6 +36,7 @@ from .models import (
     ProjectUserGroupMembership,
     ProjectJoinRequest,
     ProjectOrganization,
+    ProjectStats,
 )
 from .enums import (
     ProjectStatusEnum,
@@ -49,6 +51,7 @@ from .filter_set import (
     ProjectUserGroupMembershipGqlFilterSet,
 )
 from .activity import project_activity_log
+from .tasks import generate_viz_stats
 
 
 def get_top_entity_contributor(project, Entity):
@@ -226,6 +229,41 @@ class ProjectUserGroupMembershipListType(CustomDjangoListObjectType):
         filterset_class = ProjectUserGroupMembershipGqlFilterSet
 
 
+class ProjectVizDataType(DjangoObjectType):
+    class Meta:
+        model = ProjectStats
+        fields = (
+            'modified_at',
+            'status',
+            'public_share',
+        )
+
+    data_url = graphene.String()
+    public_url = graphene.String()
+
+    @staticmethod
+    def resolve_status(root, info, **_):
+        if root.is_ready() or root.status == ProjectStats.Status.FAILURE:
+            return root.status
+        transaction.on_commit(lambda: generate_viz_stats.delay(root.project_id))
+        # NOTE: Not changing modified_at if already pending
+        if root.status != ProjectStats.Status.PENDING:
+            root.status = ProjectStats.Status.PENDING
+            root.save(update_fields=('status',))
+        return root.status
+
+    @staticmethod
+    def resolve_data_url(root, info, **_):
+        url = root.file
+        if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
+            url = root.confidential_file
+        return url and info.context.request.build_absolute_uri(URLCachedFileField.name_to_representation(url))
+
+    @staticmethod
+    def resolve_public_url(root, info, **_):
+        return root.get_public_url(info.context.request)
+
+
 class ProjectDetailType(
     # -- Start --Project scopped entities
     LeadQuery,
@@ -267,6 +305,11 @@ class ProjectDetailType(
             page_size_query_param='pageSize'
         )
     )
+    is_visualization_available = graphene.Boolean(
+        required=True,
+        description='Checks if visualization is enabled and analysis framework is configured.',
+    )
+    viz_data = graphene.Field(ProjectVizDataType)
 
     @staticmethod
     def resolve_user_members(root, info, **kwargs):
@@ -291,6 +334,11 @@ class ProjectDetailType(
     @staticmethod
     def resolve_top_taggers(root, info, **kwargs):
         return get_top_entity_contributor(root, Entry)
+
+    @staticmethod
+    def resolve_viz_data(root, info, **kwargs):
+        if root.get_current_user_role(info.context.request.user) is not None and root.is_visualization_available:
+            return root.project_stats
 
 
 class ProjectByRegion(graphene.ObjectType):
