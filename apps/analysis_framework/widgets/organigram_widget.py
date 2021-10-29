@@ -3,7 +3,7 @@ WIDGET_ID = 'organigramWidget'
 """
 properties:
     options:
-        clientId: string  # TODO: Change this to key or any other name
+        key: string
         label: string
         tooltip?: string
         order: number
@@ -17,7 +17,7 @@ def get_values_for_organ(organ, parent_label=None):
         label = '{} / {}'.format(parent_label, label)
 
     values = [{
-        'key': organ.get('clientId'),
+        'key': organ.get('key'),
         'label': label,
     }]
 

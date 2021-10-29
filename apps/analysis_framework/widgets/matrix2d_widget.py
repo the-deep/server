@@ -4,25 +4,25 @@ WIDGET_ID = 'matrix2dWidget'
 """
 PROPERTIES:
     rows: [
-        clientId: string    # TODO: Change this to key or any other name
+        key: string
         label: string
         tooltip?: string
         order: number
         color: string
         subRows: [
-            clientId: string  # TODO: Change this to key or any other name
+            key: string
             label: string
             tooltip?: string
             order: number
         ]
     ]
     columns: [
-        clientId: string  # TODO: Change this to key or any other name
+        key: string
         label: string
         tooltip?: string
         order: number
         subColumns: [
-            clientId: string  # TODO: Change this to key or any other name
+            key: string
             label: string
             tooltip?: string
             order: number
@@ -48,7 +48,7 @@ def get_filters(widget, properties):
     for row in rows:
         row_options.append({
             'label': row.get('label'),
-            'key': row.get('clientId'),
+            'key': row.get('key'),
         })
 
         sub_rows = row.get('subRows', [])
@@ -58,7 +58,7 @@ def get_filters(widget, properties):
                     row.get('label'),
                     sub_row.get('label'),
                 ),
-                'key': sub_row.get('clientId'),
+                'key': sub_row.get('key'),
             })
 
     column_options = []
@@ -67,7 +67,7 @@ def get_filters(widget, properties):
     for column in columns:
         column_options.append({
             'label': column.get('label'),
-            'key': column.get('clientId'),
+            'key': column.get('key'),
         })
 
         subcolumns = column.get('subColumns', [])
@@ -77,7 +77,7 @@ def get_filters(widget, properties):
                     column.get('label'),
                     subcolumn.get('label'),
                 ),
-                'key': subcolumn.get('clientId'),
+                'key': subcolumn.get('key'),
             })
 
     return [{
@@ -113,21 +113,21 @@ def get_exportable(widget, properties):
     report = {
         'levels': [
             {
-                'id': column.get('clientId'),
+                'id': column.get('key'),
                 'title': column.get('label'),
                 'sublevels': [
                     {
                         'id': '{}-{}'.format(
-                            column.get('clientId'),
-                            row.get('clientId'),
+                            column.get('key'),
+                            row.get('key'),
                         ),
                         'title': row.get('label'),
                         'sublevels': [
                             {
                                 'id': '{}-{}-{}'.format(
-                                    column.get('clientId'),
-                                    row.get('clientId'),
-                                    sub_row.get('clientId'),
+                                    column.get('key'),
+                                    row.get('key'),
+                                    sub_row.get('key'),
                                 ),
                                 'title': sub_row.get('label'),
                             } for sub_row
