@@ -4,13 +4,13 @@ WIDGET_ID = 'matrix1dWidget'
 """
 PROPERTIES:
     rows: [
-        clientId: string  # TODO: Change this to key or any other name
+        key: string
         label: string
         tooltip?: string
         order: number
         color: string
         cells: [
-            clientId: string  # TODO: Change this to key or any other name
+            key: string
             label: string
             tooltip?: string
             order: number
@@ -28,7 +28,7 @@ def get_filters(widget, properties):
     for row in rows:
         filter_options.append({
             'label': row.get('label'),
-            'key': row.get('clientId'),
+            'key': row.get('key'),
         })
         cells = row.get('cells', [])
 
@@ -38,7 +38,7 @@ def get_filters(widget, properties):
                     row.get('label'),
                     cell.get('label'),
                 ),
-                'key': cell.get('clientId'),
+                'key': cell.get('key'),
             })
 
     return [{
@@ -63,11 +63,11 @@ def get_exportable(widget, properties):
     report = {
         'levels': [
             {
-                'id': row.get('clientId'),
+                'id': row.get('key'),
                 'title': row.get('label'),
                 'sublevels': [
                     {
-                        'id': '{}-{}'.format(row.get('clientId'), cell.get('clientId')),
+                        'id': '{}-{}'.format(row.get('key'), cell.get('key')),
                         'title': cell.get('label'),
                     } for cell in row.get('cells', [])
                 ],

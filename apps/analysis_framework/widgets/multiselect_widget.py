@@ -3,7 +3,7 @@ WIDGET_ID = 'multiselectWidget'
 """
 properties:
     options: [
-        clientId: string  # TODO: Change this to key or any other name
+        key: string
         label: string
         tooltip?: string
         order: number

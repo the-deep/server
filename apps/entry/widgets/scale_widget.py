@@ -12,7 +12,7 @@ def _get_scale(widget, data, widget_properties):
     options = widget_properties.get('options', [])
     scale = next((
         s for s in options
-        if s['clientId'] == selected_scale
+        if s['key'] == selected_scale
     ), None)
     scale = scale or {}
     return {
@@ -65,7 +65,7 @@ def get_comprehensive_data(widgets_meta, widget, data, widget_properties):
         min_option, max_option = {}, {}
         if options:
             min_option, max_option = {**options[0]}, {**options[len(options) - 1]}
-            min_option['key'], max_option['key'] = min_option.pop('clientId'), max_option.pop('clientId')
+            min_option['key'], max_option['key'] = min_option.pop('key'), max_option.pop('key')
         widgets_meta[widget.pk] = {
             'min': min_option,
             'max': max_option,
@@ -77,6 +77,6 @@ def get_comprehensive_data(widgets_meta, widget, data, widget_properties):
         'label': scale['label'],
         'index': ([
             (i + 1) for i, v in enumerate(options)
-            if v['clientId'] == selected_scales[0]
+            if v['key'] == selected_scales[0]
         ] or [None])[0] if selected_scales else None,
     }
