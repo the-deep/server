@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import transaction
 from rest_framework.decorators import action
 from rest_framework import (
@@ -113,10 +112,9 @@ class ExportTriggerView(views.APIView):
             filters=filters,
         )
 
-        if True or not settings.TESTING:
-            transaction.on_commit(
-                lambda: export.set_task_id(export_task.delay(export.id).id)
-            )
+        transaction.on_commit(
+            lambda: export.set_task_id(export_task.delay(export.id).id)
+        )
 
         return response.Response({
             'export_triggered': export.id,

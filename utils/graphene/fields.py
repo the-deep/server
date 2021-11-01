@@ -13,6 +13,7 @@ from graphene_django_extras.filters.filter import get_filterset_class
 from graphene_django_extras.paginations.pagination import BaseDjangoGraphqlPagination
 from graphene_django_extras.settings import graphql_api_settings
 from graphene_django_extras.utils import get_extra_filters
+from graphene_django.rest_framework.serializer_converter import get_graphene_type_from_serializer_field
 
 from utils.graphene.pagination import OrderingOnlyArgumentPagination
 from deep.serializers import URLCachedFileField
@@ -271,3 +272,15 @@ class UserEntityCountType(graphene.ObjectType):
     name = graphene.String()
     user_id = graphene.String()
     count = graphene.Int()
+
+
+def generate_serializer_field_class(inner_type, serializer_field, non_null=False):
+    new_serializer_field = type(
+        "{}SerializerField".format(inner_type.__name__),
+        (serializer_field,),
+        {},
+    )
+    get_graphene_type_from_serializer_field.register(new_serializer_field)(
+        lambda _: graphene.NonNull(inner_type) if non_null else inner_type
+    )
+    return new_serializer_field

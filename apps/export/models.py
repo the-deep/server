@@ -47,9 +47,13 @@ class Export(models.Model):
     format = models.CharField(max_length=100, choices=Format.choices)
     type = models.CharField(max_length=99, choices=DataType.choices)
     export_type = models.CharField(max_length=100, choices=ExportType.choices)
-    filters = models.JSONField(default=dict)
     exported_by = models.ForeignKey(User, on_delete=models.CASCADE)
     exported_at = models.DateTimeField(auto_now_add=True)
+
+    # Lead filters
+    filters = models.JSONField(default=dict)
+    # Additional configuration options
+    extra_options = models.JSONField(default=dict)
 
     mime_type = models.CharField(max_length=200, blank=True)
     file = models.FileField(upload_to='export/', max_length=255, null=True, blank=True, default=None)
