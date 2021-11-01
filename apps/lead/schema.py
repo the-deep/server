@@ -27,7 +27,10 @@ from .enums import (
     LeadPriorityEnum,
     LeadSourceTypeEnum,
 )
-from .filter_set import LeadGQFilterSet
+from .filter_set import (
+    LeadGQFilterSet,
+    LeadGroupGQFilterSet
+)
 
 
 def get_lead_qs(info):
@@ -41,7 +44,10 @@ def get_lead_qs(info):
 
 
 def get_lead_group_qs(info):
-    return LeadGroup.objects.filter(project=info.context.active_project)
+    lead_group_qs = LeadGroup.objects.filter(project=info.context.active_project)
+    if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
+        return lead_group_qs
+    return LeadGroup.objects.none()
 
 
 def get_emm_entities_qs(info):
@@ -125,7 +131,11 @@ class EntriesCountType(graphene.ObjectType):
 class LeadGroupType(DjangoObjectType):
     class Meta:
         model = LeadGroup
-        fields = ('id', 'title')
+        fields = (
+            'id', 'title', 'project',
+            'created_by', 'created_at',
+            'modified_by', 'modified_at',
+        )
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -135,7 +145,7 @@ class LeadGroupType(DjangoObjectType):
 class LeadGroupListType(CustomDjangoListObjectType):
     class Meta:
         model = LeadGroup
-        filterset_class = []
+        filterset_class = LeadGroupGQFilterSet
 
 
 # LeadDetailType is defined for detailed (nested) attributes.
