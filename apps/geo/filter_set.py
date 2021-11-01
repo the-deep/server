@@ -1,6 +1,7 @@
 import django_filters
 from django.db import models
 from django.db.models.functions import Concat
+from utils.graphene.filters import IDListFilter
 
 from geo.models import (
     AdminLevel,
@@ -80,6 +81,7 @@ class AdminLevelFilterSet(django_filters.rest_framework.FilterSet):
 
 # ------------------------------ Graphql filters -----------------------------------
 class GeoAreaGqlFilterSet(django_filters.rest_framework.FilterSet):
+    ids = IDListFilter(field_name='id')
     search = django_filters.CharFilter(
         label='Geo Area Label search',
         method='geo_area_label'

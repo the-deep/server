@@ -5,6 +5,7 @@ from django.core.cache import cache
 from django.utils.functional import cached_property
 from django.db import models
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db.models.functions import Cast
 from django.utils import timezone
 
@@ -16,6 +17,7 @@ from lead.models import Lead
 from entry.models import Entry
 from export.models import Export
 from user.models import User
+from geo.models import Region
 
 from .models import (
     Project,
@@ -156,6 +158,18 @@ class ProjectExploreStatsLoader(WithContextMixin):
         )
 
 
+class GeoRegionLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = Region.objects.filter(project__in=keys).annotate(
+            projects_id=ArrayAgg('project', filter=models.Q(project__in=keys)),
+        ).defer('geo_options')
+        _map = defaultdict(list)
+        for region in qs.all():
+            for project_id in region.projects_id:
+                _map[project_id].append(region)
+        return Promise.resolve([_map.get(key) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
 
     @cached_property
@@ -176,3 +190,7 @@ class DataLoaders(WithContextMixin):
 
     def resolve_explore_stats(self):
         return ProjectExploreStatsLoader(context=self.context).resolve()
+
+    @cached_property
+    def geo_region(self):
+        return GeoRegionLoader(context=self.context)
