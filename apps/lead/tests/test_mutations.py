@@ -9,6 +9,7 @@ from gallery.factories import FileFactory
 from lead.factories import (
     LeadFactory,
     EmmEntityFactory,
+    LeadGroupFactory
 )
 
 
@@ -382,3 +383,41 @@ class TestLeadBulkMutationSchema(GraphQLSnapShotTestCase):
         response = _query_check()['data']['project']['leadBulk']
         self.assertMatchSnapshot(response, 'success')
         self.assertEqual(lead_count + 2, Lead.objects.count())
+
+
+class TestLeadGroupMutation(GraphQLTestCase):
+    def test_lead_group_delete(self):
+        query = '''
+            mutation MyMutation ($projectId: ID! $leadGroupId: ID!) {
+              project(id: $projectId) {
+                leadGroupDelete(id: $leadGroupId) {
+                  ok
+                  errors
+                  result {
+                    id
+                    title
+                  }
+                }
+              }
+            }
+        '''
+        project = ProjectFactory.create()
+        user = UserFactory.create()
+        project.add_member(user)
+        lead_group = LeadGroupFactory.create(project=project)
+
+        def _query_check(**kwargs):
+            return self.query_check(
+                query,
+                variables={'projectId': project.id, 'leadGroupId': lead_group.id},
+                **kwargs
+            )
+
+        # -- Without login
+        _query_check(assert_for_error=True)
+
+        # --- member user
+        self.force_login(user)
+        content = _query_check(assert_for_error=False)
+        self.assertEqual(content['data']['project']['leadGroupDelete']['ok'], True)
+        self.assertIdEqual(content['data']['project']['leadGroupDelete']['result']['id'], lead_group.id)

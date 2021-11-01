@@ -12,7 +12,7 @@ from ary.filters import AssessmentGQFilterSet
 
 def get_assessment_qs(info):
     assessment_qs = Assessment.objects.filter(project=info.context.active_project)
-    if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
+    if PP.check_permission(info, PP.Permission.VIEW_ENTRY):
         return assessment_qs
     return Assessment.objects.none()
 
