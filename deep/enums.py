@@ -5,6 +5,7 @@ from lead.enums import enum_map as lead_enum_map
 from entry.enums import enum_map as entry_enum_map
 from export.enums import enum_map as export_enum_map
 from quality_assurance.enums import enum_map as quality_assurance_enum_map
+from analysis.enums import enum_map as analysis_enum_map
 
 ENUM_TO_GRAPHENE_ENUM_MAP = {
     **user_group_enum_map,
@@ -13,5 +14,6 @@ ENUM_TO_GRAPHENE_ENUM_MAP = {
     **lead_enum_map,
     **entry_enum_map,
     **export_enum_map,
-    **quality_assurance_enum_map
+    **quality_assurance_enum_map,
+    **analysis_enum_map,
 }

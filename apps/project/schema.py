@@ -25,6 +25,7 @@ from export.schema import Query as ExportQuery
 from geo.schema import RegionDetailType, ProjectScopeQuery as GeoQuery
 from quality_assurance.schema import Query as QualityAssuranceQuery
 from ary.schema import Query as AryQuery
+from analysis.schema import Query as AnalysisQuery
 
 from lead.models import Lead
 from entry.models import Entry
@@ -297,6 +298,7 @@ class ProjectDetailType(
     GeoQuery,
     QualityAssuranceQuery,
     AryQuery,
+    AnalysisQuery,
     # --  End  --Project scopped entities
     ProjectType,
 ):
