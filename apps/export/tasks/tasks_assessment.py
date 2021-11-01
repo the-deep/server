@@ -1,3 +1,8 @@
+import copy
+
+from deep.permissions import ProjectPermissions as PP
+from lead.models import Lead
+from lead.filter_set import LeadGQFilterSet
 from ary.models import Assessment, PlannedAssessment
 from ary.export import (
     get_export_data_for_assessments,
@@ -9,18 +14,21 @@ from export.assessments import NewExcelExporter
 
 
 def _export_assessments(export, AssessmentModel, excel_sheet_data_generator):
+    user = export.exported_by
     project = export.project
     export_type = export.export_type
     is_preview = export.is_preview
-    filters = export.filters
 
-    arys = AssessmentModel.objects.filter(project=project).prefetch_related('project').distinct()
-    if AssessmentModel == Assessment:
-        lead = filters.get('lead', [])
-        if filters.get('include_leads', True):
-            arys = arys.filter(lead__in=lead)
-        else:
-            arys = arys.exclude(lead__in=lead)
+    arys = AssessmentModel.objects.filter(project=project).select_related('project').distinct()
+    if AssessmentModel == Assessment:  # Filter is only available for Assessments (not PlannedAssessment)
+        user_project_permissions = PP.get_permissions(project, user)
+        filters = copy.deepcopy(export.filters)  # Avoid mutating database values
+        # Lead filtered queryset
+        leads_qs = Lead.objects.filter(project=export.project)
+        if PP.Permission.VIEW_ALL_LEAD not in user_project_permissions:
+            leads_qs = leads_qs.filter(confidentiality=Lead.Confidentiality.UNPROTECTED)
+        leads_qs = LeadGQFilterSet(data=filters, queryset=leads_qs).qs
+        arys = arys.filter(lead__in=leads_qs)
     iterable_arys = arys[:Export.PREVIEW_ASSESSMENT_SIZE] if is_preview else arys
 
     if export_type == Export.ExportType.JSON:

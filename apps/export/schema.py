@@ -1,4 +1,6 @@
+import json
 import graphene
+from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
@@ -30,7 +32,7 @@ class UserExportType(DjangoObjectType):
         model = Export
         fields = (
             'id', 'project', 'is_preview', 'title',
-            'filters', 'mime_type', 'file', 'exported_by',
+            'filters', 'extra_options', 'mime_type', 'file', 'exported_by',
             'exported_at', 'pending', 'is_archived'
         )
 
@@ -43,6 +45,11 @@ class UserExportType(DjangoObjectType):
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
         return get_export_qs(info)
+
+    @staticmethod
+    def resolve_filters(root, info, **kwargs):
+        # XXX: Better way?
+        return json.loads(CamelCaseJSONRenderer().render(root.filters))
 
 
 class UserExportListType(CustomDjangoListObjectType):

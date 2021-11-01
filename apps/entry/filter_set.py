@@ -548,6 +548,7 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
     lead_priorities = MultipleInputFilter(LeadPriorityEnum, field_name='lead__priority')
     lead_confidentialities = MultipleInputFilter(LeadConfidentialityEnum, field_name='lead__confidentiality')
 
+    search = django_filters.CharFilter(method='search_filter')
     created_by = IDListFilter()
     modified_by = IDListFilter()
     comment_status = SimpleInputFilter(
@@ -642,6 +643,14 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
             if type(value[0]) == OrganizationType:
                 return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
             return qs.filter(organization_types__in=value).distinct()
+        return qs
+
+    def search_filter(self, qs, _, value):
+        if value:
+            return qs.filter(
+                models.Q(lead__title__icontains=value) |
+                models.Q(excerpt__icontains=value)
+            )
         return qs
 
     @property
