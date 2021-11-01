@@ -17,6 +17,7 @@ from project.models import Project
 from organization.models import OrganizationType
 from user.models import User
 from entry.filter_set import EntryGQFilterSet
+from user_resource.filters import UserResourceGqlFilterSet
 
 from .models import Lead, LeadGroup
 from .enums import (
@@ -351,3 +352,16 @@ class LeadGQFilterSet(LeadFilterSet):
         elif value == self.CustomFilter.EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES:
             return qs.annotate(filtered_entries_count=_get_annotate(controlled=True)).filter(filtered_entries_count__gte=1)
         return qs
+
+
+class LeadGroupGQFilterSet(UserResourceGqlFilterSet):
+    search = django_filters.CharFilter(method='filter_title')
+
+    class Meta:
+        model = LeadGroup
+        fields = ()
+
+    def filter_title(self, qs, name, value):
+        if not value:
+            return qs
+        return qs.filter(title__icontains=value).distinct()
