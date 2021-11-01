@@ -18,6 +18,7 @@ from utils.graphene.fields import (
 )
 from deep.permissions import ProjectPermissions as PP
 from deep.serializers import URLCachedFileField
+from user_resource.schema import UserResourceMixin
 
 from lead.schema import Query as LeadQuery
 from entry.schema import Query as EntryQuery
@@ -161,7 +162,7 @@ class ProjectUserGroupMembershipType(ClientIdMixin, DjangoObjectType):
     badges = graphene.List(graphene.NonNull(ProjectMembershipBadgeTypeEnum))
 
 
-class ProjectType(DjangoObjectType):
+class ProjectType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = Project
         fields = (

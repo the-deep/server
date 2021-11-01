@@ -536,6 +536,10 @@ type EntryType {
   highlightHidden: Boolean!
   controlled: Boolean
   controlledChangedBy: UserType
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
   entryType: EntryTagTypeEnum!
   entryTypeDisplay: EnumDescription!
   attributes: [AttributeType!]
@@ -658,10 +662,6 @@ enum LeadCustomFilterEnum {
 
 type LeadDetailType {
   id: ID!
-  createdAt: DateTime!
-  modifiedAt: DateTime!
-  createdBy: UserType
-  modifiedBy: UserType
   clientId: String!
   leadGroup: LeadGroupType
   project: ProjectType!
@@ -673,6 +673,10 @@ type LeadDetailType {
   website: String!
   attachment: GalleryFileType
   isAssessmentLead: Boolean!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
   sourceType: LeadSourceTypeEnum!
   sourceTypeDisplay: EnumDescription!
   priority: LeadPriorityEnum!
@@ -830,10 +834,6 @@ enum LeadStatusEnum {
 
 type LeadType {
   id: ID!
-  createdAt: DateTime!
-  modifiedAt: DateTime!
-  createdBy: UserType
-  modifiedBy: UserType
   clientId: String!
   leadGroup: LeadGroupType
   project: ProjectType!
@@ -845,6 +845,10 @@ type LeadType {
   website: String!
   attachment: GalleryFileType
   isAssessmentLead: Boolean!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
   sourceType: LeadSourceTypeEnum!
   sourceTypeDisplay: EnumDescription!
   priority: LeadPriorityEnum!

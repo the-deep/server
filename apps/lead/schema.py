@@ -8,6 +8,7 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from utils.graphene.enums import EnumDescription
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
+from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
 from organization.schema import OrganizationType
 from user.models import User
@@ -155,12 +156,11 @@ class LeadGroupListType(CustomDjangoListObjectType):
 
 
 # LeadDetailType is defined for detailed (nested) attributes.
-class LeadType(ClientIdMixin, DjangoObjectType):
+class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Lead
         fields = (
-            'id', 'title', 'created_by', 'created_at', 'modified_by', 'modified_at',
-            'is_assessment_lead', 'project', 'lead_group', 'assignee', 'published_on',
+            'id', 'title', 'is_assessment_lead', 'project', 'lead_group', 'assignee', 'published_on',
             'text', 'url', 'website', 'attachment',
             'client_id',
         )
@@ -208,8 +208,7 @@ class LeadDetailType(LeadType):
         model = Lead
         skip_registry = True
         fields = (
-            'id', 'title', 'created_by', 'created_at', 'modified_by', 'modified_at',
-            'is_assessment_lead', 'project', 'lead_group', 'assignee', 'published_on',
+            'id', 'title', 'is_assessment_lead', 'project', 'lead_group', 'assignee', 'published_on',
             'text', 'url', 'website', 'attachment',
             'client_id',
         )
