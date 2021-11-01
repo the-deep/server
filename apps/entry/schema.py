@@ -7,6 +7,7 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from utils.graphene.enums import EnumDescription
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField, DjangoListField
+from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
 from lead.models import Lead
 from quality_assurance.schema import EntryReviewCommentType
@@ -89,7 +90,7 @@ class AttributeType(ClientIdMixin, DjangoObjectType):
             )
 
 
-class EntryType(ClientIdMixin, DjangoObjectType):
+class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Entry
         fields = (
