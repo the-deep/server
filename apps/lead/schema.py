@@ -136,10 +136,15 @@ class LeadGroupType(DjangoObjectType):
             'created_by', 'created_at',
             'modified_by', 'modified_at',
         )
+    lead_counts = graphene.Field(graphene.Int)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
         return get_lead_group_qs(info)
+
+    @staticmethod
+    def resolve_lead_counts(root, info, **kwargs):
+        return info.context.dl.lead.lead_counts.load(root.pk)
 
 
 class LeadGroupListType(CustomDjangoListObjectType):

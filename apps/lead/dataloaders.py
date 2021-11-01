@@ -5,7 +5,7 @@ from django.db import models
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
 from entry.models import Entry
-from .models import LeadPreview
+from .models import LeadPreview, LeadGroup
 
 
 class LeadPreviewLoader(DataLoaderWithContext):
@@ -51,6 +51,18 @@ class EntriesCountLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key, _dummy) for key in keys])
 
 
+class LeadGroupLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        lead_group_qs = LeadGroup.objects.filter(id__in=keys).annotate(
+            lead_counts=models.Count('lead', distinct=True)
+        )
+        _map = {
+            lead_group['id']: lead_group['lead_counts']
+            for lead_group in lead_group_qs.values('id', 'lead_counts')
+        }
+        return Promise.resolve([_map.get(key) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     @cached_property
     def lead_preview(self):
@@ -59,3 +71,7 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def entries_counts(self):
         return EntriesCountLoader(context=self.context)
+
+    @cached_property
+    def lead_counts(self):
+        return LeadGroupLoader(context=self.context)

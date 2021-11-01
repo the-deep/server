@@ -640,3 +640,49 @@ class TestLeadQuerySchema(GraphQLTestCase):
         self.assertEqual(len(content), 2, content)
         self.assertEqual(content[0]['status'], self.genum(Lead.Status.IN_PROGRESS), content)
         self.assertEqual(content[1]['status'], self.genum(Lead.Status.NOT_TAGGED), content)
+
+    def test_lead_group_query(self):
+        query = '''
+              query MyQuery ($id: ID!) {
+                project(id: $id) {
+                  leadGroups(ordering: "id") {
+                    results {
+                      id
+                      title
+                      project {
+                        id
+                      }
+                      leadCounts
+                    }
+                    totalCount
+                  }
+                }
+              }
+          '''
+        project = ProjectFactory.create()
+        project2 = ProjectFactory.create()
+        member_user = UserFactory.create()
+        project.add_member(member_user)
+        project2.add_member(member_user)
+
+        lead_group1 = LeadGroupFactory.create(project=project)
+        lead_group2 = LeadGroupFactory.create(project=project)
+        lead_group3 = LeadGroupFactory.create(project=project2)
+        LeadFactory.create_batch(4, project=project, lead_group=lead_group1)
+        LeadFactory.create_batch(2, project=project, lead_group=lead_group2)
+        LeadFactory.create_batch(2, project=project, lead_group=lead_group3)
+
+        self.force_login(member_user)
+        content = self.query_check(query, variables={'id': project.id})
+        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 2)
+        self.assertEqual(
+            set(result['id'] for result in content['data']['project']['leadGroups']['results']),
+            set([str(lead_group1.id), str(lead_group2.id)])
+        )
+        self.assertListIds(content['data']['project']['leadGroups']['results'], [lead_group1, lead_group2], content)
+
+        # with different project
+        content = self.query_check(query, variables={'id': project2.id})
+        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 1)
+        self.assertEqual(content['data']['project']['leadGroups']['results'][0]['id'], str(lead_group3.id))
+        self.assertEqual(content['data']['project']['leadGroups']['results'][0]['leadCounts'], 2)
