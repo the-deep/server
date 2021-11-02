@@ -531,12 +531,12 @@ class TestLeadQuerySchema(GraphQLTestCase):
         project2 = ProjectFactory.create()
         member_user = UserFactory.create()
         confidential_member_user = UserFactory.create()
-        project.add_member(member_user, role=self.project_role_viewer_non_confidential)
+        project.add_member(member_user, role=self.project_role_clairvoyant_one)
         project.add_member(confidential_member_user, role=self.project_role_viewer)
 
         lead_group1 = LeadGroupFactory.create(project=project)
         lead_group2 = LeadGroupFactory.create(project=project)
-        lead_group3 = LeadGroupFactory.create(project=project2)
+        LeadGroupFactory.create(project=project2)
 
         emm_entity_1 = EmmEntityFactory.create()
         emm_entity_2 = EmmEntityFactory.create()
@@ -565,13 +565,12 @@ class TestLeadQuerySchema(GraphQLTestCase):
 
         # with different project
         content = self.query_check(query, variables={'id': project2.id})
-        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 1)
-        self.assertEqual(content['data']['project']['leadGroups']['results'][0]['id'], str(lead_group3.id))
+        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 0)
 
         # test for emm_entities
         # login with member_user
         content = self.query_check(query, variables={'id': project.id})
-        self.assertEqual(content['data']['project']['emmEntities']['totalCount'], 2)
+        self.assertEqual(content['data']['project']['emmEntities']['totalCount'], 3)
 
         # login with confidential_member_user
         self.force_login(confidential_member_user)
@@ -582,11 +581,6 @@ class TestLeadQuerySchema(GraphQLTestCase):
         # login with confidential_member_user
         content = self.query_check(query, variables={'id': project.id})
         self.assertEqual(content['data']['project']['leadEmmTriggers']['totalCount'], 3)
-
-        # login with member_user
-        self.force_login(member_user)
-        content = self.query_check(query, variables={'id': project.id})
-        self.assertEqual(content['data']['project']['leadEmmTriggers']['totalCount'], 2)
 
         # test for project that user is not member
         content = self.query_check(query, variables={'id': project2.id})
