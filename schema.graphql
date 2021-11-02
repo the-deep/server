@@ -1149,7 +1149,7 @@ type Query {
   analysisFramework(id: ID!): AnalysisFrameworkDetailType
   analysisFrameworks(id: Float, createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID], modifiedBy: [ID], search: String, page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkListType
   project(id: ID!): ProjectDetailType
-  projects(createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID!], modifiedBy: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): ProjectListType
+  projects(createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): ProjectListType
   recentProjects: [ProjectDetailType!]
   projectsByRegion: [ProjectByRegion!]
   projectExploreStats: ProjectExploreStatType
