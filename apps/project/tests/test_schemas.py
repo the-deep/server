@@ -665,6 +665,8 @@ class TestProjectExploreStats(GraphQLSnapShotTestCase):
         query = '''
             query MyQuery {
               projectExploreStats {
+                totalProjects
+                totalUsers
                 leadsAddedWeekly
                 dailyAverageLeadsTaggedPerProject
                 generatedExportsMonthly
@@ -683,6 +685,7 @@ class TestProjectExploreStats(GraphQLSnapShotTestCase):
         self.assertMatchSnapshot(content, 'no-data')
 
         user = UserFactory.create()
+        UserFactory.create_batch(3, is_active=False)  # Some Inactive users
         analysis_framework = AnalysisFrameworkFactory.create()
         projects = ProjectFactory.create_batch(3)
         projects_with_af = ProjectFactory.create_batch(3, analysis_framework=analysis_framework)
