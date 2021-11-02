@@ -15,6 +15,7 @@ from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 from lead.models import Lead
 from entry.models import Entry
 from export.models import Export
+from user.models import User
 
 from .models import (
     Project,
@@ -111,6 +112,8 @@ class ProjectExploreStatsLoader(WithContextMixin):
 
         return dict(
             calculated_at=now,
+            total_projects=project_count,
+            total_users=User.objects.filter(is_active=True).count(),
             leads_added_weekly=leads_count and (
                 leads_count / (
                     (

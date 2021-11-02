@@ -12,6 +12,8 @@ snapshots['TestProjectExploreStats::test_snapshot no-data'] = {
         'projectExploreStats': {
             'calculatedAt': '2021-01-01T00:00:00.123456+00:00',
             'dailyAverageLeadsTaggedPerProject': 0.0,
+            'totalProjects': 0,
+            'totalUsers': 0,
             'generatedExportsMonthly': 0,
             'leadsAddedWeekly': 0,
             'topActiveProjects': [
@@ -24,6 +26,8 @@ snapshots['TestProjectExploreStats::test_snapshot only-project'] = {
     'data': {
         'projectExploreStats': {
             'calculatedAt': '2021-01-01T00:00:00.123456+00:00',
+            'totalProjects': 7,
+            'totalUsers': 1,
             'dailyAverageLeadsTaggedPerProject': 0.0,
             'generatedExportsMonthly': 0,
             'leadsAddedWeekly': 0,
@@ -67,6 +71,8 @@ snapshots['TestProjectExploreStats::test_snapshot with-data'] = {
     'data': {
         'projectExploreStats': {
             'calculatedAt': '2021-01-01T00:00:00.123456+00:00',
+            'totalProjects': 7,
+            'totalUsers': 1,
             'dailyAverageLeadsTaggedPerProject': 0.10204081632653061,
             'generatedExportsMonthly': 3,
             'leadsAddedWeekly': 6,
