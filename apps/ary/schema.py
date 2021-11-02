@@ -5,6 +5,7 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import ProjectPermissions as PP
+from user_resource.schema import UserResourceMixin
 
 from ary.models import Assessment
 from ary.filters import AssessmentGQFilterSet
@@ -17,7 +18,7 @@ def get_assessment_qs(info):
     return Assessment.objects.none()
 
 
-class AssessmentType(DjangoObjectType):
+class AssessmentType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = Assessment
         fields = (
