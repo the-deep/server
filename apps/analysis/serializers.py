@@ -42,10 +42,10 @@ class AnalyticalEntriesSerializer(UniqueFieldsMixin, UserResourceSerializer):
 class AnalyticalStatementSerializer(
     RemoveNullFieldsMixin,
     DynamicFieldsMixin,
-    UserResourceSerializer,
     NestedCreateMixin,
     # XXX: This is a custom mixin where we delete first and then create to avoid duplicate key value
     CustomNestedUpdateMixin,
+    serializers.ModelSerializer,
 ):
     analytical_entries = AnalyticalEntriesSerializer(source='analyticalstatemententry_set', many=True, required=False)
 
