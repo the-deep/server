@@ -99,9 +99,12 @@ class ProjectExploreStatType(graphene.ObjectType):
 
 class ProjectStatType(graphene.ObjectType):
     number_of_leads = graphene.Field(graphene.Int)
+    number_of_leads_not_tagged = graphene.Field(graphene.Int)
+    number_of_leads_in_progress = graphene.Field(graphene.Int)
     number_of_leads_tagged = graphene.Field(graphene.Int)
-    number_of_leads_tagged_and_controlled = graphene.Field(graphene.Int)
     number_of_entries = graphene.Field(graphene.Int)
+    number_of_entries_verified = graphene.Field(graphene.Int)
+    number_of_entries_controlled = graphene.Field(graphene.Int)
     number_of_users = graphene.Field(graphene.Int)
     leads_activity = graphene.List(graphene.NonNull(DateCountType))
     entries_activity = graphene.List(graphene.NonNull(DateCountType))
