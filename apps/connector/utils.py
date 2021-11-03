@@ -3,6 +3,7 @@ import logging
 from django.core.cache import cache
 from django.conf import settings
 
+from deep.caches import CacheKey
 from utils.common import replace_ns
 
 
@@ -41,7 +42,7 @@ def ConnectorWrapper(ConnectorClass):
             from respective source
             """
             url_params = f'{url}:{str(params)}'
-            cache_key = f'connector_{hash(url_params)}'
+            cache_key = CacheKey.CONNECTOR_KEY_FORMAT.format(hash(url_params))
 
             data = cache.get(cache_key)
 

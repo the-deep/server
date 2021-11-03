@@ -77,6 +77,7 @@ def get_filtered_projects(user, queries, annotate=False):
 
 # -------------------- Graphql Filters -----------------------------------
 class ProjectGqlFilterSet(UserResourceGqlFilterSet):
+    ids = IDListFilter(field_name='id')
     status = SimpleInputFilter(ProjectStatusEnum)
     organizations = IDListFilter(distinct=True)
     analysis_frameworks = IDListFilter(field_name='analysis_framework')

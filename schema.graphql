@@ -452,6 +452,13 @@ type EntryType {
 
 scalar EnumDescription
 
+type ExploreProjectStatTopActiveProjectsType {
+  projectId: ID!
+  projectTitle: String
+  analysisFrameworkId: ID
+  analysisFrameworkTitle: String
+}
+
 enum ExportDataTypeEnum {
   ENTRIES
   ASSESSMENTS
@@ -909,6 +916,16 @@ type ProjectDetailType {
   vizData: ProjectVizDataType
 }
 
+type ProjectExploreStatType {
+  calculatedAt: DateTime
+  totalProjects: Int
+  totalUsers: Int
+  leadsAddedWeekly: Int
+  dailyAverageLeadsTaggedPerProject: Float
+  generatedExportsMonthly: Int
+  topActiveProjects: [ExploreProjectStatTopActiveProjectsType!]
+}
+
 type ProjectGeoAreaListType {
   results: [ProjectGeoAreaType!]
   totalCount: Int
@@ -1038,9 +1055,12 @@ type ProjectRoleType {
 
 type ProjectStatType {
   numberOfLeads: Int
+  numberOfLeadsNotTagged: Int
+  numberOfLeadsInProgress: Int
   numberOfLeadsTagged: Int
-  numberOfLeadsTaggedAndControlled: Int
   numberOfEntries: Int
+  numberOfEntriesVerified: Int
+  numberOfEntriesControlled: Int
   numberOfUsers: Int
   leadsActivity: [DateCountType!]
   entriesActivity: [DateCountType!]
@@ -1132,9 +1152,10 @@ type Query {
   analysisFramework(id: ID!): AnalysisFrameworkDetailType
   analysisFrameworks(id: Float, createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID], modifiedBy: [ID], search: String, page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkListType
   project(id: ID!): ProjectDetailType
-  projects(createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID!], modifiedBy: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): ProjectListType
+  projects(createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): ProjectListType
   recentProjects: [ProjectDetailType!]
   projectsByRegion: [ProjectByRegion!]
+  projectExploreStats: ProjectExploreStatType
   _debug: DjangoDebug
 }
 
