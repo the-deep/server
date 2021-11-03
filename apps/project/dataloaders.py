@@ -33,7 +33,6 @@ class ProjectStatLoader(DataLoaderWithContext):
                 'number_of_leads_not_tagged',
                 'number_of_leads_in_progress',
                 'number_of_leads_tagged',
-                'number_of_leads_with_entries',
                 'number_of_entries',
                 'number_of_entries_verified',
                 'number_of_entries_controlled',

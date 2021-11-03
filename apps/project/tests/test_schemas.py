@@ -6,6 +6,7 @@ from django.core.cache import cache
 
 from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
 
+from lead.models import Lead
 from project.models import (
     ProjectMembership,
     ProjectUserGroupMembership,
@@ -53,9 +54,12 @@ class TestProjectSchema(GraphQLTestCase):
                     date
                   }
                   numberOfLeads
+                  numberOfLeadsNotTagged
+                  numberOfLeadsInProgress
                   numberOfLeadsTagged
-                  numberOfLeadsTaggedAndControlled
                   numberOfEntries
+                  numberOfEntriesVerified
+                  numberOfEntriesControlled
                   numberOfUsers
                   leadsActivity {
                     count
@@ -150,6 +154,7 @@ class TestProjectSchema(GraphQLTestCase):
 
         # add some lead for the project
         lead = LeadFactory.create(project=public_project)
+        lead2 = LeadFactory.create(project=public_project)
         LeadFactory.create_batch(3, project=public_project)
         LeadFactory.create(project=private_project)
 
@@ -158,7 +163,20 @@ class TestProjectSchema(GraphQLTestCase):
             4,
             project=public_project, analysis_framework=analysis_framework, lead=lead
         )
+        entry2_1 = EntryFactory.create(
+            project=public_project, analysis_framework=analysis_framework, lead=lead2, controlled=True)
+        entry2_2 = EntryFactory.create(project=public_project, analysis_framework=analysis_framework, lead=lead2)
         EntryFactory.create(project=private_project, analysis_framework=analysis_framework, lead=lead)
+
+        # Verify entries
+        entry2_1.verified_by.add(user)
+        entry2_1.verified_by.add(user3)
+        entry2_2.verified_by.add(user)
+
+        # NOTE: Right noe only IN_PROGRESS status is set automatically
+        # Control one lead
+        lead2.status = Lead.Status.TAGGED
+        lead2.save(update_fields=('status',))
 
         # lets add some regions to project
         region1, region2, region3 = RegionFactory.create_batch(3)
@@ -193,10 +211,13 @@ class TestProjectSchema(GraphQLTestCase):
         self.force_login(user)
         content = self.query_check(query, variables={'id': public_project.id})
         self.assertNotEqual(content['data']['project'], None, content)
-        self.assertEqual(content['data']['project']['stats']['numberOfLeads'], 4, content)
+        self.assertEqual(content['data']['project']['stats']['numberOfLeads'], 5, content)
+        self.assertEqual(content['data']['project']['stats']['numberOfLeadsNotTagged'], 3, content)
+        self.assertEqual(content['data']['project']['stats']['numberOfLeadsInProgress'], 1, content)
         self.assertEqual(content['data']['project']['stats']['numberOfLeadsTagged'], 1, content)
-        self.assertEqual(content['data']['project']['stats']['numberOfLeadsTaggedAndControlled'], 0, content)
-        self.assertEqual(content['data']['project']['stats']['numberOfEntries'], 4, content)
+        self.assertEqual(content['data']['project']['stats']['numberOfEntries'], 6, content)
+        self.assertEqual(content['data']['project']['stats']['numberOfEntriesVerified'], 2, content)
+        self.assertEqual(content['data']['project']['stats']['numberOfEntriesControlled'], 1, content)
         self.assertEqual(content['data']['project']['stats']['numberOfUsers'], 3, content)
         self.assertEqual(len(content['data']['project']['stats']['leadsActivity']), 1, content)
         self.assertEqual(len(content['data']['project']['stats']['entriesActivity']), 1, content)
