@@ -119,6 +119,10 @@ type AssessmentType {
   summary: GenericScalar
   score: GenericScalar
   questionnaire: GenericScalar
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
 }
 
 input AttributeGqInputType {
