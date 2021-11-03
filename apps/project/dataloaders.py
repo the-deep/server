@@ -29,11 +29,15 @@ class ProjectStatLoader(DataLoaderWithContext):
         annotate_data = {
             key: Cast(KeyTextTransform(key, 'stats_cache'), models.IntegerField())
             for key in [
-                ('number_of_leads'),
-                ('number_of_leads_tagged'),
-                ('number_of_leads_tagged_and_controlled'),
-                ('number_of_entries'),
-                ('number_of_users'),
+                'number_of_leads',
+                'number_of_leads_not_tagged',
+                'number_of_leads_in_progress',
+                'number_of_leads_tagged',
+                'number_of_leads_with_entries',
+                'number_of_entries',
+                'number_of_entries_verified',
+                'number_of_entries_controlled',
+                'number_of_users',
             ]
         }
         stat_qs = Project.objects.filter(id__in=keys).annotate(**annotate_data)

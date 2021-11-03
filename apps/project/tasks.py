@@ -86,7 +86,7 @@ def _generate_project_stats_cache():
 
     # Calculate
     leads_count_map = _count_by_project_qs(Lead.objects.all())
-    leads_tagged_count_map = _count_by_project_qs(
+    leads_with_entries_count_map = _count_by_project_qs(
         Lead.objects.annotate(
             entries_count=models.Subquery(
                 Entry.objects.filter(
@@ -113,7 +113,14 @@ def _generate_project_stats_cache():
             ),
         ).filter(entries_count__gt=0, entries_count=models.F('entries_controlled_count'))
     )
+    leads_not_tagged_count_map = _count_by_project_qs(Lead.objects.filter(status=Lead.Status.NOT_TAGGED))
+    leads_in_progress_count_map = _count_by_project_qs(Lead.objects.filter(status=Lead.Status.IN_PROGRESS))
+    leads_tagged_count_map = _count_by_project_qs(Lead.objects.filter(status=Lead.Status.TAGGED))
+
     entries_count_map = _count_by_project_qs(Entry.objects.all())
+    entries_verified_count_map = _count_by_project_qs(Entry.objects.filter(verified_by__isnull=False))
+    entries_controlled_count_map = _count_by_project_qs(Entry.objects.filter(controlled=True))
+
     members_count_map = _count_by_project_qs(ProjectMembership.objects.all())
 
     # Recent lead/entry stats
@@ -131,8 +138,13 @@ def _generate_project_stats_cache():
             number_of_users=members_count_map.get(pk, 0),
             number_of_leads=leads_count_map.get(pk, 0),
             number_of_leads_tagged=leads_tagged_count_map.get(pk, 0),
+            number_of_leads_with_entries=leads_with_entries_count_map.get(pk, 0),
             number_of_leads_tagged_and_controlled=leads_tagged_and_controlled_count_map.get(pk, 0),
+            number_of_leads_not_tagged=leads_not_tagged_count_map.get(pk, 0),
+            number_of_leads_in_progress=leads_in_progress_count_map.get(pk, 0),
             number_of_entries=entries_count_map.get(pk, 0),
+            number_of_entries_verified=entries_verified_count_map.get(pk, 0),
+            number_of_entries_controlled=entries_controlled_count_map.get(pk, 0),
             leads_activity=leads_activity_count_map.get(pk, 0),
             entries_activity=entries_activity_count_map.get(pk, 0),
             leads_activities=leads_activity_map.get(pk, []),

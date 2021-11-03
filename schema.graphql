@@ -1055,9 +1055,12 @@ type ProjectRoleType {
 
 type ProjectStatType {
   numberOfLeads: Int
+  numberOfLeadsNotTagged: Int
+  numberOfLeadsInProgress: Int
   numberOfLeadsTagged: Int
-  numberOfLeadsTaggedAndControlled: Int
   numberOfEntries: Int
+  numberOfEntriesVerified: Int
+  numberOfEntriesControlled: Int
   numberOfUsers: Int
   leadsActivity: [DateCountType!]
   entriesActivity: [DateCountType!]
