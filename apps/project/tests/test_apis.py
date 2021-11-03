@@ -1604,6 +1604,11 @@ class ProjectApiTest(TestCase):
         self.create_entry(lead=lead2, controlled=False)
         self.create_entry(lead=lead3, controlled=False)
 
+        # number_of_leads_tagged
+        lead1_2.status = lead1_1.status = Lead.Status.TAGGED
+        lead1_2.save(update_fields=('status',))
+        lead1_1.save(update_fields=('status',))
+
         # Run the caching process
         _generate_project_stats_cache()
 
@@ -1618,7 +1623,7 @@ class ProjectApiTest(TestCase):
         )
         self.assertEqual(project_1_data['id'], project1.pk)
         self.assertEqual(project_1_data['number_of_leads'], 5)
-        self.assertEqual(project_1_data['number_of_leads_tagged'], 4)
+        self.assertEqual(project_1_data['number_of_leads_tagged'], 2)
         self.assertEqual(project_1_data['number_of_leads_tagged_and_controlled'], 2)
         self.assertEqual(project_1_data['number_of_entries'], 9)
         self.assertEqual(len(project_1_data['leads_activity']), 2)

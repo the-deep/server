@@ -86,16 +86,6 @@ def _generate_project_stats_cache():
 
     # Calculate
     leads_count_map = _count_by_project_qs(Lead.objects.all())
-    leads_with_entries_count_map = _count_by_project_qs(
-        Lead.objects.annotate(
-            entries_count=models.Subquery(
-                Entry.objects.filter(
-                    lead=models.OuterRef('pk'),
-                ).order_by().values('lead').annotate(count=models.Count('id')).values('count')[:1],
-                output_field=models.IntegerField()
-            ),
-        ).filter(entries_count__gt=0)
-    )
     leads_tagged_and_controlled_count_map = _count_by_project_qs(
         Lead.objects.annotate(
             entries_count=models.Subquery(
@@ -138,7 +128,6 @@ def _generate_project_stats_cache():
             number_of_users=members_count_map.get(pk, 0),
             number_of_leads=leads_count_map.get(pk, 0),
             number_of_leads_tagged=leads_tagged_count_map.get(pk, 0),
-            number_of_leads_with_entries=leads_with_entries_count_map.get(pk, 0),
             number_of_leads_tagged_and_controlled=leads_tagged_and_controlled_count_map.get(pk, 0),
             number_of_leads_not_tagged=leads_not_tagged_count_map.get(pk, 0),
             number_of_leads_in_progress=leads_in_progress_count_map.get(pk, 0),
