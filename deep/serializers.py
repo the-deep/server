@@ -4,7 +4,7 @@ from django.core.exceptions import FieldDoesNotExist
 from django.core.cache import cache
 from rest_framework import serializers
 
-from deep.caches import local_cache
+from deep.caches import local_cache, CacheKey
 from deep.middleware import get_s3_signed_url_ttl
 
 StorageClass = get_storage_class()
@@ -49,11 +49,9 @@ class RecursiveSerializer(serializers.Serializer):
 
 
 class URLCachedFileField(serializers.FileField):
-    CACHE_KEY = 'url_cache_{}'
-
     @classmethod
     def get_cache_key(cls, filename):
-        return cls.CACHE_KEY.format(hash(filename))
+        return CacheKey.URL_CACHED_FILE_FIELD_KEY_FORMAT.format(hash(filename))
 
     @classmethod
     def name_to_representation(cls, name):
@@ -142,7 +140,11 @@ class TempClientIdMixin(serializers.ModelSerializer):
 
     @staticmethod
     def get_cache_key(instance, request):
-        return f'{hash(request)}-{type(instance).__name__}-{instance.id}'
+        return CacheKey.TEMP_CLIENT_ID_KEY_FORMAT.format(
+            request_hash=hash(request),
+            instance_type=type(instance).__name__,
+            instance_id=instance.pk,
+        )
 
     def _get_temp_client_id(self, validated_data):
         try:

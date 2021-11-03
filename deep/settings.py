@@ -712,6 +712,7 @@ GRAPHENE_NODES_WHITELIST = (
     'loginWithHid',
     'register',
     'resetPassword',
+    'projectExploreStats',
 )
 
 # https://docs.graphene-python.org/projects/django/en/latest/settings/

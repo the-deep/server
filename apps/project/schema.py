@@ -78,11 +78,33 @@ def get_top_entity_contributor(project, Entity):
     ]
 
 
+class ProjectExploreStatType(graphene.ObjectType):
+    calculated_at = graphene.DateTime()
+    total_projects = graphene.Int()
+    total_users = graphene.Int()
+    leads_added_weekly = graphene.Int()
+    daily_average_leads_tagged_per_project = graphene.Float()
+    generated_exports_monthly = graphene.Int()
+    top_active_projects = graphene.List(
+        graphene.NonNull(
+            type('ExploreProjectStatTopActiveProjectsType', (graphene.ObjectType,), {
+                'project_id': graphene.Field(graphene.NonNull(graphene.ID)),
+                'project_title': graphene.String(),
+                'analysis_framework_id': graphene.ID(),
+                'analysis_framework_title': graphene.String(),
+            })
+        )
+    )
+
+
 class ProjectStatType(graphene.ObjectType):
     number_of_leads = graphene.Field(graphene.Int)
+    number_of_leads_not_tagged = graphene.Field(graphene.Int)
+    number_of_leads_in_progress = graphene.Field(graphene.Int)
     number_of_leads_tagged = graphene.Field(graphene.Int)
-    number_of_leads_tagged_and_controlled = graphene.Field(graphene.Int)
     number_of_entries = graphene.Field(graphene.Int)
+    number_of_entries_verified = graphene.Field(graphene.Int)
+    number_of_entries_controlled = graphene.Field(graphene.Int)
     number_of_users = graphene.Field(graphene.Int)
     leads_activity = graphene.List(graphene.NonNull(DateCountType))
     entries_activity = graphene.List(graphene.NonNull(DateCountType))
@@ -377,6 +399,7 @@ class Query:
     )
     recent_projects = graphene.List(graphene.NonNull(ProjectDetailType))
     projects_by_region = graphene.List(graphene.NonNull(ProjectByRegion))
+    project_explore_stats = graphene.Field(ProjectExploreStatType)
 
     # NOTE: This is a custom feature, see https://github.com/the-deep/graphene-django-extras
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
@@ -403,3 +426,7 @@ class Query:
                 )
             ),
         ).values('id', 'centroid', 'projects_id')
+
+    @staticmethod
+    def resolve_project_explore_stats(root, info, **kwargs):
+        return info.context.dl.project.resolve_explore_stats()
