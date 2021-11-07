@@ -54,7 +54,7 @@ class ExportTests(TestCase):
         role.save()
 
         self.authenticate(self.user)
-        response = self.client.post(url)
+        response = self.client.post(url, data={'filters': [['project', project.id]]})
         self.assert_200(response)
 
         export = Export.objects.get(id=response.data['export_triggered'])
