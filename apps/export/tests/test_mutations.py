@@ -151,8 +151,14 @@ class TestExportMutationSchema(GraphQLTestCase):
 
         # --- member user
         self.force_login(self.member_user)
-        content = _query_check(minput)['data']['project']['exportCreate']['result']
-        self.assertNotEqual(content, None, content)
+        # ----- (Simple validation)
+        response = _query_check(minput, okay=False)['data']
+        self.assertEqual(response['project']['exportCreate']['result'], None, response)
+
+        # -----
+        minput['format'] = self.genum(Export.Format.XLSX)
+        response = _query_check(minput)['data']
+        self.assertNotEqual(response['project']['exportCreate']['result'], None, response)
 
     def test_export_cancel(self):
         """

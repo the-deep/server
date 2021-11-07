@@ -214,8 +214,8 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
     report_show_lead_entry_id = serializers.BooleanField(required=False)
     report_show_assessment_data = serializers.BooleanField(required=False)
     report_show_entry_widget_data = serializers.BooleanField(required=False)
-    report_text_widget_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=True)
-    report_exporting_widgets = serializers.ListField(child=serializers.IntegerField(), allow_empty=True)
+    report_text_widget_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=True, required=False)
+    report_exporting_widgets = serializers.ListField(child=serializers.IntegerField(), allow_empty=True, required=False)
     report_levels = ExportReportLevelWidgetSerializer(
         required=False, many=True, help_text=ExportReportLevelWidgetSerializer.__doc__)
     report_structure = ExportReportStructureWidgetSerializer(
@@ -274,9 +274,9 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
         export_type = data['export_type']
         _format = data['format']
         if export_type not in self.SUPPORTED_EXPORT_TYPES_BY_DATE_TYPE[data_type]:
-            raise serializers.ValidationError('Unsupported Export type: {_export_type} for Data type: {_type}')
+            raise serializers.ValidationError(f'Unsupported Export type: {export_type} for Data type: {data_type}')
         if _format not in self.SUPPORTED_FORMATS_BY_EXPORT_TYPE[export_type]:
-            raise serializers.ValidationError('Unsupported Format: {_format} for Export Type: {export_type}')
+            raise serializers.ValidationError(f'Unsupported Format: {_format} for Export Type: {export_type}')
         return data
 
     def update(self, _):
