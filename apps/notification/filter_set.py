@@ -1,7 +1,9 @@
 import django_filters
 from django.db.models import Q
 
+from utils.graphene.filters import SimpleInputFilter
 from .models import Notification, Assignment
+from .enums import NotificationStatusEnum, NotificationTypeEnum
 
 
 class NotificationFilterSet(django_filters.FilterSet):
@@ -62,3 +64,22 @@ class AssignmentFilterSet(django_filters.FilterSet):
     class Meta:
         model = Assignment
         fields = ('project', 'is_done')
+
+
+# -------------------- Graphql Filters -----------------------------------
+class NotificationGqlFilterSet(NotificationFilterSet):
+    is_pending = django_filters.BooleanFilter(label='Action Status', method='is_pending_filter')
+    notification_type = SimpleInputFilter(NotificationTypeEnum)
+    status = SimpleInputFilter(NotificationStatusEnum)
+
+    def is_pending_filter(self, queryset, _, value):
+        if value is True:
+            return queryset.filter(
+                data__status='pending',
+            ).distinct()
+        elif value is False:
+            return queryset.filter(
+                ~Q(data__status='pending') | Q(data__status__isnull=True)
+            ).distinct()
+        # If none
+        return queryset

@@ -17,7 +17,7 @@ def send_entry_comment_email(user_id, comment_id):
     send_mail_to_user(
         user, Profile.E_EMAIL_COMMENT,
         context={
-            'notification_type': Notification.ENTRY_COMMENT_ADD,
+            'notification_type': Notification.Type.ENTRY_COMMENT_ADD,
             'Notification': Notification,
             'comment': comment,
             'assignees_display': ', '.join(

@@ -55,19 +55,19 @@ class TestNotificationAPIs(TestCase):
         self.create_join_request(project, user)
         notifs = Notification.get_for(self.user)
         assert notifs.count() == 1
-        assert notifs[0].status == Notification.STATUS_UNSEEN
+        assert notifs[0].status == Notification.Status.UNSEEN
 
         self.authenticate()
 
         data = [
-            {'id': notifs[0].id, 'status': Notification.STATUS_SEEN}
+            {'id': notifs[0].id, 'status': Notification.Status.SEEN}
         ]
         response = self.client.put(url, data)
         self.assert_200(response)
 
         # Check status
         notif = Notification.objects.get(id=notifs[0].id)
-        assert notif.status == Notification.STATUS_SEEN
+        assert notif.status == Notification.Status.SEEN
 
     def test_update_notification_invalid_data(self):
         project = self.create(Project, role=self.admin_role)
@@ -79,7 +79,7 @@ class TestNotificationAPIs(TestCase):
         self.create_join_request(project, user)
         notifs = Notification.get_for(self.user)
         assert notifs.count() == 1
-        assert notifs[0].status == Notification.STATUS_UNSEEN
+        assert notifs[0].status == Notification.Status.UNSEEN
 
         self.authenticate()
 
@@ -87,11 +87,11 @@ class TestNotificationAPIs(TestCase):
         data = [
             {
                 'id': notifs[0].id + 1,
-                'status': Notification.STATUS_SEEN + 'a'
+                'status': Notification.Status.SEEN + 'a'
             },
             {
                 'id': notifs[0].id,
-                'status': Notification.STATUS_SEEN
+                'status': Notification.Status.SEEN
             },
         ]
         response = self.client.put(url, data)

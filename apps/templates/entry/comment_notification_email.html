@@ -32,14 +32,14 @@
 {% endblock %}
 
 {% block body %}
-    {% if notification_type == Notification.ENTRY_COMMENT_ADD %}
+    {% if notification_type == Notification.Type.ENTRY_COMMENT_ADD %}
         <p class="email-label">
             {{comment.created_by.profile.get_display_name}} added a comment in Entry: <{{comment.entry.lead}}>
         </p>
         <div class="comment">
             {{comment.text | markdown_render }}
         </div>
-    {% elif notification_type == Notification.ENTRY_COMMENT_REPLY_ADD %}
+    {% elif notification_type == Notification.Type.ENTRY_COMMENT_REPLY_ADD %}
         <p class="email-label">
             {{comment.created_by.profile.get_display_name}} replied:
         </p>
@@ -52,7 +52,7 @@
         <div class="comment">
             {{comment.parent.text | markdown_render}}
         </div>
-    {% elif notification_type == Notification.ENTRY_COMMENT_MODIFY %}
+    {% elif notification_type == Notification.Type.ENTRY_COMMENT_MODIFY %}
         <p class="email-label">
             {{comment.created_by.profile.get_display_name}} modified the comment you are following:
         </p>
@@ -64,7 +64,7 @@
             <p class="arrow"></p>
             {% endfor %}
         </div>
-    {% elif notification_type == Notification.ENTRY_COMMENT_REPLY_MODIFY %}
+    {% elif notification_type == Notification.Type.ENTRY_COMMENT_REPLY_MODIFY %}
         <p class="email-label">
             {{comment.created_by.profile.get_display_name}} modified the comment you are following:
         </p>
@@ -76,14 +76,14 @@
             <p class="arrow"></p>
             {% endfor %}
         </div>
-    {% elif notification_type == Notification.ENTRY_COMMENT_RESOLVED %}
+    {% elif notification_type == Notification.Type.ENTRY_COMMENT_RESOLVED %}
         <p class="email-label">
             {{comment.created_by.profile.get_display_name}} resolved the comment thread:
         </p>
         <div class="comment">
             {{comment.text | markdown_render}}
         </div>
-    {% elif notification_type == Notification.ENTRY_COMMENT_ASSIGNEE_CHANGE %}
+    {% elif notification_type == Notification.Type.ENTRY_COMMENT_ASSIGNEE_CHANGE %}
         <p class="email-label">
             {{comment.created_by.profile.get_display_name}} assigned {{assignees_display}} to the comment:
         </p>
