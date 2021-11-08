@@ -206,7 +206,7 @@ class TestProjectJoinMutation(GraphQLTestCase):
         notification_qs = Notification.objects.filter(
             receiver=admin_user,
             project=project,
-            notification_type=Notification.PROJECT_JOIN_REQUEST
+            notification_type=Notification.Type.PROJECT_JOIN_REQUEST
         )
         old_count = notification_qs.count()
         with self.captureOnCommitCallbacks(execute=True):

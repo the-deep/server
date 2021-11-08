@@ -924,6 +924,43 @@ type Mutation {
   analysisFramework(id: ID!): AnalysisFrameworkMutationType
 }
 
+type NotificationListType {
+  results: [NotificationType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum NotificationStatusEnum {
+  SEEN
+  UNSEEN
+}
+
+type NotificationType {
+  id: ID!
+  project: ProjectType
+  data: GenericScalar
+  timestamp: DateTime!
+  notificationType: NotificationTypeEnum!
+  notificationTypeDisplay: EnumDescription!
+  status: NotificationStatusEnum!
+  statusDisplay: EnumDescription!
+}
+
+enum NotificationTypeEnum {
+  PROJECT_JOIN_REQUEST
+  PROJECT_JOIN_REQUEST_ABORT
+  PROJECT_JOIN_RESPONSE
+  ENTRY_COMMENT_ADD
+  ENTRY_COMMENT_MODIFY
+  ENTRY_COMMENT_ASSIGNEE_CHANGE
+  ENTRY_COMMENT_REPLY_ADD
+  ENTRY_COMMENT_REPLY_MODIFY
+  ENTRY_COMMENT_RESOLVED
+  ENTRY_REVIEW_COMMENT_ADD
+  ENTRY_REVIEW_COMMENT_MODIFY
+}
+
 type OrganizationListType {
   results: [OrganizationType!]
   totalCount: Int
@@ -1265,6 +1302,8 @@ type ProjectVizDataType {
 }
 
 type Query {
+  notification(id: ID!): NotificationType
+  notifications(timestamp: DateTime, timestamp_Lt: Date, timestamp_Gt: Date, timestamp_Lte: Date, timestamp_Gte: Date, status: NotificationStatusEnum, notificationType: NotificationTypeEnum, isPending: Boolean, page: Int = 1, ordering: String, pageSize: Int): NotificationListType
   region(id: ID!): RegionDetailType
   regions(id: Float, code: String, title: String, public: Boolean, project: [ID], createdAt: DateTime, createdBy: [ID], modifiedAt: DateTime, modifiedBy: [ID], createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, excludeProject: [ID], page: Int = 1, ordering: String, pageSize: Int): RegionListType
   organization(id: ID!): OrganizationType

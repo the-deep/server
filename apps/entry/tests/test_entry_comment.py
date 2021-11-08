@@ -212,7 +212,7 @@ class EntryCommentTests(TestCase):
         assert _get_comment_users_pk(comment1_id) == set([tagger1.pk])
         assert _get_notifications_receivers() == (
             set([tagger1.pk]),
-            set([Notification.ENTRY_COMMENT_ADD]),
+            set([Notification.Type.ENTRY_COMMENT_ADD]),
         )
 
         data['parent'] = comment1_id
@@ -227,7 +227,7 @@ class EntryCommentTests(TestCase):
         assert _get_comment_users_pk(reply1_id) == set([reviewer.pk])
         assert _get_notifications_receivers() == (
             set([reviewer.pk]),
-            set([Notification.ENTRY_COMMENT_REPLY_ADD]),
+            set([Notification.Type.ENTRY_COMMENT_REPLY_ADD]),
         )
 
         # Create a reply 2
@@ -239,7 +239,7 @@ class EntryCommentTests(TestCase):
         assert _get_comment_users_pk(reply2_id) == set([tagger1.pk])
         assert _get_notifications_receivers() == (
             set([tagger1.pk]),  # Targeted users for notification
-            set([Notification.ENTRY_COMMENT_REPLY_ADD]),  # Notification type
+            set([Notification.Type.ENTRY_COMMENT_REPLY_ADD]),  # Notification type
         )
 
         # Create a reply 3
@@ -251,7 +251,7 @@ class EntryCommentTests(TestCase):
         assert _get_comment_users_pk(reply3_id) == set([reviewer.pk, tagger1.pk])
         assert _get_notifications_receivers() == (
             set([reviewer.pk, tagger1.pk]),
-            set([Notification.ENTRY_COMMENT_REPLY_ADD]),
+            set([Notification.Type.ENTRY_COMMENT_REPLY_ADD]),
         )
 
         # Update reply 3
@@ -263,7 +263,7 @@ class EntryCommentTests(TestCase):
         assert _get_comment_users_pk(reply3_id) == set([reviewer.pk, tagger1.pk])
         assert _get_notifications_receivers() == (
             set([reviewer.pk, tagger1.pk]),
-            set([Notification.ENTRY_COMMENT_REPLY_MODIFY]),
+            set([Notification.Type.ENTRY_COMMENT_REPLY_MODIFY]),
         )
 
         # Change assigne for the commit
@@ -275,7 +275,7 @@ class EntryCommentTests(TestCase):
             })
         assert _get_notifications_receivers() == (
             set([tagger1.pk, tagger2.pk]),
-            set([Notification.ENTRY_COMMENT_ASSIGNEE_CHANGE]),
+            set([Notification.Type.ENTRY_COMMENT_ASSIGNEE_CHANGE]),
         )
 
         # Update comment text
@@ -287,7 +287,7 @@ class EntryCommentTests(TestCase):
             })
         assert _get_notifications_receivers() == (
             set([tagger1.pk, tagger2.pk]),
-            set([Notification.ENTRY_COMMENT_MODIFY]),
+            set([Notification.Type.ENTRY_COMMENT_MODIFY]),
         )
 
         # Resolve comment
@@ -297,7 +297,7 @@ class EntryCommentTests(TestCase):
             self.client.post(f'{url}{comment1_id}/resolve/')
         assert _get_notifications_receivers() == (
             set([tagger1.pk, tagger2.pk]),
-            set([Notification.ENTRY_COMMENT_RESOLVED]),
+            set([Notification.Type.ENTRY_COMMENT_RESOLVED]),
         )
 
     def test_entry_comment_put(self):
