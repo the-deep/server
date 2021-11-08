@@ -951,7 +951,7 @@ type ProjectDetailType {
   assessment(id: ID!): AssessmentType
   assessments(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentListType
   reviewComment(id: ID!): EntryReviewCommentDetailType
-  geoAreas(search: String, page: Int = 1, ordering: String, pageSize: Int): ProjectGeoAreaListType
+  geoAreas(ids: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): ProjectGeoAreaListType
   export(id: ID!): UserExportType
   exports(type: [ExportDataTypeEnum!], format: [ExportFormatEnum!], status: [ExportStatusEnum!], page: Int = 1, ordering: String, pageSize: Int): UserExportListType
   entry(id: ID!): EntryType
