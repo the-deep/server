@@ -699,12 +699,12 @@ type LeadGroupListType {
 
 type LeadGroupType {
   id: ID!
+  title: String!
+  project: ProjectType!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  title: String!
-  project: ProjectType!
   leadCounts: Int
 }
 

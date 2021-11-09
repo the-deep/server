@@ -861,7 +861,7 @@ class TestAnalysisAPIs(TestCase):
             statement='Hello from here',
             client_id='1'
         )
-        self.create(
+        statement_entry1 = self.create(
             AnalyticalStatementEntry,
             analytical_statement=analytical_statement,
             entry=entry1,
@@ -886,12 +886,12 @@ class TestAnalysisAPIs(TestCase):
                         {
                             "order": 1,
                             "client_id": "1",
-                            "entry": entry2.id,
+                            "entry": entry1.id,
                         },
                         {
-                            "order": 2,
+                            "order": 3,
                             "client_id": "2",
-                            "entry": entry1.id
+                            "entry": entry2.id
                         }
                     ],
                 }
@@ -902,6 +902,8 @@ class TestAnalysisAPIs(TestCase):
         self.assert_200(response)
         self.assertEqual(response.data['analytical_statements'][0]['id'], analytical_statement.id)
         self.assertEqual(response.data['analytical_statements'][0]['analytical_entries'][0]['entry'],
+                         statement_entry1.entry.id)
+        self.assertEqual(response.data['analytical_statements'][0]['analytical_entries'][1]['entry'],
                          statement_entry2.entry.id)
 
     def test_pillar_overview_in_analysis(self):
