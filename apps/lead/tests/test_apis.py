@@ -39,6 +39,8 @@ from lead.models import (
 )
 from user_group.models import UserGroup, GroupMembership
 from ary.models import Assessment
+from lead.factories import LeadFactory
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 logger = logging.getLogger(__name__)
@@ -1749,3 +1751,41 @@ class WebInfoExtractionTests(TestCase):
             'existing': False,
         }
         self.assertEqualWithWarning(expected, response.data)
+
+
+# class TestExtractorCallback(TestCase):
+#     def setUp(self):
+#         super().setUp()
+#         self.lead = LeadFactory.create()
+#
+#     def test_extractor_callback_url(self):
+#         url = '/api/v1/leads/extract-callback/'
+#         self.authenticate()
+#         image1 = SimpleUploadedFile(
+#             name='test_image1.jpg', content=b'', content_type='image/jpeg'
+#         )
+#         image2 = SimpleUploadedFile(
+#             name='test_image2.jpg', content=b'', content_type='image/jpeg'
+#         )
+#         image3 = SimpleUploadedFile(
+#             name='test_image3.jpg', content=b'', content_type='image/jpeg'
+#         )
+#         text_file = SimpleUploadedFile(
+#             name='text.txt', content=b'', content_type='text/plain'
+#         )
+#         pdf_file = SimpleUploadedFile(
+#             name='text.txt', content=b'', content_type='application/pdf'
+#         )
+#         data = {
+#             "client_id": self.lead.id,
+#             "images_path": [
+#                 image1.url,
+#                 image2.url,
+#                 image3.url
+#             ],
+#             "text_path": text_file.url,
+#             "url": pdf_file.url
+#         }
+#
+#         response = self.client.post(url, data)
+#         print(response.content)

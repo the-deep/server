@@ -792,6 +792,10 @@ SESSION_COOKIE_DOMAIN = env('SESSION_COOKIE_DOMAIN')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#csrf-cookie-domain
 CSRF_COOKIE_DOMAIN = env('CSRF_COOKIE_DOMAIN')
 
+DEEPL_EXTRACTOR_URL = os.environ.get("DEEPL_EXTRACTOR_URL", 'http://extractor:8001/extract_docs')
+DEEPL_EXTRACTOR_CALLBACK_URL = os.environ.get(
+    "DEEPL_EXTRACTOR_CALLBACK_URL", 'http://server:8000/api/v1/leads/extract-callback/'
+)
 
 # Graphene configs
 # WHITELIST following nodes from authentication checks
