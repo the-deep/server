@@ -86,16 +86,27 @@ class AnalysisPillarType(ClientIdMixin, DjangoObjectType):
     analysis = graphene.ID(source='analysis_id', required=True)
     cloned_from = graphene.ID(source='cloned_from_id', required=True)
 
+    @staticmethod
+    def get_custom_queryset(queryset, info, **kwargs):
+        return get_analysis_pillar_qs(info)
+
+
+class AnalysisPillarDetailType(AnalysisPillarType):
+    class Meta:
+        model = AnalysisPillar
+        skip_registry = True
+        fields = (
+            'id',
+            'title', 'main_statement', 'information_gap', 'assignee',
+            'filters',
+        )
+
     entries = DjangoPaginatedListObjectField(
         AnalysisPillarEntryListType,
         pagination=PageGraphqlPagination(
             page_size_query_param='pageSize'
         )
     )
-
-    @staticmethod
-    def get_custom_queryset(queryset, info, **kwargs):
-        return get_analysis_pillar_qs(info)
 
     @staticmethod
     def resolve_entries(root, info, **kwargs):
@@ -126,7 +137,7 @@ class Query:
     )
 
     # Pillar
-    analysis_pillar = DjangoObjectField(AnalysisPillarType)
+    analysis_pillar = DjangoObjectField(AnalysisPillarDetailType)
     analysis_pillars = DjangoPaginatedListObjectField(
         AnalysisPillarListType,
         pagination=PageGraphqlPagination(
@@ -139,5 +150,5 @@ class Query:
         return get_analysis_qs(info)
 
     @staticmethod
-    def resolve_pillars(root, info, **kwargs) -> QuerySet:
-        return get_analysis_pillar_qs(info).filter(analysis=root)
+    def resolve_analysis_pillars(root, info, **kwargs) -> QuerySet:
+        return get_analysis_pillar_qs(info)
