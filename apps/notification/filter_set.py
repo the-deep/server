@@ -67,10 +67,27 @@ class AssignmentFilterSet(django_filters.FilterSet):
 
 
 # -------------------- Graphql Filters -----------------------------------
-class NotificationGqlFilterSet(NotificationFilterSet):
+class NotificationGqlFilterSet(django_filters.FilterSet):
+    timestamp = django_filters.DateTimeFilter(
+        field_name='timestamp',
+        input_formats=[django_filters.fields.IsoDateTimeField.ISO_8601],
+    )
+    timestamp_lte = django_filters.DateTimeFilter(
+        field_name='timestamp', lookup_expr='lte',
+        input_formats=[django_filters.fields.IsoDateTimeField.ISO_8601],
+    )
+    timestamp_gte = django_filters.DateTimeFilter(
+        field_name='timestamp', lookup_expr='gte',
+        input_formats=[django_filters.fields.IsoDateTimeField.ISO_8601],
+    )
+
     is_pending = django_filters.BooleanFilter(label='Action Status', method='is_pending_filter')
     notification_type = SimpleInputFilter(NotificationTypeEnum)
     status = SimpleInputFilter(NotificationStatusEnum)
+
+    class Meta:
+        model = Notification
+        fields = ()
 
     def is_pending_filter(self, queryset, _, value):
         if value is True:

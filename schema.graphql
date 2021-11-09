@@ -1303,7 +1303,7 @@ type ProjectVizDataType {
 
 type Query {
   notification(id: ID!): NotificationType
-  notifications(timestamp: DateTime, timestamp_Lt: Date, timestamp_Gt: Date, timestamp_Lte: Date, timestamp_Gte: Date, status: NotificationStatusEnum, notificationType: NotificationTypeEnum, isPending: Boolean, page: Int = 1, ordering: String, pageSize: Int): NotificationListType
+  notifications(timestamp: DateTime, timestampLte: DateTime, timestampGte: DateTime, isPending: Boolean, notificationType: NotificationTypeEnum, status: NotificationStatusEnum, page: Int = 1, ordering: String, pageSize: Int): NotificationListType
   region(id: ID!): RegionDetailType
   regions(id: Float, code: String, title: String, public: Boolean, project: [ID], createdAt: DateTime, createdBy: [ID], modifiedAt: DateTime, modifiedBy: [ID], createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, excludeProject: [ID], page: Int = 1, ordering: String, pageSize: Int): RegionListType
   organization(id: ID!): OrganizationType
