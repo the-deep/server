@@ -11,6 +11,7 @@ from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import ProjectPermissions as PP
 from organization.schema import OrganizationType
 from user.models import User
+from user_resource.schema import UserResourceMixin
 
 from user.schema import UserType
 
@@ -128,13 +129,13 @@ class EntriesCountType(graphene.ObjectType):
     controlled = graphene.Int()
 
 
-class LeadGroupType(DjangoObjectType):
+class LeadGroupType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = LeadGroup
         fields = (
-            'id', 'title', 'project',
-            'created_by', 'created_at',
-            'modified_by', 'modified_at',
+            'id',
+            'title',
+            'project',
         )
     lead_counts = graphene.Field(graphene.Int)
 
