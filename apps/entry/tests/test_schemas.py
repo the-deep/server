@@ -233,10 +233,8 @@ class TestEntryQuery(GraphQLTestCase):
                 $commentStatus: EntryFilterCommentStatusEnum
                 $controlled: Boolean
                 $createdAt: DateTime
-                $createdAt_Gt: DateTime
-                $createdAt_Gte: DateTime
-                $createdAt_Lt: DateTime
-                $createdAt_Lte: DateTime
+                $createdAtGte: DateTime
+                $createdAtLte: DateTime
                 $createdBy: [ID!]
                 $entriesId: [ID!]
                 $entryTypes: [EntryTagTypeEnum!]
@@ -248,10 +246,8 @@ class TestEntryQuery(GraphQLTestCase):
                 $leadGroupLabel: String
                 $leadPriorities: [LeadPriorityEnum!]
                 $leadPublishedOn: Date
-                $leadPublishedOn_Gt: Date
-                $leadPublishedOn_Gte: Date
-                $leadPublishedOn_Lt: Date
-                $leadPublishedOn_Lte: Date
+                $leadPublishedOnGte: Date
+                $leadPublishedOnLte: Date
                 $leads: [ID!]
                 $leadStatuses: [LeadStatusEnum!]
                 $leadTitle: String
@@ -264,10 +260,8 @@ class TestEntryQuery(GraphQLTestCase):
                     commentStatus: $commentStatus
                     controlled: $controlled
                     createdAt: $createdAt
-                    createdAt_Gt: $createdAt_Gt
-                    createdAt_Gte: $createdAt_Gte
-                    createdAt_Lt: $createdAt_Lt
-                    createdAt_Lte: $createdAt_Lte
+                    createdAtGte: $createdAtGte
+                    createdAtLte: $createdAtLte
                     createdBy: $createdBy
                     entriesId: $entriesId
                     entryTypes: $entryTypes
@@ -284,10 +278,8 @@ class TestEntryQuery(GraphQLTestCase):
                     leadGroupLabel: $leadGroupLabel
                     leadPriorities: $leadPriorities
                     leadPublishedOn: $leadPublishedOn
-                    leadPublishedOn_Gt: $leadPublishedOn_Gt
-                    leadPublishedOn_Gte: $leadPublishedOn_Gte
-                    leadPublishedOn_Lt: $leadPublishedOn_Lt
-                    leadPublishedOn_Lte: $leadPublishedOn_Lte
+                    leadPublishedOnGte: $leadPublishedOnGte
+                    leadPublishedOnLte: $leadPublishedOnLte
                     leads: $leads
                     leadStatuses: $leadStatuses
                     leadTitle: $leadTitle
@@ -407,17 +399,13 @@ class TestEntryQuery(GraphQLTestCase):
             # ({'modifiedAt': []}, []),
             # ({'modifiedBy': []}, []),
             # ({'createdAt': []}, []),
-            # ({'createdAt_Gt': []}, []),
-            # ({'createdAt_Gte': []}, []),
-            # ({'createdAt_Lt': []}, []),
-            # ({'createdAt_Lte': []}, []),
+            # ({'createdAtGte': []}, []),
+            # ({'createdAtLte': []}, []),
             # ({'createdBy': []}, []),
             # ({'leadGroupLabel': []}, []),
             # ({'leadPublishedOn': []}, []),
-            # ({'leadPublishedOn_Gt': []}, []),
-            # ({'leadPublishedOn_Gte': []}, []),
-            # ({'leadPublishedOn_Lt': []}, []),
-            # ({'leadPublishedOn_Lte': []}, []),
+            # ({'leadPublishedOnGte': []}, []),
+            # ({'leadPublishedOnLte': []}, []),
         ]:
             # Entry filter test
             content = self.query_check(query, variables={'projectId': project.id, **filter_data})
