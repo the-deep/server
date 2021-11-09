@@ -1,3 +1,4 @@
+from functools import partial
 import django_filters
 import graphene
 from graphene.types.generic import GenericScalar
@@ -104,3 +105,21 @@ IDListFilter = _get_id_list_filter
 # IDListFilter = _generate_list_filter_class(graphene.ID)
 StringListFilter = _generate_list_filter_class(graphene.String)
 GenericFilter = _generate_filter_class(GenericScalar)
+
+DateTimeFilter = partial(
+    django_filters.DateTimeFilter,
+    input_formats=[django_filters.fields.IsoDateTimeField.ISO_8601],
+)
+DateTimeGteFilter = partial(
+    django_filters.DateTimeFilter,
+    lookup_expr='gte',
+    input_formats=[django_filters.fields.IsoDateTimeField.ISO_8601],
+)
+DateTimeLteFilter = partial(
+    django_filters.DateTimeFilter,
+    lookup_expr='lte',
+    input_formats=[django_filters.fields.IsoDateTimeField.ISO_8601],
+)
+
+DateGteFilter = partial(django_filters.DateFilter, lookup_expr='gte')
+DateLteFilter = partial(django_filters.DateFilter, lookup_expr='lte')

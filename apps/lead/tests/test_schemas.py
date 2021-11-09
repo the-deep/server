@@ -24,13 +24,10 @@ class TestLeadQuerySchema(GraphQLTestCase):
             # lead Arguments
             $assignees: [ID!]
             $authoringOrganizationTypes: [ID!]
-            $classifiedDocId: [Float]
             $confidentiality: LeadConfidentialityEnum
             $createdAt: DateTime
-            $createdAt_Gt: DateTime
-            $createdAt_Gte: DateTime
-            $createdAt_Lt: DateTime
-            $createdAt_Lte: DateTime
+            $createdAtGte: DateTime
+            $createdAtLte: DateTime
             $customFilters: LeadCustomFilterEnum
             $emmEntities: String
             $emmKeywords: String
@@ -39,10 +36,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
             $exists: LeadExistsEnum
             $priorities: [LeadPriorityEnum!]
             $publishedOn: Date
-            $publishedOn_Gt: Date
-            $publishedOn_Gte: Date
-            $publishedOn_Lt: Date
-            $publishedOn_Lte: Date
+            $publishedOnGte: Date
+            $publishedOnLte: Date
             $search: String
             $sourceTypes: [LeadSourceTypeEnum!]
             $statuses: [LeadStatusEnum!]
@@ -54,13 +49,10 @@ class TestLeadQuerySchema(GraphQLTestCase):
             leads (
                 assignees: $assignees
                 authoringOrganizationTypes: $authoringOrganizationTypes
-                classifiedDocId: $classifiedDocId
                 confidentiality: $confidentiality
                 createdAt: $createdAt
-                createdAt_Gt: $createdAt_Gt
-                createdAt_Gte: $createdAt_Gte
-                createdAt_Lt: $createdAt_Lt
-                createdAt_Lte: $createdAt_Lte
+                createdAtGte: $createdAtGte
+                createdAtLte: $createdAtLte
                 customFilters: $customFilters
                 emmEntities: $emmEntities
                 emmKeywords: $emmKeywords
@@ -68,10 +60,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 exists: $exists
                 priorities: $priorities
                 publishedOn: $publishedOn
-                publishedOn_Gt: $publishedOn_Gt
-                publishedOn_Gte: $publishedOn_Gte
-                publishedOn_Lt: $publishedOn_Lt
-                publishedOn_Lte: $publishedOn_Lte
+                publishedOnGte: $publishedOnGte
+                publishedOnLte: $publishedOnLte
                 search: $search
                 sourceTypes: $sourceTypes
                 statuses: $statuses
@@ -236,18 +226,14 @@ class TestLeadQuerySchema(GraphQLTestCase):
             # ({'emmRiskFactors': []}, []),
             # TODO: Common filters
             # ({'publishedOn': []}, []),
-            # ({'publishedOn_Gt': []}, []),
-            # ({'publishedOn_Gte': []}, []),
-            # ({'publishedOn_Lt': []}, []),
-            # ({'publishedOn_Lte': []}, []),
+            # ({'publishedOnGte': []}, []),
+            # ({'publishedOnLte': []}, []),
             # ({'text': []}, []),
             # ({'url': []}, []),
             # ({'website': []}, []),
             # ({'createdAt': []}, []),
-            # ({'createdAt_Gt': []}, []),
-            # ({'createdAt_Gte': []}, []),
-            # ({'createdAt_Lt': []}, []),
-            # ({'createdAt_Lte': []}, []),
+            # ({'createdAtGte': []}, []),
+            # ({'createdAtLte': []}, []),
         ]:
             content = self.query_check(self.lead_filter_query, variables={'projectId': project.id, **filter_data})
             self.assertListIds(

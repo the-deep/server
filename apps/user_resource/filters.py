@@ -1,6 +1,12 @@
-from utils.graphene.filters import IDListFilter
-from django.contrib.auth.models import User
 import django_filters
+from django.contrib.auth.models import User
+
+from utils.graphene.filters import (
+    IDListFilter,
+    DateTimeFilter,
+    DateTimeGteFilter,
+    DateTimeLteFilter,
+)
 
 
 class UserResourceFilterSet(django_filters.FilterSet):
@@ -31,25 +37,11 @@ class UserResourceFilterSet(django_filters.FilterSet):
 
 
 class UserResourceGqlFilterSet(django_filters.FilterSet):
-    created_at_gte = django_filters.DateTimeFilter(
-        field_name='created_at',
-        lookup_expr='gte',
-        input_formats=[django_filters.fields.IsoDateTimeField.ISO_8601]
-    )
-    created_at_lte = django_filters.DateTimeFilter(
-        field_name='created_at',
-        lookup_expr='lte',
-        input_formats=[django_filters.fields.IsoDateTimeField.ISO_8601]
-    )
-    modified_at_gte = django_filters.DateTimeFilter(
-        field_name='modified_at',
-        lookup_expr='gte',
-        input_formats=[django_filters.fields.IsoDateTimeField.ISO_8601]
-    )
-    modified_at_lte = django_filters.DateTimeFilter(
-        field_name='modified_at',
-        lookup_expr='lte',
-        input_formats=[django_filters.fields.IsoDateTimeField.ISO_8601]
-    )
+    created_at = DateTimeFilter()
+    created_at_gte = DateTimeGteFilter(field_name='created_at')
+    created_at_lte = DateTimeLteFilter(field_name='created_at')
+    modified_at = DateTimeFilter()
+    modified_at_gte = DateTimeGteFilter(field_name='modified_at')
+    modified_at_lte = DateTimeLteFilter(field_name='modified_at')
     created_by = IDListFilter()
     modified_by = IDListFilter()
