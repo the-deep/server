@@ -59,6 +59,7 @@ from .serializers import (
     LeadOptionsSerializer,
     LeadOptionsBodySerializer,
     LegacyLeadOptionsSerializer,
+    ExtractCallbackSerializer,
 )
 
 
@@ -234,6 +235,19 @@ class LeadViewSet(viewsets.ModelViewSet):
         response = self.get_paginated_response(serializer.data)
 
         return response
+
+    @action(
+        detail=False,
+        permission_classes=[permissions.AllowAny],
+        methods=['post'],
+        serializer_class=ExtractCallbackSerializer,
+        url_path='extract-callback',
+    )
+    def extract_callback(self, request, version=None):
+        serializer = ExtractCallbackSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return response.Response("done", status=status.HTTP_200_OK)
 
 
 class LeadBulkDeleteViewSet(viewsets.GenericViewSet):
