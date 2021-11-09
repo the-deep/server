@@ -12,7 +12,6 @@ from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
 from organization.schema import OrganizationType
 from user.models import User
-from user_resource.schema import UserResourceMixin
 
 from user.schema import UserType
 
