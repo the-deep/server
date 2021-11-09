@@ -1,10 +1,26 @@
+from celery import shared_task
+# from channels import Group
+from django.core.files import File
+from django.db.models import Q
+from django.db.models.functions import Length
+from django.conf import settings
+from lead.models import (
+    Lead,
+    LeadPreview,
+)
+from redis_store import redis
+# from rest_framework.renderers import JSONRenderer
+from utils.extractor.file_document import FileDocument
+from utils.extractor.web_document import WebDocument
+from utils.extractor.thumbnailers import DocThumbnailer
+# from utils.websocket.subscription import SubscriptionConsumer
+
 import time
-import reversion
 import os
 import re
 import requests
 import tempfile
-
+import json
 import logging
 
 from celery import shared_task
@@ -56,72 +72,32 @@ def _extract_from_lead_core(lead_id):
     """
     # Get the lead to be extracted
     lead = Lead.objects.get(id=lead_id)
-    lead.update_extraction_status(Lead.ExtractionStatus.STARTED)
-
-    with reversion.create_revision():
-        text, images = '', []
-        word_count, page_count = 0, 1
-
-        # Extract either using FileDocument or WebDocument
-        # as per the document type
+    url_to_extract = None
+    if lead.attachment:
+        url_to_extract = lead.attachment.url
+    elif lead.url:
+        url_to_extract = lead.url
+    if url_to_extract:
         try:
-            if lead.text:
-                text = lead.text
-                images = []
-
-            elif lead.attachment:
-                doc = FileDocument(
-                    lead.attachment.file,
-                    lead.attachment.file.name,
-                )
-                text, images, page_count = doc.extract()
-
-            elif lead.url:
-                doc = WebDocument(lead.url)
-                text, images, page_count = doc.extract()
-
-            text = _preprocess(text)
-            word_count = len(re.findall(r'\b\S+\b', text))
-            lead.update_extraction_status(Lead.ExtractionStatus.SUCCESS)
+            headers = {
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "urls": [
+                    {
+                        "url": url_to_extract,
+                        "client_id": lead.id,
+                    }
+                ],
+                "callback_url": settings.DEEPL_EXTRACTOR_CALLBACK_URL
+            }
+            response = requests.post(settings.DEEPL_EXTRACTOR_URL, headers=headers, data=json.dumps(payload))
+            if response.status_code == 200:
+                logger.info('Lead Extraction Request Sent!!', exc_info=True)
+            else:
+                logger.error('Lead Extraction Request Failed!!', exc_info=True)
         except Exception:
-            logger.error('Lead Extraction Failed!!', exc_info=True)
-            lead.update_extraction_status(Lead.ExtractionStatus.FAILED)
-            if images:
-                for image in images:
-                    image.close()
-            # return False
-
-        # Make sure there isn't existing lead preview
-        LeadPreview.objects.filter(lead=lead).delete()
-        LeadPreviewImage.objects.filter(lead=lead).delete()
-
-        # and create new one
-        LeadPreview.objects.create(
-            lead=lead,
-            text_extract=text,
-            word_count=word_count,
-            page_count=page_count,
-        )
-
-        transaction.on_commit(
-            lambda: extract_thumbnail.s(lead.id).delay()
-        )
-        if text and not lead.project.is_private:
-            # Send background deepl request
-            transaction.on_commit(
-                lambda: send_lead_text_to_deepl.s(lead.id).delay()
-            )
-
-        # Save extracted images as LeadPreviewImage instances
-        if images:
-            LeadPreviewImage.objects.filter(lead=lead).delete()
-            for image in images:
-                lead_image = LeadPreviewImage(lead=lead)
-                lead_image.file.save(os.path.basename(image.name),
-                                     File(image), True)
-                lead_image.save()
-                image.close()
-
+            logger.exception('Lead Extraction Failed, Expeption occoured!!', exc_info=True)
     return True
 
 
@@ -177,6 +153,7 @@ def send_lead_text_to_deepl(lead_id):
         return True
 
     try:
+        return True
         return classify_lead(lead)
     except Exception:
         # Do not retry

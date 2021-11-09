@@ -30,7 +30,10 @@ from .models import (
     LeadPreviewImage,
     LeadEMMTrigger,
     EMMEntity,
+    LeadPreview,
 )
+from utils.image import download_file_from_url
+from apps.docs.utils import get_text_form_url
 
 
 def check_if_url_exists(url, user=None, project=None, exception_id=None, return_lead=False):
@@ -623,3 +626,42 @@ class LeadCopyGqSerializer(ProjectPropertySerializerMixin, serializers.Serialize
                 new_lead = self.clone_lead(lead, project_id, user)
                 new_lead and new_leads.append(new_lead)
         return new_leads
+
+
+class ExtractCallbackSerializer(serializers.Serializer):
+    """
+    Serialize deepl extractor
+    """
+    client_id = serializers.IntegerField()
+    images_path = serializers.ListField(
+        child=serializers.CharField(allow_blank=True), default=[]
+    )
+    text_path = serializers.CharField()
+    url = serializers.CharField()
+    # page_count = serializers.IntegerField()
+
+    def create(self, validated_data):
+        lead = None
+        try:
+            lead = Lead.objects.get(id=validated_data["client_id"])
+        except Lead.DoesNotExist:
+            raise serializers.ValidationError("Invalid lead id")
+        # Make sure there isn't existing lead preview
+        LeadPreview.objects.filter(lead=lead).delete()
+        LeadPreviewImage.objects.filter(lead=lead).delete()
+        word_count, page_count = 0, 1
+        # and create new one
+        LeadPreview.objects.create(
+            lead=lead,
+            text_extract=get_text_form_url(validated_data["text_path"]),
+            word_count=word_count,
+            page_count=page_count,
+        )
+        # Save extracted images as LeadPreviewImage instances
+        LeadPreviewImage.objects.filter(lead=lead).delete()
+        for image in validated_data["images_path"]:
+            lead_image = LeadPreviewImage(lead=lead)
+            image_obj = download_file_from_url(image)
+            lead_image.file.save(image_obj.name, image_obj)
+            lead_image.save()
+        return True
