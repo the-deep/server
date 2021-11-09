@@ -29,7 +29,7 @@ class Region(UserResource):
     geo_options = models.JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
-        return self.title
+        return f"[{'Public' if self.public else 'Private'}] {self.title}"
 
     class Meta:
         ordering = ['title', 'code']

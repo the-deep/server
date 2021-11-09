@@ -1,3 +1,4 @@
+from django import forms
 from django.utils.html import format_html
 from django.contrib import messages
 from django.utils.safestring import mark_safe
@@ -9,6 +10,8 @@ from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib import admin
 
 from deep.admin import document_preview, linkify, ReadOnlyMixin
+from deep.middleware import get_current_user
+from gallery.models import File
 
 from .actions import merge_organizations
 from .filters import IsFromReliefWeb
@@ -52,11 +55,41 @@ class OrganizationInline(ReadOnlyMixin, admin.TabularInline):
     extra = 0
 
 
+class OrganizationModelForm(forms.ModelForm):
+    update_logo_direct = forms.ImageField(required=False, help_text='This will replace current logo.')
+
+    class Meta:
+        model = Organization
+        fields = '__all__'
+
+    def save(self, commit=True):
+        new_logo_file = self.cleaned_data.pop('update_logo_direct', None)
+        instance = super().save(commit=False)
+        if new_logo_file:
+            mime_type = new_logo_file.content_type
+            current_user = get_current_user()
+            new_logo = File.objects.create(
+                title=new_logo_file.name,
+                mime_type=mime_type,
+                created_by=current_user,
+                modified_by=current_user,
+                is_public=True,
+            )
+            new_logo.file.save(new_logo_file.name, new_logo_file)
+            instance.logo = new_logo
+        if commit:
+            instance.save()
+        return instance
+
+
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
     search_fields = ('title', 'short_name', 'long_name')
     list_display = ('title', 'short_name', linkify('organization_type'), 'get_relief_web_id', 'verified', 'modified_at')
-    readonly_fields = (document_preview('logo', 'Logo Preview'), 'relief_web_id')
+    readonly_fields = (
+        document_preview('logo', label='Logo Preview', max_height='400px', max_width='300px'),
+        'relief_web_id'
+    )
     list_filter = ('organization_type', 'verified', IsFromReliefWeb,)
     actions = (merge_organizations,)
     exclude = ('parent',)
@@ -66,6 +99,7 @@ class OrganizationAdmin(admin.ModelAdmin):
         'organization_type', 'regions', 'parent',
     )
     change_list_template = 'admin/organization_change_list.html'
+    form = OrganizationModelForm
 
     def get_relief_web_id(self, obj):
         id = obj.relief_web_id
