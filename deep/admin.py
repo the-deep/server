@@ -53,13 +53,13 @@ class VersionAdmin(JSONFieldMixin, _VersionAdmin):
 
 
 class ReadOnlyMixin():
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, *args, **kwargs):
         return False
 
-    def has_change_permission(self, request, obj=None):
+    def has_change_permission(self, request, *args, **kwargs):
         return False
 
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(self, request, *args, **kwargs):
         return False
 
 
