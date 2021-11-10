@@ -703,7 +703,7 @@ type LeadGroupType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  leadCounts: Int
+  leadCounts: Int!
 }
 
 input LeadInputType {

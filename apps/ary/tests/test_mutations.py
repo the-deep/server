@@ -23,6 +23,7 @@ class TestAssessmentMutation(GraphQLTestCase):
         '''
         project = ProjectFactory.create()
         member_user = UserFactory.create()
+        non_member_user = UserFactory.create()
         project.add_member(member_user)
 
         lead1 = LeadFactory.create(project=project)
@@ -43,3 +44,7 @@ class TestAssessmentMutation(GraphQLTestCase):
         content = _query_check(assert_for_error=False)
         self.assertEqual(content['data']['project']['assessmentDelete']['ok'], True)
         self.assertIdEqual(content['data']['project']['assessmentDelete']['result']['id'], ary.id)
+
+        # --- non_member user
+        self.force_login(non_member_user)
+        content = _query_check(assert_for_error=True)

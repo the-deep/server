@@ -137,7 +137,7 @@ class LeadGroupType(UserResourceMixin, DjangoObjectType):
             'title',
             'project',
         )
-    lead_counts = graphene.Field(graphene.Int)
+    lead_counts = graphene.Int(required=True)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -145,7 +145,7 @@ class LeadGroupType(UserResourceMixin, DjangoObjectType):
 
     @staticmethod
     def resolve_lead_counts(root, info, **kwargs):
-        return info.context.dl.lead.lead_counts.load(root.pk)
+        return info.context.dl.lead.leadgroup_lead_counts.load(root.pk)
 
 
 class LeadGroupListType(CustomDjangoListObjectType):

@@ -642,6 +642,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         project = ProjectFactory.create()
         project2 = ProjectFactory.create()
         member_user = UserFactory.create()
+        non_member_user = UserFactory.create()
         project.add_member(member_user)
         project2.add_member(member_user)
 
@@ -661,7 +662,13 @@ class TestLeadQuerySchema(GraphQLTestCase):
         )
         self.assertListIds(content['data']['project']['leadGroups']['results'], [lead_group1, lead_group2], content)
 
+        # login with non_member_user
+        self.force_login(non_member_user)
+        content = self.query_check(query, variables={'id': project.id})
+        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 0)
+
         # with different project
+        self.force_login(member_user)
         content = self.query_check(query, variables={'id': project2.id})
         self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 1)
         self.assertEqual(content['data']['project']['leadGroups']['results'][0]['id'], str(lead_group3.id))

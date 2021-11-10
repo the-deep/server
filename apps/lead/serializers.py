@@ -438,6 +438,11 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
             raise serializers.ValidationError('Only project members can be assigneed')
         return assignee
 
+    def validate_lead_group(self, lead_group):
+        if lead_group.project != self.project:
+            raise serializers.ValidationError(f'Lead Should have same project {lead_group.project} as Lead Group project')
+        return lead_group
+
     def validate_is_assessment_lead(self, value):
         # Allow setting True
         # For False make sure there are no assessment attached.
