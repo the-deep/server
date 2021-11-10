@@ -11,6 +11,7 @@ from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import ProjectPermissions as PP
 from organization.schema import OrganizationType
 from user.models import User
+from user_resource.schema import UserResourceMixin
 
 from user.schema import UserType
 
@@ -27,7 +28,10 @@ from .enums import (
     LeadPriorityEnum,
     LeadSourceTypeEnum,
 )
-from .filter_set import LeadGQFilterSet
+from .filter_set import (
+    LeadGQFilterSet,
+    LeadGroupGQFilterSet
+)
 
 
 def get_lead_qs(info):
@@ -41,7 +45,10 @@ def get_lead_qs(info):
 
 
 def get_lead_group_qs(info):
-    return LeadGroup.objects.filter(project=info.context.active_project)
+    lead_group_qs = LeadGroup.objects.filter(project=info.context.active_project)
+    if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
+        return lead_group_qs
+    return LeadGroup.objects.none()
 
 
 def get_emm_entities_qs(info):
@@ -122,20 +129,29 @@ class EntriesCountType(graphene.ObjectType):
     controlled = graphene.Int()
 
 
-class LeadGroupType(DjangoObjectType):
+class LeadGroupType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = LeadGroup
-        fields = ('id', 'title')
+        fields = (
+            'id',
+            'title',
+            'project',
+        )
+    lead_counts = graphene.Int(required=True)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
         return get_lead_group_qs(info)
 
+    @staticmethod
+    def resolve_lead_counts(root, info, **kwargs):
+        return info.context.dl.lead.leadgroup_lead_counts.load(root.pk)
+
 
 class LeadGroupListType(CustomDjangoListObjectType):
     class Meta:
         model = LeadGroup
-        filterset_class = []
+        filterset_class = LeadGroupGQFilterSet
 
 
 # LeadDetailType is defined for detailed (nested) attributes.

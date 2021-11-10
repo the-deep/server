@@ -5,6 +5,7 @@ from user_resource.filters import UserResourceFilterSet
 from user.models import User
 from project.models import Project
 from lead.models import Lead, LeadGroup
+from user_resource.filters import UserResourceGqlFilterSet
 
 from .models import (
     Assessment,
@@ -64,3 +65,20 @@ class PlannedAssessmentFilterSet(UserResourceFilterSet):
                 },
             },
         }
+
+
+# -------------------- Graphql Filters -----------------------------------
+class AssessmentGQFilterSet(UserResourceGqlFilterSet):
+    search = django_filters.CharFilter(method='filter_title')
+
+    class Meta:
+        model = Assessment
+        fields = ()
+
+    def filter_title(self, qs, name, value):
+        if not value:
+            return qs
+        return qs.filter(
+            models.Q(lead__title__icontains=value) |
+            models.Q(lead_group__title__icontains=value)
+        ).distinct()

@@ -9,7 +9,14 @@ import django_filters
 import graphene
 from graphene_django.filter.filterset import GrapheneFilterSetMixin
 
-from utils.graphene.filters import IDListFilter, MultipleInputFilter, SimpleInputFilter
+from user_resource.filters import UserResourceGqlFilterSet
+from utils.graphene.filters import (
+    IDListFilter,
+    MultipleInputFilter,
+    SimpleInputFilter,
+    DateGteFilter,
+    DateLteFilter,
+)
 from utils.graphene.enums import convert_enum_to_graphene_enum
 from deep.filter_set import DjangoFilterCSVWidget
 from analysis_framework.models import Filter
@@ -525,30 +532,36 @@ class EntryFilterDataType(graphene.InputObjectType):
 
 
 # ----------------------------- Graphql Filters ---------------------------------------
-class EntryGQFilterSet(GrapheneFilterSetMixin, EntryFilterMixin, django_filters.FilterSet):
-    lead = None
-    lead_assignee = None
-    comment_assignee = None
-    comment_created_by = None
+class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
+    class CommentStatus(models.TextChoices):
+        RESOLVED = 'resolved', 'Resolved',
+        UNRESOLVED = 'unresolved', 'Unresolved',
 
-    created_by = IDListFilter()
-    modified_by = IDListFilter()
-    leads = IDListFilter(field_name='lead')
-    comment_status = SimpleInputFilter(
-        convert_enum_to_graphene_enum(EntryFilterMixin.CommentStatus, name='EntryFilterCommentStatusEnum'),
-        label='Comment Status', method='comment_status_filter',
-    )
-    entry_types = MultipleInputFilter(EntryTagTypeEnum, field_name='entry_type')
-    project_entry_labels = IDListFilter(label='Project Entry Labels', method='project_entry_labels_filter')
-    authoring_organization_types = IDListFilter(method='authoring_organization_types_filter')
-    entries_id = IDListFilter(field_name='id')
     # Lead fields
+    leads = IDListFilter(field_name='lead')
+    lead_published_on = django_filters.DateFilter()
+    lead_published_on_gte = DateGteFilter(field_name='lead__published_on')
+    lead_published_on_lte = DateLteFilter(field_name='lead__published_on')
     lead_title = django_filters.CharFilter(lookup_expr='icontains', field_name='lead__title')
     lead_assignees = IDListFilter(label='Lead Assignees', field_name='lead__assignee')
     lead_statuses = MultipleInputFilter(LeadStatusEnum, field_name='lead__status')
     lead_priorities = MultipleInputFilter(LeadPriorityEnum, field_name='lead__priority')
     lead_confidentialities = MultipleInputFilter(LeadConfidentialityEnum, field_name='lead__confidentiality')
 
+    created_by = IDListFilter()
+    modified_by = IDListFilter()
+    comment_status = SimpleInputFilter(
+        convert_enum_to_graphene_enum(CommentStatus, name='EntryFilterCommentStatusEnum'),
+        label='Comment Status', method='comment_status_filter',
+    )
+    entry_types = MultipleInputFilter(EntryTagTypeEnum, field_name='entry_type')
+    project_entry_labels = IDListFilter(label='Project Entry Labels', method='project_entry_labels_filter')
+    authoring_organization_types = IDListFilter(method='authoring_organization_types_filter')
+    entries_id = IDListFilter(field_name='id')
+    geo_custom_shape = django_filters.CharFilter(label='GEO Custom Shapes', method='geo_custom_shape_filter')
+    # Entry Group Label Filters
+    lead_group_label = django_filters.CharFilter(label='Lead Group Label', method='lead_group_label_filter')
+    # Dynamic filterable data
     filterable_data = MultipleInputFilter(EntryFilterDataType, method='filterable_data_filter')
 
     class Meta:
@@ -556,12 +569,9 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, EntryFilterMixin, django_filters.
         fields = {
             **{
                 x: ['exact'] for x in [
-                    'id', 'excerpt', 'created_at', 'modified_at',
-                    'controlled',
+                    'id', 'excerpt', 'controlled',
                 ]
             },
-            'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
-            # 'lead_published_on': ['exact', 'lt', 'gt', 'lte', 'gte'],
         }
         filter_overrides = {
             models.CharField: {
@@ -581,3 +591,63 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, EntryFilterMixin, django_filters.
             filters = Filter.qs_with_widget_type().filter(analysis_framework_id=project.analysis_framework_id).all()
             return get_filtered_entries_using_af_filter(queryset, filters, value, project=project, new_query_structure=True)
         return queryset
+
+    def comment_status_filter(self, queryset, name, value):
+        if value == self.CommentStatus.UNRESOLVED:
+            return queryset.filter(
+                entrycomment__is_resolved=False,
+                entrycomment__parent__isnull=True,
+            )
+        elif value == self.CommentStatus.RESOLVED:
+            return queryset.filter(
+                entrycomment__is_resolved=True,
+                entrycomment__parent__isnull=True,
+            )
+        return queryset
+
+    def geo_custom_shape_filter(self, queryset, name, value):
+        if value:
+            query_params = reduce(
+                lambda acc, item: acc | item,
+                [
+                    models.Q(
+                        attribute__widget__widget_id='geoWidget',
+                        attribute__data__value__contains=[{'type': v}],
+                    ) for v in value.split(',')
+                ],
+            )
+            return queryset.filter(query_params)
+        return queryset
+
+    def project_entry_labels_filter(self, queryset, name, value):
+        if value:
+            return queryset.filter(
+                entrygrouplabel__label__in=value,
+            )
+        return queryset
+
+    def lead_group_label_filter(self, queryset, name, value):
+        if value:
+            return queryset.filter(entrygrouplabel__group__title__icontains=value)
+        return queryset
+
+    def authoring_organization_types_filter(self, qs, name, value):
+        if value:
+            qs = qs.annotate(
+                organization_types=models.functions.Coalesce(
+                    'lead__authors__parent__organization_type',
+                    'lead__authors__organization_type'
+                )
+            )
+            if type(value[0]) == OrganizationType:
+                return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
+            return qs.filter(organization_types__in=value).distinct()
+        return qs
+
+    @property
+    def qs(self):
+        qs = super().qs
+        # Note: Since we cannot have `.distinct()` inside a subquery
+        if self.data.get('from_subquery', False):
+            return Entry.objects.filter(id__in=qs)
+        return qs.distinct()

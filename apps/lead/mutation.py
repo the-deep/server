@@ -8,8 +8,8 @@ from utils.graphene.mutation import (
 )
 from deep.permissions import ProjectPermissions as PP
 
-from .models import Lead
-from .schema import LeadType
+from .models import Lead, LeadGroup
+from .schema import LeadType, LeadGroupType
 from .serializers import (
     LeadGqSerializer as LeadSerializer,
 )
@@ -22,6 +22,12 @@ LeadInputType = generate_input_type_for_serializer(
 
 
 class LeadMutationMixin():
+    @classmethod
+    def filter_queryset(cls, qs, info):
+        return qs.filter(project=info.context.active_project)
+
+
+class LeadGroupMutationMixin():
     @classmethod
     def filter_queryset(cls, qs, info):
         return qs.filter(project=info.context.active_project)
@@ -54,6 +60,14 @@ class DeleteLead(LeadMutationMixin, PsDeleteMutation):
     permissions = [PP.Permission.DELETE_LEAD]
 
 
+class DeleteLeadGroup(LeadGroupMutationMixin, PsDeleteMutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+    model = LeadGroup
+    result = graphene.Field(LeadGroupType)
+    permissions = [PP.Permission.DELETE_LEAD]
+
+
 class BulkLeadInputType(LeadInputType):
     id = graphene.ID()
 
@@ -75,3 +89,4 @@ class Mutation():
     lead_update = UpdateLead.Field()
     lead_delete = DeleteLead.Field()
     lead_bulk = BulkLead.Field()
+    lead_group_delete = DeleteLeadGroup.Field()

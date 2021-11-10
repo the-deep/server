@@ -102,6 +102,29 @@ type AnalysisFrameworkVisibleProjectType {
   isPrivate: Boolean!
 }
 
+type AssessmentListType {
+  results: [AssessmentType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AssessmentType {
+  id: ID!
+  lead: LeadType
+  project: ProjectType!
+  leadGroup: LeadGroupType
+  metadata: GenericScalar
+  methodology: GenericScalar
+  summary: GenericScalar
+  score: GenericScalar
+  questionnaire: GenericScalar
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+}
+
 input AttributeGqInputType {
   id: ID
   data: GenericScalar
@@ -261,6 +284,12 @@ type DateCountType {
 
 scalar DateTime
 
+type DeleteAssessment {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssessmentType
+}
+
 type DeleteEntry {
   errors: [GenericScalar!]
   ok: Boolean
@@ -271,6 +300,12 @@ type DeleteLead {
   errors: [GenericScalar!]
   ok: Boolean
   result: LeadType
+}
+
+type DeleteLeadGroup {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: LeadGroupType
 }
 
 type DeleteUserGroup {
@@ -618,33 +653,31 @@ type LeadEmmTriggerType {
 input LeadEntriesFilterData {
   id: ID
   excerpt: String
-  createdAt: DateTime
-  createdAt_Lt: DateTime
-  createdAt_Gt: DateTime
-  createdAt_Lte: DateTime
-  createdAt_Gte: DateTime
-  modifiedAt: DateTime
   controlled: Boolean
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
   createdBy: [ID!]
   modifiedBy: [ID!]
-  leadPublishedOn: Date
-  leadPublishedOn_Gt: Date
-  leadPublishedOn_Lt: Date
-  leadPublishedOn_Gte: Date
-  leadPublishedOn_Lte: Date
-  commentStatus: EntryFilterCommentStatusEnum
-  geoCustomShape: String
-  projectEntryLabels: [ID!]
-  leadGroupLabel: String
-  authoringOrganizationTypes: [ID!]
   leads: [ID!]
-  entryTypes: [EntryTagTypeEnum!]
-  entriesId: [ID!]
+  leadPublishedOn: Date
+  leadPublishedOnGte: Date
+  leadPublishedOnLte: Date
   leadTitle: String
   leadAssignees: [ID!]
   leadStatuses: [LeadStatusEnum!]
   leadPriorities: [LeadPriorityEnum!]
   leadConfidentialities: [LeadConfidentialityEnum!]
+  commentStatus: EntryFilterCommentStatusEnum
+  entryTypes: [EntryTagTypeEnum!]
+  projectEntryLabels: [ID!]
+  authoringOrganizationTypes: [ID!]
+  entriesId: [ID!]
+  geoCustomShape: String
+  leadGroupLabel: String
   filterableData: [EntryFilterDataType!]
 }
 
@@ -665,6 +698,12 @@ type LeadGroupListType {
 type LeadGroupType {
   id: ID!
   title: String!
+  project: ProjectType!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  leadCounts: Int!
 }
 
 input LeadInputType {
@@ -893,16 +932,18 @@ type ProjectDetailType {
   organizations: [ProjectOrganizationType!]
   hasAnalysisFramework: Boolean!
   hasAssessmentTemplate: Boolean!
+  assessment(id: ID!): AssessmentType
+  assessments(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentListType
   reviewComment(id: ID!): EntryReviewCommentDetailType
   geoAreas(search: String, page: Int = 1, ordering: String, pageSize: Int): ProjectGeoAreaListType
   export(id: ID!): UserExportType
   exports(type: [ExportDataTypeEnum!], format: [ExportFormatEnum!], status: [ExportStatusEnum!], page: Int = 1, ordering: String, pageSize: Int): UserExportListType
   entry(id: ID!): EntryType
-  entries(id: ID, excerpt: String, createdAt: DateTime, createdAt_Lt: DateTime, createdAt_Gt: DateTime, createdAt_Lte: DateTime, createdAt_Gte: DateTime, modifiedAt: DateTime, controlled: Boolean, createdBy: [ID!], modifiedBy: [ID!], leadPublishedOn: Date, leadPublishedOn_Gt: Date, leadPublishedOn_Lt: Date, leadPublishedOn_Gte: Date, leadPublishedOn_Lte: Date, commentStatus: EntryFilterCommentStatusEnum, geoCustomShape: String, projectEntryLabels: [ID!], leadGroupLabel: String, authoringOrganizationTypes: [ID!], leads: [ID!], entryTypes: [EntryTagTypeEnum!], entriesId: [ID!], leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], filterableData: [EntryFilterDataType!], page: Int = 1, ordering: String, pageSize: Int): EntryListType
+  entries(id: ID, excerpt: String, controlled: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], leads: [ID!], leadPublishedOn: Date, leadPublishedOnGte: Date, leadPublishedOnLte: Date, leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], commentStatus: EntryFilterCommentStatusEnum, entryTypes: [EntryTagTypeEnum!], projectEntryLabels: [ID!], authoringOrganizationTypes: [ID!], entriesId: [ID!], geoCustomShape: String, leadGroupLabel: String, filterableData: [EntryFilterDataType!], page: Int = 1, ordering: String, pageSize: Int): EntryListType
   lead(id: ID!): LeadDetailType
-  leads(id: Float, text: String, url: String, website: String, emmEntities: String, createdAt: DateTime, createdAt_Lt: DateTime, createdAt_Gt: DateTime, createdAt_Lte: DateTime, createdAt_Gte: DateTime, publishedOn: Date, publishedOn_Lt: Date, publishedOn_Gt: Date, publishedOn_Lte: Date, publishedOn_Gte: Date, search: String, confidentiality: LeadConfidentialityEnum, classifiedDocId: [Float], exists: LeadExistsEnum, emmKeywords: String, emmRiskFactors: String, authoringOrganizationTypes: [ID!], customFilters: LeadCustomFilterEnum, createdBy: [ID!], modifiedBy: [ID!], sourceTypes: [LeadSourceTypeEnum!], priorities: [LeadPriorityEnum!], statuses: [LeadStatusEnum!], assignees: [ID!], entriesFilterData: LeadEntriesFilterData, page: Int = 1, ordering: String, pageSize: Int): LeadListType
+  leads(id: Float, text: String, url: String, website: String, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], sourceTypes: [LeadSourceTypeEnum!], priorities: [LeadPriorityEnum!], confidentiality: LeadConfidentialityEnum, statuses: [LeadStatusEnum!], assignees: [ID!], authoringOrganizationTypes: [ID!], exists: LeadExistsEnum, customFilters: LeadCustomFilterEnum, entriesFilterData: LeadEntriesFilterData, search: String, publishedOn: Date, publishedOnGte: Date, publishedOnLte: Date, emmEntities: String, emmKeywords: String, emmRiskFactors: String, page: Int = 1, ordering: String, pageSize: Int): LeadListType
   leadGroup(id: ID!): LeadGroupType
-  leadGroups(createdAt: DateTime, modifiedAt: DateTime, createdBy: ID, modifiedBy: ID, clientId: String, title: String, project: ID, page: Int = 1, ordering: String, pageSize: Int): LeadGroupListType
+  leadGroups(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): LeadGroupListType
   emmEntities(name: String, page: Int = 1, ordering: String, pageSize: Int): EmmEntityListType
   leadEmmTriggers(lead: ID, emmKeyword: String, emmRiskFactor: String, count: Int, page: Int = 1, ordering: String, pageSize: Int): LeadEmmTriggerListType
   emmKeywords: [EmmKeyWordType!]
@@ -910,8 +951,8 @@ type ProjectDetailType {
   activityLog: GenericScalar
   topSourcers: [UserEntityCountType!]
   topTaggers: [UserEntityCountType!]
-  userMembers(id: Float, createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID!], modifiedBy: [ID!], search: String, members: [ID!], page: Int = 1, ordering: String, pageSize: Int): ProjectMembershipListType
-  userGroupMembers(id: Float, createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID!], modifiedBy: [ID!], search: String, usergroups: [ID!], page: Int = 1, ordering: String, pageSize: Int): ProjectUserGroupMembershipListType
+  userMembers(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, members: [ID!], page: Int = 1, ordering: String, pageSize: Int): ProjectMembershipListType
+  userGroupMembers(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, usergroups: [ID!], page: Int = 1, ordering: String, pageSize: Int): ProjectUserGroupMembershipListType
   isVisualizationAvailable: Boolean!
   vizData: ProjectVizDataType
 }
@@ -1000,6 +1041,7 @@ type ProjectMembershipType {
 type ProjectMutationType {
   id: ID!
   title: String!
+  assessmentDelete(id: ID!): DeleteAssessment
   entryReviewCommentCreate(data: EntryReviewCommentInputType!): CreateEntryReviewComment
   entryReviewCommentUpdate(data: EntryReviewCommentInputType!, id: ID!): UpdateEntryReviewComment
   entryCreate(data: EntryInputType!): CreateEntry
@@ -1010,6 +1052,7 @@ type ProjectMutationType {
   leadUpdate(data: LeadInputType!, id: ID!): UpdateLead
   leadDelete(id: ID!): DeleteLead
   leadBulk(items: [BulkLeadInputType!]): BulkLead
+  leadGroupDelete(id: ID!): DeleteLeadGroup
   acceptRejectProject(data: ProjectAcceptRejectInputType!, id: ID!): ProjectAcceptReject
   projectUserMembershipBulk(deleteIds: [ID!], items: [BulkProjectMembershipInputType!]): BulkUpdateProjectMembership
   projectUserGroupMembershipBulk(deleteIds: [ID!], items: [BulkProjectUserGroupMembershipInputType!]): BulkUpdateProjectUserGroupMembership
@@ -1150,9 +1193,9 @@ type Query {
   user(id: ID!): UserType
   users(id: Float, page: Int = 1, ordering: String, pageSize: Int): UserListType
   analysisFramework(id: ID!): AnalysisFrameworkDetailType
-  analysisFrameworks(id: Float, createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID], modifiedBy: [ID], search: String, page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkListType
+  analysisFrameworks(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkListType
   project(id: ID!): ProjectDetailType
-  projects(createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): ProjectListType
+  projects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): ProjectListType
   recentProjects: [ProjectDetailType!]
   projectsByRegion: [ProjectByRegion!]
   projectExploreStats: ProjectExploreStatType

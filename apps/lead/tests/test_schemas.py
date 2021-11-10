@@ -24,13 +24,10 @@ class TestLeadQuerySchema(GraphQLTestCase):
             # lead Arguments
             $assignees: [ID!]
             $authoringOrganizationTypes: [ID!]
-            $classifiedDocId: [Float]
             $confidentiality: LeadConfidentialityEnum
             $createdAt: DateTime
-            $createdAt_Gt: DateTime
-            $createdAt_Gte: DateTime
-            $createdAt_Lt: DateTime
-            $createdAt_Lte: DateTime
+            $createdAtGte: DateTime
+            $createdAtLte: DateTime
             $customFilters: LeadCustomFilterEnum
             $emmEntities: String
             $emmKeywords: String
@@ -39,10 +36,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
             $exists: LeadExistsEnum
             $priorities: [LeadPriorityEnum!]
             $publishedOn: Date
-            $publishedOn_Gt: Date
-            $publishedOn_Gte: Date
-            $publishedOn_Lt: Date
-            $publishedOn_Lte: Date
+            $publishedOnGte: Date
+            $publishedOnLte: Date
             $search: String
             $sourceTypes: [LeadSourceTypeEnum!]
             $statuses: [LeadStatusEnum!]
@@ -54,13 +49,10 @@ class TestLeadQuerySchema(GraphQLTestCase):
             leads (
                 assignees: $assignees
                 authoringOrganizationTypes: $authoringOrganizationTypes
-                classifiedDocId: $classifiedDocId
                 confidentiality: $confidentiality
                 createdAt: $createdAt
-                createdAt_Gt: $createdAt_Gt
-                createdAt_Gte: $createdAt_Gte
-                createdAt_Lt: $createdAt_Lt
-                createdAt_Lte: $createdAt_Lte
+                createdAtGte: $createdAtGte
+                createdAtLte: $createdAtLte
                 customFilters: $customFilters
                 emmEntities: $emmEntities
                 emmKeywords: $emmKeywords
@@ -68,10 +60,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 exists: $exists
                 priorities: $priorities
                 publishedOn: $publishedOn
-                publishedOn_Gt: $publishedOn_Gt
-                publishedOn_Gte: $publishedOn_Gte
-                publishedOn_Lt: $publishedOn_Lt
-                publishedOn_Lte: $publishedOn_Lte
+                publishedOnGte: $publishedOnGte
+                publishedOnLte: $publishedOnLte
                 search: $search
                 sourceTypes: $sourceTypes
                 statuses: $statuses
@@ -236,18 +226,14 @@ class TestLeadQuerySchema(GraphQLTestCase):
             # ({'emmRiskFactors': []}, []),
             # TODO: Common filters
             # ({'publishedOn': []}, []),
-            # ({'publishedOn_Gt': []}, []),
-            # ({'publishedOn_Gte': []}, []),
-            # ({'publishedOn_Lt': []}, []),
-            # ({'publishedOn_Lte': []}, []),
+            # ({'publishedOnGte': []}, []),
+            # ({'publishedOnLte': []}, []),
             # ({'text': []}, []),
             # ({'url': []}, []),
             # ({'website': []}, []),
             # ({'createdAt': []}, []),
-            # ({'createdAt_Gt': []}, []),
-            # ({'createdAt_Gte': []}, []),
-            # ({'createdAt_Lt': []}, []),
-            # ({'createdAt_Lte': []}, []),
+            # ({'createdAtGte': []}, []),
+            # ({'createdAtLte': []}, []),
         ]:
             content = self.query_check(self.lead_filter_query, variables={'projectId': project.id, **filter_data})
             self.assertListIds(
@@ -531,12 +517,12 @@ class TestLeadQuerySchema(GraphQLTestCase):
         project2 = ProjectFactory.create()
         member_user = UserFactory.create()
         confidential_member_user = UserFactory.create()
-        project.add_member(member_user, role=self.project_role_viewer_non_confidential)
+        project.add_member(member_user, role=self.project_role_clairvoyant_one)
         project.add_member(confidential_member_user, role=self.project_role_viewer)
 
         lead_group1 = LeadGroupFactory.create(project=project)
         lead_group2 = LeadGroupFactory.create(project=project)
-        lead_group3 = LeadGroupFactory.create(project=project2)
+        LeadGroupFactory.create(project=project2)
 
         emm_entity_1 = EmmEntityFactory.create()
         emm_entity_2 = EmmEntityFactory.create()
@@ -565,13 +551,12 @@ class TestLeadQuerySchema(GraphQLTestCase):
 
         # with different project
         content = self.query_check(query, variables={'id': project2.id})
-        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 1)
-        self.assertEqual(content['data']['project']['leadGroups']['results'][0]['id'], str(lead_group3.id))
+        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 0)
 
         # test for emm_entities
         # login with member_user
         content = self.query_check(query, variables={'id': project.id})
-        self.assertEqual(content['data']['project']['emmEntities']['totalCount'], 2)
+        self.assertEqual(content['data']['project']['emmEntities']['totalCount'], 3)
 
         # login with confidential_member_user
         self.force_login(confidential_member_user)
@@ -582,11 +567,6 @@ class TestLeadQuerySchema(GraphQLTestCase):
         # login with confidential_member_user
         content = self.query_check(query, variables={'id': project.id})
         self.assertEqual(content['data']['project']['leadEmmTriggers']['totalCount'], 3)
-
-        # login with member_user
-        self.force_login(member_user)
-        content = self.query_check(query, variables={'id': project.id})
-        self.assertEqual(content['data']['project']['leadEmmTriggers']['totalCount'], 2)
 
         # test for project that user is not member
         content = self.query_check(query, variables={'id': project2.id})
@@ -640,3 +620,56 @@ class TestLeadQuerySchema(GraphQLTestCase):
         self.assertEqual(len(content), 2, content)
         self.assertEqual(content[0]['status'], self.genum(Lead.Status.IN_PROGRESS), content)
         self.assertEqual(content[1]['status'], self.genum(Lead.Status.NOT_TAGGED), content)
+
+    def test_lead_group_query(self):
+        query = '''
+              query MyQuery ($id: ID!) {
+                project(id: $id) {
+                  leadGroups(ordering: "id") {
+                    results {
+                      id
+                      title
+                      project {
+                        id
+                      }
+                      leadCounts
+                    }
+                    totalCount
+                  }
+                }
+              }
+          '''
+        project = ProjectFactory.create()
+        project2 = ProjectFactory.create()
+        member_user = UserFactory.create()
+        non_member_user = UserFactory.create()
+        project.add_member(member_user)
+        project2.add_member(member_user)
+
+        lead_group1 = LeadGroupFactory.create(project=project)
+        lead_group2 = LeadGroupFactory.create(project=project)
+        lead_group3 = LeadGroupFactory.create(project=project2)
+        LeadFactory.create_batch(4, project=project, lead_group=lead_group1)
+        LeadFactory.create_batch(2, project=project, lead_group=lead_group2)
+        LeadFactory.create_batch(2, project=project, lead_group=lead_group3)
+
+        self.force_login(member_user)
+        content = self.query_check(query, variables={'id': project.id})
+        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 2)
+        self.assertEqual(
+            set(result['id'] for result in content['data']['project']['leadGroups']['results']),
+            set([str(lead_group1.id), str(lead_group2.id)])
+        )
+        self.assertListIds(content['data']['project']['leadGroups']['results'], [lead_group1, lead_group2], content)
+
+        # login with non_member_user
+        self.force_login(non_member_user)
+        content = self.query_check(query, variables={'id': project.id})
+        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 0)
+
+        # with different project
+        self.force_login(member_user)
+        content = self.query_check(query, variables={'id': project2.id})
+        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 1)
+        self.assertEqual(content['data']['project']['leadGroups']['results'][0]['id'], str(lead_group3.id))
+        self.assertEqual(content['data']['project']['leadGroups']['results'][0]['leadCounts'], 2)
