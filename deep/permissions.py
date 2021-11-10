@@ -274,6 +274,7 @@ class ProjectPermissions(BasePermissions):
         Permission.CAN_QUALITY_CONTROL: "You don't have permission to Quality Control",
     }
 
+    # NOTE: If we need to have delete permission as well make sure to update queryset in schema and mutations.
     VIEWER_NON_CONFIDENTIAL = [
         Permission.VIEW_ENTRY,
         Permission.VIEW_ONLY_UNPROTECTED_LEAD,

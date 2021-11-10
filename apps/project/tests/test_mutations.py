@@ -136,7 +136,7 @@ class TestProjectGeneralMutation(GraphQLTestCase):
                 if assertLogic == self.assert_200:
                     content = _query_check(okay=True)
                 else:
-                    content = _query_check(assert_for_error=True)
+                    _query_check(assert_for_error=True)
                     continue
                 response = content['data']['project']['projectVizConfigurationUpdate']['result']
                 if assertLogic == self.assert_200:

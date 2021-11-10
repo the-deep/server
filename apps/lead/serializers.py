@@ -439,8 +439,8 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
         return assignee
 
     def validate_lead_group(self, lead_group):
-        if lead_group.project != self.project:
-            raise serializers.ValidationError(f'Lead Should have same project {lead_group.project} as Lead Group project')
+        if lead_group and lead_group.project_id != self.project.id:
+            raise serializers.ValidationError('LeadGroup should have same project as lead project')
         return lead_group
 
     def validate_is_assessment_lead(self, value):
