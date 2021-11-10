@@ -17,7 +17,7 @@ class DeleteAssessment(AssessmentMutationMixin, PsDeleteMutation):
         id = graphene.ID(required=True)
     model = Assessment
     result = graphene.Field(AssessmentType)
-    permissions = [PP.Permission.DELETE_ENTRY]
+    permissions = [PP.Permission.DELETE_LEAD]
 
 
 class Mutation():

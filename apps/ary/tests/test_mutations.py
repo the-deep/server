@@ -47,4 +47,4 @@ class TestAssessmentMutation(GraphQLTestCase):
 
         # --- non_member user
         self.force_login(non_member_user)
-        content = _query_check(assert_for_error=True)
+        _query_check(assert_for_error=True)

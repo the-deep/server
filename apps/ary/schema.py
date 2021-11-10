@@ -7,14 +7,18 @@ from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import ProjectPermissions as PP
 from user_resource.schema import UserResourceMixin
 
+from lead.models import Lead
 from ary.models import Assessment
 from ary.filters import AssessmentGQFilterSet
 
 
 def get_assessment_qs(info):
     assessment_qs = Assessment.objects.filter(project=info.context.active_project)
-    if PP.check_permission(info, PP.Permission.VIEW_ENTRY):
+    # Generate querset according to permission
+    if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
         return assessment_qs
+    elif PP.check_permission(info, PP.Permission.VIEW_ONLY_UNPROTECTED_LEAD):
+        return assessment_qs.filter(lead__confidentiality=Lead.Confidentiality.UNPROTECTED)
     return Assessment.objects.none()
 
 
