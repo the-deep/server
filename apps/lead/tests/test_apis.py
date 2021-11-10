@@ -41,6 +41,7 @@ from user_group.models import UserGroup, GroupMembership
 from ary.models import Assessment
 from lead.factories import LeadFactory
 from django.core.files.uploadedfile import SimpleUploadedFile
+from unittest import mock
 
 
 logger = logging.getLogger(__name__)
@@ -1753,39 +1754,44 @@ class WebInfoExtractionTests(TestCase):
         self.assertEqualWithWarning(expected, response.data)
 
 
-# class TestExtractorCallback(TestCase):
-#     def setUp(self):
-#         super().setUp()
-#         self.lead = LeadFactory.create()
-#
-#     def test_extractor_callback_url(self):
-#         url = '/api/v1/leads/extract-callback/'
-#         self.authenticate()
-#         image1 = SimpleUploadedFile(
-#             name='test_image1.jpg', content=b'', content_type='image/jpeg'
-#         )
-#         image2 = SimpleUploadedFile(
-#             name='test_image2.jpg', content=b'', content_type='image/jpeg'
-#         )
-#         image3 = SimpleUploadedFile(
-#             name='test_image3.jpg', content=b'', content_type='image/jpeg'
-#         )
-#         text_file = SimpleUploadedFile(
-#             name='text.txt', content=b'', content_type='text/plain'
-#         )
-#         pdf_file = SimpleUploadedFile(
-#             name='text.txt', content=b'', content_type='application/pdf'
-#         )
-#         data = {
-#             "client_id": self.lead.id,
-#             "images_path": [
-#                 image1.url,
-#                 image2.url,
-#                 image3.url
-#             ],
-#             "text_path": text_file.url,
-#             "url": pdf_file.url
-#         }
-#
-#         response = self.client.post(url, data)
-#         print(response.content)
+class TestExtractorCallback(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.lead = LeadFactory.create()
+
+    @mock.patch('lead.serializers.get_text_form_url')
+    @mock.patch('lead.serializers.download_file_from_url')
+    def test_extractor_callback_url(self, download_file_from_url_mock, get_text_form_url_mock):
+        url = '/api/v1/leads/extract-callback/'
+        self.authenticate()
+
+        image = SimpleUploadedFile(
+            name='test_image.jpg', content=b'', content_type='image/jpeg'
+        )
+        download_file_from_url_mock.return_value = image
+        get_text_form_url_mock.return_value = "Extracted text"
+
+        # Before callback
+        lead_preview = LeadPreview.objects.filter(lead=self.lead).last()
+        self.assertEqual(lead_preview, None)
+        images_count = LeadPreview.objects.filter(lead=self.lead).count()
+        self.assertEqual(images_count, 0)
+
+        data = {
+            "client_id": self.lead.id,
+            "images_path": ["http://random.com/image1.jpeg"],
+            "text_path": "http://random.com/extracted_file.txt",
+            "url": "http://random.com/pdf_file.pdf",
+            "total_words_count": 300,
+            "total_pages": 4
+        }
+
+        # After callback
+        response = self.client.post(url, data)
+        self.assert_200(response)
+        lead_preview = LeadPreview.objects.filter(lead=self.lead).last()
+        self.assertEqual(lead_preview.text_extract, "Extracted text")
+        self.assertEqual(lead_preview.word_count, 300)
+        self.assertEqual(lead_preview.page_count, 4)
+        images_count = LeadPreview.objects.filter(lead=self.lead).count()
+        self.assertEqual(images_count, 1)

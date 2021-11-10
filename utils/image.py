@@ -30,11 +30,14 @@ def download_file_from_url(url):
     """
     Returns a file object form url
     """
-    response = requests.get(url)
-    # Make base 64 data
-    base_64_data = (
-        "data:" + response.headers['Content-Type'] + ";" +
-        "base64," + base64.b64encode(response.content).decode("utf-8")
-    )
-    decoded_file, header = decode_base64_if_possible(base_64_data)
-    return decoded_file
+    try:
+        response = requests.get(url)
+        # Make base 64 data
+        base_64_data = (
+            "data:" + response.headers['Content-Type'] + ";" +
+            "base64," + base64.b64encode(response.content).decode("utf-8")
+        )
+        decoded_file, header = decode_base64_if_possible(base_64_data)
+        return decoded_file
+    except Exception:
+        return None
