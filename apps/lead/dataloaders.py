@@ -51,16 +51,16 @@ class EntriesCountLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key, _dummy) for key in keys])
 
 
-class LeadGroupLoader(DataLoaderWithContext):
+class LeadGroupLeadCountLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         lead_group_qs = LeadGroup.objects.filter(id__in=keys).annotate(
             lead_counts=models.Count('lead', distinct=True)
         )
         _map = {
-            lead_group['id']: lead_group['lead_counts']
-            for lead_group in lead_group_qs.values('id', 'lead_counts')
+            id: count
+            for id, count in lead_group_qs.values_list('id', 'lead_counts')
         }
-        return Promise.resolve([_map.get(key) for key in keys])
+        return Promise.resolve([_map.get(key, 0) for key in keys])
 
 
 class DataLoaders(WithContextMixin):
@@ -73,5 +73,5 @@ class DataLoaders(WithContextMixin):
         return EntriesCountLoader(context=self.context)
 
     @cached_property
-    def lead_counts(self):
-        return LeadGroupLoader(context=self.context)
+    def leadgroup_lead_counts(self):
+        return LeadGroupLeadCountLoader(context=self.context)

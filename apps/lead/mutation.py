@@ -27,6 +27,12 @@ class LeadMutationMixin():
         return qs.filter(project=info.context.active_project)
 
 
+class LeadGroupMutationMixin():
+    @classmethod
+    def filter_queryset(cls, qs, info):
+        return qs.filter(project=info.context.active_project)
+
+
 class CreateLead(LeadMutationMixin, PsGrapheneMutation):
     class Arguments:
         data = LeadInputType(required=True)
@@ -54,7 +60,7 @@ class DeleteLead(LeadMutationMixin, PsDeleteMutation):
     permissions = [PP.Permission.DELETE_LEAD]
 
 
-class DeleteLeadGroup(LeadMutationMixin, PsDeleteMutation):
+class DeleteLeadGroup(LeadGroupMutationMixin, PsDeleteMutation):
     class Arguments:
         id = graphene.ID(required=True)
     model = LeadGroup

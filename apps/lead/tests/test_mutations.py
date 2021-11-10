@@ -402,8 +402,9 @@ class TestLeadGroupMutation(GraphQLTestCase):
             }
         '''
         project = ProjectFactory.create()
-        user = UserFactory.create()
-        project.add_member(user)
+        member_user = UserFactory.create()
+        non_member_user = UserFactory.create()
+        project.add_member(member_user)
         lead_group = LeadGroupFactory.create(project=project)
 
         def _query_check(**kwargs):
@@ -417,7 +418,11 @@ class TestLeadGroupMutation(GraphQLTestCase):
         _query_check(assert_for_error=True)
 
         # --- member user
-        self.force_login(user)
+        self.force_login(member_user)
         content = _query_check(assert_for_error=False)
         self.assertEqual(content['data']['project']['leadGroupDelete']['ok'], True)
         self.assertIdEqual(content['data']['project']['leadGroupDelete']['result']['id'], lead_group.id)
+
+        # -- non-member user
+        self.force_login(non_member_user)
+        content = _query_check(assert_for_error=True)
