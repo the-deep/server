@@ -54,5 +54,8 @@ def get_text_form_url(url):
     """
     Returns text from url
     """
-    response = requests.get(url)
-    return response.text
+    try:
+        response = requests.get(url)
+        return response.text
+    except Exception:
+        return ""
