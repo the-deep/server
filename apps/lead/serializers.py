@@ -638,7 +638,8 @@ class ExtractCallbackSerializer(serializers.Serializer):
     )
     text_path = serializers.CharField()
     url = serializers.CharField()
-    # page_count = serializers.IntegerField()
+    total_words_count = serializers.IntegerField()
+    total_pages = serializers.IntegerField()
 
     def create(self, validated_data):
         lead = None
@@ -649,7 +650,7 @@ class ExtractCallbackSerializer(serializers.Serializer):
         # Make sure there isn't existing lead preview
         LeadPreview.objects.filter(lead=lead).delete()
         LeadPreviewImage.objects.filter(lead=lead).delete()
-        word_count, page_count = 0, 1
+        word_count, page_count = validated_data["total_words_count"], validated_data["total_pages"]
         # and create new one
         LeadPreview.objects.create(
             lead=lead,
@@ -662,6 +663,7 @@ class ExtractCallbackSerializer(serializers.Serializer):
         for image in validated_data["images_path"]:
             lead_image = LeadPreviewImage(lead=lead)
             image_obj = download_file_from_url(image)
-            lead_image.file.save(image_obj.name, image_obj)
-            lead_image.save()
+            if image_obj:
+                lead_image.file.save(image_obj.name, image_obj)
+                lead_image.save()
         return True

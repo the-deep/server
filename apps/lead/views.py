@@ -247,7 +247,7 @@ class LeadViewSet(viewsets.ModelViewSet):
         serializer = ExtractCallbackSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return response.Response("done", status=status.HTTP_200_OK)
+        return response.Response("Request successfully completed", status=status.HTTP_200_OK)
 
 
 class LeadBulkDeleteViewSet(viewsets.GenericViewSet):
