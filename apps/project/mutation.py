@@ -18,6 +18,7 @@ from deep.permissions import ProjectPermissions as PP
 from lead.mutation import Mutation as LeadMutation
 from entry.mutation import Mutation as EntryMutation
 from quality_assurance.mutation import Mutation as QualityAssuranceMutation
+from ary.mutation import Mutation as AryMutation
 
 from .models import (
     Project,
@@ -200,9 +201,12 @@ class UpdateProjectVizConfiguration(PsGrapheneMutation):
 
 
 class ProjectMutationType(
+    # --Begin Project Scoped Mutation
     LeadMutation,
     EntryMutation,
     QualityAssuranceMutation,
+    AryMutation,
+    # --End Project Scoped Mutation
     DjangoObjectType
 ):
     """

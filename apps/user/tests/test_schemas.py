@@ -207,9 +207,11 @@ class TestUserSchema(GraphQLTestCase):
         '''
         user = UserFactory.create()
         # # Without Login session
-        content = self.query_check(query, assert_for_error=True)
+        self.query_check(query, assert_for_error=True)
+
         # # Login
         self.force_login(user)
+
         # Query Me (Success)
         content = self.query_check(query)
         self.assertEqual(content['data']['me']['id'], str(user.id), content)
@@ -217,7 +219,7 @@ class TestUserSchema(GraphQLTestCase):
         # # Logout
         self.query_check(logout_mutation, okay=True)
         # Query Me (with error again)
-        content = self.query_check(query, assert_for_error=True)
+        self.query_check(query, assert_for_error=True)
 
     @mock.patch('jwt_auth.captcha.requests')
     @mock.patch('user.serializers.send_password_reset', side_effect=send_password_reset)

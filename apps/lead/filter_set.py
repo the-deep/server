@@ -10,6 +10,8 @@ from utils.graphene.filters import (
     MultipleInputFilter,
     SimpleInputFilter,
     IDListFilter,
+    DateGteFilter,
+    DateLteFilter,
 )
 from utils.graphene.enums import convert_enum_to_graphene_enum
 
@@ -17,6 +19,7 @@ from project.models import Project
 from organization.models import OrganizationType
 from user.models import User
 from entry.filter_set import EntryGQFilterSet
+from user_resource.filters import UserResourceGqlFilterSet
 
 from .models import Lead, LeadGroup
 from .enums import (
@@ -287,12 +290,19 @@ class LeadGroupFilterSet(UserResourceFilterSet):
 
 
 # ------------------------------ Graphql filters -----------------------------------
-class LeadGQFilterSet(LeadFilterSet):
-    ordering = None
-    project = None
-    assignee = None
-    priority = None
-    status = None
+class LeadGQFilterSet(UserResourceGqlFilterSet):
+    class Exists(models.TextChoices):
+        ENTRIES_EXISTS = 'entries_exists', 'Entry Exists'
+        ASSESSMENT_EXISTS = 'assessment_exists', 'Assessment Exists'
+        ENTRIES_DO_NOT_EXIST = 'entries_do_not_exist', 'Entries do not exist'
+        ASSESSMENT_DOES_NOT_EXIST = 'assessment_does_not_exist', 'Assessment does not exist'
+
+    class CustomFilter(models.TextChoices):
+        EXCLUDE_EMPTY_FILTERED_ENTRIES = 'exclude_empty_filtered_entries', 'exclude empty filtered entries'
+        EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES = (
+            'exclude_empty_controlled_filtered_entries',
+            'exclude empty controlled filtered entries',
+        )
 
     created_by = IDListFilter()
     modified_by = IDListFilter()
@@ -307,7 +317,7 @@ class LeadGQFilterSet(LeadFilterSet):
         convert_enum_to_graphene_enum(LeadFilterSet.Exists, name='LeadExistsEnum'),
         label='Exists Choice', method='exists_filter',
     )
-    custom_filters = SimpleInputFilter(
+    custom_filters = SimpleInputFilter(  # used in export
         convert_enum_to_graphene_enum(LeadFilterSet.CustomFilter, name='LeadCustomFilterEnum'),
         label='Filtered Exists Choice', method='filtered_exists_filter',
     )
@@ -319,6 +329,92 @@ class LeadGQFilterSet(LeadFilterSet):
         ),
         method='filtered_entries_filter_data'
     )
+
+    search = django_filters.CharFilter(method='search_filter')
+
+    published_on = django_filters.DateFilter()
+    published_on_gte = DateGteFilter(field_name='published_on')
+    published_on_lte = DateLteFilter(field_name='published_on')
+
+    emm_entities = django_filters.CharFilter(method='emm_entities_filter')
+    emm_keywords = django_filters.CharFilter(method='emm_keywords_filter')
+    emm_risk_factors = django_filters.CharFilter(method='emm_risk_factors_filter')
+
+    class Meta:
+        model = Lead
+        fields = {
+            **{
+                x: ['exact']
+                for x in ['id', 'text', 'url', 'website']
+            },
+        }
+
+        filter_overrides = {
+            models.CharField: {
+                'filter_class': django_filters.CharFilter,
+                'extra': lambda _: {
+                    'lookup_expr': 'icontains',
+                },
+            },
+        }
+
+    def search_filter(self, qs, name, value):
+        # NOTE: This exists to make it compatible with post filter
+        if not value:
+            return qs
+        return qs.filter(
+            # By title
+            models.Q(title__icontains=value) |
+            # By source
+            models.Q(source_raw__icontains=value) |
+            models.Q(source__title__icontains=value) |
+            models.Q(source__parent__title__icontains=value) |
+            # By author
+            models.Q(author__title__icontains=value) |
+            models.Q(author__parent__title__icontains=value) |
+            models.Q(author_raw__icontains=value) |
+            models.Q(authors__title__icontains=value) |
+            models.Q(authors__parent__title__icontains=value) |
+            # By URL
+            models.Q(url__icontains=value) |
+            models.Q(website__icontains=value)
+        ).distinct()
+
+    def exists_filter(self, qs, name, value):
+        if value == self.Exists.ENTRIES_EXISTS:
+            return qs.filter(entry__isnull=False)
+        elif value == self.Exists.ASSESSMENT_EXISTS:
+            return qs.filter(assessment__isnull=False)
+        elif value == self.Exists.ENTRIES_DO_NOT_EXIST:
+            return qs.filter(entry__isnull=True)
+        elif value == self.Exists.ASSESSMENT_DOES_NOT_EXIST:
+            return qs.filter(assessment__isnull=True)
+        return qs
+
+    def emm_entities_filter(self, qs, name, value):
+        splitted = [x for x in value.split(',') if x]
+        return qs.filter(emm_entities__in=splitted)
+
+    def emm_keywords_filter(self, qs, name, value):
+        splitted = [x for x in value.split(',') if x]
+        return qs.filter(emm_triggers__emm_keyword__in=splitted)
+
+    def emm_risk_factors_filter(self, qs, name, value):
+        splitted = [x for x in value.split(',') if x]
+        return qs.filter(emm_triggers__emm_risk_factor__in=splitted)
+
+    def authoring_organization_types_filter(self, qs, name, value):
+        if value:
+            qs = qs.annotate(
+                organization_types=models.functions.Coalesce(
+                    'authors__parent__organization_type',
+                    'authors__organization_type'
+                )
+            )
+            if type(value[0]) == OrganizationType:
+                return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
+            return qs.filter(organization_types__in=value).distinct()
+        return qs
 
     def filtered_entries_filter_data(self, qs, name, value):
         # NOTE: This filter data is used by filtered_exists_filter
@@ -351,3 +447,20 @@ class LeadGQFilterSet(LeadFilterSet):
         elif value == self.CustomFilter.EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES:
             return qs.annotate(filtered_entries_count=_get_annotate(controlled=True)).filter(filtered_entries_count__gte=1)
         return qs
+
+    @property
+    def qs(self):
+        return super().qs.distinct()
+
+
+class LeadGroupGQFilterSet(UserResourceGqlFilterSet):
+    search = django_filters.CharFilter(method='filter_title')
+
+    class Meta:
+        model = LeadGroup
+        fields = ()
+
+    def filter_title(self, qs, name, value):
+        if not value:
+            return qs
+        return qs.filter(title__icontains=value).distinct()

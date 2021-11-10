@@ -1,7 +1,10 @@
 from django.db import models
 import django_filters
 
-from user_resource.filters import UserResourceFilterSet
+from user_resource.filters import (
+    UserResourceFilterSet,
+    UserResourceGqlFilterSet,
+)
 from .models import (
     AnalysisFramework,
 )
@@ -22,7 +25,8 @@ class AnalysisFrameworkFilterSet(UserResourceFilterSet):
         }
 
 
-class AnalysisFrameworkGqFilterSet(UserResourceFilterSet):
+# ----------------------------- Graphql Filters ---------------------------------------
+class AnalysisFrameworkGqFilterSet(UserResourceGqlFilterSet):
     search = django_filters.CharFilter(method='search_filter')
 
     class Meta:
