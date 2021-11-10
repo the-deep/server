@@ -3,7 +3,6 @@ from typing import List
 import graphene
 from django.db import transaction, models
 from django.db.models import QuerySet
-from django.contrib.postgres.aggregates.general import ArrayAgg
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene.types import generic
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
@@ -52,6 +51,7 @@ from .filter_set import (
     ProjectGqlFilterSet,
     ProjectMembershipGqlFilterSet,
     ProjectUserGroupMembershipGqlFilterSet,
+    ProjectByRegionGqlFilterSet,
 )
 from .activity import project_activity_log
 from .tasks import generate_viz_stats
@@ -390,10 +390,26 @@ class ProjectJoinRequestType(DjangoObjectType):
     status = graphene.Field(ProjectJoinRequestStatusEnum, required=True)
 
 
+class RegionWithProject(DjangoObjectType):
+    class Meta:
+        model = Region
+        fields = (
+            'id', 'centroid',
+        )
+    projects_id = graphene.List(graphene.NonNull(graphene.ID))
+
+
 class ProjectListType(CustomDjangoListObjectType):
     class Meta:
         model = Project
         filterset_class = ProjectGqlFilterSet
+
+
+class ProjectByRegionListType(CustomDjangoListObjectType):
+    class Meta:
+        model = Region
+        base_type = RegionWithProject
+        filterset_class = ProjectByRegionGqlFilterSet
 
 
 class Query:
@@ -405,8 +421,10 @@ class Query:
         )
     )
     recent_projects = graphene.List(graphene.NonNull(ProjectDetailType))
-    projects_by_region = graphene.List(graphene.NonNull(ProjectByRegion))
     project_explore_stats = graphene.Field(ProjectExploreStatType)
+
+    # projects_by_region = graphene.List(graphene.NonNull(ProjectByRegion))
+    projects_by_region = DjangoPaginatedListObjectField(ProjectByRegionListType)
 
     # NOTE: This is a custom feature, see https://github.com/the-deep/graphene-django-extras
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
@@ -423,16 +441,10 @@ class Query:
 
     @staticmethod
     def resolve_projects_by_region(root, info, **kwargs):
-        # TODO: Cache this
-        return Region.objects.filter(centroid__isnull=False).order_by('centroid').annotate(
-            projects_id=ArrayAgg(
-                'project',
-                ordering='project',
-                filter=models.Q(
-                    project__in=Project.get_for_gq(info.context.user)
-                )
-            ),
-        ).values('id', 'centroid', 'projects_id')
+        return Region\
+            .get_for(info.context.user)\
+            .filter(centroid__isnull=False)\
+            .order_by('centroid')
 
     @staticmethod
     def resolve_project_explore_stats(root, info, **kwargs):
