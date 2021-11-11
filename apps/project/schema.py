@@ -18,6 +18,7 @@ from utils.graphene.fields import (
 )
 from deep.permissions import ProjectPermissions as PP
 from deep.serializers import URLCachedFileField
+from user_resource.schema import UserResourceMixin
 
 from lead.schema import Query as LeadQuery
 from entry.schema import Query as EntryQuery
@@ -25,6 +26,7 @@ from export.schema import Query as ExportQuery
 from geo.schema import RegionDetailType, ProjectScopeQuery as GeoQuery
 from quality_assurance.schema import Query as QualityAssuranceQuery
 from ary.schema import Query as AryQuery
+from analysis.schema import Query as AnalysisQuery
 
 from lead.models import Lead
 from entry.models import Entry
@@ -160,7 +162,7 @@ class ProjectUserGroupMembershipType(ClientIdMixin, DjangoObjectType):
     badges = graphene.List(graphene.NonNull(ProjectMembershipBadgeTypeEnum))
 
 
-class ProjectType(DjangoObjectType):
+class ProjectType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = Project
         fields = (
@@ -297,6 +299,7 @@ class ProjectDetailType(
     GeoQuery,
     QualityAssuranceQuery,
     AryQuery,
+    AnalysisQuery,
     # --  End  --Project scopped entities
     ProjectType,
 ):

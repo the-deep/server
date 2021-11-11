@@ -118,6 +118,62 @@ type AnalysisFrameworkVisibleProjectType {
   isPrivate: Boolean!
 }
 
+type AnalysisListType {
+  results: [AnalysisType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AnalysisPillarDetailType {
+  id: ID!
+  title: String!
+  mainStatement: String!
+  informationGap: String!
+  filters: GenericScalar
+  assignee: UserType!
+  clientId: String!
+  analysis: ID!
+  clonedFrom: ID!
+  entries(id: ID, excerpt: String, controlled: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], leads: [ID!], leadPublishedOn: Date, leadPublishedOnGte: Date, leadPublishedOnLte: Date, leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], commentStatus: EntryFilterCommentStatusEnum, entryTypes: [EntryTagTypeEnum!], projectEntryLabels: [ID!], authoringOrganizationTypes: [ID!], entriesId: [ID!], geoCustomShape: String, leadGroupLabel: String, filterableData: [EntryFilterDataType!], discarded: Boolean, excludeEntries: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarEntryListType
+}
+
+type AnalysisPillarEntryListType {
+  results: [EntryType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AnalysisPillarListType {
+  results: [AnalysisPillarType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AnalysisPillarType {
+  id: ID!
+  title: String!
+  mainStatement: String!
+  informationGap: String!
+  filters: GenericScalar
+  assignee: UserType!
+  clientId: String!
+  analysis: ID!
+  clonedFrom: ID!
+}
+
+type AnalysisType {
+  id: ID!
+  title: String!
+  startDate: Date
+  endDate: Date!
+  clientId: String!
+  teamLead: ID!
+  clonedFrom: ID!
+}
+
 type AssessmentListType {
   results: [AssessmentType!]
   totalCount: Int
@@ -492,6 +548,10 @@ type EntryType {
   highlightHidden: Boolean!
   controlled: Boolean
   controlledChangedBy: UserType
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
   entryType: EntryTagTypeEnum!
   entryTypeDisplay: EnumDescription!
   attributes: [AttributeType!]
@@ -614,10 +674,6 @@ enum LeadCustomFilterEnum {
 
 type LeadDetailType {
   id: ID!
-  createdAt: DateTime!
-  modifiedAt: DateTime!
-  createdBy: UserType
-  modifiedBy: UserType
   clientId: String!
   leadGroup: LeadGroupType
   project: ProjectType!
@@ -629,6 +685,10 @@ type LeadDetailType {
   website: String!
   attachment: GalleryFileType
   isAssessmentLead: Boolean!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
   sourceType: LeadSourceTypeEnum!
   sourceTypeDisplay: EnumDescription!
   priority: LeadPriorityEnum!
@@ -786,10 +846,6 @@ enum LeadStatusEnum {
 
 type LeadType {
   id: ID!
-  createdAt: DateTime!
-  modifiedAt: DateTime!
-  createdBy: UserType
-  modifiedBy: UserType
   clientId: String!
   leadGroup: LeadGroupType
   project: ProjectType!
@@ -801,6 +857,10 @@ type LeadType {
   website: String!
   attachment: GalleryFileType
   isAssessmentLead: Boolean!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
   sourceType: LeadSourceTypeEnum!
   sourceTypeDisplay: EnumDescription!
   priority: LeadPriorityEnum!
@@ -948,6 +1008,10 @@ type ProjectDetailType {
   organizations: [ProjectOrganizationType!]
   hasAnalysisFramework: Boolean!
   hasAssessmentTemplate: Boolean!
+  analysis(id: ID!): AnalysisType
+  analyses(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisListType
+  analysisPillar(id: ID!): AnalysisPillarDetailType
+  analysisPillars(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], analyses: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarListType
   assessment(id: ID!): AssessmentType
   assessments(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentListType
   reviewComment(id: ID!): EntryReviewCommentDetailType
