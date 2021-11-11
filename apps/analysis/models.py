@@ -1,7 +1,6 @@
 import copy
 
 from django.db import models
-from django_enumfield import enum
 from django.db.models.functions import JSONObject
 from django.db import connection as django_db_connection
 from django.utils.translation import gettext_lazy as _
@@ -332,18 +331,11 @@ class DiscardedEntry(models.Model):
     """
     Discarded entries for AnalysisPillar
     """
-    class TagType(enum.Enum):
-        REDUNDANT = 0
-        TOO_OLD = 1
-        ANECDOTAL = 2
-        OUTLIER = 3
-
-        __labels__ = {
-            REDUNDANT: _('Redundant'),
-            TOO_OLD: _('Too old'),
-            ANECDOTAL: _('Anecdotal'),
-            OUTLIER: _('Outlier'),
-        }
+    class TagType(models.IntegerChoices):
+        REDUNDANT = 0, _('Redundant')
+        TOO_OLD = 1, _('Too old')
+        ANECDOTAL = 2, _('Anecdotal')
+        OUTLIER = 3, _('Outlier')
 
     analysis_pillar = models.ForeignKey(
         AnalysisPillar,
@@ -353,7 +345,7 @@ class DiscardedEntry(models.Model):
         Entry,
         on_delete=models.CASCADE
     )
-    tag = enum.EnumField(TagType)
+    tag = models.IntegerField(choices=TagType.choices)
 
     class Meta:
         unique_together = ('entry', 'analysis_pillar')
