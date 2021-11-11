@@ -22,7 +22,7 @@ from deep.serializers import URLCachedFileField
 from lead.schema import Query as LeadQuery
 from entry.schema import Query as EntryQuery
 from export.schema import Query as ExportQuery
-from geo.schema import RegionType, ProjectScopeQuery as GeoQuery
+from geo.schema import RegionDetailType, ProjectScopeQuery as GeoQuery
 from quality_assurance.schema import Query as QualityAssuranceQuery
 from ary.schema import Query as AryQuery
 
@@ -179,7 +179,7 @@ class ProjectType(DjangoObjectType):
     )
     stats = graphene.Field(ProjectStatType)
     membership_pending = graphene.Boolean(required=True)
-    regions = DjangoListField(RegionType)
+    regions = DjangoListField(RegionDetailType)
     status = graphene.Field(ProjectStatusEnum, required=True)
     status_display = EnumDescription(source='get_status_display', required=True)
     organizations = graphene.List(graphene.NonNull(ProjectOrganizationType))
@@ -225,8 +225,10 @@ class ProjectType(DjangoObjectType):
         return info.context.dl.project.organizations.load(root.pk)
 
     def resolve_regions(root, info, **kwargs):
-        # NOTE: This is prefetched by graphene-django-extras
-        return root.regions.all()
+        # Need to have a base permission
+        if PP.check_permission(info, PP.Permission.BASE_ACCESS):
+            return info.context.dl.project.geo_region.load(root.pk)
+        return info.context.dl.project.geo_region.load(root.pk)
 
 
 class AnalysisFrameworkVisibleProjectType(DjangoObjectType):

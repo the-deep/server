@@ -236,8 +236,9 @@ class BasePermissions():
 class ProjectPermissions(BasePermissions):
 
     @unique
-    class Permission(Enum):  # TODO: Not sure how auto() works, if different server have different values.
+    class Permission(Enum):
         # ---------------------- Project
+        BASE_ACCESS = auto()
         UPDATE_PROJECT = auto()
         CAN_ADD_MEMBER = auto()
         # ---------------------- Lead
@@ -276,10 +277,12 @@ class ProjectPermissions(BasePermissions):
 
     # NOTE: If we need to have delete permission as well make sure to update queryset in schema and mutations.
     VIEWER_NON_CONFIDENTIAL = [
+        Permission.BASE_ACCESS,
         Permission.VIEW_ENTRY,
         Permission.VIEW_ONLY_UNPROTECTED_LEAD,
     ]
     VIEWER = [
+        Permission.BASE_ACCESS,
         Permission.VIEW_ENTRY,
         Permission.VIEW_ALL_LEAD,
     ]

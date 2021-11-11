@@ -3,6 +3,22 @@ schema {
   mutation: Mutation
 }
 
+type AdminLevelType {
+  id: ID!
+  title: String!
+  level: Int
+  nameProp: String!
+  codeProp: String!
+  parentNameProp: String!
+  parentCodeProp: String!
+  geoShapeFile: GalleryFileType
+  tolerance: Float!
+  staleGeoAreas: Boolean!
+  parent: ID
+  geojsonFile: FileField
+  boundsFile: FileField
+}
+
 type AnalysisFrameworkDetailType {
   id: ID!
   createdAt: DateTime!
@@ -926,7 +942,7 @@ type ProjectDetailType {
   allowedPermissions: [ProjectPermission!]!
   stats: ProjectStatType
   membershipPending: Boolean!
-  regions: [RegionType!]
+  regions: [RegionDetailType!]
   status: ProjectStatusEnum!
   statusDisplay: EnumDescription!
   organizations: [ProjectOrganizationType!]
@@ -935,7 +951,7 @@ type ProjectDetailType {
   assessment(id: ID!): AssessmentType
   assessments(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentListType
   reviewComment(id: ID!): EntryReviewCommentDetailType
-  geoAreas(search: String, page: Int = 1, ordering: String, pageSize: Int): ProjectGeoAreaListType
+  geoAreas(ids: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): ProjectGeoAreaListType
   export(id: ID!): UserExportType
   exports(type: [ExportDataTypeEnum!], format: [ExportFormatEnum!], status: [ExportStatusEnum!], page: Int = 1, ordering: String, pageSize: Int): UserExportListType
   entry(id: ID!): EntryType
@@ -1075,6 +1091,7 @@ enum ProjectOrganizationTypeEnum {
 }
 
 enum ProjectPermission {
+  BASE_ACCESS
   UPDATE_PROJECT
   CAN_ADD_MEMBER
   CREATE_LEAD
@@ -1145,7 +1162,7 @@ type ProjectType {
   allowedPermissions: [ProjectPermission!]!
   stats: ProjectStatType
   membershipPending: Boolean!
-  regions: [RegionType!]
+  regions: [RegionDetailType!]
   status: ProjectStatusEnum!
   statusDisplay: EnumDescription!
   organizations: [ProjectOrganizationType!]
@@ -1183,6 +1200,8 @@ type ProjectVizDataType {
 }
 
 type Query {
+  region(id: ID!): RegionDetailType
+  regions(id: Float, code: String, title: String, public: Boolean, project: [ID], createdAt: DateTime, createdBy: [ID], modifiedAt: DateTime, modifiedBy: [ID], createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, excludeProject: [ID], page: Int = 1, ordering: String, pageSize: Int): RegionListType
   organization(id: ID!): OrganizationType
   organizations(id: Float, search: String, page: Int = 1, ordering: String, pageSize: Int): OrganizationListType
   organizationType(id: ID!): OrganizationTypeType
@@ -1202,6 +1221,25 @@ type Query {
   _debug: DjangoDebug
 }
 
+type RegionDetailType {
+  id: ID!
+  title: String!
+  public: Boolean!
+  regionalGroups: GenericScalar
+  keyFigures: GenericScalar
+  populationData: GenericScalar
+  mediaSources: GenericScalar
+  centroid: PointScalar
+  adminLevels: [AdminLevelType!]
+}
+
+type RegionListType {
+  results: [RegionType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
 type RegionType {
   id: ID!
   title: String!
@@ -1211,7 +1249,6 @@ type RegionType {
   populationData: GenericScalar
   mediaSources: GenericScalar
   centroid: PointScalar
-  geoOptions: GenericScalar
 }
 
 type Register {

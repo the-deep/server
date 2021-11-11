@@ -4,14 +4,19 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from django.db import models
 
 from utils.graphene.types import CustomDjangoListObjectType
-from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.fields import DjangoPaginatedListObjectField, FileField
 
-from geo.models import Region, GeoArea
+from geo.models import Region, GeoArea, AdminLevel
 from geo.filter_set import RegionFilterSet, GeoAreaGqlFilterSet
 
 
-def get_project_region_qs(info):
-    return Region.objects.filter(project=info.context.active_project).distinct()
+def get_users_region_qs(info):
+    return Region.get_for(info.context.user).defer('geo_options')
+
+
+def get_users_adminlevel_qs(info):
+    # NOTE: We don't need geo_area_titles
+    return AdminLevel.get_for(info.context.user).defer('geo_area_titles')
 
 
 def get_geo_area_queryset_for_project_geo_area_type():
@@ -21,18 +26,53 @@ def get_geo_area_queryset_for_project_geo_area_type():
     )
 
 
+class AdminLevelType(DjangoObjectType):
+    class Meta:
+        model = AdminLevel
+        fields = (
+            'id',
+            'title', 'level', 'tolerance', 'stale_geo_areas', 'geo_shape_file',
+            'name_prop', 'code_prop', 'parent_name_prop', 'parent_code_prop',
+        )
+
+    parent = graphene.ID(source='parent_id')
+    geojson_file = graphene.Field(FileField)
+    bounds_file = graphene.Field(FileField)
+
+    @staticmethod
+    def get_custom_queryset(queryset, info, **kwargs):
+        return get_users_adminlevel_qs(info)
+
+
 class RegionType(DjangoObjectType):
     class Meta:
         model = Region
         fields = (
             'id', 'title', 'public', 'regional_groups',
             'key_figures', 'population_data', 'media_sources',
-            'geo_options', 'centroid',
+            'centroid',
         )
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
-        return get_project_region_qs(info)
+        return get_users_region_qs(info)
+
+
+class RegionDetailType(RegionType):
+    class Meta:
+        model = Region
+        skip_registry = True
+        fields = (
+            'id', 'title', 'public', 'regional_groups',
+            'key_figures', 'population_data', 'media_sources',
+            'centroid',
+        )
+
+    admin_levels = graphene.List(graphene.NonNull(AdminLevelType))
+
+    @staticmethod
+    def resolve_admin_levels(root, info, **kwargs):
+        return info.context.dl.geo.admin_levels_by_region.load(root.pk)
 
 
 class RegionListType(CustomDjangoListObjectType):
@@ -42,7 +82,7 @@ class RegionListType(CustomDjangoListObjectType):
 
 
 class Query:
-    region = DjangoObjectField(RegionType)
+    region = DjangoObjectField(RegionDetailType)
     regions = DjangoPaginatedListObjectField(
         RegionListType,
         pagination=PageGraphqlPagination(
@@ -51,8 +91,8 @@ class Query:
     )
 
     @staticmethod
-    def resolve_regions(queryset, info, **kwargs):
-        return get_project_region_qs(info)
+    def resolve_regions(root, info, **kwargs):
+        return get_users_region_qs(info)
 
 
 # -------------------------------- Project Specific Query ---------------------------------

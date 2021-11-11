@@ -10,6 +10,7 @@ from entry.dataloaders import DataLoaders as EntryDataloaders
 from organization.dataloaders import DataLoaders as OrganizationDataLoaders
 from analysis_framework.dataloaders import DataLoaders as AfDataloaders
 from quality_assurance.dataloaders import DataLoaders as QADataLoaders
+from geo.dataloaders import DataLoaders as GeoDataLoaders
 
 
 class GlobalDataLoaders(WithContextMixin):
@@ -44,3 +45,7 @@ class GlobalDataLoaders(WithContextMixin):
     @cached_property
     def quality_assurance(self):
         return QADataLoaders(context=self.context)
+
+    @cached_property
+    def geo(self):
+        return GeoDataLoaders(context=self.context)
