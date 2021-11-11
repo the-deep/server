@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 import django_filters
 
 from deep.filter_set import DjangoFilterCSVWidget
+from tabular.models import Field as TabularField
 from analysis_framework.models import Filter
 from lead.models import Lead
 from entry.models import (
@@ -233,9 +234,31 @@ def get_filtered_entries(user, queries):
     entries = Entry.get_for(user)
     entries_id = queries.get('entries_id')
     project = queries.get('project')
+    search = queries.get('search')
 
     if entries_id:
         entries = entries.filter(id__in=entries_id)
+
+    if search:
+        # For searching tabular columns
+        tabular_field_filters = {}
+        if project:
+            tabular_field_filters['sheet__book__project'] = project
+
+        fields = TabularField.objects.filter(
+            title__icontains=search,
+            **tabular_field_filters
+        )
+        entries = entries.filter(
+            models.Q(lead__title__icontains=search) |
+            models.Q(excerpt__icontains=search) |
+            (
+                models.Q(
+                    tabular_field__in=models.Subquery(
+                        fields.values_list('pk', flat=True))
+                )
+            )
+        )
 
     if project:
         entries = entries.filter(lead__project__id=project)

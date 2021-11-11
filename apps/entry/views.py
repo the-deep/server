@@ -51,7 +51,6 @@ from .filter_set import (
     EntryCommentFilterSet,
     get_filtered_entries,
 )
-from tabular.models import Field as TabularField
 import django_filters
 
 
@@ -295,30 +294,6 @@ class EntryFilterView(EntrySummaryPaginationMixin, generics.GenericAPIView):
             'lead', 'lead__attachment', 'lead__assignee',
         )
         queryset = Entry.annotate_comment_count(queryset)
-
-        project = filters.get('project')
-        search = filters.get('search')
-
-        if search:
-            # For searching tabular columns
-            field_filters = {}
-            if project:
-                field_filters['sheet__book__project'] = project
-
-            fields = TabularField.objects.filter(
-                title__icontains=search,
-                **field_filters
-            )
-            queryset = queryset.filter(
-                models.Q(lead__title__icontains=search) |
-                models.Q(excerpt__icontains=search) |
-                (
-                    models.Q(
-                        tabular_field__in=models.Subquery(
-                            fields.values_list('pk', flat=True))
-                    )
-                )
-            )
 
         return (
             queryset
