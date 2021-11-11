@@ -1,7 +1,12 @@
 import django_filters
 
 from project.models import Project
-from utils.graphene.filters import MultipleInputFilter
+from utils.graphene.filters import (
+    MultipleInputFilter,
+    DateTimeFilter,
+    DateTimeGteFilter,
+    DateTimeLteFilter,
+)
 
 from .models import Export
 from .enums import (
@@ -61,6 +66,11 @@ class ExportGQLFilterSet(django_filters.rest_framework.FilterSet):
     type = MultipleInputFilter(ExportDataTypeEnum)
     format = MultipleInputFilter(ExportFormatEnum)
     status = MultipleInputFilter(ExportStatusEnum)
+
+    search = django_filters.CharFilter(field_name='title', lookup_expr='icontains')
+    exported_at = DateTimeFilter()
+    exported_at_gte = DateTimeGteFilter(field_name='exported_at')
+    exported_at_lte = DateTimeLteFilter(field_name='exported_at')
 
     class Meta:
         model = Export
