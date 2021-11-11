@@ -73,10 +73,13 @@ def _extract_from_lead_core(lead_id):
     # Get the lead to be extracted
     lead = Lead.objects.get(id=lead_id)
     url_to_extract = None
+    url_content_type = None
     if lead.attachment:
         url_to_extract = lead.attachment.url
+        url_content_type = FileDocument(lead.attachment.file, lead.attachment.file.name).type
     elif lead.url:
         url_to_extract = lead.url
+        url_content_type = WebDocument(lead.url).type
     if url_to_extract:
         try:
             headers = {
@@ -87,6 +90,7 @@ def _extract_from_lead_core(lead_id):
                     {
                         "url": url_to_extract,
                         "client_id": lead.id,
+                        "url_content_type": url_content_type
                     }
                 ],
                 "callback_url": settings.DEEPL_EXTRACTOR_CALLBACK_URL
