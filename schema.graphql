@@ -601,6 +601,7 @@ type ExploreProjectStatTopActiveProjectsType {
 }
 
 input ExportCreateInputType {
+  title: String!
   type: ExportDataTypeEnum!
   format: ExportFormatEnum!
   exportType: ExportExportTypeEnum!
@@ -1188,7 +1189,7 @@ type ProjectDetailType {
   reviewComment(id: ID!): EntryReviewCommentDetailType
   geoAreas(ids: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): ProjectGeoAreaListType
   export(id: ID!): UserExportType
-  exports(type: [ExportDataTypeEnum!], format: [ExportFormatEnum!], status: [ExportStatusEnum!], page: Int = 1, ordering: String, pageSize: Int): UserExportListType
+  exports(type: [ExportDataTypeEnum!], format: [ExportFormatEnum!], status: [ExportStatusEnum!], search: String, exportedAt: DateTime, exportedAtGte: DateTime, exportedAtLte: DateTime, page: Int = 1, ordering: String, pageSize: Int): UserExportListType
   entry(id: ID!): EntryType
   entries(id: ID, excerpt: String, controlled: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], leads: [ID!], leadPublishedOn: Date, leadPublishedOnGte: Date, leadPublishedOnLte: Date, leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], search: String, commentStatus: EntryFilterCommentStatusEnum, entryTypes: [EntryTagTypeEnum!], projectEntryLabels: [ID!], authoringOrganizationTypes: [ID!], entriesId: [ID!], geoCustomShape: String, leadGroupLabel: String, filterableData: [EntryFilterDataType!], page: Int = 1, ordering: String, pageSize: Int): EntryListType
   lead(id: ID!): LeadDetailType

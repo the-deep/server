@@ -134,6 +134,7 @@ class TestExportMutationSchema(GraphQLTestCase):
         minput = dict(
             format=self.genum(Export.Format.PDF),
             type=self.genum(Export.DataType.ENTRIES),
+            title='Export 101',
             exportType=self.genum(Export.ExportType.EXCEL),
             isPreview=False,
             filters={},
