@@ -189,6 +189,15 @@ class AnalysisFrameworkListType(CustomDjangoListObjectType):
         filterset_class = AnalysisFrameworkGqFilterSet
 
 
+class RecentAnalysisFrameworkType(AnalysisFrameworkDetailType):
+    project_count = graphene.Field(graphene.Int)
+    lead_count = graphene.Field(graphene.Int)
+
+    class Meta:
+        model = AnalysisFramework
+        skip_registry = True
+
+
 class Query:
     analysis_framework = DjangoObjectField(AnalysisFrameworkDetailType)
     analysis_frameworks = DjangoPaginatedListObjectField(
@@ -197,7 +206,12 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
+    recent_frameworks = graphene.List(graphene.NonNull(RecentAnalysisFrameworkType))
 
     @staticmethod
     def resolve_analysis_frameworks(root, info, **kwargs) -> QuerySet:
         return AnalysisFramework.get_for_gq(info.context.user).distinct()
+
+    @staticmethod
+    def resolve_recent_frameworks(root, info, **kwargs) -> QuerySet:
+        return AnalysisFramework.get_recent_frameworks(root, info.context.user)

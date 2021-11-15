@@ -92,6 +92,32 @@ class AnalysisFramework(UserResource):
             return visible_afs.filter(current_user_role__isnull=False)
         return visible_afs
 
+    @staticmethod
+    def get_recent_frameworks(self, user, max=5):
+        from project.models import Project
+        from lead.models import Lead
+
+        return AnalysisFramework.get_for_gq(user).annotate(
+            project_count=models.functions.Coalesce(
+                models.Subquery(
+                    Project.objects.filter(
+                        analysis_framework=models.OuterRef('pk')
+                    ).order_by().values('analysis_framework').annotate(
+                        count=models.Count('id', distinct=True),
+                    ).values('count')[:1],
+                    output_field=models.IntegerField()
+                ), 0),
+            lead_count=models.functions.Coalesce(
+                models.Subquery(
+                    Lead.objects.filter(
+                        project__analysis_framework=models.OuterRef('pk')
+                    ).order_by().values('project__analysis_framework').annotate(
+                        count=models.Count('id', distinct=True)
+                    ).values('count')[:1],
+                    output_field=models.IntegerField()
+                ), 0),
+        ).order_by('-project_count', '-lead_count')[:max]
+
     def get_current_user_role(self, user):
         """
         Return current_user_role from instance (if get_for_gq is used or generate)
