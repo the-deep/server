@@ -304,8 +304,9 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             'exclude empty controlled filtered entries',
         )
 
-    ids = IDListFilter(method='filter_leads_id')
-    exclude_provided_leads_id = django_filters.BooleanFilter(method='filter_exclude_provided_leads_id')
+    ids = IDListFilter(method='filter_leads_id', help_text='Empty ids are ignored.')
+    exclude_provided_leads_id = django_filters.BooleanFilter(
+        method='filter_exclude_provided_leads_id', help_text='Only used when ids are provided.')
     created_by = IDListFilter()
     modified_by = IDListFilter()
     source_types = MultipleInputFilter(LeadSourceTypeEnum, field_name='source_type')
@@ -419,12 +420,8 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
         return qs
 
     def filter_leads_id(self, qs, _, value):
-        exclude_provided_leads_id = self.data.get('exclude_provided_leads_id', False)
-        if not value:
-            return qs
-        if exclude_provided_leads_id:
-            return qs.exclude(id__in=value)
-        return qs.filter(id__in=value)
+        # NOTE: Used is qs
+        return qs
 
     def filter_exclude_provided_leads_id(self, qs, *_):
         # NOTE: Used in filter_leads_id
@@ -464,8 +461,16 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
 
     @property
     def qs(self):
-        return super().qs.distinct()
-
+        def _custom_qs(qs):
+            # NOTE: To handle empty ids
+            exclude_provided_leads_id = self.data.get('exclude_provided_leads_id', False)
+            leads_ids = self.data.get('ids')
+            if leads_ids is None:
+                return qs
+            if exclude_provided_leads_id:
+                return qs.exclude(id__in=leads_ids)
+            return qs.filter(id__in=leads_ids)
+        return _custom_qs(super().qs).distinct()
 
 class LeadGroupGQFilterSet(UserResourceGqlFilterSet):
     search = django_filters.CharFilter(method='filter_title')
