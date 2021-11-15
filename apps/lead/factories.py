@@ -8,7 +8,9 @@ from .models import (
     Lead,
     EMMEntity,
     LeadGroup,
-    LeadEMMTrigger
+    LeadEMMTrigger,
+    LeadPreview,
+    LeadPreviewImage
 )
 
 
@@ -67,3 +69,13 @@ class LeadEMMTriggerFactory(DjangoModelFactory):
 
     class Meta:
         model = LeadEMMTrigger
+
+
+class LeadPreviewFactory(DjangoModelFactory):
+    class Meta:
+        model = LeadPreview
+
+
+class LeadPreviewImageFactory(DjangoModelFactory):
+    class Meta:
+        model = LeadPreviewImage

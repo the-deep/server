@@ -38,7 +38,7 @@ from .filter_set import (
 
 def get_lead_qs(info):
     lead_qs = Lead.objects.filter(project=info.context.active_project)
-    # Generate querset according to permission
+    # Generate queryset according to permission
     if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
         return lead_qs
     elif PP.check_permission(info, PP.Permission.VIEW_ONLY_UNPROTECTED_LEAD):
@@ -241,6 +241,10 @@ class LeadListWithEnumOrderingType(CustomDjangoListObjectType):
     class Meta:
         model = Lead
         filterset_class = LeadWithOrderingGQFilterSet
+
+
+class LeadCopyType(graphene.ObjectType):
+    leads = graphene.Field(LeadType)
 
 
 class Query:

@@ -1,3 +1,5 @@
+from django.db import models
+
 from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
 
 from organization.factories import OrganizationFactory
@@ -9,7 +11,10 @@ from gallery.factories import FileFactory
 from lead.factories import (
     LeadFactory,
     EmmEntityFactory,
-    LeadGroupFactory
+    LeadGroupFactory,
+    LeadEMMTriggerFactory,
+    LeadPreviewFactory,
+    LeadPreviewImageFactory,
 )
 
 
@@ -426,3 +431,115 @@ class TestLeadGroupMutation(GraphQLTestCase):
         # -- non-member user
         self.force_login(non_member_user)
         _query_check(assert_for_error=True)
+
+
+class TestLeadCopyMutation(GraphQLTestCase):
+    def test_lead_copy_mutation(self):
+        query = '''
+            mutation MyMutation ($projectId: ID! $input: LeadCopyInputType!) {
+              project(id: $projectId) {
+                leadCopy(data: $input) {
+                  ok
+                  errors
+                  result {
+                    id
+                    title
+                  }
+                }
+              }
+            }
+        '''
+        member_user = UserFactory.create()
+        source_project = ProjectFactory.create()
+        source_project.add_member(member_user)
+        destination_project = ProjectFactory.create()
+        destination_project.add_member(member_user)
+        non_member_user = UserFactory.create()
+
+        # Lead1 Info (Will be used later for testing)
+        lead1_title = 'Lead 1 2019--222-'
+        lead1_text_extract = 'This is a test text extract'
+        lead1_preview_file = 'invalid_test_file'
+        author = OrganizationFactory.create(title='author1')
+        author2 = OrganizationFactory.create(title='author2')
+        emm_keyword = 'emm1'
+        emm_risk_factor = 'risk1'
+        emm_count = 22
+        emm_entity_name = 'emm_entity_11'
+
+        # Generate Leads
+        lead1 = LeadFactory.create(
+            title=lead1_title,
+            project=destination_project,
+            source_type=Lead.SourceType.WEBSITE,
+            url='http://example.com'
+        )
+        lead1.authors.set([author, author2])
+
+        # Generating Foreign elements for lead1
+        LeadPreviewFactory.create(lead=lead1, text_extract=lead1_text_extract)
+        LeadPreviewImageFactory.create(lead=lead1, file=lead1_preview_file)
+        emm_trigger = LeadEMMTriggerFactory.create(
+            lead=lead1,
+            emm_keyword=emm_keyword,
+            emm_risk_factor=emm_risk_factor,
+            count=emm_count
+        )
+        lead1.emm_entities.set([EmmEntityFactory.create(name=emm_entity_name)])
+
+        lead2 = LeadFactory.create()
+        lead3 = LeadFactory.create()
+        old_count = Lead.objects.filter(project=destination_project).count()
+
+        # test for single lead copy
+        minput = {
+            'destinationProject': destination_project.id,
+            'leads': [lead1.id]
+        }
+
+        def _query_check(**kwargs):
+            return self.query_check(query, minput=minput, variables={'projectId': destination_project.pk}, **kwargs)
+
+        # withput login
+        _query_check(assert_for_error=True)
+
+        # with non_member user[destination_project]
+        self.force_login(non_member_user)
+        _query_check(assert_for_error=True)
+
+        # with member user
+        self.force_login(member_user)
+        _query_check(assert_for_error=False)
+
+        # lets make sure lead is copied to the destination project
+        new_count = Lead.objects.filter(project=destination_project).count()
+        self.assertEqual(new_count, old_count + 1)
+        # make sure same lead is created for destination project
+        destination_lead = Lead.objects.filter(project=destination_project).first()
+        self.assertEqual(destination_lead.title, lead1.title)
+
+        # lets check for the foreign key field copy
+        self.assertEqual(Lead.objects.filter(title=lead1.title).count(), 2)
+        lead1_copy = Lead.objects.filter(title=lead1.title).exclude(models.Q(pk=lead1.pk)).get()
+        lead1_copy.refresh_from_db()
+
+        emm_trigger = lead1_copy.emm_triggers.filter(emm_risk_factor=emm_risk_factor, emm_keyword=emm_keyword)[0]
+        assert lead1_copy.authors.count() == 2
+        assert sorted(lead1_copy.authors.values_list('id', flat=True)) == [author.id, author2.id]
+        assert lead1_copy.leadpreview.text_extract == lead1_text_extract
+        assert lead1_copy.images.all()[0].file == lead1_preview_file
+        assert emm_trigger.count == emm_count
+        assert lead1_copy.emm_entities.all()[0].name == emm_entity_name
+
+        # lets test for the multiple lead
+        minput = {
+            'destinationProject': destination_project.id,
+            'leads': [lead2.id, lead3.id]
+        }
+
+        def _query_check(**kwargs):
+            return self.query_check(query, minput=minput, variables={'projectId': destination_project.pk}, **kwargs)
+
+        _query_check(assert_for_error=False)
+        # check for the multiple leads clone
+        self.assertEqual(Lead.objects.filter(project=destination_project).count(), 2)
