@@ -10,7 +10,6 @@ from deep.serializers import (
     RemoveNullFieldsMixin,
     ProjectPropertySerializerMixin,
     StringIDField,
-    IntegerIDField,
 )
 from lead.filter_set import LeadGQFilterSet
 from analysis_framework.models import Widget, Exportable
@@ -38,13 +37,13 @@ class ExportReportLevelWidgetSubSubLevelSerializer(serializers.Serializer):  # A
 class ExportReportLevelWidgetSubLevelSerializer(serializers.Serializer):
     id = StringIDField(help_text='Matrix1D: {row-key}-{cell-key}, Matrix2D: {column-key}-{row-key}')
     title = serializers.CharField(help_text='Matrix1D: {cell-label}, Matrix2D: {row-label}')
-    sublevels = ExportReportLevelWidgetSubSubLevelSerializer(many=True, help_text='For 2D matrix')
+    sublevels = ExportReportLevelWidgetSubSubLevelSerializer(many=True, required=False, help_text='For 2D matrix')
 
 
 class ExportReportLevelWidgetLevelSerializer(serializers.Serializer):
     id = StringIDField(help_text='Matrix1D: {row-key}, Matrix2D: {column-key}')
     title = serializers.CharField(help_text='Matrix1D: {row-label}, Matrix2D: {column-label}')
-    sublevels = ExportReportLevelWidgetSubLevelSerializer(many=True)
+    sublevels = ExportReportLevelWidgetSubLevelSerializer(many=True, required=False, help_text='Not required for uncategorized data')
 
 
 class ExportReportLevelWidgetSerializer(serializers.Serializer):
@@ -92,8 +91,8 @@ class ExportReportLevelWidgetSerializer(serializers.Serializer):
         ],
     }
     """
-    id = IntegerIDField(help_text='Widget ID')
-    levels = ExportReportLevelWidgetLevelSerializer(many=True, help_text='Widget levels')
+    id = StringIDField(help_text='Widget ID')
+    levels = ExportReportLevelWidgetLevelSerializer(many=True, required=False, help_text='Widget levels')
 
 
 # ---- [End] ExportReportLevel Serialisers
@@ -104,12 +103,12 @@ class ExportReportStructureWidgetThirdLevelSerializer(serializers.Serializer):  
 
 class ExportReportStructureWidgetSecondLevelSerializer(serializers.Serializer):
     id = StringIDField(help_text='Matrix1D: {row-key}-{cell-key}, Matrix2D: {column-key}-{row-key}')
-    levels = ExportReportStructureWidgetThirdLevelSerializer(many=True, help_text='For 2D matrix')
+    levels = ExportReportStructureWidgetThirdLevelSerializer(many=True, required=False, help_text='For 2D matrix')
 
 
 class ExportReportStructureWidgetFirstLevelSerializer(serializers.Serializer):
     id = StringIDField(help_text='Matrix1D: {row-key}, Matrix2D: {column-key}')
-    levels = ExportReportStructureWidgetSecondLevelSerializer(many=True)
+    levels = ExportReportStructureWidgetSecondLevelSerializer(many=True, required=False, help_text='Not required for uncategorized data')
 
 
 class ExportReportStructureWidgetSerializer(serializers.Serializer):
@@ -151,8 +150,8 @@ class ExportReportStructureWidgetSerializer(serializers.Serializer):
         ],
     }
     """
-    id = IntegerIDField(help_text='Widget ID')
-    levels = ExportReportStructureWidgetFirstLevelSerializer(many=True, help_text='Widget levels')
+    id = StringIDField(help_text='Widget ID')
+    levels = ExportReportStructureWidgetFirstLevelSerializer(many=True, required=False, help_text='Widget levels')
 
 # ---- [End] ExportReportStructure Serialisers
 
