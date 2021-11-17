@@ -107,7 +107,7 @@ class AnalysisFramework(UserResource):
                     ).values('count')[:1],
                     output_field=models.IntegerField()
                 ), 0),
-            lead_count=models.functions.Coalesce(
+            source_count=models.functions.Coalesce(
                 models.Subquery(
                     Lead.objects.filter(
                         project__analysis_framework=models.OuterRef('pk')
@@ -116,7 +116,12 @@ class AnalysisFramework(UserResource):
                     ).values('count')[:1],
                     output_field=models.IntegerField()
                 ), 0),
-        ).order_by('-project_count', '-lead_count')[:max]
+        ).order_by('-project_count', '-source_count').values(
+            analysis_framework_id=models.F('id'),
+            analysis_framework_title=models.F('title'),
+            project_count=models.F('project_count'),
+            source_count=models.F('source_count'),
+        )[:max]
 
     def get_current_user_role(self, user):
         """
