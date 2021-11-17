@@ -78,3 +78,12 @@ class AssignmentSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data['content_object_type'] = instance.content_type.model
         return data
+
+
+# Graphql Serialzier
+class NotificationGqSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(required=True)
+
+    class Meta:
+        model = Notification
+        fields = ('id', 'status')
