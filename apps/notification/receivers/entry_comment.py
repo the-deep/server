@@ -58,7 +58,7 @@ def create_entry_commit_notification(sender, instance, **kwargs):
     old_comment = EntryComment.objects.get(pk=instance.pk)
 
     if instance.is_resolved and old_comment.is_resolved != instance.is_resolved:  # Comment is Resolved
-        meta['notification_type'] = Notification.ENTRY_COMMENT_RESOLVED
+        meta['notification_type'] = Notification.Type.ENTRY_COMMENT_RESOLVED
         transaction.on_commit(lambda: send_notifications_for_comment(instance.pk, meta))
         instance.receiver_notification_already_send = True
 
@@ -75,7 +75,7 @@ def create_entry_commit_notification_post(sender, instance, action, **kwargs):
 
     meta = {}
 
-    meta['notification_type'] = Notification.ENTRY_COMMENT_ASSIGNEE_CHANGE
+    meta['notification_type'] = Notification.Type.ENTRY_COMMENT_ASSIGNEE_CHANGE
     instance.receiver_notification_already_send = True
     transaction.on_commit(lambda: send_notifications_for_comment(instance.pk, meta))
 
@@ -88,11 +88,11 @@ def create_entry_commit_text_notification(sender, instance, created, **kwargs):
     comment = instance.comment
     meta = {}
     meta['notification_type'] = (
-        Notification.ENTRY_COMMENT_REPLY_ADD if comment.parent else Notification.ENTRY_COMMENT_ADD
+        Notification.Type.ENTRY_COMMENT_REPLY_ADD if comment.parent else Notification.Type.ENTRY_COMMENT_ADD
     )
     if EntryCommentText.objects.filter(comment=comment).count() > 1:
         meta['notification_type'] = (
-            Notification.ENTRY_COMMENT_REPLY_MODIFY if comment.parent else Notification.ENTRY_COMMENT_MODIFY
+            Notification.Type.ENTRY_COMMENT_REPLY_MODIFY if comment.parent else Notification.Type.ENTRY_COMMENT_MODIFY
         )
 
     transaction.on_commit(lambda: send_notifications_for_comment(comment.pk, meta))

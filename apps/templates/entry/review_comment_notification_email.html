@@ -32,7 +32,7 @@
 {% endblock %}
 
 {% block body %}
-    {% if notification_type == Notification.ENTRY_REVIEW_COMMENT_ADD %}
+    {% if notification_type == Notification.Type.ENTRY_REVIEW_COMMENT_ADD %}
         <p class="email-label">
         {{comment.created_by.profile.get_display_name}}
         {% if comment.comment_type == CommentType.VERIFY %}
@@ -51,7 +51,7 @@
         <div class="comment">
             {{comment.text | markdown_render }}
         </div>
-    {% elif notification_type == Notification.ENTRY_REVIEW_COMMENT_MODIFY %}
+    {% elif notification_type == Notification.Type.ENTRY_REVIEW_COMMENT_MODIFY %}
         <p class="email-label">
             {{comment.created_by.profile.get_display_name}} modified the comment you are mentioned in:
         </p>

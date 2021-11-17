@@ -129,11 +129,11 @@ class EntryReviewCommentSerializer(serializers.ModelSerializer):
         notify_meta = {'text_changed': text_changed}
 
         if instance is None:  # Create
-            notify_meta['notification_type'] = Notification.ENTRY_REVIEW_COMMENT_ADD
+            notify_meta['notification_type'] = Notification.Type.ENTRY_REVIEW_COMMENT_ADD
             notify_meta['text_changed'] = True
             instance = super().create(validated_data)
         else:  # Update
-            notify_meta['notification_type'] = Notification.ENTRY_REVIEW_COMMENT_MODIFY
+            notify_meta['notification_type'] = Notification.Type.ENTRY_REVIEW_COMMENT_MODIFY
             current_mentioned_users_pk = list(instance.mentioned_users.values_list('pk', flat=True))
             notify_meta['new_mentioned_users'] = [
                 user
@@ -306,11 +306,11 @@ class EntryReviewCommentGqlSerializer(ProjectPropertySerializerMixin, serializer
         notify_meta = {'text_changed': text_changed}
 
         if instance is None:  # Create
-            notify_meta['notification_type'] = Notification.ENTRY_REVIEW_COMMENT_ADD
+            notify_meta['notification_type'] = Notification.Type.ENTRY_REVIEW_COMMENT_ADD
             notify_meta['text_changed'] = True
             instance = super().create(validated_data)
         else:  # Update
-            notify_meta['notification_type'] = Notification.ENTRY_REVIEW_COMMENT_MODIFY
+            notify_meta['notification_type'] = Notification.Type.ENTRY_REVIEW_COMMENT_MODIFY
             current_mentioned_users_pk = list(instance.mentioned_users.values_list('pk', flat=True))
             notify_meta['new_mentioned_users'] = [
                 user

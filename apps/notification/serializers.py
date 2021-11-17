@@ -14,8 +14,7 @@ from .models import (
 )
 
 
-class NotificationSerializer(RemoveNullFieldsMixin,
-                             serializers.ModelSerializer):
+class NotificationSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     id = serializers.IntegerField()
     data = serializers.SerializerMethodField()
 
@@ -41,11 +40,7 @@ class NotificationSerializer(RemoveNullFieldsMixin,
     def get_data(self, notification):
         if not notification.data:
             return {}
-
-        if notification.notification_type in Notification.TYPES:
-            return notification.data
-
-        return {}
+        return notification.data
 
 
 class AssignmentEntryCommentSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):

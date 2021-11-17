@@ -177,7 +177,7 @@ class EntryCommentEmail(View):
         context = get_basic_email_context()
         context.update({
             'email_type': Profile.E_EMAIL_COMMENT,
-            'notification_type': Notification.ENTRY_COMMENT_ASSIGNEE_CHANGE,
+            'notification_type': Notification.Type.ENTRY_COMMENT_ASSIGNEE_CHANGE,
             'Notification': Notification,
             'comment': comment,
         })
@@ -192,7 +192,7 @@ class EntryReviewCommentEmail(View):
     """
     def get(self, request):
         comment_id = request.GET.get('comment_id')
-        notification_type = request.GET.get('notification_type', Notification.ENTRY_REVIEW_COMMENT_ADD)
+        notification_type = request.GET.get('notification_type', Notification.Type.ENTRY_REVIEW_COMMENT_ADD)
         comment = (
             EntryReviewComment.objects.get(pk=comment_id)
             if comment_id else EntryReviewComment.objects.first()
