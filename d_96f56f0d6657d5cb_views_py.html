@@ -125,7 +125,7 @@
     <p class="run"><span class="n"><a id="t64" href="#t64">64</a></span><span class="t">        <span class="nam">qs</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">filter_queryset</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">get_queryset</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t65" href="#t65">65</a></span><span class="t">        <span class="nam">total</span> <span class="op">=</span> <span class="nam">qs</span><span class="op">.</span><span class="nam">count</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t66" href="#t66">66</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t67" href="#t67">67</a></span><span class="t">        <span class="nam">unseen_notifications</span> <span class="op">=</span> <span class="nam">qs</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">status</span><span class="op">=</span><span class="nam">Notification</span><span class="op">.</span><span class="nam">STATUS_UNSEEN</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t67" href="#t67">67</a></span><span class="t">        <span class="nam">unseen_notifications</span> <span class="op">=</span> <span class="nam">qs</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">status</span><span class="op">=</span><span class="nam">Notification</span><span class="op">.</span><span class="nam">Status</span><span class="op">.</span><span class="nam">UNSEEN</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t68" href="#t68">68</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t69" href="#t69">69</a></span><span class="t">        <span class="nam">unseen_requests_count</span> <span class="op">=</span> <span class="nam">unseen_notifications</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">data__status</span><span class="op">=</span><span class="str">'pending'</span><span class="op">)</span><span class="op">.</span><span class="nam">count</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t70" href="#t70">70</a></span><span class="t">        <span class="nam">unseen_notifications_count</span> <span class="op">=</span> <span class="nam">unseen_notifications</span><span class="op">.</span><span class="nam">count</span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="nam">unseen_requests_count</span>&nbsp;</span><span class="r"></span></p>
@@ -167,7 +167,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.1.2</a>,
-            created at 2021-11-17 04:50 +0000
+            created at 2021-11-17 08:27 +0000
         </p>
     </div>
 </footer>
