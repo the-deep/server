@@ -16,7 +16,7 @@ from user import mutation as user_mutation, schema as user_schema
 from user_group import mutation as user_group_mutation, schema as user_group_schema
 from organization import schema as organization_schema
 from geo import schema as geo_schema
-from notification import schema as notification_schema
+from notification import schema as notification_schema, mutation as notification_mutation
 
 
 class Query(
@@ -38,6 +38,7 @@ class Mutation(
     user_mutation.Mutation,
     user_group_mutation.Mutation,
     pj_mutation.Mutation,
+    notification_mutation.Mutation,
     graphene.ObjectType
 ):
     pass
