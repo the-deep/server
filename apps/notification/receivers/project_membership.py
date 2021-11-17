@@ -18,7 +18,7 @@ def create_notification(sender, instance, created, **kwargs):
         for admin in admins:
             Notification.objects.create(
                 receiver=admin,
-                notification_type=Notification.PROJECT_JOIN_REQUEST,
+                notification_type=Notification.Type.PROJECT_JOIN_REQUEST,
                 project=instance.project,
                 data=data,
             )
@@ -28,7 +28,7 @@ def create_notification(sender, instance, created, **kwargs):
     if instance.status in ['accepted', 'rejected']:
         Notification.objects.create(
             receiver=instance.requested_by,
-            notification_type=Notification.PROJECT_JOIN_RESPONSE,
+            notification_type=Notification.Type.PROJECT_JOIN_RESPONSE,
             project=instance.project,
             data=data,
         )
@@ -44,7 +44,7 @@ def create_notification(sender, instance, created, **kwargs):
     for admin in admins:
         Notification.objects.create(
             receiver=admin,
-            notification_type=Notification.PROJECT_JOIN_RESPONSE,
+            notification_type=Notification.Type.PROJECT_JOIN_RESPONSE,
             project=instance.project,
             data=data,
         )
@@ -66,7 +66,7 @@ def update_notification_for_join_request(sender, instance, **kwargs):
     for admin in admins:
         Notification.objects.create(
             receiver=admin,
-            notification_type=Notification.PROJECT_JOIN_REQUEST_ABORT,
+            notification_type=Notification.Type.PROJECT_JOIN_REQUEST_ABORT,
             project=instance.project,
             data=data
         )
@@ -99,7 +99,7 @@ def remove_notifications_for_former_project_admin(
             for old_project_join_request in old_project_join_requests:
                 Notification.objects.create(
                     receiver=instance.member,
-                    notification_type=Notification.PROJECT_JOIN_REQUEST,
+                    notification_type=Notification.Type.PROJECT_JOIN_REQUEST,
                     project=instance.project,
                     data=ProjectJoinRequestSerializer(
                         old_project_join_request).data,
@@ -121,7 +121,7 @@ def create_notifications_for_new_project_admin(
             for old_project_join_request in old_project_join_requests:
                 Notification.objects.create(
                     receiver=instance.member,
-                    notification_type=Notification.PROJECT_JOIN_REQUEST,
+                    notification_type=Notification.Type.PROJECT_JOIN_REQUEST,
                     project=instance.project,
                     data=ProjectJoinRequestSerializer(
                         old_project_join_request).data,

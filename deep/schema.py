@@ -16,6 +16,7 @@ from user import mutation as user_mutation, schema as user_schema
 from user_group import mutation as user_group_mutation, schema as user_group_schema
 from organization import schema as organization_schema
 from geo import schema as geo_schema
+from notification import schema as notification_schema
 
 
 class Query(
@@ -25,6 +26,7 @@ class Query(
     user_group_schema.Query,
     organization_schema.Query,
     geo_schema.Query,
+    notification_schema.Query,
     graphene.ObjectType
 ):
     if settings.DEBUG:

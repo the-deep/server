@@ -465,7 +465,7 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         assert _get_comment_users_pk(comment_id) == set([user2.pk])
         assert _get_notifications_receivers() == (
             set([user2.pk]),
-            set([Notification.ENTRY_REVIEW_COMMENT_ADD]),
+            set([Notification.Type.ENTRY_REVIEW_COMMENT_ADD]),
         )
 
         # Create a commit (multiple mentionedUsers)
@@ -482,7 +482,7 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         assert _get_comment_users_pk(comment_id) == set([user2.pk, user3.pk])
         assert _get_notifications_receivers() == (
             set([user2.pk, user3.pk]),
-            set([Notification.ENTRY_REVIEW_COMMENT_ADD]),
+            set([Notification.Type.ENTRY_REVIEW_COMMENT_ADD]),
         )
 
         # Create a commit different comment_type
@@ -505,7 +505,7 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
             assert _get_comment_users_pk(comment_id) == set([user2.pk, user3.pk])
             assert _get_notifications_receivers() == (
                 set([user2.pk, user3.pk]),
-                set([Notification.ENTRY_REVIEW_COMMENT_ADD]),
+                set([Notification.Type.ENTRY_REVIEW_COMMENT_ADD]),
             )
 
             _clear_notifications()
@@ -523,7 +523,7 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
             assert _get_comment_users_pk(comment_id) == set([user2.pk, user3.pk])
             assert _get_notifications_receivers() == (
                 set([user2.pk, user3.pk]),
-                set([Notification.ENTRY_REVIEW_COMMENT_MODIFY]),
+                set([Notification.Type.ENTRY_REVIEW_COMMENT_MODIFY]),
             )  # New notifications are created
 
             _clear_notifications()
@@ -534,5 +534,5 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
             assert _get_comment_users_pk(comment_id) == set([user4.pk, user2.pk, user3.pk])
             assert _get_notifications_receivers() == (
                 set([user4.pk]),
-                set([Notification.ENTRY_REVIEW_COMMENT_MODIFY]),
+                set([Notification.Type.ENTRY_REVIEW_COMMENT_MODIFY]),
             )  # New notifications are created only for user2

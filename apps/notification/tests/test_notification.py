@@ -32,9 +32,9 @@ class TestNotification(TestCase):
                 "A notification should have been created for admin"
 
             notification = notifications[0]
-            assert notification.status == Notification.STATUS_UNSEEN
+            assert notification.status == Notification.Status.UNSEEN
             assert notification.notification_type ==\
-                Notification.PROJECT_JOIN_REQUEST
+                Notification.Type.PROJECT_JOIN_REQUEST
             assert notification.receiver == user
             assert notification.data['status'] == 'pending'
             assert notification.data['data']['reason'] is not None
@@ -60,7 +60,7 @@ class TestNotification(TestCase):
         notifications = Notification.get_for(self.user)
         assert notifications.count() == 1
         assert notifications[0].notification_type ==\
-            Notification.PROJECT_JOIN_REQUEST
+            Notification.Type.PROJECT_JOIN_REQUEST
 
         # Update join_request by adding member
         project.add_member(join_request.requested_by, role=join_request.role)
@@ -76,7 +76,7 @@ class TestNotification(TestCase):
         assert notifications.count() == 2
         new_notif = Notification.get_for(self.user).order_by('-timestamp')[0]
         assert new_notif.notification_type ==\
-            Notification.PROJECT_JOIN_RESPONSE
+            Notification.Type.PROJECT_JOIN_RESPONSE
         assert new_notif.data['status'] == 'accepted'
 
         # Get notifications for requesting user
@@ -86,7 +86,7 @@ class TestNotification(TestCase):
         assert notifications.count() == 1
         new_notif = notifications[0]
         assert new_notif.notification_type ==\
-            Notification.PROJECT_JOIN_RESPONSE
+            Notification.Type.PROJECT_JOIN_RESPONSE
         assert new_notif.data['status'] == 'accepted'
 
     def test_notification_updated_on_request_rejected(self):
@@ -105,7 +105,7 @@ class TestNotification(TestCase):
         notifications = Notification.get_for(self.user)
         assert notifications.count() == 1
         assert notifications[0].notification_type ==\
-            Notification.PROJECT_JOIN_REQUEST
+            Notification.Type.PROJECT_JOIN_REQUEST
         assert notifications[0].data['status'] == 'pending'
 
         # Update join_request without adding member
@@ -118,7 +118,7 @@ class TestNotification(TestCase):
         assert notifications.count() == 2
         new_notif = notifications.order_by('-timestamp')[0]
         assert new_notif.notification_type ==\
-            Notification.PROJECT_JOIN_RESPONSE
+            Notification.Type.PROJECT_JOIN_RESPONSE
         assert new_notif.data['status'] == 'rejected'
 
         # Get notifications for requesting user
@@ -128,7 +128,7 @@ class TestNotification(TestCase):
         assert notifications.count() == 1
         new_notif = notifications[0]
         assert new_notif.notification_type ==\
-            Notification.PROJECT_JOIN_RESPONSE
+            Notification.Type.PROJECT_JOIN_RESPONSE
         assert new_notif.data['status'] == 'rejected'
 
     def test_notification_updated_on_request_aborted(self):
@@ -146,7 +146,7 @@ class TestNotification(TestCase):
         notifications = Notification.get_for(self.user)
         assert notifications.count() == 1
         assert notifications[0].notification_type ==\
-            Notification.PROJECT_JOIN_REQUEST
+            Notification.Type.PROJECT_JOIN_REQUEST
         assert notifications[0].data['status'] == 'pending'
 
         # Now abort join request by deleting it
@@ -158,7 +158,7 @@ class TestNotification(TestCase):
         new_notif = notifications.order_by('-timestamp')[0]
         assert new_notif.data['status'] == 'aborted'
         assert new_notif.notification_type ==\
-            Notification.PROJECT_JOIN_REQUEST_ABORT
+            Notification.Type.PROJECT_JOIN_REQUEST_ABORT
 
         # Get notifications for requesting user
         # there should be none

@@ -8,47 +8,25 @@ from project.models import Project
 
 
 class Notification(models.Model):
-    # Project Joins Notification Types
-    PROJECT_JOIN_REQUEST = 'project_join_request'
-    PROJECT_JOIN_RESPONSE = 'project_join_response'
-    PROJECT_JOIN_REQUEST_ABORT = 'project_join_request_abort'
+    class Type(models.TextChoices):
+        # Project Joins Notification Types
+        PROJECT_JOIN_REQUEST = 'project_join_request', 'Join project request'
+        PROJECT_JOIN_REQUEST_ABORT = 'project_join_request_abort', 'Join project request abort'
+        PROJECT_JOIN_RESPONSE = 'project_join_response', 'Join project response'
+        # Entry Comment Notifications Types
+        ENTRY_COMMENT_ADD = 'entry_comment_add', 'Entry Comment Add'
+        ENTRY_COMMENT_MODIFY = 'entry_comment_modify', 'Entry Comment Modify'
+        ENTRY_COMMENT_ASSIGNEE_CHANGE = 'entry_comment_assignee_change', 'entry_comment_assignee_change'
+        ENTRY_COMMENT_REPLY_ADD = 'entry_comment_reply_add', 'Entry Comment Reply Add'
+        ENTRY_COMMENT_REPLY_MODIFY = 'entry_comment_reply_modify', 'Entry Comment Reply Modify'
+        ENTRY_COMMENT_RESOLVED = 'entry_comment_resolved', 'Entry Comment Resolved'
+        # Entry Comment Review Notifications Types
+        ENTRY_REVIEW_COMMENT_ADD = 'entry_review_comment_add', 'entry_review_comment_add'
+        ENTRY_REVIEW_COMMENT_MODIFY = 'entry_review_comment_modify', 'entry_review_comment_modify'
 
-    # Entry Comment Notifications Types
-    ENTRY_COMMENT_ADD = 'entry_comment_add'
-    ENTRY_COMMENT_MODIFY = 'entry_comment_modify'
-    ENTRY_COMMENT_ASSIGNEE_CHANGE = 'entry_comment_assignee_change'
-    ENTRY_COMMENT_REPLY_ADD = 'entry_comment_reply_add'
-    ENTRY_COMMENT_REPLY_MODIFY = 'entry_comment_reply_modify'
-    ENTRY_COMMENT_RESOLVED = 'entry_comment_resolved'
-
-    # Entry Comment Review Notifications Types
-    ENTRY_REVIEW_COMMENT_ADD = 'entry_review_comment_add'
-    ENTRY_REVIEW_COMMENT_MODIFY = 'entry_review_comment_modify'
-
-    TYPE_CHOICES = (
-        (PROJECT_JOIN_REQUEST, 'Join project request'),
-        (PROJECT_JOIN_REQUEST_ABORT, 'Join project request abort'),
-        (PROJECT_JOIN_RESPONSE, 'Join project response'),
-
-        (ENTRY_COMMENT_ADD, 'Entry Comment Add'),
-        (ENTRY_COMMENT_MODIFY, 'Entry Comment Modify'),
-        (ENTRY_COMMENT_ASSIGNEE_CHANGE, 'entry_comment_assignee_change'),
-        (ENTRY_COMMENT_REPLY_ADD, 'Entry Comment Reply Add'),
-        (ENTRY_COMMENT_REPLY_MODIFY, 'Entry Comment Reply Modify'),
-        (ENTRY_COMMENT_RESOLVED, 'Entry Comment Resolved'),
-
-        (ENTRY_REVIEW_COMMENT_ADD, 'entry_review_comment_add'),
-        (ENTRY_REVIEW_COMMENT_MODIFY, 'entry_review_comment_modify'),
-    )
-    TYPES = [choice[0] for choice in TYPE_CHOICES]
-
-    STATUS_SEEN = 'seen'
-    STATUS_UNSEEN = 'unseen'
-
-    STATUS_CHOICES = (
-        (STATUS_SEEN, 'Seen'),
-        (STATUS_UNSEEN, 'Unseen'),
-    )
+    class Status(models.TextChoices):
+        SEEN = 'seen', 'Seen'
+        UNSEEN = 'unseen', 'Unseen'
 
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(
@@ -58,15 +36,12 @@ class Notification(models.Model):
         null=True,
         default=None
     )
-    notification_type = models.CharField(
-        max_length=48,
-        choices=TYPE_CHOICES,
-    )
     data = models.JSONField(default=None, blank=True, null=True)
+    notification_type = models.CharField(max_length=48, choices=Type.choices)
     status = models.CharField(
         max_length=48,
-        choices=STATUS_CHOICES,
-        default=STATUS_UNSEEN,
+        choices=Status.choices,
+        default=Status.UNSEEN,
     )
     timestamp = models.DateTimeField(
         default=timezone.now,
