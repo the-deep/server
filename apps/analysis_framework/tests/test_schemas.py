@@ -228,11 +228,13 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
         # NOTE: This test includes the recent_analysis_framework based on project and source
         query = '''
                 query MyQuery {
-                  recentFrameworks{
-                    id
-                    title
-                    leadCount
-                    projectCount
+                  projectExploreStats {
+                    topActiveFrameworks {
+                      analysisFrameworkId
+                      analysisFrameworkTitle
+                      projectCount
+                      sourceCount
+                    }
                   }
                 }
             '''
@@ -276,12 +278,27 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
 
         content = self.query_check(query)
 
-        self.assertEqual(len(content['data']['recentFrameworks']), 5, content)
-        self.assertEqual(content['data']['recentFrameworks'][0]['id'], str(analysis_framework1.id))
-        self.assertEqual(content['data']['recentFrameworks'][0]['projectCount'], 3)
-        self.assertEqual(content['data']['recentFrameworks'][0]['leadCount'], 65)
-        self.assertEqual(content['data']['recentFrameworks'][1]['id'], str(analysis_framework3.id))
-        self.assertEqual(content['data']['recentFrameworks'][1]['projectCount'], 2)
-        self.assertEqual(content['data']['recentFrameworks'][2]['id'], str(analysis_framework5.id))
-        self.assertEqual(content['data']['recentFrameworks'][3]['id'], str(analysis_framework6.id))
-        self.assertEqual(content['data']['recentFrameworks'][4]['id'], str(analysis_framework4.id))
+        self.assertEqual(len(content['data']['projectExploreStats']['topActiveFrameworks']), 5, content)
+        self.assertEqual(
+            content['data']['projectExploreStats']['topActiveFrameworks'][0]['analysisFrameworkId'],
+            str(analysis_framework1.id)
+        )
+        self.assertEqual(content['data']['projectExploreStats']['topActiveFrameworks'][0]['projectCount'], 3)
+        self.assertEqual(content['data']['projectExploreStats']['topActiveFrameworks'][0]['sourceCount'], 65)
+        self.assertEqual(
+            content['data']['projectExploreStats']['topActiveFrameworks'][1]['analysisFrameworkId'],
+            str(analysis_framework3.id)
+        )
+        self.assertEqual(content['data']['projectExploreStats']['topActiveFrameworks'][1]['projectCount'], 2)
+        self.assertEqual(
+            content['data']['projectExploreStats']['topActiveFrameworks'][2]['analysisFrameworkId'],
+            str(analysis_framework5.id)
+        )
+        self.assertEqual(
+            content['data']['projectExploreStats']['topActiveFrameworks'][3]['analysisFrameworkId'],
+            str(analysis_framework6.id)
+        )
+        self.assertEqual(
+            content['data']['projectExploreStats']['topActiveFrameworks'][4]['analysisFrameworkId'],
+            str(analysis_framework4.id)
+        )

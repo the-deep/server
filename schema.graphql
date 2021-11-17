@@ -593,6 +593,13 @@ type EntryType {
 
 scalar EnumDescription
 
+type ExploreProjectStatTopActiveFrameworksType {
+  analysisFrameworkId: ID!
+  analysisFrameworkTitle: String
+  projectCount: Int
+  sourceCount: Int
+}
+
 type ExploreProjectStatTopActiveProjectsType {
   projectId: ID!
   projectTitle: String
@@ -1217,6 +1224,7 @@ type ProjectExploreStatType {
   dailyAverageLeadsTaggedPerProject: Float
   generatedExportsMonthly: Int
   topActiveProjects: [ExploreProjectStatTopActiveProjectsType!]
+  topActiveFrameworks: [ExploreProjectStatTopActiveFrameworksType!]
 }
 
 type ProjectGeoAreaListType {
@@ -1454,43 +1462,12 @@ type Query {
   users(id: Float, page: Int = 1, ordering: String, pageSize: Int): UserListType
   analysisFramework(id: ID!): AnalysisFrameworkDetailType
   analysisFrameworks(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkListType
-  recentFrameworks: [RecentAnalysisFrameworkType!]
   project(id: ID!): ProjectDetailType
   projects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): ProjectListType
   recentProjects: [ProjectDetailType!]
   projectExploreStats: ProjectExploreStatType
   projectsByRegion(projectFilter: RegionProjectFilterData, ordering: String): ProjectByRegionListType
   _debug: DjangoDebug
-}
-
-type RecentAnalysisFrameworkType {
-  id: ID!
-  createdAt: DateTime!
-  modifiedAt: DateTime!
-  createdBy: UserType
-  modifiedBy: UserType
-  title: String!
-  description: String
-  isPrivate: Boolean!
-  organization: OrganizationType
-  previewImage: FileField
-  properties: GenericScalar
-  clientId: String
-  members: [AnalysisFrameworkMembershipType!]
-  sectionSet: [SectionType!]!
-  widgetSet: [WidgetType!]!
-  filterSet: [AnalysisFrameworkFilterType!]!
-  analysisframeworkmembershipSet: [AnalysisFrameworkMembershipType!]!
-  projectSet: [ProjectType!]!
-  entrySet: [EntryType!]!
-  currentUserRole: String
-  allowedPermissions: [AnalysisFrameworkPermission!]!
-  primaryTagging: [SectionType!]
-  secondaryTagging: [WidgetType!]
-  filters: [AnalysisFrameworkFilterType!]
-  visibleProjects: [AnalysisFrameworkVisibleProjectType!]
-  projectCount: Int
-  leadCount: Int
 }
 
 type RegionDetailType {
