@@ -938,7 +938,7 @@ type OrganizationType {
   shortName: String!
   longName: String!
   url: String!
-  regions: [RegionType!]!
+  regions: [RegionWithProject!]!
   organizationType: OrganizationTypeType
   verified: Boolean!
   mergedAs: MergedAsOrganizationType
@@ -977,10 +977,11 @@ input ProjectAcceptRejectInputType {
   role: String
 }
 
-type ProjectByRegion {
-  id: ID!
-  projectsId: [ID!]
-  centroid: PointScalar
+type ProjectByRegionListType {
+  results: [RegionWithProject!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
 }
 
 type ProjectDetailType {
@@ -1280,8 +1281,8 @@ type Query {
   project(id: ID!): ProjectDetailType
   projects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): ProjectListType
   recentProjects: [ProjectDetailType!]
-  projectsByRegion: [ProjectByRegion!]
   projectExploreStats: ProjectExploreStatType
+  projectsByRegion(projectFilter: RegionProjectFilterData, ordering: String): ProjectByRegionListType
   _debug: DjangoDebug
 }
 
@@ -1304,6 +1305,24 @@ type RegionListType {
   pageSize: Int
 }
 
+input RegionProjectFilterData {
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
+  createdBy: [ID!]
+  modifiedBy: [ID!]
+  ids: [ID!]
+  status: ProjectStatusEnum
+  organizations: [ID!]
+  analysisFrameworks: [ID!]
+  regions: [ID!]
+  search: String
+  isCurrentUserMember: Boolean
+}
+
 type RegionType {
   id: ID!
   title: String!
@@ -1313,6 +1332,12 @@ type RegionType {
   populationData: GenericScalar
   mediaSources: GenericScalar
   centroid: PointScalar
+}
+
+type RegionWithProject {
+  id: ID!
+  centroid: PointScalar
+  projectsId: [ID!]
 }
 
 type Register {

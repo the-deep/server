@@ -1,6 +1,12 @@
+import graphene
+
+from django.contrib.postgres.aggregates.general import ArrayAgg
+from graphene_django.filter.utils import get_filtering_args_from_filterset
 from django.db import models
 from django.db.models.functions import Concat, Lower
 import django_filters
+
+from geo.models import Region
 
 from utils.graphene.filters import SimpleInputFilter, IDListFilter
 from user_resource.filters import UserResourceFilterSet, UserResourceGqlFilterSet
@@ -23,7 +29,7 @@ class ProjectFilterSet(UserResourceFilterSet):
         filter_overrides = {
             models.CharField: {
                 'filter_class': django_filters.CharFilter,
-                'extra': lambda f: {
+                'extra': lambda _: {
                     'lookup_expr': 'icontains',
                 },
             },
@@ -32,7 +38,7 @@ class ProjectFilterSet(UserResourceFilterSet):
     is_current_user_member = django_filters.BooleanFilter(
         field_name='is_current_user_member', method='filter_with_membership')
 
-    def filter_with_membership(self, queryset, name, value):
+    def filter_with_membership(self, queryset, _, value):
         if value is not None:
             queryset = queryset.filter(
                 id__in=Project.get_for_member(
@@ -90,12 +96,12 @@ class ProjectGqlFilterSet(UserResourceGqlFilterSet):
         model = Project
         fields = ()
 
-    def filter_title(self, qs, name, value):
+    def filter_title(self, qs, _, value):
         if not value:
             return qs
         return qs.filter(title__icontains=value).distinct()
 
-    def filter_with_membership(self, queryset, name, value):
+    def filter_with_membership(self, queryset, _, value):
         if value is not None:
             queryset = queryset.filter(
                 id__in=Project.get_for_member(
@@ -139,3 +145,33 @@ class ProjectUserGroupMembershipGqlFilterSet(UserResourceGqlFilterSet):
         if value:
             return qs.filter(usergroup__title__icontains=value).distinct()
         return qs
+
+
+class ProjectByRegionGqlFilterSet(django_filters.FilterSet):
+    project_filter = SimpleInputFilter(
+        type(
+            'RegionProjectFilterData',
+            (graphene.InputObjectType,),
+            get_filtering_args_from_filterset(ProjectGqlFilterSet, 'project.schema.ProjectListType')
+        ),
+        method='filter_project_filter',
+    )
+
+    class Meta:
+        model = Region
+        fields = ()
+
+    def filter_project_filter(self, qs, *_):
+        # Used in def qs
+        return qs
+
+    @property
+    def qs(self):
+        project_qs = Project.get_for_gq(self.request.user)
+        # Filter project if filter is provided
+        project_filter = self.data.get('project_filter')
+        if project_filter:
+            project_qs = ProjectGqlFilterSet(data=project_filter, queryset=project_qs, request=self.request).qs
+        return super().qs.annotate(
+            projects_id=ArrayAgg('project', distinct=True, ordering='project', filter=models.Q(project__in=project_qs)),
+        ).filter(projects_id__isnull=False).only('id', 'centroid')
