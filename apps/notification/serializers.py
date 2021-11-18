@@ -80,10 +80,15 @@ class AssignmentSerializer(serializers.ModelSerializer):
         return data
 
 
-# Graphql Serialzier
+# Graphql Serializer
 class NotificationGqSerializer(serializers.ModelSerializer):
-    id = serializers.CharField(required=True)
+    id = serializers.IntegerField(required=True)
 
     class Meta:
         model = Notification
         fields = ('id', 'status')
+
+    def update(self, instance, validated_data):
+        if instance and not Notification.objects.filter(id=instance.id, receiver=self.context['request'].user).exists():
+            raise serializers.ValidationError('Cannot update this notification')
+        return super().update(instance, validated_data)

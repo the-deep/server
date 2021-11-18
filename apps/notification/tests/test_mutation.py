@@ -21,6 +21,7 @@ class NotificationMutation(GraphQLTestCase):
         '''
 
         user = UserFactory.create()
+        another_user = UserFactory.create()
         notification = NotificationFactory.create(status=Notification.Status.UNSEEN, receiver=user)
 
         def _query_check(minput, **kwargs):
@@ -42,3 +43,8 @@ class NotificationMutation(GraphQLTestCase):
         # check for the notification status update(db-level)
         notification = Notification.objects.get(id=notification.id)
         assert notification.status == Notification.Status.SEEN
+
+        # -- with different user
+        self.force_login(another_user)
+        content = _query_check(minput, okay=False)['data']['notificationStatusUpdate']['result']
+        self.assertEqual(content, None, content)
