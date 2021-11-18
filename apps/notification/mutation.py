@@ -27,7 +27,7 @@ class NotificationStatusUpdate(graphene.Mutation):
     @staticmethod
     def mutate(root, info, data):
         try:
-            instance = Notification.objects.get(id=data['id'])
+            instance = Notification.objects.get(id=data['id'], receiver=info.context.request.user)
 
         except Notification.DoesNotExist:
             return NotificationStatusUpdate(errors=[

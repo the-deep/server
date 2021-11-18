@@ -938,8 +938,8 @@ enum NotificationStatusEnum {
 }
 
 input NotificationStatusInputType {
-  id: String!
-  status: status
+  id: Int!
+  status: NotificationStatusEnum
 }
 
 type NotificationStatusUpdate {
@@ -1021,8 +1021,7 @@ type ProjectAcceptReject {
 }
 
 input ProjectAcceptRejectInputType {
-  id: ID
-  status: String!
+  status: ProjectJoinRequestStatusEnum
   role: String
 }
 
@@ -1648,9 +1647,4 @@ enum WidgetWidgetTypeEnum {
 enum WidgetWidthTypeEnum {
   FULL
   HALF
-}
-
-enum status {
-  SEEN
-  UNSEEN
 }
