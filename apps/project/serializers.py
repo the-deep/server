@@ -568,13 +568,15 @@ class ProjectJoinGqSerializer(serializers.ModelSerializer):
 
 
 class ProjectAcceptRejectSerializer(serializers.ModelSerializer):
-    id = IntegerIDField(required=False)
-    status = serializers.CharField(required=True)
     role = serializers.CharField(required=False, allow_null=True, allow_blank=True)
 
     class Meta:
         model = ProjectJoinRequest
-        fields = ('id', 'status', 'role')
+        fields = (
+            'id',
+            'status',
+            'role'
+        )
 
     @staticmethod
     def _accept_request(responded_by, join_request, role):
