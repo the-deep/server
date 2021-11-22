@@ -472,6 +472,7 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             return qs.filter(id__in=leads_ids)
         return _custom_qs(super().qs).distinct()
 
+
 class LeadGroupGQFilterSet(UserResourceGqlFilterSet):
     search = django_filters.CharFilter(method='filter_title')
 

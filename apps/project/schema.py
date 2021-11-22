@@ -9,11 +9,14 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.geo_scalars import PointScalar
 from utils.graphene.enums import EnumDescription
-from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
-from utils.graphene.fields import (
-    DjangoPaginatedListObjectField,
+from utils.graphene.types import (
+    CustomDjangoListObjectType,
+    ClientIdMixin,
     DateCountType,
     UserEntityCountType
+)
+from utils.graphene.fields import (
+    DjangoPaginatedListObjectField,
 )
 from deep.permissions import ProjectPermissions as PP
 from deep.serializers import URLCachedFileField

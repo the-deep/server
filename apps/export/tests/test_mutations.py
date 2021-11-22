@@ -25,7 +25,10 @@ class TestExportMutationSchema(GraphQLTestCase):
                 isArchived
                 format
                 filters
-                file
+                file {
+                  name
+                  url
+                }
                 exportedAt
                 exportType
                 project
@@ -56,7 +59,10 @@ class TestExportMutationSchema(GraphQLTestCase):
                 isArchived
                 format
                 filters
-                file
+                file {
+                  name
+                  url
+                }
                 exportedAt
                 exportType
                 project
@@ -87,7 +93,10 @@ class TestExportMutationSchema(GraphQLTestCase):
                 isArchived
                 format
                 filters
-                file
+                file {
+                  name
+                  url
+                }
                 exportedAt
                 exportType
                 project

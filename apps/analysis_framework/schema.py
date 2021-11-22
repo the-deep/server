@@ -6,8 +6,8 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from django.db.models import QuerySet
 
 from utils.graphene.enums import EnumDescription
-from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
-from utils.graphene.fields import DjangoPaginatedListObjectField, FileField
+from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin, FileFieldType
+from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import AnalysisFrameworkPermissions as AfP
 from project.schema import AnalysisFrameworkVisibleProjectType
 
@@ -65,10 +65,10 @@ class AnalysisFrameworkType(DjangoObjectType):
         only_fields = (
             'id', 'title', 'description', 'is_private', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
-            'preview_image',
         )
 
     current_user_role = graphene.String()
+    preview_image = graphene.Field(FileFieldType)
     allowed_permissions = graphene.List(
         graphene.NonNull(
             graphene.Enum.from_enum(AfP.Permission),
@@ -144,7 +144,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     members = DjangoListField(AnalysisFrameworkMembershipType)
     filters = DjangoListField(AnalysisFrameworkFilterType)
     exportables = DjangoListField(AnalysisFrameworkExportableType)
-    preview_image = graphene.Field(FileField)
+    preview_image = graphene.Field(FileFieldType)
     visible_projects = DjangoListField(AnalysisFrameworkVisibleProjectType)
 
     class Meta:
@@ -153,7 +153,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
         only_fields = (
             'id', 'title', 'description', 'is_private', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
-            'preview_image', 'properties',
+            'properties',
         )
 
     @staticmethod
