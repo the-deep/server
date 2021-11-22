@@ -16,7 +16,6 @@ from graphene_django_extras.utils import get_extra_filters
 from graphene_django.rest_framework.serializer_converter import get_graphene_type_from_serializer_field
 
 from utils.graphene.pagination import OrderingOnlyArgumentPagination
-from deep.serializers import URLCachedFileField
 
 
 class CustomDjangoListObjectBase(DjangoListObjectBase):
@@ -243,35 +242,6 @@ def get_filtering_args_from_non_model_filterset(filterset_class):
         field_type.description = filter_field.label
         args[name] = field_type
     return args
-
-
-class FileField(graphene.ObjectType):
-    """
-    # TODO: Check if we can register this to Django FileField
-    https://github.com/graphql-python/graphene-django/issues/249
-    """
-    name = graphene.String()
-    url = graphene.String()
-
-    def resolve_name(root, info, **kwargs) -> str:
-        return root.name
-
-    def resolve_url(root, info, **kwargs) -> str:
-        return info.context.request.build_absolute_uri(
-            URLCachedFileField.name_to_representation(root)
-        )
-
-
-class DateCountType(graphene.ObjectType):
-    date = graphene.String()
-    count = graphene.Int()
-
-
-class UserEntityCountType(graphene.ObjectType):
-    id = graphene.String()
-    name = graphene.String()
-    user_id = graphene.String()
-    count = graphene.Int()
 
 
 def generate_serializer_field_class(inner_type, serializer_field, non_null=False):

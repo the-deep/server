@@ -137,6 +137,7 @@ class UserSerializer(RemoveNullFieldsMixin, WriteOnlyOnCreateSerializerMixin,
     def create(self, validated_data):
         profile_data = validated_data.pop('profile', None)
         validated_data.pop('hcaptcha_response', None)
+        validated_data['email'] = validated_data['email'].lower()
         user = super().create(validated_data)
         user.save()
         user.profile = self.update_or_create_profile(user, profile_data)

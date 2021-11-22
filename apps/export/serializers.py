@@ -43,7 +43,8 @@ class ExportReportLevelWidgetSubLevelSerializer(serializers.Serializer):
 class ExportReportLevelWidgetLevelSerializer(serializers.Serializer):
     id = StringIDField(help_text='Matrix1D: {row-key}, Matrix2D: {column-key}')
     title = serializers.CharField(help_text='Matrix1D: {row-label}, Matrix2D: {column-label}')
-    sublevels = ExportReportLevelWidgetSubLevelSerializer(many=True, required=False, help_text='Not required for uncategorized data')
+    sublevels = ExportReportLevelWidgetSubLevelSerializer(
+        many=True, required=False, help_text='Not required for uncategorized data')
 
 
 class ExportReportLevelWidgetSerializer(serializers.Serializer):
@@ -108,7 +109,8 @@ class ExportReportStructureWidgetSecondLevelSerializer(serializers.Serializer):
 
 class ExportReportStructureWidgetFirstLevelSerializer(serializers.Serializer):
     id = StringIDField(help_text='Matrix1D: {row-key}, Matrix2D: {column-key}')
-    levels = ExportReportStructureWidgetSecondLevelSerializer(many=True, required=False, help_text='Not required for uncategorized data')
+    levels = ExportReportStructureWidgetSecondLevelSerializer(
+        many=True, required=False, help_text='Not required for uncategorized data')
 
 
 class ExportReportStructureWidgetSerializer(serializers.Serializer):

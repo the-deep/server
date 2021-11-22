@@ -1,8 +1,9 @@
 from collections import OrderedDict
 
 import graphene
+from typing import Union
 
-from django.db.models import QuerySet
+from django.db import models
 from graphene import ObjectType, Field, Int
 # we will use graphene_django registry over the one from graphene_django_extras
 # since it adds information regarding nullability in the schema definition
@@ -14,6 +15,7 @@ from graphene_django_extras.types import DjangoObjectOptions
 
 from deep.serializers import TempClientIdMixin
 from deep.caches import local_cache
+from deep.serializers import URLCachedFileField
 from utils.graphene.fields import CustomDjangoListField
 from utils.graphene.options import CustomObjectTypeOptions
 
@@ -135,7 +137,7 @@ class CustomDjangoListObjectType(DjangoListObjectType):
         if not DJANGO_FILTER_INSTALLED and filter_fields:
             raise Exception("Can only set filter_fields if Django-Filter is installed")
 
-        assert isinstance(queryset, QuerySet) or queryset is None, (
+        assert isinstance(queryset, models.QuerySet) or queryset is None, (
             "The attribute queryset in {} needs to be an instance of "
             'Django model queryset, received "{}".'
         ).format(cls.__name__, queryset)
@@ -204,3 +206,31 @@ class CustomDjangoListObjectType(DjangoListObjectType):
         super(DjangoListObjectType, cls).__init_subclass_with_meta__(
             _meta=_meta, **options
         )
+
+
+class FileFieldType(graphene.ObjectType):
+    # TODO: Check if we can register this to Django FileField
+    # https://github.com/graphql-python/graphene-django/issues/249
+
+    name = graphene.String()
+    url = graphene.String()
+
+    def resolve_name(root, info, **kwargs) -> Union[str, None]:
+        return root.name
+
+    def resolve_url(root, info, **kwargs) -> Union[str, None]:
+        return info.context.request.build_absolute_uri(
+            URLCachedFileField.name_to_representation(root)
+        )
+
+
+class DateCountType(graphene.ObjectType):
+    date = graphene.String()
+    count = graphene.Int()
+
+
+class UserEntityCountType(graphene.ObjectType):
+    id = graphene.String()
+    name = graphene.String()
+    user_id = graphene.String()
+    count = graphene.Int()
