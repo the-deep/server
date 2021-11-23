@@ -1,3 +1,4 @@
+import copy
 from typing import Union
 
 from django.db import models
@@ -36,6 +37,7 @@ class AnalysisFramework(UserResource):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.section_set: models.QuerySet[Section]
         self.widget_set: models.QuerySet[Widget]
         self.filter_set: models.QuerySet[Filter]
 
@@ -47,21 +49,29 @@ class AnalysisFramework(UserResource):
         Clone analysis framework along with all widgets,
         filters and exportables
         """
-        title = overrides.get('title', '{} (cloned)'.format(
-            self.title[:230]))  # Strip off extra chars from title
+        title = overrides.get(
+            'title', '{} (cloned)'.format(self.title[:230])
+        )  # Strip off extra chars from title
         description = overrides.get('description', '')
-        analysis_framework = AnalysisFramework(
+        clone_analysis_framework = AnalysisFramework(
             title=title,
             description=description,
         )
-        analysis_framework.created_by = user
-        analysis_framework.modified_by = user
-        analysis_framework.save()
+        clone_analysis_framework.created_by = user
+        clone_analysis_framework.modified_by = user
+        clone_analysis_framework.save()
 
+        old_new_section_map = {}
+        # Clone section and track old->new
+        for section in self.section_set.all():
+            old_new_section_map[section.pk] = section.clone_to(clone_analysis_framework)
+        # Clone widget with new AF and section
         for widget in self.widget_set.all():
-            widget.clone_to(analysis_framework)
-
-        return analysis_framework
+            widget.clone_to(
+                clone_analysis_framework,
+                old_new_section_map.get(widget.section_id),
+            )
+        return clone_analysis_framework
 
     @staticmethod
     def get_for(user):
@@ -237,6 +247,13 @@ class Section(models.Model):
     def __str__(self):
         return f'{self.analysis_framework_id}#{self.title}'
 
+    def clone_to(self, analysis_framework):
+        section_clone = copy.deepcopy(self)
+        section_clone.pk = None
+        section_clone.analysis_framework = analysis_framework
+        section_clone.save()
+        return section_clone
+
 
 class Widget(models.Model):
     """
@@ -286,16 +303,13 @@ class Widget(models.Model):
     def __str__(self):
         return '{}:{} ({})'.format(self.title, self.pk, self.widget_id)
 
-    def clone_to(self, analysis_framework):
-        widget = Widget(
-            analysis_framework=analysis_framework,
-            key=self.key,
-            widget_id=self.widget_id,
-            title=self.title,
-            properties=self.properties,
-        )
-        widget.save()
-        return widget
+    def clone_to(self, analysis_framework, section):
+        widget_clone = copy.deepcopy(self)
+        widget_clone.pk = None
+        widget_clone.analysis_framework = analysis_framework
+        widget_clone.section = section
+        widget_clone.save()
+        return widget_clone
 
     @staticmethod
     def get_for(user):
