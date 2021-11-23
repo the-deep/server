@@ -301,11 +301,12 @@ class AfWidgetLimit():
 class WidgetGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
     id = IntegerIDField(required=False)
     key = serializers.CharField(required=True)
+    version = serializers.IntegerField(required=True)
 
     class Meta:
         model = Widget
         fields = (
-            'id', 'key', 'widget_id', 'title', 'properties', 'order', 'width',
+            'id', 'key', 'widget_id', 'title', 'properties', 'order', 'width', 'version',
             'client_id',
         )
 

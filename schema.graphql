@@ -213,6 +213,7 @@ input AttributeGqInputType {
   id: ID
   data: GenericScalar
   widget: ID!
+  widgetVersion: Int!
   clientId: String
 }
 
@@ -1743,6 +1744,7 @@ input WidgetGqlInputType {
   properties: GenericScalar
   order: Int
   width: WidgetWidthTypeEnum
+  version: Int!
   clientId: String
 }
 
