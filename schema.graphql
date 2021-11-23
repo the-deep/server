@@ -907,6 +907,7 @@ type MergedAsOrganizationType {
 }
 
 type Mutation {
+  notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
   joinProject(data: ProjectJoinRequestInputType!): CreateProjectJoin
   projectJoinRequestDelete(projectId: ID!): ProjectJoinRequestDelete
   project(id: ID!): ProjectMutationType
@@ -934,6 +935,17 @@ type NotificationListType {
 enum NotificationStatusEnum {
   SEEN
   UNSEEN
+}
+
+input NotificationStatusInputType {
+  id: ID!
+  status: NotificationStatusEnum
+}
+
+type NotificationStatusUpdate {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: NotificationType
 }
 
 type NotificationType {
@@ -1009,8 +1021,7 @@ type ProjectAcceptReject {
 }
 
 input ProjectAcceptRejectInputType {
-  id: ID
-  status: String!
+  status: ProjectJoinRequestStatusEnum
   role: String
 }
 
