@@ -4,14 +4,22 @@ DATA_VERSION = 1
 
 
 def update_attribute(widget, data, widget_properties):
+    """
+    data:
+        value: {
+            [key: string]: {  // row
+                [key: string]: boolean: undefined  // cell
+            }
+        }
+    """
     filter_values = []
     excel_values = []
     report_values = []
 
-    data = (data or {}).get('value', {})
+    data_value = (data or {}).get('value', {})
     rows = widget_properties.get('rows', [])
 
-    for row_key, row in data.items():
+    for row_key, row in data_value.items():
         row_exists = False
         row_data = next((
             r for r in rows
@@ -91,8 +99,8 @@ def _get_headers(widgets_meta, widget, widget_properties):
     return pillar_header_map, subpillar_header_map
 
 
-def get_comprehensive_data(widgets_meta, widget, _data, widget_properties):
-    data = (_data or {}).get('value') or {}
+def get_comprehensive_data(widgets_meta, widget, data, widget_properties):
+    data_value = (data or {}).get('value') or {}
 
     pillar_header_map, subpillar_header_map = _get_headers(
         widgets_meta, widget, widget_properties,
@@ -100,7 +108,7 @@ def get_comprehensive_data(widgets_meta, widget, _data, widget_properties):
 
     values = []
 
-    for pillar_key, pillar_value in data.items():
+    for pillar_key, pillar_value in data_value.items():
         for subpillar_key, subpillar_selected in pillar_value.items():
             pillar_header = pillar_header_map.get(pillar_key)
             subpillar_header = subpillar_header_map.get(subpillar_key)

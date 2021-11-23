@@ -292,6 +292,8 @@ class Widget(models.Model):
     # NOTE: With section: Primary Tagging, without section: Secondary Tagging
     section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
+    # Version saved by client (TODO: implement structure validator at server side as well)
+    version = models.SmallIntegerField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.section:
