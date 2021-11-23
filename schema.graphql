@@ -596,8 +596,8 @@ scalar EnumDescription
 type ExploreProjectStatTopActiveFrameworksType {
   analysisFrameworkId: ID!
   analysisFrameworkTitle: String
-  projectCount: Int
-  sourceCount: Int
+  projectCount: Int!
+  sourceCount: Int!
 }
 
 type ExploreProjectStatTopActiveProjectsType {
