@@ -351,7 +351,7 @@ class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
                                                         project=project,
                                                         role=ProjectRole.get_default_role(),
                                                         status=ProjectJoinRequest.Status.PENDING)
-        minput = dict(status='accepted', role='normal')
+        minput = dict(status=self.genum(ProjectJoinRequest.Status.ACCEPTED), role='normal')
 
         # without login
         self.query_check(
@@ -373,7 +373,11 @@ class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
             content['data']['project']['acceptRejectProject']['result']['respondedBy']['id'],
             str(user.id), content
         )
-        self.assertEqual(content['data']['project']['acceptRejectProject']['result']['status'], 'ACCEPTED', content)
+        self.assertEqual(
+            content['data']['project']['acceptRejectProject']['result']['status'],
+            self.genum(ProjectJoinRequest.Status.ACCEPTED),
+            content
+        )
         # make sure memberships is created
         self.assertIn(user2.id, ProjectMembership.objects.filter(project=project).values_list('member', flat=True))
 
@@ -386,7 +390,7 @@ class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
                                                         project=project,
                                                         role=ProjectRole.get_default_role(),
                                                         status=ProjectJoinRequest.Status.PENDING)
-        minput = dict(status='rejected')
+        minput = dict(status=self.genum(ProjectJoinRequest.Status.REJECTED))
         # without login
         self.query_check(
             self.projet_accept_reject_mutation,
@@ -399,7 +403,11 @@ class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
         self.force_login(user)
         content = self.query_check(self.projet_accept_reject_mutation, minput=minput,
                                    variables={'projectId': project.id, 'joinRequestId': join_request.id})
-        self.assertEqual(content['data']['project']['acceptRejectProject']['result']['status'], 'REJECTED', content)
+        self.assertEqual(
+            content['data']['project']['acceptRejectProject']['result']['status'],
+            self.genum(ProjectJoinRequest.Status.REJECTED),
+            content
+        )
 
 
 class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
