@@ -381,6 +381,12 @@ class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
         # make sure memberships is created
         self.assertIn(user2.id, ProjectMembership.objects.filter(project=project).values_list('member', flat=True))
 
+        # Make sure that only one notification is created for the user who accept the project_join_request
+        self.assertEqual(Notification.objects.filter(
+            receiver=user,
+            notification_type=Notification.Type.PROJECT_JOIN_RESPONSE
+        ).count(), 1)
+
     def test_project_join_request_reject(self):
         user = UserFactory.create()
         user2 = UserFactory.create()
