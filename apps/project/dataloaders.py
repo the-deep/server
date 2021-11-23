@@ -18,6 +18,7 @@ from entry.models import Entry
 from export.models import Export
 from user.models import User
 from geo.models import Region
+from analysis_framework.models import AnalysisFramework
 
 from .models import (
     Project,
@@ -75,6 +76,7 @@ class OrganizationsLoader(DataLoaderWithContext):
 class ProjectExploreStatsLoader(WithContextMixin):
     def get_stats(self):
         now = timezone.now()
+
         # Projects -- stats_cache__entries_activity are calculated for last 3 months
         project_count = Project.objects.count()
         latest_active_projects_qs = Project.objects\
@@ -115,6 +117,33 @@ class ProjectExploreStatsLoader(WithContextMixin):
             min_exported_at=models.Min('exported_at'),
         )
 
+        # Recent frameworks
+        top_active_frameworks = AnalysisFramework.get_for_gq(self.context.request.user).annotate(
+            project_count=models.functions.Coalesce(
+                models.Subquery(
+                    Project.objects.filter(
+                        analysis_framework=models.OuterRef('pk')
+                    ).order_by().values('analysis_framework').annotate(
+                        count=models.Count('id', distinct=True),
+                    ).values('count')[:1],
+                    output_field=models.IntegerField()
+                ), 0),
+            source_count=models.functions.Coalesce(
+                models.Subquery(
+                    Lead.objects.filter(
+                        project__analysis_framework=models.OuterRef('pk')
+                    ).order_by().values('project__analysis_framework').annotate(
+                        count=models.Count('id', distinct=True)
+                    ).values('count')[:1],
+                    output_field=models.IntegerField()
+                ), 0),
+        ).order_by('-project_count', '-source_count').values(
+            analysis_framework_id=models.F('id'),
+            analysis_framework_title=models.F('title'),
+            project_count=models.F('project_count'),
+            source_count=models.F('source_count'),
+        )[:5]
+
         return dict(
             calculated_at=now,
             total_projects=project_count,
@@ -148,6 +177,7 @@ class ProjectExploreStatsLoader(WithContextMixin):
                 )
             ),
             top_active_projects=latest_active_projects,
+            top_active_frameworks=top_active_frameworks,
         )
 
     def resolve(self):
