@@ -938,7 +938,7 @@ enum NotificationStatusEnum {
 }
 
 input NotificationStatusInputType {
-  id: Int!
+  id: ID!
   status: NotificationStatusEnum
 }
 

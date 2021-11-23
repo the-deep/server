@@ -5,6 +5,7 @@ from generic_relations.relations import GenericRelatedField
 from deep.serializers import RemoveNullFieldsMixin
 from user.serializers import SimpleUserSerializer
 from project.serializers import SimpleProjectSerializer
+from deep.serializers import IntegerIDField
 
 from lead.models import Lead
 from entry.models import EntryComment
@@ -82,13 +83,13 @@ class AssignmentSerializer(serializers.ModelSerializer):
 
 # Graphql Serializer
 class NotificationGqSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(required=True)
+    id = IntegerIDField(required=True)
 
     class Meta:
         model = Notification
         fields = ('id', 'status')
 
     def update(self, instance, validated_data):
-        if instance and not Notification.objects.filter(id=instance.id, receiver=self.context['request'].user).exists():
-            raise serializers.ValidationError('Cannot update this notification')
+        if instance and instance.receiver != self.context['request'].user:
+            raise serializers.ValidationError('Only the recepient of this notification can update its status.')
         return super().update(instance, validated_data)
