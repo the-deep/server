@@ -16,14 +16,12 @@ properties:
 def get_filters(widget, properties):
     from analysis_framework.models import Filter  # To avoid circular import
 
-    options = properties.get('options', [])
     filter_options = [
         {
-            'label': option.get('label'),
-            'key': option.get('key'),
-        } for option in options
+            'key': option['key'],
+            'label': option['label'],
+        } for option in properties.get('options', [])
     ]
-
     return [{
         'filter_type': Filter.FilterType.LIST,
         'properties': {
