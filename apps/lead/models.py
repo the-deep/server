@@ -1,7 +1,10 @@
+from collections import defaultdict
+
 from django.contrib.contenttypes.fields import GenericRelation
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models, transaction
+from django.contrib.postgres.aggregates.general import ArrayAgg
 
 from project.models import Project
 from project.permissions import PROJECT_PERMISSIONS

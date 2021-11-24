@@ -87,7 +87,7 @@ def matrix1d_property_convertor(properties):
         cell_order = 0
         for cell in row['cells']:
             new_cell = clone_data(cell, CELL_MAP)
-            new_cell['label'] = new_row['label'] or 'Untitled Cell'
+            new_cell['label'] = new_cell['label'] or 'Untitled Cell'
             new_cell['order'] = cell_order
             verifiy_data(new_cell, cell, CELL_MAP)
             new_cells.append(new_cell)

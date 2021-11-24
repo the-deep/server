@@ -193,6 +193,14 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
         return root.get_assignee()
 
     @staticmethod
+    def resolve_source(root, info, **kwargs) -> Union[User, None]:
+        return root.source_id and info.context.dl.lead.source_organization.load(root.source_id)
+
+    @staticmethod
+    def resolve_authors(root, info, **kwargs) -> Union[User, None]:
+        return info.context.dl.lead.author_organizations.load(root.pk)
+
+    @staticmethod
     def resolve_lead_preview(root, info, **kwargs) -> Union[int, None]:
         return info.context.dl.lead.lead_preview.load(root.pk)
 
