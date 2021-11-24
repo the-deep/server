@@ -277,7 +277,6 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
         self.force_login(user)
 
         content = self.query_check(query)
-        print(content)
 
         self.assertEqual(len(content['data']['projectExploreStats']['topActiveFrameworks']), 5, content)
         self.assertEqual(
