@@ -44,8 +44,8 @@
             </div>
         </div>
         <h2>
-            <span class="text">192 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">178<span class="text"> run</span></button>
+            <span class="text">193 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">179<span class="text"> run</span></button>
             <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">14<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
             <button type="button" class="par run show_par button_toggle_par" value="par" data-shortcut="p" title="Toggle lines partially run">5<span class="text"> partial</span></button>
@@ -78,7 +78,7 @@
     <p class="run"><span class="n"><a id="t17" href="#t17">17</a></span><span class="t"><span class="key">from</span> <span class="nam">utils</span><span class="op">.</span><span class="nam">graphene</span><span class="op">.</span><span class="nam">enums</span> <span class="key">import</span> <span class="nam">get_enum_name_from_django_field</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t18" href="#t18">18</a></span><span class="t"><span class="com"># from utils.common import to_camelcase</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t19" href="#t19">19</a></span><span class="t"><span class="key">from</span> <span class="nam">deep</span><span class="op">.</span><span class="nam">enums</span> <span class="key">import</span> <span class="nam">ENUM_TO_GRAPHENE_ENUM_MAP</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t20" href="#t20">20</a></span><span class="t"><span class="key">from</span> <span class="nam">deep</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="nam">IntegerIDField</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t20" href="#t20">20</a></span><span class="t"><span class="key">from</span> <span class="nam">deep</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="nam">IntegerIDField</span><span class="op">,</span> <span class="nam">StringIDField</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t21" href="#t21">21</a></span><span class="t"><span class="key">from</span> <span class="nam">deep</span><span class="op">.</span><span class="nam">permissions</span> <span class="key">import</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t22" href="#t22">22</a></span><span class="t">    <span class="nam">ProjectPermissions</span> <span class="key">as</span> <span class="nam">PP</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t23" href="#t23">23</a></span><span class="t">    <span class="nam">AnalysisFrameworkPermissions</span> <span class="key">as</span> <span class="nam">AfP</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -104,7 +104,7 @@
     <p class="pln"><span class="n"><a id="t43" href="#t43">43</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t44" href="#t44">44</a></span><span class="t"><span class="op">@</span><span class="nam">get_graphene_type_from_serializer_field</span><span class="op">.</span><span class="nam">register</span><span class="op">(</span><span class="nam">serializers</span><span class="op">.</span><span class="nam">PrimaryKeyRelatedField</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t45" href="#t45">45</a></span><span class="t"><span class="op">@</span><span class="nam">get_graphene_type_from_serializer_field</span><span class="op">.</span><span class="nam">register</span><span class="op">(</span><span class="nam">IntegerIDField</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t46" href="#t46">46</a></span><span class="t"><span class="com"># @get_graphene_type_from_serializer_field.register(IntegerIDField)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t46" href="#t46">46</a></span><span class="t"><span class="op">@</span><span class="nam">get_graphene_type_from_serializer_field</span><span class="op">.</span><span class="nam">register</span><span class="op">(</span><span class="nam">StringIDField</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t47" href="#t47">47</a></span><span class="t"><span class="key">def</span> <span class="nam">convert_serializer_field_to_id</span><span class="op">(</span><span class="nam">field</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t48" href="#t48">48</a></span><span class="t">    <span class="key">return</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">ID</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t49" href="#t49">49</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -419,7 +419,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.1.2</a>,
-            created at 2021-11-17 08:27 +0000
+            created at 2021-11-24 06:26 +0000
         </p>
     </div>
 </footer>

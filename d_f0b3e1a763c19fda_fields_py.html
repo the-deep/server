@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for utils/graphene/fields.py: 60%</title>
+    <title>Coverage for utils/graphene/fields.py: 58%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="coverage_html.js" defer></script>
@@ -13,7 +13,7 @@
     <div class="content">
         <h1>
             <span class="text">Coverage for </span><b>utils/graphene/fields.py</b>:
-            <span class="pc_cov">60%</span>
+            <span class="pc_cov">58%</span>
         </h1>
         <div id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
@@ -44,8 +44,8 @@
             </div>
         </div>
         <h2>
-            <span class="text">142 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">96<span class="text"> run</span></button>
+            <span class="text">131 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">85<span class="text"> run</span></button>
             <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">46<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
             <button type="button" class="par run show_par button_toggle_par" value="par" data-shortcut="p" title="Toggle lines partially run">9<span class="text"> partial</span></button>
@@ -74,9 +74,9 @@
     <p class="run"><span class="n"><a id="t13" href="#t13">13</a></span><span class="t"><span class="key">from</span> <span class="nam">graphene_django_extras</span><span class="op">.</span><span class="nam">paginations</span><span class="op">.</span><span class="nam">pagination</span> <span class="key">import</span> <span class="nam">BaseDjangoGraphqlPagination</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t14" href="#t14">14</a></span><span class="t"><span class="key">from</span> <span class="nam">graphene_django_extras</span><span class="op">.</span><span class="nam">settings</span> <span class="key">import</span> <span class="nam">graphql_api_settings</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t15" href="#t15">15</a></span><span class="t"><span class="key">from</span> <span class="nam">graphene_django_extras</span><span class="op">.</span><span class="nam">utils</span> <span class="key">import</span> <span class="nam">get_extra_filters</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t16" href="#t16">16</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t17" href="#t17">17</a></span><span class="t"><span class="key">from</span> <span class="nam">utils</span><span class="op">.</span><span class="nam">graphene</span><span class="op">.</span><span class="nam">pagination</span> <span class="key">import</span> <span class="nam">OrderingOnlyArgumentPagination</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t18" href="#t18">18</a></span><span class="t"><span class="key">from</span> <span class="nam">deep</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="nam">URLCachedFileField</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t16" href="#t16">16</a></span><span class="t"><span class="key">from</span> <span class="nam">graphene_django</span><span class="op">.</span><span class="nam">rest_framework</span><span class="op">.</span><span class="nam">serializer_converter</span> <span class="key">import</span> <span class="nam">get_graphene_type_from_serializer_field</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t17" href="#t17">17</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t18" href="#t18">18</a></span><span class="t"><span class="key">from</span> <span class="nam">utils</span><span class="op">.</span><span class="nam">graphene</span><span class="op">.</span><span class="nam">pagination</span> <span class="key">import</span> <span class="nam">OrderingOnlyArgumentPagination</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t19" href="#t19">19</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t20" href="#t20">20</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t21" href="#t21">21</a></span><span class="t"><span class="key">class</span> <span class="nam">CustomDjangoListObjectBase</span><span class="op">(</span><span class="nam">DjangoListObjectBase</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -305,39 +305,22 @@
     <p class="mis show_mis"><span class="n"><a id="t244" href="#t244">244</a></span><span class="t">    <span class="key">return</span> <span class="nam">args</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t245" href="#t245">245</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t246" href="#t246">246</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t247" href="#t247">247</a></span><span class="t"><span class="key">class</span> <span class="nam">FileField</span><span class="op">(</span><span class="nam">graphene</span><span class="op">.</span><span class="nam">ObjectType</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t248" href="#t248">248</a></span><span class="t">    <span class="str">"""</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t249" href="#t249">249</a></span><span class="t"><span class="str">    # TODO: Check if we can register this to Django FileField</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t250" href="#t250">250</a></span><span class="t"><span class="str">    https://github.com/graphql-python/graphene-django/issues/249</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t251" href="#t251">251</a></span><span class="t"><span class="str">    """</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t252" href="#t252">252</a></span><span class="t">    <span class="nam">name</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">String</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t253" href="#t253">253</a></span><span class="t">    <span class="nam">url</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">String</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t254" href="#t254">254</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t255" href="#t255">255</a></span><span class="t">    <span class="key">def</span> <span class="nam">resolve_name</span><span class="op">(</span><span class="nam">root</span><span class="op">,</span> <span class="nam">info</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span> <span class="op">-></span> <span class="nam">str</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t256" href="#t256">256</a></span><span class="t">        <span class="key">return</span> <span class="nam">root</span><span class="op">.</span><span class="nam">name</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t257" href="#t257">257</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t258" href="#t258">258</a></span><span class="t">    <span class="key">def</span> <span class="nam">resolve_url</span><span class="op">(</span><span class="nam">root</span><span class="op">,</span> <span class="nam">info</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span> <span class="op">-></span> <span class="nam">str</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t259" href="#t259">259</a></span><span class="t">        <span class="key">return</span> <span class="nam">info</span><span class="op">.</span><span class="nam">context</span><span class="op">.</span><span class="nam">request</span><span class="op">.</span><span class="nam">build_absolute_uri</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t260" href="#t260">260</a></span><span class="t">            <span class="nam">URLCachedFileField</span><span class="op">.</span><span class="nam">name_to_representation</span><span class="op">(</span><span class="nam">root</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t261" href="#t261">261</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t262" href="#t262">262</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t263" href="#t263">263</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t264" href="#t264">264</a></span><span class="t"><span class="key">class</span> <span class="nam">DateCountType</span><span class="op">(</span><span class="nam">graphene</span><span class="op">.</span><span class="nam">ObjectType</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t265" href="#t265">265</a></span><span class="t">    <span class="nam">date</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">String</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t266" href="#t266">266</a></span><span class="t">    <span class="nam">count</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">Int</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t267" href="#t267">267</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t268" href="#t268">268</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t269" href="#t269">269</a></span><span class="t"><span class="key">class</span> <span class="nam">UserEntityCountType</span><span class="op">(</span><span class="nam">graphene</span><span class="op">.</span><span class="nam">ObjectType</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t270" href="#t270">270</a></span><span class="t">    <span class="nam">id</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">String</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t271" href="#t271">271</a></span><span class="t">    <span class="nam">name</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">String</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t272" href="#t272">272</a></span><span class="t">    <span class="nam">user_id</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">String</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t273" href="#t273">273</a></span><span class="t">    <span class="nam">count</span> <span class="op">=</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">Int</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t247" href="#t247">247</a></span><span class="t"><span class="key">def</span> <span class="nam">generate_serializer_field_class</span><span class="op">(</span><span class="nam">inner_type</span><span class="op">,</span> <span class="nam">serializer_field</span><span class="op">,</span> <span class="nam">non_null</span><span class="op">=</span><span class="key">False</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t248" href="#t248">248</a></span><span class="t">    <span class="nam">new_serializer_field</span> <span class="op">=</span> <span class="nam">type</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t249" href="#t249">249</a></span><span class="t">        <span class="str">"{}SerializerField"</span><span class="op">.</span><span class="nam">format</span><span class="op">(</span><span class="nam">inner_type</span><span class="op">.</span><span class="nam">__name__</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t250" href="#t250">250</a></span><span class="t">        <span class="op">(</span><span class="nam">serializer_field</span><span class="op">,</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t251" href="#t251">251</a></span><span class="t">        <span class="op">{</span><span class="op">}</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t252" href="#t252">252</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t253" href="#t253">253</a></span><span class="t">    <span class="nam">get_graphene_type_from_serializer_field</span><span class="op">.</span><span class="nam">register</span><span class="op">(</span><span class="nam">new_serializer_field</span><span class="op">)</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t254" href="#t254">254</a></span><span class="t">        <span class="key">lambda</span> <span class="nam">_</span><span class="op">:</span> <span class="nam">graphene</span><span class="op">.</span><span class="nam">NonNull</span><span class="op">(</span><span class="nam">inner_type</span><span class="op">)</span> <span class="key">if</span> <span class="nam">non_null</span> <span class="key">else</span> <span class="nam">inner_type</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t255" href="#t255">255</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t256" href="#t256">256</a></span><span class="t">    <span class="key">return</span> <span class="nam">new_serializer_field</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.1.2</a>,
-            created at 2021-11-17 08:27 +0000
+            created at 2021-11-24 06:26 +0000
         </p>
     </div>
 </footer>
