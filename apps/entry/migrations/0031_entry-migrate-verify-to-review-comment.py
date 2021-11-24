@@ -20,8 +20,9 @@ def migrate_entry_controlled_to_review_comment_(Entry, EntryReviewComment):
                 entry_id=entry.id,
                 created_by_id=entry.controlled_changed_by_id,
                 comment_type=(
-                    EntryReviewComment.CommentType.VERIFY if entry.controlled
-                    else EntryReviewComment.CommentType.UNVERIFY
+                    # 1 -> EntryReviewComment.CommentType.VERIFY
+                    # 2 -> EntryReviewComment.CommentType.UNVERIFY
+                    1 if entry.controlled else 2
                 ),
             )
         )
