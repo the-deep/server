@@ -4,6 +4,7 @@ from utils.graphene.tests import GraphQLSnapShotTestCase
 
 from user.factories import UserFactory
 from project.factories import ProjectFactory
+from lead.factories import LeadFactory
 from analysis_framework.factories import (
     AnalysisFrameworkFactory,
     SectionFactory,
@@ -222,3 +223,82 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
         af.add_member(user)
         response = _query_check()
         self.assertMatchSnapshot(response, 'with-membership')
+
+    def test_recent_analysis_framework(self):
+        # NOTE: This test includes the recent_analysis_framework based on project and source
+        query = '''
+                query MyQuery {
+                  projectExploreStats {
+                    topActiveFrameworks {
+                      analysisFrameworkId
+                      analysisFrameworkTitle
+                      projectCount
+                      sourceCount
+                    }
+                  }
+                }
+            '''
+
+        user = UserFactory.create()
+
+        # lets create some analysis_framework
+        analysis_framework1 = AnalysisFrameworkFactory.create()
+        analysis_framework2 = AnalysisFrameworkFactory.create()
+        analysis_framework3 = AnalysisFrameworkFactory.create()
+        analysis_framework4 = AnalysisFrameworkFactory.create()
+        analysis_framework5 = AnalysisFrameworkFactory.create()
+        analysis_framework6 = AnalysisFrameworkFactory.create()
+
+        project1 = ProjectFactory.create(analysis_framework=analysis_framework1)
+        project2 = ProjectFactory.create(analysis_framework=analysis_framework2)
+        project3 = ProjectFactory.create(analysis_framework=analysis_framework1)
+        project4 = ProjectFactory.create(analysis_framework=analysis_framework3)
+        project5 = ProjectFactory.create(analysis_framework=analysis_framework4)
+        project6 = ProjectFactory.create(analysis_framework=analysis_framework3)
+        project7 = ProjectFactory.create(analysis_framework=analysis_framework1)
+        project8 = ProjectFactory.create(analysis_framework=analysis_framework5)
+        project9 = ProjectFactory.create(analysis_framework=analysis_framework6)
+
+        # some lead for the project
+        LeadFactory.create_batch(15, project=project1)
+        LeadFactory.create_batch(13, project=project2)
+        LeadFactory.create_batch(20, project=project3)
+        LeadFactory.create_batch(20, project=project4)
+        LeadFactory.create_batch(20, project=project5)
+        LeadFactory.create_batch(30, project=project6)
+        LeadFactory.create_batch(30, project=project7)
+        LeadFactory.create_batch(30, project=project8)
+        LeadFactory.create_batch(30, project=project9)
+
+        # -- Without login
+        self.query_check(query, assert_for_error=True)
+
+        # -- With login
+        self.force_login(user)
+
+        content = self.query_check(query)
+
+        self.assertEqual(len(content['data']['projectExploreStats']['topActiveFrameworks']), 5, content)
+        self.assertEqual(
+            content['data']['projectExploreStats']['topActiveFrameworks'][0]['analysisFrameworkId'],
+            str(analysis_framework1.id)
+        )
+        self.assertEqual(content['data']['projectExploreStats']['topActiveFrameworks'][0]['projectCount'], 3)
+        self.assertEqual(content['data']['projectExploreStats']['topActiveFrameworks'][0]['sourceCount'], 65)
+        self.assertEqual(
+            content['data']['projectExploreStats']['topActiveFrameworks'][1]['analysisFrameworkId'],
+            str(analysis_framework3.id)
+        )
+        self.assertEqual(content['data']['projectExploreStats']['topActiveFrameworks'][1]['projectCount'], 2)
+        self.assertEqual(
+            content['data']['projectExploreStats']['topActiveFrameworks'][2]['analysisFrameworkId'],
+            str(analysis_framework5.id)
+        )
+        self.assertEqual(
+            content['data']['projectExploreStats']['topActiveFrameworks'][3]['analysisFrameworkId'],
+            str(analysis_framework6.id)
+        )
+        self.assertEqual(
+            content['data']['projectExploreStats']['topActiveFrameworks'][4]['analysisFrameworkId'],
+            str(analysis_framework4.id)
+        )

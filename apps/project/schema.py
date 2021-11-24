@@ -101,6 +101,16 @@ class ProjectExploreStatType(graphene.ObjectType):
             })
         )
     )
+    top_active_frameworks = graphene.List(
+        graphene.NonNull(
+            type('ExploreProjectStatTopActiveFrameworksType', (graphene.ObjectType,), {
+                'analysis_framework_id': graphene.Field(graphene.NonNull(graphene.ID)),
+                'analysis_framework_title': graphene.String(),
+                'project_count': graphene.NonNull(graphene.Int),
+                'source_count': graphene.NonNull(graphene.Int)
+            })
+        )
+    )
 
 
 class ProjectStatType(graphene.ObjectType):

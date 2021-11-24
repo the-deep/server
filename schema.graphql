@@ -593,6 +593,13 @@ type EntryType {
 
 scalar EnumDescription
 
+type ExploreProjectStatTopActiveFrameworksType {
+  analysisFrameworkId: ID!
+  analysisFrameworkTitle: String
+  projectCount: Int!
+  sourceCount: Int!
+}
+
 type ExploreProjectStatTopActiveProjectsType {
   projectId: ID!
   projectTitle: String
@@ -1217,6 +1224,7 @@ type ProjectExploreStatType {
   dailyAverageLeadsTaggedPerProject: Float
   generatedExportsMonthly: Int
   topActiveProjects: [ExploreProjectStatTopActiveProjectsType!]
+  topActiveFrameworks: [ExploreProjectStatTopActiveFrameworksType!]
 }
 
 type ProjectGeoAreaListType {

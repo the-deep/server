@@ -623,7 +623,7 @@ class ProjectAcceptRejectSerializer(serializers.ModelSerializer):
             ProjectAcceptRejectSerializer._accept_request(self.context['request'].user, instance, role)
         elif validated_data['status'] == 'rejected':
             ProjectAcceptRejectSerializer._reject_request(self.context['request'].user, instance)
-        return super().update(instance, validated_data)
+        return instance
 
 
 class ProjectMembershipGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
