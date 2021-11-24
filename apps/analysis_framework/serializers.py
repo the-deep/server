@@ -301,7 +301,8 @@ class AfWidgetLimit():
 class WidgetGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
     id = IntegerIDField(required=False)
     key = serializers.CharField(required=True)
-    version = serializers.IntegerField(required=True)
+    # TODO: This needs to be send from frontend `version = serializers.IntegerField(required=True)`
+    version = serializers.IntegerField(default=1)
 
     class Meta:
         model = Widget
