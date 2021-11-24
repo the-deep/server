@@ -304,6 +304,9 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             'exclude empty controlled filtered entries',
         )
 
+    ids = IDListFilter(method='filter_leads_id', help_text='Empty ids are ignored.')
+    exclude_provided_leads_id = django_filters.BooleanFilter(
+        method='filter_exclude_provided_leads_id', help_text='Only used when ids are provided.')
     created_by = IDListFilter()
     modified_by = IDListFilter()
     source_types = MultipleInputFilter(LeadSourceTypeEnum, field_name='source_type')
@@ -327,7 +330,7 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             (graphene.InputObjectType,),
             get_filtering_args_from_filterset(EntryGQFilterSet, 'entry.schema.EntryListType')
         ),
-        method='filtered_entries_filter_data'
+        method='filtered_entries_filter_data',
     )
 
     search = django_filters.CharFilter(method='search_filter')
@@ -416,11 +419,19 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             return qs.filter(organization_types__in=value).distinct()
         return qs
 
-    def filtered_entries_filter_data(self, qs, name, value):
+    def filter_leads_id(self, qs, _, value):
+        # NOTE: Used is qs
+        return qs
+
+    def filter_exclude_provided_leads_id(self, qs, *_):
+        # NOTE: Used in filter_leads_id
+        return qs
+
+    def filtered_entries_filter_data(self, qs, *_):
         # NOTE: This filter data is used by filtered_exists_filter
         return qs
 
-    def filtered_exists_filter(self, qs, name, value):
+    def filtered_exists_filter(self, qs, _, value):
         entries_filter_data = self.data.get('entries_filter_data') or {}
         if self.request is None:
             raise Exception(f'{self.request=} should be defined')
@@ -450,7 +461,16 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
 
     @property
     def qs(self):
-        return super().qs.distinct()
+        def _custom_qs(qs):
+            # NOTE: To handle empty ids
+            exclude_provided_leads_id = self.data.get('exclude_provided_leads_id', False)
+            leads_ids = self.data.get('ids')
+            if leads_ids is None:
+                return qs
+            if exclude_provided_leads_id:
+                return qs.exclude(id__in=leads_ids)
+            return qs.filter(id__in=leads_ids)
+        return _custom_qs(super().qs).distinct()
 
 
 class LeadGroupGQFilterSet(UserResourceGqlFilterSet):

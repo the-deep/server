@@ -3,8 +3,8 @@ from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from django.db import models
 
-from utils.graphene.types import CustomDjangoListObjectType
-from utils.graphene.fields import DjangoPaginatedListObjectField, FileField
+from utils.graphene.types import CustomDjangoListObjectType, FileFieldType
+from utils.graphene.fields import DjangoPaginatedListObjectField
 
 from geo.models import Region, GeoArea, AdminLevel
 from geo.filter_set import RegionFilterSet, GeoAreaGqlFilterSet
@@ -36,8 +36,8 @@ class AdminLevelType(DjangoObjectType):
         )
 
     parent = graphene.ID(source='parent_id')
-    geojson_file = graphene.Field(FileField)
-    bounds_file = graphene.Field(FileField)
+    geojson_file = graphene.Field(FileFieldType)
+    bounds_file = graphene.Field(FileFieldType)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):

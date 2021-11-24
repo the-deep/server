@@ -78,6 +78,8 @@ class AnalysisFrameworkAdmin(VersionAdmin):
     ]
     list_display = [
         'title',  # 'project_count',
+        'created_at',
+        'created_by',
         query_buttons('View', [inline[0] for inline in custom_inlines]),
     ]
     autocomplete_fields = ('created_by', 'modified_by',)

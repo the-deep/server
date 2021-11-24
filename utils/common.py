@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import hashlib
-from xml.sax.saxutils import escape as xml_escape
 import matplotlib as mp
+from django.utils.hashable import make_hashable
+from django.utils.encoding import force_str
+from xml.sax.saxutils import escape as xml_escape
 from datetime import timedelta, datetime
 from django.conf import settings
 from redis_store import redis
@@ -463,3 +465,9 @@ def to_camelcase(snake_str):
 def get_number_of_months_between_dates(d1, d2):
     if d1 and d2:
         return abs(d1.year - d2.year) * 12 + abs(d1.month - d2.month)
+
+
+def get_enum_display(Enum, value):
+    choices_dict = dict(make_hashable(Enum.choices))
+    # force_str() to coerce lazy strings.
+    return force_str(choices_dict.get(make_hashable(value), value), strings_only=True)

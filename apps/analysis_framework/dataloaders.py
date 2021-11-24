@@ -10,6 +10,7 @@ from .models import (
     Widget,
     Section,
     Filter,
+    Exportable,
     AnalysisFrameworkMembership,
 )
 
@@ -63,6 +64,18 @@ class FilterLoader(DataLoaderWithContext):
         return Promise.resolve([_map[key] for key in keys])
 
 
+class ExportableLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = Exportable.qs_with_widget_type().filter(
+            analysis_framework__in=keys,
+            widget_type__isnull=False,  # Remove if widget_type is empty (meaning widget doesn't exists)
+        )
+        _map = defaultdict(list)
+        for exportable in qs:
+            _map[exportable.analysis_framework_id].append(exportable)
+        return Promise.resolve([_map[key] for key in keys])
+
+
 class MembershipLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         qs = AnalysisFrameworkMembership.objects\
@@ -100,6 +113,10 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def filters(self):
         return FilterLoader(context=self.context)
+
+    @cached_property
+    def exportables(self):
+        return ExportableLoader(context=self.context)
 
     @cached_property
     def members(self):
