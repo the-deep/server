@@ -1,10 +1,12 @@
+import json
 import graphene
+from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
-from utils.graphene.types import CustomDjangoListObjectType
+from utils.graphene.types import CustomDjangoListObjectType, FileFieldType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 
 from .models import Export
@@ -20,7 +22,8 @@ from .enums import (
 def get_export_qs(info):
     return Export.objects.filter(
         project=info.context.active_project,
-        exported_by=info.context.request.user
+        exported_by=info.context.request.user,
+        is_deleted=False,
     )
 
 
@@ -29,18 +32,25 @@ class UserExportType(DjangoObjectType):
         model = Export
         fields = (
             'id', 'project', 'is_preview', 'title',
-            'filters', 'mime_type', 'file', 'exported_by',
-            'exported_at', 'pending', 'is_deleted', 'is_archived'
+            'filters', 'mime_type', 'extra_options', 'exported_by',
+            'exported_at', 'pending', 'is_archived'
         )
 
+    project = graphene.ID(source='project_id')
     format = graphene.Field(graphene.NonNull(ExportFormatEnum))
     type = graphene.Field(graphene.NonNull(ExportDataTypeEnum))
     status = graphene.Field(graphene.NonNull(ExportStatusEnum))
     export_type = graphene.Field(graphene.NonNull(ExportExportTypeEnum))
+    file = graphene.Field(FileFieldType)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
         return get_export_qs(info)
+
+    @staticmethod
+    def resolve_filters(root, info, **kwargs):
+        # XXX: Better way?
+        return json.loads(CamelCaseJSONRenderer().render(root.filters))
 
 
 class UserExportListType(CustomDjangoListObjectType):

@@ -6,8 +6,8 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from django.db.models import QuerySet
 
 from utils.graphene.enums import EnumDescription
-from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
-from utils.graphene.fields import DjangoPaginatedListObjectField, FileField
+from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin, FileFieldType
+from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import AnalysisFrameworkPermissions as AfP
 from project.schema import AnalysisFrameworkVisibleProjectType
 
@@ -16,6 +16,7 @@ from .models import (
     Section,
     Widget,
     Filter,
+    Exportable,
     AnalysisFrameworkMembership,
     AnalysisFrameworkRole,
 )
@@ -64,10 +65,10 @@ class AnalysisFrameworkType(DjangoObjectType):
         only_fields = (
             'id', 'title', 'description', 'is_private', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
-            'preview_image',
         )
 
     current_user_role = graphene.String()
+    preview_image = graphene.Field(FileFieldType)
     allowed_permissions = graphene.List(
         graphene.NonNull(
             graphene.Enum.from_enum(AfP.Permission),
@@ -104,7 +105,7 @@ class AnalysisFrameworkRoleType(DjangoObjectType):
 class AnalysisFrameworkFilterType(DjangoObjectType):
     class Meta:
         model = Filter
-        only_fields = ('title', 'properties',)
+        only_fields = ('id', 'title', 'properties',)
 
     key = graphene.String(required=True)
     widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
@@ -115,6 +116,20 @@ class AnalysisFrameworkFilterType(DjangoObjectType):
     @staticmethod
     def resolve_widget_type(root, info, **kwargs):
         return root.widget_type  # NOTE: This is added from AnalysisFrameworkDetailType.resolve_filters dataloader
+
+
+class AnalysisFrameworkExportableType(DjangoObjectType):
+    class Meta:
+        model = Exportable
+        only_fields = ('id', 'inline', 'order', 'data',)
+
+    widget_key = graphene.String(required=True)
+    widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
+    widget_type_display = EnumDescription(source='get_widget_type_display', required=True)
+
+    @staticmethod
+    def resolve_widget_type(root, info, **kwargs):
+        return root.widget_type  # NOTE: This is added from AnalysisFrameworkDetailType.resolve_exportables dataloader
 
 
 class AnalysisFrameworkMembershipType(ClientIdMixin, DjangoObjectType):
@@ -128,7 +143,8 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     secondary_tagging = DjangoListField(WidgetType)  # Without section
     members = DjangoListField(AnalysisFrameworkMembershipType)
     filters = DjangoListField(AnalysisFrameworkFilterType)
-    preview_image = graphene.Field(FileField)
+    exportables = DjangoListField(AnalysisFrameworkExportableType)
+    preview_image = graphene.Field(FileFieldType)
     visible_projects = DjangoListField(AnalysisFrameworkVisibleProjectType)
 
     class Meta:
@@ -137,7 +153,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
         only_fields = (
             'id', 'title', 'description', 'is_private', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
-            'preview_image', 'properties',
+            'properties',
         )
 
     @staticmethod
@@ -151,6 +167,10 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     @staticmethod
     def resolve_filters(root, info):
         return info.context.dl.analysis_framework.filters.load(root.id)
+
+    @staticmethod
+    def resolve_exportables(root, info):
+        return info.context.dl.analysis_framework.exportables.load(root.id)
 
     @staticmethod
     def resolve_members(root, info):

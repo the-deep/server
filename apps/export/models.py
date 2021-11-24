@@ -39,21 +39,24 @@ class Export(models.Model):
     PREVIEW_ENTRY_SIZE = 10
     PREVIEW_ASSESSMENT_SIZE = 10
 
-    project = models.ForeignKey(Project, default=None, null=True, blank=True, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     is_preview = models.BooleanField(default=False)
 
-    title = models.CharField(max_length=255, blank=True)
+    title = models.CharField(max_length=255)
 
-    format = models.CharField(max_length=100, choices=Format.choices, blank=True)
-    type = models.CharField(max_length=99, choices=DataType.choices, blank=True)
-    export_type = models.CharField(max_length=100, choices=ExportType.choices, blank=True)
-    filters = models.JSONField(default=dict, blank=True, null=True,)
-
-    mime_type = models.CharField(max_length=200, blank=True)
-    file = models.FileField(upload_to='export/', max_length=255,
-                            null=True, blank=True, default=None)
+    format = models.CharField(max_length=100, choices=Format.choices)
+    type = models.CharField(max_length=99, choices=DataType.choices)
+    export_type = models.CharField(max_length=100, choices=ExportType.choices)
     exported_by = models.ForeignKey(User, on_delete=models.CASCADE)
     exported_at = models.DateTimeField(auto_now_add=True)
+
+    # Lead filters
+    filters = models.JSONField(default=dict)
+    # Additional configuration options
+    extra_options = models.JSONField(default=dict)
+
+    mime_type = models.CharField(max_length=200, blank=True)
+    file = models.FileField(upload_to='export/', max_length=255, null=True, blank=True, default=None)
 
     pending = models.BooleanField(default=True)
     status = models.CharField(max_length=30, choices=Status.choices, default=Status.PENDING)

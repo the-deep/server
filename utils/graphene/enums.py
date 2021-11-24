@@ -76,7 +76,9 @@ class EnumDescription(graphene.Scalar):
         """
         Here value should always be callable get_FOO_display
         """
-        return value()
+        if callable(value):
+            return value()
+        return value
 
     serialize = coerce_string
     parse_value = coerce_string

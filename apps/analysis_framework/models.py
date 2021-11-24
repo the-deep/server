@@ -2,6 +2,7 @@ from typing import Union
 
 from django.db import models
 
+from utils.common import get_enum_display
 from user_resource.models import UserResource
 from user.models import User
 from organization.models import Organization
@@ -340,6 +341,11 @@ class Filter(models.Model):
     def __str__(self):
         return '{} ({})'.format(self.title, self.key)
 
+    def get_widget_type_display(self):
+        widget_type = getattr(self, 'widget_type')  # Included when qs_with_widget_type is used
+        if widget_type:
+            return get_enum_display(Widget.WidgetType, widget_type)
+
     @classmethod
     def qs_with_widget_type(cls):
         # TODO: maybe use properties?
@@ -405,6 +411,19 @@ class Exportable(models.Model):
     class Meta:
         ordering = ['order']
 
+    @classmethod
+    def qs_with_widget_type(cls):
+        # TODO: maybe use properties?
+        # Return exportable queryset with addtional field `widget_type`
+        return cls.objects.annotate(
+            widget_type=models.Subquery(
+                Widget.objects.filter(
+                    key=models.OuterRef('widget_key'),
+                    analysis_framework=models.OuterRef('analysis_framework'),
+                ).values('widget_id')[:1], output_field=models.CharField()
+            )
+        )
+
     def clone_to(self, analysis_framework):
         exportable = Exportable(
             analysis_framework=analysis_framework,
@@ -425,6 +444,11 @@ class Exportable(models.Model):
             models.Q(analysis_framework__project__members=user) |
             models.Q(analysis_framework__project__user_groups__members=user)
         ).distinct()
+
+    def get_widget_type_display(self):
+        widget_type = getattr(self, 'widget_type')  # Included when qs_with_widget_type is used
+        if widget_type:
+            return get_enum_display(Widget.WidgetType, widget_type)
 
     def can_get(self, user):
         return self.analysis_framework.can_get(user)

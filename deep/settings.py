@@ -682,16 +682,18 @@ CSP_DEFAULT_SRC = ["'self'"]
 SECURE_REFERRER_POLICY = 'same-origin'
 if HTTP_PROTOCOL == 'https':
     SESSION_COOKIE_NAME = f'__Secure-{SESSION_COOKIE_NAME}'
-    CSRF_COOKIE_NAME = f'__Secure-{CSRF_COOKIE_NAME}'
-    CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
     SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 30  # TODO: Increase this slowly
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SESSION_COOKIE_HTTPONLY = True
-    CSRF_COOKIE_HTTPONLY = True
+    # NOTE: Client needs to read CSRF COOKIE.
+    # CSRF_COOKIE_NAME = f'__Secure-{CSRF_COOKIE_NAME}'
+    # CSRF_COOKIE_SECURE = True
+    # CSRF_COOKIE_HTTPONLY = True
+    CSRF_TRUSTED_ORIGINS = [DEEPER_FRONTEND_HOST, DJANGO_API_HOST]
 
 # https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-CSRF_USE_SESSIONS
 CSRF_USE_SESSIONS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'False').lower() == 'true'
