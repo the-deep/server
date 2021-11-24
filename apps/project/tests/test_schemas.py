@@ -744,10 +744,14 @@ class TestProjectExploreStats(GraphQLSnapShotTestCase):
             }
         '''
 
+        user = UserFactory.create()
+
+        # -- With login
+        self.force_login(user)
+
         previous_content = content = self.query_check(query)
         self.assertMatchSnapshot(content, 'no-data')
 
-        user = UserFactory.create()
         UserFactory.create_batch(3, is_active=False)  # Some Inactive users
         analysis_framework = AnalysisFrameworkFactory.create()
         projects = ProjectFactory.create_batch(3)

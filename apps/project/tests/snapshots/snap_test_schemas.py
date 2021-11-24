@@ -13,7 +13,7 @@ snapshots['TestProjectExploreStats::test_snapshot no-data'] = {
             'calculatedAt': '2021-01-01T00:00:00.123456+00:00',
             'dailyAverageLeadsTaggedPerProject': 0.0,
             'totalProjects': 0,
-            'totalUsers': 0,
+            'totalUsers': 1,
             'generatedExportsMonthly': 0,
             'leadsAddedWeekly': 0,
             'topActiveProjects': [
