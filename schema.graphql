@@ -219,6 +219,7 @@ input AttributeGqInputType {
 
 type AttributeType {
   id: ID!
+  widgetVersion: Int
   data: GenericScalar
   clientId: String!
   widget: ID!
@@ -1753,6 +1754,7 @@ type WidgetType {
   title: String!
   properties: GenericScalar
   order: Int!
+  version: Int
   clientId: String!
   widgetId: WidgetWidgetTypeEnum!
   widgetIdDisplay: EnumDescription!
