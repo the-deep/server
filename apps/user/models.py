@@ -98,8 +98,7 @@ class Profile(models.Model):
 
     @staticmethod
     def get_display_name_for_user(user):
-        # TODO: Maybe something like this? return f'{name} #{user.id}'
-        return user.get_full_name() if user.first_name else user.username
+        return user.get_full_name() or f'User#{user.pk}'
 
     def get_display_name(self):
         return self.get_display_name_for_user(self.user)
