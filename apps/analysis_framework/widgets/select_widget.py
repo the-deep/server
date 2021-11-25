@@ -15,11 +15,18 @@ properties:
 def get_filters(widget, properties):
     from analysis_framework.models import Filter  # To avoid circular import
 
+    filter_options = [
+        {
+            'key': option['key'],
+            'label': option['label'],
+        }
+        for option in properties.get('options', [])
+    ]
     return [{
         'filter_type': Filter.FilterType.LIST,
         'properties': {
             'type': 'multiselect',
-            'options': properties.get('options', []),
+            'options': filter_options,
         },
     }]
 

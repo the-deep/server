@@ -70,14 +70,14 @@ class ReviewCommentsCountLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         count_qs = EntryReviewComment.objects\
             .filter(entry__in=keys)\
-            .order_by().values('project')\
+            .order_by().values('entry')\
             .annotate(count=models.Count('id'))\
-            .values_list('project', 'count')
+            .values_list('entry', 'count')
         counts = {
-            project: count
-            for project, count in count_qs
+            entry_id: count
+            for entry_id, count in count_qs
         }
-        return Promise.resolve([counts.get(key) for key in keys])
+        return Promise.resolve([counts.get(key, 0) for key in keys])
 
 
 class DataLoaders(WithContextMixin):

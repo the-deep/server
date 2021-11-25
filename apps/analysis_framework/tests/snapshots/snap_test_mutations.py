@@ -481,7 +481,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_widgets_limit fai
             'arrayErrors': [
                 {
                     'clientId': 'nonMemberErrors',
-                    'messages': 'Only 1 items are allowed. Provided: 2',
+                    'messages': 'Only 1 sections are allowed. Provided: 2',
                     'objectErrors': None
                 }
             ],
@@ -507,7 +507,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_widgets_limit fai
                             'arrayErrors': [
                                 {
                                     'clientId': 'nonMemberErrors',
-                                    'messages': 'Only 2 items are allowed. Provided: 4',
+                                    'messages': 'Only 2 widgets are allowed. Provided: 4',
                                     'objectErrors': None
                                 }
                             ],
@@ -526,7 +526,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_widgets_limit fai
                             'arrayErrors': [
                                 {
                                     'clientId': 'nonMemberErrors',
-                                    'messages': 'Only 2 items are allowed. Provided: 4',
+                                    'messages': 'Only 2 widgets are allowed. Provided: 4',
                                     'objectErrors': None
                                 }
                             ],
@@ -547,7 +547,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_widgets_limit fai
             'arrayErrors': [
                 {
                     'clientId': 'nonMemberErrors',
-                    'messages': 'Only 2 items are allowed. Provided: 4',
+                    'messages': 'Only 2 widgets are allowed. Provided: 4',
                     'objectErrors': None
                 }
             ],

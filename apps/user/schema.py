@@ -13,7 +13,7 @@ from jwt_auth.token import AccessToken
 
 from project.models import Project
 from .models import User, Feature
-from .filters import UserFilterSet
+from .filters import UserGqlFilterSet
 
 
 def only_me(func):
@@ -140,7 +140,7 @@ class UserMeType(DjangoObjectType):
 class UserListType(CustomDjangoListObjectType):
     class Meta:
         model = User
-        filterset_class = UserFilterSet
+        filterset_class = UserGqlFilterSet
 
 
 class Query:

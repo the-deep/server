@@ -1459,7 +1459,7 @@ type Query {
   userGroups(id: Float, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): UserGroupListType
   me: UserMeType
   user(id: ID!): UserType
-  users(id: Float, page: Int = 1, ordering: String, pageSize: Int): UserListType
+  users(id: Float, search: String, membersExcludeProject: ID, membersExcludeFramework: ID, page: Int = 1, ordering: String, pageSize: Int): UserListType
   analysisFramework(id: ID!): AnalysisFrameworkDetailType
   analysisFrameworks(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkListType
   project(id: ID!): ProjectDetailType
