@@ -118,7 +118,7 @@ class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
 
     @staticmethod
     def resolve_review_comments_count(root, info, **kwargs):
-        return root.entryreviewcomment_set.count()
+        return info.context.dl.entry.review_comments_count.load(root.pk)
 
     @staticmethod
     def resolve_project_labels(root, info, **kwargs):
