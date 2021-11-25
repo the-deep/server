@@ -74,7 +74,7 @@
     <p class="pln"><span class="n"><a id="t13" href="#t13">13</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t14" href="#t14">14</a></span><span class="t"><span class="key">from</span> <span class="nam">project</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Project</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t15" href="#t15">15</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">User</span><span class="op">,</span> <span class="nam">Feature</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t16" href="#t16">16</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="nam">filters</span> <span class="key">import</span> <span class="nam">UserFilterSet</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t16" href="#t16">16</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="nam">filters</span> <span class="key">import</span> <span class="nam">UserGqlFilterSet</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t17" href="#t17">17</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t18" href="#t18">18</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t19" href="#t19">19</a></span><span class="t"><span class="key">def</span> <span class="nam">only_me</span><span class="op">(</span><span class="nam">func</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -201,7 +201,7 @@
     <p class="run"><span class="n"><a id="t140" href="#t140">140</a></span><span class="t"><span class="key">class</span> <span class="nam">UserListType</span><span class="op">(</span><span class="nam">CustomDjangoListObjectType</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t141" href="#t141">141</a></span><span class="t">    <span class="key">class</span> <span class="nam">Meta</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t142" href="#t142">142</a></span><span class="t">        <span class="nam">model</span> <span class="op">=</span> <span class="nam">User</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t143" href="#t143">143</a></span><span class="t">        <span class="nam">filterset_class</span> <span class="op">=</span> <span class="nam">UserFilterSet</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t143" href="#t143">143</a></span><span class="t">        <span class="nam">filterset_class</span> <span class="op">=</span> <span class="nam">UserGqlFilterSet</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t144" href="#t144">144</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t145" href="#t145">145</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t146" href="#t146">146</a></span><span class="t"><span class="key">class</span> <span class="nam">Query</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -224,7 +224,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.1.2</a>,
-            created at 2021-11-24 07:23 +0000
+            created at 2021-11-25 11:26 +0000
         </p>
     </div>
 </footer>
