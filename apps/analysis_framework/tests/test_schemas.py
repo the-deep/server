@@ -136,6 +136,7 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
                     id
                     key
                     title
+                    version
                     widgetId
                     order
                     properties

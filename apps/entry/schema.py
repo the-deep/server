@@ -58,7 +58,7 @@ class AttributeType(ClientIdMixin, DjangoObjectType):
         model = Attribute
         skip_registry = True
         fields = (
-            'id', 'data',
+            'id', 'data', 'widget_version',
             'client_id',
         )
 
