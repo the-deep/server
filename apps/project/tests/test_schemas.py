@@ -744,10 +744,15 @@ class TestProjectExploreStats(GraphQLSnapShotTestCase):
             }
         '''
 
+        def _cache_clear():
+            cache.delete(CacheKey.PROJECT_EXPLORE_STATS_LOADER_KEY)  # Delete cache
+
         user = UserFactory.create()
 
         # -- With login
         self.force_login(user)
+
+        _cache_clear()
 
         previous_content = content = self.query_check(query)
         self.assertMatchSnapshot(content, 'no-data')
@@ -766,7 +771,7 @@ class TestProjectExploreStats(GraphQLSnapShotTestCase):
 
         content = self.query_check(query)
         self.assertEqual(content, previous_content)  # Test for cache
-        cache.delete(CacheKey.PROJECT_EXPLORE_STATS_LOADER_KEY)  # Delete cache
+        _cache_clear()
         previous_content = content = self.query_check(query)  # Pull latest data
         self.assertMatchSnapshot(content, 'only-project')
 
@@ -809,6 +814,6 @@ class TestProjectExploreStats(GraphQLSnapShotTestCase):
 
         content = self.query_check(query)
         self.assertEqual(content, previous_content)  # Test for cache
-        cache.delete(CacheKey.PROJECT_EXPLORE_STATS_LOADER_KEY)  # Delete cache
+        _cache_clear()
         previous_content = content = self.query_check(query)  # Pull latest data
         self.assertMatchSnapshot(content, 'with-data')

@@ -6,6 +6,7 @@ from utils.graphene.tests import GraphQLTestCase
 
 from gallery.factories import FileFactory
 from project.factories import ProjectFactory
+from analysis_framework.factories import AnalysisFrameworkFactory
 from user.models import User, Feature
 from user.factories import UserFactory, FeatureFactory
 from user.utils import (
@@ -498,3 +499,62 @@ class TestUserSchema(GraphQLTestCase):
             )  # Should be None
         # check for display_picture_url
         self.assertNotEqual(content['data']['me']['displayPictureUrl'], None, content)
+
+    def test_user_filters(self):
+        query = '''
+            query UserQuery($membersExcludeFramework: ID, $membersExcludeProject: ID, $search: String) {
+              users(
+                  membersExcludeFramework: $membersExcludeFramework,
+                  membersExcludeProject: $membersExcludeProject,
+                  search: $search
+              ) {
+                results {
+                    organization
+                    lastName
+                    language
+                    isActive
+                    id
+                    firstName
+                    displayPictureUrl
+                    displayName
+                }
+                page
+                pageSize
+              }
+            }
+        '''
+        project1, project2 = ProjectFactory.create_batch(2)
+        af1, af2 = AnalysisFrameworkFactory.create_batch(2)
+
+        user = UserFactory.create(first_name='Normal Guy')
+        user1, user2, user3 = UserFactory.create_batch(3)
+        project1.add_member(user1)
+        project1.add_member(user2)
+        project2.add_member(user2)
+        project2.add_member(user)
+        af1.add_member(user1)
+        af1.add_member(user2)
+        af1.add_member(user)
+        af2.add_member(user2)
+
+        def _query_check(filters, **kwargs):
+            return self.query_check(query, variables=filters, **kwargs)
+
+        # Without authentication -----
+        content = _query_check({}, assert_for_error=True)
+
+        # With authentication -----
+        self.force_login(user)
+
+        # Without any filters
+        for name, filters, count, users in (
+            ('no-filter', dict(), 4, [user, user1, user2, user3]),
+            ('exclude-project-1', dict(membersExcludeProject=project1.pk), 2, [user, user3]),
+            ('exclude-project-2', dict(membersExcludeProject=project2.pk), 2, [user1, user3]),
+            ('exclude-af-1', dict(membersExcludeFramework=af1.pk), 1, [user3]),
+            ('exclude-af-2', dict(membersExcludeFramework=af2.pk), 3, [user, user1, user3]),
+            ('search', dict(search='Guy'), 1, [user]),
+        ):
+            content = _query_check(filters)['data']['users']['results']
+            self.assertEqual(len(content), count, (name, content))
+            self.assertListIds(content, users, (name, content))

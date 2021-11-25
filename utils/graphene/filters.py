@@ -100,6 +100,11 @@ def _get_id_list_filter(**kwargs):
 SimpleInputFilter = _get_simple_input_filter
 MultipleInputFilter = _get_multiple_input_filter
 
+IDFilter = _generate_filter_class(
+    graphene.ID,
+    filter_type=django_filters.NumberFilter,
+)
+
 # Generic Filters
 IDListFilter = _get_id_list_filter
 # IDListFilter = _generate_list_filter_class(graphene.ID)

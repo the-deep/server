@@ -333,7 +333,11 @@ class SectionGqlSerializer(TempClientIdMixin, WritableNestedModelSerializer):
 
     def validate_widgets(self, items):
         # Check max limit for widgets
-        validate_items_limit(items, AfWidgetLimit.MAX_WIDGETS_ALLOWED_PER_SECTION)
+        validate_items_limit(
+            items,
+            AfWidgetLimit.MAX_WIDGETS_ALLOWED_PER_SECTION,
+            error_message='Only %d widgets are allowed. Provided: %d'
+        )
         return items
 
 
@@ -375,12 +379,20 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
 
     def validate_primary_tagging(self, items):
         # Check max limit for sections
-        validate_items_limit(items, AfWidgetLimit.MAX_SECTIONS_ALLOWED)
+        validate_items_limit(
+            items,
+            AfWidgetLimit.MAX_SECTIONS_ALLOWED,
+            error_message='Only %d sections are allowed. Provided: %d'
+        )
         return items
 
     def validate_secondary_tagging(self, items):
         # Check max limit for secondary_tagging
-        validate_items_limit(items, AfWidgetLimit.MAX_WIDGETS_ALLOWED_IN_SECONDARY_TAGGING)
+        validate_items_limit(
+            items,
+            AfWidgetLimit.MAX_WIDGETS_ALLOWED_IN_SECONDARY_TAGGING,
+            error_message='Only %d widgets are allowed. Provided: %d'
+        )
         return items
 
     def _delete_old_secondary_taggings(self, af, secondary_tagging):
