@@ -10,6 +10,7 @@ from geo.schema import get_geo_area_queryset_for_project_geo_area_type
 from quality_assurance.models import EntryReviewComment
 
 from .models import (
+    Entry,
     Attribute,
     EntryGroupLabel,
 )
@@ -80,6 +81,31 @@ class ReviewCommentsCountLoader(DataLoaderWithContext):
         return Promise.resolve([counts.get(key, 0) for key in keys])
 
 
+class EntryVerifiedByLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        verified_by_through_qs = Entry.verified_by.through.objects\
+            .filter(entry__in=keys)\
+            .prefetch_related('user')
+        _map = defaultdict(list)
+        for item in verified_by_through_qs.all():
+            _map[item.entry_id].append(item.user)
+        return Promise.resolve([_map.get(key, []) for key in keys])
+
+
+class EntryVerifiedByCountLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        count_qs = Entry.verified_by.through.objects\
+            .filter(entry__in=keys)\
+            .order_by().values('entry')\
+            .annotate(count=models.Count('id'))\
+            .values_list('entry', 'count')
+        counts = {
+            entry: count
+            for entry, count in count_qs
+        }
+        return Promise.resolve([counts.get(key, 0) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     @cached_property
     def entry_attributes(self):
@@ -100,3 +126,11 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def review_comments_count(self):
         return ReviewCommentsCountLoader(context=self.context)
+
+    @cached_property
+    def verified_by(self):
+        return EntryVerifiedByLoader(context=self.context)
+
+    @cached_property
+    def verified_by_count(self):
+        return EntryVerifiedByCountLoader(context=self.context)

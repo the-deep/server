@@ -1,3 +1,4 @@
+
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework import (
     views,
@@ -14,6 +15,7 @@ from django.conf import settings
 from django.template.response import TemplateResponse
 from graphene_django.views import GraphQLView
 from graphene_file_upload.django import FileUploadGraphQLView
+from sentry_sdk.api import start_transaction as sentry_start_transaction
 
 # Importing for initialization (Make sure to import this before apps.<>)
 """
@@ -212,6 +214,23 @@ class EntryReviewCommentEmail(View):
 class CustomGraphQLView(FileUploadGraphQLView):
     def get_context(self, request):
         return GQLContext(request)
+
+    def execute_graphql_request(
+        self,
+        request,
+        data,
+        query,
+        variables,
+        operation_name,
+        show_graphiql,
+    ):
+        operation_type = self.get_backend(request)\
+            .document_from_string(self.schema, query)\
+            .get_operation_type(operation_name)
+        with sentry_start_transaction(op=operation_type, name=operation_name):
+            return super().execute_graphql_request(
+                request, data, query, variables, operation_name, show_graphiql
+            )
 
     @staticmethod
     def format_error(error):
