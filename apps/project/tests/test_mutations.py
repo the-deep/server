@@ -360,6 +360,11 @@ class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
             variables={'projectId': project.id, 'joinRequestId': join_request.id},
             assert_for_error=True
         )
+        notification_qs = Notification.objects.filter(
+            receiver=user,
+            notification_type=Notification.Type.PROJECT_JOIN_RESPONSE
+        )
+        old_count = notification_qs.count()
 
         # with login
         self.force_login(user)
@@ -380,6 +385,7 @@ class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
         )
         # make sure memberships is created
         self.assertIn(user2.id, ProjectMembership.objects.filter(project=project).values_list('member', flat=True))
+        assert notification_qs.count() > old_count
 
     def test_project_join_request_reject(self):
         user = UserFactory.create()

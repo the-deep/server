@@ -24,7 +24,7 @@ def create_notification(sender, instance, created, **kwargs):
             )
         return
 
-    # notifiy the requester as well
+    # notify the requester as well
     if instance.status in ['accepted', 'rejected']:
         Notification.objects.create(
             receiver=instance.requested_by,
