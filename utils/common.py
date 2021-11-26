@@ -480,3 +480,12 @@ def has_prefetched(obj, field):
     if hasattr(obj, '_prefetched_objects_cache') and field in obj._prefetched_objects_cache:
         return True
     return False
+
+
+def has_select_related(obj, field):
+    """
+    Checks if field is select_related.
+    """
+    if field in obj._state.fields_cache:
+        return True
+    return False
