@@ -42,7 +42,7 @@ class AttributeGeoSelectedOptionsLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         geo_area_qs = get_geo_area_queryset_for_project_geo_area_type().filter(
             id__in={id for ids in keys for id in ids}
-        )
+        ).defer('polygons')
         geo_area_map = {
             str(geo_area.id): geo_area
             for geo_area in geo_area_qs

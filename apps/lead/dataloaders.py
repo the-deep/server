@@ -93,7 +93,7 @@ class LeadAuthorsLoader(DataLoaderWithContext):
         return Promise.resolve([
             [
                 _map.get(author)
-                for author in lead_author_map.get(key)
+                for author in lead_author_map.get(key, [])
             ]
             for key in keys
         ])
