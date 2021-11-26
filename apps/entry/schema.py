@@ -4,6 +4,7 @@ from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
+from utils.common import has_prefetched
 from utils.graphene.enums import EnumDescription
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField, DjangoListField
@@ -106,6 +107,7 @@ class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     attributes = graphene.List(graphene.NonNull(AttributeType))
     project_labels = graphene.List(graphene.NonNull(EntryGroupLabelType))
     verified_by = DjangoListField(UserType)
+    verified_by_count = graphene.Int(required=True)
     review_comments = graphene.List(graphene.NonNull(EntryReviewCommentType))
     review_comments_count = graphene.Int(required=True)
 
@@ -115,10 +117,6 @@ class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
         return get_entry_qs(info)
-
-    @staticmethod
-    def resolve_review_comments_count(root, info, **kwargs):
-        return info.context.dl.entry.review_comments_count.load(root.pk)
 
     @staticmethod
     def resolve_project_labels(root, info, **kwargs):
@@ -131,6 +129,24 @@ class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     @staticmethod
     def resolve_review_comments(root, info, **kwargs):
         return info.context.dl.entry.review_comments.load(root.pk)
+
+    @staticmethod
+    def resolve_review_comments_count(root, info, **kwargs):
+        return info.context.dl.entry.review_comments_count.load(root.pk)
+
+    @staticmethod
+    def resolve_verified_by(root, info, **kwargs):
+        # Use cache if available
+        if has_prefetched(root, 'verified_by'):
+            return root.verified_by.all()
+        return info.context.dl.entry.verified_by.load(root.pk)
+
+    @staticmethod
+    def resolve_verified_by_count(root, info, **kwargs):
+        # Use cache if available
+        if has_prefetched(root, 'verified_by'):
+            return len(root.verified_by.all())
+        return info.context.dl.entry.verified_by_count.load(root.pk)
 
 
 class EntryListType(CustomDjangoListObjectType):

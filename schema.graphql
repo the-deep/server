@@ -589,6 +589,7 @@ type EntryType {
   attributes: [AttributeType!]
   projectLabels: [EntryGroupLabelType!]
   verifiedBy: [UserType!]
+  verifiedByCount: Int!
   reviewComments: [EntryReviewCommentType!]
   reviewCommentsCount: Int!
 }

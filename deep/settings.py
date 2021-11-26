@@ -582,6 +582,7 @@ HCAPTCHA_SECRET = os.environ.get('HCAPTCHA_SECRET', '0x0000000000000000000000000
 
 # Sentry Config
 SENTRY_DSN = os.environ.get('SENTRY_DSN')
+SENTRY_SAMPLE_RATE = float(os.environ.get('SENTRY_SAMPLE_RATE', '0.05'))
 
 if SENTRY_DSN:
     SENTRY_CONFIG = {
