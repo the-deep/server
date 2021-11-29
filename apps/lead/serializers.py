@@ -511,16 +511,20 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
 
 
 class LeadCopySerializer(serializers.Serializer):
-    destination_project = serializers.CharField(required=True)
+    projects = serializers.ListField(
+        child=IntegerIDField(),
+        required=True
+    )
     leads = serializers.ListField(
-        child=serializers.CharField(),
+        child=IntegerIDField(),
         required=True,
     )
 
-    def validate_destination_project(self, project):
-        if not ProjectMembership.objects.filter(project_id=project, member=self.context['request'].user).exists():
-            return serializers.ValidationError('Not access to copy in destination project')
-        return project
+    def validate_projects(self, projects):
+        for project in projects:
+            if not ProjectMembership.objects.filter(project_id=project, member=self.context['request'].user).exists():
+                return serializers.ValidationError('Not access to copy in destination project')
+        return projects
 
     def clone_or_get_lead(self, lead, project_id, user, context):
         existing_lead = raise_or_return_existing_lead(
@@ -586,9 +590,11 @@ class LeadCopySerializer(serializers.Serializer):
         from project.models import Project
 
         leads = validated_data.get('leads', [])
-        project = validated_data.get('destination_project', None)
+        print(leads)
+        projects = validated_data.get('projects', [])
         user = self.context['request'].user
-        project = Project.objects.get(id=project)
-        for lead in leads:
-            lead = Lead.objects.get(id=lead)
-            return self.clone_or_get_lead(lead, project.id, user, self.context)
+        for project in projects:
+            project = Project.objects.get(id=project)
+            for lead in leads:
+                lead = Lead.objects.get(id=lead)
+        return self.clone_or_get_lead(lead, project.id, user, self.context)

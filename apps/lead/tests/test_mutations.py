@@ -454,6 +454,8 @@ class TestLeadCopyMutation(GraphQLTestCase):
         source_project.add_member(member_user)
         destination_project = ProjectFactory.create()
         destination_project.add_member(member_user)
+        destination_project2 = ProjectFactory.create()
+        destination_project2.add_member(member_user)
         non_member_user = UserFactory.create()
 
         # Lead1 Info (Will be used later for testing)
@@ -493,7 +495,7 @@ class TestLeadCopyMutation(GraphQLTestCase):
 
         # test for single lead copy
         minput = {
-            'destinationProject': destination_project.id,
+            'projects': [destination_project.id],
             'leads': [lead1.id]
         }
 
@@ -533,7 +535,7 @@ class TestLeadCopyMutation(GraphQLTestCase):
 
         # lets test for the multiple lead
         minput = {
-            'destinationProject': destination_project.id,
+            'projects': [destination_project.id, destination_project2.id],
             'leads': [lead2.id, lead3.id]
         }
 
@@ -543,3 +545,4 @@ class TestLeadCopyMutation(GraphQLTestCase):
         _query_check(assert_for_error=False)
         # check for the multiple leads clone
         self.assertEqual(Lead.objects.filter(project=destination_project).count(), 2)
+        self.assertEqual(Lead.objects.filter(project=destination_project2).count(), 1)
