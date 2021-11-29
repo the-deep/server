@@ -717,6 +717,8 @@ GRAPHENE_NODES_WHITELIST = (
     'register',
     'resetPassword',
     'projectExploreStats',
+    'publicProjects',
+    'publicProjectsByRegion',
 )
 
 # https://docs.graphene-python.org/projects/django/en/latest/settings/

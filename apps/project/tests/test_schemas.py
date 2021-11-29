@@ -313,6 +313,35 @@ class TestProjectSchema(GraphQLTestCase):
         self.assertEqual(content['data']['projects']['results'][0]['id'], str(public_project.pk), content)
         self.assertEqual(content['data']['projects']['results'][1]['id'], str(private_project.pk), content)
 
+    def test_public_projects(self):
+        query = '''
+            query MyQuery {
+              publicProjects (ordering: "id") {
+                page
+                pageSize
+                totalCount
+                results {
+                  id
+                  status
+                  title
+                  description
+                  stats {
+                    numberOfLeads
+                    numberOfUsers
+                  }
+                }
+              }
+            }
+        '''
+        public_project1, public_project2, public_project3 = ProjectFactory.create_batch(3)
+        private_project = ProjectFactory.create(is_private=True)
+
+        content = self.query_check(query)
+        self.assertEqual(content['data']['publicProjects']['totalCount'], 3, content)
+        self.assertListIds(content['data']['publicProjects']['results'], [public_project1, public_project2, public_project3], content)
+        # make sure private projects are not visible here
+        self.assertNotListIds(content['data']['publicProjects']['results'], [private_project], content)
+
     def test_project_stat_recent(self):
         query = '''
               query MyQuery {
@@ -485,6 +514,31 @@ class TestProjectSchema(GraphQLTestCase):
                     'projectsId': [str(project1.pk)]
                 }
             ], content)
+
+    def test_public_projects_by_region(self):
+        query = '''
+              query MyQuery {
+                publicProjectsByRegion (ordering: "id") {
+                  totalCount
+                  results {
+                      id
+                      projectsId
+                      centroid
+                  }
+                }
+              }
+          '''
+
+        region1 = RegionFactory.create()
+        region2 = RegionFactory.create()
+        region3 = RegionFactory.create()
+        region4 = RegionFactory.create()
+        public_project1 = ProjectFactory.create(is_private=False, regions=[region1, region2])
+        public_project2 = ProjectFactory.create(is_private=False, regions=[region3])
+        private_project = ProjectFactory.create(is_private=True, regions=[region4])
+
+        content = self.query_check(query)
+        self.assertEqual(content['data']['publicProjectsByRegion']['totalCount'], 3, content)
 
 
 class TestProjectViz(GraphQLTestCase):
