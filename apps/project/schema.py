@@ -33,6 +33,7 @@ from analysis.schema import Query as AnalysisQuery
 from lead.models import Lead
 from entry.models import Entry
 from geo.models import Region
+from geo.filter_set import RegionFilterSet
 
 from .models import (
     Project,
@@ -425,9 +426,22 @@ class ProjectByRegionListType(CustomDjangoListObjectType):
         filterset_class = ProjectByRegionGqlFilterSet
 
 
+class PublicProjectByRegionListType(CustomDjangoListObjectType):
+    class Meta:
+        model = Region
+        base_type = RegionWithProject
+        filterset_class = RegionFilterSet
+
+
 class Query:
     project = DjangoObjectField(ProjectDetailType)
     projects = DjangoPaginatedListObjectField(
+        ProjectListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+    public_projects = DjangoPaginatedListObjectField(
         ProjectListType,
         pagination=PageGraphqlPagination(
             page_size_query_param='pageSize'
@@ -438,6 +452,13 @@ class Query:
 
     # projects_by_region = graphene.List(graphene.NonNull(ProjectByRegion))
     projects_by_region = DjangoPaginatedListObjectField(ProjectByRegionListType)
+    # only the region for which project are public
+    public_projects_by_region = DjangoPaginatedListObjectField(
+        PublicProjectByRegionListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
 
     # NOTE: This is a custom feature, see https://github.com/the-deep/graphene-django-extras
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
@@ -445,6 +466,10 @@ class Query:
     @staticmethod
     def resolve_projects(root, info, **kwargs) -> QuerySet:
         return Project.get_for_gq(info.context.user).distinct()
+
+    @staticmethod
+    def resolve_public_projects(root, info, **kwargs) -> QuerySet:
+        return Project.objects.filter(is_private=False).distinct()
 
     @staticmethod
     def resolve_recent_projects(root, info, **kwargs) -> QuerySet:
@@ -458,6 +483,10 @@ class Query:
             .get_for(info.context.user)\
             .filter(centroid__isnull=False)\
             .order_by('centroid')
+
+    @staticmethod
+    def resolve_public_projects_by_region(root, info, **kwargs):
+        return Region.objects.filter(project__is_private=False).distinct()
 
     @staticmethod
     def resolve_project_explore_stats(root, info, **kwargs):

@@ -186,6 +186,10 @@ class Project(UserResource):
             return visible_projects.filter(current_user_role__isnull=False)
         return visible_projects
 
+    @classmethod
+    def get_for_public_project(cls):
+        return Project.objects.filter(is_private=False).distinct()
+
     def fetch_current_user_membership_data(self, user):
         membership = ProjectMembership.objects\
             .select_related('role')\
