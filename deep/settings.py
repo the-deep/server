@@ -146,6 +146,7 @@ LOCAL_APPS = [
     'questionnaire',
     'quality_assurance',
     'unified_connector',
+    'nlp',
 
     # MISC DEEP APPS
     'bulk_data_migration',
@@ -832,3 +833,10 @@ if DEEP_ENVIRONMENT in ['production']:
     GRAPHENE['MIDDLEWARE'].append('deep.middleware.DisableIntrospectionSchemaMiddleware')
 
 UNHCR_PORTAL_API_KEY = env('UNHCR_PORTAL_API_KEY')
+
+EXTRACTOR_URL = os.environ.get(
+    'EXTRACTOR_URL', 'http://extractor:8001'
+)
+MODEL_PREDICTION_CALLBACK_URL = os.environ.get(
+    'MODEL_PREDICTION_CALLBACK_URL', 'http://server:8000/api/v1/model-predictions/model-predict-callback/'
+)
