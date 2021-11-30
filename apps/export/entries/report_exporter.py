@@ -330,7 +330,7 @@ class ReportExporter:
             title_para = self.doc.add_paragraph()
             title_para.ref.paragraph_format.right_indent = Inches(0.25)
             title_para.add_run(f'{widget.title}')
-            for legend in widget.properties.get('data', {}).get('scale_units')[::-1]:
+            for legend in widget.properties.get('options', [])[::-1]:
                 para = self.doc.add_paragraph()
                 para.ref.paragraph_format.right_indent = Inches(0.25)
                 para.add_oval_shape(legend.get('color'))
@@ -348,7 +348,7 @@ class ReportExporter:
                 title_para = self.doc.add_paragraph()
                 title_para.ref.paragraph_format.right_indent = Inches(0.25)
                 title_para.add_run(f'{widget.get("widget", {}).get("title")}')
-                for legend in widget.get('widget', {}).get('properties', {}).get('data', {}).get('scale_units', [])[::-1]:
+                for legend in widget.get('widget', {}).get('properties', {}).get('options', [])[::-1]:
                     para = self.doc.add_paragraph()
                     para.ref.paragraph_format.right_indent = Inches(0.25)
                     para.add_oval_shape(legend.get('color'))

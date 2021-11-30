@@ -35,7 +35,7 @@ class EntryFactory(DjangoModelFactory):
 
 
 class EntryAttributeFactory(DjangoModelFactory):
-    pass
+    widget_version = 1
 
     class Meta:
         model = Attribute

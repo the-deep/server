@@ -84,6 +84,7 @@ def get_filtered_projects(user, queries, annotate=False):
 # -------------------- Graphql Filters -----------------------------------
 class ProjectGqlFilterSet(UserResourceGqlFilterSet):
     ids = IDListFilter(field_name='id')
+    exclude_ids = IDListFilter(method='filter_exclude_ids')
     status = SimpleInputFilter(ProjectStatusEnum)
     organizations = IDListFilter(distinct=True)
     analysis_frameworks = IDListFilter(field_name='analysis_framework')
@@ -95,6 +96,11 @@ class ProjectGqlFilterSet(UserResourceGqlFilterSet):
     class Meta:
         model = Project
         fields = ()
+
+    def filter_exclude_ids(self, qs, _, value):
+        if not value:
+            return qs
+        return qs.exclude(ids__in=value)
 
     def filter_title(self, qs, _, value):
         if not value:

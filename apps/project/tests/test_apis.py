@@ -1286,17 +1286,6 @@ class ProjectApiTest(TestCase):
             ('widget 1d', 'widget_1d', 'matrix1dWidget', {}),
             ('widget 2d', 'widget_2d', 'matrix2dWidget', {}),
             ('geo widget', 'geo_widget', 'geoWidget', {}),
-            (
-                'severity widget',
-                'severity_widget',
-                'conditionalWidget',
-                {
-                    'is_conditional_widget': True,
-                    'selectors': ['widgets', 0, 'widget'],
-                    'widget_key': 'scalewidget-1',
-                    'widget_type': 'scaleWidget',
-                },
-            ),
             ('reliability widget', 'reliability_widget', 'scaleWidget', {}),
             ('affected groups widget', 'affected_groups_widget', 'multiselectWidget', {}),
             ('specific needs groups widget', 'specific_needs_groups_widget', 'multiselectWidget', {}),
@@ -1308,7 +1297,7 @@ class ProjectApiTest(TestCase):
                 title=title,
                 widget_id=data_identifier,
                 key=f'{data_identifier}-{index}',
-                properties={'data': w_data[data_identifier]},
+                properties=w_data[data_identifier],
             )
             self.create(Attribute, entry=entry, widget=widget, data=a_data[data_identifier])
             valid_stat_config[widget_identifier] = {

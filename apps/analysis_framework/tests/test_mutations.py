@@ -1,3 +1,4 @@
+import copy
 import json
 from unittest import mock
 
@@ -122,6 +123,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                       properties
                       title
                       widgetId
+                      version
                       clientId
                     }
                   }
@@ -132,6 +134,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                     properties
                     title
                     widgetId
+                    version
                     clientId
                   }
                 }
@@ -157,6 +160,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                             clientId='section-text-101-client-id',
                             title='',
                             widgetId=self.genum(Widget.WidgetType.TEXT),
+                            version=1,
                             key='section-text-101',
                             order=1,
                             properties=dict(),
@@ -165,6 +169,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                             clientId='section-text-102-client-id',
                             title='',
                             widgetId=self.genum(Widget.WidgetType.TEXT),
+                            version=1,
                             key='section-text-102',
                             order=2,
                             properties=dict(),
@@ -181,6 +186,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                             clientId='section-2-text-101-client-id',
                             title='Section-2-Text-101',
                             widgetId=self.genum(Widget.WidgetType.TEXT),
+                            version=1,
                             key='section-2-text-101',
                             order=1,
                             properties=dict(),
@@ -189,6 +195,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                             clientId='section-2-text-102-client-id',
                             title='Section-2-Text-102',
                             widgetId=self.genum(Widget.WidgetType.TEXT),
+                            version=1,
                             key='section-2-text-102',
                             order=2,
                             properties=dict(),
@@ -201,6 +208,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                     clientId='select-widget-101-client-id',
                     title='',
                     widgetId=self.genum(Widget.WidgetType.SELECT),
+                    version=1,
                     key='select-widget-101-key',
                     order=1,
                     properties=dict(),
@@ -209,6 +217,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                     clientId='multi-select-widget-102-client-id',
                     title='multi-select-Widget-2',
                     widgetId=self.genum(Widget.WidgetType.MULTISELECT),
+                    version=1,
                     key='multi-select-widget-102-key',
                     order=2,
                     properties=dict(),
@@ -233,6 +242,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                             clientId='section-text-101-client-id',
                             title='Section-Text-101',
                             widgetId=self.genum(Widget.WidgetType.TEXT),
+                            version=1,
                             key='section-text-101',
                             order=1,
                             properties=dict(),
@@ -241,6 +251,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                             clientId='section-text-102-client-id',
                             title='Section-Text-102',
                             widgetId=self.genum(Widget.WidgetType.TEXT),
+                            version=1,
                             key='section-text-102',
                             order=2,
                             properties=dict(),
@@ -257,6 +268,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                             clientId='section-2-text-101-client-id',
                             title='Section-2-Text-101',
                             widgetId=self.genum(Widget.WidgetType.TEXT),
+                            version=1,
                             key='section-2-text-101',
                             order=1,
                             properties=dict(),
@@ -265,6 +277,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                             clientId='section-2-text-102-client-id',
                             title='Section-2-Text-102',
                             widgetId=self.genum(Widget.WidgetType.TEXT),
+                            version=1,
                             key='section-2-text-102',
                             order=2,
                             properties=dict(),
@@ -277,6 +290,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                     clientId='select-widget-101-client-id',
                     title='Select-Widget-1',
                     widgetId=self.genum(Widget.WidgetType.SELECT),
+                    version=1,
                     key='select-widget-101-key',
                     order=1,
                     properties=dict(),
@@ -285,6 +299,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                     clientId='multi-select-widget-102-client-id',
                     title='multi-select-Widget-2',
                     widgetId=self.genum(Widget.WidgetType.MULTISELECT),
+                    version=1,
                     key='multi-select-widget-102-key',
                     order=2,
                     properties=dict(),
@@ -337,7 +352,13 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                           properties
                           title
                           widgetId
+                          version
                           clientId
+                          conditional {
+                            parentWidget
+                            parentWidgetType
+                            conditions
+                          }
                         }
                       }
                       secondaryTagging {
@@ -347,7 +368,13 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                         properties
                         title
                         widgetId
+                        version
                         clientId
+                        conditional {
+                          parentWidget
+                          parentWidgetType
+                          conditions
+                        }
                       }
                     }
                   }
@@ -372,6 +399,8 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         # ---------- Let's create a new AF (Using create test data)
         new_af_response = self.query_check(
             self.create_query, minput=self.valid_minput)['data']['analysisFrameworkCreate']['result']
+        self.assertMatchSnapshot(copy.deepcopy(new_af_response), 'created')
+
         new_af_id = new_af_response['id']
         # ---------------- Remove invalid attributes
         new_af_response.pop('currentUserRole')
@@ -395,6 +424,38 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         response = _query_check(new_af_id, new_af_response, okay=True)
         self.assertMatchSnapshot(response, 'success')
 
+        # Check with conditionals
+        other_af_widget = WidgetFactory.create(analysis_framework=AnalysisFrameworkFactory.create())
+        af_widget = Widget.objects.filter(analysis_framework_id=new_af_id).first()
+        af_widget_pk = af_widget and af_widget.pk
+
+        # Some with conditionals
+        new_af_response['primaryTagging'][0]['widgets'][1]['conditional'] = dict(
+            parentWidget=other_af_widget.pk,
+            conditions=[],
+        )
+
+        response = _query_check(new_af_id, new_af_response, okay=False)
+
+        # Success Add
+        new_af_response['primaryTagging'][0]['widgets'][1]['conditional'] = dict(
+            parentWidget=af_widget_pk,
+            conditions=[],
+        )
+        new_af_response['secondaryTagging'][0]['conditional'] = dict(
+            parentWidget=af_widget_pk,
+            conditions=[],
+        )
+        response = _query_check(new_af_id, new_af_response, okay=True)
+        self.assertMatchSnapshot(response, 'with-conditionals-add')
+
+        # Success Remove
+        new_af_response['primaryTagging'][0]['widgets'][1].pop('conditional')
+        new_af_response['secondaryTagging'][0]['conditional'] = None  # Should remove this only
+        response = _query_check(new_af_id, new_af_response, okay=True)
+        self.assertMatchSnapshot(response, 'with-conditionals-remove')
+
+        # With another user (Access denied)
         another_user = UserFactory.create()
         self.force_login(another_user)
         _query_check(new_af_id, new_af_response, assert_for_error=True)
@@ -559,6 +620,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                             clientId=f'section-text-{j}-client-id',
                             title=f'Section-Text-{j}',
                             widgetId=self.genum(Widget.WidgetType.TEXT),
+                            version=1,
                             key=f'section-text-{j}',
                             order=j,
                         )
@@ -571,6 +633,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                     clientId=f'section-text-{j}-client-id',
                     title=f'Section-Text-{j}',
                     widgetId=self.genum(Widget.WidgetType.TEXT),
+                    version=1,
                     key=f'section-text-{j}',
                     order=j,
                 )
