@@ -563,6 +563,7 @@ class LeadCopySerializer(serializers.Serializer):
         # NOTE: Don't copy lead_group for now
         lead.lead_group = None
         lead.project_id = project_id
+        lead.client_id = None
         lead.save()
 
         # Clone Lead Preview (One-to-one fields)
