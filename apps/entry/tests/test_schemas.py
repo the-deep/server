@@ -44,7 +44,7 @@ class TestEntryQuery(GraphQLTestCase):
                       widget
                       data
                       clientId
-                      widget_version
+                      widgetVersion
                       id
                     }
                     clientId
@@ -100,7 +100,7 @@ class TestEntryQuery(GraphQLTestCase):
                           widget
                           data
                           clientId
-                          widget_version
+                          widgetVersion
                           id
                         }
                         clientId
@@ -172,7 +172,7 @@ class TestEntryQuery(GraphQLTestCase):
                       widget
                       data
                       clientId
-                      widget_version
+                      widgetVersion
                       id
                     }
                     clientId

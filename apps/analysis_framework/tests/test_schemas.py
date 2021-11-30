@@ -126,6 +126,7 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
                   widgetId
                   order
                   properties
+                  version
                 }
                 primaryTagging {
                   id

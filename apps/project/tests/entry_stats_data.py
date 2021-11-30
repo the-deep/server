@@ -12,7 +12,7 @@ WIDGET_DATA = {
         ]
     },
     'scaleWidget': {
-        'scale_units': [
+        'options': [
             {'key': 'scale-1', 'color': '#470000', 'label': 'Scale 1'},
             {'key': 'scale-2', 'color': '#a40000', 'label': 'Scale 2'},
             {'key': 'scale-3', 'color': '#d40000', 'label': 'Scale 3'}
@@ -33,7 +33,7 @@ WIDGET_DATA = {
                     {'key': 'subpillar-7', 'value': 'Environment'},
                 ],
                 'color': '#c26b27',
-                'title': 'Context',
+                'label': 'Context',
                 'tooltip': 'Information about the environment in which humanitarian actors operates and the crisis happen', # noqa E501
             }, {
                 'key': 'pillar-2',
@@ -44,7 +44,7 @@ WIDGET_DATA = {
                     {'key': 'subpillar-11', 'value': 'Casualties'},
                 ],
                 'color': '#efaf78',
-                'title': 'Humanitarian Profile',
+                'label': 'Humanitarian Profile',
                 'tooltip': 'Information related to the population affected, including affected residents and displaced people', # noqa E501
             }, {
                 'key': 'pillar-3',
@@ -55,7 +55,7 @@ WIDGET_DATA = {
                     {'key': 'subpillar-15', 'value': 'Humanitarian Access Gaps'},
                 ],
                 'color': '#b9b2a5',
-                'title': 'Humanitarian Access',
+                'label': 'Humanitarian Access',
                 'tooltip': 'Information related to restrictions and constraints in accessing or being accessed by people in need', # noqa E501
             }, {
                 'key': 'pillar-4',
@@ -65,113 +65,88 @@ WIDGET_DATA = {
                     {'key': 'subpillar-18', 'value': 'Information Needs & Gaps'},
                 ],
                 'color': '#9bd65b',
-                'title': 'Information',
+                'label': 'Information',
                 'tooltip': 'Information about information, including communication means, information challenges and information needs', # noqa E501
             }]
     },
 
     'matrix2dWidget': {
-        'sectors': [
-            {'id': 'sector-9', 'title': 'Cross', 'tooltip': 'Cross sectoral information', 'subsectors': []},
-            {'id': 'sector-0', 'title': 'Food', 'tooltip': '...', 'subsectors': []},
-            {'id': 'sector-1', 'title': 'Livelihoods', 'tooltip': '...', 'subsectors': []},
-            {'id': 'sector-2', 'title': 'Health', 'tooltip': '...', 'subsectors': []},
-            {'id': 'sector-3', 'title': 'Nutrition', 'tooltip': '...', 'subsectors': []},
+        'columns': [
+            {'key': 'sector-9', 'label': 'Cross', 'tooltip': 'Cross sectoral information', 'subColumns': []},
+            {'key': 'sector-0', 'label': 'Food', 'tooltip': '...', 'subColumns': []},
+            {'key': 'sector-1', 'label': 'Livelihoods', 'tooltip': '...', 'subColumns': []},
+            {'key': 'sector-2', 'label': 'Health', 'tooltip': '...', 'subColumns': []},
+            {'key': 'sector-3', 'label': 'Nutrition', 'tooltip': '...', 'subColumns': []},
             {
-                'id': 'sector-4',
-                'title': 'WASH',
+                'key': 'sector-4',
+                'label': 'WASH',
                 'tooltip': '...',
-                'subsectors': [
-                    {'id': 'subsector-1', 'title': 'Water'},
-                    {'id': 'subsector-2', 'title': 'Sanitation'},
-                    {'id': 'subsector-3', 'title': 'Hygiene'},
-                    {'id': 'subsector-4', 'title': 'Waste management', 'tooltip': ''},
-                    {'id': 'subsector-5', 'title': 'Vector control', 'tooltip': ''}
+                'subColumns': [
+                    {'key': 'subsector-1', 'label': 'Water'},
+                    {'key': 'subsector-2', 'label': 'Sanitation'},
+                    {'key': 'subsector-3', 'label': 'Hygiene'},
+                    {'key': 'subsector-4', 'label': 'Waste management', 'tooltip': ''},
+                    {'key': 'subsector-5', 'label': 'Vector control', 'tooltip': ''}
                 ]
             },
-            {'id': 'sector-5', 'title': 'Shelter', 'tooltip': '...', 'subsectors': []},
+            {'key': 'sector-5', 'label': 'Shelter', 'tooltip': '...', 'subColumns': []},
             {
-                'id': 'sector-7',
-                'title': 'Education',
+                'key': 'sector-7',
+                'label': 'Education',
                 'tooltip': '.....',
-                'subsectors': [
-                    {'id': 'subsector-6', 'title': 'Learning Environment', 'tooltip': ''},
-                    {'id': 'subsector-7', 'title': 'Teaching and Learning', 'tooltip': ''},
-                    {'id': 'subsector-8', 'title': 'Teachers and Education Personnel', 'tooltip': ''},
+                'subColumns': [
+                    {'key': 'subsector-6', 'label': 'Learning Environment', 'tooltip': ''},
+                    {'key': 'subsector-7', 'label': 'Teaching and Learning', 'tooltip': ''},
+                    {'key': 'subsector-8', 'label': 'Teachers and Education Personnel', 'tooltip': ''},
                 ]
             },
-            {'id': 'sector-8', 'title': 'Protection', 'tooltip': '', 'subsectors': []},
-            {'id': 'sector-10', 'title': 'Agriculture', 'tooltip': '...', 'subsectors': []},
-            {'id': 'sector-11', 'title': 'Logistics', 'tooltip': '...', 'subsectors': []}
+            {'key': 'sector-8', 'label': 'Protection', 'tooltip': '', 'subColumns': []},
+            {'key': 'sector-10', 'label': 'Agriculture', 'tooltip': '...', 'subColumns': []},
+            {'key': 'sector-11', 'label': 'Logistics', 'tooltip': '...', 'subColumns': []}
         ],
-        'dimensions': [
+        'rows': [
             {
-                'id': 'dimension-0',
+                'key': 'dimension-0',
                 'color': '#eae285',
-                'title': 'Scope & Scale',
+                'label': 'Scope & Scale',
                 'tooltip': 'Information about the direct and indirect impact of the disaster or crisis',
-                'subdimensions': [
-                    {'id': 'subdimension-0', 'title': 'Drivers/Aggravating Factors', 'tooltip': '...'},
-                    {'id': 'subdimension-3', 'title': 'System Disruption', 'tooltip': '...'},
-                    {'id': 'subdimension-4', 'title': 'Damages & Losses', 'tooltip': '...'},
-                    {'id': 'subdimension-6', 'title': 'Lessons Learnt', 'tooltip': '...'}
+                'subRows': [
+                    {'key': 'subdimension-0', 'label': 'Drivers/Aggravating Factors', 'tooltip': '...'},
+                    {'key': 'subdimension-3', 'label': 'System Disruption', 'tooltip': '...'},
+                    {'key': 'subdimension-4', 'label': 'Damages & Losses', 'tooltip': '...'},
+                    {'key': 'subdimension-6', 'label': 'Lessons Learnt', 'tooltip': '...'}
                 ]
             },
             {
-                'id': 'dimension-1',
+                'key': 'dimension-1',
                 'color': '#fba855',
-                'title': 'Humanitarian Conditions',
+                'label': 'Humanitarian Conditions',
                 'tooltip': '...',
-                'subdimensions': [
-                    {'id': 'subdimension-1', 'title': 'Living Standards', 'tooltip': '...'},
-                    {'id': 'us9kizxxwha7cpgb', 'title': 'Coping Mechanisms', 'tooltip': ''},
-                    {'id': 'subdimension-7', 'title': 'Physical & mental wellbeing', 'tooltip': '..'},
-                    {'id': 'subdimension-8', 'title': 'Risks & Vulnerabilities', 'tooltip': '...'},
-                    {'id': 'ejve4vklgge9ysxm', 'title': 'People with Specific Needs', 'tooltip': ''},
-                    {'id': 'subdimension-10', 'title': 'Unmet Needs', 'tooltip': '...'},
-                    {'id': 'subdimension-16', 'title': 'Lessons Learnt', 'tooltip': '...'},
+                'subRows': [
+                    {'key': 'subdimension-1', 'label': 'Living Standards', 'tooltip': '...'},
+                    {'key': 'us9kizxxwha7cpgb', 'label': 'Coping Mechanisms', 'tooltip': ''},
+                    {'key': 'subdimension-7', 'label': 'Physical & mental wellbeing', 'tooltip': '..'},
+                    {'key': 'subdimension-8', 'label': 'Risks & Vulnerabilities', 'tooltip': '...'},
+                    {'key': 'ejve4vklgge9ysxm', 'label': 'People with Specific Needs', 'tooltip': ''},
+                    {'key': 'subdimension-10', 'label': 'Unmet Needs', 'tooltip': '...'},
+                    {'key': 'subdimension-16', 'label': 'Lessons Learnt', 'tooltip': '...'},
                 ]
             },
             {
-                'id': 'dimension-2',
+                'key': 'dimension-2',
                 'color': '#92c5f6',
-                'title': 'Capacities & Response',
+                'label': 'Capacities & Response',
                 'tooltip': '...',
-                'subdimensions': [
-                    {'id': '7iiastsikxackbrt', 'title': 'System Functionality', 'tooltip': '...'},
-                    {'id': 'subdimension-11', 'title': 'Government', 'tooltip': '...'},
-                    {'id': 'drk4j92jwvmck7dc', 'title': 'LNGO', 'tooltip': '...'},
-                    {'id': 'subdimension-12', 'title': 'International', 'tooltip': '...'},
-                    {'id': 'subdimension-14', 'title': 'Response Gaps', 'tooltip': '...'},
-                    {'id': 'subdimension-15', 'title': 'Lessons Learnt', 'tooltip': '...'},
+                'subRows': [
+                    {'key': '7iiastsikxackbrt', 'label': 'System Functionality', 'tooltip': '...'},
+                    {'key': 'subdimension-11', 'label': 'Government', 'tooltip': '...'},
+                    {'key': 'drk4j92jwvmck7dc', 'label': 'LNGO', 'tooltip': '...'},
+                    {'key': 'subdimension-12', 'label': 'International', 'tooltip': '...'},
+                    {'key': 'subdimension-14', 'label': 'Response Gaps', 'tooltip': '...'},
+                    {'key': 'subdimension-15', 'label': 'Lessons Learnt', 'tooltip': '...'},
                 ]
             }
         ]
-    },
-
-    'conditionalWidget': {
-        'widgets': [{
-            'widget': {
-                'key': 'scalewidget-1',
-                'title': 'Severity',
-                'widget_id': 'scaleWidget',
-                'properties': {
-                    'data': {
-                        'scale_units': [
-                            {'key': 'scale-1', 'color': '#fef0d9', 'label': 'No problem/Minor Problem'},
-                            {'key': 'scale-2', 'color': '#fdcc8a', 'label': 'Of Concern'},
-                            {'key': 'scale-3', 'color': '#fc8d59', 'label': 'Major'},
-                            {'key': 'scale-4', 'color': '#e34a33', 'label': 'Severe'},
-                            {'key': 'scale-5', 'color': '#b30000', 'label': 'Critical'},
-                        ],
-                    }
-                }
-            },
-            'conditions': {
-                'list': [{}],
-                'operator': 'AND',
-            }
-        }]
     },
 
     'geoWidget': {},
@@ -210,19 +185,6 @@ ATTRIBUTE_DATA = {
                     }
                 }
             },
-        },
-    },
-
-    'conditionalWidget': {
-        'data': {
-            'value': {
-                'selected_widget_key': 'scalewidget-1',
-                'scalewidget-1': {
-                    'data': {
-                        'value': 'scale-3',
-                    }
-                }
-            }
         },
     },
 }

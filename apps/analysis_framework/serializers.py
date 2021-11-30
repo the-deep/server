@@ -17,7 +17,10 @@ from .models import (
     AnalysisFramework,
     AnalysisFrameworkRole,
     AnalysisFrameworkMembership,
-    Widget, Section, Filter, Exportable,
+    Widget,
+    Section,
+    Filter,
+    Exportable,
 )
 
 
@@ -298,18 +301,53 @@ class AfWidgetLimit():
     MAX_WIDGETS_ALLOWED_IN_SECONDARY_TAGGING = 50
 
 
+class WidgetConditionalGqlSerializer(serializers.Serializer):
+    parent_widget = serializers.PrimaryKeyRelatedField(queryset=Widget.objects.all())
+    conditions = serializers.JSONField()
+
+
 class WidgetGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
     id = IntegerIDField(required=False)
     key = serializers.CharField(required=True)
-    # TODO: This needs to be send from frontend `version = serializers.IntegerField(required=True)`
-    version = serializers.IntegerField(default=1)
+    version = serializers.IntegerField(required=True)
+    conditional = WidgetConditionalGqlSerializer(required=False, allow_null=True)
 
     class Meta:
         model = Widget
         fields = (
-            'id', 'key', 'widget_id', 'title', 'properties', 'order', 'width', 'version',
+            'id', 'key', 'widget_id', 'title', 'order', 'width', 'version',
+            'properties', 'conditional',
             'client_id',
         )
+
+    @cached_property
+    def framework(self):
+        framework = self.context['request'].active_af
+        # This is a rare case, just to make sure this is validated
+        if self.instance and self.instance.analysis_framework != framework:
+            raise serializers.ValidationError('Invalid access')
+        return framework
+
+    def validate_conditional(self, conditional):
+        if conditional is None:
+            return dict(
+                conditional_parent_widget=None,  # Clear parent widget
+            )
+        if self.framework is None:
+            raise serializers.ValidationError("Conditional isn't supported in creation of AF.")
+        parent_widget = conditional['parent_widget']
+        conditions = conditional['conditions']
+        if parent_widget.analysis_framework_id != self.framework.id:
+            raise serializers.ValidationError('Parent widget should be of same AF')
+        return dict(
+            conditional_parent_widget=parent_widget,
+            conditional_conditions=conditions,
+        )
+
+    def validate(self, data):
+        if 'conditional' in data:
+            data.update(data.pop('conditional'))
+        return data
 
 
 # TODO: Using WritableNestedModelSerializer here, let's use this everywhere instead of using custom serializer.
@@ -423,13 +461,16 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
                 partial=True,
             )
             serializer.is_valid(raise_exception=True)  # This might be already validated
+            # Overwriting AF on save
             serializer.save(analysis_framework=af)
 
     def create(self, validated_data):
-        secondary_tagging = validated_data.pop('secondary_tagging', None)
+        validated_data.pop('secondary_tagging', None)
+        secondary_tagging = self.initial_data.get('secondary_tagging', None)
         # Create AF
         instance = super().create(validated_data)
         secondary_tagging and self._save_secondary_taggings(instance, secondary_tagging)
+        # TODO: Check if there are any recursive conditionals
         # Create a owner role
         owner_role = instance.get_or_create_owner_role()
         instance.add_member(self.context['request'].user, owner_role)
@@ -438,7 +479,8 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
         return instance
 
     def update(self, instance, validated_data):
-        secondary_tagging = validated_data.pop('secondary_tagging', None)
+        validated_data.pop('secondary_tagging', None)
+        secondary_tagging = self.initial_data.get('secondary_tagging', None)
         # Update AF
         instance = super().update(instance, validated_data)
         # Update secondary_tagging

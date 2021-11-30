@@ -49,7 +49,7 @@ class SectionInline(StackedInline):
 
 
 class AFRelatedAdmin(JFModelAdmin):
-    search_fields = ('title',)
+    search_fields = ('analysis_framework__title', 'title',)
     list_display = (
         '__str__', linkify('analysis_framework'),
     )
@@ -93,6 +93,16 @@ class AnalysisFrameworkAdmin(VersionAdmin):
 
     def has_add_permission(self, request, obj=None):
         return False
+
+    def get_formsets_with_inlines(self, request, obj=None):
+        widget_queryset = Widget.objects.filter(analysis_framework=obj)
+        for inline in self.get_inline_instances(request, obj):
+            formset = inline.get_formset(request, obj)
+            for field in ['widget', 'parent_widget', 'conditional_parent_widget']:
+                if field not in formset.form.base_fields:
+                    continue
+                formset.form.base_fields[field].queryset = widget_queryset
+            yield formset, inline
 
 
 @admin.register(AnalysisFrameworkRole)

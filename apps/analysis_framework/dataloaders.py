@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from promise import Promise
 from django.utils.functional import cached_property
+from django.db import models
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 from project.models import Project
@@ -23,6 +24,8 @@ class WidgetLoader(DataLoaderWithContext):
                 f'{parent}__in': keys,
                 **filters,
             }
+        ).annotate(
+            conditional_parent_widget_type=models.F('conditional_parent_widget__widget_id'),
         ).order_by('order', 'id')
         _map = defaultdict(list)
         for widget in qs:
