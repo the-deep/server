@@ -100,7 +100,7 @@ class ProjectGqlFilterSet(UserResourceGqlFilterSet):
     def filter_exclude_ids(self, qs, _, value):
         if not value:
             return qs
-        return qs.exclude(ids__in=value)
+        return qs.exclude(id__in=value)
 
     def filter_title(self, qs, _, value):
         if not value:

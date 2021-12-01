@@ -7,6 +7,7 @@ from django.db import models
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
 from geo.schema import get_geo_area_queryset_for_project_geo_area_type
+from analysis_framework.models import Widget
 from quality_assurance.models import EntryReviewComment
 
 from .models import (
@@ -18,9 +19,10 @@ from .models import (
 
 class EntryAttributesLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        attributes_qs = Attribute.objects.filter(entry__in=keys).annotate(
-            widget_type=models.F('widget__widget_id'),
-        )
+        attributes_qs = Attribute.objects\
+            .filter(entry__in=keys)\
+            .exclude(widget__widget_id__in=Widget.DEPRECATED_TYPES)\
+            .annotate(widget_type=models.F('widget__widget_id'))
         attributes = defaultdict(list)
         for attribute in attributes_qs:
             attributes[attribute.entry_id].append(attribute)
