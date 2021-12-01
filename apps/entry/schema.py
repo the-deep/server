@@ -64,6 +64,7 @@ class AttributeType(ClientIdMixin, DjangoObjectType):
         )
 
     widget = graphene.ID(required=True)
+    widget_version = graphene.Int(required=True)
     widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
     widget_type_display = EnumDescription(source='get_widget_type', required=True)
     # NOTE: This requires region_title and admin_level_title to be annotated
