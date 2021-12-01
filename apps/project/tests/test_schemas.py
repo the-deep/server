@@ -321,15 +321,28 @@ class TestProjectSchema(GraphQLTestCase):
                 pageSize
                 totalCount
                 results {
-                  id
-                  status
-                  title
-                  description
-                  stats {
-                    numberOfLeads
-                    numberOfUsers
+                  analysisFramework {
+                      id
+                      title
+                    }
+                    createdAt
+                    description
+                    id
+                    organizations {
+                      id
+                      organization {
+                          id
+                      }
+                    }
+                    regions {
+                        id
+                    }
+                    stats {
+                        numberOfUsers
+                        numberOfLeads
+                    }
+                    title
                   }
-                }
               }
             }
         '''
@@ -521,28 +534,44 @@ class TestProjectSchema(GraphQLTestCase):
 
     def test_public_projects_by_region(self):
         query = '''
-              query MyQuery {
-                publicProjectsByRegion (ordering: "id") {
-                  totalCount
-                  results {
-                      id
-                      projectsId
-                      centroid
-                  }
-                }
+            query MyQuery ($projectFilter: PublicRegionProjectFilterData) {
+              publicProjectsByRegion (projectFilter: $projectFilter) {
+               totalCount
+               results {
+                 id
+                 projectsId
+                 centroid
+               }
               }
-          '''
-
-        region1 = RegionFactory.create()
+            }
+        '''
+        region1 = RegionFactory.create(public=False)
         region2 = RegionFactory.create()
         region3 = RegionFactory.create()
-        region4 = RegionFactory.create()
-        ProjectFactory.create(is_private=False, regions=[region1, region2])
-        ProjectFactory.create(is_private=False, regions=[region3])
-        ProjectFactory.create(is_private=True, regions=[region4])
+        region4 = RegionFactory.create(public=False)
+        project1 = ProjectFactory.create(is_private=False, regions=[region1, region2], title='Test Nepal')
+        ProjectFactory.create(is_private=False, regions=[region3], title='Test Canada')
+        project2 = ProjectFactory.create(is_private=True, regions=[region4], title='Test Brazil')
 
         content = self.query_check(query)
-        self.assertEqual(content['data']['publicProjectsByRegion']['totalCount'], 3, content)
+        self.assertEqual(content['data']['publicProjectsByRegion']['totalCount'], 2, content)
+
+        # test for project filter
+        project_filter = {'ids': [project1.pk]}
+        content = self.query_check(query, variables={'projectFilter': project_filter})['data']['publicProjectsByRegion']
+        self.assertEqual(content['totalCount'], 1, content)
+
+        project_filter = {'ids': [project1.pk, project2.pk]}
+        content = self.query_check(query, variables={'projectFilter': project_filter})['data']['publicProjectsByRegion']
+        self.assertEqual(content['totalCount'], 1, content)
+
+        project_filter = {'search': 'Canada'}
+        content = self.query_check(query, variables={'projectFilter': project_filter})['data']['publicProjectsByRegion']
+        self.assertEqual(content['totalCount'], 1, content)
+
+        project_filter = {'search': 'Brazil'}
+        content = self.query_check(query, variables={'projectFilter': project_filter})['data']['publicProjectsByRegion']
+        self.assertEqual(content['totalCount'], 0, content)
 
 
 class TestProjectViz(GraphQLTestCase):

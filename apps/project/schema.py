@@ -33,7 +33,6 @@ from analysis.schema import Query as AnalysisQuery
 from lead.models import Lead
 from entry.models import Entry
 from geo.models import Region
-from geo.filter_set import RegionFilterSet
 
 from .models import (
     Project,
@@ -56,9 +55,11 @@ from .filter_set import (
     ProjectMembershipGqlFilterSet,
     ProjectUserGroupMembershipGqlFilterSet,
     ProjectByRegionGqlFilterSet,
+    PublicProjectByRegionGqlFileterSet,
 )
 from .activity import project_activity_log
 from .tasks import generate_viz_stats
+from .public_schema import PublicProjectListType
 
 
 def get_top_entity_contributor(project, Entity):
@@ -244,7 +245,7 @@ class ProjectType(UserResourceMixin, DjangoObjectType):
         # Need to have a base permission
         if PP.check_permission(info, PP.Permission.BASE_ACCESS):
             return info.context.dl.project.geo_region.load(root.pk)
-        return info.context.dl.project.geo_region.load(root.pk)
+        return info.context.dl.project.public_geo_region.load(root.pk)
 
 
 class AnalysisFrameworkVisibleProjectType(DjangoObjectType):
@@ -426,11 +427,11 @@ class ProjectByRegionListType(CustomDjangoListObjectType):
         filterset_class = ProjectByRegionGqlFilterSet
 
 
-class PublicProjectByRegionListType(CustomDjangoListObjectType):
+class PublicProjectByRegionListType(ProjectByRegionListType):
     class Meta:
         model = Region
         base_type = RegionWithProject
-        filterset_class = RegionFilterSet
+        filterset_class = PublicProjectByRegionGqlFileterSet
 
 
 class Query:
@@ -442,7 +443,7 @@ class Query:
         )
     )
     public_projects = DjangoPaginatedListObjectField(
-        ProjectListType,
+        PublicProjectListType,
         pagination=PageGraphqlPagination(
             page_size_query_param='pageSize'
         )
@@ -486,7 +487,7 @@ class Query:
 
     @staticmethod
     def resolve_public_projects_by_region(root, info, **kwargs):
-        return Region.objects.filter(project__is_private=False).distinct()
+        return Region.objects.filter(public=True).distinct()
 
     @staticmethod
     def resolve_project_explore_stats(root, info, **kwargs):

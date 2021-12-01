@@ -200,6 +200,18 @@ class GeoRegionLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key) for key in keys])
 
 
+class PublicGeoRegionLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = Region.objects.filter(project__in=keys, public=True).annotate(
+            projects_id=ArrayAgg('project', filter=models.Q(project__in=keys)),
+        ).defer('geo_options')
+        _map = defaultdict(list)
+        for region in qs.all():
+            for project_id in region.projects_id:
+                _map[project_id].append(region)
+        return Promise.resolve([_map.get(key) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
 
     @cached_property
@@ -224,3 +236,7 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def geo_region(self):
         return GeoRegionLoader(context=self.context)
+
+    @cached_property
+    def public_geo_region(self):
+        return PublicGeoRegionLoader(context=self.context)
