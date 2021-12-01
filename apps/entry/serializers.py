@@ -569,8 +569,7 @@ class EntryCommentTextSerializer(serializers.ModelSerializer):
 # --------------------- Graphql Serializers ----------------------------------------
 class AttributeGqSerializer(TempClientIdMixin, serializers.ModelSerializer):
     id = IntegerIDField(required=False)
-    # TODO: This needs to be send from frontend `widget_version = serializers.IntegerField(required=True)`
-    widget_version = serializers.IntegerField(default=1)
+    widget_version = serializers.IntegerField(required=True)
 
     class Meta:
         model = Attribute
