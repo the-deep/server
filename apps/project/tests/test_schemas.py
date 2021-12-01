@@ -338,7 +338,11 @@ class TestProjectSchema(GraphQLTestCase):
 
         content = self.query_check(query)
         self.assertEqual(content['data']['publicProjects']['totalCount'], 3, content)
-        self.assertListIds(content['data']['publicProjects']['results'], [public_project1, public_project2, public_project3], content)
+        self.assertListIds(
+            content['data']['publicProjects']['results'],
+            [public_project1, public_project2, public_project3],
+            content
+        )
         # make sure private projects are not visible here
         self.assertNotListIds(content['data']['publicProjects']['results'], [private_project], content)
 
@@ -533,9 +537,9 @@ class TestProjectSchema(GraphQLTestCase):
         region2 = RegionFactory.create()
         region3 = RegionFactory.create()
         region4 = RegionFactory.create()
-        public_project1 = ProjectFactory.create(is_private=False, regions=[region1, region2])
-        public_project2 = ProjectFactory.create(is_private=False, regions=[region3])
-        private_project = ProjectFactory.create(is_private=True, regions=[region4])
+        ProjectFactory.create(is_private=False, regions=[region1, region2])
+        ProjectFactory.create(is_private=False, regions=[region3])
+        ProjectFactory.create(is_private=True, regions=[region4])
 
         content = self.query_check(query)
         self.assertEqual(content['data']['publicProjectsByRegion']['totalCount'], 3, content)
