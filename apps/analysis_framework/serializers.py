@@ -328,6 +328,11 @@ class WidgetGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
             raise serializers.ValidationError('Invalid access')
         return framework
 
+    def validate_widget_id(self, widget_type):
+        if widget_type in Widget.DEPRECATED_TYPES:
+            raise serializers.ValidationError(f'Widget Type {widget_type} is not supported anymore!!')
+        return widget_type
+
     def validate_conditional(self, conditional):
         if conditional is None:
             return dict(

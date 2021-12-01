@@ -277,6 +277,12 @@ class Widget(models.Model):
         TEXT = widgets_store.text_widget.WIDGET_ID
         EXCERPT = 'excerptWidget', 'Excerpt #DEPRICATED'  # TODO:DEPRICATED
 
+    DEPRECATED_TYPES = [
+        WidgetType.EXCERPT,
+        WidgetType.CONDITIONAL,
+        WidgetType.NUMBER_MATRIX,
+    ]
+
     class WidthType(models.TextChoices):
         FULL = 'full', 'Full'
         HALF = 'half', 'Half'

@@ -70,4 +70,4 @@ class Query:
 
     @staticmethod
     def resolve_exports(root, info, **kwargs) -> QuerySet:
-        return get_export_qs(info)
+        return get_export_qs(info).filter(is_preview=False)
