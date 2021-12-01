@@ -22,6 +22,7 @@ def verifiy_data(data, src_data, mapping):
             raise Exception('Data is required here')
 
 
+# -- Widget convertors
 def matrix1d_property_convertor(properties):
     """
     OLD PROPERTIES:
@@ -396,6 +397,7 @@ def scale_property_convertor(properties):
     }
 
 
+# -- Attributes convertor
 def date_range_attribute_data_convertor(data):
     value = data.get('value') or {}
     return {
@@ -451,6 +453,94 @@ ATTRIBUTE_MIGRATION_MAP = {
     Widget.WidgetType.TIME_RANGE: time_range_attribute_data_convertor,
     Widget.WidgetType.GEO: geo_attribute_data_convertor,
 }
+
+CONDITIONAL_OPERATOR_MAP = {
+    ('matrix1dWidget', 'containsPillar'): 'matrix1d-rows-selected',
+    ('matrix1dWidget', 'containsSubpillar'): 'matrix1d-cells-selected',
+    ('matrix2dWidget', 'containsDimension'): 'matrix2d-rows-selected',
+    ('matrix2dWidget', 'containsSubdimension'): 'matrix2d-sub-rows-selected',
+    ('multiselectWidget', 'isSelected'): 'multi-selection-selected',
+    ('scaleWidget', 'isEqualTo'): 'scale-selected',
+    ('selectWidget', 'isSelected'): 'single-selection-selected',
+}
+
+
+def get_widgets_from_conditional(conditional_widget):
+    af_widget_qs = Widget.objects.filter(analysis_framework_id=conditional_widget.analysis_framework_id)
+    widgets = conditional_widget.properties.get('data', {}).get('widgets', [])
+    for conditional_widget_data in widgets:
+        widget_data = conditional_widget_data['widget']
+
+        legacy_conditions = conditional_widget_data['conditions']
+        if len(legacy_conditions['list']) == 0:
+            continue
+        if len(legacy_conditions['list']) > 1:
+            raise Exception('Found multiple list. Not supported')
+        legacy_condition = legacy_conditions['list'][0]
+
+        parent_widget_key = legacy_condition['widget_key']
+        parent_widget = af_widget_qs.get(key=parent_widget_key)
+        operator = CONDITIONAL_OPERATOR_MAP[(legacy_condition['widget_id'], legacy_condition['condition_type'])]
+        condition_attributes = legacy_condition.get('attributes') or {}
+        invert = legacy_condition.get('invert_logic')
+
+        if operator == 'matrix1d-rows-selected':
+            condition_collection = condition_attributes.get('pillars') or {}
+        elif operator == 'matrix1d-cells-selected':
+            condition_collection = condition_attributes.get('subpillars') or {}
+        elif operator == 'matrix2d-rows-selected':
+            condition_collection = condition_attributes.get('dimensions') or {}
+        elif operator == 'matrix2d-sub-rows-selected':
+            condition_collection = condition_attributes.get('subdimensions') or {}
+        elif operator == 'multi-selection-selected':
+            condition_collection = condition_attributes.get('selections') or {}
+        elif operator == 'scale-selected':
+            condition_collection = condition_attributes.get('scales') or {}
+        elif operator == 'single-selection-selected':
+            condition_collection = condition_attributes.get('selections') or {}
+        else:
+            raise Exception('Found unhandled attribute data')
+        condition_value = condition_collection.get('values') or []
+        operatorModifier = 'every' if condition_collection.get('test_every') else 'some'
+
+        conditions = [
+            dict(
+                key=legacy_condition['key'],
+                conjunctionOperator=legacy_conditions['operator'],
+                order=1,
+                invert=invert,
+                operatorModifier=operatorModifier,
+                operator=CONDITIONAL_OPERATOR_MAP[(legacy_condition['widget_id'], legacy_condition['condition_type'])],
+                value=condition_value,
+            )
+        ]
+
+        new_widget = Widget(
+            analysis_framework_id=conditional_widget.analysis_framework_id,
+            key=widget_data['key'],
+            widget_id=widget_data['widget_id'],
+            title=widget_data['title'],
+            properties=widget_data['properties'],
+            conditional_parent_widget=parent_widget,
+            conditional_conditions=conditions,
+        )
+        yield new_widget
+
+
+def get_attribute_from_conditional_data(widget_qs, attribute):
+    conditional_data = copy.deepcopy(attribute.data or {})
+    conditional_value = (conditional_data or {}).get('value')
+    if conditional_value in [None, {}] or 'selected_widget_key' not in conditional_value:
+        return
+    selected_widget_key = conditional_value['selected_widget_key']
+    selected_widget = widget_qs.get(key=selected_widget_key)
+    value = conditional_value.get(selected_widget_key)
+    data = (value or {}).get('data') or {}
+    return Attribute(
+        entry=attribute.entry,
+        widget=selected_widget,
+        data=data,
+    )
 
 
 class Command(BaseCommand):
@@ -512,16 +602,104 @@ class Command(BaseCommand):
             print(f'\n- {widget_type}')
             required_attribute_qs = attribute_qs.filter(widget__widget_id=widget_type)
             total = required_attribute_qs.count()
-            for index, attribute in enumerate(required_attribute_qs.all()):
+            for index, attribute in enumerate(required_attribute_qs.iterator(chunk_size=1000)):
                 # Update properties.
                 old_data = copy.deepcopy(attribute.data or {})
                 attribute.data = attribute_data_convertor(old_data)
-                # print_attribute_data(attribute)
                 attribute.data['old_data'] = old_data  # Clean-up this later.
                 attribute.widget_version = self.CURRENT_VERSION
                 # Save
                 attribute.save(update_fields=('data', 'widget_version',))
                 print(f'-- Saved ({index})/({total})', end='\r')
+        print('')
+
+        # Just update for this widgets (Not changes are required for this widgets)
+        print('Update normal widgets:')
+        print(
+            widget_qs.filter(
+                widget_id__in=[
+                    Widget.WidgetType.DATE,
+                    Widget.WidgetType.DATE_RANGE,
+                    Widget.WidgetType.TIME,
+                    Widget.WidgetType.TIME_RANGE,
+                    Widget.WidgetType.NUMBER,
+                    Widget.WidgetType.GEO,
+                    Widget.WidgetType.TEXT,
+                    # Deprecated widgets
+                    Widget.WidgetType.EXCERPT,
+                    Widget.WidgetType.NUMBER_MATRIX,
+                ]
+            ).update(version=1)
+        )
+
+        # Just update for this widget's attributes (Not changes are required for this widgets)
+        print('Update normal attributes:')
+        print(
+            attribute_qs.filter(
+                widget__widget_id__in=[
+                    Widget.WidgetType.DATE,
+                    Widget.WidgetType.TIME,
+                    Widget.WidgetType.NUMBER,
+                    Widget.WidgetType.TEXT,
+                    Widget.WidgetType.MATRIX1D,
+                    Widget.WidgetType.MATRIX2D,
+                    Widget.WidgetType.MULTISELECT,
+                    Widget.WidgetType.SELECT,
+                    Widget.WidgetType.ORGANIGRAM,
+                    Widget.WidgetType.SCALE,
+                    # Deprecated widgets
+                    Widget.WidgetType.EXCERPT,
+                    Widget.WidgetType.NUMBER_MATRIX,
+                ]
+            ).update(widget_version=1)
+        )
+
+        # Conditional Widgets
+        conditional_widget_qs = widget_qs.filter(widget_id=Widget.WidgetType.CONDITIONAL)
+        total = conditional_widget_qs.count()
+        print(f'Conditional Widgets (Total: {total})')
+        for index, conditional_widget in enumerate(conditional_widget_qs.all(), 1):
+            for widget in get_widgets_from_conditional(conditional_widget):
+                # Update properties.
+                if conditional_widget.properties.get('added_from') == 'overview':  # Requires section
+                    widget.section = self.get_section_for_af_id(widget.analysis_framework_id)
+                old_properties = copy.deepcopy(widget.properties.get('data') or {})
+                widget_property_convertor = WIDGET_MIGRATION_MAP.get(widget.widget_id)
+                if widget_property_convertor is not None:
+                    widget.properties = widget_property_convertor(old_properties)
+                widget.properties['from_conditional_widget'] = True
+                widget.version = self.CURRENT_VERSION
+                # Save
+                widget.save()
+            conditional_widget.properties = {'old_data': conditional_widget.properties}
+            conditional_widget.version = self.CURRENT_VERSION
+            conditional_widget.save(update_fields=('version',))
+            print(f'-- Saved ({index})/({total})', end='\r')
+        print('')
+
+        # Migrate Conditional Entry Attribute Data
+        conditional_attribute_qs = attribute_qs.filter(widget__widget_id=Widget.WidgetType.CONDITIONAL)
+        total = conditional_attribute_qs.count()
+        print(f'Conditional Entry Attributes (Total: {total})')
+        for index, attribute in enumerate(conditional_attribute_qs.iterator(chunk_size=1000)):
+            # Update properties.
+            try:
+                new_attribute = get_attribute_from_conditional_data(
+                    Widget.objects.filter(analysis_framework_id=attribute.widget.analysis_framework_id),
+                    attribute,
+                )
+            except Widget.DoesNotExist:
+                continue
+            if new_attribute is not None:
+                attribute_data_convertor = ATTRIBUTE_MIGRATION_MAP.get(new_attribute.widget.widget_id)
+                if attribute_data_convertor is not None:
+                    new_attribute.data = attribute_data_convertor(copy.deepcopy(new_attribute.data))
+                new_attribute.widget_version = self.CURRENT_VERSION
+                new_attribute.save()
+            attribute.data = {'old_data': attribute.data}
+            attribute.widget_version = self.CURRENT_VERSION
+            attribute.save(update_fields=('data', 'widget_version',))
+            print(f'-- Saved ({index})/({total})', end='\r')
         print('')
 
 

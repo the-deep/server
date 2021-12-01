@@ -14,17 +14,18 @@ def migrate_entry_controlled_to_review_comment_(Entry, EntryReviewComment):
     ).prefetch_related('verified_by')
 
     bulk_mgr = BulkCreateManager(chunk_size=5000)
-    for entry in entry_qs.iterator(chunk_size=10000):
-        bulk_mgr.add(
-            EntryReviewComment(
-                entry_id=entry.id,
-                created_by_id=entry.controlled_changed_by_id,
-                comment_type=(
-                    # 1 -> EntryReviewComment.CommentType.VERIFY
-                    # 2 -> EntryReviewComment.CommentType.UNVERIFY
-                    1 if entry.controlled else 2
-                ),
-            )
+    total = entry_qs.count()
+    print(f'Processing {total} entries')
+    for index, entry in enumerate(entry_qs.iterator(chunk_size=10000), 1):
+        print(f'Processing {index} of {total}', end='\r')
+        EntryReviewComment.objects.create(
+            entry_id=entry.id,
+            created_by_id=entry.controlled_changed_by_id,
+            comment_type=(
+                # 1 -> EntryReviewComment.CommentType.VERIFY
+                # 2 -> EntryReviewComment.CommentType.UNVERIFY
+                1 if entry.controlled else 2
+            ),
         )
         verified_by_users_id = [u.id for u in entry.verified_by.all()]
         if entry.controlled and entry.controlled_changed_by_id not in verified_by_users_id:
