@@ -1,3 +1,4 @@
+import datetime
 
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework import (
@@ -135,7 +136,8 @@ class ProjectJoinRequest(View):
                 Data from this project will help me alot.',
         })
         return TemplateResponse(
-            request, 'project/project_join_request_email.html', context)
+            request, 'project/project_join_request_email.html', context
+        )
 
 
 class PasswordReset(View):
@@ -148,7 +150,27 @@ class PasswordReset(View):
         context = get_basic_email_context()
         context.update({'welcome': welcome})
         return TemplateResponse(
-            request, 'registration/password_reset_email.html', context)
+            request, 'registration/password_reset_email.html', context
+        )
+
+
+class PasswordChanged(View):
+    """
+    Template view for password changed email
+    NOTE: Use Only For Debug
+    """
+    def get(self, request):
+        context = get_basic_email_context()
+        context.update(
+            {
+                'time': datetime.datetime.now(),
+                'location': 'Nepal',
+                'device': 'Chrome OS',
+            }
+        )
+        return TemplateResponse(
+            request, 'password_changed/email.html', context
+        )
 
 
 class AccountActivate(View):
@@ -159,7 +181,8 @@ class AccountActivate(View):
     def get(self, request):
         context = get_basic_email_context()
         return TemplateResponse(
-            request, 'registration/user_activation_email.html', context)
+            request, 'registration/user_activation_email.html', context
+        )
 
 
 class EntryCommentEmail(View):
@@ -184,7 +207,8 @@ class EntryCommentEmail(View):
             'comment': comment,
         })
         return TemplateResponse(
-            request, 'entry/comment_notification_email.html', context)
+            request, 'entry/comment_notification_email.html', context
+        )
 
 
 class EntryReviewCommentEmail(View):
@@ -208,7 +232,8 @@ class EntryReviewCommentEmail(View):
             'comment': comment,
         })
         return TemplateResponse(
-            request, 'entry/review_comment_notification_email.html', context)
+            request, 'entry/review_comment_notification_email.html', context
+        )
 
 
 class CustomGraphQLView(FileUploadGraphQLView):

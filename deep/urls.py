@@ -157,6 +157,7 @@ from deep.views import (
     PasswordReset,
     ProjectJoinRequest,
     ProjectPublicVizView,
+    PasswordChanged,
     get_frontend_url,
 )
 from organization.views import (
@@ -570,6 +571,7 @@ if settings.DEBUG:
         ]
     urlpatterns += [
         re_path(r'^pr-email/$', PasswordReset.as_view()),
+        re_path(r'^pc-email/$', PasswordChanged.as_view()),
         re_path(r'^aa-email/$', AccountActivate.as_view()),
         re_path(r'^pj-email/$', ProjectJoinRequest.as_view()),
         re_path(r'^ec-email/$', EntryCommentEmail.as_view()),
