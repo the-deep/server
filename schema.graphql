@@ -21,11 +21,11 @@ type AdminLevelType {
 
 type AnalysisFrameworkDetailType {
   id: ID!
-  title: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
+  title: String!
   description: String
   isPrivate: Boolean!
   organization: OrganizationType
@@ -111,11 +111,11 @@ type AnalysisFrameworkRoleType {
 
 type AnalysisFrameworkType {
   id: ID!
-  title: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
+  title: String!
   description: String
   isPrivate: Boolean!
   organization: OrganizationType
@@ -1478,11 +1478,6 @@ type ProjectVizDataType {
   publicUrl: String
 }
 
-type PublicProjectAnalysisFrameworkForType {
-  id: ID!
-  title: String!
-}
-
 type PublicProjectByRegionListType {
   results: [RegionWithProject!]
   totalCount: Int
@@ -1497,49 +1492,17 @@ type PublicProjectListType {
   pageSize: Int
 }
 
-type PublicProjectOrganizationType {
-  id: ID!
-  organization: OrganizationType!
-}
-
-type PublicProjectRegionType {
-  id: ID!
-  title: String!
-}
-
-type PublicProjectStatType {
-  numberOfLeads: Int
-  numberOfUsers: Int
-}
-
 type PublicProjectType {
   id: ID!
   createdAt: DateTime!
   title: String!
   description: String!
-  stats: PublicProjectStatType
-  regions: [PublicProjectRegionType!]
-  organizations: [PublicProjectOrganizationType!]
-  analysisFramework: PublicProjectAnalysisFrameworkForType
-}
-
-input PublicRegionProjectFilterData {
-  createdAt: DateTime
-  createdAtGte: DateTime
-  createdAtLte: DateTime
-  modifiedAt: DateTime
-  modifiedAtGte: DateTime
-  modifiedAtLte: DateTime
-  createdBy: [ID!]
-  modifiedBy: [ID!]
-  ids: [ID!]
-  excludeIds: [ID!]
-  status: ProjectStatusEnum
-  organizations: [ID!]
-  analysisFrameworks: [ID!]
-  regions: [ID!]
-  search: String
-  isCurrentUserMember: Boolean
+  analysisFrameworkTitle: String
+  regionsTitle: String
+  organizationsTitle: String
+  numberOfUsers: Int!
+  numberOfLeads: Int!
+  numberOfEntries: Int!
 }
 
 type Query {
@@ -1560,11 +1523,11 @@ type Query {
   analysisFrameworks(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkListType
   project(id: ID!): ProjectDetailType
   projects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): ProjectListType
-  publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): PublicProjectListType
   recentProjects: [ProjectDetailType!]
   projectExploreStats: ProjectExploreStatType
   projectsByRegion(projectFilter: RegionProjectFilterData, ordering: String): ProjectByRegionListType
-  publicProjectsByRegion(projectFilter: PublicRegionProjectFilterData, page: Int = 1, ordering: String, pageSize: Int): PublicProjectByRegionListType
+  publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): PublicProjectListType
+  publicProjectsByRegion(projectFilter: RegionProjectFilterData, page: Int = 1, ordering: String, pageSize: Int): PublicProjectByRegionListType
   _debug: DjangoDebug
 }
 

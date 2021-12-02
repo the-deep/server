@@ -427,7 +427,7 @@ class ProjectByRegionListType(CustomDjangoListObjectType):
         filterset_class = ProjectByRegionGqlFilterSet
 
 
-class PublicProjectByRegionListType(ProjectByRegionListType):
+class PublicProjectByRegionListType(CustomDjangoListObjectType):
     class Meta:
         model = Region
         base_type = RegionWithProject
@@ -442,18 +442,19 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
+    recent_projects = graphene.List(graphene.NonNull(ProjectDetailType))
+    project_explore_stats = graphene.Field(ProjectExploreStatType)
+
+    # only the region for which project are public
+    projects_by_region = DjangoPaginatedListObjectField(ProjectByRegionListType)
+
+    # PUBLIC NODES
     public_projects = DjangoPaginatedListObjectField(
         PublicProjectListType,
         pagination=PageGraphqlPagination(
             page_size_query_param='pageSize'
         )
     )
-    recent_projects = graphene.List(graphene.NonNull(ProjectDetailType))
-    project_explore_stats = graphene.Field(ProjectExploreStatType)
-
-    # projects_by_region = graphene.List(graphene.NonNull(ProjectByRegion))
-    projects_by_region = DjangoPaginatedListObjectField(ProjectByRegionListType)
-    # only the region for which project are public
     public_projects_by_region = DjangoPaginatedListObjectField(
         PublicProjectByRegionListType,
         pagination=PageGraphqlPagination(
@@ -469,10 +470,6 @@ class Query:
         return Project.get_for_gq(info.context.user).distinct()
 
     @staticmethod
-    def resolve_public_projects(root, info, **kwargs) -> QuerySet:
-        return Project.objects.filter(is_private=False).distinct()
-
-    @staticmethod
     def resolve_recent_projects(root, info, **kwargs) -> QuerySet:
         # only the recent project of the user member of
         queryset = Project.get_for_gq(info.context.user, only_member=True)
@@ -486,9 +483,14 @@ class Query:
             .order_by('centroid')
 
     @staticmethod
-    def resolve_public_projects_by_region(root, info, **kwargs):
-        return Region.objects.filter(public=True).distinct()
-
-    @staticmethod
     def resolve_project_explore_stats(root, info, **kwargs):
         return info.context.dl.project.resolve_explore_stats()
+
+    # PUBLIC RESOLVERS
+    @staticmethod
+    def resolve_public_projects(root, info, **kwargs) -> QuerySet:
+        return PublicProjectListType.queryset()
+
+    @staticmethod
+    def resolve_public_projects_by_region(root, info, **kwargs):
+        return Region.objects.filter(public=True).distinct()

@@ -30,6 +30,15 @@ class OrganizationLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key) for key in keys])
 
 
+class ParentOrganizationLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = Organization.objects.filter(id__in=keys).only('id', 'title')
+        _map = {
+            org.pk: org for org in qs
+        }
+        return Promise.resolve([_map.get(key) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     @cached_property
     def logo(self):
@@ -38,3 +47,7 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def organization(self):
         return OrganizationLoader(context=self.context)
+
+    @cached_property
+    def parent_organization(self):
+        return ParentOrganizationLoader(context=self.context)
