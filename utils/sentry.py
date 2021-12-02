@@ -89,7 +89,6 @@ def init_sentry(app_type, tags={}, **config):
         CeleryIntegration(),
         DjangoIntegration(),
         RedisIntegration(),
-
     ]
     sentry_sdk.init(
         **config,
