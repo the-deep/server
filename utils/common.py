@@ -471,3 +471,21 @@ def get_enum_display(Enum, value):
     choices_dict = dict(make_hashable(Enum.choices))
     # force_str() to coerce lazy strings.
     return force_str(choices_dict.get(make_hashable(value), value), strings_only=True)
+
+
+def has_prefetched(obj, field):
+    """
+    Checks if field is prefetched.
+    """
+    if hasattr(obj, '_prefetched_objects_cache') and field in obj._prefetched_objects_cache:
+        return True
+    return False
+
+
+def has_select_related(obj, field):
+    """
+    Checks if field is select_related.
+    """
+    if field in obj._state.fields_cache:
+        return True
+    return False

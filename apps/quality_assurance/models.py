@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.functional import cached_property
 
-from entry.models import Entry
+from entry.models import Entry, EntryComment
 from user.models import User
 
 
@@ -72,6 +72,7 @@ class EntryReviewComment(BaseReviewComment):
 
     entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
     comment_type = models.IntegerField(choices=CommentType.choices, default=CommentType.COMMENT)
+    entry_comment = models.ForeignKey(EntryComment, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta(BaseReviewComment.Meta):
         abstract = False
