@@ -27,6 +27,7 @@ from .enums import (
     LeadStatusEnum,
     LeadPriorityEnum,
     LeadSourceTypeEnum,
+    LeadOrderingEnum,
 )
 
 
@@ -471,6 +472,13 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
                 return qs.exclude(id__in=leads_ids)
             return qs.filter(id__in=leads_ids)
         return _custom_qs(super().qs).distinct()
+
+
+class LeadWithOrderingGQFilterSet(LeadGQFilterSet):
+    ordering = MultipleInputFilter(LeadOrderingEnum, method='ordering_filter')
+
+    def ordering_filter(self, qs, name, value):
+        return qs.order_by(*value)
 
 
 class LeadGroupGQFilterSet(UserResourceGqlFilterSet):

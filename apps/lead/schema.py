@@ -5,6 +5,7 @@ from django.db.models import QuerySet
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
+from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 from utils.graphene.enums import EnumDescription
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
@@ -30,7 +31,8 @@ from .enums import (
 )
 from .filter_set import (
     LeadGQFilterSet,
-    LeadGroupGQFilterSet
+    LeadWithOrderingGQFilterSet,
+    LeadGroupGQFilterSet,
 )
 
 
@@ -235,12 +237,24 @@ class LeadListType(CustomDjangoListObjectType):
         filterset_class = LeadGQFilterSet
 
 
+class LeadListWithEnumOrderingType(CustomDjangoListObjectType):
+    class Meta:
+        model = Lead
+        filterset_class = LeadWithOrderingGQFilterSet
+
+
 class Query:
     lead = DjangoObjectField(LeadDetailType)
+    leads_with_enum_ordering = DjangoPaginatedListObjectField(
+        LeadListWithEnumOrderingType,
+        pagination=NoOrderingPageGraphqlPagination(
+            page_size_query_param='pageSize',
+        )
+    )
     leads = DjangoPaginatedListObjectField(
         LeadListType,
         pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
+            page_size_query_param='pageSize',
         )
     )
     lead_group = DjangoObjectField(LeadGroupType)

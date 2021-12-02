@@ -4,15 +4,29 @@ import logging
 import sentry_sdk
 from django.core.exceptions import PermissionDenied
 from django.conf import settings
+from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 
 # Celery Terminated Exception: The worker processing a job has been terminated by user request.
 from billiard.exceptions import Terminated
+from deep.exceptions import UnauthorizedException
+
 logger = logging.getLogger(__name__)
 
-IGNORED_ERRORS = [Terminated, 'graphql.execution.utils', PermissionDenied]
+IGNORED_ERRORS = [
+    Terminated,
+    PermissionDenied,
+    UnauthorizedException,
+]
+IGNORED_LOGGERS = [
+    'graphql.execution.utils',
+    __name__,
+]
+
+for _logger in IGNORED_LOGGERS:
+    ignore_logger(_logger)
 
 
 class InvalidGitRepository(Exception):

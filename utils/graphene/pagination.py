@@ -1,5 +1,19 @@
 from graphene import String
 from graphene_django_extras.paginations.pagination import BaseDjangoGraphqlPagination
+from graphene_django_extras import PageGraphqlPagination
+
+
+class NoOrderingPageGraphqlPagination(PageGraphqlPagination):
+    """
+    Custom pagination to support enum ordering from filterset
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def to_graphql_fields(self):
+        fields = super().to_graphql_fields()
+        fields.pop(self.ordering_param)
+        return fields
 
 
 class OrderingOnlyArgumentPagination(BaseDjangoGraphqlPagination):
@@ -46,5 +60,4 @@ class OrderingOnlyArgumentPagination(BaseDjangoGraphqlPagination):
                     qs = qs.order_by(*order)
             else:
                 qs = qs.order_by(order)
-
         return qs

@@ -25,7 +25,7 @@ from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
 from user.utils import send_project_join_request_emails
 from user_group.serializers import SimpleUserGroupSerializer
-from user_resource.serializers import UserResourceSerializer
+from user_resource.serializers import UserResourceSerializer, DeprecatedUserResourceSerializer
 from ary.models import AssessmentTemplate
 from .models import (
     Project,
@@ -223,7 +223,7 @@ class ProjectUsergroupMembershipSerializer(RemoveNullFieldsMixin,
         return resource
 
 
-class ProjectSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceSerializer):
+class ProjectSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, DeprecatedUserResourceSerializer):
 
     organizations = ProjectOrganizationSerializer(
         source='projectorganization_set',
