@@ -213,13 +213,13 @@ input AttributeGqInputType {
   id: ID
   data: GenericScalar
   widget: ID!
-  widgetVersion: Int
+  widgetVersion: Int!
   clientId: String
 }
 
 type AttributeType {
   id: ID!
-  widgetVersion: Int
+  widgetVersion: Int!
   data: GenericScalar
   clientId: String!
   widget: ID!
