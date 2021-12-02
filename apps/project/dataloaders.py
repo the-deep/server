@@ -189,8 +189,12 @@ class ProjectExploreStatsLoader(WithContextMixin):
 
 
 class GeoRegionLoader(DataLoaderWithContext):
+    @staticmethod
+    def get_region_queryset():
+        return Region.objects.all()
+
     def batch_load_fn(self, keys):
-        qs = Region.objects.filter(project__in=keys).annotate(
+        qs = self.get_region_queryset().filter(project__in=keys).annotate(
             projects_id=ArrayAgg('project', filter=models.Q(project__in=keys)),
         ).defer('geo_options')
         _map = defaultdict(list)
@@ -200,16 +204,10 @@ class GeoRegionLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key) for key in keys])
 
 
-class PublicGeoRegionLoader(DataLoaderWithContext):
-    def batch_load_fn(self, keys):
-        qs = Region.objects.filter(project__in=keys, public=True).annotate(
-            projects_id=ArrayAgg('project', filter=models.Q(project__in=keys)),
-        ).defer('geo_options')
-        _map = defaultdict(list)
-        for region in qs.all():
-            for project_id in region.projects_id:
-                _map[project_id].append(region)
-        return Promise.resolve([_map.get(key) for key in keys])
+class PublicGeoRegionLoader(GeoRegionLoader):
+    @staticmethod
+    def get_region_queryset():
+        return Region.objects.filter(public=True)
 
 
 class DataLoaders(WithContextMixin):
@@ -224,10 +222,6 @@ class DataLoaders(WithContextMixin):
 
     @cached_property
     def organizations(self):
-        return OrganizationsLoader(context=self.context)
-
-    @cached_property
-    def organization_type_organization(self):
         return OrganizationsLoader(context=self.context)
 
     def resolve_explore_stats(self):

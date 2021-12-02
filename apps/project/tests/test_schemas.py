@@ -321,28 +321,17 @@ class TestProjectSchema(GraphQLTestCase):
                 pageSize
                 totalCount
                 results {
-                  analysisFramework {
-                      id
-                      title
-                    }
-                    createdAt
-                    description
-                    id
-                    organizations {
-                      id
-                      organization {
-                          id
-                      }
-                    }
-                    regions {
-                        id
-                    }
-                    stats {
-                        numberOfUsers
-                        numberOfLeads
-                    }
-                    title
-                  }
+                  id
+                  title
+                  description
+                  createdAt
+                  analysisFrameworkTitle
+                  organizationsTitle
+                  regionsTitle
+                  numberOfEntries
+                  numberOfLeads
+                  numberOfUsers
+                }
               }
             }
         '''
@@ -534,7 +523,7 @@ class TestProjectSchema(GraphQLTestCase):
 
     def test_public_projects_by_region(self):
         query = '''
-            query MyQuery ($projectFilter: PublicRegionProjectFilterData) {
+            query MyQuery ($projectFilter: RegionProjectFilterData) {
               publicProjectsByRegion (projectFilter: $projectFilter) {
                totalCount
                results {

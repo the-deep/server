@@ -1,48 +1,15 @@
 import graphene
 
-from graphene_django import DjangoObjectType, DjangoListField
+from graphene_django import DjangoObjectType
+from django.contrib.postgres.aggregates import StringAgg
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.db.models.functions import Cast, Coalesce
+from django.db import models
 
 from utils.graphene.types import CustomDjangoListObjectType
 
-from analysis_framework.models import AnalysisFramework
-from geo.models import Region
-
-from .models import Project, ProjectOrganization
+from .models import Project
 from .filter_set import ProjectGqlFilterSet
-
-
-class PublicProjectStatType(graphene.ObjectType):
-    number_of_leads = graphene.Field(graphene.Int)
-    number_of_users = graphene.Field(graphene.Int)
-
-
-class PublicProjectOrganizationType(DjangoObjectType):
-    class Meta:
-        model = ProjectOrganization
-        skip_registry = True
-        fields = ('id', 'organization',)
-
-    @staticmethod
-    def resolve_organization(root, info):
-        return info.context.dl.organization.organization.load(root.organization_id)
-
-
-class PublicProjectRegionType(DjangoObjectType):
-    class Meta:
-        model = Region
-        skip_registry = True
-        fields = (
-            'id', 'title'
-        )
-
-
-class PublicProjectAnalysisFrameworkForType(DjangoObjectType):
-    class Meta:
-        model = AnalysisFramework
-        skip_registry = True
-        fields = (
-            'id', 'title'
-        )
 
 
 class PublicProjectType(DjangoObjectType):
@@ -50,23 +17,19 @@ class PublicProjectType(DjangoObjectType):
         model = Project
         skip_registry = True
         fields = (
-            'id', 'description', 'title',
-            'created_at'
+            'id',
+            'title',
+            'description',
+            'analysis_framework_id',
+            'created_at',
         )
-    stats = graphene.Field(PublicProjectStatType)
-    regions = DjangoListField(PublicProjectRegionType)
-    organizations = graphene.List(graphene.NonNull(PublicProjectOrganizationType))
-    analysis_framework = graphene.Field(PublicProjectAnalysisFrameworkForType)
 
-    @staticmethod
-    def resolve_organizations(root, info):
-        return info.context.dl.project.organizations.load(root.pk)
-
-    def resolve_regions(root, info, **kwargs):
-        return info.context.dl.project.public_geo_region.load(root.pk)
-
-    def resolve_stats(root, info, **kwargs):
-        return info.context.dl.project.project_stat.load(root.pk)
+    analysis_framework_title = graphene.String()
+    regions_title = graphene.String()
+    organizations_title = graphene.String()
+    number_of_users = graphene.Int(required=True)
+    number_of_leads = graphene.Int(required=True)
+    number_of_entries = graphene.Int(required=True)
 
 
 class PublicProjectListType(CustomDjangoListObjectType):
@@ -74,3 +37,34 @@ class PublicProjectListType(CustomDjangoListObjectType):
         model = Project
         base_type = PublicProjectType
         filterset_class = ProjectGqlFilterSet
+
+    @classmethod
+    def queryset(cls):
+        return Project.objects.filter(is_private=False).annotate(
+            analysis_framework_title=models.F('analysis_framework__title'),
+            regions_title=StringAgg('regions__title', ', ', distinct=True),
+            organizations_title=StringAgg(
+                models.Case(
+                    models.When(
+                        projectorganization__organization__parent__isnull=False,
+                        then='projectorganization__organization__parent__title'
+                    ),
+                    default='projectorganization__organization__title',
+                ),
+                ', ',
+                distinct=True,
+            ),
+            **{
+                key: Coalesce(
+                    Cast(KeyTextTransform(key, 'stats_cache'), models.IntegerField()),
+                    0,
+                )
+                for key in ['number_of_leads', 'number_of_users', 'number_of_entries']
+            },
+        ).only(
+            'id',
+            'title',
+            'description',
+            'analysis_framework_id',
+            'created_at',
+        )

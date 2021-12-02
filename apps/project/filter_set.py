@@ -154,14 +154,13 @@ class ProjectUserGroupMembershipGqlFilterSet(UserResourceGqlFilterSet):
 
 
 class ProjectByRegionGqlFilterSet(django_filters.FilterSet):
-    project_filter = SimpleInputFilter(
-        type(
-            'RegionProjectFilterData',
-            (graphene.InputObjectType,),
-            get_filtering_args_from_filterset(ProjectGqlFilterSet, 'project.schema.ProjectListType')
-        ),
-        method='filter_project_filter',
+    RegionProjectFilterData = type(
+        'RegionProjectFilterData',
+        (graphene.InputObjectType,),
+        get_filtering_args_from_filterset(ProjectGqlFilterSet, 'project.schema.ProjectListType')
     )
+
+    project_filter = SimpleInputFilter(RegionProjectFilterData, method='filter_project_filter')
 
     class Meta:
         model = Region
@@ -171,9 +170,12 @@ class ProjectByRegionGqlFilterSet(django_filters.FilterSet):
         # Used in def qs
         return qs
 
+    def get_project_queryset(self):
+        return Project.get_for_gq(self.request.user)
+
     @property
     def qs(self):
-        project_qs = Project.get_for_gq(self.request.user)
+        project_qs = self.get_project_queryset()
         # Filter project if filter is provided
         project_filter = self.data.get('project_filter')
         if project_filter:
@@ -183,32 +185,6 @@ class ProjectByRegionGqlFilterSet(django_filters.FilterSet):
         ).filter(projects_id__isnull=False).only('id', 'centroid')
 
 
-class PublicProjectByRegionGqlFileterSet(django_filters.FilterSet):
-
-    project_filter = SimpleInputFilter(
-        type(
-            'PublicRegionProjectFilterData',
-            (graphene.InputObjectType,),
-            get_filtering_args_from_filterset(ProjectGqlFilterSet, 'project.schema.ProjectListType')
-        ),
-        method='filter_project_filter',
-    )
-
-    class Meta:
-        model = Region
-        fields = ()
-
-    def filter_project_filter(self, qs, *_):
-        # Used in def qs
-        return qs
-
-    @property
-    def qs(self):
-        project_qs = Project.objects.filter(is_private=False)
-        # Filter project if filter is provided
-        project_filter = self.data.get('project_filter')
-        if project_filter:
-            project_qs = ProjectGqlFilterSet(data=project_filter, queryset=project_qs, request=self.request).qs
-        return super().qs.annotate(
-            projects_id=ArrayAgg('project', distinct=True, ordering='project', filter=models.Q(project__in=project_qs)),
-        ).filter(projects_id__isnull=False).only('id', 'centroid')
+class PublicProjectByRegionGqlFileterSet(ProjectByRegionGqlFilterSet):
+    def get_project_queryset(self):
+        return Project.objects.filter(is_private=False)

@@ -64,6 +64,9 @@ class OrganizationType(DjangoObjectType):
     def resolve_logo(root, info, **kwargs) -> File:
         return info.context.dl.organization.logo.load(root.pk)
 
+    def resolve_merged_as(root, info, **kwargs):
+        return info.context.dl.organization.parent_organization.load(root.parent_id)
+
 
 class OrganizationListType(CustomDjangoListObjectType):
     class Meta:
