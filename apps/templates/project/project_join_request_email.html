@@ -17,10 +17,6 @@
         .button {
             margin: 0 6px;
         }
-
-        .reject {
-            background-color: #d3575e;
-        }
     </style>
 {% endblock %}
 
@@ -48,7 +44,7 @@
                 Add user
             </a>
             <a
-                class="button reject"
+                class="secondary-button"
                 href="{{ protocol }}://{{ domain }}{% url 'accept_project_confirm' uidb64=uid pidb64=pid token=token %}?accept=false"
                 >
                 Reject Request
