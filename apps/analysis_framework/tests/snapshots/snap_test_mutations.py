@@ -142,6 +142,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 'properties': {
                                 },
                                 'title': 'Section-2-Text-101',
+                                'version': 1,
                                 'widgetId': 'TEXT'
                             },
                             {
@@ -152,6 +153,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 'properties': {
                                 },
                                 'title': 'Section-2-Text-102',
+                                'version': 1,
                                 'widgetId': 'TEXT'
                             }
                         ]
@@ -171,6 +173,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 'properties': {
                                 },
                                 'title': 'Section-Text-101',
+                                'version': 1,
                                 'widgetId': 'TEXT'
                             },
                             {
@@ -181,6 +184,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 'properties': {
                                 },
                                 'title': 'Section-Text-102',
+                                'version': 1,
                                 'widgetId': 'TEXT'
                             }
                         ]
@@ -195,6 +199,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                         'properties': {
                         },
                         'title': 'Select-Widget-1',
+                        'version': 1,
                         'widgetId': 'SELECT'
                     },
                     {
@@ -205,6 +210,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                         'properties': {
                         },
                         'title': 'multi-select-Widget-2',
+                        'version': 1,
                         'widgetId': 'MULTISELECT'
                     }
                 ],
@@ -342,6 +348,102 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
     ]
 }
 
+snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framework_update created'] = {
+    'currentUserRole': 'Owner',
+    'description': 'Af description',
+    'id': '1',
+    'isPrivate': False,
+    'primaryTagging': [
+        {
+            'clientId': 'section-102',
+            'id': '2',
+            'order': 1,
+            'title': 'Section 102',
+            'tooltip': 'Tooltip for section 102',
+            'widgets': [
+                {
+                    'clientId': 'section-2-text-101-client-id',
+                    'id': '3',
+                    'key': 'section-2-text-101',
+                    'order': 1,
+                    'properties': {
+                    },
+                    'title': 'Section-2-Text-101',
+                    'version': 1,
+                    'widgetId': 'TEXT'
+                },
+                {
+                    'clientId': 'section-2-text-102-client-id',
+                    'id': '4',
+                    'key': 'section-2-text-102',
+                    'order': 2,
+                    'properties': {
+                    },
+                    'title': 'Section-2-Text-102',
+                    'version': 1,
+                    'widgetId': 'TEXT'
+                }
+            ]
+        },
+        {
+            'clientId': 'section-101',
+            'id': '1',
+            'order': 2,
+            'title': 'Section 101',
+            'tooltip': 'Tooltip for section 101',
+            'widgets': [
+                {
+                    'clientId': 'section-text-101-client-id',
+                    'id': '1',
+                    'key': 'section-text-101',
+                    'order': 1,
+                    'properties': {
+                    },
+                    'title': 'Section-Text-101',
+                    'version': 1,
+                    'widgetId': 'TEXT'
+                },
+                {
+                    'clientId': 'section-text-102-client-id',
+                    'id': '2',
+                    'key': 'section-text-102',
+                    'order': 2,
+                    'properties': {
+                    },
+                    'title': 'Section-Text-102',
+                    'version': 1,
+                    'widgetId': 'TEXT'
+                }
+            ]
+        }
+    ],
+    'secondaryTagging': [
+        {
+            'clientId': 'select-widget-101-client-id',
+            'id': '5',
+            'key': 'select-widget-101-key',
+            'order': 1,
+            'properties': {
+            },
+            'title': 'Select-Widget-1',
+            'version': 1,
+            'widgetId': 'SELECT'
+        },
+        {
+            'clientId': 'multi-select-widget-102-client-id',
+            'id': '6',
+            'key': 'multi-select-widget-102-key',
+            'order': 2,
+            'properties': {
+            },
+            'title': 'multi-select-Widget-2',
+            'version': 1,
+            'widgetId': 'MULTISELECT'
+        }
+    ],
+    'title': 'AF (TEST)'
+}
+
 snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framework_update errors'] = {
     'data': {
         '__typename': 'Mutation',
@@ -406,22 +508,26 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             'widgets': [
                                 {
                                     'clientId': 'section-2-text-101-client-id',
+                                    'conditional': None,
                                     'id': '7',
                                     'key': 'section-2-text-101',
                                     'order': 1,
                                     'properties': {
                                     },
                                     'title': 'Section-2-Text-101',
+                                    'version': 1,
                                     'widgetId': 'TEXT'
                                 },
                                 {
                                     'clientId': 'section-2-text-102-client-id',
+                                    'conditional': None,
                                     'id': '4',
                                     'key': 'section-2-text-102',
                                     'order': 2,
                                     'properties': {
                                     },
                                     'title': 'Updated-Section-2-Text-101',
+                                    'version': 1,
                                     'widgetId': 'TEXT'
                                 }
                             ]
@@ -435,22 +541,26 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             'widgets': [
                                 {
                                     'clientId': 'section-text-101-client-id',
+                                    'conditional': None,
                                     'id': '1',
                                     'key': 'section-text-101',
                                     'order': 1,
                                     'properties': {
                                     },
                                     'title': 'Section-Text-101',
+                                    'version': 1,
                                     'widgetId': 'TEXT'
                                 },
                                 {
                                     'clientId': 'section-text-102-client-id',
+                                    'conditional': None,
                                     'id': '2',
                                     'key': 'section-text-102',
                                     'order': 2,
                                     'properties': {
                                     },
                                     'title': 'Section-Text-102',
+                                    'version': 1,
                                     'widgetId': 'TEXT'
                                 }
                             ]
@@ -459,12 +569,231 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                     'secondaryTagging': [
                         {
                             'clientId': 'multi-select-widget-102-client-id',
+                            'conditional': None,
                             'id': '8',
                             'key': 'multi-select-widget-102-key',
                             'order': 2,
                             'properties': {
                             },
                             'title': 'multi-select-Widget-2',
+                            'version': 1,
+                            'widgetId': 'MULTISELECT'
+                        }
+                    ],
+                    'title': 'Updated AF (TEST)'
+                }
+            }
+        }
+    }
+}
+
+snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framework_update with-conditionals-add'] = {
+    'data': {
+        '__typename': 'Mutation',
+        'analysisFramework': {
+            'analysisFrameworkUpdate': {
+                'errors': None,
+                'ok': True,
+                'result': {
+                    'currentUserRole': 'Owner',
+                    'description': 'Updated Af description',
+                    'id': '1',
+                    'isPrivate': False,
+                    'primaryTagging': [
+                        {
+                            'clientId': 'section-102',
+                            'id': '2',
+                            'order': 1,
+                            'title': 'Updated Section 102',
+                            'tooltip': 'Tooltip for section 102',
+                            'widgets': [
+                                {
+                                    'clientId': 'section-2-text-101-client-id',
+                                    'conditional': None,
+                                    'id': '10',
+                                    'key': 'section-2-text-101',
+                                    'order': 1,
+                                    'properties': {
+                                    },
+                                    'title': 'Section-2-Text-101',
+                                    'version': 1,
+                                    'widgetId': 'TEXT'
+                                },
+                                {
+                                    'clientId': 'section-2-text-102-client-id',
+                                    'conditional': {
+                                        'conditions': [
+                                        ],
+                                        'parentWidget': '1',
+                                        'parentWidgetType': 'TEXT'
+                                    },
+                                    'id': '4',
+                                    'key': 'section-2-text-102',
+                                    'order': 2,
+                                    'properties': {
+                                    },
+                                    'title': 'Updated-Section-2-Text-101',
+                                    'version': 1,
+                                    'widgetId': 'TEXT'
+                                }
+                            ]
+                        },
+                        {
+                            'clientId': 'section-101',
+                            'id': '4',
+                            'order': 2,
+                            'title': 'Section 101',
+                            'tooltip': 'Tooltip for section 101',
+                            'widgets': [
+                                {
+                                    'clientId': 'section-text-101-client-id',
+                                    'conditional': None,
+                                    'id': '1',
+                                    'key': 'section-text-101',
+                                    'order': 1,
+                                    'properties': {
+                                    },
+                                    'title': 'Section-Text-101',
+                                    'version': 1,
+                                    'widgetId': 'TEXT'
+                                },
+                                {
+                                    'clientId': 'section-text-102-client-id',
+                                    'conditional': None,
+                                    'id': '2',
+                                    'key': 'section-text-102',
+                                    'order': 2,
+                                    'properties': {
+                                    },
+                                    'title': 'Section-Text-102',
+                                    'version': 1,
+                                    'widgetId': 'TEXT'
+                                }
+                            ]
+                        }
+                    ],
+                    'secondaryTagging': [
+                        {
+                            'clientId': 'multi-select-widget-102-client-id',
+                            'conditional': {
+                                'conditions': [
+                                ],
+                                'parentWidget': '1',
+                                'parentWidgetType': 'TEXT'
+                            },
+                            'id': '11',
+                            'key': 'multi-select-widget-102-key',
+                            'order': 2,
+                            'properties': {
+                            },
+                            'title': 'multi-select-Widget-2',
+                            'version': 1,
+                            'widgetId': 'MULTISELECT'
+                        }
+                    ],
+                    'title': 'Updated AF (TEST)'
+                }
+            }
+        }
+    }
+}
+
+snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framework_update with-conditionals-remove'] = {
+    'data': {
+        '__typename': 'Mutation',
+        'analysisFramework': {
+            'analysisFrameworkUpdate': {
+                'errors': None,
+                'ok': True,
+                'result': {
+                    'currentUserRole': 'Owner',
+                    'description': 'Updated Af description',
+                    'id': '1',
+                    'isPrivate': False,
+                    'primaryTagging': [
+                        {
+                            'clientId': 'section-102',
+                            'id': '2',
+                            'order': 1,
+                            'title': 'Updated Section 102',
+                            'tooltip': 'Tooltip for section 102',
+                            'widgets': [
+                                {
+                                    'clientId': 'section-2-text-101-client-id',
+                                    'conditional': None,
+                                    'id': '12',
+                                    'key': 'section-2-text-101',
+                                    'order': 1,
+                                    'properties': {
+                                    },
+                                    'title': 'Section-2-Text-101',
+                                    'version': 1,
+                                    'widgetId': 'TEXT'
+                                },
+                                {
+                                    'clientId': 'section-2-text-102-client-id',
+                                    'conditional': {
+                                        'conditions': [
+                                        ],
+                                        'parentWidget': '1',
+                                        'parentWidgetType': 'TEXT'
+                                    },
+                                    'id': '4',
+                                    'key': 'section-2-text-102',
+                                    'order': 2,
+                                    'properties': {
+                                    },
+                                    'title': 'Updated-Section-2-Text-101',
+                                    'version': 1,
+                                    'widgetId': 'TEXT'
+                                }
+                            ]
+                        },
+                        {
+                            'clientId': 'section-101',
+                            'id': '5',
+                            'order': 2,
+                            'title': 'Section 101',
+                            'tooltip': 'Tooltip for section 101',
+                            'widgets': [
+                                {
+                                    'clientId': 'section-text-101-client-id',
+                                    'conditional': None,
+                                    'id': '1',
+                                    'key': 'section-text-101',
+                                    'order': 1,
+                                    'properties': {
+                                    },
+                                    'title': 'Section-Text-101',
+                                    'version': 1,
+                                    'widgetId': 'TEXT'
+                                },
+                                {
+                                    'clientId': 'section-text-102-client-id',
+                                    'conditional': None,
+                                    'id': '2',
+                                    'key': 'section-text-102',
+                                    'order': 2,
+                                    'properties': {
+                                    },
+                                    'title': 'Section-Text-102',
+                                    'version': 1,
+                                    'widgetId': 'TEXT'
+                                }
+                            ]
+                        }
+                    ],
+                    'secondaryTagging': [
+                        {
+                            'clientId': 'multi-select-widget-102-client-id',
+                            'conditional': None,
+                            'id': '13',
+                            'key': 'multi-select-widget-102-key',
+                            'order': 2,
+                            'properties': {
+                            },
+                            'title': 'multi-select-Widget-2',
+                            'version': 1,
                             'widgetId': 'MULTISELECT'
                         }
                     ],

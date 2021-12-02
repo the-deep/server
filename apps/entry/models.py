@@ -188,6 +188,8 @@ class Attribute(models.Model):
     """
     entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
     widget = models.ForeignKey(Widget, on_delete=models.CASCADE)
+    # Widget's version when the attribute was saved (Set by client)
+    widget_version = models.SmallIntegerField(null=True, blank=True)
     data = models.JSONField(default=None, blank=True, null=True)
 
     def save(self, *args, **kwargs):

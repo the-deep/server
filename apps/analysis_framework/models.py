@@ -277,6 +277,12 @@ class Widget(models.Model):
         TEXT = widgets_store.text_widget.WIDGET_ID
         EXCERPT = 'excerptWidget', 'Excerpt #DEPRICATED'  # TODO:DEPRICATED
 
+    DEPRECATED_TYPES = [
+        WidgetType.EXCERPT,
+        WidgetType.CONDITIONAL,
+        WidgetType.NUMBER_MATRIX,
+    ]
+
     class WidthType(models.TextChoices):
         FULL = 'full', 'Full'
         HALF = 'half', 'Half'
@@ -292,6 +298,12 @@ class Widget(models.Model):
     # NOTE: With section: Primary Tagging, without section: Secondary Tagging
     section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
+    # Version saved by client (TODO: implement structure validator at server side as well)
+    version = models.SmallIntegerField(null=True, blank=True)
+    # Conditional
+    conditional_parent_widget = models.ForeignKey(
+        'Widget', related_name='child_widget_conditionals', on_delete=models.SET_NULL, null=True, blank=True)
+    conditional_conditions = models.JSONField(default=list, blank=True)
 
     def save(self, *args, **kwargs):
         if self.section:
@@ -301,7 +313,7 @@ class Widget(models.Model):
         update_widget(self)
 
     def __str__(self):
-        return '{}:{} ({})'.format(self.title, self.pk, self.widget_id)
+        return '{}:: {}:{} ({})'.format(self.analysis_framework_id, self.title, self.pk, self.widget_id)
 
     def clone_to(self, analysis_framework, section):
         widget_clone = copy.deepcopy(self)

@@ -3,6 +3,7 @@ import os
 import logging
 import sentry_sdk
 from django.core.exceptions import PermissionDenied
+from django.conf import settings
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
@@ -78,6 +79,7 @@ def init_sentry(app_type, tags={}, **config):
     ]
     sentry_sdk.init(
         **config,
+        traces_sample_rate=settings.SENTRY_SAMPLE_RATE,
         ignore_errors=IGNORED_ERRORS,
         integrations=integrations,
     )

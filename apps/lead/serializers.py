@@ -428,8 +428,12 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
         )
 
     def validate_attachment(self, attachment):
-        if attachment and attachment.created_by != self.context['request'].user:
-            raise serializers.ValidationError('Attachment not found!')
+        # If attachment is None or isn't changed.
+        if attachment is None or (self.instance and self.instance.attachment_id == attachment.id):
+            return attachment
+        # For new attachment make sure user have permission to attach.
+        if attachment.created_by != self.context['request'].user:
+            raise serializers.ValidationError("Attachment not found or you don't have the permission!")
         return attachment
 
     def validate_assignee(self, assignee_id):

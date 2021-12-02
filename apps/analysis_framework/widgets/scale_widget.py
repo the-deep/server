@@ -3,6 +3,7 @@ WIDGET_ID = 'scaleWidget'
 
 """
 properties:
+    defaultValue?: string
     options: [
         key: string
         label: string

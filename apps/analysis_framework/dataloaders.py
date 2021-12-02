@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from promise import Promise
 from django.utils.functional import cached_property
+from django.db import models
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 from project.models import Project
@@ -18,12 +19,15 @@ from .models import (
 class WidgetLoader(DataLoaderWithContext):
     @staticmethod
     def load_widgets(keys, parent, **filters):
-        qs = Widget.objects.filter(
-            **{
-                f'{parent}__in': keys,
-                **filters,
-            }
-        ).order_by('order', 'id')
+        qs = Widget.objects\
+            .filter(
+                **{
+                    f'{parent}__in': keys,
+                    **filters,
+                }
+            ).exclude(widget_id__in=Widget.DEPRECATED_TYPES)\
+            .annotate(conditional_parent_widget_type=models.F('conditional_parent_widget__widget_id'))\
+            .order_by('order', 'id')
         _map = defaultdict(list)
         for widget in qs:
             _map[getattr(widget, f'{parent}_id')].append(widget)

@@ -31,6 +31,7 @@ class WidgetFactory(DjangoModelFactory):
     key = factory.Sequence(lambda n: f'widget-key-{n}')
     widget_id = fuzzy.FuzzyChoice(Widget.WidgetType.choices, getter=lambda c: c[0])
     properties = {}
+    version = 1
 
     class Meta:
         model = Widget

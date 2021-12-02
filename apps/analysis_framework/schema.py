@@ -3,6 +3,7 @@ from typing import Union
 import graphene
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
+from graphene.types.generic import GenericScalar
 from django.db.models import QuerySet
 
 from utils.graphene.enums import EnumDescription
@@ -28,11 +29,17 @@ from .enums import (
 from .filter_set import AnalysisFrameworkGqFilterSet
 
 
+class WidgetConditionalType(graphene.ObjectType):
+    parent_widget = graphene.ID(required=True)
+    parent_widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
+    conditions = GenericScalar()
+
+
 class WidgetType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Widget
         fields = (
-            'id', 'title', 'order', 'properties',
+            'id', 'title', 'order', 'properties', 'version',
             'client_id',
         )
 
@@ -41,6 +48,17 @@ class WidgetType(ClientIdMixin, DjangoObjectType):
     width = graphene.Field(WidgetWidthTypeEnum, required=True)
     width_display = EnumDescription(source='get_width_display', required=True)
     key = graphene.String(required=True)
+    version = graphene.Int(required=True)
+    conditional = graphene.Field(WidgetConditionalType)
+
+    @staticmethod
+    def resolve_conditional(root, info, **_):
+        if root.conditional_parent_widget_id:
+            return dict(
+                parent_widget=root.conditional_parent_widget_id,
+                parent_widget_type=root.conditional_parent_widget_type,
+                conditions=root.conditional_conditions,
+            )
 
 
 class SectionType(ClientIdMixin, DjangoObjectType):

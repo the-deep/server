@@ -67,12 +67,12 @@ def _get_widget_info(config, widgets, skip_data=False, default=None):
 
     widget = widgets[config['pk']]
 
-    def _return(data):
+    def _return(properties):
         return {
             '_widget': widget,
             'pk': widget.pk,
             'config': config,
-            'data': data,
+            'properties': properties,
         }
 
     if skip_data:
@@ -85,20 +85,18 @@ def _get_widget_info(config, widgets, skip_data=False, default=None):
         ).first()
         return _return(w_filter.properties if w_filter else None)
 
-    data = widget.properties['data']
-    is_conditional_widget = config.get('is_conditional_widget')
-    if is_conditional_widget:
-        for c_widget in data.get('widgets', []):
-            _widget = c_widget['widget']
-            if _widget['key'] == config['widget_key']:
-                data = _widget['properties']['data']
-    return _return(data)
+    properties = widget.properties
+    if config.get('is_conditional_widget'):
+        # TODO: Skipping conditional widget, in new this is not needed
+        return default
+    return _return(properties)
 
 
 def _get_attribute_widget_value(cd_widget_map, w_value, widget_type, widget_pk=None):
     if widget_type in ['scaleWidget', 'multiselectWidget', 'organigramWidget']:
         return w_value
     elif widget_type == 'geoWidget':
+        # XXX: We don't need this now, as only string are stored here. Remove later.
         return get_valid_geo_ids(w_value)
     elif widget_type == 'conditionalWidget':
         cd_config = cd_widget_map.get(widget_pk)
@@ -210,13 +208,13 @@ def get_project_entries_stats(project, skip_geo_data=False):
 
     w_reliability_default = w_severity_default = {
         'pk': None,
-        'data': {
-            'scale_units': [],
+        'properties': {
+            'options': [],
         },
     }
     w_specific_needs_groups_default = {
         'pk': None,
-        'data': {
+        'properties': {
             'options': []
         },
     }
@@ -243,61 +241,61 @@ def get_project_entries_stats(project, skip_geo_data=False):
         {
             'id': f"{w['pk']}-{dimension[id_key]}",
             'widget_id': w['pk'],
-            'name': dimension['title'],
+            'name': dimension['label'],
             'color': dimension.get('color'),
         } for id_key, w, dimensions in [
-            *[('key', w1d, w1d['data']['rows']) for w1d in w1ds],
-            *[('id', w2d, w2d['data']['dimensions']) for w2d in w2ds],
+            *[('key', w1d, w1d['properties']['rows']) for w1d in w1ds],
+            *[('key', w2d, w2d['properties']['rows']) for w2d in w2ds],
         ] for dimension in dimensions
     ]
     framework_groups_array = [
         {
-            'id': subdimension['id'],
+            'id': subdimension['key'],
             'widget_id': w2d['pk'],
-            'context_id': f"{w2d['pk']}-{dimension['id']}",
-            'name': subdimension['title'],
+            'context_id': f"{w2d['pk']}-{dimension['key']}",
+            'name': subdimension['label'],
             'tooltip': subdimension.get('tooltip'),
         }
         for w2d in w2ds
-        for dimension in w2d['data']['dimensions']
-        for subdimension in dimension['subdimensions']
+        for dimension in w2d['properties']['rows']
+        for subdimension in dimension['subRows']
     ]
 
     sector_array = [
         {
-            'id': sector['id'],
+            'id': sector['key'],
             'widget_id': w2d['pk'],
-            'name': sector['title'],
+            'name': sector['label'],
             'tooltip': sector.get('tooltip'),
         }
         for w2d in w2ds
-        for sector in w2d['data']['sectors']
+        for sector in w2d['properties']['columns']
     ]
     affected_groups_array = [
         {
             'id': option['key'],
             'name': option['label'],
-        } for option in w_ag['data']['options']
+        } for option in w_ag['properties']['options']
     ]
     specific_needs_groups_array = [
         {
             'id': option['key'],
             'name': option['label'],
-        } for option in w_specific_needs_groups['data']['options']
+        } for option in w_specific_needs_groups['properties']['options']
     ]
     severity_units = [
         {
             'id': severity['key'],
             'color': severity.get('color'),
             'name': severity['label'],
-        } for severity in w_severity['data']['scale_units']
+        } for severity in w_severity['properties']['options']
     ]
     reliability_units = [
         {
             'id': reliability['key'],
             'color': reliability.get('color'),
             'name': reliability['label'],
-        } for reliability in w_reliability['data']['scale_units']
+        } for reliability in w_reliability['properties']['options']
     ]
 
     meta = {

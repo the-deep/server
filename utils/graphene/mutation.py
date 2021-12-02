@@ -36,6 +36,11 @@ def convert_list_field_to_field(field):
     return (graphene.List, graphene.NonNull(child_type))
 
 
+@get_graphene_type_from_serializer_field.register(serializers.Serializer)
+def convert_serializer_to_field(field):
+    return graphene.Field
+
+
 @get_graphene_type_from_serializer_field.register(serializers.ManyRelatedField)
 def convert_serializer_field_to_many_related_id(field):
     return (graphene.List, graphene.NonNull(graphene.ID))
@@ -100,6 +105,9 @@ def convert_serializer_field(field, is_input=True, convert_choices_to_enum=True)
             global_registry = get_global_registry()
             field_model = field.Meta.model
             args = [global_registry.get_type_for_model(field_model)]
+    elif isinstance(field, serializers.Serializer):
+        if is_input:
+            graphql_type = convert_serializer_to_input_type(field.__class__)
     elif isinstance(field, serializers.ListSerializer):
         field = field.child
         if is_input:

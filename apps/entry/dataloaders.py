@@ -7,9 +7,11 @@ from django.db import models
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
 from geo.schema import get_geo_area_queryset_for_project_geo_area_type
+from analysis_framework.models import Widget
 from quality_assurance.models import EntryReviewComment
 
 from .models import (
+    Entry,
     Attribute,
     EntryGroupLabel,
 )
@@ -17,9 +19,10 @@ from .models import (
 
 class EntryAttributesLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        attributes_qs = Attribute.objects.filter(entry__in=keys).annotate(
-            widget_type=models.F('widget__widget_id'),
-        )
+        attributes_qs = Attribute.objects\
+            .filter(entry__in=keys)\
+            .exclude(widget__widget_id__in=Widget.DEPRECATED_TYPES)\
+            .annotate(widget_type=models.F('widget__widget_id'))
         attributes = defaultdict(list)
         for attribute in attributes_qs:
             attributes[attribute.entry_id].append(attribute)
@@ -41,7 +44,7 @@ class AttributeGeoSelectedOptionsLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         geo_area_qs = get_geo_area_queryset_for_project_geo_area_type().filter(
             id__in={id for ids in keys for id in ids}
-        )
+        ).defer('polygons')
         geo_area_map = {
             str(geo_area.id): geo_area
             for geo_area in geo_area_qs
@@ -80,6 +83,31 @@ class ReviewCommentsCountLoader(DataLoaderWithContext):
         return Promise.resolve([counts.get(key, 0) for key in keys])
 
 
+class EntryVerifiedByLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        verified_by_through_qs = Entry.verified_by.through.objects\
+            .filter(entry__in=keys)\
+            .prefetch_related('user')
+        _map = defaultdict(list)
+        for item in verified_by_through_qs.all():
+            _map[item.entry_id].append(item.user)
+        return Promise.resolve([_map.get(key, []) for key in keys])
+
+
+class EntryVerifiedByCountLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        count_qs = Entry.verified_by.through.objects\
+            .filter(entry__in=keys)\
+            .order_by().values('entry')\
+            .annotate(count=models.Count('id'))\
+            .values_list('entry', 'count')
+        counts = {
+            entry: count
+            for entry, count in count_qs
+        }
+        return Promise.resolve([counts.get(key, 0) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     @cached_property
     def entry_attributes(self):
@@ -100,3 +128,11 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def review_comments_count(self):
         return ReviewCommentsCountLoader(context=self.context)
+
+    @cached_property
+    def verified_by(self):
+        return EntryVerifiedByLoader(context=self.context)
+
+    @cached_property
+    def verified_by_count(self):
+        return EntryVerifiedByCountLoader(context=self.context)
