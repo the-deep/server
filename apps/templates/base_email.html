@@ -1,4 +1,5 @@
 {% load premailer %}
+{% load static %}
 {% premailer %}
 <html>
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600" rel="stylesheet">
@@ -35,34 +36,48 @@
                 margin-left: 8px;
             }
 
-
             .button-like-link {
+                background-color: #1a3ed0;
+                border-radius: 18px;
+                border: 1px solid #1a3ed0;
+                color: #fff;
                 display: inline-block;
-                box-shadow: 0 2px 7px -2px rgba(0, 0, 0, .5);
+                font-family: inherit;
+                font-size: 14px;
+                font-weight: 600;
+                padding: 6px 24px;
                 text-decoration: none;
                 text-transform: uppercase;
-                padding: 8px 10px;
-                background-color: #008975;
-                color: #fff;
-                font-family: inherit;
-                font-size: 12px;
-                font-weight: 400;
-                border-radius: 2px;
-                transition: 0.2s all ease-in-out;
             }
 
             .button {
-                background-color: #008975;
-                border-radius: 2px;
-                box-shadow: 0 2px 7px -2px rgba(0, 0, 0, .5);
+                background-color: #1a3ed0;
+                border-radius: 18px;
+                border: 1px solid #1a3ed0;
                 color: #fff;
                 font-family: inherit;
-                font-size: 12px;
-                font-weight: 400;
-                padding: 8px 10px;
+                font-size: 14px;
+                font-weight: 600;
+                padding: 6px 24px;
                 text-decoration: none;
                 text-transform: uppercase;
-                transition: 0.2s all ease-in-out;
+            }
+
+            .secondary-button {
+                background-color: #f5f8fb;
+                border-radius: 18px;
+                border: 1px solid transparent;
+                color: #1a3ed0;
+                font-family: inherit;
+                font-size: 14px;
+                font-weight: 600;
+                padding: 6px 24px;
+                text-decoration: none;
+                text-transform: uppercase;
+            }
+
+            .secondary-button:hover {
+                background-color: #dfe7f2;
             }
 
             .link:hover {
@@ -108,7 +123,7 @@
                 class="logo"
                 width="160"
                 height="160"
-                src="https://beta.thedeep.io/deep-logo-grey.png"
+                src="{{ protocol }}://{{ domain }}{% static 'image/deep-logo.png' %}"
             />
             {% load i18n %}{% autoescape off %}
             <p class="header">
@@ -131,7 +146,7 @@
                             class="icon"
                             width="20"
                             height="20"
-                            src="https://beta.thedeep.io/assets/b75807b6b25e3a0fbfef0cff2ac480b9.png"
+                            src="{{ protocol }}://{{ domain }}{% static 'image/skype.png' %}"
                         />
                     </a>
                     <a
@@ -141,7 +156,7 @@
                             class="icon"
                             width="20"
                             height="20"
-                            src="https://beta.thedeep.io/assets/ceb2ee32fae85bb99262eb68e0227915.png"
+                            src="{{ protocol }}://{{ domain }}{% static 'image/slack.png' %}"
                         />
                     </a>
                 </div>
@@ -154,7 +169,7 @@
                             class="zen"
                             width="16"
                             height="16"
-                            src="https://beta.thedeep.io/assets/998aff77756caa02f20f3cf3b81e03d5.png"
+                            src="{{ protocol }}://{{ domain }}{% static 'image/zendesk.png' %}"
                         />
                     </a>
                 </div>
