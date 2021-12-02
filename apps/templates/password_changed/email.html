@@ -1,22 +1,59 @@
+{% extends "registration/base_email.html" %}
+
+{% block head %}
+    <style>
+        .table {
+            margin: auto;
+        }
+        .cell {
+            text-align: left;
+            padding: 0 4px;
+            font-weight: 600;
+            font-family: inherit;
+            color: #616161;
+        }
+        .button {
+            display: inline-block;
+            margin: 12px 0;
+        }
+    </style>
+{% endblock %}
 
 {% block container %}
     <p>
         Your password has been changed successfully.
-        Time:{{time}}
-        Location:{{location}}
-        Device:{{device}}
-        If you are aware of this change, you can disregard this email.
-        If this was not triggered by you, click the button below to reset your password.
-        <a class="button-link"
-        href="{{ protocol }}://{{client_domain}}/password-reset/"
-        >
-        Reset Password
-        </a>
-        <br>
-        Incase yo like to change your password
-        <a class="button-link"
-        href="{{ protocol }}://{{client_domain}}/users/me/change-password/">
-            Change Password
-        </a>
     </p>
+    <table class="table">
+        <tr>
+            <th class="cell">Time:</th>
+            <th class="cell">{{time}}</th>
+        </tr>
+        <tr>
+            <th class="cell">Location:</th>
+            <th class="cell">{{location}}</th>
+        </tr>
+        <tr>
+            <th class="cell">Device:</th>
+            <th class="cell">{{device}}</th>
+        </tr>
+    </table>
+    <p>
+        If you are aware of this change, you can disregard this email.
+        If this was not triggered by you, please reset your password.
+    </p>
+    <a
+        class="button"
+        href="{{ protocol }}://{{client_domain}}/password-reset/"
+    >
+        Reset Password
+    </a>
+    <p>
+        If you would like to change your password
+    </p>
+    <a
+        class="button"
+        href="{{ protocol }}://{{client_domain}}/users/me/change-password/"
+    >
+        Change Password
+    </a>
 {% endblock%}
