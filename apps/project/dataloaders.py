@@ -118,7 +118,7 @@ class ProjectExploreStatsLoader(WithContextMixin):
         )
 
         # Recent frameworks
-        top_active_frameworks = AnalysisFramework.get_for_gq(self.context.request.user).annotate(
+        top_active_frameworks = AnalysisFramework.objects.filter(is_private=False).annotate(
             project_count=models.functions.Coalesce(
                 models.Subquery(
                     Project.objects.filter(
