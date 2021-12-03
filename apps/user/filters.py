@@ -17,6 +17,7 @@ class UserGqlFilterSet(django_filters.FilterSet):
     search = django_filters.CharFilter(method='filter_search')
     members_exclude_project = IDFilter(method='filter_exclude_project')
     members_exclude_framework = IDFilter(method='filter_exclude_framework')
+    members_exclude_usergroup = IDFilter(method='filter_exclude_usergroup')
 
     class Meta:
         model = User
@@ -33,6 +34,13 @@ class UserGqlFilterSet(django_filters.FilterSet):
         if value:
             qs = qs.filter(
                 ~models.Q(framework_membership__framework_id=value)
+            )
+        return qs
+
+    def filter_exclude_usergroup(self, qs, name, value):
+        if value:
+            qs = qs.filter(
+                ~models.Q(groupmembership__group_id=value)
             )
         return qs
 

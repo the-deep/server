@@ -10,7 +10,7 @@ snapshots = Snapshot()
 snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with-membership'] = {
     'data': {
         'analysisFramework': {
-            'currentUserRole': 'Default',
+            'currentUserRole': 'DEFAULT',
             'description': 'Quality throughout beautiful instead ahead despite measure ago current practice nation determine operation speak.',
             'id': '1',
             'isPrivate': False,

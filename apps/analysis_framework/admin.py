@@ -107,6 +107,7 @@ class AnalysisFrameworkAdmin(VersionAdmin):
 
 @admin.register(AnalysisFrameworkRole)
 class AnalysisFrameworkRoleAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'type', 'is_default_role')
     readonly_fields = ['is_private_role']
 
     def has_add_permission(self, request, obj=None):

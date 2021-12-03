@@ -7,6 +7,7 @@ from rest_framework import permissions
 
 from deep.exceptions import PermissionDeniedException
 from project.models import Project, ProjectRole, ProjectMembership
+from analysis_framework.models import AnalysisFrameworkRole
 from project.permissions import PROJECT_PERMISSIONS
 from lead.models import Lead
 from entry.models import Entry
@@ -240,6 +241,7 @@ class ProjectPermissions(BasePermissions):
         # ---------------------- Project
         BASE_ACCESS = auto()
         UPDATE_PROJECT = auto()
+        DELETE_PROJECT = auto()
         CAN_ADD_MEMBER = auto()
         # ---------------------- Lead
         CREATE_LEAD = auto()
@@ -276,57 +278,45 @@ class ProjectPermissions(BasePermissions):
     }
 
     # NOTE: If we need to have delete permission as well make sure to update queryset in schema and mutations.
-    VIEWER_NON_CONFIDENTIAL = [
+    READER_NON_CONFIDENTIAL = [
         Permission.BASE_ACCESS,
         Permission.VIEW_ENTRY,
         Permission.VIEW_ONLY_UNPROTECTED_LEAD,
-    ]
-    VIEWER = [
-        Permission.BASE_ACCESS,
-        Permission.VIEW_ENTRY,
-        Permission.VIEW_ALL_LEAD,
-    ]
-    READER_NON_CONFIDENTIAL = [
-        *VIEWER_NON_CONFIDENTIAL,
         Permission.CREATE_EXPORT,
     ]
     READER = [
-        *VIEWER,
+        Permission.BASE_ACCESS,
+        Permission.VIEW_ENTRY,
+        Permission.VIEW_ALL_LEAD,
         Permission.CREATE_EXPORT,
     ]
-    SOURCER = [
-        Permission.CREATE_LEAD,
-        Permission.VIEW_ALL_LEAD,
-        Permission.UPDATE_LEAD,
-        Permission.DELETE_LEAD,
-    ]
-    ANALYST = [
+    MEMBER = [
         *READER,
-        Permission.CREATE_LEAD,
-        Permission.UPDATE_LEAD,
-        Permission.DELETE_LEAD,
         Permission.CREATE_ENTRY,
-        Permission.UPDATE_ENTRY,
+        Permission.CREATE_LEAD,
         Permission.DELETE_ENTRY,
+        Permission.DELETE_LEAD,
+        Permission.UPDATE_ENTRY,
+        Permission.UPDATE_LEAD,
+        Permission.VIEW_ALL_LEAD,
     ]
     ADMIN = [
-        *ANALYST,
+        *MEMBER,
         Permission.UPDATE_PROJECT,
         Permission.CAN_ADD_MEMBER,
     ]
-    CLAIRVOYANT_ONE = [*ADMIN]
+    PROJECT_OWNER = [
+        *ADMIN,
+        Permission.DELETE_PROJECT,
+    ]
 
-    # NOTE: Key are already defined in production.
-    # TODO: Will need to create this role locally to work.
     PERMISSION_MAP = {
-        'Viewer (Non Confidential)': VIEWER_NON_CONFIDENTIAL,
-        'Viewer': VIEWER,
-        'Reader (Non Confidential)': READER_NON_CONFIDENTIAL,
-        'Reader': READER,
-        'Sourcer': SOURCER,
-        'Analyst': ANALYST,
-        'Admin': ADMIN,
-        'Clairvoyant One': CLAIRVOYANT_ONE,
+        ProjectRole.Type.PROJECT_OWNER: PROJECT_OWNER,
+        ProjectRole.Type.ADMIN: ADMIN,
+        ProjectRole.Type.MEMBER: MEMBER,
+        ProjectRole.Type.READER: READER,
+        ProjectRole.Type.READER_NON_CONFIDENTIAL: READER_NON_CONFIDENTIAL,
+        ProjectRole.Type.UNKNOWN: [Permission.BASE_ACCESS],
     }
     BADGES_PERMISSION_MAP = {
         ProjectMembership.BadgeType.QA: Permission.CAN_QUALITY_CONTROL,
@@ -381,15 +371,14 @@ class AnalysisFrameworkPermissions(BasePermissions):
     PRIVATE_EDITOR = [*PRIVATE_VIEWER, Permission.CAN_EDIT_FRAMEWORK]
     PRIVATE_OWNER = [*PRIVATE_EDITOR, Permission.CAN_ADD_USER]
 
-    # NOTE: Key are already defined in production.
-    # TODO: Will need to create this role locally to work.
     PERMISSION_MAP = {
-        'Editor': EDITOR,
-        'Owner': OWNER,
-        'Default': DEFAULT,
-        'Private Editor': PRIVATE_EDITOR,
-        'Private Owner': PRIVATE_OWNER,
-        'Private Viewer': PRIVATE_VIEWER,
+        AnalysisFrameworkRole.Type.EDITOR: EDITOR,
+        AnalysisFrameworkRole.Type.OWNER: OWNER,
+        AnalysisFrameworkRole.Type.DEFAULT: DEFAULT,
+        AnalysisFrameworkRole.Type.PRIVATE_EDITOR: PRIVATE_EDITOR,
+        AnalysisFrameworkRole.Type.PRIVATE_OWNER: PRIVATE_OWNER,
+        AnalysisFrameworkRole.Type.PRIVATE_VIEWER: PRIVATE_VIEWER,
+
     }
 
     CONTEXT_PERMISSION_ATTR = 'af_permissions'

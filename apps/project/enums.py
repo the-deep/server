@@ -5,6 +5,7 @@ from utils.graphene.enums import (
 
 from .models import (
     Project,
+    ProjectRole,
     ProjectJoinRequest,
     ProjectOrganization,
     ProjectStats,
@@ -13,6 +14,7 @@ from .models import (
 )
 
 ProjectStatusEnum = convert_enum_to_graphene_enum(Project.Status, name='ProjectStatusEnum')
+ProjectRoleTypeEnum = convert_enum_to_graphene_enum(ProjectRole.Type, name='ProjectRoleTypeEnum')
 ProjectOrganizationTypeEnum = convert_enum_to_graphene_enum(ProjectOrganization.Type, name='ProjectOrganizationTypeEnum')
 ProjectJoinRequestStatusEnum = convert_enum_to_graphene_enum(ProjectJoinRequest.Status, name='ProjectJoinRequestStatusEnum')
 ProjectStatsStatusEnum = convert_enum_to_graphene_enum(ProjectStats.Status, name='ProjectStatsStatusEnum')
@@ -29,6 +31,7 @@ enum_map = {
         (ProjectStats.status, ProjectStatsStatusEnum),
         (ProjectMembership.badges, ProjectMembershipBadgeTypeEnum),
         (ProjectUserGroupMembership.badges, ProjectMembershipBadgeTypeEnum),
+        (ProjectRole.type, ProjectRoleTypeEnum),
     )
 }
 

@@ -18,9 +18,9 @@ snapshots['TestProjectMembershipMutation::test_user_group_membership_admin_bulk 
             'id': '1',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'role': {
-                'id': '6',
+                'id': '3',
                 'level': 200,
-                'title': 'Analyst'
+                'title': 'Member'
             },
             'usergroup': {
                 'id': '3',
@@ -64,8 +64,8 @@ snapshots['TestProjectMembershipMutation::test_user_group_membership_admin_bulk 
             'id': '6',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'role': {
-                'id': '6',
-                'title': 'Analyst'
+                'id': '3',
+                'title': 'Member'
             },
             'usergroup': {
                 'id': '5',
@@ -83,8 +83,8 @@ snapshots['TestProjectMembershipMutation::test_user_group_membership_admin_bulk 
             'id': '7',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'role': {
-                'id': '6',
-                'title': 'Analyst'
+                'id': '3',
+                'title': 'Member'
             },
             'usergroup': {
                 'id': '6',
@@ -156,7 +156,7 @@ snapshots['TestProjectMembershipMutation::test_user_group_membership_admin_bulk 
             'id': '2',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'role': {
-                'id': '7',
+                'id': '4',
                 'title': 'Admin'
             },
             'usergroup': {
@@ -178,9 +178,9 @@ snapshots['TestProjectMembershipMutation::test_user_group_membership_using_clair
             'id': '1',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'role': {
-                'id': '6',
+                'id': '3',
                 'level': 200,
-                'title': 'Analyst'
+                'title': 'Member'
             },
             'usergroup': {
                 'id': '3',
@@ -212,8 +212,8 @@ snapshots['TestProjectMembershipMutation::test_user_group_membership_using_clair
             'id': '2',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'role': {
-                'id': '8',
-                'title': 'Clairvoyant One'
+                'id': '5',
+                'title': 'Project Owner'
             },
             'usergroup': {
                 'id': '4',
@@ -232,8 +232,8 @@ snapshots['TestProjectMembershipMutation::test_user_group_membership_using_clair
             'id': '6',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'role': {
-                'id': '6',
-                'title': 'Analyst'
+                'id': '3',
+                'title': 'Member'
             },
             'usergroup': {
                 'id': '5',
@@ -251,8 +251,8 @@ snapshots['TestProjectMembershipMutation::test_user_group_membership_using_clair
             'id': '7',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'role': {
-                'id': '6',
-                'title': 'Analyst'
+                'id': '3',
+                'title': 'Member'
             },
             'usergroup': {
                 'id': '6',
@@ -314,8 +314,8 @@ snapshots['TestProjectMembershipMutation::test_user_group_membership_using_clair
             'id': '2',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'role': {
-                'id': '8',
-                'title': 'Clairvoyant One'
+                'id': '5',
+                'title': 'Project Owner'
             },
             'usergroup': {
                 'id': '4',
@@ -347,9 +347,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 1'
                 'id': '6'
             },
             'role': {
-                'id': '6',
+                'id': '3',
                 'level': 200,
-                'title': 'Analyst'
+                'title': 'Member'
             }
         }
     ],
@@ -393,8 +393,8 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 1'
                 'id': '8'
             },
             'role': {
-                'id': '6',
-                'title': 'Analyst'
+                'id': '3',
+                'title': 'Member'
             }
         },
         {
@@ -412,8 +412,8 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 1'
                 'id': '9'
             },
             'role': {
-                'id': '6',
-                'title': 'Analyst'
+                'id': '3',
+                'title': 'Member'
             }
         }
     ]
@@ -488,7 +488,7 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 2'
                 'id': '7'
             },
             'role': {
-                'id': '7',
+                'id': '4',
                 'title': 'Admin'
             }
         }
@@ -513,9 +513,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
                 'id': '6'
             },
             'role': {
-                'id': '6',
+                'id': '3',
                 'level': 200,
-                'title': 'Analyst'
+                'title': 'Member'
             }
         }
     ],
@@ -550,8 +550,8 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
                 'id': '7'
             },
             'role': {
-                'id': '8',
-                'title': 'Clairvoyant One'
+                'id': '5',
+                'title': 'Project Owner'
             }
         },
         None,
@@ -570,8 +570,8 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
                 'id': '8'
             },
             'role': {
-                'id': '6',
-                'title': 'Analyst'
+                'id': '3',
+                'title': 'Member'
             }
         },
         {
@@ -589,8 +589,8 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
                 'id': '9'
             },
             'role': {
-                'id': '6',
-                'title': 'Analyst'
+                'id': '3',
+                'title': 'Member'
             }
         }
     ]
@@ -655,8 +655,8 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
                 'id': '7'
             },
             'role': {
-                'id': '8',
-                'title': 'Clairvoyant One'
+                'id': '5',
+                'title': 'Project Owner'
             }
         },
         None,

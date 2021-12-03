@@ -2,6 +2,7 @@ import uuid
 
 from dateutil.relativedelta import relativedelta
 from django.urls import reverse
+from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.utils.functional import cached_property
@@ -164,7 +165,7 @@ class Project(UserResource):
                     ProjectMembership.objects.filter(
                         project=models.OuterRef('pk'),
                         member=user,
-                    ).order_by('role__title').values('role__title')[:1],
+                    ).order_by('role__type').values('role__type')[:1],
                     output_field=models.CharField()
                 ),
             ).annotate(
@@ -193,7 +194,7 @@ class Project(UserResource):
         current_user_role = None
         badges = []
         if membership:
-            current_user_role = membership.role.title
+            current_user_role = membership.role.type
             badges = membership.badges
         self.current_user_membership_data = dict(
             user_id=user.id,
@@ -588,7 +589,16 @@ class ProjectRole(models.Model):
     Roles for Project
     """
 
+    class Type(models.TextChoices):
+        PROJECT_OWNER = 'project_owner', 'Project Owner'
+        ADMIN = 'admin', 'Admin'
+        MEMBER = 'member', 'Member'
+        READER = 'reader', 'Reader'
+        READER_NON_CONFIDENTIAL = 'reader_non_confidential', 'Reader (Non-confidential)'
+        UNKNOWN = 'unknown', 'Unknown'
+
     title = models.CharField(max_length=255, unique=True)
+    type = models.CharField(choices=Type.choices, default=Type.UNKNOWN, max_length=50)
 
     lead_permissions = models.IntegerField(default=0)
     entry_permissions = models.IntegerField(default=0)
@@ -657,6 +667,12 @@ class ProjectRole(models.Model):
 
             # can be negative if first bit 1, so check if not zero
             return item_permissions & permission_bit != 0
+
+    def clean(self):
+        if self.type != self.Type.UNKNOWN and ProjectRole.objects.filter(type=self.type).count() > 0:
+            raise ValidationError({
+                'type': f'Type: {self.type} is already assigned!!'
+            })
 
 
 class ProjectStats(models.Model):

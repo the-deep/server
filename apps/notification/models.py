@@ -16,13 +16,13 @@ class Notification(models.Model):
         # Entry Comment Notifications Types
         ENTRY_COMMENT_ADD = 'entry_comment_add', 'Entry Comment Add'
         ENTRY_COMMENT_MODIFY = 'entry_comment_modify', 'Entry Comment Modify'
-        ENTRY_COMMENT_ASSIGNEE_CHANGE = 'entry_comment_assignee_change', 'entry_comment_assignee_change'
+        ENTRY_COMMENT_ASSIGNEE_CHANGE = 'entry_comment_assignee_change', 'Entry Comment Assignee Change'
         ENTRY_COMMENT_REPLY_ADD = 'entry_comment_reply_add', 'Entry Comment Reply Add'
         ENTRY_COMMENT_REPLY_MODIFY = 'entry_comment_reply_modify', 'Entry Comment Reply Modify'
         ENTRY_COMMENT_RESOLVED = 'entry_comment_resolved', 'Entry Comment Resolved'
         # Entry Comment Review Notifications Types
-        ENTRY_REVIEW_COMMENT_ADD = 'entry_review_comment_add', 'entry_review_comment_add'
-        ENTRY_REVIEW_COMMENT_MODIFY = 'entry_review_comment_modify', 'entry_review_comment_modify'
+        ENTRY_REVIEW_COMMENT_ADD = 'entry_review_comment_add', 'Entry Review Comment Add'
+        ENTRY_REVIEW_COMMENT_MODIFY = 'entry_review_comment_modify', 'Entry Review Comment Modify'
 
     class Status(models.TextChoices):
         SEEN = 'seen', 'Seen'

@@ -77,8 +77,11 @@ class TestProjectSchema(GraphQLTestCase):
         '''
 
         user = UserFactory.create()
-        public_project, public_project2, public_project3, public_project4 = ProjectFactory.create_batch(4)
         analysis_framework = AnalysisFrameworkFactory.create()
+        public_project, public_project2, public_project3, public_project4 = ProjectFactory.create_batch(
+            4,
+            analysis_framework=analysis_framework
+        )
         now = timezone.now()
         lead1_1 = self.update_obj(LeadFactory.create(project=public_project), created_at=now + relativedelta(months=-1))
         lead1_2 = self.update_obj(LeadFactory.create(project=public_project), created_at=now + relativedelta(months=-2))
@@ -140,9 +143,8 @@ class TestProjectSchema(GraphQLTestCase):
         EntryFactory.create(lead=lead3, project=public_project3, controlled=False, analysis_framework=analysis_framework)
 
         user2, user3, request_user, non_member_user = UserFactory.create_batch(4)
-        analysis_framework = AnalysisFrameworkFactory.create()
-        public_project = ProjectFactory.create()
-        private_project = ProjectFactory.create(is_private=True)
+        public_project = ProjectFactory.create(analysis_framework=analysis_framework)
+        private_project = ProjectFactory.create(is_private=True, analysis_framework=analysis_framework)
         ProjectJoinRequestFactory.create(
             project=public_project, requested_by=request_user,
             status='pending', role=self.project_role_admin
@@ -637,8 +639,8 @@ class TestProjectViz(GraphQLTestCase):
         non_confidential_user = UserFactory.create()
         non_member_user = UserFactory.create()
         project = ProjectFactory.create(analysis_framework=af)
-        project.add_member(member_user, role=self.project_role_analyst)
-        project.add_member(non_confidential_user, role=self.project_role_viewer_non_confidential)
+        project.add_member(member_user, role=self.project_role_member)
+        project.add_member(non_confidential_user, role=self.project_role_reader_non_confidential)
 
         def _query_check(**kwargs):
             return self.query_check(query, variables={'id': project.pk}, **kwargs)

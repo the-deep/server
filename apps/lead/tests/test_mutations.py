@@ -66,8 +66,8 @@ class TestLeadMutationSchema(GraphQLTestCase):
         self.non_member_user = UserFactory.create()
         self.readonly_member_user = UserFactory.create()
         self.member_user = UserFactory.create()
-        self.project.add_member(self.readonly_member_user, role=self.project_role_viewer_non_confidential)
-        self.project.add_member(self.member_user, role=self.project_role_analyst)
+        self.project.add_member(self.readonly_member_user, role=self.project_role_reader_non_confidential)
+        self.project.add_member(self.member_user, role=self.project_role_member)
 
     def test_lead_create(self):
         """
@@ -361,7 +361,7 @@ class TestLeadBulkMutationSchema(GraphQLSnapShotTestCase):
         project = ProjectFactory.create()
         # User with role
         user = UserFactory.create()
-        project.add_member(user, role=self.project_role_analyst)
+        project.add_member(user, role=self.project_role_member)
         lead1 = LeadFactory.create(project=project)
         lead2 = LeadFactory.create(project=project, source_type=Lead.SourceType.WEBSITE, url='https://example.com/path')
 

@@ -122,7 +122,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
             'errors': None,
             'ok': True,
             'result': {
-                'currentUserRole': 'Owner',
+                'currentUserRole': 'OWNER',
                 'description': 'Af description',
                 'id': '1',
                 'isPrivate': False,
@@ -349,7 +349,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
 }
 
 snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framework_update created'] = {
-    'currentUserRole': 'Owner',
+    'currentUserRole': 'OWNER',
     'description': 'Af description',
     'id': '1',
     'isPrivate': False,
@@ -494,7 +494,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                 'errors': None,
                 'ok': True,
                 'result': {
-                    'currentUserRole': 'Owner',
+                    'currentUserRole': 'OWNER',
                     'description': 'Updated Af description',
                     'id': '1',
                     'isPrivate': False,
@@ -595,7 +595,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                 'errors': None,
                 'ok': True,
                 'result': {
-                    'currentUserRole': 'Owner',
+                    'currentUserRole': 'OWNER',
                     'description': 'Updated Af description',
                     'id': '1',
                     'isPrivate': False,
@@ -706,7 +706,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                 'errors': None,
                 'ok': True,
                 'result': {
-                    'currentUserRole': 'Owner',
+                    'currentUserRole': 'OWNER',
                     'description': 'Updated Af description',
                     'id': '1',
                     'isPrivate': False,
