@@ -335,14 +335,50 @@ class TestProjectSchema(GraphQLTestCase):
               }
             }
         '''
-        public_project1, public_project2, public_project3 = ProjectFactory.create_batch(3)
-        private_project = ProjectFactory.create(is_private=True)
+        # Lets create some analysis_framework(private + publice)
+        public_analysis_framework = AnalysisFrameworkFactory.create(
+            is_private=False,
+            title='Public Analysis Framework Title'
+        )
+        private_analysis_framework = AnalysisFrameworkFactory.create(
+            title='Private Analysis Framework Title',
+            is_private=True
+        )
 
+        # lets create some regions(private + public)
+        public_region = RegionFactory.create(public=True, title='Public Region')
+        private_region = RegionFactory.create(public=False, title='Private Region')
+        public_project1 = ProjectFactory.create(analysis_framework=public_analysis_framework, regions=[public_region])
+        public_project2 = ProjectFactory.create(analysis_framework=public_analysis_framework, regions=[private_region])
+        public_project3 = ProjectFactory.create(analysis_framework=private_analysis_framework, regions=[public_region])
+        private_project = ProjectFactory.create(is_private=True)
         content = self.query_check(query)
         self.assertEqual(content['data']['publicProjects']['totalCount'], 3, content)
         self.assertListIds(
             content['data']['publicProjects']['results'],
             [public_project1, public_project2, public_project3],
+            content
+        )
+        # some checks for analysis_framework private and public
+        self.assertEqual(
+            content['data']['publicProjects']['results'][0]['analysisFrameworkTitle'],
+            'Public Analysis Framework Title',
+            content
+        )
+        self.assertEqual(
+            content['data']['publicProjects']['results'][2]['analysisFrameworkTitle'],
+            None,
+            content
+        )
+        # some check for regions private and public
+        self.assertEqual(
+            content['data']['publicProjects']['results'][2]['regionsTitle'],
+            'Public Region',
+            content
+        )
+        self.assertEqual(
+            content['data']['publicProjects']['results'][1]['regionsTitle'],
+            None,
             content
         )
         # make sure private projects are not visible here

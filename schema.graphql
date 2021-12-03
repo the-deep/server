@@ -1503,6 +1503,7 @@ type PublicProjectType {
   numberOfUsers: Int!
   numberOfLeads: Int!
   numberOfEntries: Int!
+  analysisFrameworkPreview: String
 }
 
 type Query {
