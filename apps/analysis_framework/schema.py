@@ -25,6 +25,7 @@ from .enums import (
     WidgetWidgetTypeEnum,
     WidgetWidthTypeEnum,
     WidgetFilterTypeEnum,
+    AnalysisFrameworkRoleTypeEnum,
 )
 from .filter_set import AnalysisFrameworkGqFilterSet
 
@@ -85,7 +86,7 @@ class AnalysisFrameworkType(DjangoObjectType):
             'created_by', 'created_at', 'modified_by', 'modified_at',
         )
 
-    current_user_role = graphene.String()
+    current_user_role = graphene.Field(AnalysisFrameworkRoleTypeEnum)
     preview_image = graphene.Field(FileFieldType)
     allowed_permissions = graphene.List(
         graphene.NonNull(

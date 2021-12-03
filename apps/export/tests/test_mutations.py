@@ -118,9 +118,9 @@ class TestExportMutationSchema(GraphQLTestCase):
         self.readonly_member_user = UserFactory.create()
         self.member_user = UserFactory.create()
         self.another_member_user = UserFactory.create()
-        self.project.add_member(self.readonly_member_user, role=self.project_role_viewer_non_confidential)
-        self.project.add_member(self.member_user, role=self.project_role_analyst)
-        self.project.add_member(self.another_member_user, role=self.project_role_analyst)
+        self.project.add_member(self.readonly_member_user, role=self.project_role_reader_non_confidential)
+        self.project.add_member(self.member_user, role=self.project_role_member)
+        self.project.add_member(self.another_member_user, role=self.project_role_member)
         self.common_export_attrs = dict(
             project=self.project,
             format=Export.Format.DOCX,
@@ -153,10 +153,6 @@ class TestExportMutationSchema(GraphQLTestCase):
 
         # -- With login (non-member)
         self.force_login(self.non_member_user)
-        _query_check(minput, assert_for_error=True)
-
-        # --- member user (read-only)
-        self.force_login(self.readonly_member_user)
         _query_check(minput, assert_for_error=True)
 
         # --- member user

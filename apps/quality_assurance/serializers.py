@@ -141,7 +141,6 @@ class EntryReviewCommentSerializer(serializers.ModelSerializer):
                 if user.pk not in current_mentioned_users_pk
             ]
             instance = super().update(instance, validated_data)
-            instance.save()
 
         if text and text_changed:
             self._add_comment_text(instance, text)

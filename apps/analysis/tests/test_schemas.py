@@ -38,7 +38,7 @@ class TestAnalysisQuerySchema(GraphQLTestCase):
         member_user = UserFactory.create()
         non_member_user = UserFactory.create()
         project = ProjectFactory.create()
-        project.add_member(member_user, role=self.project_role_viewer_non_confidential)
+        project.add_member(member_user, role=self.project_role_reader_non_confidential)
         analyses = AnalysisFactory.create_batch(2, project=project, team_lead=member_user, end_date=datetime.datetime.now())
         for analysis in analyses:
             AnalysisPillarFactory.create_batch(5, analysis=analysis, assignee=member_user)
@@ -84,7 +84,7 @@ class TestAnalysisQuerySchema(GraphQLTestCase):
         member_user = UserFactory.create()
         non_member_user = UserFactory.create()
         project = ProjectFactory.create()
-        project.add_member(member_user, role=self.project_role_viewer_non_confidential)
+        project.add_member(member_user, role=self.project_role_reader_non_confidential)
         analysis = AnalysisFactory.create(project=project, team_lead=member_user, end_date=datetime.datetime.now())
         analysis_pillar = AnalysisPillarFactory.create(analysis=analysis, assignee=member_user)
 
@@ -136,7 +136,7 @@ class TestAnalysisQuerySchema(GraphQLTestCase):
         af = AnalysisFrameworkFactory.create()
         project = ProjectFactory.create(analysis_framework=af)
         another_project = ProjectFactory.create(analysis_framework=af)
-        project.add_member(member_user, role=self.project_role_viewer_non_confidential)
+        project.add_member(member_user, role=self.project_role_reader_non_confidential)
         analysis = AnalysisFactory.create(project=project, team_lead=member_user, end_date=now)
         analysis_pillar = AnalysisPillarFactory.create(analysis=analysis, assignee=member_user)
 
