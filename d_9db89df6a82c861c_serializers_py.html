@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/project/serializers.py: 88%</title>
+    <title>Coverage for apps/project/serializers.py: 89%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="coverage_html.js" defer></script>
@@ -13,7 +13,7 @@
     <div class="content">
         <h1>
             <span class="text">Coverage for </span><b>apps/project/serializers.py</b>:
-            <span class="pc_cov">88%</span>
+            <span class="pc_cov">89%</span>
         </h1>
         <div id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
@@ -86,7 +86,7 @@
     <p class="run"><span class="n"><a id="t25" href="#t25">25</a></span><span class="t"><span class="key">from</span> <span class="nam">user_group</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">UserGroup</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t26" href="#t26">26</a></span><span class="t"><span class="key">from</span> <span class="nam">user</span><span class="op">.</span><span class="nam">utils</span> <span class="key">import</span> <span class="nam">send_project_join_request_emails</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t27" href="#t27">27</a></span><span class="t"><span class="key">from</span> <span class="nam">user_group</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="nam">SimpleUserGroupSerializer</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t28" href="#t28">28</a></span><span class="t"><span class="key">from</span> <span class="nam">user_resource</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="nam">UserResourceSerializer</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t28" href="#t28">28</a></span><span class="t"><span class="key">from</span> <span class="nam">user_resource</span><span class="op">.</span><span class="nam">serializers</span> <span class="key">import</span> <span class="nam">UserResourceSerializer</span><span class="op">,</span> <span class="nam">DeprecatedUserResourceSerializer</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t29" href="#t29">29</a></span><span class="t"><span class="key">from</span> <span class="nam">ary</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">AssessmentTemplate</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t30" href="#t30">30</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t31" href="#t31">31</a></span><span class="t">    <span class="nam">Project</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -284,7 +284,7 @@
     <p class="mis show_mis"><span class="n"><a id="t223" href="#t223">223</a></span><span class="t">        <span class="key">return</span> <span class="nam">resource</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t224" href="#t224">224</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t225" href="#t225">225</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t226" href="#t226">226</a></span><span class="t"><span class="key">class</span> <span class="nam">ProjectSerializer</span><span class="op">(</span><span class="nam">RemoveNullFieldsMixin</span><span class="op">,</span> <span class="nam">DynamicFieldsMixin</span><span class="op">,</span> <span class="nam">UserResourceSerializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t226" href="#t226">226</a></span><span class="t"><span class="key">class</span> <span class="nam">ProjectSerializer</span><span class="op">(</span><span class="nam">RemoveNullFieldsMixin</span><span class="op">,</span> <span class="nam">DynamicFieldsMixin</span><span class="op">,</span> <span class="nam">DeprecatedUserResourceSerializer</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t227" href="#t227">227</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t228" href="#t228">228</a></span><span class="t">    <span class="nam">organizations</span> <span class="op">=</span> <span class="nam">ProjectOrganizationSerializer</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t229" href="#t229">229</a></span><span class="t">        <span class="nam">source</span><span class="op">=</span><span class="str">'projectorganization_set'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -825,8 +825,8 @@
 <footer>
     <div class="content">
         <p>
-            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.1.2</a>,
-            created at 2021-11-26 08:10 +0000
+            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.2</a>,
+            created at 2021-12-03 06:21 +0000
         </p>
     </div>
 </footer>
