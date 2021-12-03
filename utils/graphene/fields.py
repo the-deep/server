@@ -15,7 +15,7 @@ from graphene_django_extras.settings import graphql_api_settings
 from graphene_django_extras.utils import get_extra_filters
 from graphene_django.rest_framework.serializer_converter import get_graphene_type_from_serializer_field
 
-from utils.graphene.pagination import OrderingOnlyArgumentPagination
+from utils.graphene.pagination import OrderingOnlyArgumentPagination, NoOrderingPageGraphqlPagination
 
 
 class CustomDjangoListObjectBase(DjangoListObjectBase):
@@ -215,8 +215,12 @@ class DjangoPaginatedListObjectField(DjangoFilterPaginateListField):
 
         if getattr(self, "pagination", None):
             ordering = kwargs.pop(self.pagination.ordering_param, None) or self.pagination.ordering
-            ordering = ','.join([to_snake_case(each) for each in ordering.strip(',').replace(' ', '').split(',')])
-            self.pagination.ordering = ordering
+            if type(self.pagination) == NoOrderingPageGraphqlPagination:
+                # This is handled in filterset
+                self.pagination.ordering = None
+            else:
+                ordering = ','.join([to_snake_case(each) for each in ordering.strip(',').replace(' ', '').split(',')])
+                self.pagination.ordering = ordering
             'pageSize' in kwargs and kwargs['pageSize'] is None and kwargs.pop('pageSize')
             qs = self.pagination.paginate_queryset(qs, **kwargs)
 

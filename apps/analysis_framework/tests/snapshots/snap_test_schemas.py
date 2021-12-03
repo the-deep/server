@@ -98,16 +98,6 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'version': 1,
                         },
                         {
-                            'id': '7',
-                            'key': 'widget-key-1',
-                            'order': 1,
-                            'properties': {
-                            },
-                            'title': 'Widget-1',
-                            'widgetId': 'CONDITIONAL',
-                            'version': 1,
-                        },
-                        {
                             'id': '8',
                             'key': 'widget-key-2',
                             'order': 2,
@@ -135,16 +125,6 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'title': 'Section-0',
                     'tooltip': 'Some tooltip info 101',
                     'widgets': [
-                        {
-                            'id': '1',
-                            'key': 'widget-key-0',
-                            'order': 0,
-                            'properties': {
-                            },
-                            'title': 'Widget-0',
-                            'widgetId': 'CONDITIONAL',
-                            'version': 1,
-                        },
                         {
                             'id': '2',
                             'key': 'widget-key-1',
@@ -281,16 +261,6 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'version': 1,
                         },
                         {
-                            'id': '7',
-                            'key': 'widget-key-1',
-                            'order': 1,
-                            'properties': {
-                            },
-                            'title': 'Widget-1',
-                            'widgetId': 'CONDITIONAL',
-                            'version': 1,
-                        },
-                        {
                             'id': '8',
                             'key': 'widget-key-2',
                             'order': 2,
@@ -318,16 +288,6 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'title': 'Section-0',
                     'tooltip': 'Some tooltip info 101',
                     'widgets': [
-                        {
-                            'id': '1',
-                            'key': 'widget-key-0',
-                            'order': 0,
-                            'properties': {
-                            },
-                            'title': 'Widget-0',
-                            'widgetId': 'CONDITIONAL',
-                            'version': 1,
-                        },
                         {
                             'id': '2',
                             'key': 'widget-key-1',

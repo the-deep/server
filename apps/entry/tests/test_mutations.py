@@ -192,9 +192,9 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
         """
         minput = dict(
             attributes=[
-                dict(widget=self.widget1.pk, data=self.dummy_data, clientId='client-id-attribute-1'),
-                dict(widget=self.widget2.pk, data=self.dummy_data, clientId='client-id-attribute-2'),
-                dict(widget=self.widget3.pk, data=self.dummy_data, clientId='client-id-attribute-3'),
+                dict(widget=self.widget1.pk, data=self.dummy_data, clientId='client-id-attribute-1', widgetVersion=1),
+                dict(widget=self.widget2.pk, data=self.dummy_data, clientId='client-id-attribute-2', widgetVersion=1),
+                dict(widget=self.widget3.pk, data=self.dummy_data, clientId='client-id-attribute-3', widgetVersion=1),
             ],
             order=1,
             lead=self.lead.pk,
@@ -246,9 +246,9 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
 
         minput = dict(
             attributes=[
-                dict(widget=self.widget1.pk, data=self.dummy_data, clientId='client-id-attribute-1'),
-                dict(widget=self.widget2.pk, data=self.dummy_data, clientId='client-id-attribute-2'),
-                dict(widget=self.widget1.pk, data=self.dummy_data, clientId='client-id-attribute-3'),
+                dict(widget=self.widget1.pk, data=self.dummy_data, clientId='client-id-attribute-1', widgetVersion=1),
+                dict(widget=self.widget2.pk, data=self.dummy_data, clientId='client-id-attribute-2', widgetVersion=1),
+                dict(widget=self.widget1.pk, data=self.dummy_data, clientId='client-id-attribute-3', widgetVersion=1),
             ],
             order=1,
             lead=self.lead.pk,
@@ -338,10 +338,18 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
                 dict(
                     id=entry2.pk,
                     attributes=[
-                        dict(widget=self.widget1.pk, data=self.dummy_data, clientId='client-id-old-new-attribute-1'),
+                        dict(
+                            widget=self.widget1.pk,
+                            data=self.dummy_data,
+                            clientId='client-id-old-new-attribute-1',
+                            widgetVersion=1
+                        ),
                         dict(
                             id=entry2_att1.pk,
-                            widget=self.widget1.pk, data=self.dummy_data, clientId='client-id-old-attribute-1'
+                            widget=self.widget1.pk,
+                            data=self.dummy_data,
+                            clientId='client-id-old-attribute-1',
+                            widgetVersion=1,
                         ),
                     ],
                     order=1,
@@ -357,7 +365,12 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
                 ),
                 dict(
                     attributes=[
-                        dict(widget=self.widget1.pk, data=self.dummy_data, clientId='client-id-new-attribute-1'),
+                        dict(
+                            widget=self.widget1.pk,
+                            data=self.dummy_data,
+                            clientId='client-id-new-attribute-1',
+                            widgetVersion=1,
+                        ),
                     ],
                     order=1,
                     lead=self.lead.pk,
