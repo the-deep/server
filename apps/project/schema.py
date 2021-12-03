@@ -498,4 +498,4 @@ class Query:
 
     @staticmethod
     def resolve_public_projects_by_region(root, info, **kwargs):
-        return Region.objects.filter(public=True).distinct()
+        return Region.objects.filter(centroid__isnull=False).distinct()
