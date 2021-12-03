@@ -8,6 +8,8 @@ from django.db import models
 
 from utils.graphene.types import CustomDjangoListObjectType
 
+from deep.serializers import URLCachedFileField
+
 from .models import Project
 from .filter_set import ProjectGqlFilterSet
 
@@ -30,6 +32,15 @@ class PublicProjectType(DjangoObjectType):
     number_of_users = graphene.Int(required=True)
     number_of_leads = graphene.Int(required=True)
     number_of_entries = graphene.Int(required=True)
+    analysis_framework_preview = graphene.String()
+
+    @staticmethod
+    def resolve_analysis_framework_preview(root, info, **kwargs):
+        if root.analysis_framework.is_private is False:
+            return info.context.request.build_absolute_uri(
+                URLCachedFileField.name_to_representation(root.analysis_framework.preview_image)
+            )
+        return None
 
 
 class PublicProjectListType(CustomDjangoListObjectType):
@@ -41,8 +52,20 @@ class PublicProjectListType(CustomDjangoListObjectType):
     @classmethod
     def queryset(cls):
         return Project.objects.filter(is_private=False).annotate(
-            analysis_framework_title=models.F('analysis_framework__title'),
-            regions_title=StringAgg('regions__title', ', ', distinct=True),
+            analysis_framework_title=models.Case(
+                models.When(
+                    analysis_framework__is_private=False,
+                    then=models.F('analysis_framework__title')
+                ),
+                default=None,
+            ),
+            regions_title=models.Case(
+                models.When(
+                    regions__public=True,
+                    then=StringAgg('regions__title', ', ', distinct=True)
+                ),
+                default=None,
+            ),
             organizations_title=StringAgg(
                 models.Case(
                     models.When(
