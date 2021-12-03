@@ -32,13 +32,13 @@ class PublicProjectType(DjangoObjectType):
     number_of_users = graphene.Int(required=True)
     number_of_leads = graphene.Int(required=True)
     number_of_entries = graphene.Int(required=True)
-    analysis_framework_preview = graphene.String()
+    analysis_framework_preview_image = graphene.String()
 
     @staticmethod
-    def resolve_analysis_framework_preview(root, info, **kwargs):
-        if root.analysis_framework.is_private is False:
+    def resolve_analysis_framework_preview_image(root, info, **kwargs):
+        if root.preview_image:
             return info.context.request.build_absolute_uri(
-                URLCachedFileField.name_to_representation(root.analysis_framework.preview_image)
+                URLCachedFileField.name_to_representation(root.preview_image)
             )
         return None
 
@@ -58,6 +58,13 @@ class PublicProjectListType(CustomDjangoListObjectType):
                     then=models.F('analysis_framework__title')
                 ),
                 default=None,
+            ),
+            preview_image=models.Case(
+                models.When(
+                    analysis_framework__is_private=False,
+                    then=models.F('analysis_framework__preview_image')
+                ),
+                default=None
             ),
             regions_title=models.Case(
                 models.When(

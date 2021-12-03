@@ -1212,6 +1212,7 @@ type ProjectDetailType {
   allowedPermissions: [ProjectPermission!]!
   stats: ProjectStatType
   membershipPending: Boolean!
+  isRejected: Boolean!
   regions: [RegionDetailType!]
   status: ProjectStatusEnum!
   statusDisplay: EnumDescription!
@@ -1441,6 +1442,7 @@ type ProjectType {
   allowedPermissions: [ProjectPermission!]!
   stats: ProjectStatType
   membershipPending: Boolean!
+  isRejected: Boolean!
   regions: [RegionDetailType!]
   status: ProjectStatusEnum!
   statusDisplay: EnumDescription!
@@ -1503,7 +1505,7 @@ type PublicProjectType {
   numberOfUsers: Int!
   numberOfLeads: Int!
   numberOfEntries: Int!
-  analysisFrameworkPreview: String
+  analysisFrameworkPreviewImage: String
 }
 
 type Query {
