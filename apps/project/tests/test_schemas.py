@@ -67,6 +67,7 @@ class TestProjectSchema(GraphQLTestCase):
                   }
                 }
                 membershipPending
+                isRejected
                 regions {
                   id
                   title
@@ -76,7 +77,7 @@ class TestProjectSchema(GraphQLTestCase):
         '''
 
         user = UserFactory.create()
-        public_project, public_project2, public_project3 = ProjectFactory.create_batch(3)
+        public_project, public_project2, public_project3, public_project4 = ProjectFactory.create_batch(4)
         analysis_framework = AnalysisFrameworkFactory.create()
         now = timezone.now()
         lead1_1 = self.update_obj(LeadFactory.create(project=public_project), created_at=now + relativedelta(months=-1))
@@ -146,7 +147,11 @@ class TestProjectSchema(GraphQLTestCase):
             project=public_project, requested_by=request_user,
             status='pending', role=self.project_role_admin
         )
-
+        # create projectJoinRequest(status='rejected')
+        ProjectJoinRequestFactory.create(
+            project=public_project4, requested_by=request_user,
+            status='rejected', role=self.project_role_admin
+        )
         # add some project member
         public_project.add_member(user)
         public_project.add_member(user2)
@@ -205,6 +210,12 @@ class TestProjectSchema(GraphQLTestCase):
         content = self.query_check(query, variables={'id': public_project.id})
         self.assertNotEqual(content['data']['project'], None, content)
         self.assertEqual(content['data']['project']['membershipPending'], False)
+
+        # login with request_user
+        self.force_login(request_user)
+        content = self.query_check(query, variables={'id': public_project4.id})
+        self.assertNotEqual(content['data']['project'], None, content)
+        self.assertEqual(content['data']['project']['isRejected'], True)
 
         # --- member user
         # ---- (public-project)

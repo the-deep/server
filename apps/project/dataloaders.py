@@ -64,6 +64,20 @@ class ProjectJoinStatusLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key, False) for key in keys])
 
 
+class ProjectRejectStatusLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        join_status_qs = ProjectJoinRequest.objects.filter(
+            project__in=keys,
+            requested_by=self.context.request.user,
+            status='rejected',
+        ).values_list('project_id', flat=True)
+        _map = {
+            project_id: True
+            for project_id in join_status_qs
+        }
+        return Promise.resolve([_map.get(key, False) for key in keys])
+
+
 class OrganizationsLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         qs = ProjectOrganization.objects.filter(project__in=keys)
@@ -234,3 +248,7 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def public_geo_region(self):
         return PublicGeoRegionLoader(context=self.context)
+
+    @cached_property
+    def project_rejected_status(self):
+        return ProjectRejectStatusLoader(context=self.context)

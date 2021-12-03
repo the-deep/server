@@ -196,6 +196,7 @@ class ProjectType(UserResourceMixin, DjangoObjectType):
     )
     stats = graphene.Field(ProjectStatType)
     membership_pending = graphene.Boolean(required=True)
+    is_rejected = graphene.Boolean(required=True)
     regions = DjangoListField(RegionDetailType)
     status = graphene.Field(ProjectStatusEnum, required=True)
     status_display = EnumDescription(source='get_status_display', required=True)
@@ -236,6 +237,10 @@ class ProjectType(UserResourceMixin, DjangoObjectType):
     @staticmethod
     def resolve_membership_pending(root, info):
         return info.context.dl.project.join_status.load(root.pk)
+
+    @staticmethod
+    def resolve_is_rejected(root, info):
+        return info.context.dl.project.project_rejected_status.load(root.pk)
 
     @staticmethod
     def resolve_organizations(root, info):
