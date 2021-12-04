@@ -146,7 +146,7 @@
     <p class="pln"><span class="n"><a id="t85" href="#t85">85</a></span><span class="t">                <span class="nam">Q</span><span class="op">(</span><span class="nam">is_available_for_all</span><span class="op">=</span><span class="key">True</span><span class="op">)</span> <span class="op">|</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t86" href="#t86">86</a></span><span class="t">                <span class="nam">Q</span><span class="op">(</span><span class="nam">users</span><span class="op">=</span><span class="nam">user</span><span class="op">)</span> <span class="op">|</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t87" href="#t87">87</a></span><span class="t">                <span class="nam">Q</span><span class="op">(</span><span class="nam">email_domains__domain_name__exact</span><span class="op">=</span><span class="nam">user_domain</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t88" href="#t88">88</a></span><span class="t">            <span class="op">)</span><span class="op">.</span><span class="nam">order_by</span><span class="op">(</span><span class="str">'key'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t88" href="#t88">88</a></span><span class="t">            <span class="op">)</span><span class="op">.</span><span class="nam">order_by</span><span class="op">(</span><span class="str">'key'</span><span class="op">)</span><span class="op">.</span><span class="nam">distinct</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t89" href="#t89">89</a></span><span class="t">        <span class="key">except</span> <span class="nam">IndexError</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t90" href="#t90">90</a></span><span class="t">            <span class="key">return</span> <span class="nam">Feature</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">none</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t91" href="#t91">91</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -276,7 +276,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.2</a>,
-            created at 2021-12-03 06:21 +0000
+            created at 2021-12-04 14:26 +0000
         </p>
     </div>
 </footer>
