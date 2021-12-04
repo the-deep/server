@@ -581,33 +581,34 @@ class TestProjectSchema(GraphQLTestCase):
               }
             }
         '''
-        region1 = RegionFactory.create(public=False)
-        region2 = RegionFactory.create()
-        region3 = RegionFactory.create()
-        region4 = RegionFactory.create(public=False)
+        fake_centroid = Point(1, 2)
+        region1 = RegionFactory.create(public=False, centroid=fake_centroid)
+        region2 = RegionFactory.create(centroid=fake_centroid)
+        region3 = RegionFactory.create(centroid=fake_centroid)
+        region4 = RegionFactory.create(public=False, centroid=fake_centroid)
+        RegionFactory.create()  # No Centroid ( This will not show)
         project1 = ProjectFactory.create(is_private=False, regions=[region1, region2], title='Test Nepal')
         ProjectFactory.create(is_private=False, regions=[region3], title='Test Canada')
         project2 = ProjectFactory.create(is_private=True, regions=[region4], title='Test Brazil')
 
+        def _query_check(project_filter):
+            return self.query_check(query, variables={'projectFilter': project_filter})
+
         content = self.query_check(query)
-        self.assertEqual(content['data']['publicProjectsByRegion']['totalCount'], 2, content)
+        self.assertEqual(content['data']['publicProjectsByRegion']['totalCount'], 3, content)
 
         # test for project filter
-        project_filter = {'ids': [project1.pk]}
-        content = self.query_check(query, variables={'projectFilter': project_filter})['data']['publicProjectsByRegion']
+        content = _query_check({'ids': [project1.pk]})['data']['publicProjectsByRegion']
+        self.assertEqual(content['totalCount'], 2, content)
+
+        content = _query_check({'ids': [project1.pk, project2.pk]})['data']['publicProjectsByRegion']
+        self.assertEqual(content['totalCount'], 2, content)
+
+        content = _query_check({'search': 'Canada'})['data']['publicProjectsByRegion']
         self.assertEqual(content['totalCount'], 1, content)
 
-        project_filter = {'ids': [project1.pk, project2.pk]}
-        content = self.query_check(query, variables={'projectFilter': project_filter})['data']['publicProjectsByRegion']
-        self.assertEqual(content['totalCount'], 1, content)
-
-        project_filter = {'search': 'Canada'}
-        content = self.query_check(query, variables={'projectFilter': project_filter})['data']['publicProjectsByRegion']
-        self.assertEqual(content['totalCount'], 1, content)
-
-        project_filter = {'search': 'Brazil'}
-        content = self.query_check(query, variables={'projectFilter': project_filter})['data']['publicProjectsByRegion']
-        self.assertEqual(content['totalCount'], 0, content)
+        content = _query_check({'search': 'Brazil'})['data']['publicProjectsByRegion']
+        self.assertEqual(content['totalCount'], 0, content)  # Private projects are not shown
 
 
 class TestProjectViz(GraphQLTestCase):

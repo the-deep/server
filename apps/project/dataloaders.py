@@ -69,7 +69,7 @@ class ProjectRejectStatusLoader(DataLoaderWithContext):
         join_status_qs = ProjectJoinRequest.objects.filter(
             project__in=keys,
             requested_by=self.context.request.user,
-            status='rejected',
+            status=ProjectJoinRequest.Status.REJECTED,
         ).values_list('project_id', flat=True)
         _map = {
             project_id: True

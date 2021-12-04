@@ -85,7 +85,7 @@ class Profile(models.Model):
                 Q(is_available_for_all=True) |
                 Q(users=user) |
                 Q(email_domains__domain_name__exact=user_domain)
-            ).order_by('key')
+            ).order_by('key').distinct()
         except IndexError:
             return Feature.objects.none()
 

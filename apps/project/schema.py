@@ -482,8 +482,7 @@ class Query:
 
     @staticmethod
     def resolve_projects_by_region(root, info, **kwargs):
-        return Region\
-            .get_for(info.context.user)\
+        return Region.objects\
             .filter(centroid__isnull=False)\
             .order_by('centroid')
 
@@ -497,5 +496,5 @@ class Query:
         return PublicProjectListType.queryset()
 
     @staticmethod
-    def resolve_public_projects_by_region(root, info, **kwargs):
-        return Region.objects.filter(centroid__isnull=False).distinct()
+    def resolve_public_projects_by_region(*args, **kwargs):
+        return Query.resolve_projects_by_region(*args, **kwargs)
