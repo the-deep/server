@@ -64,6 +64,20 @@ class ProjectJoinStatusLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key, False) for key in keys])
 
 
+class ProjectRejectStatusLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        join_status_qs = ProjectJoinRequest.objects.filter(
+            project__in=keys,
+            requested_by=self.context.request.user,
+            status=ProjectJoinRequest.Status.REJECTED,
+        ).values_list('project_id', flat=True)
+        _map = {
+            project_id: True
+            for project_id in join_status_qs
+        }
+        return Promise.resolve([_map.get(key, False) for key in keys])
+
+
 class OrganizationsLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         qs = ProjectOrganization.objects.filter(project__in=keys)
@@ -118,7 +132,7 @@ class ProjectExploreStatsLoader(WithContextMixin):
         )
 
         # Recent frameworks
-        top_active_frameworks = AnalysisFramework.get_for_gq(self.context.request.user).annotate(
+        top_active_frameworks = AnalysisFramework.objects.filter(is_private=False).annotate(
             project_count=models.functions.Coalesce(
                 models.Subquery(
                     Project.objects.filter(
@@ -189,8 +203,12 @@ class ProjectExploreStatsLoader(WithContextMixin):
 
 
 class GeoRegionLoader(DataLoaderWithContext):
+    @staticmethod
+    def get_region_queryset():
+        return Region.objects.all()
+
     def batch_load_fn(self, keys):
-        qs = Region.objects.filter(project__in=keys).annotate(
+        qs = self.get_region_queryset().filter(project__in=keys).annotate(
             projects_id=ArrayAgg('project', filter=models.Q(project__in=keys)),
         ).defer('geo_options')
         _map = defaultdict(list)
@@ -198,6 +216,12 @@ class GeoRegionLoader(DataLoaderWithContext):
             for project_id in region.projects_id:
                 _map[project_id].append(region)
         return Promise.resolve([_map.get(key) for key in keys])
+
+
+class PublicGeoRegionLoader(GeoRegionLoader):
+    @staticmethod
+    def get_region_queryset():
+        return Region.objects.filter(public=True)
 
 
 class DataLoaders(WithContextMixin):
@@ -214,13 +238,17 @@ class DataLoaders(WithContextMixin):
     def organizations(self):
         return OrganizationsLoader(context=self.context)
 
-    @cached_property
-    def organization_type_organization(self):
-        return OrganizationsLoader(context=self.context)
-
     def resolve_explore_stats(self):
         return ProjectExploreStatsLoader(context=self.context).resolve()
 
     @cached_property
     def geo_region(self):
         return GeoRegionLoader(context=self.context)
+
+    @cached_property
+    def public_geo_region(self):
+        return PublicGeoRegionLoader(context=self.context)
+
+    @cached_property
+    def project_rejected_status(self):
+        return ProjectRejectStatusLoader(context=self.context)

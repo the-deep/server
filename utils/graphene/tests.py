@@ -204,6 +204,18 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
             message,
         )
 
+    def assertNotListIds(
+        self,
+        current_list, excepted_list, message=None,
+        get_current_list_id=lambda x: str(x['id']),
+        get_not_excepted_list_id=lambda x: str(x.id),
+    ):
+        self.assertNotEqual(
+            set([get_current_list_id(item) for item in current_list]),
+            set([get_not_excepted_list_id(item) for item in excepted_list]),
+            message,
+        )
+
     def assertIdEqual(self, excepted, real, message=None):
         return self.assertEqual(str(excepted), str(real), message)
 

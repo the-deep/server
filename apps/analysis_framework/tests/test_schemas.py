@@ -241,8 +241,6 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
                 }
             '''
 
-        user = UserFactory.create()
-
         # lets create some analysis_framework
         analysis_framework1 = AnalysisFrameworkFactory.create()
         analysis_framework2 = AnalysisFrameworkFactory.create()
@@ -271,12 +269,6 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
         LeadFactory.create_batch(30, project=project7)
         LeadFactory.create_batch(30, project=project8)
         LeadFactory.create_batch(30, project=project9)
-
-        # -- Without login
-        self.query_check(query, assert_for_error=True)
-
-        # -- With login
-        self.force_login(user)
 
         content = self.query_check(query)
 
