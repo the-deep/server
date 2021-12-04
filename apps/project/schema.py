@@ -55,9 +55,11 @@ from .filter_set import (
     ProjectMembershipGqlFilterSet,
     ProjectUserGroupMembershipGqlFilterSet,
     ProjectByRegionGqlFilterSet,
+    PublicProjectByRegionGqlFileterSet,
 )
 from .activity import project_activity_log
 from .tasks import generate_viz_stats
+from .public_schema import PublicProjectListType
 
 
 def get_top_entity_contributor(project, Entity):
@@ -194,6 +196,7 @@ class ProjectType(UserResourceMixin, DjangoObjectType):
     )
     stats = graphene.Field(ProjectStatType)
     membership_pending = graphene.Boolean(required=True)
+    is_rejected = graphene.Boolean(required=True)
     regions = DjangoListField(RegionDetailType)
     status = graphene.Field(ProjectStatusEnum, required=True)
     status_display = EnumDescription(source='get_status_display', required=True)
@@ -236,6 +239,10 @@ class ProjectType(UserResourceMixin, DjangoObjectType):
         return info.context.dl.project.join_status.load(root.pk)
 
     @staticmethod
+    def resolve_is_rejected(root, info):
+        return info.context.dl.project.project_rejected_status.load(root.pk)
+
+    @staticmethod
     def resolve_organizations(root, info):
         return info.context.dl.project.organizations.load(root.pk)
 
@@ -243,7 +250,7 @@ class ProjectType(UserResourceMixin, DjangoObjectType):
         # Need to have a base permission
         if PP.check_permission(info, PP.Permission.BASE_ACCESS):
             return info.context.dl.project.geo_region.load(root.pk)
-        return info.context.dl.project.geo_region.load(root.pk)
+        return info.context.dl.project.public_geo_region.load(root.pk)
 
 
 class AnalysisFrameworkVisibleProjectType(DjangoObjectType):
@@ -425,6 +432,13 @@ class ProjectByRegionListType(CustomDjangoListObjectType):
         filterset_class = ProjectByRegionGqlFilterSet
 
 
+class PublicProjectByRegionListType(CustomDjangoListObjectType):
+    class Meta:
+        model = Region
+        base_type = RegionWithProject
+        filterset_class = PublicProjectByRegionGqlFileterSet
+
+
 class Query:
     project = DjangoObjectField(ProjectDetailType)
     projects = DjangoPaginatedListObjectField(
@@ -436,8 +450,22 @@ class Query:
     recent_projects = graphene.List(graphene.NonNull(ProjectDetailType))
     project_explore_stats = graphene.Field(ProjectExploreStatType)
 
-    # projects_by_region = graphene.List(graphene.NonNull(ProjectByRegion))
+    # only the region for which project are public
     projects_by_region = DjangoPaginatedListObjectField(ProjectByRegionListType)
+
+    # PUBLIC NODES
+    public_projects = DjangoPaginatedListObjectField(
+        PublicProjectListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+    public_projects_by_region = DjangoPaginatedListObjectField(
+        PublicProjectByRegionListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
 
     # NOTE: This is a custom feature, see https://github.com/the-deep/graphene-django-extras
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
@@ -454,11 +482,19 @@ class Query:
 
     @staticmethod
     def resolve_projects_by_region(root, info, **kwargs):
-        return Region\
-            .get_for(info.context.user)\
+        return Region.objects\
             .filter(centroid__isnull=False)\
             .order_by('centroid')
 
     @staticmethod
     def resolve_project_explore_stats(root, info, **kwargs):
         return info.context.dl.project.resolve_explore_stats()
+
+    # PUBLIC RESOLVERS
+    @staticmethod
+    def resolve_public_projects(root, info, **kwargs) -> QuerySet:
+        return PublicProjectListType.queryset()
+
+    @staticmethod
+    def resolve_public_projects_by_region(*args, **kwargs):
+        return Query.resolve_projects_by_region(*args, **kwargs)

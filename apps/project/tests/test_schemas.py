@@ -67,6 +67,7 @@ class TestProjectSchema(GraphQLTestCase):
                   }
                 }
                 membershipPending
+                isRejected
                 regions {
                   id
                   title
@@ -76,7 +77,7 @@ class TestProjectSchema(GraphQLTestCase):
         '''
 
         user = UserFactory.create()
-        public_project, public_project2, public_project3 = ProjectFactory.create_batch(3)
+        public_project, public_project2, public_project3, public_project4 = ProjectFactory.create_batch(4)
         analysis_framework = AnalysisFrameworkFactory.create()
         now = timezone.now()
         lead1_1 = self.update_obj(LeadFactory.create(project=public_project), created_at=now + relativedelta(months=-1))
@@ -146,7 +147,11 @@ class TestProjectSchema(GraphQLTestCase):
             project=public_project, requested_by=request_user,
             status='pending', role=self.project_role_admin
         )
-
+        # create projectJoinRequest(status='rejected')
+        ProjectJoinRequestFactory.create(
+            project=public_project4, requested_by=request_user,
+            status='rejected', role=self.project_role_admin
+        )
         # add some project member
         public_project.add_member(user)
         public_project.add_member(user2)
@@ -205,6 +210,12 @@ class TestProjectSchema(GraphQLTestCase):
         content = self.query_check(query, variables={'id': public_project.id})
         self.assertNotEqual(content['data']['project'], None, content)
         self.assertEqual(content['data']['project']['membershipPending'], False)
+
+        # login with request_user
+        self.force_login(request_user)
+        content = self.query_check(query, variables={'id': public_project4.id})
+        self.assertNotEqual(content['data']['project'], None, content)
+        self.assertEqual(content['data']['project']['isRejected'], True)
 
         # --- member user
         # ---- (public-project)
@@ -312,6 +323,77 @@ class TestProjectSchema(GraphQLTestCase):
         self.assertEqual(content['data']['projects']['totalCount'], 2, content)
         self.assertEqual(content['data']['projects']['results'][0]['id'], str(public_project.pk), content)
         self.assertEqual(content['data']['projects']['results'][1]['id'], str(private_project.pk), content)
+
+    def test_public_projects(self):
+        query = '''
+            query MyQuery {
+              publicProjects (ordering: "id") {
+                page
+                pageSize
+                totalCount
+                results {
+                  id
+                  title
+                  description
+                  createdAt
+                  analysisFrameworkTitle
+                  organizationsTitle
+                  regionsTitle
+                  numberOfEntries
+                  numberOfLeads
+                  numberOfUsers
+                }
+              }
+            }
+        '''
+        # Lets create some analysis_framework(private + publice)
+        public_analysis_framework = AnalysisFrameworkFactory.create(
+            is_private=False,
+            title='Public Analysis Framework Title'
+        )
+        private_analysis_framework = AnalysisFrameworkFactory.create(
+            title='Private Analysis Framework Title',
+            is_private=True
+        )
+
+        # lets create some regions(private + public)
+        public_region = RegionFactory.create(public=True, title='Public Region')
+        private_region = RegionFactory.create(public=False, title='Private Region')
+        public_project1 = ProjectFactory.create(analysis_framework=public_analysis_framework, regions=[public_region])
+        public_project2 = ProjectFactory.create(analysis_framework=public_analysis_framework, regions=[private_region])
+        public_project3 = ProjectFactory.create(analysis_framework=private_analysis_framework, regions=[public_region])
+        private_project = ProjectFactory.create(is_private=True)
+        content = self.query_check(query)
+        self.assertEqual(content['data']['publicProjects']['totalCount'], 3, content)
+        self.assertListIds(
+            content['data']['publicProjects']['results'],
+            [public_project1, public_project2, public_project3],
+            content
+        )
+        # some checks for analysis_framework private and public
+        self.assertEqual(
+            content['data']['publicProjects']['results'][0]['analysisFrameworkTitle'],
+            'Public Analysis Framework Title',
+            content
+        )
+        self.assertEqual(
+            content['data']['publicProjects']['results'][2]['analysisFrameworkTitle'],
+            None,
+            content
+        )
+        # some check for regions private and public
+        self.assertEqual(
+            content['data']['publicProjects']['results'][2]['regionsTitle'],
+            'Public Region',
+            content
+        )
+        self.assertEqual(
+            content['data']['publicProjects']['results'][1]['regionsTitle'],
+            None,
+            content
+        )
+        # make sure private projects are not visible here
+        self.assertNotListIds(content['data']['publicProjects']['results'], [private_project], content)
 
     def test_project_stat_recent(self):
         query = '''
@@ -485,6 +567,48 @@ class TestProjectSchema(GraphQLTestCase):
                     'projectsId': [str(project1.pk)]
                 }
             ], content)
+
+    def test_public_projects_by_region(self):
+        query = '''
+            query MyQuery ($projectFilter: RegionProjectFilterData) {
+              publicProjectsByRegion (projectFilter: $projectFilter) {
+               totalCount
+               results {
+                 id
+                 projectsId
+                 centroid
+               }
+              }
+            }
+        '''
+        fake_centroid = Point(1, 2)
+        region1 = RegionFactory.create(public=False, centroid=fake_centroid)
+        region2 = RegionFactory.create(centroid=fake_centroid)
+        region3 = RegionFactory.create(centroid=fake_centroid)
+        region4 = RegionFactory.create(public=False, centroid=fake_centroid)
+        RegionFactory.create()  # No Centroid ( This will not show)
+        project1 = ProjectFactory.create(is_private=False, regions=[region1, region2], title='Test Nepal')
+        ProjectFactory.create(is_private=False, regions=[region3], title='Test Canada')
+        project2 = ProjectFactory.create(is_private=True, regions=[region4], title='Test Brazil')
+
+        def _query_check(project_filter):
+            return self.query_check(query, variables={'projectFilter': project_filter})
+
+        content = self.query_check(query)
+        self.assertEqual(content['data']['publicProjectsByRegion']['totalCount'], 3, content)
+
+        # test for project filter
+        content = _query_check({'ids': [project1.pk]})['data']['publicProjectsByRegion']
+        self.assertEqual(content['totalCount'], 2, content)
+
+        content = _query_check({'ids': [project1.pk, project2.pk]})['data']['publicProjectsByRegion']
+        self.assertEqual(content['totalCount'], 2, content)
+
+        content = _query_check({'search': 'Canada'})['data']['publicProjectsByRegion']
+        self.assertEqual(content['totalCount'], 1, content)
+
+        content = _query_check({'search': 'Brazil'})['data']['publicProjectsByRegion']
+        self.assertEqual(content['totalCount'], 0, content)  # Private projects are not shown
 
 
 class TestProjectViz(GraphQLTestCase):
