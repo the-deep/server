@@ -13,9 +13,8 @@ from entry.models import (
     Lead,
     Entry,
     Attribute,
-    EntryComment,
-    EntryCommentText,
 )
+from quality_assurance.models import EntryReviewComment
 from analysis_framework.models import (
     AnalysisFramework,
     AnalysisFrameworkRole,
@@ -1715,9 +1714,7 @@ class ProjectApiTest(TestCase):
         entry = self.update_obj(self.create_entry(lead=lead3, project=project), created_at=now + relativedelta(months=-3))
 
         # Entries Comments
-        entry_comment = self.create(EntryComment, entry=entry)
-        self.create(EntryCommentText, comment=entry_comment, text='Old')
-        self.create(EntryCommentText, comment=entry_comment, text='New')
+        self.create(EntryReviewComment, entry=entry)
 
         url = '/api/v1/projects/recent-activities/'
 

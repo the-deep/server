@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.core.cache import cache
 from django.utils.functional import cached_property
 from django.db.models.functions import Cast
 from django.contrib.auth.models import User
@@ -13,6 +14,7 @@ from django.db.models import Q
 from django.db.models.functions import JSONObject
 from django.db import connection as django_db_connection
 
+from deep.caches import CacheKey
 from user_resource.models import UserResource
 from geo.models import Region
 from user_group.models import UserGroup
@@ -224,8 +226,9 @@ class Project(UserResource):
 
     @classmethod
     def get_recent_activities(cls, user):
-        from entry.models import Entry, EntryComment
+        from entry.models import Entry
         from lead.models import Lead
+        from quality_assurance.models import EntryReviewComment
 
         project_qs = cls.get_for_member(user)
         created_by_expression = models.functions.Coalesce(
@@ -247,12 +250,21 @@ class Project(UserResource):
             models.Value('entry', output_field=models.CharField()),
             created_by_expression,
         )
-        entry_comment_qs = EntryComment.objects.filter(entry__project__in=project_qs).values_list(
-            'id', 'entrycommenttext__created_at', 'entry__project_id', 'entry__project__title',
+        entry_comment_qs = EntryReviewComment.objects.filter(entry__project__in=project_qs).values_list(
+            'id', 'created_at', 'entry__project_id', 'entry__project__title',
             'created_by_id', 'created_by__profile__display_picture__file',
             models.Value('entry-comment', output_field=models.CharField()),
             created_by_expression,
         ).distinct('id')
+
+        def _get_activities():
+            return list(leads_qs.union(entry_qs).union(entry_comment_qs).order_by('-created_at')[:30])
+
+        activities = cache.get_or_set(
+            CacheKey.RECENT_ACTIVITIES_KEY_FORMAT.format(user.pk),
+            _get_activities,
+            60 * 5,  # 5min
+        )
 
         return [
             {
@@ -268,7 +280,7 @@ class Project(UserResource):
                     'created_by_display_name',
                 ])
             }
-            for item in leads_qs.union(entry_qs).union(entry_comment_qs).order_by('-created_at')[:30]
+            for item in activities
         ]
 
     @staticmethod
