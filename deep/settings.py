@@ -665,11 +665,14 @@ if DEBUG and 'DOCKER_HOST_IP' in os.environ and not TESTING:
     # https://github.com/flavors/django-graphiql-debug-toolbar#installation
     # FIXME: If mutation are triggered twice https://github.com/flavors/django-graphiql-debug-toolbar/pull/12/files
     # FIXME: All request are triggered twice. Creating multiple entries in admin panel as well.
+    # # JUST FOR Graphiql
     # INSTALLED_APPS += ['debug_toolbar', 'graphiql_debug_toolbar']
     # MIDDLEWARE = ['deep.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
+    # # JUST FOR DRF
+    # INSTALLED_APPS += ['debug_toolbar']
+    # MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
     # INTERNAL_IPS = [os.environ['DOCKER_HOST_IP']]
     pass
-
 
 # https://docs.djangoproject.com/en/3.1/ref/settings/#std:setting-APPEND_SLASH
 APPEND_SLASH = True
