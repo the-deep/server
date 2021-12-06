@@ -6,18 +6,29 @@ from utils.graphene.mutation import (
     PsBulkGrapheneMutation,
     PsDeleteMutation,
 )
+from utils.graphene.error_types import (
+    mutation_is_not_valid,
+    CustomErrorType
+)
 from deep.permissions import ProjectPermissions as PP
 
 from .models import Lead, LeadGroup
 from .schema import LeadType, LeadGroupType
 from .serializers import (
     LeadGqSerializer as LeadSerializer,
+    LeadCopySerializer
 )
 
 
 LeadInputType = generate_input_type_for_serializer(
     'LeadInputType',
     serializer_class=LeadSerializer,
+)
+
+
+LeadCopyInputType = generate_input_type_for_serializer(
+    'LeadCopyInputType',
+    serializer_class=LeadCopySerializer,
 )
 
 
@@ -84,9 +95,27 @@ class BulkLead(LeadMutationMixin, PsBulkGrapheneMutation):
     permissions = [PP.Permission.CREATE_LEAD]
 
 
+class LeadCopy(graphene.Mutation):
+    class Arguments:
+        data = LeadCopyInputType(required=True)
+
+    errors = graphene.List(graphene.NonNull(CustomErrorType))
+    ok = graphene.Boolean()
+    result = graphene.Field(LeadType)
+
+    @staticmethod
+    def mutate(root, info, data):
+        serializer = LeadCopySerializer(data=data, context={'request': info.context.request})
+        if errors := mutation_is_not_valid(serializer):
+            return LeadCopy(errors=errors, ok=False)
+        instance = serializer.save()
+        return LeadCopy(result=instance, errors=None, ok=True)
+
+
 class Mutation():
     lead_create = CreateLead.Field()
     lead_update = UpdateLead.Field()
     lead_delete = DeleteLead.Field()
     lead_bulk = BulkLead.Field()
     lead_group_delete = DeleteLeadGroup.Field()
+    lead_copy = LeadCopy.Field()
