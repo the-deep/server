@@ -621,7 +621,7 @@ type ExploreProjectStatTopActiveProjectsType {
 }
 
 input ExportCreateInputType {
-  title: String!
+  title: String
   type: ExportDataTypeEnum!
   format: ExportFormatEnum!
   exportType: ExportExportTypeEnum!

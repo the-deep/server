@@ -159,37 +159,12 @@ class ExportReportStructureWidgetSerializer(serializers.Serializer):
 
 
 class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.ModelSerializer):
-    SUPPORTED_EXPORT_TYPES_BY_DATE_TYPE = {
-        Export.DataType.ENTRIES: [
-            Export.ExportType.EXCEL,
-            Export.ExportType.REPORT,
-            Export.ExportType.JSON,
-        ],
-        Export.DataType.ASSESSMENTS: [
-            Export.ExportType.EXCEL,
-        ],
-        Export.DataType.PLANNED_ASSESSMENTS: [
-            Export.ExportType.EXCEL,
-        ],
-    }
-
-    SUPPORTED_FORMATS_BY_EXPORT_TYPE = {
-        Export.ExportType.EXCEL: [
-            Export.Format.XLSX,
-        ],
-        Export.ExportType.REPORT: [
-            Export.Format.DOCX,
-            Export.Format.PDF,
-        ],
-        Export.ExportType.JSON: [
-            Export.Format.JSON,
-        ],
-    }
+    title = serializers.CharField(required=False)
 
     class Meta:
         model = Export
         fields = (
-            'title',  # Data type (entries, assessments, ..)
+            'title',
             'type',  # Data type (entries, assessments, ..)
             'format',  # xlsx, docx, pdf, ...
             'export_type',  # excel, report, json, ...
@@ -275,16 +250,15 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
         data_type = data['type']
         export_type = data['export_type']
         _format = data['format']
-        if export_type not in self.SUPPORTED_EXPORT_TYPES_BY_DATE_TYPE[data_type]:
-            raise serializers.ValidationError(f'Unsupported Export type: {export_type} for Data type: {data_type}')
-        if _format not in self.SUPPORTED_FORMATS_BY_EXPORT_TYPE[export_type]:
-            raise serializers.ValidationError(f'Unsupported Format: {_format} for Export Type: {export_type}')
+        if (data_type, export_type, _format) not in Export.DEFAULT_TITLE_LABEL:
+            raise serializers.ValidationError(f'Unsupported Export request: {(data_type, export_type, _format)}')
         return data
 
     def update(self, _):
         raise serializers.ValidationError('Update isn\'t allowed for Export')
 
     def create(self, data):
+        data['title'] = data['title'] or Export.generate_title(data['type'], data['export_type'], data['format'])
         data['exported_by'] = self.context['request'].user
         data['project'] = self.project
         data['extra_options'] = {

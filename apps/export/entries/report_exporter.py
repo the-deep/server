@@ -14,10 +14,6 @@ from django.db.models import (
 from docx.shared import Inches
 
 from export.formats.docx import Document
-from export.mime_types import (
-    DOCX_MIME_TYPE,
-    PDF_MIME_TYPE,
-)
 
 from analysis_framework.models import Widget
 from entry.models import Entry, ExportData, Attribute, EntryGroupLabel
@@ -40,7 +36,6 @@ from ary.export.data_collection_techniques_info import (
 )
 
 from lead.models import Lead
-from utils.common import generate_filename
 from tabular.viz import renderer as viz_renderer
 from export.models import Export
 
@@ -712,9 +707,13 @@ class ReportExporter:
         """
         Structure the document
         """
-        self.doc.add_heading('DEEP Export — {} — {}'.format(datetime.today().strftime('%b %d, %Y'),
-                                                            project.title),
-                             1)
+        self.doc.add_heading(
+            'DEEP Export — {} — {}'.format(
+                datetime.today().strftime('%b %d, %Y'),
+                project.title,
+            ),
+            1,
+        )
         self.doc.add_paragraph()
 
         self.legend_heading = self.doc.add_heading('Legends', 2)
@@ -837,10 +836,7 @@ class ReportExporter:
             temp_pdf = os.path.join(settings.TEMP_DIR, '{}.pdf'.format(filename))
 
             call(['libreoffice', '--headless', '--convert-to', 'pdf', temp_doc.name, '--outdir', settings.TEMP_DIR])
-            filename = generate_filename('Entries General Export', 'pdf')
             file = File(open(temp_pdf, 'rb'))
-            export_format = Export.Format.PDF
-            export_mime_type = PDF_MIME_TYPE
 
             # Cleanup
             os.unlink(temp_pdf)
@@ -848,10 +844,6 @@ class ReportExporter:
 
         else:
             buffer = self.doc.save()
-
-            filename = generate_filename('Entries General Export', 'docx')
             file = ContentFile(buffer)
-            export_format = Export.Format.DOCX
-            export_mime_type = DOCX_MIME_TYPE
 
-        return filename, export_format, export_mime_type, file
+        return file

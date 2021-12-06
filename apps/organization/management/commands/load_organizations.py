@@ -40,12 +40,19 @@ class Command(BaseCommand):
     def load_org_type(self, type_data):
         fields = type_data['fields']
         values = {
+            'title': fields['name'],
             'description': fields.get('description', ''),
             'relief_web_id': fields.get('id'),
         }
 
         OrganizationType.objects.update_or_create(
-            title=fields['name'],
+            **(
+                # Use short_name to sync (Should only be used once) --sync-by-name
+                {'title': values['title']}
+                if self.sync_by_name
+                # Using relief_web_id to sync
+                else {'relief_web_id': values['relief_web_id']}
+            ),
             defaults=values
         )
 

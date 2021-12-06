@@ -2,14 +2,12 @@ import logging
 from django.core.files.base import ContentFile
 
 from export.formats.xlsx import WorkBook, RowsBuilder
-from export.mime_types import EXCEL_MIME_TYPE
 from entry.models import Entry, ExportData, ProjectEntryLabel, LeadEntryGroup
 from lead.models import Lead
 from export.models import Export
 
 from utils.common import (
     format_date,
-    generate_filename,
     excel_column_name,
     get_valid_xml_string as xstr
 )
@@ -490,5 +488,4 @@ class ExcelExporter:
         self.add_bibliography_sheet()
 
         buffer = self.wb.save()
-        filename = generate_filename('Entries Export', 'xlsx')
-        return filename, Export.Format.XLSX, EXCEL_MIME_TYPE, ContentFile(buffer)
+        return ContentFile(buffer)

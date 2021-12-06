@@ -1,9 +1,16 @@
 from django.db import models
 from django.core.cache import cache
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from deep.caches import CacheKey
 from project.models import Project
+from export.mime_types import (
+    DOCX_MIME_TYPE,
+    PDF_MIME_TYPE,
+    EXCEL_MIME_TYPE,
+    JSON_MIME_TYPE,
+)
 
 
 class Export(models.Model):
@@ -19,12 +26,6 @@ class Export(models.Model):
         FAILURE = 'failure', 'Failure'
         CANCELED = 'canceled', 'Canceled'
 
-    class Format(models.TextChoices):
-        XLSX = 'xlsx', 'xlsx'
-        DOCX = 'docx', 'docx'
-        PDF = 'pdf', 'pdf'
-        JSON = 'json', 'json'
-
     class DataType(models.TextChoices):
         ENTRIES = 'entries', 'Entries'
         ASSESSMENTS = 'assessments', 'Assessments'
@@ -34,6 +35,31 @@ class Export(models.Model):
         EXCEL = 'excel', 'Excel'
         REPORT = 'report', 'Report'
         JSON = 'json', 'Json'
+
+    class Format(models.TextChoices):
+        XLSX = 'xlsx', 'xlsx'
+        DOCX = 'docx', 'docx'
+        PDF = 'pdf', 'pdf'
+        JSON = 'json', 'json'
+
+    MIME_TYPE_MAP = {
+        Format.XLSX: EXCEL_MIME_TYPE,
+        Format.DOCX: DOCX_MIME_TYPE,
+        Format.PDF: PDF_MIME_TYPE,
+        Format.JSON: JSON_MIME_TYPE,
+    }
+    DEFAULT_MIME_TYPE = 'application/octet-stream'
+
+    DEFAULT_TITLE_LABEL = {
+        (DataType.ENTRIES, ExportType.EXCEL, Format.XLSX): 'Entries Excel Export',
+        (DataType.ENTRIES, ExportType.REPORT, Format.DOCX): 'Entries General Export',
+        (DataType.ENTRIES, ExportType.REPORT, Format.PDF): 'Entries General Export',
+        (DataType.ENTRIES, ExportType.JSON, Format.JSON): 'Entries JSON Export',
+        (DataType.ASSESSMENTS, ExportType.EXCEL, Format.XLSX): 'AAssessments Excel Export',
+        (DataType.ASSESSMENTS, ExportType.JSON, Format.JSON): 'AAssessments JSON Export',
+        (DataType.PLANNED_ASSESSMENTS, ExportType.EXCEL, Format.XLSX): 'Planned Assessments Excel Export',
+        (DataType.PLANNED_ASSESSMENTS, ExportType.JSON, Format.JSON): 'Planned Assessments JSON Export',
+    }
 
     # Number of entries to proccess if is_preview is True
     PREVIEW_ENTRY_SIZE = 10
@@ -72,6 +98,16 @@ class Export(models.Model):
             exported_by=user,
             is_deleted=False
         ).distinct()
+
+    @classmethod
+    def generate_title(cls, data_type, export_type, export_format):
+        file_label = cls.DEFAULT_TITLE_LABEL[(data_type, export_type, export_format)]
+        time_str = timezone.now().strftime('%Y%m%d')
+        return f'{time_str} DEEP {file_label}'
+
+    def save(self, *args, **kwargs):
+        self.title = self.title or self.generate_title(self.type, self.export_type, self.format)
+        return super().save(*args, **kwargs)
 
     def get_task_id(self, clear=False):
         cache_key = CacheKey.EXPORT_TASK_CACHE_KEY_FORMAT.format(self.pk)

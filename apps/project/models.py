@@ -681,7 +681,7 @@ class ProjectRole(models.Model):
             return item_permissions & permission_bit != 0
 
     def clean(self):
-        if self.type != self.Type.UNKNOWN and ProjectRole.objects.filter(type=self.type).count() > 0:
+        if self.type != self.Type.UNKNOWN and ProjectRole.objects.filter(type=self.type).exclude(pk=self.pk).count() > 0:
             raise ValidationError({
                 'type': f'Type: {self.type} is already assigned!!'
             })

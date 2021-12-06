@@ -47,7 +47,7 @@ class CommonSetupClassMixin:
         super().tearDownClass()
         # clear the temporary media files
         try:
-            shutil.rmtree(os.path.join(settings.BASE_DIR, TEST_MEDIA_ROOT))
+            shutil.rmtree(os.path.join(settings.BASE_DIR, TEST_MEDIA_ROOT), ignore_errors=True)
         except FileNotFoundError:
             pass
 
