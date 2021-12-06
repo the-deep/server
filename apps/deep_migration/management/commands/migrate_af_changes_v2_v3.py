@@ -543,6 +543,33 @@ def get_attribute_from_conditional_data(widget_qs, attribute):
     )
 
 
+def get_number_matrix_widget_data(widget_data):
+    rows = {}
+    columns = {}
+    if widget_data:
+        for row in widget_data.get('row_headers'):
+            rows[row['key']] = row['title']
+        for column in widget_data.get('column_headers'):
+            columns[column['key']] = column['title']
+    return {
+        'rows': rows,
+        'columns': columns,
+    }
+
+
+def get_number_matrix_attribute_data(widget_data, attribute_value):
+    extracted_data = []
+    if attribute_value:
+        for row_key, row_data in attribute_value.items():
+            row_label = widget_data['rows'].get(row_key, 'N/A')
+            if not row_data:
+                continue
+            for column_key, value in row_data.items():
+                column_label = widget_data['columns'].get(column_key, 'N/A')
+                extracted_data.append(f'({row_label}, {column_label}, {value})')
+    return ','.join(extracted_data)
+
+
 class Command(BaseCommand):
     CURRENT_VERSION = 1
 
@@ -559,19 +586,6 @@ class Command(BaseCommand):
                 title='Overview',
             )[0]  # NOTE: Check if multiple exists if required
         return self.af_default_sections[af_id]
-
-    """
-
-    for widget in Widget.objects.filter(properties__old_properties__isnull=False):
-        if widget.properties.get('old_properties'):
-            widget.properties = widget.properties['old_properties']
-            widget.save(update_fields=('properties',))
-
-    for attr in Attribute.objects.filter(data__old_data__isnull=False):
-        if attr.data.get('old_data'):
-            attr.data = attr.data['old_data']
-            attr.save(update_fields=('data',))
-    """
 
     def handle(self, *args, **kwargs):
         widget_qs = Widget.objects.exclude(version=self.CURRENT_VERSION)
@@ -612,47 +626,6 @@ class Command(BaseCommand):
                 attribute.save(update_fields=('data', 'widget_version',))
                 print(f'-- Saved ({index})/({total})', end='\r')
         print('')
-
-        # Just update for this widgets (Not changes are required for this widgets)
-        print('Update normal widgets:')
-        print(
-            widget_qs.filter(
-                widget_id__in=[
-                    Widget.WidgetType.DATE,
-                    Widget.WidgetType.DATE_RANGE,
-                    Widget.WidgetType.TIME,
-                    Widget.WidgetType.TIME_RANGE,
-                    Widget.WidgetType.NUMBER,
-                    Widget.WidgetType.GEO,
-                    Widget.WidgetType.TEXT,
-                    # Deprecated widgets
-                    Widget.WidgetType.EXCERPT,
-                    Widget.WidgetType.NUMBER_MATRIX,
-                ]
-            ).update(version=1)
-        )
-
-        # Just update for this widget's attributes (Not changes are required for this widgets)
-        print('Update normal attributes:')
-        print(
-            attribute_qs.filter(
-                widget__widget_id__in=[
-                    Widget.WidgetType.DATE,
-                    Widget.WidgetType.TIME,
-                    Widget.WidgetType.NUMBER,
-                    Widget.WidgetType.TEXT,
-                    Widget.WidgetType.MATRIX1D,
-                    Widget.WidgetType.MATRIX2D,
-                    Widget.WidgetType.MULTISELECT,
-                    Widget.WidgetType.SELECT,
-                    Widget.WidgetType.ORGANIGRAM,
-                    Widget.WidgetType.SCALE,
-                    # Deprecated widgets
-                    Widget.WidgetType.EXCERPT,
-                    Widget.WidgetType.NUMBER_MATRIX,
-                ]
-            ).update(widget_version=1)
-        )
 
         # Conditional Widgets
         conditional_widget_qs = widget_qs.filter(widget_id=Widget.WidgetType.CONDITIONAL)
@@ -701,6 +674,86 @@ class Command(BaseCommand):
             attribute.save(update_fields=('data', 'widget_version',))
             print(f'-- Saved ({index})/({total})', end='\r')
         print('')
+
+        # Now migrate all number_matrix to Text
+        number_matrix_widget_qs = widget_qs.filter(widget_id=Widget.WidgetType.NUMBER_MATRIX)
+        total = number_matrix_widget_qs.count()
+        print(f'Number Matrix Widget (Total: {total})')
+        for index, widget in enumerate(number_matrix_widget_qs.iterator(chunk_size=1000)):
+            widget.title = f'{widget.title} (Previously Number Matrix)'
+            widget.widget_id = Widget.WidgetType.TEXT
+            if widget.properties.get('added_from') == 'overview':  # Requires section
+                widget.section = self.get_section_for_af_id(widget.analysis_framework_id)
+            widget.properties = {
+                'migrated_from_number_matrix': True,
+                'old_data': copy.deepcopy(widget.properties),
+            }
+            widget.version = self.CURRENT_VERSION
+            widget.save(update_fields=('title', 'widget_id', 'properties', 'version', 'section'))
+            print(f'-- Saved ({index})/({total})', end='\r')
+        print('')
+
+        # Migrate Number Matrix Entry Attribute Data
+        number_matrix_attribute_qs = attribute_qs.filter(widget__properties__migrated_from_number_matrix=True)
+        total = number_matrix_attribute_qs.count()
+        if total:
+            number_matrix_widget_label_map = {}
+            for widget in Widget.objects.filter(properties__migrated_from_number_matrix=True):
+                widget_data = (widget.properties and widget.properties.get('old_data', {}).get('data'))
+                number_matrix_widget_label_map[widget.pk] = get_number_matrix_widget_data(widget_data)
+
+            print(f'Number Matrix Entry Attributes (Total: {total})')
+            for index, attribute in enumerate(number_matrix_attribute_qs.iterator(chunk_size=1000)):
+                attribute.data = {
+                    'value': get_number_matrix_attribute_data(
+                        number_matrix_widget_label_map[attribute.widget_id],
+                        (attribute.data or {}).get('value'),
+                    ),
+                    'old_data': attribute.data,
+                }
+                attribute.widget_version = self.CURRENT_VERSION
+                attribute.save(update_fields=('data', 'widget_version',))
+                print(f'-- Saved ({index})/({total})', end='\r')
+            print('')
+
+        # Finally just update for this widgets (Not changes are required for this widgets)
+        print('Update normal widgets:')
+        print(
+            widget_qs.filter(
+                widget_id__in=[
+                    Widget.WidgetType.DATE,
+                    Widget.WidgetType.DATE_RANGE,
+                    Widget.WidgetType.TIME,
+                    Widget.WidgetType.TIME_RANGE,
+                    Widget.WidgetType.NUMBER,
+                    Widget.WidgetType.GEO,
+                    Widget.WidgetType.TEXT,
+                    # Deprecated widgets
+                    Widget.WidgetType.EXCERPT,
+                ]
+            ).update(version=1)
+        )
+
+        # Just update for this widget's attributes (Not changes are required for this widgets)
+        print('Update normal attributes:')
+        print(
+            attribute_qs.filter(
+                widget__widget_id__in=[
+                    Widget.WidgetType.DATE,
+                    Widget.WidgetType.TIME,
+                    Widget.WidgetType.NUMBER,
+                    Widget.WidgetType.TEXT,
+                    Widget.WidgetType.MATRIX1D,
+                    Widget.WidgetType.MATRIX2D,
+                    Widget.WidgetType.MULTISELECT,
+                    Widget.WidgetType.SELECT,
+                    Widget.WidgetType.ORGANIGRAM,
+                    Widget.WidgetType.SCALE,
+                    # Deprecated widgets
+                    Widget.WidgetType.EXCERPT,
+                ]
+            ).update(widget_version=1)
+        )
 
 
 def print_property(widget):
