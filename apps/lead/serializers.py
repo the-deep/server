@@ -22,7 +22,6 @@ from project.serializers import SimpleProjectSerializer
 from gallery.serializers import SimpleFileSerializer, File
 from user.models import User
 from project.models import ProjectMembership
-from deep.permissions import ProjectPermissions as PP
 from .models import (
     LeadGroup,
     Lead,
