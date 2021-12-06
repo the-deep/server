@@ -799,6 +799,17 @@ enum LeadConfidentialityEnum {
   CONFIDENTIAL
 }
 
+type LeadCopy {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: LeadType
+}
+
+input LeadCopyInputType {
+  projects: [ID!]!
+  leads: [ID!]!
+}
+
 enum LeadCustomFilterEnum {
   EXCLUDE_EMPTY_FILTERED_ENTRIES
   EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES
@@ -1349,6 +1360,7 @@ type ProjectMutationType {
   leadDelete(id: ID!): DeleteLead
   leadBulk(items: [BulkLeadInputType!]): BulkLead
   leadGroupDelete(id: ID!): DeleteLeadGroup
+  leadCopy(data: LeadCopyInputType!): LeadCopy
   acceptRejectProject(data: ProjectAcceptRejectInputType!, id: ID!): ProjectAcceptReject
   projectUserMembershipBulk(deleteIds: [ID!], items: [BulkProjectMembershipInputType!]): BulkUpdateProjectMembership
   projectUserGroupMembershipBulk(deleteIds: [ID!], items: [BulkProjectUserGroupMembershipInputType!]): BulkUpdateProjectUserGroupMembership
