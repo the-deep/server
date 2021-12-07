@@ -20,6 +20,7 @@ from rest_framework import status
 
 from deep.middleware import _set_current_request
 from analysis_framework.models import AnalysisFramework, AnalysisFrameworkRole
+from project.permissions import get_project_permissions_value
 from project.models import ProjectRole
 
 User = get_user_model()
@@ -136,6 +137,11 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
             # TODO: Migrate current dynamic permission to static ones.
             return ProjectRole.objects.create(
                 title=title,
+                lead_permissions=get_project_permissions_value('lead', '__all__'),
+                entry_permissions=get_project_permissions_value('entry', '__all__'),
+                setup_permissions=get_project_permissions_value('setup', '__all__'),
+                export_permissions=get_project_permissions_value('export', '__all__'),
+                assessment_permissions=get_project_permissions_value('assessment', '__all__'),
                 is_creator_role=False,
                 level=level,
                 is_default_role=is_default_role,

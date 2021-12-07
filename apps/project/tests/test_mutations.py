@@ -336,10 +336,12 @@ class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
         user2 = UserFactory.create()
         project = ProjectFactory.create()
         project.add_member(user, role=self.project_role_admin)
-        join_request = ProjectJoinRequestFactory.create(requested_by=user2,
-                                                        project=project,
-                                                        role=ProjectRole.get_default_role(),
-                                                        status=ProjectJoinRequest.Status.PENDING)
+        join_request = ProjectJoinRequestFactory.create(
+            requested_by=user2,
+            project=project,
+            role=ProjectRole.get_default_role(),
+            status=ProjectJoinRequest.Status.PENDING
+        )
         minput = dict(status=self.genum(ProjectJoinRequest.Status.ACCEPTED), role='normal')
 
         # without login
