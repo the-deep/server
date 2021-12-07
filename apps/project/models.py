@@ -160,29 +160,31 @@ class Project(UserResource):
         """
         Used by graphql schema
         """
+        current_user_role_subquery = models.Subquery(
+            ProjectMembership.objects.filter(
+                project=models.OuterRef('pk'),
+                member=user,
+            ).order_by('role__level').values('role__type')[:1],
+            output_field=models.CharField(),
+        )
+        current_user_membership_data_subquery = JSONObject(
+            user_id=models.Value(user.id),
+            role=models.F('current_user_role'),
+            badges=models.Subquery(
+                ProjectMembership.objects.filter(
+                    project=models.OuterRef('pk'),
+                    member=user,
+                ).order_by('badges').values('badges')[:1],
+                output_field=ArrayField(models.CharField()),
+            ),
+        )
         visible_projects = cls.objects\
             .annotate(
                 # For using within query filters
-                current_user_role=models.Subquery(
-                    ProjectMembership.objects.filter(
-                        project=models.OuterRef('pk'),
-                        member=user,
-                    ).order_by('role__type').values('role__type')[:1],
-                    output_field=models.CharField()
-                ),
+                current_user_role=current_user_role_subquery,
             ).annotate(
                 # NOTE: This is used by permission module
-                current_user_membership_data=JSONObject(
-                    user_id=models.Value(user.id),
-                    role=models.F('current_user_role'),
-                    badges=models.Subquery(
-                        ProjectMembership.objects.filter(
-                            project=models.OuterRef('pk'),
-                            member=user,
-                        ).order_by('badges').values('badges')[:1],
-                        output_field=ArrayField(models.CharField()),
-                    ),
-                ),
+                current_user_membership_data=current_user_membership_data_subquery,
                 # NOTE: Exclude if project is private + user is not a member
             ).exclude(is_private=True, current_user_role__isnull=True)
         if only_member:

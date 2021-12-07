@@ -161,11 +161,12 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Lead
         fields = (
-            'id', 'title', 'is_assessment_lead', 'project', 'lead_group', 'assignee', 'published_on',
+            'id', 'title', 'is_assessment_lead', 'lead_group', 'assignee', 'published_on',
             'text', 'url', 'website', 'attachment',
             'client_id',
         )
 
+    project = graphene.ID(source='project_id', required=True)
     # Enums
     source_type = graphene.Field(LeadSourceTypeEnum, required=True)
     source_type_display = EnumDescription(source='get_source_type_display', required=True)
@@ -217,7 +218,7 @@ class LeadDetailType(LeadType):
         model = Lead
         skip_registry = True
         fields = (
-            'id', 'title', 'is_assessment_lead', 'project', 'lead_group', 'assignee', 'published_on',
+            'id', 'title', 'is_assessment_lead', 'lead_group', 'assignee', 'published_on',
             'text', 'url', 'website', 'attachment',
             'client_id',
         )
@@ -241,10 +242,6 @@ class LeadListWithEnumOrderingType(CustomDjangoListObjectType):
     class Meta:
         model = Lead
         filterset_class = LeadWithOrderingGQFilterSet
-
-
-class LeadCopyType(graphene.ObjectType):
-    leads = graphene.Field(LeadType)
 
 
 class Query:
