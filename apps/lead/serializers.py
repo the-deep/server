@@ -5,6 +5,7 @@ from django.db import transaction
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
+from deep.permissions import ProjectPermissions as PP
 from deep.serializers import (
     RemoveNullFieldsMixin,
     TempClientIdMixin,
@@ -509,7 +510,7 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
         return lead
 
 
-class LeadCopySerializer(serializers.Serializer):
+class LeadCopyGqSerializer(ProjectPropertySerializerMixin, serializers.Serializer):
     projects = serializers.ListField(
         child=IntegerIDField(),
         required=True
@@ -519,82 +520,88 @@ class LeadCopySerializer(serializers.Serializer):
         required=True,
     )
 
-    def validate_projects(self, projects):
-        for project in projects:
-            if not ProjectMembership.objects.filter(project_id=project, member=self.context['request'].user).exists():
-                return serializers.ValidationError('Not access to copy in destination project')
-        return projects
-
-    def clone_or_get_lead(self, lead, project_id, user, context):
-        existing_lead = raise_or_return_existing_lead(
-            project_id, lead, lead.source_type, lead.url, lead.text, lead.attachment, return_lead=True,
+    def validate_projects(self, projects_id):
+        return list(
+            ProjectMembership.objects.filter(
+                member=self.context['request'].user,
+                role__type__in=PP.REVERSE_PERMISSION_MAP[PP.Permission.CREATE_LEAD],
+                project__in=projects_id,
+            ).values_list('project', flat=True).distinct()
         )
-        if existing_lead:
-            return existing_lead
 
-        return self.clone_entity(lead, project_id, user, context, skip_existing_check=True)
+    def validate_leads(self, leads_id):
+        allowed_permission = self.context['request'].project_permissions
+        lead_qs = Lead.objects.filter(
+            id__in=leads_id,
+            project=self.project,
+        )
+        if PP.Permission.VIEW_ALL_LEAD in allowed_permission:
+            return lead_qs.all()
+        elif PP.Permission.VIEW_ONLY_UNPROTECTED_LEAD in allowed_permission:
+            return lead_qs.filter(confidentiality=Lead.Confidentiality.UNPROTECTED).all()
+        raise serializers.ValidationError("You don't have lead read access")
 
-    def clone_entity(self, original_lead, project_id, user, context, skip_existing_check=False):
-        lead = copy.deepcopy(original_lead)
+    def clone_lead(self, original_lead, project_id, user):
+        new_lead = copy.deepcopy(original_lead)
 
         def _get_clone_ready(obj, lead):
             obj.pk = None
             obj.lead = lead
             return obj
 
-        preview = original_lead.leadpreview if hasattr(lead, 'leadpreview') else None
+        new_lead.pk = None
+        existing_lead = raise_or_return_existing_lead(
+            project_id,
+            new_lead,
+            new_lead.source_type,
+            new_lead.url,
+            new_lead.text,
+            new_lead.attachment,
+            return_lead=True
+        )
+        if existing_lead:
+            return
+
+        preview = original_lead.leadpreview if hasattr(original_lead, 'leadpreview') else None
         preview_images = original_lead.images.all()
         emm_triggers = original_lead.emm_triggers.all()
         emm_entities = original_lead.emm_entities.all()
         authors = original_lead.authors.all()
 
-        lead.pk = None
-        try:
-            # By default it raises error
-            if not skip_existing_check:
-                raise_or_return_existing_lead(
-                    project_id, lead, lead.source_type, lead.url, lead.text, lead.attachment,
-                )
-            # return existing lead
-        except serializers.ValidationError:
-            return  # SKIP COPY if validation fails
-
         # NOTE: Don't copy lead_group for now
-        lead.lead_group = None
-        lead.project_id = project_id
-        lead.client_id = None
-        lead.save()
+        new_lead.lead_group = None
+        new_lead.project_id = project_id
+        new_lead.client_id = None
+        new_lead.save()
 
         # Clone Lead Preview (One-to-one fields)
         if preview:
             preview.pk = None
-            preview.lead = lead
+            preview.lead = new_lead
             preview.save()
 
         # Clone Many to many Fields
-        lead.assignee.add(user)  # Assign requesting user
-        lead.emm_entities.set(emm_entities)
-        lead.authors.set(authors)
+        new_lead.assignee.add(user)  # Assign requesting user
+        new_lead.emm_entities.set(emm_entities)
+        new_lead.authors.set(authors)
 
         # Clone Many to one Fields
         LeadPreviewImage.objects.bulk_create([
-            _get_clone_ready(image, lead) for image in preview_images
+            _get_clone_ready(image, new_lead) for image in preview_images
         ])
         LeadEMMTrigger.objects.bulk_create([
-            _get_clone_ready(emm_trigger, lead) for emm_trigger in emm_triggers
+            _get_clone_ready(emm_trigger, new_lead) for emm_trigger in emm_triggers
         ])
 
-        return lead
+        return new_lead
 
     def create(self, validated_data):
-        from project.models import Project
-
+        projects_id = validated_data.get('projects', [])
         leads = validated_data.get('leads', [])
-        print(leads)
-        projects = validated_data.get('projects', [])
         user = self.context['request'].user
-        for project in projects:
-            project = Project.objects.get(id=project)
+        new_leads = []
+        for project_id in projects_id:
             for lead in leads:
-                lead = Lead.objects.get(id=lead)
-        return self.clone_or_get_lead(lead, project.id, user, self.context)
+                new_lead = self.clone_lead(lead, project_id, user)
+                new_lead and new_leads.append(new_lead)
+        return new_leads

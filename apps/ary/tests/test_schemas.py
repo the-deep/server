@@ -40,7 +40,7 @@ class TestAssessmentQuery(GraphQLTestCase):
         member_user = UserFactory.create()
         member_user = UserFactory.create()
         non_confidential_member_user = UserFactory.create()
-        project1.add_member(non_confidential_member_user, role=self.project_role_viewer_non_confidential)
+        project1.add_member(non_confidential_member_user, role=self.project_role_reader_non_confidential)
         non_member_user = UserFactory.create()
         project1.add_member(member_user)
         project2.add_member(member_user)

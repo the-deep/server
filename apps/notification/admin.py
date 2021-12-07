@@ -7,7 +7,8 @@ from .models import (
 
 @admin.register(Notification)
 class Notification(admin.ModelAdmin):
-    pass
+    list_display = ('receiver', 'project', 'notification_type', 'timestamp', 'status')
+    list_filter = ('notification_type', 'status')
 
 
 @admin.register(Assignment)

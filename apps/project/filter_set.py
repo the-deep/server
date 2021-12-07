@@ -6,17 +6,18 @@ from django.db import models
 from django.db.models.functions import Concat, Lower
 import django_filters
 
-from geo.models import Region
-
+from deep.permissions import ProjectPermissions as PP
 from utils.graphene.filters import SimpleInputFilter, IDListFilter
 from user_resource.filters import UserResourceFilterSet, UserResourceGqlFilterSet
 
+from geo.models import Region
 from .models import (
     Project,
     ProjectMembership,
     ProjectUserGroupMembership,
 )
 from .enums import (
+    ProjectPermissionEnum,
     ProjectStatusEnum,
 )
 
@@ -92,6 +93,7 @@ class ProjectGqlFilterSet(UserResourceGqlFilterSet):
     search = django_filters.CharFilter(method='filter_title')
     is_current_user_member = django_filters.BooleanFilter(
         field_name='is_current_user_member', method='filter_with_membership')
+    has_permission_access = SimpleInputFilter(ProjectPermissionEnum, method='filter_has_permission_access')
 
     class Meta:
         model = Project
@@ -114,6 +116,16 @@ class ProjectGqlFilterSet(UserResourceGqlFilterSet):
                     self.request.user,
                     exclude=not value,
                 )
+            )
+        return queryset
+
+    def filter_has_permission_access(self, queryset, _, value):
+        if value:
+            queryset = queryset.filter(
+                id__in=ProjectMembership.objects.filter(
+                    member=self.request.user,
+                    role__type__in=PP.REVERSE_PERMISSION_MAP[value],
+                ).values('project')
             )
         return queryset
 

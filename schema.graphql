@@ -30,7 +30,7 @@ type AnalysisFrameworkDetailType {
   isPrivate: Boolean!
   organization: OrganizationType
   properties: GenericScalar
-  currentUserRole: String
+  currentUserRole: AnalysisFrameworkRoleTypeEnum
   previewImage: FileFieldType
   allowedPermissions: [AnalysisFrameworkPermission!]!
   primaryTagging: [SectionType!]
@@ -109,6 +109,16 @@ type AnalysisFrameworkRoleType {
   title: String!
 }
 
+enum AnalysisFrameworkRoleTypeEnum {
+  EDITOR
+  OWNER
+  DEFAULT
+  PRIVATE_EDITOR
+  PRIVATE_OWNER
+  PRIVATE_VIEWER
+  UNKNOWN
+}
+
 type AnalysisFrameworkType {
   id: ID!
   createdAt: DateTime!
@@ -119,7 +129,7 @@ type AnalysisFrameworkType {
   description: String
   isPrivate: Boolean!
   organization: OrganizationType
-  currentUserRole: String
+  currentUserRole: AnalysisFrameworkRoleTypeEnum
   previewImage: FileFieldType
   allowedPermissions: [AnalysisFrameworkPermission!]!
 }
@@ -611,7 +621,7 @@ type ExploreProjectStatTopActiveProjectsType {
 }
 
 input ExportCreateInputType {
-  title: String!
+  title: String
   type: ExportDataTypeEnum!
   format: ExportFormatEnum!
   exportType: ExportExportTypeEnum!
@@ -802,7 +812,7 @@ enum LeadConfidentialityEnum {
 type LeadCopy {
   errors: [GenericScalar!]
   ok: Boolean
-  result: LeadType
+  result: [LeadType!]
 }
 
 input LeadCopyInputType {
@@ -819,7 +829,6 @@ type LeadDetailType {
   id: ID!
   clientId: String!
   leadGroup: LeadGroupType
-  project: ProjectType!
   title: String!
   assignee: UserType
   publishedOn: Date
@@ -832,6 +841,7 @@ type LeadDetailType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
+  project: ID!
   sourceType: LeadSourceTypeEnum!
   sourceTypeDisplay: EnumDescription!
   priority: LeadPriorityEnum!
@@ -1020,7 +1030,6 @@ type LeadType {
   id: ID!
   clientId: String!
   leadGroup: LeadGroupType
-  project: ProjectType!
   title: String!
   assignee: UserType
   publishedOn: Date
@@ -1033,6 +1042,7 @@ type LeadType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
+  project: ID!
   sourceType: LeadSourceTypeEnum!
   sourceTypeDisplay: EnumDescription!
   priority: LeadPriorityEnum!
@@ -1219,7 +1229,7 @@ type ProjectDetailType {
   isPrivate: Boolean!
   isVisualizationEnabled: Boolean!
   data: GenericScalar
-  currentUserRole: String
+  currentUserRole: ProjectRoleTypeEnum
   allowedPermissions: [ProjectPermission!]!
   stats: ProjectStatType
   membershipPending: Boolean!
@@ -1385,6 +1395,7 @@ enum ProjectOrganizationTypeEnum {
 enum ProjectPermission {
   BASE_ACCESS
   UPDATE_PROJECT
+  DELETE_PROJECT
   CAN_ADD_MEMBER
   CREATE_LEAD
   VIEW_ONLY_UNPROTECTED_LEAD
@@ -1403,6 +1414,15 @@ type ProjectRoleType {
   id: ID!
   title: String!
   level: Int!
+}
+
+enum ProjectRoleTypeEnum {
+  PROJECT_OWNER
+  ADMIN
+  MEMBER
+  READER
+  READER_NON_CONFIDENTIAL
+  UNKNOWN
 }
 
 type ProjectStatType {
@@ -1450,7 +1470,7 @@ type ProjectType {
   isDefault: Boolean!
   isPrivate: Boolean!
   isVisualizationEnabled: Boolean!
-  currentUserRole: String
+  currentUserRole: ProjectRoleTypeEnum
   allowedPermissions: [ProjectPermission!]!
   stats: ProjectStatType
   membershipPending: Boolean!
@@ -1533,15 +1553,15 @@ type Query {
   userGroups(id: Float, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): UserGroupListType
   me: UserMeType
   user(id: ID!): UserType
-  users(id: Float, search: String, membersExcludeProject: ID, membersExcludeFramework: ID, page: Int = 1, ordering: String, pageSize: Int): UserListType
+  users(id: Float, search: String, membersExcludeProject: ID, membersExcludeFramework: ID, membersExcludeUsergroup: ID, page: Int = 1, ordering: String, pageSize: Int): UserListType
   analysisFramework(id: ID!): AnalysisFrameworkDetailType
-  analysisFrameworks(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkListType
+  analysisFrameworks(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkListType
   project(id: ID!): ProjectDetailType
-  projects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): ProjectListType
+  projects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, page: Int = 1, ordering: String, pageSize: Int): ProjectListType
   recentProjects: [ProjectDetailType!]
   projectExploreStats: ProjectExploreStatType
   projectsByRegion(projectFilter: RegionProjectFilterData, ordering: String): ProjectByRegionListType
-  publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): PublicProjectListType
+  publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, page: Int = 1, ordering: String, pageSize: Int): PublicProjectListType
   publicProjectsByRegion(projectFilter: RegionProjectFilterData, page: Int = 1, ordering: String, pageSize: Int): PublicProjectByRegionListType
   _debug: DjangoDebug
 }
@@ -1582,6 +1602,7 @@ input RegionProjectFilterData {
   regions: [ID!]
   search: String
   isCurrentUserMember: Boolean
+  hasPermissionAccess: ProjectPermission
 }
 
 type RegionType {

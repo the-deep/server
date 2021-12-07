@@ -1,10 +1,14 @@
+import graphene
+
 from utils.graphene.enums import (
     convert_enum_to_graphene_enum,
     get_enum_name_from_django_field,
 )
+from deep.permissions import ProjectPermissions as PP
 
 from .models import (
     Project,
+    ProjectRole,
     ProjectJoinRequest,
     ProjectOrganization,
     ProjectStats,
@@ -12,7 +16,9 @@ from .models import (
     ProjectUserGroupMembership,
 )
 
+ProjectPermissionEnum = graphene.Enum.from_enum(PP.Permission)
 ProjectStatusEnum = convert_enum_to_graphene_enum(Project.Status, name='ProjectStatusEnum')
+ProjectRoleTypeEnum = convert_enum_to_graphene_enum(ProjectRole.Type, name='ProjectRoleTypeEnum')
 ProjectOrganizationTypeEnum = convert_enum_to_graphene_enum(ProjectOrganization.Type, name='ProjectOrganizationTypeEnum')
 ProjectJoinRequestStatusEnum = convert_enum_to_graphene_enum(ProjectJoinRequest.Status, name='ProjectJoinRequestStatusEnum')
 ProjectStatsStatusEnum = convert_enum_to_graphene_enum(ProjectStats.Status, name='ProjectStatsStatusEnum')
@@ -29,6 +35,7 @@ enum_map = {
         (ProjectStats.status, ProjectStatsStatusEnum),
         (ProjectMembership.badges, ProjectMembershipBadgeTypeEnum),
         (ProjectUserGroupMembership.badges, ProjectMembershipBadgeTypeEnum),
+        (ProjectRole.type, ProjectRoleTypeEnum),
     )
 }
 

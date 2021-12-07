@@ -480,7 +480,7 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
         owner_role = instance.get_or_create_owner_role()
         instance.add_member(self.context['request'].user, owner_role)
         # NOTE: Set current_user_role value. (get_current_user_role)
-        instance.current_user_role = owner_role.title
+        instance.current_user_role = owner_role.type
         return instance
 
     def update(self, instance, validated_data):

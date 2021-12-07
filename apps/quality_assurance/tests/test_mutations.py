@@ -89,9 +89,9 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         self.lead = LeadFactory.create(project=self.project)
         self.entry = EntryFactory.create(lead=self.lead)
         # Add member to project
-        self.project.add_member(self.readonly_member_user, role=self.project_role_viewer_non_confidential)
-        self.project.add_member(self.member_user, role=self.project_role_analyst)
-        self.project.add_member(self.qa_member_user, role=self.project_role_analyst, badges=[ProjectMembership.BadgeType.QA])
+        self.project.add_member(self.readonly_member_user, role=self.project_role_reader_non_confidential)
+        self.project.add_member(self.member_user, role=self.project_role_member)
+        self.project.add_member(self.qa_member_user, role=self.project_role_member, badges=[ProjectMembership.BadgeType.QA])
 
     def _query_check(self, mutation_input, review_comment_id=None, **kwargs):
         variables = {'projectId': self.project.id}
@@ -182,9 +182,9 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         user2 = UserFactory.create()
         user3 = UserFactory.create()
         user4 = UserFactory.create()
-        self.project.add_member(user1, role=self.project_role_analyst, badges=[ProjectMembership.BadgeType.QA])
-        self.project.add_member(user2, role=self.project_role_analyst, badges=[ProjectMembership.BadgeType.QA])
-        self.project.add_member(user3, role=self.project_role_analyst, badges=[ProjectMembership.BadgeType.QA])
+        self.project.add_member(user1, role=self.project_role_member, badges=[ProjectMembership.BadgeType.QA])
+        self.project.add_member(user2, role=self.project_role_member, badges=[ProjectMembership.BadgeType.QA])
+        self.project.add_member(user3, role=self.project_role_member, badges=[ProjectMembership.BadgeType.QA])
 
         self.force_login(user1)
         data = {
@@ -229,9 +229,9 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         user1 = UserFactory.create()
         user2 = UserFactory.create()
         user3 = UserFactory.create()
-        self.project.add_member(user1, role=self.project_role_analyst, badges=[ProjectMembership.BadgeType.QA])
-        self.project.add_member(user2, role=self.project_role_analyst, badges=[ProjectMembership.BadgeType.QA])
-        self.project.add_member(user3, role=self.project_role_analyst, badges=[ProjectMembership.BadgeType.QA])
+        self.project.add_member(user1, role=self.project_role_member, badges=[ProjectMembership.BadgeType.QA])
+        self.project.add_member(user2, role=self.project_role_member, badges=[ProjectMembership.BadgeType.QA])
+        self.project.add_member(user3, role=self.project_role_member, badges=[ProjectMembership.BadgeType.QA])
 
         self.force_login(user1)
         data = {
@@ -302,7 +302,7 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
 
     def test_entry_review_comment_project_qa_badge_api(self):
         user1 = UserFactory.create()
-        user1_membership = self.project.add_member(user1, role=self.project_role_analyst)
+        user1_membership = self.project.add_member(user1, role=self.project_role_member)
 
         self.force_login(user1)
         for comment_type in [
@@ -328,9 +328,9 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         user1 = UserFactory.create()
         user2 = UserFactory.create()
         user3 = UserFactory.create()
-        self.project.add_member(user1, role=self.project_role_analyst, badges=[ProjectMembership.BadgeType.QA])
-        self.project.add_member(user2, role=self.project_role_analyst, badges=[ProjectMembership.BadgeType.QA])
-        self.project.add_member(user3, role=self.project_role_analyst)
+        self.project.add_member(user1, role=self.project_role_member, badges=[ProjectMembership.BadgeType.QA])
+        self.project.add_member(user2, role=self.project_role_member, badges=[ProjectMembership.BadgeType.QA])
+        self.project.add_member(user3, role=self.project_role_member)
 
         self.force_login(user1)
         data = {
@@ -444,10 +444,10 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         user2 = UserFactory.create()
         user3 = UserFactory.create()
         user4 = UserFactory.create()
-        self.project.add_member(user1, role=self.project_role_analyst, badges=[ProjectMembership.BadgeType.QA])
-        self.project.add_member(user2, role=self.project_role_analyst, badges=[ProjectMembership.BadgeType.QA])
-        self.project.add_member(user3, role=self.project_role_analyst, badges=[ProjectMembership.BadgeType.QA])
-        self.project.add_member(user4, role=self.project_role_analyst, badges=[ProjectMembership.BadgeType.QA])
+        self.project.add_member(user1, role=self.project_role_member, badges=[ProjectMembership.BadgeType.QA])
+        self.project.add_member(user2, role=self.project_role_member, badges=[ProjectMembership.BadgeType.QA])
+        self.project.add_member(user3, role=self.project_role_member, badges=[ProjectMembership.BadgeType.QA])
+        self.project.add_member(user4, role=self.project_role_member, badges=[ProjectMembership.BadgeType.QA])
 
         self.force_login(self.qa_member_user)
 

@@ -140,14 +140,6 @@ def parse_number(num_str):
     return num
 
 
-def generate_filename(title, extension):
-    return '{} DEEP {}.{}'.format(
-        time.strftime('%Y%m%d'),
-        title,
-        extension,
-    )
-
-
 def identity(x):
     return x
 

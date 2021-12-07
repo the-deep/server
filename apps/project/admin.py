@@ -159,7 +159,7 @@ class ProjectAdmin(VersionAdmin):
 
 @admin.register(ProjectRole)
 class ProjectRoleAdmin(admin.ModelAdmin):
-    list_display = ('title', 'level',)
+    list_display = ('id', 'title', 'level', 'type', 'is_default_role')
     form = ProjectRoleForm
 
 

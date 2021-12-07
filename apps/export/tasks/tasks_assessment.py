@@ -37,7 +37,7 @@ def _export_assessments(export, AssessmentModel, excel_sheet_data_generator):
             ary.project.title: ary.to_exportable_json()
             for ary in iterable_arys
         }
-        export_data = exporter.export(export, export.type.title())
+        export_data = exporter.export()
     elif export_type == Export.ExportType.EXCEL:
         sheets_data = excel_sheet_data_generator(iterable_arys)
         export_data = NewExcelExporter(sheets_data)\

@@ -2,11 +2,9 @@ from collections import OrderedDict
 
 from django.core.files.base import ContentFile
 
-from export.models import Export
 from export.formats.xlsx import WorkBook, RowsBuilder
 from openpyxl.styles import Alignment, Font
-from export.mime_types import EXCEL_MIME_TYPE
-from utils.common import format_date, generate_filename, underscore_to_title
+from utils.common import format_date, underscore_to_title
 
 import logging
 
@@ -191,8 +189,7 @@ class ExcelExporter:
             self.split.set_col_types(self.col_types)
 
         buffer = self.wb.save()
-        filename = generate_filename('Assessments Export', 'xlsx')
-        return filename, Export.Format.XLSX, EXCEL_MIME_TYPE, ContentFile(buffer)
+        return ContentFile(buffer)
 
 
 class NewExcelExporter:
@@ -294,5 +291,4 @@ class NewExcelExporter:
             self.wb.wb.remove(self.wb.wb.get_sheet_by_name('Sheet'))
 
         buffer = self.wb.save()
-        filename = generate_filename('Assessments Export', 'xlsx')
-        return filename, Export.Format.XLSX, EXCEL_MIME_TYPE, ContentFile(buffer)
+        return ContentFile(buffer)

@@ -1,7 +1,8 @@
 import logging
+from django.utils.crypto import get_random_string
+
 from celery import shared_task
 from export.models import Export
-
 from .tasks_entries import export_entries
 from .tasks_assessment import export_assessments, export_planned_assessments
 
@@ -15,8 +16,17 @@ EXPORTER_TYPE = {
 }
 
 
+def get_export_filename(export):
+    random_string = get_random_string(length=10)
+    filename = f'{export.title}.{export.format}'
+    if export.is_preview:
+        filename = f'(Preview) {filename}'
+    return f'{random_string}/{filename}'
+
+
 @shared_task
 def export_task(export_id, force=False):
+    data_type = 'UNKNOWN'
     try:
         export = Export.objects.get(pk=export_id)
         data_type = export.type
@@ -29,13 +39,10 @@ def export_task(export_id, force=False):
         export.status = Export.Status.STARTED
         export.save()
 
-        filename, export_format, mime_type, file = EXPORTER_TYPE[export.type](export)
-        filename = f'Preview-{filename}' if export.is_preview else filename
+        file = EXPORTER_TYPE[export.type](export)
 
-        export.title = export.title or filename
-        export.format = export_format
-        export.mime_type = mime_type
-        export.file.save(filename, file)
+        export.mime_type = Export.MIME_TYPE_MAP.get(export.format, Export.DEFAULT_MIME_TYPE)
+        export.file.save(get_export_filename(export), file)
         export.pending = False
         export.status = Export.Status.SUCCESS
         export.save()
@@ -48,7 +55,7 @@ def export_task(export_id, force=False):
             export.pending = False
             export.save()
         logger.error(
-            'Export Failed {}!!'.format(data_type if 'data_type' in locals() else 'UNKOWN'),
+            f'Export Failed {data_type}!!',
             exc_info=True,
             extra={
                 'data': {

@@ -143,14 +143,14 @@ class TestEntryQuery(GraphQLTestCase):
         self.assertEqual(content['data']['project']['entries']['totalCount'], 0, content)
         self.assertEqual(len(results), 0, results)
         # -- Without membership (confidential only)
-        current_membership = self.project.add_member(user, role=self.project_role_viewer_non_confidential)
+        current_membership = self.project.add_member(user, role=self.project_role_reader_non_confidential)
         content = _query_check()
         results = content['data']['project']['entries']['results']
         self.assertEqual(content['data']['project']['entries']['totalCount'], 1, content)
         self.assertIdEqual(results[0]['id'], entry.pk, results)
         # -- With membership (non-confidential only)
         current_membership.delete()
-        self.project.add_member(user, role=self.project_role_viewer)
+        self.project.add_member(user, role=self.project_role_reader)
         content = _query_check()
         results = content['data']['project']['entries']['results']
         self.assertEqual(content['data']['project']['entries']['totalCount'], 2, content)
@@ -215,14 +215,14 @@ class TestEntryQuery(GraphQLTestCase):
         content = _query_check(conf_entry)  # Confidential entry
         self.assertEqual(content['data']['project']['entry'], None, content)
         # -- Without membership (confidential only)
-        current_membership = self.project.add_member(user, role=self.project_role_viewer_non_confidential)
+        current_membership = self.project.add_member(user, role=self.project_role_reader_non_confidential)
         content = _query_check(entry)  # Normal entry
         self.assertNotEqual(content['data']['project']['entry'], None, content)
         content = _query_check(conf_entry)  # Confidential entry
         self.assertEqual(content['data']['project']['entry'], None, content)
         # -- With membership (non-confidential only)
         current_membership.delete()
-        self.project.add_member(user, role=self.project_role_viewer)
+        self.project.add_member(user, role=self.project_role_reader)
         content = _query_check(entry)  # Normal entry
         self.assertNotEqual(content['data']['project']['entry'], None, content)
         content = _query_check(conf_entry)  # Confidential entry
@@ -305,9 +305,9 @@ class TestEntryQuery(GraphQLTestCase):
         user = UserFactory.create()
         member1 = UserFactory.create()
         member2 = UserFactory.create()
-        project.add_member(user, role=self.project_role_viewer)
-        project.add_member(member1, role=self.project_role_viewer)
-        project.add_member(member2, role=self.project_role_viewer)
+        project.add_member(user, role=self.project_role_reader)
+        project.add_member(member1, role=self.project_role_reader)
+        project.add_member(member2, role=self.project_role_reader)
         lead1 = LeadFactory.create(
             project=project,
             title='Test 1',
@@ -527,7 +527,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
         self.project.regions.add(region)
         # User with role
         self.user = UserFactory.create()
-        self.project.add_member(self.user, role=self.project_role_viewer)
+        self.project.add_member(self.user, role=self.project_role_reader)
         self.lead1 = LeadFactory.create(project=self.project)
         self.lead2 = LeadFactory.create(project=self.project)
         self.lead3 = LeadFactory.create(project=self.project)

@@ -97,7 +97,7 @@ class TestProjectGeneralMutation(GraphQLTestCase):
 
         self.set_project_viz_configuration(project)
         project.add_member(admin_user, role=self.project_role_admin)
-        project.add_member(member_user, role=self.project_role_analyst)
+        project.add_member(member_user, role=self.project_role_member)
 
         minput = dict(action=None)
 
@@ -336,10 +336,12 @@ class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
         user2 = UserFactory.create()
         project = ProjectFactory.create()
         project.add_member(user, role=self.project_role_admin)
-        join_request = ProjectJoinRequestFactory.create(requested_by=user2,
-                                                        project=project,
-                                                        role=ProjectRole.get_default_role(),
-                                                        status=ProjectJoinRequest.Status.PENDING)
+        join_request = ProjectJoinRequestFactory.create(
+            requested_by=user2,
+            project=project,
+            role=ProjectRole.get_default_role(),
+            status=ProjectJoinRequest.Status.PENDING
+        )
         minput = dict(status=self.genum(ProjectJoinRequest.Status.ACCEPTED), role='normal')
 
         # without login
@@ -479,8 +481,8 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         membership1 = project.add_member(member_user1, badges=[ProjectMembership.BadgeType.QA])
         membership2 = project.add_member(member_user2)
         project.add_member(member_user5)
-        creater_user_membership = project.add_member(creater_user, role=self.project_role_clairvoyant_one)
-        another_clairvoyant_user = project.add_member(member_user0, role=self.project_role_clairvoyant_one)
+        creater_user_membership = project.add_member(creater_user, role=self.project_role_owner)
+        another_clairvoyant_user = project.add_member(member_user0, role=self.project_role_owner)
         user_membership = project.add_member(user, role=user_role)
         project.add_member(low_permission_user)
 
@@ -497,7 +499,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 dict(
                     member=member_user2.pk,
                     clientId="member-user-2",
-                    role=self.project_role_clairvoyant_one.pk,
+                    role=self.project_role_owner.pk,
                     id=membership2.pk,
                     badges=[self.genum(ProjectMembership.BadgeType.QA)],
                 ),
@@ -505,13 +507,13 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 dict(
                     member=member_user5.pk,
                     clientId="member-user-5",
-                    role=self.project_role_analyst.pk,
+                    role=self.project_role_member.pk,
                 ),
                 # Try adding new member (Valid on try 1, invalid on try 2)
                 dict(
                     member=member_user3.pk,
                     clientId="member-user-3",
-                    role=self.project_role_analyst.pk,
+                    role=self.project_role_member.pk,
                 ),
                 # Try adding new member (without giving role) -> this should use default role
                 # Valid on try 1, invalid on try 2
@@ -549,7 +551,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
             dict(
                 member=member_user6.pk,
                 clientId="member-user-2",
-                role=self.project_role_clairvoyant_one.pk,
+                role=self.project_role_owner.pk,
                 id=membership2.pk,
             ),
             dict(
@@ -563,7 +565,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         self.assertMatchSnapshot(response, 'try 2')
 
     def test_user_membership_using_clairvoyan_one_bulk(self):
-        self._user_membership_bulk(self.project_role_clairvoyant_one)
+        self._user_membership_bulk(self.project_role_owner)
 
     def test_user_membership_admin_bulk(self):
         self._user_membership_bulk(self.project_role_admin)
@@ -648,7 +650,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         membership1 = _add_member(member_user_group1, badges=[ProjectMembership.BadgeType.QA])
         membership2 = _add_member(member_user_group2)
         _add_member(member_user_group5)
-        another_clairvoyant_user_group = _add_member(member_user_group0, role=self.project_role_clairvoyant_one)
+        another_clairvoyant_user_group = _add_member(member_user_group0, role=self.project_role_owner)
         user_group_membership = _add_member(user_group, role=user_role)
 
         minput = dict(
@@ -663,7 +665,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 dict(
                     usergroup=member_user_group2.pk,
                     clientId="member-user-2",
-                    role=self.project_role_clairvoyant_one.pk,
+                    role=self.project_role_owner.pk,
                     id=membership2.pk,
                     badges=[self.genum(ProjectMembership.BadgeType.QA)],
                 ),
@@ -671,13 +673,13 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 dict(
                     usergroup=member_user_group5.pk,
                     clientId="member-user-5",
-                    role=self.project_role_analyst.pk,
+                    role=self.project_role_member.pk,
                 ),
                 # Try adding new member (Valid on try 1, invalid on try 2)
                 dict(
                     usergroup=member_user_group3.pk,
                     clientId="member-user-3",
-                    role=self.project_role_analyst.pk,
+                    role=self.project_role_member.pk,
                 ),
                 # Try adding new member (without giving role) -> this should use default role
                 # Valid on try 1, invalid on try 2
@@ -707,7 +709,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
             dict(
                 usergroup=member_user_group6.pk,
                 clientId="member-user-2",
-                role=self.project_role_clairvoyant_one.pk,
+                role=self.project_role_owner.pk,
                 id=membership2.pk,
             ),
             dict(
@@ -721,7 +723,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         self.assertMatchSnapshot(response, 'try 2')
 
     def test_user_group_membership_using_clairvoyan_one_bulk(self):
-        self._user_group_membership_bulk(self.project_role_clairvoyant_one)
+        self._user_group_membership_bulk(self.project_role_owner)
 
     def test_user_group_membership_admin_bulk(self):
         self._user_group_membership_bulk(self.project_role_admin)
