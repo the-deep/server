@@ -1,6 +1,7 @@
 import logging
 from typing import List
 from enum import Enum, auto, unique
+from collections import defaultdict
 
 from django.db.models import F
 from rest_framework import permissions
@@ -321,6 +322,12 @@ class ProjectPermissions(BasePermissions):
     BADGES_PERMISSION_MAP = {
         ProjectMembership.BadgeType.QA: Permission.CAN_QUALITY_CONTROL,
     }
+
+    REVERSE_PERMISSION_MAP = defaultdict(list)
+    for _role_type, _permissions in PERMISSION_MAP.items():
+        for permission in _permissions:
+            REVERSE_PERMISSION_MAP[permission].append(_role_type)
+            REVERSE_PERMISSION_MAP[permission.value].append(_role_type)
 
     CONTEXT_PERMISSION_ATTR = 'project_permissions'
 

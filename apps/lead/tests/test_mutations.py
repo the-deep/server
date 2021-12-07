@@ -1,5 +1,3 @@
-from django.db import models
-
 from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
 
 from organization.factories import OrganizationFactory
@@ -444,105 +442,167 @@ class TestLeadCopyMutation(GraphQLTestCase):
                   result {
                     id
                     title
+                    project
                   }
                 }
               }
             }
         '''
         member_user = UserFactory.create()
-        source_project = ProjectFactory.create()
-        source_project.add_member(member_user)
-        destination_project = ProjectFactory.create()
-        destination_project.add_member(member_user)
-        destination_project2 = ProjectFactory.create()
-        destination_project2.add_member(member_user)
+        member_user_only_protected = UserFactory.create()
         non_member_user = UserFactory.create()
+        # Source Projects
+        wa_source_project = ProjectFactory.create(title='With access Source Project')  # With access
+        woa_source_project = ProjectFactory.create(title='Without access Source Project')  # Without access
+        # Destination Projects
+        wa_destination_project = ProjectFactory.create(title='With access Destination Project')  # With access
+        woa_destination_project = ProjectFactory.create(title='Without access Destination Project')  # Without access
+        # Assign access
+        wa_source_project.add_member(member_user)
+        wa_source_project.add_member(member_user_only_protected, role=self.project_role_reader_non_confidential)
+        wa_destination_project.add_member(member_user)
+        wa_destination_project.add_member(member_user_only_protected)
+        woa_source_project.add_member(member_user, role=self.project_base_access)  # With no lead read access
+        woa_source_project.add_member(member_user_only_protected, role=self.project_base_access)  # With no lead read access
 
         # Lead1 Info (Will be used later for testing)
-        lead1_title = 'Lead 1 2019--222-'
-        lead1_text_extract = 'This is a test text extract'
-        lead1_preview_file = 'invalid_test_file'
-        author = OrganizationFactory.create(title='author1')
+        author1 = OrganizationFactory.create(title='author1')
         author2 = OrganizationFactory.create(title='author2')
-        emm_keyword = 'emm1'
-        emm_risk_factor = 'risk1'
-        emm_count = 22
-        emm_entity_name = 'emm_entity_11'
+        emm_entity = EmmEntityFactory.create(name='emm_entity_11')
 
-        # Generate Leads
-        lead1 = LeadFactory.create(
-            title=lead1_title,
-            project=destination_project,
+        # Generate some leads in source projects.
+        wa_lead_confidential = LeadFactory.create(
+            title='Confidential Lead (with-access)',
+            project=wa_source_project,
+            source_type=Lead.SourceType.WEBSITE,
+            url='http://confidential-lead.example.com',
+            confidentiality=Lead.Confidentiality.CONFIDENTIAL,
+        )
+        wa_lead1 = LeadFactory.create(
+            title='Lead 1 (with-access)',
+            project=wa_source_project,
             source_type=Lead.SourceType.WEBSITE,
             url='http://example.com'
         )
-        lead1.authors.set([author, author2])
-
-        # Generating Foreign elements for lead1
-        LeadPreviewFactory.create(lead=lead1, text_extract=lead1_text_extract)
-        LeadPreviewImageFactory.create(lead=lead1, file=lead1_preview_file)
-        emm_trigger = LeadEMMTriggerFactory.create(
-            lead=lead1,
-            emm_keyword=emm_keyword,
-            emm_risk_factor=emm_risk_factor,
-            count=emm_count
+        wa_lead2 = LeadFactory.create(
+            title='Lead 2 (with-access)',
+            project=wa_source_project,
+            source_type=Lead.SourceType.WEBSITE,
+            url='http://another.example.com'
         )
-        lead1.emm_entities.set([EmmEntityFactory.create(name=emm_entity_name)])
+        woa_lead3 = LeadFactory.create(
+            title='Lead 3 (without-access)',
+            project=woa_source_project,
+            source_type=Lead.SourceType.WEBSITE,
+            url='http://another-2.example.com'
+        )
+        # Assign authors
+        wa_lead1.authors.set([author1, author2])
+        wa_lead2.authors.set([author1])
+        woa_lead3.authors.set([author2])
 
-        lead2 = LeadFactory.create()
-        lead3 = LeadFactory.create()
-        old_count = Lead.objects.filter(project=destination_project).count()
+        # Generating Foreign elements for wa_lead1
+        wa_lead1_preview = LeadPreviewFactory.create(lead=wa_lead1, text_extract='This is a random text extarct')
+        wa_lead1_image_preview = LeadPreviewImageFactory.create(lead=wa_lead1, file='test-file-123')
+        LeadEMMTriggerFactory.create(
+            lead=wa_lead1,
+            emm_keyword='emm1',
+            emm_risk_factor='risk1',
+            count=22,
+        )
+        wa_lead1.emm_entities.set([emm_entity])
+
+        # Generate some leads in destinations projects as well.
+        LeadFactory.create(
+            project=wa_destination_project,
+            title=wa_lead2.title,
+            source_type=wa_lead2.source_type,
+            url=wa_lead2.url,
+        )
 
         # test for single lead copy
         minput = {
-            'projects': [destination_project.id],
-            'leads': [lead1.id]
+            'projects': [
+                wa_destination_project.id,  # Lead will be added here
+                woa_destination_project.id,  # No Lead are added here
+            ],
+            'leads': [
+                wa_lead_confidential.id,
+                wa_lead1.id,
+                wa_lead2.id,
+                woa_lead3.id
+            ]
         }
 
-        def _query_check(**kwargs):
-            return self.query_check(query, minput=minput, variables={'projectId': destination_project.pk}, **kwargs)
+        def _query_check(source_project, **kwargs):
+            return self.query_check(query, minput=minput, variables={'projectId': source_project.pk}, **kwargs)
 
         # withput login
-        _query_check(assert_for_error=True)
+        _query_check(wa_source_project, assert_for_error=True)
 
         # with non_member user[destination_project]
         self.force_login(non_member_user)
-        _query_check(assert_for_error=True)
+        _query_check(wa_source_project, assert_for_error=True)
 
-        # with member user
-        self.force_login(member_user)
-        _query_check(assert_for_error=False)
+        # with member user (With non-confidential access)
+        self.force_login(member_user_only_protected)
 
+        woa_current_leads_count = woa_destination_project.lead_set.count()
+        woa_current_leads_count = woa_destination_project.lead_set.count()
+        # Call endpoint using no lead read access (no changes here)
+        _query_check(woa_source_project, okay=False)
+        woa_new_leads_count = woa_destination_project.lead_set.count()
+        self.assertEqual(woa_current_leads_count, woa_new_leads_count)
+        self.assertEqual(woa_current_leads_count, woa_new_leads_count)
+
+        wa_current_leads_count = wa_destination_project.lead_set.count()
+        woa_current_leads_count = woa_destination_project.lead_set.count()
+        # Call endpoint
+        new_leads = _query_check(wa_source_project)['data']['project']['leadCopy']['result']
         # lets make sure lead is copied to the destination project
-        new_count = Lead.objects.filter(project=destination_project).count()
-        self.assertEqual(new_count, old_count + 1)
+        wa_new_count = wa_destination_project.lead_set.count()
+        woa_new_leads_count = woa_destination_project.lead_set.count()
+        # Only 1 since there is already another lead for wa_lead2 in wa_destination_project
+        # confidential can't be copied for member_user_only_protected user.
+        self.assertEqual(len(new_leads), 1, new_leads)
+        self.assertEqual(wa_new_count, wa_current_leads_count + 1)
+        self.assertEqual(woa_current_leads_count, woa_new_leads_count)
+
+        wa_current_leads_count = wa_destination_project.lead_set.count()
+        woa_current_leads_count = woa_destination_project.lead_set.count()
+        # Call endpoint (again)
+        _query_check(wa_source_project)
+        wa_new_count = wa_destination_project.lead_set.count()
+        woa_new_leads_count = woa_destination_project.lead_set.count()
+        # No changes now since leads are already copied
+        self.assertEqual(wa_new_count, wa_current_leads_count)
+        self.assertEqual(woa_current_leads_count, woa_new_leads_count)
+
+        self.force_login(member_user)  # With confidential access
+        wa_current_leads_count = wa_destination_project.lead_set.count()
+        woa_current_leads_count = woa_destination_project.lead_set.count()
+        # Call endpoint
+        _query_check(wa_source_project)
+        # lets make sure lead is copied to the destination project
+        wa_new_count = wa_destination_project.lead_set.count()
+        woa_new_leads_count = woa_destination_project.lead_set.count()
+        self.assertEqual(wa_new_count, wa_current_leads_count + 1)  # 1 new confidential lead
+        self.assertEqual(woa_current_leads_count, woa_new_leads_count)
+
+        # Now check if copied leads are done correctly
         # make sure same lead is created for destination project
-        destination_lead = Lead.objects.filter(project=destination_project).first()
-        self.assertEqual(destination_lead.title, lead1.title)
-
+        copied_lead1 = wa_destination_project.lead_set.get(title=wa_lead1.title)
+        self.assertEqual(copied_lead1.source_type, wa_lead1.source_type)
+        self.assertEqual(copied_lead1.url, wa_lead1.url)
+        self.assertEqual(copied_lead1.confidentiality, wa_lead1.confidentiality)
         # lets check for the foreign key field copy
-        self.assertEqual(Lead.objects.filter(title=lead1.title).count(), 2)
-        lead1_copy = Lead.objects.filter(title=lead1.title).exclude(models.Q(pk=lead1.pk)).get()
-        lead1_copy.refresh_from_db()
-
-        emm_trigger = lead1_copy.emm_triggers.filter(emm_risk_factor=emm_risk_factor, emm_keyword=emm_keyword)[0]
-        assert lead1_copy.authors.count() == 2
-        assert sorted(lead1_copy.authors.values_list('id', flat=True)) == [author.id, author2.id]
-        assert lead1_copy.leadpreview.text_extract == lead1_text_extract
-        assert lead1_copy.images.all()[0].file == lead1_preview_file
-        assert emm_trigger.count == emm_count
-        assert lead1_copy.emm_entities.all()[0].name == emm_entity_name
-
-        # lets test for the multiple lead
-        minput = {
-            'projects': [destination_project.id, destination_project2.id],
-            'leads': [lead2.id, lead3.id]
-        }
-
-        def _query_check(**kwargs):
-            return self.query_check(query, minput=minput, variables={'projectId': destination_project.pk}, **kwargs)
-
-        _query_check(assert_for_error=False)
-        # check for the multiple leads clone
-        self.assertEqual(Lead.objects.filter(project=destination_project).count(), 2)
-        self.assertEqual(Lead.objects.filter(project=destination_project2).count(), 1)
+        self.assertEqual(copied_lead1.leadpreview.text_extract, wa_lead1_preview.text_extract)
+        self.assertEqual(list(copied_lead1.images.values_list('file', flat=True)), [wa_lead1_image_preview.file.name])
+        self.assertEqual(
+            list(copied_lead1.emm_triggers.values('emm_keyword', 'emm_risk_factor', 'count')),
+            list(wa_lead1.emm_triggers.values('emm_keyword', 'emm_risk_factor', 'count')),
+        )
+        self.assertEqual(
+            list(copied_lead1.emm_entities.all()),
+            [emm_entity],
+        )

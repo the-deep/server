@@ -44,6 +44,7 @@ from .models import (
     ProjectStats,
 )
 from .enums import (
+    ProjectPermissionEnum,
     ProjectStatusEnum,
     ProjectRoleTypeEnum,
     ProjectJoinRequestStatusEnum,
@@ -192,7 +193,7 @@ class ProjectType(UserResourceMixin, DjangoObjectType):
     current_user_role = graphene.Field(ProjectRoleTypeEnum)
     allowed_permissions = graphene.List(
         graphene.NonNull(
-            graphene.Enum.from_enum(PP.Permission),
+            ProjectPermissionEnum,
         ), required=True
     )
     stats = graphene.Field(ProjectStatType)
