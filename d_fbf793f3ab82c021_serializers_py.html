@@ -541,7 +541,7 @@
     <p class="run"><span class="n"><a id="t480" href="#t480">480</a></span><span class="t">        <span class="nam">owner_role</span> <span class="op">=</span> <span class="nam">instance</span><span class="op">.</span><span class="nam">get_or_create_owner_role</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t481" href="#t481">481</a></span><span class="t">        <span class="nam">instance</span><span class="op">.</span><span class="nam">add_member</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">context</span><span class="op">[</span><span class="str">'request'</span><span class="op">]</span><span class="op">.</span><span class="nam">user</span><span class="op">,</span> <span class="nam">owner_role</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t482" href="#t482">482</a></span><span class="t">        <span class="com"># NOTE: Set current_user_role value. (get_current_user_role)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t483" href="#t483">483</a></span><span class="t">        <span class="nam">instance</span><span class="op">.</span><span class="nam">current_user_role</span> <span class="op">=</span> <span class="nam">owner_role</span><span class="op">.</span><span class="nam">title</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t483" href="#t483">483</a></span><span class="t">        <span class="nam">instance</span><span class="op">.</span><span class="nam">current_user_role</span> <span class="op">=</span> <span class="nam">owner_role</span><span class="op">.</span><span class="nam">type</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t484" href="#t484">484</a></span><span class="t">        <span class="key">return</span> <span class="nam">instance</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t485" href="#t485">485</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t486" href="#t486">486</a></span><span class="t">    <span class="key">def</span> <span class="nam">update</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">instance</span><span class="op">,</span> <span class="nam">validated_data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -613,7 +613,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.2</a>,
-            created at 2021-12-06 16:01 +0000
+            created at 2021-12-07 09:42 +0000
         </p>
     </div>
 </footer>
