@@ -235,7 +235,7 @@ class FilterData(models.Model):
     )
 
     # Just number for numeric comparision
-    number = models.IntegerField(default=None, blank=True, null=True)
+    number = models.BigIntegerField(default=None, blank=True, null=True)
 
     # For intersection between two numbers
     from_number = models.IntegerField(default=None, blank=True, null=True)
