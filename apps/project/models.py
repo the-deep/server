@@ -2,8 +2,10 @@ import uuid
 
 from dateutil.relativedelta import relativedelta
 from django.urls import reverse
+from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.core.cache import cache
 from django.utils.functional import cached_property
 from django.db.models.functions import Cast
 from django.contrib.auth.models import User
@@ -12,6 +14,7 @@ from django.db.models import Q
 from django.db.models.functions import JSONObject
 from django.db import connection as django_db_connection
 
+from deep.caches import CacheKey
 from user_resource.models import UserResource
 from geo.models import Region
 from user_group.models import UserGroup
@@ -157,29 +160,31 @@ class Project(UserResource):
         """
         Used by graphql schema
         """
+        current_user_role_subquery = models.Subquery(
+            ProjectMembership.objects.filter(
+                project=models.OuterRef('pk'),
+                member=user,
+            ).order_by('role__level').values('role__type')[:1],
+            output_field=models.CharField(),
+        )
+        current_user_membership_data_subquery = JSONObject(
+            user_id=models.Value(user.id),
+            role=models.F('current_user_role'),
+            badges=models.Subquery(
+                ProjectMembership.objects.filter(
+                    project=models.OuterRef('pk'),
+                    member=user,
+                ).order_by('badges').values('badges')[:1],
+                output_field=ArrayField(models.CharField()),
+            ),
+        )
         visible_projects = cls.objects\
             .annotate(
                 # For using within query filters
-                current_user_role=models.Subquery(
-                    ProjectMembership.objects.filter(
-                        project=models.OuterRef('pk'),
-                        member=user,
-                    ).order_by('role__title').values('role__title')[:1],
-                    output_field=models.CharField()
-                ),
+                current_user_role=current_user_role_subquery,
             ).annotate(
                 # NOTE: This is used by permission module
-                current_user_membership_data=JSONObject(
-                    user_id=models.Value(user.id),
-                    role=models.F('current_user_role'),
-                    badges=models.Subquery(
-                        ProjectMembership.objects.filter(
-                            project=models.OuterRef('pk'),
-                            member=user,
-                        ).order_by('badges').values('badges')[:1],
-                        output_field=ArrayField(models.CharField()),
-                    ),
-                ),
+                current_user_membership_data=current_user_membership_data_subquery,
                 # NOTE: Exclude if project is private + user is not a member
             ).exclude(is_private=True, current_user_role__isnull=True)
         if only_member:
@@ -193,7 +198,7 @@ class Project(UserResource):
         current_user_role = None
         badges = []
         if membership:
-            current_user_role = membership.role.title
+            current_user_role = membership.role.type
             badges = membership.badges
         self.current_user_membership_data = dict(
             user_id=user.id,
@@ -223,8 +228,9 @@ class Project(UserResource):
 
     @classmethod
     def get_recent_activities(cls, user):
-        from entry.models import Entry, EntryComment
+        from entry.models import Entry
         from lead.models import Lead
+        from quality_assurance.models import EntryReviewComment
 
         project_qs = cls.get_for_member(user)
         created_by_expression = models.functions.Coalesce(
@@ -246,12 +252,21 @@ class Project(UserResource):
             models.Value('entry', output_field=models.CharField()),
             created_by_expression,
         )
-        entry_comment_qs = EntryComment.objects.filter(entry__project__in=project_qs).values_list(
-            'id', 'entrycommenttext__created_at', 'entry__project_id', 'entry__project__title',
+        entry_comment_qs = EntryReviewComment.objects.filter(entry__project__in=project_qs).values_list(
+            'id', 'created_at', 'entry__project_id', 'entry__project__title',
             'created_by_id', 'created_by__profile__display_picture__file',
             models.Value('entry-comment', output_field=models.CharField()),
             created_by_expression,
         ).distinct('id')
+
+        def _get_activities():
+            return list(leads_qs.union(entry_qs).union(entry_comment_qs).order_by('-created_at')[:30])
+
+        activities = cache.get_or_set(
+            CacheKey.RECENT_ACTIVITIES_KEY_FORMAT.format(user.pk),
+            _get_activities,
+            60 * 5,  # 5min
+        )
 
         return [
             {
@@ -267,7 +282,7 @@ class Project(UserResource):
                     'created_by_display_name',
                 ])
             }
-            for item in leads_qs.union(entry_qs).union(entry_comment_qs).order_by('-created_at')[:30]
+            for item in activities
         ]
 
     @staticmethod
@@ -588,7 +603,16 @@ class ProjectRole(models.Model):
     Roles for Project
     """
 
+    class Type(models.TextChoices):
+        PROJECT_OWNER = 'project_owner', 'Project Owner'
+        ADMIN = 'admin', 'Admin'
+        MEMBER = 'member', 'Member'
+        READER = 'reader', 'Reader'
+        READER_NON_CONFIDENTIAL = 'reader_non_confidential', 'Reader (Non-confidential)'
+        UNKNOWN = 'unknown', 'Unknown'
+
     title = models.CharField(max_length=255, unique=True)
+    type = models.CharField(choices=Type.choices, default=Type.UNKNOWN, max_length=50)
 
     lead_permissions = models.IntegerField(default=0)
     entry_permissions = models.IntegerField(default=0)
@@ -657,6 +681,12 @@ class ProjectRole(models.Model):
 
             # can be negative if first bit 1, so check if not zero
             return item_permissions & permission_bit != 0
+
+    def clean(self):
+        if self.type != self.Type.UNKNOWN and ProjectRole.objects.filter(type=self.type).exclude(pk=self.pk).count() > 0:
+            raise ValidationError({
+                'type': f'Type: {self.type} is already assigned!!'
+            })
 
 
 class ProjectStats(models.Model):

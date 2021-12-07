@@ -2,6 +2,7 @@ import copy
 from typing import Union
 
 from django.db import models
+from django.core.exceptions import ValidationError
 
 from utils.common import get_enum_display
 from user_resource.models import UserResource
@@ -89,7 +90,7 @@ class AnalysisFramework(UserResource):
                     AnalysisFrameworkMembership.objects.filter(
                         framework=models.OuterRef('pk'),
                         member=user,
-                    ).order_by('role__title').values('role__title')[:1],
+                    ).order_by('role__type').values('role__type')[:1],
                     output_field=models.CharField()
                 )
                 # NOTE: Exclude if af is private + user is not a member and user is not member of project using af
@@ -114,7 +115,7 @@ class AnalysisFramework(UserResource):
         memberships = list(
             AnalysisFrameworkMembership.objects
             .filter(framework=self, member=user)
-            .values_list('role__title', flat=True)
+            .values_list('role__type', flat=True)
         )
         if memberships:
             self.current_user_role = memberships[0]
@@ -487,6 +488,21 @@ class AnalysisFrameworkRole(models.Model):
     """
     Roles for AnalysisFramework
     """
+    class Type(models.TextChoices):
+        EDITOR = 'editor', 'Editor'
+        OWNER = 'owner', 'Owner'
+        DEFAULT = 'default', 'default'
+        PRIVATE_EDITOR = 'private_editor', 'Private Editor'
+        PRIVATE_OWNER = 'private_owner', 'Private Owner'
+        PRIVATE_VIEWER = 'private_viewer', 'Private Viewer'
+        UNKNOWN = 'unknown', 'Unknown'
+
+    PRIVATE_TYPES = [
+        Type.PRIVATE_EDITOR,
+        Type.PRIVATE_OWNER,
+        Type.PRIVATE_VIEWER,
+    ]
+
     CAN_ADD_USER = 'can_add_user'
     CAN_CLONE_FRAMEWORK = 'can_clone_framework'
     CAN_EDIT_FRAMEWORK = 'can_edit_framework'
@@ -501,6 +517,7 @@ class AnalysisFrameworkRole(models.Model):
 
     title = models.CharField(max_length=255, unique=True)
     is_private_role = models.BooleanField(default=False)
+    type = models.CharField(choices=Type.choices, default=Type.UNKNOWN, max_length=50)
 
     # The following field allows user to add other users to the framework and
     # assign appropriate permissions
@@ -533,6 +550,17 @@ class AnalysisFrameworkRole(models.Model):
             x: self.__dict__[x]
             for x in AnalysisFrameworkRole.PERMISSION_FIELDS
         }
+
+    def clean(self):
+        if self.is_private_role:
+            if self.type not in self.PRIVATE_TYPES:
+                raise ValidationError({
+                    'type': f'{self.type} is not allowed for Private Roles.',
+                })
+        elif self.type in self.PRIVATE_TYPES:
+            raise ValidationError({
+                'type': f'{self.type} is not allowed for Public Roles.',
+            })
 
 
 class AnalysisFrameworkMembership(models.Model):

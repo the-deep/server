@@ -81,21 +81,23 @@ def _generate_project_stats_cache():
     current_time = timezone.now()
     threshold = ProjectStats.get_activity_timeframe(current_time)
 
+    # Make sure to only look for entries which have same AF as Project's AF
+    all_entries_qs = Entry.objects.filter(analysis_framework=models.F('project__analysis_framework'))
     recent_leads = Lead.objects.filter(created_at__gte=threshold)
-    recent_entries = Entry.objects.filter(created_at__gte=threshold)
+    recent_entries = all_entries_qs.filter(created_at__gte=threshold)
 
     # Calculate
     leads_count_map = _count_by_project_qs(Lead.objects.all())
     leads_tagged_and_controlled_count_map = _count_by_project_qs(
         Lead.objects.annotate(
             entries_count=models.Subquery(
-                Entry.objects.filter(
+                all_entries_qs.filter(
                     lead=models.OuterRef('pk'),
                 ).order_by().values('lead').annotate(count=models.Count('id')).values('count')[:1],
                 output_field=models.IntegerField()
             ),
             entries_controlled_count=models.Subquery(
-                Entry.objects.filter(
+                all_entries_qs.filter(
                     lead=models.OuterRef('pk'),
                     controlled=True,
                 ).order_by().values('lead').annotate(count=models.Count('id')).values('count')[:1],
@@ -108,8 +110,8 @@ def _generate_project_stats_cache():
     leads_tagged_count_map = _count_by_project_qs(Lead.objects.filter(status=Lead.Status.TAGGED))
 
     entries_count_map = _count_by_project_qs(Entry.objects.all())
-    entries_verified_count_map = _count_by_project_qs(Entry.objects.filter(verified_by__isnull=False))
-    entries_controlled_count_map = _count_by_project_qs(Entry.objects.filter(controlled=True))
+    entries_verified_count_map = _count_by_project_qs(all_entries_qs.filter(verified_by__isnull=False))
+    entries_controlled_count_map = _count_by_project_qs(all_entries_qs.filter(controlled=True))
 
     members_count_map = _count_by_project_qs(ProjectMembership.objects.all())
 

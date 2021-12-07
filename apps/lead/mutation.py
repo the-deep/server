@@ -16,7 +16,7 @@ from .models import Lead, LeadGroup
 from .schema import LeadType, LeadGroupType
 from .serializers import (
     LeadGqSerializer as LeadSerializer,
-    LeadCopySerializer
+    LeadCopyGqSerializer,
 )
 
 
@@ -28,7 +28,7 @@ LeadInputType = generate_input_type_for_serializer(
 
 LeadCopyInputType = generate_input_type_for_serializer(
     'LeadCopyInputType',
-    serializer_class=LeadCopySerializer,
+    serializer_class=LeadCopyGqSerializer,
 )
 
 
@@ -101,15 +101,15 @@ class LeadCopy(graphene.Mutation):
 
     errors = graphene.List(graphene.NonNull(CustomErrorType))
     ok = graphene.Boolean()
-    result = graphene.Field(LeadType)
+    result = graphene.List(graphene.NonNull(LeadType))
 
     @staticmethod
     def mutate(root, info, data):
-        serializer = LeadCopySerializer(data=data, context={'request': info.context.request})
+        serializer = LeadCopyGqSerializer(data=data, context={'request': info.context.request})
         if errors := mutation_is_not_valid(serializer):
             return LeadCopy(errors=errors, ok=False)
-        instance = serializer.save()
-        return LeadCopy(result=instance, errors=None, ok=True)
+        new_leads = serializer.save()
+        return LeadCopy(result=new_leads, errors=None, ok=True)
 
 
 class Mutation():

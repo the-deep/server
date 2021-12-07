@@ -12,14 +12,14 @@ class GQLContext:
         self.request = request
         # Project
         self.active_project = self.request.active_project = None
-        self.project_permissions = []
+        self.project_permissions = self.request.project_permissions = []
         # AnalysisFramework
         self.active_af = self.request.active_af = None
         self.af_permissions = []
 
     def set_active_project(self, project):
         self.active_project = self.request.active_project = project
-        self.project_permissions = PP.get_permissions(project, self.request.user)
+        self.project_permissions = self.request.project_permissions = PP.get_permissions(project, self.request.user)
 
     def set_active_af(self, af):
         self.active_af = self.request.active_af = af

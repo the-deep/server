@@ -13,7 +13,7 @@ from sentry_sdk.integrations.redis import RedisIntegration
 from billiard.exceptions import Terminated
 from deep.exceptions import UnauthorizedException
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('deep_sentry.errors.logging')
 
 IGNORED_ERRORS = [
     Terminated,
@@ -22,7 +22,7 @@ IGNORED_ERRORS = [
 ]
 IGNORED_LOGGERS = [
     'graphql.execution.utils',
-    __name__,
+    'deep_sentry.errors.logging',
 ]
 
 for _logger in IGNORED_LOGGERS:

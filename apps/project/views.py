@@ -914,7 +914,7 @@ def accept_project_confirm(
 class ProjectRoleViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ProjectRoleSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = ProjectRole.objects.all()
+    queryset = ProjectRole.objects.order_by('level')
 
 
 class ProjectUserGroupViewSet(viewsets.ModelViewSet):

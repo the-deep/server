@@ -175,7 +175,7 @@ class TempClientIdMixin(serializers.ModelSerializer):
         return instance
 
 
-class ProjectPropertySerializerMixin(serializers.ModelSerializer):
+class ProjectPropertySerializerMixin(serializers.Serializer):
     project_property_attribute = None
 
     @cached_property

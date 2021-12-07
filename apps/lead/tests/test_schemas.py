@@ -99,8 +99,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
         non_member_user = UserFactory.create()
         member_user = UserFactory.create()
         confidential_member_user = UserFactory.create()
-        project.add_member(member_user, role=self.project_role_viewer_non_confidential)
-        project.add_member(confidential_member_user, role=self.project_role_viewer)
+        project.add_member(member_user, role=self.project_role_reader_non_confidential)
+        project.add_member(confidential_member_user, role=self.project_role_reader)
         normal_lead = LeadFactory.create(project=project)  # It's UNPROTECTED by default
         confidential_lead = LeadFactory.create(project=project, confidentiality=Lead.Confidentiality.CONFIDENTIAL)
 
@@ -145,9 +145,9 @@ class TestLeadQuerySchema(GraphQLTestCase):
         user = UserFactory.create()
         member1 = UserFactory.create()
         member2 = UserFactory.create()
-        project.add_member(user, role=self.project_role_viewer)
-        project.add_member(member1, role=self.project_role_viewer)
-        project.add_member(member2, role=self.project_role_viewer)
+        project.add_member(user, role=self.project_role_reader)
+        project.add_member(member1, role=self.project_role_reader)
+        project.add_member(member2, role=self.project_role_reader)
         lead1 = LeadFactory.create(
             project=project,
             title='Test 1',
@@ -267,8 +267,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
         non_member_user = UserFactory.create()
         member_user = UserFactory.create()
         confidential_member_user = UserFactory.create()
-        project.add_member(member_user, role=self.project_role_viewer_non_confidential)
-        project.add_member(confidential_member_user, role=self.project_role_viewer)
+        project.add_member(member_user, role=self.project_role_reader_non_confidential)
+        project.add_member(confidential_member_user, role=self.project_role_reader)
         # Create 10 (5 confidential, 5 non-protected) dummy leads
         normal_leads = LeadFactory.create_batch(5, project=project)  # It's UNPROTECTED by default
         confidential_leads = LeadFactory.create_batch(6, project=project, confidentiality=Lead.Confidentiality.CONFIDENTIAL)
@@ -446,7 +446,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         af, af_new = AnalysisFrameworkFactory.create_batch(2)
         user = UserFactory.create()
         project = ProjectFactory.create(analysis_framework=af)
-        project.add_member(user, role=self.project_role_analyst)
+        project.add_member(user, role=self.project_role_member)
         lead = LeadFactory.create(project=project)
 
         controlled_entries = EntryFactory.create_batch(2, lead=lead, controlled=True)
@@ -517,8 +517,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
         project2 = ProjectFactory.create()
         member_user = UserFactory.create()
         confidential_member_user = UserFactory.create()
-        project.add_member(member_user, role=self.project_role_clairvoyant_one)
-        project.add_member(confidential_member_user, role=self.project_role_viewer)
+        project.add_member(member_user, role=self.project_role_owner)
+        project.add_member(confidential_member_user, role=self.project_role_reader)
 
         lead_group1 = LeadGroupFactory.create(project=project)
         lead_group2 = LeadGroupFactory.create(project=project)
