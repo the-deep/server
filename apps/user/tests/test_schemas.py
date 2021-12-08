@@ -7,7 +7,7 @@ from utils.graphene.tests import GraphQLTestCase
 from gallery.factories import FileFactory
 from project.factories import ProjectFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
-from user.models import User, Feature
+from user.models import User, Feature, EmailCondition
 from user.factories import UserFactory, FeatureFactory
 from user.utils import (
     send_password_changed_notification,
@@ -310,9 +310,8 @@ class TestUserSchema(GraphQLTestCase):
         project = ProjectFactory.create()
         gallery_file = FileFactory.create()
 
-        # With invalid attributes
         minput = dict(
-            emailOptOuts=["news_and_updates", "join_requests", "haha-hunu"],  # Invalid options
+            emailOptOuts=[''],
             displayPicture=gallery_file.pk,  # File without access
             lastActiveProject=project.pk,  # Non-member Project
             language="en-us",
@@ -320,14 +319,18 @@ class TestUserSchema(GraphQLTestCase):
             lastName="Deep",
             organization="DFS",
         )
+        minput['emailOptOuts'] = [
+            self.genum(EmailCondition.NEWS_AND_UPDATES),
+            self.genum(EmailCondition.JOIN_REQUESTS),
+        ]
         # Without authentication -----
         content = self.query_check(query, minput=minput, assert_for_error=True)
         # With authentication -----
         self.force_login(user)
         content = self.query_check(query, minput=minput, okay=False)
-        self.assertEqual(len(content['data']['updateMe']['errors']), 3, content)
+        self.assertEqual(len(content['data']['updateMe']['errors']), 2, content)
         # With valid -----
-        minput['emailOptOuts'] = ["news_and_updates", "join_requests"]  # Remove invalid option
+        # Remove invalid option
         # Add ownership to file
         gallery_file.created_by = user
         gallery_file.save()
