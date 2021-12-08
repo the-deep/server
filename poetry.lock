@@ -459,6 +459,19 @@ six = ">=1.10.0"
 dev = ["black", "isort", "django", "mypy", "django-stubs", "djangorestframework-stubs"]
 
 [[package]]
+name = "django-environ"
+version = "0.8.1"
+description = "A package that allows you to utilize 12factor inspired environment variables to configure your Django application."
+category = "main"
+optional = false
+python-versions = ">=3.4,<4"
+
+[package.extras]
+develop = ["coverage[toml] (>=5.0a4)", "pytest (>=4.6.11)", "furo (>=2021.8.17b43,<2021.9.0)", "sphinx (>=3.5.0)", "sphinx-notfound-page"]
+docs = ["furo (>=2021.8.17b43,<2021.9.0)", "sphinx (>=3.5.0)", "sphinx-notfound-page"]
+testing = ["coverage[toml] (>=5.0a4)", "pytest (>=4.6.11)"]
+
+[[package]]
 name = "django-filter"
 version = "2.4.0"
 description = "Django-filter is a reusable Django application for allowing users to filter querysets dynamically."
@@ -2459,7 +2472,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "c239fbb69b0c498504daf74bafc68f4950ef3a3853eb45b8ecd2f8fd3940e89d"
+content-hash = "273736a8c68f872674ae3536fe610d0cc0016843ac531874154ddda3b5af3887"
 
 [metadata.files]
 amqp = [
@@ -2611,6 +2624,10 @@ django-debug-toolbar = [
 django-enumfield = [
     {file = "django-enumfield-2.0.2.tar.gz", hash = "sha256:e5fe9826b5f6c5372c70ab82d9afa126fac932a88af2ae46b530b9ef520b1c8f"},
     {file = "django_enumfield-2.0.2-py2.py3-none-any.whl", hash = "sha256:4a237885151bf36b94f084cdb652fda6dcf1b2d3796b8d31764c33d30cfd478f"},
+]
+django-environ = [
+    {file = "django-environ-0.8.1.tar.gz", hash = "sha256:6f0bc902b43891656b20486938cba0861dc62892784a44919170719572a534cb"},
+    {file = "django_environ-0.8.1-py2.py3-none-any.whl", hash = "sha256:42593bee519a527602a467c7b682aee1a051c2597f98c45f4f4f44169ecdb6e5"},
 ]
 django-filter = [
     {file = "django-filter-2.4.0.tar.gz", hash = "sha256:84e9d5bb93f237e451db814ed422a3a625751cbc9968b484ecc74964a8696b06"},
