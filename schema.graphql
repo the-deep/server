@@ -1575,6 +1575,7 @@ type RegionDetailType {
   populationData: GenericScalar
   mediaSources: GenericScalar
   centroid: PointScalar
+  isPublished: Boolean!
   adminLevels: [AdminLevelType!]
 }
 
