@@ -1,3 +1,4 @@
+from user.enums import enum_map as user_enum_map
 from user_group.enums import enum_map as user_group_enum_map
 from project.enums import enum_map as project_enum_map
 from analysis_framework.enums import enum_map as analysis_framework_enum_map
@@ -9,6 +10,7 @@ from analysis.enums import enum_map as analysis_enum_map
 from notification.enums import enum_map as notification_enum_map
 
 ENUM_TO_GRAPHENE_ENUM_MAP = {
+    **user_enum_map,
     **user_group_enum_map,
     **project_enum_map,
     **analysis_framework_enum_map,

@@ -416,7 +416,11 @@ class GqPasswordResetSerializer(CaptchaSerializerMixin, serializers.ModelSeriali
 class UserMeSerializer(serializers.ModelSerializer):
     organization = serializers.CharField(source='profile.organization', allow_blank=True, required=False)
     language = serializers.CharField(source='profile.language', allow_null=True, required=False)
-    email_opt_outs = serializers.ListField(source='profile.email_opt_outs', required=False)
+    email_opt_outs = serializers.ListField(
+        child=serializers.ChoiceField(choices=Profile.EmailConditionOptOut.choices),
+        source='profile.email_opt_outs',
+        required=False,
+    )
     last_active_project = serializers.PrimaryKeyRelatedField(
         source='profile.last_active_project',
         queryset=Project.objects.all(),
@@ -433,7 +437,7 @@ class UserMeSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'first_name', 'last_name', 'organization', 'display_picture',
+            'first_name', 'last_name', 'organization', 'display_picture',
             'language', 'email_opt_outs', 'last_active_project'
         )
 
@@ -441,13 +445,6 @@ class UserMeSerializer(serializers.ModelSerializer):
         if project and not project.is_member(self.context['request'].user):
             raise serializers.ValidationError('Invalid project')
         return project
-
-    def validate_email_opt_outs(self, email_opt_outs):
-        if email_opt_outs:
-            invalid_options = [opt for opt in email_opt_outs if opt not in Profile.EMAIL_CONDITIONS_TYPES]
-            if invalid_options:
-                raise serializers.ValidationError('Invalid email opt outs: %s' % (','.join(invalid_options)))
-        return email_opt_outs
 
     def validate_display_picture(self, display_picture):
         if display_picture and display_picture.created_by != self.context['request'].user:
