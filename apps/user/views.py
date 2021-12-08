@@ -29,7 +29,7 @@ from .serializers import (
 from .permissions import UserPermission
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     create:
     Register a new user

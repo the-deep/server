@@ -50,7 +50,7 @@ class RegionType(DjangoObjectType):
         fields = (
             'id', 'title', 'public', 'regional_groups',
             'key_figures', 'population_data', 'media_sources',
-            'centroid',
+            'centroid', 'is_published',
         )
 
     @staticmethod
