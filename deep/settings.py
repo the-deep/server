@@ -4,6 +4,7 @@ Django settings for deep project.
 import os
 import sys
 import logging
+import environ
 from celery.schedules import crontab
 
 from utils import sentry
@@ -14,27 +15,72 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APPS_DIR = os.path.join(BASE_DIR, 'apps')
 TEMP_DIR = '/tmp'
 
+# TODO: Make sure to pull as much from env then default values.
+env = environ.Env(
+    DJANGO_DEBUG=(bool, False),
+    DJANGO_SECRET_KEY=str,
+    DEEP_ENVIRONMENT=(str, 'development'),
+    FRONTEND_HOST=(str, 'localhost:3000'),
+    DJANGO_ALLOWED_HOST=(str, None),
+    DEEPER_SITE_NAME=(str, 'DEEPER'),
+    DEEP_HTTPS=(str, 'http'),
+    PYTEST_XDIST_WORKER=(str, ''),
+    PROFILE=(bool, False),
+    DATABASE_NAME=(str, 'postgres'),
+    DATABASE_USER=(str, 'postgres'),
+    DATABASE_PASSWORD=(str, 'postgres'),
+    DATABASE_PORT=(str, '5432'),
+    DATABASE_HOST=(str, 'db'),
+    DJANGO_USE_S3=(bool, False),
+    S3_AWS_ACCESS_KEY_ID=(str, None),
+    S3_AWS_SECRET_ACCESS_KEY=(str, None),
+    S3_AWS_ENDPOINT_URL=(str, None),
+    CELERY_REDIS_URL=(str, 'redis://redis:6379/0'),
+    DJANGO_CACHE_REDIS_URL=(str, 'redis://redis:6379/2'),
+    HID_CLIENT_ID=(str, 'deep-local'),
+    HID_CLIENT_NAME=(str, 'Deep Local'),
+    HID_CLIENT_REDIRECT_URL=(str, 'http://localhost:3000/login/'),
+    HID_AUTH_URI=(str, 'https://api2.dev.humanitarian.id'),
+    USE_PAPERTRAIL=(bool, False),
+    EBS_HOSTNAME=(str, 'UNK_HOST'),
+    EBS_ENV_TYPE=(str, 'UNK_ENV'),
+    PAPERTRAIL_PORT=(int, None),
+    EMAIL_HOST=(str, 'smtp.gmail.com'),
+    EMAIL_HOST_PASSWORD=(str, 'deep1234'),
+    EMAIL_PORT=(int, 587),
+    EMAIL_USE_TLS=(bool, True),
+    USE_EMAIL_CONFIG=(bool, False),
+    EMAIL_HOST_USER=(str, 'deepnotifications1@gmail.com'),
+    SES_AWS_ACCESS_KEY_ID=(str, None),
+    SES_AWS_SECRET_ACCESS_KEY=(str, None),
+    HCAPTCHA_SECRET=(str, '0x0000000000000000000000000000000000000000'),
+    SENTRY_DSN=(str, None),
+    SENTRY_SAMPLE_RATE=(float, 0.05),
+    DEEPL_DOMAIN=(str, 'http://192.168.31.92:8010'),
+    CSRF_TRUSTED_ORIGINS=(bool, False),
+    SESSION_COOKIE_DOMAIN=(str, 'localhost'),
+    CSRF_COOKIE_DOMAIN=(str, 'localhost'),
+    DOCKER_HOST_IP=(str, None),
+)
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
-    '=p5!pos4^@$tb1yi@++o5_s)ya@62odvk_mf--#8ozaw0wnc0q')
+SECRET_KEY = env('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
+DEBUG = env('DJANGO_DEBUG')
 
-DEEP_ENVIRONMENT = os.environ.get('DEEP_ENVIRONMENT', 'development')
+DEEP_ENVIRONMENT = env('DEEP_ENVIRONMENT')
 
-ALLOWED_HOSTS = [os.environ.get('DJANGO_ALLOWED_HOST', '*')]
+ALLOWED_HOSTS = [env('DJANGO_ALLOWED_HOST')]
 
-DEEPER_FRONTEND_ARY_HOST = os.environ.get('FRONTEND_ARY_HOST', 'localhost:3000')  # TODO: Remove this later
-DEEPER_FRONTEND_HOST = os.environ.get('FRONTEND_HOST', 'localhost:3000')
-DJANGO_API_HOST = os.environ.get('DJANGO_ALLOWED_HOST', 'localhost:8000')
+DEEPER_FRONTEND_HOST = env('FRONTEND_HOST')
+DJANGO_API_HOST = env('DJANGO_ALLOWED_HOST')
 
-DEEPER_SITE_NAME = os.environ.get('DEEPER_SITE_NAME', 'DEEPER')
-HTTP_PROTOCOL = os.environ.get('DEEP_HTTPS', 'http')
+DEEPER_SITE_NAME = env('DEEPER_SITE_NAME')
+HTTP_PROTOCOL = env('DEEP_HTTPS')
 
 # See if we are inside a test environment (pytest)
 TESTING = any([
@@ -45,11 +91,11 @@ TESTING = any([
         '/usr/local/lib/python3.6/dist-packages/py/test.py',
     ]
     # Provided by pytest-xdist
-]) or os.environ.get('PYTEST_XDIST_WORKER') is not None
+]) or env('PYTEST_XDIST_WORKER') is not None
 TEST_RUNNER = 'snapshottest.django.TestRunner'
 TEST_DIR = os.path.join(BASE_DIR, 'deep/test_files')
 
-PROFILE = os.environ.get('PROFILE', 'false').lower() == 'true'
+PROFILE = env('PROFILE')
 
 # Application definition
 
@@ -174,11 +220,11 @@ WSGI_APPLICATION = 'deep.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': os.environ.get('DATABASE_NAME', 'postgres'),
-        'USER': os.environ.get('DATABASE_USER', 'postgres'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'postgres'),
-        'PORT': os.environ.get('DATABASE_PORT', '5432'),
-        'HOST': os.environ.get('DATABASE_HOST', 'db'),
+        'NAME': env('DATABASE_NAME'),
+        'USER': env('DATABASE_USER'),
+        'PASSWORD': env('DATABASE_PASSWORD'),
+        'PORT': env('DATABASE_PORT'),
+        'HOST': env('DATABASE_HOST'),
         'OPTIONS': {
             'sslmode': 'prefer' if DEBUG else 'require',  # Require ssl in Production
         },
@@ -280,14 +326,14 @@ LANGUAGES = (
 # NOTE: S3 have max 7 days for signed url (https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html) # noqa
 GALLERY_FILE_EXPIRE = 60 * 60 * 24 * 2
 
-if os.environ.get('DJANGO_USE_S3', 'False').lower() == 'true':
+if env('DJANGO_USE_S3'):
     # AWS S3 Bucket Credentials
-    AWS_STORAGE_BUCKET_NAME_STATIC = os.environ['DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC']
-    AWS_STORAGE_BUCKET_NAME_MEDIA = os.environ['DJANGO_AWS_STORAGE_BUCKET_NAME_MEDIA']
+    AWS_STORAGE_BUCKET_NAME_STATIC = env('DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC')
+    AWS_STORAGE_BUCKET_NAME_MEDIA = env('DJANGO_AWS_STORAGE_BUCKET_NAME_MEDIA')
     # If environment variable are not provided, then EC2 Role will be used.
-    AWS_ACCESS_KEY_ID = os.environ.get('S3_AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = os.environ.get('S3_AWS_SECRET_ACCESS_KEY')
-    AWS_S3_ENDPOINT_URL = os.environ.get('S3_AWS_ENDPOINT_URL') if DEBUG else None
+    AWS_ACCESS_KEY_ID = env('S3_AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = env('S3_AWS_SECRET_ACCESS_KEY')
+    AWS_S3_ENDPOINT_URL = env('S3_AWS_ENDPOINT_URL') if DEBUG else None
 
     AWS_S3_FILE_OVERWRITE = False
     AWS_DEFAULT_ACL = 'private'
@@ -322,7 +368,7 @@ STATICFILES_DIRS = [
 ]
 
 # CELERY CONFIG "redis://:{password}@{host}:{port}/{db}"
-CELERY_REDIS_URL = os.environ.get('CELERY_REDIS_URL', 'redis://redis:6379/0')
+CELERY_REDIS_URL = env('CELERY_REDIS_URL')
 CELERY_BROKER_URL = CELERY_REDIS_URL
 CELERY_RESULT_BACKEND = CELERY_REDIS_URL
 CELERY_TIMEZONE = TIME_ZONE
@@ -346,20 +392,7 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-# REDIS STORE CONFIG "redis://:{password}@{host}:{port}/{db}"
-# CHANNEL_REDIS_URL = os.environ.get('CHANNEL_REDIS_URL', 'redis://redis:6379/1')
-# CHANNELS CONFIG
-# CHANNEL_LAYERS = {
-#    'default': {
-#        'BACKEND': 'asgi_redis.core.RedisChannelLayer',
-#        'CONFIG': {
-#            'hosts': [CHANNEL_REDIS_URL],
-#        },
-#        'ROUTING': 'deep.routing.channel_routing',
-#    },
-# }
-
-DJANGO_CACHE_REDIS_URL = os.environ.get('DJANGO_CACHE_REDIS_URL', 'redis://redis:6379/2')
+DJANGO_CACHE_REDIS_URL = env('DJANGO_CACHE_REDIS_URL')
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
@@ -378,12 +411,10 @@ CACHES = {
 RELIEFWEB_APPNAME = 'thedeep.io'
 
 # HID CONFIGS [NOTE: Update config in React too]
-HID_CLIENT_ID = os.environ.get('HID_CLIENT_ID', 'deep-local')
-HID_CLIENT_REDIRECT_URL = os.environ.get(
-    'HID_CLIENT_REDIRECT_URL', 'http://localhost:3000/login/')
-HID_AUTH_URI = os.environ.get(
-    'HID_AUTH_URI',
-    'https://api2.dev.humanitarian.id')  # https://auth.humanitarian.id
+HID_CLIENT_ID = env('HID_CLIENT_ID')
+HID_CLIENT_NAME = env('HID_CLIENT_NAME')
+HID_CLIENT_REDIRECT_URL = env('HID_CLIENT_REDIRECT_URL')
+HID_AUTH_URI = env('HID_AUTH_URI')
 
 # Logging Errors to Papertrail
 
@@ -405,12 +436,12 @@ def add_username_attribute(record):
 # pdfminer can log heavy logs
 logging.getLogger("pdfminer").setLevel(logging.WARNING)
 
-if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
+if env('USE_PAPERTRAIL'):
     format_args = (
-        os.environ.get('EBS_HOSTNAME', 'UNK_HOST'),
-        os.environ.get('EBS_ENV_TYPE', 'UNK_ENV'),
+        env('EBS_HOSTNAME'),
+        env('EBS_ENV_TYPE'),
     )
-    papertrail_address = (os.environ.get('PAPERTRAIL_HOST'), int(os.environ.get('PAPERTRAIL_PORT')))
+    papertrail_address = (env('PAPERTRAIL_HOST'), env('PAPERTRAIL_PORT'))
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
@@ -535,14 +566,14 @@ CORS_ALLOW_HEADERS = (
 )
 
 # Email CONFIGS (NOT USED)
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'deep1234')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT') or 587)
-EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = env('EMAIL_PORT')
+EMAIL_USE_TLS = env('EMAIL_USE_TLS')
 
 # Email CONFIGS
-USE_EMAIL_CONFIG = os.environ.get('USE_EMAIL_CONFIG', 'False').lower() == 'true'
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'deepnotifications1@gmail.com')
+USE_EMAIL_CONFIG = env('USE_EMAIL_CONFIG')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_FROM = '{}DEEP Admin <{}>'.format(
     f'[{DEEP_ENVIRONMENT.upper()}] ' if DEEP_ENVIRONMENT.lower() != 'beta' else '',
     EMAIL_HOST_USER,
@@ -561,8 +592,8 @@ else:
     """
     EMAIL_BACKEND = 'django_ses.SESBackend'
     # If environment variable are not provided, then EC2 Role will be used.
-    AWS_SES_ACCESS_KEY_ID = os.environ.get('SES_AWS_ACCESS_KEY_ID')
-    AWS_SES_SECRET_ACCESS_KEY = os.environ.get('SES_AWS_SECRET_ACCESS_KEY')
+    AWS_SES_ACCESS_KEY_ID = env('SES_AWS_ACCESS_KEY_ID')
+    AWS_SES_SECRET_ACCESS_KEY = env('SES_AWS_SECRET_ACCESS_KEY')
 
 # Gallery files Cache-control max-age - 1hr from s3
 MAX_FILE_CACHE_AGE = GALLERY_FILE_EXPIRE - (60 * 60)
@@ -579,11 +610,11 @@ MAX_LOGIN_ATTEMPTS_FOR_CAPTCHA = 3
 MAX_LOGIN_ATTEMPTS = 10
 
 # https://docs.hcaptcha.com/#integration-testing-test-keys
-HCAPTCHA_SECRET = os.environ.get('HCAPTCHA_SECRET', '0x0000000000000000000000000000000000000000')
+HCAPTCHA_SECRET = env('HCAPTCHA_SECRET')
 
 # Sentry Config
-SENTRY_DSN = os.environ.get('SENTRY_DSN')
-SENTRY_SAMPLE_RATE = float(os.environ.get('SENTRY_SAMPLE_RATE', '0.05'))
+SENTRY_DSN = env('SENTRY_DSN')
+SENTRY_SAMPLE_RATE = env('SENTRY_SAMPLE_RATE')
 
 if SENTRY_DSN:
     SENTRY_CONFIG = {
@@ -606,7 +637,7 @@ DEEPL_DOMAINS = {
     'nightly': 'https://deepl-nightly.thedeep.io',
     'alpha': 'https://deepl-alpha.thedeep.io',
     'beta': 'https://deepl.togglecorp.com',
-    'development': os.environ.get('DEEPL_DOMAIN', 'http://192.168.31.92:8010'),
+    'development': env('DEEPL_DOMAIN'),
 }
 
 DEEPL_DOMAIN = DEEPL_DOMAINS.get(DEEP_ENVIRONMENT, DEEPL_DOMAINS['alpha'])
@@ -661,7 +692,7 @@ DEBUG_TOOLBAR_PANELS = [
     "debug_toolbar.panels.profiling.ProfilingPanel",
 ]
 
-if DEBUG and 'DOCKER_HOST_IP' in os.environ and not TESTING:
+if DEBUG and env('DOCKER_HOST_IP') and not TESTING:
     # https://github.com/flavors/django-graphiql-debug-toolbar#installation
     # FIXME: If mutation are triggered twice https://github.com/flavors/django-graphiql-debug-toolbar/pull/12/files
     # FIXME: All request are triggered twice. Creating multiple entries in admin panel as well.
@@ -671,7 +702,7 @@ if DEBUG and 'DOCKER_HOST_IP' in os.environ and not TESTING:
     # # JUST FOR DRF
     # INSTALLED_APPS += ['debug_toolbar']
     # MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
-    # INTERNAL_IPS = [os.environ['DOCKER_HOST_IP']]
+    # INTERNAL_IPS = [env('DOCKER_HOST_IP')]
     pass
 
 # https://docs.djangoproject.com/en/3.1/ref/settings/#std:setting-APPEND_SLASH
@@ -704,11 +735,11 @@ if HTTP_PROTOCOL == 'https':
     ]
 
 # https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-CSRF_USE_SESSIONS
-CSRF_USE_SESSIONS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'False').lower() == 'true'
+CSRF_USE_SESSIONS = env('CSRF_TRUSTED_ORIGINS')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-SESSION_COOKIE_DOMAIN
-SESSION_COOKIE_DOMAIN = os.environ.get('SESSION_COOKIE_DOMAIN', 'localhost')
+SESSION_COOKIE_DOMAIN = env('SESSION_COOKIE_DOMAIN')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#csrf-cookie-domain
-CSRF_COOKIE_DOMAIN = os.environ.get('CSRF_COOKIE_DOMAIN', 'localhost')
+CSRF_COOKIE_DOMAIN = env('CSRF_COOKIE_DOMAIN')
 
 
 # Graphene configs
