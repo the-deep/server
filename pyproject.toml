@@ -75,6 +75,7 @@ factory-boy = "*"
 colorlog = "*"
 drf-writable-nested = "*"
 graphene-file-upload = "^1.3.0"
+django-environ = "^0.8.1"
 
 [tool.poetry.dev-dependencies]
 pytest-profiling = "*"
