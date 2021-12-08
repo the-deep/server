@@ -137,7 +137,7 @@ class UserSerializer(RemoveNullFieldsMixin, WriteOnlyOnCreateSerializerMixin,
     def create(self, validated_data):
         profile_data = validated_data.pop('profile', None)
         validated_data.pop('hcaptcha_response', None)
-        validated_data['email'] = validated_data['email'].lower()
+        validated_data['email'] = validated_data['username'] = (validated_data['email'] or validated_data['email']).lower()
         user = super().create(validated_data)
         user.save()
         user.profile = self.update_or_create_profile(user, profile_data)
@@ -377,6 +377,9 @@ class RegisterSerializer(CaptchaSerializerMixin, serializers.ModelSerializer):
             'email', 'first_name', 'last_name',
             'organization', 'captcha',
         )
+
+    def validate_email(self, email):
+        return email.lower()
 
     # Only this method is used for Register
     def create(self, validated_data):
