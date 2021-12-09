@@ -8,6 +8,7 @@ from project.serializers import SimpleProjectSerializer
 from deep.serializers import IntegerIDField
 
 from lead.models import Lead
+from quality_assurance.models import EntryReviewComment
 from entry.models import EntryComment
 from .models import (
     Notification,
@@ -52,6 +53,14 @@ class AssignmentEntryCommentSerializer(RemoveNullFieldsMixin, serializers.ModelS
         fields = ('id', 'text', 'entry', 'entry_excerpt',)
 
 
+class AssignmentEntryReviewCommentSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
+    entry_excerpt = serializers.CharField(source='entry.excerpt', read_only=True)
+
+    class Meta:
+        model = EntryReviewComment
+        fields = ('id', 'text', 'entry', 'entry_excerpt',)
+
+
 class AssignmentLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Lead
@@ -62,6 +71,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
     content_object_details = GenericRelatedField({
         Lead: AssignmentLeadSerializer(),
         EntryComment: AssignmentEntryCommentSerializer(),
+        EntryReviewComment: AssignmentEntryReviewCommentSerializer(),
     }, read_only=True, source='content_object')
     project_details = SimpleProjectSerializer(source='project', read_only=True)
     created_by_details = SimpleUserSerializer(source='created_by', read_only=True)
