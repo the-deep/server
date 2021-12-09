@@ -51,8 +51,9 @@ class ExcelExporter:
         # Initial titles
         self.titles = [
             'Date of Lead Publication',
+            'Lead Created Date',
             'Imported By',
-            'Date Imported',
+            'Entry Created Date',
             'Verification Status',
             'Lead Id',
             'Lead Title',
@@ -411,11 +412,11 @@ class ExcelExporter:
             self.bibliography_data[lead.id] = (author, source, published_on, url, lead.title)
 
             rows = RowsBuilder(self.split, self.group, self.decoupled)
-            rows.add_value(format_date(lead.published_on))
-
             rows.add_value_list([
-                entry.created_by.profile.get_display_name(),
-                format_date(entry.created_at.date()),
+                format_date(lead.published_on),  # Date of Lead Publication
+                lead.created_at and lead.created_at.isoformat(),  # Lead Created Date
+                entry.created_by.profile.get_display_name(),  # Imported By
+                entry and entry.created_at.isoformat(),  # Entry Created Date
                 'Verified' if entry.verified else 'Unverified',
                 f'{lead.id}',
                 lead.title,
