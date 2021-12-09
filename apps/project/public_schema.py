@@ -22,10 +22,10 @@ class PublicProjectType(DjangoObjectType):
             'id',
             'title',
             'description',
-            'analysis_framework_id',
             'created_at',
         )
 
+    analysis_framework = graphene.ID(source='analysis_framework_id')
     analysis_framework_title = graphene.String()
     regions_title = graphene.String()
     organizations_title = graphene.String()

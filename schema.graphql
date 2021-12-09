@@ -1531,6 +1531,7 @@ type PublicProjectType {
   createdAt: DateTime!
   title: String!
   description: String!
+  analysisFramework: ID
   analysisFrameworkTitle: String
   regionsTitle: String
   organizationsTitle: String
@@ -1570,6 +1571,7 @@ type RegionDetailType {
   id: ID!
   title: String!
   public: Boolean!
+  isPublished: Boolean!
   regionalGroups: GenericScalar
   keyFigures: GenericScalar
   populationData: GenericScalar
@@ -1609,6 +1611,7 @@ type RegionType {
   id: ID!
   title: String!
   public: Boolean!
+  isPublished: Boolean!
   regionalGroups: GenericScalar
   keyFigures: GenericScalar
   populationData: GenericScalar
@@ -1709,6 +1712,12 @@ type UpdateUserGroup {
 
 scalar Upload
 
+enum UserEmailConditionOptOutEnum {
+  JOIN_REQUESTS
+  NEWS_AND_UPDATES
+  EMAIL_COMMENT
+}
+
 type UserEntityCountType {
   id: String
   name: String
@@ -1793,7 +1802,7 @@ input UserMeInputType {
   organization: String
   displayPicture: ID
   language: String
-  emailOptOuts: [String!]
+  emailOptOuts: [UserEmailConditionOptOutEnum!]
   lastActiveProject: ID
 }
 
@@ -1809,7 +1818,7 @@ type UserMeType {
   displayPictureUrl: String
   organization: String
   language: String
-  emailOptOuts: [String!]
+  emailOptOuts: [UserEmailConditionOptOutEnum!]
   jwtToken: JwtTokenType
   lastActiveProject: ProjectDetailType
   accessibleFeatures: [UserFeatureAccessType!]!
