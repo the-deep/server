@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.db import transaction
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
+from django.utils import timezone
 
 from deep.permissions import ProjectPermissions as PP
 from deep.serializers import (
@@ -572,6 +573,11 @@ class LeadCopyGqSerializer(ProjectPropertySerializerMixin, serializers.Serialize
         new_lead.lead_group = None
         new_lead.project_id = project_id
         new_lead.client_id = None
+
+        # update the fields for copied lead
+        new_lead.created_at = timezone.now()
+        new_lead.created_by = new_lead.modified_by = self.context['request'].user
+        new_lead.status = Lead.Status.NOT_TAGGED
         new_lead.save()
 
         # Clone Lead Preview (One-to-one fields)

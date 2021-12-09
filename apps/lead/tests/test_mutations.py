@@ -443,6 +443,14 @@ class TestLeadCopyMutation(GraphQLTestCase):
                     id
                     title
                     project
+                    status
+                    createdAt
+                    createdBy {
+                        id
+                    }
+                    modifiedBy {
+                        id
+                    }
                   }
                 }
               }
@@ -451,6 +459,8 @@ class TestLeadCopyMutation(GraphQLTestCase):
         member_user = UserFactory.create()
         member_user_only_protected = UserFactory.create()
         non_member_user = UserFactory.create()
+        created_by_user = UserFactory.create()
+
         # Source Projects
         wa_source_project = ProjectFactory.create(title='With access Source Project')  # With access
         woa_source_project = ProjectFactory.create(title='Without access Source Project')  # Without access
@@ -482,7 +492,9 @@ class TestLeadCopyMutation(GraphQLTestCase):
             title='Lead 1 (with-access)',
             project=wa_source_project,
             source_type=Lead.SourceType.WEBSITE,
-            url='http://example.com'
+            url='http://example.com',
+            created_by=created_by_user,
+            status=Lead.Status.TAGGED
         )
         wa_lead2 = LeadFactory.create(
             title='Lead 2 (with-access)',
@@ -537,7 +549,7 @@ class TestLeadCopyMutation(GraphQLTestCase):
         def _query_check(source_project, **kwargs):
             return self.query_check(query, minput=minput, variables={'projectId': source_project.pk}, **kwargs)
 
-        # withput login
+        # without login
         _query_check(wa_source_project, assert_for_error=True)
 
         # with non_member user[destination_project]
@@ -606,3 +618,7 @@ class TestLeadCopyMutation(GraphQLTestCase):
             list(copied_lead1.emm_entities.all()),
             [emm_entity],
         )
+        # lets check for the updated fields after copy
+        self.assertEqual(copied_lead1.created_by.id, member_user_only_protected.id)
+        self.assertEqual(copied_lead1.modified_by.id, member_user_only_protected.id)
+        self.assertEqual(copied_lead1.status, Lead.Status.NOT_TAGGED)
