@@ -53,6 +53,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='profile',
             name='email_opt_outs',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(choices=[('join_requests', 'Project join requests'), ('news_and_updates', 'News and updates'), ('email_comment', 'Entry comment updates')], max_length=128), blank=True, default=list, size=None),
+            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(choices=[('join_requests', 'Join Requests'), ('news_and_updates', 'News And Updates'), ('email_comment', 'Email Comment')], max_length=128), blank=True, default=list, size=None)
         ),
     ]

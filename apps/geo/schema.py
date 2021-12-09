@@ -50,7 +50,7 @@ class RegionType(DjangoObjectType):
         fields = (
             'id', 'title', 'public', 'regional_groups',
             'key_figures', 'population_data', 'media_sources',
-            'centroid',
+            'centroid', 'is_published',
         )
 
     @staticmethod
@@ -65,7 +65,7 @@ class RegionDetailType(RegionType):
         fields = (
             'id', 'title', 'public', 'regional_groups',
             'key_figures', 'population_data', 'media_sources',
-            'centroid',
+            'centroid', 'is_published',
         )
 
     admin_levels = graphene.List(graphene.NonNull(AdminLevelType))
@@ -125,5 +125,6 @@ class ProjectScopeQuery:
     @staticmethod
     def resolve_geo_areas(queryset, info, **kwargs):
         return get_geo_area_queryset_for_project_geo_area_type().filter(
+            admin_level__region__is_published=True,
             admin_level__region__project=info.context.active_project,
         )

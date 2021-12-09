@@ -12,6 +12,7 @@ from sentry_sdk.integrations.redis import RedisIntegration
 # Celery Terminated Exception: The worker processing a job has been terminated by user request.
 from billiard.exceptions import Terminated
 from deep.exceptions import UnauthorizedException
+from apps.jwt_auth.errors import InvalidCaptchaError
 
 logger = logging.getLogger('deep_sentry.errors.logging')
 
@@ -19,6 +20,7 @@ IGNORED_ERRORS = [
     Terminated,
     PermissionDenied,
     UnauthorizedException,
+    InvalidCaptchaError,
 ]
 IGNORED_LOGGERS = [
     'graphql.execution.utils',

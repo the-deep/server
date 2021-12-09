@@ -28,7 +28,7 @@ from deep.graphene_converter import *  # type: ignore # noqa F401
 
 from deep.graphene_context import GQLContext
 from deep.exceptions import PermissionDeniedException
-from user.models import User, Profile
+from user.models import User, Profile, EmailCondition
 from project.models import Project
 from entry.models import EntryComment
 from quality_assurance.models import EntryReviewComment
@@ -201,7 +201,7 @@ class EntryCommentEmail(View):
         )
         context = get_basic_email_context()
         context.update({
-            'email_type': Profile.E_EMAIL_COMMENT,
+            'email_type': EmailCondition.EMAIL_COMMENT,
             'notification_type': Notification.Type.ENTRY_COMMENT_ASSIGNEE_CHANGE,
             'Notification': Notification,
             'comment': comment,
@@ -225,7 +225,7 @@ class EntryReviewCommentEmail(View):
         )
         context = get_basic_email_context()
         context.update({
-            'email_type': Profile.E_EMAIL_COMMENT,
+            'email_type': EmailCondition.EMAIL_COMMENT,
             'notification_type': notification_type,
             'CommentType': EntryReviewComment.CommentType,
             'Notification': Notification,

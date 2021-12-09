@@ -512,6 +512,9 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
 
 
 class LeadCopyGqSerializer(ProjectPropertySerializerMixin, serializers.Serializer):
+    MAX_PROJECTS_ALLOWED = 10
+    MAX_LEADS_ALLOWED = 100
+
     projects = serializers.ListField(
         child=IntegerIDField(),
         required=True
@@ -522,13 +525,17 @@ class LeadCopyGqSerializer(ProjectPropertySerializerMixin, serializers.Serialize
     )
 
     def validate_projects(self, projects_id):
-        return list(
+        projects_id = list(
             ProjectMembership.objects.filter(
                 member=self.context['request'].user,
                 role__type__in=PP.REVERSE_PERMISSION_MAP[PP.Permission.CREATE_LEAD],
                 project__in=projects_id,
             ).values_list('project', flat=True).distinct()
         )
+        count = len(projects_id)
+        if count > self.MAX_PROJECTS_ALLOWED:
+            raise serializers.ValidationError(f'Only {self.MAX_PROJECTS_ALLOWED} are allowed. Provided: {count}')
+        return projects_id
 
     def validate_leads(self, leads_id):
         allowed_permission = self.context['request'].project_permissions
@@ -537,10 +544,15 @@ class LeadCopyGqSerializer(ProjectPropertySerializerMixin, serializers.Serialize
             project=self.project,
         )
         if PP.Permission.VIEW_ALL_LEAD in allowed_permission:
-            return lead_qs.all()
+            pass
         elif PP.Permission.VIEW_ONLY_UNPROTECTED_LEAD in allowed_permission:
-            return lead_qs.filter(confidentiality=Lead.Confidentiality.UNPROTECTED).all()
-        raise serializers.ValidationError("You don't have lead read access")
+            lead_qs = lead_qs.filter(confidentiality=Lead.Confidentiality.UNPROTECTED).all()
+        else:
+            raise serializers.ValidationError("You don't have lead read access")
+        count = lead_qs.count()
+        if count > self.MAX_LEADS_ALLOWED:
+            raise serializers.ValidationError(f'Only {self.MAX_LEADS_ALLOWED} are allowed. Provided: {count}')
+        return lead_qs
 
     def clone_lead(self, original_lead, project_id, user):
         new_lead = copy.deepcopy(original_lead)

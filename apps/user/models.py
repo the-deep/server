@@ -17,6 +17,16 @@ from utils.common import camelcase_to_titlecase
 from gallery.models import File
 
 
+class EmailCondition(models.TextChoices):
+    JOIN_REQUESTS = 'join_requests', 'Project join requests'
+    NEWS_AND_UPDATES = 'news_and_updates', 'News and updates'
+    EMAIL_COMMENT = 'email_comment', 'Entry comment updates'
+    # Always send
+    ACCOUNT_ACTIVATION = 'account_activation', 'Account Activation'
+    PASSWORD_RESET = 'password_reset', 'Password Reset'
+    PASSWORD_CHANGED = 'password_changed', 'Password Changed'
+
+
 class Profile(models.Model):
     """
     User profile model
@@ -24,26 +34,17 @@ class Profile(models.Model):
     Extra attributes for the user besides the django
     provided ones.
     """
-    # Email Conditions
-    E_ACCOUNT_ACTIVATION = 'account_activation'
-    E_PASSWORD_RESET = 'password_reset'
-    E_PASSWORD_CHANGED = 'password_changed'
+    class EmailConditionOptOut(models.TextChoices):
+        JOIN_REQUESTS = EmailCondition.JOIN_REQUESTS
+        NEWS_AND_UPDATES = EmailCondition.NEWS_AND_UPDATES
+        EMAIL_COMMENT = EmailCondition.EMAIL_COMMENT
 
-    E_JOIN_REQUESTS = 'join_requests'
-    E_NEWS_AND_UPDATES = 'news_and_updates'
-    E_EMAIL_COMMENT = 'email_comment'
-
-    EMAIL_CONDITIONS = (
-        (E_JOIN_REQUESTS, 'Project join requests'),
-        (E_NEWS_AND_UPDATES, 'News and updates'),
-        (E_EMAIL_COMMENT, 'Entry comment updates'),
-    )
-    EMAIL_CONDITIONS_TYPES = [cond[0] for cond in EMAIL_CONDITIONS]
+    EMAIL_CONDITIONS_TYPES = [cond[0] for cond in EmailCondition.choices]
 
     ALWAYS_SEND_EMAIL_CONDITIONS = [
-        E_ACCOUNT_ACTIVATION,
-        E_PASSWORD_RESET,
-        E_PASSWORD_CHANGED
+        EmailCondition.ACCOUNT_ACTIVATION,
+        EmailCondition.PASSWORD_RESET,
+        EmailCondition.PASSWORD_CHANGED
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -69,7 +70,7 @@ class Profile(models.Model):
     login_attempts = models.IntegerField(default=0)
     invalid_email = models.BooleanField(default=False, help_text='Flagged as bounce email')
     email_opt_outs = ArrayField(
-        models.CharField(max_length=128, choices=EMAIL_CONDITIONS),
+        models.CharField(max_length=128, choices=EmailConditionOptOut.choices),
         default=list,
         blank=True,
     )

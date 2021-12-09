@@ -2,7 +2,7 @@ from celery import shared_task
 from django.db import transaction
 
 from entry.models import EntryComment
-from user.models import User, Profile
+from user.models import User, EmailCondition
 from user.utils import send_mail_to_user
 
 from quality_assurance.models import EntryReviewComment
@@ -15,7 +15,7 @@ def send_entry_comment_email(user_id, comment_id):
     user = User.objects.get(pk=user_id)
     comment = EntryComment.objects.get(pk=comment_id)
     send_mail_to_user(
-        user, Profile.E_EMAIL_COMMENT,
+        user, EmailCondition.EMAIL_COMMENT,
         context={
             'notification_type': Notification.Type.ENTRY_COMMENT_ADD,
             'Notification': Notification,
@@ -34,7 +34,7 @@ def send_entry_review_comment_email(user_id, comment_id, notification_type):
     user = User.objects.get(pk=user_id)
     comment = EntryComment.objects.get(pk=comment_id)
     send_mail_to_user(
-        user, Profile.E_EMAIL_COMMENT,
+        user, EmailCondition.EMAIL_COMMENT,
         context={
             'Notification': Notification,
             'CommentType': EntryReviewComment.CommentType,

@@ -15,7 +15,7 @@ from django.core.mail import EmailMultiAlternatives
 from .token import unsubscribe_email_token_generator
 from project.models import ProjectJoinRequest
 from project.token import project_request_token_generator
-from .models import Profile
+from .models import Profile, EmailCondition
 
 
 logger = logging.getLogger(__name__)
@@ -107,7 +107,7 @@ def send_password_reset(user, welcome=False):
         'welcome': welcome,
     }
     send_mail_to_user(
-        user, Profile.E_PASSWORD_RESET,
+        user, EmailCondition.PASSWORD_RESET,
         context=context,
         subject_template_name='registration/password_reset_subject.txt',
         email_template_name='registration/password_reset_email.html',
@@ -124,7 +124,7 @@ def send_account_activation(user):
         'token': default_token_generator.make_token(user),
     }
     send_mail_to_user(
-        user, Profile.E_ACCOUNT_ACTIVATION,
+        user, EmailCondition.ACCOUNT_ACTIVATION,
         context=context,
         subject_template_name='registration/user_activation_subject.txt',
         email_template_name='registration/user_activation_email.html',
@@ -141,7 +141,7 @@ def send_project_join_request_emails(join_request_id):
     request_by = join_request.requested_by
     reason = join_request.data['reason']
     request_data = {'join_request': join_request}
-    email_type = Profile.E_JOIN_REQUESTS
+    email_type = EmailCondition.JOIN_REQUESTS
 
     context = {
         'request_by': request_by,
@@ -192,7 +192,7 @@ def send_password_changed_notification(user_id, client_ip, device_type):
         'device': device_type,
     }
     send_mail_to_user(
-        user, email_type=Profile.E_PASSWORD_CHANGED,
+        user, email_type=EmailCondition.PASSWORD_CHANGED,
         context=context,
         subject_template_name='password_changed/subject.txt',
         email_template_name='password_changed/email.html',

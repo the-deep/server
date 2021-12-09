@@ -13,6 +13,7 @@ from jwt_auth.token import AccessToken
 
 from project.models import Project
 from .models import User, Feature
+from .enums import UserEmailConditionOptOutEnum
 from .filters import UserGqlFilterSet
 
 
@@ -74,7 +75,7 @@ class UserMeType(DjangoObjectType):
     display_picture_url = graphene.String()
     organization = graphene.String()
     language = graphene.String()
-    email_opt_outs = graphene.List(graphene.NonNull(graphene.String))
+    email_opt_outs = graphene.List(graphene.NonNull(UserEmailConditionOptOutEnum))
     jwt_token = graphene.Field(JwtTokenType)
     last_active_project = graphene.Field('project.schema.ProjectDetailType')
     accessible_features = graphene.List(graphene.NonNull(UserFeatureAccessType), required=True)
