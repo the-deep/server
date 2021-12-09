@@ -8,7 +8,7 @@ from user.models import User
 from lead.models import Lead
 from notification.models import Notification, Assignment
 from project.models import ProjectJoinRequest, Project
-from entry.models import EntryComment
+from quality_assurance.models import EntryReviewComment
 
 
 class TestNotificationAPIs(TestCase):
@@ -381,8 +381,8 @@ class TestAssignmentApi(TestCase):
         data = response.data
         assert data['count'] == 0, "No Assignments till now"
 
-        entry_comment = self.create(EntryComment, entry=entry, project=project, assignees=[user1])
-        self.create(EntryComment, entry=entry, project=project1, assignees=[user2])
+        entry_comment = self.create(EntryReviewComment, entry=entry, project=project, mentioned_users=[user1])
+        self.create(EntryReviewComment, entry=entry, project=project1, mentioned_users=[user2])
 
         self.authenticate(user1)
         params = {'project': project.id}
@@ -391,7 +391,7 @@ class TestAssignmentApi(TestCase):
         self.assert_200(response)
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['project_details']['id'], entry.project.id)
-        self.assertEqual(response.data['results'][0]['content_object_type'], 'entrycomment')
+        self.assertEqual(response.data['results'][0]['content_object_type'], 'entryreviewcomment')
         self.assertEqual(response.data['results'][0]['content_object_details']['id'], entry_comment.id)
 
     def test_create_assignment_on_entry_comment_text_change(self):
@@ -411,9 +411,9 @@ class TestAssignmentApi(TestCase):
         data = response.data
         assert data['count'] == 0, "No Assignments till now"
 
-        url = f'/api/v1/entries/{entry.pk}/entry-comments/'
+        url = f'/api/v1/entries/{entry.pk}/review-comments/'
         data = {
-            'assignees': [user1.pk],
+            'mentioned_users': [user1.pk],
             'text': 'This is first comment',
             'parent': None,
         }
@@ -464,9 +464,9 @@ class TestAssignmentApi(TestCase):
         data = response.data
         assert data['count'] == 0, "No Assignments till now"
 
-        url = f'/api/v1/entries/{entry.pk}/entry-comments/'
+        url = f'/api/v1/entries/{entry.pk}/review-comments/'
         data = {
-            'assignees': [user1.pk],
+            'mentioned_users': [user1.pk],
             'text': 'This is first comment',
             'parent': None,
         }
@@ -484,7 +484,7 @@ class TestAssignmentApi(TestCase):
 
         # Patch new assignee
         self.authenticate()
-        response = self.client.patch(f'{url}{comment_id}/', {'assignees': [user2.pk]})
+        response = self.client.patch(f'{url}{comment_id}/', {'mentioned_users': [user2.pk]})
         self.assert_200(response)
 
         # try to check the assignment
