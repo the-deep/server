@@ -53,13 +53,13 @@ class VersionAdmin(JSONFieldMixin, _VersionAdmin):
 
 
 class ReadOnlyMixin():
-    def has_add_permission(self, request):
+    def has_add_permission(self, *args, **kwargs):
         return False
 
-    def has_change_permission(self, request, obj=None):
+    def has_change_permission(self, *args, **kwargs):
         return False
 
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(self, *args, **kwargs):
         return False
 
 
@@ -110,13 +110,13 @@ def query_buttons(description, queries):
     return _query_buttons
 
 
-def document_preview(field_name, label=None):
+def document_preview(field_name, max_height='600px', max_width='800px', label=None):
     """
     Show document preview for file fields
     """
     def _document_preview(obj):
         file = getattr(obj, field_name)
-        if file:
+        if file and file.url:
             try:
                 if file.name.split('?')[0].split('.')[-1] in ['docx', 'xlsx', 'pptx', 'ods', 'doc']:
                     return mark_safe(
@@ -126,13 +126,13 @@ def document_preview(field_name, label=None):
                     )
             except Exception:
                 pass
-            height = '600px'
-            width = '800px'
             return mark_safe(f"""
-                <object data="{file.url}" height="{height}" width="{width}">
-                    <img style="max-height:{height};max-width:{width}" src="{file.url}"/>
+                <object
+                    data="{file.url}"
+                    style="display: block; max-width:{max_width}; max-height:{max_height}; width: auto; height: auto;"
+                >
+                    <img style="max-height:{max_height};max-width:{max_width}" src="{file.url}"/>
                     <iframe src="https://docs.google.com/viewer?url={quote(file.url)}&embedded=true"></iframe>
-                    </object>
                 </object>
             """)
         return 'N/A'

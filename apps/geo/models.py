@@ -41,7 +41,7 @@ class Region(UserResource):
         super().__init__(*args, **kwargs)
 
     def __str__(self):
-        return self.title
+        return f"[{'Public' if self.public else 'Private'}] {self.title}"
 
     class Meta:
         ordering = ['title', 'code']
