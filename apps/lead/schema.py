@@ -28,6 +28,7 @@ from .enums import (
     LeadStatusEnum,
     LeadPriorityEnum,
     LeadSourceTypeEnum,
+    LeadExtractionStatusEnum,
 )
 from .filter_set import (
     LeadGQFilterSet,
@@ -177,6 +178,7 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     status = graphene.Field(LeadStatusEnum, required=True)
     status_display = EnumDescription(source='get_status_display', required=True)
 
+    extraction_status = graphene.Field(LeadExtractionStatusEnum)
     lead_preview = graphene.Field(LeadPreviewType)
     source = graphene.Field(OrganizationType)
     authors = DjangoListField(OrganizationType)

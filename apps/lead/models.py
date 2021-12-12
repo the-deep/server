@@ -77,6 +77,12 @@ class Lead(UserResource, ProjectEntityMixin):
         WEB_API = 'api', 'Web API'
         UNKNOWN = 'unknown', 'Unknown'
 
+    class ExtractionStatus(models.IntegerChoices):
+        PENDING = 0, 'Pending'
+        STARTED = 1, 'Started'
+        SUCCESS = 2, 'Success'
+        FAILED = 3, 'Failed'
+
     lead_group = models.ForeignKey(
         LeadGroup,
         on_delete=models.SET_NULL,
@@ -112,6 +118,8 @@ class Lead(UserResource, ProjectEntityMixin):
     text = models.TextField(blank=True)
     url = models.TextField(blank=True)
     website = models.CharField(max_length=255, blank=True)
+    extraction_status = models.SmallIntegerField(
+        choices=ExtractionStatus.choices, default=ExtractionStatus.PENDING)
 
     attachment = models.ForeignKey(
         File, on_delete=models.SET_NULL, default=None, null=True, blank=True,
@@ -141,10 +149,17 @@ class Lead(UserResource, ProjectEntityMixin):
             'attachment_id': self.attachment_id,
         }
 
+    def update_extraction_status(self, new_status, commit=True):
+        self.extraction_status = new_status
+        if commit:
+            self.save(update_fields=('extraction_status',))
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+        update_fields = kwargs.get('update_fields', [])
 
-        if not settings.TESTING:
+        initial_fields = ['text', 'attachment', 'attachment_id', 'url']
+        if not settings.TESTING and any(x in update_fields for x in initial_fields):
             from lead.tasks import extract_from_lead
 
             d1 = self.__initial

@@ -28,6 +28,7 @@ from .enums import (
     LeadPriorityEnum,
     LeadSourceTypeEnum,
     LeadOrderingEnum,
+    LeadExtractionStatusEnum,
 )
 
 
@@ -314,6 +315,7 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
     priorities = MultipleInputFilter(LeadPriorityEnum, field_name='priority')
     confidentiality = SimpleInputFilter(LeadConfidentialityEnum)
     statuses = MultipleInputFilter(LeadStatusEnum, field_name='status')
+    extraction_status = SimpleInputFilter(LeadExtractionStatusEnum, field_name='extraction_status')
     assignees = IDListFilter(field_name='assignee')
     authoring_organization_types = IDListFilter(method='authoring_organization_types_filter')
     # Filter-only enum filter
