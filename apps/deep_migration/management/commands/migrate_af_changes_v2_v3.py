@@ -398,6 +398,43 @@ def scale_property_convertor(properties):
 
 
 # -- Attributes convertor
+MAXTIX_DATA_EMPTY_VALUES = [{}, None]
+
+
+def matrix1d_attribute_data_convertor(data):
+    value = data.get('value') or {}
+    new_value = {}
+    for row_key, row_data in value.items():
+        new_row_data = {}
+        for cell_key, is_selected in (row_data or {}).items():
+            if is_selected:
+                new_row_data[cell_key] = True
+        if new_row_data not in MAXTIX_DATA_EMPTY_VALUES:
+            new_value[row_key] = new_row_data
+    return {
+        'value': new_value
+    }
+
+
+def matrix2d_attribute_data_convertor(data):
+    value = data.get('value') or {}
+    new_value = {}
+    for row_key, row_data in value.items():
+        new_row_data = {}
+        for sub_row_key, sub_row_data in (row_data or {}).items():
+            new_sub_row_data = {}
+            for column_key, sub_column_values in (sub_row_data or {}).items():
+                if sub_column_values is not None:
+                    new_sub_row_data[column_key] = sub_column_values
+            if new_sub_row_data not in MAXTIX_DATA_EMPTY_VALUES:
+                new_row_data[sub_row_key] = new_sub_row_data
+        if new_row_data not in MAXTIX_DATA_EMPTY_VALUES:
+            new_value[row_key] = new_row_data
+    return {
+        'value': new_value
+    }
+
+
 def date_range_attribute_data_convertor(data):
     value = data.get('value') or {}
     return {
@@ -449,6 +486,8 @@ WIDGET_MIGRATION_MAP = {
 }
 
 ATTRIBUTE_MIGRATION_MAP = {
+    Widget.WidgetType.MATRIX1D: matrix1d_attribute_data_convertor,
+    Widget.WidgetType.MATRIX2D: matrix2d_attribute_data_convertor,
     Widget.WidgetType.DATE_RANGE: date_range_attribute_data_convertor,
     Widget.WidgetType.TIME_RANGE: time_range_attribute_data_convertor,
     Widget.WidgetType.GEO: geo_attribute_data_convertor,
