@@ -117,7 +117,7 @@ class EntryReviewCommentSerializer(serializers.ModelSerializer):
         text = validated_data.pop('text', '').strip()
         comment_type = validated_data.get('comment_type', EntryReviewComment.CommentType.COMMENT)
         # Make sure to check text required
-        if not text and comment_type in [
+        if not text and not (instance and instance.text) and comment_type in [
             EntryReviewComment.CommentType.COMMENT,
             EntryReviewComment.CommentType.UNVERIFY,
             EntryReviewComment.CommentType.UNCONTROL,

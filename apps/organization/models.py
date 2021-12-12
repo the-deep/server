@@ -1,4 +1,5 @@
 from django.db import models
+from deep.middleware import get_current_user
 from user_resource.models import UserResource
 
 
@@ -51,6 +52,11 @@ class Organization(UserResource):
             ("can_merge", "Can Merge organizations"),
         )
 
+    def __str__(self):
+        return f'{self.pk} : ({self.short_name}) {self.title} ' + (
+            '(MERGED)' if self.parent else ''
+        )
+
     @property
     def data(self):
         """
@@ -65,10 +71,13 @@ class Organization(UserResource):
             self._data = self
         return self._data
 
-    def __str__(self):
-        return f'{self.pk} : ({self.short_name}) {self.title} ' + (
-            '(MERGED)' if self.parent else ''
-        )
+    def save(self, *args, **kwargs):
+        current_user = get_current_user()
+        if current_user:
+            if self.pk is None:
+                self.created_by = current_user
+            self.modified_by = current_user
+        super().save(*args, **kwargs)
 
     def get_organization_type_display(self):
         return self.data.organization_type.title
