@@ -858,6 +858,7 @@ type LeadDetailType {
   entriesCounts: EntriesCountType
   emmEntities: [EmmEntityType!]
   emmTriggers: [LeadEmmTriggerType!]
+  assessmentId: ID
   entries: [EntryType!]
 }
 
@@ -1067,6 +1068,7 @@ type LeadType {
   entriesCounts: EntriesCountType
   emmEntities: [EmmEntityType!]
   emmTriggers: [LeadEmmTriggerType!]
+  assessmentId: ID
 }
 
 type Login {

@@ -188,6 +188,7 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     # EMM Fields
     emm_entities = DjangoListField(EmmEntityType)
     emm_triggers = DjangoListField(LeadEmmTriggerType)
+    assessment_id = graphene.ID()
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -196,6 +197,10 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     @staticmethod
     def resolve_assignee(root, info, **kwargs) -> Union[User, None]:
         return root.get_assignee()
+
+    @staticmethod
+    def resolve_assessment_id(root, info, **kwargs) -> Union[User, None]:
+        return info.context.dl.lead.assessment_id.load(root.pk)
 
     @staticmethod
     def resolve_source(root, info, **kwargs) -> Union[User, None]:
