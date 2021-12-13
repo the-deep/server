@@ -676,6 +676,7 @@ input ExportLeadsEntriesFilterData {
   priorities: [LeadPriorityEnum!]
   confidentiality: LeadConfidentialityEnum
   statuses: [LeadStatusEnum!]
+  extractionStatus: LeadExtractionStatusEnum
   assignees: [ID!]
   authoringOrganizationTypes: [ID!]
   exists: LeadExistsEnum
@@ -850,12 +851,14 @@ type LeadDetailType {
   confidentialityDisplay: EnumDescription!
   status: LeadStatusEnum!
   statusDisplay: EnumDescription!
+  extractionStatus: LeadExtractionStatusEnum
   leadPreview: LeadPreviewType
   source: OrganizationType
   authors: [OrganizationType!]
   entriesCounts: EntriesCountType
   emmEntities: [EmmEntityType!]
   emmTriggers: [LeadEmmTriggerType!]
+  assessmentId: ID
   entries: [EntryType!]
 }
 
@@ -916,6 +919,13 @@ enum LeadExistsEnum {
   ASSESSMENT_EXISTS
   ENTRIES_DO_NOT_EXIST
   ASSESSMENT_DOES_NOT_EXIST
+}
+
+enum LeadExtractionStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILED
 }
 
 type LeadGroupListType {
@@ -1051,12 +1061,14 @@ type LeadType {
   confidentialityDisplay: EnumDescription!
   status: LeadStatusEnum!
   statusDisplay: EnumDescription!
+  extractionStatus: LeadExtractionStatusEnum
   leadPreview: LeadPreviewType
   source: OrganizationType
   authors: [OrganizationType!]
   entriesCounts: EntriesCountType
   emmEntities: [EmmEntityType!]
   emmTriggers: [LeadEmmTriggerType!]
+  assessmentId: ID
 }
 
 type Login {
@@ -1253,8 +1265,8 @@ type ProjectDetailType {
   entry(id: ID!): EntryType
   entries(id: ID, excerpt: String, controlled: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], leads: [ID!], leadPublishedOn: Date, leadPublishedOnGte: Date, leadPublishedOnLte: Date, leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], search: String, commentStatus: EntryFilterCommentStatusEnum, entryTypes: [EntryTagTypeEnum!], projectEntryLabels: [ID!], authoringOrganizationTypes: [ID!], entriesId: [ID!], geoCustomShape: String, leadGroupLabel: String, filterableData: [EntryFilterDataType!], page: Int = 1, ordering: String, pageSize: Int): EntryListType
   lead(id: ID!): LeadDetailType
-  leadsWithEnumOrdering(id: Float, text: String, url: String, website: String, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeProvidedLeadsId: Boolean, sourceTypes: [LeadSourceTypeEnum!], priorities: [LeadPriorityEnum!], confidentiality: LeadConfidentialityEnum, statuses: [LeadStatusEnum!], assignees: [ID!], authoringOrganizationTypes: [ID!], exists: LeadExistsEnum, customFilters: LeadCustomFilterEnum, entriesFilterData: LeadEntriesFilterData, search: String, publishedOn: Date, publishedOnGte: Date, publishedOnLte: Date, emmEntities: String, emmKeywords: String, emmRiskFactors: String, ordering: [LeadOrderingEnum!], page: Int = 1, pageSize: Int): LeadListWithEnumOrderingType
-  leads(id: Float, text: String, url: String, website: String, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeProvidedLeadsId: Boolean, sourceTypes: [LeadSourceTypeEnum!], priorities: [LeadPriorityEnum!], confidentiality: LeadConfidentialityEnum, statuses: [LeadStatusEnum!], assignees: [ID!], authoringOrganizationTypes: [ID!], exists: LeadExistsEnum, customFilters: LeadCustomFilterEnum, entriesFilterData: LeadEntriesFilterData, search: String, publishedOn: Date, publishedOnGte: Date, publishedOnLte: Date, emmEntities: String, emmKeywords: String, emmRiskFactors: String, page: Int = 1, ordering: String, pageSize: Int): LeadListType
+  leadsWithEnumOrdering(id: Float, text: String, url: String, website: String, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeProvidedLeadsId: Boolean, sourceTypes: [LeadSourceTypeEnum!], priorities: [LeadPriorityEnum!], confidentiality: LeadConfidentialityEnum, statuses: [LeadStatusEnum!], extractionStatus: LeadExtractionStatusEnum, assignees: [ID!], authoringOrganizationTypes: [ID!], exists: LeadExistsEnum, customFilters: LeadCustomFilterEnum, entriesFilterData: LeadEntriesFilterData, search: String, publishedOn: Date, publishedOnGte: Date, publishedOnLte: Date, emmEntities: String, emmKeywords: String, emmRiskFactors: String, ordering: [LeadOrderingEnum!], page: Int = 1, pageSize: Int): LeadListWithEnumOrderingType
+  leads(id: Float, text: String, url: String, website: String, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeProvidedLeadsId: Boolean, sourceTypes: [LeadSourceTypeEnum!], priorities: [LeadPriorityEnum!], confidentiality: LeadConfidentialityEnum, statuses: [LeadStatusEnum!], extractionStatus: LeadExtractionStatusEnum, assignees: [ID!], authoringOrganizationTypes: [ID!], exists: LeadExistsEnum, customFilters: LeadCustomFilterEnum, entriesFilterData: LeadEntriesFilterData, search: String, publishedOn: Date, publishedOnGte: Date, publishedOnLte: Date, emmEntities: String, emmKeywords: String, emmRiskFactors: String, page: Int = 1, ordering: String, pageSize: Int): LeadListType
   leadGroup(id: ID!): LeadGroupType
   leadGroups(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): LeadGroupListType
   emmEntities(name: String, page: Int = 1, ordering: String, pageSize: Int): EmmEntityListType

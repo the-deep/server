@@ -8,6 +8,7 @@ from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
 from entry.models import Entry
 from organization.models import Organization
+from ary.models import Assessment
 from .models import Lead, LeadPreview, LeadGroup
 
 
@@ -99,6 +100,15 @@ class LeadAuthorsLoader(DataLoaderWithContext):
         ])
 
 
+class LeadAssessmentIdLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        assessments_qs = Assessment.objects.filter(lead__in=keys).values_list('id', 'lead')
+        _map = {
+            lead_id: _id for _id, lead_id in assessments_qs
+        }
+        return Promise.resolve([_map.get(key) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     @cached_property
     def lead_preview(self):
@@ -119,3 +129,7 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def author_organizations(self):
         return LeadAuthorsLoader(context=self.context)
+
+    @cached_property
+    def assessment_id(self):
+        return LeadAssessmentIdLoader(context=self.context)
