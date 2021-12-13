@@ -11,6 +11,7 @@ LeadConfidentialityEnum = convert_enum_to_graphene_enum(Lead.Confidentiality, na
 LeadStatusEnum = convert_enum_to_graphene_enum(Lead.Status, name='LeadStatusEnum')
 LeadPriorityEnum = convert_enum_to_graphene_enum(Lead.Priority, name='LeadPriorityEnum')
 LeadSourceTypeEnum = convert_enum_to_graphene_enum(Lead.SourceType, name='LeadSourceTypeEnum')
+LeadExtractionStatusEnum = convert_enum_to_graphene_enum(Lead.ExtractionStatus, name='LeadExtractionStatusEnum')
 
 enum_map = {
     get_enum_name_from_django_field(field): enum
@@ -19,6 +20,7 @@ enum_map = {
         (Lead.status, LeadStatusEnum),
         (Lead.priority, LeadPriorityEnum),
         (Lead.source_type, LeadSourceTypeEnum),
+        (Lead.extraction_status, LeadExtractionStatusEnum),
     )
 }
 

@@ -258,7 +258,7 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
         raise serializers.ValidationError('Update isn\'t allowed for Export')
 
     def create(self, data):
-        data['title'] = data['title'] or Export.generate_title(data['type'], data['export_type'], data['format'])
+        data['title'] = data.get('title') or Export.generate_title(data['type'], data['export_type'], data['format'])
         data['exported_by'] = self.context['request'].user
         data['project'] = self.project
         data['extra_options'] = {

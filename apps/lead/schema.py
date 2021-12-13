@@ -28,6 +28,7 @@ from .enums import (
     LeadStatusEnum,
     LeadPriorityEnum,
     LeadSourceTypeEnum,
+    LeadExtractionStatusEnum,
 )
 from .filter_set import (
     LeadGQFilterSet,
@@ -177,6 +178,7 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     status = graphene.Field(LeadStatusEnum, required=True)
     status_display = EnumDescription(source='get_status_display', required=True)
 
+    extraction_status = graphene.Field(LeadExtractionStatusEnum)
     lead_preview = graphene.Field(LeadPreviewType)
     source = graphene.Field(OrganizationType)
     authors = DjangoListField(OrganizationType)
@@ -186,6 +188,7 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     # EMM Fields
     emm_entities = DjangoListField(EmmEntityType)
     emm_triggers = DjangoListField(LeadEmmTriggerType)
+    assessment_id = graphene.ID()
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -194,6 +197,10 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     @staticmethod
     def resolve_assignee(root, info, **kwargs) -> Union[User, None]:
         return root.get_assignee()
+
+    @staticmethod
+    def resolve_assessment_id(root, info, **kwargs) -> Union[User, None]:
+        return info.context.dl.lead.assessment_id.load(root.pk)
 
     @staticmethod
     def resolve_source(root, info, **kwargs) -> Union[User, None]:

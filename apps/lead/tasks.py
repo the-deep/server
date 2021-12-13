@@ -1,22 +1,3 @@
-from celery import shared_task
-# from channels import Group
-from django.core.files import File
-from django.db import transaction
-from django.db.models import Q
-from django.db.models.functions import Length
-from django.conf import settings
-from lead.models import (
-    Lead,
-    LeadPreview,
-    LeadPreviewImage,
-)
-from redis_store import redis
-# from rest_framework.renderers import JSONRenderer
-from utils.extractor.file_document import FileDocument
-from utils.extractor.web_document import WebDocument
-from utils.extractor.thumbnailers import DocThumbnailer
-# from utils.websocket.subscription import SubscriptionConsumer
-
 import time
 import reversion
 import os
@@ -25,6 +6,26 @@ import requests
 import tempfile
 
 import logging
+
+from celery import shared_task
+# from channels import Group
+from django.core.files import File
+from django.db import transaction
+from django.db.models import Q
+from django.db.models.functions import Length
+from django.conf import settings
+# from rest_framework.renderers import JSONRenderer
+
+from redis_store import redis
+from lead.models import (
+    Lead,
+    LeadPreview,
+    LeadPreviewImage,
+)
+from utils.extractor.file_document import FileDocument
+from utils.extractor.web_document import WebDocument
+from utils.extractor.thumbnailers import DocThumbnailer
+# from utils.websocket.subscription import SubscriptionConsumer
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,7 @@ def _extract_from_lead_core(lead_id):
     """
     # Get the lead to be extracted
     lead = Lead.objects.get(id=lead_id)
+    lead.update_extraction_status(Lead.ExtractionStatus.STARTED)
 
     with reversion.create_revision():
         text, images = '', []
@@ -80,8 +82,10 @@ def _extract_from_lead_core(lead_id):
 
             text = _preprocess(text)
             word_count = len(re.findall(r'\b\S+\b', text))
+            lead.update_extraction_status(Lead.ExtractionStatus.SUCCESS)
         except Exception:
             logger.error('Lead Extraction Failed!!', exc_info=True)
+            lead.update_extraction_status(Lead.ExtractionStatus.FAILED)
             if images:
                 for image in images:
                     image.close()
