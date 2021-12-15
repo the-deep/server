@@ -55,10 +55,11 @@ class AssignmentEntryCommentSerializer(RemoveNullFieldsMixin, serializers.ModelS
 
 class AssignmentEntryReviewCommentSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     entry_excerpt = serializers.CharField(source='entry.excerpt', read_only=True)
+    lead = serializers.CharField(source='entry.lead_id', read_only=True)
 
     class Meta:
         model = EntryReviewComment
-        fields = ('id', 'text', 'entry', 'entry_excerpt',)
+        fields = ('id', 'text', 'entry', 'entry_excerpt', 'lead')
 
 
 class AssignmentLeadSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
