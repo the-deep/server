@@ -146,6 +146,7 @@ class TestCase(test.APITestCase):
         # Creator role
         self.admin_role = ProjectRole.objects.create(
             title='Clairvoyant One',
+            type=ProjectRole.Type.PROJECT_OWNER,
             lead_permissions=get_project_permissions_value('lead', '__all__'),
             entry_permissions=get_project_permissions_value(
                 'entry', '__all__'),
@@ -161,6 +162,7 @@ class TestCase(test.APITestCase):
         # Smaller admin role
         self.smaller_admin_role = ProjectRole.objects.create(
             title='Admin',
+            type=ProjectRole.Type.ADMIN,
             lead_permissions=get_project_permissions_value('lead', '__all__'),
             entry_permissions=get_project_permissions_value(
                 'entry', '__all__'),
@@ -176,6 +178,7 @@ class TestCase(test.APITestCase):
         # Default role
         self.normal_role = ProjectRole.objects.create(
             title='Analyst',
+            type=ProjectRole.Type.MEMBER,
             lead_permissions=get_project_permissions_value(
                 'lead', '__all__'),
             entry_permissions=get_project_permissions_value(
@@ -190,6 +193,7 @@ class TestCase(test.APITestCase):
         )
         self.view_only_role = ProjectRole.objects.create(
             title='Viewer',
+            type=ProjectRole.Type.READER,
             lead_permissions=get_project_permissions_value(
                 'lead', ['view']
             ),
@@ -204,25 +208,6 @@ class TestCase(test.APITestCase):
             ),
             assessment_permissions=get_project_permissions_value(
                 'assessment', ['view']
-            ),
-        )
-        # ARY full-access role
-        self.ary_create_role = ProjectRole.objects.create(
-            title='AryViewOnly',
-            lead_permissions=get_project_permissions_value(
-                'lead', ['view']
-            ),
-            entry_permissions=get_project_permissions_value(
-                'entry', ['view']
-            ),
-            setup_permissions=get_project_permissions_value(
-                'setup', []
-            ),
-            export_permissions=get_project_permissions_value(
-                'export', []
-            ),
-            assessment_permissions=get_project_permissions_value(
-                'assessment', '__all__'
             ),
         )
 

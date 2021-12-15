@@ -188,7 +188,7 @@ class TestProjectJoinMutation(GraphQLTestCase):
         user = UserFactory.create()
         admin_user = UserFactory.create()
         project = ProjectFactory.create()
-        project.add_member(admin_user, role=ProjectRole.get_default_admin_role())
+        project.add_member(admin_user, role=ProjectRole.get_admin_role())
         reason = fuzzy.FuzzyText(length=100).fuzz()
         minput = dict(project=project.id, reason=reason)
         self.force_login(user)

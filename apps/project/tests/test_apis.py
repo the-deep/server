@@ -215,8 +215,8 @@ class ProjectApiTest(TestCase):
         public_project = self.create(Project, is_private=False, organizations=[])
 
         # Add roles for self.user
-        private_project.add_member(self.user, ProjectRole.get_creator_role())
-        public_project.add_member(self.user, ProjectRole.get_creator_role())
+        private_project.add_member(self.user, ProjectRole.get_owner_role())
+        public_project.add_member(self.user, ProjectRole.get_owner_role())
 
         self._change_project_privacy_test(private_project, 403, self.user)
         self._change_project_privacy_test(public_project, 403, self.user)
@@ -264,7 +264,7 @@ class ProjectApiTest(TestCase):
         private_project.add_member(
             self.user,
             # Test with role which can modify project
-            ProjectRole.get_creator_role(),
+            ProjectRole.get_owner_role(),
         )
 
         url = f'/api/v1/projects/{private_project.id}/'
@@ -291,7 +291,7 @@ class ProjectApiTest(TestCase):
         private_project.add_member(
             self.user,
             # Test with role which can modify project
-            ProjectRole.get_creator_role(),
+            ProjectRole.get_owner_role(),
         )
 
         url = f'/api/v1/projects/{private_project.id}/'
@@ -313,7 +313,7 @@ class ProjectApiTest(TestCase):
         private_project.add_member(
             self.user,
             # Test with role which can modify project
-            ProjectRole.get_creator_role(),
+            ProjectRole.get_owner_role(),
         )
 
         url = f'/api/v1/projects/{private_project.id}/'
@@ -343,7 +343,7 @@ class ProjectApiTest(TestCase):
         private_project.add_member(
             self.user,
             # Test with role which can modify project
-            ProjectRole.get_creator_role(),
+            ProjectRole.get_owner_role(),
         )
 
         url = f'/api/v1/projects/{private_project.id}/'
@@ -367,7 +367,7 @@ class ProjectApiTest(TestCase):
         public_project.add_member(
             self.user,
             # Test with role which can modify project
-            ProjectRole.get_creator_role(),
+            ProjectRole.get_owner_role(),
         )
 
         url = f'/api/v1/projects/{public_project.id}/'
@@ -389,7 +389,7 @@ class ProjectApiTest(TestCase):
         public_project.add_member(
             self.user,
             # Test with role which can modify project
-            ProjectRole.get_creator_role(),
+            ProjectRole.get_owner_role(),
         )
         private_framework.add_member(
             self.user,
