@@ -378,7 +378,6 @@ RELIEFWEB_APPNAME = 'thedeep.io'
 
 # HID CONFIGS [NOTE: Update config in React too]
 HID_CLIENT_ID = os.environ.get('HID_CLIENT_ID', 'deep-local')
-HID_CLIENT_NAME = os.environ.get('HID_CLIENT_NAME', 'Deep Local')
 HID_CLIENT_REDIRECT_URL = os.environ.get(
     'HID_CLIENT_REDIRECT_URL', 'http://localhost:3000/login/')
 HID_AUTH_URI = os.environ.get(
@@ -689,7 +688,6 @@ if HTTP_PROTOCOL == 'https':
     SESSION_COOKIE_NAME = f'__Secure-{SESSION_COOKIE_NAME}'
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
-    SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 30  # TODO: Increase this slowly
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
