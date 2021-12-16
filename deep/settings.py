@@ -6,8 +6,10 @@ import sys
 import logging
 import environ
 from celery.schedules import crontab
+from email.utils import parseaddr
 
 from utils import sentry
+from utils.aws import get_db_cluster_secret
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -20,47 +22,58 @@ env = environ.Env(
     DJANGO_DEBUG=(bool, False),
     DJANGO_SECRET_KEY=str,
     DEEP_ENVIRONMENT=(str, 'development'),
-    FRONTEND_HOST=(str, 'localhost:3000'),
-    DJANGO_ALLOWED_HOST=(str, None),
+    SERVICE_ENVIRONMENT_TYPE=str,
+    FRONTEND_ARY_HOST=str,
+    FRONTEND_HOST=str,
+    DJANGO_ALLOWED_HOST=str,
     DEEPER_SITE_NAME=(str, 'DEEPER'),
-    DEEP_HTTPS=(str, 'http'),
-    PYTEST_XDIST_WORKER=(str, ''),
-    PROFILE=(bool, False),
-    DATABASE_NAME=(str, 'postgres'),
-    DATABASE_USER=(str, 'postgres'),
-    DATABASE_PASSWORD=(str, 'postgres'),
-    DATABASE_PORT=(str, '5432'),
-    DATABASE_HOST=(str, 'db'),
+    # Database
+    DATABASE_NAME=str,
+    DATABASE_USER=str,
+    DATABASE_PASSWORD=str,
+    DATABASE_PORT=str,
+    DATABASE_HOST=str,
+    # S3
     DJANGO_USE_S3=(bool, False),
     S3_AWS_ACCESS_KEY_ID=(str, None),
     S3_AWS_SECRET_ACCESS_KEY=(str, None),
     S3_AWS_ENDPOINT_URL=(str, None),
-    CELERY_REDIS_URL=(str, 'redis://redis:6379/0'),
-    DJANGO_CACHE_REDIS_URL=(str, 'redis://redis:6379/2'),
-    HID_CLIENT_ID=(str, 'deep-local'),
-    HID_CLIENT_NAME=(str, 'Deep Local'),
-    HID_CLIENT_REDIRECT_URL=(str, 'http://localhost:3000/login/'),
-    HID_AUTH_URI=(str, 'https://api2.dev.humanitarian.id'),
-    USE_PAPERTRAIL=(bool, False),
-    EBS_HOSTNAME=(str, 'UNK_HOST'),
-    EBS_ENV_TYPE=(str, 'UNK_ENV'),
-    PAPERTRAIL_PORT=(int, None),
-    EMAIL_HOST=(str, 'smtp.gmail.com'),
-    EMAIL_HOST_PASSWORD=(str, 'deep1234'),
-    EMAIL_PORT=(int, 587),
-    EMAIL_USE_TLS=(bool, True),
-    USE_EMAIL_CONFIG=(bool, False),
-    EMAIL_HOST_USER=(str, 'deepnotifications1@gmail.com'),
+    CELERY_REDIS_URL=str,
+    DJANGO_CACHE_REDIS_URL=str,
+    # HID
+    HID_CLIENT_ID=str,
+    HID_CLIENT_REDIRECT_URL=str,
+    HID_AUTH_URI=str,
+    # Email
+    EMAIL_FROM=str,
+    DJANGO_ADMINS=(str, 'admin@thedeep.io'),
+    USE_SES_EMAIL_CONFIG=(bool, False),
     SES_AWS_ACCESS_KEY_ID=(str, None),
     SES_AWS_SECRET_ACCESS_KEY=(str, None),
+    # Hcaptcha
     HCAPTCHA_SECRET=(str, '0x0000000000000000000000000000000000000000'),
+    # Sentry
     SENTRY_DSN=(str, None),
-    SENTRY_SAMPLE_RATE=(float, 0.05),
+    SENTRY_SAMPLE_RATE=(float, 0.2),
+    # Deepl (not used)
     DEEPL_DOMAIN=(str, 'http://192.168.31.92:8010'),
-    CSRF_TRUSTED_ORIGINS=(bool, False),
-    SESSION_COOKIE_DOMAIN=(str, 'localhost'),
-    CSRF_COOKIE_DOMAIN=(str, 'localhost'),
+    # Security settings
+    DEEP_HTTPS=(str, 'http'),
+    # CSRF_TRUSTED_ORIGINS=(bool, False),
+    SESSION_COOKIE_DOMAIN=str,
+    CSRF_COOKIE_DOMAIN=str,
     DOCKER_HOST_IP=(str, None),
+    # Pytest
+    PYTEST_XDIST_WORKER=(str, ''),
+    PROFILE=(bool, False),
+    # Copilot ENVS
+    COPILOT_APPLICATION_NAME=(str, None),
+    COPILOT_ENVIRONMENT_NAME=(str, None),
+    COPILOT_SERVICE_NAME=(str, None),
+    DEEP_DATABASE_SECRET=(str, None),
+    DEEP_DATABASE_SECRET_REF=(str, None),
+    ELASTI_CACHE_ADDRESS=str,
+    ELASTI_CACHE_PORT=str,
 )
 
 # Quick-start development settings - unsuitable for production
@@ -72,11 +85,12 @@ SECRET_KEY = env('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DJANGO_DEBUG')
 
-DEEP_ENVIRONMENT = env('DEEP_ENVIRONMENT')
+DEEP_ENVIRONMENT = env('DEEP_ENVIRONMENT') or env('COPILOT_ENVIRONMENT_NAME')
 
 ALLOWED_HOSTS = [env('DJANGO_ALLOWED_HOST')]
 
 DEEPER_FRONTEND_HOST = env('FRONTEND_HOST')
+DEEPER_FRONTEND_ARY_HOST = env('FRONTEND_ARY_HOST')  # TODO: Remove this later
 DJANGO_API_HOST = env('DJANGO_ALLOWED_HOST')
 
 DEEPER_SITE_NAME = env('DEEPER_SITE_NAME')
@@ -216,20 +230,41 @@ WSGI_APPLICATION = 'deep.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': env('DATABASE_NAME'),
-        'USER': env('DATABASE_USER'),
-        'PASSWORD': env('DATABASE_PASSWORD'),
-        'PORT': env('DATABASE_PORT'),
-        'HOST': env('DATABASE_HOST'),
-        'OPTIONS': {
-            'sslmode': 'prefer' if DEBUG else 'require',  # Require ssl in Production
-        },
+if env('COPILOT_ENVIRONMENT_NAME'):
+    DBCLUSTER_SECRET = get_db_cluster_secret(
+        env('DEEP_DATABASE_SECRET'),
+        env('DEEP_DATABASE_SECRET_REF'),
+    )
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            # in the workflow environment
+            'NAME': DBCLUSTER_SECRET['dbname'],
+            'USER': DBCLUSTER_SECRET['username'],
+            'PASSWORD': DBCLUSTER_SECRET['password'],
+            'HOST': DBCLUSTER_SECRET['host'],
+            'PORT': DBCLUSTER_SECRET['port'],
+            'OPTIONS': {
+                'sslmode': 'require',
+                # https://lightsail.aws.amazon.com/ls/docs/en_us/articles/amazon-lightsail-download-ssl-certificate-for-managed-database
+                'sslrootcert': os.path.join(BASE_DIR, 'deploy/rds-ca-2019-root.pem'),
+            },
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',
+            'NAME': env('DATABASE_NAME'),
+            'USER': env('DATABASE_USER'),
+            'PASSWORD': env('DATABASE_PASSWORD'),
+            'PORT': env('DATABASE_PORT'),
+            'HOST': env('DATABASE_HOST'),
+            'OPTIONS': {
+                'sslmode': 'prefer' if DEBUG else 'require',  # Require ssl in Production
+            },
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -328,8 +363,8 @@ GALLERY_FILE_EXPIRE = 60 * 60 * 24 * 2
 
 if env('DJANGO_USE_S3'):
     # AWS S3 Bucket Credentials
-    AWS_STORAGE_BUCKET_NAME_STATIC = env('DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC')
-    AWS_STORAGE_BUCKET_NAME_MEDIA = env('DJANGO_AWS_STORAGE_BUCKET_NAME_MEDIA')
+    AWS_STORAGE_BUCKET_NAME_STATIC = env('AWS_STORAGE_BUCKET_NAME_STATIC')
+    AWS_STORAGE_BUCKET_NAME_MEDIA = env('AWS_STORAGE_BUCKET_NAME_MEDIA')
     # If environment variable are not provided, then EC2 Role will be used.
     AWS_ACCESS_KEY_ID = env('S3_AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = env('S3_AWS_SECRET_ACCESS_KEY')
@@ -367,8 +402,16 @@ STATICFILES_DIRS = [
     os.path.join(APPS_DIR, 'static'),
 ]
 
+if env('COPILOT_APPLICATION_NAME'):
+    ELASTIC_REDIS_URL = f"redis://{env('ELASTI_CACHE_ADDRESS')}:{env('ELASTI_CACHE_PORT')}"
+    CELERY_REDIS_URL = f'{ELASTIC_REDIS_URL}/0'
+    DJANGO_CACHE_REDIS_URL = f'{ELASTIC_REDIS_URL}/1'
+else:
+    CELERY_REDIS_URL = env('CELERY_REDIS_URL')
+    DJANGO_CACHE_REDIS_URL = env('DJANGO_CACHE_REDIS_URL')
+
 # CELERY CONFIG "redis://:{password}@{host}:{port}/{db}"
-CELERY_REDIS_URL = env('CELERY_REDIS_URL')
+
 CELERY_BROKER_URL = CELERY_REDIS_URL
 CELERY_RESULT_BACKEND = CELERY_REDIS_URL
 CELERY_TIMEZONE = TIME_ZONE
@@ -392,7 +435,6 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-DJANGO_CACHE_REDIS_URL = env('DJANGO_CACHE_REDIS_URL')
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
@@ -412,7 +454,6 @@ RELIEFWEB_APPNAME = 'thedeep.io'
 
 # HID CONFIGS [NOTE: Update config in React too]
 HID_CLIENT_ID = env('HID_CLIENT_ID')
-HID_CLIENT_NAME = env('HID_CLIENT_NAME')
 HID_CLIENT_REDIRECT_URL = env('HID_CLIENT_REDIRECT_URL')
 HID_AUTH_URI = env('HID_AUTH_URI')
 
@@ -436,12 +477,8 @@ def add_username_attribute(record):
 # pdfminer can log heavy logs
 logging.getLogger("pdfminer").setLevel(logging.WARNING)
 
-if env('USE_PAPERTRAIL'):
-    format_args = (
-        env('EBS_HOSTNAME'),
-        env('EBS_ENV_TYPE'),
-    )
-    papertrail_address = (env('PAPERTRAIL_HOST'), env('PAPERTRAIL_PORT'))
+if env('COPILOT_APPLICATION_NAME'):
+    format_args = [env('SERVICE_ENVIRONMENT_TYPE')]
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
@@ -453,29 +490,27 @@ if env('USE_PAPERTRAIL'):
         },
         'formatters': {
             'simple': {
-                'format': '%(asctime)s {} DJANGO-{}: - %(levelname)s - %(name)s - [%(username)s] %(message)s'.format(
+                'format': '%(asctime)s DJANGO-{}: - %(levelname)s - %(name)s - [%(username)s] %(message)s'.format(
                     *format_args,
                 ),
                 'datefmt': '%Y-%m-%dT%H:%M:%S',
             },
             'profiling': {
-                'format': '%(asctime)s {} PROFILING-{}: %(message)s'.format(*format_args),
+                'format': '%(asctime)s PROFILING-{}: %(message)s'.format(*format_args),
                 'datefmt': '%Y-%m-%dT%H:%M:%S',
             },
         },
         'handlers': {
             'SysLog': {
                 'level': 'INFO',
-                'class': 'logging.handlers.SysLogHandler',
+                'class': 'logging.StreamHandler',
                 'filters': ['add_username_attribute'],
                 'formatter': 'simple',
-                'address': papertrail_address,
             },
             'ProfilingSysLog': {
                 'level': 'INFO',
-                'class': 'logging.handlers.SysLogHandler',
+                'class': 'logging.StreamHandler',
                 'formatter': 'profiling',
-                'address': papertrail_address,
             },
         },
         'loggers': {
@@ -565,28 +600,12 @@ CORS_ALLOW_HEADERS = (
     'sentry-trace',
 )
 
-# Email CONFIGS (NOT USED)
-EMAIL_HOST = env('EMAIL_HOST')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
-EMAIL_PORT = env('EMAIL_PORT')
-EMAIL_USE_TLS = env('EMAIL_USE_TLS')
-
 # Email CONFIGS
-USE_EMAIL_CONFIG = env('USE_EMAIL_CONFIG')
-EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-EMAIL_FROM = '{}DEEP Admin <{}>'.format(
-    f'[{DEEP_ENVIRONMENT.upper()}] ' if DEEP_ENVIRONMENT.lower() != 'beta' else '',
-    EMAIL_HOST_USER,
-)
-DEFAULT_FROM_EMAIL = EMAIL_FROM
-ADMINS = [('Ewan', 'ewanogle@gmail.com'), ('Togglecorp', 'info@togglecorp.com')]
+USE_SES_EMAIL_CONFIG = env('USE_SES_EMAIL_CONFIG')
+DEFAULT_FROM_EMAIL = EMAIL_FROM = env('EMAIL_FROM')
+ADMINS = tuple(parseaddr(email) for email in env.list('DJANGO_ADMINS'))
 
-if TESTING or not USE_EMAIL_CONFIG:
-    """
-    DUMP THE EMAIL TO CONSOLE
-    """
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-else:
+if USE_SES_EMAIL_CONFIG and not TESTING:
     """
     Use AWS SES
     """
@@ -594,6 +613,12 @@ else:
     # If environment variable are not provided, then EC2 Role will be used.
     AWS_SES_ACCESS_KEY_ID = env('SES_AWS_ACCESS_KEY_ID')
     AWS_SES_SECRET_ACCESS_KEY = env('SES_AWS_SECRET_ACCESS_KEY')
+else:
+    """
+    DUMP THE EMAIL TO CONSOLE
+    """
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 
 # Gallery files Cache-control max-age - 1hr from s3
 MAX_FILE_CACHE_AGE = GALLERY_FILE_EXPIRE - (60 * 60)
@@ -720,6 +745,7 @@ if HTTP_PROTOCOL == 'https':
     SESSION_COOKIE_NAME = f'__Secure-{SESSION_COOKIE_NAME}'
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
+    # SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 30  # TODO: Increase this slowly
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
@@ -730,12 +756,12 @@ if HTTP_PROTOCOL == 'https':
     # CSRF_COOKIE_HTTPONLY = True
     CSRF_TRUSTED_ORIGINS = [
         DEEPER_FRONTEND_HOST,
-        DEEPER_FRONTEND_ARY_HOST,  # TODO: Remove DEEPER_FRONTEND_ARY_HOST later
+        DEEPER_FRONTEND_ARY_HOST,  # TODO: Remove this later
         DJANGO_API_HOST,
     ]
 
 # https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-CSRF_USE_SESSIONS
-CSRF_USE_SESSIONS = env('CSRF_TRUSTED_ORIGINS')
+# CSRF_USE_SESSIONS = env('CSRF_TRUSTED_ORIGINS')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-SESSION_COOKIE_DOMAIN
 SESSION_COOKIE_DOMAIN = env('SESSION_COOKIE_DOMAIN')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#csrf-cookie-domain
