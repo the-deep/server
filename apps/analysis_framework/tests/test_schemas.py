@@ -65,6 +65,25 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
         self.assertEqual(content['data']['analysisFrameworks']['totalCount'], 3)
         self.assertIn(str(private_af.id), [d['id'] for d in results])  # Can see private project now.
 
+    def test_public_analysis_framework(self):
+        query = '''
+            query MyQuery {
+              publicAnalysisFrameworks (ordering: "id") {
+                page
+                pageSize
+                totalCount
+                results {
+                  id
+                  title
+                }
+              }
+            }
+        '''
+        AnalysisFrameworkFactory.create_batch(4, is_private=False)
+        AnalysisFrameworkFactory.create_batch(5, is_private=True)
+        content = self.query_check(query)
+        self.assertEqual(content['data']['publicAnalysisFrameworks']['totalCount'], 4, content)
+
     def test_analysis_framework(self):
         query = '''
             query MyQuery ($id: ID!) {
