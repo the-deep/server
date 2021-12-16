@@ -29,6 +29,7 @@ DEEP_ENVIRONMENT = os.environ.get('DEEP_ENVIRONMENT', 'development')
 
 ALLOWED_HOSTS = [os.environ.get('DJANGO_ALLOWED_HOST', '*')]
 
+DEEPER_FRONTEND_ARY_HOST = os.environ.get('FRONTEND_ARY_HOST', 'localhost:3000')  # TODO: Remove this later
 DEEPER_FRONTEND_HOST = os.environ.get('FRONTEND_HOST', 'localhost:3000')
 DJANGO_API_HOST = os.environ.get('DJANGO_ALLOWED_HOST', 'localhost:8000')
 
@@ -696,7 +697,11 @@ if HTTP_PROTOCOL == 'https':
     # CSRF_COOKIE_NAME = f'__Secure-{CSRF_COOKIE_NAME}'
     # CSRF_COOKIE_SECURE = True
     # CSRF_COOKIE_HTTPONLY = True
-    CSRF_TRUSTED_ORIGINS = [DEEPER_FRONTEND_HOST, DJANGO_API_HOST]
+    CSRF_TRUSTED_ORIGINS = [
+        DEEPER_FRONTEND_HOST,
+        DEEPER_FRONTEND_ARY_HOST,  # TODO: Remove DEEPER_FRONTEND_ARY_HOST later
+        DJANGO_API_HOST,
+    ]
 
 # https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-CSRF_USE_SESSIONS
 CSRF_USE_SESSIONS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'False').lower() == 'true'
