@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import hashlib
-import matplotlib as mp
 from django.utils.hashable import make_hashable
 from django.utils.encoding import force_str
 from xml.sax.saxutils import escape as xml_escape
@@ -8,8 +7,6 @@ from datetime import timedelta, datetime
 from django.conf import settings
 from redis_store import redis
 
-import plotly.io as pio
-import plotly.graph_objs as ploty_go
 from collections import Counter
 from functools import reduce
 import os
@@ -31,6 +28,14 @@ DEFAULT_HEADERS = {
 ONE_DAY = 24 * 60 * 60
 
 logger = logging.getLogger(__name__)
+
+
+try:
+    import matplotlib as mp
+    import plotly.io as pio
+    import plotly.graph_objs as ploty_go
+except ImportError as e:
+    logger.warning(f'ImportError: {e}')
 
 
 def is_valid_regex(string):

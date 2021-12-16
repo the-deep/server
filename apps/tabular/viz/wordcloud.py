@@ -1,6 +1,14 @@
-import matplotlib.pyplot as plt
+import logging
+
 from utils.common import create_plot_image
-from wordcloud import WordCloud
+
+logger = logging.getLogger(__name__)
+
+try:
+    import matplotlib.pyplot as plt
+    from wordcloud import WordCloud
+except ImportError as e:
+    logger.warning(f'ImportError: {e}')
 
 
 @create_plot_image

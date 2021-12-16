@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import pandas as pd
+import logging
 import random
 import string
 
@@ -14,6 +14,14 @@ from tabular.viz import (
     histograms,
     map as _map,
 )
+
+
+logger = logging.getLogger(__name__)
+
+try:
+    import pandas as pd
+except ImportError as e:
+    logger.warning(f'ImportError: {e}')
 
 
 STRINGS = string.ascii_uppercase + string.digits + 'चैनपुर नगरपालिका à€'
