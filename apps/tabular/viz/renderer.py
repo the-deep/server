@@ -1,5 +1,4 @@
 import os
-import pandas as pd
 import logging
 from datetime import datetime
 
@@ -15,8 +14,12 @@ from tabular.viz import (
     map as mapViz,
 )
 
-
 logger = logging.getLogger(__name__)
+
+try:
+    import pandas as pd
+except ImportError as e:
+    logger.warning(f'ImportError: {e}')
 
 
 def DEFAULT_CHART_RENDER(*args, **kwargs):

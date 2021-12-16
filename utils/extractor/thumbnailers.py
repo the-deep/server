@@ -1,11 +1,18 @@
 import tempfile
 import os
 import uuid
+import logging
 from subprocess import call
-from selenium import webdriver
 from PIL import Image
 
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
+
+try:
+    from selenium import webdriver
+except ImportError as e:
+    logger.warning(f'ImportError: {e}')
 
 DEFAULT_WIDTH = 412
 

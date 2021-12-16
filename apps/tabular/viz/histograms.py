@@ -1,6 +1,13 @@
-import matplotlib.pyplot as plt
-import plotly.graph_objs as go
+import logging
 from utils.common import create_plot_image, create_plotly_image
+
+
+logger = logging.getLogger(__name__)
+try:
+    import matplotlib.pyplot as plt
+    import plotly.graph_objs as go
+except ImportError as e:
+    logger.warning(f'ImportError: {e}')
 
 
 @create_plot_image

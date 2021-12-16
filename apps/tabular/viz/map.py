@@ -1,9 +1,5 @@
-from shapely.geometry import shape
 from utils.common import create_plot_image, make_colormap
 from geo.models import GeoArea, AdminLevel, Region
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-import geopandas as gpd
 import logging
 import json
 
@@ -11,9 +7,13 @@ import json
 logger = logging.getLogger(__name__)
 
 
-c = mcolors.ColorConverter().to_rgb
-rvb = make_colormap(
-    [c('white'), c('teal')])
+try:
+    from shapely.geometry import shape
+    import matplotlib.pyplot as plt
+    import matplotlib.colors as mcolors
+    import geopandas as gpd
+except ImportError as e:
+    logger.warning(f'ImportError: {e}')
 
 
 def get_geoareas(selected_geoareas, admin_levels=None, regions=None):
@@ -62,6 +62,9 @@ def plot(*args, **kwargs):
         shapes.append({'geoarea_id': geoarea.id, 'geometry': s})
     shapes_frame = gpd.GeoDataFrame(shapes, geometry='geometry')
     data = shapes_frame.merge(df, on='geoarea_id', how='outer').fillna(0)
+
+    c = mcolors.ColorConverter().to_rgb
+    rvb = make_colormap([c('white'), c('teal')])
 
     data.plot(
         column='count',
