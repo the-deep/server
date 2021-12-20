@@ -10,6 +10,7 @@ from gallery.models import File
 
 from .models import Organization, OrganizationType as _OrganizationType
 from .filters import OrganizationFilterSet
+from .public_schema import PublicOrganizationListObjectType
 
 
 class OrganizationTypeType(DjangoObjectType):
@@ -78,6 +79,12 @@ class Query:
     organization = DjangoObjectField(OrganizationType)
     organizations = DjangoPaginatedListObjectField(
         OrganizationListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+    public_organizations = DjangoPaginatedListObjectField(
+        PublicOrganizationListObjectType,
         pagination=PageGraphqlPagination(
             page_size_query_param='pageSize'
         )
