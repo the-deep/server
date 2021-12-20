@@ -28,6 +28,7 @@ from .enums import (
     AnalysisFrameworkRoleTypeEnum,
 )
 from .filter_set import AnalysisFrameworkGqFilterSet
+from .public_schema import PublicAnalysisFrameworkListType
 
 
 class WidgetConditionalType(graphene.ObjectType):
@@ -216,7 +217,17 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
+    public_analysis_frameworks = DjangoPaginatedListObjectField(
+        PublicAnalysisFrameworkListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
 
     @staticmethod
     def resolve_analysis_frameworks(root, info, **kwargs) -> QuerySet:
         return AnalysisFramework.get_for_gq(info.context.user).distinct()
+
+    @staticmethod
+    def resolve_public_analysis_frameworks(root, info, **kwargs) -> QuerySet:
+        return AnalysisFramework.objects.filter(is_private=False).distinct()

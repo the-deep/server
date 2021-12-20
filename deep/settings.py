@@ -722,6 +722,8 @@ GRAPHENE_NODES_WHITELIST = (
     'projectExploreStats',
     'publicProjects',
     'publicProjectsByRegion',
+    'publicAnalysisFrameworks',
+    'publicOrganizations',
 )
 
 # https://docs.graphene-python.org/projects/django/en/latest/settings/
