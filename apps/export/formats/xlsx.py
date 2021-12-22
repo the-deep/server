@@ -1,6 +1,8 @@
 from collections import OrderedDict
 
+
 from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
 from openpyxl.writer.excel import save_virtual_workbook
 
 from utils.common import (
@@ -59,7 +61,7 @@ class WorkSheet:
     def auto_fit_cells_in_row(self, row_id):
         row = list(self.ws.rows)[row_id - 1]
         for cell in row:
-            self.ws.column_dimensions[cell.column_letter].width = max(len(str(cell.value)), 15)
+            self.ws.column_dimensions[get_column_letter(cell.column)].width = max(len(str(cell.value)), 15)
         return self
 
     def append(self, rows):
