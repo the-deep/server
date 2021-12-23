@@ -10,6 +10,7 @@ from deep.serializers import (
     RemoveNullFieldsMixin,
     ProjectPropertySerializerMixin,
     StringIDField,
+    GraphqlSupportDrfSerializerJSONField,
 )
 from lead.filter_set import LeadGQFilterSet
 from analysis_framework.models import Widget, Exportable
@@ -204,7 +205,7 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
             (graphene.InputObjectType,),
             get_filtering_args_from_filterset(LeadGQFilterSet, 'lead.schema.LeadListType')
         ),
-        serializers.JSONField,
+        GraphqlSupportDrfSerializerJSONField,
     )()
 
     @property
