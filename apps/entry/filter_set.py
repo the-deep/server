@@ -30,6 +30,9 @@ from lead.enums import (
     LeadPriorityEnum,
     LeadConfidentialityEnum,
 )
+from entry.widgets.date_widget import parse_date_str
+from entry.widgets.time_widget import parse_time_str
+
 from .models import (
     Entry,
     EntryComment,
@@ -343,6 +346,24 @@ def get_filtered_entries_using_af_filter(
 
         if not any([value, value_gte, value_lte, value_list]):
             continue
+
+        # Convert Date to number
+        if _filter.widget_type in [
+            Widget.WidgetType.DATE,
+            Widget.WidgetType.DATE_RANGE,
+        ]:
+            value = value and parse_date_str(value)[1]
+            value_gte = value_gte and parse_date_str(value_gte)[1]
+            value_lte = value_lte and parse_date_str(value_lte)[1]
+
+        # Convert Time to number
+        elif _filter.widget_type in [
+            Widget.WidgetType.TIME,
+            Widget.WidgetType.TIME_RANGE,
+        ]:
+            value = value and parse_time_str(value)['time_val']
+            value_gte = value_gte and parse_time_str(value_gte)['time_val']
+            value_lte = value_lte and parse_time_str(value_lte)['time_val']
 
         if _filter.filter_type == Filter.FilterType.NUMBER:
             if value:

@@ -1,19 +1,9 @@
 from analysis_framework.widgets.time_range_widget import WIDGET_ID
+from .time_widget import parse_time_str
 
 
 # NOTE: Please update the data version when you update the data format
 DATA_VERSION = 1
-
-
-def parse_time(time_string):
-    splits = time_string.split(':')
-    h = int(splits[0])
-    m = int(splits[1])
-    # NOTE: Please update the data version when you update the data format
-    return {
-        'time_str': '{:02d}:{:02d}'.format(h, m),
-        'time_val': h * 60 + m,
-    }
 
 
 def _get_time(widget, data, widget_properties):
@@ -21,8 +11,8 @@ def _get_time(widget, data, widget_properties):
     from_value = value.get('startTime')  # TODO: use from
     to_value = value.get('endTime')  # TODO: use to
 
-    from_time = from_value and parse_time(from_value)
-    to_time = to_value and parse_time(to_value)
+    from_time = from_value and parse_time_str(from_value)
+    to_time = to_value and parse_time_str(to_value)
     # NOTE: Please update the data version when you update the data format
     return (
         from_time and from_time['time_val'],

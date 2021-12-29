@@ -1,7 +1,6 @@
-from datetime import datetime
-
-from utils.common import ONE_DAY
 from analysis_framework.widgets.date_range_widget import WIDGET_ID
+
+from .date_widget import parse_date_str
 
 # NOTE: Please update the data version when you update the data format
 DATA_VERSION = 1
@@ -12,19 +11,16 @@ def _get_date(widget, data, widget_properties):
     from_value = value.get('startDate')  # TODO: use from
     to_value = value.get('endDate')  # TODO: use to
 
-    from_date = from_value and datetime.strptime(from_value, '%Y-%m-%d')
-    to_date = to_value and datetime.strptime(to_value, '%Y-%m-%d')
-
-    from_number = from_date and int(from_date.timestamp() / ONE_DAY)
-    to_number = to_date and int(to_date.timestamp() / ONE_DAY)
+    from_date, from_number = parse_date_str(from_value)
+    to_date, to_number = parse_date_str(to_value)
 
     # NOTE: Please update the data version when you update the data format
     return (
         from_number,
         to_number,
     ), (
-        from_date and from_date.strftime('%d-%m-%Y'),
-        to_date and to_date.strftime('%d-%m-%Y'),
+        from_date,
+        to_date,
     )
 
 

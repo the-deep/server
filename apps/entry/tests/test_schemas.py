@@ -1,11 +1,8 @@
-import datetime
-
 from lead.models import Lead
 
 from entry.models import Entry
 from analysis_framework.models import Widget
 
-from utils.common import ONE_DAY
 from utils.graphene.tests import GraphQLTestCase
 from lead.filter_set import LeadFilterSet
 
@@ -433,9 +430,6 @@ class TestEntryQuery(GraphQLTestCase):
 
 
 class TestEntryFilterDataQuery(GraphQLTestCase):
-    def _get_date_in_number(self, string):
-        return int(datetime.datetime.strptime(string, '%Y-%m-%d').timestamp() / ONE_DAY)
-
     def setUp(self):
         super().setUp()
         self.entries_query = '''
@@ -675,9 +669,9 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                 [
                     {
                         'filterKey': self.widget_date_range.key,
-                        'value': self._get_date_in_number('2020-01-10'),
-                        # 'valueLte': self._get_date_in_number('2020-01-01'),  # TODO:
-                        # 'valueGte': self._get_date_in_number('2020-01-30'),  # TODO:
+                        'value': '2020-01-10',
+                        # 'valueLte': '2020-01-01',  # TODO:
+                        # 'valueGte': '2020-01-30',  # TODO:
                     },
                 ],
                 [entry2_1, entry3_1],
@@ -687,8 +681,8 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                 [
                     {
                         'filterKey': self.widget_date_range.key,
-                        'valueGte': self._get_date_in_number('2020-01-01'),
-                        'valueLte': self._get_date_in_number('2020-01-30'),
+                        'valueGte': '2020-01-01',
+                        'valueLte': '2020-01-30',
                     },
                 ],
                 [entry2_1, entry3_1, entry3_2],
@@ -698,7 +692,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                 [
                     {
                         'filterKey': self.widget_date_range.key,
-                        'valueGte': self._get_date_in_number('2020-01-30'),  # Only one is ignored
+                        'valueGte': '2020-01-30',  # Only one is ignored
                     },
                 ],
                 [entry1_1, entry2_1, entry3_1, entry3_2],
