@@ -6,6 +6,8 @@
 vendor/
 src/public/
 
+celery-worker.state
+
 # testing
 /coverage
 .coverage

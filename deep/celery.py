@@ -30,6 +30,21 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
+app.autodiscover_tasks(['deep'])
+
+
+# This is used for ECS Cluster (Each queue needs it's own clusters)
+class CeleryQueue():
+    DEFAULT = 'CELERY-DEFAULT-QUEUE'
+    EXPORT_HEAVY = 'CELERY-EXPORT-HEAVY-QUEUE'
+
+    ALL_QUEUES = (
+        DEFAULT,
+        EXPORT_HEAVY,
+    )
+
+
+app.conf.task_default_queue = CeleryQueue.DEFAULT
 
 
 @app.task(bind=True)
