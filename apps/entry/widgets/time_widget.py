@@ -5,7 +5,9 @@ from analysis_framework.widgets.time_widget import WIDGET_ID
 DATA_VERSION = 1
 
 
-def parse_time(time_string):
+# NOTE: Please update the data version when you update the data format
+# This is also used in time_range_widget
+def parse_time_str(time_string):
     splits = time_string.split(':')
     h = int(splits[0])
     m = int(splits[1])
@@ -17,7 +19,7 @@ def parse_time(time_string):
 
 def _get_time(widget, data, widget_properties):
     value = data.get('value')
-    time = value and parse_time(value)
+    time = value and parse_time_str(value)
     # NOTE: Please update the data version when you update the data format
     return time and time['time_val'], value and time['time_str']
 

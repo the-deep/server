@@ -1,21 +1,23 @@
-from datetime import datetime
+from dateutil.parser import parse as date_parse
 
+from utils.common import ONE_DAY
 from analysis_framework.widgets.date_widget import WIDGET_ID
 
-
-ONE_DAY = 24 * 60 * 60
 # NOTE: Please update the data version when you update the data format
 # this is tallied against the version stored in the export json data
 DATA_VERSION = 1
 
 
-def _get_date(widget, data, widget_properties):
-    value = data.get('value')
-
-    date = value and datetime.strptime(value, '%Y-%m-%d')
+def parse_date_str(value):
+    date = value and date_parse(value)
     number = date and int(date.timestamp() / ONE_DAY)
     # NOTE: Please update the data version when you update the data format
     return date and date.strftime('%d-%m-%Y'), number
+
+
+def _get_date(widget, data, widget_properties):
+    value = data.get('value')
+    return parse_date_str(value)
 
 
 def update_attribute(widget, data, widget_properties):

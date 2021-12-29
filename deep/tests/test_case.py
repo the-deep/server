@@ -4,7 +4,6 @@ from rest_framework import (
     test,
     status,
 )
-from jwt_auth.token import AccessToken, RefreshToken
 
 import datetime
 from django.utils import timezone
@@ -60,14 +59,7 @@ class TestCase(test.APITestCase):
 
     def authenticate(self, user=None):
         user = user or self.user
-        access = AccessToken.for_user(user)
-        refresh = RefreshToken.for_access_token(access)
-
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(access.encode())
-        )
-
-        return access.encode(), refresh.encode()
+        self.client.force_login(user)
 
     def authenticate_root(self):
         self.authenticate(self.root_user)
