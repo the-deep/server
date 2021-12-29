@@ -1,22 +1,58 @@
 version: '3.2'
 
 services:
-    db:
-      image: postgis/postgis:10-3.1
-      environment:
-        POSTGRES_PASSWORD: postgres
+  db:
+    image: postgis/postgis:10-3.1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: deep
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-    redis:
-      image: redis:latest
+  redis:
+    image: redis:latest
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-    server:
-      image: $DOCKER_IMAGE_SERVER
-      environment:
-        CI: "true"
-        # https://github.com/pytest-dev/pytest/issues/7443
-        PYTEST_ADDOPTS: "--color=yes"
-      volumes:
-        - .:/code
-      depends_on:
-        - db
-        - redis
+  server:
+    image: $DOCKER_IMAGE_SERVER
+    environment:
+      CI: "true"
+      # https://github.com/pytest-dev/pytest/issues/7443
+      PYTEST_ADDOPTS: "--color=yes"
+      DJANGO_DEBUG: "true"
+      DEEP_ENVIRONMENT: development
+      DJANGO_SECRET_KEY: "XXXXXXXXXXXXXXXXXXXXXXXXXX"
+      DEEP_FRONTEND_HOST: localhost:3000
+      DEEP_FRONTEND_ARY_HOST: localhost:3001
+      DJANGO_ALLOWED_HOST: localhost
+      SESSION_COOKIE_DOMAIN: localhost
+      CSRF_COOKIE_DOMAIN: localhost
+      EMAIL_FROM: dev@thedeep.io
+      # From db.environment
+      DATABASE_NAME: deep
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_PORT: 5432
+      DATABASE_HOST: db
+      # From redis
+      CELERY_REDIS_URL: redis://redis:6379/0
+      DJANGO_CACHE_REDIS_URL: redis://redis:6379/2
+      # HID
+      HID_CLIENT_ID: deep-local
+      HID_CLIENT_REDIRECT_URL: http://localhost:3000/login/
+      HID_AUTH_URI: https://api2.dev.humanitarian.id
+    volumes:
+      - .:/code
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
