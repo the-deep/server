@@ -9,6 +9,7 @@ from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models, transaction
 
 from deep import compiler  # noqa: F401
+from deep.authentication import CSRFExemptSessionAuthentication
 from rest_framework.decorators import action
 from rest_framework import (
     serializers,
@@ -556,6 +557,8 @@ class WebInfoExtractView(views.APIView):
     Extract information from a website for new lead
     """
     permission_classes = [permissions.IsAuthenticated]
+    # FIXME: This is also used by chrome-extension, use csrf properly
+    authentication_classes = [CSRFExemptSessionAuthentication]
 
     def get_organization(self, title, search):
         org = search.get(title)
@@ -609,6 +612,8 @@ class WebInfoDataView(views.APIView):
     the web info extraction service
     """
     permission_classes = [permissions.IsAuthenticated]
+    # FIXME: This is also used by chrome-extension, use csrf properly
+    authentication_classes = [CSRFExemptSessionAuthentication]
 
     def get_organization(self, title, search):
         org = search.get(title)

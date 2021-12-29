@@ -216,7 +216,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        'jwt_auth.authentication.JwtAuthentication',
+        # 'jwt_auth.authentication.JwtAuthentication',
     ),
     'EXCEPTION_HANDLER': 'deep.exception_handler.custom_exception_handler',
     'DEFAULT_RENDERER_CLASSES': [
@@ -341,8 +341,8 @@ CELERY_BEAT_SCHEDULE = {
     },
     'project_generate_stats': {
         'task': 'project.tasks.generate_project_stats_cache',
-        # Every 1 hour
-        'schedule': crontab(minute=0, hour="*/1"),
+        # Every 5 min
+        'schedule': crontab(minute="*/5"),
     },
 }
 
