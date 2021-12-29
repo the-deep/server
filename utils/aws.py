@@ -1,4 +1,5 @@
 import boto3
+import requests
 from botocore.exceptions import ClientError
 import json
 import logging
@@ -6,12 +7,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def get_db_cluster_secret(cluster_secret, cluster_secret_ref):
+def get_db_cluster_secret(cluster_secret):
     try:
         # Try for databaseSecret json
         return json.loads(cluster_secret)
     except json.decoder.JSONDecodeError:
-        logger.info(f'Fetching db cluster secret using ARN: {cluster_secret_ref}')
+        logger.warning(f'Fetching db cluster secret using ARN: {cluster_secret}')
 
     # the passed secret is the aws arn instead
     session = boto3.session.Session()
@@ -21,11 +22,9 @@ def get_db_cluster_secret(cluster_secret, cluster_secret_ref):
     )
 
     try:
-        get_secret_value_response = client.get_secret_value(
-            SecretId=cluster_secret_ref
-        )
+        get_secret_value_response = client.get_secret_value(SecretId=cluster_secret)
     except ClientError as e:
-        logger.info(f"Got client error {e.response['Error']['Code']} for {cluster_secret_ref}")
+        logger.error(f"Got client error {e.response['Error']['Code']} for {cluster_secret}")
     else:
         logger.info('Found secret...')
         # Secrets Manager decrypts the secret value using the associated KMS CMK
@@ -37,3 +36,16 @@ def get_db_cluster_secret(cluster_secret, cluster_secret_ref):
             # binary_secret_data = get_secret_value_response['SecretBinary']
             logger.error("Secret should be decrypted to string but found binary instead")
     raise Exception('Failed to parse/fetch secret')
+
+
+def get_internal_ip(name):
+    try:
+        resp = requests.get('http://169.254.170.2/v2/metadata', timeout=1).json()
+        return [
+            container['Networks'][0]['IPv4Addresses'][0]
+            for container in resp['Containers']
+            # 'web' is from Dockerfile + web manifest
+            if container['DockerName'] == name
+        ][0]
+    except Exception:
+        logger.error(f"Failed to retrieve AWS internal ip, {locals().get('resp')}", exc_info=True)

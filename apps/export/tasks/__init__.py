@@ -2,6 +2,8 @@ import logging
 from django.utils.crypto import get_random_string
 
 from celery import shared_task
+
+from deep.celery import CeleryQueue
 from export.models import Export
 from .tasks_entries import export_entries
 from .tasks_assessment import export_assessments, export_planned_assessments
@@ -24,7 +26,7 @@ def get_export_filename(export):
     return f'{random_string}/{filename}'
 
 
-@shared_task
+@shared_task(queue=CeleryQueue.EXPORT_HEAVY)
 def export_task(export_id, force=False):
     data_type = 'UNKNOWN'
     try:
