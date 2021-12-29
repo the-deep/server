@@ -16,7 +16,7 @@ snapshots['TestLeadBulkMutationSchema::test_lead_bulk success'] = {
                 'arrayErrors': None,
                 'clientId': 'new-lead-3',
                 'field': 'nonFieldErrors',
-                'messages': 'A lead with this URL has already been added to Project: Project-0',
+                'messages': 'A source with this URL has already been added to Project: Project-0',
                 'objectErrors': None
             }
         ],
