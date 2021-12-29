@@ -9,7 +9,7 @@ from celery.schedules import crontab
 from email.utils import parseaddr
 
 from utils import sentry
-from utils.aws import get_db_cluster_secret
+from utils.aws import get_db_cluster_secret, get_internal_ip as get_aws_internal_ip
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -23,8 +23,8 @@ env = environ.Env(
     DJANGO_SECRET_KEY=str,
     DEEP_ENVIRONMENT=(str, 'development'),
     SERVICE_ENVIRONMENT_TYPE=str,
-    FRONTEND_ARY_HOST=str,
-    FRONTEND_HOST=str,
+    DEEP_FRONTEND_ARY_HOST=str,
+    DEEP_FRONTEND_HOST=str,
     DJANGO_ALLOWED_HOST=str,
     DEEPER_SITE_NAME=(str, 'DEEPER'),
     # Database
@@ -71,7 +71,6 @@ env = environ.Env(
     COPILOT_ENVIRONMENT_NAME=(str, None),
     COPILOT_SERVICE_NAME=(str, None),
     DEEP_DATABASE_SECRET=(str, None),
-    DEEP_DATABASE_SECRET_REF=(str, None),
     ELASTI_CACHE_ADDRESS=str,
     ELASTI_CACHE_PORT=str,
 )
@@ -85,12 +84,12 @@ SECRET_KEY = env('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DJANGO_DEBUG')
 
-DEEP_ENVIRONMENT = env('DEEP_ENVIRONMENT') or env('COPILOT_ENVIRONMENT_NAME')
+DEEP_ENVIRONMENT = env('COPILOT_ENVIRONMENT_NAME') or env('DEEP_ENVIRONMENT')
 
 ALLOWED_HOSTS = [env('DJANGO_ALLOWED_HOST')]
 
-DEEPER_FRONTEND_HOST = env('FRONTEND_HOST')
-DEEPER_FRONTEND_ARY_HOST = env('FRONTEND_ARY_HOST')  # TODO: Remove this later
+DEEPER_FRONTEND_HOST = env('DEEP_FRONTEND_HOST')
+DEEPER_FRONTEND_ARY_HOST = env('DEEP_FRONTEND_ARY_HOST')  # TODO: Remove this later
 DJANGO_API_HOST = env('DJANGO_ALLOWED_HOST')
 
 DEEPER_SITE_NAME = env('DEEPER_SITE_NAME')
@@ -228,16 +227,21 @@ TEMPLATES = [
 WSGI_APPLICATION = 'deep.wsgi.application'
 
 
+IN_AWS_COPILOT_ECS = not not env('COPILOT_SERVICE_NAME')
+
+
+if IN_AWS_COPILOT_ECS and env('SERVICE_ENVIRONMENT_TYPE') == 'web':
+    ALLOWED_HOSTS.append(
+        get_aws_internal_ip(env('SERVICE_ENVIRONMENT_TYPE'))
+    )
+
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-if env('COPILOT_ENVIRONMENT_NAME'):
-    DBCLUSTER_SECRET = get_db_cluster_secret(
-        env('DEEP_DATABASE_SECRET'),
-        env('DEEP_DATABASE_SECRET_REF'),
-    )
+if IN_AWS_COPILOT_ECS:
+    DBCLUSTER_SECRET = get_db_cluster_secret(env('DEEP_DATABASE_SECRET'))
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',
             # in the workflow environment
             'NAME': DBCLUSTER_SECRET['dbname'],
             'USER': DBCLUSTER_SECRET['username'],
@@ -402,7 +406,7 @@ STATICFILES_DIRS = [
     os.path.join(APPS_DIR, 'static'),
 ]
 
-if env('COPILOT_APPLICATION_NAME'):
+if IN_AWS_COPILOT_ECS:
     ELASTIC_REDIS_URL = f"redis://{env('ELASTI_CACHE_ADDRESS')}:{env('ELASTI_CACHE_PORT')}"
     CELERY_REDIS_URL = f'{ELASTIC_REDIS_URL}/0'
     DJANGO_CACHE_REDIS_URL = f'{ELASTIC_REDIS_URL}/1'
@@ -415,18 +419,19 @@ else:
 CELERY_BROKER_URL = CELERY_REDIS_URL
 CELERY_RESULT_BACKEND = CELERY_REDIS_URL
 CELERY_TIMEZONE = TIME_ZONE
+CELERY_EVENT_QUEUE_PREFIX = 'deep-celery-'
 CELERY_ACKS_LATE = True
 
 CELERY_BEAT_SCHEDULE = {
     'remaining_tabular_generate_columns_image': {
         'task': 'tabular.tasks.remaining_tabular_generate_columns_image',
         # Every 6 hour
-        'schedule': crontab(minute=0, hour="*/6"),
+        'schedule': crontab(minute=0, hour='*/6'),
     },
     'classify_remaining_lead_previews': {
         'task': 'lead.tasks.classify_remaining_lead_previews',
         # Every 3 hours
-        'schedule': crontab(minute=0, hour="*/3"),
+        'schedule': crontab(minute=0, hour='*/3'),
     },
     'project_generate_stats': {
         'task': 'project.tasks.generate_project_stats_cache',
@@ -434,6 +439,15 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': crontab(minute="*/5"),
     },
 }
+
+if IN_AWS_COPILOT_ECS:
+    CELERY_BEAT_SCHEDULE.update({
+        'push_celery_cloudwatch_metric': {
+            'task': 'deep.tasks.put_celery_query_metric',
+            # Every minute
+            'schedule': crontab(minute='*/1'),
+        },
+    })
 
 CACHES = {
     'default': {
@@ -477,7 +491,7 @@ def add_username_attribute(record):
 # pdfminer can log heavy logs
 logging.getLogger("pdfminer").setLevel(logging.WARNING)
 
-if env('COPILOT_APPLICATION_NAME'):
+if IN_AWS_COPILOT_ECS:
     format_args = [env('SERVICE_ENVIRONMENT_TYPE')]
     LOGGING = {
         'version': 1,

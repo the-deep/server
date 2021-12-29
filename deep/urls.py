@@ -551,7 +551,6 @@ urlpatterns = [
             name="favicon"),
 ] + [
     # graphql patterns
-    re_path('^graphiql/?$', csrf_exempt(CustomGraphQLView.as_view(graphiql=True))),
     re_path('^graphql/?$', csrf_exempt(CustomGraphQLView.as_view())),
     re_path(r'^favicon.ico$',
             RedirectView.as_view(
@@ -570,6 +569,7 @@ if settings.DEBUG:
             re_path('__debug__/', include(debug_toolbar.urls)),
         ]
     urlpatterns += [
+        re_path('^graphiql/?$', csrf_exempt(CustomGraphQLView.as_view(graphiql=True))),
         re_path(r'^pr-email/$', PasswordReset.as_view()),
         re_path(r'^pc-email/$', PasswordChanged.as_view()),
         re_path(r'^aa-email/$', AccountActivate.as_view()),
