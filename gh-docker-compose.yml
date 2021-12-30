@@ -50,9 +50,8 @@ services:
       HID_CLIENT_REDIRECT_URL: http://localhost:3000/login/
       HID_AUTH_URI: https://api2.dev.humanitarian.id
     volumes:
-      - .:/code
+      - ./coverage/:/code/coverage/
+      - ./ci-share/:/ci-share/
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - db
+      - redis
