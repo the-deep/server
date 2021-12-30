@@ -17,7 +17,7 @@ RUN apt-get update -y \
         # NOTE: procps: For pkill command
         procps \
         # Deep Required Packages
-        binutils gdal-bin \
+        wait-for-it binutils gdal-bin \
     # Upgrade pip and install python packages for code
     && pip install --upgrade --no-cache-dir pip poetry \
     && poetry --version \
