@@ -71,6 +71,7 @@ env = environ.Env(
     COPILOT_ENVIRONMENT_NAME=(str, None),
     COPILOT_SERVICE_NAME=(str, None),
     DEEP_DATABASE_SECRET=(str, None),
+    DEEP_DATABASE_SECRET_ARN=(str, None),
     ELASTI_CACHE_ADDRESS=str,
     ELASTI_CACHE_PORT=str,
 )
@@ -238,7 +239,7 @@ if IN_AWS_COPILOT_ECS and env('SERVICE_ENVIRONMENT_TYPE') == 'web':
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 if IN_AWS_COPILOT_ECS:
-    DBCLUSTER_SECRET = get_db_cluster_secret(env('DEEP_DATABASE_SECRET'))
+    DBCLUSTER_SECRET = get_db_cluster_secret(env('DEEP_DATABASE_SECRET'), env('DEEP_DATABASE_SECRET_ARN'))
     DATABASES = {
         'default': {
             'ENGINE': 'django.contrib.gis.db.backends.postgis',

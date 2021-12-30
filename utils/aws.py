@@ -7,12 +7,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def get_db_cluster_secret(cluster_secret):
+def get_db_cluster_secret(cluster_secret, cluster_secret_arn):
     try:
         # Try for databaseSecret json
-        return json.loads(cluster_secret)
+        if cluster_secret:
+            return json.loads(cluster_secret)
     except json.decoder.JSONDecodeError:
-        logger.warning(f'Fetching db cluster secret using ARN: {cluster_secret}')
+        logger.warning(f'Fetching db cluster secret using ARN: {cluster_secret_arn}')
 
     # the passed secret is the aws arn instead
     session = boto3.session.Session()
@@ -22,9 +23,9 @@ def get_db_cluster_secret(cluster_secret):
     )
 
     try:
-        get_secret_value_response = client.get_secret_value(SecretId=cluster_secret)
+        get_secret_value_response = client.get_secret_value(SecretId=cluster_secret_arn)
     except ClientError as e:
-        logger.error(f"Got client error {e.response['Error']['Code']} for {cluster_secret}")
+        logger.error(f"Got client error {e.response['Error']['Code']} for {cluster_secret_arn}")
     else:
         logger.info('Found secret...')
         # Secrets Manager decrypts the secret value using the associated KMS CMK

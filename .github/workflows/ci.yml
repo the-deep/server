@@ -41,6 +41,7 @@ jobs:
           file: Dockerfile
           push: false # This would be set to true in a real world deployment scenario.
           load: true
+          target: worker # this has all the dep
           tags: ${{ steps.prep.outputs.tagged_image }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
@@ -49,9 +50,9 @@ jobs:
         env:
           DOCKER_IMAGE_SERVER: ${{ steps.prep.outputs.tagged_image }}
         run: |
-          docker-compose -f gh-docker-compose.yml run --rm server /code/scripts/wait-for-it.sh db:5432 &&
-          docker-compose -f gh-docker-compose.yml run --rm server ./manage.py graphql_schema --out schema-latest.graphql &&
-          cmp --silent schema.graphql schema-latest.graphql || {
+          docker-compose -f gh-docker-compose.yml run --rm server wait-for-it db:5432 &&
+          docker-compose -f gh-docker-compose.yml run --rm server ./manage.py graphql_schema --out /ci-share/schema-latest.graphql &&
+          cmp --silent schema.graphql ./ci-share/schema-latest.graphql || {
             echo 'The schema.graphql is not up to date with the latest changes. Please update and push latest';
             diff schema.graphql schema-latest.graphql;
             exit 1;
@@ -73,6 +74,8 @@ jobs:
           DOCKER_IMAGE_SERVER: ${{ steps.prep.outputs.tagged_image }}
         with:
           coverageCommand: docker-compose -f gh-docker-compose.yml run --rm server /code/scripts/run_tests.sh
+          coverageLocations: |
+            ${{github.workspace}}/coverage/coverage.xml:coverage.py
 
       - name: Publish coverage to code cov
         uses: codecov/codecov-action@v2
@@ -91,7 +94,7 @@ jobs:
         if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
         with:
           branch: gh-pages
-          folder: ./htmlcov
+          folder: ./coverage/htmlcov
 
       - uses: 8398a7/action-slack@v3
         with:
