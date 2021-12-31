@@ -9,7 +9,6 @@ from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models, transaction
 
 from deep import compiler  # noqa: F401
-from deep.authentication import CSRFExemptSessionAuthentication
 from rest_framework.decorators import action
 from rest_framework import (
     serializers,
@@ -27,6 +26,7 @@ import django_filters
 
 from deep.permissions import ModifyPermission, CreateLeadPermission, DeleteLeadPermission
 from deep.paginations import AutocompleteSetPagination
+from deep.authentication import CSRFExemptSessionAuthentication
 
 from lead.filter_set import (
     LeadGroupFilterSet,
@@ -92,6 +92,7 @@ class LeadGroupViewSet(viewsets.ModelViewSet):
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter)
     filterset_class = LeadGroupFilterSet
+    authentication_classes = [CSRFExemptSessionAuthentication]
     search_fields = ('title',)
 
     def get_queryset(self):
