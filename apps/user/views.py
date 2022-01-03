@@ -53,7 +53,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = User.objects.filter(is_active=True).order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [UserPermission]
+    permission_classes = [permissions.IsAuthenticated, UserPermission]
 
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
 
