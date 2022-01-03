@@ -55,8 +55,8 @@ class Export(models.Model):
         (DataType.ENTRIES, ExportType.REPORT, Format.DOCX): 'Entries General Export',
         (DataType.ENTRIES, ExportType.REPORT, Format.PDF): 'Entries General Export',
         (DataType.ENTRIES, ExportType.JSON, Format.JSON): 'Entries JSON Export',
-        (DataType.ASSESSMENTS, ExportType.EXCEL, Format.XLSX): 'AAssessments Excel Export',
-        (DataType.ASSESSMENTS, ExportType.JSON, Format.JSON): 'AAssessments JSON Export',
+        (DataType.ASSESSMENTS, ExportType.EXCEL, Format.XLSX): 'Assessments Excel Export',
+        (DataType.ASSESSMENTS, ExportType.JSON, Format.JSON): 'Assessments JSON Export',
         (DataType.PLANNED_ASSESSMENTS, ExportType.EXCEL, Format.XLSX): 'Planned Assessments Excel Export',
         (DataType.PLANNED_ASSESSMENTS, ExportType.JSON, Format.JSON): 'Planned Assessments JSON Export',
     }
