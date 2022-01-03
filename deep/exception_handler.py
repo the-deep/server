@@ -3,7 +3,7 @@ import sentry_sdk
 
 from rest_framework.views import exception_handler
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, exceptions
 
 from deep.errors import map_error_codes, WARN_EXCEPTIONS
 
@@ -39,7 +39,9 @@ def custom_exception_handler(exc, context):
     # Timestamp of exception
     response.data['timestamp'] = timezone.now()
 
-    if hasattr(exc, 'status_code'):
+    if isinstance(exc, (exceptions.NotAuthenticated,)):
+        response.status_code = status.HTTP_401_UNAUTHORIZED
+    elif hasattr(exc, 'status_code'):
         response.status_code = exc.status_code
 
     if hasattr(exc, 'code'):
