@@ -7,13 +7,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def get_db_cluster_secret(cluster_secret, cluster_secret_arn):
-    try:
-        # Try for databaseSecret json
-        if cluster_secret:
-            return json.loads(cluster_secret)
-    except json.decoder.JSONDecodeError:
-        logger.warning(f'Fetching db cluster secret using ARN: {cluster_secret_arn}')
+def fetch_db_credentials_from_secret_arn(cluster_secret_arn):
+    logger.warning(f'Fetching db cluster secret using ARN: {cluster_secret_arn}')
 
     # the passed secret is the aws arn instead
     session = boto3.session.Session()
