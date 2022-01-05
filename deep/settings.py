@@ -4,12 +4,13 @@ Django settings for deep project.
 import os
 import sys
 import logging
+import json
 import environ
 from celery.schedules import crontab
 from email.utils import parseaddr
 
 from utils import sentry
-from utils.aws import get_db_cluster_secret, get_internal_ip as get_aws_internal_ip
+from utils.aws import fetch_db_credentials_from_secret_arn, get_internal_ip as get_aws_internal_ip
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -70,8 +71,9 @@ env = environ.Env(
     COPILOT_APPLICATION_NAME=(str, None),
     COPILOT_ENVIRONMENT_NAME=(str, None),
     COPILOT_SERVICE_NAME=(str, None),
-    DEEP_DATABASE_SECRET=(str, None),
+    DEEP_DATABASE_SECRET=(json, None),
     DEEP_DATABASE_SECRET_ARN=(str, None),
+    DEEP_BUCKET_ACCESS_USER_SECRET=(json, None),
     ELASTI_CACHE_ADDRESS=str,
     ELASTI_CACHE_PORT=str,
 )
@@ -239,7 +241,10 @@ if IN_AWS_COPILOT_ECS and env('SERVICE_ENVIRONMENT_TYPE') == 'web':
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 if IN_AWS_COPILOT_ECS:
-    DBCLUSTER_SECRET = get_db_cluster_secret(env('DEEP_DATABASE_SECRET'), env('DEEP_DATABASE_SECRET_ARN'))
+    DBCLUSTER_SECRET = (
+        env.json('DEEP_DATABASE_SECRET') or
+        fetch_db_credentials_from_secret_arn(env('DEEP_DATABASE_SECRET_ARN'))
+    )
     DATABASES = {
         'default': {
             'ENGINE': 'django.contrib.gis.db.backends.postgis',
@@ -371,8 +376,12 @@ if env('DJANGO_USE_S3'):
     AWS_STORAGE_BUCKET_NAME_STATIC = env('AWS_STORAGE_BUCKET_NAME_STATIC')
     AWS_STORAGE_BUCKET_NAME_MEDIA = env('AWS_STORAGE_BUCKET_NAME_MEDIA')
     # If environment variable are not provided, then EC2 Role will be used.
-    AWS_ACCESS_KEY_ID = env('S3_AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = env('S3_AWS_SECRET_ACCESS_KEY')
+    if env.json('DEEP_BUCKET_ACCESS_USER_SECRET'):
+        AWS_ACCESS_KEY_ID = env.json('DEEP_BUCKET_ACCESS_USER_SECRET')['AccessKeyId']
+        AWS_SECRET_ACCESS_KEY = env.json('DEEP_BUCKET_ACCESS_USER_SECRET')['SecretAccessKey']
+    else:
+        AWS_ACCESS_KEY_ID = env('S3_AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = env('S3_AWS_SECRET_ACCESS_KEY')
     AWS_S3_ENDPOINT_URL = env('S3_AWS_ENDPOINT_URL') if DEBUG else None
 
     AWS_S3_FILE_OVERWRITE = False
@@ -471,8 +480,6 @@ RELIEFWEB_APPNAME = 'thedeep.io'
 HID_CLIENT_ID = env('HID_CLIENT_ID')
 HID_CLIENT_REDIRECT_URL = env('HID_CLIENT_REDIRECT_URL')
 HID_AUTH_URI = env('HID_AUTH_URI')
-
-# Logging Errors to Papertrail
 
 
 def add_username_attribute(record):
