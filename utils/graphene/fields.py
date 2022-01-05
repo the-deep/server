@@ -214,7 +214,6 @@ class DjangoPaginatedListObjectField(DjangoFilterPaginateListField):
         count = qs.count()
 
         if getattr(self, "pagination", None):
-            print('>>', self.pagination.ordering, '<->', kwargs.get(self.pagination.ordering_param))
             ordering = kwargs.pop(self.pagination.ordering_param, None) or self.pagination.ordering
             if type(self.pagination) == NoOrderingPageGraphqlPagination:
                 # This is handled in filterset
