@@ -168,7 +168,7 @@ class EntryReviewCommentNotificationSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'entry', 'created_at',
             'text', 'lead', 'project_details', 'created_by_details',
-            'comment_type', 'comment_type_display',
+            'comment_type', 'comment_type_display', 'mentioned_users',
         )
 
 
