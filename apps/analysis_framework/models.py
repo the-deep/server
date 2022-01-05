@@ -62,16 +62,25 @@ class AnalysisFramework(UserResource):
         clone_analysis_framework.modified_by = user
         clone_analysis_framework.save()
 
-        old_new_section_map = {}
+        old_new_sections_map = {}
+        old_new_widgets_map = {}
+        widgets_with_conditional = []
         # Clone section and track old->new
         for section in self.section_set.all():
-            old_new_section_map[section.pk] = section.clone_to(clone_analysis_framework)
+            old_new_sections_map[section.pk] = section.clone_to(clone_analysis_framework).pk
         # Clone widget with new AF and section
         for widget in self.widget_set.all():
-            widget.clone_to(
+            cloned_widget = widget.clone_to(
                 clone_analysis_framework,
-                old_new_section_map.get(widget.section_id),
+                old_new_sections_map.get(widget.section_id),
             )
+            old_new_widgets_map[widget.pk] = cloned_widget.pk
+            if cloned_widget.conditional_parent_widget_id:
+                widgets_with_conditional.append(cloned_widget)
+        # For widgets with conditional assigned.
+        for widget in widgets_with_conditional:
+            widget.conditional_parent_widget_id = old_new_widgets_map[widget.conditional_parent_widget_id]
+            widget.save(update_fields=('conditional_parent_widget_id',))
         return clone_analysis_framework
 
     @staticmethod
@@ -306,6 +315,10 @@ class Widget(models.Model):
         'Widget', related_name='child_widget_conditionals', on_delete=models.SET_NULL, null=True, blank=True)
     conditional_conditions = models.JSONField(default=list, blank=True)
 
+    # For typing
+    section_id: Union[int, None]
+    conditional_parent_widget_id: Union[int, None]
+
     def save(self, *args, **kwargs):
         if self.section:
             self.analysis_framework_id = self.section.analysis_framework_id
@@ -316,11 +329,11 @@ class Widget(models.Model):
     def __str__(self):
         return '{}:: {}:{} ({})'.format(self.analysis_framework_id, self.title, self.pk, self.widget_id)
 
-    def clone_to(self, analysis_framework, section):
+    def clone_to(self, analysis_framework, section_id):
         widget_clone = copy.deepcopy(self)
         widget_clone.pk = None
         widget_clone.analysis_framework = analysis_framework
-        widget_clone.section = section
+        widget_clone.section_id = section_id
         widget_clone.save()
         return widget_clone
 
