@@ -26,6 +26,7 @@ import django_filters
 
 from deep.permissions import ModifyPermission, CreateLeadPermission, DeleteLeadPermission
 from deep.paginations import AutocompleteSetPagination
+from deep.authentication import CSRFExemptSessionAuthentication
 
 from lead.filter_set import (
     LeadGroupFilterSet,
@@ -91,6 +92,7 @@ class LeadGroupViewSet(viewsets.ModelViewSet):
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter)
     filterset_class = LeadGroupFilterSet
+    authentication_classes = [CSRFExemptSessionAuthentication]
     search_fields = ('title',)
 
     def get_queryset(self):
@@ -556,6 +558,8 @@ class WebInfoExtractView(views.APIView):
     Extract information from a website for new lead
     """
     permission_classes = [permissions.IsAuthenticated]
+    # FIXME: This is also used by chrome-extension, use csrf properly
+    authentication_classes = [CSRFExemptSessionAuthentication]
 
     def get_organization(self, title, search):
         org = search.get(title)
@@ -609,6 +613,8 @@ class WebInfoDataView(views.APIView):
     the web info extraction service
     """
     permission_classes = [permissions.IsAuthenticated]
+    # FIXME: This is also used by chrome-extension, use csrf properly
+    authentication_classes = [CSRFExemptSessionAuthentication]
 
     def get_organization(self, title, search):
         org = search.get(title)

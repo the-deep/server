@@ -10,8 +10,12 @@ if [ "$CI" == "true" ]; then
     # Wait until database is ready
     $BASE_DIR/wait-for-it.sh ${DATABASE_HOST:-db}:${DATABASE_PORT-5432}
 
+    # To show migration logs
+    ./manage.py test -v 2 deep.tests.test_fake
+
+    # Run all tests now
     echo 'import coverage; coverage.process_startup()' > /code/sitecustomize.py
-    COVERAGE_PROCESS_START=`pwd`/.coveragerc COVERAGE_FILE=`pwd`/.coverage PYTHONPATH=`pwd` py.test -n auto --dist=loadfile --durations=10
+    COVERAGE_PROCESS_START=`pwd`/.coveragerc COVERAGE_FILE=`pwd`/.coverage PYTHONPATH=`pwd` py.test -n auto --reuse-db --dist=loadfile --durations=10
 
     # Collect/Generate reports
     coverage combine

@@ -183,12 +183,14 @@ class TestUserSchema(GraphQLTestCase):
         self.assertEqual(len(content['data']['register']['errors']), 1, content)
 
         # With valid input
-        minput['email'] = 'john@cena.com'
+        minput['email'] = 'john@Cena.com'
         with self.captureOnCommitCallbacks(execute=True):
             content = self.query_check(query, minput=minput, okay=True)
         # Make sure password reset message is send
-        user = User.objects.get(email=minput['email'])
+        user = User.objects.get(email=minput['email'].lower())
         send_password_reset_mock.assert_called_once_with(user=user, welcome=True)
+        self.assertEqual(user.username, user.email)
+        self.assertEqual(user.email, minput['email'].lower())
 
     def test_logout(self):
         query = '''

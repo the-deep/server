@@ -4,7 +4,6 @@ from rest_framework import (
     test,
     status,
 )
-from jwt_auth.token import AccessToken, RefreshToken
 
 import datetime
 from django.utils import timezone
@@ -60,14 +59,7 @@ class TestCase(test.APITestCase):
 
     def authenticate(self, user=None):
         user = user or self.user
-        access = AccessToken.for_user(user)
-        refresh = RefreshToken.for_access_token(access)
-
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(access.encode())
-        )
-
-        return access.encode(), refresh.encode()
+        self.client.force_login(user)
 
     def authenticate_root(self):
         self.authenticate(self.root_user)
@@ -146,6 +138,7 @@ class TestCase(test.APITestCase):
         # Creator role
         self.admin_role = ProjectRole.objects.create(
             title='Clairvoyant One',
+            type=ProjectRole.Type.PROJECT_OWNER,
             lead_permissions=get_project_permissions_value('lead', '__all__'),
             entry_permissions=get_project_permissions_value(
                 'entry', '__all__'),
@@ -161,6 +154,7 @@ class TestCase(test.APITestCase):
         # Smaller admin role
         self.smaller_admin_role = ProjectRole.objects.create(
             title='Admin',
+            type=ProjectRole.Type.ADMIN,
             lead_permissions=get_project_permissions_value('lead', '__all__'),
             entry_permissions=get_project_permissions_value(
                 'entry', '__all__'),
@@ -176,6 +170,7 @@ class TestCase(test.APITestCase):
         # Default role
         self.normal_role = ProjectRole.objects.create(
             title='Analyst',
+            type=ProjectRole.Type.MEMBER,
             lead_permissions=get_project_permissions_value(
                 'lead', '__all__'),
             entry_permissions=get_project_permissions_value(
@@ -190,6 +185,7 @@ class TestCase(test.APITestCase):
         )
         self.view_only_role = ProjectRole.objects.create(
             title='Viewer',
+            type=ProjectRole.Type.READER,
             lead_permissions=get_project_permissions_value(
                 'lead', ['view']
             ),
@@ -204,25 +200,6 @@ class TestCase(test.APITestCase):
             ),
             assessment_permissions=get_project_permissions_value(
                 'assessment', ['view']
-            ),
-        )
-        # ARY full-access role
-        self.ary_create_role = ProjectRole.objects.create(
-            title='AryViewOnly',
-            lead_permissions=get_project_permissions_value(
-                'lead', ['view']
-            ),
-            entry_permissions=get_project_permissions_value(
-                'entry', ['view']
-            ),
-            setup_permissions=get_project_permissions_value(
-                'setup', []
-            ),
-            export_permissions=get_project_permissions_value(
-                'export', []
-            ),
-            assessment_permissions=get_project_permissions_value(
-                'assessment', '__all__'
             ),
         )
 

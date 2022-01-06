@@ -6,8 +6,11 @@ from user.factories import UserFactory
 from project.factories import ProjectFactory
 from export.factories import ExportFactory
 
+from lead.models import Lead
 from export.models import Export
 from export.tasks import get_export_filename
+
+from lead.filter_set import LeadFilterSet
 
 
 class TestExportMutationSchema(GraphQLTestCase):
@@ -149,7 +152,49 @@ class TestExportMutationSchema(GraphQLTestCase):
             title='Export 101',
             exportType=self.genum(Export.ExportType.EXCEL),
             isPreview=False,
-            filters={},
+
+            filters={
+                'ids': [],
+                'exists': None,
+                'search': None,
+                'statuses': [
+                    self.genum(Lead.Status.NOT_TAGGED),
+                    self.genum(Lead.Status.IN_PROGRESS),
+                    self.genum(Lead.Status.TAGGED),
+                ],
+                'assignees': None,
+                'priorities': None,
+                'createdAtGte': '2021-11-01T00:00:00.123456+00:00',
+                'createdAtLte': '2021-01-01T00:00:00.123456+00:00',
+                'customFilters': self.genum(LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES),
+                'confidentiality': None,
+                'publishedOnGte': None,
+                'publishedOnLte': None,
+                'excludeProvidedLeadsId': True,
+                'authoringOrganizationTypes': None,
+                'entriesFilterData': {
+                    'controlled': None,
+                    'createdBy': None,
+                    'entryTypes': None,
+                    'filterableData': [
+                        {
+                            'filterKey': 'random-element-1',
+                            'value': None,
+                            'valueGte': None,
+                            'valueLte': None,
+                            'valueList': [
+                                'random-value-1',
+                                'random-value-2',
+                                'random-value-3',
+                                'random-value-4',
+                            ],
+                            'useExclude': None,
+                            'useAndOperator': None,
+                            'includeSubRegions': None,
+                        }
+                    ]
+                },
+            },
         )
         # -- Without login
         _query_check(minput, assert_for_error=True)
@@ -167,7 +212,53 @@ class TestExportMutationSchema(GraphQLTestCase):
         # -----
         minput['format'] = self.genum(Export.Format.XLSX)
         response = _query_check(minput)['data']
-        self.assertNotEqual(response['project']['exportCreate']['result'], None, response)
+        response_export = response['project']['exportCreate']['result']
+        self.assertNotEqual(response_export, None, response)
+        export = Export.objects.get(pk=response_export['id'])
+        excepted_filters = {
+            'ids': [],
+            'exists': None,
+            'search': None,
+            'statuses': [
+                'pending',
+                'processed',
+                'validated',
+            ],
+            'assignees': None,
+            'priorities': None,
+            'created_at_gte': '2021-11-01T00:00:00.123Z',
+            'created_at_lte': '2021-01-01T00:00:00.123Z',
+            'custom_filters': 'exclude_empty_filtered_entries',
+            'confidentiality': None,
+            'published_on_gte': None,
+            'published_on_lte': None,
+            'exclude_provided_leads_id': True,
+            'authoring_organization_types': None,
+            'entries_filter_data': {
+                'controlled': None,
+                'created_by': None,
+                'entry_types': None,
+                'filterable_data': [
+                    {
+                        'value': None,
+                        'value_gte': None,
+                        'value_lte': None,
+                        'filter_key': 'random-element-1',
+                        'value_list': [
+                            'random-value-1',
+                            'random-value-2',
+                            'random-value-3',
+                            'random-value-4'
+                        ],
+                        'use_exclude': None,
+                        'use_and_operator': None,
+                        'include_sub_regions': None
+                    }
+                ]
+            },
+        }
+        # Make sure the filters are stored in db properly
+        self.assertEqual(export.filters, excepted_filters, response)
 
     def test_export_cancel(self):
         """

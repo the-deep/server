@@ -276,7 +276,7 @@ class ProjectSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, DeprecatedUse
         ProjectMembership.objects.create(
             project=project,
             member=member,
-            role=ProjectRole.get_creator_role(),
+            role=ProjectRole.get_owner_role(),
         )
 
         return project
@@ -583,7 +583,7 @@ class ProjectAcceptRejectSerializer(serializers.ModelSerializer):
         if not role or role == 'normal':
             role = ProjectRole.get_default_role()
         elif role == 'admin':
-            role = ProjectRole.get_default_admin_role()
+            role = ProjectRole.get_admin_role()
         else:
             role_qs = ProjectRole.objects.filter(id=role)
             if not role_qs.exists():

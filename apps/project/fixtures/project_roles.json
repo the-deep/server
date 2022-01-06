@@ -1,0 +1,87 @@
+[
+  {
+    "model": "project.projectrole",
+    "pk": 1,
+    "fields": {
+      "title": "Admin",
+      "type": "admin",
+      "lead_permissions": 15,
+      "entry_permissions": 15,
+      "setup_permissions": 3,
+      "export_permissions": 1,
+      "assessment_permissions": 15,
+      "level": 100,
+      "is_creator_role": false,
+      "is_default_role": false,
+      "description": ""
+    }
+  },
+  {
+    "model": "project.projectrole",
+    "pk": 2,
+    "fields": {
+      "title": "Analyst",
+      "type": "member",
+      "lead_permissions": 15,
+      "entry_permissions": 15,
+      "setup_permissions": 0,
+      "export_permissions": 1,
+      "assessment_permissions": 15,
+      "level": 200,
+      "is_creator_role": false,
+      "is_default_role": true,
+      "description": ""
+    }
+  },
+  {
+    "model": "project.projectrole",
+    "pk": 3,
+    "fields": {
+      "title": "Clairvoyant One",
+      "type": "project_owner",
+      "lead_permissions": 15,
+      "entry_permissions": 15,
+      "setup_permissions": 3,
+      "export_permissions": 1,
+      "assessment_permissions": 15,
+      "level": 1,
+      "is_creator_role": true,
+      "is_default_role": false,
+      "description": ""
+    }
+  },
+  {
+    "model": "project.projectrole",
+    "pk": 5,
+    "fields": {
+      "title": "Reader",
+      "type": "reader",
+      "lead_permissions": 1,
+      "entry_permissions": 1,
+      "setup_permissions": 0,
+      "export_permissions": 1,
+      "assessment_permissions": 1,
+      "level": 400,
+      "is_creator_role": false,
+      "is_default_role": false,
+      "description": ""
+    }
+  },
+  {
+    "model": "project.projectrole",
+    "pk": 36,
+    "fields": {
+      "title": "Reader (Non Confidential)",
+      "type": "reader_non_confidential",
+      "lead_permissions": 16,
+      "entry_permissions": 16,
+      "setup_permissions": 0,
+      "export_permissions": 2,
+      "assessment_permissions": 0,
+      "level": 800,
+      "is_creator_role": false,
+      "is_default_role": false,
+      "description": ""
+    }
+  }
+]

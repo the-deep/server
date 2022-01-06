@@ -29,6 +29,7 @@ DEEP_ENVIRONMENT = os.environ.get('DEEP_ENVIRONMENT', 'development')
 
 ALLOWED_HOSTS = [os.environ.get('DJANGO_ALLOWED_HOST', '*')]
 
+DEEPER_FRONTEND_ARY_HOST = os.environ.get('FRONTEND_ARY_HOST', 'localhost:3000')  # TODO: Remove this later
 DEEPER_FRONTEND_HOST = os.environ.get('FRONTEND_HOST', 'localhost:3000')
 DJANGO_API_HOST = os.environ.get('DJANGO_ALLOWED_HOST', 'localhost:8000')
 
@@ -213,9 +214,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Authentication
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        'jwt_auth.authentication.JwtAuthentication',
+        # 'jwt_auth.authentication.JwtAuthentication',
     ),
     'EXCEPTION_HANDLER': 'deep.exception_handler.custom_exception_handler',
     'DEFAULT_RENDERER_CLASSES': [
@@ -340,8 +341,8 @@ CELERY_BEAT_SCHEDULE = {
     },
     'project_generate_stats': {
         'task': 'project.tasks.generate_project_stats_cache',
-        # Every 1 hour
-        'schedule': crontab(minute=0, hour="*/1"),
+        # Every 5 min
+        'schedule': crontab(minute="*/5"),
     },
 }
 
@@ -378,7 +379,6 @@ RELIEFWEB_APPNAME = 'thedeep.io'
 
 # HID CONFIGS [NOTE: Update config in React too]
 HID_CLIENT_ID = os.environ.get('HID_CLIENT_ID', 'deep-local')
-HID_CLIENT_NAME = os.environ.get('HID_CLIENT_NAME', 'Deep Local')
 HID_CLIENT_REDIRECT_URL = os.environ.get(
     'HID_CLIENT_REDIRECT_URL', 'http://localhost:3000/login/')
 HID_AUTH_URI = os.environ.get(
@@ -689,7 +689,6 @@ if HTTP_PROTOCOL == 'https':
     SESSION_COOKIE_NAME = f'__Secure-{SESSION_COOKIE_NAME}'
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
-    SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 30  # TODO: Increase this slowly
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
@@ -698,7 +697,11 @@ if HTTP_PROTOCOL == 'https':
     # CSRF_COOKIE_NAME = f'__Secure-{CSRF_COOKIE_NAME}'
     # CSRF_COOKIE_SECURE = True
     # CSRF_COOKIE_HTTPONLY = True
-    CSRF_TRUSTED_ORIGINS = [DEEPER_FRONTEND_HOST, DJANGO_API_HOST]
+    CSRF_TRUSTED_ORIGINS = [
+        DEEPER_FRONTEND_HOST,
+        DEEPER_FRONTEND_ARY_HOST,  # TODO: Remove DEEPER_FRONTEND_ARY_HOST later
+        DJANGO_API_HOST,
+    ]
 
 # https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-CSRF_USE_SESSIONS
 CSRF_USE_SESSIONS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'False').lower() == 'true'

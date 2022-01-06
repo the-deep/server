@@ -3,6 +3,7 @@ from rest_framework import viewsets, mixins, permissions, filters
 import django_filters
 
 from deep.paginations import AutocompleteSetPagination
+from deep.authentication import CSRFExemptSessionAuthentication
 
 from .serializers import (
     OrganizationSerializer,
@@ -32,6 +33,7 @@ class OrganizationViewSet(
     serializer_class = OrganizationSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = AutocompleteSetPagination
+    authentication_classes = [CSRFExemptSessionAuthentication]
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter)
     search_fields = ('title', 'short_name', 'long_name', 'url',)
