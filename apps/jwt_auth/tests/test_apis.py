@@ -7,17 +7,6 @@ class JwtApiTests(TestCase):
         super().__init__(*args, **kwargs)
         self.user_password = 'joHnDave!@#123'
 
-    def test_refresh_token(self):
-        _, refresh = self.authenticate()
-
-        data = {
-            'refresh': refresh,
-        }
-        url = '/api/v1/token/refresh/'
-
-        response = self.client.post(url, data)
-        self.assert_200(response)
-
     def test_login_with_password_greater_than_128_characters(self):
         data = {
             'username': "Hari@gmail.com",

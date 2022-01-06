@@ -1,5 +1,6 @@
 import graphene
 from django.contrib.auth import login, logout
+from django.contrib.auth import update_session_auth_hash
 
 from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
 from utils.graphene.mutation import generate_input_type_for_serializer
@@ -140,6 +141,7 @@ class ChangeUserPassword(graphene.Mutation):
         if errors := mutation_is_not_valid(serializer):
             return ChangeUserPassword(errors=errors, ok=False)
         serializer.save()
+        update_session_auth_hash(info.context.request, info.context.request.user)
         return ChangeUserPassword(errors=None, ok=True)
 
 

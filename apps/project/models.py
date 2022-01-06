@@ -427,10 +427,7 @@ class Project(UserResource):
 
 
 def get_default_role_id():
-    # Query only the id column to avoid migration issues
-    return ProjectRole.objects.filter(
-        is_default_role=True
-    ).values('id').first()['id']
+    return ProjectRole.get_default_role().id
 
 
 class ProjectOrganization(models.Model):
@@ -628,29 +625,21 @@ class ProjectRole(models.Model):
 
     @classmethod
     def get_admin_roles(cls):
-        modify_bit = PROJECT_PERMISSIONS.setup.modify
-        return cls.objects.annotate(
-            modify_bit=models.F('setup_permissions').bitand(modify_bit)
-        ).filter(modify_bit=modify_bit)
+        return cls.objects.filter(
+            type__in=[cls.Type.ADMIN, cls.Type.PROJECT_OWNER],
+        )
 
     @classmethod
-    def get_creator_role(cls):
-        return cls.objects.filter(is_creator_role=True).first()
+    def get_owner_role(cls):
+        return cls.objects.get(type=ProjectRole.Type.PROJECT_OWNER)
 
     @classmethod
-    def get_default_admin_role(cls):
-        # TODO: This method should not be needed.
-        # Fix use cases and remove this method.
-        return cls.get_admin_roles().filter(
-            is_creator_role=False
-        ).first()
+    def get_admin_role(cls):
+        return cls.objects.get(type=ProjectRole.Type.ADMIN)
 
     @classmethod
     def get_default_role(cls):
-        qs = cls.objects.filter(is_default_role=True)
-        if qs.exists():
-            return qs.first()
-        return None
+        return cls.objects.get(type=ProjectRole.Type.MEMBER)
 
     def __str__(self):
         return self.title

@@ -117,7 +117,7 @@ class CustomPaginatedListObjectField(DjangoFilterPaginateListField):
             ordering = kwargs.pop(self.pagination.ordering_param, None) or self.pagination.ordering
             ordering = ','.join([to_snake_case(each) for each in ordering.strip(',').replace(' ', '').split(',')])
             'pageSize' in kwargs and kwargs['pageSize'] is None and kwargs.pop('pageSize')
-            self.pagination.ordering = ordering
+            kwargs[self.pagination.ordering_param] = ordering
             qs = self.pagination.paginate_queryset(qs, **kwargs)
 
         return CustomDjangoListObjectBase(
@@ -217,10 +217,10 @@ class DjangoPaginatedListObjectField(DjangoFilterPaginateListField):
             ordering = kwargs.pop(self.pagination.ordering_param, None) or self.pagination.ordering
             if type(self.pagination) == NoOrderingPageGraphqlPagination:
                 # This is handled in filterset
-                self.pagination.ordering = None
+                kwargs[self.pagination.ordering_param] = None
             else:
                 ordering = ','.join([to_snake_case(each) for each in ordering.strip(',').replace(' ', '').split(',')])
-                self.pagination.ordering = ordering
+                kwargs[self.pagination.ordering_param] = ordering
             'pageSize' in kwargs and kwargs['pageSize'] is None and kwargs.pop('pageSize')
             qs = self.pagination.paginate_queryset(qs, **kwargs)
 

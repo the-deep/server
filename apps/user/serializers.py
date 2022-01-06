@@ -384,6 +384,7 @@ class RegisterSerializer(CaptchaSerializerMixin, serializers.ModelSerializer):
     # Only this method is used for Register
     def create(self, validated_data):
         validated_data.pop('captcha')
+        validated_data['username'] = validated_data['email'].lower()
         profile_data = {
             'organization': validated_data.pop('organization')
         }

@@ -58,7 +58,7 @@ def raise_or_return_existing_lead(project, lead, source_type, url, text, attachm
 
     if source_type == Lead.SourceType.WEBSITE:
         existing_lead = check_if_url_exists(url, None, project, lead and lead.pk, return_lead=return_lead)
-        error_message = f'A lead with this URL has already been added to Project: {project}'
+        error_message = f'A source with this URL has already been added to Project: {project}'
     elif (
         attachment and attachment.metadata and
         source_type in [Lead.SourceType.DISK, Lead.SourceType.DROPBOX, Lead.SourceType.GOOGLE_DRIVE]
@@ -68,13 +68,13 @@ def raise_or_return_existing_lead(project, lead, source_type, url, text, attachm
             project=project,
             attachment__metadata__md5_hash=attachment.metadata.get('md5_hash'),
         ).exclude(pk=lead and lead.pk).first()
-        error_message = f'A lead with this file has already been added to Project: {project}'
+        error_message = f'A source with this file has already been added to Project: {project}'
     elif source_type == Lead.SourceType.TEXT:
         existing_lead = Lead.objects.filter(
             project=project,
             text=text,
         ).exclude(pk=lead and lead.pk).first()
-        error_message = f'A lead with this text has already been added to Project: {project}'
+        error_message = f'A source with this text has already been added to Project: {project}'
 
     if existing_lead:
         if return_lead:

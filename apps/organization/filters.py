@@ -45,6 +45,9 @@ class OrganizationFilterSet(django_filters.FilterSet):
             return qs.filter(
                 models.Q(title__icontains=value) |
                 models.Q(short_name__icontains=value) |
-                models.Q(long_name__icontains=value)
+                models.Q(long_name__icontains=value) |
+                models.Q(related_childs__title__icontains=value) |
+                models.Q(related_childs__short_name__icontains=value) |
+                models.Q(related_childs__long_name__icontains=value)
             ).distinct()
         return qs

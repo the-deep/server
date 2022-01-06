@@ -96,3 +96,7 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
+
+    def resolve_organizations(root, info, **kwargs):
+        # Filterout merged organizations
+        return Organization.objects.filter(parent__isnull=True).all()

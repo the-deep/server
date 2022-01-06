@@ -1,5 +1,8 @@
+import json
+
 from django.utils.functional import cached_property
 from django.core.files.storage import FileSystemStorage, get_storage_class
+from django.core.serializers.json import DjangoJSONEncoder
 from django.core.exceptions import FieldDoesNotExist
 from django.core.cache import cache
 from rest_framework import serializers
@@ -205,3 +208,21 @@ class StringIDField(serializers.CharField):
     check out utils/graphene/mutation.py
     """
     pass
+
+
+class GraphqlSupportDrfSerializerJSONField(serializers.JSONField):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.encoder = self.encoder or DjangoJSONEncoder
+
+    def to_internal_value(self, data):
+        try:
+            if self.binary or getattr(data, 'is_json_string', False):
+                if isinstance(data, bytes):
+                    data = data.decode()
+                return json.loads(data, cls=self.decoder)
+            else:
+                data = json.loads(json.dumps(data, cls=self.encoder))
+        except (TypeError, ValueError):
+            self.fail('invalid')
+        return data

@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.template.response import TemplateResponse
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_text
@@ -52,7 +53,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = User.objects.filter(is_active=True).order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [UserPermission]
+    permission_classes = [permissions.IsAuthenticated, UserPermission]
 
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
 
@@ -147,6 +148,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        update_session_auth_hash(request, request.user)
         return response.Response(status=status.HTTP_200_OK)
 
 
