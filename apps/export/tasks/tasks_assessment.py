@@ -2,7 +2,7 @@ import copy
 
 from deep.permissions import ProjectPermissions as PP
 from lead.models import Lead
-from lead.filter_set import LeadGQFilterSet
+from lead.filter_set import get_filtered_leads
 from ary.models import Assessment, PlannedAssessment
 from ary.export import (
     get_export_data_for_assessments,
@@ -27,7 +27,7 @@ def _export_assessments(export, AssessmentModel, excel_sheet_data_generator):
         leads_qs = Lead.objects.filter(project=export.project)
         if PP.Permission.VIEW_ALL_LEAD not in user_project_permissions:
             leads_qs = leads_qs.filter(confidentiality=Lead.Confidentiality.UNPROTECTED)
-        leads_qs = LeadGQFilterSet(data=filters, queryset=leads_qs).qs
+        leads_qs = get_filtered_leads(filters, project, leads_qs)
         arys = arys.filter(lead__in=leads_qs)
     iterable_arys = arys[:Export.PREVIEW_ASSESSMENT_SIZE] if is_preview else arys
 
