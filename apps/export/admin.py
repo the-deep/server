@@ -31,7 +31,7 @@ trigger_retry.short_description = 'Force trigger export process for selected exp
 
 @admin.register(Export)
 class ExportAdmin(ModelAdmin):
-    list_display = ('title', 'file', 'type', 'exported_by', 'project', 'export_type',
+    list_display = ('title', 'file', 'type', 'exported_by', 'exported_at', 'project', 'export_type',
                     'format', 'pending', 'is_preview', 'status',)
     search_fields = ('title',)
     readonly_fields = (document_preview('file'),)

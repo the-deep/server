@@ -494,3 +494,15 @@ class LeadGroupGQFilterSet(UserResourceGqlFilterSet):
         if not value:
             return qs
         return qs.filter(title__icontains=value).distinct()
+
+
+def get_filtered_leads(filters, active_project, leads_qs):
+    """
+    Use this if request is not available
+    """
+    dummy_request = type('DummyRequest', (object,), dict(active_project=active_project))()
+    return LeadGQFilterSet(
+        data=filters,
+        queryset=leads_qs,
+        request=dummy_request,
+    ).qs
