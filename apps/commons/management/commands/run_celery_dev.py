@@ -3,10 +3,11 @@ import subprocess
 
 from django.core.management.base import BaseCommand
 from django.utils import autoreload
+from deep.celery import CeleryQueue
 
 
 CMD = (
-    'celery -A deep worker -B --concurrency=2 -l info '
+    f"celery -A deep worker -Q {','.join(CeleryQueue.ALL_QUEUES)} -B --concurrency=2 -l info "
     '--scheduler django_celery_beat.schedulers:DatabaseScheduler '
     '--statedb=/var/run/celery/worker.state'
 )
