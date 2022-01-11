@@ -276,7 +276,7 @@ class TestUserGroupSchema(GraphQLTestCase):
             }
         '''
         user = UserFactory.create()
-        ug = UserGroupFactory.create(title='User-Group 101')
+        ug = UserGroupFactory.create(title='User-Group 101', created_by=user)
         ug.add_member(user, role=GroupMembership.Role.ADMIN)
         self.query_check(query, assert_for_error=True, variables={'id': str(ug.pk)})
 

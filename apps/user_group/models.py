@@ -52,6 +52,9 @@ class UserGroup(UserResource):
     def is_member(self, user):
         return self in UserGroup.get_for_member(user)
 
+    def can_delete(self, user):
+        return self.created_by == user
+
     def can_modify(self, user):
         return GroupMembership.objects.filter(
             group=self,

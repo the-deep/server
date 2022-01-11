@@ -316,11 +316,13 @@ class DeleteMutation(GrapheneMutation):
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
         instance = cls.get_object(info, **kwargs)
-        old_id = instance.id
-        instance.delete()
-        # add old id so that client can use it if required
-        instance.id = old_id
-        return cls(result=instance, errors=None, ok=True)
+        if instance.can_delete(info.context.user):
+            old_id = instance.id
+            instance.delete()
+            # add old id so that client can use it if required
+            instance.id = old_id
+            return cls(result=instance, errors=None, ok=True)
+        return cls(result=None, errors=[dict(message='You are not allowed to delete!!')], ok=False)
 
 
 class ProjectScopeMixin():

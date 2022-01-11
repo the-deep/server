@@ -83,6 +83,9 @@ class EntryReviewComment(BaseReviewComment):
     def __str__(self):
         return f'{self.entry}: {self.text}'
 
+    def can_delete(self, user):
+        return self.comment_type == self.CommentType.COMMENT and self.can_modify(user)
+
     def get_related_users(self, skip_owner_user=True):
         users = list(
             self.mentioned_users.through.objects
