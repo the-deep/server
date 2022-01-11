@@ -404,6 +404,12 @@ type DeleteEntry {
   result: EntryType
 }
 
+type DeleteEntryReviewComment {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: EntryReviewCommentDetailType
+}
+
 type DeleteLead {
   errors: [GenericScalar!]
   ok: Boolean
@@ -1373,6 +1379,7 @@ type ProjectMutationType {
   assessmentDelete(id: ID!): DeleteAssessment
   entryReviewCommentCreate(data: EntryReviewCommentInputType!): CreateEntryReviewComment
   entryReviewCommentUpdate(data: EntryReviewCommentInputType!, id: ID!): UpdateEntryReviewComment
+  entryReviewCommentDelete(id: ID!): DeleteEntryReviewComment
   entryCreate(data: EntryInputType!): CreateEntry
   entryUpdate(data: EntryInputType!, id: ID!): UpdateEntry
   entryDelete(id: ID!): DeleteEntry
