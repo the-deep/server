@@ -97,4 +97,4 @@ class PublicProjectListType(CustomDjangoListObjectType):
             'description',
             'analysis_framework_id',
             'created_at',
-        )
+        ).distinct()

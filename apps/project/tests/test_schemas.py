@@ -364,12 +364,13 @@ class TestProjectSchema(GraphQLTestCase):
         public_project1 = ProjectFactory.create(analysis_framework=public_analysis_framework, regions=[public_region])
         public_project2 = ProjectFactory.create(analysis_framework=public_analysis_framework, regions=[private_region])
         public_project3 = ProjectFactory.create(analysis_framework=private_analysis_framework, regions=[public_region])
+        public_project4 = ProjectFactory.create(analysis_framework=private_analysis_framework, regions=[public_region])
         private_project = ProjectFactory.create(is_private=True)
         content = self.query_check(query)
-        self.assertEqual(content['data']['publicProjects']['totalCount'], 3, content)
+        self.assertEqual(content['data']['publicProjects']['totalCount'], 4, content)
         self.assertListIds(
             content['data']['publicProjects']['results'],
-            [public_project1, public_project2, public_project3],
+            [public_project1, public_project2, public_project3, public_project4],
             content
         )
         # some checks for analysis_framework private and public
