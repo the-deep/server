@@ -65,7 +65,7 @@ env = environ.Env(
     CSRF_COOKIE_DOMAIN=str,
     DOCKER_HOST_IP=(str, None),
     # Pytest
-    PYTEST_XDIST_WORKER=(str, ''),
+    PYTEST_XDIST_WORKER=(str, None),
     PROFILE=(bool, False),
     # Copilot ENVS
     COPILOT_APPLICATION_NAME=(str, None),

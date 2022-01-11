@@ -11,6 +11,8 @@ from project.factories import ProjectFactory
 from lead.factories import LeadFactory
 from entry.factories import EntryFactory
 
+from quality_assurance.factories import EntryReviewCommentFactory
+
 
 VerifiedByQs = Entry.verified_by.through.objects
 
@@ -75,7 +77,36 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
             }
           }
         }
+    '''
 
+    DELETE_ENTRY_REVIEW_COMMENT_QUERY = '''
+        mutation MyMutation ($projectId: ID!, $commentId: ID!) {
+          project(id: $projectId) {
+            entryReviewCommentDelete(id: $commentId) {
+              ok
+              errors
+              result {
+                id
+                commentType
+                createdAt
+                text
+                createdBy {
+                  id
+                  displayName
+                }
+                mentionedUsers {
+                  id
+                  displayName
+                }
+                textHistory {
+                  id
+                  createdAt
+                  text
+                }
+              }
+            }
+          }
+        }
     '''
 
     def setUp(self):
@@ -536,3 +567,47 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
                 set([user4.pk]),
                 set([Notification.Type.ENTRY_REVIEW_COMMENT_MODIFY]),
             )  # New notifications are created only for user2
+
+    def test_entry_review_comment_delete(self):
+        def _query_check(review_comment_id, **kwargs):
+            variables = {'projectId': self.project.id, 'commentId': review_comment_id}
+            return self.query_check(
+                self.DELETE_ENTRY_REVIEW_COMMENT_QUERY,
+                mnested=['project'],
+                variables=variables,
+                **kwargs
+            )
+
+        member_user2 = UserFactory.create()
+        self.project.add_member(member_user2, role=self.project_role_member)
+        create_kwargs = dict(entry=self.entry, created_by=member_user2)
+        comments = [
+            EntryReviewCommentFactory.create(comment_type=EntryReviewComment.CommentType.COMMENT, **create_kwargs)
+            for comment_type in [
+                EntryReviewComment.CommentType.VERIFY,
+                EntryReviewComment.CommentType.UNVERIFY,
+                EntryReviewComment.CommentType.CONTROL,
+                EntryReviewComment.CommentType.UNCONTROL,
+                EntryReviewComment.CommentType.COMMENT,
+            ]
+        ]
+
+        # -- Without login
+        [_query_check(comment.pk, assert_for_error=True) for comment in comments]
+
+        # -- With login (non-member)
+        self.force_login(self.non_member_user)
+        [_query_check(comment.pk, assert_for_error=True) for comment in comments]
+
+        # -- With login (member but not creator)
+        self.force_login(self.member_user)
+        [_query_check(comment.pk, assert_for_error=True) for comment in comments]
+
+        # -- With login (member but creator)
+        self.force_login(member_user2)
+        [
+            (
+                _query_check(comment.pk, okay=True) if comment.comment_type == EntryReviewComment.CommentType.COMMENT
+                else _query_check(comment.pk, okay=False)
+            )for index, comment in enumerate(comments)
+        ]

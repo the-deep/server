@@ -3,6 +3,7 @@ import graphene
 from utils.graphene.mutation import (
     generate_input_type_for_serializer,
     PsGrapheneMutation,
+    PsDeleteMutation,
 )
 from deep.permissions import ProjectPermissions as PP
 
@@ -44,6 +45,15 @@ class UpdateEntryReviewComment(EntryReviewCommentMutationMixin, PsGrapheneMutati
     permissions = [PP.Permission.CREATE_ENTRY, PP.Permission.UPDATE_ENTRY]
 
 
+class DeleteEntryReviewComment(EntryReviewCommentMutationMixin, PsDeleteMutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+    model = EntryReviewComment
+    result = graphene.Field(EntryReviewCommentDetailType)
+    permissions = [PP.Permission.CREATE_ENTRY, PP.Permission.UPDATE_ENTRY]
+
+
 class Mutation():
     entry_review_comment_create = CreateEntryReviewComment.Field()
     entry_review_comment_update = UpdateEntryReviewComment.Field()
+    entry_review_comment_delete = DeleteEntryReviewComment.Field()

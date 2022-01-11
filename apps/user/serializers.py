@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
 from django.conf import settings
-from django.db import transaction
+from django.db import transaction, models
 
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
@@ -379,7 +379,10 @@ class RegisterSerializer(CaptchaSerializerMixin, serializers.ModelSerializer):
         )
 
     def validate_email(self, email):
-        return email.lower()
+        email = email.lower()
+        if User.objects.filter(models.Q(email=email) | models.Q(username=email)).exists():
+            raise serializers.ValidationError('User with that email already exists!!')
+        return email
 
     # Only this method is used for Register
     def create(self, validated_data):

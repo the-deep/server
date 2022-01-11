@@ -117,12 +117,12 @@ class ResetPassword(graphene.Mutation):
     def mutate(root, info, data):
         serializer = ResetPasswordSerializer(data=data, context={'request': info.context.request})
         if errors := mutation_is_not_valid(serializer):
-            return Register(
+            return ResetPassword(
                 errors=errors,
                 ok=False,
             )
         serializer.save()
-        return Register(
+        return ResetPassword(
             errors=None,
             ok=True
         )

@@ -35,6 +35,9 @@ class LeadGroup(UserResource):
     def can_get(self, user):
         return self.project.is_member(user)
 
+    def can_delete(self, user):
+        return self.can_modify(user)
+
     def can_modify(self, user):
         return self.project.is_member(user)
 
