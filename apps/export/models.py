@@ -75,6 +75,8 @@ class Export(models.Model):
     export_type = models.CharField(max_length=100, choices=ExportType.choices)
     exported_by = models.ForeignKey(User, on_delete=models.CASCADE)
     exported_at = models.DateTimeField(auto_now_add=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
 
     # Lead filters
     filters = models.JSONField(default=dict)
