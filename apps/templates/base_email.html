@@ -1,4 +1,5 @@
 {% load premailer %}
+{% load deep_notification_tags %}
 {% load static %}
 {% premailer %}
 <html>
@@ -123,7 +124,7 @@
                 class="logo"
                 width="160"
                 height="160"
-                src="{{ protocol }}://{{ domain }}{% static 'image/deep-logo.png' %}"
+                src="{{ 'image/deep-logo.png' | static_full_path }}"
             />
             {% load i18n %}{% autoescape off %}
             <p class="header">
@@ -146,7 +147,7 @@
                             class="icon"
                             width="20"
                             height="20"
-                            src="{{ protocol }}://{{ domain }}{% static 'image/skype.png' %}"
+                            src="{{ 'image/skype.png' | static_full_path }}"
                         />
                     </a>
                     <a
@@ -156,7 +157,7 @@
                             class="icon"
                             width="20"
                             height="20"
-                            src="{{ protocol }}://{{ domain }}{% static 'image/slack.png' %}"
+                            src="{{ 'image/slack.png' | static_full_path }}"
                         />
                     </a>
                 </div>
@@ -169,7 +170,7 @@
                             class="zen"
                             width="16"
                             height="16"
-                            src="{{ protocol }}://{{ domain }}{% static 'image/zendesk.png' %}"
+                            src="{{ 'image/zendesk.png' | static_full_path }}"
                         />
                     </a>
                 </div>
