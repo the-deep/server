@@ -1,4 +1,5 @@
 import logging
+from django.utils import timezone
 from django.utils.crypto import get_random_string
 
 from celery import shared_task
@@ -38,24 +39,29 @@ def export_task(export_id, force=False):
             logger.warning(f'Export status is {export.get_status_display()}')
             return 'SKIPPED'
 
+        # Update status to STARTED
         export.status = Export.Status.STARTED
-        export.save()
+        export.started_at = timezone.now()
+        export.save(update_fields=('status', 'started_at',))
 
         file = EXPORTER_TYPE[export.type](export)
 
         export.mime_type = Export.MIME_TYPE_MAP.get(export.format, Export.DEFAULT_MIME_TYPE)
         export.file.save(get_export_filename(export), file)
-        export.pending = False
+
+        # Update status to SUCCESS
         export.status = Export.Status.SUCCESS
+        export.ended_at = timezone.now()
         export.save()
 
         return_value = True
     except Exception:
         export = Export.objects.filter(id=export_id).first()
+        # Update status to FAILURE
         if export:
             export.status = Export.Status.FAILURE
-            export.pending = False
-            export.save()
+            export.ended_at = timezone.now()
+            export.save(update_fields=('status', 'ended_at',))
         logger.error(
             f'Export Failed {data_type}!!',
             exc_info=True,
