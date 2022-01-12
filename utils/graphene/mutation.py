@@ -224,8 +224,16 @@ class BaseGrapheneMutation(graphene.Mutation):
 
     @classmethod
     def get_object(cls, info, **kwargs):
-        obj = cls.get_queryset(info).get(id=kwargs['id'])
-        return obj
+        try:
+            return cls.get_queryset(info).get(id=kwargs['id'])
+        except cls.model.DoesNotExist:
+            return cls(
+                result=None,
+                okay=False,
+                errors=[
+                    dict(field='nonFieldErrors', messages=f'{str(cls.model)} does not exist.')
+                ],
+            )
 
     @classmethod
     def check_permissions(cls, info, **kwargs):
@@ -322,7 +330,13 @@ class DeleteMutation(GrapheneMutation):
             # add old id so that client can use it if required
             instance.id = old_id
             return cls(result=instance, errors=None, ok=True)
-        return cls(result=None, errors=[dict(message='You are not allowed to delete!!')], ok=False)
+        return cls(
+            result=None,
+            ok=False,
+            errors=[
+                dict(field='nonFieldErrors', message='You are not allowed to delete!!'),
+            ],
+        )
 
 
 class ProjectScopeMixin():
