@@ -679,6 +679,14 @@ class ProjectMembershipGqlSerializer(TempClientIdMixin, serializers.ModelSeriali
             raise serializers.ValidationError('Changing same level role is not allowed!')
         return new_role
 
+    def validate(self, data):
+        linked_group = (self.instance and self.instance.linked_group)
+        if linked_group:
+            raise serializers.ValidationError(
+                f'This user is added through usergroup: {linked_group}. Please update the respective usergroup.'
+            )
+        return data
+
     def create(self, validated_data):
         validated_data['added_by'] = self.context['request'].user
         validated_data['project'] = self.project

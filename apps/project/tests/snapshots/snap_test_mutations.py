@@ -373,7 +373,16 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 1'
             }
         ],
         None,
-        None
+        None,
+        [
+            {
+                'arrayErrors': None,
+                'clientId': 'member-user-2-with-user-group',
+                'field': 'nonFieldErrors',
+                'messages': 'This user is added through usergroup: Group-1. Please update the respective usergroup.',
+                'objectErrors': None,
+            }
+        ]
     ],
     'result': [
         None,
@@ -386,7 +395,7 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 1'
             'badges': [
             ],
             'clientId': 'member-user-3',
-            'id': '8',
+            'id': '9',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
                 'displayName': 'Debra Gardner',
@@ -405,7 +414,7 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 1'
             'badges': [
             ],
             'clientId': 'member-user-4',
-            'id': '9',
+            'id': '10',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
                 'displayName': 'Jeffrey Lawrence',
@@ -415,7 +424,8 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 1'
                 'id': '3',
                 'title': 'Member'
             }
-        }
+        },
+        None,
     ]
 }
 
@@ -453,6 +463,15 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 2'
         [
             {
                 'arrayErrors': None,
+                'clientId': 'member-user-2-with-user-group',
+                'field': 'nonFieldErrors',
+                'messages': 'This user is added through usergroup: Group-1. Please update the respective usergroup.',
+                'objectErrors': None,
+            }
+        ],
+        [
+            {
+                'arrayErrors': None,
                 'clientId': 'member-user-2',
                 'field': 'member',
                 'messages': 'Changing member is not allowed!',
@@ -469,6 +488,7 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 2'
         None
     ],
     'result': [
+        None,
         None,
         None,
         None,
@@ -491,7 +511,7 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 2'
                 'id': '4',
                 'title': 'Admin'
             }
-        }
+        },
     ]
 }
 
@@ -531,7 +551,16 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
             }
         ],
         None,
-        None
+        None,
+        [
+            {
+                'arrayErrors': None,
+                'clientId': 'member-user-2-with-user-group',
+                'field': 'nonFieldErrors',
+                'messages': 'This user is added through usergroup: Group-1. Please update the respective usergroup.',
+                'objectErrors': None,
+            }
+        ],
     ],
     'result': [
         {
@@ -563,7 +592,7 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
             'badges': [
             ],
             'clientId': 'member-user-3',
-            'id': '8',
+            'id': '9',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
                 'displayName': 'Debra Gardner',
@@ -582,7 +611,7 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
             'badges': [
             ],
             'clientId': 'member-user-4',
-            'id': '9',
+            'id': '10',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
                 'displayName': 'Jeffrey Lawrence',
@@ -592,7 +621,8 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
                 'id': '3',
                 'title': 'Member'
             }
-        }
+        },
+        None
     ]
 }
 
@@ -617,6 +647,15 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
                 'field': 'member',
                 'messages': 'User is already a member!',
                 'objectErrors': None
+            }
+        ],
+        [
+            {
+                'arrayErrors': None,
+                'clientId': 'member-user-2-with-user-group',
+                'field': 'nonFieldErrors',
+                'messages': 'This user is added through usergroup: Group-1. Please update the respective usergroup.',
+                'objectErrors': None,
             }
         ],
         [
@@ -662,6 +701,7 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
         None,
         None,
         None,
-        None
+        None,
+        None,
     ]
 }

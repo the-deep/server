@@ -158,7 +158,9 @@ class BulkUpdateProjectMembership(PsBulkGrapheneMutation):
                 role__level__gt=user_membership.role.level,  # Only allow for lower level roles.
             ).exclude(
                 # Exclude yourself and owner of the Project
-                member__in=[info.context.user, project.created_by]
+                member__in=[info.context.user, project.created_by],
+                # Also exclude memberships from usergroups
+                linked_group__isnull=False,
             )
         return ProjectMembership.objects.none()
 
