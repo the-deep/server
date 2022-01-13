@@ -475,11 +475,14 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
             member_user4,
             member_user5,
             member_user6,
-        ) = UserFactory.create_batch(7)
+            member_user7,
+        ) = UserFactory.create_batch(8)
 
         project = ProjectFactory.create(created_by=creater_user)
+        user_group = UserGroupFactory.create(title='Group-1')
         membership1 = project.add_member(member_user1, badges=[ProjectMembership.BadgeType.QA])
         membership2 = project.add_member(member_user2)
+        membership_using_user_group = project.add_member(member_user7, linked_group=user_group)
         project.add_member(member_user5)
         creater_user_membership = project.add_member(creater_user, role=self.project_role_owner)
         another_clairvoyant_user = project.add_member(member_user0, role=self.project_role_owner)
@@ -521,6 +524,13 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                     member=member_user4.pk,
                     clientId="member-user-4",
                 ),
+                dict(
+                    id=membership_using_user_group.pk,
+                    member=member_user7.pk,
+                    clientId="member-user-2-with-user-group",
+                    role=self.project_role_member.pk,
+                    badges=[self.genum(ProjectMembership.BadgeType.QA)],
+                )
             ],
         )
 
