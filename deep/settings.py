@@ -595,7 +595,7 @@ if DEBUG:
 else:
     # Restrict to thedeep.io 1 level subdomains only in Production
     CORS_ORIGIN_REGEX_WHITELIST = [
-        r"^https://\w+\.thedeep\.io$",
+        r"^https://[\w-]+\.thedeep\.io$",
     ]
 
 CORS_URLS_REGEX = r'(^/api/.*$)|(^/media/.*$)|(^/graphql$)'
