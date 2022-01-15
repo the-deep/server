@@ -52,8 +52,9 @@ class AttributeGeoSelectedOptionsLoader(DataLoaderWithContext):
         return Promise.resolve(
             [
                 [
-                    geo_area_map.get(str(id))
+                    geo_area_map[str(id)]
                     for id in ids
+                    if id in geo_area_map
                 ]
                 for ids in keys
             ]
