@@ -68,8 +68,7 @@ class AttributeType(ClientIdMixin, DjangoObjectType):
     widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
     widget_type_display = EnumDescription(source='get_widget_type', required=True)
     # NOTE: This requires region_title and admin_level_title to be annotated
-    # NOTE: Some item can be null (if missing from database)
-    geo_selected_options = graphene.List(ProjectGeoAreaType)
+    geo_selected_options = graphene.List(graphene.NonNull(ProjectGeoAreaType))
 
     @staticmethod
     def resolve_widget(root, info, **_):
@@ -83,12 +82,7 @@ class AttributeType(ClientIdMixin, DjangoObjectType):
     def resolve_geo_selected_options(root, info, **_):
         if root.widget_type == Widget.WidgetType.GEO and root.data and root.data.get('value'):
             return info.context.dl.entry.attribute_geo_selected_options.load(
-                # TODO: Need to migrate out dict (custom polygon) from 'value'.
-                tuple([
-                    v
-                    for v in root.data['value']
-                    if type(v) in [str, int]
-                ])  # needs to be hashable
+                tuple(root.data['value'])  # needs to be hashable
             )
 
 
