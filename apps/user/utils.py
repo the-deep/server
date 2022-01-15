@@ -83,6 +83,19 @@ def send_mail_to_user(user, email_type, context={}, *args, **kwargs):
     )
 
 
+# This is WIP
+def notify_users_for_maintaince_alert():
+    return
+    users = User.objects.filter(profile__invalid_email=False, is_active=True).all()
+    for user in users.all():
+        send_mail_to_user(
+            user, EmailCondition.PLATFORM_UPDATE,
+            context={},
+            subject_template_name='maintenance/subject.txt',
+            email_template_name='maintenance/email.html',
+        )
+
+
 def get_users(email):
     """Given an email, return matching user(s) who should receive a reset.
     This allows subclasses to more easily customize the default policies

@@ -25,6 +25,7 @@ class EmailCondition(models.TextChoices):
     ACCOUNT_ACTIVATION = 'account_activation', 'Account Activation'
     PASSWORD_RESET = 'password_reset', 'Password Reset'
     PASSWORD_CHANGED = 'password_changed', 'Password Changed'
+    PLATFORM_UPDATE = 'platform_update', 'Deep platform updates'
 
 
 class Profile(models.Model):
@@ -44,7 +45,8 @@ class Profile(models.Model):
     ALWAYS_SEND_EMAIL_CONDITIONS = [
         EmailCondition.ACCOUNT_ACTIVATION,
         EmailCondition.PASSWORD_RESET,
-        EmailCondition.PASSWORD_CHANGED
+        EmailCondition.PASSWORD_CHANGED,
+        EmailCondition.PLATFORM_UPDATE,
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)

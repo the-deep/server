@@ -1,0 +1,28 @@
+{% extends "base_email.html" %}
+
+{% block head %}
+    <style>
+        .table {
+            margin: auto;
+        }
+        .cell {
+            text-align: left;
+            padding: 0 4px;
+            font-weight: 600;
+            font-family: inherit;
+            color: #616161;
+        }
+        .button {
+            display: inline-block;
+            margin: 12px 0;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <p>
+        We’re writing to let you know that DEEP will down from 15/01/2022 04:15AM GMT to 16/01/2022 12:15PM GMT as we upgrade to a new version of the platform.
+        You can learn more about what’s new <a href="https://deephelp.zendesk.com/hc/en-us/articles/4412600779789-DEEP-Release-Plan-Nov-22-2021">here</a>
+        Please let us know if you have any questions or comments.
+    </p>
+{% endblock%}

@@ -1569,6 +1569,19 @@ type PublicProjectListType {
   pageSize: Int
 }
 
+enum PublicProjectOrderingEnum {
+  ASC_ID
+  ASC_CREATED_AT
+  ASC_TITLE
+  ASC_USERS_COUNT
+  ASC_SOURCES_COUNT
+  DESC_ID
+  DESC_CREATED_AT
+  DESC_TITLE
+  DESC_USERS_COUNT
+  DESC_SOURCES_COUNT
+}
+
 type PublicProjectType {
   id: ID!
   createdAt: DateTime!
@@ -1603,11 +1616,11 @@ type Query {
   analysisFrameworks(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkListType
   publicAnalysisFrameworks(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, isCurrentUserMember: Boolean, page: Int = 1, ordering: String, pageSize: Int): PublicAnalysisFrameworkListType
   project(id: ID!): ProjectDetailType
-  projects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, page: Int = 1, ordering: String, pageSize: Int): ProjectListType
+  projects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, isTest: Boolean, page: Int = 1, ordering: String, pageSize: Int): ProjectListType
   recentProjects: [ProjectDetailType!]
   projectExploreStats: ProjectExploreStatType
   projectsByRegion(projectFilter: RegionProjectFilterData, ordering: String): ProjectByRegionListType
-  publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, page: Int = 1, ordering: String, pageSize: Int): PublicProjectListType
+  publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, isTest: Boolean, ordering: [PublicProjectOrderingEnum!], page: Int = 1, pageSize: Int): PublicProjectListType
   publicProjectsByRegion(projectFilter: RegionProjectFilterData, page: Int = 1, ordering: String, pageSize: Int): PublicProjectByRegionListType
   _debug: DjangoDebug
 }
@@ -1650,6 +1663,7 @@ input RegionProjectFilterData {
   search: String
   isCurrentUserMember: Boolean
   hasPermissionAccess: ProjectPermission
+  isTest: Boolean
 }
 
 type RegionType {

@@ -2,6 +2,7 @@ import json
 import copy
 
 from django.core.management.base import BaseCommand
+from django.core.paginator import Paginator
 from analysis_framework.models import Widget, Section
 from entry.models import Attribute
 
@@ -476,6 +477,14 @@ def geo_attribute_data_convertor(data):
     }
 
 
+def attribute_data_convertor_each(attribute_data_convertor, widget_version, attribute):
+    old_data = copy.deepcopy(attribute.data or {})
+    attribute.data = attribute_data_convertor(old_data)
+    attribute.data['old_data'] = old_data  # Clean-up this later.
+    attribute.widget_version = widget_version
+    return attribute
+
+
 WIDGET_MIGRATION_MAP = {
     Widget.WidgetType.MATRIX1D: matrix1d_property_convertor,
     Widget.WidgetType.MATRIX2D: matrix2d_property_convertor,
@@ -486,11 +495,11 @@ WIDGET_MIGRATION_MAP = {
 }
 
 ATTRIBUTE_MIGRATION_MAP = {
-    Widget.WidgetType.MATRIX1D: matrix1d_attribute_data_convertor,
-    Widget.WidgetType.MATRIX2D: matrix2d_attribute_data_convertor,
     Widget.WidgetType.DATE_RANGE: date_range_attribute_data_convertor,
     Widget.WidgetType.TIME_RANGE: time_range_attribute_data_convertor,
     Widget.WidgetType.GEO: geo_attribute_data_convertor,
+    Widget.WidgetType.MATRIX1D: matrix1d_attribute_data_convertor,
+    Widget.WidgetType.MATRIX2D: matrix2d_attribute_data_convertor,
 }
 
 CONDITIONAL_OPERATOR_MAP = {
@@ -653,16 +662,18 @@ class Command(BaseCommand):
         print(f'Entry Attributes (Total: {attribute_qs.count()})')
         for widget_type, attribute_data_convertor in ATTRIBUTE_MIGRATION_MAP.items():
             print(f'\n- {widget_type}')
-            required_attribute_qs = attribute_qs.filter(widget__widget_id=widget_type)
+            required_attribute_qs = attribute_qs.filter(widget__widget_id=widget_type).order_by('id')
+            paginator = Paginator(required_attribute_qs, 1000)
             total = required_attribute_qs.count()
-            for index, attribute in enumerate(required_attribute_qs.iterator(chunk_size=1000)):
-                # Update properties.
-                old_data = copy.deepcopy(attribute.data or {})
-                attribute.data = attribute_data_convertor(old_data)
-                attribute.data['old_data'] = old_data  # Clean-up this later.
-                attribute.widget_version = self.CURRENT_VERSION
-                # Save
-                attribute.save(update_fields=('data', 'widget_version',))
+            index = 0
+            for _ in paginator.page_range:
+                page = paginator.page(1)
+                updated_attributes = [
+                    attribute_data_convertor_each(attribute_data_convertor, self.CURRENT_VERSION, attribute)
+                    for attribute in page.object_list
+                ]
+                index += len(updated_attributes)
+                Attribute.objects.bulk_update(updated_attributes, ['data', 'widget_version'])
                 print(f'-- Saved ({index})/({total})', end='\r')
         print('')
 

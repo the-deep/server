@@ -47,3 +47,19 @@ enum_map.update({
         model_name=ProjectStats.__name__,
     ): ProjectStatsActionEnum,
 })
+
+
+# TODO: Define this dynamically through a list?
+class PublicProjectOrderingEnum(graphene.Enum):
+    # ASC
+    ASC_ID = 'id'
+    ASC_CREATED_AT = 'created_at'
+    ASC_TITLE = 'title'
+    ASC_USERS_COUNT = 'number_of_users'
+    ASC_SOURCES_COUNT = 'number_of_leads'
+    # DESC
+    DESC_ID = '-id'
+    DESC_CREATED_AT = '-created_at'
+    DESC_TITLE = '-title'
+    DESC_USERS_COUNT = '-number_of_users'
+    DESC_SOURCES_COUNT = '-number_of_leads'

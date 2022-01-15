@@ -51,6 +51,9 @@
     <p>Useful links:</p>
     <ul>
     <li class="list-item">Go to DEEP Website: <a href="{{frontend_url}}">{{frontend_url}}</a></li>
+    {% if DEBUG %}
+    <li class="list-item">Go to GraphQL IDE: <a href="/graphiql">Graphiql</a></li>
+    {% endif %}
     <li class="list-item">Go to DEEP Admin: <a href="/admin">Admin Panel</a></li>
     <li class="doc list-item">
         Go to DEEP API Documentation:

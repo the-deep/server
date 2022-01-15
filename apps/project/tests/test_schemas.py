@@ -329,7 +329,7 @@ class TestProjectSchema(GraphQLTestCase):
     def test_public_projects(self):
         query = '''
             query MyQuery {
-              publicProjects (ordering: "id") {
+              publicProjects (ordering: ASC_ID) {
                 page
                 pageSize
                 totalCount

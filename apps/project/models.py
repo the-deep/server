@@ -75,6 +75,8 @@ class Project(UserResource):
 
     # Project visibility
     is_private = models.BooleanField(default=False)
+    # Hide projects from explore page for now.
+    is_test = models.BooleanField(default=False)
 
     is_visualization_enabled = models.BooleanField(default=False)
 

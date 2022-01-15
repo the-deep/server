@@ -9,6 +9,7 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.geo_scalars import PointScalar
 from utils.graphene.enums import EnumDescription
+from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 from utils.graphene.types import (
     CustomDjangoListObjectType,
     ClientIdMixin,
@@ -458,7 +459,7 @@ class Query:
     # PUBLIC NODES
     public_projects = DjangoPaginatedListObjectField(
         PublicProjectListType,
-        pagination=PageGraphqlPagination(
+        pagination=NoOrderingPageGraphqlPagination(
             page_size_query_param='pageSize'
         )
     )

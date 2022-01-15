@@ -88,19 +88,22 @@ class ProjectAdmin(VersionAdmin):
         linkify('category_editor', 'Category Editor'),
         linkify('analysis_framework', 'Assessment Framework'),
         linkify('assessment_template', 'Assessment Template'),
-        'associated_regions',
+        'associated_regions', 'leads_count',
         'entries_count', 'assessment_count', 'members_count',
     ]
     autocomplete_fields = (
         'analysis_framework', 'assessment_template', 'category_editor',
         'created_by', 'modified_by', 'regions',
     )
-    list_filter = ('assessment_template', 'is_private',)
+    list_filter = ('assessment_template', 'is_private', 'is_test')
     actions = [trigger_project_stat_cache_calc()]
-    inlines = [ProjectMembershipInline,
-               ProjectUserGroupMembershipInline,
-               ProjectJoinRequestInline,
-               ProjectOrganizationInline]
+    inlines = [
+        ProjectMembershipInline,
+        ProjectUserGroupMembershipInline,
+        ProjectJoinRequestInline,
+        ProjectOrganizationInline,
+    ]
+    show_full_result_count = False
 
     def get_queryset(self, request):
         def _count_subquery(Model, count_field='id'):

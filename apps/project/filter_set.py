@@ -7,7 +7,7 @@ from django.db.models.functions import Concat, Lower
 import django_filters
 
 from deep.permissions import ProjectPermissions as PP
-from utils.graphene.filters import SimpleInputFilter, IDListFilter
+from utils.graphene.filters import SimpleInputFilter, IDListFilter, MultipleInputFilter
 from user_resource.filters import UserResourceFilterSet, UserResourceGqlFilterSet
 
 from geo.models import Region
@@ -19,6 +19,7 @@ from .models import (
 from .enums import (
     ProjectPermissionEnum,
     ProjectStatusEnum,
+    PublicProjectOrderingEnum,
 )
 
 
@@ -94,6 +95,7 @@ class ProjectGqlFilterSet(UserResourceGqlFilterSet):
     is_current_user_member = django_filters.BooleanFilter(
         field_name='is_current_user_member', method='filter_with_membership')
     has_permission_access = SimpleInputFilter(ProjectPermissionEnum, method='filter_has_permission_access')
+    is_test = django_filters.BooleanFilter(field_name='is_test')
 
     class Meta:
         model = Project
@@ -200,3 +202,10 @@ class ProjectByRegionGqlFilterSet(django_filters.FilterSet):
 class PublicProjectByRegionGqlFileterSet(ProjectByRegionGqlFilterSet):
     def get_project_queryset(self):
         return Project.objects.filter(is_private=False)
+
+
+class PublicProjectGqlFilterSet(ProjectGqlFilterSet):
+    ordering = MultipleInputFilter(PublicProjectOrderingEnum, method='ordering_filter')
+
+    def ordering_filter(self, qs, name, value):
+        return qs.order_by(*value)
