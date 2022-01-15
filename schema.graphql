@@ -235,7 +235,7 @@ type AttributeType {
   widget: ID!
   widgetType: WidgetWidgetTypeEnum!
   widgetTypeDisplay: EnumDescription!
-  geoSelectedOptions: [ProjectGeoAreaType]
+  geoSelectedOptions: [ProjectGeoAreaType!]
 }
 
 input BulkAnalysisFrameworkMembershipInputType {
