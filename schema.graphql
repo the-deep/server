@@ -1280,6 +1280,7 @@ type ProjectDetailType {
   emmKeywords: [EmmKeyWordType!]
   emmRiskFactors: [EmmKeyRiskFactorType!]
   activityLog: GenericScalar
+  recentActiveUsers: [UserEntityDateType!]
   topSourcers: [UserEntityCountType!]
   topTaggers: [UserEntityCountType!]
   userMembers(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, members: [ID!], page: Int = 1, ordering: String, pageSize: Int): ProjectMembershipListType
@@ -1768,6 +1769,12 @@ type UserEntityCountType {
   name: String
   userId: String
   count: Int
+}
+
+type UserEntityDateType {
+  id: String!
+  name: String
+  date: DateTime!
 }
 
 type UserExportListType {

@@ -334,6 +334,36 @@ class Project(UserResource):
         ]
         return recent_projects
 
+    def get_recent_active_users_id_and_date(self, max_users=3):
+        # NOTE: to avoid circular import
+        from entry.models import Entry
+        from lead.models import Lead
+        # NOTE: Django ORM union don't allow annotation
+        # TODO: Need to refactor this
+        with django_db_connection.cursor() as cursor:
+            select_sql = [
+                f'''
+                    SELECT
+                        tb."{field}_by_id" AS "user",
+                        MAX(tb."{field}_at") AS "date"
+                    FROM "{Model._meta.db_table}" AS tb
+                    WHERE tb."project_id" = {self.pk}
+                    GROUP BY tb."{field}_by_id"
+                ''' for Model, field in [
+                    (Lead, 'created'),
+                    (Lead, 'modified'),
+                    (Entry, 'created'),
+                    (Entry, 'modified'),
+                ]
+            ]
+            union_sql = '(' + ') UNION ('.join(select_sql) + ')'
+            cursor.execute(
+                f'SELECT DISTINCT(entities."user"), MAX("date") as "date" FROM ({union_sql}) as entities'
+                f' GROUP BY entities."user" ORDER BY "date" DESC Limit {max_users}'
+            )
+            # id, date
+            return cursor.fetchall()
+
     @staticmethod
     def get_for_public(requestUser, user):
         return Project\

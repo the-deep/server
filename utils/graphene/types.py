@@ -234,3 +234,9 @@ class UserEntityCountType(graphene.ObjectType):
     name = graphene.String()
     user_id = graphene.String()
     count = graphene.Int()
+
+
+class UserEntityDateType(graphene.ObjectType):
+    id = graphene.String(required=True)
+    name = graphene.String()
+    date = graphene.DateTime(required=True)

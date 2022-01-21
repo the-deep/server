@@ -13,7 +13,8 @@ from utils.graphene.types import (
     CustomDjangoListObjectType,
     ClientIdMixin,
     DateCountType,
-    UserEntityCountType
+    UserEntityCountType,
+    UserEntityDateType,
 )
 from utils.graphene.fields import (
     DjangoPaginatedListObjectField,
@@ -22,6 +23,7 @@ from deep.permissions import ProjectPermissions as PP
 from deep.serializers import URLCachedFileField
 from user_resource.schema import UserResourceMixin
 
+from user.models import User
 from lead.schema import Query as LeadQuery
 from entry.schema import Query as EntryQuery
 from export.schema import Query as ExportQuery
@@ -64,6 +66,27 @@ from .tasks import generate_viz_stats
 from .public_schema import PublicProjectListType
 
 
+def get_recent_active_users(project, max_users=3):
+    # id, date
+    users_activity = project.get_recent_active_users_id_and_date(max_users=max_users)
+    recent_active_users_map = {
+        user.pk: user
+        for user in User.objects.filter(pk__in=[id for id, _ in users_activity])
+    }
+    recent_active_users = [
+        (recent_active_users_map[id], date)
+        for id, date in users_activity
+        if id in recent_active_users_map
+    ]
+    return [
+        {
+            'id': user.id,
+            'name': user.get_display_name(),
+            'date': date,
+        } for user, date in recent_active_users
+    ]
+
+
 def get_top_entity_contributor(project, Entity):
     contributors = ProjectMembership.objects.filter(
         project=project,
@@ -76,12 +99,12 @@ def get_top_entity_contributor(project, Entity):
             .annotate(cnt=models.Count('*')).values('cnt')[:1],
             output_field=models.IntegerField(),
         ), 0),
-    ).order_by('-entity_count').select_related('member', 'member__profile')[:5]
+    ).order_by('-entity_count').select_related('member')[:5]
 
     return [
         {
             'id': contributor.id,
-            'name': contributor.member.profile.get_display_name(),
+            'name': contributor.member.get_display_name(),
             'user_id': contributor.member.id,
             'count': contributor.entity_count,
         } for contributor in contributors
@@ -341,6 +364,7 @@ class ProjectDetailType(
 
     analysis_framework = graphene.Field(AnalysisFrameworkDetailType)
     activity_log = generic.GenericScalar()  # TODO: Need to define type
+    recent_active_users = graphene.List(graphene.NonNull(UserEntityDateType))
     top_sourcers = graphene.List(graphene.NonNull(UserEntityCountType))
     top_taggers = graphene.List(graphene.NonNull(UserEntityCountType))
 
@@ -377,6 +401,10 @@ class ProjectDetailType(
     @staticmethod
     def resolve_activity_log(root, info, **kwargs):
         return list(project_activity_log(root))
+
+    @staticmethod
+    def resolve_recent_active_users(root, info, **kwargs):
+        return get_recent_active_users(root)
 
     @staticmethod
     def resolve_top_sourcers(root, info, **kwargs):
