@@ -10,6 +10,10 @@ snapshots = Snapshot()
 snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with-membership'] = {
     'data': {
         'analysisFramework': {
+            'allowedPermissions': [
+                'CAN_CLONE_FRAMEWORK',
+                'CAN_USE_IN_OTHER_PROJECTS',
+            ],
             'currentUserRole': 'DEFAULT',
             'description': 'Quality throughout beautiful instead ahead despite measure ago current practice nation determine operation speak.',
             'id': '1',
@@ -199,6 +203,10 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
 snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query without-membership'] = {
     'data': {
         'analysisFramework': {
+            'allowedPermissions': [
+                'CAN_CLONE_FRAMEWORK',
+                'CAN_USE_IN_OTHER_PROJECTS',
+            ],
             'currentUserRole': None,
             'description': 'Quality throughout beautiful instead ahead despite measure ago current practice nation determine operation speak.',
             'id': '1',
