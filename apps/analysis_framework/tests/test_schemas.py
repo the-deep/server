@@ -138,6 +138,7 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
                 description
                 isPrivate
                 title
+                allowedPermissions
                 secondaryTagging {
                   id
                   key
