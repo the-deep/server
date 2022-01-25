@@ -367,7 +367,7 @@ class AnalysisFrameworkPermissions(BasePermissions):
         Permission.CAN_USE_IN_OTHER_PROJECTS: "You don't have permission to use in other projects",
     }
 
-    DEFAULT = [
+    DEFAULT = [  # NOTE: This is also send for public AF without membership
         Permission.CAN_CLONE_FRAMEWORK,
         Permission.CAN_USE_IN_OTHER_PROJECTS,
     ]
@@ -393,5 +393,5 @@ class AnalysisFrameworkPermissions(BasePermissions):
     @classmethod
     def get_permissions(cls, role, is_public=False):
         if role is None and is_public:
-            return [cls.Permission.CAN_USE_IN_OTHER_PROJECTS]
+            return cls.DEFAULT
         return cls.PERMISSION_MAP.get(role) or []
