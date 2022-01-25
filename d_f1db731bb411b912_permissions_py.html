@@ -45,10 +45,10 @@
         </div>
         <h2>
             <span class="text">191 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">179<span class="text"> run</span></button>
-            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">12<span class="text"> missing</span></button>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">180<span class="text"> run</span></button>
+            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">11<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
-            <button type="button" class="par run show_par button_toggle_par" value="par" data-shortcut="p" title="Toggle lines partially run">9<span class="text"> partial</span></button>
+            <button type="button" class="par run show_par button_toggle_par" value="par" data-shortcut="p" title="Toggle lines partially run">8<span class="text"> partial</span></button>
         </h2>
         <div style="display: none;">
             <button type="button" class="button_next_chunk" data-shortcut="j">Next highlighted chunk</button>
@@ -428,7 +428,7 @@
     <p class="pln"><span class="n"><a id="t367" href="#t367">367</a></span><span class="t">        <span class="nam">Permission</span><span class="op">.</span><span class="nam">CAN_USE_IN_OTHER_PROJECTS</span><span class="op">:</span> <span class="str">"You don't have permission to use in other projects"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t368" href="#t368">368</a></span><span class="t">    <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t369" href="#t369">369</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t370" href="#t370">370</a></span><span class="t">    <span class="nam">DEFAULT</span> <span class="op">=</span> <span class="op">[</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t370" href="#t370">370</a></span><span class="t">    <span class="nam">DEFAULT</span> <span class="op">=</span> <span class="op">[</span>  <span class="com"># NOTE: This is also send for public AF without membership</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t371" href="#t371">371</a></span><span class="t">        <span class="nam">Permission</span><span class="op">.</span><span class="nam">CAN_CLONE_FRAMEWORK</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t372" href="#t372">372</a></span><span class="t">        <span class="nam">Permission</span><span class="op">.</span><span class="nam">CAN_USE_IN_OTHER_PROJECTS</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t373" href="#t373">373</a></span><span class="t">    <span class="op">]</span>&nbsp;</span><span class="r"></span></p>
@@ -453,15 +453,15 @@
     <p class="pln"><span class="n"><a id="t392" href="#t392">392</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t393" href="#t393">393</a></span><span class="t">    <span class="op">@</span><span class="nam">classmethod</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t394" href="#t394">394</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_permissions</span><span class="op">(</span><span class="nam">cls</span><span class="op">,</span> <span class="nam">role</span><span class="op">,</span> <span class="nam">is_public</span><span class="op">=</span><span class="key">False</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="par run show_par"><span class="n"><a id="t395" href="#t395">395</a></span><span class="t">        <span class="key">if</span> <span class="nam">role</span> <span class="key">is</span> <span class="key">None</span> <span class="key">and</span> <span class="nam">is_public</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">395&#x202F;&#x219B;&#x202F;396</span><span class="annotate long">line 395 didn't jump to line 396, because the condition on line 395 was never true</span></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t396" href="#t396">396</a></span><span class="t">            <span class="key">return</span> <span class="op">[</span><span class="nam">cls</span><span class="op">.</span><span class="nam">Permission</span><span class="op">.</span><span class="nam">CAN_USE_IN_OTHER_PROJECTS</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t395" href="#t395">395</a></span><span class="t">        <span class="key">if</span> <span class="nam">role</span> <span class="key">is</span> <span class="key">None</span> <span class="key">and</span> <span class="nam">is_public</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t396" href="#t396">396</a></span><span class="t">            <span class="key">return</span> <span class="nam">cls</span><span class="op">.</span><span class="nam">DEFAULT</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t397" href="#t397">397</a></span><span class="t">        <span class="key">return</span> <span class="nam">cls</span><span class="op">.</span><span class="nam">PERMISSION_MAP</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">role</span><span class="op">)</span> <span class="key">or</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.2</a>,
-            created at 2022-01-21 10:31 +0000
+            created at 2022-01-25 08:34 +0000
         </p>
     </div>
 </footer>
