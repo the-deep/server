@@ -35,6 +35,5 @@ widget_store = {
         number_matrix_widget,
         conditional_widget,
         text_widget,
-
     )
 }
