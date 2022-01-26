@@ -346,6 +346,8 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
     emm_keywords = django_filters.CharFilter(method='emm_keywords_filter')
     emm_risk_factors = django_filters.CharFilter(method='emm_risk_factors_filter')
 
+    ordering = MultipleInputFilter(LeadOrderingEnum, method='ordering_filter')
+
     class Meta:
         model = Lead
         fields = {
@@ -392,6 +394,16 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             models.Q(url__icontains=value) |
             models.Q(website__icontains=value)
         ).distinct()
+
+    def ordering_filter(self, qs, name, value):
+        for ordering in value:
+            if ordering == '-page_count':
+                qs = qs.order_by(models.F('leadpreview__page_count').desc(nulls_last=True))
+            elif ordering == 'page_count':
+                qs = qs.order_by(models.F('leadpreview__page_count').asc(nulls_first=True))
+            else:
+                qs = qs.order_by(ordering)
+        return qs
 
     def exists_filter(self, qs, name, value):
         if value == self.Exists.ENTRIES_EXISTS:
@@ -481,13 +493,6 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
                 return qs.exclude(id__in=leads_ids)
             return qs.filter(id__in=leads_ids)
         return _custom_qs(super().qs).distinct()
-
-
-class LeadWithOrderingGQFilterSet(LeadGQFilterSet):
-    ordering = MultipleInputFilter(LeadOrderingEnum, method='ordering_filter')
-
-    def ordering_filter(self, qs, name, value):
-        return qs.order_by(*value)
 
 
 class LeadGroupGQFilterSet(UserResourceGqlFilterSet):

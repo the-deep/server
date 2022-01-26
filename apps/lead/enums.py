@@ -36,7 +36,7 @@ class LeadOrderingEnum(graphene.Enum):
     ASC_CREATED_BY = 'created_by'
     ASC_ASSIGNEE = 'assignee'
     ASC_PRIORITY = 'priority'
-    ASC_PAGE_COUNT = 'leadpreview__page_count'
+    ASC_PAGE_COUNT = 'page_count'
     # DESC
     DESC_ID = '-id'
     DESC_CREATED_AT = '-created_at'
@@ -46,4 +46,4 @@ class LeadOrderingEnum(graphene.Enum):
     DESC_CREATED_BY = '-created_by'
     DESC_ASSIGNEE = '-assignee'
     DESC_PRIORITY = '-priority'
-    DESC_PAGE_COUNT = 'leadpreview__page_count'
+    DESC_PAGE_COUNT = '-page_count'
