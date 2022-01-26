@@ -69,7 +69,7 @@ class AnalysisFramework(UserResource):
         for section in self.section_set.all():
             old_new_sections_map[section.pk] = section.clone_to(clone_analysis_framework).pk
         # Clone widget with new AF and section
-        for widget in self.widget_set.all():
+        for widget in self.widget_set.exclude(widget_id__in=Widget.DEPRECATED_TYPES):
             cloned_widget = widget.clone_to(
                 clone_analysis_framework,
                 old_new_sections_map.get(widget.section_id),
