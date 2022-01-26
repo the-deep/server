@@ -32,7 +32,6 @@ from .enums import (
 )
 from .filter_set import (
     LeadGQFilterSet,
-    LeadWithOrderingGQFilterSet,
     LeadGroupGQFilterSet,
 )
 
@@ -245,23 +244,11 @@ class LeadListType(CustomDjangoListObjectType):
         filterset_class = LeadGQFilterSet
 
 
-class LeadListWithEnumOrderingType(CustomDjangoListObjectType):
-    class Meta:
-        model = Lead
-        filterset_class = LeadWithOrderingGQFilterSet
-
-
 class Query:
     lead = DjangoObjectField(LeadDetailType)
-    leads_with_enum_ordering = DjangoPaginatedListObjectField(
-        LeadListWithEnumOrderingType,
-        pagination=NoOrderingPageGraphqlPagination(
-            page_size_query_param='pageSize',
-        )
-    )
     leads = DjangoPaginatedListObjectField(
         LeadListType,
-        pagination=PageGraphqlPagination(
+        pagination=NoOrderingPageGraphqlPagination(
             page_size_query_param='pageSize',
         )
     )
