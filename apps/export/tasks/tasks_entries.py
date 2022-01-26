@@ -9,7 +9,7 @@ from export.entries.report_exporter import ReportExporter
 from export.entries.json_exporter import JsonExporter
 from geo.models import Region
 from lead.models import Lead
-from lead.filter_set import get_filtered_leads
+from lead.filter_set import LeadGQFilterSet
 from entry.filter_set import EntryGQFilterSet
 
 
@@ -29,9 +29,12 @@ def export_entries(export):
     leads_qs = Lead.objects.filter(project=export.project)
     if PP.Permission.VIEW_ALL_LEAD not in user_project_permissions:
         leads_qs = leads_qs.filter(confidentiality=Lead.Confidentiality.UNPROTECTED)
-    leads_qs = get_filtered_leads(filters, project, leads_qs)
+    # Lead and Entry FilterSet needs request to work with active_project
+    dummy_request = LeadGQFilterSet.get_dummy_request(project)
+    leads_qs = LeadGQFilterSet(data=filters, queryset=leads_qs, request=dummy_request).qs
     entries_qs = EntryGQFilterSet(
         data=filters.get('entries_filter_data'),
+        request=dummy_request,
         queryset=Entry.objects.filter(
             project=export.project,
             analysis_framework=export.project.analysis_framework_id,
