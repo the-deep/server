@@ -109,7 +109,7 @@ def _generate_project_stats_cache():
     leads_in_progress_count_map = _count_by_project_qs(Lead.objects.filter(status=Lead.Status.IN_PROGRESS))
     leads_tagged_count_map = _count_by_project_qs(Lead.objects.filter(status=Lead.Status.TAGGED))
 
-    entries_count_map = _count_by_project_qs(Entry.objects.all())
+    entries_count_map = _count_by_project_qs(all_entries_qs)
     entries_verified_count_map = _count_by_project_qs(all_entries_qs.filter(verified_by__isnull=False))
     entries_controlled_count_map = _count_by_project_qs(all_entries_qs.filter(controlled=True))
 
