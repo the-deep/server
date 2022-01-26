@@ -217,7 +217,7 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
         return Exportable.objects.filter(analysis_framework=self.project.analysis_framework_id)
 
     def validate_filters(self, filters):
-        filter_set = LeadGQFilterSet(data=filters)
+        filter_set = LeadGQFilterSet(data=filters, request=self.context['request'])
         if not filter_set.is_valid():
             raise serializers.ValidationError(filter_set.errors)
         return filters
