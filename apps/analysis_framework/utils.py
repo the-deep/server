@@ -7,7 +7,7 @@ def update_widget(widget):
     widget_module = widget_store.get(widget.widget_id)
 
     if widget_module is None:
-        raise Exception(f'Unknown widget type: {widget.widet_id}')
+        raise Exception(f'Unknown widget type: {widget.widget_id}')
 
     new_filter_keys = []
     if hasattr(widget_module, 'get_filters'):
