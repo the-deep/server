@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.db import models
 from django.contrib import messages
+from admin_auto_filters.filters import AutocompleteFilterFactory
 
 from deep.admin import ModelAdmin, document_preview
 
@@ -38,7 +39,12 @@ class ExportAdmin(ModelAdmin):
     )
     search_fields = ('title',)
     readonly_fields = (document_preview('file'),)
-    list_filter = ('type', 'export_type', 'format', 'pending', 'is_preview', 'status',)
+    list_filter = (
+        'type', 'export_type', 'format', 'pending', 'status', 'is_preview', 'is_deleted', 'is_archived',
+        AutocompleteFilterFactory('Project', 'project'),
+        AutocompleteFilterFactory('Analysis Framework', 'project__analysis_framework'),
+        AutocompleteFilterFactory('Exported By', 'exported_by'),
+    )
     actions = [trigger_retry]
     autocomplete_fields = ('project', 'exported_by',)
 
