@@ -3,12 +3,16 @@ import graphene
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
 
+from utils.graphene.types import CustomDjangoListObjectType
+from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 from utils.graphene.enums import EnumDescription
 from deep.permissions import ProjectPermissions as PP
 from lead.models import Lead
 
 from quality_assurance.models import EntryReviewComment, EntryReviewCommentText
 from .enums import EntryReviewCommentTypeEnum
+from .filters import EntryReviewCommentGQFilterSet
 
 
 def get_entry_comment_qs(info):
@@ -40,7 +44,6 @@ class EntryReviewCommentTextType(DjangoObjectType):
 class EntryReviewCommentType(DjangoObjectType):
     class Meta:
         model = EntryReviewComment
-        skip_registry = True
         fields = (
             'id',
             'created_by',
@@ -57,6 +60,7 @@ class EntryReviewCommentType(DjangoObjectType):
 class EntryReviewCommentDetailType(EntryReviewCommentType):
     class Meta:
         model = EntryReviewComment
+        skip_registry = True
         fields = (
             'id',
             'entry',
@@ -76,5 +80,21 @@ class EntryReviewCommentDetailType(EntryReviewCommentType):
         return info.context.dl.quality_assurance.text_history.load(root.pk)
 
 
+class EntryReviewCommentListType(CustomDjangoListObjectType):
+    class Meta:
+        model = EntryReviewComment
+        filterset_class = EntryReviewCommentGQFilterSet
+
+
 class Query:
     review_comment = DjangoObjectField(EntryReviewCommentDetailType)
+    review_comments = DjangoPaginatedListObjectField(
+        EntryReviewCommentListType,
+        pagination=NoOrderingPageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+
+    @staticmethod
+    def resolve_review_comments(root, info, **kwargs):
+        return get_entry_comment_qs(info)
