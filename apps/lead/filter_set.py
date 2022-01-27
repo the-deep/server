@@ -364,6 +364,13 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             },
         }
 
+    @staticmethod
+    def get_dummy_request(project):
+        """
+        Use this if request is not available
+        """
+        return type('DummyRequest', (object,), dict(active_project=project))()
+
     def search_filter(self, qs, name, value):
         # NOTE: This exists to make it compatible with post filter
         if not value:
@@ -494,15 +501,3 @@ class LeadGroupGQFilterSet(UserResourceGqlFilterSet):
         if not value:
             return qs
         return qs.filter(title__icontains=value).distinct()
-
-
-def get_filtered_leads(filters, active_project, leads_qs):
-    """
-    Use this if request is not available
-    """
-    dummy_request = type('DummyRequest', (object,), dict(active_project=active_project))()
-    return LeadGQFilterSet(
-        data=filters,
-        queryset=leads_qs,
-        request=dummy_request,
-    ).qs

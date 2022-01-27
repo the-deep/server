@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
+from django.db import models
 from django.contrib import messages
+from admin_auto_filters.filters import AutocompleteFilterFactory
 
 from deep.admin import ModelAdmin, document_preview
 
@@ -31,13 +33,26 @@ trigger_retry.short_description = 'Force trigger export process for selected exp
 
 @admin.register(Export)
 class ExportAdmin(ModelAdmin):
-    list_display = ('title', 'file', 'type', 'exported_by', 'exported_at', 'project', 'export_type',
-                    'format', 'pending', 'is_preview', 'status',)
+    list_display = (
+        'title', 'file', 'type', 'exported_by', 'exported_at', 'execution_time', 'project', 'export_type',
+        'format', 'pending', 'is_preview', 'status',
+    )
     search_fields = ('title',)
     readonly_fields = (document_preview('file'),)
-    list_filter = ('type', 'export_type', 'format', 'pending', 'is_preview', 'status',)
+    list_filter = (
+        'type', 'export_type', 'format', 'pending', 'status', 'is_preview', 'is_deleted', 'is_archived',
+        AutocompleteFilterFactory('Project', 'project'),
+        AutocompleteFilterFactory('Analysis Framework', 'project__analysis_framework'),
+        AutocompleteFilterFactory('Exported By', 'exported_by'),
+    )
     actions = [trigger_retry]
     autocomplete_fields = ('project', 'exported_by',)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('exported_by', 'project')
+        return super().get_queryset(request)\
+            .annotate(execution_time=models.F('ended_at') - models.F('started_at'))\
+            .select_related('exported_by', 'project')
+
+    def execution_time(self, obj):
+        return obj.execution_time
+    execution_time.admin_order_field = 'execution_time'

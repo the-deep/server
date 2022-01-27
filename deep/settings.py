@@ -168,6 +168,7 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_email',
     'django_otp.plugins.otp_totp',
 
+    'admin_auto_filters',
     'ordered_model',
     'fixture_magic',
     'autofixture',
