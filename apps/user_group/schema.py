@@ -8,7 +8,7 @@ from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 
 from .models import UserGroup, GroupMembership
-from .filters import UserGroupFilterSet
+from .filters import UserGroupGQFilterSet
 from .enums import GroupMembershipRoleEnum
 
 
@@ -54,7 +54,7 @@ class UserGroupType(DjangoObjectType):
 class UserGroupListType(CustomDjangoListObjectType):
     class Meta:
         model = UserGroup
-        filterset_class = UserGroupFilterSet
+        filterset_class = UserGroupGQFilterSet
 
 
 class Query:
