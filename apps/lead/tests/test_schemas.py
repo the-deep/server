@@ -309,7 +309,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 analysisFramework {
                     id
                 }
-                leads(ordering: "id") {
+                leads(ordering: ASC_ID) {
                   page
                   pageSize
                   totalCount
@@ -576,7 +576,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         query = '''
             query MyQuery ($id: ID!) {
               project(id: $id) {
-                leads(ordering: "id") {
+                leads(ordering: ASC_ID) {
                   results {
                     id
                     title
