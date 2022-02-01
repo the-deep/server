@@ -29,6 +29,7 @@ from .enums import (
     LeadPriorityEnum,
     LeadSourceTypeEnum,
     LeadExtractionStatusEnum,
+    LeadOrderingEnum,
 )
 from .filter_set import (
     LeadGQFilterSet,
@@ -181,13 +182,20 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     lead_preview = graphene.Field(LeadPreviewType)
     source = graphene.Field(OrganizationType)
     authors = DjangoListField(OrganizationType)
-    entries_counts = graphene.Field(EntriesCountType)
     assignee = graphene.Field(UserType)
     lead_group = graphene.Field(LeadGroupType)
     # EMM Fields
     emm_entities = DjangoListField(EmmEntityType)
     emm_triggers = DjangoListField(LeadEmmTriggerType)
     assessment_id = graphene.ID()
+    # Entries count
+    entries_count = graphene.Field(EntriesCountType)
+    filtered_entries_count = graphene.Int(
+        description=(
+            'Count used to order or filter-out leads'
+            '. Can be =null or =entries_count->total or !=entries_count->total.'
+        )
+    )
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -214,9 +222,12 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
         return info.context.dl.lead.lead_preview.load(root.pk)
 
     @staticmethod
-    def resolve_entries_counts(root, info, **kwargs):
-        # TODO: Use entry filter here as well
-        return info.context.dl.lead.entries_counts.load(root.pk)
+    def resolve_entries_count(root, info, **kwargs):
+        return info.context.dl.lead.entries_count.load(root.pk)
+
+    @staticmethod
+    def resolve_filtered_entries_count(root, info, **kwargs):
+        return getattr(root, LeadOrderingEnum.ASC_ENTRIES_COUNT.value, None)
 
 
 class LeadDetailType(LeadType):

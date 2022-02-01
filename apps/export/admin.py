@@ -41,6 +41,7 @@ class ExportAdmin(ModelAdmin):
     readonly_fields = (document_preview('file'),)
     list_filter = (
         'type', 'export_type', 'format', 'pending', 'status', 'is_preview', 'is_deleted', 'is_archived',
+        ('ended_at', admin.EmptyFieldListFilter),
         AutocompleteFilterFactory('Project', 'project'),
         AutocompleteFilterFactory('Analysis Framework', 'project__analysis_framework'),
         AutocompleteFilterFactory('Exported By', 'exported_by'),
