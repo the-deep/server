@@ -109,7 +109,7 @@ class DataLoaders(WithContextMixin):
         return LeadPreviewLoader(context=self.context)
 
     @cached_property
-    def entries_counts(self):
+    def entries_count(self):
         return EntriesCountLoader(context=self.context)
 
     @cached_property

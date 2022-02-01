@@ -326,10 +326,6 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
         convert_enum_to_graphene_enum(LeadFilterSet.Exists, name='LeadExistsEnum'),
         label='Exists Choice', method='exists_filter',
     )
-    custom_filters = SimpleInputFilter(  # used in export
-        convert_enum_to_graphene_enum(LeadFilterSet.CustomFilter, name='LeadCustomFilterEnum'),
-        label='Filtered Exists Choice', method='filtered_exists_filter',
-    )
     entries_filter_data = SimpleInputFilter(
         type(
             'LeadEntriesFilterData',
@@ -376,6 +372,35 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
         """
         return type('DummyRequest', (object,), dict(active_project=project))()
 
+    # Non-filters methods
+    @staticmethod
+    def get_entry_count_subquery(request, entries_filter_data, **additional_filters):
+        return models.functions.Coalesce(
+            models.Subquery(
+                EntryGQFilterSet(
+                    data=entries_filter_data,
+                    request=request,
+                ).qs.filter(
+                    project=request.active_project,
+                    analysis_framework=request.active_project.analysis_framework_id,
+                    lead=models.OuterRef('pk'),
+                    **additional_filters,
+                ).values('lead').order_by().annotate(
+                    count=models.Count('id')
+                ).values('count')[:1], output_field=models.IntegerField()
+            ), 0
+        )
+
+    def _add_entries_count_annotate(self, qs, **filters):
+        if self.request is None:
+            raise Exception(f'{self.request=} should be defined')
+        entries_filter_data = self.data.get('entries_filter_data') or {}
+        subquery = self.get_entry_count_subquery(self.request, entries_filter_data, **filters)
+        return qs.annotate(**{
+            LeadOrderingEnum.ASC_ENTRIES_COUNT.value: subquery,
+        })
+
+    # Filters methods
     def search_filter(self, qs, name, value):
         # NOTE: This exists to make it compatible with post filter
         if not value:
@@ -399,22 +424,36 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
         ).distinct()
 
     def ordering_filter(self, qs, name, value):
+        if any(
+            ordering in [
+                LeadOrderingEnum.ASC_ENTRIES_COUNT,
+                LeadOrderingEnum.DESC_ENTRIES_COUNT,
+            ] for ordering in value
+        ):
+            qs = self._add_entries_count_annotate(qs)
+
         for ordering in value:
-            if ordering == '-page_count':
+            if ordering == LeadOrderingEnum.DESC_PAGE_COUNT:
                 qs = qs.order_by(models.F('leadpreview__page_count').desc(nulls_last=True))
-            elif ordering == 'page_count':
+            elif ordering == LeadOrderingEnum.ASC_PAGE_COUNT:
                 qs = qs.order_by(models.F('leadpreview__page_count').asc(nulls_first=True))
             else:
                 qs = qs.order_by(ordering)
         return qs
 
     def exists_filter(self, qs, name, value):
+        if value in [
+            self.Exists.ENTRIES_EXISTS,
+            self.Exists.ENTRIES_DO_NOT_EXIST
+        ]:
+            qs = self._add_entries_count_annotate(qs)
+
         if value == self.Exists.ENTRIES_EXISTS:
-            return qs.filter(entry__isnull=False)
+            return qs.filter(**{f'{LeadOrderingEnum.ASC_ENTRIES_COUNT.value}__gt': 0})
+        elif value == self.Exists.ENTRIES_DO_NOT_EXIST:
+            return qs.filter(**{LeadOrderingEnum.ASC_ENTRIES_COUNT.value: 0})
         elif value == self.Exists.ASSESSMENT_EXISTS:
             return qs.filter(assessment__isnull=False)
-        elif value == self.Exists.ENTRIES_DO_NOT_EXIST:
-            return qs.filter(entry__isnull=True)
         elif value == self.Exists.ASSESSMENT_DOES_NOT_EXIST:
             return qs.filter(assessment__isnull=True)
         return qs
@@ -474,7 +513,7 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             raise Exception(f'{self.request=} should be defined')
 
         def _get_annotate(**filters):
-            return Coalesce(
+            return models.functions.Coalesce(
                 models.Subquery(
                     EntryGQFilterSet(
                         data=entries_filter_data,

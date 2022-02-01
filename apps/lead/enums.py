@@ -36,14 +36,18 @@ class LeadOrderingEnum(graphene.Enum):
     ASC_CREATED_BY = 'created_by'
     ASC_ASSIGNEE = 'assignee__first_name'
     ASC_PRIORITY = 'priority'
+    # # Custom Filters
     ASC_PAGE_COUNT = 'page_count'
+    ASC_ENTRIES_COUNT = 'entries_count'
     # DESC
     DESC_ID = f'-{ASC_ID}'
     DESC_CREATED_AT = f'-{ASC_CREATED_AT}'
     DESC_TITLE = f'-{ASC_TITLE}'
     DESC_SOURCE = f'-{ASC_SOURCE}'
     DESC_PUBLISHED_ON = f'-{ASC_PUBLISHED_ON}'
-    DESC_CREATED_BY = f'-{ASC_CREATED_AT}'
+    DESC_CREATED_BY = f'-{ASC_CREATED_BY}'
     DESC_ASSIGNEE = f'-{ASC_ASSIGNEE}'
     DESC_PRIORITY = f'-{ASC_PRIORITY}'
+    # # Custom Filters
     DESC_PAGE_COUNT = f'-{ASC_PAGE_COUNT}'
+    DESC_ENTRIES_COUNT = f'-{ASC_ENTRIES_COUNT}'
