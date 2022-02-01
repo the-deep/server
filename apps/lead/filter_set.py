@@ -318,6 +318,8 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
     extraction_status = SimpleInputFilter(LeadExtractionStatusEnum, field_name='extraction_status')
     assignees = IDListFilter(field_name='assignee')
     authoring_organization_types = IDListFilter(method='authoring_organization_types_filter')
+    author_organizations = IDListFilter(field_name='authors')
+    source_organizations = IDListFilter(field_name='source')
     # Filter-only enum filter
     exists = SimpleInputFilter(
         convert_enum_to_graphene_enum(LeadFilterSet.Exists, name='LeadExistsEnum'),
@@ -353,7 +355,7 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
         fields = {
             **{
                 x: ['exact']
-                for x in ['id', 'text', 'url', 'website']
+                for x in ['text', 'url', 'website']
             },
         }
 

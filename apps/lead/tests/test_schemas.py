@@ -24,6 +24,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
             # lead Arguments
             $assignees: [ID!]
             $authoringOrganizationTypes: [ID!]
+            $authorOrganizations: [ID!]
+            $sourceOrganizations: [ID!]
             $confidentiality: LeadConfidentialityEnum
             $createdAt: DateTime
             $createdAtGte: DateTime
@@ -49,6 +51,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
             leads (
                 assignees: $assignees
                 authoringOrganizationTypes: $authoringOrganizationTypes
+                authorOrganizations: $authorOrganizations
+                sourceOrganizations: $sourceOrganizations
                 confidentiality: $confidentiality
                 createdAt: $createdAt
                 createdAtGte: $createdAtGte
@@ -153,6 +157,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
             title='Test 1',
             source_type=Lead.SourceType.TEXT,
             confidentiality=Lead.Confidentiality.CONFIDENTIAL,
+            source=org1,
             authors=[org1, org2],
             assignee=[member1],
             priority=Lead.Priority.HIGH,
@@ -172,12 +177,14 @@ class TestLeadQuerySchema(GraphQLTestCase):
             url='https://wwwexample.com/sample-1',
             title='Sample 1',
             confidentiality=Lead.Confidentiality.CONFIDENTIAL,
+            source=org2,
             authors=[org1, org3],
             priority=Lead.Priority.LOW,
         )
         lead4 = LeadFactory.create(
             project=project,
             title='Sample 2',
+            source=org3,
             authors=[org1],
             priority=Lead.Priority.MEDIUM,
         )
@@ -186,6 +193,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
             title='Sample 3',
             status=Lead.Status.TAGGED,
             assignee=[member2],
+            source=org3,
         )
 
         EntryFactory.create(project=project, analysis_framework=af, lead=lead4, controlled=False)
@@ -204,6 +212,10 @@ class TestLeadQuerySchema(GraphQLTestCase):
             ({'assignees': [member1.pk, member2.pk]}, [lead1, lead2, lead5]),
             ({'authoringOrganizationTypes': [org_type2.pk]}, [lead1, lead2, lead3]),
             ({'authoringOrganizationTypes': [org_type1.pk, org_type2.pk]}, [lead1, lead2, lead3, lead4]),
+            ({'authorOrganizations': [org1.pk, org2.pk]}, [lead1, lead2, lead3, lead4]),
+            ({'authorOrganizations': [org3.pk]}, [lead2, lead3]),
+            ({'sourceOrganizations': [org1.pk, org2.pk]}, [lead1, lead3]),
+            ({'sourceOrganizations': [org3.pk]}, [lead4, lead5]),
             ({'priorities': [self.genum(Lead.Priority.HIGH)]}, [lead1, lead2]),
             ({'priorities': [self.genum(Lead.Priority.LOW), self.genum(Lead.Priority.HIGH)]}, [lead1, lead2, lead3, lead5]),
             ({'sourceTypes': [self.genum(Lead.SourceType.WEBSITE)]}, [lead3]),
