@@ -229,7 +229,7 @@ class TestEntryQuery(GraphQLTestCase):
         query = '''
             query MyQuery (
                 $projectId: ID!
-                $authoringOrganizationTypes: [ID!]
+                $leadAuthoringOrganizationTypes: [ID!]
                 $commentStatus: EntryFilterCommentStatusEnum
                 $controlled: Boolean
                 $createdAt: DateTime
@@ -272,7 +272,7 @@ class TestEntryQuery(GraphQLTestCase):
                     modifiedBy: $modifiedBy
                     projectEntryLabels: $projectEntryLabels
                     # Lead filters
-                    authoringOrganizationTypes: $authoringOrganizationTypes
+                    leadAuthoringOrganizationTypes: $leadAuthoringOrganizationTypes
                     leadAssignees: $leadAssignees
                     leadConfidentialities: $leadConfidentialities
                     leadGroupLabel: $leadGroupLabel
@@ -375,8 +375,8 @@ class TestEntryQuery(GraphQLTestCase):
             # TODO: ({'geoCustomShape': []}, []),
             # TODO: After adding comment({'commentStatus': self.genum(EntryFilterMixin.CommentStatus.RESOLVED)}, []),
             # Lead filters
-            ({'authoringOrganizationTypes': [org_type2.pk]}, [entry1_1, entry2_1, entry3_1]),
-            ({'authoringOrganizationTypes': [org_type1.pk, org_type2.pk]}, [entry1_1, entry2_1, entry3_1, entry4_1]),
+            ({'leadAuthoringOrganizationTypes': [org_type2.pk]}, [entry1_1, entry2_1, entry3_1]),
+            ({'leadAuthoringOrganizationTypes': [org_type1.pk, org_type2.pk]}, [entry1_1, entry2_1, entry3_1, entry4_1]),
             ({'leads': [lead1.pk, lead2.pk]}, [entry1_1, entry2_1]),
             ({'leadTitle': 'test'}, [entry1_1, entry2_1]),
             ({'leadAssignees': [member2.pk]}, [entry2_1]),
