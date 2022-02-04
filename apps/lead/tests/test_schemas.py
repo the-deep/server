@@ -30,7 +30,6 @@ class TestLeadQuerySchema(GraphQLTestCase):
             $createdAt: DateTime
             $createdAtGte: DateTime
             $createdAtLte: DateTime
-            $customFilters: LeadCustomFilterEnum
             $emmEntities: String
             $emmKeywords: String
             $emmRiskFactors: String
@@ -57,7 +56,6 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 createdAt: $createdAt
                 createdAtGte: $createdAtGte
                 createdAtLte: $createdAtLte
-                customFilters: $customFilters
                 emmEntities: $emmEntities
                 emmKeywords: $emmKeywords
                 emmRiskFactors: $emmRiskFactors
@@ -230,9 +228,6 @@ class TestLeadQuerySchema(GraphQLTestCase):
             ({'exists': self.genum(LeadFilterSet.Exists.ENTRIES_DO_NOT_EXIST)}, [lead1, lead2, lead3]),
             ({'exists': self.genum(LeadFilterSet.Exists.ASSESSMENT_EXISTS)}, [lead1, lead2]),
             ({'exists': self.genum(LeadFilterSet.Exists.ASSESSMENT_DOES_NOT_EXIST)}, [lead3, lead4, lead5]),
-            # NOTE: customFilters + entriesFilterData is in entry tests.
-            ({'customFilters': self.genum(LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES)}, [lead5]),
-            ({'customFilters': self.genum(LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES)}, [lead4, lead5]),
             # TODO:
             # ({'emmEntities': []}, []),
             # ({'emmKeywords': []}, []),
@@ -333,7 +328,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                     title
                     publishedOn
                     priority
-                    entriesCounts {
+                    entriesCount {
                       total
                       controlled
                     }
@@ -385,7 +380,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         lead2 = LeadFactory.create(project=project, source=org2, authors=[org1, org3])
         lead3 = LeadFactory.create(project=project)
 
-        # Some entries for entriesCounts
+        # Some entries for entriesCount
         EntryFactory.create_batch(2, lead=lead1, controlled=True)
         EntryFactory.create_batch(5, lead=lead1)
         EntryFactory.create_batch(10, lead=lead2)
@@ -415,8 +410,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
             [10, 0],
             [0, 0],
         ]):
-            self.assertEqual(results[index]['entriesCounts']['total'], total_count, content)
-            self.assertEqual(results[index]['entriesCounts']['controlled'], controlled_count, content)
+            self.assertEqual(results[index]['entriesCount']['total'], total_count, content)
+            self.assertEqual(results[index]['entriesCount']['controlled'], controlled_count, content)
 
         # Change AF, this will now not show old entries
         content = self.query_check(query, variables={'id': project.id})
@@ -433,8 +428,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
             [1, 0],
             [0, 0],
         ]):
-            self.assertEqual(results[index]['entriesCounts']['total'], total_count, content)
-            self.assertEqual(results[index]['entriesCounts']['controlled'], controlled_count, content)
+            self.assertEqual(results[index]['entriesCount']['total'], total_count, content)
+            self.assertEqual(results[index]['entriesCount']['controlled'], controlled_count, content)
 
     def test_leads_entries_query(self):
         query = '''
@@ -445,7 +440,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 }
                 lead(id: $leadId) {
                     id
-                    entriesCounts {
+                    entriesCount {
                       total
                       controlled
                     }
@@ -474,8 +469,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
         self.assertIdEqual(response['data']['project']['analysisFramework']['id'], af.pk)
         content = response['data']['project']['lead']
         self.assertIdEqual(content['id'], lead.pk, content)
-        self.assertEqual(content['entriesCounts']['total'], 5, content)
-        self.assertEqual(content['entriesCounts']['controlled'], 2, content)
+        self.assertEqual(content['entriesCount']['total'], 5, content)
+        self.assertEqual(content['entriesCount']['controlled'], 2, content)
         self.assertListIds(content['entries'], [*controlled_entries, *not_controlled_entries], content)
 
         # Now change AF
@@ -489,8 +484,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
         self.assertIdEqual(response['data']['project']['analysisFramework']['id'], af_new.pk)
         content = response['data']['project']['lead']
         self.assertIdEqual(content['id'], lead.pk, content)
-        self.assertEqual(content['entriesCounts']['total'], 6, content)
-        self.assertEqual(content['entriesCounts']['controlled'], 4, content)
+        self.assertEqual(content['entriesCount']['total'], 6, content)
+        self.assertEqual(content['entriesCount']['controlled'], 4, content)
         self.assertListIds(content['entries'], [*new_controlled_entries, *new_not_controlled_entries], content)
 
     def test_lead_options_query(self):
