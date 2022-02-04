@@ -419,7 +419,7 @@ class TestEntryQuery(GraphQLTestCase):
                 TestLeadQuerySchema.lead_filter_query,
                 variables={
                     'projectId': project.id,
-                    'customFilters': self.genum(LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES),
+                    'exists': self.genum(LeadFilterSet.Exists.ENTRIES_EXISTS),
                     'entriesFilterData': filter_data,
                 }
             )
@@ -827,7 +827,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                 TestLeadQuerySchema.lead_filter_query,
                 variables={
                     'projectId': self.project.id,
-                    'customFilters': self.genum(LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES),
+                    'exists': self.genum(LeadFilterSet.Exists.ENTRIES_EXISTS),
                     'entriesFilterData': {
                         'filterableData': filter_data,
                     }

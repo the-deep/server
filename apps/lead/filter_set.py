@@ -300,13 +300,6 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
         ENTRIES_DO_NOT_EXIST = 'entries_do_not_exist', 'Entries do not exist'
         ASSESSMENT_DOES_NOT_EXIST = 'assessment_does_not_exist', 'Assessment does not exist'
 
-    class CustomFilter(models.TextChoices):
-        EXCLUDE_EMPTY_FILTERED_ENTRIES = 'exclude_empty_filtered_entries', 'exclude empty filtered entries'
-        EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES = (
-            'exclude_empty_controlled_filtered_entries',
-            'exclude empty controlled filtered entries',
-        )
-
     ids = IDListFilter(method='filter_leads_id', help_text='Empty ids are ignored.')
     exclude_provided_leads_id = django_filters.BooleanFilter(
         method='filter_exclude_provided_leads_id', help_text='Only used when ids are provided.')
