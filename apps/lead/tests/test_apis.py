@@ -1759,17 +1759,17 @@ class TestExtractorCallback(TestCase):
         super().setUp()
         self.lead = LeadFactory.create()
 
-    @mock.patch('lead.serializers.get_text_form_url')
-    @mock.patch('lead.serializers.download_file_from_url')
-    def test_extractor_callback_url(self, download_file_from_url_mock, get_text_form_url_mock):
+    @mock.patch('lead.serializers.RequestHelper.get_text')
+    @mock.patch('lead.serializers.RequestHelper.get_decoded_file')
+    def test_extractor_callback_url(self, get_decoded_file_mock, get_text_mock):
         url = '/api/v1/leads/extract-callback/'
         self.authenticate()
 
         image = SimpleUploadedFile(
             name='test_image.jpg', content=b'', content_type='image/jpeg'
         )
-        download_file_from_url_mock.return_value = image
-        get_text_form_url_mock.return_value = "Extracted text"
+        get_decoded_file_mock.return_value = image
+        get_text_mock.return_value = "Extracted text"
 
         # Before callback
         lead_preview = LeadPreview.objects.filter(lead=self.lead).last()

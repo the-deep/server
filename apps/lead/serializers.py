@@ -32,8 +32,7 @@ from .models import (
     EMMEntity,
     LeadPreview,
 )
-from utils.image import download_file_from_url
-from apps.docs.utils import get_text_form_url
+from utils.request import RequestHelper
 
 
 def check_if_url_exists(url, user=None, project=None, exception_id=None, return_lead=False):
@@ -654,7 +653,7 @@ class ExtractCallbackSerializer(serializers.Serializer):
         # and create new one
         LeadPreview.objects.create(
             lead=lead,
-            text_extract=get_text_form_url(validated_data["text_path"]),
+            text_extract=RequestHelper(url=validated_data["text_path"], ignore_error=True).get_text(),
             word_count=word_count,
             page_count=page_count,
         )
@@ -662,7 +661,7 @@ class ExtractCallbackSerializer(serializers.Serializer):
         LeadPreviewImage.objects.filter(lead=lead).delete()
         for image in validated_data["images_path"]:
             lead_image = LeadPreviewImage(lead=lead)
-            image_obj = download_file_from_url(image)
+            image_obj = RequestHelper(url=image, ignore_error=True).get_decoded_file()
             if image_obj:
                 lead_image.file.save(image_obj.name, image_obj)
                 lead_image.save()
