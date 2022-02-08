@@ -1,5 +1,4 @@
 from rest_framework.mixins import RetrieveModelMixin
-import requests
 
 
 def mark_as_list():
@@ -48,14 +47,3 @@ def is_list_view(path, method, view):
         return False
 
     return True
-
-
-def get_text_form_url(url):
-    """
-    Returns text from url
-    """
-    try:
-        response = requests.get(url)
-        return response.text
-    except Exception:
-        return ""
