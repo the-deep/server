@@ -568,6 +568,9 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
     lead_statuses = MultipleInputFilter(LeadStatusEnum, field_name='lead__status')
     lead_priorities = MultipleInputFilter(LeadPriorityEnum, field_name='lead__priority')
     lead_confidentialities = MultipleInputFilter(LeadConfidentialityEnum, field_name='lead__confidentiality')
+    lead_authoring_organization_types = IDListFilter(method='authoring_organization_types_filter')
+    lead_author_organizations = IDListFilter(field_name='lead__authors')
+    lead_source_organizations = IDListFilter(field_name='lead__source')
 
     search = django_filters.CharFilter(method='search_filter')
     created_by = IDListFilter()
@@ -578,7 +581,6 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
     )
     entry_types = MultipleInputFilter(EntryTagTypeEnum, field_name='entry_type')
     project_entry_labels = IDListFilter(label='Project Entry Labels', method='project_entry_labels_filter')
-    authoring_organization_types = IDListFilter(method='authoring_organization_types_filter')
     entries_id = IDListFilter(field_name='id')
     geo_custom_shape = django_filters.CharFilter(label='GEO Custom Shapes', method='geo_custom_shape_filter')
     # Entry Group Label Filters
