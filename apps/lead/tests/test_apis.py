@@ -5,6 +5,7 @@ from django.db.models import Q
 
 from rest_framework.exceptions import ErrorDetail
 
+from utils.common import UidBase64Helper
 from deep.tests import TestCase
 
 from user.models import User
@@ -23,6 +24,7 @@ from organization.models import (
 from organization.serializers import SimpleOrganizationSerializer
 from lead.filter_set import LeadFilterSet
 from lead.serializers import SimpleLeadGroupSerializer
+from lead.tasks import LeadExtraction
 from entry.models import (
     Entry,
     ProjectEntryLabel,
@@ -39,6 +41,9 @@ from lead.models import (
 )
 from user_group.models import UserGroup, GroupMembership
 from ary.models import Assessment
+from lead.factories import LeadFactory
+from django.core.files.uploadedfile import SimpleUploadedFile
+from unittest import mock
 
 
 logger = logging.getLogger(__name__)
@@ -274,7 +279,7 @@ class LeadTests(TestCase):
         response = self.client.get(url)
 
         r_data = response.json()
-        assert 'entriesCount' in r_data["results"][0]
+        assert 'entriesCount' in r_data['results'][0]
 
     def test_create_lead_no_create_role(self, assignee=None):
         lead_count = Lead.objects.count()
@@ -422,7 +427,7 @@ class LeadTests(TestCase):
         response = self.client.post(url, data)
         rdata = response.data
         assert 'has_emm_leads' in rdata
-        assert not rdata['has_emm_leads'], "There should be no emm leads in the project"
+        assert not rdata['has_emm_leads'], 'There should be no emm leads in the project'
         assert_id(rdata['members'], SimpleUserSerializer([user1, user2, user], many=True).data)
         assert rdata['projects'] == SimpleProjectSerializer([project], many=True).data
         assert rdata['lead_groups'] == []
@@ -483,7 +488,7 @@ class LeadTests(TestCase):
         )
 
         data = {
-            "projects": [project.id],
+            'projects': [project.id],
         }
         self.authenticate()
         response = self.client.post(url, data, format='json')
@@ -501,7 +506,7 @@ class LeadTests(TestCase):
         assert data['emm_risk_factors'] == []
 
         assert 'has_emm_leads' in data
-        assert data['has_emm_leads'], "There are emm leads"
+        assert data['has_emm_leads'], 'There are emm leads'
 
         data = {
             'projects': [project.id],
@@ -514,7 +519,7 @@ class LeadTests(TestCase):
 
         # Check emm_entities
         assert 'emm_entities' in data
-        assert not data['emm_entities'], "Entities not specified."
+        assert not data['emm_entities'], 'Entities not specified.'
 
         # Check emm_risk_factors
         assert 'emm_risk_factors' in data
@@ -524,10 +529,10 @@ class LeadTests(TestCase):
 
         # Check emm_keywords
         assert 'emm_keywords' in data
-        assert not data['emm_entities'], "Keywords not specified."
+        assert not data['emm_entities'], 'Keywords not specified.'
 
         assert 'has_emm_leads' in data
-        assert data['has_emm_leads'], "There are emm leads"
+        assert data['has_emm_leads'], 'There are emm leads'
 
     def test_options_assignees_get(self):
         url = '/api/v1/lead-options/?projects={}'
@@ -644,7 +649,7 @@ class LeadTests(TestCase):
         assert expected_keywords_count_set == result_keywords_count_set
 
         assert 'has_emm_leads' in data
-        assert data['has_emm_leads'], "There are emm leads"
+        assert data['has_emm_leads'], 'There are emm leads'
 
         # Now check options for project1, there should be no emm related data
         url = f'/api/v1/lead-options/?projects={project1.id}'
@@ -654,7 +659,7 @@ class LeadTests(TestCase):
         data = response.data
 
         assert 'has_emm_leads' in data
-        assert not data['has_emm_leads'], "this Project should not have emm"
+        assert not data['has_emm_leads'], 'this Project should not have emm'
         assert 'emm_risk_factors' in data
         assert not data['emm_risk_factors']
         assert 'emm_keywords' in data
@@ -759,7 +764,7 @@ class LeadTests(TestCase):
         response = self.client.post(url, data)
         self.assert_403(response)
 
-        assert leads_count == Lead.objects.all().count(), "No new lead should have been created"
+        assert leads_count == Lead.objects.all().count(), 'No new lead should have been created'
 
     def test_lead_copy(self):
         url = '/api/v1/lead-copy/'
@@ -977,22 +982,22 @@ class LeadTests(TestCase):
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
-        assert len(response.data['results']) == 3, "Three leads created"
+        assert len(response.data['results']) == 3, 'Three leads created'
         leads = response.data['results']
-        assert leads[0]['id'] == lead3.id, "Preview3 has no pages"
-        assert leads[1]['id'] == lead2.id, "Preview2 has less pages"
-        assert leads[2]['id'] == lead1.id, "Preview1 has more pages"
+        assert leads[0]['id'] == lead3.id, 'Preview3 has no pages'
+        assert leads[1]['id'] == lead2.id, 'Preview2 has less pages'
+        assert leads[2]['id'] == lead1.id, 'Preview1 has more pages'
 
         # Descending ordering
         url = '/api/v1/leads/?ordering=,-page_count,,'  # this also tests leading/trailing/multiple commas
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
-        assert len(response.data['results']) == 3, "Three leads created"
+        assert len(response.data['results']) == 3, 'Three leads created'
         leads = response.data['results']
-        assert leads[0]['id'] == lead1.id, "Preview1 has more pages"
-        assert leads[1]['id'] == lead2.id, "Preview2 has less pages"
-        assert leads[2]['id'] == lead3.id, "Preview3 has no pages"
+        assert leads[0]['id'] == lead1.id, 'Preview1 has more pages'
+        assert leads[1]['id'] == lead2.id, 'Preview2 has less pages'
+        assert leads[2]['id'] == lead3.id, 'Preview3 has no pages'
 
     def test_lead_filter(self):
         project = self.create_project(create_assessment_template=True)
@@ -1059,10 +1064,10 @@ class LeadTests(TestCase):
     def test_lead_authoring_organization_type_filter(self):
         url = '/api/v1/leads/?authoring_organization_types={}'
 
-        project = self.create_project(title="lead_test_project")
-        organization_type1 = self.create(OrganizationType, title="National")
-        organization_type2 = self.create(OrganizationType, title="International")
-        organization_type3 = self.create(OrganizationType, title="Government")
+        project = self.create_project(title='lead_test_project')
+        organization_type1 = self.create(OrganizationType, title='National')
+        organization_type2 = self.create(OrganizationType, title='International')
+        organization_type3 = self.create(OrganizationType, title='Government')
 
         organization1 = self.create(Organization, organization_type=organization_type1)
         organization2 = self.create(Organization, organization_type=organization_type2)
@@ -1079,27 +1084,27 @@ class LeadTests(TestCase):
         # Authoring organization_type filter test
         response = self.client.get(url.format(organization_type1.id))
         self.assert_200(response)
-        assert len(response.data['results']) == 2, "There should be 2 lead"
+        assert len(response.data['results']) == 2, 'There should be 2 lead'
 
         # get multiple leads
         organization_type_query = ','.join([
             str(id) for id in [organization_type1.id, organization_type3.id]
         ])
         response = self.client.get(url.format(organization_type_query))
-        assert len(response.data['results']) == 3, "There should be 3 lead"
+        assert len(response.data['results']) == 3, 'There should be 3 lead'
 
         # test authoring_organization post filter
         url = '/api/v1/leads/filter/'
         filter_data = {'authoring_organization_types': [organization_type1.id]}
         self.authenticate()
         response = self.client.post(url, data=filter_data, format='json')
-        assert len(response.data['results']) == 2, "There should be 2 lead"
+        assert len(response.data['results']) == 2, 'There should be 2 lead'
 
         # test multiple post
         filter_data = {'authoring_organization_types': [organization_type1.id, organization_type3.id]}
         self.authenticate()
         response = self.client.post(url, filter_data, format='json')
-        assert len(response.data['results']) == 3, "There should be 3 lead"
+        assert len(response.data['results']) == 3, 'There should be 3 lead'
 
     def test_lead_filter_search(self):
         url = '/api/v1/leads/?emm_entities={}'
@@ -1267,7 +1272,7 @@ class LeadTests(TestCase):
 
         def _test_response(resp):
             self.assert_200(resp)
-            assert len(resp.data['results']) == 3, "There should be three leads"
+            assert len(resp.data['results']) == 3, 'There should be three leads'
             ids_list = [x['id']for x in resp.data['results']]
             assert lead1.id in ids_list
             assert lead2.id in ids_list
@@ -1278,7 +1283,7 @@ class LeadTests(TestCase):
         # Get a single lead
         resp = self.client.get(url.format(entity1.id))
         self.assert_200(resp)
-        assert len(resp.data['results']) == 1, "There should be one lead"
+        assert len(resp.data['results']) == 1, 'There should be one lead'
         assert resp.data['results'][0]['id'] == lead1.id
 
         # Get a multiple leads
@@ -1291,7 +1296,7 @@ class LeadTests(TestCase):
         filter_data = {'emm_entities': [entity1.id]}
         self.authenticate()
         resp = self.client.post(url, filter_data, format='json')
-        assert len(resp.data['results']) == 1, "There should be one lead"
+        assert len(resp.data['results']) == 1, 'There should be one lead'
         assert resp.data['results'][0]['id'] == lead1.id
 
         filter_data = {'emm_entities': [entity1.id, entity2.id]}
@@ -1332,7 +1337,7 @@ class LeadTests(TestCase):
         # Get a single lead
         resp = self.client.get(url.format('keyword1'))
         self.assert_200(resp)
-        assert len(resp.data['results']) == 2, "There should be 2 leads"
+        assert len(resp.data['results']) == 2, 'There should be 2 leads'
         ids_list = [x['id']for x in resp.data['results']]
         assert lead1.id in ids_list
         assert lead2.id in ids_list
@@ -1341,7 +1346,7 @@ class LeadTests(TestCase):
         entities_query = ','.join(['keyword1', 'keyword2'])
         resp = self.client.get(url.format(entities_query))
         self.assert_200(resp)
-        assert len(resp.data['results']) == 3, "There should be three leads"
+        assert len(resp.data['results']) == 3, 'There should be three leads'
         ids_list = [x['id']for x in resp.data['results']]
         assert lead1.id in ids_list
         assert lead2.id in ids_list
@@ -1379,7 +1384,7 @@ class LeadTests(TestCase):
         # Get a single lead
         resp = self.client.get(url.format('rf1'))
         self.assert_200(resp)
-        assert len(resp.data['results']) == 2, "There should be 2 leads"
+        assert len(resp.data['results']) == 2, 'There should be 2 leads'
         ids_list = [x['id']for x in resp.data['results']]
         assert lead1.id in ids_list
         assert lead4.id in ids_list
@@ -1388,7 +1393,7 @@ class LeadTests(TestCase):
         entities_query = ','.join(['rf1', 'rf2'])
         resp = self.client.get(url.format(entities_query))
         self.assert_200(resp)
-        assert len(resp.data['results']) == 4, "There should be four leads"
+        assert len(resp.data['results']) == 4, 'There should be four leads'
         ids_list = [x['id'] for x in resp.data['results']]
         assert lead1.id in ids_list
         assert lead2.id in ids_list
@@ -1569,10 +1574,10 @@ class LeadTests(TestCase):
         self.assertEqual(response.data['results'][0]['id'], leadg_1.id)
 
     def test_authors_and_authoring_organization_type(self):
-        project = self.create_project(title="lead_test_project")
-        organization_type1 = self.create(OrganizationType, title="National")
-        organization_type2 = self.create(OrganizationType, title="International")
-        organization_type3 = self.create(OrganizationType, title="Government")
+        project = self.create_project(title='lead_test_project')
+        organization_type1 = self.create(OrganizationType, title='National')
+        organization_type2 = self.create(OrganizationType, title='International')
+        organization_type3 = self.create(OrganizationType, title='Government')
 
         organization1 = self.create(Organization, organization_type=organization_type1)
         organization2 = self.create(Organization, organization_type=organization_type2)
@@ -1749,3 +1754,83 @@ class WebInfoExtractionTests(TestCase):
             'existing': False,
         }
         self.assertEqualWithWarning(expected, response.data)
+
+
+class TestExtractorCallback(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.lead = LeadFactory.create()
+
+    @mock.patch('lead.tasks.RequestHelper.get_text')
+    @mock.patch('lead.tasks.RequestHelper.get_decoded_file')
+    def test_extractor_callback_url(self, get_decoded_file_mock, get_text_mock):
+        url = '/api/v1/leads/extract-callback/'
+        self.authenticate()
+
+        image = SimpleUploadedFile(
+            name='test_image.jpg', content=b'', content_type='image/jpeg'
+        )
+        get_decoded_file_mock.return_value = image
+        get_text_mock.return_value = 'Extracted text'
+
+        # Before callback
+        lead_preview = LeadPreview.objects.filter(lead=self.lead).last()
+        self.assertEqual(lead_preview, None)
+        images_count = LeadPreview.objects.filter(lead=self.lead).count()
+        self.assertEqual(images_count, 0)
+
+        data = {
+            'client_id': LeadExtraction.generate_lead_client_id(self.lead),
+            'images_path': ['http://random.com/image1.jpeg', 'http://random.com/image1.jpeg'],
+            'text_path': 'http://random.com/extracted_file.txt',
+            'url': 'http://random.com/pdf_file.pdf',
+            'total_words_count': 300,
+            'total_pages': 4,
+            'extraction_status': 0,
+        }
+
+        # After callback [Failure]
+        response = self.client.post(url, data)
+        self.assert_200(response)
+        self.lead.refresh_from_db()
+        self.assertEqual(self.lead.extraction_status, Lead.ExtractionStatus.FAILED)
+        self.assertEqual(LeadPreview.objects.filter(lead=self.lead).count(), 0)
+        self.assertEqual(LeadPreviewImage.objects.filter(lead=self.lead).count(), 0)
+
+        data['extraction_status'] = 1
+        # After callback [Success]
+        response = self.client.post(url, data)
+        self.assert_200(response)
+        self.lead.refresh_from_db()
+        self.assertEqual(self.lead.extraction_status, Lead.ExtractionStatus.SUCCESS)
+        self.assertEqual(LeadPreview.objects.filter(lead=self.lead).count(), 1)
+        lead_preview = LeadPreview.objects.filter(lead=self.lead).last()
+        self.assertEqual(lead_preview.text_extract, 'Extracted text')
+        self.assertEqual(lead_preview.word_count, 300)
+        self.assertEqual(lead_preview.page_count, 4)
+        self.assertEqual(LeadPreviewImage.objects.filter(lead=self.lead).count(), 2)
+
+    def test_client_id_generator(self):
+        project = self.create_project()
+        lead1 = self.create_lead(project=project)
+        lead2 = self.create_lead(project=project)
+        lead1_client_id = LeadExtraction.generate_lead_client_id(lead1)
+        lead2_client_id = LeadExtraction.generate_lead_client_id(lead2)
+        lead2.delete()
+        for lead, client_id, excepted_exception in [
+            (lead1, lead1_client_id, None),
+            (
+                lead1,
+                f'{UidBase64Helper.encode(lead1.pk)}-some-random-id',
+                LeadExtraction.Exception.InvalidOrExpiredToken,
+            ),
+            (lead1, '11-some-random-id', LeadExtraction.Exception.InvalidTokenValue),
+            (lead1, 'some-random-id', LeadExtraction.Exception.InvalidTokenValue),
+            (lead2, lead2_client_id, LeadExtraction.Exception.LeadNotFound),
+            (lead2, 'somerandomid', LeadExtraction.Exception.InvalidTokenValue),
+        ]:
+            if excepted_exception:
+                with self.assertRaises(excepted_exception):
+                    LeadExtraction.get_lead_from_client_id(client_id)
+            else:
+                assert LeadExtraction.get_lead_from_client_id(client_id) == lead

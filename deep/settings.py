@@ -65,6 +65,9 @@ env = environ.Env(
     SESSION_COOKIE_DOMAIN=str,
     CSRF_COOKIE_DOMAIN=str,
     DOCKER_HOST_IP=(str, None),
+    # DEEPL
+    DEEPL_EXTRACTOR_URL=str,  # http://extractor:8001/extract_docs
+    DEEPL_EXTRACTOR_CALLBACK_URL=str,  # http://web:8000/api/v1/leads/extract-callback/
     # Pytest
     PYTEST_XDIST_WORKER=(str, None),
     PROFILE=(bool, False),
@@ -441,11 +444,6 @@ CELERY_BEAT_SCHEDULE = {
         # Every 6 hour
         'schedule': crontab(minute=0, hour='*/6'),
     },
-    'classify_remaining_lead_previews': {
-        'task': 'lead.tasks.classify_remaining_lead_previews',
-        # Every 3 hours
-        'schedule': crontab(minute=0, hour='*/3'),
-    },
     'project_generate_stats': {
         'task': 'project.tasks.generate_project_stats_cache',
         # Every 5 min
@@ -682,20 +680,10 @@ if SENTRY_DSN:
         **SENTRY_CONFIG,
     )
 
-# DEEPL Config
-DEEPL_DOMAINS = {
-    'nightly': 'https://deepl-nightly.thedeep.io',
-    'alpha': 'https://deepl-alpha.thedeep.io',
-    'beta': 'https://deepl.togglecorp.com',
-    'development': env('DEEPL_DOMAIN'),
-}
-
-DEEPL_DOMAIN = DEEPL_DOMAINS.get(DEEP_ENVIRONMENT, DEEPL_DOMAINS['alpha'])
-DEEPL_API = DEEPL_DOMAIN + '/api'
-
 # Token timeout days
 TOKEN_DEFAULT_RESET_TIMEOUT_DAYS = 7
 PROJECT_REQUEST_RESET_TIMEOUT_DAYS = 7
+LEAD_EXTRACTION_TOKEN_RESET_TIMEOUT_DAYS = 1
 
 JSON_EDITOR_INIT_JS = 'js/jsoneditor-init.js'
 LOGIN_URL = '/admin/login'
@@ -792,6 +780,9 @@ SESSION_COOKIE_DOMAIN = env('SESSION_COOKIE_DOMAIN')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#csrf-cookie-domain
 CSRF_COOKIE_DOMAIN = env('CSRF_COOKIE_DOMAIN')
 
+# DEEPL Config
+DEEPL_EXTRACTOR_URL = env('DEEPL_EXTRACTOR_URL')
+DEEPL_EXTRACTOR_CALLBACK_URL = env('DEEPL_EXTRACTOR_CALLBACK_URL')
 
 # Graphene configs
 # WHITELIST following nodes from authentication checks

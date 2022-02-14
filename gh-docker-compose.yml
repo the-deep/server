@@ -50,6 +50,9 @@ services:
       HID_CLIENT_ID: deep-local
       HID_CLIENT_REDIRECT_URL: http://localhost:3000/login/
       HID_AUTH_URI: https://api2.dev.humanitarian.id
+      # DEEPL Service
+      DEEPL_EXTRACTOR_URL: http://extractor:8001/extract_docs
+      DEEPL_EXTRACTOR_CALLBACK_URL: http://server:8000/api/v1/leads/extract-callback/
     volumes:
       - ./coverage/:/code/coverage/
       - ./ci-share/:/ci-share/

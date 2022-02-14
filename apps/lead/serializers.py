@@ -24,6 +24,8 @@ from project.serializers import SimpleProjectSerializer
 from gallery.serializers import SimpleFileSerializer, File
 from user.models import User
 from project.models import ProjectMembership
+
+from .tasks import LeadExtraction
 from .models import (
     LeadGroup,
     Lead,
@@ -623,3 +625,34 @@ class LeadCopyGqSerializer(ProjectPropertySerializerMixin, serializers.Serialize
                 new_lead = self.clone_lead(lead, project_id, user)
                 new_lead and new_leads.append(new_lead)
         return new_leads
+
+
+class ExtractCallbackSerializer(serializers.Serializer):
+    """
+    Serialize deepl extractor
+    """
+    client_id = serializers.CharField()
+    images_path = serializers.ListField(
+        child=serializers.CharField(allow_blank=True), default=[]
+    )
+    text_path = serializers.CharField()
+    url = serializers.CharField()
+    total_words_count = serializers.IntegerField()
+    total_pages = serializers.IntegerField()
+    extraction_status = serializers.IntegerField()  # 0 = Failed, 1 = Success
+
+    def validate_client_id(self, client_id):
+        try:
+            return LeadExtraction.get_lead_from_client_id(client_id)
+        except Exception as e:
+            raise serializers.ValidationError(str(e))
+
+    def create(self, data):
+        return LeadExtraction.save_lead_data(
+            data['client_id'],  # This is now lead instance from validate_client_id
+            data['extraction_status'] == 1,
+            data['text_path'],
+            data['images_path'],
+            data['total_words_count'],
+            data['total_pages'],
+        )
