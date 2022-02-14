@@ -24,15 +24,15 @@ from project.serializers import SimpleProjectSerializer
 from gallery.serializers import SimpleFileSerializer, File
 from user.models import User
 from project.models import ProjectMembership
+
+from .tasks import LeadExtraction
 from .models import (
     LeadGroup,
     Lead,
     LeadPreviewImage,
     LeadEMMTrigger,
     EMMEntity,
-    LeadPreview,
 )
-from utils.request import RequestHelper
 
 
 def check_if_url_exists(url, user=None, project=None, exception_id=None, return_lead=False):
@@ -631,7 +631,7 @@ class ExtractCallbackSerializer(serializers.Serializer):
     """
     Serialize deepl extractor
     """
-    client_id = serializers.IntegerField()
+    client_id = serializers.CharField()
     images_path = serializers.ListField(
         child=serializers.CharField(allow_blank=True), default=[]
     )
@@ -639,30 +639,20 @@ class ExtractCallbackSerializer(serializers.Serializer):
     url = serializers.CharField()
     total_words_count = serializers.IntegerField()
     total_pages = serializers.IntegerField()
+    extraction_status = serializers.IntegerField()  # 0 = Failed, 1 = Success
 
-    def create(self, validated_data):
-        lead = None
+    def validate_client_id(self, client_id):
         try:
-            lead = Lead.objects.get(id=validated_data["client_id"])
-        except Lead.DoesNotExist:
-            raise serializers.ValidationError("Invalid lead id")
-        # Make sure there isn't existing lead preview
-        LeadPreview.objects.filter(lead=lead).delete()
-        LeadPreviewImage.objects.filter(lead=lead).delete()
-        word_count, page_count = validated_data["total_words_count"], validated_data["total_pages"]
-        # and create new one
-        LeadPreview.objects.create(
-            lead=lead,
-            text_extract=RequestHelper(url=validated_data["text_path"], ignore_error=True).get_text(),
-            word_count=word_count,
-            page_count=page_count,
+            return LeadExtraction.get_lead_from_client_id(client_id)
+        except Exception as e:
+            raise serializers.ValidationError(str(e))
+
+    def create(self, data):
+        return LeadExtraction.save_lead_data(
+            data['client_id'],  # This is now lead instance from validate_client_id
+            data['extraction_status'] == 1,
+            data['text_path'],
+            data['images_path'],
+            data['total_words_count'],
+            data['total_pages'],
         )
-        # Save extracted images as LeadPreviewImage instances
-        LeadPreviewImage.objects.filter(lead=lead).delete()
-        for image in validated_data["images_path"]:
-            lead_image = LeadPreviewImage(lead=lead)
-            image_obj = RequestHelper(url=image, ignore_error=True).get_decoded_file()
-            if image_obj:
-                lead_image.file.save(image_obj.name, image_obj)
-                lead_image.save()
-        return True
