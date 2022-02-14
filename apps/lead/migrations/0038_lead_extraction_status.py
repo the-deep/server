@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='lead',
             name='extraction_status',
-            field=models.SmallIntegerField(choices=[(0, 'Pending'), (1, 'Started'), (2, 'Success'), (3, 'Failed')], default=0),
+            field=models.SmallIntegerField(choices=[(0, 'Pending'), (1, 'Started'), (4, 'Retrying'), (2, 'Success'), (3, 'Failed')], default=0),
         ),
         migrations.RunPython(
             set_lead_extraction_status_for_current_leads,

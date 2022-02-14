@@ -83,6 +83,7 @@ class Lead(UserResource, ProjectEntityMixin):
     class ExtractionStatus(models.IntegerChoices):
         PENDING = 0, 'Pending'
         STARTED = 1, 'Started'
+        RETRYING = 4, 'Retrying'
         SUCCESS = 2, 'Success'
         FAILED = 3, 'Failed'
 
