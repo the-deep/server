@@ -1,19 +1,4 @@
-from celery import shared_task
-# from channels import Group
-from django.core.files import File
-from django.db.models import Q
-from django.db.models.functions import Length
-from django.conf import settings
-from lead.models import (
-    Lead,
-    LeadPreview,
-)
-from redis_store import redis
-# from rest_framework.renderers import JSONRenderer
-from utils.extractor.file_document import FileDocument
-from utils.extractor.web_document import WebDocument
-from utils.extractor.thumbnailers import DocThumbnailer
-# from utils.websocket.subscription import SubscriptionConsumer
+from typing import List
 
 import time
 import os
@@ -22,7 +7,26 @@ import requests
 import tempfile
 import json
 import logging
-# from utils.websocket.subscription import SubscriptionConsumer
+
+from celery import shared_task
+from django.core.files import File
+from django.db.models import Q
+from django.db.models.functions import Length
+from django.conf import settings
+from django.utils.encoding import DjangoUnicodeDecodeError
+
+from redis_store import redis
+from utils.common import redis_lock, UidBase64Helper
+from utils.request import RequestHelper
+from utils.extractor.file_document import FileDocument
+from utils.extractor.web_document import WebDocument
+from utils.extractor.thumbnailers import DocThumbnailer
+from .token import lead_extraction_token_generator
+from .models import (
+    Lead,
+    LeadPreview,
+    LeadPreviewImage,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -40,50 +44,111 @@ def _preprocess(text):
     text = re.sub(r' +', ' ', text)
     # More than 3 line breaks to just 3 line breaks
     text = re.sub(r'\n\s*\n\s*(\n\s*)+', '\n\n\n', text)
-
     return text.strip()
 
 
-def _extract_from_lead_core(lead_id):
-    """
-    The core lead extraction method.
-    DONOT USE THIS METHOD DIRECTLY.
-    TO PREVENT MULTIPLE LEAD EXTRACTIONS HAPPEN SIMULTANEOUSLY,
-    USE THE extract_from_lead METHOD.
-    """
-    # Get the lead to be extracted
-    lead = Lead.objects.get(id=lead_id)
-    url_to_extract = None
-    url_content_type = None
-    if lead.attachment:
-        url_to_extract = lead.attachment.url
-        url_content_type = FileDocument(lead.attachment.file, lead.attachment.file.name).type
-    elif lead.url:
-        url_to_extract = lead.url
-        url_content_type = WebDocument(lead.url).type
-    if url_to_extract:
+class LeadExtraction:
+    REQUEST_HEADERS = {'Content-Type': 'application/json'}
+    MAX_RETRIES = 10
+    RETRY_COUNTDOWN = 10 * 60  # 10 min
+    class Exception():
+        class InvalidTokenValue(Exception):
+            message = 'Invalid Token'
+
+        class InvalidOrExpiredToken(Exception):
+            message = 'Invalid/expired token in client_id'
+
+        class LeadNotFound(Exception):
+            message = 'No lead found for provided id'
+
+    @staticmethod
+    def generate_lead_client_id(lead) -> str:
+        uid = UidBase64Helper.encode(lead.pk)
+        token = lead_extraction_token_generator.make_token(lead)
+        return f'{uid}-{token}'
+
+    @classmethod
+    def get_lead_from_client_id(cls, client_id):
         try:
-            headers = {
-                "Content-Type": "application/json"
-            }
-            payload = {
-                "urls": [
-                    {
-                        "url": url_to_extract,
-                        "client_id": lead.id,
-                        "url_content_type": url_content_type
-                    }
-                ],
-                "callback_url": settings.DEEPL_EXTRACTOR_CALLBACK_URL
-            }
-            response = requests.post(settings.DEEPL_EXTRACTOR_URL, headers=headers, data=json.dumps(payload))
-            if response.status_code == 200:
-                logger.info('Lead Extraction Request Sent!!', exc_info=True)
-            else:
-                logger.error('Lead Extraction Request Failed!!', exc_info=True)
-        except Exception:
-            logger.exception('Lead Extraction Failed, Expeption occoured!!', exc_info=True)
-    return True
+            uidb64, token = client_id.split('-', 1)
+            uid = UidBase64Helper.decode(uidb64)
+        except (ValueError, DjangoUnicodeDecodeError):
+            raise cls.Exception.InvalidTokenValue()
+        if (lead := Lead.objects.filter(id=uid).first()) is None:
+            raise cls.Exception.LeadNotFound(f'No lead found for provided id: {uid}')
+        if not lead_extraction_token_generator.check_token(lead, token):
+            raise cls.Exception.InvalidOrExpiredToken()
+        return lead
+
+    @classmethod
+    def trigger_lead_extract(cls, lead):
+    def trigger_lead_extract(cls, lead, task_instance):
+        # Get the lead to be extracted
+        url_to_extract = None
+        if lead.attachment:
+            url_to_extract = lead.attachment.url
+        elif lead.url:
+            url_to_extract = lead.url
+        if url_to_extract:
+            try:
+                payload = {
+                    'urls': [
+                        {
+                            'url': url_to_extract,
+                            'client_id': LeadExtraction.generate_lead_client_id(lead.id),
+                        }
+                    ],
+                    'callback_url': settings.DEEPL_EXTRACTOR_CALLBACK_URL
+                }
+                response = requests.post(
+                    settings.DEEPL_EXTRACTOR_URL,
+                    headers=cls.REQUEST_HEADERS,
+                    data=json.dumps(payload)
+                )
+                if response.status_code == 200:
+                    logger.info('Lead Extraction Request Sent!!', exc_info=True)
+                    lead.update_extraction_status(Lead.ExtractionStatus.Started)
+                    return True
+                else:
+                    logger.error('Lead Extraction Request Failed!!', exc_info=True)
+            except Exception:
+                logger.exception('Lead Extraction Failed, Exception occoured!!', exc_info=True)
+        lead.update_extraction_status(Lead.ExtractionStatus.RETRYING)
+        task_instance.retry(countdown=cls.RETRY_COUNTDOWN)
+        return False
+
+    @staticmethod
+    def save_lead_data(
+        lead: Lead,
+        extraction_success: bool,
+        text_source_uri: str,
+        images_uri: List[str],
+        words_count: int,
+        pages_count: int,
+    ):
+        if not extraction_success:
+            lead.update_extraction_status(Lead.ExtractionStatus.FAILED)
+            return lead
+        LeadPreview.objects.filter(lead=lead).delete()
+        LeadPreviewImage.objects.filter(lead=lead).delete()
+        word_count, page_count = words_count, pages_count
+        # and create new one
+        LeadPreview.objects.create(
+            lead=lead,
+            text_extract=RequestHelper(url=text_source_uri, ignore_error=True).get_text(),
+            word_count=word_count,
+            page_count=page_count,
+        )
+        # Save extracted images as LeadPreviewImage instances
+        LeadPreviewImage.objects.filter(lead=lead).delete()
+        for image in images_uri:
+            lead_image = LeadPreviewImage(lead=lead)
+            image_obj = RequestHelper(url=image, ignore_error=True).get_decoded_file()
+            if image_obj:
+                lead_image.file.save(image_obj.name, image_obj)
+                lead_image.save()
+        lead.update_extraction_status(Lead.ExtractionStatus.SUCCESS)
+        return lead
 
 
 @shared_task
@@ -193,57 +258,20 @@ def classify_lead(lead):
 
 
 @shared_task
-def extract_from_lead(lead_id):
+@shared_task(bind=True, max_retries=LeadExtraction.MAX_RETRIES)
+@redis_lock('lead_extraction_{0}', 60 * 60 * 0.5)
+def extract_from_lead(task_instance, lead_id):
     """
     A task to auto extract text and images from a lead.
 
     * Lead should have a valid attachment or url.
-    * It needs to be checked whether this task from the same lead
-      is already going on.
-    * On extraction complete, subscribed users through websocket
-      need to be notified.
+    * It needs to be checked whether this task from the same lead is already going on.
     """
-
-    # Use redis lock to keep track of leads currently being extracted
-    # and try to prevent useless parallel extraction of same lead that
-    # that might happen.
-    key = 'lead_extraction_{}'.format(lead_id)
-    lock = redis.get_lock(key, 60 * 60 * 0.5)  # Lock lifetime half hours
-    have_lock = lock.acquire(blocking=False)
-    if not have_lock:
-        return False
-
     try:
-        # Actual extraction process
-        return_value = _extract_from_lead_core(lead_id)
-
-        # Send signal to all pending websocket clients
-        # that the lead extraction has completed.
-
-        # code = SubscriptionConsumer.encode({
-        #     'channel': 'leads',
-        #     'event': 'onPreviewExtracted',
-        #     'leadId': lead_id,
-        # })
-
-        # TODO: Discuss and decide the notification response format
-        # Also TODO: Should a handler be added during subscription
-        # to immediately reply with already extracted lead?
-
-        # Group(code).send(json.loads(
-        #     JSONRenderer().render({
-        #         'code': code,
-        #         'timestamp': timezone.now(),
-        #         'type': 'notification',
-        #         'status': return_value,
-        #     }).decode('utf-8')
-        # ))
+        lead = Lead.objects.get(pk=lead_id)
+        return LeadExtraction.trigger_lead_extract(lead, task_instance)
     except Exception:
         logger.error('Lead Core Extraction Failed!!', exc_info=True)
-        return_value = False
-
-    lock.release()
-    return return_value
 
 
 @shared_task
