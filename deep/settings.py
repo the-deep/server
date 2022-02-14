@@ -444,11 +444,6 @@ CELERY_BEAT_SCHEDULE = {
         # Every 6 hour
         'schedule': crontab(minute=0, hour='*/6'),
     },
-    'classify_remaining_lead_previews': {
-        'task': 'lead.tasks.classify_remaining_lead_previews',
-        # Every 3 hours
-        'schedule': crontab(minute=0, hour='*/3'),
-    },
     'project_generate_stats': {
         'task': 'project.tasks.generate_project_stats_cache',
         # Every 5 min
@@ -684,17 +679,6 @@ if SENTRY_DSN:
         app_type='API',
         **SENTRY_CONFIG,
     )
-
-# DEEPL Config
-DEEPL_DOMAINS = {
-    'nightly': 'https://deepl-nightly.thedeep.io',
-    'alpha': 'https://deepl-alpha.thedeep.io',
-    'beta': 'https://deepl.togglecorp.com',
-    'development': env('DEEPL_DOMAIN'),
-}
-
-DEEPL_DOMAIN = DEEPL_DOMAINS.get(DEEP_ENVIRONMENT, DEEPL_DOMAINS['alpha'])
-DEEPL_API = DEEPL_DOMAIN + '/api'
 
 # Token timeout days
 TOKEN_DEFAULT_RESET_TIMEOUT_DAYS = 7

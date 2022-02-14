@@ -970,6 +970,7 @@ enum LeadExistsEnum {
 enum LeadExtractionStatusEnum {
   PENDING
   STARTED
+  RETRYING
   SUCCESS
   FAILED
 }
