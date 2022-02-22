@@ -146,7 +146,7 @@ LOCAL_APPS = [
     'questionnaire',
     'quality_assurance',
     'unified_connector',
-    'nlp',
+    'assisted_tagging',
 
     # MISC DEEP APPS
     'bulk_data_migration',
