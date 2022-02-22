@@ -1,13 +1,14 @@
-from nlp.models import ModelInfo, ModelPrediction, ReviewTag, PredictionEnum
-from rest_framework import serializers
-import nlp.constants as constants
-from django.conf import settings
 import requests
+from rest_framework import serializers
+from django.conf import settings
+
 from entry.models import Entry
+
+from . import constants
+from .models import ModelInfo, ModelPrediction, ReviewTag, PredictionEnum
 
 
 class ModelInfoSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ModelInfo
         fields = '__all__'
@@ -31,7 +32,6 @@ class ModelPredictionSerializer(serializers.ModelSerializer):
 
 
 class ReviewTagSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ReviewTag
         fields = '__all__'
@@ -45,15 +45,14 @@ def save_virtual_framework_tags():
     headers = {
         "Content-Type": "application/json"
     }
-    nlp_response = requests.get(f"{settings.EXTRACTOR_URL}/vf_tags", headers=headers)
-    data = nlp_response.json()
+    resp = requests.get(f"{settings.EXTRACTOR_URL}/vf_tags", headers=headers)
+    data = resp.json()
     for item in data:
         prediction_enum, created = PredictionEnum.objects.get_or_create(
             id=item['id'],
             name=item['key'],
             defaults={'value': item['id']}
         )
-        print(f'{prediction_enum} --------------- {created}')
 
 
 def get_prediction_enum_obj(id):
@@ -90,7 +89,6 @@ class ModelPredictionCallbackSerializer(serializers.Serializer):
                     data["threshold"] = thresholds[category_key][key]
                     data['version'] = versions[category_key][key]
                     model_predictions.append(ModelPrediction(**data))
-
             ModelPrediction.objects.bulk_create(model_predictions)
             return True
         except Exception:

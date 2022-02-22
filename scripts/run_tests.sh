@@ -12,7 +12,7 @@ if [ "$CI" == "true" ]; then
     wait-for-it ${DATABASE_HOST:-db}:${DATABASE_PORT-5432}
 
     # To show migration logs
-    ./manage.py test -v 2 deep.tests.test_fake
+    ./manage.py test --keepdb -v 2 deep.tests.test_fake
 
     # Run all tests now
     echo 'import coverage; coverage.process_startup()' > /code/sitecustomize.py

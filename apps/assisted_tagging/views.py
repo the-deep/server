@@ -1,19 +1,21 @@
+import requests
+import json
+
 from rest_framework import viewsets, response
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from django.conf import settings
-import requests
-import json
-from nlp.serializers import (
+
+from entry.models import Entry
+from .serializers import (
     ModelInfoSerializer,
     ModelPredictionSerializer,
     ReviewTagSerializer,
     ModelPredictionRequestSerializer,
     ModelPredictionCallbackSerializer,
 )
-from nlp.models import ModelInfo, ModelPrediction, ReviewTag
-from entry.models import Entry
+from .models import ModelInfo, ModelPrediction, ReviewTag
 
 
 class ModelInfoViewSet(viewsets.ModelViewSet):
@@ -53,8 +55,8 @@ class ModelPredictionViewSet(viewsets.ModelViewSet):
             payload["entries"].append({'entry_id': entry.id, "entry": entry.excerpt})
         if not payload["entries"]:
             return response.Response("Entries not selected")
-        nlp_response = requests.post(f"{settings.EXTRACTOR_URL}/entry_predict", headers=headers, data=json.dumps(payload))
-        if nlp_response.status_code == 200:
+        resp = requests.post(f"{settings.EXTRACTOR_URL}/entry_predict", headers=headers, data=json.dumps(payload))
+        if resp.status_code == 200:
             return response.Response({'Prediction request sent'})
         return response.Response({'Prediction request failed'})
 
