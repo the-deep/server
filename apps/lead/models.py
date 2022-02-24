@@ -133,6 +133,12 @@ class Lead(UserResource, ProjectEntityMixin):
     assignments = GenericRelation(Assignment, related_query_name='lead')
     is_assessment_lead = models.BooleanField(default=False)
 
+    # Connector  # On delete, make sure to update UnifiedConnectorLead aleady_added to false.
+    # connector_lead = models.ForeignKey(
+    #     'unified_connector.ConnectorLead',
+    #     on_delete=models.SET_NULL, related_name='+', blank=True, null=True
+    # )
+
     def __str__(self):
         return '{}'.format(self.title)
 

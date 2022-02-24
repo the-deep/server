@@ -143,6 +143,7 @@ LOCAL_APPS = [
     'client_page_meta',
     'questionnaire',
     'quality_assurance',
+    'unified_connector',
 
     # MISC DEEP APPS
     'bulk_data_migration',
