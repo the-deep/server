@@ -1337,6 +1337,7 @@ type ProjectDetailType {
   userGroupMembers(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, usergroups: [ID!], page: Int = 1, ordering: String, pageSize: Int): ProjectUserGroupMembershipListType
   isVisualizationAvailable: Boolean!
   vizData: ProjectVizDataType
+  unifiedConnector: UnifiedConnectorQueryType
 }
 
 type ProjectExploreStatType {
@@ -1763,6 +1764,34 @@ type SectionType {
   tooltip: String
   clientId: String!
   widgets: [WidgetType!]
+}
+
+type UnifiedConnectorListType {
+  results: [UnifiedConnectorType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum UnifiedConnectorOrderingEnum {
+  ASC_ID
+  ASC_CREATED_AT
+  ASC_TITLE
+  DESC_ID
+  DESC_CREATED_AT
+  DESC_TITLE
+}
+
+type UnifiedConnectorQueryType {
+  unifiedConnector(id: ID!): UnifiedConnectorType
+  unifiedConnectors(ordering: [UnifiedConnectorOrderingEnum!], page: Int = 1, pageSize: Int): UnifiedConnectorListType
+}
+
+type UnifiedConnectorType {
+  id: ID!
+  title: String!
+  isActive: Boolean!
+  project: ID!
 }
 
 type UpdateAnalysisFramework {
