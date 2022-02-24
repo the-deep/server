@@ -340,7 +340,7 @@ class DeleteMutation(GrapheneMutation):
 
 
 class ProjectScopeMixin():
-    permissions: List[str]
+    permissions: List[PP.Permission]
 
     @classmethod
     def check_permissions(cls, info, **_):
@@ -362,7 +362,7 @@ class PsDeleteMutation(ProjectScopeMixin, DeleteMutation):
 
 
 class AfScopeMixin():
-    permissions: List[str]
+    permissions: List[AfP.Permission]
 
     @classmethod
     def check_permissions(cls, info, **_):

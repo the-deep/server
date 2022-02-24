@@ -244,6 +244,11 @@ class ProjectPermissions(BasePermissions):
         UPDATE_PROJECT = auto()
         DELETE_PROJECT = auto()
         CAN_ADD_MEMBER = auto()
+        # ---------------------- Unified Connector
+        VIEW_UNIFIED_CONNECTOR = auto()
+        CREATE_UNIFIED_CONNECTOR = auto()
+        UPDATE_UNIFIED_CONNECTOR = auto()
+        DELETE_UNIFIED_CONNECTOR = auto()
         # ---------------------- Lead
         CREATE_LEAD = auto()
         VIEW_ONLY_UNPROTECTED_LEAD = auto()
@@ -300,6 +305,10 @@ class ProjectPermissions(BasePermissions):
         Permission.UPDATE_ENTRY,
         Permission.UPDATE_LEAD,
         Permission.VIEW_ALL_LEAD,
+        Permission.VIEW_UNIFIED_CONNECTOR,
+        Permission.CREATE_UNIFIED_CONNECTOR,
+        Permission.UPDATE_UNIFIED_CONNECTOR,
+        Permission.DELETE_UNIFIED_CONNECTOR,
     ]
     ADMIN = [
         *MEMBER,
