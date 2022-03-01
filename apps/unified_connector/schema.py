@@ -4,7 +4,7 @@ from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
 
 from utils.graphene.pagination import NoOrderingPageGraphqlPagination
-from utils.graphene.types import CustomDjangoListObjectType
+from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import ProjectPermissions as PP
 from lead.enums import LeadExtractionStatusEnum
@@ -85,7 +85,7 @@ class ConnectorSourceLeadListType(CustomDjangoListObjectType):
         filterset_class = ConnectorSourceLeadGQFilterSet
 
 
-class ConnectorSourceType(DjangoObjectType):
+class ConnectorSourceType(ClientIdMixin, DjangoObjectType):
     source = graphene.Field(ConnectorSourceEnum)
     unified_connector = graphene.ID(required=True, source='unified_connector_id')
 
@@ -109,7 +109,7 @@ class ConnectorSourceListType(CustomDjangoListObjectType):
         filterset_class = ConnectorSourceGQFilterSet
 
 
-class UnifiedConnectorType(DjangoObjectType):
+class UnifiedConnectorType(ClientIdMixin, DjangoObjectType):
     project = graphene.ID(required=True, source='project_id')
     sources = graphene.List(graphene.NonNull(ConnectorSourceType))
 
