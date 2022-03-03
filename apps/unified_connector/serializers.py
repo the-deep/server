@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db import transaction
 
 from deep.serializers import TempClientIdMixin
 from deep.serializers import ProjectPropertySerializerMixin
@@ -8,8 +9,43 @@ from .models import (
     UnifiedConnector,
     ConnectorSource,
 )
+from .tasks import UnifiedConnectorTask, process_unified_connector
 
 
+class ExtractCallbackSerializer(serializers.Serializer):
+    """
+    Serialize deepl extractor
+    """
+    client_id = serializers.CharField()
+    images_path = serializers.ListField(
+        child=serializers.CharField(allow_blank=True), default=[]
+    )
+    text_path = serializers.CharField()
+    url = serializers.CharField()
+    total_words_count = serializers.IntegerField()
+    total_pages = serializers.IntegerField()
+    extraction_status = serializers.IntegerField()  # 0 = Failed, 1 = Success
+
+    def validate_client_id(self, data):
+        client_id = data['client_id']
+        try:
+            data['lead'] = UnifiedConnectorTask.get_connector_lead_from_client_id(client_id)
+        except Exception as e:
+            raise serializers.ValidationError(str(e))
+        return data
+
+    def create(self, data):
+        return UnifiedConnectorTask.save_connector_lead_data_from_extractor(
+            data['lead'],  # Added from validate
+            data['extraction_status'] == 1,
+            data['text_path'],
+            data['images_path'],
+            data['total_words_count'],
+            data['total_pages'],
+        )
+
+
+# ------------------- Graphql Serializers ------------------------------------
 class ConnectorSourceGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserResourceSerializer):
     project_property_attribute = 'unified_connector'
 
@@ -56,3 +92,10 @@ class UnifiedConnectorGqSerializer(ProjectPropertySerializerMixin, TempClientIdM
     def validate(self, data):
         data['project'] = self.project
         return data
+
+    def create(self, data):
+        instance = super().create(data)
+        transaction.on_commit(
+            lambda: process_unified_connector.delay(instance.pk)
+        )
+        return instance

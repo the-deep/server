@@ -308,12 +308,12 @@ class ProjectPermissions(BasePermissions):
         Permission.VIEW_UNIFIED_CONNECTOR,
         Permission.CREATE_UNIFIED_CONNECTOR,
         Permission.UPDATE_UNIFIED_CONNECTOR,
-        Permission.DELETE_UNIFIED_CONNECTOR,
     ]
     ADMIN = [
         *MEMBER,
         Permission.UPDATE_PROJECT,
         Permission.CAN_ADD_MEMBER,
+        Permission.DELETE_UNIFIED_CONNECTOR,
     ]
     PROJECT_OWNER = [
         *ADMIN,

@@ -19,6 +19,7 @@ from . import converters
 
 # import autofixture
 
+from unified_connector.views import ConnectorLeadExtractCallbackView
 from user.views import (
     UserViewSet,
     PasswordResetView,
@@ -81,6 +82,7 @@ from lead.views import (
     LeadPreviewViewSet,
     LeadOptionsView,
     LeadExtractionTriggerView,
+    LeadExtractionTokenGenerator,
     LeadWebsiteFetch,
     LeadCopyView,
 
@@ -532,6 +534,18 @@ urlpatterns = [
             AnalysisFrameworkCloneView.as_view()),
     re_path(get_api_path(r'clone-category-editor/(?P<ce_id>\d+)/$'),
             CategoryEditorCloneView.as_view()),
+
+    # NLP Callback endpoints
+    re_path(
+        get_api_path(r'connector-lead-extract-callback/$'),
+        ConnectorLeadExtractCallbackView.as_view(),
+        name='connector_lead_extract_callback',
+    ),
+    re_path(
+        get_api_path(r'lead-extract-callback/$'),
+        LeadExtractionTokenGenerator.as_view(),
+        name='lead_extract_callback',
+    ),
 
     # Combined API View
     re_path(get_api_path(r'combined/$'), CombinedView.as_view()),

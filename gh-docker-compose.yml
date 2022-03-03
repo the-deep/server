@@ -52,7 +52,7 @@ services:
       HID_AUTH_URI: https://api2.dev.humanitarian.id
       # DEEPL Service
       DEEPL_EXTRACTOR_URL: http://extractor:8001/extract_docs
-      DEEPL_EXTRACTOR_CALLBACK_URL: http://server:8000/api/v1/leads/extract-callback/
+      DEEPL_EXTRACTOR_CALLBACK_DOMAIN: http://server:8000
     volumes:
       - ./coverage/:/code/coverage/
       - ./ci-share/:/ci-share/
