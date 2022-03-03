@@ -1,9 +1,12 @@
+from typing import List, Tuple
+
 from functools import reduce
 from abc import ABC, abstractmethod
 from django.db.models import Q
 
 from organization.models import Organization
 from utils.common import random_key
+from utils.date_extractor import str_to_date
 
 from lead.models import Lead
 
@@ -39,9 +42,10 @@ class OrganizationSearch():
                 for _, d in text_queries
             ],
         )
-        exact_organizations = Organization.objects.filter(exact_query).all()
+        exact_organizations = Organization.objects.filter(exact_query).select_related('parent').all()
         organization_map = {
-            key.lower(): organization
+            # NOTE: organization.data will return itself or it's parent organization (handling merged organizations)
+            key.lower(): organization.data
             for organization in exact_organizations
             for key in [organization.title, organization.short_name, organization.long_name]
         }
@@ -64,16 +68,18 @@ class Source(ABC):
     DEFAULT_PER_PAGE = 25
 
     def __init__(self):
-        if not hasattr(self, 'title') \
-                or not hasattr(self, 'key') \
-                or not hasattr(self, 'options'):
+        if (
+            not hasattr(self, 'title') or
+            not hasattr(self, 'key') or
+            not hasattr(self, 'options')
+        ):
             raise Exception('Source not defined properly')
 
     @abstractmethod
     def fetch(self, params, offset=None, limit=None):
         pass
 
-    def get_leads(self, *args, **kwargs):
+    def get_leads(self, *args, **kwargs) -> Tuple[List[Lead], int]:
         leads_data, total_count = self.fetch(*args, **kwargs)
         if not leads_data:
             return [], total_count
@@ -86,10 +92,12 @@ class Source(ABC):
 
         leads = []
         for ldata in leads_data:
+            published_on = str_to_date(ldata['published_on'])
+            published_on = published_on and published_on.date
             lead = Lead(
                 id=ldata.get('id', random_key()),
                 title=ldata['title'],
-                published_on=ldata['published_on'],
+                published_on=published_on,
                 url=ldata['url'],
                 source_raw=ldata['source'],
                 author_raw=ldata['author'],

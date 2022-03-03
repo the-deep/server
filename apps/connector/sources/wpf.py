@@ -161,7 +161,7 @@ class WorldFoodProgramme(Source):
         resp = requests.get(self.URL, params=params)
         return resp.text
 
-    def fetch(self, params, offset, limit):
+    def fetch(self, params, offset=None, limit=None):
         results = []
 
         # NOTE: No calculation of offset, the api supports pagination

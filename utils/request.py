@@ -1,9 +1,9 @@
-import base64
 from typing import Union
+
 from dataclasses import dataclass, field
 import requests
 
-from utils.image import decode_base64_if_possible
+from django.core.files.base import ContentFile
 
 
 def requesthelper_ignore_error(func):
@@ -18,7 +18,7 @@ def requesthelper_ignore_error(func):
 class RequestHelper:
     url: str
     ignore_error: bool = False
-    response: Union[str, None] = field(init=False, repr=False)
+    response: Union[None, requests.Response] = field(init=False, repr=False)
     error_on_response: Union[bool, None] = field(init=False)
 
     def __post_init__(self):
@@ -35,14 +35,11 @@ class RequestHelper:
         return self
 
     @requesthelper_ignore_error
-    def get_decoded_file(self):
-        base_64_data = (
-            "data:" + self.response.headers['Content-Type'] + ";" +
-            "base64," + base64.b64encode(self.response.content).decode("utf-8")
-        )
-        decoded_file, _ = decode_base64_if_possible(base_64_data)
-        return decoded_file
+    def get_file(self) -> Union[ContentFile, None]:
+        if self.response:
+            return ContentFile(self.response.content)
 
     @requesthelper_ignore_error
-    def get_text(self):
-        return self.response.text
+    def get_text(self) -> Union[str, None]:
+        if self.response:
+            return self.response.text

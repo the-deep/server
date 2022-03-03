@@ -8,11 +8,14 @@ from utils.graphene.enums import (
 from .models import ConnectorSource
 
 ConnectorSourceEnum = convert_enum_to_graphene_enum(ConnectorSource.Source, name='ConnectorSourceEnum')
+ConnectorLeadExtractionStatusEnum = convert_enum_to_graphene_enum(
+    ConnectorSource.Status, name='ConnectorLeadExtractionStatusEnum')
 
 enum_map = {
     get_enum_name_from_django_field(field): enum
     for field, enum in (
         (ConnectorSource.source, ConnectorSourceEnum),
+        (ConnectorSource.status, ConnectorLeadExtractionStatusEnum),
     )
 }
 

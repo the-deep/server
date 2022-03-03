@@ -8,11 +8,14 @@ import logging
 from celery import shared_task
 from django.db.models import Q
 from django.conf import settings
+from django.urls import reverse
+
 from django.utils.encoding import DjangoUnicodeDecodeError
 
 from utils.common import redis_lock, UidBase64Helper
 from utils.request import RequestHelper
 
+from .typings import NlpExtractorUrl
 from .token import lead_extraction_token_generator
 from .models import (
     Lead,
@@ -23,6 +26,7 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 
+# TODO: REMOVE THIS
 def _preprocess(text):
     # Remove NUL (0x00) characters
     text = text.replace('\x00', '')
@@ -53,6 +57,13 @@ class LeadExtraction:
             message = 'No lead found for provided id'
 
     @staticmethod
+    def get_callback_url():
+        return (
+            settings.DEEPL_EXTRACTOR_CALLBACK_DOMAIN +
+            reverse('lead_extract_callback', kwargs={'version': 'v1'})
+        )
+
+    @staticmethod
     def generate_lead_client_id(lead) -> str:
         uid = UidBase64Helper.encode(lead.pk)
         token = lead_extraction_token_generator.make_token(lead)
@@ -72,6 +83,32 @@ class LeadExtraction:
         return lead
 
     @classmethod
+    def send_trigger_request_to_extractor(
+        cls,
+        urls: List[NlpExtractorUrl],
+        callback_url: str,
+    ):
+        payload = {
+            'urls': urls,
+            'callback_url': callback_url,
+        }
+        try:
+            response = requests.post(
+                settings.DEEPL_EXTRACTOR_URL,
+                headers=cls.REQUEST_HEADERS,
+                data=json.dumps(payload)
+            )
+            if response.status_code == 200:
+                return True
+        except Exception:
+            logger.exception('Lead Extraction Failed, Exception occurred!!', exc_info=True)
+        _response = locals().get('response')
+        logger.error(
+            'Lead Extraction Request Failed!!',
+            extra={'response': _response and _response.content},
+        )
+
+    @classmethod
     def trigger_lead_extract(cls, lead, task_instance):
         # Get the lead to be extracted
         url_to_extract = None
@@ -80,29 +117,18 @@ class LeadExtraction:
         elif lead.url:
             url_to_extract = lead.url
         if url_to_extract:
-            try:
-                payload = {
-                    'urls': [
-                        {
-                            'url': url_to_extract,
-                            'client_id': LeadExtraction.generate_lead_client_id(lead.id),
-                        }
-                    ],
-                    'callback_url': settings.DEEPL_EXTRACTOR_CALLBACK_URL
-                }
-                response = requests.post(
-                    settings.DEEPL_EXTRACTOR_URL,
-                    headers=cls.REQUEST_HEADERS,
-                    data=json.dumps(payload)
-                )
-                if response.status_code == 200:
-                    logger.info('Lead Extraction Request Sent!!', exc_info=True)
-                    lead.update_extraction_status(Lead.ExtractionStatus.Started)
-                    return True
-                else:
-                    logger.error('Lead Extraction Request Failed!!', exc_info=True)
-            except Exception:
-                logger.exception('Lead Extraction Failed, Exception occoured!!', exc_info=True)
+            success = cls.send_trigger_request_to_extractor(
+                [
+                    {
+                        'url': url_to_extract,
+                        'client_id': LeadExtraction.generate_lead_client_id(lead.id),
+                    }
+                ],
+                cls.get_callback_url(),
+            )
+            if success:
+                lead.update_extraction_status(Lead.ExtractionStatus.STARTED)
+                return True
         lead.update_extraction_status(Lead.ExtractionStatus.RETRYING)
         task_instance.retry(countdown=cls.RETRY_COUNTDOWN)
         return False
@@ -113,15 +139,15 @@ class LeadExtraction:
         extraction_success: bool,
         text_source_uri: str,
         images_uri: List[str],
-        words_count: int,
-        pages_count: int,
+        word_count: int,
+        page_count: int,
     ):
         if not extraction_success:
             lead.update_extraction_status(Lead.ExtractionStatus.FAILED)
             return lead
         LeadPreview.objects.filter(lead=lead).delete()
         LeadPreviewImage.objects.filter(lead=lead).delete()
-        word_count, page_count = words_count, pages_count
+        word_count, page_count = word_count, page_count
         # and create new one
         LeadPreview.objects.create(
             lead=lead,
@@ -133,7 +159,7 @@ class LeadExtraction:
         LeadPreviewImage.objects.filter(lead=lead).delete()
         for image in images_uri:
             lead_image = LeadPreviewImage(lead=lead)
-            image_obj = RequestHelper(url=image, ignore_error=True).get_decoded_file()
+            image_obj = RequestHelper(url=image, ignore_error=True).get_file()
             if image_obj:
                 lead_image.file.save(image_obj.name, image_obj)
                 lead_image.save()

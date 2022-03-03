@@ -236,19 +236,6 @@ class LeadViewSet(viewsets.ModelViewSet):
 
         return response
 
-    @action(
-        detail=False,
-        permission_classes=[permissions.AllowAny],
-        methods=['post'],
-        serializer_class=ExtractCallbackSerializer,
-        url_path='extract-callback',
-    )
-    def extract_callback(self, request, version=None):
-        serializer = ExtractCallbackSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return response.Response("Request successfully completed", status=status.HTTP_200_OK)
-
 
 class LeadBulkDeleteViewSet(viewsets.GenericViewSet):
     permission_classes = [permissions.IsAuthenticated, DeleteLeadPermission]
@@ -825,3 +812,13 @@ class LeadCopyView(BaseCopyView):
         ])
 
         return lead
+
+
+class LeadExtractionTokenGenerator(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = ExtractCallbackSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return response.Response("Request successfully completed", status=status.HTTP_200_OK)

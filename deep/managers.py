@@ -22,16 +22,17 @@ class BaseBulkManager(object):
     def _process_obj(self, obj):
         return obj
 
-    def add(self, obj):
+    def add(self, *objs):
         """
         Add an object to the queue to be action, and call bulk_create if we
         have enough objs.
         """
-        model_class = type(obj)
-        model_key = model_class._meta.label
-        self._queues[model_key].append(self._process_obj(obj))
-        if len(self._queues[model_key]) >= self.chunk_size:
-            self._commit(model_class)
+        for obj in objs:
+            model_class = type(obj)
+            model_key = model_class._meta.label
+            self._queues[model_key].append(self._process_obj(obj))
+            if len(self._queues[model_key]) >= self.chunk_size:
+                self._commit(model_class)
 
     def done(self):
         """

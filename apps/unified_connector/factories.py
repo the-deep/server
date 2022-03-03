@@ -25,6 +25,7 @@ class ConnectorSourceFactory(DjangoModelFactory):
 
 class ConnectorLeadFactory(DjangoModelFactory):
     title = factory.Sequence(lambda n: f'Connector-Lead-{n}')
+    url = factory.Sequence(lambda n: f'https://example.com/path-{n}')
 
     class Meta:
         model = ConnectorLead

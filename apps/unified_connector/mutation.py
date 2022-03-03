@@ -12,6 +12,7 @@ from .schema import UnifiedConnectorType
 from .serializers import (
     UnifiedConnectorGqSerializer as UnifiedConnectorSerializer,
 )
+from .tasks import process_unified_connector
 
 
 UnifiedConnectorInputType = generate_input_type_for_serializer(
@@ -53,7 +54,25 @@ class DeleteUnifiedConnector(UnifiedConnectorMixin, PsDeleteMutation):
     permissions = [PP.Permission.DELETE_UNIFIED_CONNECTOR]
 
 
+class TriggerUnifiedConnector(UnifiedConnectorMixin, PsGrapheneMutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+    model = UnifiedConnector
+    serializer_class = UnifiedConnectorSerializer
+    permissions = [PP.Permission.VIEW_UNIFIED_CONNECTOR]
+
+    @classmethod
+    def perform_mutate(cls, _, info, **kwargs):
+        instance = cls.get_object(info, **kwargs)
+        if instance.is_active:
+            process_unified_connector.delay(instance.pk)
+            return cls(errors=None, ok=True)
+        errors = [dict(field='nonFieldErrors', message='Inactive unified connector!!')]
+        return cls(errors=errors, ok=False)
+
+
 class UnifiedConnectorMutationType(graphene.ObjectType):
     unified_connector_create = CreateUnifiedConnector.Field()
     unified_connector_update = UpdateUnifiedConnector.Field()
     unified_connector_delete = DeleteUnifiedConnector.Field()
+    unified_connector_trigger = TriggerUnifiedConnector.Field()
