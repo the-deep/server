@@ -492,9 +492,17 @@ def has_select_related(obj, field):
     return False
 
 
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+
 class UidBase64Helper():
+    @staticmethod
     def encode(integer):
         return urlsafe_base64_encode(force_bytes(integer))
 
+    @staticmethod
     def decode(uidb64):
         return force_text(urlsafe_base64_decode(uidb64))

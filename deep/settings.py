@@ -67,7 +67,7 @@ env = environ.Env(
     DOCKER_HOST_IP=(str, None),
     # DEEPL
     DEEPL_EXTRACTOR_URL=str,  # http://extractor:8001/extract_docs
-    DEEPL_EXTRACTOR_CALLBACK_URL=str,  # http://web:8000/api/v1/leads/extract-callback/
+    DEEPL_EXTRACTOR_CALLBACK_DOMAIN=str,  # http://web:8000
     # Pytest
     PYTEST_XDIST_WORKER=(str, None),
     PROFILE=(bool, False),
@@ -685,6 +685,7 @@ if SENTRY_DSN:
 TOKEN_DEFAULT_RESET_TIMEOUT_DAYS = 7
 PROJECT_REQUEST_RESET_TIMEOUT_DAYS = 7
 LEAD_EXTRACTION_TOKEN_RESET_TIMEOUT_DAYS = 1
+CONNECTOR_LEAD_EXTRACTION_TOKEN_RESET_TIMEOUT_DAYS = 1
 
 JSON_EDITOR_INIT_JS = 'js/jsoneditor-init.js'
 LOGIN_URL = '/admin/login'
@@ -783,7 +784,7 @@ CSRF_COOKIE_DOMAIN = env('CSRF_COOKIE_DOMAIN')
 
 # DEEPL Config
 DEEPL_EXTRACTOR_URL = env('DEEPL_EXTRACTOR_URL')
-DEEPL_EXTRACTOR_CALLBACK_URL = env('DEEPL_EXTRACTOR_CALLBACK_URL')
+DEEPL_EXTRACTOR_CALLBACK_DOMAIN = env('DEEPL_EXTRACTOR_CALLBACK_DOMAIN')
 
 # Graphene configs
 # WHITELIST following nodes from authentication checks

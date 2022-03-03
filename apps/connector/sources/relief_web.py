@@ -187,6 +187,8 @@ COUNTRIES = [
     {"key": "SDS", "label": "South Sudan"},
 ]
 
+RELIEFWEB_MAX_LIMIT = 1000
+
 
 def _format_date(datestr):
     return datestr + 'T00:00:00+00:00'
@@ -255,13 +257,14 @@ class ReliefWeb(Source):
             return {'operator': 'AND', 'conditions': filters}
         return {}
 
-    def fetch(self, params, offset, limit):
+    def fetch(self, params, offset=None, limit=None):
         results = []
 
         post_params = {}
         post_params['fields'] = {
-            'include': ['url_alias', 'title', 'date.original', 'file',
-                        'source', 'source.homepage']
+            'include': [
+                'url_alias', 'title', 'date.original', 'file', 'source', 'source.homepage'
+            ]
         }
 
         post_params['filter'] = self.parse_filter_params(params)
@@ -275,30 +278,33 @@ class ReliefWeb(Source):
 
         if offset:
             post_params['offset'] = offset
-        if limit:
-            post_params['limit'] = limit
+
+        limit = min(limit or 1000, 1000)  # Limit from relief-web
+        post_params['limit'] = min(limit or RELIEFWEB_MAX_LIMIT, RELIEFWEB_MAX_LIMIT)
 
         post_params['sort'] = ['date.original:desc', 'title:asc']
 
-        content = self.get_content(self.URL, post_params)
-        resp = json.loads(content)
+        relief_url = self.URL
+        total_count = 0
 
-        total_count = resp['totalCount']
-        limited_data = resp['data']  # The offset limit is handled by the api itself
+        while relief_url is not None:
+            content = self.get_content(relief_url, post_params)
+            resp = json.loads(content)
+            total_count = resp['totalCount']
 
-        for datum in limited_data:
-            fields = datum['fields']
-            url = fields['file'][0]['url'] if fields.get('file') else fields['url_alias']
-            lead = {
-                'id': str(datum['id']),
-                'title': fields['title'],
-                'published_on': fields['date']['original'],
-                'url': url,
-                'source': 'reliefweb',
-                'source_type': Lead.SourceType.WEBSITE,
-                'author': fields['source'][0]['name'],
-                'website': 'www.reliefweb.int',
-            }
-            results.append(lead)
-
+            for datum in resp['data']:
+                fields = datum['fields']
+                url = fields['file'][0]['url'] if fields.get('file') else fields['url_alias']
+                lead = {
+                    'id': str(datum['id']),
+                    'title': fields['title'],
+                    'published_on': fields['date']['original'],
+                    'url': url,
+                    'source': 'reliefweb',
+                    'source_type': Lead.SourceType.WEBSITE.value,
+                    'author': fields['source'][0]['name'],
+                    'website': 'www.reliefweb.int',
+                }
+                results.append(lead)
+            relief_url = resp['links'].get('next', {}).get('herf')
         return results, total_count

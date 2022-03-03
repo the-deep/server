@@ -6,8 +6,8 @@ from graphene_django_extras import DjangoObjectField
 from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
+from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
-from lead.enums import LeadExtractionStatusEnum
 
 from .filters import (
     ConnectorSourceGQFilterSet,
@@ -20,7 +20,10 @@ from .models import (
     ConnectorSource,
     ConnectorSourceLead,
 )
-from .enums import ConnectorSourceEnum
+from .enums import (
+    ConnectorSourceEnum,
+    ConnectorLeadExtractionStatusEnum,
+)
 
 
 def get_unified_connector_qs(info):
@@ -46,7 +49,7 @@ def get_connector_source_lead_qs(info):
 
 # NOTE: This is not used directly
 class ConnectorLeadType(DjangoObjectType):
-    extraction_status = graphene.Field(LeadExtractionStatusEnum)
+    extraction_status = graphene.Field(ConnectorLeadExtractionStatusEnum)
 
     class Meta:
         model = ConnectorLead
@@ -56,7 +59,7 @@ class ConnectorLeadType(DjangoObjectType):
             'title',
             'published_on',
             'source_raw',
-            'authors_raw',
+            'author_raw',
             'source',  # TODO: Dataloader
             'authors',  # TODO: Dataloader
         )
@@ -85,7 +88,7 @@ class ConnectorSourceLeadListType(CustomDjangoListObjectType):
         filterset_class = ConnectorSourceLeadGQFilterSet
 
 
-class ConnectorSourceType(ClientIdMixin, DjangoObjectType):
+class ConnectorSourceType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     source = graphene.Field(ConnectorSourceEnum)
     unified_connector = graphene.ID(required=True, source='unified_connector_id')
 
@@ -95,6 +98,7 @@ class ConnectorSourceType(ClientIdMixin, DjangoObjectType):
             'id',
             'title',
             'unified_connector',
+            'last_fetched_at',
             'params',
         )
 
@@ -109,7 +113,7 @@ class ConnectorSourceListType(CustomDjangoListObjectType):
         filterset_class = ConnectorSourceGQFilterSet
 
 
-class UnifiedConnectorType(ClientIdMixin, DjangoObjectType):
+class UnifiedConnectorType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     project = graphene.ID(required=True, source='project_id')
     sources = graphene.List(graphene.NonNull(ConnectorSourceType))
 

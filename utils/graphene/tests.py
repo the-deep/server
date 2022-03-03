@@ -29,7 +29,7 @@ TEST_EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 TEST_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 TEST_CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
         'LOCATION': 'unique-snowflake',
     }
 }

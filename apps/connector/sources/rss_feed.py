@@ -69,7 +69,7 @@ class RssFeed(Source):
         },
     ]
 
-    option_lead_field_map = {
+    _option_lead_field_map = {
         option['lead_field']: option['key']
         for option in options if option.get('lead_field')
     }
@@ -80,7 +80,7 @@ class RssFeed(Source):
         resp = requests.get(url, headers=DEFAULT_HEADERS)
         return resp.content
 
-    def fetch(self, params, offset, limit):
+    def fetch(self, params, offset=None, limit=None):
         results = []
         if not params or not params.get('feed-url'):
             return results, 0
@@ -90,14 +90,19 @@ class RssFeed(Source):
         items = xml.findall('channel/item')
 
         total_count = len(items)
-        limited_items = items[offset: offset + limit]
+
+        limited_items = items
+        if offset:
+            limited_items = items[offset:]
+        if limit:
+            limited_items = items[:limit]
 
         for item in limited_items:
             data = {
                 'source_type': Lead.SourceType.RSS,
                 **{
                     lead_field: _get_field_value(item, params.get(param_key))
-                    for lead_field, param_key in self.option_lead_field_map.items()
+                    for lead_field, param_key in self._option_lead_field_map.items()
                 },
             }
             results.append(data)

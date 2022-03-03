@@ -24,6 +24,7 @@ from project.serializers import SimpleProjectSerializer
 from gallery.serializers import SimpleFileSerializer, File
 from user.models import User
 from project.models import ProjectMembership
+from unified_connector.models import ConnectorSourceLead
 
 from .tasks import LeadExtraction
 from .models import (
@@ -431,6 +432,7 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
             'authors',
             'emm_triggers',
             'emm_entities',
+            'connector_lead',
             'client_id',  # From TempClientIdMixin
         )
 
@@ -496,6 +498,13 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
         # Save Assignee
         if assignee:
             lead.assignee.add(assignee)
+        # If connector lead is provided, set already_added for all connector leads
+        if validated_data['connector_lead']:
+            ConnectorSourceLead.update_aleady_added_using_lead(lead, added=True)
+            ConnectorSourceLead.objects.filter(
+                connector_lead=lead.connector_lead,
+                source__unified_connector__project=lead.project,
+            ).update(already_added=True)
         return lead
 
     def update(self, instance, validated_data):
@@ -641,15 +650,17 @@ class ExtractCallbackSerializer(serializers.Serializer):
     total_pages = serializers.IntegerField()
     extraction_status = serializers.IntegerField()  # 0 = Failed, 1 = Success
 
-    def validate_client_id(self, client_id):
+    def validate_client_id(self, data):
+        client_id = data['client_id']
         try:
-            return LeadExtraction.get_lead_from_client_id(client_id)
+            data['lead'] = LeadExtraction.get_lead_from_client_id(client_id)
         except Exception as e:
             raise serializers.ValidationError(str(e))
+        return data
 
     def create(self, data):
         return LeadExtraction.save_lead_data(
-            data['client_id'],  # This is now lead instance from validate_client_id
+            data['lead'],  # Added from validate
             data['extraction_status'] == 1,
             data['text_path'],
             data['images_path'],

@@ -157,7 +157,7 @@ class EMM(RssFeed):
 
     def parse_emm_item(self, item):
         info = {}
-        for lead_field, field in self.option_lead_field_map.items():
+        for lead_field, field in self._option_lead_field_map.items():
             if not self.params.get(field):
                 field_value = None
             else:
