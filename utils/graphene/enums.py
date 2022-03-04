@@ -34,6 +34,7 @@ def get_enum_name_from_django_field(
         serializers.ChoiceField,
         models.CharField,
         models.IntegerField,
+        models.SmallIntegerField,
         ArrayField,
         models.query_utils.DeferredAttribute,
     ],
@@ -51,7 +52,7 @@ def get_enum_name_from_django_field(
         elif type(field) == ArrayField:
             model_name = field.model.__name__
             field_name = field.base_field.name
-        elif type(field) in [models.CharField, models.IntegerField]:
+        elif type(field) in [models.CharField, models.SmallIntegerField, models.IntegerField]:
             model_name = field.model.__name__
             field_name = field.name
         elif type(field) == models.query_utils.DeferredAttribute:

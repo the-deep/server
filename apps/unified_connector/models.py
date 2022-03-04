@@ -146,8 +146,9 @@ class ConnectorSource(UserResource):
                 } for count, date in self.leads.filter(published_on__isnull=False)
                 .order_by().values('published_on').annotate(
                     count=models.Count('*'),
-                ).values('count', date=models.F('published_on'))
+                ).values_list('count', models.F('published_on'))
             ],
+            'leads_count': self.leads.count(),
         }
         if commit:
             self.save()

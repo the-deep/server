@@ -14,6 +14,8 @@ from unified_connector.factories import (
 
 
 class TestUnifiedConnectorQuery(GraphQLTestCase):
+    ENABLE_NOW_PATCHER = True
+
     UNIFIED_CONNECTORS_QUERY = '''
         query MyQuery ($id: ID!) {
           project(id: $id) {
@@ -25,12 +27,18 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                   isActive
                   project
                   title
+                  leadsCount
                   sources {
                       id
                       params
                       source
                       title
                       unifiedConnector
+                      leadsCount
+                      stats {
+                        date
+                        count
+                      }
                   }
                 }
               }
@@ -48,12 +56,18 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 isActive
                 project
                 title
+                leadsCount
                 sources {
                     id
                     params
                     source
                     title
                     unifiedConnector
+                    leadsCount
+                    stats {
+                      date
+                      count
+                    }
                 }
               }
             }
@@ -73,6 +87,11 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                   source
                   title
                   unifiedConnector
+                  leadsCount
+                  stats {
+                    date
+                    count
+                  }
                 }
               }
             }
@@ -90,6 +109,11 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 source
                 title
                 unifiedConnector
+                leadsCount
+                stats {
+                  date
+                  count
+                }
               }
             }
           }
@@ -176,8 +200,22 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
         )['data']['project']['unifiedConnector']['unifiedConnectors']
         self.assertEqual(content['totalCount'], 2)
         self.assertEqual(content['results'], [
-            dict(id=str(self.uc1.pk), isActive=False, project=str(self.project.pk), title=self.uc1.title, sources=[]),
-            dict(id=str(self.uc2.pk), isActive=False, project=str(self.project.pk), title=self.uc2.title, sources=[]),
+            dict(
+                id=str(self.uc1.pk),
+                isActive=False,
+                project=str(self.project.pk),
+                title=self.uc1.title,
+                leadsCount=0,
+                sources=[],
+            ),
+            dict(
+                id=str(self.uc2.pk),
+                isActive=False,
+                project=str(self.project.pk),
+                title=self.uc2.title,
+                leadsCount=0,
+                sources=[],
+            ),
         ])
         # Single
         content = self.query_check(
@@ -185,15 +223,27 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
         )['data']['project']['unifiedConnector']['unifiedConnector']
         self.assertEqual(
             content, dict(
-                id=str(self.uc1.pk), isActive=False, project=str(self.project.pk), title=self.uc1.title, sources=[]
+                id=str(self.uc1.pk),
+                isActive=False,
+                project=str(self.project.pk),
+                title=self.uc1.title,
+                leadsCount=0,
+                sources=[],
             ),
         )
 
     def test_connector_source_query(self):
+        fake_lead_1 = ConnectorLeadFactory.create(published_on=self.now_datetime.date())
+        fake_lead_2 = ConnectorLeadFactory.create(published_on=self.now_datetime.date())
         source1_1 = ConnectorSourceFactory.create(unified_connector=self.uc1, source=ConnectorSource.Source.ATOM_FEED)
         source1_2 = ConnectorSourceFactory.create(unified_connector=self.uc1, source=ConnectorSource.Source.RELIEF_WEB)
         source2_1 = ConnectorSourceFactory.create(unified_connector=self.uc2, source=ConnectorSource.Source.RSS_FEED)
         source2_2 = ConnectorSourceFactory.create(unified_connector=self.uc2, source=ConnectorSource.Source.UNHCR)
+        source1_1.leads.add(fake_lead_1)
+        source1_1.leads.add(fake_lead_2)
+        source2_1.leads.add(fake_lead_2)
+        source1_1.generate_stats()
+        source2_1.generate_stats()
 
         # -- non member user
         self.force_login(self.another_user)
@@ -213,6 +263,8 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
             title=source1_1.title,
             unifiedConnector=str(self.uc1.pk),
             params={},
+            leadsCount=2,
+            stats=[{'count': 2, 'date': self.now_datetime.strftime('%Y-%m-%d')}],
         )
         ec_source1_2 = dict(
             id=str(source1_2.pk),
@@ -220,6 +272,8 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
             title=source1_2.title,
             unifiedConnector=str(self.uc1.pk),
             params={},
+            leadsCount=0,
+            stats=[],
         )
         ec_source2_1 = dict(
             id=str(source2_1.pk),
@@ -227,6 +281,8 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
             title=source2_1.title,
             unifiedConnector=str(self.uc2.pk),
             params={},
+            leadsCount=1,
+            stats=[{'count': 1, 'date': self.now_datetime.strftime('%Y-%m-%d')}],
         )
         ec_source2_2 = dict(
             id=str(source2_2.pk),
@@ -234,6 +290,8 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
             title=source2_2.title,
             unifiedConnector=str(self.uc2.pk),
             params={},
+            leadsCount=0,
+            stats=[],
         )
 
         # -- member user
@@ -265,6 +323,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 project=str(self.project.pk),
                 title=self.uc1.title,
                 sources=[ec_source1_1, ec_source1_2],
+                leadsCount=2,
             ),
             dict(
                 id=str(self.uc2.pk),
@@ -272,6 +331,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 project=str(self.project.pk),
                 title=self.uc2.title,
                 sources=[ec_source2_1, ec_source2_2],
+                leadsCount=1,
             ),
         ])
         # Single
@@ -285,6 +345,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 project=str(self.project.pk),
                 title=self.uc1.title,
                 sources=[ec_source1_1, ec_source1_2],
+                leadsCount=2,
             ),
         )
 

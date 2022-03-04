@@ -307,4 +307,6 @@ class ReliefWeb(Source):
                 }
                 results.append(lead)
             relief_url = resp['links'].get('next', {}).get('herf')
+            if offset is not None:  # Don't pull all if offset is provided
+                break
         return results, total_count
