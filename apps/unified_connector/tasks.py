@@ -1,3 +1,4 @@
+import copy
 import logging
 from typing import List
 
@@ -91,7 +92,7 @@ class UnifiedConnectorTask():
 
     @classmethod
     def _process_unified_source(cls, source):
-        params = source.params
+        params = copy.deepcopy(source.params)
         source_fetcher = source.source_fetcher()
         leads, _ = source_fetcher.get_leads(params)
 

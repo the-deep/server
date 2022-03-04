@@ -2,8 +2,11 @@ import logging
 from rest_framework import serializers
 from django.db import transaction
 
-from deep.serializers import TempClientIdMixin
-from deep.serializers import ProjectPropertySerializerMixin
+from deep.serializers import (
+    TempClientIdMixin,
+    ProjectPropertySerializerMixin,
+    IntegerIDField,
+)
 from user_resource.serializers import UserResourceSerializer
 
 from .models import (
@@ -52,6 +55,7 @@ class ExtractCallbackSerializer(serializers.Serializer):
 
 # ------------------- Graphql Serializers ------------------------------------
 class ConnectorSourceGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserResourceSerializer):
+    id = IntegerIDField(required=False)
     project_property_attribute = 'unified_connector'
 
     class Meta:
