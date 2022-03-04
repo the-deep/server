@@ -233,6 +233,7 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         content = self._query_check(
             data, review_comment_id=comment_pk, okay=True)['data']['project']['entryReviewCommentUpdate']
         self.assertEqual(content['result']['textHistory'][0]['text'], data['text'])
+        self.assertEqual(content['result']['text'], data['text'])
         self.force_login(user2)
         self._query_check(data, review_comment_id=comment_pk, assert_for_error=True)
 
