@@ -48,6 +48,12 @@ class BaseReviewComment(models.Model):
         if last_comment_text:
             return last_comment_text.text
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # NOTE: Clear text if cached
+        if hasattr(self, 'text'):
+            del self.text
+
 
 class BaseReviewCommentText(models.Model):
     """
