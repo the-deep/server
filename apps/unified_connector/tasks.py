@@ -11,9 +11,9 @@ from django.utils.encoding import DjangoUnicodeDecodeError
 
 from utils.common import redis_lock, UidBase64Helper
 from utils.request import RequestHelper
+from deep.exceptions import BaseException
 from lead.tasks import LeadExtraction
 
-from lead.models import Lead
 from .token import connector_lead_extraction_token_generator
 from .models import (
     ConnectorLead,
@@ -29,14 +29,14 @@ logger = logging.getLogger(__name__)
 class UnifiedConnectorTask():
 
     class Exception():
-        class InvalidTokenValue(Exception):
-            message = 'Invalid Token'
+        class InvalidTokenValue(BaseException):
+            default_message = 'Invalid Token'
 
-        class InvalidOrExpiredToken(Exception):
-            message = 'Invalid/expired token in client_id'
+        class InvalidOrExpiredToken(BaseException):
+            default_message = 'Invalid/expired token in client_id'
 
-        class ConnectorLeadNotFound(Exception):
-            message = 'No connector lead found for provided id'
+        class ConnectorLeadNotFound(BaseException):
+            default_message = 'No connector lead found for provided id'
 
     @staticmethod
     def get_callback_url():
@@ -74,19 +74,20 @@ class UnifiedConnectorTask():
         page_count: int,
     ):
         if not extraction_success:
-            connector_lead.update_extraction_status(Lead.ExtractionStatus.FAILED)
+            connector_lead.update_extraction_status(ConnectorLead.ExtractionStatus.FAILED)
             return connector_lead
-        connector_lead.simplified_text = RequestHelper(url=text_source_uri, ignore_error=True).get_text()
+        connector_lead.simplified_text = RequestHelper(url=text_source_uri, ignore_error=True).get_text() or ''
         connector_lead.word_count = word_count
         connector_lead.page_count = page_count
         for image in images_uri:
-            lead_image = ConnectorLeadPreviewImage(lead=connector_lead)
+            lead_image = ConnectorLeadPreviewImage(connector_lead=connector_lead)
             image_obj = RequestHelper(url=image, ignore_error=True).get_file()
             if image_obj:
                 lead_image.image.save(image_obj.name, image_obj)
                 lead_image.save()
-        connector_lead.update_extraction_status(Lead.ExtractionStatus.SUCCESS, commit=False)
+        connector_lead.update_extraction_status(ConnectorLead.ExtractionStatus.SUCCESS, commit=False)
         connector_lead.save()
+        return connector_lead
 
     @classmethod
     def _process_unified_source(cls, source):

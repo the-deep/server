@@ -70,7 +70,7 @@ class ConnectorLead(models.Model):
 
 
 class ConnectorLeadPreviewImage(models.Model):
-    connector_lead = models.ForeignKey(ConnectorLead, on_delete=models.CASCADE)
+    connector_lead = models.ForeignKey(ConnectorLead, on_delete=models.CASCADE, related_name='preview_images')
     image = models.FileField(upload_to='connector-lead/preview-images/', max_length=255)
 
 
