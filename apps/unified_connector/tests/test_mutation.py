@@ -1,16 +1,22 @@
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
+from django.core.files import File
 
 from utils.graphene.tests import GraphQLSnapShotTestCase
-from unified_connector.models import ConnectorSource
 
 from project.factories import ProjectFactory
 from user.factories import UserFactory
 
-from unified_connector.models import ConnectorLead
+from deep.tests import TestCase
+from unified_connector.models import (
+    ConnectorLead,
+    ConnectorSource,
+    ConnectorLeadPreviewImage,
+)
+from unified_connector.tasks import UnifiedConnectorTask
 from unified_connector.factories import (
-    # ConnectorLeadFactory,
-    # ConnectorSourceLeadFactory,
+    ConnectorLeadFactory,
     ConnectorSourceFactory,
+    ConnectorSourceLeadFactory,
     UnifiedConnectorFactory,
 )
 from .connector_mock_data import RELIEF_WEB_MOCK_DATA
@@ -110,6 +116,25 @@ class TestLeadMutationSchema(GraphQLSnapShotTestCase):
               unifiedConnectorTrigger(id: $unifiedConnectorId) {
                 ok
                 errors
+              }
+            }
+          }
+        }
+    '''
+
+    UPDATE_CONNECTOR_SOURCE_LEAD_MUTATION = '''
+        mutation MyMutation ($projectId: ID!, $connectorSourceLeadId: ID!, $input: ConnectorSourceLeadInputType!) {
+          project(id: $projectId) {
+            unifiedConnector {
+              connectorSourceLeadUpdate(id: $connectorSourceLeadId, data: $input) {
+                errors
+                ok
+                result {
+                  id
+                  source
+                  alreadyAdded
+                  blocked
+                }
               }
             }
           }
@@ -368,173 +393,144 @@ class TestLeadMutationSchema(GraphQLSnapShotTestCase):
             )
             connector_lead_qs.delete()  # Clear all connector leads
 
-    """
-    def test_unified_connector_integration_with_connector(self):
-        project = self.create_project()
-
-        url = f'/api/v1/projects/{project.pk}/unified-connectors/'
-        data = {
-            'clientId': 'random-id-from-client',
-            'sources': [
-                {
-                    'params': {
-                        'from': '2020-09-10',
-                        'country': 'NPL',
-                    },
-                    'source': store.relief_web.ReliefWeb.key,
-                }, {
-                    'params': {
-                        'feed-url': 'https://feedly.com/f/RgQDCHTXsLH8ZTuoy7N2ALOg.atom?count=5',
-                        'url-field': 'link',
-                        'date-field': 'published',
-                        'title-field': 'title',
-                        'author-field': None,
-                        'source-field': 'author',
-                        'website-field': 'link',
-                    },
-                    'source': store.atom_feed.AtomFeed.key,
-                }, {
-                    'params': {
-                        'feed-url': 'https://reliefweb.int/country/ukr/rss.xml',
-                        'url-field': 'link',
-                        'date-field': 'author',
-                        'title-field': 'title',
-                        'source-field': 'source',
-                        'website-field': 'link',
-                    },
-                    'source': store.rss_feed.RssFeed.key,
-                }, {
-                    'params': {
-                        'feed-url': 'https://emm.newsbrief.eu/rss/rss?type=category&id=TH5739-Philippines&duplicates=false',
-                        'url-field': 'link',
-                        'date-field': 'pubDate',
-                        'title-field': 'title',
-                        'author-field': 'source',
-                        'source-field': 'source',
-                        'website-field': 'source',
-                    },
-                    'source': store.emm.EMM.key,
-                },
-            ],
-            'title': 'Nepal Leads',
-            'isActive': True,
-        }
-
-        # Test POST API
-        self.authenticate()
-        response = self.client.post(url, data)
-        self.assert_201(response)
-        data = response.json()
-        unified_connector_id = data['id']
-        unified_connector_trigger_url = (
-            f'/api/v1/projects/{project.pk}/unified-connectors/{unified_connector_id}/trigger-sync/'
+    def test_connector_source_lead_update(self):
+        uc = UnifiedConnectorFactory.create(project=self.project)
+        fake_lead1 = ConnectorLeadFactory.create()
+        source1 = ConnectorSourceFactory.create(
+            source=ConnectorSource.Source.ATOM_FEED,
+            unified_connector=uc,
         )
-        unified_connector = UnifiedConnector.objects.get(pk=unified_connector_id)
-
-        invoke_lambda_function_mock.side_effect = lambda lambda_function, data: [
-            200, {
-                'existingSources': MOCK_LAMBDA_RESPONSE_SOURCES_BY_KEY[data['source_key']],
-                'asyncJobUuid': None,
-            }
-        ]
-
-        # Start request mock
-        mocked_requests = []
-        for source_key, _ in source_store.items():
-            MOCK_CONTENT_DATA = MOCK_CONTENT_DATA_BY_KEY.get(source_key)
-            if not MOCK_CONTENT_DATA:
-                continue
-            # NOTE: Using __bases__[0] to get the correct class instead of Wrapper Class
-            connector_requests_mock = patch(f'{_.__bases__[0].__module__}.requests')
-            connector_requests = connector_requests_mock.start()
-            for request_method in ['get', 'post']:
-                return_value = getattr(connector_requests, request_method).return_value
-                return_value.text = return_value.content = return_value.get.return_value = MOCK_CONTENT_DATA
-            mocked_requests.append(connector_requests_mock)
-
-        with self.captureOnCommitCallbacks(execute=True):
-            self.assert_200(self.client.post(unified_connector_trigger_url))
-        self.assertEqual(
-            list(unified_connector.unifiedconnectorsource_set.values_list('status', flat=True)),
-            [UnifiedConnectorSource.Status.SUCCESS for _ in data['sources']]
+        source2 = ConnectorSourceFactory.create(
+            source=ConnectorSource.Source.RELIEF_WEB,
+            unified_connector=uc,
         )
 
-        # Stop request mock
-        for mocked_request in mocked_requests:
-            mocked_request.stop()
-
-    def test_unified_connector_leads_bulk_action(self):
-        project = self.create_project()
-
-        unified_connector_source = self.create(
-            UnifiedConnectorSource,
-            source=get_source_object(store.atom_feed.AtomFeed.key),
-            connector=self.create(UnifiedConnector, project=project),
+        connector_source_lead1_1 = ConnectorSourceLeadFactory.create(
+            source=source1,
+            connector_lead=fake_lead1,
             blocked=False,
         )
-        unified_connector_source_lead1 = self.create(
-            UnifiedConnectorSourceLead,
-            source=unified_connector_source,
-            lead=self.create(ConnectorLead),
-            blocked=False,
-        )
-        unified_connector_source_lead2 = self.create(
-            UnifiedConnectorSourceLead,
-            source=unified_connector_source,
-            lead=self.create(ConnectorLead),
+        connector_source_lead1_2 = ConnectorSourceLeadFactory.create(
+            source=source1,
+            connector_lead=fake_lead1,
             blocked=True,
         )
-        unified_connector_source_lead3 = self.create(
-            UnifiedConnectorSourceLead,
-            source=unified_connector_source,
-            lead=self.create(ConnectorLead),
-            blocked=False,
+
+        connector_source_lead2_1 = ConnectorSourceLeadFactory.create(
+            source=source2,
+            connector_lead=fake_lead1,
+            blocked=True,
         )
 
-        unified_connector_source2 = self.create(
-            UnifiedConnectorSource,
-            source=get_source_object(store.atom_feed.AtomFeed.key),
-            connector=self.create(UnifiedConnector, project=project),
-        )
-        unified_connector_source_lead4 = self.create(
-            UnifiedConnectorSourceLead,
-            source=unified_connector_source2,
-            lead=self.create(ConnectorLead),
-            blocked=False,
-        )
-
-        to_block = [
-            unified_connector_source_lead1,
-            unified_connector_source_lead3,
-            unified_connector_source_lead4,
-        ]
-        to_unblock = [unified_connector_source_lead2]
-        for url in [
-            f'/api/v1/projects/{project.id}/unified-connector-sources/{unified_connector_source.id}/leads/bulk-update/',
-            f'/api/v1/projects/{project.id}/unified-connectors/{unified_connector_source.connector.id}/leads/bulk-update/',
-        ]:
-            data = {
-                'block': [ele.id for ele in to_block],
-                'unblock': [ele.id for ele in to_unblock],
-            }
-
-            self.authenticate()
-            response = self.client.post(url, data)
-            resp_body = response.json()
-            self.assert_200(response)
-            self.assertEqual(
-                sorted([ele.id for ele in to_block if ele.source == unified_connector_source]),
-                sorted(resp_body['blocked']),
-            )
-            self.assertEqual(
-                sorted(data['unblock']),
-                sorted(resp_body['unblocked']),
+        def _query_check(minput, source_lead, **kwargs):
+            return self.query_check(
+                self.UPDATE_CONNECTOR_SOURCE_LEAD_MUTATION,
+                minput=minput,
+                variables={'projectId': self.project.id, 'connectorSourceLeadId': source_lead.id},
+                **kwargs
             )
 
-            for ele in to_block:
-                ele.refresh_from_db()
-                self.assertEqual(ele.blocked, ele.source == unified_connector_source)
-            for ele in to_unblock:
-                ele.refresh_from_db()
-                self.assertEqual(ele.blocked, False)
-    """
+        minput = dict(blocked=True)
+
+        # -- Without login
+        _query_check(minput, connector_source_lead1_1, assert_for_error=True)
+
+        # -- With login (non-member)
+        self.force_login(self.non_member_user)
+        _query_check(minput, connector_source_lead1_1, assert_for_error=True)
+
+        # --- member user (read-only)
+        self.force_login(self.readonly_member_user)
+        _query_check(minput, connector_source_lead1_1, assert_for_error=True)
+
+        # --- member user
+        self.force_login(self.member_user)
+        for current, source_lead, updated_to in (
+            (False, connector_source_lead1_1, True),
+            (True, connector_source_lead1_2, False),
+            (True, connector_source_lead2_1, True),
+        ):
+            self.assertEqual(connector_source_lead1_1.blocked, current)
+            _query_check(
+                dict(blocked=updated_to),
+                source_lead,
+                mnested=['project', 'unifiedConnector'],
+                okay=True,
+            )
+            source_lead.refresh_from_db()
+            self.assertEqual(source_lead.blocked, updated_to)
+
+
+class UnifiedConnectorCallbackApiTest(TestCase):
+
+    @patch('unified_connector.tasks.RequestHelper')
+    def test_create_connector(self, RequestHelperMock):
+        def _check_connector_lead_status(connector_lead, status):
+            connector_lead.refresh_from_db()
+            self.assertEqual(connector_lead.extraction_status, status)
+
+        url = '/api/v1/connector-lead-extract-callback/'
+        connector_lead1 = ConnectorLeadFactory.create(url='https://some-random-url-01')
+        connector_lead2 = ConnectorLeadFactory.create(url='https://some-random-url-02')
+
+        SAMPLE_SIMPLIFIED_TEXT = 'Sample text'
+        RequestHelperMock.return_value.get_text.return_value = SAMPLE_SIMPLIFIED_TEXT
+        # Mock file
+        file_mock = MagicMock(spec=File, name='FileMock')
+        file_mock.name = 'test1.jpg'
+        RequestHelperMock.return_value.get_file.return_value = file_mock
+        # ------ Extraction FAILED
+        data = dict(
+            client_id='some-random-client-id',
+            url='https://some-random-url',
+            images_path=['https://sample-file-1'],
+            text_path='https://url-where-data-is-fetched-from-mock-response',
+            total_words_count=100,
+            total_pages=10,
+            extraction_status=0,  # Failed
+        )
+
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        _check_connector_lead_status(connector_lead1, ConnectorLead.ExtractionStatus.PENDING)
+
+        data['client_id'] = UnifiedConnectorTask.generate_connector_lead_client_id(connector_lead1)
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        _check_connector_lead_status(connector_lead1, ConnectorLead.ExtractionStatus.PENDING)
+
+        data['url'] = connector_lead1.url
+        response = self.client.post(url, data)
+        self.assert_200(response)
+        connector_lead1.refresh_from_db()
+        _check_connector_lead_status(connector_lead1, ConnectorLead.ExtractionStatus.FAILED)
+
+        # ------ Extraction SUCCESS
+        data = dict(
+            client_id='some-random-client-id',
+            url='https://some-random-url',
+            images_path=['https://sample-file-1', 'https://sample-file-2'],
+            text_path='https://url-where-data-is-fetched-from-mock-response',
+            total_words_count=100,
+            total_pages=10,
+            extraction_status=1,  # Failed
+        )
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        _check_connector_lead_status(connector_lead2, ConnectorLead.ExtractionStatus.PENDING)
+
+        data['client_id'] = UnifiedConnectorTask.generate_connector_lead_client_id(connector_lead2)
+        response = self.client.post(url, data)
+        self.assert_400(response)
+        _check_connector_lead_status(connector_lead2, ConnectorLead.ExtractionStatus.PENDING)
+
+        data['url'] = connector_lead2.url
+        response = self.client.post(url, data)
+        self.assert_200(response)
+        connector_lead2.refresh_from_db()
+        _check_connector_lead_status(connector_lead2, ConnectorLead.ExtractionStatus.SUCCESS)
+        preview_image_qs = ConnectorLeadPreviewImage.objects.filter(connector_lead=connector_lead2)
+        preview_image = preview_image_qs.first()
+        self.assertEqual(connector_lead2.simplified_text, SAMPLE_SIMPLIFIED_TEXT)
+        self.assertEqual(preview_image_qs.count(), 2)
+        self.assertIsNotNone(preview_image and preview_image.image.name)

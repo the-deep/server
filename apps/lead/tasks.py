@@ -151,7 +151,7 @@ class LeadExtraction:
         # and create new one
         LeadPreview.objects.create(
             lead=lead,
-            text_extract=RequestHelper(url=text_source_uri, ignore_error=True).get_text(),
+            text_extract=RequestHelper(url=text_source_uri, ignore_error=True).get_text() or '',
             word_count=word_count,
             page_count=page_count,
         )

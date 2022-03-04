@@ -537,14 +537,14 @@ urlpatterns = [
 
     # NLP Callback endpoints
     re_path(
-        get_api_path(r'connector-lead-extract-callback/$'),
-        ConnectorLeadExtractCallbackView.as_view(),
-        name='connector_lead_extract_callback',
-    ),
-    re_path(
         get_api_path(r'lead-extract-callback/$'),
         LeadExtractionTokenGenerator.as_view(),
         name='lead_extract_callback',
+    ),
+    re_path(
+        get_api_path(r'connector-lead-extract-callback/$'),
+        ConnectorLeadExtractCallbackView.as_view(),
+        name='connector_lead_extract_callback',
     ),
 
     # Combined API View
