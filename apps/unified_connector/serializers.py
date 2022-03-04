@@ -1,3 +1,4 @@
+import logging
 from rest_framework import serializers
 from django.db import transaction
 
@@ -8,8 +9,11 @@ from user_resource.serializers import UserResourceSerializer
 from .models import (
     UnifiedConnector,
     ConnectorSource,
+    ConnectorSourceLead,
 )
 from .tasks import UnifiedConnectorTask, process_unified_connector
+
+logger = logging.getLogger(__name__)
 
 
 class ExtractCallbackSerializer(serializers.Serializer):
@@ -26,10 +30,11 @@ class ExtractCallbackSerializer(serializers.Serializer):
     total_pages = serializers.IntegerField()
     extraction_status = serializers.IntegerField()  # 0 = Failed, 1 = Success
 
-    def validate_client_id(self, data):
+    def validate(self, data):
         client_id = data['client_id']
         try:
             data['lead'] = UnifiedConnectorTask.get_connector_lead_from_client_id(client_id)
+            assert data['lead'].url == data['url']
         except Exception as e:
             raise serializers.ValidationError(str(e))
         return data
@@ -99,3 +104,11 @@ class UnifiedConnectorGqSerializer(ProjectPropertySerializerMixin, TempClientIdM
             lambda: process_unified_connector.delay(instance.pk)
         )
         return instance
+
+
+class ConnectorSourceLeadGqSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ConnectorSourceLead
+        fields = (
+            'blocked',
+        )

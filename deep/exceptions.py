@@ -2,6 +2,13 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 
 
+class BaseException(Exception):
+    default_message = _('Unexpected exception. Contact admin.')
+
+    def __init__(self, msg=None, *args, **kwargs):
+        super().__init__(msg or self.default_message, *args, **kwargs)
+
+
 class CustomException(Exception):
     default_message = _('You do not have permission to perform this action.')
 

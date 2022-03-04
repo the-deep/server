@@ -650,7 +650,7 @@ class ExtractCallbackSerializer(serializers.Serializer):
     total_pages = serializers.IntegerField()
     extraction_status = serializers.IntegerField()  # 0 = Failed, 1 = Success
 
-    def validate_client_id(self, data):
+    def validate(self, data):
         client_id = data['client_id']
         try:
             data['lead'] = LeadExtraction.get_lead_from_client_id(client_id)
