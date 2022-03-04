@@ -80,6 +80,8 @@ env = environ.Env(
     DEEP_BUCKET_ACCESS_USER_SECRET=(json, None),
     ELASTI_CACHE_ADDRESS=str,
     ELASTI_CACHE_PORT=str,
+    # UNHCR Token
+    UNHCR_PORTAL_API_KEY=(str, None),
 )
 
 # Quick-start development settings - unsuitable for production
@@ -828,3 +830,5 @@ GRAPHENE_DJANGO_EXTRAS = {
 
 if DEEP_ENVIRONMENT in ['production']:
     GRAPHENE['MIDDLEWARE'].append('deep.middleware.DisableIntrospectionSchemaMiddleware')
+
+UNHCR_PORTAL_API_KEY = env('UNHCR_PORTAL_API_KEY')

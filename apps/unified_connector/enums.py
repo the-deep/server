@@ -5,17 +5,19 @@ from utils.graphene.enums import (
     get_enum_name_from_django_field,
 )
 
-from .models import ConnectorSource
+from .models import ConnectorSource, ConnectorLead
 
-ConnectorSourceEnum = convert_enum_to_graphene_enum(ConnectorSource.Source, name='ConnectorSourceEnum')
+ConnectorSourceSourceEnum = convert_enum_to_graphene_enum(ConnectorSource.Source, name='ConnectorSourceSourceEnum')
 ConnectorLeadExtractionStatusEnum = convert_enum_to_graphene_enum(
-    ConnectorSource.Status, name='ConnectorLeadExtractionStatusEnum')
+    ConnectorLead.ExtractionStatus, name='ConnectorLeadExtractionStatusEnum')
+ConnectorSourceStatusEnum = convert_enum_to_graphene_enum(ConnectorSource.Status, name='ConnectorSourceStatusEnum')
 
 enum_map = {
     get_enum_name_from_django_field(field): enum
     for field, enum in (
-        (ConnectorSource.source, ConnectorSourceEnum),
-        (ConnectorSource.status, ConnectorLeadExtractionStatusEnum),
+        (ConnectorSource.source, ConnectorSourceSourceEnum),
+        (ConnectorSource.status, ConnectorSourceStatusEnum),
+        (ConnectorLead.extraction_status, ConnectorLeadExtractionStatusEnum),
     )
 }
 

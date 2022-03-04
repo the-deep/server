@@ -293,6 +293,7 @@ input BulkLeadInputType {
   authors: [ID!]
   emmTriggers: [LeadEMMTriggerInputType!]
   emmEntities: [EMMEntityInputType!]
+  connectorLead: ID
   clientId: String
 }
 
@@ -341,6 +342,115 @@ type ChangeUserPassword {
   ok: Boolean
 }
 
+enum ConnectorLeadExtractionStatusEnum {
+  PENDING
+  RETRYING
+  STARTED
+  SUCCESS
+  FAILED
+}
+
+type ConnectorLeadType {
+  id: ID!
+  url: String!
+  title: String!
+  publishedOn: Date
+  sourceRaw: String!
+  authorRaw: String!
+  authors: [OrganizationType!]!
+  source: OrganizationType
+  extractionStatus: ConnectorLeadExtractionStatusEnum
+}
+
+input ConnectorSourceGqInputType {
+  id: ID
+  title: String!
+  source: ConnectorSourceSourceEnum!
+  params: GenericScalar
+  clientId: String
+}
+
+input ConnectorSourceLeadInputType {
+  blocked: Boolean
+}
+
+type ConnectorSourceLeadListType {
+  results: [ConnectorSourceLeadType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum ConnectorSourceLeadOrderingEnum {
+  ASC_ID
+  ASC_LEAD_CREATED_AT
+  ASC_LEAD_TITLE
+  DESC_ID
+  DESC_LEAD_CREATED_AT
+  DESC_LEAD_TITLE
+}
+
+type ConnectorSourceLeadType {
+  id: ID!
+  blocked: Boolean!
+  alreadyAdded: Boolean!
+  connectorLead: ConnectorLeadType
+  source: ID!
+}
+
+type ConnectorSourceListType {
+  results: [ConnectorSourceType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum ConnectorSourceOrderingEnum {
+  ASC_ID
+  ASC_CREATED_AT
+  ASC_TITLE
+  ASC_SOURCE
+  DESC_ID
+  DESC_CREATED_AT
+  DESC_TITLE
+  DESC_SOURCE
+}
+
+enum ConnectorSourceSourceEnum {
+  ATOM_FEED
+  RELIEF_WEB
+  RSS_FEED
+  UNHCR
+}
+
+type ConnectorSourceStatsType {
+  date: Date!
+  count: Int!
+}
+
+enum ConnectorSourceStatusEnum {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILURE
+}
+
+type ConnectorSourceType {
+  id: ID!
+  title: String!
+  unifiedConnector: ID!
+  params: GenericScalar!
+  lastFetchedAt: DateTime
+  clientId: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  source: ConnectorSourceSourceEnum
+  stats: [ConnectorSourceStatsType]
+  leadsCount: Int!
+}
+
 type CreateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
@@ -369,6 +479,12 @@ type CreateProjectJoin {
   errors: [GenericScalar!]
   ok: Boolean
   result: ProjectJoinRequestType
+}
+
+type CreateUnifiedConnector {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UnifiedConnectorType
 }
 
 type CreateUserExport {
@@ -420,6 +536,12 @@ type DeleteLeadGroup {
   errors: [GenericScalar!]
   ok: Boolean
   result: LeadGroupType
+}
+
+type DeleteUnifiedConnector {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UnifiedConnectorType
 }
 
 type DeleteUserExport {
@@ -976,6 +1098,7 @@ input LeadInputType {
   authors: [ID!]
   emmTriggers: [LeadEMMTriggerInputType!]
   emmEntities: [EMMEntityInputType!]
+  connectorLead: ID
   clientId: String
 }
 
@@ -1393,6 +1516,7 @@ type ProjectMutationType {
   projectUserMembershipBulk(deleteIds: [ID!], items: [BulkProjectMembershipInputType!]): BulkUpdateProjectMembership
   projectUserGroupMembershipBulk(deleteIds: [ID!], items: [BulkProjectUserGroupMembershipInputType!]): BulkUpdateProjectUserGroupMembership
   projectVizConfigurationUpdate(data: ProjectVizConfigurationInputType!): UpdateProjectVizConfiguration
+  unifiedConnector: UnifiedConnectorMutationType
 }
 
 type ProjectOrganizationType {
@@ -1415,6 +1539,10 @@ enum ProjectPermission {
   UPDATE_PROJECT
   DELETE_PROJECT
   CAN_ADD_MEMBER
+  VIEW_UNIFIED_CONNECTOR
+  CREATE_UNIFIED_CONNECTOR
+  UPDATE_UNIFIED_CONNECTOR
+  DELETE_UNIFIED_CONNECTOR
   CREATE_LEAD
   VIEW_ONLY_UNPROTECTED_LEAD
   VIEW_ALL_LEAD
@@ -1712,11 +1840,31 @@ type SectionType {
   widgets: [WidgetType!]
 }
 
+type TriggerUnifiedConnector {
+  errors: [GenericScalar!]
+  ok: Boolean
+}
+
+input UnifiedConnectorInputType {
+  title: String!
+  isActive: Boolean
+  sources: [ConnectorSourceGqInputType!]
+  clientId: String
+}
+
 type UnifiedConnectorListType {
   results: [UnifiedConnectorType!]
   totalCount: Int
   page: Int
   pageSize: Int
+}
+
+type UnifiedConnectorMutationType {
+  unifiedConnectorCreate(data: UnifiedConnectorInputType!): CreateUnifiedConnector
+  unifiedConnectorUpdate(data: UnifiedConnectorInputType!, id: ID!): UpdateUnifiedConnector
+  unifiedConnectorDelete(id: ID!): DeleteUnifiedConnector
+  unifiedConnectorTrigger(id: ID!): TriggerUnifiedConnector
+  connectorSourceLeadUpdate(data: ConnectorSourceLeadInputType!, id: ID!): UpdateConnectorSourceLead
 }
 
 enum UnifiedConnectorOrderingEnum {
@@ -1730,20 +1878,37 @@ enum UnifiedConnectorOrderingEnum {
 
 type UnifiedConnectorQueryType {
   unifiedConnector(id: ID!): UnifiedConnectorType
-  unifiedConnectors(ordering: [UnifiedConnectorOrderingEnum!], page: Int = 1, pageSize: Int): UnifiedConnectorListType
+  unifiedConnectors(search: String, ordering: [UnifiedConnectorOrderingEnum!], isActive: Boolean, page: Int = 1, pageSize: Int): UnifiedConnectorListType
+  connectorSource(id: ID!): ConnectorSourceType
+  connectorSources(search: String, ordering: [ConnectorSourceOrderingEnum!], sources: [ConnectorSourceSourceEnum!], statuses: [ConnectorSourceStatusEnum!], unifiedConnectors: [ID!], page: Int = 1, pageSize: Int): ConnectorSourceListType
+  connectorSourceLead(id: ID!): ConnectorSourceLeadType
+  connectorSourceLeads(ordering: [ConnectorSourceLeadOrderingEnum!], sources: [ID!], blocked: Boolean, alreadyAdded: Boolean, extractionStatus: [ConnectorLeadExtractionStatusEnum!], page: Int = 1, pageSize: Int): ConnectorSourceLeadListType
 }
 
 type UnifiedConnectorType {
   id: ID!
   title: String!
   isActive: Boolean!
+  clientId: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
   project: ID!
+  sources: [ConnectorSourceType!]
+  leadsCount: Int!
 }
 
 type UpdateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisFrameworkDetailType
+}
+
+type UpdateConnectorSourceLead {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ConnectorSourceLeadType
 }
 
 type UpdateEntry {
@@ -1774,6 +1939,12 @@ type UpdateProjectVizConfiguration {
   errors: [GenericScalar!]
   ok: Boolean
   result: ProjectVizDataType
+}
+
+type UpdateUnifiedConnector {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UnifiedConnectorType
 }
 
 type UpdateUserGroup {

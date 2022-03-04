@@ -1,4 +1,5 @@
 import graphene
+import datetime
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
@@ -21,7 +22,7 @@ from .models import (
     ConnectorSourceLead,
 )
 from .enums import (
-    ConnectorSourceEnum,
+    ConnectorSourceSourceEnum,
     ConnectorLeadExtractionStatusEnum,
 )
 
@@ -88,9 +89,20 @@ class ConnectorSourceLeadListType(CustomDjangoListObjectType):
         filterset_class = ConnectorSourceLeadGQFilterSet
 
 
+class ConnectorSourceStatsType(graphene.ObjectType):
+    date = graphene.Date(required=True)
+    count = graphene.Int(required=True)
+
+    @staticmethod
+    def resolve_date(root, info, **kwargs):
+        return datetime.datetime.strptime(root['date'], '%Y-%m-%d')
+
+
 class ConnectorSourceType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
-    source = graphene.Field(ConnectorSourceEnum)
+    source = graphene.Field(ConnectorSourceSourceEnum)
     unified_connector = graphene.ID(required=True, source='unified_connector_id')
+    stats = graphene.List(ConnectorSourceStatsType)
+    leads_count = graphene.Int(required=True)
 
     class Meta:
         model = ConnectorSource
@@ -106,6 +118,14 @@ class ConnectorSourceType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     def get_custom_queryset(queryset, info, **kwargs):
         return get_connector_source_qs(info)
 
+    @staticmethod
+    def resolve_stats(root, info, **kwargs):
+        return (root.stats or {}).get('published_dates') or []
+
+    @staticmethod
+    def resolve_leads_count(root, info, **kwargs):  # FIXME: Load real-time?
+        return (root.stats or {}).get('leads_count') or 0
+
 
 class ConnectorSourceListType(CustomDjangoListObjectType):
     class Meta:
@@ -116,6 +136,7 @@ class ConnectorSourceListType(CustomDjangoListObjectType):
 class UnifiedConnectorType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     project = graphene.ID(required=True, source='project_id')
     sources = graphene.List(graphene.NonNull(ConnectorSourceType))
+    leads_count = graphene.Int(required=True)
 
     class Meta:
         model = UnifiedConnector
@@ -128,6 +149,12 @@ class UnifiedConnectorType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
         return get_unified_connector_qs(info)
+
+    @staticmethod
+    def resolve_leads_count(root, info, **kwargs):
+        return ConnectorSourceLead.objects.filter(
+            source__unified_connector=root,
+        ).distinct().count()  # TODO: Dataloader
 
     @staticmethod
     def resolve_sources(root, info, **kwargs):
