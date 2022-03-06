@@ -814,7 +814,7 @@ class LeadCopyView(BaseCopyView):
         return lead
 
 
-class LeadExtractionTokenGenerator(views.APIView):
+class LeadExtractCallbackView(views.APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):

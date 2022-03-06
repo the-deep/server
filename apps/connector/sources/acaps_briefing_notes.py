@@ -142,7 +142,7 @@ class AcapsBriefingNotes(Source):
         resp = requests.get(url, params=params)
         return resp.text
 
-    def fetch(self, params, offset=None, limit=None):
+    def fetch(self, params):
         results = []
         content = self.get_content(self.URL, params)
         soup = Soup(content, 'html.parser')
@@ -176,10 +176,4 @@ class AcapsBriefingNotes(Source):
                     "Exception parsing {} with params {}: {}".format(
                         self.URL, params, e.args)
                 )
-
-        final_results = results
-        if offset:
-            final_results = results[offset:]
-        if limit:
-            final_results = results[:limit]
-        return final_results, len(results)
+        return results, len(results)

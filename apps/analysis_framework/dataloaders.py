@@ -94,7 +94,7 @@ class MembershipLoader(DataLoaderWithContext):
 class VisibleProjects(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         project_qs = Project.get_for_gq(self.context.request.user)\
-            .filter(analysis_framework__in=keys)
+            .filter(analysis_framework__in=keys).order_by('-id')
         _map = defaultdict(list)
         for project in project_qs:
             _map[project.analysis_framework_id].append(project)

@@ -76,7 +76,7 @@ class Source(ABC):
             raise Exception('Source not defined properly')
 
     @abstractmethod
-    def fetch(self, params, offset=None, limit=None):
+    def fetch(self, params):
         pass
 
     def get_leads(self, *args, **kwargs) -> Tuple[List[Lead], int]:
@@ -93,7 +93,7 @@ class Source(ABC):
         leads = []
         for ldata in leads_data:
             published_on = str_to_date(ldata['published_on'])
-            published_on = published_on and published_on.date
+            published_on = published_on and published_on.date()
             lead = Lead(
                 id=ldata.get('id', random_key()),
                 title=ldata['title'],
@@ -122,15 +122,10 @@ class Source(ABC):
 
         return leads, total_count
 
-    def query_leads(self, params, offset, limit):
+    def query_leads(self, params):
         from connector.serializers import SourceDataSerializer
 
-        if offset is None or offset < 0:
-            offset = 0
-        if not limit or limit < 0:
-            limit = Source.DEFAULT_PER_PAGE
-
-        data, total_count = self.get_leads(params, offset, limit)
+        data, total_count = self.get_leads(params)
         return SourceDataSerializer(
             data,
             many=True,
