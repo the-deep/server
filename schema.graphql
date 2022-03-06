@@ -359,7 +359,8 @@ type ConnectorLeadType {
   authorRaw: String!
   authors: [OrganizationType!]!
   source: OrganizationType
-  extractionStatus: ConnectorLeadExtractionStatusEnum
+  extractionStatus: ConnectorLeadExtractionStatusEnum!
+  extractionStatusDisplay: EnumDescription!
 }
 
 input ConnectorSourceGqInputType {
@@ -446,7 +447,8 @@ type ConnectorSourceType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  source: ConnectorSourceSourceEnum
+  source: ConnectorSourceSourceEnum!
+  sourceDisplay: EnumDescription!
   stats: [ConnectorSourceStatsType]
   leadsCount: Int!
 }
