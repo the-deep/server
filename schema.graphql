@@ -1850,7 +1850,6 @@ type TriggerUnifiedConnector {
 input UnifiedConnectorInputType {
   title: String!
   isActive: Boolean
-  sources: [ConnectorSourceGqInputType!]
   clientId: String
 }
 
@@ -1862,8 +1861,9 @@ type UnifiedConnectorListType {
 }
 
 type UnifiedConnectorMutationType {
-  unifiedConnectorCreate(data: UnifiedConnectorInputType!): CreateUnifiedConnector
+  unifiedConnectorCreate(data: UnifiedConnectorWithSourceInputType!): CreateUnifiedConnector
   unifiedConnectorUpdate(data: UnifiedConnectorInputType!, id: ID!): UpdateUnifiedConnector
+  unifiedConnectorWithSourceUpdate(data: UnifiedConnectorWithSourceInputType!, id: ID!): UpdateUnifiedConnectorWithSource
   unifiedConnectorDelete(id: ID!): DeleteUnifiedConnector
   unifiedConnectorTrigger(id: ID!): TriggerUnifiedConnector
   connectorSourceLeadUpdate(data: ConnectorSourceLeadInputType!, id: ID!): UpdateConnectorSourceLead
@@ -1899,6 +1899,13 @@ type UnifiedConnectorType {
   project: ID!
   sources: [ConnectorSourceType!]
   leadsCount: Int!
+}
+
+input UnifiedConnectorWithSourceInputType {
+  title: String!
+  isActive: Boolean
+  clientId: String
+  sources: [ConnectorSourceGqInputType!]
 }
 
 type UpdateAnalysisFramework {
@@ -1944,6 +1951,12 @@ type UpdateProjectVizConfiguration {
 }
 
 type UpdateUnifiedConnector {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UnifiedConnectorType
+}
+
+type UpdateUnifiedConnectorWithSource {
   errors: [GenericScalar!]
   ok: Boolean
   result: UnifiedConnectorType

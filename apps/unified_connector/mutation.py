@@ -16,7 +16,8 @@ from .schema import (
     ConnectorSourceLeadType,
 )
 from .serializers import (
-    UnifiedConnectorGqSerializer as UnifiedConnectorSerializer,
+    UnifiedConnectorGqSerializer,
+    UnifiedConnectorWithSourceGqSerializer,
     ConnectorSourceLeadGqSerializer,
 )
 from .tasks import process_unified_connector
@@ -24,7 +25,11 @@ from .tasks import process_unified_connector
 
 UnifiedConnectorInputType = generate_input_type_for_serializer(
     'UnifiedConnectorInputType',
-    serializer_class=UnifiedConnectorSerializer,
+    serializer_class=UnifiedConnectorGqSerializer,
+)
+UnifiedConnectorWithSourceInputType = generate_input_type_for_serializer(
+    'UnifiedConnectorWithSourceInputType',
+    serializer_class=UnifiedConnectorWithSourceGqSerializer,
 )
 ConnectorSourceLeadInputType = generate_input_type_for_serializer(
     'ConnectorSourceLeadInputType',
@@ -40,9 +45,9 @@ class UnifiedConnectorMixin():
 
 class CreateUnifiedConnector(UnifiedConnectorMixin, PsGrapheneMutation):
     class Arguments:
-        data = UnifiedConnectorInputType(required=True)
+        data = UnifiedConnectorWithSourceInputType(required=True)
     model = UnifiedConnector
-    serializer_class = UnifiedConnectorSerializer
+    serializer_class = UnifiedConnectorWithSourceGqSerializer
     result = graphene.Field(UnifiedConnectorType)
     permissions = [PP.Permission.CREATE_UNIFIED_CONNECTOR]
 
@@ -52,7 +57,17 @@ class UpdateUnifiedConnector(UnifiedConnectorMixin, PsGrapheneMutation):
         id = graphene.ID(required=True)
         data = UnifiedConnectorInputType(required=True)
     model = UnifiedConnector
-    serializer_class = UnifiedConnectorSerializer
+    serializer_class = UnifiedConnectorGqSerializer
+    result = graphene.Field(UnifiedConnectorType)
+    permissions = [PP.Permission.UPDATE_UNIFIED_CONNECTOR]
+
+
+class UpdateUnifiedConnectorWithSource(UnifiedConnectorMixin, PsGrapheneMutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+        data = UnifiedConnectorWithSourceInputType(required=True)
+    model = UnifiedConnector
+    serializer_class = UnifiedConnectorWithSourceGqSerializer
     result = graphene.Field(UnifiedConnectorType)
     permissions = [PP.Permission.UPDATE_UNIFIED_CONNECTOR]
 
@@ -69,7 +84,7 @@ class TriggerUnifiedConnector(UnifiedConnectorMixin, PsGrapheneMutation):
     class Arguments:
         id = graphene.ID(required=True)
     model = UnifiedConnector
-    serializer_class = UnifiedConnectorSerializer
+    serializer_class = UnifiedConnectorGqSerializer
     permissions = [PP.Permission.VIEW_UNIFIED_CONNECTOR]
 
     @classmethod
@@ -93,12 +108,15 @@ class UpdateConnectorSourceLead(PsGrapheneMutation):
 
     @classmethod
     def filter_queryset(cls, qs, info):
-        return qs.filter(source__unified_connector__project=info.context.active_project)
+        return qs.filter(
+            source__unified_connector__project=info.context.active_project
+        )
 
 
 class UnifiedConnectorMutationType(graphene.ObjectType):
     unified_connector_create = CreateUnifiedConnector.Field()
     unified_connector_update = UpdateUnifiedConnector.Field()
+    unified_connector_with_source_update = UpdateUnifiedConnectorWithSource.Field()
     unified_connector_delete = DeleteUnifiedConnector.Field()
     unified_connector_trigger = TriggerUnifiedConnector.Field()
     connector_source_lead_update = UpdateConnectorSourceLead.Field()
