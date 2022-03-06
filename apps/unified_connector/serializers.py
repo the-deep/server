@@ -70,16 +70,35 @@ class ConnectorSourceGqSerializer(ProjectPropertySerializerMixin, TempClientIdMi
 
 
 class UnifiedConnectorGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserResourceSerializer):
-    sources = ConnectorSourceGqSerializer(required=False, many=True)
-
     class Meta:
         model = UnifiedConnector
         fields = (
             'title',
             'is_active',
-            'sources',
             'client_id',  # From TempClientIdMixin
         )
+
+    def validate(self, data):
+        data['project'] = self.project
+        return data
+
+    def create(self, data):
+        instance = super().create(data)
+        transaction.on_commit(
+            lambda: process_unified_connector.delay(instance.pk)
+        )
+        return instance
+
+
+class UnifiedConnectorWithSourceGqSerializer(UnifiedConnectorGqSerializer):
+    sources = ConnectorSourceGqSerializer(required=False, many=True)
+
+    class Meta:
+        model = UnifiedConnector
+        fields = [
+            *UnifiedConnectorGqSerializer.Meta.fields,
+            'sources',
+        ]
 
     # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
     # This makes sure only scoped (individual entry) instances (attributes) are updated.
@@ -97,17 +116,6 @@ class UnifiedConnectorGqSerializer(ProjectPropertySerializerMixin, TempClientIdM
                 raise serializers.ValidationError(f'Multiple connector found for {source_type}')
             source_found.add(source_type)
         return sources
-
-    def validate(self, data):
-        data['project'] = self.project
-        return data
-
-    def create(self, data):
-        instance = super().create(data)
-        transaction.on_commit(
-            lambda: process_unified_connector.delay(instance.pk)
-        )
-        return instance
 
 
 class ConnectorSourceLeadGqSerializer(serializers.ModelSerializer):
