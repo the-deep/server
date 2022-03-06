@@ -80,35 +80,6 @@ class RssFeed(Source):
         resp = requests.get(url, headers=DEFAULT_HEADERS)
         return resp.content
 
-    def fetch(self, params, offset=None, limit=None):
-        results = []
-        if not params or not params.get('feed-url'):
-            return results, 0
-
-        content = self.get_content(params['feed-url'], {})
-        xml = etree.fromstring(content)
-        items = xml.findall('channel/item')
-
-        total_count = len(items)
-
-        limited_items = items
-        if offset:
-            limited_items = items[offset:]
-        if limit:
-            limited_items = items[:limit]
-
-        for item in limited_items:
-            data = {
-                'source_type': Lead.SourceType.RSS,
-                **{
-                    lead_field: _get_field_value(item, params.get(param_key))
-                    for lead_field, param_key in self._option_lead_field_map.items()
-                },
-            }
-            results.append(data)
-
-        return results, total_count
-
     def query_fields(self, params):
         if not params or not params.get('feed-url'):
             return []
@@ -142,3 +113,23 @@ class RssFeed(Source):
             if fields.count(field) == 1:
                 real_fields.append(field)
         return real_fields
+
+    def fetch(self, params):
+        results = []
+        if not params or not params.get('feed-url'):
+            return results, 0
+
+        content = self.get_content(params['feed-url'], {})
+        xml = etree.fromstring(content)
+        items = xml.findall('channel/item')
+
+        for item in items:
+            data = {
+                'source_type': Lead.SourceType.RSS,
+                **{
+                    lead_field: _get_field_value(item, params.get(param_key))
+                    for lead_field, param_key in self._option_lead_field_map.items()
+                },
+            }
+            results.append(data)
+        return results, len(results)

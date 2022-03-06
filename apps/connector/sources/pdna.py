@@ -88,7 +88,7 @@ class PDNA(Source):
         resp = requests.get(url)
         return resp.text
 
-    def fetch(self, params, offset=None, limit=None):
+    def fetch(self, params):
         country = params.get('country')
         if not country:
             return [], 0
@@ -125,5 +125,4 @@ class PDNA(Source):
                         "Exception parsing {} with params {}: {}".format(
                             self.URL, params, e.args)
                     )
-        final_results = results[offset: offset + limit]
-        return final_results, len(results)
+        return results, len(results)

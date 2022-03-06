@@ -48,7 +48,7 @@ class UNHCRPortal(Source):
     def get_content(self, url, params):
         return requests.get(url, params=params).json()
 
-    def fetch(self, params, offset=None, limit=None):
+    def fetch(self, params):
         results = []
         date_from = _format_date_or_none(params.pop('date_from', None))
         date_to = _format_date_or_none(params.pop('date_to', None))
@@ -58,6 +58,7 @@ class UNHCRPortal(Source):
             params['global_filter[date_to]'] = date_to
 
         params.update(self.params)  # type is default
+        params['limit'] = 50
         page = 0
 
         while True:

@@ -2,6 +2,7 @@ import logging
 from datetime import date
 
 from django.db.models import Q
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from rest_framework.exceptions import ErrorDetail
 
@@ -42,7 +43,6 @@ from lead.models import (
 from user_group.models import UserGroup, GroupMembership
 from ary.models import Assessment
 from lead.factories import LeadFactory
-from django.core.files.uploadedfile import SimpleUploadedFile
 from unittest import mock
 
 
@@ -1762,15 +1762,15 @@ class TestExtractorCallback(TestCase):
         self.lead = LeadFactory.create()
 
     @mock.patch('lead.tasks.RequestHelper.get_text')
-    @mock.patch('lead.tasks.RequestHelper.get_decoded_file')
-    def test_extractor_callback_url(self, get_decoded_file_mock, get_text_mock):
-        url = '/api/v1/leads/extract-callback/'
+    @mock.patch('lead.tasks.RequestHelper.get_file')
+    def test_extractor_callback_url(self, get_file_mock, get_text_mock):
+        url = '/api/v1/lead-extract-callback/'
         self.authenticate()
 
         image = SimpleUploadedFile(
             name='test_image.jpg', content=b'', content_type='image/jpeg'
         )
-        get_decoded_file_mock.return_value = image
+        get_file_mock.return_value = image
         get_text_mock.return_value = 'Extracted text'
 
         # Before callback

@@ -82,7 +82,7 @@ from lead.views import (
     LeadPreviewViewSet,
     LeadOptionsView,
     LeadExtractionTriggerView,
-    LeadExtractionTokenGenerator,
+    LeadExtractCallbackView,
     LeadWebsiteFetch,
     LeadCopyView,
 
@@ -538,7 +538,7 @@ urlpatterns = [
     # NLP Callback endpoints
     re_path(
         get_api_path(r'lead-extract-callback/$'),
-        LeadExtractionTokenGenerator.as_view(),
+        LeadExtractCallbackView.as_view(),
         name='lead_extract_callback',
     ),
     re_path(

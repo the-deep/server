@@ -187,8 +187,6 @@ COUNTRIES = [
     {"key": "SDS", "label": "South Sudan"},
 ]
 
-RELIEFWEB_MAX_LIMIT = 1000
-
 
 def _format_date(datestr):
     return datestr + 'T00:00:00+00:00'
@@ -257,7 +255,7 @@ class ReliefWeb(Source):
             return {'operator': 'AND', 'conditions': filters}
         return {}
 
-    def fetch(self, params, offset=None, limit=None):
+    def fetch(self, params):
         results = []
 
         post_params = {}
@@ -276,12 +274,7 @@ class ReliefWeb(Source):
                 'operator': 'AND',
             }
 
-        if offset:
-            post_params['offset'] = offset
-
-        limit = min(limit or 1000, 1000)  # Limit from relief-web
-        post_params['limit'] = min(limit or RELIEFWEB_MAX_LIMIT, RELIEFWEB_MAX_LIMIT)
-
+        post_params['limit'] = 1000
         post_params['sort'] = ['date.original:desc', 'title:asc']
 
         relief_url = self.URL
@@ -307,6 +300,4 @@ class ReliefWeb(Source):
                 }
                 results.append(lead)
             relief_url = resp['links'].get('next', {}).get('herf')
-            if offset is not None:  # Don't pull all if offset is provided
-                break
         return results, total_count

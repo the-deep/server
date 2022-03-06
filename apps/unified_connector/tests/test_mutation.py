@@ -1,7 +1,8 @@
-from unittest.mock import patch, MagicMock
-from django.core.files import File
+from unittest.mock import patch
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 
-from utils.graphene.tests import GraphQLSnapShotTestCase
+from utils.graphene.tests import GraphQLSnapShotTestCase, DUMMY_TEST_CACHES
 
 from project.factories import ProjectFactory
 from user.factories import UserFactory
@@ -22,6 +23,9 @@ from unified_connector.factories import (
 from .connector_mock_data import RELIEF_WEB_MOCK_DATA
 
 
+@override_settings(
+    CACHES=DUMMY_TEST_CACHES,
+)
 class TestLeadMutationSchema(GraphQLSnapShotTestCase):
     factories_used = [ProjectFactory, UserFactory, UnifiedConnectorFactory, ConnectorSourceFactory]
 
@@ -476,9 +480,10 @@ class UnifiedConnectorCallbackApiTest(TestCase):
         SAMPLE_SIMPLIFIED_TEXT = 'Sample text'
         RequestHelperMock.return_value.get_text.return_value = SAMPLE_SIMPLIFIED_TEXT
         # Mock file
-        file_mock = MagicMock(spec=File, name='FileMock')
-        file_mock.name = 'test1.jpg'
-        RequestHelperMock.return_value.get_file.return_value = file_mock
+        file_1 = SimpleUploadedFile(
+            name='test_image.jpg', content=b'', content_type='image/jpeg'
+        )
+        RequestHelperMock.return_value.get_file.return_value = file_1
         # ------ Extraction FAILED
         data = dict(
             client_id='some-random-client-id',
