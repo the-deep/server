@@ -69,6 +69,7 @@ class SourceDataSerializer(RemoveNullFieldsMixin,
     author_detail = SimpleOrganizationSerializer(source='author', read_only=True)
 
     source_detail = SimpleOrganizationSerializer(source='source', read_only=True)
+    published_on = serializers.DateField(read_only=True)
 
     class Meta:
         model = Lead

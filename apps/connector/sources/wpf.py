@@ -161,11 +161,9 @@ class WorldFoodProgramme(Source):
         resp = requests.get(self.URL, params=params)
         return resp.text
 
-    def fetch(self, params, offset=None, limit=None):
+    def fetch(self, params):
         results = []
 
-        # NOTE: No calculation of offset, the api supports pagination
-        # NOTE: This is not consistent with other pagination
         content = self.get_content(self.URL, params)
         soup = Soup(content, 'html.parser')
 

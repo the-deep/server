@@ -72,7 +72,7 @@ class ResearchResourceCenter(Source):
         resp = requests.get(self.URL, params=params)
         return resp.text
 
-    def fetch(self, params, offset=None, limit=None):
+    def fetch(self, params):
         results = []
         content = self.get_content(self.URL, params)
         soup = Soup(content, 'html.parser')
@@ -80,11 +80,6 @@ class ResearchResourceCenter(Source):
 
         total_count = len(contents)
         limited_contents = contents
-        if offset:
-            limited_contents = contents[offset:]
-        if limit:
-            limited_contents = contents[:limit]
-
         for row in limited_contents:
             tds = row.findAll('td')
             title = tds[0].get_text().replace('_', ' ')
