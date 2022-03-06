@@ -30,7 +30,7 @@ class TestLeadMutationSchema(GraphQLSnapShotTestCase):
     factories_used = [ProjectFactory, UserFactory, UnifiedConnectorFactory, ConnectorSourceFactory]
 
     CREATE_UNIFIED_CONNECTOR_MUTATION = '''
-        mutation MyMutation ($projectId: ID!  $input: UnifiedConnectorInputType!) {
+        mutation MyMutation ($projectId: ID!  $input: UnifiedConnectorWithSourceInputType!) {
           project(id: $projectId) {
             unifiedConnector {
               unifiedConnectorCreate(data: $input) {
@@ -58,10 +58,10 @@ class TestLeadMutationSchema(GraphQLSnapShotTestCase):
     '''
 
     UPDATE_UNIFIED_CONNECTOR_MUTATION = '''
-        mutation MyMutation ($projectId: ID!  $unifiedConnectorId: ID! $input: UnifiedConnectorInputType!) {
+        mutation MyMutation ($projectId: ID!  $unifiedConnectorId: ID! $input: UnifiedConnectorWithSourceInputType!) {
           project(id: $projectId) {
             unifiedConnector {
-              unifiedConnectorUpdate(id: $unifiedConnectorId data: $input) {
+              unifiedConnectorWithSourceUpdate(id: $unifiedConnectorId data: $input) {
                 ok
                 errors
                 result {
@@ -283,7 +283,7 @@ class TestLeadMutationSchema(GraphQLSnapShotTestCase):
         _query_check(minput, okay=False)
 
         minput['sources'].pop(-1)
-        content = _query_check(minput)['data']['project']['unifiedConnector']['unifiedConnectorUpdate']['result']
+        content = _query_check(minput)['data']['project']['unifiedConnector']['unifiedConnectorWithSourceUpdate']['result']
         self.assertMatchSnapshot(content, 'success-1')
 
     def test_unified_connector_delete(self):
