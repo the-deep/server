@@ -24,6 +24,7 @@ from .models import (
 )
 from .enums import (
     ConnectorSourceSourceEnum,
+    ConnectorSourceStatusEnum,
     ConnectorLeadExtractionStatusEnum,
 )
 
@@ -106,6 +107,8 @@ class ConnectorSourceType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     unified_connector = graphene.ID(required=True, source='unified_connector_id')
     stats = graphene.List(ConnectorSourceStatsType)
     leads_count = graphene.Int(required=True)
+    status = graphene.Field(ConnectorSourceStatusEnum, required=True)
+    status_display = EnumDescription(source='get_status_display', required=True)
 
     class Meta:
         model = ConnectorSource

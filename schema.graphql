@@ -451,6 +451,8 @@ type ConnectorSourceType {
   sourceDisplay: EnumDescription!
   stats: [ConnectorSourceStatsType]
   leadsCount: Int!
+  status: ConnectorSourceStatusEnum!
+  statusDisplay: EnumDescription!
 }
 
 type CreateAnalysisFramework {
