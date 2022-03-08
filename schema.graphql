@@ -39,6 +39,7 @@ type AnalysisFrameworkDetailType {
   filters: [AnalysisFrameworkFilterType!]
   exportables: [AnalysisFrameworkExportableType!]
   visibleProjects: [AnalysisFrameworkVisibleProjectType!]
+  predictionTagsMapping: [AnalysisFrameworkPredictionMappingType!]
 }
 
 type AnalysisFrameworkExportableType {
@@ -69,6 +70,7 @@ input AnalysisFrameworkInputType {
   properties: GenericScalar
   organization: ID
   previewImage: Upload
+  createdBy: ID
   primaryTagging: [SectionGqlInputType!]
   secondaryTagging: [WidgetGqlInputType!]
 }
@@ -94,6 +96,7 @@ type AnalysisFrameworkMutationType {
   title: String!
   analysisFrameworkUpdate(data: AnalysisFrameworkInputType!): UpdateAnalysisFramework
   analysisFrameworkMembershipBulk(deleteIds: [ID!], items: [BulkAnalysisFrameworkMembershipInputType!]): BulkUpdateAnalysisFrameworkMembership
+  analysisFrameworkPredictionMapping(data: AnalysisFrameworkPredictionMapUpdateInputType!): UpdateAnalysisFrameworkPredictionMapping
 }
 
 enum AnalysisFrameworkPermission {
@@ -102,6 +105,17 @@ enum AnalysisFrameworkPermission {
   CAN_EDIT_FRAMEWORK
   CAN_USE_IN_OTHER_PROJECTS
   DELETE_FRAMEWORK
+}
+
+input AnalysisFrameworkPredictionMapUpdateInputType {
+  predictionTagsMapping: [PredictionTagAnalysisFrameworkMapInputType!]!
+}
+
+type AnalysisFrameworkPredictionMappingType {
+  id: ID!
+  widget: ID!
+  tag: ID!
+  association: GenericScalar!
 }
 
 type AnalysisFrameworkRoleType {
@@ -217,6 +231,88 @@ type AssessmentType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
+}
+
+type AssistedTaggingModelListType {
+  results: [AssistedTaggingModelType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum AssistedTaggingModelOrderingEnum {
+  ASC_ID
+  DESC_ID
+}
+
+type AssistedTaggingModelPredictionTagListType {
+  results: [AssistedTaggingModelPredictionTagType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum AssistedTaggingModelPredictionTagOrderingEnum {
+  ASC_ID
+  DESC_ID
+}
+
+type AssistedTaggingModelPredictionTagType {
+  id: ID!
+  tagId: String!
+  isDepricated: Boolean!
+}
+
+type AssistedTaggingModelType {
+  id: ID!
+  modelId: String!
+  name: String!
+  latestVersion: AssistedTaggingModelVersionType
+  versions: [AssistedTaggingModelVersionType!]
+}
+
+type AssistedTaggingModelVersionType {
+  id: ID!
+  version: String!
+}
+
+type AssistedTaggingMutationType {
+  draftEntryCreate(data: DraftEntryInputType!): CreateDraftEntry
+  missingPredictionReviewCreate(data: MissingPredictionReviewInputType!): CreateMissingPredictionReview
+  wrongPredictionReviewCreate(data: WrongPredictionReviewInputType!): CreateWrongPredictionReview
+  missingPredictionReviewDelete(id: ID!): DeleteMissingPredictionReview
+  wrongPredictionReviewDelete(id: ID!): DeleteWrongPredictionReview
+}
+
+enum AssistedTaggingPredictionDataTypeEnum {
+  RAW
+  TAG
+}
+
+type AssistedTaggingPredictionType {
+  id: ID!
+  value: String!
+  prediction: Decimal
+  threshold: Decimal
+  isSelected: Boolean!
+  modelVersion: ID!
+  draftEntry: ID!
+  dataType: AssistedTaggingPredictionDataTypeEnum!
+  dataTypeDisplay: EnumDescription!
+  category: ID
+  tag: ID
+  wrongPredictionReviews: [WrongPredictionReviewType!]
+}
+
+type AssistedTaggingQueryType {
+  draftEntry(id: ID!): DraftEntryType
+}
+
+type AssistedTaggingRootQueryType {
+  taggingModel(id: ID!): AssistedTaggingModelType
+  taggingModels(ordering: [AssistedTaggingModelOrderingEnum!], page: Int = 1, pageSize: Int): AssistedTaggingModelListType
+  predictionTag(id: ID!): AssistedTaggingModelPredictionTagType
+  predictionTags(ordering: [AssistedTaggingModelPredictionTagOrderingEnum!], isDepricated: Boolean, page: Int = 1, pageSize: Int): AssistedTaggingModelPredictionTagListType
 }
 
 input AttributeGqInputType {
@@ -408,7 +504,7 @@ type ConnectorSourceLeadType {
   id: ID!
   blocked: Boolean!
   alreadyAdded: Boolean!
-  connectorLead: ConnectorLeadType
+  connectorLead: ConnectorLeadType!
   source: ID!
 }
 
@@ -464,12 +560,20 @@ type ConnectorSourceType {
   sourceDisplay: EnumDescription!
   stats: [ConnectorSourceStatsType]
   leadsCount: Int!
+  status: ConnectorSourceStatusEnum!
+  statusDisplay: EnumDescription!
 }
 
 type CreateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisFrameworkDetailType
+}
+
+type CreateDraftEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: DraftEntryType
 }
 
 type CreateEntry {
@@ -488,6 +592,12 @@ type CreateLead {
   errors: [GenericScalar!]
   ok: Boolean
   result: LeadType
+}
+
+type CreateMissingPredictionReview {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: MissingPredictionReviewType
 }
 
 type CreateProjectJoin {
@@ -514,6 +624,12 @@ type CreateUserGroup {
   result: UserGroupType
 }
 
+type CreateWrongPredictionReview {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: MissingPredictionReviewType
+}
+
 scalar Date
 
 type DateCountType {
@@ -522,6 +638,8 @@ type DateCountType {
 }
 
 scalar DateTime
+
+scalar Decimal
 
 type DeleteAssessment {
   errors: [GenericScalar!]
@@ -553,6 +671,12 @@ type DeleteLeadGroup {
   result: LeadGroupType
 }
 
+type DeleteMissingPredictionReview {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: MissingPredictionReviewType
+}
+
 type DeleteUnifiedConnector {
   errors: [GenericScalar!]
   ok: Boolean
@@ -569,6 +693,12 @@ type DeleteUserGroup {
   errors: [GenericScalar!]
   ok: Boolean
   result: UserGroupType
+}
+
+type DeleteWrongPredictionReview {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: WrongPredictionReviewType
 }
 
 type DjangoDebug {
@@ -590,6 +720,26 @@ type DjangoDebugSQL {
   transStatus: String
   isoLevel: String
   encoding: String
+}
+
+input DraftEntryInputType {
+  excerpt: String!
+}
+
+enum DraftEntryPredictionStatusEnum {
+  PENDING
+  STARTED
+  DONE
+}
+
+type DraftEntryType {
+  id: ID!
+  excerpt: String!
+  predictionReceivedAt: DateTime
+  predictionStatus: DraftEntryPredictionStatusEnum!
+  predictionStatusDisplay: EnumDescription!
+  predictions: [AssistedTaggingPredictionType!]
+  missingPredictionReviews: [MissingPredictionReviewType!]
 }
 
 input EMMEntityInputType {
@@ -1265,6 +1415,23 @@ type MergedAsOrganizationType {
   logo: GalleryFileType
 }
 
+input MissingPredictionReviewInputType {
+  draftEntry: ID!
+  tag: ID!
+  category: ID!
+}
+
+type MissingPredictionReviewType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  category: ID!
+  tag: ID!
+  draftEntry: ID!
+}
+
 type Mutation {
   notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
   joinProject(data: ProjectJoinRequestInputType!): CreateProjectJoin
@@ -1389,6 +1556,13 @@ input PasswordChangeInputType {
 
 scalar PointScalar
 
+input PredictionTagAnalysisFrameworkMapInputType {
+  id: Int
+  widget: ID!
+  tag: ID!
+  association: GenericScalar
+}
+
 type ProjectAcceptReject {
   errors: [GenericScalar!]
   ok: Boolean
@@ -1463,6 +1637,7 @@ type ProjectDetailType {
   isVisualizationAvailable: Boolean!
   vizData: ProjectVizDataType
   unifiedConnector: UnifiedConnectorQueryType
+  assistedTagging: AssistedTaggingQueryType
 }
 
 type ProjectExploreStatType {
@@ -1572,6 +1747,7 @@ type ProjectMutationType {
   projectUserGroupMembershipBulk(deleteIds: [ID!], items: [BulkProjectUserGroupMembershipInputType!]): BulkUpdateProjectUserGroupMembership
   projectVizConfigurationUpdate(data: ProjectVizConfigurationInputType!): UpdateProjectVizConfiguration
   unifiedConnector: UnifiedConnectorMutationType
+  assistedTagging: AssistedTaggingMutationType
 }
 
 type ProjectOrganizationType {
@@ -1792,6 +1968,7 @@ type Query {
   projectsByRegion(projectFilter: RegionProjectFilterData, ordering: String): ProjectByRegionListType
   publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, page: Int = 1, ordering: String, pageSize: Int): PublicProjectListType
   publicProjectsByRegion(projectFilter: RegionProjectFilterData, page: Int = 1, ordering: String, pageSize: Int): PublicProjectByRegionListType
+  assistedTagging: AssistedTaggingRootQueryType
   _debug: DjangoDebug
 }
 
@@ -1963,6 +2140,12 @@ input UnifiedConnectorWithSourceInputType {
 }
 
 type UpdateAnalysisFramework {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisFrameworkDetailType
+}
+
+type UpdateAnalysisFrameworkPredictionMapping {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisFrameworkDetailType
@@ -2230,4 +2413,17 @@ enum WidgetWidgetTypeEnum {
 enum WidgetWidthTypeEnum {
   FULL
   HALF
+}
+
+input WrongPredictionReviewInputType {
+  prediction: ID!
+}
+
+type WrongPredictionReviewType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  prediction: ID!
 }
