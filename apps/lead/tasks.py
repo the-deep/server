@@ -14,6 +14,7 @@ from django.utils.encoding import DjangoUnicodeDecodeError
 
 from utils.common import redis_lock, UidBase64Helper
 from utils.request import RequestHelper
+from deep.deepl import DeeplServiceEndpoint
 
 from .typings import NlpExtractorUrl
 from .token import lead_extraction_token_generator
@@ -94,7 +95,7 @@ class LeadExtraction:
         }
         try:
             response = requests.post(
-                settings.DEEPL_SERVICE_URL,
+                DeeplServiceEndpoint.DOCS_EXTRACTOR_ENDPOINT,
                 headers=cls.REQUEST_HEADERS,
                 data=json.dumps(payload)
             )

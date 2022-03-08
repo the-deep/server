@@ -3,6 +3,7 @@ from django.db import models
 
 from analysis_framework.models import Widget
 from project.models import Project
+from lead.models import Lead
 from user_resource.models import UserResource, UserResourceCreated
 
 
@@ -37,6 +38,7 @@ class AssistedTaggingModelVersion(models.Model):
 class AssistedTaggingModelPredictionTag(models.Model):
     name = models.CharField(max_length=256)  # TODO: Not provided (full from /tags)
     tag_id = models.CharField(max_length=256)
+    hide_in_analysis_framework_mapping = models.BooleanField(default=False)
     is_deprecated = models.BooleanField(default=False)
 
     def __str__(self):
@@ -50,6 +52,7 @@ class DraftEntry(UserResourceCreated):
         DONE = 2, 'Done'
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='+')
+    lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='+')
     excerpt = models.TextField()
     prediction_status = models.SmallIntegerField(choices=PredictionStatus.choices, default=PredictionStatus.PENDING)
     # After successfull prediction

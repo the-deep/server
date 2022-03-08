@@ -172,7 +172,7 @@ class AnalysisFrameworkPredictionMappingType(DjangoObjectType):
 
     @staticmethod
     def resolve_widget_type(root, info, **kwargs):
-        return root.widget.widget_type  # TODO: Dataloaders
+        return root.widget.widget_id  # TODO: Dataloaders
 
 
 class AnalysisFrameworkDetailType(AnalysisFrameworkType):

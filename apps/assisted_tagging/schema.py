@@ -14,7 +14,6 @@ from .models import (
     AssistedTaggingPrediction,
     MissingPredictionReview,
     WrongPredictionReview,
-    PredictionTagAnalysisFrameworkWidgetMapping,
 )
 from .enums import (
     DraftEntryPredictionStatusEnum,
@@ -63,6 +62,7 @@ class AssistedTaggingModelPredictionTagType(DjangoObjectType):
             'name',
             'tag_id',
             'is_deprecated',
+            'hide_in_analysis_framework_mapping',
         )
 
 
