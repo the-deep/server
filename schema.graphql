@@ -73,6 +73,7 @@ input AnalysisFrameworkInputType {
   createdBy: ID
   primaryTagging: [SectionGqlInputType!]
   secondaryTagging: [WidgetGqlInputType!]
+  predictionTagsMapping: [PredictionTagAnalysisFrameworkMapInputType!]
 }
 
 type AnalysisFrameworkListType {
@@ -96,7 +97,6 @@ type AnalysisFrameworkMutationType {
   title: String!
   analysisFrameworkUpdate(data: AnalysisFrameworkInputType!): UpdateAnalysisFramework
   analysisFrameworkMembershipBulk(deleteIds: [ID!], items: [BulkAnalysisFrameworkMembershipInputType!]): BulkUpdateAnalysisFrameworkMembership
-  analysisFrameworkPredictionMapping(data: AnalysisFrameworkPredictionMapUpdateInputType!): UpdateAnalysisFrameworkPredictionMapping
 }
 
 enum AnalysisFrameworkPermission {
@@ -105,10 +105,6 @@ enum AnalysisFrameworkPermission {
   CAN_EDIT_FRAMEWORK
   CAN_USE_IN_OTHER_PROJECTS
   DELETE_FRAMEWORK
-}
-
-input AnalysisFrameworkPredictionMapUpdateInputType {
-  predictionTagsMapping: [PredictionTagAnalysisFrameworkMapInputType!]!
 }
 
 type AnalysisFrameworkPredictionMappingType {
@@ -2140,12 +2136,6 @@ input UnifiedConnectorWithSourceInputType {
 }
 
 type UpdateAnalysisFramework {
-  errors: [GenericScalar!]
-  ok: Boolean
-  result: AnalysisFrameworkDetailType
-}
-
-type UpdateAnalysisFrameworkPredictionMapping {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisFrameworkDetailType
