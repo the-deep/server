@@ -51,7 +51,7 @@ class ConnectorSourceLeadGQFilterSet(OrderEnumMixin, django_filters.FilterSet):
     blocked = django_filters.BooleanFilter()
     already_added = django_filters.BooleanFilter()
     extraction_status = MultipleInputFilter(
-        ConnectorLeadExtractionStatusEnum, method='connector_lead__extraction_status')
+        ConnectorLeadExtractionStatusEnum, field_name='connector_lead__extraction_status')
 
     class Meat:
         model = ConnectorSourceLead

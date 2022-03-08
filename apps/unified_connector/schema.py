@@ -4,6 +4,7 @@ from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
 
+from utils.graphene.enums import EnumDescription
 from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
@@ -23,6 +24,7 @@ from .models import (
 )
 from .enums import (
     ConnectorSourceSourceEnum,
+    ConnectorSourceStatusEnum,
     ConnectorLeadExtractionStatusEnum,
 )
 
@@ -67,7 +69,7 @@ class ConnectorLeadType(DjangoObjectType):
 
 
 class ConnectorSourceLeadType(DjangoObjectType):
-    connector_lead = graphene.Field(ConnectorLeadType)  # TODO: Dataloader
+    connector_lead = graphene.Field(ConnectorLeadType, required=True)  # TODO: Dataloader
     source = graphene.ID(required=True, source='source_id')
 
     class Meta:
@@ -99,10 +101,13 @@ class ConnectorSourceStatsType(graphene.ObjectType):
 
 
 class ConnectorSourceType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
-    source = graphene.Field(ConnectorSourceSourceEnum)
+    source = graphene.Field(ConnectorSourceSourceEnum, required=True)
+    source_display = EnumDescription(source='get_source_display', required=True)
     unified_connector = graphene.ID(required=True, source='unified_connector_id')
     stats = graphene.List(ConnectorSourceStatsType)
     leads_count = graphene.Int(required=True)
+    status = graphene.Field(ConnectorSourceStatusEnum, required=True)
+    status_display = EnumDescription(source='get_status_display', required=True)
 
     class Meta:
         model = ConnectorSource
