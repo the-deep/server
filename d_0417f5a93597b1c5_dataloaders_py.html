@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for apps/entry/dataloaders.py: 77%</title>
+    <title>Coverage for apps/entry/dataloaders.py: 68%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="coverage_html.js" defer></script>
@@ -13,7 +13,7 @@
     <div class="content">
         <h1>
             <span class="text">Coverage for </span><b>apps/entry/dataloaders.py</b>:
-            <span class="pc_cov">77%</span>
+            <span class="pc_cov">68%</span>
         </h1>
         <div id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
@@ -45,8 +45,8 @@
         </div>
         <h2>
             <span class="text">74 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">60<span class="text"> run</span></button>
-            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">14<span class="text"> missing</span></button>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">54<span class="text"> run</span></button>
+            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">20<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
             <button type="button" class="par run show_par button_toggle_par" value="par" data-shortcut="p" title="Toggle lines partially run">0<span class="text"> partial</span></button>
         </h2>
@@ -124,11 +124,11 @@
     <p class="pln"><span class="n"><a id="t63" href="#t63">63</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t64" href="#t64">64</a></span><span class="t"><span class="key">class</span> <span class="nam">ReviewCommentsLoader</span><span class="op">(</span><span class="nam">DataLoaderWithContext</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t65" href="#t65">65</a></span><span class="t">    <span class="key">def</span> <span class="nam">batch_load_fn</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">keys</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t66" href="#t66">66</a></span><span class="t">        <span class="nam">comment_qs</span> <span class="op">=</span> <span class="nam">EntryReviewComment</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">entry__in</span><span class="op">=</span><span class="nam">keys</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t67" href="#t67">67</a></span><span class="t">        <span class="nam">comments</span> <span class="op">=</span> <span class="nam">defaultdict</span><span class="op">(</span><span class="nam">list</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t68" href="#t68">68</a></span><span class="t">        <span class="key">for</span> <span class="nam">comment</span> <span class="key">in</span> <span class="nam">comment_qs</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t69" href="#t69">69</a></span><span class="t">            <span class="nam">comments</span><span class="op">[</span><span class="nam">comment</span><span class="op">.</span><span class="nam">entry_id</span><span class="op">]</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">comment</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t70" href="#t70">70</a></span><span class="t">        <span class="key">return</span> <span class="nam">Promise</span><span class="op">.</span><span class="nam">resolve</span><span class="op">(</span><span class="op">[</span><span class="nam">comments</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">key</span><span class="op">)</span> <span class="key">for</span> <span class="nam">key</span> <span class="key">in</span> <span class="nam">keys</span><span class="op">]</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t66" href="#t66">66</a></span><span class="t">        <span class="nam">comment_qs</span> <span class="op">=</span> <span class="nam">EntryReviewComment</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">entry__in</span><span class="op">=</span><span class="nam">keys</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t67" href="#t67">67</a></span><span class="t">        <span class="nam">comments</span> <span class="op">=</span> <span class="nam">defaultdict</span><span class="op">(</span><span class="nam">list</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t68" href="#t68">68</a></span><span class="t">        <span class="key">for</span> <span class="nam">comment</span> <span class="key">in</span> <span class="nam">comment_qs</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t69" href="#t69">69</a></span><span class="t">            <span class="nam">comments</span><span class="op">[</span><span class="nam">comment</span><span class="op">.</span><span class="nam">entry_id</span><span class="op">]</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">comment</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t70" href="#t70">70</a></span><span class="t">        <span class="key">return</span> <span class="nam">Promise</span><span class="op">.</span><span class="nam">resolve</span><span class="op">(</span><span class="op">[</span><span class="nam">comments</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">key</span><span class="op">)</span> <span class="key">for</span> <span class="nam">key</span> <span class="key">in</span> <span class="nam">keys</span><span class="op">]</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t71" href="#t71">71</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t72" href="#t72">72</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t73" href="#t73">73</a></span><span class="t"><span class="key">class</span> <span class="nam">ReviewCommentsCountLoader</span><span class="op">(</span><span class="nam">DataLoaderWithContext</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -185,7 +185,7 @@
     <p class="pln"><span class="n"><a id="t124" href="#t124">124</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t125" href="#t125">125</a></span><span class="t">    <span class="op">@</span><span class="nam">cached_property</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t126" href="#t126">126</a></span><span class="t">    <span class="key">def</span> <span class="nam">review_comments</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t127" href="#t127">127</a></span><span class="t">        <span class="key">return</span> <span class="nam">ReviewCommentsLoader</span><span class="op">(</span><span class="nam">context</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">context</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t127" href="#t127">127</a></span><span class="t">        <span class="key">return</span> <span class="nam">ReviewCommentsLoader</span><span class="op">(</span><span class="nam">context</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">context</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t128" href="#t128">128</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t129" href="#t129">129</a></span><span class="t">    <span class="op">@</span><span class="nam">cached_property</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t130" href="#t130">130</a></span><span class="t">    <span class="key">def</span> <span class="nam">review_comments_count</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -202,8 +202,8 @@
 <footer>
     <div class="content">
         <p>
-            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.3.1</a>,
-            created at 2022-02-10 05:39 +0000
+            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.3.2</a>,
+            created at 2022-03-08 06:46 +0000
         </p>
     </div>
 </footer>
