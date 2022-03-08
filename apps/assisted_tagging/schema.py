@@ -67,6 +67,7 @@ class AssistedTaggingModelPredictionTagType(DjangoObjectType):
         model = AssistedTaggingModelPredictionTag
         fields = (
             'id',
+            'name',
             'tag_id',
             'is_depricated',
         )

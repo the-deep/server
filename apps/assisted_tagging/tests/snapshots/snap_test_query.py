@@ -41,62 +41,62 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-m
     'tag_count': 12,
     'tags': [
         {
-            'is_depricated': False,
+            'is_deprecated': False,
             'name': 'category-all-tags-1',
             'tag_id': 'category-all-tags-1'
         },
         {
-            'is_depricated': False,
+            'is_deprecated': False,
             'name': 'tag-all-tags-1-1',
             'tag_id': 'tag-all-tags-1-1'
         },
         {
-            'is_depricated': False,
+            'is_deprecated': False,
             'name': 'tag-all-tags-1-2',
             'tag_id': 'tag-all-tags-1-2'
         },
         {
-            'is_depricated': False,
+            'is_deprecated': False,
             'name': 'category-all-tags-2',
             'tag_id': 'category-all-tags-2'
         },
         {
-            'is_depricated': False,
+            'is_deprecated': False,
             'name': 'tag-all-tags-2-1',
             'tag_id': 'tag-all-tags-2-1'
         },
         {
-            'is_depricated': False,
+            'is_deprecated': False,
             'name': 'tag-all-tags-2-2',
             'tag_id': 'tag-all-tags-2-2'
         },
         {
-            'is_depricated': False,
+            'is_deprecated': False,
             'name': 'category-reliability-1',
             'tag_id': 'category-reliability-1'
         },
         {
-            'is_depricated': False,
+            'is_deprecated': False,
             'name': 'tag-reliability-1-1',
             'tag_id': 'tag-reliability-1-1'
         },
         {
-            'is_depricated': False,
+            'is_deprecated': False,
             'name': 'tag-reliability-1-2',
             'tag_id': 'tag-reliability-1-2'
         },
         {
-            'is_depricated': False,
+            'is_deprecated': False,
             'name': 'category-reliability-2',
             'tag_id': 'category-reliability-2'
         },
         {
-            'is_depricated': False,
+            'is_deprecated': False,
             'name': 'tag-reliability-2-1',
             'tag_id': 'tag-reliability-2-1'
         },
         {
-            'is_depricated': False,
+            'is_deprecated': False,
             'name': 'tag-reliability-2-2',
             'tag_id': 'tag-reliability-2-2'
         }
