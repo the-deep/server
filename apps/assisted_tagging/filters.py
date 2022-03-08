@@ -27,7 +27,7 @@ class AssistedTaggingModelGQFilterSet(OrderEnumMixin, django_filters.FilterSet):
 
 class AssistedTaggingModelPredictionTagGQFilterSet(OrderEnumMixin, django_filters.FilterSet):
     ordering = MultipleInputFilter(AssistedTaggingModelPredictionTagOrderingEnum, method='ordering_filter')
-    is_depricated = django_filters.BooleanFilter()
+    is_deprecated = django_filters.BooleanFilter()
 
     class Meta:
         model = AssistedTaggingModelPredictionTag

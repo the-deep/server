@@ -38,7 +38,7 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
               totalCount
               results {
                 id
-                isDepricated
+                isDeprecated
                 tagId
               }
             }
@@ -73,7 +73,7 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
             }
             predictionTag(id: $predictionTag) {
               id
-              isDepricated
+              isDeprecated
               tagId
             }
           }
@@ -145,7 +145,7 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
                 dict(
                     id=str(tag.id),
                     tagId=tag.tag_id,
-                    isDepricated=tag.is_depricated,
+                    isDeprecated=tag.is_deprecated,
                 )
                 for tag in [tag1, *other_tags]
             ],
@@ -153,7 +153,7 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
         self.assertEqual(content['predictionTag'], dict(
             id=str(tag1.id),
             tagId=tag1.tag_id,
-            isDepricated=tag1.is_depricated,
+            isDeprecated=tag1.is_deprecated,
         ))
 
         self.assertEqual(content['taggingModels'], dict(
@@ -388,7 +388,7 @@ class AssistedTaggingCallbackApiTest(TestCase, SnapShotTextCase):
                     AssistedTaggingModelVersion.objects.values('model__model_id', 'version')
                 ),
                 tags=list(
-                    AssistedTaggingModelPredictionTag.objects.values('name', 'tag_id', 'is_depricated')
+                    AssistedTaggingModelPredictionTag.objects.values('name', 'tag_id', 'is_deprecated')
                 ),
             )
 

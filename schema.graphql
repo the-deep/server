@@ -255,8 +255,8 @@ enum AssistedTaggingModelPredictionTagOrderingEnum {
 
 type AssistedTaggingModelPredictionTagType {
   id: ID!
+  name: String!
   tagId: String!
-  isDepricated: Boolean!
 }
 
 type AssistedTaggingModelType {
@@ -308,7 +308,7 @@ type AssistedTaggingRootQueryType {
   taggingModel(id: ID!): AssistedTaggingModelType
   taggingModels(ordering: [AssistedTaggingModelOrderingEnum!], page: Int = 1, pageSize: Int): AssistedTaggingModelListType
   predictionTag(id: ID!): AssistedTaggingModelPredictionTagType
-  predictionTags(ordering: [AssistedTaggingModelPredictionTagOrderingEnum!], isDepricated: Boolean, page: Int = 1, pageSize: Int): AssistedTaggingModelPredictionTagListType
+  predictionTags(ordering: [AssistedTaggingModelPredictionTagOrderingEnum!], isDeprecated: Boolean, page: Int = 1, pageSize: Int): AssistedTaggingModelPredictionTagListType
 }
 
 input AttributeGqInputType {

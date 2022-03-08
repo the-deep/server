@@ -35,9 +35,9 @@ class AssistedTaggingModelVersion(models.Model):
 
 
 class AssistedTaggingModelPredictionTag(models.Model):
-    name = models.CharField(max_length=256)  # TODO: Not provided
+    name = models.CharField(max_length=256)  # TODO: Not provided (full from /tags)
     tag_id = models.CharField(max_length=256)
-    is_depricated = models.BooleanField(default=False)
+    is_deprecated = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
