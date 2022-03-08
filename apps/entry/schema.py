@@ -11,7 +11,6 @@ from utils.graphene.fields import DjangoPaginatedListObjectField, DjangoListFiel
 from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
 from lead.models import Lead
-from quality_assurance.schema import EntryReviewCommentType
 from user.schema import UserType
 
 from analysis_framework.models import Widget
@@ -103,7 +102,6 @@ class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     project_labels = graphene.List(graphene.NonNull(EntryGroupLabelType))
     verified_by = DjangoListField(UserType)
     verified_by_count = graphene.Int(required=True)
-    review_comments = graphene.List(graphene.NonNull(EntryReviewCommentType))
     review_comments_count = graphene.Int(required=True)
 
     # project_labels TODO:
@@ -120,10 +118,6 @@ class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     @staticmethod
     def resolve_attributes(root, info, **kwargs):
         return info.context.dl.entry.entry_attributes.load(root.pk)
-
-    @staticmethod
-    def resolve_review_comments(root, info, **kwargs):
-        return info.context.dl.entry.review_comments.load(root.pk)
 
     @staticmethod
     def resolve_review_comments_count(root, info, **kwargs):
