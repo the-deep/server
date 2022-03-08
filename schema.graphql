@@ -229,30 +229,6 @@ type AssessmentType {
   modifiedBy: UserType
 }
 
-type AssistedTaggingModelListType {
-  results: [AssistedTaggingModelType!]
-  totalCount: Int
-  page: Int
-  pageSize: Int
-}
-
-enum AssistedTaggingModelOrderingEnum {
-  ASC_ID
-  DESC_ID
-}
-
-type AssistedTaggingModelPredictionTagListType {
-  results: [AssistedTaggingModelPredictionTagType!]
-  totalCount: Int
-  page: Int
-  pageSize: Int
-}
-
-enum AssistedTaggingModelPredictionTagOrderingEnum {
-  ASC_ID
-  DESC_ID
-}
-
 type AssistedTaggingModelPredictionTagType {
   id: ID!
   name: String!
@@ -306,9 +282,9 @@ type AssistedTaggingQueryType {
 
 type AssistedTaggingRootQueryType {
   taggingModel(id: ID!): AssistedTaggingModelType
-  taggingModels(ordering: [AssistedTaggingModelOrderingEnum!], page: Int = 1, pageSize: Int): AssistedTaggingModelListType
+  taggingModels: [AssistedTaggingModelType!]
   predictionTag(id: ID!): AssistedTaggingModelPredictionTagType
-  predictionTags(ordering: [AssistedTaggingModelPredictionTagOrderingEnum!], isDeprecated: Boolean, page: Int = 1, pageSize: Int): AssistedTaggingModelPredictionTagListType
+  predictionTags: [AssistedTaggingModelPredictionTagType!]
 }
 
 input AttributeGqInputType {
