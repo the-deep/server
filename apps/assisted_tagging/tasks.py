@@ -1,4 +1,6 @@
+import logging
 from functools import reduce
+import requests
 
 from django.conf import settings
 from django.urls import reverse
@@ -9,6 +11,7 @@ from celery import shared_task
 
 from utils.common import redis_lock, UidBase64Helper
 from deep.exceptions import DeepBaseException
+from deep.deepl import DeeplServiceEndpoint
 
 from .models import (
     DraftEntry,
@@ -20,7 +23,12 @@ from .models import (
 from .token import draft_entry_extraction_token_generator
 
 
+logger = logging.getLogger(__name__)
+
+
 class AsssistedTaggingTask():
+    REQUEST_HEADERS = {'Content-Type': 'application/json'}
+
     class Exception():
         class InvalidTokenValue(DeepBaseException):
             default_message = 'Invalid Token'
@@ -56,6 +64,32 @@ class AsssistedTaggingTask():
         if not draft_entry_extraction_token_generator.check_token(draft_entry, token):
             raise cls.Exception.InvalidOrExpiredToken()
         return draft_entry
+
+    @classmethod
+    def send_trigger_request_to_extractor(cls, draft_entry):
+        source_organization = draft_entry.lead.source
+        author_organizations = [
+            author.data.title
+            for author in draft_entry.lead.authors.all()
+        ]
+        payload = {
+            'entries': [
+                {
+                    'client_id': cls.generate_draft_entry_client_id(draft_entry),
+                    'entry': draft_entry.excerpt,
+                }
+            ],
+            'publishing_organization': source_organization and source_organization.data.title,
+            'authoring_organization': author_organizations,
+            'callback_url': cls.get_callback_url(),
+        }
+        response = requests.post(
+            DeeplServiceEndpoint.ASSISTED_TAGGING_ENTRY_PREDICT_ENDPOINT,
+            headers=cls.REQUEST_HEADERS,
+            json=payload
+        )
+        response.raise_for_status()
+        return True
 
     # --- Callback logics
     @staticmethod
@@ -125,7 +159,7 @@ class AsssistedTaggingTask():
             ])
             # Refetch
             current_tags_map = get_tags_map()
-            sync_tags_with_deepl.delay(new_tags)
+            sync_tags_with_deepl.delay()
         return current_tags_map
 
     @classmethod
@@ -202,6 +236,30 @@ class AsssistedTaggingTask():
 
 @shared_task
 @redis_lock('sync_tags_with_deepl', 60 * 60 * 0.5)
-def sync_tags_with_deepl(new_tags):
-    # TODO:
-    print(new_tags)
+def sync_tags_with_deepl():
+    response = requests.get(DeeplServiceEndpoint.ASSISTED_TAGGING_TAGS_ENDPOINT).json()
+    existing_tags_by_tagid = {
+        tag.tag_id: tag  # tag_id is from deepl
+        for tag in AssistedTaggingModelPredictionTag.objects.all()
+    }
+
+    new_tags = []
+    updated_tags = []
+    for tag_id, tag_meta in response.items():
+        assisted_tag = existing_tags_by_tagid.get(tag_id, AssistedTaggingModelPredictionTag())
+        assisted_tag.tag_id = tag_id
+        assisted_tag.name = tag_meta['label']
+        assisted_tag.hide_in_analysis_framework_mapping = tag_meta['hide_in_analysis_framework_mapping']
+        if assisted_tag.id:
+            updated_tags.append(assisted_tag)
+        else:
+            new_tags.append(assisted_tag)
+
+    new_tags and AssistedTaggingModelPredictionTag.objects.bulk_create(new_tags)
+    updated_tags and AssistedTaggingModelPredictionTag.objects.bulk_update(
+        updated_tags,
+        fields=(
+            'title',
+            'hide_in_analysis_framework_mapping',
+        )
+    )

@@ -81,7 +81,14 @@ class DraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCreate
             raise serializers.ValidationError('Only reviewer can edit this review')
         data['project'] = self.project
         return data
-    # TODO: Trigger send request to deepl server
+
+    def create(self, data):
+        instance = super().create(data)
+        AsssistedTaggingTask.send_trigger_request_to_extractor(instance)
+        return instance
+
+    def update(self, *_):
+        raise Exception('Update not allowed')
 
 
 class WrongPredictionReviewGqlSerializer(UserResourceSerializer, serializers.ModelSerializer):

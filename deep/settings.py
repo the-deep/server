@@ -64,7 +64,7 @@ env = environ.Env(
     CSRF_COOKIE_DOMAIN=str,
     DOCKER_HOST_IP=(str, None),
     # DEEPL
-    DEEPL_SERVICE_URL=str,  # http://extractor:8001/extract_docs
+    DEEPL_SERVICE_DOMAIN=str,  # http://extractor:8001
     DEEPL_SERVICE_CALLBACK_DOMAIN=str,  # http://web:8000
     # Pytest
     PYTEST_XDIST_WORKER=(str, None),
@@ -441,6 +441,11 @@ CELERY_EVENT_QUEUE_PREFIX = 'deep-celery-'
 CELERY_ACKS_LATE = True
 
 CELERY_BEAT_SCHEDULE = {
+    'sync_tag_data_with_deepl': {
+        'task': 'assisted_tagging.tasks.sync_tags_with_deepl',
+        # Every 6 hour
+        'schedule': crontab(minute=0, hour='*/6'),
+    },
     'remaining_tabular_generate_columns_image': {
         'task': 'tabular.tasks.remaining_tabular_generate_columns_image',
         # Every 6 hour
@@ -786,8 +791,9 @@ SESSION_COOKIE_DOMAIN = env('SESSION_COOKIE_DOMAIN')
 CSRF_COOKIE_DOMAIN = env('CSRF_COOKIE_DOMAIN')
 
 # DEEPL Config
-DEEPL_SERVICE_URL = env('DEEPL_SERVICE_URL')
+DEEPL_SERVICE_DOMAIN = env('DEEPL_SERVICE_DOMAIN')
 DEEPL_SERVICE_CALLBACK_DOMAIN = env('DEEPL_SERVICE_CALLBACK_DOMAIN')
+
 
 # Graphene configs
 # WHITELIST following nodes from authentication checks

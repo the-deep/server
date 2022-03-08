@@ -1,0 +1,10 @@
+from django.conf import settings
+
+
+DEEPL_SERVICE_DOMAIN = settings.DEEPL_SERVICE_DOMAIN
+
+
+class DeeplServiceEndpoint():
+    DOCS_EXTRACTOR_ENDPOINT = f'{DEEPL_SERVICE_DOMAIN}/extract_docs'
+    ASSISTED_TAGGING_TAGS_ENDPOINT = f'{DEEPL_SERVICE_DOMAIN}/vf_tags'
+    ASSISTED_TAGGING_ENTRY_PREDICT_ENDPOINT = f'{DEEPL_SERVICE_DOMAIN}/entry_predict'
