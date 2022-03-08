@@ -11,6 +11,7 @@ from questionnaire.serializers import FrameworkQuestionSerializer
 from user.models import User, Feature
 from user.serializers import SimpleUserSerializer
 from project.models import Project
+from assisted_tagging.models import PredictionTagAnalysisFrameworkWidgetMapping
 from organization.serializers import SimpleOrganizationSerializer
 from assisted_tagging.serializers import PredictionTagAnalysisFrameworkMapSerializer
 
@@ -551,10 +552,7 @@ class AnalysisFrameworkMembershipGqlSerializer(TempClientIdMixin, serializers.Mo
 
 
 class AnalysisFrameworkPredictionMapUpdateGqlSerializer(serializers.ModelSerializer):
-    prediction_tags_mapping = PredictionTagAnalysisFrameworkMapSerializer(
-        many=True,
-        required=True,
-    )
+    prediction_tags_mapping = PredictionTagAnalysisFrameworkMapSerializer(many=True)
 
     class Meta:
         model = AnalysisFramework
@@ -578,5 +576,44 @@ class AnalysisFrameworkPredictionMapUpdateGqlSerializer(serializers.ModelSeriali
         raise Exception('Created not allowed')
 
     def update(self, instance, validated_data):
-        print(instance, validated_data)
+        if 'prediction_tags_mapping' not in validated_data:  # Only change if provided
+            return instance
+        prediction_tags_mapping = validated_data['prediction_tags_mapping']
+        dont_delete_ids = [
+            mapping['id']
+            for mapping in prediction_tags_mapping
+            if 'id' in mapping
+        ]
+        # Remove mapping for given af which ids are not provided
+        PredictionTagAnalysisFrameworkWidgetMapping.objects.filter(
+            widget__analysis_framework=instance,
+        ).exclude(id__in=dont_delete_ids).delete()
+        new_mapping = []
+        updated_mapping = []
+        for mapping in prediction_tags_mapping:
+            if 'id' in mapping:
+                updated_mapping.append(
+                    PredictionTagAnalysisFrameworkWidgetMapping(
+                        id=mapping['id'],
+                        widget=mapping['widget'],
+                        tag=mapping['tag'],
+                        association=mapping.get('association'),
+                    )
+                )
+            else:
+                new_mapping.append(
+                    PredictionTagAnalysisFrameworkWidgetMapping(
+                        id=mapping['id'],
+                        widget=mapping['widget'],
+                        tag=mapping['tag'],
+                        association=mapping.get('association'),
+                    )
+                )
+        # Bulk create
+        PredictionTagAnalysisFrameworkWidgetMapping.objects.bulk_create(new_mapping)
+        # Bulk Update
+        PredictionTagAnalysisFrameworkWidgetMapping.objects.bulk_update(
+            updated_mapping,
+            fields=('widget', 'tag', 'association')
+        )
         return instance
