@@ -450,11 +450,11 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
             raise serializers.ValidationError("Can't create prediction tag mapping for new framework. Save first!")
         widget_qs = Widget.objects.filter(
             id__in=[
-                _map['widget']
+                _map['widget'].pk
                 for _map in prediction_tags_mapping
             ]
         )
-        if widget_qs.values_list('analysis_framework', flat=True).distinct() != [framework.pk]:
+        if list(widget_qs.values_list('analysis_framework', flat=True).distinct()) != [framework.pk]:
             raise serializers.ValidationError('Found widgets from another Analysis Framework')
         return prediction_tags_mapping
 

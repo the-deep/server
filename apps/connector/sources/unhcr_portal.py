@@ -59,7 +59,7 @@ class UNHCRPortal(Source):
 
         params.update(self.params)  # type is default
         params['limit'] = 50
-        page = 0
+        page = 1
 
         while True:
             params['page'] = page
@@ -68,11 +68,9 @@ class UNHCRPortal(Source):
             if not documents:
                 break
             for document in documents:
-                published_on_raw = document.get('publishDate')
-                published_on = published_on_raw and datetime.datetime.fromisoformat(published_on_raw).date()
                 data = {
                     'title': document.get('title'),
-                    'published_on': published_on,
+                    'published_on': document['publishDate'],
                     'url': document['downloadLink'],
                     'source': 'UNHCR Portal',
                     'author': '',
