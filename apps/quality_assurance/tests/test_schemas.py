@@ -29,17 +29,20 @@ class TestReviewCommentQuery(GraphQLTestCase):
                             id
                             displayName
                         }
-                        reviewComments {
+                        reviewCommentsCount
+                    }
+                    reviewComments (entry: $entryId, ordering: DESC_ID) {
+                        totalCount
+                        results {
+                            id
+                            text
                             commentType
                             createdAt
-                            id
                             mentionedUsers {
                                 displayName
                                 id
                             }
-                            text
                         }
-                        reviewCommentsCount
                     }
                 }
             }
@@ -79,14 +82,14 @@ class TestReviewCommentQuery(GraphQLTestCase):
         project.add_member(user)
         content = self.query_check(query, variables={'projectId': project.id, 'entryId': entry.id})
         self.assertEqual(content['data']['project']['entry']['reviewCommentsCount'], 2, content)
-        self.assertEqual(len(content['data']['project']['entry']['reviewComments']), 2, content)
+        self.assertEqual(content['data']['project']['reviewComments']['totalCount'], 2, content)
         self.assertListIds(
-            content['data']['project']['entry']['reviewComments'],
+            content['data']['project']['reviewComments']['results'],
             [review_comment1, review_comment2],
             content
         )
         self.assertEqual(
-            content['data']['project']['entry']['reviewComments'][1]['text'],
+            content['data']['project']['reviewComments']['results'][1]['text'],
             review_text1.text,
             content
         )
@@ -96,7 +99,7 @@ class TestReviewCommentQuery(GraphQLTestCase):
         content = self.query_check(query, variables={'projectId': project.id, 'entryId': entry.id})
         self.assertEqual(content['data']['project']['entry']['reviewCommentsCount'], 2, content)
         self.assertEqual(
-            content['data']['project']['entry']['reviewComments'][1]['text'],
+            content['data']['project']['reviewComments']['results'][1]['text'],
             review_text2.text,  # here latest text should be present
             content
         )
@@ -109,7 +112,7 @@ class TestReviewCommentQuery(GraphQLTestCase):
         # lets query for another entry
         content = self.query_check(query, variables={'projectId': project.id, 'entryId': entry1.id})
         self.assertEqual(content['data']['project']['entry']['reviewCommentsCount'], 1, content)
-        self.assertEqual(len(content['data']['project']['entry']['reviewComments']), 1, content)
+        self.assertEqual(content['data']['project']['reviewComments']['totalCount'], 1, content)
 
     def test_review_comments_project_scope_query(self):
         """
