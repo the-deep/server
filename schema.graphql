@@ -1610,7 +1610,7 @@ type Query {
   organizationType(id: ID!): OrganizationTypeType
   organizationTypes(title: String, shortName: String, description: String, reliefWebId: Int, page: Int = 1, ordering: String, pageSize: Int): OrganizationTypeListType
   userGroup(id: ID!): UserGroupType
-  userGroups(isCurrentUserMember: Boolean, membersIncludeProject: ID, membersExcludeProject: ID, page: Int = 1, ordering: String, pageSize: Int): UserGroupListType
+  userGroups(isCurrentUserMember: Boolean, search: String, membersIncludeProject: ID, membersExcludeProject: ID, page: Int = 1, ordering: String, pageSize: Int): UserGroupListType
   me: UserMeType
   user(id: ID!): UserType
   users(id: Float, search: String, membersExcludeProject: ID, membersExcludeFramework: ID, membersExcludeUsergroup: ID, page: Int = 1, ordering: String, pageSize: Int): UserListType
