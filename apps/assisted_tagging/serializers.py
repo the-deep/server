@@ -1,95 +1,136 @@
-import requests
 from rest_framework import serializers
-from django.conf import settings
 
-from entry.models import Entry
+from user_resource.serializers import UserResourceSerializer, UserResourceCreatedMixin
+from deep.serializers import ProjectPropertySerializerMixin
 
-from . import constants
-from .models import ModelInfo, ModelPrediction, ReviewTag, PredictionEnum
+from .models import (
+    DraftEntry,
+    MissingPredictionReview,
+    WrongPredictionReview,
+    PredictionTagAnalysisFrameworkWidgetMapping,
+)
+from .tasks import AsssistedTaggingTask
 
 
-class ModelInfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ModelInfo
-        fields = '__all__'
+# --- Callback Serializers
+class ModelPredictionCallbackSerializer(serializers.Serializer):
+    class ModelInfoCallbackSerializer(serializers.Serializer):
+        id = serializers.CharField()
+        version = serializers.CharField()
+
+    class ModelPredictionCallbackSerializerTagValue(serializers.Serializer):
+        prediction = serializers.DecimalField(
+            # From apps/assisted_tagging/models.py::AssistedTaggingPrediction::prediction
+            max_digits=20,
+            decimal_places=20,
+            required=False,
+        )
+        threshold = serializers.DecimalField(
+            # From apps/assisted_tagging/models.py::AssistedTaggingPrediction::threshold
+            max_digits=20,
+            decimal_places=20,
+            required=False,
+        )
+        is_selected = serializers.BooleanField()
+
+    model_info = ModelInfoCallbackSerializer()
+    values = serializers.ListSerializer(
+        child=serializers.CharField(),
+        required=False,
+    )
+    tags = serializers.DictField(
+        child=serializers.DictField(
+            child=ModelPredictionCallbackSerializerTagValue(),
+        ),
+        required=False,
+    )
+    prediction_status = serializers.IntegerField()  # 0 -> Failure, 1 -> Success
+
+
+class AssistedTaggingDraftEntryPredictionCallbackSerializer(serializers.Serializer):
+    client_id = serializers.CharField()
+    model_preds = ModelPredictionCallbackSerializer(many=True)
+
+    def validate(self, data):
+        client_id = data['client_id']
+        try:
+            data['draft_entry'] = AsssistedTaggingTask.get_draft_entry_from_client_id(client_id)
+        except Exception as e:
+            raise serializers.ValidationError({
+                'client_id': str(e)
+            })
+        return data
 
     def create(self, validated_data):
-        validated_data["version"] = constants.ALL_MODEL_VERSION
-        model_info = super().create(validated_data)
-        return model_info
+        draft_entry = validated_data['draft_entry']
+        if draft_entry.prediction_status == DraftEntry.PredictionStatus.DONE:
+            return draft_entry
+        return AsssistedTaggingTask.save_entry_draft_data(draft_entry, validated_data)
 
 
-class ModelPredictionSerializer(serializers.ModelSerializer):
-
-    prediction_name = serializers.SerializerMethodField('prediction_name')
-
-    def prediction_name(self, obj):
-        return obj.prediction_enum.name
-
+# ---------- Graphql ---------------------------
+class DraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCreatedMixin, serializers.ModelSerializer):
     class Meta:
-        model = ModelPrediction
-        fields = '__all__'
-
-
-class ReviewTagSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ReviewTag
-        fields = '__all__'
-
-
-class ModelPredictionRequestSerializer(serializers.Serializer):
-    entry_ids = serializers.ListField(child=serializers.IntegerField())
-
-
-def save_virtual_framework_tags():
-    headers = {
-        "Content-Type": "application/json"
-    }
-    resp = requests.get(f"{settings.EXTRACTOR_URL}/vf_tags", headers=headers)
-    data = resp.json()
-    for item in data:
-        prediction_enum, created = PredictionEnum.objects.get_or_create(
-            id=item['id'],
-            name=item['key'],
-            defaults={'value': item['id']}
+        model = DraftEntry
+        fields = (
+            'excerpt',
         )
 
-
-def get_prediction_enum_obj(id):
-    try:
-        return PredictionEnum.objects.get(id=id)
-    except PredictionEnum.DoesNotExist:
-        # Save new enums
-        save_virtual_framework_tags()
-        return PredictionEnum.objects.get(id=id)
+    def validate(self, data):
+        if self.instance and self.instance.created_by != self.context['request'].user:
+            raise serializers.ValidationError('Only reviewer can edit this review')
+        data['project'] = self.project
+        return data
+    # TODO: Trigger send request to deepl server
 
 
-class ModelPredictionCallbackSerializer(serializers.Serializer):
-    entry_id = serializers.IntegerField()
-    predictions = serializers.DictField(child=serializers.DictField())
-    thresholds = serializers.DictField(child=serializers.DictField())
-    versions = serializers.DictField()
+class WrongPredictionReviewGqlSerializer(UserResourceSerializer, serializers.ModelSerializer):
+    class Meta:
+        model = WrongPredictionReview
+        fields = (
+            'prediction',
+        )
 
-    def create(self, validated_data):
-        predictions = validated_data.pop('predictions', {})
-        thresholds = validated_data.pop('thresholds', {})
-        versions = validated_data.pop('versions')
-        model_predictions = []
-        entry_id = validated_data["entry_id"]
-        if ModelPrediction.objects.filter(entry__id=entry_id).exists():
-            return True
-        try:
-            for category_key, category_value in predictions.items():
-                data = {}
-                data["entry"] = Entry.objects.get(id=entry_id)
-                data["category"] = get_prediction_enum_obj(category_key)
-                for key, value in category_value.items():
-                    data["tag"] = get_prediction_enum_obj(key)
-                    data["prediction"] = value
-                    data["threshold"] = thresholds[category_key][key]
-                    data['version'] = versions[category_key][key]
-                    model_predictions.append(ModelPrediction(**data))
-            ModelPrediction.objects.bulk_create(model_predictions)
-            return True
-        except Exception:
-            return serializers.ValidationError("Sth wrong in callback")
+    def validate_prediction(self, prediction):
+        if prediction.draft_entry.project != self.context['request'].active_project:
+            raise serializers.ValidationError('Prediction not part of the active project.')
+        return prediction
+
+    def validate(self, data):
+        if self.instance and self.instance.created_by != self.context['request'].user:
+            raise serializers.ValidationError('Only reviewer can edit this review')
+        return data
+
+
+class MissingPredictionReviewGqlSerializer(UserResourceSerializer):
+    class Meta:
+        model = MissingPredictionReview
+        fields = (
+            'draft_entry',
+            'tag',
+            'category',
+        )
+
+    def validate_draft_entry(self, draft_entry):
+        if draft_entry.project != self.context['request'].active_project:
+            raise serializers.ValidationError('Draft Entry not part of the active project.')
+        return draft_entry
+
+    def validate(self, data):
+        if self.instance and self.instance.created_by != self.context['request'].user:
+            raise serializers.ValidationError('Only reviewer can edit this review')
+        return data
+
+
+# ------------------------ Analysis Framework ---------------------------------------------
+class PredictionTagAnalysisFrameworkMapSerializer(serializers.ModelSerializer):
+    association = serializers.DictField(required=False)
+
+    class Meta:
+        model = PredictionTagAnalysisFrameworkWidgetMapping
+        fields = (
+            'id',
+            'widget',
+            'tag',
+            'association',
+        )

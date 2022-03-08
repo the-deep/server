@@ -473,7 +473,7 @@ class UnifiedConnectorCallbackApiTest(TestCase):
             connector_lead.refresh_from_db()
             self.assertEqual(connector_lead.extraction_status, status)
 
-        url = '/api/v1/connector-lead-extract-callback/'
+        url = '/api/v1/callback/connector-lead-extract/'
         connector_lead1 = ConnectorLeadFactory.create(url='https://some-random-url-01')
         connector_lead2 = ConnectorLeadFactory.create(url='https://some-random-url-02')
 

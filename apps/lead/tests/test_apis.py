@@ -1764,7 +1764,7 @@ class TestExtractorCallback(TestCase):
     @mock.patch('lead.tasks.RequestHelper.get_text')
     @mock.patch('lead.tasks.RequestHelper.get_file')
     def test_extractor_callback_url(self, get_file_mock, get_text_mock):
-        url = '/api/v1/lead-extract-callback/'
+        url = '/api/v1/callback/lead-extract/'
         self.authenticate()
 
         image = SimpleUploadedFile(

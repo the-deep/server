@@ -39,7 +39,9 @@ class ExtractCallbackSerializer(serializers.Serializer):
             data['lead'] = UnifiedConnectorTask.get_connector_lead_from_client_id(client_id)
             assert data['lead'].url == data['url']
         except Exception as e:
-            raise serializers.ValidationError(str(e))
+            raise serializers.ValidationError({
+                'client_id': str(e)
+            })
         return data
 
     def create(self, data):

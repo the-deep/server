@@ -1,64 +1,137 @@
+# from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
-from user.models import User
+from analysis_framework.models import Widget
+from project.models import Project
+from user_resource.models import UserResource, UserResourceCreated
 
 
-class NlpModel(models.Model):
-    nlp_id = models.CharField(max_length=256)
-    active_version = models.ForeignKey(
-        'assisted_tagging.NlpModelVersion', null=True, blank=True, on_delete=models.SET_NULL
-    )
+class AssistedTaggingModel(models.Model):
+    model_id = models.CharField(max_length=256)
+    name = models.CharField(max_length=256)
+
+    def __int__(self):
+        self.versions: models.QuerySet[AssistedTaggingModelVersion]
 
     def __str__(self):
-        return self.name
+        return f'<{self.name}> {self.model_id}'
+
+    @property
+    def latest_version(self):
+        return self.versions.order_by('-version').first()
 
 
-class NlpModelVersion(models.Model):
-    model = models.ForeignKey(NlpModel, on_delete=models.CASCADE)
-    name = models.CharField(max_length=256)
-    endpoint = models.CharField(max_length=256)
-    mlflow_uri = models.CharField(max_length=256)
-    metric_params = models.JSONField()
-    date = models.DateTimeField()
+class AssistedTaggingModelVersion(models.Model):
+    model = models.ForeignKey(AssistedTaggingModel, on_delete=models.CASCADE, related_name='versions')
     version = models.CharField(max_length=256)  # 'MAJOR.MINOR.PATCH'
+    # Extra attributes (TODO: Later)
+    # endpoint = models.CharField(max_length=256)
+    # mlflow_uri = models.CharField(max_length=256)
+    # metric_params = models.JSONField()
+    # date = models.DateTimeField()
+
+    def __str__(self):
+        return self.version
+
+
+class AssistedTaggingModelPredictionTag(models.Model):
+    name = models.CharField(max_length=256)  # TODO: Not provided
+    tag_id = models.CharField(max_length=256)
+    is_depricated = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
 
 
-class NlpModelPredictionTag(models.Model):
-    name = models.CharField(max_length=256)
-    nlp_id = models.FloatField()
-    is_depricated = models.BooleanField(default=True)
+class DraftEntry(UserResourceCreated):
+    class PredictionStatus(models.IntegerChoices):
+        PENDING = 0, 'Pending'
+        STARTED = 1, 'Started'
+        DONE = 2, 'Done'
 
-    def __str__(self):
-        return self.name
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='+')
+    excerpt = models.TextField()
+    prediction_status = models.SmallIntegerField(choices=PredictionStatus.choices, default=PredictionStatus.PENDING)
+    # After successfull prediction
+    prediction_received_at = models.DateTimeField(null=True, blank=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.predictions: models.QuerySet[AssistedTaggingPrediction]
+        self.missing_prediction_reviews: models.QuerySet[MissingPredictionReview]
+
+    def clear_data(self):
+        self.predictions.all().delete()
+        self.missing_prediction_reviews.all().delete()
 
 
-class ModelPrediction(models.Model):
-    model_version = models.ForeignKey(NlpModelVersion, on_delete=models.CASCADE)
-    entry = models.ForeignKey('entry.Entry', on_delete=models.CASCADE)
-    prediction = models.FloatField()
-    threshold = models.FloatField()
-    tag = models.ForeignKey(PredictionEnum, on_delete=models.CASCADE, null=True, blank=True, related_name="tag")
-    category = models.ForeignKey(PredictionEnum, on_delete=models.CASCADE, null=True, blank=True, related_name="category")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+class AssistedTaggingPrediction(models.Model):
+    class DataType(models.IntegerChoices):
+        RAW = 0, 'Raw'  # data is stored in value
+        TAG = 1, 'Tag'  # data is stored in category + tag
+
+    data_type = models.SmallIntegerField(choices=DataType.choices)
+
+    model_version = models.ForeignKey(AssistedTaggingModelVersion, on_delete=models.CASCADE, related_name='+')
+    draft_entry = models.ForeignKey(DraftEntry, on_delete=models.CASCADE, related_name='predictions')
+    # For RAW DataType
+    value = models.CharField(max_length=255, blank=True)
+    # For Tag DataType
+    category = models.ForeignKey(
+        AssistedTaggingModelPredictionTag,
+        on_delete=models.CASCADE,
+        related_name="+",
+        null=True,
+        blank=True,
+    )
+    tag = models.ForeignKey(
+        AssistedTaggingModelPredictionTag,
+        on_delete=models.CASCADE,
+        related_name="+",
+        null=True,
+        blank=True,
+    )
+    # If score is provided
+    prediction = models.DecimalField(max_digits=20, decimal_places=20, null=True, blank=True)
+    threshold = models.DecimalField(max_digits=20, decimal_places=20, null=True, blank=True)
+    # Recommended by Model
+    is_selected = models.BooleanField(default=False)
+    # TODO: is_used = models.BooleanField(default=False)
+
+    id: int
 
     def __str__(self):
         return self.id
 
 
-class ReviewTag(models.Model):
-    class ReviewTypes(models.IntegerChoices):
-        WRONG_TAG = 1, 'Wrong Tag'
-        MISSING_TAG = 2, 'Missing Tag'
+class WrongPredictionReview(UserResource):
+    prediction = models.ForeignKey(
+        AssistedTaggingPrediction,
+        on_delete=models.CASCADE,
+        related_name='wrong_prediction_reviews',
+    )
+    client_id = None  # Removing field from UserResource
 
-    model_prediction = models.ForeignKey(ModelPrediction, on_delete=models.CASCADE, null=True, blank=True)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    review_type = models.FloatField(choices=ReviewTypes.choices)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    id: int
 
     def __str__(self):
-        return self.review_type
+        return self.id
+
+
+class MissingPredictionReview(UserResource):
+    draft_entry = models.ForeignKey(DraftEntry, on_delete=models.CASCADE, related_name='missing_prediction_reviews')
+    category = models.ForeignKey(AssistedTaggingModelPredictionTag, on_delete=models.CASCADE, related_name="+")
+    tag = models.ForeignKey(AssistedTaggingModelPredictionTag, on_delete=models.CASCADE, related_name="+")
+    client_id = None  # Removing field from UserResource
+
+    id: int
+
+    def __str__(self):
+        return self.id
+
+
+# ------------------------ Analysis Framework ---------------------------------------------
+class PredictionTagAnalysisFrameworkWidgetMapping(models.Model):
+    widget = models.ForeignKey(Widget, on_delete=models.CASCADE)
+    tag = models.ForeignKey(AssistedTaggingModelPredictionTag, on_delete=models.CASCADE)
+    association = models.JSONField(default=dict)

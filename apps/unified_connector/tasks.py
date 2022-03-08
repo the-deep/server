@@ -12,7 +12,7 @@ from django.utils.encoding import DjangoUnicodeDecodeError
 
 from utils.common import redis_lock, UidBase64Helper
 from utils.request import RequestHelper
-from deep.exceptions import BaseException
+from deep.exceptions import DeepBaseException
 from lead.tasks import LeadExtraction
 
 from .token import connector_lead_extraction_token_generator
@@ -28,21 +28,20 @@ logger = logging.getLogger(__name__)
 
 
 class UnifiedConnectorTask():
-
     class Exception():
-        class InvalidTokenValue(BaseException):
+        class InvalidTokenValue(DeepBaseException):
             default_message = 'Invalid Token'
 
-        class InvalidOrExpiredToken(BaseException):
+        class InvalidOrExpiredToken(DeepBaseException):
             default_message = 'Invalid/expired token in client_id'
 
-        class ConnectorLeadNotFound(BaseException):
+        class ConnectorLeadNotFound(DeepBaseException):
             default_message = 'No connector lead found for provided id'
 
     @staticmethod
     def get_callback_url():
         return (
-            settings.DEEPL_EXTRACTOR_CALLBACK_DOMAIN +
+            settings.DEEPL_SERVICE_CALLBACK_DOMAIN +
             reverse('connector_lead_extract_callback', kwargs={'version': 'v1'})
         )
 

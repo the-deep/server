@@ -12,6 +12,7 @@ from user.models import User, Feature
 from user.serializers import SimpleUserSerializer
 from project.models import Project
 from organization.serializers import SimpleOrganizationSerializer
+from assisted_tagging.serializers import PredictionTagAnalysisFrameworkMapSerializer
 
 from .models import (
     AnalysisFramework,
@@ -547,3 +548,35 @@ class AnalysisFrameworkMembershipGqlSerializer(TempClientIdMixin, serializers.Mo
         validated_data['framework'] = self.framework
         validated_data['added_by'] = self.context['request'].user
         return super().create(validated_data)
+
+
+class AnalysisFrameworkPredictionMapUpdateGqlSerializer(serializers.ModelSerializer):
+    prediction_tags_mapping = PredictionTagAnalysisFrameworkMapSerializer(
+        many=True,
+        required=True,
+    )
+
+    class Meta:
+        model = AnalysisFramework
+        fields = (
+            'prediction_tags_mapping',
+        )
+
+    def validate_prediction_tags_mapping(self, prediction_tags_mapping):
+        framework = self.context['request'].active_af
+        widget_qs = Widget.objects.filter(
+            id__in=[
+                _map['widget']
+                for _map in prediction_tags_mapping
+            ]
+        )
+        if widget_qs.values_list('analysis_framework', flat=True).distinct() != [framework.pk]:
+            raise serializers.ValidationError('Found widgets from another Analysis Framework')
+        return prediction_tags_mapping
+
+    def create(self, _):
+        raise Exception('Created not allowed')
+
+    def update(self, instance, validated_data):
+        print(instance, validated_data)
+        return instance

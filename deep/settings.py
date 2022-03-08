@@ -48,7 +48,7 @@ env = environ.Env(
     HID_AUTH_URI=str,
     # Email
     EMAIL_FROM=str,
-    DJANGO_ADMINS=(str, 'admin@thedeep.io'),
+    DJANGO_ADMINS=(list, ['Admin <admin@thedeep.io>']),
     USE_SES_EMAIL_CONFIG=(bool, False),
     SES_AWS_ACCESS_KEY_ID=(str, None),
     SES_AWS_SECRET_ACCESS_KEY=(str, None),
@@ -57,8 +57,6 @@ env = environ.Env(
     # Sentry
     SENTRY_DSN=(str, None),
     SENTRY_SAMPLE_RATE=(float, 0.2),
-    # Deepl (not used)
-    DEEPL_DOMAIN=(str, 'http://192.168.31.92:8010'),
     # Security settings
     DEEP_HTTPS=(str, 'http'),
     # CSRF_TRUSTED_ORIGINS=(bool, False),
@@ -66,8 +64,8 @@ env = environ.Env(
     CSRF_COOKIE_DOMAIN=str,
     DOCKER_HOST_IP=(str, None),
     # DEEPL
-    DEEPL_EXTRACTOR_URL=str,  # http://extractor:8001/extract_docs
-    DEEPL_EXTRACTOR_CALLBACK_DOMAIN=str,  # http://web:8000
+    DEEPL_SERVICE_URL=str,  # http://extractor:8001/extract_docs
+    DEEPL_SERVICE_CALLBACK_DOMAIN=str,  # http://web:8000
     # Pytest
     PYTEST_XDIST_WORKER=(str, None),
     PROFILE=(bool, False),
@@ -630,6 +628,7 @@ CORS_ALLOW_HEADERS = (
 # Email CONFIGS
 USE_SES_EMAIL_CONFIG = env('USE_SES_EMAIL_CONFIG')
 DEFAULT_FROM_EMAIL = EMAIL_FROM = env('EMAIL_FROM')
+
 ADMINS = tuple(parseaddr(email) for email in env.list('DJANGO_ADMINS'))
 
 if USE_SES_EMAIL_CONFIG and not TESTING:
@@ -688,6 +687,7 @@ if SENTRY_DSN:
 TOKEN_DEFAULT_RESET_TIMEOUT_DAYS = 7
 PROJECT_REQUEST_RESET_TIMEOUT_DAYS = 7
 LEAD_EXTRACTION_TOKEN_RESET_TIMEOUT_DAYS = 1
+DRAFT_ENTRY_EXTRACTION_TIMEOUT_DAYS = 1
 CONNECTOR_LEAD_EXTRACTION_TOKEN_RESET_TIMEOUT_DAYS = 1
 
 JSON_EDITOR_INIT_JS = 'js/jsoneditor-init.js'
@@ -786,8 +786,8 @@ SESSION_COOKIE_DOMAIN = env('SESSION_COOKIE_DOMAIN')
 CSRF_COOKIE_DOMAIN = env('CSRF_COOKIE_DOMAIN')
 
 # DEEPL Config
-DEEPL_EXTRACTOR_URL = env('DEEPL_EXTRACTOR_URL')
-DEEPL_EXTRACTOR_CALLBACK_DOMAIN = env('DEEPL_EXTRACTOR_CALLBACK_DOMAIN')
+DEEPL_SERVICE_URL = env('DEEPL_SERVICE_URL')
+DEEPL_SERVICE_CALLBACK_DOMAIN = env('DEEPL_SERVICE_CALLBACK_DOMAIN')
 
 # Graphene configs
 # WHITELIST following nodes from authentication checks
@@ -833,10 +833,3 @@ if DEEP_ENVIRONMENT in ['production']:
     GRAPHENE['MIDDLEWARE'].append('deep.middleware.DisableIntrospectionSchemaMiddleware')
 
 UNHCR_PORTAL_API_KEY = env('UNHCR_PORTAL_API_KEY')
-
-EXTRACTOR_URL = os.environ.get(
-    'EXTRACTOR_URL', 'http://extractor:8001'
-)
-MODEL_PREDICTION_CALLBACK_URL = os.environ.get(
-    'MODEL_PREDICTION_CALLBACK_URL', 'http://server:8000/api/v1/model-predictions/model-predict-callback/'
-)

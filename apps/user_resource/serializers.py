@@ -10,9 +10,7 @@ from deep.writable_nested_serializers import (
 
 
 class UserResourceBaseSerializer(serializers.Serializer):
-    created_at = serializers.DateTimeField(read_only=True)
     modified_at = serializers.DateTimeField(read_only=True)
-    created_by = serializers.PrimaryKeyRelatedField(read_only=True)
     modified_by = serializers.PrimaryKeyRelatedField(read_only=True)
     created_by_name = serializers.CharField(
         source='created_by.profile.get_display_name',
@@ -25,25 +23,13 @@ class UserResourceBaseSerializer(serializers.Serializer):
     version_id = serializers.SerializerMethodField()
 
     def create(self, validated_data):
-        client_id = validated_data.get('client_id')
-        if client_id:
-            ModelClass = self.Meta.model
-            item = ModelClass.objects.filter(client_id=client_id).first()
-            if item:
-                validated_data['id'] = item.id
-                return self.update(item, validated_data)
-
-        resource = super().create(validated_data)
-        resource.created_by = self.context['request'].user
-        resource.modified_by = self.context['request'].user
-        resource.save()
-        return resource
+        validated_data['created_by'] = self.context['request'].user
+        validated_data['modified_by'] = self.context['request'].user
+        return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        resource = super().update(instance, validated_data)
-        resource.modified_by = self.context['request'].user
-        resource.save()
-        return resource
+        validated_data['modified_by'] = self.context['request'].user
+        return super().update(instance, validated_data)
 
     def get_version_id(self, resource):
         if not reversion.is_registered(resource.__class__):
@@ -74,6 +60,15 @@ class UserResourceSerializer(UserResourceBaseSerializer, WritableNestedModelSeri
         }
 
         return instances
+
+
+class UserResourceCreatedMixin(serializers.Serializer):
+    created_at = serializers.DateTimeField(read_only=True)
+    created_by = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    def create(self, validated_data):
+        validated_data['created_by'] = self.context['request'].user
+        return super().create(validated_data)
 
 
 class DeprecatedUserResourceSerializer(
