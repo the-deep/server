@@ -21,6 +21,7 @@ from quality_assurance.mutation import Mutation as QualityAssuranceMutation
 from ary.mutation import Mutation as AryMutation
 from export.mutation import Mutation as ExportMutation
 from unified_connector.mutation import UnifiedConnectorMutationType
+from assisted_tagging.mutation import AssistedTaggingMutationType
 
 from .models import (
     Project,
@@ -227,6 +228,7 @@ class ProjectMutationType(
     project_user_group_membership_bulk = BulkUpdateProjectUserGroupMembership.Field()
     project_viz_configuration_update = UpdateProjectVizConfiguration.Field()
     unified_connector = graphene.Field(UnifiedConnectorMutationType)
+    assisted_tagging = graphene.Field(AssistedTaggingMutationType)
 
     @staticmethod
     def get_custom_node(_, info, id):
@@ -239,6 +241,11 @@ class ProjectMutationType(
 
     @staticmethod
     def resolve_unified_connector(root, info, **kwargs):
+        if root.get_current_user_role(info.context.request.user) is not None:
+            return {}
+
+    @staticmethod
+    def resolve_assisted_tagging(root, info, **kwargs):
         if root.get_current_user_role(info.context.request.user) is not None:
             return {}
 

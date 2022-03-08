@@ -148,6 +148,8 @@ from export.views import (
     ExportTriggerView,
     ExportViewSet,
 )
+from assisted_tagging.views import AssistedTaggingDraftEntryPredictionCallbackView
+
 from deep.views import (
     AccountActivate,
     Api_404View,
@@ -192,11 +194,6 @@ from django.conf.urls import (
     # handler403, handler400, handler500
 )
 
-from assisted_tagging.views import (
-    ModelInfoViewSet,
-    ModelPredictionViewSet,
-    ReviewTagViewSet,
-)
 
 register_converter(converters.FileNameRegex, 'filename')
 
@@ -380,11 +377,6 @@ router.register(r'languages', LanguageViewSet, basename='language')
 # Page routers
 router.register(r'pages', PageViewSet, basename='page')
 
-# Assisted Tagging routers
-router.register(r'model-infos', ModelInfoViewSet, basename='model-info')
-router.register(r'model-predictions', ModelPredictionViewSet, basename='model-prediction')
-router.register(r'missing-tags', ReviewTagViewSet, basename='missing-tag')
-
 # Versioning : (v1|v2|v3)
 
 API_PREFIX = r'^api/(?P<version>(v1|v2))/'
@@ -547,14 +539,19 @@ urlpatterns = [
 
     # NLP Callback endpoints
     re_path(
-        get_api_path(r'lead-extract-callback/$'),
+        get_api_path(r'callback/lead-extract/$'),
         LeadExtractCallbackView.as_view(),
         name='lead_extract_callback',
     ),
     re_path(
-        get_api_path(r'connector-lead-extract-callback/$'),
+        get_api_path(r'callback/connector-lead-extract/$'),
         ConnectorLeadExtractCallbackView.as_view(),
         name='connector_lead_extract_callback',
+    ),
+    re_path(
+        get_api_path(r'callback/assisted-tagging-draft-entry-prediction/$'),
+        AssistedTaggingDraftEntryPredictionCallbackView.as_view(),
+        name='assisted_tagging_draft_entry_prediction_callback',
     ),
 
     # Combined API View

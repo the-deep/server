@@ -1,6 +1,5 @@
 import django_filters
 
-
 from deep.filter_set import OrderEnumMixin
 from utils.graphene.filters import (
     MultipleInputFilter,
@@ -28,7 +27,7 @@ class UnifiedConnectorGQFilterSet(OrderEnumMixin, django_filters.FilterSet):
     ordering = MultipleInputFilter(UnifiedConnectorOrderingEnum, method='ordering_filter')
     is_active = django_filters.BooleanFilter()
 
-    class Meat:
+    class Meta:
         model = UnifiedConnector
         fields = ()
 
@@ -40,7 +39,7 @@ class ConnectorSourceGQFilterSet(OrderEnumMixin, django_filters.FilterSet):
     statuses = MultipleInputFilter(ConnectorSourceStatusEnum, field_name='status')
     unified_connectors = IDListFilter(field_name='unified_connector')
 
-    class Meat:
+    class Meta:
         model = ConnectorSource
         fields = ()
 
@@ -51,8 +50,8 @@ class ConnectorSourceLeadGQFilterSet(OrderEnumMixin, django_filters.FilterSet):
     blocked = django_filters.BooleanFilter()
     already_added = django_filters.BooleanFilter()
     extraction_status = MultipleInputFilter(
-        ConnectorLeadExtractionStatusEnum, method='connector_lead__extraction_status')
+        ConnectorLeadExtractionStatusEnum, field_name='connector_lead__extraction_status')
 
-    class Meat:
+    class Meta:
         model = ConnectorSourceLead
         fields = ()

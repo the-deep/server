@@ -2,7 +2,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 
 
-class BaseException(Exception):
+class DeepBaseException(Exception):
     default_message = _('Unexpected exception. Contact admin.')
 
     def __init__(self, msg=None, *args, **kwargs):

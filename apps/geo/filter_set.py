@@ -18,7 +18,7 @@ class GeoAreaFilterSet(django_filters.rest_framework.FilterSet):
         method='geo_area_label'
     )
 
-    class Meat:
+    class Meta:
         model = GeoArea
         fields = ()
 
@@ -87,7 +87,7 @@ class GeoAreaGqlFilterSet(django_filters.rest_framework.FilterSet):
         method='geo_area_label'
     )
 
-    class Meat:
+    class Meta:
         model = GeoArea
         fields = ()
 

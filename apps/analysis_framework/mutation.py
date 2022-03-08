@@ -19,6 +19,7 @@ from .models import (
 from .serializers import (
     AnalysisFrameworkGqlSerializer as AnalysisFrameworkSerializer,
     AnalysisFrameworkMembershipGqlSerializer as AnalysisFrameworkMembershipSerializer,
+    AnalysisFrameworkPredictionMapUpdateGqlSerializer,
 )
 from .schema import (
     AnalysisFrameworkDetailType,
@@ -34,6 +35,11 @@ AnalysisFrameworkInputType = generate_input_type_for_serializer(
 AnalysisFrameworkMembershipInputType = generate_input_type_for_serializer(
     'AnalysisFrameworkMembershipInputType',
     serializer_class=AnalysisFrameworkMembershipSerializer,
+)
+
+AnalysisFrameworkPredictionMapUpdateInputType = generate_input_type_for_serializer(
+    'AnalysisFrameworkPredictionMapUpdateInputType',
+    serializer_class=AnalysisFrameworkPredictionMapUpdateGqlSerializer,
 )
 
 
@@ -96,12 +102,23 @@ class BulkUpdateAnalysisFrameworkMembership(AfBulkGrapheneMutation):
         )
 
 
+class UpdateAnalysisFrameworkPredictionMapping(AfGrapheneMutation):
+    class Arguments:
+        data = AnalysisFrameworkPredictionMapUpdateInputType(required=True)
+
+    result = graphene.Field(AnalysisFrameworkDetailType)
+    serializer_class = AnalysisFrameworkPredictionMapUpdateGqlSerializer
+    model = AnalysisFramework
+    permissions = [AfP.Permission.CAN_EDIT_FRAMEWORK]
+
+
 class AnalysisFrameworkMutationType(DjangoObjectType):
     """
     This mutation is for other scoped objects
     """
     analysis_framework_update = UpdateAnalysisFramework.Field()
     analysis_framework_membership_bulk = BulkUpdateAnalysisFrameworkMembership.Field()
+    analysis_framework_prediction_mapping = UpdateAnalysisFrameworkPredictionMapping.Field()
 
     class Meta:
         model = AnalysisFramework

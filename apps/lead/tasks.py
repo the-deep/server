@@ -59,7 +59,7 @@ class LeadExtraction:
     @staticmethod
     def get_callback_url():
         return (
-            settings.DEEPL_EXTRACTOR_CALLBACK_DOMAIN +
+            settings.DEEPL_SERVICE_CALLBACK_DOMAIN +
             reverse('lead_extract_callback', kwargs={'version': 'v1'})
         )
 
@@ -94,7 +94,7 @@ class LeadExtraction:
         }
         try:
             response = requests.post(
-                settings.DEEPL_EXTRACTOR_URL,
+                settings.DEEPL_SERVICE_URL,
                 headers=cls.REQUEST_HEADERS,
                 data=json.dumps(payload)
             )

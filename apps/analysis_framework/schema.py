@@ -11,7 +11,9 @@ from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin, File
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import AnalysisFrameworkPermissions as AfP
 from project.schema import AnalysisFrameworkVisibleProjectType
+from assisted_tagging.schema import AnalysisFrameworkPredictionMappingType
 
+from assisted_tagging.models import PredictionTagAnalysisFrameworkWidgetMapping
 from .models import (
     AnalysisFramework,
     Section,
@@ -164,6 +166,11 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     exportables = DjangoListField(AnalysisFrameworkExportableType)
     preview_image = graphene.Field(FileFieldType)
     visible_projects = DjangoListField(AnalysisFrameworkVisibleProjectType)
+    prediction_tags_mapping = graphene.List(
+        graphene.NonNull(
+            AnalysisFrameworkPredictionMappingType,
+        ),
+    )
 
     class Meta:
         model = AnalysisFramework
@@ -199,6 +206,14 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     @staticmethod
     def resolve_visible_projects(root, info):
         return info.context.dl.analysis_framework.visible_projects.load(root.id)
+
+    @staticmethod
+    def resolve_prediction_tags_mapping(root, info):
+        if root.get_current_user_role(info.context.request.user) is not None:
+            return PredictionTagAnalysisFrameworkWidgetMapping.objects.filter(
+                widget__analysis_framework=root,
+            ).all()  # TODO: Dataloaders
+        return []
 
 
 class AnalysisFrameworkListType(CustomDjangoListObjectType):
