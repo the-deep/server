@@ -62,7 +62,7 @@ class AssistedTaggingModelPredictionTagType(DjangoObjectType):
             'id',
             'name',
             'tag_id',
-            'is_depricated',
+            'is_deprecated',
         )
 
 
@@ -177,18 +177,3 @@ class DraftEntryType(DjangoObjectType):
 # This is attached to project type.
 class AssistedTaggingQueryType(graphene.ObjectType):
     draft_entry = DjangoObjectField(DraftEntryType)
-
-
-# ----- Additional Types --------
-class AnalysisFrameworkPredictionMappingType(DjangoObjectType):
-    widget = graphene.ID(source='widget_id', required=True)
-    tag = graphene.ID(source='tag_id', required=True)
-
-    class Meta:
-        model = PredictionTagAnalysisFrameworkWidgetMapping
-        fields = (
-            'id',
-            'widget',
-            'tag',
-            'association',
-        )
