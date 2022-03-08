@@ -3,16 +3,9 @@ from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
 
 from utils.graphene.enums import EnumDescription
-from utils.graphene.pagination import NoOrderingPageGraphqlPagination
-from utils.graphene.types import CustomDjangoListObjectType
-from utils.graphene.fields import DjangoPaginatedListObjectField
 from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
 
-from .filters import (
-    AssistedTaggingModelGQFilterSet,
-    AssistedTaggingModelPredictionTagGQFilterSet,
-)
 from .models import (
     DraftEntry,
     AssistedTaggingModel,
@@ -73,34 +66,24 @@ class AssistedTaggingModelPredictionTagType(DjangoObjectType):
         )
 
 
-class AssistedTaggingModelListType(CustomDjangoListObjectType):
-    class Meta:
-        model = AssistedTaggingModel
-        filterset_class = AssistedTaggingModelGQFilterSet
-
-
-class AssistedTaggingModelPredictionTagListType(CustomDjangoListObjectType):
-    class Meta:
-        model = AssistedTaggingModelPredictionTag
-        filterset_class = AssistedTaggingModelPredictionTagGQFilterSet
-
-
 class AssistedTaggingRootQueryType(graphene.ObjectType):
     tagging_model = DjangoObjectField(AssistedTaggingModelType)
-    tagging_models = DjangoPaginatedListObjectField(
-        AssistedTaggingModelListType,
-        pagination=NoOrderingPageGraphqlPagination(
-            page_size_query_param='pageSize',
-        )
+    tagging_models = graphene.List(
+        graphene.NonNull(AssistedTaggingModelType),
     )
 
     prediction_tag = DjangoObjectField(AssistedTaggingModelPredictionTagType)
-    prediction_tags = DjangoPaginatedListObjectField(
-        AssistedTaggingModelPredictionTagListType,
-        pagination=NoOrderingPageGraphqlPagination(
-            page_size_query_param='pageSize',
-        )
+    prediction_tags = graphene.List(
+        graphene.NonNull(AssistedTaggingModelPredictionTagType)
     )
+
+    @staticmethod
+    def resolve_tagging_models(root, info, **kwargs):
+        return AssistedTaggingModel.objects.all()
+
+    @staticmethod
+    def resolve_prediction_tags(root, info, **kwargs):
+        return AssistedTaggingModelPredictionTag.objects.all()
 
 
 # -- Project Level

@@ -34,28 +34,22 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
     ASSISTED_TAGGING_NLP_DATA = '''
         query MyQuery ($taggingModelId: ID!, $predictionTag: ID!) {
           assistedTagging {
-            predictionTags(ordering: ASC_ID) {
-              totalCount
-              results {
-                id
-                isDeprecated
-                tagId
-              }
+            predictionTags {
+              id
+              isDeprecated
+              tagId
             }
-            taggingModels(ordering: ASC_ID) {
-              totalCount
-              results {
-                id
-                modelId
-                name
-                latestVersion {
-                    id
-                    version
-                }
-                versions {
+            taggingModels {
+              id
+              modelId
+              name
+              latestVersion {
                   id
                   version
-                }
+              }
+              versions {
+                id
+                version
               }
             }
             taggingModel(id: $taggingModelId) {
@@ -139,45 +133,39 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
                 predictionTag=tag1.id,
             )
         )['data']['assistedTagging']
-        self.assertEqual(content['predictionTags'], dict(
-            totalCount=5,
-            results=[
-                dict(
-                    id=str(tag.id),
-                    tagId=tag.tag_id,
-                    isDeprecated=tag.is_deprecated,
-                )
-                for tag in [tag1, *other_tags]
-            ],
-        ))
+        self.assertEqual(content['predictionTags'], [
+            dict(
+                id=str(tag.id),
+                tagId=tag.tag_id,
+                isDeprecated=tag.is_deprecated,
+            )
+            for tag in [tag1, *other_tags]
+        ])
         self.assertEqual(content['predictionTag'], dict(
             id=str(tag1.id),
             tagId=tag1.tag_id,
             isDeprecated=tag1.is_deprecated,
         ))
 
-        self.assertEqual(content['taggingModels'], dict(
-            totalCount=2,
-            results=[
-                dict(
-                    id=str(_model.id),
-                    modelId=_model.model_id,
-                    name=_model.name,
-                    latestVersion=_model.latest_version and dict(
-                        id=str(_model.latest_version.id),
-                        version=str(_model.latest_version.version),
-                    ),
-                    versions=[
-                        dict(
-                            id=str(model_version.id),
-                            version=str(model_version.version),
-                        )
-                        for model_version in _model.versions.all()
-                    ],
-                )
-                for _model in [model1, *other_models]
-            ],
-        ))
+        self.assertEqual(content['taggingModels'], [
+            dict(
+                id=str(_model.id),
+                modelId=_model.model_id,
+                name=_model.name,
+                latestVersion=_model.latest_version and dict(
+                    id=str(_model.latest_version.id),
+                    version=str(_model.latest_version.version),
+                ),
+                versions=[
+                    dict(
+                        id=str(model_version.id),
+                        version=str(model_version.version),
+                    )
+                    for model_version in _model.versions.all()
+                ],
+            )
+            for _model in [model1, *other_models]
+        ])
         self.assertEqual(content['taggingModel'], dict(
             id=str(model1.id),
             modelId=model1.model_id,
