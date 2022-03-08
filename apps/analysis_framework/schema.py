@@ -11,8 +11,6 @@ from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin, File
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import AnalysisFrameworkPermissions as AfP
 from project.schema import AnalysisFrameworkVisibleProjectType
-from assisted_tagging.schema import AnalysisFrameworkPredictionMappingType
-
 from assisted_tagging.models import PredictionTagAnalysisFrameworkWidgetMapping
 from .models import (
     AnalysisFramework,
@@ -156,6 +154,25 @@ class AnalysisFrameworkMembershipType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = AnalysisFrameworkMembership
         only_fields = ('id', 'member', 'role', 'joined_at', 'added_by')
+
+
+class AnalysisFrameworkPredictionMappingType(DjangoObjectType):
+    widget = graphene.ID(source='widget_id', required=True)
+    widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
+    tag = graphene.ID(source='tag_id', required=True)
+
+    class Meta:
+        model = PredictionTagAnalysisFrameworkWidgetMapping
+        fields = (
+            'id',
+            'widget',
+            'tag',
+            'association',
+        )
+
+    @staticmethod
+    def resolve_widget_type(root, info, **kwargs):
+        return root.widget.widget_type  # TODO: Dataloaders
 
 
 class AnalysisFrameworkDetailType(AnalysisFrameworkType):

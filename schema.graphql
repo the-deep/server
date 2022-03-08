@@ -112,6 +112,7 @@ type AnalysisFrameworkPredictionMappingType {
   widget: ID!
   tag: ID!
   association: GenericScalar!
+  widgetType: WidgetWidgetTypeEnum!
 }
 
 type AnalysisFrameworkRoleType {
@@ -233,6 +234,7 @@ type AssistedTaggingModelPredictionTagType {
   id: ID!
   name: String!
   tagId: String!
+  isDeprecated: Boolean!
 }
 
 type AssistedTaggingModelType {
