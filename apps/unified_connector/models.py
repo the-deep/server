@@ -25,6 +25,7 @@ class ConnectorLead(models.Model):
 
     id: Union[int, None]
     url = models.TextField(unique=True)
+    website = models.CharField(max_length=255, blank=True)
     title = models.CharField(max_length=255)
     published_on = models.DateField(default=None, null=True, blank=True)
     source_raw = models.CharField(max_length=255, blank=True)
@@ -53,6 +54,7 @@ class ConnectorLead(models.Model):
                 source_raw=lead.source_raw,
                 author_raw=lead.author_raw,
                 source=lead.source,
+                website=lead.website,
             ),
         )
         if not created:

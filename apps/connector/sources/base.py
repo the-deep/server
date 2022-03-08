@@ -1,5 +1,6 @@
 from typing import List, Tuple
 
+import copy
 from functools import reduce
 from abc import ABC, abstractmethod
 from django.db.models import Q
@@ -77,10 +78,10 @@ class Source(ABC):
 
     @abstractmethod
     def fetch(self, params):
-        pass
+        return [], 0
 
-    def get_leads(self, *args, **kwargs) -> Tuple[List[Lead], int]:
-        leads_data, total_count = self.fetch(*args, **kwargs)
+    def get_leads(self, params) -> Tuple[List[Lead], int]:
+        leads_data, total_count = self.fetch(copy.deepcopy(params))
         if not leads_data:
             return [], total_count
 
