@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 
 from user_resource.serializers import UserResourceSerializer, UserResourceCreatedMixin
@@ -92,7 +93,9 @@ class DraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCreate
 
     def create(self, data):
         instance = super().create(data)
-        AsssistedTaggingTask.send_trigger_request_to_extractor(instance)
+        transaction.on_commit(
+            lambda: AsssistedTaggingTask.send_trigger_request_to_extractor(instance)
+        )
         return instance
 
     def update(self, *_):
@@ -142,7 +145,6 @@ class PredictionTagAnalysisFrameworkMapSerializer(TempClientIdMixin, serializers
     TAG_NOT_REQUIRED_FOR_WIDGET_TYPE = [
         Widget.WidgetType.GEO,
     ]
-    association = serializers.DictField(required=False)
 
     class Meta:
         model = PredictionTagAnalysisFrameworkWidgetMapping
