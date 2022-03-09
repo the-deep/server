@@ -18,6 +18,7 @@ from analysis_framework.models import (
     Filter,
     Exportable,
 )
+from assisted_tagging.models import DraftEntry
 
 
 class Entry(UserResource, ProjectEntityMixin):
@@ -58,6 +59,7 @@ class Entry(UserResource, ProjectEntityMixin):
         related_name='+', on_delete=models.SET_NULL)
     # NOTE: verified_by is related to review comment
     verified_by = models.ManyToManyField(User, blank=True)
+    draft_entry = models.ForeignKey(DraftEntry, on_delete=models.SET_NULL, null=True, blank=True)
 
     # NOTE: control is like final verified action
     def control(self, user, controlled=True):

@@ -136,5 +136,10 @@ class MissingPredictionReview(UserResource):
 # ------------------------ Analysis Framework ---------------------------------------------
 class PredictionTagAnalysisFrameworkWidgetMapping(models.Model):
     widget = models.ForeignKey(Widget, on_delete=models.CASCADE)
-    tag = models.ForeignKey(AssistedTaggingModelPredictionTag, on_delete=models.CASCADE)
-    association = models.JSONField(default=dict)
+    tag = models.ForeignKey(
+        AssistedTaggingModelPredictionTag,
+        on_delete=models.CASCADE,
+        null=True,  # For just enabling assisted tagging for a widget. For eg: geo/number/date/datetime widgets
+        blank=True,
+    )
+    association = models.JSONField(null=True, blank=True)
