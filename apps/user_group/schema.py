@@ -39,6 +39,7 @@ class UserGroupType(DjangoObjectType):
 
     current_user_role = graphene.Field(GroupMembershipRoleEnum)
     current_user_role_display = EnumDescription(source='get_current_user_role_display')
+    memberships_count = graphene.Int(required=True)
     memberships = DjangoListField(GroupMembershipType)
 
     @staticmethod
@@ -49,6 +50,10 @@ class UserGroupType(DjangoObjectType):
     def resolve_memberships(root, info):
         # Only for groups with current user as members are fetched. (Logic in dataloader)
         return info.context.dl.user_group.memberships.load(root.id)
+
+    @staticmethod
+    def resolve_memberships_count(root, info):
+        return info.context.dl.user_group.memberships_count.load(root.id)
 
 
 class UserGroupListType(CustomDjangoListObjectType):

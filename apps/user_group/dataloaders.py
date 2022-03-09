@@ -1,6 +1,7 @@
 from collections import defaultdict
 from promise import Promise
 from django.utils.functional import cached_property
+from django.db import models
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
@@ -23,6 +24,20 @@ class UserGroupMembershipsLoader(DataLoaderWithContext):
         return Promise.resolve([memberships_map[key] for key in keys])
 
 
+class UserGroupMembershipsCountLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        membership_count_qs = GroupMembership.objects\
+            .order_by()\
+            .values('group')\
+            .annotate(count=models.Count('*'))\
+            .values_list('group', 'count')
+        # Membership map
+        _map = defaultdict(int)
+        for group, count in membership_count_qs:
+            _map[group] = count
+        return Promise.resolve([_map[key] for key in keys])
+
+
 class UserGroupCurrentUserRoleLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         membership_qs = GroupMembership.objects\
@@ -39,6 +54,10 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def memberships(self):
         return UserGroupMembershipsLoader(context=self.context)
+
+    @cached_property
+    def memberships_count(self):
+        return UserGroupMembershipsCountLoader(context=self.context)
 
     @cached_property
     def current_user_role(self):

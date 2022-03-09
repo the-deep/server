@@ -1852,6 +1852,7 @@ type UserGroupType {
   customProjectFields: GenericScalar
   currentUserRole: GroupMembershipRoleEnum
   currentUserRoleDisplay: EnumDescription
+  membershipsCount: Int!
   memberships: [GroupMembershipType!]
 }
 
