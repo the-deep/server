@@ -8,7 +8,7 @@ from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 
 from .models import UserGroup, GroupMembership
-from .filters import UserGroupFilterSet
+from .filters import UserGroupGQFilterSet
 from .enums import GroupMembershipRoleEnum
 
 
@@ -39,6 +39,7 @@ class UserGroupType(DjangoObjectType):
 
     current_user_role = graphene.Field(GroupMembershipRoleEnum)
     current_user_role_display = EnumDescription(source='get_current_user_role_display')
+    memberships_count = graphene.Int(required=True)
     memberships = DjangoListField(GroupMembershipType)
 
     @staticmethod
@@ -50,11 +51,15 @@ class UserGroupType(DjangoObjectType):
         # Only for groups with current user as members are fetched. (Logic in dataloader)
         return info.context.dl.user_group.memberships.load(root.id)
 
+    @staticmethod
+    def resolve_memberships_count(root, info):
+        return info.context.dl.user_group.memberships_count.load(root.id)
+
 
 class UserGroupListType(CustomDjangoListObjectType):
     class Meta:
         model = UserGroup
-        filterset_class = UserGroupFilterSet
+        filterset_class = UserGroupGQFilterSet
 
 
 class Query:

@@ -21,6 +21,7 @@ class TestUserGroupSchema(GraphQLTestCase):
                   createdAt
                   clientId
                   currentUserRole
+                  membershipsCount
                   memberships {
                     role
                     member {
@@ -61,16 +62,17 @@ class TestUserGroupSchema(GraphQLTestCase):
 
         results = self.query_check(query)['data']['userGroups']['results']
         self.assertEqual(len(results), 3, results)
-        for index, (user_group, memberships_count, current_user_role) in enumerate([
+        for index, (user_group, memberships_count, real_memberships_count, current_user_role) in enumerate([
             # as normal member
-            (ug_with_membership, 2, self.genum(GroupMembership.Role.NORMAL)),
+            (ug_with_membership, 2, 2, self.genum(GroupMembership.Role.NORMAL)),
             # as admin member
-            (ug_with_admin_membership, 1, self.genum(GroupMembership.Role.ADMIN)),
+            (ug_with_admin_membership, 1, 1, self.genum(GroupMembership.Role.ADMIN)),
             # as non member
-            (ug_without_membership, 0, None),
+            (ug_without_membership, 0, 1, None),
         ]):
             self.assertEqual(results[index]['id'], str(user_group.pk), results[index])
             self.assertEqual(len(results[index]['memberships']), memberships_count, results[index])
+            self.assertEqual(results[index]['membershipsCount'], real_memberships_count, results[index])
             self.assertEqual(results[index]['currentUserRole'], current_user_role, results[index])
 
     def test_user_group_query(self):
@@ -87,6 +89,7 @@ class TestUserGroupSchema(GraphQLTestCase):
                 createdAt
                 clientId
                 currentUserRole
+                membershipsCount
                 memberships {
                   role
                   member {
@@ -115,14 +118,16 @@ class TestUserGroupSchema(GraphQLTestCase):
         user = UserFactory.create()
         self.force_login(user)
 
-        # with login, non-member usergroup will give zero members
+        # with login, non-member usergroup will give zero members but membershipsCount 1
         content = self.query_check(query, variables={'id': str(ug_without_membership.pk)})
+        self.assertEqual(content['data']['userGroup']['membershipsCount'], 1, content)
         self.assertEqual(len(content['data']['userGroup']['memberships']), 0, content)
 
         # -- Create new user groups w/wo user as member
         # with login, non-member usergroup will give real members
         ug_with_membership = UserGroupFactory.create(members=[user, another_user])
         content = self.query_check(query, variables={'id': str(ug_with_membership.pk)})
+        self.assertEqual(content['data']['userGroup']['membershipsCount'], 2, content)
         self.assertEqual(len(content['data']['userGroup']['memberships']), 2, content)
         self.assertEqual(content['data']['userGroup']['currentUserRole'], self.genum(GroupMembership.Role.NORMAL), content)
 
@@ -145,6 +150,7 @@ class TestUserGroupSchema(GraphQLTestCase):
                     displayName
                   }
                   createdAt
+                  membershipsCount
                   memberships {
                     member {
                       id
@@ -177,6 +183,7 @@ class TestUserGroupSchema(GraphQLTestCase):
         # Response with new user group
         result = self.query_check(query, minput=minput, okay=True)['data']['userGroupCreate']['result']
         self.assertEqual(result['title'], minput['title'], result)
+        self.assertEqual(result['membershipsCount'], 2, result)
         self.assertEqual(len(result['memberships']), 2, result)
         # Another user as normal member
         self.assertEqual(result['memberships'][0]['member']['id'], minput['memberships'][0]['member'], result)
@@ -206,6 +213,7 @@ class TestUserGroupSchema(GraphQLTestCase):
                     displayName
                   }
                   createdAt
+                  membershipsCount
                   memberships {
                     member {
                       id
@@ -240,6 +248,7 @@ class TestUserGroupSchema(GraphQLTestCase):
         )['data']['userGroupUpdate']['result']
 
         self.assertEqual(result['title'], minput['title'], result)
+        self.assertEqual(result['membershipsCount'], 2, result)
         self.assertEqual(len(result['memberships']), 2, result)
 
         minput['memberships'] = [
@@ -252,6 +261,7 @@ class TestUserGroupSchema(GraphQLTestCase):
             query, minput=minput, okay=True,
             variables={'id': str(ug.pk)}
         )['data']['userGroupUpdate']['result']
+        self.assertEqual(result['membershipsCount'], 2, result)
         self.assertEqual(len(result['memberships']), 2, result)
         # New another user added as normal member (and another_user no longer exists in the group)
         self.assertEqual(result['memberships'][0]['member']['id'], minput['memberships'][0]['member'], result)
