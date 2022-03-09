@@ -159,7 +159,7 @@ class AnalysisFrameworkMembershipType(ClientIdMixin, DjangoObjectType):
 class AnalysisFrameworkPredictionMappingType(ClientIdMixin, DjangoObjectType):
     widget = graphene.ID(source='widget_id', required=True)
     widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
-    tag = graphene.ID(source='tag_id', required=True)
+    tag = graphene.ID(source='tag_id')
 
     class Meta:
         model = PredictionTagAnalysisFrameworkWidgetMapping

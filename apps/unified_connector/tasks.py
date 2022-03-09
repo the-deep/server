@@ -109,6 +109,19 @@ class UnifiedConnectorTask():
                 source.add_lead(connector_lead)
 
     @classmethod
+    def _send_trigger_request_to_extraction(cls, connector_leads: List[ConnectorLead]):
+        return LeadExtraction.send_trigger_request_to_extractor(
+            [
+                {
+                    'url': connector_lead.url,
+                    'client_id': UnifiedConnectorTask.generate_connector_lead_client_id(connector_lead),
+                }
+                for connector_lead in connector_leads
+            ],
+            cls.get_callback_url(),
+        )
+
+    @classmethod
     def send_retry_trigger_request_to_extractor(
         cls, connector_leads_qs: models.QuerySet[ConnectorLead],
         chunk_size=500,
@@ -119,47 +132,35 @@ class UnifiedConnectorTask():
             .only('id', 'url').distinct()[:chunk_size]
         )
         extraction_status = ConnectorLead.ExtractionStatus.RETRYING
-        if LeadExtraction.send_trigger_request_to_extractor(
-            [
-                {
-                    'url': connector_lead.url,
-                    'client_id': UnifiedConnectorTask.generate_connector_lead_client_id(connector_lead),
-                }
-                for connector_lead in connector_leads
-            ],
-            cls.get_callback_url(),
-        ):  # True if request is successfully send
+        if cls._send_trigger_request_to_extraction(connector_leads):  # True if request is successfully send
             extraction_status = ConnectorLead.ExtractionStatus.STARTED
-        return ConnectorLead.objects\
+        ConnectorLead.objects\
             .filter(pk__in=[c.pk for c in connector_leads])\
             .update(extraction_status=extraction_status)
+        return len(connector_leads)
 
     @classmethod
     def _send_trigger_request_to_extractor(cls, connector_leads_qs: models.QuerySet[ConnectorLead]):
         paginator = Paginator(
-            connector_leads_qs.filter(extraction_status=ConnectorLead.ExtractionStatus.PENDING).only('id', 'url').distinct(),
+            connector_leads_qs.filter(
+                extraction_status=ConnectorLead.ExtractionStatus.PENDING
+            ).only('id', 'url').order_by('id').distinct(),
             100,
         )
+        processed = 0
         while True:
             page = paginator.page(1)
             connector_leads: List[ConnectorLead] = list(page.object_list)
             if not connector_leads:  # Nothing to process anymore
                 break
             extraction_status = ConnectorLead.ExtractionStatus.RETRYING
-            if LeadExtraction.send_trigger_request_to_extractor(
-                [
-                    {
-                        'url': connector_lead.url,
-                        'client_id': UnifiedConnectorTask.generate_connector_lead_client_id(connector_lead),
-                    }
-                    for connector_lead in connector_leads
-                ],
-                cls.get_callback_url(),
-            ):  # True if request is successfully send
+            if cls._send_trigger_request_to_extraction(connector_leads):  # True if request is successfully send
                 extraction_status = ConnectorLead.ExtractionStatus.STARTED
+            processed += len(connector_leads)
             ConnectorLead.objects\
                 .filter(pk__in=[c.pk for c in connector_leads])\
                 .update(extraction_status=extraction_status)
+        return processed
 
     @classmethod
     def _process_unified_connector_source(cls, source):
