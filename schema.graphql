@@ -111,7 +111,8 @@ type AnalysisFrameworkPredictionMappingType {
   id: ID!
   widget: ID!
   tag: ID!
-  association: GenericScalar!
+  association: GenericScalar
+  clientId: String!
   widgetType: WidgetWidgetTypeEnum!
 }
 
@@ -234,6 +235,7 @@ type AssistedTaggingModelPredictionTagType {
   id: ID!
   name: String!
   tagId: String!
+  hideInAnalysisFrameworkMapping: Boolean!
   isDeprecated: Boolean!
 }
 
@@ -270,6 +272,7 @@ type AssistedTaggingPredictionType {
   threshold: Decimal
   isSelected: Boolean!
   modelVersion: ID!
+  modelVersionDeeplModelId: String!
   draftEntry: ID!
   dataType: AssistedTaggingPredictionDataTypeEnum!
   dataTypeDisplay: EnumDescription!
@@ -335,6 +338,7 @@ input BulkEntryInputType {
   droppedExcerpt: String
   highlightHidden: Boolean
   attributes: [AttributeGqInputType!]
+  draftEntry: ID
   clientId: String
 }
 
@@ -697,6 +701,7 @@ type DjangoDebugSQL {
 }
 
 input DraftEntryInputType {
+  lead: ID!
   excerpt: String!
 }
 
@@ -783,6 +788,7 @@ input EntryInputType {
   droppedExcerpt: String
   highlightHidden: Boolean
   attributes: [AttributeGqInputType!]
+  draftEntry: ID
   clientId: String
 }
 
@@ -1534,8 +1540,9 @@ scalar PointScalar
 input PredictionTagAnalysisFrameworkMapInputType {
   id: Int
   widget: ID!
-  tag: ID!
+  tag: ID
   association: GenericScalar
+  clientId: String
 }
 
 type ProjectAcceptReject {
@@ -2090,7 +2097,7 @@ type UnifiedConnectorQueryType {
   connectorSource(id: ID!): ConnectorSourceType
   connectorSources(search: String, ordering: [ConnectorSourceOrderingEnum!], sources: [ConnectorSourceSourceEnum!], statuses: [ConnectorSourceStatusEnum!], unifiedConnectors: [ID!], page: Int = 1, pageSize: Int): ConnectorSourceListType
   connectorSourceLead(id: ID!): ConnectorSourceLeadType
-  connectorSourceLeads(ordering: [ConnectorSourceLeadOrderingEnum!], sources: [ID!], blocked: Boolean, alreadyAdded: Boolean, extractionStatus: [ConnectorLeadExtractionStatusEnum!], page: Int = 1, pageSize: Int): ConnectorSourceLeadListType
+  connectorSourceLeads(ordering: [ConnectorSourceLeadOrderingEnum!], sources: [ID!], blocked: Boolean, alreadyAdded: Boolean, extractionStatus: [ConnectorLeadExtractionStatusEnum!], search: String, authorOrganizations: [ID!], publishedOn: Date, publishedOnGte: Date, publishedOnLte: Date, page: Int = 1, pageSize: Int): ConnectorSourceLeadListType
 }
 
 type UnifiedConnectorType {

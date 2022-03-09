@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 from user_resource.serializers import UserResourceSerializer, UserResourceCreatedMixin
-from deep.serializers import ProjectPropertySerializerMixin
+from deep.serializers import ProjectPropertySerializerMixin, TempClientIdMixin
+from analysis_framework.models import Widget
 
 from .models import (
     DraftEntry,
@@ -73,8 +74,14 @@ class DraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCreate
     class Meta:
         model = DraftEntry
         fields = (
+            'lead',
             'excerpt',
         )
+
+    def validate_lead(self, lead):
+        if lead.project != self.project:
+            raise serializers.ValidationError('Only lead from current project are allowed.')
+        return lead
 
     def validate(self, data):
         if self.instance and self.instance.created_by != self.context['request'].user:
@@ -130,7 +137,10 @@ class MissingPredictionReviewGqlSerializer(UserResourceSerializer):
 
 
 # ------------------------ Analysis Framework ---------------------------------------------
-class PredictionTagAnalysisFrameworkMapSerializer(serializers.ModelSerializer):
+class PredictionTagAnalysisFrameworkMapSerializer(TempClientIdMixin, serializers.ModelSerializer):
+    TAG_NOT_REQUIRED_FOR_WIDGET_TYPE = [
+        Widget.WidgetType.GEO,
+    ]
     association = serializers.DictField(required=False)
 
     class Meta:
@@ -140,4 +150,20 @@ class PredictionTagAnalysisFrameworkMapSerializer(serializers.ModelSerializer):
             'widget',
             'tag',
             'association',
+            'client_id',  # From TempClientIdMixin
         )
+
+    def validate(self, data):
+        tag = data.get('tag', self.instance and self.instance.tag)
+        association = data.get('association', self.instance and self.instance.association)
+        widget = data.get('widget', self.instance and self.instance.widget)
+        skip_tag = widget.widget_id not in self.TAG_NOT_REQUIRED_FOR_WIDGET_TYPE
+        if tag is None and not skip_tag:
+            raise serializers.ValidationError(dict(
+                tag='Tag is required for this widget.'
+            ))
+        if association is None and not skip_tag:
+            raise serializers.ValidationError(dict(
+                association='Association is required for this widget.'
+            ))
+        return data

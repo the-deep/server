@@ -106,6 +106,7 @@ class WrongPredictionReviewType(UserResourceMixin, DjangoObjectType):
 
 class AssistedTaggingPredictionType(DjangoObjectType):
     model_version = graphene.ID(source='model_version_id', required=True)
+    model_version_deepl_model_id = graphene.String(required=True)
     draft_entry = graphene.ID(source='draft_entry_id', required=True)
     data_type = graphene.Field(AssistedTaggingPredictionDataTypeEnum, required=True)
     data_type_display = EnumDescription(source='get_data_type_display', required=True)
@@ -128,6 +129,10 @@ class AssistedTaggingPredictionType(DjangoObjectType):
     @staticmethod
     def resolve_wrong_prediction_reviews(root, info, **kwargs):
         return root.wrong_prediction_reviews.all()   # TODO: Dataloaders
+
+    @staticmethod
+    def resolve_model_version_deepl_model_id(root, info, **kwargs):
+        return root.model_version.model.model_id   # TODO: Dataloaders
 
 
 class MissingPredictionReviewType(UserResourceMixin, DjangoObjectType):

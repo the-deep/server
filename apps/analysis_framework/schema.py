@@ -156,7 +156,7 @@ class AnalysisFrameworkMembershipType(ClientIdMixin, DjangoObjectType):
         only_fields = ('id', 'member', 'role', 'joined_at', 'added_by')
 
 
-class AnalysisFrameworkPredictionMappingType(DjangoObjectType):
+class AnalysisFrameworkPredictionMappingType(ClientIdMixin, DjangoObjectType):
     widget = graphene.ID(source='widget_id', required=True)
     widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
     tag = graphene.ID(source='tag_id', required=True)

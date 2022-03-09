@@ -14,6 +14,8 @@ from assisted_tagging.models import (
     AssistedTaggingModelPredictionTag,
     DraftEntry,
 )
+
+from lead.factories import LeadFactory
 from user.factories import UserFactory
 from project.factories import ProjectFactory
 
@@ -87,6 +89,7 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
                 predictions {
                   id
                   modelVersion
+                  modelVersionDeeplModelId
                   dataType
                   dataTypeDisplay
                   value
@@ -185,6 +188,7 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
 
     def test_unified_connector_draft_entry(self):
         project = ProjectFactory.create()
+        lead = LeadFactory.create(project=project)
         user = UserFactory.create()
         another_user = UserFactory.create()
         project.add_member(user)
@@ -193,7 +197,7 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
         latest_model1_version = AssistedTaggingModelVersionFactory.create_batch(2, model=model1)[0]
         category1, tag1, *other_tags = AssistedTaggingModelPredictionTagFactory.create_batch(5)
 
-        draft_entry1 = DraftEntryFactory.create(project=project, excerpt='sample excerpt')
+        draft_entry1 = DraftEntryFactory.create(project=project, lead=lead, excerpt='sample excerpt')
 
         prediction1 = AssistedTaggingPredictionFactory.create(
             data_type=AssistedTaggingPrediction.DataType.TAG,
@@ -253,6 +257,7 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
                 dict(
                     id=str(prediction1.pk),
                     modelVersion=str(prediction1.model_version_id),
+                    modelVersionDeeplModelId=str(prediction1.model_version.model.model_id),
                     dataType=self.genum(prediction1.data_type),
                     dataTypeDisplay=prediction1.get_data_type_display(),
                     value='',
@@ -263,6 +268,7 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
                 dict(
                     id=str(prediction2.id),
                     modelVersion=str(prediction2.model_version.id),
+                    modelVersionDeeplModelId=str(prediction2.model_version.model.model_id),
                     dataType=self.genum(prediction2.data_type),
                     dataTypeDisplay=prediction2.get_data_type_display(),
                     value="Nepal",
@@ -409,8 +415,11 @@ class AssistedTaggingCallbackApiTest(TestCase, SnapShotTextCase):
             )
 
         url = '/api/v1/callback/assisted-tagging-draft-entry-prediction/'
+        project = ProjectFactory.create()
+        lead = LeadFactory.create(project=project)
         draft_args = dict(
-            project=ProjectFactory.create(),
+            project=project,
+            lead=lead,
             prediction_status=DraftEntry.PredictionStatus.STARTED,
         )
         draft_entry1 = DraftEntryFactory.create(
