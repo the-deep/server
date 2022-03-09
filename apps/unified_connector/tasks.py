@@ -1,6 +1,9 @@
+from typing import List
+
+import os
 import copy
 import logging
-from typing import List
+from urllib.parse import urlparse
 
 from celery import shared_task
 from django.utils import timezone
@@ -79,11 +82,15 @@ class UnifiedConnectorTask():
         connector_lead.simplified_text = RequestHelper(url=text_source_uri, ignore_error=True).get_text() or ''
         connector_lead.word_count = word_count
         connector_lead.page_count = page_count
-        for image in images_uri:
+        image_base_path = f'{connector_lead.pk}'
+        for image_uri in images_uri:
             lead_image = ConnectorLeadPreviewImage(connector_lead=connector_lead)
-            image_obj = RequestHelper(url=image, ignore_error=True).get_file()
+            image_obj = RequestHelper(url=image_uri, ignore_error=True).get_file()
             if image_obj:
-                lead_image.image.save(image_obj.name, image_obj)
+                lead_image.image.save(
+                    os.path.join(image_base_path, os.path.basename(urlparse(image_uri).path)),
+                    image_obj,
+                )
                 lead_image.save()
         connector_lead.update_extraction_status(ConnectorLead.ExtractionStatus.SUCCESS, commit=False)
         connector_lead.save()

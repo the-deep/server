@@ -32,7 +32,6 @@ class AssistedTaggingModelVersionType(DjangoObjectType):
 
 
 class AssistedTaggingModelType(DjangoObjectType):
-    latest_version = graphene.Field(AssistedTaggingModelVersionType)
     versions = graphene.List(
         graphene.NonNull(AssistedTaggingModelVersionType)
     )
@@ -47,20 +46,19 @@ class AssistedTaggingModelType(DjangoObjectType):
 
     @staticmethod
     def resolve_versions(root, info, **kwargs):
-        return root.versions.all()   # TODO: Dataloaders
-
-    @staticmethod
-    def resolve_latest_version(root, info, **kwargs):
-        return root.latest_version   # TODO: Dataloaders
+        return root.versions.all()   # NOTE: Prefetched
 
 
 class AssistedTaggingModelPredictionTagType(DjangoObjectType):
+    parent_tag = graphene.ID(source='parent_tag_id')
+
     class Meta:
         model = AssistedTaggingModelPredictionTag
         fields = (
             'id',
             'name',
             'tag_id',
+            'is_category',
             'is_deprecated',
             'hide_in_analysis_framework_mapping',
         )
@@ -79,7 +77,7 @@ class AssistedTaggingRootQueryType(graphene.ObjectType):
 
     @staticmethod
     def resolve_tagging_models(root, info, **kwargs):
-        return AssistedTaggingModel.objects.all()
+        return AssistedTaggingModel.objects.prefetch_related('versions').all()
 
     @staticmethod
     def resolve_prediction_tags(root, info, **kwargs):
@@ -128,11 +126,11 @@ class AssistedTaggingPredictionType(DjangoObjectType):
 
     @staticmethod
     def resolve_wrong_prediction_reviews(root, info, **kwargs):
-        return root.wrong_prediction_reviews.all()   # TODO: Dataloaders
+        return root.wrong_prediction_reviews.all()   # NOTE: Prefetched by DraftEntry
 
     @staticmethod
     def resolve_model_version_deepl_model_id(root, info, **kwargs):
-        return root.model_version.model.model_id   # TODO: Dataloaders
+        return root.model_version.model.model_id   # NOTE: Prefetched by DraftEntry
 
 
 class MissingPredictionReviewType(UserResourceMixin, DjangoObjectType):
@@ -148,7 +146,6 @@ class MissingPredictionReviewType(UserResourceMixin, DjangoObjectType):
 
 
 class DraftEntryType(DjangoObjectType):
-    # TODO: Maybe use dataloader or not since this is fetched one at a time.
     prediction_status = graphene.Field(DraftEntryPredictionStatusEnum, required=True)
     prediction_status_display = EnumDescription(source='get_prediction_status_display', required=True)
     predictions = graphene.List(
@@ -168,15 +165,22 @@ class DraftEntryType(DjangoObjectType):
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
-        return get_draft_entry_qs(info)
+        # FIXME: Refactor for optimized fetching
+        return get_draft_entry_qs(info).prefetch_related(
+            'predictions',
+            'predictions__model_version',
+            'predictions__model_version__model',
+            'predictions__wrong_prediction_reviews',
+            'missing_prediction_reviews',
+        )
 
     @staticmethod
     def resolve_predictions(root, info, **kwargs):
-        return root.predictions.all()   # TODO: Need Dataloaders?
+        return root.predictions.all()   # NOTE: Prefetched by DraftEntry
 
     @staticmethod
     def resolve_missing_prediction_reviews(root, info, **kwargs):
-        return root.missing_prediction_reviews.all()   # TODO: Need Dataloaders?
+        return root.missing_prediction_reviews.all()   # NOTE: Prefetched by DraftEntry
 
 
 # This is attached to project type.

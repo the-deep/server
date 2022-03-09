@@ -37,9 +37,18 @@ class AssistedTaggingModelVersion(models.Model):
 
 class AssistedTaggingModelPredictionTag(models.Model):
     name = models.CharField(max_length=256)  # TODO: Not provided (full from /tags)
+    is_category = models.BooleanField(default=False)
     tag_id = models.CharField(max_length=256)
+    # Extra attributes
     hide_in_analysis_framework_mapping = models.BooleanField(default=False)
+    is_category = models.BooleanField(default=False)
     is_deprecated = models.BooleanField(default=False)
+    parent_tag = models.ForeignKey(
+        'assisted_tagging.AssistedTaggingModelPredictionTag',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
 
     def __str__(self):
         return self.name
@@ -95,8 +104,8 @@ class AssistedTaggingPrediction(models.Model):
         blank=True,
     )
     # If score is provided
-    prediction = models.DecimalField(max_digits=20, decimal_places=20, null=True, blank=True)
-    threshold = models.DecimalField(max_digits=20, decimal_places=20, null=True, blank=True)
+    prediction = models.DecimalField(max_digits=22, decimal_places=20, null=True, blank=True)
+    threshold = models.DecimalField(max_digits=22, decimal_places=20, null=True, blank=True)
     # Recommended by Model
     is_selected = models.BooleanField(default=False)
     # TODO: is_used = models.BooleanField(default=False)
