@@ -6,7 +6,7 @@ from user_resource.models import UserResource
 
 from lead.models import Lead
 from organization.models import Organization
-from project.models import Project
+from project.models import Project, ProjectStats
 from connector.sources import (
     atom_feed,
     rss_feed,
@@ -140,13 +140,16 @@ class ConnectorSource(UserResource):
         return self.SOURCE_FETCHER_MAP[self.source]
 
     def generate_stats(self, commit=True):
+        threshold = ProjectStats.get_activity_timeframe()
         self.stats = {
             'published_dates': [
                 {
                     'date': str(date),
                     'count': count,
-                } for count, date in self.leads.filter(published_on__isnull=False)
-                .order_by().values('published_on').annotate(
+                } for count, date in self.leads.filter(
+                    published_on__isnull=False,
+                    published_on__gte=threshold,
+                ).order_by().values('published_on').annotate(
                     count=models.Count('*'),
                 ).values_list('count', models.F('published_on'))
             ],

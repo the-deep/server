@@ -5,10 +5,11 @@ from deep.serializers import ProjectPropertySerializerMixin, TempClientIdMixin
 from analysis_framework.models import Widget
 
 from .models import (
+    AssistedTaggingPrediction,
     DraftEntry,
     MissingPredictionReview,
-    WrongPredictionReview,
     PredictionTagAnalysisFrameworkWidgetMapping,
+    WrongPredictionReview,
 )
 from .tasks import AsssistedTaggingTask
 
@@ -22,14 +23,14 @@ class ModelPredictionCallbackSerializer(serializers.Serializer):
     class ModelPredictionCallbackSerializerTagValue(serializers.Serializer):
         prediction = serializers.DecimalField(
             # From apps/assisted_tagging/models.py::AssistedTaggingPrediction::prediction
-            max_digits=20,
-            decimal_places=20,
+            max_digits=AssistedTaggingPrediction.prediction.field.max_digits,
+            decimal_places=AssistedTaggingPrediction.prediction.field.decimal_places,
             required=False,
         )
         threshold = serializers.DecimalField(
             # From apps/assisted_tagging/models.py::AssistedTaggingPrediction::threshold
-            max_digits=20,
-            decimal_places=20,
+            max_digits=AssistedTaggingPrediction.threshold.field.max_digits,
+            decimal_places=AssistedTaggingPrediction.threshold.field.decimal_places,
             required=False,
         )
         is_selected = serializers.BooleanField()

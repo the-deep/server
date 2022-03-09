@@ -234,32 +234,57 @@ class AsssistedTaggingTask():
         return draft_entry
 
 
-@shared_task
-@redis_lock('sync_tags_with_deepl', 60 * 60 * 0.5)
-def sync_tags_with_deepl():
+def _sync_tags_with_deepl():
+    def _get_existing_tags_by_tagid():
+        return {
+            tag.tag_id: tag  # tag_id is from deepl
+            for tag in AssistedTaggingModelPredictionTag.objects.all()
+        }
     response = requests.get(DeeplServiceEndpoint.ASSISTED_TAGGING_TAGS_ENDPOINT).json()
-    existing_tags_by_tagid = {
-        tag.tag_id: tag  # tag_id is from deepl
-        for tag in AssistedTaggingModelPredictionTag.objects.all()
-    }
+    existing_tags_by_tagid = _get_existing_tags_by_tagid()
 
     new_tags = []
     updated_tags = []
     for tag_id, tag_meta in response.items():
         assisted_tag = existing_tags_by_tagid.get(tag_id, AssistedTaggingModelPredictionTag())
-        assisted_tag.tag_id = tag_id
         assisted_tag.name = tag_meta['label']
+        assisted_tag.is_category = tag_meta['is_category']
         assisted_tag.hide_in_analysis_framework_mapping = tag_meta['hide_in_analysis_framework_mapping']
         if assisted_tag.id:
             updated_tags.append(assisted_tag)
         else:
+            assisted_tag.tag_id = tag_id
             new_tags.append(assisted_tag)
 
     new_tags and AssistedTaggingModelPredictionTag.objects.bulk_create(new_tags)
     updated_tags and AssistedTaggingModelPredictionTag.objects.bulk_update(
         updated_tags,
         fields=(
-            'title',
+            'name',
+            'is_category',
             'hide_in_analysis_framework_mapping',
         )
     )
+
+    # For parent relation
+    updated_tags = []
+    existing_tags_by_tagid = _get_existing_tags_by_tagid()
+    for tag_id, tag_meta in response.items():
+        if tag_meta.get('parent_id') is None:
+            continue
+        assisted_tag = existing_tags_by_tagid[tag_id]
+        parent_tag = existing_tags_by_tagid[tag_meta['parent_id']]
+        if parent_tag.pk == assisted_tag.parent_tag_id:
+            continue
+        assisted_tag.parent_tag = parent_tag
+        updated_tags.append(assisted_tag)
+    updated_tags and AssistedTaggingModelPredictionTag.objects.bulk_update(
+        updated_tags,
+        fields=('parent_tag',)
+    )
+
+
+@shared_task
+@redis_lock('sync_tags_with_deepl', 60 * 60 * 0.5)
+def sync_tags_with_deepl():
+    return _sync_tags_with_deepl()
