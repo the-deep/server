@@ -110,7 +110,7 @@ enum AnalysisFrameworkPermission {
 type AnalysisFrameworkPredictionMappingType {
   id: ID!
   widget: ID!
-  tag: ID!
+  tag: ID
   association: GenericScalar
   clientId: String!
   widgetType: WidgetWidgetTypeEnum!
@@ -236,14 +236,15 @@ type AssistedTaggingModelPredictionTagType {
   name: String!
   tagId: String!
   hideInAnalysisFrameworkMapping: Boolean!
+  isCategory: Boolean!
   isDeprecated: Boolean!
+  parentTag: ID
 }
 
 type AssistedTaggingModelType {
   id: ID!
   modelId: String!
   name: String!
-  latestVersion: AssistedTaggingModelVersionType
   versions: [AssistedTaggingModelVersionType!]
 }
 
@@ -440,6 +441,7 @@ enum ConnectorLeadExtractionStatusEnum {
 type ConnectorLeadType {
   id: ID!
   url: String!
+  website: String!
   title: String!
   publishedOn: Date
   sourceRaw: String!

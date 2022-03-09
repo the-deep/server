@@ -60,6 +60,7 @@ class ConnectorLeadType(DjangoObjectType):
         fields = (
             'id',
             'url',
+            'website',
             'title',
             'published_on',
             'source_raw',

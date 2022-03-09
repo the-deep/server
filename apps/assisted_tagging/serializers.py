@@ -160,7 +160,7 @@ class PredictionTagAnalysisFrameworkMapSerializer(TempClientIdMixin, serializers
         tag = data.get('tag', self.instance and self.instance.tag)
         association = data.get('association', self.instance and self.instance.association)
         widget = data.get('widget', self.instance and self.instance.widget)
-        skip_tag = widget.widget_id not in self.TAG_NOT_REQUIRED_FOR_WIDGET_TYPE
+        skip_tag = widget.widget_id in self.TAG_NOT_REQUIRED_FOR_WIDGET_TYPE
         if tag is None and not skip_tag:
             raise serializers.ValidationError(dict(
                 tag='Tag is required for this widget.'
