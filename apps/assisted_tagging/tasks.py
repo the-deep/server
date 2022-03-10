@@ -258,6 +258,7 @@ def _sync_tags_with_deepl():
     for tag_id, tag_meta in response.items():
         assisted_tag = existing_tags_by_tagid.get(tag_id, AssistedTaggingModelPredictionTag())
         assisted_tag.name = tag_meta['label']
+        assisted_tag.group = tag_meta.get('group')
         assisted_tag.is_category = tag_meta['is_category']
         assisted_tag.hide_in_analysis_framework_mapping = tag_meta['hide_in_analysis_framework_mapping']
         if assisted_tag.id:
@@ -272,6 +273,7 @@ def _sync_tags_with_deepl():
         fields=(
             'name',
             'is_category',
+            'group',
             'hide_in_analysis_framework_mapping',
         )
     )
@@ -294,6 +296,18 @@ def _sync_tags_with_deepl():
     )
 
 
+def _sync_models_with_deepl():
+    models_data = requests.get(DeeplServiceEndpoint.ASSISTED_TAGGING_MODELS_ENDPOINT).json()
+    for model_meta in models_data.values():
+        assisted_model, _ = AssistedTaggingModel.objects.get_or_create(
+            model_id=model_meta['id'],
+        )
+        AssistedTaggingModelVersion.objects.get_or_create(
+            model=assisted_model,
+            version=model_meta['version'],
+        )
+
+
 @shared_task
 @redis_lock('trigger_request_for_draft_entry_{0}', 60 * 60 * 0.5)
 def trigger_request_for_draft_entry(draft_entry_id):
@@ -304,4 +318,7 @@ def trigger_request_for_draft_entry(draft_entry_id):
 @shared_task
 @redis_lock('sync_tags_with_deepl', 60 * 60 * 0.5)
 def sync_tags_with_deepl():
-    return _sync_tags_with_deepl()
+    return (
+        _sync_tags_with_deepl(),
+        _sync_models_with_deepl(),
+    )

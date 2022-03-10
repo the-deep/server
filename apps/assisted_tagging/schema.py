@@ -57,6 +57,7 @@ class AssistedTaggingModelPredictionTagType(DjangoObjectType):
         fields = (
             'id',
             'name',
+            'group',
             'tag_id',
             'is_category',
             'is_deprecated',

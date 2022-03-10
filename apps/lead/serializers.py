@@ -663,7 +663,7 @@ class ExtractCallbackSerializer(serializers.Serializer):
             data['lead'],  # Added from validate
             data['extraction_status'] == 1,
             data['text_path'],
-            data['images_path'],
+            data['images_path'][:10],
             data['total_words_count'],
             data['total_pages'],
         )

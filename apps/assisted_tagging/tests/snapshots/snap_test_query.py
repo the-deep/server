@@ -2624,6 +2624,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
 
 snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
     {
+        'group': None,
         'hide_in_analysis_framework_mapping': True,
         'is_category': True,
         'is_deprecated': False,
@@ -2632,6 +2633,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '1'
     },
     {
+        'group': None,
         'hide_in_analysis_framework_mapping': True,
         'is_category': True,
         'is_deprecated': False,
@@ -2640,6 +2642,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '10'
     },
     {
+        'group': 'Reliability',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -2648,6 +2651,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '1001'
     },
     {
+        'group': 'Reliability',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -2656,6 +2660,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '1002'
     },
     {
+        'group': 'Reliability',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -2664,6 +2669,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '1003'
     },
     {
+        'group': 'Reliability',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -2672,6 +2678,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '1004'
     },
     {
+        'group': 'Sectors',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -2680,6 +2687,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '101'
     },
     {
+        'group': 'Sectors',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -2688,6 +2696,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '102'
     },
     {
+        'group': 'Sectors',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -2696,6 +2705,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '103'
     },
     {
+        'group': 'Sectors',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -2704,6 +2714,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '104'
     },
     {
+        'group': 'Sectors',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -2712,6 +2723,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '105'
     },
     {
+        'group': 'Sectors',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -2720,6 +2732,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '106'
     },
     {
+        'group': 'Sectors',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -2728,6 +2741,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '107'
     },
     {
+        'group': 'Sectors',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -2736,6 +2750,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '108'
     },
     {
+        'group': 'Sectors',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -2744,6 +2759,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '109'
     },
     {
+        'group': 'Sectors',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -2752,6 +2768,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '110'
     },
     {
+        'group': 'Sectors',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -2760,6 +2777,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '111'
     },
     {
+        'group': None,
         'hide_in_analysis_framework_mapping': True,
         'is_category': True,
         'is_deprecated': False,
@@ -2768,270 +2786,304 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '2'
     },
     {
+        'group': 'Context',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Context->Environment',
+        'name': 'Environment',
         'parent_tag__tag_id': '2',
         'tag_id': '201'
     },
     {
+        'group': 'Context',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Context->Socio Cultural',
+        'name': 'Socio Cultural',
         'parent_tag__tag_id': '2',
         'tag_id': '202'
     },
     {
+        'group': 'Context',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Context->Economy',
+        'name': 'Economy',
         'parent_tag__tag_id': '2',
         'tag_id': '203'
     },
     {
+        'group': 'Context',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Context->Demography',
+        'name': 'Demography',
         'parent_tag__tag_id': '2',
         'tag_id': '204'
     },
     {
+        'group': 'Context',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Context->Legal & Policy',
+        'name': 'Legal & Policy',
         'parent_tag__tag_id': '2',
         'tag_id': '205'
     },
     {
+        'group': 'Context',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Context->Security & Stability',
+        'name': 'Security & Stability',
         'parent_tag__tag_id': '2',
         'tag_id': '206'
     },
     {
+        'group': 'Context',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Context->Politics',
+        'name': 'Politics',
         'parent_tag__tag_id': '2',
         'tag_id': '207'
     },
     {
+        'group': 'Shock/Event',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Shock/Event->Type And Characteristics',
+        'name': 'Type And Characteristics',
         'parent_tag__tag_id': '2',
         'tag_id': '208'
     },
     {
+        'group': 'Shock/Event',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Shock/Event->Underlying/Aggravating Factors',
+        'name': 'Underlying/Aggravating Factors',
         'parent_tag__tag_id': '2',
         'tag_id': '209'
     },
     {
+        'group': 'Shock/Event',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Shock/Event->Hazard & Threats',
+        'name': 'Hazard & Threats',
         'parent_tag__tag_id': '2',
         'tag_id': '210'
     },
     {
+        'group': 'Displacement',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Displacement->Type/Numbers/Movements',
+        'name': 'Type/Numbers/Movements',
         'parent_tag__tag_id': '2',
         'tag_id': '212'
     },
     {
+        'group': 'Displacement',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Displacement->Push Factors',
+        'name': 'Push Factors',
         'parent_tag__tag_id': '2',
         'tag_id': '213'
     },
     {
+        'group': 'Displacement',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Displacement->Pull Factors',
+        'name': 'Pull Factors',
         'parent_tag__tag_id': '2',
         'tag_id': '214'
     },
     {
+        'group': 'Displacement',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Displacement->Intentions',
+        'name': 'Intentions',
         'parent_tag__tag_id': '2',
         'tag_id': '215'
     },
     {
+        'group': 'Displacement',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Displacement->Local Integration',
+        'name': 'Local Integration',
         'parent_tag__tag_id': '2',
         'tag_id': '216'
     },
     {
+        'group': 'Casualties',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Casualties->Injured',
+        'name': 'Injured',
         'parent_tag__tag_id': '2',
         'tag_id': '217'
     },
     {
+        'group': 'Casualties',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Casualties->Missing',
+        'name': 'Missing',
         'parent_tag__tag_id': '2',
         'tag_id': '218'
     },
     {
+        'group': 'Casualties',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Casualties->Dead',
+        'name': 'Dead',
         'parent_tag__tag_id': '2',
         'tag_id': '219'
     },
     {
+        'group': 'Humanitarian Access',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Humanitarian Access->Relief To Population',
+        'name': 'Relief To Population',
         'parent_tag__tag_id': '2',
         'tag_id': '220'
     },
     {
+        'group': 'Humanitarian Access',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Humanitarian Access->Population To Relief',
+        'name': 'Population To Relief',
         'parent_tag__tag_id': '2',
         'tag_id': '221'
     },
     {
+        'group': 'Humanitarian Access',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Humanitarian Access->Physical Constraints',
+        'name': 'Physical Constraints',
         'parent_tag__tag_id': '2',
         'tag_id': '222'
     },
     {
+        'group': 'Humanitarian Access',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Humanitarian Access->Number Of People Facing Humanitarian Access Constraints/Humanitarian Access Gaps',
+        'name': 'Number Of People Facing Humanitarian Access Constraints/Humanitarian Access Gaps',
         'parent_tag__tag_id': '2',
         'tag_id': '223'
     },
     {
+        'group': 'Information And Communication',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Information And Communication->Communication Means And Preferences',
+        'name': 'Communication Means And Preferences',
         'parent_tag__tag_id': '2',
         'tag_id': '224'
     },
     {
+        'group': 'Information And Communication',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Information And Communication->Information Challenges And Barriers',
+        'name': 'Information Challenges And Barriers',
         'parent_tag__tag_id': '2',
         'tag_id': '225'
     },
     {
+        'group': 'Information And Communication',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Information And Communication->Knowledge And Info Gaps (Pop)',
+        'name': 'Knowledge And Info Gaps (Pop)',
         'parent_tag__tag_id': '2',
         'tag_id': '226'
     },
     {
+        'group': 'Information And Communication',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Information And Communication->Knowledge And Info Gaps (Hum)',
+        'name': 'Knowledge And Info Gaps (Hum)',
         'parent_tag__tag_id': '2',
         'tag_id': '227'
     },
     {
+        'group': 'Covid-19',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Covid-19->Cases',
+        'name': 'Cases',
         'parent_tag__tag_id': '2',
         'tag_id': '228'
     },
     {
+        'group': 'Covid-19',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Covid-19->Contact Tracing',
+        'name': 'Contact Tracing',
         'parent_tag__tag_id': '2',
         'tag_id': '229'
     },
     {
+        'group': 'Covid-19',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Covid-19->Deaths',
+        'name': 'Deaths',
         'parent_tag__tag_id': '2',
         'tag_id': '230'
     },
     {
+        'group': 'Covid-19',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Covid-19->Hospitalization & Care',
+        'name': 'Hospitalization & Care',
         'parent_tag__tag_id': '2',
         'tag_id': '231'
     },
     {
+        'group': 'Covid-19',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Covid-19->Restriction Measures',
+        'name': 'Restriction Measures',
         'parent_tag__tag_id': '2',
         'tag_id': '232'
     },
     {
+        'group': 'Covid-19',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Covid-19->Testing',
+        'name': 'Testing',
         'parent_tag__tag_id': '2',
         'tag_id': '233'
     },
     {
+        'group': 'Covid-19',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Covid-19->Vaccination',
+        'name': 'Vaccination',
         'parent_tag__tag_id': '2',
         'tag_id': '234'
     },
     {
+        'group': None,
         'hide_in_analysis_framework_mapping': True,
         'is_category': True,
         'is_deprecated': False,
@@ -3040,150 +3092,169 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '3'
     },
     {
+        'group': 'At Risk',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'At Risk->Number Of People At Risk',
+        'name': 'Number Of People At Risk',
         'parent_tag__tag_id': '3',
         'tag_id': '301'
     },
     {
+        'group': 'At Risk',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'At Risk->Risk And Vulnerabilities',
+        'name': 'Risk And Vulnerabilities',
         'parent_tag__tag_id': '3',
         'tag_id': '302'
     },
     {
+        'group': 'Capacities & Response',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Capacities & Response->International Response',
+        'name': 'International Response',
         'parent_tag__tag_id': '3',
         'tag_id': '303'
     },
     {
+        'group': 'Capacities & Response',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Capacities & Response->Local Response',
+        'name': 'Local Response',
         'parent_tag__tag_id': '3',
         'tag_id': '304'
     },
     {
+        'group': 'Capacities & Response',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Capacities & Response->National Response',
+        'name': 'National Response',
         'parent_tag__tag_id': '3',
         'tag_id': '305'
     },
     {
+        'group': 'Capacities & Response',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Capacities & Response->Number Of People Reached/Response Gaps',
+        'name': 'Number Of People Reached/Response Gaps',
         'parent_tag__tag_id': '3',
         'tag_id': '306'
     },
     {
+        'group': 'Humanitarian Conditions',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Humanitarian Conditions->Coping Mechanisms',
+        'name': 'Coping Mechanisms',
         'parent_tag__tag_id': '3',
         'tag_id': '307'
     },
     {
+        'group': 'Humanitarian Conditions',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Humanitarian Conditions->Living Standards',
+        'name': 'Living Standards',
         'parent_tag__tag_id': '3',
         'tag_id': '308'
     },
     {
+        'group': 'Humanitarian Conditions',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Humanitarian Conditions->Number Of People In Need',
+        'name': 'Number Of People In Need',
         'parent_tag__tag_id': '3',
         'tag_id': '309'
     },
     {
+        'group': 'Humanitarian Conditions',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Humanitarian Conditions->Physical And Mental Well Being',
+        'name': 'Physical And Mental Well Being',
         'parent_tag__tag_id': '3',
         'tag_id': '310'
     },
     {
+        'group': 'Impact',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Impact->Driver/Aggravating Factors',
+        'name': 'Driver/Aggravating Factors',
         'parent_tag__tag_id': '3',
         'tag_id': '311'
     },
     {
+        'group': 'Impact',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Impact->Impact On People',
+        'name': 'Impact On People',
         'parent_tag__tag_id': '3',
         'tag_id': '312'
     },
     {
+        'group': 'Impact',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Impact->Impact On Systems, Services And Networks',
+        'name': 'Impact On Systems, Services And Networks',
         'parent_tag__tag_id': '3',
         'tag_id': '313'
     },
     {
+        'group': 'Impact',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Impact->Number Of People Affected',
+        'name': 'Number Of People Affected',
         'parent_tag__tag_id': '3',
         'tag_id': '314'
     },
     {
+        'group': 'Priority Interventions',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Priority Interventions->Expressed By Humanitarian Staff',
+        'name': 'Expressed By Humanitarian Staff',
         'parent_tag__tag_id': '3',
         'tag_id': '315'
     },
     {
+        'group': 'Priority Interventions',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Priority Interventions->Expressed By Population',
+        'name': 'Expressed By Population',
         'parent_tag__tag_id': '3',
         'tag_id': '316'
     },
     {
+        'group': 'Priority Needs',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Priority Needs->Expressed By Humanitarian Staff',
+        'name': 'Expressed By Humanitarian Staff',
         'parent_tag__tag_id': '3',
         'tag_id': '317'
     },
     {
+        'group': 'Priority Needs',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
-        'name': 'Priority Needs->Expressed By Population',
+        'name': 'Expressed By Population',
         'parent_tag__tag_id': '3',
         'tag_id': '318'
     },
     {
+        'group': None,
         'hide_in_analysis_framework_mapping': True,
         'is_category': True,
         'is_deprecated': False,
@@ -3192,6 +3263,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '4'
     },
     {
+        'group': 'Specific Needs Group',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3200,6 +3272,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '401'
     },
     {
+        'group': 'Specific Needs Group',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3208,6 +3281,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '402'
     },
     {
+        'group': 'Specific Needs Group',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3216,6 +3290,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '403'
     },
     {
+        'group': 'Specific Needs Group',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3224,6 +3299,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '404'
     },
     {
+        'group': 'Specific Needs Group',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3232,6 +3308,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '405'
     },
     {
+        'group': 'Specific Needs Group',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3240,6 +3317,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '406'
     },
     {
+        'group': 'Specific Needs Group',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3248,6 +3326,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '407'
     },
     {
+        'group': 'Specific Needs Group',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3256,6 +3335,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '408'
     },
     {
+        'group': 'Specific Needs Group',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3264,6 +3344,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '409'
     },
     {
+        'group': 'Specific Needs Group',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3272,6 +3353,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '410'
     },
     {
+        'group': 'Specific Needs Group',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3280,6 +3362,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '411'
     },
     {
+        'group': 'Specific Needs Group',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3288,6 +3371,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '412'
     },
     {
+        'group': None,
         'hide_in_analysis_framework_mapping': True,
         'is_category': True,
         'is_deprecated': False,
@@ -3296,7 +3380,8 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '5'
     },
     {
-        'hide_in_analysis_framework_mapping': True,
+        'group': 'Gender',
+        'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
         'name': 'Female',
@@ -3304,7 +3389,8 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '501'
     },
     {
-        'hide_in_analysis_framework_mapping': True,
+        'group': 'Gender',
+        'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
         'name': 'Male',
@@ -3312,6 +3398,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '502'
     },
     {
+        'group': None,
         'hide_in_analysis_framework_mapping': True,
         'is_category': True,
         'is_deprecated': False,
@@ -3320,7 +3407,8 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '6'
     },
     {
-        'hide_in_analysis_framework_mapping': True,
+        'group': 'Age',
+        'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
         'name': 'Adult (18 to 59 years old)',
@@ -3328,7 +3416,8 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '601'
     },
     {
-        'hide_in_analysis_framework_mapping': True,
+        'group': 'Age',
+        'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
         'name': 'Children/Youth (5 to 17 years old)',
@@ -3336,7 +3425,8 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '602'
     },
     {
-        'hide_in_analysis_framework_mapping': True,
+        'group': 'Age',
+        'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
         'name': 'Infants/Toddlers (<5 years old)',
@@ -3344,7 +3434,8 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '603'
     },
     {
-        'hide_in_analysis_framework_mapping': True,
+        'group': 'Age',
+        'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
         'name': 'Older Persons (60+ years old)',
@@ -3352,6 +3443,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '604'
     },
     {
+        'group': None,
         'hide_in_analysis_framework_mapping': True,
         'is_category': True,
         'is_deprecated': False,
@@ -3360,6 +3452,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '7'
     },
     {
+        'group': 'Severity',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3368,6 +3461,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '701'
     },
     {
+        'group': 'Severity',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3376,6 +3470,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '702'
     },
     {
+        'group': 'Severity',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3384,6 +3479,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '703'
     },
     {
+        'group': 'Severity',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3392,6 +3488,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '704'
     },
     {
+        'group': 'Severity',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3400,6 +3497,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '705'
     },
     {
+        'group': None,
         'hide_in_analysis_framework_mapping': True,
         'is_category': True,
         'is_deprecated': False,
@@ -3408,6 +3506,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '8'
     },
     {
+        'group': 'Affected Groups',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3416,6 +3515,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '801'
     },
     {
+        'group': 'Affected Groups',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3424,6 +3524,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '802'
     },
     {
+        'group': 'Affected Groups',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3432,6 +3533,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '803'
     },
     {
+        'group': 'Affected Groups',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3440,6 +3542,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '804'
     },
     {
+        'group': 'Affected Groups',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3448,6 +3551,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '805'
     },
     {
+        'group': 'Affected Groups',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3456,6 +3560,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '806'
     },
     {
+        'group': None,
         'hide_in_analysis_framework_mapping': True,
         'is_category': True,
         'is_deprecated': False,
@@ -3464,6 +3569,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '9'
     },
     {
+        'group': 'Demographic Groups',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3472,6 +3578,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '901'
     },
     {
+        'group': 'Demographic Groups',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3480,6 +3587,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '902'
     },
     {
+        'group': 'Demographic Groups',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3488,6 +3596,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '903'
     },
     {
+        'group': 'Demographic Groups',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3496,6 +3605,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '904'
     },
     {
+        'group': 'Demographic Groups',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3504,6 +3614,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '905'
     },
     {
+        'group': 'Demographic Groups',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,
@@ -3512,6 +3623,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'tag_id': '906'
     },
     {
+        'group': 'Demographic Groups',
         'hide_in_analysis_framework_mapping': False,
         'is_category': False,
         'is_deprecated': False,

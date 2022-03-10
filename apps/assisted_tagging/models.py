@@ -36,9 +36,10 @@ class AssistedTaggingModelVersion(models.Model):
 
 
 class AssistedTaggingModelPredictionTag(models.Model):
-    name = models.CharField(max_length=256)  # TODO: Not provided (full from /tags)
+    name = models.CharField(max_length=256, blank=True)
     is_category = models.BooleanField(default=False)
     tag_id = models.CharField(max_length=256)
+    group = models.CharField(max_length=256, blank=True, null=True)
     # Extra attributes
     hide_in_analysis_framework_mapping = models.BooleanField(default=False)
     is_category = models.BooleanField(default=False)
