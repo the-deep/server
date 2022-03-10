@@ -235,6 +235,7 @@ type AssistedTaggingModelPredictionTagType {
   id: ID!
   name: String!
   tagId: String!
+  group: String
   hideInAnalysisFrameworkMapping: Boolean!
   isCategory: Boolean!
   isDeprecated: Boolean!
@@ -711,6 +712,7 @@ enum DraftEntryPredictionStatusEnum {
   PENDING
   STARTED
   DONE
+  SEND_FAILED
 }
 
 type DraftEntryType {

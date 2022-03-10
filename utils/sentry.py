@@ -4,6 +4,7 @@ import logging
 import sentry_sdk
 from django.core.exceptions import PermissionDenied
 from django.conf import settings
+from celery.exceptions import Retry as CeleryRetry
 from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -21,6 +22,7 @@ IGNORED_ERRORS = [
     PermissionDenied,
     UnauthorizedException,
     InvalidCaptchaError,
+    CeleryRetry,
 ]
 IGNORED_LOGGERS = [
     'graphql.execution.utils',
