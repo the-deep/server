@@ -59,7 +59,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('excerpt', models.TextField()),
-                ('prediction_status', models.SmallIntegerField(choices=[(0, 'Pending'), (1, 'Started'), (2, 'Done')], default=0)),
+                ('prediction_status', models.SmallIntegerField(choices=[(0, 'Pending'), (1, 'Started'), (2, 'Done'), (3, 'Send Failed')], default=0)),
                 ('prediction_received_at', models.DateTimeField(blank=True, null=True)),
                 ('created_by', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='draftentry_created', to=settings.AUTH_USER_MODEL)),
                 ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='project.project')),

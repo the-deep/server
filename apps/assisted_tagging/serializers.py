@@ -12,7 +12,7 @@ from .models import (
     PredictionTagAnalysisFrameworkWidgetMapping,
     WrongPredictionReview,
 )
-from .tasks import AsssistedTaggingTask
+from .tasks import AsssistedTaggingTask, trigger_request_for_draft_entry
 
 
 # --- Callback Serializers
@@ -72,6 +72,7 @@ class AssistedTaggingDraftEntryPredictionCallbackSerializer(serializers.Serializ
 
 
 # ---------- Graphql ---------------------------
+# TODO: Instead of creating new entry everytime, cache it
 class DraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCreatedMixin, serializers.ModelSerializer):
     class Meta:
         model = DraftEntry
@@ -94,7 +95,7 @@ class DraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCreate
     def create(self, data):
         instance = super().create(data)
         transaction.on_commit(
-            lambda: AsssistedTaggingTask.send_trigger_request_to_extractor(instance)
+            lambda: trigger_request_for_draft_entry.delay(instance.pk)
         )
         return instance
 

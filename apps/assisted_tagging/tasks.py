@@ -83,13 +83,23 @@ class AsssistedTaggingTask():
             'authoring_organization': author_organizations,
             'callback_url': cls.get_callback_url(),
         }
-        response = requests.post(
-            DeeplServiceEndpoint.ASSISTED_TAGGING_ENTRY_PREDICT_ENDPOINT,
-            headers=cls.REQUEST_HEADERS,
-            json=payload
+        try:
+            response = requests.post(
+                DeeplServiceEndpoint.ASSISTED_TAGGING_ENTRY_PREDICT_ENDPOINT,
+                headers=cls.REQUEST_HEADERS,
+                json=payload
+            )
+            if response.status_code == 200:
+                return True
+        except Exception:
+            logger.error('Assisted tagging send failed, Exception occurred!!', exc_info=True)
+            draft_entry.prediction_status = DraftEntry.PredictionStatus.SEND_FAILED
+            draft_entry.save(update_fields=('prediction_status',))
+        _response = locals().get('response')
+        logger.error(
+            f'Assisted tagging send failed!! Response: {_response and _response.content} for payload: {payload}',
+            extra={'response': _response and _response.content},
         )
-        response.raise_for_status()
-        return True
 
     # --- Callback logics
     @staticmethod
@@ -282,6 +292,13 @@ def _sync_tags_with_deepl():
         updated_tags,
         fields=('parent_tag',)
     )
+
+
+@shared_task
+@redis_lock('trigger_request_for_draft_entry_{0}', 60 * 60 * 0.5)
+def trigger_request_for_draft_entry(draft_entry_id):
+    draft_entry = DraftEntry.objects.get(pk=draft_entry_id)
+    return AsssistedTaggingTask.send_trigger_request_to_extractor(draft_entry)
 
 
 @shared_task

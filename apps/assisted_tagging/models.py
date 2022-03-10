@@ -59,6 +59,7 @@ class DraftEntry(UserResourceCreated):
         PENDING = 0, 'Pending'
         STARTED = 1, 'Started'
         DONE = 2, 'Done'
+        SEND_FAILED = 3, 'Send Failed'
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='+')
     lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='+')
