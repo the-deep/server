@@ -299,5 +299,5 @@ class ReliefWeb(Source):
                     'website': 'www.reliefweb.int',
                 }
                 results.append(lead)
-            relief_url = resp['links'].get('next', {}).get('herf')
+            relief_url = resp['links'].get('next', {}).get('href')
         return results, total_count
