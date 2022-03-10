@@ -102,10 +102,10 @@ class LeadExtraction:
             if response.status_code == 200:
                 return True
         except Exception:
-            logger.exception('Lead Extraction Failed, Exception occurred!!', exc_info=True)
+            logger.error('Lead Extraction Failed, Exception occurred!!', exc_info=True)
         _response = locals().get('response')
         logger.error(
-            'Lead Extraction Request Failed!!',
+            f'Lead Extraction Request Failed!! Response: {_response and _response.content} for payload: {payload}',
             extra={'response': _response and _response.content},
         )
 
