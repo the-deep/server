@@ -35,6 +35,7 @@ env = environ.Env(
     DATABASE_PASSWORD=str,
     DATABASE_PORT=str,
     DATABASE_HOST=str,
+    DATABASE_SSL_MODE=(str, 'prefer'),  # Use `require` in production
     # S3
     DJANGO_USE_S3=(bool, False),
     S3_AWS_ACCESS_KEY_ID=(str, None),
@@ -278,7 +279,7 @@ else:
             'PORT': env('DATABASE_PORT'),
             'HOST': env('DATABASE_HOST'),
             'OPTIONS': {
-                'sslmode': 'prefer' if DEBUG else 'require',  # Require ssl in Production
+                'sslmode': env('DATABASE_SSL_MODE'),
             },
         }
     }
