@@ -45,8 +45,6 @@ class ExtractCallbackSerializer(serializers.Serializer):
         return data
 
     def create(self, data):
-        import json
-        print(json.dumps(self.initial_data, indent=2))
         return UnifiedConnectorTask.save_connector_lead_data_from_extractor(
             data['lead'],  # Added from validate
             data['extraction_status'] == 1,
