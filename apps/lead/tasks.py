@@ -122,7 +122,7 @@ class LeadExtraction:
                 [
                     {
                         'url': url_to_extract,
-                        'client_id': LeadExtraction.generate_lead_client_id(lead.id),
+                        'client_id': LeadExtraction.generate_lead_client_id(lead),
                     }
                 ],
                 cls.get_callback_url(),
