@@ -100,7 +100,7 @@ class AsssistedTaggingTask():
             'Assisted tagging send failed!!',
             extra={
                 'payload': payload,
-                'response': _response and _response.content
+                'response': _response.content if _response else None
             },
         )
 

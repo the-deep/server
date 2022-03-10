@@ -111,7 +111,7 @@ class LeadExtraction:
             extra={
                 'data': {
                     'payload': payload,
-                    'response': _response and _response.content,
+                    'response': _response.content if _response else None
                 }
             },
         )

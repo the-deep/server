@@ -500,6 +500,7 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
             lead.assignee.add(assignee)
         # If connector lead is provided, set already_added for all connector leads
         if lead.connector_lead:
+            # TODO: And copy simplified_text from that connector_lead.
             ConnectorSourceLead.update_aleady_added_using_lead(lead, added=True)
             ConnectorSourceLead.objects.filter(
                 connector_lead=lead.connector_lead,
