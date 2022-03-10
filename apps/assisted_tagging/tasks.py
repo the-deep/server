@@ -97,8 +97,11 @@ class AsssistedTaggingTask():
             draft_entry.save(update_fields=('prediction_status',))
         _response = locals().get('response')
         logger.error(
-            f'Assisted tagging send failed!! Response: {_response and _response.content} for payload: {payload}',
-            extra={'response': _response and _response.content},
+            'Assisted tagging send failed!!',
+            extra={
+                'payload': payload,
+                'response': _response and _response.content
+            },
         )
 
     # --- Callback logics

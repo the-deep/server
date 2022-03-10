@@ -1,9 +1,11 @@
 from typing import List
 
 import re
+import os
 import requests
 import json
 import logging
+from urllib.parse import urlparse
 
 from celery import shared_task
 from django.db.models import Q
@@ -105,8 +107,13 @@ class LeadExtraction:
             logger.error('Lead Extraction Failed, Exception occurred!!', exc_info=True)
         _response = locals().get('response')
         logger.error(
-            f'Lead Extraction Request Failed!! Response: {_response and _response.content} for payload: {payload}',
-            extra={'response': _response and _response.content},
+            'Lead Extraction Request Failed!!',
+            extra={
+                'data': {
+                    'payload': payload,
+                    'response': _response and _response.content,
+                }
+            },
         )
 
     @classmethod
@@ -157,12 +164,17 @@ class LeadExtraction:
             page_count=page_count,
         )
         # Save extracted images as LeadPreviewImage instances
+        # TODO: The logic is same for unified_connector leads as well. Maybe have a single func?
         LeadPreviewImage.objects.filter(lead=lead).delete()
-        for image in images_uri:
+        image_base_path = f'{lead.pk}'
+        for image_uri in images_uri:
             lead_image = LeadPreviewImage(lead=lead)
-            image_obj = RequestHelper(url=image, ignore_error=True).get_file()
+            image_obj = RequestHelper(url=image_uri, ignore_error=True).get_file()
             if image_obj:
-                lead_image.file.save(image_obj.name, image_obj)
+                lead_image.file.save(
+                    os.path.join(image_base_path, os.path.basename(urlparse(image_uri).path)),
+                    image_obj
+                )
                 lead_image.save()
         lead.update_extraction_status(Lead.ExtractionStatus.SUCCESS)
         return lead
