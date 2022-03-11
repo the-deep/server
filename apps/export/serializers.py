@@ -30,9 +30,22 @@ class ExportSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.Mo
 
 # ------------------- Graphql Serializers ----------------------------------------
 # ---- [Start] ExportReportLevel Serialisers
+class ExportReportLevelWidgetFourthLevelSerializer(serializers.Serializer):
+    """
+     Additional sub-level (sub-column) For matrix2d
+    """
+    id = StringIDField(help_text='Matrix2D: {column-key}-{sub-column}-{row-key}-{sub-row-key}')
+    title = serializers.CharField(help_text='Matrix2D: {sub-column-label}')
+
+
 class ExportReportLevelWidgetSubSubLevelSerializer(serializers.Serializer):  # Additional sub-level For matrix2d
     id = StringIDField(help_text='Matrix2D: {column-key}-{row-key}-{sub-row-key}')
     title = serializers.CharField(help_text='Matrix2D: {sub-row-label}')
+    sublevels = ExportReportLevelWidgetFourthLevelSerializer(
+        many=True,
+        required=False,
+        help_text='For 2D matrix (sub-column)',
+    )
 
 
 class ExportReportLevelWidgetSubLevelSerializer(serializers.Serializer):
@@ -84,6 +97,13 @@ class ExportReportLevelWidgetSerializer(serializers.Serializer):
                             {
                                 'id': '{column-key}-{row-key}-{sub-row-key}',
                                 'title': sub_row-label,
+                                'sublevels': [
+                                    {
+                                        'id': '{column_key}-{sub_column}-{row_key}-{sub_row_key}',
+                                        'title': sub_column-label,
+                                    } for sub_row
+                                    in row.get('subColumns', [])
+                                ]
                             } for sub_row
                             in row.get('subRows', [])
                         ]
@@ -99,8 +119,23 @@ class ExportReportLevelWidgetSerializer(serializers.Serializer):
 
 # ---- [End] ExportReportLevel Serialisers
 # ---- [Start] ExportReportStructure Serialisers
-class ExportReportStructureWidgetThirdLevelSerializer(serializers.Serializer):  # Additional sub-level For matrix2d
+class ExportReportStructureWidgetFourthLevelSerializer(serializers.Serializer):
+    """
+     Additional sub-level (sub-column) For matrix2d
+    """
+    id = StringIDField(help_text='Matrix2D: {column-key}-{sub-column}-{row-key}-{sub-row-key}')
+
+
+class ExportReportStructureWidgetThirdLevelSerializer(serializers.Serializer):
+    """
+    # Additional sub-level (sub-row) For matrix2d
+    """
     id = StringIDField(help_text='Matrix2D: {column-key}-{row-key}-{sub-row-key}')
+    levels = ExportReportStructureWidgetFourthLevelSerializer(
+        many=True,
+        required=False,
+        help_text='For 2D matrix (sub-column)',
+    )
 
 
 class ExportReportStructureWidgetSecondLevelSerializer(serializers.Serializer):
@@ -134,18 +169,22 @@ class ExportReportStructureWidgetSerializer(serializers.Serializer):
 
     Matrix 2D
     {
-        id: widget-id,
+        id: '{widget_id}',
         'levels': [
             {
-                'id': column-key,
+                'id': '{column_key}',
                 'levels': [
                     {
-                        'id': '{column-key}-{row-key}',
+                        'id': '{column_key}-{row_key}',
                         'levels': [
                             {
-                                'id': '{column-key}-{row-key}-{sub-row-key}',
-                            } for sub_row
-                            in row.get('subRows', [])
+                                'id': '{column_key}-{row_key}-{sub_row_key}',
+                                'levels': [
+                                    {
+                                        'id': '{column_key}-{sub_column}-{row_key}-{sub_row_key}',
+                                    } for sub_column in row.get('subColumns', [])
+                                ],
+                            } for sub_row in row.get('subRows', [])
                         ]
                     } for row in properties.get('rows', [])
                 ],
