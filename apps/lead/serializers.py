@@ -656,7 +656,9 @@ class ExtractCallbackSerializer(serializers.Serializer):
         try:
             data['lead'] = LeadExtraction.get_lead_from_client_id(client_id)
         except Exception as e:
-            raise serializers.ValidationError(str(e))
+            raise serializers.ValidationError({
+                'client_id': str(e),
+            })
         return data
 
     def create(self, data):
