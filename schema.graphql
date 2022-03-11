@@ -716,6 +716,11 @@ input ExportLeadsEntriesFilterData {
   ordering: [LeadOrderingEnum!]
 }
 
+input ExportReportLevelWidgetFourthLevelInputType {
+  id: ID!
+  title: String!
+}
+
 input ExportReportLevelWidgetInputType {
   id: ID!
   levels: [ExportReportLevelWidgetLevelInputType!]
@@ -736,11 +741,16 @@ input ExportReportLevelWidgetSubLevelInputType {
 input ExportReportLevelWidgetSubSubLevelInputType {
   id: ID!
   title: String!
+  sublevels: [ExportReportLevelWidgetFourthLevelInputType!]
 }
 
 input ExportReportStructureWidgetFirstLevelInputType {
   id: ID!
   levels: [ExportReportStructureWidgetSecondLevelInputType!]
+}
+
+input ExportReportStructureWidgetFourthLevelInputType {
+  id: ID!
 }
 
 input ExportReportStructureWidgetInputType {
@@ -755,6 +765,7 @@ input ExportReportStructureWidgetSecondLevelInputType {
 
 input ExportReportStructureWidgetThirdLevelInputType {
   id: ID!
+  levels: [ExportReportStructureWidgetFourthLevelInputType!]
 }
 
 enum ExportStatusEnum {
