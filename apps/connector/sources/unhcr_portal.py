@@ -78,5 +78,4 @@ class UNHCRPortal(Source):
                     'website': 'data2.unhcr.org'
                 }
                 results.append(data)
-
         return results, len(results)
