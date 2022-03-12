@@ -231,6 +231,7 @@ type AssessmentType {
   modifiedBy: UserType
 }
 
+
 type AssistedTaggingModelPredictionTagType {
   id: ID!
   name: String!

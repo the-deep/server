@@ -10,15 +10,15 @@ import string
 import tempfile
 import requests
 import logging
-
+from datetime import timedelta, datetime
 
 from django.utils.hashable import make_hashable
 from django.utils.encoding import force_str
-from xml.sax.saxutils import escape as xml_escape
-from datetime import timedelta, datetime
+from django.core.files.storage import FileSystemStorage, get_storage_class
 from django.conf import settings
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from xml.sax.saxutils import escape as xml_escape
 
 from redis_store import redis
 
@@ -40,6 +40,9 @@ try:
     import plotly.graph_objs as ploty_go
 except ImportError as e:
     logger.warning(f'ImportError: {e}')
+
+
+StorageClass = get_storage_class()
 
 
 def is_valid_regex(string):
@@ -496,6 +499,13 @@ def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
+
+
+def get_full_media_url(media_path):
+    if StorageClass == FileSystemStorage:
+        return f"{settings.HTTP_PROTOCOL}://{settings.DJANGO_API_HOST}{media_path}"
+    # With s3 storage
+    return media_path
 
 
 class UidBase64Helper():

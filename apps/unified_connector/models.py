@@ -44,6 +44,9 @@ class ConnectorLead(models.Model):
         choices=ExtractionStatus.choices, default=ExtractionStatus.PENDING
     )
 
+    def __init__(self, *args, **kwargs):
+        self.preview_images: models.QuerySet[ConnectorLeadPreviewImage]
+
     @classmethod
     def get_or_create_from_lead(cls, lead: Lead):
         instance, created = cls.objects.get_or_create(

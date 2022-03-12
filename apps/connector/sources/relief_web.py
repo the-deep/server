@@ -288,16 +288,19 @@ class ReliefWeb(Source):
             for datum in resp['data']:
                 fields = datum['fields']
                 url = fields['file'][0]['url'] if fields.get('file') else fields['url_alias']
+                title = fields['title']
+                published_on = (fields.get('date') or {}).get('original')
+                author = ((fields.get('source') or [{}])[0] or {}).get('name')
                 lead = {
                     'id': str(datum['id']),
-                    'title': fields['title'],
-                    'published_on': fields['date']['original'],
+                    'title': title,
+                    'published_on': published_on,
                     'url': url,
                     'source': 'reliefweb',
                     'source_type': Lead.SourceType.WEBSITE.value,
-                    'author': fields['source'][0]['name'],
+                    'author': author,
                     'website': 'www.reliefweb.int',
                 }
                 results.append(lead)
-            relief_url = resp['links'].get('next', {}).get('href')
+            relief_url = ((resp.get('links') or {}).get('next') or {}).get('href')
         return results, total_count
