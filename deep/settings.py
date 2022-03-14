@@ -442,6 +442,11 @@ CELERY_EVENT_QUEUE_PREFIX = 'deep-celery-'
 CELERY_ACKS_LATE = True
 
 CELERY_BEAT_SCHEDULE = {
+    'retry_connector_leads': {
+        'task': 'unified_connector.tasks.retry_connector_leads',
+        # Every 2 hour
+        'schedule': crontab(minute=0, hour='*/2'),
+    },
     'sync_tag_data_with_deepl': {
         'task': 'assisted_tagging.tasks.sync_tags_with_deepl',
         # Every 6 hour
