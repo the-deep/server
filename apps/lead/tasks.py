@@ -197,7 +197,7 @@ class LeadExtraction:
         )
         # Save extracted images as LeadPreviewImage instances
         # TODO: The logic is same for unified_connector leads as well. Maybe have a single func?
-        for connector_lead_preview_image in connector_lead.preview_images:
+        for connector_lead_preview_image in connector_lead.preview_images.all():
             lead_image = LeadPreviewImage(lead=lead)
             lead_image.file.save(
                 connector_lead_preview_image.image.name,
