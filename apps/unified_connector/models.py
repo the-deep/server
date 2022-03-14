@@ -46,6 +46,7 @@ class ConnectorLead(models.Model):
 
     def __init__(self, *args, **kwargs):
         self.preview_images: models.QuerySet[ConnectorLeadPreviewImage]
+        super().__init__(*args, **kwargs)
 
     @classmethod
     def get_or_create_from_lead(cls, lead: Lead):
