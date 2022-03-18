@@ -197,3 +197,20 @@ def send_password_changed_notification(user_id, client_ip, device_type):
         subject_template_name='password_changed/subject.txt',
         email_template_name='password_changed/email.html',
     )
+
+
+def generate_hidden_email(email):
+    email_first_text = email.split('@')[0]
+    email_last_text = email.split('@')[1]
+    len_email_first_text = len(email_first_text)
+
+    if len_email_first_text > 4:
+        email_prefix = email_first_text[:2]
+        email_suffix = email_first_text[-2:]
+
+    if 1 <= len_email_first_text <= 4:
+        email_prefix = email_first_text[:1]
+        email_suffix = email_first_text[-1:]
+
+    email_display = email_prefix + '***' + email_suffix + '@' + email_last_text
+    return email_display

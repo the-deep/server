@@ -1926,6 +1926,7 @@ type UserType {
   displayPictureUrl: String
   organization: String
   language: String
+  emailDisplay: String!
 }
 
 input WidgetConditionalGqlInputType {
