@@ -91,10 +91,12 @@ class LeadExtraction:
         cls,
         urls: List[NlpExtractorUrl],
         callback_url: str,
+        high_priority=False,
     ):
         payload = {
             'urls': urls,
             'callback_url': callback_url,
+            'type': 'user' if high_priority else 'system',
         }
         try:
             response = requests.post(
@@ -118,7 +120,7 @@ class LeadExtraction:
         )
 
     @classmethod
-    def trigger_lead_extract(cls, lead, task_instance):
+    def trigger_lead_extract(cls, lead, task_instance=None):
         # Get the lead to be extracted
         url_to_extract = None
         if lead.attachment:
@@ -134,12 +136,13 @@ class LeadExtraction:
                     }
                 ],
                 cls.get_callback_url(),
+                high_priority=True,
             )
             if success:
                 lead.update_extraction_status(Lead.ExtractionStatus.STARTED)
                 return True
         lead.update_extraction_status(Lead.ExtractionStatus.RETRYING)
-        task_instance.retry(countdown=cls.RETRY_COUNTDOWN)
+        task_instance and task_instance.retry(countdown=cls.RETRY_COUNTDOWN)
         return False
 
     @staticmethod
@@ -209,7 +212,7 @@ class LeadExtraction:
 
 @shared_task(bind=True, max_retries=LeadExtraction.MAX_RETRIES)
 @redis_lock('lead_extraction_{0}', 60 * 60 * 0.5)
-def extract_from_lead(task_instance, lead_id):
+def extract_from_lead(self, lead_id):
     """
     A task to auto extract text and images from a lead.
 
@@ -218,7 +221,9 @@ def extract_from_lead(task_instance, lead_id):
     """
     try:
         lead = Lead.objects.get(pk=lead_id)
-        return LeadExtraction.trigger_lead_extract(lead, task_instance)
+        if lead.extraction_status == Lead.ExtractionStatus.SUCCESS:
+            return
+        return LeadExtraction.trigger_lead_extract(lead, task_instance=self)
     except Exception:
         logger.error('Lead Core Extraction Failed!!', exc_info=True)
 
