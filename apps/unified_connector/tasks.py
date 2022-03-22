@@ -119,6 +119,7 @@ class UnifiedConnectorTask():
                 for connector_lead in connector_leads
             ],
             cls.get_callback_url(),
+            high_priority=False,
         )
 
     @classmethod
