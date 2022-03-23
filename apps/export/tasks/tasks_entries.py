@@ -43,8 +43,8 @@ def export_entries(export):
     ).qs
 
     # Prefetches
-    entries_qs = entries_qs.prefetch_related('entrygrouplabel_set')
-    entries_qs = Entry.get_exportable_queryset(entries_qs).prefetch_related(
+    entries_qs = entries_qs.prefetch_related(
+        'entrygrouplabel_set',
         'lead__authors',
         'lead__authors__organization_type',
         # Also organization parents
