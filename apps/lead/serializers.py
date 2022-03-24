@@ -643,14 +643,16 @@ class ExtractCallbackSerializer(serializers.Serializer):
     Serialize deepl extractor
     """
     client_id = serializers.CharField()
-    images_path = serializers.ListField(
-        child=serializers.CharField(allow_blank=True), default=[]
-    )
-    text_path = serializers.CharField()
     url = serializers.CharField()
-    total_words_count = serializers.IntegerField()
-    total_pages = serializers.IntegerField()
     extraction_status = serializers.IntegerField()  # 0 = Failed, 1 = Success
+    # Data fields
+    images_path = serializers.ListField(
+        child=serializers.CharField(allow_blank=True),
+        required=False, default=[],
+    )
+    text_path = serializers.CharField(required=False)
+    total_words_count = serializers.IntegerField(required=False, default=0)
+    total_pages = serializers.IntegerField(required=False, default=0)
 
     def validate(self, data):
         client_id = data['client_id']
@@ -659,6 +661,10 @@ class ExtractCallbackSerializer(serializers.Serializer):
         except Exception as e:
             raise serializers.ValidationError({
                 'client_id': str(e),
+            })
+        if data['extraction_status'] == 1 and data.get('text_path') in [None, '']:
+            raise serializers.ValidationError({
+                'text_path': 'text_path is required when extraction_status is success/1'
             })
         return data
 
