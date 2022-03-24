@@ -28,6 +28,7 @@ type AnalysisFrameworkDetailType {
   modifiedBy: UserType
   description: String
   isPrivate: Boolean!
+  assistedTaggingEnabled: Boolean!
   organization: OrganizationType
   properties: GenericScalar
   currentUserRole: AnalysisFrameworkRoleTypeEnum
@@ -140,6 +141,7 @@ type AnalysisFrameworkType {
   modifiedBy: UserType
   description: String
   isPrivate: Boolean!
+  assistedTaggingEnabled: Boolean!
   organization: OrganizationType
   currentUserRole: AnalysisFrameworkRoleTypeEnum
   previewImage: FileFieldType
@@ -230,7 +232,6 @@ type AssessmentType {
   createdBy: UserType
   modifiedBy: UserType
 }
-
 
 type AssistedTaggingModelPredictionTagType {
   id: ID!

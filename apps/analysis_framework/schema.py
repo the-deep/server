@@ -81,7 +81,7 @@ class AnalysisFrameworkType(DjangoObjectType):
     class Meta:
         model = AnalysisFramework
         only_fields = (
-            'id', 'title', 'description', 'is_private', 'organization',
+            'id', 'title', 'description', 'is_private', 'assisted_tagging_enabled', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
         )
 
@@ -193,7 +193,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
         model = AnalysisFramework
         skip_registry = True
         only_fields = (
-            'id', 'title', 'description', 'is_private', 'organization',
+            'id', 'title', 'description', 'is_private', 'assisted_tagging_enabled', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
             'properties',
         )

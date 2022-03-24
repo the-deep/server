@@ -21,6 +21,7 @@ class AnalysisFramework(UserResource):
     description = models.TextField(blank=True, null=True)
 
     is_private = models.BooleanField(default=False)
+    assisted_tagging_enabled = models.BooleanField(default=False)
 
     members = models.ManyToManyField(
         User, blank=True,

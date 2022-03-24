@@ -71,6 +71,7 @@ class AnalysisFrameworkAdmin(VersionAdmin):
     readonly_fields = ['is_private']
     inlines = [AnalysisFrameworkMemebershipInline, SectionInline, WidgetInline]
     search_fields = ('title',)
+    list_filter = ('is_private', 'assisted_tagging_enabled',)
     custom_inlines = [
         ('filter', FilterInline),
         ('exportable', ExportableInline),
