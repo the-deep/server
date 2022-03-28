@@ -145,6 +145,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         org1 = OrganizationFactory.create(organization_type=org_type1)
         org2 = OrganizationFactory.create(organization_type=org_type2)
         org3 = OrganizationFactory.create(organization_type=org_type2)
+        org1_child = OrganizationFactory.create(organization_type=org_type2, parent=org1)
         # User with role
         user = UserFactory.create()
         member1 = UserFactory.create()
@@ -157,7 +158,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
             title='Test 1',
             source_type=Lead.SourceType.TEXT,
             confidentiality=Lead.Confidentiality.CONFIDENTIAL,
-            source=org1,
+            source=org1_child,
             authors=[org1, org2],
             assignee=[member1],
             priority=Lead.Priority.HIGH,
