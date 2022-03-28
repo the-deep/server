@@ -1,6 +1,7 @@
 import django_filters
 import graphene
 from django.db import models
+from django.db.models.functions import Coalesce
 from graphene_django.filter.utils import get_filtering_args_from_filterset
 
 from deep.filter_set import DjangoFilterCSVWidget
@@ -248,7 +249,7 @@ class LeadFilterSet(django_filters.FilterSet):
     def authoring_organization_types_filter(self, qs, name, value):
         if value:
             qs = qs.annotate(
-                organization_types=models.functions.Coalesce(
+                organization_types=Coalesce(
                     'authors__parent__organization_type',
                     'authors__organization_type'
                 )
@@ -318,8 +319,8 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
     extraction_status = SimpleInputFilter(LeadExtractionStatusEnum, field_name='extraction_status')
     assignees = IDListFilter(field_name='assignee')
     authoring_organization_types = IDListFilter(method='authoring_organization_types_filter')
-    author_organizations = IDListFilter(field_name='authors')
-    source_organizations = IDListFilter(field_name='source')
+    author_organizations = IDListFilter(method='authoring_organizations_filter')
+    source_organizations = IDListFilter(method='source_organizations_filter')
     # Filter-only enum filter
     exists = SimpleInputFilter(
         convert_enum_to_graphene_enum(LeadFilterSet.Exists, name='LeadExistsEnum'),
@@ -433,7 +434,7 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
     def authoring_organization_types_filter(self, qs, name, value):
         if value:
             qs = qs.annotate(
-                organization_types=models.functions.Coalesce(
+                organization_types=Coalesce(
                     'authors__parent__organization_type',
                     'authors__organization_type'
                 )
@@ -441,6 +442,18 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             if type(value[0]) == OrganizationType:
                 return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
             return qs.filter(organization_types__in=value).distinct()
+        return qs
+
+    def authoring_organizations_filter(self, qs, _, value):
+        if value:
+            qs = qs.annotate(authoring_organizations=Coalesce('authors__parent_id', 'authors__id'))
+            return qs.filter(authoring_organizations__in=value).distinct()
+        return qs
+
+    def source_organizations_filter(self, qs, _, value):
+        if value:
+            qs = qs.annotate(source_organizations=Coalesce('source__parent_id', 'source__id'))
+            return qs.filter(source_organizations__in=value).distinct()
         return qs
 
     def filter_leads_id(self, qs, _, value):
@@ -461,7 +474,7 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             raise Exception(f'{self.request=} should be defined')
 
         def _get_annotate(**filters):
-            return models.functions.Coalesce(
+            return Coalesce(
                 models.Subquery(
                     EntryGQFilterSet(
                         data=entries_filter_data,
