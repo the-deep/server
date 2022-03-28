@@ -47,7 +47,8 @@ class Entry(UserResource, ProjectEntityMixin):
     image_raw = models.TextField(blank=True)
     tabular_field = models.ForeignKey('tabular.Field', on_delete=models.CASCADE, null=True, blank=True)
 
-    dropped_excerpt = models.TextField(blank=True)
+    dropped_excerpt = models.TextField(blank=True)  # NOTE: Original Exceprt. Modified version is stored in excerpt
+    excerpt_modified = models.BooleanField(default=False)
     highlight_hidden = models.BooleanField(default=False)
 
     # NOTE: verification is also called controlled in QA
@@ -102,6 +103,10 @@ class Entry(UserResource, ProjectEntityMixin):
                 self.excerpt[:30],
                 self.lead.title,
             )
+
+    def save(self, *args, **kwargs):
+        self.excerpt_modified = self.excerpt != self.dropped_excerpt
+        super().save(*args, **kwargs)
 
     def get_image_url(self):
         if hasattr(self, 'image_url'):
