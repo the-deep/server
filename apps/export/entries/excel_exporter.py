@@ -43,8 +43,7 @@ class ExcelExporter:
         self.bibliography_sheet = self.wb.create_sheet('Bibliography')
         self.bibliography_data = {}
 
-        self.modified_exceprt_exists = entries.filter(
-            dropped_excerpt__isnull=False).exclude(dropped_excerpt__exact='').exists()
+        self.modified_exceprt_exists = entries.filter(excerpt_modified=True).exists()
 
         # Initial titles
         self.titles = [
@@ -428,7 +427,7 @@ class ExcelExporter:
                 *(
                     [
                         self.get_entry_data(entry),
-                        entry.dropped_excerpt or '',
+                        entry.dropped_excerpt,
                     ] if self.modified_exceprt_exists else
                     [self.get_entry_data(entry)]
                 )
