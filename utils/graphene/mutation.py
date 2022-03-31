@@ -21,6 +21,7 @@ from deep.serializers import IntegerIDField, StringIDField
 from deep.permissions import (
     ProjectPermissions as PP,
     AnalysisFrameworkPermissions as AfP,
+    UserGroupPermissions as UgP,
 )
 
 
@@ -236,7 +237,7 @@ class BaseGrapheneMutation(graphene.Mutation):
             )
 
     @classmethod
-    def check_permissions(cls, info, **kwargs):
+    def check_permissions(cls, root, info, **kwargs):
         raise Exception('This needs to be implemented in inheritances class')
 
     @classmethod
@@ -267,7 +268,7 @@ class BaseGrapheneMutation(graphene.Mutation):
     # Graphene standard method
     @classmethod
     def mutate(cls, root, info, **kwargs):
-        cls.check_permissions(info, **kwargs)
+        cls.check_permissions(root, info, **kwargs)
         return cls.perform_mutate(root, info, **kwargs)
 
 
@@ -340,10 +341,10 @@ class DeleteMutation(GrapheneMutation):
 
 
 class ProjectScopeMixin():
-    permissions: List[str]
+    permissions: List[PP.Permission]
 
     @classmethod
-    def check_permissions(cls, info, **_):
+    def check_permissions(cls, root, info, **_):
         for permission in cls.permissions:
             if not PP.check_permission(info, permission):
                 raise PermissionDenied(PP.get_permission_message(permission))
@@ -362,10 +363,10 @@ class PsDeleteMutation(ProjectScopeMixin, DeleteMutation):
 
 
 class AfScopeMixin():
-    permissions: List[str]
+    permissions: List[AfP.Permission]
 
     @classmethod
-    def check_permissions(cls, info, **_):
+    def check_permissions(cls, root, info, **_):
         for permission in cls.permissions:
             if not AfP.check_permission(info, permission):
                 raise PermissionDenied(AfP.get_permission_message(permission))
@@ -376,4 +377,18 @@ class AfGrapheneMutation(AfScopeMixin, GrapheneMutation):
 
 
 class AfBulkGrapheneMutation(AfScopeMixin, BulkGrapheneMutation):
+    pass
+
+
+class UgScopeMixin():
+    permissions: List[UgP.Permission]
+
+    @classmethod
+    def check_permissions(cls, root, info, **_):
+        for permission in cls.permissions:
+            if not UgP.check_permission(info, permission):
+                raise PermissionDenied(UgP.get_permission_message(permission))
+
+
+class UserGroupBulkGrapheneMutation(UgScopeMixin, BulkGrapheneMutation):
     pass
