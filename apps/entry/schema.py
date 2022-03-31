@@ -59,7 +59,6 @@ class AttributeType(ClientIdMixin, DjangoObjectType):
         skip_registry = True
         fields = (
             'id', 'data', 'widget_version',
-            'client_id',
         )
 
     widget = graphene.ID(required=True)

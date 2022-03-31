@@ -32,6 +32,23 @@ class UserGroup(UserResource):
         return UserGroup.objects.all()
 
     @classmethod
+    def get_for_gq(cls, user, only_member=False):
+        qs = cls.objects\
+            .annotate(
+                # NOTE: This is used by permission module
+                current_user_role=models.Subquery(
+                    GroupMembership.objects.filter(
+                        group=models.OuterRef('pk'),
+                        member=user,
+                    ).order_by('role').values('role')[:1],
+                    output_field=models.CharField()
+                )
+            )
+        if only_member:
+            return qs.exclude(current_user_role__isnull=True)
+        return qs
+
+    @classmethod
     def get_for_member(cls, user, exclude=False):
         if exclude:
             return cls.objects.exclude(members=user).distinct()
@@ -64,12 +81,19 @@ class UserGroup(UserResource):
 
     def add_member(self, user, role=None, added_by=None):
         _role = role or GroupMembership.Role.NORMAL
-        return GroupMembership.objects.create(
+        return GroupMembership.objects.get_or_create(
             member=user,
             role=_role,
             group=self,
-            added_by=added_by or user,
+            defaults={
+                'added_by': added_by or user,
+            },
         )
+
+    def get_current_user_role(self, user):
+        return GroupMembership.objects\
+            .filter(group=self, member=user)\
+            .values_list('role', flat=True).first()
 
 
 class GroupMembership(models.Model):

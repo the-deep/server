@@ -330,6 +330,19 @@ type BulkUpdateProjectUserGroupMembership {
   deletedResult: [ProjectUserGroupMembershipType!]
 }
 
+type BulkUpdateUserGroupMembership {
+  errors: [[GenericScalar!]]
+  result: [GroupMembershipType]
+  deletedResult: [GroupMembershipType!]
+}
+
+input BulkUserGroupMembershipInputType {
+  id: ID
+  member: ID!
+  role: GroupMembershipRoleEnum
+  clientId: String
+}
+
 type CancelUserExport {
   errors: [GenericScalar!]
   ok: Boolean
@@ -809,12 +822,6 @@ type GalleryFileType {
 
 scalar GenericScalar
 
-input GroupMembershipGqInputType {
-  id: Int
-  member: ID!
-  role: GroupMembershipRoleEnum
-}
-
 enum GroupMembershipRoleEnum {
   NORMAL
   ADMIN
@@ -825,6 +832,7 @@ type GroupMembershipType {
   member: UserType!
   joinedAt: DateTime!
   addedBy: UserType
+  clientId: String!
   role: GroupMembershipRoleEnum!
   roleDisplay: EnumDescription!
 }
@@ -1137,8 +1145,8 @@ type Mutation {
   projectJoinRequestDelete(projectId: ID!): ProjectJoinRequestDelete
   project(id: ID!): ProjectMutationType
   userGroupCreate(data: UserGroupInputType!): CreateUserGroup
-  userGroupUpdate(data: UserGroupInputType!, id: ID!): UpdateUserGroup
   userGroupDelete(id: ID!): DeleteUserGroup
+  userGroup(id: ID!): UserGroupMutationType
   login(data: LoginInputType!): Login
   loginWithHid(data: HIDLoginInputType!): LoginWithHID
   logout: Logout
@@ -1840,7 +1848,6 @@ input UserGroupInputType {
   displayPicture: ID
   globalCrisisMonitoring: Boolean
   customProjectFields: GenericScalar
-  memberships: [GroupMembershipGqInputType!]
 }
 
 type UserGroupListType {
@@ -1848,6 +1855,13 @@ type UserGroupListType {
   totalCount: Int
   page: Int
   pageSize: Int
+}
+
+type UserGroupMutationType {
+  id: ID!
+  title: String!
+  userGroupUpdate(data: UserGroupInputType!, id: ID!): UpdateUserGroup
+  userGroupMembershipBulk(deleteIds: [ID!], items: [BulkUserGroupMembershipInputType!]): BulkUpdateUserGroupMembership
 }
 
 type UserGroupType {
