@@ -7,7 +7,8 @@ from deep.permissions import UserGroupPermissions as UgP
 from utils.graphene.mutation import (
     generate_input_type_for_serializer,
     GrapheneMutation,
-    DeleteMutation,
+    UserGroupDeleteMutation,
+    UserGroupGrapheneMutation,
     UserGroupBulkGrapheneMutation,
 )
 
@@ -42,28 +43,40 @@ class CreateUserGroup(GrapheneMutation):
         return True  # Allow all to create AF
 
 
-class UpdateUserGroup(GrapheneMutation):
+class UpdateUserGroup(UserGroupGrapheneMutation):
     class Arguments:
         data = UserGroupInputType(required=True)
-        id = graphene.ID(required=True)
-    model = UserGroup
+
+    result = graphene.Field(UserGroupType)
+    # class vars
     serializer_class = UserGroupGqSerializer
-    result = graphene.Field(UserGroupType)
-
-    @classmethod
-    def check_permissions(cls, root, info, **_):
-        return info.context.user == root.created_by
-
-
-class DeleteUserGroup(DeleteMutation):
-    class Arguments:
-        id = graphene.ID(required=True)
     model = UserGroup
-    result = graphene.Field(UserGroupType)
 
     @classmethod
-    def check_permissions(cls, root, info, **_):
-        return info.context.user == root.created_by
+    def check_permissions(cls, info, **_):
+        if info.context.user != info.context.active_ug.created_by:
+            raise PermissionDenied('Only creater have permission to update user group')
+
+    @classmethod
+    def perform_mutate(cls, root, info, **kwargs):
+        kwargs['id'] = info.context.active_ug.id
+        return super().perform_mutate(root, info, **kwargs)
+
+
+class DeleteUserGroup(UserGroupDeleteMutation):
+    result = graphene.Field(UserGroupType)
+    # class vars
+    model = UserGroup
+
+    @classmethod
+    def check_permissions(cls, info, **_):
+        if info.context.user != info.context.active_ug.created_by:
+            raise PermissionDenied('Only creater have permission to delete user group')
+
+    @classmethod
+    def perform_mutate(cls, root, info, **kwargs):
+        kwargs['id'] = info.context.active_ug.id
+        return super().perform_mutate(root, info, **kwargs)
 
 
 class BulkUserGroupMembershipInputType(UserGroupMembershipInputType):
@@ -99,6 +112,7 @@ class UserGroupMutationType(DjangoObjectType):
     This mutation is for other scoped objects
     """
     user_group_update = UpdateUserGroup.Field()
+    user_group_delete = DeleteUserGroup.Field()
     user_group_membership_bulk = BulkUpdateUserGroupMembership.Field()
 
     class Meta:
@@ -118,5 +132,4 @@ class UserGroupMutationType(DjangoObjectType):
 
 class Mutation():
     user_group_create = CreateUserGroup.Field()
-    user_group_delete = DeleteUserGroup.Field()
     user_group = DjangoObjectField(UserGroupMutationType)

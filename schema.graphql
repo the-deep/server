@@ -1145,7 +1145,6 @@ type Mutation {
   projectJoinRequestDelete(projectId: ID!): ProjectJoinRequestDelete
   project(id: ID!): ProjectMutationType
   userGroupCreate(data: UserGroupInputType!): CreateUserGroup
-  userGroupDelete(id: ID!): DeleteUserGroup
   userGroup(id: ID!): UserGroupMutationType
   login(data: LoginInputType!): Login
   loginWithHid(data: HIDLoginInputType!): LoginWithHID
@@ -1860,7 +1859,8 @@ type UserGroupListType {
 type UserGroupMutationType {
   id: ID!
   title: String!
-  userGroupUpdate(data: UserGroupInputType!, id: ID!): UpdateUserGroup
+  userGroupUpdate(data: UserGroupInputType!): UpdateUserGroup
+  userGroupDelete: DeleteUserGroup
   userGroupMembershipBulk(deleteIds: [ID!], items: [BulkUserGroupMembershipInputType!]): BulkUpdateUserGroupMembership
 }
 
