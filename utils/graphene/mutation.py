@@ -237,7 +237,7 @@ class BaseGrapheneMutation(graphene.Mutation):
             )
 
     @classmethod
-    def check_permissions(cls, root, info, **kwargs):
+    def check_permissions(cls, info, **kwargs):
         raise Exception('This needs to be implemented in inheritances class')
 
     @classmethod
@@ -268,7 +268,7 @@ class BaseGrapheneMutation(graphene.Mutation):
     # Graphene standard method
     @classmethod
     def mutate(cls, root, info, **kwargs):
-        cls.check_permissions(root, info, **kwargs)
+        cls.check_permissions(info, **kwargs)
         return cls.perform_mutate(root, info, **kwargs)
 
 
@@ -344,7 +344,7 @@ class ProjectScopeMixin():
     permissions: List[PP.Permission]
 
     @classmethod
-    def check_permissions(cls, root, info, **_):
+    def check_permissions(cls, info, **_):
         for permission in cls.permissions:
             if not PP.check_permission(info, permission):
                 raise PermissionDenied(PP.get_permission_message(permission))
@@ -366,7 +366,7 @@ class AfScopeMixin():
     permissions: List[AfP.Permission]
 
     @classmethod
-    def check_permissions(cls, root, info, **_):
+    def check_permissions(cls, info, **_):
         for permission in cls.permissions:
             if not AfP.check_permission(info, permission):
                 raise PermissionDenied(AfP.get_permission_message(permission))
@@ -384,11 +384,19 @@ class UgScopeMixin():
     permissions: List[UgP.Permission]
 
     @classmethod
-    def check_permissions(cls, root, info, **_):
+    def check_permissions(cls, info, **_):
         for permission in cls.permissions:
             if not UgP.check_permission(info, permission):
                 raise PermissionDenied(UgP.get_permission_message(permission))
 
 
+class UserGroupGrapheneMutation(UgScopeMixin, GrapheneMutation):
+    pass
+
+
 class UserGroupBulkGrapheneMutation(UgScopeMixin, BulkGrapheneMutation):
+    pass
+
+
+class UserGroupDeleteMutation(UgScopeMixin, DeleteMutation):
     pass
