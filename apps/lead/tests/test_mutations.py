@@ -236,7 +236,7 @@ class TestLeadMutationSchema(GraphQLTestCase):
         _query_check(non_access_lead, okay=False)
         # ------- login as readonly_member
         self.force_login(self.readonly_member_user)
-        # Success with normal lead (with project membership)
+        # No Success with normal lead (with project membership)
         _query_check(lead, assert_for_error=True)
         # ------- login as normal member
         self.force_login(self.member_user)

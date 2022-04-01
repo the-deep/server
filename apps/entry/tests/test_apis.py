@@ -342,14 +342,9 @@ class EntryTests(TestCase):
         r_data = response.json()
         self.assertEqual(Entry.objects.count(), entry_count + 1)
         self.assertEqual(r_data['clientId'], client_id)
-        id = r_data['id']
 
         response = self.client.post(url, data)
-        self.assert_201(response)
-
-        self.assertEqual(Entry.objects.count(), entry_count + 1)
-        self.assertEqual(r_data['id'], id)
-        self.assertEqual(r_data['clientId'], client_id)
+        self.assert_500(response)
 
     def test_patch_attributes(self):
         entry = self.create_entry()

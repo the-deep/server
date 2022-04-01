@@ -169,7 +169,7 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
                         id=str(model_version.id),
                         version=str(model_version.version),
                     )
-                    for model_version in _model.versions.all()
+                    for model_version in _model.versions.order_by('-version').all()
                 ],
             )
             for _model in [model1, *other_models]

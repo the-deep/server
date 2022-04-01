@@ -357,29 +357,29 @@ class TestLeadMutationSchema(GraphQLSnapShotTestCase):
                     'both-invalid',
                     [500, 'invalid-content'],
                     [500, {'error_message': 'Mock error message'}],
-                    ConnectorSource.Status.FAILURE.value,
+                    ConnectorSource.Status.FAILURE,
                     [],
                 ),
                 (
                     'extractor-invalid',
                     [200, RELIEF_WEB_MOCK_DATA],
                     [500, {'error_message': 'Mock error message'}],
-                    ConnectorSource.Status.SUCCESS.value,
-                    [ConnectorLead.ExtractionStatus.RETRYING.value],
+                    ConnectorSource.Status.SUCCESS,
+                    [ConnectorLead.ExtractionStatus.RETRYING],
                 ),
                 (
                     'source-invalid',
                     [500, 'invalid-content'],
                     [200, {}],
-                    ConnectorSource.Status.FAILURE.value,
+                    ConnectorSource.Status.FAILURE,
                     [],
                 ),
                 (
                     'all-good',
                     [200, RELIEF_WEB_MOCK_DATA],
                     [200, {}],
-                    ConnectorSource.Status.SUCCESS.value,
-                    [ConnectorLead.ExtractionStatus.STARTED.value],
+                    ConnectorSource.Status.SUCCESS,
+                    [ConnectorLead.ExtractionStatus.STARTED],
                 ),
         ]:
             reliefweb_requests_mock.post.return_value.status_code = source_response[0]
@@ -389,11 +389,14 @@ class TestLeadMutationSchema(GraphQLSnapShotTestCase):
             with self.captureOnCommitCallbacks(execute=True):
                 _query_okay_check()
             self.assertEqual(
-                list(uc.sources.values_list('status', flat=True)), [expected_source_status], label
+                list(uc.sources.values_list('status', flat=True)),
+                [expected_source_status.value],
+                f'{label}: {expected_source_status.label}'
             )
             self.assertEqual(
                 list(connector_lead_qs.distinct().values_list('extraction_status', flat=True)),
-                expected_lead_status, label
+                [status.value for status in expected_lead_status],
+                f'{label}: {[status.label for status in expected_lead_status]}',
             )
             connector_lead_qs.delete()  # Clear all connector leads
 
@@ -474,8 +477,8 @@ class UnifiedConnectorCallbackApiTest(TestCase):
             self.assertEqual(connector_lead.extraction_status, status)
 
         url = '/api/v1/callback/connector-lead-extract/'
-        connector_lead1 = ConnectorLeadFactory.create(url='https://some-random-url-01')
-        connector_lead2 = ConnectorLeadFactory.create(url='https://some-random-url-02')
+        connector_lead1 = ConnectorLeadFactory.create(url='https://example.com/some-random-url-01')
+        connector_lead2 = ConnectorLeadFactory.create(url='https://example.com/some-random-url-02')
 
         SAMPLE_SIMPLIFIED_TEXT = 'Sample text'
         RequestHelperMock.return_value.get_text.return_value = SAMPLE_SIMPLIFIED_TEXT
@@ -487,9 +490,9 @@ class UnifiedConnectorCallbackApiTest(TestCase):
         # ------ Extraction FAILED
         data = dict(
             client_id='some-random-client-id',
-            url='https://some-random-url',
-            images_path=['https://sample-file-1'],
-            text_path='https://url-where-data-is-fetched-from-mock-response',
+            url='https://example.com/some-random-url',
+            images_path=['https://example.com/sample-file-1.jpg'],
+            text_path='https://example.com/url-where-data-is-fetched-from-mock-response',
             total_words_count=100,
             total_pages=10,
             extraction_status=0,  # Failed
@@ -513,9 +516,9 @@ class UnifiedConnectorCallbackApiTest(TestCase):
         # ------ Extraction SUCCESS
         data = dict(
             client_id='some-random-client-id',
-            url='https://some-random-url',
-            images_path=['https://sample-file-1', 'https://sample-file-2'],
-            text_path='https://url-where-data-is-fetched-from-mock-response',
+            url='https://example.com/some-random-url',
+            images_path=['https://example.com/sample-file-1.jpg', 'https://example.com/sample-file-2.jpg'],
+            text_path='https://example.com/url-where-data-is-fetched-from-mock-response',
             total_words_count=100,
             total_pages=10,
             extraction_status=1,  # Failed
