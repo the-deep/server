@@ -7,6 +7,13 @@ from project.models import ProjectJoinRequest, Project
 from lead.models import Lead
 from quality_assurance.models import EntryReviewComment
 
+from user.factories import UserFactory
+from project.factories import ProjectFactory
+from analysis_framework.factories import AnalysisFrameworkFactory
+from entry.factories import EntryFactory
+from quality_assurance.factories import EntryReviewCommentFactory
+from lead.factories import LeadFactory
+
 
 class TestNotification(TestCase):
     """Unit test for Notification"""
@@ -171,18 +178,18 @@ class TestAssignment(TestCase):
 
     @patch('notification.receivers.assignment.get_current_user')
     def test_create_assignment_create_on_entry_review_comment(self, get_user_mocked_func):
-        project = self.create_project()
-        entry = self.create_entry(project=project)
-        user1 = self.create_user()
-        user2 = self.create_user()
+        af = AnalysisFrameworkFactory.create()
+        project = ProjectFactory.create(analysis_framework=af)
+        user1, user2 = UserFactory.create_batch(2)
         get_user_mocked_func.return_value = user2
+        entry = EntryFactory.create(
+            lead=LeadFactory.create(project=project)
+        )
 
-        print(Lead.objects.count())
         old_assignment_count = Assignment.objects.count()
-        entry_review_comment = self.create(EntryReviewComment, entry=entry, entry_comment=None)
+        entry_review_comment = EntryReviewCommentFactory.create(entry=entry, entry_comment=None, created_by=user1)
         new_assignment_count = Assignment.objects.count()
 
-        print(Lead.objects.count())
         self.assertEqual(old_assignment_count, new_assignment_count)
 
         entry_review_comment.mentioned_users.add(user1)
@@ -250,8 +257,8 @@ class TestAssignment(TestCase):
         project = self.create_project()
         user1 = self.create(User)
         user2 = self.create(User)
-        entry = self.create_entry(project=project)
         get_user_mocked_func.return_value = user2
+        entry = self.create_entry(project=project)
 
         old_assignment_count = Assignment.objects.count()
         lead = self.create(Lead, project=project)

@@ -1,6 +1,7 @@
 import graphene
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
+from django.db.models import Prefetch
 
 from utils.graphene.enums import EnumDescription
 from user_resource.schema import UserResourceMixin
@@ -78,7 +79,12 @@ class AssistedTaggingRootQueryType(graphene.ObjectType):
 
     @staticmethod
     def resolve_tagging_models(root, info, **kwargs):
-        return AssistedTaggingModel.objects.prefetch_related('versions').all()
+        return AssistedTaggingModel.objects.prefetch_related(
+            Prefetch(
+                'versions',
+                queryset=AssistedTaggingModelVersion.objects.order_by('-version'),
+            ),
+        ).all()
 
     @staticmethod
     def resolve_prediction_tags(root, info, **kwargs):

@@ -541,7 +541,7 @@ class TestAnalysisAPIs(TestCase):
                     "analytical_entries": [
                         {
                             "order": 1,
-                            "client_id": "1",
+                            "client_id": "3",
                             "entry": entry1.id,
                         }
                     ],
@@ -884,13 +884,13 @@ class TestAnalysisAPIs(TestCase):
                     'statement': 'Hello from there',
                     "analytical_entries": [
                         {
+                            "id": statement_entry1.pk,
                             "order": 1,
-                            "client_id": "1",
                             "entry": entry1.id,
                         },
                         {
+                            "id": statement_entry2.pk,
                             "order": 3,
-                            "client_id": "2",
                             "entry": entry2.id
                         }
                     ],
@@ -901,10 +901,14 @@ class TestAnalysisAPIs(TestCase):
         response = self.client.patch(url, data)
         self.assert_200(response)
         self.assertEqual(response.data['analytical_statements'][0]['id'], analytical_statement.id)
-        self.assertEqual(response.data['analytical_statements'][0]['analytical_entries'][0]['entry'],
-                         statement_entry1.entry.id)
-        self.assertEqual(response.data['analytical_statements'][0]['analytical_entries'][1]['entry'],
-                         statement_entry2.entry.id)
+        self.assertEqual(
+            response.data['analytical_statements'][0]['analytical_entries'][0]['entry'],
+            statement_entry1.entry.id,
+        )
+        self.assertEqual(
+            response.data['analytical_statements'][0]['analytical_entries'][1]['entry'],
+            statement_entry2.entry.id,
+        )
 
     def test_pillar_overview_in_analysis(self):
         user = self.create_user()

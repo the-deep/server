@@ -8,8 +8,10 @@ RELIEF_WEB_MOCK_DATA = '''
     {
       "time": 11,
       "href": "https://api.reliefweb.int/v1/reports?appname=thedeep.io",
-      "links": { "self": { "href": "https://api.reliefweb.int/v1/reports?appname=thedeep.io" },
-        "next": { "href": "https://api.reliefweb.int/v1/reports?appname=thedeep.io&offset=10&limit=10" }
+      "links": {
+          "self": {
+              "href": "https://api.reliefweb.int/v1/reports?appname=thedeep.io"
+          }
       },
       "took": 4,
       "totalCount": 14,
