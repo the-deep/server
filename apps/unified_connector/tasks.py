@@ -70,16 +70,12 @@ class UnifiedConnectorTask():
     @staticmethod
     def save_connector_lead_data_from_extractor(
         connector_lead: ConnectorLead,
-        extraction_success: bool,
         text_source_uri: str,
         images_uri: List[str],
         word_count: int,
         page_count: int,
     ):
-        if not extraction_success:
-            connector_lead.update_extraction_status(ConnectorLead.ExtractionStatus.FAILED)
-            return connector_lead
-        connector_lead.simplified_text = RequestHelper(url=text_source_uri, ignore_error=True).get_text() or ''
+        connector_lead.simplified_text = RequestHelper(url=text_source_uri, ignore_error=True).get_text(sanitize=True) or ''
         connector_lead.word_count = word_count
         connector_lead.page_count = page_count
         image_base_path = f'{connector_lead.pk}'

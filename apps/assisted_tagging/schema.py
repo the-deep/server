@@ -174,7 +174,10 @@ class DraftEntryType(DjangoObjectType):
     def get_custom_queryset(queryset, info, **kwargs):
         # FIXME: Refactor for optimized fetching
         return get_draft_entry_qs(info).prefetch_related(
-            'predictions',
+            Prefetch(
+                'predictions',
+                queryset=AssistedTaggingPrediction.objects.order_by('id'),
+            ),
             'predictions__model_version',
             'predictions__model_version__model',
             'predictions__wrong_prediction_reviews',

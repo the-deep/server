@@ -11,6 +11,7 @@ from user_resource.serializers import UserResourceSerializer
 
 from .models import (
     UnifiedConnector,
+    ConnectorLead,
     ConnectorSource,
     ConnectorSourceLead,
 )
@@ -45,14 +46,18 @@ class ExtractCallbackSerializer(serializers.Serializer):
         return data
 
     def create(self, data):
-        return UnifiedConnectorTask.save_connector_lead_data_from_extractor(
-            data['lead'],  # Added from validate
-            data['extraction_status'] == 1,
-            data['text_path'],
-            data['images_path'][:10],  # TODO: Support for more images, to much image will error.
-            data['total_words_count'],
-            data['total_pages'],
-        )
+        success = data['extraction_status'] == 1
+        connector_lead = data['lead']   # Added from validate
+        if success:
+            return UnifiedConnectorTask.save_connector_lead_data_from_extractor(
+                connector_lead,
+                data['text_path'],
+                data['images_path'][:10],  # TODO: Support for more images, to much image will error.
+                data['total_words_count'],
+                data['total_pages'],
+            )
+        connector_lead.update_extraction_status(ConnectorLead.ExtractionStatus.FAILED)
+        return connector_lead
 
 
 # ------------------- Graphql Serializers ------------------------------------
