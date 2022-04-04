@@ -669,11 +669,15 @@ class ExtractCallbackSerializer(serializers.Serializer):
         return data
 
     def create(self, data):
-        return LeadExtraction.save_lead_data(
-            data['lead'],  # Added from validate
-            data['extraction_status'] == 1,
-            data['text_path'],
-            data['images_path'][:10],
-            data['total_words_count'],
-            data['total_pages'],
-        )
+        success = data['extraction_status'] == 1
+        lead = data['lead']   # Added from validate
+        if success:
+            return LeadExtraction.save_lead_data(
+                lead,
+                data['text_path'],
+                data['images_path'][:10],   # TODO: Support for more images, to much image will error.
+                data['total_words_count'],
+                data['total_pages'],
+            )
+        lead.update_extraction_status(Lead.ExtractionStatus.FAILED)
+        return lead

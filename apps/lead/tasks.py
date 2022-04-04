@@ -148,22 +148,18 @@ class LeadExtraction:
     @staticmethod
     def save_lead_data(
         lead: Lead,
-        extraction_success: bool,
         text_source_uri: str,
         images_uri: List[str],
         word_count: int,
         page_count: int,
     ):
-        if not extraction_success:
-            lead.update_extraction_status(Lead.ExtractionStatus.FAILED)
-            return lead
         LeadPreview.objects.filter(lead=lead).delete()
         LeadPreviewImage.objects.filter(lead=lead).delete()
         word_count, page_count = word_count, page_count
         # and create new one
         LeadPreview.objects.create(
             lead=lead,
-            text_extract=RequestHelper(url=text_source_uri, ignore_error=True).get_text() or '',
+            text_extract=RequestHelper(url=text_source_uri, ignore_error=True).get_text(sanitize=True) or '',
             word_count=word_count,
             page_count=page_count,
         )
