@@ -4,6 +4,7 @@ from unified_connector.models import ConnectorSource
 
 from project.factories import ProjectFactory
 from user.factories import UserFactory
+from organization.factories import OrganizationFactory
 
 from unified_connector.factories import (
     ConnectorLeadFactory,
@@ -134,6 +135,12 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                   connectorLead {
                     id
                     title
+                    source {
+                        id
+                    }
+                    authors {
+                        id
+                    }
                   }
                 }
               }
@@ -154,7 +161,13 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 connectorLead {
                   id
                   title
+                  source {
+                      id
                   }
+                  authors {
+                      id
+                  }
+                }
               }
             }
           }
@@ -350,16 +363,19 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
         )
 
     def test_connector_source_leads_query(self):
+        org1, org2, org3 = OrganizationFactory.create_batch(3)
+        clead1 = ConnectorLeadFactory.create(source=org1, authors=[org2, org3])
         source1_1 = ConnectorSourceFactory.create(unified_connector=self.uc1, source=ConnectorSource.Source.ATOM_FEED)
         source1_2 = ConnectorSourceFactory.create(unified_connector=self.uc1, source=ConnectorSource.Source.RELIEF_WEB)
         source2_1 = ConnectorSourceFactory.create(unified_connector=self.uc2, source=ConnectorSource.Source.RSS_FEED)
         source2_2 = ConnectorSourceFactory.create(unified_connector=self.uc2, source=ConnectorSource.Source.UNHCR)
 
-        source1_1_leads = ConnectorSourceLeadFactory.create_batch(2, source=source1_1, connector_lead=self.fake_lead)
-        source1_2_leads = ConnectorSourceLeadFactory.create_batch(3, source=source1_2, connector_lead=self.fake_lead)
-        source2_1_leads = ConnectorSourceLeadFactory.create_batch(4, source=source2_1, connector_lead=self.fake_lead)
-        source2_2_leads = ConnectorSourceLeadFactory.create_batch(6, source=source2_2, connector_lead=self.fake_lead)
+        source1_1_leads = ConnectorSourceLeadFactory.create_batch(2, source=source1_1, connector_lead=clead1)
+        source1_2_leads = ConnectorSourceLeadFactory.create_batch(3, source=source1_2, connector_lead=clead1)
+        source2_1_leads = ConnectorSourceLeadFactory.create_batch(4, source=source2_1, connector_lead=clead1)
+        source2_2_leads = ConnectorSourceLeadFactory.create_batch(6, source=source2_2, connector_lead=clead1)
 
+        self.maxDiff = None
         self.force_login(self.user)
         content = self.query_check(
             self.SOURCE_CONNECTOR_LEADS_QUERY, variables=dict(id=self.project.id)
@@ -370,7 +386,12 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 id=str(lead.pk),
                 alreadyAdded=False,
                 blocked=False,
-                connectorLead=dict(id=str(self.fake_lead.pk), title=self.fake_lead.title),
+                connectorLead=dict(
+                    id=str(clead1.pk),
+                    title=clead1.title,
+                    source=dict(id=str(org1.pk)),
+                    authors=[dict(id=str(org2.pk)), dict(id=str(org3.pk))],
+                ),
                 source=str(lead.source_id),
             )
             for lead in [
@@ -390,7 +411,12 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 id=str(lead.pk),
                 alreadyAdded=False,
                 blocked=False,
-                connectorLead=dict(id=str(self.fake_lead.pk), title=self.fake_lead.title),
+                connectorLead=dict(
+                    id=str(clead1.pk),
+                    title=clead1.title,
+                    source=dict(id=str(org1.pk)),
+                    authors=[dict(id=str(org2.pk)), dict(id=str(org3.pk))],
+                ),
                 source=str(lead.source_id),
             )
         )

@@ -65,13 +65,21 @@ class ConnectorLeadType(DjangoObjectType):
             'published_on',
             'source_raw',
             'author_raw',
-            'source',  # TODO: Dataloader
-            'authors',  # TODO: Dataloader
+            'source',
+            'authors',
         )
+
+    @staticmethod
+    def resolve_source(root, info, **_):
+        return root.source_id and info.context.dl.unified_connector.connector_lead_source.load(root.source_id)
+
+    @staticmethod
+    def resolve_authors(root, info, **_):
+        return info.context.dl.unified_connector.connector_lead_authors.load(root.pk)
 
 
 class ConnectorSourceLeadType(DjangoObjectType):
-    connector_lead = graphene.Field(ConnectorLeadType, required=True)  # TODO: Dataloader
+    connector_lead = graphene.Field(ConnectorLeadType, required=True)
     source = graphene.ID(required=True, source='source_id')
 
     class Meta:
@@ -83,8 +91,12 @@ class ConnectorSourceLeadType(DjangoObjectType):
         )
 
     @staticmethod
-    def get_custom_queryset(queryset, info, **kwargs):
+    def get_custom_queryset(queryset, info, **_):
         return get_connector_source_lead_qs(info)
+
+    @staticmethod
+    def resolve_connector_lead(root, info, **_):
+        return info.context.dl.unified_connector.connector_source_lead_lead.load(root.connector_lead_id)
 
 
 class ConnectorSourceLeadListType(CustomDjangoListObjectType):
@@ -122,16 +134,16 @@ class ConnectorSourceType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
         )
 
     @staticmethod
-    def get_custom_queryset(queryset, info, **kwargs):
+    def get_custom_queryset(queryset, info, **_):
         return get_connector_source_qs(info)
 
     @staticmethod
-    def resolve_stats(root, info, **kwargs):
+    def resolve_stats(root, info, **_):
         return (root.stats or {}).get('published_dates') or []
 
     @staticmethod
-    def resolve_leads_count(root, info, **kwargs):  # FIXME: Load real-time?
-        return (root.stats or {}).get('leads_count') or 0
+    def resolve_leads_count(root, info, **_):
+        return info.context.dl.unified_connector.connector_source_leads_count.load(root.pk)
 
 
 class ConnectorSourceListType(CustomDjangoListObjectType):
@@ -158,14 +170,12 @@ class UnifiedConnectorType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
         return get_unified_connector_qs(info)
 
     @staticmethod
-    def resolve_leads_count(root, info, **kwargs):
-        return ConnectorSourceLead.objects.filter(
-            source__unified_connector=root,
-        ).distinct().count()  # TODO: Dataloader
+    def resolve_leads_count(root, info, **_):
+        return info.context.dl.unified_connector.unified_connector_leads_count.load(root.id)
 
     @staticmethod
-    def resolve_sources(root, info, **kwargs):
-        return root.sources.order_by('id')  # TODO: Dataloader
+    def resolve_sources(root, info, **_):
+        return info.context.dl.unified_connector.unified_connector_sources.load(root.id)
 
 
 class UnifiedConnectorListType(CustomDjangoListObjectType):
