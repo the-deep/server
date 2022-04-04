@@ -1123,6 +1123,7 @@ type JwtTokenType {
 
 enum LeadConfidentialityEnum {
   UNPROTECTED
+  RESTRICTED
   CONFIDENTIAL
 }
 
