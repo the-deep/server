@@ -63,7 +63,7 @@ class ConnectorLead(models.Model):
         )
         if not created:
             return instance, False
-        # XXX: Custom attributes from connector
+        # NOTE: Custom attributes from connector
         authors = getattr(lead, '_authors', None)
         if authors:
             instance.authors.set(authors)

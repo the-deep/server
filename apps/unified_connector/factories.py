@@ -30,6 +30,14 @@ class ConnectorLeadFactory(DjangoModelFactory):
     class Meta:
         model = ConnectorLead
 
+    @factory.post_generation
+    def authors(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for author in extracted:
+                self.authors.add(author)
+
 
 class ConnectorSourceLeadFactory(DjangoModelFactory):
     class Meta:

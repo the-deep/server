@@ -172,7 +172,6 @@ class DraftEntryType(DjangoObjectType):
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
-        # FIXME: Refactor for optimized fetching
         return get_draft_entry_qs(info).prefetch_related(
             Prefetch(
                 'predictions',
