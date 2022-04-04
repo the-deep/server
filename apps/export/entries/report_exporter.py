@@ -587,8 +587,12 @@ class ReportExporter:
         )
         # Add source (with url if available)
         para.add_hyperlink(url, source) if url else para.add_run(source)
-        # Add (confidential) to source without ,
-        lead.confidentiality == Lead.Confidentiality.CONFIDENTIAL and para.add_run(' (confidential)')
+        # Add (confidential/restricted) to source without ,
+        if lead.confidentiality == Lead.Confidentiality.CONFIDENTIAL:
+            para.add_run(' (confidential)')
+        elif lead.confidentiality == Lead.Confidentiality.RESTRICTED:
+            para.add_run(' (restricted)')
+
         # Add lead title if available
         lead.title and para.add_run(f", {lead.title}")
         # Finally add date
@@ -832,6 +836,8 @@ class ReportExporter:
 
             if lead.confidentiality == Lead.Confidentiality.CONFIDENTIAL:
                 para.add_run(' (confidential)')
+            elif lead.confidentiality == Lead.Confidentiality.RESTRICTED:
+                para.add_run(' (restricted)')
 
             self.doc.add_paragraph()
         # self.doc.add_page_break()

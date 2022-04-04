@@ -55,6 +55,7 @@ class Lead(UserResource, ProjectEntityMixin):
 
     class Confidentiality(models.TextChoices):
         UNPROTECTED = 'unprotected', 'Unprotected'
+        RESTRICTED = 'restricted', 'Restricted'
         CONFIDENTIAL = 'confidential', 'Confidential'
 
     class Status(models.TextChoices):
