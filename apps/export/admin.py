@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.translation import gettext_lazy as _
 from django.utils.safestring import mark_safe
 from django.db import models
 from django.contrib import messages
@@ -31,6 +32,24 @@ def trigger_retry(modeladmin, request, queryset):
 trigger_retry.short_description = 'Force trigger export process for selected export, limit: {}'.format(TRIGGER_LIMIT)
 
 
+class HaveExecutionTimeFilter(admin.SimpleListFilter):
+    class Parameter(models.TextChoices):
+        TRUE = 'true', _('Yes')
+        FALSE = 'false', _('False')
+
+    title = _('Have Execution Time')
+    parameter_name = 'have_execution_time'
+
+    def lookups(self, *_):
+        return self.Parameter.choices
+
+    def queryset(self, _, queryset):
+        _filter = models.Q(started_at__isnull=False, ended_at__isnull=False)
+        if self.value() == self.Parameter.TRUE:
+            return queryset.filter(_filter)
+        return queryset.exclude(_filter)
+
+
 @admin.register(Export)
 class ExportAdmin(ModelAdmin):
     list_display = (
@@ -42,6 +61,7 @@ class ExportAdmin(ModelAdmin):
     list_filter = (
         'type', 'export_type', 'format', 'pending', 'status', 'is_preview', 'is_deleted', 'is_archived',
         ('ended_at', admin.EmptyFieldListFilter),
+        HaveExecutionTimeFilter,
         AutocompleteFilterFactory('Project', 'project'),
         AutocompleteFilterFactory('Analysis Framework', 'project__analysis_framework'),
         AutocompleteFilterFactory('Exported By', 'exported_by'),
@@ -54,6 +74,9 @@ class ExportAdmin(ModelAdmin):
             .annotate(execution_time=models.F('ended_at') - models.F('started_at'))\
             .select_related('exported_by', 'project')
 
+    @admin.display(
+        ordering='execution_time',
+        description='Execution Time',
+    )
     def execution_time(self, obj):
         return obj.execution_time
-    execution_time.admin_order_field = 'execution_time'
