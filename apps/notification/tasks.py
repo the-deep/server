@@ -32,7 +32,7 @@ def send_entry_comment_email(user_id, comment_id):
 @shared_task
 def send_entry_review_comment_email(user_id, comment_id, notification_type):
     user = User.objects.get(pk=user_id)
-    comment = EntryComment.objects.get(pk=comment_id)
+    comment = EntryReviewComment.objects.get(pk=comment_id)
     send_mail_to_user(
         user, EmailCondition.EMAIL_COMMENT,
         context={
