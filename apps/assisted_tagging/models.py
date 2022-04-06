@@ -1,5 +1,8 @@
 # from django.contrib.postgres.fields import ArrayField
+from __future__ import annotations
+from typing import Union
 from django.db import models
+from django.db.models.functions import Concat
 
 from analysis_framework.models import Widget
 from project.models import Project
@@ -33,6 +36,24 @@ class AssistedTaggingModelVersion(models.Model):
 
     def __str__(self):
         return self.version
+
+    @classmethod
+    def get_latest_models_version(cls) -> models.QuerySet:
+        return AssistedTaggingModelVersion.objects.annotate(
+            model_with_version=Concat(
+                models.F('model_id'), models.F('version'),
+                output_field=models.CharField(),
+            )
+        ).filter(
+            model_with_version__in=AssistedTaggingModelVersion.objects.order_by().values('model').annotate(
+                max_version=models.Max('version'),
+            ).annotate(
+                model_with_version=Concat(
+                    models.F('model_id'), models.F('max_version'),
+                    output_field=models.CharField(),
+                )
+            ).values('model_with_version')
+        ).order_by('model_with_version')
 
 
 class AssistedTaggingModelPredictionTag(models.Model):
@@ -73,6 +94,21 @@ class DraftEntry(UserResourceCreated):
         super().__init__(*args, **kwargs)
         self.predictions: models.QuerySet[AssistedTaggingPrediction]
         self.missing_prediction_reviews: models.QuerySet[MissingPredictionReview]
+
+    @classmethod
+    def get_existing_draft_entry(cls, project: Project, lead: Lead, excerpt: str) -> Union[DraftEntry, None]:
+        already_existing_draft_entry = cls.objects.filter(
+            project=project,
+            lead=lead,
+            excerpt=excerpt,
+        ).first()
+        if (
+            already_existing_draft_entry and
+            not already_existing_draft_entry.predictions.filter(
+                ~models.Q(model_version__in=AssistedTaggingModelVersion.get_latest_models_version()),
+            ).exists()
+        ):
+            return already_existing_draft_entry
 
     def clear_data(self):
         self.predictions.all().delete()
