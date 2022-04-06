@@ -92,6 +92,8 @@ class DraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCreate
         if self.instance and self.instance.created_by != self.context['request'].user:
             raise serializers.ValidationError('Only reviewer can edit this review')
         data['project'] = self.project
+        if self.project.is_private:
+            raise serializers.ValidationError('Assisted tagging is not available for private projects.')
         return data
 
     def create(self, data):
