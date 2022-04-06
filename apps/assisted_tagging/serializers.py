@@ -72,7 +72,6 @@ class AssistedTaggingDraftEntryPredictionCallbackSerializer(serializers.Serializ
 
 
 # ---------- Graphql ---------------------------
-# TODO: Instead of creating new entry everytime, cache it
 class DraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCreatedMixin, serializers.ModelSerializer):
     class Meta:
         model = DraftEntry
@@ -96,6 +95,15 @@ class DraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCreate
         return data
 
     def create(self, data):
+        # Use already existing draft entry if found
+        already_existing_draft_entry = DraftEntry.get_existing_draft_entry(
+            data['project'],
+            data['lead'],
+            data['excerpt'],
+        )
+        if already_existing_draft_entry:
+            return already_existing_draft_entry
+        # Create new one and send trigger to deepl.
         instance = super().create(data)
         transaction.on_commit(
             lambda: trigger_request_for_draft_entry.delay(instance.pk)

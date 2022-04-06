@@ -1705,3 +1705,82 @@ class AssistedTaggingCallbackApiTest(TestCase, SnapShotTextCase):
         _sync_tags_with_deepl()
         self.assertNotEqual(len(_get_current_tags()), 0)
         self.assertMatchSnapshot(_get_current_tags(), 'sync-tags')
+
+
+class TestAssistedTaggingModules(GraphQLTestCase):
+
+    def test_assisted_tagging_model_version_latest_model_fetch(self):
+        model1, model2, model3 = AssistedTaggingModelFactory.create_batch(3)
+        model1_v1 = AssistedTaggingModelVersionFactory.create(model=model1, version='v1.0.0')
+        model1_v1_1 = AssistedTaggingModelVersionFactory.create(model=model1, version='v1.0.1')
+        model2_v1 = AssistedTaggingModelVersionFactory.create(model=model2, version='v1.0.0')
+        model3_v0_1 = AssistedTaggingModelVersionFactory.create(model=model2, version='v0.0.1')
+        model3_v1 = AssistedTaggingModelVersionFactory.create(model=model3, version='v1.0.0')
+        latest_models = list(AssistedTaggingModelVersion.get_latest_models_version())
+        assert model1_v1 not in latest_models
+        assert model3_v0_1 not in latest_models
+        assert latest_models == [
+            model1_v1_1,
+            model2_v1,
+            model3_v1,
+        ]
+
+    def test_get_existing_draft_entry(self):
+        # Model
+        model1, model2, model3 = AssistedTaggingModelFactory.create_batch(3)
+        # Model Versions
+        model1_v1 = AssistedTaggingModelVersionFactory.create(model=model1, version='v1.0.0')
+        model1_v1_1 = AssistedTaggingModelVersionFactory.create(model=model1, version='v1.0.1')
+        model2_v1 = AssistedTaggingModelVersionFactory.create(model=model2, version='v1.0.0')
+
+        project = ProjectFactory.create()
+        lead = LeadFactory.create(project=project)
+        excerpt = 'test-101'
+        draft_entry1 = DraftEntryFactory.create(project=project, lead=lead, excerpt=excerpt)
+        category1, tag1 = AssistedTaggingModelPredictionTagFactory.create_batch(2)
+
+        prediction_common_params = dict(
+            draft_entry=draft_entry1,
+            category=category1,
+            tag=tag1,
+            prediction=0.1,
+            threshold=0.05,
+            is_selected=True,
+        )
+
+        # Create predictions with old + latest versions
+        AssistedTaggingPredictionFactory.create(
+            data_type=AssistedTaggingPrediction.DataType.TAG,
+            model_version=model1_v1,
+            **prediction_common_params,
+        )
+        AssistedTaggingPredictionFactory.create(
+            data_type=AssistedTaggingPrediction.DataType.TAG,
+            model_version=model2_v1,
+            **prediction_common_params,
+        )
+
+        assert DraftEntry.get_existing_draft_entry(
+            project,
+            lead,
+            excerpt=excerpt,
+        ) is None
+
+        # Clear out predictions
+        draft_entry1.predictions.all().delete()
+        # Create predictions with latest versions only
+        AssistedTaggingPredictionFactory.create(
+            data_type=AssistedTaggingPrediction.DataType.TAG,
+            model_version=model1_v1_1,
+            **prediction_common_params,
+        )
+        AssistedTaggingPredictionFactory.create(
+            data_type=AssistedTaggingPrediction.DataType.TAG,
+            model_version=model2_v1,
+            **prediction_common_params,
+        )
+        assert DraftEntry.get_existing_draft_entry(
+            project,
+            lead,
+            excerpt=excerpt,
+        ) == draft_entry1
