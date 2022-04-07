@@ -1466,6 +1466,7 @@ type ProjectRoleType {
   id: ID!
   title: String!
   level: Int!
+  type: ProjectRoleTypeEnum!
 }
 
 enum ProjectRoleTypeEnum {
