@@ -177,7 +177,9 @@ class ProjectOrganizationType(DjangoObjectType):
 class ProjectRoleType(DjangoObjectType):
     class Meta:
         model = ProjectRole
-        only_fields = ('id', 'title', 'level')
+        fields = ('id', 'title', 'level')
+
+    type = graphene.Field(ProjectRoleTypeEnum, required=True)
 
 
 class ProjectMembershipType(ClientIdMixin, DjangoObjectType):
