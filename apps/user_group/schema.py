@@ -4,7 +4,7 @@ from graphene_django import DjangoObjectType, DjangoListField
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.enums import EnumDescription
-from utils.graphene.types import CustomDjangoListObjectType
+from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
 
 from .models import UserGroup, GroupMembership
@@ -12,10 +12,12 @@ from .filters import UserGroupGQFilterSet
 from .enums import GroupMembershipRoleEnum
 
 
-class GroupMembershipType(DjangoObjectType):
+class GroupMembershipType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = GroupMembership
-        fields = ('id', 'member', 'joined_at', 'added_by',)
+        fields = (
+            'id', 'member', 'joined_at', 'added_by',
+        )
 
     role = graphene.Field(GroupMembershipRoleEnum, required=True)
     role_display = EnumDescription(source='get_role_display', required=True)

@@ -21,6 +21,7 @@ from deep.serializers import IntegerIDField, StringIDField
 from deep.permissions import (
     ProjectPermissions as PP,
     AnalysisFrameworkPermissions as AfP,
+    UserGroupPermissions as UgP,
 )
 
 
@@ -225,15 +226,9 @@ class BaseGrapheneMutation(graphene.Mutation):
     @classmethod
     def get_object(cls, info, **kwargs):
         try:
-            return cls.get_queryset(info).get(id=kwargs['id'])
+            return cls.get_queryset(info).get(id=kwargs['id']), None
         except cls.model.DoesNotExist:
-            return cls(
-                result=None,
-                okay=False,
-                errors=[
-                    dict(field='nonFieldErrors', messages=f'{str(cls.model)} does not exist.')
-                ],
-            )
+            return None, [dict(field='nonFieldErrors', messages=f'{cls.model.__name__} does not exist.')]
 
     @classmethod
     def check_permissions(cls, info, **kwargs):
@@ -247,8 +242,11 @@ class BaseGrapheneMutation(graphene.Mutation):
     def _save_item(cls, item, info, **kwargs):
         id = kwargs.pop('id', None)
         if id:
+            instance, errors = cls.get_object(info, id=id, **kwargs)
+            if errors:
+                return None, errors
             serializer = cls.serializer_class(
-                instance=cls.get_object(info, id=id, **kwargs),
+                instance=instance,
                 data=item,
                 context={'request': info.context},
                 partial=True,
@@ -323,7 +321,9 @@ class DeleteMutation(GrapheneMutation):
 
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
-        instance = cls.get_object(info, **kwargs)
+        instance, errors = cls.get_object(info, **kwargs)
+        if errors:
+            return cls(result=None, errors=errors, ok=False)
         if instance.can_delete(info.context.user):
             old_id = instance.id
             instance.delete()
@@ -340,7 +340,7 @@ class DeleteMutation(GrapheneMutation):
 
 
 class ProjectScopeMixin():
-    permissions: List[str]
+    permissions: List[PP.Permission]
 
     @classmethod
     def check_permissions(cls, info, **_):
@@ -362,7 +362,7 @@ class PsDeleteMutation(ProjectScopeMixin, DeleteMutation):
 
 
 class AfScopeMixin():
-    permissions: List[str]
+    permissions: List[AfP.Permission]
 
     @classmethod
     def check_permissions(cls, info, **_):
@@ -376,4 +376,26 @@ class AfGrapheneMutation(AfScopeMixin, GrapheneMutation):
 
 
 class AfBulkGrapheneMutation(AfScopeMixin, BulkGrapheneMutation):
+    pass
+
+
+class UgScopeMixin():
+    permissions: List[UgP.Permission]
+
+    @classmethod
+    def check_permissions(cls, info, **_):
+        for permission in cls.permissions:
+            if not UgP.check_permission(info, permission):
+                raise PermissionDenied(UgP.get_permission_message(permission))
+
+
+class UserGroupGrapheneMutation(UgScopeMixin, GrapheneMutation):
+    pass
+
+
+class UserGroupBulkGrapheneMutation(UgScopeMixin, BulkGrapheneMutation):
+    pass
+
+
+class UserGroupDeleteMutation(UgScopeMixin, DeleteMutation):
     pass

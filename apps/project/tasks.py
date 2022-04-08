@@ -89,7 +89,7 @@ def _generate_project_stats_cache():
     # Calculate
     leads_count_map = _count_by_project_qs(Lead.objects.all())
     leads_tagged_and_controlled_count_map = _count_by_project_qs(
-        Lead.objects.annotate(
+        Lead.objects.filter(status=Lead.Status.TAGGED).annotate(
             entries_count=models.Subquery(
                 all_entries_qs.filter(
                     lead=models.OuterRef('pk'),

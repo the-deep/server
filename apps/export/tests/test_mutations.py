@@ -286,11 +286,11 @@ class TestExportMutationSchema(GraphQLTestCase):
 
         # --- member user (read-only)
         self.force_login(self.readonly_member_user)
-        _query_check(export_pending, assert_for_error=True)
+        _query_check(export_pending, okay=False)
 
         # --- member user (but not owner)
         self.force_login(self.member_user)
-        _query_check(export2, assert_for_error=True)
+        _query_check(export2, okay=False)
 
         # --- member user (with ownership)
         self.force_login(self.member_user)
@@ -323,11 +323,11 @@ class TestExportMutationSchema(GraphQLTestCase):
 
         # --- member user (read-only)
         self.force_login(self.readonly_member_user)
-        _query_check(export1, assert_for_error=True)
+        _query_check(export1, okay=False)
 
         # --- member user (but not owner)
         self.force_login(self.member_user)
-        _query_check(export2, assert_for_error=True)
+        _query_check(export2, okay=False)
 
         # --- member user (with ownership)
         self.force_login(self.member_user)

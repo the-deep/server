@@ -411,7 +411,7 @@ class ExcelExporter:
             rows.add_value(format_date(lead.published_on))
 
             rows.add_value_list([
-                entry.created_by.profile.get_display_name(),
+                entry.created_by and entry.created_by.profile.get_display_name(),
                 format_date(entry.created_at.date()),
                 'Controlled' if entry.controlled else 'Uncontrolled',
                 f'{lead.id}',

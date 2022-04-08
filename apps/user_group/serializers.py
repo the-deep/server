@@ -1,7 +1,8 @@
+from django.utils.functional import cached_property
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
-from deep.serializers import RemoveNullFieldsMixin
+from deep.serializers import RemoveNullFieldsMixin, TempClientIdMixin, IntegerIDField
 from user_group.models import UserGroup, GroupMembership
 from user_resource.serializers import UserResourceSerializer
 
@@ -117,17 +118,10 @@ class UserGroupGqSerializer(
     DynamicFieldsMixin,
     UserResourceSerializer
 ):
-    memberships = GroupMembershipGqSerializer(
-        source='groupmembership_set',
-        many=True,
-        required=False,
-    )
-
     class Meta:
         model = UserGroup
         fields = (
             'id', 'title', 'description', 'display_picture', 'global_crisis_monitoring', 'custom_project_fields',
-            'memberships',
         )
 
     def create(self, validated_data):
@@ -141,7 +135,6 @@ class UserGroupGqSerializer(
 
     def update(self, instance, validated_data):
         user_group = super().update(instance, validated_data)
-        # TODO: Don't allow bulk membership upgrade (Add mutation to add each member)
         # FIXME: Adding created_by as admin if removed after update
         if user_group.created_by and not user_group.members.filter(pk=user_group.created_by_id).exists():
             GroupMembership.objects.create(
@@ -150,3 +143,36 @@ class UserGroupGqSerializer(
                 role='admin'
             )
         return user_group
+
+
+class UserGroupMembershipGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
+    id = IntegerIDField(required=False)
+
+    class Meta:
+        model = GroupMembership
+        fields = (
+            'id',
+            'member',
+            'role',
+            'client_id'
+        )
+
+    @cached_property
+    def usergroup(self):
+        usergroup = self.context['request'].active_ug
+        # This is a rare case, just to make sure this is validated
+        if self.instance and self.instance.group != usergroup:
+            raise serializers.ValidationError('Invalid access')
+        return usergroup
+
+    def validate_member(self, member):
+        current_members = GroupMembership.objects.filter(group=self.usergroup, member=member)
+        if current_members.exclude(pk=self.instance and self.instance.pk).exists():
+            raise serializers.ValidationError('User is already a member!')
+        return member
+
+    def create(self, validated_data):
+        # make request user to be added_by by default
+        validated_data['added_by'] = self.context['request'].user
+        validated_data['group'] = self.usergroup
+        return super().create(validated_data)

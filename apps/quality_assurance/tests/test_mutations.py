@@ -235,7 +235,7 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         self.assertEqual(content['result']['textHistory'][0]['text'], data['text'])
         self.assertEqual(content['result']['text'], data['text'])
         self.force_login(user2)
-        self._query_check(data, review_comment_id=comment_pk, assert_for_error=True)
+        self._query_check(data, review_comment_id=comment_pk, okay=False)
 
         self.force_login(user2)
         data = {
@@ -602,7 +602,7 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
 
         # -- With login (member but not creator)
         self.force_login(self.member_user)
-        [_query_check(comment.pk, assert_for_error=True) for comment in comments]
+        [_query_check(comment.pk, okay=False) for comment in comments]
 
         # -- With login (member but creator)
         self.force_login(member_user2)
