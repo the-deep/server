@@ -233,7 +233,7 @@ class TestLeadMutationSchema(GraphQLTestCase):
         # --- login
         self.force_login(self.member_user)
         # Error with login (if non-member project)
-        _query_check(non_access_lead, assert_for_error=True)
+        _query_check(non_access_lead, okay=False)
         # ------- login as readonly_member
         self.force_login(self.readonly_member_user)
         # Success with normal lead (with project membership)
@@ -299,7 +299,7 @@ class TestLeadMutationSchema(GraphQLTestCase):
         # --- login
         self.force_login(self.member_user)
         # ------- Non access lead
-        _query_check(non_access_lead, assert_for_error=True)
+        _query_check(non_access_lead, okay=False)
         # ------- Access lead
         result = _query_check(lead, okay=True)['data']['project']['leadUpdate']['result']
         self.assertEqual(result['title'], minput['title'], result)
@@ -422,7 +422,7 @@ class TestLeadGroupMutation(GraphQLTestCase):
 
         # --- member user
         self.force_login(member_user)
-        content = _query_check(assert_for_error=False)
+        content = _query_check()
         self.assertEqual(content['data']['project']['leadGroupDelete']['ok'], True)
         self.assertIdEqual(content['data']['project']['leadGroupDelete']['result']['id'], lead_group.id)
 

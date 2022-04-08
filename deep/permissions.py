@@ -13,7 +13,7 @@ from project.permissions import PROJECT_PERMISSIONS
 from lead.models import Lead
 from entry.models import Entry
 from analysis.models import AnalysisPillar
-from user_group.models import UserGroup
+from user_group.models import UserGroup, GroupMembership
 
 logger = logging.getLogger(__name__)
 
@@ -394,4 +394,31 @@ class AnalysisFrameworkPermissions(BasePermissions):
     def get_permissions(cls, role, is_public=False):
         if role is None and is_public:
             return cls.DEFAULT
+        return cls.PERMISSION_MAP.get(role) or []
+
+
+class UserGroupPermissions(BasePermissions):
+
+    @unique
+    class Permission(Enum):
+        CAN_ADD_USER = auto()
+
+    Permission.__name__ = 'UserGroupPermission'
+
+    __error_message__ = {
+        Permission.CAN_ADD_USER: "You don't have permission to update memberships",
+    }
+
+    ADMIN = [Permission.CAN_ADD_USER]
+    NORMAL = []
+
+    PERMISSION_MAP = {
+        GroupMembership.Role.ADMIN: ADMIN,
+        GroupMembership.Role.NORMAL: NORMAL,
+    }
+
+    CONTEXT_PERMISSION_ATTR = 'ug_permissions'
+
+    @classmethod
+    def get_permissions(cls, role):
         return cls.PERMISSION_MAP.get(role) or []

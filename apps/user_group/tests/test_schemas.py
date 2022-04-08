@@ -167,14 +167,7 @@ class TestUserGroupSchema(GraphQLTestCase):
             }
         '''
         user = UserFactory.create()
-        another_user = UserFactory.create()
-        minput = dict(
-            title='New user group from mutation',
-            memberships=[dict(
-                member=str(another_user.pk),
-                role=self.genum(GroupMembership.Role.NORMAL),
-            )],
-        )
+        minput = dict(title='New user group from mutation')
         self.query_check(query, minput=minput, assert_for_error=True)
 
         self.force_login(user)
@@ -183,120 +176,117 @@ class TestUserGroupSchema(GraphQLTestCase):
         # Response with new user group
         result = self.query_check(query, minput=minput, okay=True)['data']['userGroupCreate']['result']
         self.assertEqual(result['title'], minput['title'], result)
-        self.assertEqual(result['membershipsCount'], 2, result)
-        self.assertEqual(len(result['memberships']), 2, result)
-        # Another user as normal member
-        self.assertEqual(result['memberships'][0]['member']['id'], minput['memberships'][0]['member'], result)
-        self.assertEqual(result['memberships'][0]['role'], minput['memberships'][0]['role'], result)
-        self.assertEqual(result['memberships'][0]['addedBy']['id'], str(user.pk), result)  # Current user
-        # Current user as admin
-        self.assertEqual(result['memberships'][1]['member']['id'], str(user.pk), result)
-        self.assertEqual(result['memberships'][1]['role'], self.genum(GroupMembership.Role.ADMIN), result)
-        self.assertEqual(result['memberships'][1]['addedBy'], None, result)  # Automate
+        self.assertEqual(result['membershipsCount'], 1, result)
 
     def test_user_group_update_mutation(self):
         query = '''
             mutation MyMutation($input: UserGroupInputType! $id: ID!) {
-              userGroupUpdate(data: $input id: $id) {
-                ok
-                errors
-                result {
-                  id
-                  title
-                  modifiedAt
-                  modifiedBy {
-                    id
-                    displayName
-                  }
-                  createdBy {
-                    id
-                    displayName
-                  }
-                  createdAt
-                  membershipsCount
-                  memberships {
-                    member {
+              userGroup(id: $id) {
+                  userGroupUpdate(data: $input) {
+                    ok
+                    errors
+                    result {
                       id
-                      displayName
-                    }
-                    role
-                    addedBy {
-                      id
-                      displayName
+                      title
+                      modifiedAt
+                      modifiedBy {
+                        id
+                        displayName
+                      }
+                      createdBy {
+                        id
+                        displayName
+                      }
+                      createdAt
+                      membershipsCount
+                      memberships {
+                        member {
+                          id
+                          displayName
+                        }
+                        role
+                        addedBy {
+                          id
+                          displayName
+                        }
+                      }
                     }
                   }
-                }
               }
             }
         '''
         user = UserFactory.create()
-        another_user = UserFactory.create()
-        new_another_user = UserFactory.create()
-        ug = UserGroupFactory.create(title='User-Group 101', members=[another_user], created_by=user)
+        member_user = UserFactory.create()
+        guest_user = UserFactory.create()
+        ug = UserGroupFactory.create(title='User-Group 101', members=[member_user], created_by=user)
         ug.add_member(user, role=GroupMembership.Role.ADMIN)
         minput = dict(
             title='User-Group 101 (Updated)',
         )
         self.query_check(query, minput=minput, assert_for_error=True, variables={'id': str(ug.pk)})
 
+        for _user in [guest_user, member_user]:
+            self.force_login(_user)
+            self.query_check(
+                query, minput=minput, assert_for_error=True, variables={'id': str(ug.pk)}
+            )
+
         self.force_login(user)
-        # TODO: Add permission check
-        # content = self.query_check(query, minput=minput, okay=False, variables={'id': str(ug.pk)})
-        # Response with new user group
         result = self.query_check(
-            query, minput=minput, okay=True, variables={'id': str(ug.pk)}
-        )['data']['userGroupUpdate']['result']
+            query, minput=minput, okay=True, mnested=['userGroup'], variables={'id': str(ug.pk)}
+        )['data']['userGroup']['userGroupUpdate']['result']
 
         self.assertEqual(result['title'], minput['title'], result)
         self.assertEqual(result['membershipsCount'], 2, result)
         self.assertEqual(len(result['memberships']), 2, result)
 
-        minput['memberships'] = [
-            dict(
-                member=str(new_another_user.pk),
-                role=self.genum(GroupMembership.Role.ADMIN),
-            ),
-        ]
         result = self.query_check(
-            query, minput=minput, okay=True,
+            query,
+            minput=minput,
+            okay=True,
+            mnested=['userGroup'],
             variables={'id': str(ug.pk)}
-        )['data']['userGroupUpdate']['result']
+        )['data']['userGroup']['userGroupUpdate']['result']
         self.assertEqual(result['membershipsCount'], 2, result)
         self.assertEqual(len(result['memberships']), 2, result)
-        # New another user added as normal member (and another_user no longer exists in the group)
-        self.assertEqual(result['memberships'][0]['member']['id'], minput['memberships'][0]['member'], result)
-        self.assertEqual(result['memberships'][0]['role'], minput['memberships'][0]['role'].upper(), result)  # noqa:E501 FIXME: why upper()
-        self.assertEqual(result['memberships'][0]['addedBy']['id'], str(user.pk), result)  # Current user
-        # Make sure admin (created_by) user is not removed even if not provided while updating
         self.assertEqual(result['memberships'][1]['member']['id'], str(user.pk), result)
         self.assertEqual(result['memberships'][1]['role'], self.genum(GroupMembership.Role.ADMIN), result)
-        self.assertEqual(result['memberships'][1]['addedBy'], None, result)  # Automate
 
     def test_user_group_delete_mutation(self):
         query = '''
             mutation MyMutation($id: ID!) {
-              userGroupDelete(id: $id) {
-                ok
-                errors
-                result {
-                  id
-                  title
-                }
+              userGroup(id: $id) {
+                  userGroupDelete {
+                    ok
+                    errors
+                    result {
+                      id
+                      title
+                    }
+                  }
               }
             }
         '''
         user = UserFactory.create()
+        guest_user = UserFactory.create()
+        member_user = UserFactory.create()
         ug = UserGroupFactory.create(title='User-Group 101', created_by=user)
         ug.add_member(user, role=GroupMembership.Role.ADMIN)
+        ug.add_member(member_user, role=GroupMembership.Role.ADMIN)
         self.query_check(query, assert_for_error=True, variables={'id': str(ug.pk)})
 
-        self.force_login(user)
-        # TODO: Add permission check
-        # content = self.query_check(query, okay=False, variables={'id': str(ug.pk)})
-        # Response with new user group
-        result = self.query_check(query, okay=True, variables={'id': str(ug.pk)})['data']['userGroupDelete']['result']
+        for _user in [guest_user, member_user]:
+            self.force_login(_user)
+            self.query_check(query, assert_for_error=True, variables={'id': str(ug.pk)})
 
-        # New another user added as normal member (and another_user no longer exists in the group)
+        self.force_login(user)
+        result = self.query_check(
+            query,
+            okay=True,
+            mnested=['userGroup'],
+            variables={'id': str(ug.pk)},
+        )['data']['userGroup']['userGroupDelete']['result']
+
         self.assertEqual(result['id'], str(ug.id), result)
         self.assertEqual(result['title'], ug.title, result)
         with self.assertRaises(UserGroup.DoesNotExist):  # Make sure user_group doesn't exists anymore

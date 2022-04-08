@@ -121,13 +121,9 @@ class AnalysisFramework(UserResource):
             return self.current_user_role
         # If not available generate
         self.current_user_role = None
-        memberships = list(
-            AnalysisFrameworkMembership.objects
-            .filter(framework=self, member=user)
-            .values_list('role__type', flat=True)
-        )
-        if memberships:
-            self.current_user_role = memberships[0]
+        self.current_user_role = AnalysisFrameworkMembership.objects\
+            .filter(framework=self, member=user)\
+            .values_list('role__type', flat=True).first()
         return self.current_user_role
 
     def can_get(self, _: User):

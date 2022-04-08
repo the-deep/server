@@ -42,7 +42,6 @@ class WidgetType(ClientIdMixin, DjangoObjectType):
         model = Widget
         fields = (
             'id', 'title', 'order', 'properties', 'version',
-            'client_id',
         )
 
     widget_id = graphene.Field(WidgetWidgetTypeEnum, required=True)
@@ -70,7 +69,6 @@ class SectionType(ClientIdMixin, DjangoObjectType):
         model = Section
         fields = (
             'id', 'title', 'order', 'tooltip',
-            'client_id',
         )
 
     @staticmethod
