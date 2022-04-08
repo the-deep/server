@@ -228,7 +228,7 @@ class BaseGrapheneMutation(graphene.Mutation):
         try:
             return cls.get_queryset(info).get(id=kwargs['id']), None
         except cls.model.DoesNotExist:
-            return None, [dict(field='nonFieldErrors', messages=f'{str(cls.model)} does not exist.')]
+            return None, [dict(field='nonFieldErrors', messages=f'{cls.model.__name__} does not exist.')]
 
     @classmethod
     def check_permissions(cls, info, **kwargs):

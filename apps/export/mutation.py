@@ -42,7 +42,9 @@ class CancelUserExport(UserExportMutationMixin, PsGrapheneMutation):
 
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
-        export = cls.get_object(info, **kwargs)
+        export, errors = cls.get_object(info, **kwargs)
+        if export is None or errors:
+            return cls(result=export, errors=errors, ok=True)
         if export.status in [Export.Status.PENDING, Export.Status.STARTED]:
             celery_app.control.revoke(export.get_task_id(clear=True), terminate=True)
             export.status = Export.Status.CANCELED
@@ -59,7 +61,9 @@ class DeleteUserExport(UserExportMutationMixin, PsGrapheneMutation):
 
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
-        export = cls.get_object(info, **kwargs)
+        export, errors = cls.get_object(info, **kwargs)
+        if export is None or errors:
+            return cls(result=export, errors=errors, ok=True)
         export.is_deleted = True  # Soft delete
         export.save(update_fields=('is_deleted',))
         return cls(result=export, errors=None, ok=True)
