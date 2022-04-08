@@ -55,8 +55,8 @@ class ConnectorLead(models.Model):
             defaults=dict(
                 title=lead.title,
                 published_on=lead.published_on,
-                source_raw=lead.source_raw,
-                author_raw=lead.author_raw,
+                source_raw=lead.source_raw or '',
+                author_raw=lead.author_raw or '',
                 source=lead.source,
                 website=lead.website,
             ),

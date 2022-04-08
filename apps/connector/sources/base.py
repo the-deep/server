@@ -1,6 +1,7 @@
-from typing import List, Tuple
-
 import copy
+import datetime
+
+from typing import List, Tuple, Union
 from functools import reduce
 from abc import ABC, abstractmethod
 from django.db.models import Q
@@ -81,6 +82,16 @@ class Source(ABC):
         return [], 0
 
     def get_leads(self, params) -> Tuple[List[Lead], int]:
+        def _parse_date(date_raw) -> Union[None, datetime.date]:
+            if type(date_raw) == datetime.date:
+                return date_raw
+            elif type(date_raw) == datetime.datetime:
+                return date_raw.date()
+            else:
+                published_on = str_to_date(date_raw)
+                if published_on:
+                    return published_on.date()
+
         leads_data, total_count = self.fetch(copy.deepcopy(params))
         if not leads_data:
             return [], total_count
@@ -93,8 +104,7 @@ class Source(ABC):
 
         leads = []
         for ldata in leads_data:
-            published_on = str_to_date(ldata['published_on'])
-            published_on = published_on and published_on.date()
+            published_on = _parse_date(ldata['published_on'])
             lead = Lead(
                 id=ldata.get('id', random_key()),
                 title=ldata['title'],

@@ -666,6 +666,13 @@ class ExtractCallbackSerializer(serializers.Serializer):
             raise serializers.ValidationError({
                 'text_path': 'text_path is required when extraction_status is success/1'
             })
+        if data['extraction_status'] == 1:
+            errors = {}
+            for key in ['text_path', 'total_words_count', 'total_pages']:
+                if key not in data:
+                    errors[key] = f'<{key}> is missing. Required when the extraction is 1 (Success)'
+            if errors:
+                raise serializers.ValidationError(errors)
         return data
 
     def create(self, data):
@@ -675,9 +682,9 @@ class ExtractCallbackSerializer(serializers.Serializer):
             return LeadExtraction.save_lead_data(
                 lead,
                 data['text_path'],
-                data['images_path'][:10],   # TODO: Support for more images, to much image will error.
-                data['total_words_count'],
-                data['total_pages'],
+                data.get('images_path', [])[:10],   # TODO: Support for more images, to much image will error.
+                data.get('total_words_count'),
+                data.get('total_pages'),
             )
         lead.update_extraction_status(Lead.ExtractionStatus.FAILED)
         return lead
