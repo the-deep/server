@@ -89,7 +89,9 @@ class TriggerUnifiedConnector(UnifiedConnectorMixin, PsGrapheneMutation):
 
     @classmethod
     def perform_mutate(cls, _, info, **kwargs):
-        instance = cls.get_object(info, **kwargs)
+        instance, errors = cls.get_object(info, **kwargs)
+        if errors:
+            return cls(errors=errors, ok=False)
         if instance.is_active:
             process_unified_connector.delay(instance.pk)
             return cls(errors=None, ok=True)
