@@ -13,6 +13,7 @@ from user.utils import (
     send_password_changed_notification,
     send_password_reset,
     send_account_activation,
+    generate_hidden_email,
 )
 from utils.hid.tests.test_hid import (
     HIDIntegrationTest,
@@ -563,3 +564,70 @@ class TestUserSchema(GraphQLTestCase):
             content = _query_check(filters)['data']['users']['results']
             self.assertEqual(len(content), count, (name, content))
             self.assertListIds(content, users, (name, content))
+
+    def test_get_user_hidden_email(self):
+        query_single_user = '''
+            query MyQuery($id: ID!) {
+                user(id: $id) {
+                    id
+                    emailDisplay
+                    firstName
+                    lastName
+                    isActive
+                    displayPictureUrl
+                    language
+                    organization
+                    displayName
+                }
+            }
+
+        '''
+
+        query_all_users = '''
+            query MyQuery {
+                users {
+                    results {
+                    id
+                    emailDisplay
+                    firstName
+                    isActive
+                    language
+                    lastName
+                    displayName
+                    displayPictureUrl
+                    organization
+                    }
+                    totalCount
+                }
+            }
+
+        '''
+        user = UserFactory.create(email='testuser@deep.com')
+        UserFactory.create(email='testuser2@deep.com')
+        UserFactory.create(email='testuser3@deep.com')
+        # # Without Login session
+        self.query_check(query_single_user, variables={'id': str(user.id)}, assert_for_error=True)
+
+        # # Login
+        self.force_login(user)
+
+        # Query User (Success)
+        content = self.query_check(query_single_user, variables={'id': str(user.id)})
+        self.assertEqual(content['data']['user']['id'], str(user.id), content)
+        self.assertEqual(content['data']['user']['emailDisplay'], 'te***er@deep.com')
+
+        # Query Users (Success)
+        content = self.query_check(query_all_users)
+        email_display_list = [result['emailDisplay'] for result in content['data']['users']['results']]
+        self.assertTrue(set(['te***er@deep.com', 'te***r2@deep.com']).issubset(set(email_display_list)))
+
+    def test_generate_hidden_email(self):
+        for original, expected in [
+            ('testuser1@deep.com', 'te***r1@deep.com'),
+            ('testuser2@deep.com', 'te***r2@deep.com'),
+            ('abcd@deep.com', 'a***d@deep.com'),
+            ('abc@deep.com', 'a***c@deep.com'),
+            ('xy@deep.com', 'x***y@deep.com'),
+            ('a@deep.com', 'a***a@deep.com'),
+        ]:
+            self.assertEqual(expected, generate_hidden_email(original))

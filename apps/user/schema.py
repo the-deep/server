@@ -15,6 +15,7 @@ from project.models import Project
 from .models import User, Feature
 from .enums import UserEmailConditionOptOutEnum
 from .filters import UserGqlFilterSet
+from .utils import generate_hidden_email
 
 
 def only_me(func):
@@ -47,6 +48,7 @@ class UserType(DjangoObjectType):
     display_picture_url = graphene.String()
     organization = graphene.String()
     language = graphene.String()
+    email_display = graphene.String(required=True)
 
     @staticmethod
     def resolve_display_picture_url(root, info, **kwargs) -> Union[str, None]:
@@ -57,6 +59,10 @@ class UserType(DjangoObjectType):
     @staticmethod
     def resolve_organization(root, info, **kwargs) -> Union[str, None]:
         return info.context.dl.user.organization.load(root.id)
+
+    @staticmethod
+    def resolve_email_display(root, info, **kwargs) -> Union[str, None]:
+        return generate_hidden_email(root.email)
 
 
 class UserMeType(DjangoObjectType):
