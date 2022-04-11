@@ -2,6 +2,7 @@ import graphene
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
+from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 
@@ -79,13 +80,13 @@ class Query:
     organization = DjangoObjectField(OrganizationType)
     organizations = DjangoPaginatedListObjectField(
         OrganizationListType,
-        pagination=PageGraphqlPagination(
+        pagination=NoOrderingPageGraphqlPagination(
             page_size_query_param='pageSize'
         )
     )
     public_organizations = DjangoPaginatedListObjectField(
         PublicOrganizationListObjectType,
-        pagination=PageGraphqlPagination(
+        pagination=NoOrderingPageGraphqlPagination(
             page_size_query_param='pageSize'
         )
     )
