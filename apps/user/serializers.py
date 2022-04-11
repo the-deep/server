@@ -209,14 +209,13 @@ class PasswordResetSerializer(RemoveNullFieldsMixin,
     email = serializers.EmailField(required=True)
 
     def get_user(self, email):
-        users = User.objects.filter(email=email)
+        users = User.objects.filter(
+            models.Q(email=email.lower()) |
+            models.Q(email=email)
+        )
         if not users.exists():
             raise UserNotFoundError
         return users.first()
-
-    def validate_email(self, email):
-        self.get_user(email)
-        return email
 
     def validate_hcaptcha_response(self, captcha):
         validate_hcaptcha(captcha)
@@ -320,11 +319,18 @@ class LoginSerializer(serializers.Serializer):
             user.profile.login_attempts = login_attempts
             user.profile.save(update_fields=['login_attempts'])
 
+        email = data['email']
         # NOTE: authenticate only works for active users
         # NOTE: username should be equal to email
-        authenticate_user = authenticate(username=data['email'], password=data['password'])
+        authenticate_user = authenticate(username=email.lower(), password=data['password'])
+        # Try again without lower (for legacy users, TODO: Migrate this users)
+        if authenticate_user is None:
+            authenticate_user = authenticate(username=email, password=data['password'])
         captcha = data.get('captcha')
-        user = User.objects.filter(email=data['email']).first()
+        user = User.objects.filter(
+            models.Q(email=email.lower()) |
+            models.Q(email=email)
+        ).first()
 
         # User doesn't exists in the system.
         if user is None:
