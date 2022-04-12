@@ -614,17 +614,17 @@ class TestUserSchema(GraphQLTestCase):
         # Query User (Success)
         content = self.query_check(query_single_user, variables={'id': str(user.id)})
         self.assertEqual(content['data']['user']['id'], str(user.id), content)
-        self.assertEqual(content['data']['user']['emailDisplay'], 'te***er@deep.com')
+        self.assertEqual(content['data']['user']['emailDisplay'], 't***r@deep.com')
 
         # Query Users (Success)
         content = self.query_check(query_all_users)
         email_display_list = [result['emailDisplay'] for result in content['data']['users']['results']]
-        self.assertTrue(set(['te***er@deep.com', 'te***r2@deep.com']).issubset(set(email_display_list)))
+        self.assertTrue(set(['t***r@deep.com', 't***2@deep.com']).issubset(set(email_display_list)))
 
     def test_generate_hidden_email(self):
         for original, expected in [
-            ('testuser1@deep.com', 'te***r1@deep.com'),
-            ('testuser2@deep.com', 'te***r2@deep.com'),
+            ('testuser1@deep.com', 't***1@deep.com'),
+            ('testuser2@deep.com', 't***2@deep.com'),
             ('abcd@deep.com', 'a***d@deep.com'),
             ('abc@deep.com', 'a***c@deep.com'),
             ('xy@deep.com', 'x***y@deep.com'),
