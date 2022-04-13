@@ -10,31 +10,80 @@
                 font-family: 'Source Sans Pro', sans-serif;
             }
             p {
-                margin: 6px 0;
-                font-size: 1.1em;
-                color: #616161;
+                margin: 12px 0;
+                line-height: 1.4;
+                color: #313131;
             }
-            .header {
-                margin-bottom: 12px;
-                font-size: 1.12em;
-            }
-            .mail {
-                margin: 0 auto;
-                max-width: 640px;
+            body {
+                background-color: #efefef;
                 font-family: 'Source Sans Pro', sans-serif;
+                margin: 0;
                 text-align: center;
             }
-            .logo {
+            .mail {
+                display: block;
+            }
+            .header-container {
+                background-color: #ffffff;
+            }
+            .header {
+                max-width: 660px;
+                width: 100%;
+                padding: 20px 0;
                 margin: auto;
-                margin-bottom: 24px;
+            }
+            .header-description {
+                text-align: left;
+                padding: 0 20px;
+                color: #515151;
+            }
+            .logo-container {
+                text-align: right;
+                padding: 0 20px;
+            }
+            .deep-team {
+                margin: auto;
+                padding: 12px;
+                text-align: center;
+                background-color: #FFF;
+            }
+            .deep-team p {
+                line-height: 1;
+                margin: unset !important;
+            }
+            .mail-body {
+                max-width: 640px;
+                margin: 36px auto;
+                background-color: #FFF;
+                padding: 10px;
+                text-align: center;
             }
 
+            .thank-you-container {
+                background-color: #f5f8fb;
+                padding: 6px;
+            }
+
+            .thank-you-container >p {
+                margin: 6px;
+            }
+
+            .thank-you {
+                font-weight: bold;
+                text-transform: uppercase;
+                color: #414141;
+            }
             .icon {
                 margin-left: 8px;
             }
 
             .zen {
                 margin-left: 8px;
+            }
+
+            .actions-container {
+                background-color: #f5f8fb;
+                padding: 24px 48px;
             }
 
             .button-like-link {
@@ -89,21 +138,8 @@
                 box-shadow: 0 2px 3px -1px rgba(0, 0, 0, .5);
             }
 
-            .deep-team {
-                color: #6e7b8a;
-            }
-
-            .deep-team p {
-                margin-top: 12px;
-                font-size: 14px;
-            }
-
             .bold {
                 font-weight: bold;
-            }
-
-            .unsubscribe {
-                font-size: 14px;
             }
 
             .community p {
@@ -120,24 +156,31 @@
 
     <body>
         <div class="mail">
-            <img
-                class="logo"
-                width="160"
-                height="160"
-                src="{{ 'image/deep-logo.png' | static_full_path }}"
-            />
-            {% load i18n %}{% autoescape off %}
-            <p class="header">
-                Hi there {{ user.first_name }},
-            </p>
-
-            {% block body %}{% endblock %}
-
-            <br>
+            <div class="header-container">
+                <table class="header">
+                    <tr class="header-content">
+                        {% load i18n %}{% autoescape off %}
+                        <th class="header-description">
+                            {% block title %}{% endblock %}
+                        </th>
+                        <th class="logo-container">
+                            <img
+                                width="120"
+                                height="auto"
+                                src="{{ 'image/deep-logo-long.png' | static_full_path }}"
+                                />
+                        </th>
+                    </tr>
+                </table>
+            </div>
+            <div class="mail-body">
+                {% block body %}{% endblock %}
+                <div class="thank-you-container">
+                    <p class="thank-you">Thank you for using DEEP</p>
+                    <p>The DEEP team</p>
+                </div>
+            </div>
             <div class="deep-team">
-                <p>Thank you for using DEEP</p>
-                <p>-The DEEP team</p>
-                <br>
                 <div class="community">
                 <p>Join the community on Skype or Slack!</p>
                     <a
@@ -162,7 +205,7 @@
                     </a>
                 </div>
                 <div class="community">
-                <p>Need Help?</p>
+                    <p>Need Help?</p>
                     <a
                         href="https://deephelp.zendesk.com/hc/en-us/categories/360000874911-DEEP-User-Guide"
                     >
@@ -174,19 +217,17 @@
                         />
                     </a>
                 </div>
+                {% if email_type in unsubscribe_email_types %}
+                    <p>
+                        Would you prefer to not receive these kinds of emails anymore?
+                        <a
+                            href="{{ protocol }}://{{ domain }}{% url 'unsubscribe_email' uidb64=unsubscribe_email_id token=unsubscribe_email_token email_type=email_type %}"
+                            >
+                            Click here to unsubscribe.
+                        </a>
+                    </p>
+                {% endif %}
             </div>
-            <br>
-            <br>
-            {% if email_type in unsubscribe_email_types %}
-                <p class="unsubscribe">
-                    Would you prefer to not receive these kinds of emails anymore?
-                    <a
-                        href="{{ protocol }}://{{ domain }}{% url 'unsubscribe_email' uidb64=unsubscribe_email_id token=unsubscribe_email_token email_type=email_type %}"
-                    >
-                        Click here to unsubscribe.
-                    </a>
-                </p>
-            {% endif %}
             {% endautoescape %}
         </div>
     <body>

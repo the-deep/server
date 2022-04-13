@@ -10,6 +10,10 @@
             padding-left: 5px;
         }
 
+        .question {
+            margin-top: 36px;
+        }
+
         .button-container {
             padding: 12px 0 24px;
         }
@@ -20,22 +24,26 @@
     </style>
 {% endblock %}
 
+{% block title %}
+    Request to join {{ project.title }}
+{% endblock %}
+
 {% block body %}
     <p>
-        <span class="bold">{{ request_by.profile.get_display_name }} ({{ request_by.email }}) </span>
-            has requested to join the project
-        <span class="bold"> {{ project.title }}.</span>
+        Hi there {{ user.first_name }},
     </p>
-
-    <p>
+    <span>{{ request_by.profile.get_display_name }} ({{ request_by.email }}) </span>
+        has requested to join the project
+    <span> {{ project.title }}.</span>
+    <p class="question">
         <span class="bold">Why does the user want to join this project?</span>
     </p>
     <p>
         <span class="user-replies">{{ reason }}</span>
     </p>
 
-    <div class="actions">
-       <p class="unsubscribe"> Since you are an administrator of the project, you may choose to: </p>
+    <div class="actions-container">
+       <p> Since you are an administrator of the project, you may choose to: </p>
         <div class="button-container">
             <a
                 class="button"
