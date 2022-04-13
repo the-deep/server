@@ -7,15 +7,19 @@
         }
     </style>
 {% endblock %}
-
+{% block title %}
+    Activate Account
+{% endblock %}
 {% block container %}
-    <p>
-        It seems your DEEP account is not active – please click on the link below to activate it:
-    </p>
-    <a
-        class="button-like-link activation-link"
-        href="{{ protocol }}://{{ domain }}{% url 'user_activate_confirm' uidb64=uid token=token %}"
-        >
-        Activate your account
-    </a>
+    <div class="actions-container">
+        <p>
+            It seems your DEEP account is not active – please click on the link below to activate it:
+        </p>
+        <a
+            class="button-like-link activation-link"
+            href="{{ protocol }}://{{ domain }}{% url 'user_activate_confirm' uidb64=uid token=token %}"
+            >
+            Activate your account
+        </a>
+    </div>
 {% endblock %}

@@ -3,57 +3,66 @@
 {% block head %}
     <style>
         .table {
-            margin: auto;
+            margin: 36px auto;
         }
+
         .cell {
             text-align: left;
             padding: 0 4px;
-            font-weight: 600;
             font-family: inherit;
+            font-weight: normal;
             color: #616161;
         }
+
+        .label {
+            font-weight: bold;
+            font-family: inherit;
+            width: 96px;
+        }
+
         .button {
             display: inline-block;
-            margin: 12px 0;
+            margin: 2px 0;
         }
     </style>
 {% endblock %}
-
+{% block title %}
+    Your password has been changed successfully.
+{% endblock %}
 {% block container %}
     <p>
+        Hi there {{ user.first_name }},
+        <br>
         Your password has been changed successfully.
     </p>
     <table class="table">
         <tr>
-            <th class="cell">Time:</th>
+            <th class="cell label">Time</th>
             <th class="cell">{{time}}</th>
         </tr>
         <tr>
-            <th class="cell">Location:</th>
+            <th class="cell label">Location</th>
             <th class="cell">{{location}}</th>
         </tr>
         <tr>
-            <th class="cell">Device:</th>
+            <th class="cell label">Device</th>
             <th class="cell">{{device}}</th>
         </tr>
     </table>
-    <p>
-        If you are aware of this change, you can disregard this email.
-        If this was not triggered by you, please reset your password.
-    </p>
-    <a
-        class="button"
-        href="{{ protocol }}://{{client_domain}}/forgot-password/"
-    >
-        Reset Password
-    </a>
-    <p>
-        If you would like to change your password
-    </p>
-    <a
-        class="button"
-        href="{{ protocol }}://{{client_domain}}/my-profile/"
-    >
-        Change Password
-    </a>
+    <div class="actions-container">
+        <p>
+            If you are aware of this change, you can disregard this email.
+            If this was not triggered by you, please reset your password.
+        </p>
+        <a
+            class="button"
+            href="{{ protocol }}://{{client_domain}}/forgot-password/"
+        >
+            Reset Password
+        </a>
+        <p>
+            Your username, in case you've forgotten:
+            <a href={{ user.get_username }}>{{ user.get_username }}</a>
+        </p>
+    </div>
 {% endblock%}
