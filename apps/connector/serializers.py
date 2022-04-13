@@ -75,7 +75,7 @@ class SourceDataSerializer(RemoveNullFieldsMixin,
         model = Lead
         fields = (
             'key', 'title', 'source', 'source_type', 'url',
-            'website', 'published_on', 'existing',
+            'published_on', 'existing',
             'emm_entities', 'emm_triggers', 'source_detail',
             'author_detail', 'authors', 'authors_detail',
             'source_raw', 'author_raw',

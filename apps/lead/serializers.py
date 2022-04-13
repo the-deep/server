@@ -427,7 +427,6 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
             'is_assessment_lead',
             'lead_group',
             'url',
-            'website',
             'source',
             'authors',
             'emm_triggers',

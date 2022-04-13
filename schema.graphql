@@ -367,7 +367,6 @@ input BulkLeadInputType {
   isAssessmentLead: Boolean
   leadGroup: ID
   url: String
-  website: String
   source: ID
   authors: [ID!]
   emmTriggers: [LeadEMMTriggerInputType!]
@@ -959,7 +958,6 @@ enum ExportFormatEnum {
 input ExportLeadsEntriesFilterData {
   text: String
   url: String
-  website: String
   createdAt: DateTime
   createdAtGte: DateTime
   createdAtLte: DateTime
@@ -1147,7 +1145,6 @@ type LeadDetailType {
   publishedOn: Date
   text: String!
   url: String!
-  website: String!
   attachment: GalleryFileType
   isAssessmentLead: Boolean!
   createdAt: DateTime!
@@ -1270,7 +1267,6 @@ input LeadInputType {
   isAssessmentLead: Boolean
   leadGroup: ID
   url: String
-  website: String
   source: ID
   authors: [ID!]
   emmTriggers: [LeadEMMTriggerInputType!]
@@ -1351,7 +1347,6 @@ type LeadType {
   publishedOn: Date
   text: String!
   url: String!
-  website: String!
   attachment: GalleryFileType
   isAssessmentLead: Boolean!
   createdAt: DateTime!
@@ -1618,7 +1613,7 @@ type ProjectDetailType {
   entry(id: ID!): EntryType
   entries(id: ID, excerpt: String, controlled: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], leads: [ID!], leadCreatedBy: [ID!], leadPublishedOn: Date, leadPublishedOnGte: Date, leadPublishedOnLte: Date, leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], leadAuthoringOrganizationTypes: [ID!], leadAuthorOrganizations: [ID!], leadSourceOrganizations: [ID!], search: String, commentStatus: EntryFilterCommentStatusEnum, entryTypes: [EntryTagTypeEnum!], projectEntryLabels: [ID!], entriesId: [ID!], geoCustomShape: String, leadGroupLabel: String, filterableData: [EntryFilterDataType!], page: Int = 1, ordering: String, pageSize: Int): EntryListType
   lead(id: ID!): LeadDetailType
-  leads(text: String, url: String, website: String, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeProvidedLeadsId: Boolean, sourceTypes: [LeadSourceTypeEnum!], priorities: [LeadPriorityEnum!], confidentiality: LeadConfidentialityEnum, statuses: [LeadStatusEnum!], extractionStatus: LeadExtractionStatusEnum, assignees: [ID!], authoringOrganizationTypes: [ID!], authorOrganizations: [ID!], sourceOrganizations: [ID!], hasEntries: Boolean, hasAssessment: Boolean, entriesFilterData: LeadEntriesFilterData, search: String, publishedOn: Date, publishedOnGte: Date, publishedOnLte: Date, emmEntities: String, emmKeywords: String, emmRiskFactors: String, ordering: [LeadOrderingEnum!], page: Int = 1, pageSize: Int): LeadListType
+  leads(text: String, url: String, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeProvidedLeadsId: Boolean, sourceTypes: [LeadSourceTypeEnum!], priorities: [LeadPriorityEnum!], confidentiality: LeadConfidentialityEnum, statuses: [LeadStatusEnum!], extractionStatus: LeadExtractionStatusEnum, assignees: [ID!], authoringOrganizationTypes: [ID!], authorOrganizations: [ID!], sourceOrganizations: [ID!], exists: LeadExistsEnum, customFilters: LeadCustomFilterEnum, entriesFilterData: LeadEntriesFilterData, search: String, publishedOn: Date, publishedOnGte: Date, publishedOnLte: Date, emmEntities: String, emmKeywords: String, emmRiskFactors: String, ordering: [LeadOrderingEnum!], page: Int = 1, pageSize: Int): LeadListType
   leadGroup(id: ID!): LeadGroupType
   leadGroups(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): LeadGroupListType
   emmEntities(name: String, page: Int = 1, ordering: String, pageSize: Int): EmmEntityListType

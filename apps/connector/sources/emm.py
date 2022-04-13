@@ -210,7 +210,6 @@ def test_emm():
     with open('/tmp/rss.xml') as f:
         e = EMM()
         params = {
-            'website-field': 'link',
             'url-field': 'link',
             'date-field': 'pubDate',
             'source-field': 'source',

@@ -202,7 +202,6 @@ class HumanitarianResponse(Source):
                     'url': url,
                     'source': 'Humanitarian Response',
                     'author': 'Humanitarian Response',
-                    'website': self.URL,
                     'source_type': Lead.SourceType.WEBSITE
                 }
                 results.append(data)

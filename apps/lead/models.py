@@ -122,7 +122,6 @@ class Lead(UserResource, ProjectEntityMixin):
 
     text = models.TextField(blank=True)
     url = models.TextField(blank=True)
-    website = models.CharField(max_length=255, blank=True)
     extraction_status = models.SmallIntegerField(
         choices=ExtractionStatus.choices, default=ExtractionStatus.PENDING)
 

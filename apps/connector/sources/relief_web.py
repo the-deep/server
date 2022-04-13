@@ -299,7 +299,6 @@ class ReliefWeb(Source):
                     'source': 'reliefweb',
                     'source_type': Lead.SourceType.WEBSITE.value,
                     'author': author,
-                    'website': 'www.reliefweb.int',
                 }
                 results.append(lead)
             relief_url = ((resp.get('links') or {}).get('next') or {}).get('href')
