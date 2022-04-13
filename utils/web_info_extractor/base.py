@@ -9,7 +9,7 @@ class ExtractorMixin:
     # it as 'source_field:rename_to'. For example: 'date_str:date' will have date_str value
     # in 'date' field of serialized_data
 
-    fields = ['title', 'date_str:date', 'country', 'source', 'website', 'author']
+    fields = ['title', 'date_str:date', 'country', 'source', 'author']
 
     def get_date_str(self):
         parsed = self.get_date()

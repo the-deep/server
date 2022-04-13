@@ -33,7 +33,6 @@ class TestLeadMutationSchema(GraphQLTestCase):
                 status
                 text
                 url
-                website
                 source {
                     id
                 }
@@ -120,7 +119,6 @@ class TestLeadMutationSchema(GraphQLTestCase):
             authors=[org1.pk, org2.pk],
             text='Random Text',
             url='',
-            website='',
             emmEntities=[
                 dict(name=emm_entity_1.name),
                 dict(name=emm_entity_2.name),
@@ -178,9 +176,8 @@ class TestLeadMutationSchema(GraphQLTestCase):
         # ------------- Website
         minput['sourceType'] = self.genum(Lead.SourceType.WEBSITE)
         minput['url'] = 'http://www.example.com/random-path'
-        minput['website'] = 'www.example.com'
         result = _query_check(okay=True)['data']['project']['leadCreate1']['result']
-        self.assertCustomDictEqual(result, minput, result, only_keys=['url', 'website'])
+        self.assertCustomDictEqual(result, minput, result, only_keys=['url'])
         # Try again will end in error
         result = _query_check(okay=False)['data']['project']['leadCreate1']['result']
         self.assertEqual(result, None, result)
@@ -257,7 +254,6 @@ class TestLeadMutationSchema(GraphQLTestCase):
                     sourceType
                     text
                     url
-                    website
                     attachment {
                         id
                     }
@@ -316,17 +312,15 @@ class TestLeadMutationSchema(GraphQLTestCase):
         # ------------ Website (Using duplicate website)
         new_lead = LeadFactory.create(
             project=self.project, source_type=Lead.SourceType.WEBSITE,
-            url='https://example.com/random-path', website='example.com',
+            url='https://example.com/random-path'
         )
         minput['sourceType'] = self.genum(Lead.SourceType.WEBSITE)
         minput['url'] = new_lead.url
-        minput['website'] = new_lead.website
         result = _query_check(lead, okay=False)['data']['project']['leadUpdate']['result']
         self.assertEqual(result, None, result)
         new_lead.delete()  # Can save after deleting the conflicting lead.
         result = _query_check(lead, okay=True)['data']['project']['leadUpdate']['result']
         self.assertEqual(result['url'], minput['url'], result)
-        self.assertEqual(result['website'], minput['website'], result)
         # ------------ Attachment (Using duplicate file)
         new_lead = LeadFactory.create(project=self.project, source_type=Lead.SourceType.DISK, attachment=user_file)
         minput['sourceType'] = self.genum(Lead.SourceType.DISK)

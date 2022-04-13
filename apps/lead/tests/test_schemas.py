@@ -73,7 +73,6 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 statuses: $statuses
                 text: $text
                 url: $url
-                website: $website
                 entriesFilterData: $entriesFilterData
                 ordering: $ordering
             ) {
@@ -266,7 +265,6 @@ class TestLeadQuerySchema(GraphQLTestCase):
             # ({'publishedOnLte': []}, []),
             # ({'text': []}, []),
             # ({'url': []}, []),
-            # ({'website': []}, []),
             # ({'createdAt': []}, []),
             # ({'createdAtGte': []}, []),
             # ({'createdAtLte': []}, []),
