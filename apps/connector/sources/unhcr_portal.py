@@ -309,7 +309,6 @@ class UNHCRPortal(Source):
                     'source': 'UNHCR Portal',
                     'author': '',
                     'source_type': '',
-                    'website': 'data2.unhcr.org'
                 }
                 results.append(data)
             footer = soup.find('div', {'class': 'pgSearch_results_footer'})
@@ -320,32 +319,5 @@ class UNHCRPortal(Source):
                 page += 1
             else:
                 break
-
-        for item in items:
-            itemcontent = item.find(
-                'div',
-                {'class': ['searchResultItem_content', 'media_body']}
-            )
-            urlcontent = item.find(
-                'div',
-                {'class': 'searchResultItem_download'}
-            )
-            datecontent = item.find(
-                'span',
-                {'class': 'searchResultItem_date'}
-            )
-            title = itemcontent.find('a').get_text()
-            pdfurl = urlcontent.find('a')['href']
-            raw_date = datecontent.find('b').get_text()  # 4 July 2018
-            date = datetime.datetime.strptime(raw_date, '%d %B %Y')
-            data = {
-                'title': title.strip(),
-                'published_on': date.date(),
-                'url': pdfurl,
-                'source': 'UNHCR Portal',
-                'author': 'UNHCR Portal',
-                'source_type': '',
-            }
-            results.append(data)
 
         return results, len(results)

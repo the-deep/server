@@ -1111,7 +1111,7 @@ class LeadTests(TestCase):
         project = self.create_project()
         lead1 = self.create(Lead, project=project, title='mytext')
         lead2 = self.create(Lead, project=project, source_raw='thisis_mytext')
-        lead3 = self.create(Lead, project=project)
+        self.create(Lead, project=project)
         self.create(Lead, project=project, title='nothing_here')
 
         url = '/api/v1/leads/?search={}'
@@ -1119,7 +1119,7 @@ class LeadTests(TestCase):
         resp = self.client.get(url.format('mytext'))
         self.assert_200(resp)
 
-        expected_ids = {lead1.id, lead2.id, lead3.id}
+        expected_ids = {lead1.id, lead2.id}
         obtained_ids = {x['id'] for x in resp.data['results']}
         assert expected_ids == obtained_ids
 
