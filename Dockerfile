@@ -1,6 +1,6 @@
 FROM python:3.8-slim-buster as base
 
-LABEL maintainer="Deep Dev dev@thedeep.com"
+LABEL maintainer="Deep Dev dev@thedeep.io"
 
 ENV PYTHONUNBUFFERED 1
 
