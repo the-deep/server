@@ -77,7 +77,7 @@ def convert_serializer_field_to_enum(field):
     )
 
 
-def convert_serializer_field(field, is_input=True, convert_choices_to_enum=True):
+def convert_serializer_field(field, is_input=True, convert_choices_to_enum=True, force_optional=False):
     """
     Converts a django rest frameworks field to a graphql field
     and marks the field as required if we are creating an input type
@@ -92,7 +92,10 @@ def convert_serializer_field(field, is_input=True, convert_choices_to_enum=True)
         graphql_type = get_graphene_type_from_serializer_field(field)
 
     args = []
-    kwargs = {"description": field.help_text, "required": is_input and field.required}
+    kwargs = {
+        "description": field.help_text,
+        "required": is_input and field.required and not force_optional
+    }
 
     # if it is a tuple or a list it means that we are returning
     # the graphql type and the child type
@@ -164,7 +167,8 @@ def fields_for_serializer(
     exclude_fields,
     is_input=False,
     convert_choices_to_enum=True,
-    lookup_field=None
+    lookup_field=None,
+    partial=False,
 ):
     """
     NOTE: Same as the original definition. Needs overriding to
@@ -187,7 +191,10 @@ def fields_for_serializer(
             continue
 
         fields[name] = convert_serializer_field(
-            field, is_input=is_input, convert_choices_to_enum=convert_choices_to_enum
+            field,
+            is_input=is_input,
+            convert_choices_to_enum=convert_choices_to_enum,
+            force_optional=partial,
         )
     return fields
 
@@ -195,12 +202,14 @@ def fields_for_serializer(
 def generate_input_type_for_serializer(
     name: str,
     serializer_class,
+    partial=False,
 ) -> Type[graphene.InputObjectType]:
     data_members = fields_for_serializer(
         serializer_class(),
         only_fields=[],
         exclude_fields=[],
-        is_input=True
+        is_input=True,
+        partial=partial,
     )
     return type(name, (graphene.InputObjectType,), data_members)
 

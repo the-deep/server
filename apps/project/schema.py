@@ -361,9 +361,9 @@ class ProjectDetailType(
         fields = (
             'id', 'title', 'description', 'start_date', 'end_date', 'analysis_framework',
             'category_editor', 'assessment_template', 'data',
-            'is_default', 'is_private', 'is_visualization_enabled',
             'created_at', 'created_by',
-            'modified_at', 'modified_by'
+            'modified_at', 'modified_by',
+            'is_default', 'is_private', 'is_visualization_enabled', 'has_publicly_viewable_leads',
         )
 
     analysis_framework = graphene.Field(AnalysisFrameworkDetailType)

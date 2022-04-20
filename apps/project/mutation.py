@@ -8,6 +8,7 @@ from django.core.exceptions import PermissionDenied
 
 from utils.graphene.mutation import (
     generate_input_type_for_serializer,
+    GrapheneMutation,
     PsGrapheneMutation,
     PsBulkGrapheneMutation,
 )
@@ -15,6 +16,8 @@ from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
 
 from deep.permissions import ProjectPermissions as PP
 
+from geo.models import Region
+from geo.schema import RegionDetailType
 from lead.mutation import Mutation as LeadMutation
 from entry.mutation import Mutation as EntryMutation
 from quality_assurance.mutation import Mutation as QualityAssuranceMutation
@@ -31,6 +34,7 @@ from .models import (
     ProjectUserGroupMembership,
 )
 from .serializers import (
+    ProjectGqSerializer,
     ProjectJoinGqSerializer,
     ProjectAcceptRejectSerializer,
     ProjectMembershipGqlSerializer as ProjectMembershipSerializer,
@@ -38,12 +42,24 @@ from .serializers import (
     ProjectVizConfigurationSerializer,
 )
 from .schema import (
+    ProjectDetailType,
     ProjectJoinRequestType,
     ProjectMembershipType,
     ProjectUserGroupMembershipType,
     ProjectVizDataType,
 )
 
+
+ProjectCreateInputType = generate_input_type_for_serializer(
+    'ProjectCreateInputType',
+    serializer_class=ProjectGqSerializer,
+)
+
+ProjectUpdateInputType = generate_input_type_for_serializer(
+    'ProjectUpdateInputType',
+    serializer_class=ProjectGqSerializer,
+    partial=True,
+)
 
 ProjectJoinRequestInputType = generate_input_type_for_serializer(
     'ProjectJoinRequestInputType',
@@ -69,6 +85,36 @@ ProjectVizConfigurationInputType = generate_input_type_for_serializer(
     'ProjectVizConfigurationInputType',
     serializer_class=ProjectVizConfigurationSerializer,
 )
+
+
+class CreateProject(GrapheneMutation):
+    class Arguments:
+        data = ProjectCreateInputType(required=True)
+
+    result = graphene.Field(ProjectDetailType)
+    # class vars
+    serializer_class = ProjectGqSerializer
+    model = Project
+
+    @classmethod
+    def check_permissions(cls, *args, **_):
+        return True  # Allow all to create New Project
+
+
+class UpdateProject(PsGrapheneMutation):
+    class Arguments:
+        data = ProjectUpdateInputType(required=True)
+
+    result = graphene.Field(ProjectDetailType)
+    # class vars
+    serializer_class = ProjectGqSerializer
+    model = Project
+    permissions = [PP.Permission.UPDATE_PROJECT]
+
+    @classmethod
+    def perform_mutate(cls, root, info, **kwargs):
+        kwargs['id'] = info.context.active_project.id
+        return super().perform_mutate(root, info, **kwargs)
 
 
 class ProjectAcceptReject(PsGrapheneMutation):
@@ -195,6 +241,40 @@ class BulkUpdateProjectUserGroupMembership(PsBulkGrapheneMutation):
         return ProjectUserGroupMembership.objects.none()
 
 
+class BulkUpdateProjectRegion(PsBulkGrapheneMutation):
+    class Arguments:
+        regions_to_add = graphene.List(graphene.NonNull(graphene.ID))
+        regions_to_remove = graphene.List(graphene.NonNull(graphene.ID))
+
+    result = graphene.List(graphene.NonNull(RegionDetailType))
+    deleted_result = graphene.List(graphene.NonNull(RegionDetailType))
+    # class vars
+    model = Project.regions.through
+    permissions = [PP.Permission.CAN_ADD_MEMBER]
+
+    @classmethod
+    def perform_mutate(cls, _, info, **kwargs):
+        project = info.context.active_project
+        regions_to_add = kwargs.get('regions_to_add') or []
+        regions_to_remove = kwargs.get('regions_to_remove') or []
+        existing_regions = project.regions.all()
+        added_regions = [
+            region
+            for region in Region.objects.filter(id__in=regions_to_add).exclude(
+                id__in=existing_regions.values('id')
+            ).order_by('id')
+            if region.public or region.can_modify(info.context.user)
+        ]
+        deleted_regions = list(existing_regions.filter(id__in=regions_to_remove).order_by('id'))
+        assert len(added_regions) <= len(regions_to_add)
+        assert len(deleted_regions) <= len(regions_to_remove)
+        # Remove regions
+        project.regions.remove(*deleted_regions)
+        # Add regions
+        project.regions.add(*added_regions)
+        return cls(result=added_regions, deleted_result=deleted_regions)
+
+
 class UpdateProjectVizConfiguration(PsGrapheneMutation):
     class Arguments:
         data = ProjectVizConfigurationInputType(required=True)
@@ -223,9 +303,11 @@ class ProjectMutationType(
         skip_registry = True
         fields = ('id', 'title')
 
+    project_update = UpdateProject.Field()
     accept_reject_project = ProjectAcceptReject.Field()
     project_user_membership_bulk = BulkUpdateProjectMembership.Field()
     project_user_group_membership_bulk = BulkUpdateProjectUserGroupMembership.Field()
+    project_region_bulk = BulkUpdateProjectRegion.Field()
     project_viz_configuration_update = UpdateProjectVizConfiguration.Field()
     unified_connector = graphene.Field(UnifiedConnectorMutationType)
     assisted_tagging = graphene.Field(AssistedTaggingMutationType)
@@ -251,7 +333,7 @@ class ProjectMutationType(
 
 
 class Mutation(object):
+    project_create = CreateProject.Field()
     join_project = CreateProjectJoin.Field()
     project_join_request_delete = ProjectJoinRequestDelete.Field()
     project = DjangoObjectField(ProjectMutationType)
-    # TODO: For project mutation make sure AF permission is checked when using. (Public and Private logics)

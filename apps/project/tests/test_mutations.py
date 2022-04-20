@@ -4,6 +4,8 @@ from factory import fuzzy
 
 from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
 from user.utils import send_project_join_request_emails
+
+from user.models import Feature
 from notification.models import Notification
 from project.models import (
     get_default_role_id,
@@ -14,14 +16,18 @@ from project.models import (
     ProjectStats,
 )
 
-from user.factories import UserFactory
+from user.factories import UserFactory, FeatureFactory
 from lead.factories import LeadFactory
 from entry.factories import EntryFactory, EntryAttributeFactory
 from analysis_framework.factories import AnalysisFrameworkFactory, WidgetFactory
 from user_group.factories import UserGroupFactory
 from project.factories import ProjectFactory, ProjectJoinRequestFactory
+from organization.factories import OrganizationFactory
+from geo.factories import RegionFactory
 
 from project.tasks import _generate_project_viz_stats
+
+from project.models import Project, ProjectOrganization
 from . import entry_stats_data
 
 
@@ -155,6 +161,360 @@ class TestProjectGeneralMutation(GraphQLTestCase):
                         self.client.logout()
                         rest_response = self.client.get(f"{response['publicUrl']}?format=json")
                         self.assert_403(rest_response)
+
+
+class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
+    def test_project_create_mutation(self):
+        query = '''
+            mutation MyMutation($input: ProjectCreateInputType!) {
+              __typename
+              projectCreate(data: $input) {
+                ok
+                errors
+                result {
+                  id
+                  title
+                  analysisFramework {
+                    id
+                    isPrivate
+                  }
+                  description
+                  startDate
+                  endDate
+                  isPrivate
+                  hasPubliclyViewableLeads
+                  isVisualizationEnabled
+                  organizations {
+                    id
+                    organization {
+                      id
+                      title
+                    }
+                    organizationType
+                    organizationTypeDisplay
+                  }
+                  status
+                }
+              }
+            }
+        '''
+
+        user = UserFactory.create()
+        af = AnalysisFrameworkFactory.create()
+        private_project_feature = FeatureFactory.create(key=Feature.FeatureKey.PRIVATE_PROJECT)
+        private_af = AnalysisFrameworkFactory.create(is_private=True)
+        private_af_w_membership = AnalysisFrameworkFactory.create(is_private=True)
+        private_af_w_membership.add_member(user)
+
+        org1 = OrganizationFactory.create()
+
+        minput = dict(
+            title='Project 1',
+            analysisFramework=str(private_af.id),
+            description='Project description 101',
+            startDate='2020-01-01',
+            endDate='2021-01-01',
+            status=self.genum(Project.Status.ACTIVE),
+            isPrivate=True,
+            hasPubliclyViewableLeads=False,
+            isVisualizationEnabled=False,
+            organizations=[
+                dict(
+                    organization=str(org1.pk),
+                    organizationType=self.genum(ProjectOrganization.Type.LEAD_ORGANIZATION),
+                ),
+            ],
+        )
+
+        def _query_check(**kwargs):
+            return self.query_check(
+                query,
+                minput=minput,
+                **kwargs,
+            )
+
+        # ---------- Without login
+        _query_check(assert_for_error=True)
+        # ---------- With login
+        self.force_login(user)
+        # ----------------- Some Invalid input
+        response = _query_check(okay=False)
+
+        # invalid [private AF with memership] + public project
+        minput['analysisFramework'] = str(private_af_w_membership.pk)
+        minput['isPrivate'] = False
+        response = _query_check(okay=False)
+        # invalid [private AF with memership] + private project + without feature permission
+        minput['isPrivate'] = True
+        response = _query_check(okay=False)
+        # invalid [private AF with memership] + private project + with feature permission
+        private_project_feature.users.add(user)
+        response = _query_check(okay=True)['data']['projectCreate']
+        self.assertMatchSnapshot(response, 'private-af-private-project-success')
+
+        # Valid [public AF] + private project
+        minput['analysisFramework'] = str(af.pk)
+        minput['isPrivate'] = True
+        response = _query_check(okay=True)['data']['projectCreate']
+        self.assertMatchSnapshot(response, 'public-af-private-project-success')
+
+        # Valid [public AF] + private project
+        minput['analysisFramework'] = str(af.pk)
+        minput['isPrivate'] = False
+        response = _query_check(okay=True)['data']['projectCreate']
+        self.assertMatchSnapshot(response, 'public-af-public-project-success')
+
+    def test_project_update_mutation(self):
+        query = '''
+            mutation MyMutation($projectId: ID!, $input: ProjectUpdateInputType!) {
+              __typename
+              project(id: $projectId) {
+                  projectUpdate(data: $input) {
+                    ok
+                    errors
+                    result {
+                      id
+                      title
+                      analysisFramework {
+                        id
+                        isPrivate
+                      }
+                      description
+                      startDate
+                      endDate
+                      isPrivate
+                      hasPubliclyViewableLeads
+                      isVisualizationEnabled
+                      organizations {
+                        id
+                        organization {
+                          id
+                          title
+                        }
+                        organizationType
+                        organizationTypeDisplay
+                      }
+                      status
+                    }
+                  }
+              }
+            }
+        '''
+
+        user = UserFactory.create()
+        normal_user = UserFactory.create()
+        another_user = UserFactory.create()
+        af = AnalysisFrameworkFactory.create()
+        private_af = AnalysisFrameworkFactory.create(is_private=True)
+        private_af_2 = AnalysisFrameworkFactory.create(is_private=True)
+        private_af_w_membership = AnalysisFrameworkFactory.create(is_private=True)
+        private_af_w_membership.add_member(user)
+        public_project = ProjectFactory.create(title='Public Project 101', analysis_framework=af)
+        private_project = ProjectFactory.create(title='Private Project 101', analysis_framework=private_af, is_private=True)
+        public_project.add_member(user, role=self.project_role_owner)
+        private_project.add_member(user, role=self.project_role_owner)
+        public_project.add_member(normal_user)
+
+        org1 = OrganizationFactory.create()
+
+        public_minput = dict(
+            title=public_project.title,
+            analysisFramework=str(public_project.analysis_framework.id),
+            isPrivate=False,
+            organizations=[
+                dict(
+                    organization=str(org1.pk),
+                    organizationType=self.genum(ProjectOrganization.Type.LEAD_ORGANIZATION),
+                ),
+            ],
+        )
+
+        private_minput = dict(
+            title=private_project.title,
+            analysisFramework=str(private_project.analysis_framework.id),
+            isPrivate=True,
+            organizations=[
+                dict(
+                    organization=str(org1.pk),
+                    organizationType=self.genum(ProjectOrganization.Type.LEAD_ORGANIZATION),
+                ),
+            ],
+        )
+
+        def _query_check(project, minput, **kwargs):
+            return self.query_check(
+                query,
+                minput=minput,
+                mnested=['project'],
+                variables={'projectId': str(project.pk)},
+                **kwargs,
+            )
+
+        def _public_query_check(**kwargs):
+            return _query_check(public_project, public_minput, **kwargs)
+
+        def _private_query_check(**kwargs):
+            return _query_check(private_project, private_minput, **kwargs)
+
+        # ---------- Without login
+        _public_query_check(assert_for_error=True)
+        _private_query_check(assert_for_error=True)
+        # ---------- With login (non member)
+        self.force_login(another_user)
+        _public_query_check(assert_for_error=True)
+        _private_query_check(assert_for_error=True)
+        # ---------- With login (member with low access)
+        self.force_login(normal_user)
+        _public_query_check(assert_for_error=True)
+        _private_query_check(assert_for_error=True)
+
+        # ---------- With login (member with high access)
+        self.force_login(user)
+        _public_query_check(okay=True)
+        _private_query_check(okay=True)
+
+        # WITH ACCESS
+        # ----- isPrivate attribute
+        # [changing private status) [public project]
+        public_minput['isPrivate'] = True
+        self.assertMatchSnapshot(_public_query_check(okay=False), 'public-project:is-private-change-error')
+        public_minput['isPrivate'] = False
+
+        # [changing private status) [public project]
+        private_minput['isPrivate'] = False
+        self.assertMatchSnapshot(_private_query_check(okay=False), 'private-project:is-private-change-error')
+        private_minput['isPrivate'] = True
+
+        # ----- AF attribute
+        # [changing private status) [public project]
+        public_minput['analysisFramework'] = str(private_af.id)
+        self.assertMatchSnapshot(_public_query_check(okay=False), 'public-project:private-af')
+        public_minput['analysisFramework'] = str(private_af_w_membership.id)
+        self.assertMatchSnapshot(_public_query_check(okay=False), 'public-project:private-af-with-membership')
+        public_minput['analysisFramework'] = str(public_project.analysis_framework_id)
+
+        # [changing private status) [private project]
+        private_minput['analysisFramework'] = str(private_af_2.id)
+        self.assertMatchSnapshot(_private_query_check(okay=False), 'private-project:private-af')
+        private_minput['analysisFramework'] = str(private_af_w_membership.id)
+        _private_query_check(okay=True)
+        private_minput['analysisFramework'] = str(private_project.analysis_framework_id)
+
+    def test_project_region_action_mutation(self):
+        query = '''
+            mutation MyMutation ($projectId: ID!, $regionsToAdd: [ID!], $regionsToRemove: [ID!]) {
+              project(id: $projectId) {
+                projectRegionBulk(regionsToAdd: $regionsToAdd, regionsToRemove: $regionsToRemove) {
+                  result {
+                    id
+                    title
+                  }
+                  deletedResult {
+                    id
+                    title
+                  }
+                }
+              }
+            }
+        '''
+
+        user = UserFactory.create()
+        normal_user = UserFactory.create()
+        another_user = UserFactory.create()
+        af = AnalysisFrameworkFactory.create()
+        project = ProjectFactory.create(title='Project 101', analysis_framework=af)
+        project.add_member(user, role=self.project_role_owner)
+        project.add_member(normal_user)
+        region_public = RegionFactory.create(title='public-region')
+        region_private = RegionFactory.create(title='private-region', public=False)
+        region_private_owner = RegionFactory.create(title='private-region-owner', public=False, created_by=user)
+        # Region with project membership
+        # -- Normal
+        region_private_with_membership = RegionFactory.create(title='private-region-with-membership', public=False)
+        another_project_for_membership = ProjectFactory.create()
+        another_project_for_membership.regions.add(region_private_with_membership)
+        another_project_for_membership.add_member(user, role=self.project_role_admin)
+        # -- Admin
+        region_private_with_membership_admin = RegionFactory.create(title='private-region-with-membership', public=False)
+        another_project_for_membership_admin = ProjectFactory.create()
+        another_project_for_membership_admin.regions.add(region_private_with_membership_admin)
+        another_project_for_membership_admin.add_member(user, role=self.project_role_admin)
+
+        def _query_check(add, remove, **kwargs):
+            return self.query_check(
+                query,
+                mnested=['project'],
+                variables={
+                    'projectId': str(project.pk),
+                    'regionsToAdd': add,
+                    'regionsToRemove': remove,
+                },
+                **kwargs,
+            )
+
+        # ---------- Without login
+        _query_check([], [], assert_for_error=True)
+        # ---------- With login (non member)
+        self.force_login(another_user)
+        _query_check([], [], assert_for_error=True)
+        # ---------- With login (member + low access)
+        self.force_login(normal_user)
+        _query_check([], [], assert_for_error=True)
+        # ---------- With login (member with high access)
+        self.force_login(user)
+        # Simple checkup
+        response = _query_check([], [])
+        self.assertEqual(response['data']['project']['projectRegionBulk'], {
+            'deletedResult': [],
+            'result': [],
+        })
+
+        # Add
+        response = _query_check(
+            [
+                str(region_public.pk),
+                str(region_private.pk),
+                str(region_private_owner.pk),
+                str(region_private_with_membership.pk),
+            ],
+            [],
+        )
+        self.assertEqual(response['data']['project']['projectRegionBulk'], {
+            'deletedResult': [],
+            'result': [
+                dict(id=str(region_public.pk), title=region_public.title),
+                dict(id=str(region_private_owner.pk), title=region_private_owner.title),
+                dict(id=str(region_private_with_membership.pk), title=region_private_with_membership.title),
+            ],
+        })
+        self.assertEqual(
+            list(project.regions.values_list('id', flat=True).order_by('id')),
+            [
+                region_public.pk,
+                region_private_owner.pk,
+                region_private_with_membership.pk,
+            ]
+        )
+
+        # Delete
+        response = _query_check(
+            [],
+            [
+                str(region_public.pk),
+                str(region_private.pk),
+                str(region_private_owner.pk),
+                str(region_private_with_membership.pk),
+            ],
+        )
+        self.assertEqual(response['data']['project']['projectRegionBulk'], {
+            'deletedResult': [
+                dict(id=str(region_public.pk), title=region_public.title),
+                dict(id=str(region_private_owner.pk), title=region_private_owner.title),
+                dict(id=str(region_private_with_membership.pk), title=region_private_with_membership.title),
+            ],
+            'result': [],
+        })
+        self.assertEqual(list(project.regions.values_list('id', flat=True).order_by('id')), [])
 
 
 class TestProjectJoinMutation(GraphQLTestCase):
@@ -547,7 +907,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         self.force_login(non_member_user)
         _query_check(assert_for_error=True)
         # ---------- With login (with low-permission member)
-        self.force_login(non_member_user)
+        self.force_login(low_permission_user)
         _query_check(assert_for_error=True)
         # ---------- With login (with higher permission)
         self.force_login(user)

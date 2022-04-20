@@ -87,6 +87,8 @@ class Project(UserResource):
         blank=True,
     )
 
+    has_publicly_viewable_leads = models.BooleanField(default=False)
+
     # Store project stats data as cache. View project/tasks for structure
     stats_cache = models.JSONField(default=dict)
 
