@@ -72,16 +72,18 @@ def linkify(field_name, label=None):
     """
 
     def _linkify(obj):
-        linked_obj = obj
-        for _field_name in field_name.split('.'):
-            linked_obj = getattr(linked_obj, _field_name, None)
-        if linked_obj:
-            app_label = linked_obj._meta.app_label
-            model_name = linked_obj._meta.model_name
-            view_name = f"admin:{app_label}_{model_name}_change"
-            link_url = reverse(view_name, args=[linked_obj.pk])
-            return format_html(f'<a href="{link_url}">{linked_obj}</a>')
-
+        try:
+            linked_obj = obj
+            for _field_name in field_name.split('.'):
+                linked_obj = getattr(linked_obj, _field_name, None)
+            if linked_obj:
+                app_label = linked_obj._meta.app_label
+                model_name = linked_obj._meta.model_name
+                view_name = f"admin:{app_label}_{model_name}_change"
+                link_url = reverse(view_name, args=[linked_obj.pk])
+                return format_html(f'<a href="{link_url}">{linked_obj}</a>')
+        except Exception:
+            pass
         return '-'
 
     _linkify.short_description = label or ' '.join(field_name.split('.'))
