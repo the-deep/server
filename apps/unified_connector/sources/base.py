@@ -68,6 +68,7 @@ class OrganizationSearch():
 
 class Source(ABC):
     DEFAULT_PER_PAGE = 25
+    UNIFIED_CONNECTOR_SOURCE_MAX_PAGE_NUMBER = 100
 
     def __init__(self):
         if (

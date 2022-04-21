@@ -275,6 +275,8 @@ class UNHCRPortal(Source):
 
         page = 1
         while True:
+            if page > self.UNIFIED_CONNECTOR_SOURCE_MAX_PAGE_NUMBER:
+                break
             updated_params['page'] = page
             content = self.get_content(self.URL, updated_params)
             soup = Soup(content, 'html.parser')
@@ -319,5 +321,4 @@ class UNHCRPortal(Source):
                 page += 1
             else:
                 break
-
         return results, len(results)

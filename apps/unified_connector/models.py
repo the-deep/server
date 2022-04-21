@@ -7,7 +7,7 @@ from user_resource.models import UserResource
 from lead.models import Lead
 from organization.models import Organization
 from project.models import Project, ProjectStats
-from connector.sources import (
+from .sources import (
     atom_feed,
     rss_feed,
     unhcr_portal,
