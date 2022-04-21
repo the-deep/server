@@ -75,6 +75,7 @@ input AnalysisFrameworkInputType {
   primaryTagging: [SectionGqlInputType!]
   secondaryTagging: [WidgetGqlInputType!]
   predictionTagsMapping: [PredictionTagAnalysisFrameworkMapInputType!]
+  assistedTaggingEnabled: Boolean
 }
 
 type AnalysisFrameworkListType {

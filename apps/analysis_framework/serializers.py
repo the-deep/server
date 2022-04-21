@@ -400,7 +400,7 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
             'title', 'description', 'is_private', 'properties', 'organization', 'preview_image',
             'created_at', 'created_by', 'modified_at', 'modified_by',
             'primary_tagging', 'secondary_tagging',
-            'prediction_tags_mapping',
+            'prediction_tags_mapping', 'assisted_tagging_enabled',
         )
 
     # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
