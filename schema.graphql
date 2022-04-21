@@ -2022,6 +2022,7 @@ type PublicProjectWithMembershipData {
 }
 
 type Query {
+  rssFields(url: String): [RssFieldType!]
   publicLead(uuid: UUID!): PublicLeadMetaType
   notification(id: ID!): NotificationType
   notifications(timestamp: DateTime, timestampLte: DateTime, timestampGte: DateTime, isPending: Boolean, notificationType: NotificationTypeEnum, status: NotificationStatusEnum, page: Int = 1, ordering: String, pageSize: Int): NotificationListType
@@ -2132,6 +2133,11 @@ type ResetPassword {
 input ResetPasswordInputType {
   email: String!
   captcha: String!
+}
+
+type RssFieldType {
+  key: String
+  label: String
 }
 
 input SectionGqlInputType {

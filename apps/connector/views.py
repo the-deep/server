@@ -26,7 +26,7 @@ from .models import (
     ConnectorProject,
 )
 from .sources.store import source_store
-from .sources.base import Source
+from unified_connector.sources.base import Source
 
 
 class SourceViewSet(viewsets.ViewSet):
