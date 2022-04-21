@@ -74,10 +74,16 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
     GRAPHQL_SCHEMA = 'deep.schema.schema'
     ENABLE_NOW_PATCHER = False
 
+    def _setup_premailer_patcher(self, mock):
+        mock.get.return_value = ''
+        mock.post.return_value = ''
+
     def setUp(self):
         super().setUp()
         self.create_project_roles()
         self.create_af_roles()
+        self.premailer_patcher_requests = patch('premailer.premailer.requests')
+        self._setup_premailer_patcher(self.premailer_patcher_requests.start())
         if self.ENABLE_NOW_PATCHER:
             self.now_patcher = patch('django.utils.timezone.now')
             self.now_datetime = datetime.datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
@@ -88,6 +94,7 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
         _set_current_request()  # Clear request
         if hasattr(self, 'now_patcher'):
             self.now_patcher.stop()
+        self.premailer_patcher_requests.stop()
         super().tearDown()
 
     def force_login(self, user):

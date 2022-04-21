@@ -164,6 +164,14 @@ class TestProjectGeneralMutation(GraphQLTestCase):
 
 
 class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
+    factories_used = [
+        UserFactory,
+        ProjectFactory,
+        AnalysisFrameworkFactory,
+        OrganizationFactory,
+        RegionFactory,
+    ]
+
     def test_project_create_mutation(self):
         query = '''
             mutation MyMutation($input: ProjectCreateInputType!) {
