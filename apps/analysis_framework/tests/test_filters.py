@@ -6,6 +6,7 @@ from analysis_framework.factories import AnalysisFrameworkFactory
 
 class TestAnalysisFrameworkFilter(GraphQLTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.filter_class = AnalysisFrameworkGqFilterSet
 
     def test_search_filter(self):
