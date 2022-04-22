@@ -899,6 +899,7 @@ type EntryType {
   verifiedBy: [UserType!]
   verifiedByCount: Int!
   reviewCommentsCount: Int!
+  draftEntry: ID
 }
 
 scalar EnumDescription

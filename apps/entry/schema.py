@@ -102,6 +102,7 @@ class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     verified_by = DjangoListField(UserType)
     verified_by_count = graphene.Int(required=True)
     review_comments_count = graphene.Int(required=True)
+    draft_entry = graphene.ID(source="draft_entry_id")
 
     # project_labels TODO:
     # tabular_field TODO:
