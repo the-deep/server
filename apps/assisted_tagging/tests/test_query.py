@@ -19,6 +19,7 @@ from assisted_tagging.models import (
 from lead.factories import LeadFactory
 from user.factories import UserFactory
 from project.factories import ProjectFactory
+from geo.factories import RegionFactory, AdminLevelFactory, GeoAreaFactory
 
 from assisted_tagging.factories import (
     AssistedTaggingModelFactory,
@@ -99,6 +100,9 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
                   wrongPredictionReviews {
                     id
                   }
+                }
+                relatedGeoareas {
+                    title
                 }
                 missingPredictionReviews {
                   id
@@ -189,13 +193,22 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
 
     def test_unified_connector_draft_entry(self):
         project = ProjectFactory.create()
+        region = RegionFactory.create(is_published=True)
+        admin_level = AdminLevelFactory.create(region=region)
         lead = LeadFactory.create(project=project)
         user = UserFactory.create()
         another_user = UserFactory.create()
         project.add_member(user)
+        project.regions.add(region)
+        self.maxDiff = None
 
+        GeoAreaFactory.create(admin_level=admin_level, title='Nepal')
+        GeoAreaFactory.create(admin_level=admin_level, title='Bagmati')
+        GeoAreaFactory.create(admin_level=admin_level, title='Kathmandu')
         model1 = AssistedTaggingModelFactory.create()
+        geo_model = AssistedTaggingModelFactory.create(model_id=AssistedTaggingModel.ModelID.GEO)
         latest_model1_version = AssistedTaggingModelVersionFactory.create_batch(2, model=model1)[0]
+        latest_geo_model_version = AssistedTaggingModelVersionFactory.create(model=geo_model)
         category1, tag1, *other_tags = AssistedTaggingModelPredictionTagFactory.create_batch(5)
 
         draft_entry1 = DraftEntryFactory.create(project=project, lead=lead, excerpt='sample excerpt')
@@ -212,9 +225,16 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
         )
         prediction2 = AssistedTaggingPredictionFactory.create(
             data_type=AssistedTaggingPrediction.DataType.RAW,
-            model_version=latest_model1_version,
+            model_version=latest_geo_model_version,
             draft_entry=draft_entry1,
             value='Nepal',
+            is_selected=True,
+        )
+        prediction3 = AssistedTaggingPredictionFactory.create(
+            data_type=AssistedTaggingPrediction.DataType.RAW,
+            model_version=latest_geo_model_version,
+            draft_entry=draft_entry1,
+            value='Kathmandu',
             is_selected=True,
         )
         missing_prediction1 = MissingPredictionReviewFactory.create(
@@ -226,6 +246,7 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
             prediction=prediction1,
             created_by=user,
         )
+        draft_entry1.save_geo_data()
 
         def _query_check(**kwargs):
             return self.query_check(
@@ -272,7 +293,18 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
                     modelVersionDeeplModelId=str(prediction2.model_version.model.model_id),
                     dataType=self.genum(prediction2.data_type),
                     dataTypeDisplay=prediction2.get_data_type_display(),
-                    value="Nepal",
+                    value=prediction2.value,
+                    category=None,
+                    tag=None,
+                    wrongPredictionReviews=[],
+                ),
+                dict(
+                    id=str(prediction3.id),
+                    modelVersion=str(prediction3.model_version.id),
+                    modelVersionDeeplModelId=str(prediction3.model_version.model.model_id),
+                    dataType=self.genum(prediction3.data_type),
+                    dataTypeDisplay=prediction3.get_data_type_display(),
+                    value=prediction3.value,
                     category=None,
                     tag=None,
                     wrongPredictionReviews=[],
@@ -284,7 +316,16 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
                     category=str(missing_prediction1.category_id),
                     tag=str(missing_prediction1.tag_id),
                 )
-            ]
+            ],
+            relatedGeoareas=[
+                dict(
+                    title='Nepal',
+                ),
+                dict(
+                    title='Kathmandu',
+                )
+
+            ],
         ))
 
 

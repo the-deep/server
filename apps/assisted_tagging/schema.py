@@ -7,6 +7,7 @@ from utils.graphene.enums import EnumDescription
 from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
 
+from geo.schema import ProjectGeoAreaType
 from .models import (
     DraftEntry,
     AssistedTaggingModel,
@@ -161,6 +162,9 @@ class DraftEntryType(DjangoObjectType):
     missing_prediction_reviews = graphene.List(
         graphene.NonNull(MissingPredictionReviewType),
     )
+    related_geoareas = graphene.List(
+        graphene.NonNull(ProjectGeoAreaType)
+    )
 
     class Meta:
         model = DraftEntry
@@ -181,6 +185,7 @@ class DraftEntryType(DjangoObjectType):
             'predictions__model_version__model',
             'predictions__wrong_prediction_reviews',
             'missing_prediction_reviews',
+            'related_geoareas',
         )
 
     @staticmethod
@@ -190,6 +195,10 @@ class DraftEntryType(DjangoObjectType):
     @staticmethod
     def resolve_missing_prediction_reviews(root, info, **kwargs):
         return root.missing_prediction_reviews.all()   # NOTE: Prefetched by DraftEntry
+
+    @staticmethod
+    def resolve_related_geoareas(root, info, **kwargs):
+        return root.related_geoareas.all()   # NOTE: Prefetched by DraftEntry
 
 
 # This is attached to project type.

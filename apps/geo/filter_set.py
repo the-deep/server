@@ -1,7 +1,9 @@
+from functools import reduce
+
 import django_filters
 from django.db import models
 from django.db.models.functions import Concat
-from utils.graphene.filters import IDListFilter
+from utils.graphene.filters import IDListFilter, StringListFilter
 
 from geo.models import (
     AdminLevel,
@@ -86,6 +88,10 @@ class GeoAreaGqlFilterSet(django_filters.rest_framework.FilterSet):
         label='Geo Area Label search',
         method='geo_area_label'
     )
+    titles = StringListFilter(
+        label='Geo Area Label search',
+        method='filter_titles'
+    )
 
     class Meta:
         model = GeoArea
@@ -104,4 +110,19 @@ class GeoAreaGqlFilterSet(django_filters.rest_framework.FilterSet):
                     output_field=models.fields.CharField()
                 ),
             ).filter(label__icontains=value)
+        return queryset
+
+    def filter_titles(self, queryset, name, values):
+        if values:
+            # Let's only use 20 max.
+            _values = values[:20]
+            return queryset.filter(
+                reduce(
+                    lambda acc, item: acc | item,
+                    [
+                        models.Q(title__icontains=value)
+                        for value in _values
+                    ]
+                )
+            )
         return queryset

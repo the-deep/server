@@ -108,7 +108,7 @@ IDFilter = _generate_filter_class(
 # Generic Filters
 IDListFilter = _get_id_list_filter
 # IDListFilter = _generate_list_filter_class(graphene.ID)
-StringListFilter = _generate_list_filter_class(graphene.String)
+StringListFilter: MultipleInputFilter = _generate_list_filter_class(graphene.String)
 GenericFilter = _generate_filter_class(GenericScalar)
 
 DateTimeFilter = partial(

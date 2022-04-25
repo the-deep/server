@@ -8,9 +8,16 @@ from analysis_framework.models import Widget
 from project.models import Project
 from lead.models import Lead
 from user_resource.models import UserResource, UserResourceCreated
+from geo.models import GeoArea
 
 
 class AssistedTaggingModel(models.Model):
+    # This is for refering model id within deep. This can change. Source is the deepl.
+    class ModelID(models.TextChoices):
+        MAIN = 'all_tags_model', 'All tags model'
+        GEO = 'geolocation', 'Geo Location'
+        RELIABILITY = 'reliability', 'Reliability'
+
     model_id = models.CharField(max_length=256)
     name = models.CharField(max_length=256)
 
@@ -89,6 +96,8 @@ class DraftEntry(UserResourceCreated):
     prediction_status = models.SmallIntegerField(choices=PredictionStatus.choices, default=PredictionStatus.PENDING)
     # After successfull prediction
     prediction_received_at = models.DateTimeField(null=True, blank=True)
+    # Additional attribues
+    related_geoareas = models.ManyToManyField(GeoArea, blank=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -113,6 +122,22 @@ class DraftEntry(UserResourceCreated):
     def clear_data(self):
         self.predictions.all().delete()
         self.missing_prediction_reviews.all().delete()
+
+    def save_geo_data(self):
+        from geo.filter_set import GeoAreaGqlFilterSet
+        geo_values = list(
+            AssistedTaggingPrediction.objects
+            .filter(
+                draft_entry=self,
+                model_version__model__model_id=AssistedTaggingModel.ModelID.GEO.value
+            ).values_list('value', flat=True)
+        )
+        if geo_values:
+            geo_areas_qs = GeoAreaGqlFilterSet(
+                data={'titles': geo_values},
+                queryset=GeoArea.get_for_project(self.project),
+            ).qs
+            self.related_geoareas.set(geo_areas_qs)
 
 
 class AssistedTaggingPrediction(models.Model):

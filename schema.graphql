@@ -726,6 +726,7 @@ type DraftEntryType {
   predictionStatusDisplay: EnumDescription!
   predictions: [AssistedTaggingPredictionType!]
   missingPredictionReviews: [MissingPredictionReviewType!]
+  relatedGeoareas: [ProjectGeoAreaType!]
 }
 
 input EMMEntityInputType {
@@ -1605,7 +1606,7 @@ type ProjectDetailType {
   assessments(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentListType
   reviewComment(id: ID!): EntryReviewCommentDetailType
   reviewComments(entry: ID, ordering: [EntryReviewCommentOrderingEnum!], page: Int = 1, pageSize: Int): EntryReviewCommentListType
-  geoAreas(ids: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): ProjectGeoAreaListType
+  geoAreas(ids: [ID!], search: String, titles: [String!], page: Int = 1, ordering: String, pageSize: Int): ProjectGeoAreaListType
   export(id: ID!): UserExportType
   exports(type: [ExportDataTypeEnum!], format: [ExportFormatEnum!], status: [ExportStatusEnum!], search: String, exportedAt: DateTime, exportedAtGte: DateTime, exportedAtLte: DateTime, page: Int = 1, ordering: String, pageSize: Int): UserExportListType
   entry(id: ID!): EntryType
