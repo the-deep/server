@@ -243,6 +243,7 @@ class AsssistedTaggingTask():
             for predition in model_preds:
                 model_version = models_version_map[(predition['model_info']['id'], predition['model_info']['version'])]
                 cls._process_model_preds(model_version, current_tags_map, draft_entry, predition)
+            draft_entry.save_geo_data()
             draft_entry.save()
         return draft_entry
 

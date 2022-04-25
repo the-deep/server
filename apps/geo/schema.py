@@ -124,7 +124,4 @@ class ProjectScopeQuery:
 
     @staticmethod
     def resolve_geo_areas(queryset, info, **kwargs):
-        return get_geo_area_queryset_for_project_geo_area_type().filter(
-            admin_level__region__is_published=True,
-            admin_level__region__project=info.context.active_project,
-        )
+        return GeoArea.get_for_project(info.context.active_project)
