@@ -131,6 +131,9 @@ class ConnectorSource(UserResource):
     last_fetched_at = models.DateTimeField(blank=True, null=True)
     stats = models.JSONField(default=dict)  # {published_dates: ['date': <>, 'count': <>]}
     status = models.SmallIntegerField(choices=Status.choices, default=Status.PENDING)
+    # Execution time
+    start_date = models.DateTimeField(null=True, blank=True)
+    end_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.title

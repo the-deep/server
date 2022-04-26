@@ -462,7 +462,24 @@ CELERY_BEAT_SCHEDULE = {
         # Every 5 min
         'schedule': crontab(minute="*/5"),
     },
+    # UNIFIED CONNECTORS
+    'schedule_trigger_quick_unified_connectors': {
+        'task': 'unified_connector.tasks.schedule_trigger_quick_unified_connectors',
+        # Every 1 hour
+        'schedule': crontab(hour="*/1"),
+    },
+    'schedule_trigger_heavy_unified_connectors': {
+        'task': 'unified_connector.tasks.schedule_trigger_heavy_unified_connectors',
+        # Every 1 hour
+        'schedule': crontab(hour="*/1"),
+    },
+    'schedule_trigger_super_heavy_unified_connectors': {
+        'task': 'unified_connector.tasks.schedule_trigger_super_heavy_unified_connectors',
+        # Every 6 hours
+        'schedule': crontab(hour="*/6"),
+    },
 }
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 if IN_AWS_COPILOT_ECS:
     CELERY_BEAT_SCHEDULE.update({

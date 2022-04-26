@@ -3,6 +3,7 @@ from typing import List
 import os
 import copy
 import logging
+from datetime import timedelta
 from urllib.parse import urlparse
 
 from celery import shared_task
@@ -137,7 +138,7 @@ class UnifiedConnectorTask():
         return len(connector_leads)
 
     @classmethod
-    def _send_trigger_request_to_extractor(cls, connector_leads_qs: models.QuerySet[ConnectorLead]):
+    def send_trigger_request_to_extractor(cls, connector_leads_qs: models.QuerySet[ConnectorLead]):
         paginator = Paginator(
             connector_leads_qs.filter(
                 extraction_status=ConnectorLead.ExtractionStatus.PENDING
@@ -160,20 +161,23 @@ class UnifiedConnectorTask():
         return processed
 
     @classmethod
-    def _process_unified_connector_source(cls, source):
+    def process_unified_connector_source(cls, source):
         source.status = ConnectorSource.Status.PROCESSING
-        source.save(update_fields=('status',))
-        source.last_fetched_at = timezone.now()
+        source.start_date = timezone.now()
+        source.save(update_fields=('status', 'start_date'))
+        update_fields = ['status', 'last_fetched_at', 'end_date']
         try:
             # Fetch leads
             cls._process_unified_source(source)
             source.status = ConnectorSource.Status.SUCCESS
             source.generate_stats(commit=False)
-            source.save(update_fields=('status', 'stats', 'last_fetched_at',))
+            update_fields.append('stats')
         except Exception:
             source.status = ConnectorSource.Status.FAILURE
             logger.error(f'Failed to process source: {source}', exc_info=True)
-            source.save(update_fields=('status', 'last_fetched_at',))
+        source.last_fetched_at = timezone.now()
+        source.end_date = timezone.now()
+        source.save(update_fields=update_fields)
 
     @classmethod
     def process_unified_connector(cls, unified_connector_id):
@@ -182,9 +186,9 @@ class UnifiedConnectorTask():
             logger.warning(f'Skippping processing for inactive connector (pk:{unified_connector.pk}) {unified_connector}')
             return
         for source in unified_connector.sources.all():
-            cls._process_unified_connector_source(source)
+            cls.process_unified_connector_source(source)
         # Send trigger to extractor
-        cls._send_trigger_request_to_extractor(
+        cls.send_trigger_request_to_extractor(
             ConnectorLead.objects.filter(connectorsourcelead__source__unified_connector=unified_connector)
         )
 
@@ -207,3 +211,62 @@ def retry_connector_leads():
         )
     except Exception:
         logger.error('Retry connector lead failed', exc_info=True)
+
+
+def _trigger_connector_sources(max_execution_time, threshold, limit):
+    sources_qs = ConnectorSource.objects.annotate(
+        execution_time=models.F('ended_at') - models.F('started_at'),
+    ).exclude(
+        execution_time__isnull=False,
+        status=ConnectorSource.Status.PROCESSING,
+    ).filter(
+        unified_connector__is_active=True,
+        execution_time__lte=max_execution_time,
+        last_fetched_at__lte=timezone.now() - threshold,
+    ).order_by('execution_time')
+
+    processed_unified_connectors = set()
+    for source in sources_qs.all()[:limit]:
+        try:
+            UnifiedConnectorTask.process_unified_connector_source(source)
+            processed_unified_connectors.add(source.unified_connector_id)
+        except Exception:
+            logger.error('Failed to trigger connector source', exc_info=True)
+    # Trigger connector leads
+    for unified_connector_id in processed_unified_connectors:
+        UnifiedConnectorTask.send_trigger_request_to_extractor(
+            ConnectorLead.objects.filter(connectorsourcelead__source__unified_connector=unified_connector_id)
+        )
+
+
+@shared_task
+@redis_lock('schedule_trigger_quick_unified_connectors', 60 * 60)
+def schedule_trigger_quick_unified_connectors():
+    # NOTE: Process connectors sources which have runtime <= 3 min and was processed 3 hours before.
+    _trigger_connector_sources(
+        timedelta(minutes=3),
+        timedelta(hours=3),
+        20,
+    )
+
+
+@shared_task
+@redis_lock('schedule_trigger_heavy_unified_connectors', 60 * 60)
+def schedule_trigger_heavy_unified_connectors():
+    # NOTE: Process connectors sources which have runtime <= 10 min and was processed 3 hours ago.
+    _trigger_connector_sources(
+        timedelta(minutes=10),
+        timedelta(hours=3),
+        6,
+    )
+
+
+@shared_task
+@redis_lock('schedule_trigger_heavy_unified_connectors', 60 * 60)
+def schedule_trigger_super_heavy_unified_connectors():
+    # NOTE: Process connectors sources which have runtime <= 1 hour and was processed 24 hours ago.
+    _trigger_connector_sources(
+        timedelta(hours=1),
+        timedelta(hours=24),
+        10,
+    )
