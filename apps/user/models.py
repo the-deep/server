@@ -165,6 +165,7 @@ class Feature(models.Model):
         POLYGON_SUPPORT_GEO = 'polygon_support_geo', 'Polygon support geo'
         ENTRY_VISUALIZATION_CONFIGURATION = 'entry_visualization_configuration', 'Entry visualization configuration'
         CONNECTORS = 'connectors', 'Unified Connectors'
+        ASSISTED = 'assisted', 'Assisted Tagging'
         # Deprecated keys
         QUALITY_CONTROL = 'quality_control', 'Quality Control (Deprecated)'
         NEW_UI = 'new_ui', 'New UI (Deprecated)'
