@@ -48,7 +48,9 @@ class TestOrganizationTypeQuery(GraphQLTestCase):
             }
         '''
         Organization.objects.all().delete()
-        organizations = OrganizationFactory.create_batch(3)
+        org1 = OrganizationFactory.create(title='org-1')
+        org2 = OrganizationFactory.create(title='org-2')
+        org3 = OrganizationFactory.create(title='org-3')
         user = UserFactory.create()
 
         # Without authentication -----
@@ -63,7 +65,7 @@ class TestOrganizationTypeQuery(GraphQLTestCase):
             ],
             [
                 org.title
-                for org in organizations[::-1]
+                for org in [org3, org2, org1]
             ],
             content,
         )

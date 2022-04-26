@@ -127,16 +127,13 @@ class ConnectorViewSet(viewsets.ModelViewSet):
         project_id = request.data.pop('project', None)
         project = project_id and Project.objects.get(id=project_id)
 
-        offset = request.data.pop('offset', None) or 0
-        limit = request.data.pop('limit', None) or Source.DEFAULT_PER_PAGE
-
         params = {
             **(connector.params or {}),
             **(request.data or {}),
         }
 
         source = source_store[connector.source.key]()
-        data, count = source.get_leads(params, offset, limit)
+        data, count = source.get_leads(params)
 
         # Paginate manually
         # FIXME: Make this better: probably cache, and also optimize
@@ -153,7 +150,6 @@ class ConnectorViewSet(viewsets.ModelViewSet):
             'count': count,
             'has_emm_triggers': getattr(source, 'has_emm_triggers', False),
             'has_emm_entities': getattr(source, 'has_emm_entities', False),
-            'count_per_page': limit,
             'results': results,
         })
 

@@ -33,6 +33,12 @@ TEST_CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
+DUMMY_TEST_CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
 TEST_AUTH_PASSWORD_VALIDATORS = []
 
 

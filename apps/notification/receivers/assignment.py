@@ -17,15 +17,18 @@ def lead_assignment_signal(sender, instance, action, **kwargs):
     user = get_current_user()
     if action == 'post_add' and pk_set and user:
         for receiver_user in pk_set:
-            if Assignment.objects.filter(lead__id=instance.id,
-                                         created_for_id=receiver_user,
-                                         project=instance.project).exists():
+            if Assignment.objects.filter(
+                lead__id=instance.id,
+                created_for_id=receiver_user,
+                project=instance.project,
+            ).exists():
                 continue
             Assignment.objects.create(
                 content_object=instance,
                 created_for_id=receiver_user,
                 project=instance.project,
-                created_by=user,)
+                created_by=user,
+            )
 
     elif action == 'post_remove' and pk_set and user:
         for receiver_user in pk_set:

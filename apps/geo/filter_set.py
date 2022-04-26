@@ -1,15 +1,25 @@
+from functools import reduce
+
 import django_filters
 from django.db import models
 from django.db.models.functions import Concat
-from utils.graphene.filters import IDListFilter
 
-from geo.models import (
+from deep.filter_set import OrderEnumMixin
+from utils.graphene.filters import (
+    IDListFilter,
+    StringListFilter,
+    MultipleInputFilter,
+)
+
+from project.models import Project
+from user_resource.filters import UserResourceFilterSet
+
+from .models import (
     AdminLevel,
     GeoArea,
     Region,
 )
-from project.models import Project
-from user_resource.filters import UserResourceFilterSet
+from .enums import GeoAreaOrderingEnum
 
 
 class GeoAreaFilterSet(django_filters.rest_framework.FilterSet):
@@ -18,7 +28,7 @@ class GeoAreaFilterSet(django_filters.rest_framework.FilterSet):
         method='geo_area_label'
     )
 
-    class Meat:
+    class Meta:
         model = GeoArea
         fields = ()
 
@@ -80,14 +90,19 @@ class AdminLevelFilterSet(django_filters.rest_framework.FilterSet):
 
 
 # ------------------------------ Graphql filters -----------------------------------
-class GeoAreaGqlFilterSet(django_filters.rest_framework.FilterSet):
+class GeoAreaGqlFilterSet(OrderEnumMixin, django_filters.rest_framework.FilterSet):
     ids = IDListFilter(field_name='id')
     search = django_filters.CharFilter(
         label='Geo Area Label search',
         method='geo_area_label'
     )
+    titles = StringListFilter(
+        label='Geo Area Label search',
+        method='filter_titles'
+    )
+    ordering = MultipleInputFilter(GeoAreaOrderingEnum, method='ordering_filter')
 
-    class Meat:
+    class Meta:
         model = GeoArea
         fields = ()
 
@@ -104,4 +119,19 @@ class GeoAreaGqlFilterSet(django_filters.rest_framework.FilterSet):
                     output_field=models.fields.CharField()
                 ),
             ).filter(label__icontains=value)
+        return queryset
+
+    def filter_titles(self, queryset, name, values):
+        if values:
+            # Let's only use 20 max.
+            _values = values[:20]
+            return queryset.filter(
+                reduce(
+                    lambda acc, item: acc | item,
+                    [
+                        models.Q(title__icontains=value)
+                        for value in _values
+                    ]
+                )
+            )
         return queryset

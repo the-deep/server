@@ -11,7 +11,9 @@ from questionnaire.serializers import FrameworkQuestionSerializer
 from user.models import User, Feature
 from user.serializers import SimpleUserSerializer
 from project.models import Project
+from assisted_tagging.models import PredictionTagAnalysisFrameworkWidgetMapping
 from organization.serializers import SimpleOrganizationSerializer
+from assisted_tagging.serializers import PredictionTagAnalysisFrameworkMapSerializer
 
 from .models import (
     AnalysisFramework,
@@ -389,6 +391,7 @@ class SectionGqlSerializer(TempClientIdMixin, WritableNestedModelSerializer):
 class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
     primary_tagging = SectionGqlSerializer(source='section_set', many=True, required=False)
     secondary_tagging = WidgetGqlSerializer(many=True, write_only=False, required=False)
+    prediction_tags_mapping = PredictionTagAnalysisFrameworkMapSerializer(many=True, write_only=False, required=False)
     client_id = None  # Inherited from UserResourceSerializer
 
     class Meta:
@@ -397,6 +400,7 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
             'title', 'description', 'is_private', 'properties', 'organization', 'preview_image',
             'created_at', 'created_by', 'modified_at', 'modified_by',
             'primary_tagging', 'secondary_tagging',
+            'prediction_tags_mapping', 'assisted_tagging_enabled',
         )
 
     # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
@@ -440,6 +444,20 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
         )
         return items
 
+    def validate_prediction_tags_mapping(self, prediction_tags_mapping):
+        framework = self.instance
+        if framework is None:
+            raise serializers.ValidationError("Can't create prediction tag mapping for new framework. Save first!")
+        widget_qs = Widget.objects.filter(
+            id__in=[
+                _map['widget'].pk
+                for _map in prediction_tags_mapping
+            ]
+        )
+        if list(widget_qs.values_list('analysis_framework', flat=True).distinct()) != [framework.pk]:
+            raise serializers.ValidationError('Found widgets from another Analysis Framework')
+        return prediction_tags_mapping
+
     def _delete_old_secondary_taggings(self, af, secondary_tagging):
         current_ids = [
             widget_data['id'] for widget_data in secondary_tagging
@@ -469,11 +487,47 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
             # Overwriting AF on save
             serializer.save(analysis_framework=af)
 
+    def _delete_old_prediction_tags_mapping(self, af, prediction_tags_mapping):
+        current_ids = [
+            mapping['id']
+            for mapping in prediction_tags_mapping
+            if 'id' in mapping
+        ]
+        qs_to_delete = PredictionTagAnalysisFrameworkWidgetMapping.objects\
+            .filter(
+                widget__analysis_framework=af,
+            ).exclude(pk__in=current_ids)  # Exclude current provided widgets
+        qs_to_delete.delete()
+
+    def _save_prediction_tags_mapping(self, af, prediction_tags_mapping):
+        # Create secondary tagging widgets (Primary/Section widgets are created using WritableNestedModelSerializer)
+        for prediction_tag_mapping in prediction_tags_mapping:
+            id = prediction_tag_mapping.get('id')
+            mapping = None
+            if id:
+                mapping = PredictionTagAnalysisFrameworkWidgetMapping.objects.filter(
+                    widget__analysis_framework=af,
+                    widget=prediction_tag_mapping['widget'],
+                    pk=id,
+                ).first()
+            serializer = PredictionTagAnalysisFrameworkMapSerializer(
+                instance=mapping,
+                data=prediction_tag_mapping,
+                context=self.context,
+                partial=True,
+            )
+            serializer.is_valid(raise_exception=True)  # This might be already validated
+            # Overwriting AF on save
+            serializer.save()
+
     def create(self, validated_data):
         validated_data.pop('secondary_tagging', None)
+        validated_data.pop('prediction_tags_mapping', None)
         secondary_tagging = self.initial_data.get('secondary_tagging', None)
+        prediction_tags_mapping = self.initial_data.get('prediction_tags_mapping', None)
         # Create AF
         instance = super().create(validated_data)
+        prediction_tags_mapping and self._save_prediction_tags_mapping(instance, prediction_tags_mapping)
         secondary_tagging and self._save_secondary_taggings(instance, secondary_tagging)
         # TODO: Check if there are any recursive conditionals
         # Create a owner role
@@ -485,13 +539,18 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
 
     def update(self, instance, validated_data):
         validated_data.pop('secondary_tagging', None)
+        validated_data.pop('prediction_tags_mapping', None)
         secondary_tagging = self.initial_data.get('secondary_tagging', None)
+        prediction_tags_mapping = self.initial_data.get('prediction_tags_mapping', None)
         # Update AF
         instance = super().update(instance, validated_data)
         # Update secondary_tagging
         if secondary_tagging is not None:
             self._delete_old_secondary_taggings(instance, secondary_tagging)
             self._save_secondary_taggings(instance, secondary_tagging)
+        if prediction_tags_mapping is not None:
+            self._delete_old_prediction_tags_mapping(instance, prediction_tags_mapping)
+            self._save_prediction_tags_mapping(instance, prediction_tags_mapping)
         # Create a owner role for created_by if it's removed
         if instance.created_by_id and not instance.members.filter(id=instance.created_by_id).exists():
             owner_role = instance.get_or_create_owner_role()

@@ -18,6 +18,7 @@ from user_group import mutation as user_group_mutation, schema as user_group_sch
 from organization import schema as organization_schema
 from geo import schema as geo_schema
 from notification import schema as notification_schema, mutation as notification_mutation
+from assisted_tagging import schema as assisted_tagging_schema
 
 
 class Query(
@@ -30,8 +31,14 @@ class Query(
     notification_schema.Query,
     graphene.ObjectType
 ):
+    assisted_tagging = graphene.Field(assisted_tagging_schema.AssistedTaggingRootQueryType)
+
     if settings.DEBUG:
         _debug = graphene.Field(DjangoDebug, name="_debug")
+
+    @staticmethod
+    def resolve_assisted_tagging(root, info, **kwargs):
+        return {}
 
 
 class Mutation(

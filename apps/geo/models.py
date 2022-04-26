@@ -302,6 +302,13 @@ class GeoArea(models.Model):
     def __str__(self):
         return self.title
 
+    @classmethod
+    def get_for_project(cls, project, is_published=True):
+        return cls.objects.filter(
+            admin_level__region__is_published=is_published,
+            admin_level__region__project=project,
+        )
+
     def clone_to(self, admin_level, parent=None):
         geo_area = GeoArea(
             admin_level=admin_level,

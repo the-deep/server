@@ -24,6 +24,9 @@ from project.serializers import SimpleProjectSerializer
 from gallery.serializers import SimpleFileSerializer, File
 from user.models import User
 from project.models import ProjectMembership
+from unified_connector.models import ConnectorSourceLead
+
+from .tasks import LeadExtraction
 from .models import (
     LeadGroup,
     Lead,
@@ -429,6 +432,7 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
             'authors',
             'emm_triggers',
             'emm_entities',
+            'connector_lead',
             'client_id',  # From TempClientIdMixin
         )
 
@@ -494,6 +498,15 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
         # Save Assignee
         if assignee:
             lead.assignee.add(assignee)
+        # If connector lead is provided, set already_added for all connector leads
+        if lead.connector_lead:
+            # TODO: And copy simplified_text from that connector_lead.
+            LeadExtraction.save_lead_data_using_connector_lead(lead, lead.connector_lead)
+            ConnectorSourceLead.update_aleady_added_using_lead(lead, added=True)
+            ConnectorSourceLead.objects.filter(
+                connector_lead=lead.connector_lead,
+                source__unified_connector__project=lead.project,
+            ).update(already_added=True)
         return lead
 
     def update(self, instance, validated_data):
@@ -623,3 +636,55 @@ class LeadCopyGqSerializer(ProjectPropertySerializerMixin, serializers.Serialize
                 new_lead = self.clone_lead(lead, project_id, user)
                 new_lead and new_leads.append(new_lead)
         return new_leads
+
+
+class ExtractCallbackSerializer(serializers.Serializer):
+    """
+    Serialize deepl extractor
+    """
+    client_id = serializers.CharField()
+    url = serializers.CharField()
+    extraction_status = serializers.IntegerField()  # 0 = Failed, 1 = Success
+    # Data fields
+    images_path = serializers.ListField(
+        child=serializers.CharField(allow_blank=True),
+        required=False, default=[],
+    )
+    text_path = serializers.CharField(required=False)
+    total_words_count = serializers.IntegerField(required=False, default=0)
+    total_pages = serializers.IntegerField(required=False, default=0)
+
+    def validate(self, data):
+        client_id = data['client_id']
+        try:
+            data['lead'] = LeadExtraction.get_lead_from_client_id(client_id)
+        except Exception as e:
+            raise serializers.ValidationError({
+                'client_id': str(e),
+            })
+        if data['extraction_status'] == 1 and data.get('text_path') in [None, '']:
+            raise serializers.ValidationError({
+                'text_path': 'text_path is required when extraction_status is success/1'
+            })
+        if data['extraction_status'] == 1:
+            errors = {}
+            for key in ['text_path', 'total_words_count', 'total_pages']:
+                if key not in data:
+                    errors[key] = f'<{key}> is missing. Required when the extraction is 1 (Success)'
+            if errors:
+                raise serializers.ValidationError(errors)
+        return data
+
+    def create(self, data):
+        success = data['extraction_status'] == 1
+        lead = data['lead']   # Added from validate
+        if success:
+            return LeadExtraction.save_lead_data(
+                lead,
+                data['text_path'],
+                data.get('images_path', [])[:10],   # TODO: Support for more images, to much image will error.
+                data.get('total_words_count'),
+                data.get('total_pages'),
+            )
+        lead.update_extraction_status(Lead.ExtractionStatus.FAILED)
+        return lead

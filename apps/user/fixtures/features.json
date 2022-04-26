@@ -62,5 +62,13 @@
             "key": "analysis",
             "title": "Analysis Module"
         }
+    },
+    {
+        "model": "user.feature",
+        "pk": 9,
+        "fields": {
+            "key": "connectors",
+            "title": "Unified Connectors"
+        }
     }
 ]

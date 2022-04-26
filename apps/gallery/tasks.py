@@ -1,5 +1,4 @@
 from celery import shared_task
-from django.conf import settings
 from gallery.models import (
     File,
     FilePreview,
@@ -9,13 +8,10 @@ from utils.extractor.file_document import FileDocument
 
 from redis_store import redis
 import reversion
-import requests
 
 import logging
 
 logger = logging.getLogger(__name__)
-
-DEEPL_NGRAMS_URL = settings.DEEPL_API + '/keywords-extraction/'
 
 # SEE lead.tasks for better explanation of these functions
 
@@ -42,19 +38,8 @@ def _extract_from_file_core(file_preview_id):
             except Exception:
                 logger.error('gallery._extract_from_file_core', exc_info=True)
                 continue
-
         if all_text:
             file_preview.text = all_text
-            data = {
-                'document': all_text
-            }
-            try:
-                response = requests.post(DEEPL_NGRAMS_URL,
-                                         data=data).json()
-                file_preview.ngrams = response
-            except Exception:
-                logger.error('gallery.DEEPL_NGRAMS', exc_info=True)
-
         file_preview.extracted = True
         file_preview.save()
 

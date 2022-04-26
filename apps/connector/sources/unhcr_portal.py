@@ -1,6 +1,9 @@
-from bs4 import BeautifulSoup as Soup
+import json
+import copy
 import requests
 import datetime
+
+from bs4 import BeautifulSoup as Soup
 
 from .base import Source
 from connector.utils import ConnectorWrapper
@@ -240,11 +243,6 @@ class UNHCRPortal(Source):
             'field_type': 'date',
             'title': 'To',
         },
-        {
-            'key': 'page',
-            'field_type': 'number',
-            'title': 'Page',
-        },
     ]
     params = {
         'type[]': [
@@ -256,62 +254,71 @@ class UNHCRPortal(Source):
     }
 
     def get_content(self, url, params):
-        resp = requests.get(url, params=params)
-        return resp.text
+        return requests.get(url, params=params).text
 
-    def fetch(self, params, offset, limit):
+    def fetch(self, params):
         results = []
-        country = params.pop('country', None)
-        date_from = _format_date_or_none(params.pop('date_from', None))
-        date_to = _format_date_or_none(params.pop('date_to', None))
+        updated_params = copy.deepcopy(params)
+
+        country = updated_params.pop('country', None)
+        date_from = _format_date_or_none(updated_params.pop('date_from', None))
+        date_to = _format_date_or_none(updated_params.pop('date_to', None))
         if country:
-            params['global_filter[country_json]'] = '{"0":"' + country + '"}'
-            params['global_filter[country]'] = country
+            updated_params['country_json'] = json.dumps({'0': country})
+            updated_params['country'] = country
         if date_from:
-            params['global_filter[date_from]'] = date_from
+            updated_params['date_from'] = date_from
         if date_to:
-            params['global_filter[date_to]'] = date_to
+            updated_params['date_to'] = date_to
 
-        params.update(self.params)  # type is default
+        updated_params.update(self.params)  # type is default
 
-        content = self.get_content(self.URL, params)
-        soup = Soup(content, 'html.parser')
-        contents = soup.findAll('ul', {'class': 'searchResults'})
-        if not contents:
-            return results, 0
+        page = 1
+        while True:
+            updated_params['page'] = page
+            content = self.get_content(self.URL, updated_params)
+            soup = Soup(content, 'html.parser')
+            contents = soup.findAll('ul', {'class': 'searchResults'})
+            if not contents:
+                return results, 0
 
-        content = contents[0]
-        items = content.findAll('li', {'class': ['searchResultItem']})
+            content = contents[0]
+            items = content.findAll('li', {'class': ['searchResultItem']})
 
-        total_count = len(items)
-        limited_items = items[offset: offset + limit]
+            for item in items:
+                itemcontent = item.find(
+                    'div',
+                    {'class': ['searchResultItem_content', 'media_body']}
+                )
+                urlcontent = item.find(
+                    'div',
+                    {'class': 'searchResultItem_download'}
+                )
+                datecontent = item.find(
+                    'span',
+                    {'class': 'searchResultItem_date'}
+                )
+                title = itemcontent.find('a').get_text()
+                pdfurl = urlcontent.find('a')['href']
+                raw_date = datecontent.find('b').get_text()  # 4 July 2018
+                date = datetime.datetime.strptime(raw_date, '%d %B %Y')
+                data = {
+                    'title': title and title.strip(),
+                    'published_on': date.date(),
+                    'url': pdfurl,
+                    'source': 'UNHCR Portal',
+                    'author': '',
+                    'source_type': '',
+                    'website': 'data2.unhcr.org'
+                }
+                results.append(data)
+            footer = soup.find('div', {'class': 'pgSearch_results_footer'})
+            if not footer:
+                break
+            next_url = footer.find('a', {'rel': 'next'})
+            if next_url and next_url['href']:
+                page += 1
+            else:
+                break
 
-        for item in limited_items:
-            itemcontent = item.find(
-                'div',
-                {'class': ['searchResultItem_content', 'media_body']}
-            )
-            urlcontent = item.find(
-                'div',
-                {'class': 'searchResultItem_download'}
-            )
-            datecontent = item.find(
-                'span',
-                {'class': 'searchResultItem_date'}
-            )
-            title = itemcontent.find('a').get_text()
-            pdfurl = urlcontent.find('a')['href']
-            raw_date = datecontent.find('b').get_text()  # 4 July 2018
-            date = datetime.datetime.strptime(raw_date, '%d %B %Y')
-            data = {
-                'title': title.strip(),
-                'published_on': date.date(),
-                'url': pdfurl,
-                'source': 'UNHCR Portal',
-                'author': 'UNHCR Portal',
-                'source_type': '',
-                'website': 'data2.unhcr.org'
-            }
-            results.append(data)
-
-        return results, total_count
+        return results, len(results)

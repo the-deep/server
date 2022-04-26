@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 import hashlib
-from django.utils.hashable import make_hashable
-from django.utils.encoding import force_str
-from xml.sax.saxutils import escape as xml_escape
-from datetime import timedelta, datetime
-from django.conf import settings
-from redis_store import redis
-
 from collections import Counter
 from functools import reduce
 import os
@@ -17,6 +10,17 @@ import string
 import tempfile
 import requests
 import logging
+from datetime import timedelta, datetime
+
+from django.utils.hashable import make_hashable
+from django.utils.encoding import force_str
+from django.core.files.storage import FileSystemStorage, get_storage_class
+from django.conf import settings
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from xml.sax.saxutils import escape as xml_escape
+
+from redis_store import redis
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1)' + \
     ' AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
@@ -36,6 +40,9 @@ try:
     import plotly.graph_objs as ploty_go
 except ImportError as e:
     logger.warning(f'ImportError: {e}')
+
+
+StorageClass = get_storage_class()
 
 
 def is_valid_regex(string):
@@ -486,3 +493,26 @@ def has_select_related(obj, field):
     if field in obj._state.fields_cache:
         return True
     return False
+
+
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+
+def get_full_media_url(media_path):
+    if StorageClass == FileSystemStorage:
+        return f"{settings.HTTP_PROTOCOL}://{settings.DJANGO_API_HOST}{media_path}"
+    # With s3 storage
+    return media_path
+
+
+class UidBase64Helper():
+    @staticmethod
+    def encode(integer):
+        return urlsafe_base64_encode(force_bytes(integer))
+
+    @staticmethod
+    def decode(uidb64):
+        return force_text(urlsafe_base64_decode(uidb64))

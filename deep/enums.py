@@ -8,6 +8,8 @@ from export.enums import enum_map as export_enum_map
 from quality_assurance.enums import enum_map as quality_assurance_enum_map
 from analysis.enums import enum_map as analysis_enum_map
 from notification.enums import enum_map as notification_enum_map
+from unified_connector.enums import enum_map as unified_connector_enum_map
+from assisted_tagging.enums import enum_map as assisted_tagging_enum_map
 
 ENUM_TO_GRAPHENE_ENUM_MAP = {
     **user_enum_map,
@@ -19,5 +21,7 @@ ENUM_TO_GRAPHENE_ENUM_MAP = {
     **export_enum_map,
     **quality_assurance_enum_map,
     **analysis_enum_map,
-    **notification_enum_map
+    **notification_enum_map,
+    **unified_connector_enum_map,
+    **assisted_tagging_enum_map,
 }

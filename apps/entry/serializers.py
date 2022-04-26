@@ -632,6 +632,7 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
             'dropped_excerpt',
             'highlight_hidden',
             'attributes',
+            'draft_entry',
             'client_id',
         )
 
@@ -666,6 +667,12 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
                 'lead': 'Changing lead is not allowed'
             })
 
+        # ----------------- Validate Draft entry if provided
+        draft_entry = data.get('draft_entry')
+        if draft_entry and draft_entry.lead != lead:
+            raise serializers.ValidationError({
+                'draft_entry': 'Only attach draft entry from current lead.',
+            })
         # ---------------- Project
         if not self.instance:  # For create only
             data['project'] = self.context['request'].active_project

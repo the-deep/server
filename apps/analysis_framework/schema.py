@@ -11,7 +11,7 @@ from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin, File
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import AnalysisFrameworkPermissions as AfP
 from project.schema import AnalysisFrameworkVisibleProjectType
-
+from assisted_tagging.models import PredictionTagAnalysisFrameworkWidgetMapping
 from .models import (
     AnalysisFramework,
     Section,
@@ -81,7 +81,7 @@ class AnalysisFrameworkType(DjangoObjectType):
     class Meta:
         model = AnalysisFramework
         only_fields = (
-            'id', 'title', 'description', 'is_private', 'organization',
+            'id', 'title', 'description', 'is_private', 'assisted_tagging_enabled', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
         )
 
@@ -156,6 +156,25 @@ class AnalysisFrameworkMembershipType(ClientIdMixin, DjangoObjectType):
         only_fields = ('id', 'member', 'role', 'joined_at', 'added_by')
 
 
+class AnalysisFrameworkPredictionMappingType(ClientIdMixin, DjangoObjectType):
+    widget = graphene.ID(source='widget_id', required=True)
+    widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
+    tag = graphene.ID(source='tag_id')
+
+    class Meta:
+        model = PredictionTagAnalysisFrameworkWidgetMapping
+        fields = (
+            'id',
+            'widget',
+            'tag',
+            'association',
+        )
+
+    @staticmethod
+    def resolve_widget_type(root, info, **kwargs):
+        return root.widget.widget_id  # TODO: Dataloaders
+
+
 class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     primary_tagging = DjangoListField(SectionType)  # With section
     secondary_tagging = DjangoListField(WidgetType)  # Without section
@@ -164,12 +183,17 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     exportables = DjangoListField(AnalysisFrameworkExportableType)
     preview_image = graphene.Field(FileFieldType)
     visible_projects = DjangoListField(AnalysisFrameworkVisibleProjectType)
+    prediction_tags_mapping = graphene.List(
+        graphene.NonNull(
+            AnalysisFrameworkPredictionMappingType,
+        ),
+    )
 
     class Meta:
         model = AnalysisFramework
         skip_registry = True
         only_fields = (
-            'id', 'title', 'description', 'is_private', 'organization',
+            'id', 'title', 'description', 'is_private', 'assisted_tagging_enabled', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
             'properties',
         )
@@ -199,6 +223,14 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     @staticmethod
     def resolve_visible_projects(root, info):
         return info.context.dl.analysis_framework.visible_projects.load(root.id)
+
+    @staticmethod
+    def resolve_prediction_tags_mapping(root, info):
+        if root.get_current_user_role(info.context.request.user) is not None:
+            return PredictionTagAnalysisFrameworkWidgetMapping.objects.filter(
+                widget__analysis_framework=root,
+            ).all()  # TODO: Dataloaders
+        return []
 
 
 class AnalysisFrameworkListType(CustomDjangoListObjectType):

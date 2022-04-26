@@ -175,6 +175,9 @@ def get_project_entries_stats(project, skip_geo_data=False):
         'specific_needs_groups_widget': {
             'pk': 2681,
         },
+        'demographic_groups_widget': {
+            'pk': 8703,
+        },
     }
     """
 
@@ -206,16 +209,10 @@ def get_project_entries_stats(project, skip_geo_data=False):
         if type(config[key]) is not list:
             config[key] = [config[key]]
 
-    w_reliability_default = w_severity_default = {
+    w_reliability_default = w_severity_default = w_specific_needs_groups_default = w_demographic_groups_default = {
         'pk': None,
         'properties': {
             'options': [],
-        },
-    }
-    w_specific_needs_groups_default = {
-        'pk': None,
-        'properties': {
-            'options': []
         },
     }
 
@@ -224,6 +221,9 @@ def get_project_entries_stats(project, skip_geo_data=False):
 
     w_specific_needs_groups = _get_widget_info(
         config.get('specific_needs_groups_widget'), widgets, default=w_specific_needs_groups_default
+    )
+    w_demographic_groups = _get_widget_info(
+        config.get('demographic_groups_widget'), widgets, default=w_demographic_groups_default
     )
     w_severity = _get_widget_info(config.get('severity_widget'), widgets, default=w_severity_default)
     w_reliability = _get_widget_info(config.get('reliability_widget'), widgets, default=w_reliability_default)
@@ -283,6 +283,13 @@ def get_project_entries_stats(project, skip_geo_data=False):
             'name': option['label'],
         } for option in w_specific_needs_groups['properties']['options']
     ]
+    w_demographic_groups_array = [
+        {
+            'id': option['key'],
+            'name': option['label'],
+        } for option in w_demographic_groups['properties']['options']
+    ]
+
     severity_units = [
         {
             'id': severity['key'],
@@ -306,6 +313,7 @@ def get_project_entries_stats(project, skip_geo_data=False):
         'sector_array': sector_array,
         'affected_groups_array': affected_groups_array,
         'specific_needs_groups_array': specific_needs_groups_array,
+        'demographic_groups_array': w_demographic_groups_array,
         'severity_units': severity_units,
         'reliability_units': reliability_units,
     }
@@ -336,6 +344,7 @@ def get_project_entries_stats(project, skip_geo_data=False):
             'reliability': collector.get(w_reliability['pk']),
             'geo': collector.get(w_geo['pk'], []),
             'special_needs': collector.get(w_specific_needs_groups['pk'], []),
+            'demographic_groups': collector.get(w_demographic_groups['pk'], []),
             'affected_groups': collector.get(w_ag['pk'], []),
             'context_sector': {
                 w['pk']: {

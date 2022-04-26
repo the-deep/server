@@ -1,9 +1,14 @@
+import copy
+import datetime
+
+from typing import List, Tuple, Union
 from functools import reduce
 from abc import ABC, abstractmethod
 from django.db.models import Q
 
 from organization.models import Organization
 from utils.common import random_key
+from utils.date_extractor import str_to_date
 
 from lead.models import Lead
 
@@ -39,9 +44,10 @@ class OrganizationSearch():
                 for _, d in text_queries
             ],
         )
-        exact_organizations = Organization.objects.filter(exact_query).all()
+        exact_organizations = Organization.objects.filter(exact_query).select_related('parent').all()
         organization_map = {
-            key.lower(): organization
+            # NOTE: organization.data will return itself or it's parent organization (handling merged organizations)
+            key.lower(): organization.data
             for organization in exact_organizations
             for key in [organization.title, organization.short_name, organization.long_name]
         }
@@ -64,17 +70,29 @@ class Source(ABC):
     DEFAULT_PER_PAGE = 25
 
     def __init__(self):
-        if not hasattr(self, 'title') \
-                or not hasattr(self, 'key') \
-                or not hasattr(self, 'options'):
+        if (
+            not hasattr(self, 'title') or
+            not hasattr(self, 'key') or
+            not hasattr(self, 'options')
+        ):
             raise Exception('Source not defined properly')
 
     @abstractmethod
-    def fetch(self, params, offset=None, limit=None):
-        pass
+    def fetch(self, params):
+        return [], 0
 
-    def get_leads(self, *args, **kwargs):
-        leads_data, total_count = self.fetch(*args, **kwargs)
+    def get_leads(self, params) -> Tuple[List[Lead], int]:
+        def _parse_date(date_raw) -> Union[None, datetime.date]:
+            if type(date_raw) == datetime.date:
+                return date_raw
+            elif type(date_raw) == datetime.datetime:
+                return date_raw.date()
+            else:
+                published_on = str_to_date(date_raw)
+                if published_on:
+                    return published_on.date()
+
+        leads_data, total_count = self.fetch(copy.deepcopy(params))
         if not leads_data:
             return [], total_count
 
@@ -86,10 +104,11 @@ class Source(ABC):
 
         leads = []
         for ldata in leads_data:
+            published_on = _parse_date(ldata['published_on'])
             lead = Lead(
                 id=ldata.get('id', random_key()),
                 title=ldata['title'],
-                published_on=ldata['published_on'],
+                published_on=published_on,
                 url=ldata['url'],
                 source_raw=ldata['source'],
                 author_raw=ldata['author'],
@@ -114,15 +133,10 @@ class Source(ABC):
 
         return leads, total_count
 
-    def query_leads(self, params, offset, limit):
+    def query_leads(self, params):
         from connector.serializers import SourceDataSerializer
 
-        if offset is None or offset < 0:
-            offset = 0
-        if not limit or limit < 0:
-            limit = Source.DEFAULT_PER_PAGE
-
-        data, total_count = self.get_leads(params, offset, limit)
+        data, total_count = self.get_leads(params)
         return SourceDataSerializer(
             data,
             many=True,

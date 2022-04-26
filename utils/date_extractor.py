@@ -1,10 +1,14 @@
+import datetime
+
+from typing import Union
+
 from dateutil.parser import parse
 import re
 
 
-def str_to_date(string):
+def str_to_date(value: str) -> Union[datetime.datetime, None]:
     try:
-        return parse(string)
+        return parse(value)
     except Exception:
         return None
 
