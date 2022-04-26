@@ -12,6 +12,7 @@ from organization.dataloaders import DataLoaders as OrganizationDataLoaders
 from analysis_framework.dataloaders import DataLoaders as AfDataloaders
 from quality_assurance.dataloaders import DataLoaders as QADataLoaders
 from geo.dataloaders import DataLoaders as GeoDataLoaders
+from unified_connector.dataloaders import DataLoaders as UnifiedConnectorDataLoaders
 
 
 class GlobalDataLoaders(WithContextMixin):
@@ -54,3 +55,7 @@ class GlobalDataLoaders(WithContextMixin):
     @cached_property
     def geo(self):
         return GeoDataLoaders(context=self.context)
+
+    @cached_property
+    def unified_connector(self):
+        return UnifiedConnectorDataLoaders(context=self.context)

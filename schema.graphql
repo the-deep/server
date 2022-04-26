@@ -28,6 +28,7 @@ type AnalysisFrameworkDetailType {
   modifiedBy: UserType
   description: String
   isPrivate: Boolean!
+  assistedTaggingEnabled: Boolean!
   organization: OrganizationType
   properties: GenericScalar
   currentUserRole: AnalysisFrameworkRoleTypeEnum
@@ -39,6 +40,7 @@ type AnalysisFrameworkDetailType {
   filters: [AnalysisFrameworkFilterType!]
   exportables: [AnalysisFrameworkExportableType!]
   visibleProjects: [AnalysisFrameworkVisibleProjectType!]
+  predictionTagsMapping: [AnalysisFrameworkPredictionMappingType!]
 }
 
 type AnalysisFrameworkExportableType {
@@ -69,8 +71,11 @@ input AnalysisFrameworkInputType {
   properties: GenericScalar
   organization: ID
   previewImage: Upload
+  createdBy: ID
   primaryTagging: [SectionGqlInputType!]
   secondaryTagging: [WidgetGqlInputType!]
+  predictionTagsMapping: [PredictionTagAnalysisFrameworkMapInputType!]
+  assistedTaggingEnabled: Boolean
 }
 
 type AnalysisFrameworkListType {
@@ -104,6 +109,15 @@ enum AnalysisFrameworkPermission {
   DELETE_FRAMEWORK
 }
 
+type AnalysisFrameworkPredictionMappingType {
+  id: ID!
+  widget: ID!
+  tag: ID
+  association: GenericScalar
+  clientId: String!
+  widgetType: WidgetWidgetTypeEnum!
+}
+
 type AnalysisFrameworkRoleType {
   id: ID!
   title: String!
@@ -128,6 +142,7 @@ type AnalysisFrameworkType {
   modifiedBy: UserType
   description: String
   isPrivate: Boolean!
+  assistedTaggingEnabled: Boolean!
   organization: OrganizationType
   currentUserRole: AnalysisFrameworkRoleTypeEnum
   previewImage: FileFieldType
@@ -219,6 +234,69 @@ type AssessmentType {
   modifiedBy: UserType
 }
 
+type AssistedTaggingModelPredictionTagType {
+  id: ID!
+  name: String!
+  tagId: String!
+  group: String
+  hideInAnalysisFrameworkMapping: Boolean!
+  isCategory: Boolean!
+  isDeprecated: Boolean!
+  parentTag: ID
+}
+
+type AssistedTaggingModelType {
+  id: ID!
+  modelId: String!
+  name: String!
+  versions: [AssistedTaggingModelVersionType!]
+}
+
+type AssistedTaggingModelVersionType {
+  id: ID!
+  version: String!
+}
+
+type AssistedTaggingMutationType {
+  draftEntryCreate(data: DraftEntryInputType!): CreateDraftEntry
+  missingPredictionReviewCreate(data: MissingPredictionReviewInputType!): CreateMissingPredictionReview
+  wrongPredictionReviewCreate(data: WrongPredictionReviewInputType!): CreateWrongPredictionReview
+  missingPredictionReviewDelete(id: ID!): DeleteMissingPredictionReview
+  wrongPredictionReviewDelete(id: ID!): DeleteWrongPredictionReview
+}
+
+enum AssistedTaggingPredictionDataTypeEnum {
+  RAW
+  TAG
+}
+
+type AssistedTaggingPredictionType {
+  id: ID!
+  value: String!
+  prediction: Decimal
+  threshold: Decimal
+  isSelected: Boolean!
+  modelVersion: ID!
+  modelVersionDeeplModelId: String!
+  draftEntry: ID!
+  dataType: AssistedTaggingPredictionDataTypeEnum!
+  dataTypeDisplay: EnumDescription!
+  category: ID
+  tag: ID
+  wrongPredictionReviews: [WrongPredictionReviewType!]
+}
+
+type AssistedTaggingQueryType {
+  draftEntry(id: ID!): DraftEntryType
+}
+
+type AssistedTaggingRootQueryType {
+  taggingModel(id: ID!): AssistedTaggingModelType
+  taggingModels: [AssistedTaggingModelType!]
+  predictionTag(id: ID!): AssistedTaggingModelPredictionTagType
+  predictionTags: [AssistedTaggingModelPredictionTagType!]
+}
+
 input AttributeGqInputType {
   id: ID
   data: GenericScalar
@@ -265,6 +343,7 @@ input BulkEntryInputType {
   droppedExcerpt: String
   highlightHidden: Boolean
   attributes: [AttributeGqInputType!]
+  draftEntry: ID
   clientId: String
 }
 
@@ -293,6 +372,7 @@ input BulkLeadInputType {
   authors: [ID!]
   emmTriggers: [LeadEMMTriggerInputType!]
   emmEntities: [EMMEntityInputType!]
+  connectorLead: ID
   clientId: String
 }
 
@@ -354,10 +434,130 @@ type ChangeUserPassword {
   ok: Boolean
 }
 
+enum ConnectorLeadExtractionStatusEnum {
+  PENDING
+  RETRYING
+  STARTED
+  SUCCESS
+  FAILED
+}
+
+type ConnectorLeadType {
+  id: ID!
+  url: String!
+  website: String!
+  title: String!
+  publishedOn: Date
+  sourceRaw: String!
+  authorRaw: String!
+  authors: [OrganizationType!]!
+  source: OrganizationType
+  extractionStatus: ConnectorLeadExtractionStatusEnum!
+  extractionStatusDisplay: EnumDescription!
+}
+
+input ConnectorSourceGqInputType {
+  id: ID
+  title: String!
+  source: ConnectorSourceSourceEnum!
+  params: GenericScalar
+  clientId: String
+}
+
+input ConnectorSourceLeadInputType {
+  blocked: Boolean
+}
+
+type ConnectorSourceLeadListType {
+  results: [ConnectorSourceLeadType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum ConnectorSourceLeadOrderingEnum {
+  ASC_ID
+  ASC_LEAD_CREATED_AT
+  ASC_LEAD_TITLE
+  DESC_ID
+  DESC_LEAD_CREATED_AT
+  DESC_LEAD_TITLE
+}
+
+type ConnectorSourceLeadType {
+  id: ID!
+  blocked: Boolean!
+  alreadyAdded: Boolean!
+  connectorLead: ConnectorLeadType!
+  source: ID!
+}
+
+type ConnectorSourceListType {
+  results: [ConnectorSourceType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum ConnectorSourceOrderingEnum {
+  ASC_ID
+  ASC_CREATED_AT
+  ASC_TITLE
+  ASC_SOURCE
+  DESC_ID
+  DESC_CREATED_AT
+  DESC_TITLE
+  DESC_SOURCE
+}
+
+enum ConnectorSourceSourceEnum {
+  ATOM_FEED
+  RELIEF_WEB
+  RSS_FEED
+  UNHCR
+}
+
+type ConnectorSourceStatsType {
+  date: Date!
+  count: Int!
+}
+
+enum ConnectorSourceStatusEnum {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILURE
+}
+
+type ConnectorSourceType {
+  id: ID!
+  title: String!
+  unifiedConnector: ID!
+  params: GenericScalar!
+  lastFetchedAt: DateTime
+  clientId: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  source: ConnectorSourceSourceEnum!
+  sourceDisplay: EnumDescription!
+  stats: [ConnectorSourceStatsType]
+  leadsCount: Int!
+  status: ConnectorSourceStatusEnum!
+  statusDisplay: EnumDescription!
+}
+
 type CreateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisFrameworkDetailType
+}
+
+type CreateDraftEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: DraftEntryType
 }
 
 type CreateEntry {
@@ -378,10 +578,22 @@ type CreateLead {
   result: LeadType
 }
 
+type CreateMissingPredictionReview {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: MissingPredictionReviewType
+}
+
 type CreateProjectJoin {
   errors: [GenericScalar!]
   ok: Boolean
   result: ProjectJoinRequestType
+}
+
+type CreateUnifiedConnector {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UnifiedConnectorType
 }
 
 type CreateUserExport {
@@ -396,6 +608,12 @@ type CreateUserGroup {
   result: UserGroupType
 }
 
+type CreateWrongPredictionReview {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: MissingPredictionReviewType
+}
+
 scalar Date
 
 type DateCountType {
@@ -404,6 +622,8 @@ type DateCountType {
 }
 
 scalar DateTime
+
+scalar Decimal
 
 type DeleteAssessment {
   errors: [GenericScalar!]
@@ -435,6 +655,18 @@ type DeleteLeadGroup {
   result: LeadGroupType
 }
 
+type DeleteMissingPredictionReview {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: MissingPredictionReviewType
+}
+
+type DeleteUnifiedConnector {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UnifiedConnectorType
+}
+
 type DeleteUserExport {
   errors: [GenericScalar!]
   ok: Boolean
@@ -445,6 +677,12 @@ type DeleteUserGroup {
   errors: [GenericScalar!]
   ok: Boolean
   result: UserGroupType
+}
+
+type DeleteWrongPredictionReview {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: WrongPredictionReviewType
 }
 
 type DjangoDebug {
@@ -466,6 +704,29 @@ type DjangoDebugSQL {
   transStatus: String
   isoLevel: String
   encoding: String
+}
+
+input DraftEntryInputType {
+  lead: ID!
+  excerpt: String!
+}
+
+enum DraftEntryPredictionStatusEnum {
+  PENDING
+  STARTED
+  DONE
+  SEND_FAILED
+}
+
+type DraftEntryType {
+  id: ID!
+  excerpt: String!
+  predictionReceivedAt: DateTime
+  predictionStatus: DraftEntryPredictionStatusEnum!
+  predictionStatusDisplay: EnumDescription!
+  predictions: [AssistedTaggingPredictionType!]
+  missingPredictionReviews: [MissingPredictionReviewType!]
+  relatedGeoareas: [ProjectGeoAreaType!]
 }
 
 input EMMEntityInputType {
@@ -535,6 +796,7 @@ input EntryInputType {
   droppedExcerpt: String
   highlightHidden: Boolean
   attributes: [AttributeGqInputType!]
+  draftEntry: ID
   clientId: String
 }
 
@@ -638,6 +900,7 @@ type EntryType {
   verifiedBy: [UserType!]
   verifiedByCount: Int!
   reviewCommentsCount: Int!
+  draftEntry: ID
 }
 
 scalar EnumDescription
@@ -801,6 +1064,7 @@ enum FeatureKey {
   ZOOMABLE_IMAGE
   POLYGON_SUPPORT_GEO
   ENTRY_VISUALIZATION_CONFIGURATION
+  CONNECTORS
   QUALITY_CONTROL
   NEW_UI
   ANALYSIS
@@ -821,6 +1085,13 @@ type GalleryFileType {
 }
 
 scalar GenericScalar
+
+enum GeoAreaOrderingEnum {
+  ASC_ID
+  ASC_ADMIN_LEVEL
+  DESC_ID
+  DESC_ADMIN_LEVEL
+}
 
 enum GroupMembershipRoleEnum {
   NORMAL
@@ -970,6 +1241,7 @@ enum LeadExistsEnum {
 enum LeadExtractionStatusEnum {
   PENDING
   STARTED
+  RETRYING
   SUCCESS
   FAILED
 }
@@ -1011,6 +1283,7 @@ input LeadInputType {
   authors: [ID!]
   emmTriggers: [LeadEMMTriggerInputType!]
   emmEntities: [EMMEntityInputType!]
+  connectorLead: ID
   clientId: String
 }
 
@@ -1139,6 +1412,23 @@ type MergedAsOrganizationType {
   logo: GalleryFileType
 }
 
+input MissingPredictionReviewInputType {
+  draftEntry: ID!
+  tag: ID!
+  category: ID!
+}
+
+type MissingPredictionReviewType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  category: ID!
+  tag: ID!
+  draftEntry: ID!
+}
+
 type Mutation {
   notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
   joinProject(data: ProjectJoinRequestInputType!): CreateProjectJoin
@@ -1263,6 +1553,14 @@ input PasswordChangeInputType {
 
 scalar PointScalar
 
+input PredictionTagAnalysisFrameworkMapInputType {
+  id: Int
+  widget: ID!
+  tag: ID
+  association: GenericScalar
+  clientId: String
+}
+
 type ProjectAcceptReject {
   errors: [GenericScalar!]
   ok: Boolean
@@ -1315,7 +1613,7 @@ type ProjectDetailType {
   assessments(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentListType
   reviewComment(id: ID!): EntryReviewCommentDetailType
   reviewComments(entry: ID, ordering: [EntryReviewCommentOrderingEnum!], page: Int = 1, pageSize: Int): EntryReviewCommentListType
-  geoAreas(ids: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): ProjectGeoAreaListType
+  geoAreas(ids: [ID!], search: String, titles: [String!], ordering: [GeoAreaOrderingEnum!], page: Int = 1, pageSize: Int): ProjectGeoAreaListType
   export(id: ID!): UserExportType
   exports(type: [ExportDataTypeEnum!], format: [ExportFormatEnum!], status: [ExportStatusEnum!], search: String, exportedAt: DateTime, exportedAtGte: DateTime, exportedAtLte: DateTime, page: Int = 1, ordering: String, pageSize: Int): UserExportListType
   entry(id: ID!): EntryType
@@ -1336,6 +1634,8 @@ type ProjectDetailType {
   userGroupMembers(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, usergroups: [ID!], page: Int = 1, ordering: String, pageSize: Int): ProjectUserGroupMembershipListType
   isVisualizationAvailable: Boolean!
   vizData: ProjectVizDataType
+  unifiedConnector: UnifiedConnectorQueryType
+  assistedTagging: AssistedTaggingQueryType
 }
 
 type ProjectExploreStatType {
@@ -1444,6 +1744,8 @@ type ProjectMutationType {
   projectUserMembershipBulk(deleteIds: [ID!], items: [BulkProjectMembershipInputType!]): BulkUpdateProjectMembership
   projectUserGroupMembershipBulk(deleteIds: [ID!], items: [BulkProjectUserGroupMembershipInputType!]): BulkUpdateProjectUserGroupMembership
   projectVizConfigurationUpdate(data: ProjectVizConfigurationInputType!): UpdateProjectVizConfiguration
+  unifiedConnector: UnifiedConnectorMutationType
+  assistedTagging: AssistedTaggingMutationType
 }
 
 type ProjectOrganizationType {
@@ -1466,6 +1768,10 @@ enum ProjectPermission {
   UPDATE_PROJECT
   DELETE_PROJECT
   CAN_ADD_MEMBER
+  VIEW_UNIFIED_CONNECTOR
+  CREATE_UNIFIED_CONNECTOR
+  UPDATE_UNIFIED_CONNECTOR
+  DELETE_UNIFIED_CONNECTOR
   CREATE_LEAD
   VIEW_ONLY_UNPROTECTED_LEAD
   VIEW_ALL_LEAD
@@ -1660,6 +1966,7 @@ type Query {
   projectsByRegion(projectFilter: RegionProjectFilterData, ordering: String): ProjectByRegionListType
   publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, page: Int = 1, ordering: String, pageSize: Int): PublicProjectListType
   publicProjectsByRegion(projectFilter: RegionProjectFilterData, page: Int = 1, ordering: String, pageSize: Int): PublicProjectByRegionListType
+  assistedTagging: AssistedTaggingRootQueryType
   _debug: DjangoDebug
 }
 
@@ -1764,10 +2071,82 @@ type SectionType {
   widgets: [WidgetType!]
 }
 
+type TriggerUnifiedConnector {
+  errors: [GenericScalar!]
+  ok: Boolean
+}
+
+input UnifiedConnectorInputType {
+  title: String!
+  isActive: Boolean
+  clientId: String
+}
+
+type UnifiedConnectorListType {
+  results: [UnifiedConnectorType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type UnifiedConnectorMutationType {
+  unifiedConnectorCreate(data: UnifiedConnectorWithSourceInputType!): CreateUnifiedConnector
+  unifiedConnectorUpdate(data: UnifiedConnectorInputType!, id: ID!): UpdateUnifiedConnector
+  unifiedConnectorWithSourceUpdate(data: UnifiedConnectorWithSourceInputType!, id: ID!): UpdateUnifiedConnectorWithSource
+  unifiedConnectorDelete(id: ID!): DeleteUnifiedConnector
+  unifiedConnectorTrigger(id: ID!): TriggerUnifiedConnector
+  connectorSourceLeadUpdate(data: ConnectorSourceLeadInputType!, id: ID!): UpdateConnectorSourceLead
+}
+
+enum UnifiedConnectorOrderingEnum {
+  ASC_ID
+  ASC_CREATED_AT
+  ASC_TITLE
+  DESC_ID
+  DESC_CREATED_AT
+  DESC_TITLE
+}
+
+type UnifiedConnectorQueryType {
+  unifiedConnector(id: ID!): UnifiedConnectorType
+  unifiedConnectors(search: String, ordering: [UnifiedConnectorOrderingEnum!], isActive: Boolean, page: Int = 1, pageSize: Int): UnifiedConnectorListType
+  connectorSource(id: ID!): ConnectorSourceType
+  connectorSources(search: String, ordering: [ConnectorSourceOrderingEnum!], sources: [ConnectorSourceSourceEnum!], statuses: [ConnectorSourceStatusEnum!], unifiedConnectors: [ID!], page: Int = 1, pageSize: Int): ConnectorSourceListType
+  connectorSourceLead(id: ID!): ConnectorSourceLeadType
+  connectorSourceLeads(ordering: [ConnectorSourceLeadOrderingEnum!], sources: [ID!], blocked: Boolean, alreadyAdded: Boolean, extractionStatus: [ConnectorLeadExtractionStatusEnum!], search: String, authorOrganizations: [ID!], publishedOn: Date, publishedOnGte: Date, publishedOnLte: Date, page: Int = 1, pageSize: Int): ConnectorSourceLeadListType
+}
+
+type UnifiedConnectorType {
+  id: ID!
+  title: String!
+  isActive: Boolean!
+  clientId: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  project: ID!
+  sources: [ConnectorSourceType!]
+  leadsCount: Int!
+}
+
+input UnifiedConnectorWithSourceInputType {
+  title: String!
+  isActive: Boolean
+  clientId: String
+  sources: [ConnectorSourceGqInputType!]
+}
+
 type UpdateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisFrameworkDetailType
+}
+
+type UpdateConnectorSourceLead {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ConnectorSourceLeadType
 }
 
 type UpdateEntry {
@@ -1798,6 +2177,18 @@ type UpdateProjectVizConfiguration {
   errors: [GenericScalar!]
   ok: Boolean
   result: ProjectVizDataType
+}
+
+type UpdateUnifiedConnector {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UnifiedConnectorType
+}
+
+type UpdateUnifiedConnectorWithSource {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UnifiedConnectorType
 }
 
 type UpdateUserGroup {
@@ -2014,4 +2405,17 @@ enum WidgetWidgetTypeEnum {
 enum WidgetWidthTypeEnum {
   FULL
   HALF
+}
+
+input WrongPredictionReviewInputType {
+  prediction: ID!
+}
+
+type WrongPredictionReviewType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  prediction: ID!
 }

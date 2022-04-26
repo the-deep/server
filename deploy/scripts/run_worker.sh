@@ -22,7 +22,7 @@ if ! [ -z "$CELERY_MAX_TASKS_PER_CHILD" ]; then
 fi
 
 if [[ $CELERY_RUN_BEAT == "true"  ]]; then
-    celery_args="$celery_args--statedb=celery-worker.state --scheduler django_celery_beat.schedulers:DatabaseScheduler "
+    celery_args="$celery_args-B "
 fi
 
-celery -A deep worker -B -l info $celery_args
+celery -A deep worker -l info $celery_args

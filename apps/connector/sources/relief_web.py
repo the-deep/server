@@ -255,13 +255,14 @@ class ReliefWeb(Source):
             return {'operator': 'AND', 'conditions': filters}
         return {}
 
-    def fetch(self, params, offset, limit):
+    def fetch(self, params):
         results = []
 
         post_params = {}
         post_params['fields'] = {
-            'include': ['url_alias', 'title', 'date.original', 'file',
-                        'source', 'source.homepage']
+            'include': [
+                'url_alias', 'title', 'date.original', 'file', 'source', 'source.homepage'
+            ]
         }
 
         post_params['filter'] = self.parse_filter_params(params)
@@ -273,32 +274,33 @@ class ReliefWeb(Source):
                 'operator': 'AND',
             }
 
-        if offset:
-            post_params['offset'] = offset
-        if limit:
-            post_params['limit'] = limit
-
+        post_params['limit'] = 1000
         post_params['sort'] = ['date.original:desc', 'title:asc']
 
-        content = self.get_content(self.URL, post_params)
-        resp = json.loads(content)
+        relief_url = self.URL
+        total_count = 0
 
-        total_count = resp['totalCount']
-        limited_data = resp['data']  # The offset limit is handled by the api itself
+        while relief_url is not None:
+            content = self.get_content(relief_url, post_params)
+            resp = json.loads(content)
+            total_count = resp['totalCount']
 
-        for datum in limited_data:
-            fields = datum['fields']
-            url = fields['file'][0]['url'] if fields.get('file') else fields['url_alias']
-            lead = {
-                'id': str(datum['id']),
-                'title': fields['title'],
-                'published_on': fields['date']['original'],
-                'url': url,
-                'source': 'reliefweb',
-                'source_type': Lead.SourceType.WEBSITE,
-                'author': fields['source'][0]['name'],
-                'website': 'www.reliefweb.int',
-            }
-            results.append(lead)
-
+            for datum in resp['data']:
+                fields = datum['fields']
+                url = fields['file'][0]['url'] if fields.get('file') else fields['url_alias']
+                title = fields['title']
+                published_on = (fields.get('date') or {}).get('original')
+                author = ((fields.get('source') or [{}])[0] or {}).get('name')
+                lead = {
+                    'id': str(datum['id']),
+                    'title': title,
+                    'published_on': published_on,
+                    'url': url,
+                    'source': 'reliefweb',
+                    'source_type': Lead.SourceType.WEBSITE.value,
+                    'author': author,
+                    'website': 'www.reliefweb.int',
+                }
+                results.append(lead)
+            relief_url = ((resp.get('links') or {}).get('next') or {}).get('href')
         return results, total_count

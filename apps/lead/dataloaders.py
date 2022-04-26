@@ -9,6 +9,9 @@ from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 from entry.models import Entry
 from organization.models import Organization
 from ary.models import Assessment
+
+from organization.dataloaders import OrganizationLoader
+
 from .models import Lead, LeadPreview, LeadGroup
 
 
@@ -67,15 +70,6 @@ class LeadGroupLeadCountLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key, 0) for key in keys])
 
 
-class LeadSourceLoader(DataLoaderWithContext):
-    def batch_load_fn(self, keys):
-        organization_qs = Organization.objects.filter(id__in=keys)
-        _map = {
-            org.pk: org for org in organization_qs
-        }
-        return Promise.resolve([_map.get(key) for key in keys])
-
-
 class LeadAuthorsLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         lead_author_qs = Lead.objects\
@@ -124,7 +118,7 @@ class DataLoaders(WithContextMixin):
 
     @cached_property
     def source_organization(self):
-        return LeadSourceLoader(context=self.context)
+        return OrganizationLoader(context=self.context)
 
     @cached_property
     def author_organizations(self):

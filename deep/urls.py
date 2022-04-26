@@ -19,6 +19,7 @@ from . import converters
 
 # import autofixture
 
+from unified_connector.views import ConnectorLeadExtractCallbackView
 from user.views import (
     UserViewSet,
     PasswordResetView,
@@ -81,6 +82,7 @@ from lead.views import (
     LeadPreviewViewSet,
     LeadOptionsView,
     LeadExtractionTriggerView,
+    LeadExtractCallbackView,
     LeadWebsiteFetch,
     LeadCopyView,
 
@@ -146,6 +148,8 @@ from export.views import (
     ExportTriggerView,
     ExportViewSet,
 )
+from assisted_tagging.views import AssistedTaggingDraftEntryPredictionCallbackView
+
 from deep.views import (
     AccountActivate,
     Api_404View,
@@ -189,6 +193,7 @@ from django.conf.urls import (
     handler404
     # handler403, handler400, handler500
 )
+
 
 register_converter(converters.FileNameRegex, 'filename')
 
@@ -372,7 +377,6 @@ router.register(r'languages', LanguageViewSet, basename='language')
 # Page routers
 router.register(r'pages', PageViewSet, basename='page')
 
-
 # Versioning : (v1|v2|v3)
 
 API_PREFIX = r'^api/(?P<version>(v1|v2))/'
@@ -532,6 +536,23 @@ urlpatterns = [
             AnalysisFrameworkCloneView.as_view()),
     re_path(get_api_path(r'clone-category-editor/(?P<ce_id>\d+)/$'),
             CategoryEditorCloneView.as_view()),
+
+    # NLP Callback endpoints
+    re_path(
+        get_api_path(r'callback/lead-extract/$'),
+        LeadExtractCallbackView.as_view(),
+        name='lead_extract_callback',
+    ),
+    re_path(
+        get_api_path(r'callback/connector-lead-extract/$'),
+        ConnectorLeadExtractCallbackView.as_view(),
+        name='connector_lead_extract_callback',
+    ),
+    re_path(
+        get_api_path(r'callback/assisted-tagging-draft-entry-prediction/$'),
+        AssistedTaggingDraftEntryPredictionCallbackView.as_view(),
+        name='assisted_tagging_draft_entry_prediction_callback',
+    ),
 
     # Combined API View
     re_path(get_api_path(r'combined/$'), CombinedView.as_view()),

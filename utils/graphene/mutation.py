@@ -55,6 +55,7 @@ def convert_serializer_field_to_id(field):
 
 
 @get_graphene_type_from_serializer_field.register(serializers.JSONField)
+@get_graphene_type_from_serializer_field.register(serializers.DictField)
 def convert_serializer_field_to_generic_scalar(field):
     return GenericScalar
 

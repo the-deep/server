@@ -1,5 +1,4 @@
 from utils.extractor import extractors
-from utils.extractor import thumbnailers
 
 HTML = 'html'
 PDF = 'pdf'
@@ -13,14 +12,6 @@ EXTRACTORS = {
     DOCX: extractors.DocxExtractor,
     PPTX: extractors.PptxExtractor,
     MSWORD: extractors.MswordExtractor,
-}
-
-THUMBNAILERS = {
-    HTML: thumbnailers.WebThumbnailer,
-    PDF: thumbnailers.DocThumbnailer,
-    DOCX: thumbnailers.DocThumbnailer,
-    PPTX: thumbnailers.DocThumbnailer,
-    MSWORD: thumbnailers.DocThumbnailer,
 }
 
 
@@ -46,18 +37,3 @@ class Document:
         if extractor:
             return extractor(self.doc, self.params).extract()
         return '', [], 1
-
-    def get_thumbnail(self):
-        """
-        Create thumbnail for the document
-
-        Returns thumbnail file
-        """
-        thumbnailer = THUMBNAILERS.get(self.type)
-        if thumbnailer:
-            if self.type is HTML:
-                return thumbnailer(self.params['url'], self.type).get_thumbnail()
-            else:
-                return thumbnailer(self.doc, self.type).get_thumbnail()
-
-        return None

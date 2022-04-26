@@ -180,7 +180,7 @@ class HumanitarianResponse(Source):
         resp = requests.get(url, params={})
         return resp.text
 
-    def fetch(self, params, offset=None, limit=None):
+    def fetch(self, params):
         results = []
         url = self.URL
         if params.get('country'):
@@ -212,5 +212,4 @@ class HumanitarianResponse(Source):
                     str(e.args)
                 )
 
-        final_results = results[offset: offset + limit]
-        return final_results, len(results)
+        return results, len(results)

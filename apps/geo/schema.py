@@ -5,6 +5,7 @@ from django.db import models
 
 from utils.graphene.types import CustomDjangoListObjectType, FileFieldType
 from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 
 from geo.models import Region, GeoArea, AdminLevel
 from geo.filter_set import RegionFilterSet, GeoAreaGqlFilterSet
@@ -19,8 +20,8 @@ def get_users_adminlevel_qs(info):
     return AdminLevel.get_for(info.context.user).defer('geo_area_titles')
 
 
-def get_geo_area_queryset_for_project_geo_area_type():
-    return GeoArea.objects.annotate(
+def get_geo_area_queryset_for_project_geo_area_type(queryset=None):
+    return (queryset or GeoArea.objects).annotate(
         region_title=models.F('admin_level__region__title'),
         admin_level_title=models.F('admin_level__title'),
     )
@@ -117,14 +118,13 @@ class ProjectGeoAreaListType(CustomDjangoListObjectType):
 class ProjectScopeQuery:
     geo_areas = DjangoPaginatedListObjectField(
         ProjectGeoAreaListType,
-        pagination=PageGraphqlPagination(
+        pagination=NoOrderingPageGraphqlPagination(
             page_size_query_param='pageSize'
         )
     )
 
     @staticmethod
     def resolve_geo_areas(queryset, info, **kwargs):
-        return get_geo_area_queryset_for_project_geo_area_type().filter(
-            admin_level__region__is_published=True,
-            admin_level__region__project=info.context.active_project,
+        return get_geo_area_queryset_for_project_geo_area_type(
+            queryset=GeoArea.get_for_project(info.context.active_project)
         )

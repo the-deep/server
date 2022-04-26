@@ -95,12 +95,10 @@ class EMM(RssFeed):
         resp = requests.get(url)
         return resp.content
 
-    def fetch(self, params, offset=None, limit=None):
+    def fetch(self, params):
         if not params or not params.get('feed-url'):
             return [], 0
 
-        self.offset = offset or 0
-        self.limit = limit
         self.params = params
 
         content = self.get_content(self.params['feed-url'], {})
@@ -123,11 +121,10 @@ class EMM(RssFeed):
         items = xml.findall('channel/item')
 
         total_count = len(items)
-        limited_items = items[self.offset:self.offset + self.limit] if self.limit else items[self.offset:]
 
         entities = {}
         leads_infos = []  # Contains kwargs dict
-        for item in limited_items:
+        for item in items:
             # Extract info from item
             lead_info = self.parse_emm_item(item)
 
@@ -157,7 +154,7 @@ class EMM(RssFeed):
 
     def parse_emm_item(self, item):
         info = {}
-        for lead_field, field in self.option_lead_field_map.items():
+        for lead_field, field in self._option_lead_field_map.items():
             if not self.params.get(field):
                 field_value = None
             else:

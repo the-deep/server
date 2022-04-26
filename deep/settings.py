@@ -35,6 +35,7 @@ env = environ.Env(
     DATABASE_PASSWORD=str,
     DATABASE_PORT=str,
     DATABASE_HOST=str,
+    DATABASE_SSL_MODE=(str, 'prefer'),  # Use `require` in production
     # S3
     DJANGO_USE_S3=(bool, False),
     S3_AWS_ACCESS_KEY_ID=(str, None),
@@ -48,7 +49,7 @@ env = environ.Env(
     HID_AUTH_URI=str,
     # Email
     EMAIL_FROM=str,
-    DJANGO_ADMINS=(str, 'admin@thedeep.io'),
+    DJANGO_ADMINS=(list, ['Admin <admin@thedeep.io>']),
     USE_SES_EMAIL_CONFIG=(bool, False),
     SES_AWS_ACCESS_KEY_ID=(str, None),
     SES_AWS_SECRET_ACCESS_KEY=(str, None),
@@ -57,14 +58,15 @@ env = environ.Env(
     # Sentry
     SENTRY_DSN=(str, None),
     SENTRY_SAMPLE_RATE=(float, 0.2),
-    # Deepl (not used)
-    DEEPL_DOMAIN=(str, 'http://192.168.31.92:8010'),
     # Security settings
     DEEP_HTTPS=(str, 'http'),
     # CSRF_TRUSTED_ORIGINS=(bool, False),
     SESSION_COOKIE_DOMAIN=str,
     CSRF_COOKIE_DOMAIN=str,
     DOCKER_HOST_IP=(str, None),
+    # DEEPL
+    DEEPL_SERVICE_DOMAIN=str,  # http://extractor:8001
+    DEEPL_SERVICE_CALLBACK_DOMAIN=str,  # http://web:8000
     # Pytest
     PYTEST_XDIST_WORKER=(str, None),
     PROFILE=(bool, False),
@@ -77,6 +79,8 @@ env = environ.Env(
     DEEP_BUCKET_ACCESS_USER_SECRET=(json, None),
     ELASTI_CACHE_ADDRESS=str,
     ELASTI_CACHE_PORT=str,
+    # UNHCR Token
+    UNHCR_PORTAL_API_KEY=(str, None),
 )
 
 # Quick-start development settings - unsuitable for production
@@ -140,6 +144,8 @@ LOCAL_APPS = [
     'client_page_meta',
     'questionnaire',
     'quality_assurance',
+    'unified_connector',
+    'assisted_tagging',
 
     # MISC DEEP APPS
     'bulk_data_migration',
@@ -273,7 +279,7 @@ else:
             'PORT': env('DATABASE_PORT'),
             'HOST': env('DATABASE_HOST'),
             'OPTIONS': {
-                'sslmode': 'prefer' if DEBUG else 'require',  # Require ssl in Production
+                'sslmode': env('DATABASE_SSL_MODE'),
             },
         }
     }
@@ -436,22 +442,44 @@ CELERY_EVENT_QUEUE_PREFIX = 'deep-celery-'
 CELERY_ACKS_LATE = True
 
 CELERY_BEAT_SCHEDULE = {
+    'retry_connector_leads': {
+        'task': 'unified_connector.tasks.retry_connector_leads',
+        # Every 2 hour
+        'schedule': crontab(minute=0, hour='*/2'),
+    },
+    'sync_tag_data_with_deepl': {
+        'task': 'assisted_tagging.tasks.sync_tags_with_deepl',
+        # Every 6 hour
+        'schedule': crontab(minute=0, hour='*/6'),
+    },
     'remaining_tabular_generate_columns_image': {
         'task': 'tabular.tasks.remaining_tabular_generate_columns_image',
         # Every 6 hour
         'schedule': crontab(minute=0, hour='*/6'),
-    },
-    'classify_remaining_lead_previews': {
-        'task': 'lead.tasks.classify_remaining_lead_previews',
-        # Every 3 hours
-        'schedule': crontab(minute=0, hour='*/3'),
     },
     'project_generate_stats': {
         'task': 'project.tasks.generate_project_stats_cache',
         # Every 5 min
         'schedule': crontab(minute="*/5"),
     },
+    # UNIFIED CONNECTORS
+    'schedule_trigger_quick_unified_connectors': {
+        'task': 'unified_connector.tasks.schedule_trigger_quick_unified_connectors',
+        # Every 1 hour
+        'schedule': crontab(hour="*/1"),
+    },
+    'schedule_trigger_heavy_unified_connectors': {
+        'task': 'unified_connector.tasks.schedule_trigger_heavy_unified_connectors',
+        # Every 1 hour
+        'schedule': crontab(hour="*/1"),
+    },
+    'schedule_trigger_super_heavy_unified_connectors': {
+        'task': 'unified_connector.tasks.schedule_trigger_super_heavy_unified_connectors',
+        # Every 6 hours
+        'schedule': crontab(hour="*/6"),
+    },
 }
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 if IN_AWS_COPILOT_ECS:
     CELERY_BEAT_SCHEDULE.update({
@@ -628,6 +656,7 @@ CORS_ALLOW_HEADERS = (
 # Email CONFIGS
 USE_SES_EMAIL_CONFIG = env('USE_SES_EMAIL_CONFIG')
 DEFAULT_FROM_EMAIL = EMAIL_FROM = env('EMAIL_FROM')
+
 ADMINS = tuple(parseaddr(email) for email in env.list('DJANGO_ADMINS'))
 
 if USE_SES_EMAIL_CONFIG and not TESTING:
@@ -682,20 +711,12 @@ if SENTRY_DSN:
         **SENTRY_CONFIG,
     )
 
-# DEEPL Config
-DEEPL_DOMAINS = {
-    'nightly': 'https://deepl-nightly.thedeep.io',
-    'alpha': 'https://deepl-alpha.thedeep.io',
-    'beta': 'https://deepl.togglecorp.com',
-    'development': env('DEEPL_DOMAIN'),
-}
-
-DEEPL_DOMAIN = DEEPL_DOMAINS.get(DEEP_ENVIRONMENT, DEEPL_DOMAINS['alpha'])
-DEEPL_API = DEEPL_DOMAIN + '/api'
-
 # Token timeout days
 TOKEN_DEFAULT_RESET_TIMEOUT_DAYS = 7
 PROJECT_REQUEST_RESET_TIMEOUT_DAYS = 7
+LEAD_EXTRACTION_TOKEN_RESET_TIMEOUT_DAYS = 1
+DRAFT_ENTRY_EXTRACTION_TIMEOUT_DAYS = 1
+CONNECTOR_LEAD_EXTRACTION_TOKEN_RESET_TIMEOUT_DAYS = 1
 
 JSON_EDITOR_INIT_JS = 'js/jsoneditor-init.js'
 LOGIN_URL = '/admin/login'
@@ -792,6 +813,10 @@ SESSION_COOKIE_DOMAIN = env('SESSION_COOKIE_DOMAIN')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#csrf-cookie-domain
 CSRF_COOKIE_DOMAIN = env('CSRF_COOKIE_DOMAIN')
 
+# DEEPL Config
+DEEPL_SERVICE_DOMAIN = env('DEEPL_SERVICE_DOMAIN')
+DEEPL_SERVICE_CALLBACK_DOMAIN = env('DEEPL_SERVICE_CALLBACK_DOMAIN')
+
 
 # Graphene configs
 # WHITELIST following nodes from authentication checks
@@ -835,3 +860,5 @@ GRAPHENE_DJANGO_EXTRAS = {
 
 if DEEP_ENVIRONMENT in ['production']:
     GRAPHENE['MIDDLEWARE'].append('deep.middleware.DisableIntrospectionSchemaMiddleware')
+
+UNHCR_PORTAL_API_KEY = env('UNHCR_PORTAL_API_KEY')

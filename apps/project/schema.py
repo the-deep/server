@@ -31,6 +31,8 @@ from geo.schema import RegionDetailType, ProjectScopeQuery as GeoQuery
 from quality_assurance.schema import Query as QualityAssuranceQuery
 from ary.schema import Query as AryQuery
 from analysis.schema import Query as AnalysisQuery
+from unified_connector.schema import UnifiedConnectorQueryType
+from assisted_tagging.schema import AssistedTaggingQueryType
 
 from lead.models import Lead
 from entry.models import Entry
@@ -387,6 +389,9 @@ class ProjectDetailType(
         description='Checks if visualization is enabled and analysis framework is configured.',
     )
     viz_data = graphene.Field(ProjectVizDataType)
+    # Other scoped queries
+    unified_connector = graphene.Field(UnifiedConnectorQueryType)
+    assisted_tagging = graphene.Field(AssistedTaggingQueryType)
 
     @staticmethod
     def resolve_user_members(root, info, **kwargs):
@@ -420,6 +425,16 @@ class ProjectDetailType(
     def resolve_viz_data(root, info, **kwargs):
         if root.get_current_user_role(info.context.request.user) is not None and root.is_visualization_available:
             return root.project_stats
+
+    @staticmethod
+    def resolve_unified_connector(root, info, **kwargs):
+        if root.get_current_user_role(info.context.request.user) is not None:
+            return {}
+
+    @staticmethod
+    def resolve_assisted_tagging(root, info, **kwargs):
+        if root.get_current_user_role(info.context.request.user) is not None:
+            return {}
 
 
 class ProjectByRegion(graphene.ObjectType):

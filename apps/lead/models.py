@@ -83,6 +83,7 @@ class Lead(UserResource, ProjectEntityMixin):
     class ExtractionStatus(models.IntegerChoices):
         PENDING = 0, 'Pending'
         STARTED = 1, 'Started'
+        RETRYING = 4, 'Retrying'
         SUCCESS = 2, 'Success'
         FAILED = 3, 'Failed'
 
@@ -131,6 +132,12 @@ class Lead(UserResource, ProjectEntityMixin):
     emm_entities = models.ManyToManyField('EMMEntity', blank=True)
     assignments = GenericRelation(Assignment, related_query_name='lead')
     is_assessment_lead = models.BooleanField(default=False)
+
+    # Connector  # On delete, make sure to update UnifiedConnectorLead aleady_added to false.
+    connector_lead = models.ForeignKey(
+        'unified_connector.ConnectorLead',
+        on_delete=models.SET_NULL, related_name='+', blank=True, null=True
+    )
 
     def __str__(self):
         return '{}'.format(self.title)
