@@ -184,7 +184,6 @@ class AsssistedTaggingTask():
 
         tags = model_prediction.get('tags', {})  # NLP TagId
         values = model_prediction.get('values', [])  # Raw value
-        print(model_prediction.keys())
 
         common_attrs = dict(
             model_version=model_version,
@@ -233,16 +232,16 @@ class AsssistedTaggingTask():
             ]
         ])
         models_version_map = cls.get_or_create_models_version([
-            predition['model_info']
-            for predition in model_preds
+            prediction['model_info']
+            for prediction in model_preds
         ])
 
         with transaction.atomic():
             draft_entry.clear_data()  # Clear old data if exists
             draft_entry.calculated_at = timezone.now()
-            for predition in model_preds:
-                model_version = models_version_map[(predition['model_info']['id'], predition['model_info']['version'])]
-                cls._process_model_preds(model_version, current_tags_map, draft_entry, predition)
+            for prediction in model_preds:
+                model_version = models_version_map[(prediction['model_info']['id'], prediction['model_info']['version'])]
+                cls._process_model_preds(model_version, current_tags_map, draft_entry, prediction)
             draft_entry.save_geo_data()
             draft_entry.save()
         return draft_entry

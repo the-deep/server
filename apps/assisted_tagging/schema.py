@@ -7,7 +7,10 @@ from utils.graphene.enums import EnumDescription
 from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
 
-from geo.schema import ProjectGeoAreaType
+from geo.schema import (
+    ProjectGeoAreaType,
+    get_geo_area_queryset_for_project_geo_area_type,
+)
 from .models import (
     DraftEntry,
     AssistedTaggingModel,
@@ -180,6 +183,10 @@ class DraftEntryType(DjangoObjectType):
             Prefetch(
                 'predictions',
                 queryset=AssistedTaggingPrediction.objects.order_by('id'),
+            ),
+            Prefetch(
+                'related_geoareas',
+                queryset=get_geo_area_queryset_for_project_geo_area_type().order_by('id'),
             ),
             'predictions__model_version',
             'predictions__model_version__model',

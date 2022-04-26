@@ -21,11 +21,12 @@ from lead.factories import LeadFactory
 from entry.factories import EntryFactory
 from project.factories import ProjectFactory, ProjectJoinRequestFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
-from geo.factories import RegionFactory
+from geo.factories import RegionFactory, AdminLevelFactory, GeoAreaFactory
 from ary.factories import AssessmentTemplateFactory
 from export.factories import ExportFactory
 
 from project.tasks import _generate_project_stats_cache
+from geo.enums import GeoAreaOrderingEnum
 
 from .test_mutations import TestProjectGeneralMutation
 
@@ -397,6 +398,89 @@ class TestProjectSchema(GraphQLTestCase):
         )
         # make sure private projects are not visible here
         self.assertNotListIds(content['data']['publicProjects']['results'], [private_project], content)
+
+    def test_project_geoareas(self):
+        query = '''
+              query MyQuery(
+                  $projectID: ID!,
+                  $ids: [ID!],
+                  $ordering: [GeoAreaOrderingEnum!],
+                  $search: String,
+                  $titles: [String!]
+              ) {
+                project(id: $projectID) {
+                    geoAreas(
+                        ids: $ids,
+                        ordering: $ordering,
+                        search: $search,
+                        titles: $titles
+                    ) {
+                        totalCount
+                        results {
+                            id
+                            adminLevelTitle
+                            regionTitle
+                            title
+                        }
+                    }
+                }
+              }
+          '''
+
+        user = UserFactory.create()
+        region = RegionFactory.create(title='Nepal', is_published=True)
+        project = ProjectFactory.create()
+        project.add_member(user)
+        project.regions.add(region)
+
+        admin_level = AdminLevelFactory.create(title='District', region=region)
+        geo1 = GeoAreaFactory.create(admin_level=admin_level, title='Kathmandu')
+        geo2 = GeoAreaFactory.create(admin_level=admin_level, title='Lalitpur')
+        GeoAreaFactory.create(admin_level=admin_level, title='Bhaktapur')
+
+        geo1_data = dict(
+            id=str(geo1.pk),
+            adminLevelTitle=geo1.admin_level.title,
+            regionTitle=geo1.admin_level.region.title,
+            title=geo1.title,
+        )
+        geo2_data = dict(
+            id=str(geo2.pk),
+            adminLevelTitle=geo2.admin_level.title,
+            regionTitle=geo2.admin_level.region.title,
+            title=geo2.title,
+        )
+
+        def _query_check(variables={}, **kwargs):
+            return self.query_check(
+                query,
+                variables={'projectID': project.id, **variables},
+                **kwargs,
+            )
+
+        # -- Without login
+        _query_check(assert_for_error=True)
+
+        # -- With login
+        self.force_login(user)
+
+        content = _query_check()['data']['project']['geoAreas']['results']
+        self.assertEqual(len(content), 3, content)
+
+        filters = {'ids': [str(geo1.pk), str(geo2.pk)], 'ordering': self.genum(GeoAreaOrderingEnum.ASC_ID)}
+        content = _query_check(variables=filters)['data']['project']['geoAreas']['results']
+        self.assertEqual(len(content), 2, content)
+        self.assertEqual(content, [geo1_data, geo2_data], content)
+
+        filters = {'search': 'kathm', 'ordering': self.genum(GeoAreaOrderingEnum.ASC_ID)}
+        content = _query_check(variables=filters)['data']['project']['geoAreas']['results']
+        self.assertEqual(len(content), 1, content)
+        self.assertEqual(content, [geo1_data], content)
+
+        filters = {'titles': ['kathm', 'lalit'], 'ordering': self.genum(GeoAreaOrderingEnum.ASC_ID)}
+        content = _query_check(variables=filters)['data']['project']['geoAreas']['results']
+        self.assertEqual(len(content), 2, content)
+        self.assertEqual(content, [geo1_data, geo2_data], content)
 
     def test_project_stat_recent(self):
         query = '''

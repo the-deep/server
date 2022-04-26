@@ -3,15 +3,23 @@ from functools import reduce
 import django_filters
 from django.db import models
 from django.db.models.functions import Concat
-from utils.graphene.filters import IDListFilter, StringListFilter
 
-from geo.models import (
+from deep.filter_set import OrderEnumMixin
+from utils.graphene.filters import (
+    IDListFilter,
+    StringListFilter,
+    MultipleInputFilter,
+)
+
+from project.models import Project
+from user_resource.filters import UserResourceFilterSet
+
+from .models import (
     AdminLevel,
     GeoArea,
     Region,
 )
-from project.models import Project
-from user_resource.filters import UserResourceFilterSet
+from .enums import GeoAreaOrderingEnum
 
 
 class GeoAreaFilterSet(django_filters.rest_framework.FilterSet):
@@ -82,7 +90,7 @@ class AdminLevelFilterSet(django_filters.rest_framework.FilterSet):
 
 
 # ------------------------------ Graphql filters -----------------------------------
-class GeoAreaGqlFilterSet(django_filters.rest_framework.FilterSet):
+class GeoAreaGqlFilterSet(OrderEnumMixin, django_filters.rest_framework.FilterSet):
     ids = IDListFilter(field_name='id')
     search = django_filters.CharFilter(
         label='Geo Area Label search',
@@ -92,6 +100,7 @@ class GeoAreaGqlFilterSet(django_filters.rest_framework.FilterSet):
         label='Geo Area Label search',
         method='filter_titles'
     )
+    ordering = MultipleInputFilter(GeoAreaOrderingEnum, method='ordering_filter')
 
     class Meta:
         model = GeoArea
