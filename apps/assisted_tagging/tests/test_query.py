@@ -1760,11 +1760,11 @@ class TestAssistedTaggingModules(GraphQLTestCase):
         latest_models = list(AssistedTaggingModelVersion.get_latest_models_version())
         assert model1_v1 not in latest_models
         assert model3_v0_1 not in latest_models
-        assert latest_models == [
+        assert set(latest_models) == set([
             model1_v1_1,
             model2_v1,
             model3_v1,
-        ]
+        ])
 
     def test_get_existing_draft_entry(self):
         # Model
