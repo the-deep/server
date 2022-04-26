@@ -70,5 +70,13 @@
             "key": "connectors",
             "title": "Unified Connectors"
         }
+    },
+    {
+        "model": "user.feature",
+        "pk": 10,
+        "fields": {
+            "key": "assisted",
+            "title": "Assisted Tagging"
+        }
     }
 ]
