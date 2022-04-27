@@ -11,6 +11,7 @@ from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin, File
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.permissions import AnalysisFrameworkPermissions as AfP
 from project.schema import AnalysisFrameworkVisibleProjectType
+from project.models import ProjectMembership
 from assisted_tagging.models import PredictionTagAnalysisFrameworkWidgetMapping
 from .models import (
     AnalysisFramework,
@@ -226,7 +227,12 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
 
     @staticmethod
     def resolve_prediction_tags_mapping(root, info):
-        if root.get_current_user_role(info.context.request.user) is not None:
+        project_membership_qs = ProjectMembership.objects\
+            .filter(
+                project__analysis_framework=root,
+                member=info.context.request.user,
+            )
+        if root.get_current_user_role(info.context.request.user) is not None or project_membership_qs.exists():
             return PredictionTagAnalysisFrameworkWidgetMapping.objects.filter(
                 widget__analysis_framework=root,
             ).all()  # TODO: Dataloaders
