@@ -1411,7 +1411,11 @@ type Logout {
 type MergedAsOrganizationType {
   id: ID!
   title: String!
+  shortName: String!
+  longName: String!
+  url: String!
   logo: GalleryFileType
+  verified: Boolean!
 }
 
 input MissingPredictionReviewInputType {
@@ -1524,13 +1528,13 @@ enum OrganizationOrderingEnum {
 type OrganizationType {
   id: ID!
   title: String!
-  logo: GalleryFileType
   shortName: String!
   longName: String!
   url: String!
+  logo: GalleryFileType
+  verified: Boolean!
   regions: [RegionWithProject!]!
   organizationType: OrganizationTypeType
-  verified: Boolean!
   mergedAs: MergedAsOrganizationType
 }
 
