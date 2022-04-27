@@ -215,7 +215,7 @@ def retry_connector_leads():
 
 def _trigger_connector_sources(max_execution_time, threshold, limit):
     sources_qs = ConnectorSource.objects.annotate(
-        execution_time=models.F('ended_at') - models.F('started_at'),
+        execution_time=models.F('end_date') - models.F('start_date'),
     ).exclude(
         execution_time__isnull=False,
         status=ConnectorSource.Status.PROCESSING,

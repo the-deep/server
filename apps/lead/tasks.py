@@ -36,8 +36,6 @@ def _preprocess(text):
     text = text.replace('\x00', '')
     # Tabs and nbsps to space
     text = re.sub(r'(\t|&nbsp;)', ' ', text)
-    # Single line breaks to spaces
-    text = re.sub(r'(?<!\n)[ \t]*\n[ \t]*(?!\n)', ' ', text)
     # Multiple spaces to single
     text = re.sub(r' +', ' ', text)
     # More than 3 line breaks to just 3 line breaks
