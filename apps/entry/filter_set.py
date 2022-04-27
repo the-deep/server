@@ -560,6 +560,7 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
 
     # Lead fields
     leads = IDListFilter(field_name='lead')
+    lead_created_by = IDListFilter(field_name='lead__created_by')
     lead_published_on = django_filters.DateFilter()
     lead_published_on_gte = DateGteFilter(field_name='lead__published_on')
     lead_published_on_lte = DateLteFilter(field_name='lead__published_on')
