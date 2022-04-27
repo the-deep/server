@@ -10,8 +10,6 @@ from lead.models import Lead
 from export.models import Export
 from export.tasks import get_export_filename
 
-from lead.filter_set import LeadFilterSet
-
 
 class TestExportMutationSchema(GraphQLTestCase):
     CREATE_EXPORT_QUERY = '''
@@ -170,7 +168,7 @@ class TestExportMutationSchema(GraphQLTestCase):
                 'publishedOnLte': None,
                 'excludeProvidedLeadsId': True,
                 'authoringOrganizationTypes': None,
-                'exists': self.genum(LeadFilterSet.Exists.ENTRIES_EXISTS),
+                'hasEntries': True,
                 'entriesFilterData': {
                     'controlled': None,
                     'createdBy': None,
@@ -231,7 +229,7 @@ class TestExportMutationSchema(GraphQLTestCase):
             'published_on_lte': None,
             'exclude_provided_leads_id': True,
             'authoring_organization_types': None,
-            'exists': 'entries_exists',
+            'has_entries': True,
             'entries_filter_data': {
                 'controlled': None,
                 'created_by': None,

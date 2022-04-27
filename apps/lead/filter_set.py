@@ -14,11 +14,11 @@ from utils.graphene.filters import (
     DateGteFilter,
     DateLteFilter,
 )
-from utils.graphene.enums import convert_enum_to_graphene_enum
 
 from project.models import Project
 from organization.models import OrganizationType
 from user.models import User
+from entry.models import Entry
 from entry.filter_set import EntryGQFilterSet
 from user_resource.filters import UserResourceGqlFilterSet
 
@@ -52,8 +52,7 @@ class LeadFilterSet(django_filters.FilterSet):
     class CustomFilter(models.TextChoices):
         EXCLUDE_EMPTY_FILTERED_ENTRIES = 'exclude_empty_filtered_entries', 'exclude empty filtered entries'
         EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES = (
-            'exclude_empty_controlled_filtered_entries',
-            'exclude empty controlled filtered entries',
+            'exclude_empty_controlled_filtered_entries', 'exclude empty controlled filtered entries'
         )
 
     search = django_filters.CharFilter(method='search_filter')
@@ -294,12 +293,6 @@ class LeadGroupFilterSet(UserResourceFilterSet):
 
 # ------------------------------ Graphql filters -----------------------------------
 class LeadGQFilterSet(UserResourceGqlFilterSet):
-    class Exists(models.TextChoices):
-        ENTRIES_EXISTS = 'entries_exists', 'Entry Exists'
-        ASSESSMENT_EXISTS = 'assessment_exists', 'Assessment Exists'
-        ENTRIES_DO_NOT_EXIST = 'entries_do_not_exist', 'Entries do not exist'
-        ASSESSMENT_DOES_NOT_EXIST = 'assessment_does_not_exist', 'Assessment does not exist'
-
     ids = IDListFilter(method='filter_leads_id', help_text='Empty ids are ignored.')
     exclude_provided_leads_id = django_filters.BooleanFilter(
         method='filter_exclude_provided_leads_id', help_text='Only used when ids are provided.')
@@ -315,10 +308,8 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
     author_organizations = IDListFilter(method='authoring_organizations_filter')
     source_organizations = IDListFilter(method='source_organizations_filter')
     # Filter-only enum filter
-    exists = SimpleInputFilter(
-        convert_enum_to_graphene_enum(LeadFilterSet.Exists, name='LeadExistsEnum'),
-        label='Exists Choice', method='exists_filter',
-    )
+    has_entries = django_filters.BooleanFilter(method='filter_has_entries', help_text='Lead has entries.')
+    has_assessment = django_filters.BooleanFilter(method='filter_has_assessment', help_text='Lead has assessment.')
     entries_filter_data = SimpleInputFilter(
         type(
             'LeadEntriesFilterData',
@@ -358,40 +349,24 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             },
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.custom_context = {}
+
+    @property
+    def active_project(self) -> Project:
+        if self.request is None:
+            raise Exception(f'{self.request=} should be defined')
+        if self.request.active_project is None:
+            raise Exception(f'{self.request.active_project=} should be defined')
+        return self.request.active_project
+
     @staticmethod
     def get_dummy_request(project):
         """
         Use this if request is not available
         """
         return type('DummyRequest', (object,), dict(active_project=project))()
-
-    # Non-filters methods
-    @staticmethod
-    def get_entry_count_subquery(request, entries_filter_data, **additional_filters):
-        return models.functions.Coalesce(
-            models.Subquery(
-                EntryGQFilterSet(
-                    data=entries_filter_data,
-                    request=request,
-                ).qs.filter(
-                    project=request.active_project,
-                    analysis_framework=request.active_project.analysis_framework_id,
-                    lead=models.OuterRef('pk'),
-                    **additional_filters,
-                ).values('lead').order_by().annotate(
-                    count=models.Count('id')
-                ).values('count')[:1], output_field=models.IntegerField()
-            ), 0
-        )
-
-    def _add_entries_count_annotate(self, qs, **filters):
-        if self.request is None:
-            raise Exception(f'{self.request=} should be defined')
-        entries_filter_data = self.data.get('entries_filter_data') or {}
-        subquery = self.get_entry_count_subquery(self.request, entries_filter_data, **filters)
-        return qs.annotate(**{
-            LeadOrderingEnum.ASC_ENTRIES_COUNT.value: subquery,
-        })
 
     # Filters methods
     def search_filter(self, qs, name, value):
@@ -417,38 +392,25 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
         ).distinct()
 
     def ordering_filter(self, qs, name, value):
-        if any(
-            ordering in [
+        active_entry_count_field = self.custom_context.get('active_entry_count_field')
+        for ordering in value:
+            # Custom for entries count (use filter or normal entry count)
+            if active_entry_count_field and ordering in [
                 LeadOrderingEnum.ASC_ENTRIES_COUNT,
                 LeadOrderingEnum.DESC_ENTRIES_COUNT,
-            ] for ordering in value
-        ):
-            qs = self._add_entries_count_annotate(qs)
-
-        for ordering in value:
-            if ordering == LeadOrderingEnum.DESC_PAGE_COUNT:
+            ]:
+                if ordering == LeadOrderingEnum.ASC_ENTRIES_COUNT:
+                    qs = qs.order_by(active_entry_count_field)
+                else:
+                    qs = qs.order_by(f'-{active_entry_count_field}')
+            # Custom for page count with nulls_last
+            elif ordering == LeadOrderingEnum.DESC_PAGE_COUNT:
                 qs = qs.order_by(models.F('leadpreview__page_count').desc(nulls_last=True))
             elif ordering == LeadOrderingEnum.ASC_PAGE_COUNT:
                 qs = qs.order_by(models.F('leadpreview__page_count').asc(nulls_first=True))
+            # For remaining
             else:
                 qs = qs.order_by(ordering)
-        return qs
-
-    def exists_filter(self, qs, name, value):
-        if value in [
-            self.Exists.ENTRIES_EXISTS,
-            self.Exists.ENTRIES_DO_NOT_EXIST
-        ]:
-            qs = self._add_entries_count_annotate(qs)
-
-        if value == self.Exists.ENTRIES_EXISTS:
-            return qs.filter(**{f'{LeadOrderingEnum.ASC_ENTRIES_COUNT.value}__gt': 0})
-        elif value == self.Exists.ENTRIES_DO_NOT_EXIST:
-            return qs.filter(**{LeadOrderingEnum.ASC_ENTRIES_COUNT.value: 0})
-        elif value == self.Exists.ASSESSMENT_EXISTS:
-            return qs.filter(assessment__isnull=False)
-        elif value == self.Exists.ASSESSMENT_DOES_NOT_EXIST:
-            return qs.filter(assessment__isnull=True)
         return qs
 
     def emm_entities_filter(self, qs, name, value):
@@ -488,58 +450,88 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             return qs.filter(source_organizations__in=value).distinct()
         return qs
 
-    def filter_leads_id(self, qs, _, value):
-        # NOTE: Used is qs
-        return qs
-
     def filter_exclude_provided_leads_id(self, qs, *_):
         # NOTE: Used in filter_leads_id
         return qs
 
-    def filtered_entries_filter_data(self, qs, *_):
-        # NOTE: This filter data is used by filtered_exists_filter
-        return qs
+    def filter_leads_id(self, qs, _, value):
+        if value is None:
+            return qs
+        if self.data.get('exclude_provided_leads_id'):
+            return qs.exclude(id__in=value)
+        return qs.filter(id__in=value)
 
-    def filtered_exists_filter(self, qs, _, value):
-        entries_filter_data = self.data.get('entries_filter_data') or {}
-        if self.request is None:
-            raise Exception(f'{self.request=} should be defined')
+    def filter_has_entries(self, qs, _, value):
+        if value is None:
+            return qs
+        if value:
+            return qs.filter(entry_count__gt=0)
+        return qs.filter(entry_count=0)
 
-        def _get_annotate(**filters):
-            return models.functions.Coalesce(
+    def filter_has_assessment(self, qs, _, value):
+        if value is None:
+            return qs
+        return qs.filter(assessment__isnull=not value)
+
+    def filtered_entries_filter_data(self, qs, _, value):
+        if value is None:
+            return qs
+        return qs.filter(filtered_entry_count__gt=0)
+
+    def filter_queryset(self, qs):
+        def _entry_subquery(entry_qs: models.QuerySet):
+            subquery_qs = entry_qs.\
+                filter(
+                    project=self.active_project,
+                    analysis_framework=self.active_project.analysis_framework_id,
+                    lead=models.OuterRef('pk'),
+                )\
+                .values('lead').order_by()\
+                .annotate(count=models.Count('id'))\
+                .values('count')
+            return Coalesce(
                 models.Subquery(
+                    subquery_qs[:1],
+                    output_field=models.IntegerField()
+                ), 0,
+            )
+
+        # Pre-annotate required fields for entries count (w/wo filters)
+        entries_filter_data = self.data.get('entries_filter_data')
+        has_entries = self.data.get('has_entries')
+        has_entries_count_ordering = any(
+            ordering in [
+                LeadOrderingEnum.ASC_ENTRIES_COUNT,
+                LeadOrderingEnum.DESC_ENTRIES_COUNT,
+            ] for ordering in self.data.get('ordering') or []
+        )
+
+        # With filter
+        if entries_filter_data is not None:
+            qs = qs.annotate(
+                filtered_entry_count=_entry_subquery(
                     EntryGQFilterSet(
                         data=entries_filter_data,
                         request=self.request,
-                    ).qs.filter(
-                        project=self.request.active_project,
-                        analysis_framework=self.request.active_project.analysis_framework_id,
-                        lead=models.OuterRef('pk'),
-                        **filters,
-                    ).values('lead').order_by().annotate(
-                        count=models.Count('id')
-                    ).values('count')[:1], output_field=models.IntegerField()
-                ), 0
+                    ).qs
+                )
             )
-
-        if value == self.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES:
-            return qs.annotate(filtered_entries_count=_get_annotate()).filter(filtered_entries_count__gte=1)
-        elif value == self.CustomFilter.EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES:
-            return qs.annotate(filtered_entries_count=_get_annotate(controlled=True)).filter(filtered_entries_count__gte=1)
-        return qs
+            self.custom_context['active_entry_count_field'] = 'filtered_entry_count'
+        # Without filter
+        if has_entries is not None or (
+            entries_filter_data is None and has_entries_count_ordering
+        ):
+            self.custom_context['active_entry_count_field'] = self.custom_context.\
+                get('active_entry_count_field', 'entry_count')
+            qs = qs.annotate(
+                entry_count=_entry_subquery(Entry.objects.all())
+            )
+        # Call super function
+        return super().filter_queryset(qs)
 
     @property
     def qs(self):
-        def _custom_qs(qs):
-            # NOTE: To handle empty ids
-            exclude_provided_leads_id = self.data.get('exclude_provided_leads_id', False)
-            leads_ids = self.data.get('ids')
-            if leads_ids is None:
-                return qs
-            if exclude_provided_leads_id:
-                return qs.exclude(id__in=leads_ids)
-            return qs.filter(id__in=leads_ids)
-        return _custom_qs(super().qs).distinct()
+        return super().qs.distinct()
 
 
 class LeadGroupGQFilterSet(UserResourceGqlFilterSet):
