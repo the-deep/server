@@ -5,7 +5,6 @@ from user.factories import UserFactory
 from project.factories import ProjectFactory
 
 from lead.models import Lead
-from lead.filter_set import LeadFilterSet
 from entry.factories import EntryFactory
 from ary.factories import AssessmentFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
@@ -15,6 +14,8 @@ from lead.factories import (
     EmmEntityFactory,
     LeadGroupFactory
 )
+
+from lead.enums import LeadOrderingEnum
 
 
 class TestLeadQuerySchema(GraphQLTestCase):
@@ -30,11 +31,12 @@ class TestLeadQuerySchema(GraphQLTestCase):
             $createdAt: DateTime
             $createdAtGte: DateTime
             $createdAtLte: DateTime
+            $hasEntries: Boolean
+            $hasAssessment: Boolean
             $emmEntities: String
             $emmKeywords: String
             $emmRiskFactors: String
             $entriesFilterData: LeadEntriesFilterData
-            $exists: LeadExistsEnum
             $priorities: [LeadPriorityEnum!]
             $publishedOn: Date
             $publishedOnGte: Date
@@ -45,6 +47,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
             $text: String
             $url: String
             $website: String
+            $ordering: [LeadOrderingEnum!]
         ) {
           project(id: $projectId) {
             leads (
@@ -56,10 +59,11 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 createdAt: $createdAt
                 createdAtGte: $createdAtGte
                 createdAtLte: $createdAtLte
+                hasEntries: $hasEntries
+                hasAssessment: $hasAssessment
                 emmEntities: $emmEntities
                 emmKeywords: $emmKeywords
                 emmRiskFactors: $emmRiskFactors
-                exists: $exists
                 priorities: $priorities
                 publishedOn: $publishedOn
                 publishedOnGte: $publishedOnGte
@@ -71,6 +75,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 url: $url
                 website: $website
                 entriesFilterData: $entriesFilterData
+                ordering: $ordering
             ) {
               results {
                 id
@@ -196,6 +201,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         )
 
         EntryFactory.create(project=project, analysis_framework=af, lead=lead4, controlled=False)
+        EntryFactory.create(project=project, analysis_framework=af, lead=lead4, controlled=False)
         EntryFactory.create(project=project, analysis_framework=af, lead=lead5, controlled=True)
         AssessmentFactory.create(project=project, lead=lead1)
         AssessmentFactory.create(project=project, lead=lead2)
@@ -224,10 +230,32 @@ class TestLeadQuerySchema(GraphQLTestCase):
             ),
             ({'statuses': [self.genum(Lead.Status.NOT_TAGGED)]}, [lead2, lead3]),
             ({'statuses': [self.genum(Lead.Status.IN_PROGRESS), self.genum(Lead.Status.TAGGED)]}, [lead1, lead4, lead5]),
-            ({'exists': self.genum(LeadFilterSet.Exists.ENTRIES_EXISTS)}, [lead4, lead5]),
-            ({'exists': self.genum(LeadFilterSet.Exists.ENTRIES_DO_NOT_EXIST)}, [lead1, lead2, lead3]),
-            ({'exists': self.genum(LeadFilterSet.Exists.ASSESSMENT_EXISTS)}, [lead1, lead2]),
-            ({'exists': self.genum(LeadFilterSet.Exists.ASSESSMENT_DOES_NOT_EXIST)}, [lead3, lead4, lead5]),
+            ({'hasEntries': True}, [lead4, lead5]),
+            ({'hasEntries': False}, [lead1, lead2, lead3]),
+            (
+                {
+                    'hasEntries': True,
+                    'ordering': [self.genum(LeadOrderingEnum.DESC_ENTRIES_COUNT), self.genum(LeadOrderingEnum.ASC_ID)],
+                },
+                [lead5, lead4]
+            ),
+            (
+                {
+                    'hasEntries': True,
+                    'entriesFilterData': {},
+                    'ordering': [self.genum(LeadOrderingEnum.DESC_ENTRIES_COUNT), self.genum(LeadOrderingEnum.ASC_ID)],
+                },
+                [lead5, lead4]
+            ),
+            (
+                {
+                    'entriesFilterData': {'controlled': True},
+                    'ordering': [self.genum(LeadOrderingEnum.DESC_ENTRIES_COUNT), self.genum(LeadOrderingEnum.ASC_ID)],
+                },
+                [lead5]
+            ),
+            ({'hasAssessment': True}, [lead1, lead2]),
+            ({'hasAssessment': False}, [lead3, lead4, lead5]),
             # TODO:
             # ({'emmEntities': []}, []),
             # ({'emmKeywords': []}, []),

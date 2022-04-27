@@ -29,7 +29,6 @@ from .enums import (
     LeadPriorityEnum,
     LeadSourceTypeEnum,
     LeadExtractionStatusEnum,
-    LeadOrderingEnum,
 )
 from .filter_set import (
     LeadGQFilterSet,
@@ -227,7 +226,8 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
 
     @staticmethod
     def resolve_filtered_entries_count(root, info, **kwargs):
-        return getattr(root, LeadOrderingEnum.ASC_ENTRIES_COUNT.value, None)
+        # filtered_entry_count is from LeadFilterSet
+        return getattr(root, 'filtered_entry_count', None)
 
 
 class LeadDetailType(LeadType):

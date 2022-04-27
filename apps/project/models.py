@@ -92,6 +92,7 @@ class Project(UserResource):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.analysis_framework_id: int
         self.current_user_membership_data = getattr(
             self, 'current_user_membership_data',
             dict(
