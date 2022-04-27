@@ -38,7 +38,11 @@ class MergedAsOrganizationType(DjangoObjectType):
         fields = (
             'id',
             'title',
+            'short_name',
+            'long_name',
+            'url',
             'logo',
+            'verified',
         )
     logo = graphene.Field(GalleryFileType)
 
