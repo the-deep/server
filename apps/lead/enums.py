@@ -34,7 +34,7 @@ class LeadOrderingEnum(graphene.Enum):
     ASC_SOURCE = 'source__title'
     ASC_PUBLISHED_ON = 'published_on'
     ASC_CREATED_BY = 'created_by'
-    ASC_ASSIGNEE = 'assignee__firstname'
+    ASC_ASSIGNEE = 'assignee__first_name'
     ASC_PRIORITY = 'priority'
     ASC_PAGE_COUNT = 'page_count'
     # DESC
