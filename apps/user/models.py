@@ -126,11 +126,18 @@ class Profile(models.Model):
         # return settings.LANGUAGE_CODE
 
 
+def user_get_display_email(user):
+    from .utils import generate_hidden_email
+
+    return generate_hidden_email(user.email)
+
+
 # TODO: Use Abstract User Model (Merge profile to User Table)
 User.get_display_name = Profile.get_display_name_for_user
 User.display_name = property(Profile.get_display_name_for_user)
 User.have_feature_access = Profile.have_feature_access_for_user
 User.get_accessible_features = Profile.get_user_accessible_features
+User.get_display_email = user_get_display_email
 
 
 def get_for_project(project):

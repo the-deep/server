@@ -32,7 +32,7 @@
     <p>
         Hi there {{ user.first_name }},
     </p>
-    <span>{{ request_by.profile.get_display_name }} ({{ request_by.email }}) </span>
+    <span>{{ request_by.get_display_name }} ({{ request_by.get_display_email }}) </span>
         has requested to join the project
     <span> {{ project.title }}.</span>
     <p class="question">
