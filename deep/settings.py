@@ -77,6 +77,7 @@ env = environ.Env(
     DEEP_DATABASE_SECRET=(json, None),
     DEEP_DATABASE_SECRET_ARN=(str, None),
     DEEP_BUCKET_ACCESS_USER_SECRET=(json, None),
+    DEEP_BUCKET_ACCESS_USER_SECRET_ARN=(str, None),
     ELASTI_CACHE_ADDRESS=str,
     ELASTI_CACHE_PORT=str,
     # UNHCR Token
@@ -385,9 +386,13 @@ if env('DJANGO_USE_S3'):
     AWS_STORAGE_BUCKET_NAME_STATIC = env('AWS_STORAGE_BUCKET_NAME_STATIC')
     AWS_STORAGE_BUCKET_NAME_MEDIA = env('AWS_STORAGE_BUCKET_NAME_MEDIA')
     # If environment variable are not provided, then EC2 Role will be used.
-    if env.json('DEEP_BUCKET_ACCESS_USER_SECRET'):
-        AWS_ACCESS_KEY_ID = env.json('DEEP_BUCKET_ACCESS_USER_SECRET')['AccessKeyId']
-        AWS_SECRET_ACCESS_KEY = env.json('DEEP_BUCKET_ACCESS_USER_SECRET')['SecretAccessKey']
+    AWS_S3_SECRET = (
+        env.json('DEEP_BUCKET_ACCESS_USER_SECRET') or
+        fetch_db_credentials_from_secret_arn(env('DEEP_BUCKET_ACCESS_USER_SECRET_ARN'), ignore_error=True)
+    )
+    if AWS_S3_SECRET:
+        AWS_ACCESS_KEY_ID = AWS_S3_SECRET['AccessKeyId']
+        AWS_SECRET_ACCESS_KEY = AWS_S3_SECRET['SecretAccessKey']
     else:
         AWS_ACCESS_KEY_ID = env('S3_AWS_ACCESS_KEY_ID')
         AWS_SECRET_ACCESS_KEY = env('S3_AWS_SECRET_ACCESS_KEY')
