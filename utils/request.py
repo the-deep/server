@@ -1,5 +1,4 @@
 from typing import Union
-import re
 
 from dataclasses import dataclass, field
 import requests
@@ -27,17 +26,8 @@ class RequestHelper:
 
     @staticmethod
     def sanitize_text(text: str):
-        # Remove NUL (0x00) characters
-        text = text.replace('\x00', '')
-        # Tabs and nbsps to space
-        text = re.sub(r'(\t|&nbsp;)', ' ', text)
-        # Single line breaks to spaces
-        text = re.sub(r'(?<!\n)[ \t]*\n[ \t]*(?!\n)', ' ', text)
-        # Multiple spaces to single
-        text = re.sub(r' +', ' ', text)
-        # More than 3 line breaks to just 3 line breaks
-        text = re.sub(r'\n\s*\n\s*(\n\s*)+', '\n\n\n', text)
-        return text.strip()
+        from lead.tasks import _preprocess
+        return _preprocess(text)
 
     def fetch(self):
         try:
