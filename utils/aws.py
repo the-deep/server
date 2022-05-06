@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def fetch_db_credentials_from_secret_arn(cluster_secret_arn):
+def fetch_db_credentials_from_secret_arn(cluster_secret_arn, ignore_error=False):
     logger.warning(f'Fetching db cluster secret using ARN: {cluster_secret_arn}')
 
     # the passed secret is the aws arn instead
@@ -31,6 +31,8 @@ def fetch_db_credentials_from_secret_arn(cluster_secret_arn):
         else:
             # binary_secret_data = get_secret_value_response['SecretBinary']
             logger.error("Secret should be decrypted to string but found binary instead")
+    if ignore_error:
+        return
     raise Exception('Failed to parse/fetch secret')
 
 

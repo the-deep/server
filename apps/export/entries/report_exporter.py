@@ -16,7 +16,12 @@ from docx.shared import Inches
 from export.formats.docx import Document
 
 from analysis_framework.models import Widget
-from entry.models import Entry, ExportData, Attribute, EntryGroupLabel
+from entry.models import (
+    Entry,
+    ExportData,
+    Attribute,
+    # EntryGroupLabel,
+)
 from entry.widgets import (
     scale_widget,
     time_widget,
@@ -248,14 +253,17 @@ class ReportExporter:
         return self
 
     def load_group_lables(self, entries, show_groups=False):
-        self.entry_group_labels = {}
-        if not show_groups:
-            return self
-        for entry, group, label in EntryGroupLabel.objects.filter(entry__in=entries).order_by().values_list(
-                'entry_id', 'group__title', 'label__title'):
-            entry_d = self.entry_group_labels[entry] = self.entry_group_labels.get(entry, [])
-            entry_d.append([group, label])
+        # NOTE: This is causing high DB cpu usages. Removing as the feature doesn't exists in the UI.
+        # FIXME: Analysize and fix the query.
         return self
+        # self.entry_group_labels = {}
+        # if not show_groups:
+        #     return self
+        # for entry, group, label in EntryGroupLabel.objects.filter(entry__in=entries).order_by().values_list(
+        #         'entry_id', 'group__title', 'label__title'):
+        #     entry_d = self.entry_group_labels[entry] = self.entry_group_labels.get(entry, [])
+        #     entry_d.append([group, label])
+        # return self
 
     def load_text_from_text_widgets(self, entries, text_widget_ids):
         """
