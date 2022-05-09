@@ -4,7 +4,6 @@ from entry.models import Entry
 from analysis_framework.models import Widget
 
 from utils.graphene.tests import GraphQLTestCase
-from lead.filter_set import LeadFilterSet
 
 from user.factories import UserFactory
 from geo.factories import RegionFactory, AdminLevelFactory, GeoAreaFactory
@@ -419,7 +418,7 @@ class TestEntryQuery(GraphQLTestCase):
                 TestLeadQuerySchema.lead_filter_query,
                 variables={
                     'projectId': project.id,
-                    'customFilters': self.genum(LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES),
+                    'hasEntries': True,
                     'entriesFilterData': filter_data,
                 }
             )
@@ -827,7 +826,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
                 TestLeadQuerySchema.lead_filter_query,
                 variables={
                     'projectId': self.project.id,
-                    'customFilters': self.genum(LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES),
+                    'hasEntries': True,
                     'entriesFilterData': {
                         'filterableData': filter_data,
                     }

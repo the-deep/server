@@ -10,8 +10,6 @@ from lead.models import Lead
 from export.models import Export
 from export.tasks import get_export_filename
 
-from lead.filter_set import LeadFilterSet
-
 
 class TestExportMutationSchema(GraphQLTestCase):
     CREATE_EXPORT_QUERY = '''
@@ -155,7 +153,6 @@ class TestExportMutationSchema(GraphQLTestCase):
 
             filters={
                 'ids': [],
-                'exists': None,
                 'search': None,
                 'statuses': [
                     self.genum(Lead.Status.NOT_TAGGED),
@@ -166,12 +163,12 @@ class TestExportMutationSchema(GraphQLTestCase):
                 'priorities': None,
                 'createdAtGte': '2021-11-01T00:00:00.123456+00:00',
                 'createdAtLte': '2021-01-01T00:00:00.123456+00:00',
-                'customFilters': self.genum(LeadFilterSet.CustomFilter.EXCLUDE_EMPTY_FILTERED_ENTRIES),
                 'confidentiality': None,
                 'publishedOnGte': None,
                 'publishedOnLte': None,
                 'excludeProvidedLeadsId': True,
                 'authoringOrganizationTypes': None,
+                'hasEntries': True,
                 'entriesFilterData': {
                     'controlled': None,
                     'createdBy': None,
@@ -217,7 +214,6 @@ class TestExportMutationSchema(GraphQLTestCase):
         export = Export.objects.get(pk=response_export['id'])
         excepted_filters = {
             'ids': [],
-            'exists': None,
             'search': None,
             'statuses': [
                 'pending',
@@ -228,12 +224,12 @@ class TestExportMutationSchema(GraphQLTestCase):
             'priorities': None,
             'created_at_gte': '2021-11-01T00:00:00.123Z',
             'created_at_lte': '2021-01-01T00:00:00.123Z',
-            'custom_filters': 'exclude_empty_filtered_entries',
             'confidentiality': None,
             'published_on_gte': None,
             'published_on_lte': None,
             'exclude_provided_leads_id': True,
             'authoring_organization_types': None,
+            'has_entries': True,
             'entries_filter_data': {
                 'controlled': None,
                 'created_by': None,
