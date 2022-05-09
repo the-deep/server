@@ -199,6 +199,7 @@ class ReportExporter:
         self.show_lead_entry_id = show_lead_entry_id
         self.show_assessment_data = show_assessment_data
         self.show_entry_widget_data = show_entry_widget_data
+        self.entry_group_labels = {}
 
         self.doc = Document(
             os.path.join(settings.APPS_DIR, 'static/doc_export/template.docx')
@@ -256,7 +257,6 @@ class ReportExporter:
         # NOTE: This is causing high DB cpu usages. Removing as the feature doesn't exists in the UI.
         # FIXME: Analysize and fix the query.
         return self
-        # self.entry_group_labels = {}
         # if not show_groups:
         #     return self
         # for entry, group, label in EntryGroupLabel.objects.filter(entry__in=entries).order_by().values_list(
