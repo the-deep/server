@@ -210,6 +210,7 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
             'export_type',  # excel, report, json, ...
             'is_preview',
             'filters',
+            'analysis',
             # Specific arguments for exports additional configuration
             'excel_decoupled',
             'report_show_groups',
@@ -292,6 +293,8 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
         _format = data['format']
         if (data_type, export_type, _format) not in Export.DEFAULT_TITLE_LABEL:
             raise serializers.ValidationError(f'Unsupported Export request: {(data_type, export_type, _format)}')
+        """if data_type == Export.DataType.ANALYSES:
+            raise serializers.ValidationError(f'Required Analysis for {data_type}')"""
         return data
 
     def update(self, _):
@@ -316,6 +319,7 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
                 'report_structure',
             ) if key in data
         }
+        data['analysis'] = data.get('analysis')
         export = super().create(data)
         transaction.on_commit(
             lambda: export.set_task_id(export_task.delay(export.id).id)
