@@ -367,6 +367,7 @@ input BulkLeadInputType {
   isAssessmentLead: Boolean
   leadGroup: ID
   url: String
+  website: String
   source: ID
   authors: [ID!]
   emmTriggers: [LeadEMMTriggerInputType!]
@@ -1267,6 +1268,7 @@ input LeadInputType {
   isAssessmentLead: Boolean
   leadGroup: ID
   url: String
+  website: String
   source: ID
   authors: [ID!]
   emmTriggers: [LeadEMMTriggerInputType!]
