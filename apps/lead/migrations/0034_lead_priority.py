@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='lead',
             name='priority',
-            field=models.IntegerField(choices=[(300, 'High'), (200, 'Medium'), (100, 'Low')], default=100),
+            field=models.IntegerField(choices=[(100, 'Low'), (200, 'Medium'), (300, 'High')], default=100),
         ),
     ]
