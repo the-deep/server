@@ -23,7 +23,6 @@ def get_source_object(key):
 
 SAMPLE_RSS_PARAMS = {
     'feed-url': 'https://reliefweb.int/country/afg/rss.xml?primary_country=16',
-    'website': 'reliefweb',
     'title-field': 'title',
     'source-field': 'source',
     'author-field': 'author',
@@ -33,7 +32,6 @@ SAMPLE_RSS_PARAMS = {
 
 SAMPLE_ATOM_PARAMS = {
     'feed-url': 'https://feedly.com/f/Lmh0gtsFqdkr3hzoDFuOeass.atom?count=10',
-    'website': 'link',
     'title-field': 'title',
     'source-field': 'author',
     'author-field': 'author',
@@ -44,7 +42,6 @@ SAMPLE_ATOM_PARAMS = {
 SAMPLE_EMM_PARAMS = {
     'feed-url': 'https://emm.newsbrief.eu/rss/rss?type=category&'
                 'id=filter-FocusedMyanmarEW-Q&language=en&duplicates=false',
-    'website-field': 'link',
     'url-field': 'link',
     'date-field': 'pubDate',
     'source-field': 'source',

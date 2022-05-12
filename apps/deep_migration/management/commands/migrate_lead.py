@@ -104,7 +104,6 @@ class Command(MigrationCommand):
 
         elif data.get('url'):
             lead.source_type = Lead.SourceType.WEBSITE
-            lead.website = data['website']
             lead.url = data['url']
 
         elif data.get('attachment'):

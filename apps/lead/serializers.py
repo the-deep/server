@@ -410,6 +410,7 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
     # NOTE: Right now this is send to client through connector and then return back to server (Only needed on create)
     emm_triggers = LeadEMMTriggerSerializer(many=True, required=False)
     emm_entities = EMMEntitySerializer(many=True, required=False)
+    website = serializers.CharField(required=False)  # XXX: Remove this after chrome extension is updated
 
     class Meta:
         model = Lead
@@ -427,7 +428,7 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
             'is_assessment_lead',
             'lead_group',
             'url',
-            'website',
+            'website',  # XXX: Remove this after chrome extension is updated
             'source',
             'authors',
             'emm_triggers',
@@ -468,6 +469,7 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
         This validator makes sure there is no duplicate leads in a project
         """
         # Using active project here.
+        data.pop('website', None)  # XXX: Remove this after chrome extension is updated
         data['project'] = self.project
         attachment = data.get('attachment', self.instance and self.instance.attachment)
         source_type = data.get('source_type', self.instance and self.instance.source_type)

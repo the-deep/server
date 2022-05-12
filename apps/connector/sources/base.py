@@ -115,7 +115,6 @@ class Source(ABC):
                 source=organization_search.get(ldata['source']),
                 author=organization_search.get(ldata['author']),
                 source_type=ldata['source_type'],
-                website=ldata['website'],
             )
 
             if ldata.get('author') is not None:

@@ -309,7 +309,6 @@ class UNHCRPortal(Source):
                     'source': 'UNHCR Portal',
                     'author': '',
                     'source_type': '',
-                    'website': 'data2.unhcr.org'
                 }
                 results.append(data)
             footer = soup.find('div', {'class': 'pgSearch_results_footer'})
