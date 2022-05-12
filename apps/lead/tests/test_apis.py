@@ -1111,7 +1111,7 @@ class LeadTests(TestCase):
         project = self.create_project()
         lead1 = self.create(Lead, project=project, title='mytext')
         lead2 = self.create(Lead, project=project, source_raw='thisis_mytext')
-        lead3 = self.create(Lead, project=project, website='http://thisis-mytext.com')
+        self.create(Lead, project=project)
         self.create(Lead, project=project, title='nothing_here')
 
         url = '/api/v1/leads/?search={}'
@@ -1119,7 +1119,7 @@ class LeadTests(TestCase):
         resp = self.client.get(url.format('mytext'))
         self.assert_200(resp)
 
-        expected_ids = {lead1.id, lead2.id, lead3.id}
+        expected_ids = {lead1.id, lead2.id}
         obtained_ids = {x['id'] for x in resp.data['results']}
         assert expected_ids == obtained_ids
 
@@ -1135,7 +1135,7 @@ class LeadTests(TestCase):
         project = self.create_project()
         lead1 = self.create(Lead, project=project, title='mytext')
         lead2 = self.create(Lead, project=project, source_raw='thisis_mytext')
-        lead3 = self.create(Lead, project=project, website='http://thisis-mytext.com')
+        lead3 = self.create(Lead, project=project)
 
         url = '/api/v1/leads/filter/'
         post_data = {}
@@ -1679,7 +1679,6 @@ SAMPLE_WEB_INFO_URL = 'https://reliefweb.int/report/yemen/yemen-emergency-food-s
 SAMPLE_WEB_INFO_SOURCE = 'World Food Programme, UN Children\'s Fund, Food and Agriculture Organization of the United Nations' # noqa
 SAMPLE_WEB_INFO_COUNTRY = 'Yemen'
 SAMPLE_WEB_INFO_DATE = date(2017, 1, 26)
-SAMPLE_WEB_INFO_WEBSITE = 'reliefweb.int'
 SAMPLE_WEB_INFO_TITLE = 'Yemen Emergency Food Security and Nutrition Assessment (EFSNA) 2016 - Preliminary Results' # noqa
 
 
@@ -1704,7 +1703,6 @@ class WebInfoExtractionTests(TestCase):
             self.assertEqual(rdata['title'], 'Pregnant women flee lack of maternal health care in Venezuela')
             self.assertEqual(rdata['date'], '2019-07-23')
             self.assertEqual(rdata['country'], 'Colombia')
-            self.assertEqual(rdata['website'], 'redhum.org')
             self.assertEqual(rdata['url'], data['url'])
             self.assertEqual(rdata['source_raw'], 'redhum')
             self.assertEqual(rdata['author_raw'], 'United Nations High Commissioner for Refugees')
@@ -1744,7 +1742,6 @@ class WebInfoExtractionTests(TestCase):
             'project': sample_project.id,
             'date': SAMPLE_WEB_INFO_DATE,
             'country': SAMPLE_WEB_INFO_COUNTRY,
-            'website': SAMPLE_WEB_INFO_WEBSITE,
             'title': SAMPLE_WEB_INFO_TITLE,
             'url': SAMPLE_WEB_INFO_URL,
             'source': SimpleOrganizationSerializer(self.reliefweb).data,

@@ -93,7 +93,6 @@ class ResearchResourceCenter(Source):
                 'source': "Research Resource Center",
                 'author': "Research Resource Center",
                 'source_type': Lead.SourceType.WEBSITE,
-                'website': self.URL
             }
             results.append(data)
         return results, total_count

@@ -58,7 +58,6 @@ class ConnectorLead(models.Model):
                 source_raw=lead.source_raw or '',
                 author_raw=lead.author_raw or '',
                 source=lead.source,
-                website=lead.website,
             ),
         )
         if not created:

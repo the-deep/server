@@ -162,7 +162,7 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
         model = Lead
         fields = (
             'id', 'title', 'is_assessment_lead', 'lead_group', 'assignee', 'published_on',
-            'text', 'url', 'website', 'attachment',
+            'text', 'url', 'attachment',
             'client_id',
         )
 
@@ -196,9 +196,15 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
         )
     )
 
+    website = graphene.String(required=True)  # XXX: Remove this after chrome extension is updated
+
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
         return get_lead_qs(info)
+
+    @staticmethod
+    def resolve_website(root, info, **kwargs) -> str:  # XXX: Remove this after chrome extension is updated
+        return 'fake.website'
 
     @staticmethod
     def resolve_assignee(root, info, **kwargs) -> Union[User, None]:
@@ -236,7 +242,7 @@ class LeadDetailType(LeadType):
         skip_registry = True
         fields = (
             'id', 'title', 'is_assessment_lead', 'lead_group', 'assignee', 'published_on',
-            'text', 'url', 'website', 'attachment',
+            'text', 'url', 'attachment',
             'client_id',
         )
 

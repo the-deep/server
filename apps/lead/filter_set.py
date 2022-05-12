@@ -148,7 +148,7 @@ class LeadFilterSet(django_filters.FilterSet):
         fields = {
             **{
                 x: ['exact']
-                for x in ['id', 'text', 'url', 'website']
+                for x in ['id', 'text', 'url']
             },
             'emm_entities': ['exact'],
             # 'emm_keywords': ['exact'],
@@ -197,8 +197,7 @@ class LeadFilterSet(django_filters.FilterSet):
             models.Q(authors__title__icontains=value) |
             models.Q(authors__parent__title__icontains=value) |
             # By URL
-            models.Q(url__icontains=value) |
-            models.Q(website__icontains=value)
+            models.Q(url__icontains=value)
         ).distinct()
 
     def project_filter(self, qs, name, value):
@@ -336,7 +335,7 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
         fields = {
             **{
                 x: ['exact']
-                for x in ['text', 'url', 'website']
+                for x in ['text', 'url']
             },
         }
 
@@ -387,8 +386,7 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             models.Q(authors__title__icontains=value) |
             models.Q(authors__parent__title__icontains=value) |
             # By URL
-            models.Q(url__icontains=value) |
-            models.Q(website__icontains=value)
+            models.Q(url__icontains=value)
         ).distinct()
 
     def ordering_filter(self, qs, name, value):

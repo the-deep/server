@@ -26,13 +26,6 @@ class RssFeed(Source):
             'title': 'Feed URL'
         },
         {
-            'key': 'website-field',
-            'field_type': 'select',
-            'lead_field': 'website',
-            'title': 'Website',
-            'options': [],
-        },
-        {
             'key': 'title-field',
             'field_type': 'select',
             'lead_field': 'title',
