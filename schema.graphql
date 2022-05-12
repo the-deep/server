@@ -1318,9 +1318,9 @@ type LeadPreviewType {
 }
 
 enum LeadPriorityEnum {
-  HIGH
-  MEDIUM
   LOW
+  MEDIUM
+  HIGH
 }
 
 enum LeadSourceTypeEnum {

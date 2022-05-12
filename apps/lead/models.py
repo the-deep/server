@@ -65,9 +65,9 @@ class Lead(UserResource, ProjectEntityMixin):
         TAGGED = 'validated', 'Tagged'
 
     class Priority(models.IntegerChoices):
-        HIGH = 300, 'High'
-        MEDIUM = 200, 'Medium'
         LOW = 100, 'Low'
+        MEDIUM = 200, 'Medium'
+        HIGH = 300, 'High'
 
     class SourceType(models.TextChoices):
         TEXT = 'text', 'Text'
