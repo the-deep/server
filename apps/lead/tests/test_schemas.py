@@ -46,7 +46,6 @@ class TestLeadQuerySchema(GraphQLTestCase):
             $statuses: [LeadStatusEnum!]
             $text: String
             $url: String
-            $website: String
             $ordering: [LeadOrderingEnum!]
         ) {
           project(id: $projectId) {
