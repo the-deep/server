@@ -1,11 +1,7 @@
-from collections import OrderedDict
-
 from django.core.files.base import ContentFile
 from django.conf import settings
 
-from export.formats.xlsx import WorkBook, RowsBuilder
-from openpyxl.styles import Alignment, Font
-from utils.common import format_date, underscore_to_title
+from export.formats.xlsx import WorkBook
 
 import logging
 
@@ -33,7 +29,9 @@ class ExcelExporter:
     def add_analytical_statement_entries(self, analytical_statement_entries):
         self.analysis_sheet.append([self.titles])
         for analytical_statement_entry in analytical_statement_entries:
-            url = f'{settings.HTTP_PROTOCOL}://{settings.DEEPER_FRONTEND_HOST}/permalink/projects/{analytical_statement_entry.entry.project_id}/leads/{analytical_statement_entry.entry.lead_id}/entries/{analytical_statement_entry.entry.id}/'
+            url = f'{settings.HTTP_PROTOCOL}://{settings.DEEPER_FRONTEND_HOST}/permalink/projects/'
+            f'{analytical_statement_entry.entry.project_id}/leads/{analytical_statement_entry.entry.lead_id}/'
+            f'entries/{analytical_statement_entry.entry.id}/'
             self.analysis_sheet.append([[
                 analytical_statement_entry.analytical_statement.analysis_pillar_id,
                 analytical_statement_entry.analytical_statement.analysis_pillar.title,

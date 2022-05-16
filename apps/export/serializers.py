@@ -1,6 +1,8 @@
 import graphene
 
 from django.db import transaction
+from django.shortcuts import get_object_or_404
+
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from graphene_django.filter.utils import get_filtering_args_from_filterset
@@ -16,6 +18,7 @@ from lead.filter_set import LeadGQFilterSet
 from analysis_framework.models import Widget, Exportable
 from .tasks import export_task
 from .models import Export
+from analysis.models import Analysis
 
 
 class ExportSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer):
@@ -291,10 +294,16 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
         data_type = data['type']
         export_type = data['export_type']
         _format = data['format']
+        project = self.project
+        analysis = data.get('analysis')
+        if analysis:
+            analysis_object = get_object_or_404(Analysis, id=analysis.id)
+            if analysis_object.project != project:
+                raise serializers.ValidationError(
+                    f'Analysis project {analysis.project_id} does not current project {project.id}'
+                )
         if (data_type, export_type, _format) not in Export.DEFAULT_TITLE_LABEL:
             raise serializers.ValidationError(f'Unsupported Export request: {(data_type, export_type, _format)}')
-        """if data_type == Export.DataType.ANALYSES:
-            raise serializers.ValidationError(f'Required Analysis for {data_type}')"""
         return data
 
     def update(self, _):
