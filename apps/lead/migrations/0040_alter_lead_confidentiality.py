@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='lead',
             name='confidentiality',
-            field=models.CharField(choices=[('unprotected', 'Unprotected'), ('restricted', 'Restricted'), ('confidential', 'Confidential')], default='unprotected', max_length=30),
+            field=models.CharField(choices=[('unprotected', 'Public'), ('restricted', 'Restricted'), ('confidential', 'Confidential')], default='unprotected', max_length=30),
         ),
     ]
