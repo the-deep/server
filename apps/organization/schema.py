@@ -17,7 +17,7 @@ from .public_schema import PublicOrganizationListObjectType
 class OrganizationTypeType(DjangoObjectType):
     class Meta:
         model = _OrganizationType
-        fields = (
+        only_fields = (
             'id',
             'title',
             'short_name',
@@ -35,7 +35,7 @@ class MergedAsOrganizationType(DjangoObjectType):
     class Meta:
         model = Organization
         skip_registry = True
-        fields = (
+        only_fields = (
             'id',
             'title',
             'short_name',
@@ -53,7 +53,7 @@ class MergedAsOrganizationType(DjangoObjectType):
 class OrganizationType(DjangoObjectType):
     class Meta:
         model = Organization
-        fields = (
+        only_fields = (
             'id',
             'title',
             'short_name',

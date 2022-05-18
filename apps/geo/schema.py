@@ -30,7 +30,7 @@ def get_geo_area_queryset_for_project_geo_area_type(queryset=None):
 class AdminLevelType(DjangoObjectType):
     class Meta:
         model = AdminLevel
-        fields = (
+        only_fields = (
             'id',
             'title', 'level', 'tolerance', 'stale_geo_areas', 'geo_shape_file',
             'name_prop', 'code_prop', 'parent_name_prop', 'parent_code_prop',
@@ -48,7 +48,7 @@ class AdminLevelType(DjangoObjectType):
 class RegionType(DjangoObjectType):
     class Meta:
         model = Region
-        fields = (
+        only_fields = (
             'id', 'title', 'public', 'regional_groups',
             'key_figures', 'population_data', 'media_sources',
             'centroid', 'is_published',
@@ -63,7 +63,7 @@ class RegionDetailType(RegionType):
     class Meta:
         model = Region
         skip_registry = True
-        fields = (
+        only_fields = (
             'id', 'title', 'public', 'regional_groups',
             'key_figures', 'population_data', 'media_sources',
             'centroid', 'is_published',
@@ -101,7 +101,7 @@ class Query:
 class ProjectGeoAreaType(DjangoObjectType):
     class Meta:
         model = GeoArea
-        fields = ('id', 'title',)
+        only_fields = ('id', 'title',)
         skip_registry = True
 
     region_title = graphene.String(required=True)

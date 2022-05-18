@@ -25,7 +25,7 @@ def get_assessment_qs(info):
 class AssessmentType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = Assessment
-        fields = (
+        only_fields = (
             'id', 'lead', 'project', 'lead_group',
             'metadata', 'methodology', 'summary',
             'score', 'questionnaire',
