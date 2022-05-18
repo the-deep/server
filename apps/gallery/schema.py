@@ -10,11 +10,23 @@ class GalleryFileType(DjangoObjectType):
         model = File
         fields = (
             'id',
-            # 'uuid',
             'title',
             'mime_type',
             'metadata',
         )
+    file = graphene.Field(FileFieldType)
+
+    @staticmethod
+    def resolve_file(root, info, **_):
+        if root.file:
+            return root.file
+
+
+class PublicGalleryFileType(DjangoObjectType):
+    class Meta:
+        model = File
+        skip_registry = True
+        fields = ('title',)
     file = graphene.Field(FileFieldType)
 
     @staticmethod

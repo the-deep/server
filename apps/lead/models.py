@@ -1,3 +1,4 @@
+import uuid as python_uuid
 from django.contrib.contenttypes.fields import GenericRelation
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -94,6 +95,7 @@ class Lead(UserResource, ProjectEntityMixin):
         null=True, blank=True, default=None,
     )
 
+    uuid = models.UUIDField(default=python_uuid.uuid4, editable=False, unique=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
 
