@@ -574,9 +574,7 @@ class ReportExporter:
 
         source = lead.get_source_display() or 'Reference'
         author = lead.get_authors_display()
-        url = lead.url or (
-            lead.attachment and lead.attachment.get_file_url()
-        )
+        url = lead.url or lead.generate_client_url()
         date = entry.lead.published_on
 
         para.add_run('(' if widget_texts_exists else ' (')
@@ -826,9 +824,7 @@ class ReportExporter:
             lead.published_on and para.add_run(f" {lead.published_on.strftime('%m/%d/%y')}. ")
 
             para = self.doc.add_paragraph()
-            url = lead.url or (
-                lead.attachment and lead.attachment.get_file_url()
-            )
+            url = lead.url or lead.generate_client_url()
             if url:
                 para.add_hyperlink(url, url)
             else:

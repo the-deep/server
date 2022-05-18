@@ -416,7 +416,7 @@ class ExcelExporter:
                 'Controlled' if entry.controlled else 'Uncontrolled',
                 f'{lead.id}',
                 lead.title,
-                lead.url or (lead.attachment and lead.attachment.get_file_url()),
+                lead.url or lead.generate_client_url(),
                 lead.get_authoring_organizations_type_display(),
                 lead.get_authors_display(),
                 lead.get_source_display(),
