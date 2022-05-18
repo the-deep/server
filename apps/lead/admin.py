@@ -52,6 +52,7 @@ class LeadAdmin(VersionAdmin):
         'project', 'created_by', 'modified_by', 'attachment', 'assignee',
         'source', 'authors', 'author', 'emm_entities', 'lead_group',
     )
+    readonly_fields=('uuid',)
     actions = [trigger_lead_extract]
 
 
