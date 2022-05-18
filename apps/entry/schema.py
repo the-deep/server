@@ -57,7 +57,7 @@ class AttributeType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Attribute
         skip_registry = True
-        fields = (
+        only_fields = (
             'id', 'data', 'widget_version',
         )
 
@@ -87,7 +87,7 @@ class AttributeType(ClientIdMixin, DjangoObjectType):
 class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Entry
-        fields = (
+        only_fields = (
             'id',
             'lead', 'project', 'analysis_framework', 'information_date', 'order',
             'excerpt', 'dropped_excerpt', 'image', 'tabular_field', 'highlight_hidden',

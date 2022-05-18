@@ -8,7 +8,7 @@ from .models import File
 class GalleryFileType(DjangoObjectType):
     class Meta:
         model = File
-        fields = (
+        only_fields = (
             'id',
             'title',
             'mime_type',
@@ -26,7 +26,7 @@ class PublicGalleryFileType(DjangoObjectType):
     class Meta:
         model = File
         skip_registry = True
-        fields = ('title',)
+        only_fields = ('title',)
     file = graphene.Field(FileFieldType)
 
     @staticmethod

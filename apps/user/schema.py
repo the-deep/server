@@ -33,13 +33,13 @@ class JwtTokenType(graphene.ObjectType):
 class UserFeatureAccessType(DjangoObjectType):
     class Meta:
         model = Feature
-        fields = ('key', 'title', 'feature_type')
+        only_fields = ('key', 'title', 'feature_type')
 
 
 class UserType(DjangoObjectType):
     class Meta:
         model = User
-        fields = (
+        only_fields = (
             'id', 'first_name', 'last_name', 'is_active',
         )
 
@@ -69,7 +69,7 @@ class UserMeType(DjangoObjectType):
     class Meta:
         model = User
         skip_registry = True
-        fields = (
+        only_fields = (
             'id', 'first_name', 'last_name', 'is_active',
             'email', 'last_login',
         )

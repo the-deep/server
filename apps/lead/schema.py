@@ -74,7 +74,7 @@ def get_lead_emm_entities_qs(info):
 class LeadPreviewType(DjangoObjectType):
     class Meta:
         model = LeadPreview
-        fields = (
+        only_fields = (
             'text_extract',
             'thumbnail',
             'thumbnail_height',
@@ -89,7 +89,7 @@ class LeadPreviewType(DjangoObjectType):
 class LeadEmmTriggerType(DjangoObjectType):
     class Meta:
         model = LeadEMMTrigger
-        fields = ('id', 'emm_keyword', 'emm_risk_factor', 'count')
+        only_fields = ('id', 'emm_keyword', 'emm_risk_factor', 'count')
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -105,7 +105,7 @@ class LeadEmmTriggerListType(CustomDjangoListObjectType):
 class EmmEntityType(DjangoObjectType):
     class Meta:
         model = EMMEntity
-        fields = ('id', 'name')
+        only_fields = ('id', 'name')
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -134,7 +134,7 @@ class EntriesCountType(graphene.ObjectType):
 class LeadGroupType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = LeadGroup
-        fields = (
+        only_fields = (
             'id',
             'title',
             'project',
@@ -160,7 +160,7 @@ class LeadGroupListType(CustomDjangoListObjectType):
 class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Lead
-        fields = (
+        only_fields = (
             'id', 'title', 'is_assessment_lead', 'lead_group', 'assignee', 'published_on',
             'text', 'url', 'attachment',
             'client_id',
@@ -240,7 +240,7 @@ class LeadDetailType(LeadType):
     class Meta:
         model = Lead
         skip_registry = True
-        fields = (
+        only_fields = (
             'id', 'title', 'is_assessment_lead', 'lead_group', 'assignee', 'published_on',
             'text', 'url', 'attachment',
             'client_id',

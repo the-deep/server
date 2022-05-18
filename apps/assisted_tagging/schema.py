@@ -30,7 +30,7 @@ from .enums import (
 class AssistedTaggingModelVersionType(DjangoObjectType):
     class Meta:
         model = AssistedTaggingModelVersion
-        fields = (
+        only_fields = (
             'id',
             'version',
         )
@@ -43,7 +43,7 @@ class AssistedTaggingModelType(DjangoObjectType):
 
     class Meta:
         model = AssistedTaggingModel
-        fields = (
+        only_fields = (
             'id',
             'name',
             'model_id',
@@ -59,7 +59,7 @@ class AssistedTaggingModelPredictionTagType(DjangoObjectType):
 
     class Meta:
         model = AssistedTaggingModelPredictionTag
-        fields = (
+        only_fields = (
             'id',
             'name',
             'group',
@@ -108,7 +108,7 @@ class WrongPredictionReviewType(UserResourceMixin, DjangoObjectType):
 
     class Meta:
         model = WrongPredictionReview
-        fields = (
+        only_fields = (
             'id',
         )
 
@@ -127,7 +127,7 @@ class AssistedTaggingPredictionType(DjangoObjectType):
 
     class Meta:
         model = AssistedTaggingPrediction
-        fields = (
+        only_fields = (
             'id',
             'value',
             'prediction',
@@ -151,7 +151,7 @@ class MissingPredictionReviewType(UserResourceMixin, DjangoObjectType):
 
     class Meta:
         model = MissingPredictionReview
-        fields = (
+        only_fields = (
             'id',
         )
 
@@ -171,7 +171,7 @@ class DraftEntryType(DjangoObjectType):
 
     class Meta:
         model = DraftEntry
-        fields = (
+        only_fields = (
             'id',
             'excerpt',
             'prediction_received_at',

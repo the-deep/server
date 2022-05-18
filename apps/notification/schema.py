@@ -25,7 +25,7 @@ def get_user_notification_qs(info):
 class NotificationType(DjangoObjectType):
     class Meta:
         model = Notification
-        fields = (
+        only_fields = (
             'id', 'project', 'data', 'timestamp',
         )
 
