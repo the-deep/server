@@ -61,18 +61,18 @@ def _get_selected_nodes_with_parent(node, selected_ids, node_mapping=None):
 
 def update_attribute(widget, data, widget_properties):
     values = data.get('value', [])
-    base_node = widget_properties.get('key')
+    base_node = widget_properties.get('options', {})
 
     selected_nodes_with_parents = [
         [
             *[
                 # Don't show base/root as parent nodes
-                parent_node['title'] if base_node != parent_node['key'] else ''
+                parent_node['title'] if base_node.get('key') != parent_node['key'] else ''
                 for parent_node in node['parents']
             ][::-1],
             node['title'],
         ]
-        for node in _get_selected_nodes_with_parent(widget_properties, set(values))
+        for node in _get_selected_nodes_with_parent(base_node, set(values))
     ]
 
     return {
