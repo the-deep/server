@@ -4,7 +4,7 @@ import uuid
 from django.db import migrations
 
 
-def gen_uuid(apps, schema_editor):
+def gen_uuid(apps, _):
     FileModel = apps.get_model('gallery', 'File')
     for file in FileModel.objects.all():
         file.uuid = uuid.uuid4()

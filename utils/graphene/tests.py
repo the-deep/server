@@ -100,6 +100,9 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
     def force_login(self, user):
         self.client.force_login(user)
 
+    def logout(self):
+        self.client.logout()
+
     def genum(self, _enum: Enum):
         """
         Return appropriate enum value.
