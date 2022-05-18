@@ -3,6 +3,7 @@ import graphene
 from deep.permissions import ProjectPermissions as PP
 from utils.graphene.enums import EnumDescription
 from gallery.schema import PublicGalleryFileType
+from project.public_schema import PublicProjectWithMembershipData
 
 from .models import Lead
 from .schema import LeadSourceTypeEnum
@@ -15,7 +16,7 @@ def get_public_lead_qs():
     )
 
 
-class PublicLeadType(graphene.ObjectType):
+class PublicLeadDetailType(graphene.ObjectType):
     uuid = graphene.UUID(required=True)
     project_title = graphene.String(required=True)
     created_by_display_name = graphene.String()
@@ -41,15 +42,26 @@ class PublicLeadType(graphene.ObjectType):
         return root.source and root.source.data.title
 
 
+class PublicLeadMetaType(graphene.ObjectType):
+    project = graphene.Field(PublicProjectWithMembershipData)
+    lead = graphene.Field(PublicLeadDetailType)
+
+
 class Query:
     public_lead = graphene.Field(
-        PublicLeadType,
+        PublicLeadMetaType,
         uuid=graphene.UUID(required=True),
     )
 
     @staticmethod
-    def resolve_public_lead(root, info, **kwargs):
-        def _get_lead(qs):
+    def resolve_public_lead(_, info, **kwargs):
+        def _return(lead, project):
+            return {
+                'project': project and (project if not project.is_private else None),
+                'lead': lead,
+            }
+
+        def _get_lead_from_qs(qs):
             return qs\
                 .select_related(
                     'project',
@@ -57,13 +69,15 @@ class Query:
                     'source',
                     'source__parent',
                 ).filter(uuid=kwargs['uuid']).first()
+
         user = info.context.user
         if user is None or user.is_anonymous:
-            return _get_lead(get_public_lead_qs())
+            lead = _get_lead_from_qs(get_public_lead_qs())
+            return _return(lead, None)
 
-        lead = _get_lead(Lead.objects)
+        lead = _get_lead_from_qs(Lead.objects.all())
         if lead is None:
-            return
+            return _return(None, None)
         user_permissions = PP.get_permissions(lead.project, user)
         if (
             PP.Permission.VIEW_ALL_LEAD in user_permissions or
@@ -75,4 +89,7 @@ class Query:
                 lead.project.has_publicly_viewable_leads  # Project allows to share pubilc leads
             )
         ):
-            return lead
+            return _return(lead, lead.project)
+        elif not lead.project.is_private:
+            return _return(None, lead.project)
+        return _return(None, None)

@@ -1,7 +1,8 @@
 from django.contrib import admin
-from reversion.admin import VersionAdmin
 from django.utils.safestring import mark_safe
 from django.contrib import messages
+from reversion.admin import VersionAdmin
+from admin_auto_filters.filters import AutocompleteFilterFactory
 
 from .tasks import extract_from_lead
 from .models import (
@@ -43,7 +44,11 @@ trigger_lead_extract.short_description = 'Trigger lead extraction'
 class LeadAdmin(VersionAdmin):
     inlines = [LeadPreviewInline, LeadPreviewImageInline]
     search_fields = ['title']
-    list_filter = ('project', 'created_by', 'created_at')
+    list_filter = (
+        AutocompleteFilterFactory('Project', 'project'),
+        AutocompleteFilterFactory('Created By', 'created_by'),
+        'created_at',
+    )
     list_display = [
         'title', 'project', 'created_by', 'created_at',
     ]
