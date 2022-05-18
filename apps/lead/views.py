@@ -1,6 +1,7 @@
 import copy
-import requests
 import re
+import requests
+import uuid as python_uuid
 
 from django.utils import timezone
 from django.conf import settings
@@ -777,6 +778,7 @@ class LeadCopyView(BaseCopyView):
         authors = original_lead.authors.all()
 
         lead.pk = None
+        lead.uuid = python_uuid.uuid4()
         try:
             # By default it raises error
             if not skip_existing_check:

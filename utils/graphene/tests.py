@@ -75,8 +75,8 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
     ENABLE_NOW_PATCHER = False
 
     def _setup_premailer_patcher(self, mock):
-        mock.get.return_value = ''
-        mock.post.return_value = ''
+        mock.get.return_value.text = ''
+        mock.post.return_value.text = ''
 
     def setUp(self):
         super().setUp()
