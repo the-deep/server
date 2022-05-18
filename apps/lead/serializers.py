@@ -1,4 +1,5 @@
 import copy
+import uuid as python_uuid
 
 from django.shortcuts import get_object_or_404
 from django.db import transaction
@@ -578,6 +579,7 @@ class LeadCopyGqSerializer(ProjectPropertySerializerMixin, serializers.Serialize
             return obj
 
         new_lead.pk = None
+        new_lead.uuid = python_uuid.uuid4()
         existing_lead = raise_or_return_existing_lead(
             project_id,
             new_lead,
