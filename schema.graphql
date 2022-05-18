@@ -1949,6 +1949,24 @@ type PublicAnalysisFrameworkListType {
   pageSize: Int
 }
 
+type PublicGalleryFileType {
+  title: String!
+  file: FileFieldType
+}
+
+type PublicLeadType {
+  uuid: UUID!
+  projectTitle: String!
+  createdByDisplayName: String
+  sourceTitle: String
+  publishedOn: Date
+  sourceType: LeadSourceTypeEnum!
+  sourceTypeDisplay: EnumDescription!
+  text: String
+  url: String
+  attachment: PublicGalleryFileType
+}
+
 type PublicOrganization {
   id: ID!
   title: String!
@@ -1991,6 +2009,7 @@ type PublicProjectType {
 }
 
 type Query {
+  publicLead(uuid: UUID!): PublicLeadType
   notification(id: ID!): NotificationType
   notifications(timestamp: DateTime, timestampLte: DateTime, timestampGte: DateTime, isPending: Boolean, notificationType: NotificationTypeEnum, status: NotificationStatusEnum, page: Int = 1, ordering: String, pageSize: Int): NotificationListType
   region(id: ID!): RegionDetailType
@@ -2124,6 +2143,8 @@ type TriggerUnifiedConnector {
   errors: [GenericScalar!]
   ok: Boolean
 }
+
+scalar UUID
 
 input UnifiedConnectorInputType {
   title: String!
