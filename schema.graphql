@@ -1954,7 +1954,7 @@ type PublicGalleryFileType {
   file: FileFieldType
 }
 
-type PublicLeadType {
+type PublicLeadDetailType {
   uuid: UUID!
   projectTitle: String!
   createdByDisplayName: String
@@ -1965,6 +1965,11 @@ type PublicLeadType {
   text: String
   url: String
   attachment: PublicGalleryFileType
+}
+
+type PublicLeadMetaType {
+  project: PublicProjectWithMembershipData
+  lead: PublicLeadDetailType
 }
 
 type PublicOrganization {
@@ -2008,8 +2013,15 @@ type PublicProjectType {
   analysisFrameworkPreviewImage: String
 }
 
+type PublicProjectWithMembershipData {
+  id: ID!
+  title: ID!
+  membershipPending: Boolean!
+  isRejected: Boolean!
+}
+
 type Query {
-  publicLead(uuid: UUID!): PublicLeadType
+  publicLead(uuid: UUID!): PublicLeadMetaType
   notification(id: ID!): NotificationType
   notifications(timestamp: DateTime, timestampLte: DateTime, timestampGte: DateTime, isPending: Boolean, notificationType: NotificationTypeEnum, status: NotificationStatusEnum, page: Int = 1, ordering: String, pageSize: Int): NotificationListType
   region(id: ID!): RegionDetailType
