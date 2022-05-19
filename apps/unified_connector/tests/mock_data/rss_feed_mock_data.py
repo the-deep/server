@@ -158,34 +158,39 @@ RSS_FEED_MOCK_EXCEPTED_LEADS = [
         "author_raw": "Danish Refugee Council",
         "source_raw": "ReliefWeb - Updates",
         "published_on": datetime.date(2020, 9, 17),
-        "title": "Ukraine: DRC / DDG Legal Alert: Issue 55 - August 2020 [EN/RU/UK]"
+        "title": "Ukraine: DRC / DDG Legal Alert: Issue 55 - August 2020 [EN/RU/UK]",
+        "source_type": 'rss'
     },
     {
         "url": "https://reliefweb.int/report/ukraine/osce-special-monitoring",
         "author_raw": "Organization for Security and Co-operation in Europe",
         "source_raw": "ReliefWeb - Updates",
         "published_on": datetime.date(2020, 9, 16),
-        "title": "OSCE Special Monitoring Mission to Ukraine (SMM) Daily Report 221/2020 issued on 16 September 2020"
+        "title": "OSCE Special Monitoring Mission to Ukraine (SMM) Daily Report 221/2020 issued on 16 September 2020",
+        "source_type": 'rss'
     },
     {
         "url": "https://reliefweb.int/report/ukraine/crossing-contact-line-august-2020-snapshot-enuk",
         "author_raw": "UN High Commissioner for Refugees",
         "source_raw": "ReliefWeb - Updates",
         "published_on": datetime.date(2020, 9, 16),
-        "title": "Ukraine: Crossing the Contact Line, August 2020 Snapshot [EN/UK]"
+        "title": "Ukraine: Crossing the Contact Line, August 2020 Snapshot [EN/UK]",
+        "source_type": 'rss'
     },
     {
         "url": "https://reliefweb.int/report/ukraine/eu-and-undp-supply-protective-respirators-medical",
         "author_raw": "UN Development Programme",
         "source_raw": "ReliefWeb - Updates",
         "published_on": datetime.date(2020, 9, 16),
-        "title": "Ukraine: EU and UNDP supply protective respirators to medical workers in Donetsk Oblast"
+        "title": "Ukraine: EU and UNDP supply protective respirators to medical workers in Donetsk Oblast",
+        "source_type": 'rss'
     },
     {
         "url": "https://reliefweb.int/report/ukraine/osce-special-monitoring-mission-ukraine-smm-daily",
         "author_raw": "Organization for Security and Co-operation in Europe",
         "source_raw": "ReliefWeb - Updates",
         "published_on": datetime.date(2020, 9, 15),
-        "title": "OSCE Special Monitoring Mission to Ukraine (SMM) Daily Report 220/2020 issued on 15 September 2020"
+        "title": "OSCE Special Monitoring Mission to Ukraine (SMM) Daily Report 220/2020 issued on 15 September 2020",
+        "source_type": 'rss'
     },
 ]

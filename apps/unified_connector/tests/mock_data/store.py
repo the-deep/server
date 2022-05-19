@@ -14,6 +14,11 @@ from .rss_feed_mock_data import (
     RSS_PARAMS,
     RSS_FEED_MOCK_EXCEPTED_LEADS,
 )
+from .atom_feed_mock_data import (
+    ATOM_FEED_MOCK_DATA_RAW,
+    ATOM_FEED_PARAMS,
+    ATOM_FEED_MOCK_EXCEPTED_LEADS,
+)
 
 CONNECTOR_SOURCE_MOCK_DATA = {
     ConnectorSource.Source.UNHCR: (
@@ -25,10 +30,14 @@ CONNECTOR_SOURCE_MOCK_DATA = {
     ConnectorSource.Source.RSS_FEED: (
         (RSS_FEED_MOCK_DATA_RAW,), RSS_FEED_MOCK_EXCEPTED_LEADS
     ),
+    ConnectorSource.Source.ATOM_FEED: (
+        (ATOM_FEED_MOCK_DATA_RAW,), ATOM_FEED_MOCK_EXCEPTED_LEADS
+    ),
 }
 
 CONNECTOR_SOURCE_MOCK_PARAMS = {
     ConnectorSource.Source.RSS_FEED: RSS_PARAMS,
+    ConnectorSource.Source.ATOM_FEED: ATOM_FEED_PARAMS,
 }
 
 
