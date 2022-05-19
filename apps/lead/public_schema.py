@@ -18,7 +18,7 @@ def get_public_lead_qs():
 
 class PublicLeadDetailType(graphene.ObjectType):
     uuid = graphene.UUID(required=True)
-    project_title = graphene.String(required=True)
+    project_title = graphene.String()
     created_by_display_name = graphene.String()
     source_title = graphene.String()
     published_on = graphene.Date()
@@ -31,6 +31,8 @@ class PublicLeadDetailType(graphene.ObjectType):
 
     @staticmethod
     def resolve_project_title(root, info, **_):
+        if root.project.is_private and not root.has_project_access:
+            return
         return root.project.title
 
     @staticmethod
@@ -55,9 +57,15 @@ class Query:
 
     @staticmethod
     def resolve_public_lead(_, info, **kwargs):
-        def _return(lead, project):
+        def _return(lead, project, has_access):
+            _project = project
+            print('>>', lead, project, project and project.is_private, has_access)
+            if (project and project.is_private) and not has_access:
+                _project = None
+            if lead:
+                lead.has_project_access = has_access
             return {
-                'project': project and (project if not project.is_private else None),
+                'project': _project,
                 'lead': lead,
             }
 
@@ -73,12 +81,13 @@ class Query:
         user = info.context.user
         if user is None or user.is_anonymous:
             lead = _get_lead_from_qs(get_public_lead_qs())
-            return _return(lead, None)
+            return _return(lead, None, False)
 
         lead = _get_lead_from_qs(Lead.objects.all())
         if lead is None:
-            return _return(None, None)
+            return _return(None, None, False)
         user_permissions = PP.get_permissions(lead.project, user)
+        has_access = len(user_permissions) > 0
         if (
             PP.Permission.VIEW_ALL_LEAD in user_permissions or
             (
@@ -89,7 +98,5 @@ class Query:
                 lead.project.has_publicly_viewable_leads  # Project allows to share pubilc leads
             )
         ):
-            return _return(lead, lead.project)
-        elif not lead.project.is_private:
-            return _return(None, lead.project)
-        return _return(None, None)
+            return _return(lead, lead.project, has_access)
+        return _return(None, lead.project, has_access)
