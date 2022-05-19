@@ -141,6 +141,17 @@ A batch of N95 respirators will soon be provided to medical institutions in Luha
 </rss>
 '''.encode('utf-8')
 
+
+RSS_PARAMS = {
+    "feed-url": "test-url",
+    "url-field": "link",
+    "author-field": "author",
+    "source-field": "source",
+    "date-field": "pubDate",
+    "title-field": "title"
+}
+
+
 RSS_FEED_MOCK_EXCEPTED_LEADS = [
     {
         "url": "https://reliefweb.int/report/ukraine/ukraine-drc-ddg",
