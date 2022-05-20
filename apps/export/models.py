@@ -11,6 +11,7 @@ from export.mime_types import (
     EXCEL_MIME_TYPE,
     JSON_MIME_TYPE,
 )
+from analysis.models import Analysis
 
 
 class Export(models.Model):
@@ -30,6 +31,7 @@ class Export(models.Model):
         ENTRIES = 'entries', 'Entries'
         ASSESSMENTS = 'assessments', 'Assessments'
         PLANNED_ASSESSMENTS = 'planned_assessments', 'Planned Assessments'
+        ANALYSES = 'analyses', 'Analyses'
 
     class ExportType(models.TextChoices):
         EXCEL = 'excel', 'Excel'
@@ -59,6 +61,7 @@ class Export(models.Model):
         (DataType.ASSESSMENTS, ExportType.JSON, Format.JSON): 'Assessments JSON Export',
         (DataType.PLANNED_ASSESSMENTS, ExportType.EXCEL, Format.XLSX): 'Planned Assessments Excel Export',
         (DataType.PLANNED_ASSESSMENTS, ExportType.JSON, Format.JSON): 'Planned Assessments JSON Export',
+        (DataType.ANALYSES, ExportType.EXCEL, Format.XLSX): 'Analyses Excel Export',
     }
 
     # Number of entries to proccess if is_preview is True
@@ -90,6 +93,13 @@ class Export(models.Model):
     status = models.CharField(max_length=30, choices=Status.choices, default=Status.PENDING)
     is_deleted = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False)
+
+    # used for analysis export
+    analysis = models.ForeignKey(
+        Analysis, null=True, blank=True,
+        verbose_name="analysis",
+        on_delete=models.SET_NULL,
+    )
 
     def __str__(self):
         return self.title
