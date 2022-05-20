@@ -21,6 +21,8 @@ from deep.permissions import (
     IsProjectMember
 )
 from project.models import Project
+from project.tasks import generate_project_geo_region_cache
+
 from .models import Region, AdminLevel, GeoArea
 from .serializers import (
     AdminLevelSerializer,
@@ -32,7 +34,7 @@ from .filter_set import (
     AdminLevelFilterSet,
     RegionFilterSet
 )
-from geo.tasks import load_geo_areas
+from .tasks import load_geo_areas
 
 
 class RegionViewSet(viewsets.ModelViewSet):
@@ -209,23 +211,23 @@ class GeoOptionsView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, version=None):
-        regions = Region.objects.all()
-
         project = request.GET.get('project')
         if project:
             project = Project.objects.get(id=project)
             if not project.is_member(request.user):
                 raise exceptions.PermissionDenied()
 
-            regions = regions.filter(project=project)
-
-        regions = regions.distinct()
-        result = {}
-        for region in regions:
-            if not region.geo_options:
-                region.calc_cache()
-            result[str(region.id)] = region.geo_options
-        return response.Response(result)
+        if (
+            project.geo_cache_file is None or
+            project.geo_cache_hash is None or
+            project.geo_cache_hash != hash(tuple(project.regions.order_by('id').values_list('cache_index', flat=True)))
+        ):
+            generate_project_geo_region_cache(project)
+        return redirect(
+            request.build_absolute_uri(
+                project.geo_cache_file.url
+            )
+        )
 
 
 class GeoAreaView(viewsets.ReadOnlyModelViewSet):

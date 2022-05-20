@@ -32,6 +32,7 @@ class Region(UserResource):
     media_sources = models.JSONField(default=None, blank=True, null=True)
 
     # cache data
+    cache_index = models.SmallIntegerField(default=0)  # Used to track cache update.
     centroid = models.PointField(blank=True, null=True)  # Admin level 0 centroid
     geo_options = models.JSONField(default=None, blank=True, null=True)
 
@@ -68,6 +69,7 @@ class Region(UserResource):
         self.centroid = GeoArea.objects\
             .filter(admin_level__region=self)\
             .aggregate(centroid=Centroid(PgUnion(Centroid('polygons'))))['centroid']
+        self.cache_index += 1  # Increment after every calc_cache. This is used by project to generate overall cache.
         if save:
             self.save()
 
