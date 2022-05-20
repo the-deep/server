@@ -2,9 +2,7 @@ import os
 from autofixture.base import AutoFixture
 from tempfile import NamedTemporaryFile
 
-from django.conf import settings
-
-from deep.tests import TestCase
+from deep.tests import TestCase, TEST_MEDIA_ROOT
 
 from gallery.models import File
 from geo.models import GeoArea, Region, AdminLevel
@@ -373,7 +371,7 @@ class TestTabularExtraction(TestCase):
             assert len(field.actual_data) == 9
 
     def initialize_data_and_basic_test(self, csv_data):
-        file = NamedTemporaryFile('w', dir=settings.MEDIA_ROOT, delete=False)
+        file = NamedTemporaryFile('w', dir=TEST_MEDIA_ROOT, delete=False)
 
         self.files.append(file.name)
 

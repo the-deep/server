@@ -1,4 +1,4 @@
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.gdal.error import GDALException
 from django.conf import settings
@@ -211,11 +211,9 @@ class GeoOptionsView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, version=None):
-        project = request.GET.get('project')
-        if project:
-            project = Project.objects.get(id=project)
-            if not project.is_member(request.user):
-                raise exceptions.PermissionDenied()
+        project = get_object_or_404(Project, pk=request.GET.get('project'))
+        if not project.is_member(request.user):
+            raise exceptions.PermissionDenied()
 
         if (
             project.geo_cache_file is None or
