@@ -250,7 +250,7 @@ class BulkUpdateProjectRegion(PsBulkGrapheneMutation):
     deleted_result = graphene.List(graphene.NonNull(RegionDetailType))
     # class vars
     model = Project.regions.through
-    permissions = [PP.Permission.CAN_ADD_MEMBER]
+    permissions = [PP.Permission.UPDATE_PROJECT]
 
     @classmethod
     def perform_mutate(cls, _, info, **kwargs):
