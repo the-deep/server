@@ -166,7 +166,7 @@ class ProjectStatType(graphene.ObjectType):
 class ProjectOrganizationType(DjangoObjectType):
     class Meta:
         model = ProjectOrganization
-        fields = ('id', 'organization',)
+        only_fields = ('id', 'organization',)
 
     organization_type = graphene.Field(ProjectOrganizationTypeEnum, required=True)
     organization_type_display = EnumDescription(source='get_organization_type_display', required=True)
@@ -179,7 +179,7 @@ class ProjectOrganizationType(DjangoObjectType):
 class ProjectRoleType(DjangoObjectType):
     class Meta:
         model = ProjectRole
-        fields = ('id', 'title', 'level')
+        only_fields = ('id', 'title', 'level')
 
     type = graphene.Field(ProjectRoleTypeEnum, required=True)
 
@@ -187,7 +187,7 @@ class ProjectRoleType(DjangoObjectType):
 class ProjectMembershipType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = ProjectMembership
-        fields = (
+        only_fields = (
             'id', 'member', 'linked_group',
             'role', 'joined_at', 'added_by',
         )
@@ -198,7 +198,7 @@ class ProjectMembershipType(ClientIdMixin, DjangoObjectType):
 class ProjectUserGroupMembershipType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = ProjectUserGroupMembership
-        fields = (
+        only_fields = (
             'id', 'usergroup',
             'role', 'joined_at', 'added_by',
         )
@@ -209,7 +209,7 @@ class ProjectUserGroupMembershipType(ClientIdMixin, DjangoObjectType):
 class ProjectType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = Project
-        fields = (
+        only_fields = (
             'id', 'title', 'description', 'start_date', 'end_date',
             'analysis_framework', 'assessment_template',
             'is_default', 'is_private', 'is_visualization_enabled',
@@ -286,7 +286,7 @@ class AnalysisFrameworkVisibleProjectType(DjangoObjectType):
     class Meta:
         model = Project
         skip_registry = True
-        fields = (
+        only_fields = (
             'id',
             'title',
             'is_private'
@@ -308,7 +308,7 @@ class ProjectUserGroupMembershipListType(CustomDjangoListObjectType):
 class ProjectVizDataType(DjangoObjectType):
     class Meta:
         model = ProjectStats
-        fields = (
+        only_fields = (
             'modified_at',
             'status',
             'public_share',
@@ -358,12 +358,12 @@ class ProjectDetailType(
     class Meta:
         model = Project
         skip_registry = True
-        fields = (
+        only_fields = (
             'id', 'title', 'description', 'start_date', 'end_date', 'analysis_framework',
             'category_editor', 'assessment_template', 'data',
-            'is_default', 'is_private', 'is_visualization_enabled',
             'created_at', 'created_by',
-            'modified_at', 'modified_by'
+            'modified_at', 'modified_by',
+            'is_default', 'is_private', 'is_visualization_enabled', 'has_publicly_viewable_leads',
         )
 
     analysis_framework = graphene.Field(AnalysisFrameworkDetailType)
@@ -446,7 +446,7 @@ class ProjectByRegion(graphene.ObjectType):
 class ProjectJoinRequestType(DjangoObjectType):
     class Meta:
         model = ProjectJoinRequest
-        fields = (
+        only_fields = (
             'id',
             'data',
             'requested_by',
@@ -460,7 +460,7 @@ class ProjectJoinRequestType(DjangoObjectType):
 class RegionWithProject(DjangoObjectType):
     class Meta:
         model = Region
-        fields = (
+        only_fields = (
             'id', 'centroid',
         )
     projects_id = graphene.List(graphene.NonNull(graphene.ID))

@@ -34,7 +34,7 @@ def get_entry_comment_qs(info):
 class EntryReviewCommentTextType(DjangoObjectType):
     class Meta:
         model = EntryReviewCommentText
-        fields = (
+        only_fields = (
             'id',
             'created_at',
             'text',
@@ -44,7 +44,7 @@ class EntryReviewCommentTextType(DjangoObjectType):
 class EntryReviewCommentType(DjangoObjectType):
     class Meta:
         model = EntryReviewComment
-        fields = (
+        only_fields = (
             'id',
             'created_by',
             'created_at',
@@ -61,7 +61,7 @@ class EntryReviewCommentDetailType(EntryReviewCommentType):
     class Meta:
         model = EntryReviewComment
         skip_registry = True
-        fields = (
+        only_fields = (
             'id',
             'entry',
             'created_by',

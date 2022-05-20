@@ -15,7 +15,7 @@ from .enums import GroupMembershipRoleEnum
 class GroupMembershipType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = GroupMembership
-        fields = (
+        only_fields = (
             'id', 'member', 'joined_at', 'added_by',
         )
 
@@ -26,7 +26,7 @@ class GroupMembershipType(ClientIdMixin, DjangoObjectType):
 class UserGroupType(DjangoObjectType):
     class Meta:
         model = UserGroup
-        fields = (
+        only_fields = (
             'id',
             'title',
             'description',

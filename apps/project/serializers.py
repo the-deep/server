@@ -9,6 +9,7 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
+from deep.permissions import AnalysisFrameworkPermissions as AfP
 from deep.serializers import (
     RemoveNullFieldsMixin,
     URLCachedFileField,
@@ -768,3 +769,94 @@ class ProjectVizConfigurationSerializer(ProjectPropertySerializerMixin, serializ
     def save(self):
         action = self.validated_data and self.validated_data['action']
         return self.project.project_stats.update_public_share_configuration(action)
+
+
+class ProjectOrganizationGqSerializer(TempClientIdMixin, serializers.ModelSerializer):
+    class Meta:
+        model = ProjectOrganization
+        fields = (
+            'id', 'organization', 'organization_type',
+            'client_id',
+        )
+
+
+class ProjectGqSerializer(DeprecatedUserResourceSerializer):
+    organizations = ProjectOrganizationGqSerializer(source='projectorganization_set', many=True, required=False)
+
+    class Meta:
+        model = Project
+        fields = (
+            'title',
+            'description',
+            'start_date',
+            'end_date',
+            'status',
+            'is_private',
+            'analysis_framework',
+            'is_visualization_enabled',
+            'has_publicly_viewable_leads',
+            'organizations',
+        )
+
+    # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
+    # This makes sure only scoped (individual entry) instances (attributes) are updated.
+    def _get_prefetch_related_instances_qs(self, qs):
+        if self.instance:
+            return qs.filter(project=self.instance)
+        return qs.none()  # On create throw error if existing id is provided
+
+    @cached_property
+    def current_user(self):
+        return self.context['request'].user
+
+    def validate_is_private(self, is_private):
+        if self.instance:
+            # For update, don't allow changing privacy.
+            if self.instance.is_private != is_private:
+                raise serializers.ValidationError('Cannot change privacy of project.')
+        # For create, make sure user can feature permission to create private project.
+        else:
+            private_access = self.current_user.profile.\
+                get_accessible_features().filter(key=Feature.FeatureKey.PRIVATE_PROJECT)
+            if is_private and not private_access.exists():
+                raise serializers.ValidationError("You don't have permission to create private project")
+        return is_private
+
+    def validate_analysis_framework(self, framework):
+        if (self.instance and self.instance.analysis_framework) == framework:
+            return framework
+        if not framework.can_get(self.current_user):
+            raise serializers.ValidationError(
+                "Given framework either doesn't exists or you don't have access to it"
+            )
+        if not framework.is_private:
+            return framework
+        # Check membership+permissions if private
+        allowed_permission = AfP.get_permissions(framework.get_current_user_role(self.current_user))
+        if not allowed_permission:
+            raise serializers.ValidationError("Either framework doesn't exists or you don't have access")
+        if AfP.Permission.CAN_USE_IN_OTHER_PROJECTS not in allowed_permission:
+            raise serializers.ValidationError("You don't have permissions to use the analysis framework in the project")
+        return framework
+
+    def validate(self, data):
+        is_private = data.get('is_private', self.instance and self.instance.is_private)
+        framework = data.get('analysis_framework', self.instance and self.instance.analysis_framework)
+
+        # Analysis Frameowrk check
+        if (self.instance and self.instance.analysis_framework) != framework:
+            # Check private
+            if not is_private and framework.is_private:
+                raise serializers.ValidationError({
+                    'analysis_framework': 'Cannot use private framework in public project',
+                })
+        return data
+
+    def create(self, validated_data):
+        project = super().create(validated_data)
+        ProjectMembership.objects.create(
+            project=project,
+            member=self.current_user,
+            role=ProjectRole.get_owner_role(),
+        )
+        return project

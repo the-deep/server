@@ -12,6 +12,7 @@ from .graphene_converter import *  # type: ignore # noqa F401
 from utils.graphene.resolver import *  # type: ignore # noqa F401
 
 from project import schema as pj_schema, mutation as pj_mutation
+from lead import public_schema as lead_public_schema
 from analysis_framework import mutation as af_mutation, schema as af_schema
 from user import mutation as user_mutation, schema as user_schema
 from user_group import mutation as user_group_mutation, schema as user_group_schema
@@ -29,6 +30,7 @@ class Query(
     organization_schema.Query,
     geo_schema.Query,
     notification_schema.Query,
+    lead_public_schema.Query,
     graphene.ObjectType
 ):
     assisted_tagging = graphene.Field(assisted_tagging_schema.AssistedTaggingRootQueryType)

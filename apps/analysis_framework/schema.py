@@ -41,7 +41,7 @@ class WidgetConditionalType(graphene.ObjectType):
 class WidgetType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Widget
-        fields = (
+        only_fields = (
             'id', 'title', 'order', 'properties', 'version',
         )
 
@@ -68,7 +68,7 @@ class SectionType(ClientIdMixin, DjangoObjectType):
 
     class Meta:
         model = Section
-        fields = (
+        only_fields = (
             'id', 'title', 'order', 'tooltip',
         )
 
@@ -164,7 +164,7 @@ class AnalysisFrameworkPredictionMappingType(ClientIdMixin, DjangoObjectType):
 
     class Meta:
         model = PredictionTagAnalysisFrameworkWidgetMapping
-        fields = (
+        only_fields = (
             'id',
             'widget',
             'tag',
