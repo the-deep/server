@@ -11,14 +11,13 @@ def export_analyses(export):
     analytical_statement_entries = AnalyticalStatementEntry.objects.filter(
         analytical_statement__analysis_pillar__analysis=analysis
     )
-    print(analytical_statement_entries, "*******************")
     if export_type == Export.ExportType.EXCEL:
         export_data = ExcelExporter(analytical_statement_entries)\
             .add_analytical_statement_entries(analytical_statement_entries)\
             .export()
     else:
         raise Exception(
-            '(Entries Export) Unkown Export Type Provided: {export_type} for Export: {export.id}'
+            f'(Analyses Export) Unkown Export Type Provided: {export_type} for Export: {export.id}'
         )
 
     return export_data

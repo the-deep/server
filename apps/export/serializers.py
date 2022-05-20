@@ -1,7 +1,6 @@
 import graphene
 
 from django.db import transaction
-from django.shortcuts import get_object_or_404
 
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
@@ -18,7 +17,6 @@ from lead.filter_set import LeadGQFilterSet
 from analysis_framework.models import Widget, Exportable
 from .tasks import export_task
 from .models import Export
-from analysis.models import Analysis
 
 
 class ExportSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer):
@@ -288,20 +286,19 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
     # TODO: def validate_report_levels(self, widget_ids):
     # TODO: def validate_report_structure(self, widget_ids):
 
+    def validate_analysis(self, analysis):
+        if analysis and analysis.project != self.project:
+            raise serializers.ValidationError(
+                f'Analysis project {analysis.project_id} doesn\'t match current project {self.project.id}'
+            )
+        return analysis
+
     def validate(self, data):
         # NOTE: We only need to check with create logic (as update is not allowed)
         # Validate type, export_type and format
         data_type = data['type']
         export_type = data['export_type']
         _format = data['format']
-        project = self.project
-        analysis = data.get('analysis')
-        if analysis:
-            analysis_object = get_object_or_404(Analysis, id=analysis.id)
-            if analysis_object.project != project:
-                raise serializers.ValidationError(
-                    f'Analysis project {analysis.project_id} does not current project {project.id}'
-                )
         if (data_type, export_type, _format) not in Export.DEFAULT_TITLE_LABEL:
             raise serializers.ValidationError(f'Unsupported Export request: {(data_type, export_type, _format)}')
         return data
@@ -328,7 +325,6 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
                 'report_structure',
             ) if key in data
         }
-        data['analysis'] = data.get('analysis')
         export = super().create(data)
         transaction.on_commit(
             lambda: export.set_task_id(export_task.delay(export.id).id)
