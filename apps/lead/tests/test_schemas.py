@@ -706,3 +706,239 @@ class TestLeadQuerySchema(GraphQLTestCase):
         self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 1)
         self.assertEqual(content['data']['project']['leadGroups']['results'][0]['id'], str(lead_group3.id))
         self.assertEqual(content['data']['project']['leadGroups']['results'][0]['leadCounts'], 2)
+
+    def test_public_lead_query(self):
+        query = '''
+            query MyQuery ($uuid: UUID!) {
+              publicLead(uuid: $uuid) {
+                project {
+                  id
+                  isRejected
+                  membershipPending
+                }
+                lead {
+                  uuid
+                  projectTitle
+                  url
+                  text
+                  sourceTypeDisplay
+                  sourceType
+                  sourceTitle
+                  publishedOn
+                  createdByDisplayName
+                  attachment {
+                    title
+                    file {
+                      url
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          '''
+
+        project = ProjectFactory.create()
+        # User with role
+        non_member_user = UserFactory.create(email='non-member@x.y')
+        member_user = UserFactory.create(email='member@x.y')
+        confidential_member_user = UserFactory.create(email='confidential-member@x.y')
+        project.add_member(member_user, role=self.project_role_reader_non_confidential)
+        project.add_member(confidential_member_user, role=self.project_role_reader)
+        # Public project
+        unprotected_lead = LeadFactory.create(
+            project=project,
+            confidentiality=Lead.Confidentiality.UNPROTECTED,
+            title='unprotected_lead',
+        )
+        restricted_lead = LeadFactory.create(
+            project=project,
+            confidentiality=Lead.Confidentiality.RESTRICTED,
+            title='restricted_lead',
+        )
+        confidential_lead = LeadFactory.create(
+            project=project,
+            confidentiality=Lead.Confidentiality.CONFIDENTIAL,
+            title='confidential_lead',
+        )
+
+        def _query_check(lead):
+            return self.query_check(query, variables={'uuid': str(lead.uuid)})
+
+        cases = [
+            # Public Project
+            (
+                False, False, [  # Project view public leads
+                    (
+                        # Without login [Lead, show_project, show_lead]
+                        None, [
+                            [unprotected_lead, False, False, None],
+                            [restricted_lead, False, False, None],
+                            [confidential_lead, False, False, None],
+                        ],
+                    ),
+                    (
+                        # Non member user
+                        non_member_user, [
+                            [unprotected_lead, True, False, None],
+                            [restricted_lead, True, False, None],
+                            [confidential_lead, True, False, None],
+                        ]
+                    ),
+                    (
+                        # Member user with non-confidential access
+                        member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, False, None],
+                        ]
+                    ),
+                    (
+                        # Member user with confidential access
+                        confidential_member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, True, True],
+                        ]
+                    ),
+                ]
+            ),
+            (
+                False, True, [  # Project view public leads
+                    (
+                        # Without login
+                        None, [
+                            [unprotected_lead, False, True, True],
+                            [restricted_lead, False, False, None],
+                            [confidential_lead, False, False, None],
+                        ],
+                    ),
+                    (
+                        # Non member user
+                        non_member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, False, None],
+                            [confidential_lead, True, False, None],
+                        ]
+                    ),
+                    (
+                        # Member user with non-confidential access
+                        member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, False, None],
+                        ]
+                    ),
+                    (
+                        # Member user with confidential access
+                        confidential_member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, True, True],
+                        ]
+                    ),
+                ]
+            ),
+            # Private Project
+            (
+                True, False, [  # Project view public leads
+                    (
+                        # Without login
+                        None, [
+                            [unprotected_lead, False, False, None],
+                            [restricted_lead, False, False, None],
+                            [confidential_lead, False, False, None],
+                        ],
+                    ),
+                    (
+                        # Non member user
+                        non_member_user, [
+                            [unprotected_lead, False, False, None],
+                            [restricted_lead, False, False, None],
+                            [confidential_lead, False, False, None],
+                        ]
+                    ),
+                    (
+                        # Member user with non-confidential access
+                        member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, False, None],
+                        ]
+                    ),
+                    (
+                        # Member user with confidential access
+                        confidential_member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, True, True],
+                        ]
+                    ),
+                ]
+            ),
+            (
+                True, True, [  # Project view public leads
+                    (
+                        # Without login
+                        None, [
+                            [unprotected_lead, False, True, False],
+                            [restricted_lead, False, False, None],
+                            [confidential_lead, False, False, None],
+                        ],
+                    ),
+                    (
+                        # Non member user
+                        non_member_user, [
+                            [unprotected_lead, False, True, False],
+                            [restricted_lead, False, False, None],
+                            [confidential_lead, False, False, None],
+                        ]
+                    ),
+                    (
+                        # Member user with non-confidential access
+                        member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, False, None],
+                        ]
+                    ),
+                    (
+                        # Member user with confidential access
+                        confidential_member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, True, True],
+                        ]
+                    ),
+                ]
+            ),
+        ]
+        for is_private, project_show_public_leads, user_and_conditions in cases:
+            project.is_private = is_private
+            project.has_publicly_viewable_leads = project_show_public_leads
+            project.save(update_fields=('is_private', 'has_publicly_viewable_leads',))
+            for user, conditions in user_and_conditions:
+                if user:
+                    self.force_login(user)
+                else:
+                    self.logout()
+                for used_lead, expect_project_membership_data, expect_lead, show_project_title in conditions:
+                    content = _query_check(used_lead)['data']['publicLead']
+                    check_meta = (is_private, project_show_public_leads, user, used_lead)
+                    # Excepted Lead
+                    if expect_lead:
+                        self.assertIsNotNone(content['lead'], check_meta)
+                        self.assertEqual(content['lead']['uuid'], str(used_lead.uuid))
+                        # Show project title in Lead data.
+                        if show_project_title:
+                            self.assertIsNotNone(content['lead']['projectTitle'], check_meta)
+                        else:
+                            self.assertIsNone(content['lead']['projectTitle'], check_meta)
+                    else:
+                        self.assertIsNone(content['lead'], check_meta)
+                    # Show project with membership data
+                    if expect_project_membership_data:
+                        self.assertIsNotNone(content['project'], check_meta)
+                        self.assertEqual(content['project']['id'], str(used_lead.project_id))
+                    else:
+                        self.assertIsNone(content['project'], check_meta)

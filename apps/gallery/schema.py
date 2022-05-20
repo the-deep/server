@@ -8,13 +8,25 @@ from .models import File
 class GalleryFileType(DjangoObjectType):
     class Meta:
         model = File
-        fields = (
+        only_fields = (
             'id',
-            # 'uuid',
             'title',
             'mime_type',
             'metadata',
         )
+    file = graphene.Field(FileFieldType)
+
+    @staticmethod
+    def resolve_file(root, info, **_):
+        if root.file:
+            return root.file
+
+
+class PublicGalleryFileType(DjangoObjectType):
+    class Meta:
+        model = File
+        skip_registry = True
+        only_fields = ('title',)
     file = graphene.Field(FileFieldType)
 
     @staticmethod

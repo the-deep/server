@@ -7,6 +7,204 @@ from snapshottest import Snapshot
 
 snapshots = Snapshot()
 
+snapshots['ProjectMutationSnapshotTest::test_project_create_mutation private-af-private-project-success'] = {
+    'errors': None,
+    'ok': True,
+    'result': {
+        'analysisFramework': {
+            'id': '3',
+            'isPrivate': True
+        },
+        'description': 'Project description 101',
+        'endDate': '2021-01-01',
+        'hasPubliclyViewableLeads': False,
+        'id': '1',
+        'isPrivate': True,
+        'isVisualizationEnabled': False,
+        'organizations': [
+            {
+                'id': '1',
+                'organization': {
+                    'id': '1',
+                    'title': 'Organization-0'
+                },
+                'organizationType': 'LEAD_ORGANIZATION',
+                'organizationTypeDisplay': 'Lead Organization'
+            }
+        ],
+        'startDate': '2020-01-01',
+        'status': 'ACTIVE',
+        'title': 'Project 1'
+    }
+}
+
+snapshots['ProjectMutationSnapshotTest::test_project_create_mutation public-af-private-project-success'] = {
+    'errors': None,
+    'ok': True,
+    'result': {
+        'analysisFramework': {
+            'id': '1',
+            'isPrivate': False
+        },
+        'description': 'Project description 101',
+        'endDate': '2021-01-01',
+        'hasPubliclyViewableLeads': False,
+        'id': '2',
+        'isPrivate': True,
+        'isVisualizationEnabled': False,
+        'organizations': [
+            {
+                'id': '2',
+                'organization': {
+                    'id': '1',
+                    'title': 'Organization-0'
+                },
+                'organizationType': 'LEAD_ORGANIZATION',
+                'organizationTypeDisplay': 'Lead Organization'
+            }
+        ],
+        'startDate': '2020-01-01',
+        'status': 'ACTIVE',
+        'title': 'Project 1'
+    }
+}
+
+snapshots['ProjectMutationSnapshotTest::test_project_create_mutation public-af-public-project-success'] = {
+    'errors': None,
+    'ok': True,
+    'result': {
+        'analysisFramework': {
+            'id': '1',
+            'isPrivate': False
+        },
+        'description': 'Project description 101',
+        'endDate': '2021-01-01',
+        'hasPubliclyViewableLeads': False,
+        'id': '3',
+        'isPrivate': False,
+        'isVisualizationEnabled': False,
+        'organizations': [
+            {
+                'id': '3',
+                'organization': {
+                    'id': '1',
+                    'title': 'Organization-0'
+                },
+                'organizationType': 'LEAD_ORGANIZATION',
+                'organizationTypeDisplay': 'Lead Organization'
+            }
+        ],
+        'startDate': '2020-01-01',
+        'status': 'ACTIVE',
+        'title': 'Project 1'
+    }
+}
+
+snapshots['ProjectMutationSnapshotTest::test_project_update_mutation private-project:is-private-change-error'] = {
+    'data': {
+        '__typename': 'Mutation',
+        'project': {
+            'projectUpdate': {
+                'errors': [
+                    {
+                        'arrayErrors': None,
+                        'clientId': None,
+                        'field': 'isPrivate',
+                        'messages': 'Cannot change privacy of project.',
+                        'objectErrors': None
+                    }
+                ],
+                'ok': False,
+                'result': None
+            }
+        }
+    }
+}
+
+snapshots['ProjectMutationSnapshotTest::test_project_update_mutation private-project:private-af'] = {
+    'data': {
+        '__typename': 'Mutation',
+        'project': {
+            'projectUpdate': {
+                'errors': [
+                    {
+                        'arrayErrors': None,
+                        'clientId': None,
+                        'field': 'analysisFramework',
+                        'messages': "Either framework doesn't exists or you don't have access",
+                        'objectErrors': None
+                    }
+                ],
+                'ok': False,
+                'result': None
+            }
+        }
+    }
+}
+
+snapshots['ProjectMutationSnapshotTest::test_project_update_mutation public-project:is-private-change-error'] = {
+    'data': {
+        '__typename': 'Mutation',
+        'project': {
+            'projectUpdate': {
+                'errors': [
+                    {
+                        'arrayErrors': None,
+                        'clientId': None,
+                        'field': 'isPrivate',
+                        'messages': 'Cannot change privacy of project.',
+                        'objectErrors': None
+                    }
+                ],
+                'ok': False,
+                'result': None
+            }
+        }
+    }
+}
+
+snapshots['ProjectMutationSnapshotTest::test_project_update_mutation public-project:private-af'] = {
+    'data': {
+        '__typename': 'Mutation',
+        'project': {
+            'projectUpdate': {
+                'errors': [
+                    {
+                        'arrayErrors': None,
+                        'clientId': None,
+                        'field': 'analysisFramework',
+                        'messages': "Either framework doesn't exists or you don't have access",
+                        'objectErrors': None
+                    }
+                ],
+                'ok': False,
+                'result': None
+            }
+        }
+    }
+}
+
+snapshots['ProjectMutationSnapshotTest::test_project_update_mutation public-project:private-af-with-membership'] = {
+    'data': {
+        '__typename': 'Mutation',
+        'project': {
+            'projectUpdate': {
+                'errors': [
+                    {
+                        'arrayErrors': None,
+                        'clientId': None,
+                        'field': 'analysisFramework',
+                        'messages': 'Cannot use private framework in public project',
+                        'objectErrors': None
+                    }
+                ],
+                'ok': False,
+                'result': None
+            }
+        }
+    }
+}
+
 snapshots['TestProjectMembershipMutation::test_user_group_membership_admin_bulk try 1'] = {
     'deletedResult': [
         {
@@ -380,7 +578,7 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 1'
                 'clientId': 'member-user-2-with-user-group',
                 'field': 'nonFieldErrors',
                 'messages': 'This user is added through usergroup: Group-1. Please update the respective usergroup.',
-                'objectErrors': None,
+                'objectErrors': None
             }
         ]
     ],
@@ -425,7 +623,7 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 1'
                 'title': 'Member'
             }
         },
-        None,
+        None
     ]
 }
 
@@ -466,7 +664,7 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 2'
                 'clientId': 'member-user-2-with-user-group',
                 'field': 'nonFieldErrors',
                 'messages': 'This user is added through usergroup: Group-1. Please update the respective usergroup.',
-                'objectErrors': None,
+                'objectErrors': None
             }
         ],
         [
@@ -511,7 +709,7 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 2'
                 'id': '4',
                 'title': 'Admin'
             }
-        },
+        }
     ]
 }
 
@@ -558,9 +756,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
                 'clientId': 'member-user-2-with-user-group',
                 'field': 'nonFieldErrors',
                 'messages': 'This user is added through usergroup: Group-1. Please update the respective usergroup.',
-                'objectErrors': None,
+                'objectErrors': None
             }
-        ],
+        ]
     ],
     'result': [
         {
@@ -655,7 +853,7 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
                 'clientId': 'member-user-2-with-user-group',
                 'field': 'nonFieldErrors',
                 'messages': 'This user is added through usergroup: Group-1. Please update the respective usergroup.',
-                'objectErrors': None,
+                'objectErrors': None
             }
         ],
         [
@@ -702,6 +900,6 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
         None,
         None,
         None,
-        None,
+        None
     ]
 }

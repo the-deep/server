@@ -98,3 +98,18 @@ class PublicProjectListType(CustomDjangoListObjectType):
             'analysis_framework_id',
             'created_at',
         ).distinct()
+
+
+class PublicProjectWithMembershipData(graphene.ObjectType):
+    id = graphene.ID(required=True)
+    title = graphene.ID(required=True)
+    membership_pending = graphene.Boolean(required=True)
+    is_rejected = graphene.Boolean(required=True)
+
+    @staticmethod
+    def resolve_membership_pending(root, info):
+        return info.context.dl.project.join_status.load(root.pk)
+
+    @staticmethod
+    def resolve_is_rejected(root, info):
+        return info.context.dl.project.project_rejected_status.load(root.pk)

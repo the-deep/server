@@ -57,7 +57,7 @@ class ConnectorLeadType(DjangoObjectType):
 
     class Meta:
         model = ConnectorLead
-        fields = (
+        only_fields = (
             'id',
             'url',
             'website',
@@ -84,7 +84,7 @@ class ConnectorSourceLeadType(DjangoObjectType):
 
     class Meta:
         model = ConnectorSourceLead
-        fields = (
+        only_fields = (
             'id',
             'blocked',
             'already_added',
@@ -125,7 +125,7 @@ class ConnectorSourceType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
 
     class Meta:
         model = ConnectorSource
-        fields = (
+        only_fields = (
             'id',
             'title',
             'unified_connector',
@@ -159,7 +159,7 @@ class UnifiedConnectorType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
 
     class Meta:
         model = UnifiedConnector
-        fields = (
+        only_fields = (
             'id',
             'title',
             'is_active',

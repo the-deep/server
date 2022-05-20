@@ -1,3 +1,4 @@
+import uuid as python_uuid
 from django.contrib.contenttypes.fields import GenericRelation
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -94,6 +95,7 @@ class Lead(UserResource, ProjectEntityMixin):
         null=True, blank=True, default=None,
     )
 
+    uuid = models.UUIDField(default=python_uuid.uuid4, editable=False, unique=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
 
@@ -158,6 +160,14 @@ class Lead(UserResource, ProjectEntityMixin):
             'url': self.url,
             'attachment_id': self.attachment_id,
         }
+
+    def generate_client_url(self):
+        # This url points to client and can be used to retrieve leads
+        # TODO: Use deep/permalinks.py (being implemented in another PR)
+        return (
+            f'{settings.HTTP_PROTOCOL}://{settings.DEEPER_FRONTEND_HOST}'
+            f'/permalink/leads-uuid/{self.uuid}'
+        )
 
     def update_extraction_status(self, new_status, commit=True):
         self.extraction_status = new_status

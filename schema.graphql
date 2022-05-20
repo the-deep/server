@@ -404,6 +404,12 @@ type BulkUpdateProjectMembership {
   deletedResult: [ProjectMembershipType!]
 }
 
+type BulkUpdateProjectRegion {
+  errors: [[GenericScalar!]]
+  result: [RegionDetailType!]
+  deletedResult: [RegionDetailType!]
+}
+
 type BulkUpdateProjectUserGroupMembership {
   errors: [[GenericScalar!]]
   result: [ProjectUserGroupMembershipType]
@@ -582,6 +588,12 @@ type CreateMissingPredictionReview {
   errors: [GenericScalar!]
   ok: Boolean
   result: MissingPredictionReviewType
+}
+
+type CreateProject {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectDetailType
 }
 
 type CreateProjectJoin {
@@ -1431,6 +1443,7 @@ type MissingPredictionReviewType {
 
 type Mutation {
   notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
+  projectCreate(data: ProjectCreateInputType!): CreateProject
   joinProject(data: ProjectJoinRequestInputType!): CreateProjectJoin
   projectJoinRequestDelete(projectId: ID!): ProjectJoinRequestDelete
   project(id: ID!): ProjectMutationType
@@ -1579,6 +1592,19 @@ type ProjectByRegionListType {
   pageSize: Int
 }
 
+input ProjectCreateInputType {
+  title: String!
+  description: String
+  startDate: Date
+  endDate: Date
+  status: ProjectStatusEnum
+  isPrivate: Boolean
+  analysisFramework: ID
+  isVisualizationEnabled: Boolean
+  hasPubliclyViewableLeads: Boolean
+  organizations: [ProjectOrganizationGqInputType!]
+}
+
 type ProjectDetailType {
   id: ID!
   createdAt: DateTime!
@@ -1594,6 +1620,7 @@ type ProjectDetailType {
   isPrivate: Boolean!
   isVisualizationEnabled: Boolean!
   data: GenericScalar
+  hasPubliclyViewableLeads: Boolean!
   currentUserRole: ProjectRoleTypeEnum
   allowedPermissions: [ProjectPermission!]!
   stats: ProjectStatType
@@ -1740,12 +1767,21 @@ type ProjectMutationType {
   leadBulk(items: [BulkLeadInputType!]): BulkLead
   leadGroupDelete(id: ID!): DeleteLeadGroup
   leadCopy(data: LeadCopyInputType!): LeadCopy
+  projectUpdate(data: ProjectUpdateInputType!): UpdateProject
   acceptRejectProject(data: ProjectAcceptRejectInputType!, id: ID!): ProjectAcceptReject
   projectUserMembershipBulk(deleteIds: [ID!], items: [BulkProjectMembershipInputType!]): BulkUpdateProjectMembership
   projectUserGroupMembershipBulk(deleteIds: [ID!], items: [BulkProjectUserGroupMembershipInputType!]): BulkUpdateProjectUserGroupMembership
+  projectRegionBulk(regionsToAdd: [ID!], regionsToRemove: [ID!]): BulkUpdateProjectRegion
   projectVizConfigurationUpdate(data: ProjectVizConfigurationInputType!): UpdateProjectVizConfiguration
   unifiedConnector: UnifiedConnectorMutationType
   assistedTagging: AssistedTaggingMutationType
+}
+
+input ProjectOrganizationGqInputType {
+  id: Int
+  organization: ID!
+  organizationType: ProjectOrganizationTypeEnum!
+  clientId: String
 }
 
 type ProjectOrganizationType {
@@ -1859,6 +1895,19 @@ type ProjectType {
   hasAssessmentTemplate: Boolean!
 }
 
+input ProjectUpdateInputType {
+  title: String
+  description: String
+  startDate: Date
+  endDate: Date
+  status: ProjectStatusEnum
+  isPrivate: Boolean
+  analysisFramework: ID
+  isVisualizationEnabled: Boolean
+  hasPubliclyViewableLeads: Boolean
+  organizations: [ProjectOrganizationGqInputType!]
+}
+
 type ProjectUserGroupMembershipListType {
   results: [ProjectUserGroupMembershipType!]
   totalCount: Int
@@ -1898,6 +1947,29 @@ type PublicAnalysisFrameworkListType {
   totalCount: Int
   page: Int
   pageSize: Int
+}
+
+type PublicGalleryFileType {
+  title: String!
+  file: FileFieldType
+}
+
+type PublicLeadDetailType {
+  uuid: UUID!
+  projectTitle: String
+  createdByDisplayName: String
+  sourceTitle: String
+  publishedOn: Date
+  sourceType: LeadSourceTypeEnum!
+  sourceTypeDisplay: EnumDescription!
+  text: String
+  url: String
+  attachment: PublicGalleryFileType
+}
+
+type PublicLeadMetaType {
+  project: PublicProjectWithMembershipData
+  lead: PublicLeadDetailType
 }
 
 type PublicOrganization {
@@ -1941,7 +2013,15 @@ type PublicProjectType {
   analysisFrameworkPreviewImage: String
 }
 
+type PublicProjectWithMembershipData {
+  id: ID!
+  title: ID!
+  membershipPending: Boolean!
+  isRejected: Boolean!
+}
+
 type Query {
+  publicLead(uuid: UUID!): PublicLeadMetaType
   notification(id: ID!): NotificationType
   notifications(timestamp: DateTime, timestampLte: DateTime, timestampGte: DateTime, isPending: Boolean, notificationType: NotificationTypeEnum, status: NotificationStatusEnum, page: Int = 1, ordering: String, pageSize: Int): NotificationListType
   region(id: ID!): RegionDetailType
@@ -2076,6 +2156,8 @@ type TriggerUnifiedConnector {
   ok: Boolean
 }
 
+scalar UUID
+
 input UnifiedConnectorInputType {
   title: String!
   isActive: Boolean
@@ -2171,6 +2253,12 @@ type UpdateMe {
   errors: [GenericScalar!]
   ok: Boolean
   result: UserMeType
+}
+
+type UpdateProject {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectDetailType
 }
 
 type UpdateProjectVizConfiguration {

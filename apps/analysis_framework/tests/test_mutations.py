@@ -19,6 +19,7 @@ from analysis_framework.factories import (
 
 class TestPreviewImage(GraphQLFileUploadTestCase, GraphQLTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.user = UserFactory.create()
         self.upload_mutation = """
             mutation Mutation($data: AnalysisFrameworkInputType!) {

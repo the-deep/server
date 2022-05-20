@@ -49,7 +49,7 @@ def get_analysis_pillar_qs(info):
 class AnalysisType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Analysis
-        fields = (
+        only_fields = (
             'id',
             'title', 'start_date', 'end_date',
         )
@@ -77,7 +77,7 @@ class AnalysisPillarEntryListType(CustomDjangoListObjectType):
 class AnalysisPillarType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = AnalysisPillar
-        fields = (
+        only_fields = (
             'id',
             'title', 'main_statement', 'information_gap', 'assignee',
             'filters',
@@ -95,7 +95,7 @@ class AnalysisPillarDetailType(AnalysisPillarType):
     class Meta:
         model = AnalysisPillar
         skip_registry = True
-        fields = (
+        only_fields = (
             'id',
             'title', 'main_statement', 'information_gap', 'assignee',
             'filters',
