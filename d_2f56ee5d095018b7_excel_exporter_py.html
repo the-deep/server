@@ -477,7 +477,7 @@
     <p class="pln"><span class="n"><a id="t416" href="#t416">416</a></span><span class="t">                <span class="str">'Controlled'</span> <span class="key">if</span> <span class="nam">entry</span><span class="op">.</span><span class="nam">controlled</span> <span class="key">else</span> <span class="str">'Uncontrolled'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t417" href="#t417">417</a></span><span class="t">                <span class="str">f'{lead.id}'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t418" href="#t418">418</a></span><span class="t">                <span class="nam">lead</span><span class="op">.</span><span class="nam">title</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t419" href="#t419">419</a></span><span class="t">                <span class="nam">lead</span><span class="op">.</span><span class="nam">url</span> <span class="key">or</span> <span class="op">(</span><span class="nam">lead</span><span class="op">.</span><span class="nam">attachment</span> <span class="key">and</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">attachment</span><span class="op">.</span><span class="nam">get_file_url</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t419" href="#t419">419</a></span><span class="t">                <span class="nam">lead</span><span class="op">.</span><span class="nam">url</span> <span class="key">or</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">generate_client_url</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t420" href="#t420">420</a></span><span class="t">                <span class="nam">lead</span><span class="op">.</span><span class="nam">get_authoring_organizations_type_display</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t421" href="#t421">421</a></span><span class="t">                <span class="nam">lead</span><span class="op">.</span><span class="nam">get_authors_display</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t422" href="#t422">422</a></span><span class="t">                <span class="nam">lead</span><span class="op">.</span><span class="nam">get_source_display</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -554,7 +554,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.3.3</a>,
-            created at 2022-05-18 18:14 +0000
+            created at 2022-05-20 08:14 +0000
         </p>
     </div>
 </footer>
