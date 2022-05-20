@@ -59,7 +59,6 @@ class Query:
     def resolve_public_lead(_, info, **kwargs):
         def _return(lead, project, has_access):
             _project = project
-            print('>>', lead, project, project and project.is_private, has_access)
             if (project and project.is_private) and not has_access:
                 _project = None
             if lead:

@@ -1956,7 +1956,7 @@ type PublicGalleryFileType {
 
 type PublicLeadDetailType {
   uuid: UUID!
-  projectTitle: String!
+  projectTitle: String
   createdByDisplayName: String
   sourceTitle: String
   publishedOn: Date
