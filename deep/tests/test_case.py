@@ -1,4 +1,5 @@
 import os
+import shutil
 import autofixture
 from rest_framework import (
     test,
@@ -6,6 +7,7 @@ from rest_framework import (
 )
 
 import datetime
+from django.test import override_settings
 from django.utils import timezone
 from django.conf import settings
 
@@ -20,6 +22,32 @@ from analysis_framework.models import AnalysisFramework
 from ary.models import AssessmentTemplate, Assessment
 
 
+TEST_MEDIA_ROOT = 'rest-media-temp'
+TEST_EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+TEST_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+TEST_CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake-rest',
+    }
+}
+DUMMY_TEST_CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'LOCATION': 'unique-snowflake-rest',
+    }
+}
+TEST_AUTH_PASSWORD_VALIDATORS = []
+
+
+@override_settings(
+    DEBUG=True,
+    EMAIL_BACKEND=TEST_EMAIL_BACKEND,
+    MEDIA_ROOT=TEST_MEDIA_ROOT,
+    DEFAULT_FILE_STORAGE=TEST_FILE_STORAGE,
+    CACHES=TEST_CACHES,
+    CELERY_TASK_ALWAYS_EAGER=True,
+)
 class TestCase(test.APITestCase):
     def setUp(self):
         self.root_user = User.objects.create_user(
@@ -42,6 +70,8 @@ class TestCase(test.APITestCase):
         # This should be called here to access roles later
         self.create_project_roles()
         self.deep_test_files_path = []
+        if not os.path.exists(TEST_MEDIA_ROOT):
+            os.makedirs(TEST_MEDIA_ROOT)
         super().setUp()
 
     def tearDown(self):
@@ -56,6 +86,11 @@ class TestCase(test.APITestCase):
                 file_path = file.file.path
                 if os.path.isfile(file_path):
                     os.unlink(file_path)
+        # clear the temporary media files
+        try:
+            shutil.rmtree(os.path.join(settings.BASE_DIR, TEST_MEDIA_ROOT), ignore_errors=True)
+        except FileNotFoundError:
+            pass
 
     def authenticate(self, user=None):
         user = user or self.user

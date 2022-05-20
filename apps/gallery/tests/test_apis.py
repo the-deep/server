@@ -116,15 +116,6 @@ class GalleryTests(TestCase):
         response = self.client.get(url)
         self.assert_404(response)
 
-    def test_public_private_file_api_no_post(self):
-        public_url = '/public-file/'
-        private_url = '/private-file/'
-        self.authenticate()
-        public_resp = self.client.post(public_url)
-        private_resp = self.client.post(private_url)
-        self.assert_405(public_resp)
-        self.assert_405(private_resp)
-
     def test_get_file_private_no_random_string(self):
         url = '/private-file/1/'
         self.authenticate()
