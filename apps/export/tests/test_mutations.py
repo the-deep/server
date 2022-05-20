@@ -301,6 +301,8 @@ class TestExportMutationSchema(GraphQLTestCase):
         self.assertNotEqual(response['project']['exportCreate']['result'], None, response)
         self.assertEqual(response['project']['exportCreate']['result']['analysis']['title'], analysis1.title)
 
+        # TODO: Add test case for file check
+
     def test_export_cancel(self):
         """
         This test makes sure only valid users can cancel export
