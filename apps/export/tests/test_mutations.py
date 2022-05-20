@@ -1,3 +1,5 @@
+import datetime
+
 from unittest.mock import patch
 
 from utils.graphene.tests import GraphQLTestCase
@@ -5,6 +7,7 @@ from utils.graphene.tests import GraphQLTestCase
 from user.factories import UserFactory
 from project.factories import ProjectFactory
 from export.factories import ExportFactory
+from analysis.factories import AnalysisFactory
 
 from lead.models import Lead
 from export.models import Export
@@ -39,6 +42,10 @@ class TestExportMutationSchema(GraphQLTestCase):
                 exportedBy {
                   id
                   displayName
+                }
+                analysis {
+                    id
+                    title
                 }
               }
             }
@@ -255,6 +262,46 @@ class TestExportMutationSchema(GraphQLTestCase):
         }
         # Make sure the filters are stored in db properly
         self.assertEqual(export.filters, excepted_filters, response)
+
+    def test_analysis_export(self):
+        # create analysis
+        analysis1 = AnalysisFactory.create(
+            project=self.project,
+            end_date=datetime.datetime.now(),
+            team_lead=self.member_user
+        )
+
+        def _query_check(minput, **kwargs):
+            return self.query_check(
+                self.CREATE_EXPORT_QUERY,
+                minput=minput,
+                variables={'projectId': self.project.id},
+                **kwargs
+            )
+
+        minput = dict(
+            format=self.genum(Export.Format.XLSX),
+            type=self.genum(Export.DataType.ANALYSES),
+            title='Analysis Export 100',
+            exportType=self.genum(Export.ExportType.EXCEL),
+            analysis=analysis1.id,
+            filters={},
+        )
+        # -- Without login
+        _query_check(minput, assert_for_error=True)
+
+        # -- With login (non-member)
+        self.force_login(self.non_member_user)
+        _query_check(minput, assert_for_error=True)
+
+        # --- member user
+        self.force_login(self.member_user)
+
+        response = _query_check(minput, okay=False)['data']
+        self.assertNotEqual(response['project']['exportCreate']['result'], None, response)
+        self.assertEqual(response['project']['exportCreate']['result']['analysis']['title'], analysis1.title)
+
+        # TODO: Add test case for file check
 
     def test_export_cancel(self):
         """

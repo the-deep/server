@@ -33,7 +33,8 @@ class UserExportType(DjangoObjectType):
         fields = (
             'id', 'project', 'is_preview', 'title',
             'filters', 'mime_type', 'extra_options', 'exported_by',
-            'exported_at', 'started_at', 'ended_at', 'pending', 'is_archived'
+            'exported_at', 'started_at', 'ended_at', 'pending', 'is_archived',
+            'analysis',
         )
 
     project = graphene.ID(source='project_id')

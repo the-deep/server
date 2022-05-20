@@ -926,6 +926,7 @@ input ExportCreateInputType {
   exportType: ExportExportTypeEnum!
   isPreview: Boolean
   filters: ExportLeadsEntriesFilterData!
+  analysis: ID
   excelDecoupled: Boolean
   reportShowGroups: Boolean
   reportShowLeadEntryId: Boolean
@@ -941,6 +942,7 @@ enum ExportDataTypeEnum {
   ENTRIES
   ASSESSMENTS
   PLANNED_ASSESSMENTS
+  ANALYSES
 }
 
 enum ExportExportTypeEnum {
@@ -2237,6 +2239,7 @@ type UserExportType {
   mimeType: String!
   pending: Boolean!
   isArchived: Boolean!
+  analysis: AnalysisType
   format: ExportFormatEnum!
   type: ExportDataTypeEnum!
   status: ExportStatusEnum!

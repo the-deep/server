@@ -1,6 +1,7 @@
 import graphene
 
 from django.db import transaction
+
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from graphene_django.filter.utils import get_filtering_args_from_filterset
@@ -210,6 +211,7 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
             'export_type',  # excel, report, json, ...
             'is_preview',
             'filters',
+            'analysis',
             # Specific arguments for exports additional configuration
             'excel_decoupled',
             'report_show_groups',
@@ -283,6 +285,13 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
 
     # TODO: def validate_report_levels(self, widget_ids):
     # TODO: def validate_report_structure(self, widget_ids):
+
+    def validate_analysis(self, analysis):
+        if analysis and analysis.project != self.project:
+            raise serializers.ValidationError(
+                f'Analysis project {analysis.project_id} doesn\'t match current project {self.project.id}'
+            )
+        return analysis
 
     def validate(self, data):
         # NOTE: We only need to check with create logic (as update is not allowed)

@@ -14,6 +14,8 @@ from utils.common import (
 
 
 def xstr(value):
+    if type(value) == int:
+        return str(value)
     return get_valid_xml_string(value, escape=False)
 
 
