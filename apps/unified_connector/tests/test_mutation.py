@@ -20,7 +20,7 @@ from unified_connector.factories import (
     ConnectorSourceLeadFactory,
     UnifiedConnectorFactory,
 )
-from .connector_mock_data import RELIEF_WEB_MOCK_DATA
+from unified_connector.tests.mock_data.relief_web_mock_data import RELIEF_WEB_MOCK_DATA_PAGE_2_RAW
 
 
 @override_settings(
@@ -318,7 +318,7 @@ class TestLeadMutationSchema(GraphQLSnapShotTestCase):
         self.force_login(admin_user)
         _query_check(okay=True, mnested=['project', 'unifiedConnector'])
 
-    @patch('connector.sources.relief_web.requests')
+    @patch('unified_connector.sources.relief_web.requests')
     @patch('lead.tasks.requests')
     def test_unified_connector_trigger(self, extractor_response_mock, reliefweb_requests_mock):
         uc = UnifiedConnectorFactory.create(project=self.project)
@@ -362,7 +362,7 @@ class TestLeadMutationSchema(GraphQLSnapShotTestCase):
                 ),
                 (
                     'extractor-invalid',
-                    [200, RELIEF_WEB_MOCK_DATA],
+                    [200, RELIEF_WEB_MOCK_DATA_PAGE_2_RAW],
                     [500, {'error_message': 'Mock error message'}],
                     ConnectorSource.Status.SUCCESS,
                     [ConnectorLead.ExtractionStatus.RETRYING],
@@ -376,7 +376,7 @@ class TestLeadMutationSchema(GraphQLSnapShotTestCase):
                 ),
                 (
                     'all-good',
-                    [200, RELIEF_WEB_MOCK_DATA],
+                    [200, RELIEF_WEB_MOCK_DATA_PAGE_2_RAW],
                     [200, {}],
                     ConnectorSource.Status.SUCCESS,
                     [ConnectorLead.ExtractionStatus.STARTED],

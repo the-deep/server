@@ -39,7 +39,7 @@ from organization.models import Organization, OrganizationType
 from organization.serializers import SimpleOrganizationSerializer
 from utils.web_info_extractor import get_web_info_extractor
 from utils.common import DEFAULT_HEADERS
-from connector.sources.base import OrganizationSearch
+from unified_connector.sources.base import OrganizationSearch
 from entry.models import Entry
 
 from .tasks import extract_from_lead
