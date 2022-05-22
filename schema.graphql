@@ -1951,6 +1951,7 @@ type PublicAnalysisFrameworkListType {
 
 type PublicGalleryFileType {
   title: String!
+  mimeType: String
   file: FileFieldType
 }
 

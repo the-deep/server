@@ -26,7 +26,7 @@ class PublicGalleryFileType(DjangoObjectType):
     class Meta:
         model = File
         skip_registry = True
-        only_fields = ('title',)
+        only_fields = ('title', 'mime_type',)
     file = graphene.Field(FileFieldType)
 
     @staticmethod
