@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from . import (
+from unified_connector.sources import (
     atom_feed,
     rss_feed,
     acaps_briefing_notes,

@@ -283,7 +283,7 @@ class ReliefWeb(Source):
         while relief_url is not None:
             content = self.get_content(relief_url, post_params)
             resp = json.loads(content)
-            total_count = resp['totalCount']
+            total_count += resp['totalCount']
 
             for datum in resp['data']:
                 fields = datum['fields']

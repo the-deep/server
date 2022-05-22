@@ -5,7 +5,7 @@ from user.models import User
 from project.models import Project
 from organization.models import Organization
 from connector.sources.store import get_random_source, acaps_briefing_notes
-from connector.sources.base import OrganizationSearch
+from unified_connector.sources.base import OrganizationSearch
 from connector.models import (
     Connector,
     ConnectorSource,
@@ -120,7 +120,7 @@ class ConnectorApiTest(TestCase):
         response = self.client.get(url)
         self.assert_200(response)
 
-    @patch('connector.sources.rss_feed.requests')
+    @patch('unified_connector.sources.rss_feed.requests')
     def test_connector_leads(self, mock_requests):
         mock_requests.get.return_value.content = RSS_FEED_MOCK_DATA
         connector = self.create(

@@ -20,6 +20,7 @@ from organization import schema as organization_schema
 from geo import schema as geo_schema
 from notification import schema as notification_schema, mutation as notification_mutation
 from assisted_tagging import schema as assisted_tagging_schema
+from unified_connector import schema as unified_connector_schema
 
 
 class Query(
@@ -31,6 +32,7 @@ class Query(
     geo_schema.Query,
     notification_schema.Query,
     lead_public_schema.Query,
+    unified_connector_schema.Query,
     graphene.ObjectType
 ):
     assisted_tagging = graphene.Field(assisted_tagging_schema.AssistedTaggingRootQueryType)

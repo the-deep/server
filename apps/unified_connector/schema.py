@@ -10,6 +10,7 @@ from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
+from unified_connector.sources.rss_feed import RssFeed
 
 from .filters import (
     ConnectorSourceGQFilterSet,
@@ -219,3 +220,16 @@ class UnifiedConnectorQueryType(graphene.ObjectType):
     @staticmethod
     def resolve_connector_source_leads(root, info, **kwargs) -> QuerySet:
         return get_connector_source_lead_qs(info)
+
+
+class RssFieldType(graphene.ObjectType):
+    key = graphene.String()
+    label = graphene.String()
+
+
+class Query:
+    rss_fields = graphene.Field(graphene.List(graphene.NonNull(RssFieldType)), url=graphene.String())
+
+    @staticmethod
+    def resolve_rss_fields(root, info, url):
+        return RssFeed().query_fields({"feed-url": url})
