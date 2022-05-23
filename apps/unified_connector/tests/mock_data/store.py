@@ -19,6 +19,15 @@ from .atom_feed_mock_data import (
     ATOM_FEED_PARAMS,
     ATOM_FEED_MOCK_EXCEPTED_LEADS,
 )
+from .humanitarian_response_mock_data import (
+    HUMANITARIAN_RESPONSE_MOCK_DATA_RAW,
+    HUMANITARIAN_RESPONSE_MOCK_EXCEPTED_LEADS,
+)
+from .pdna_mock_data import (
+    PDNA_MOCK_DATA_RAW,
+    PDNA_MOCK_EXCEPTED_LEADS,
+    PDNA_PARAMS,
+)
 
 CONNECTOR_SOURCE_MOCK_DATA = {
     ConnectorSource.Source.UNHCR: (
@@ -33,11 +42,18 @@ CONNECTOR_SOURCE_MOCK_DATA = {
     ConnectorSource.Source.ATOM_FEED: (
         (ATOM_FEED_MOCK_DATA_RAW,), ATOM_FEED_MOCK_EXCEPTED_LEADS
     ),
+    ConnectorSource.Source.HUMANITARIAN_RESP: (
+        (HUMANITARIAN_RESPONSE_MOCK_DATA_RAW,), HUMANITARIAN_RESPONSE_MOCK_EXCEPTED_LEADS
+    ),
+    ConnectorSource.Source.PDNA: (
+        (PDNA_MOCK_DATA_RAW,), PDNA_MOCK_EXCEPTED_LEADS
+    ),
 }
 
 CONNECTOR_SOURCE_MOCK_PARAMS = {
     ConnectorSource.Source.RSS_FEED: RSS_PARAMS,
     ConnectorSource.Source.ATOM_FEED: ATOM_FEED_PARAMS,
+    ConnectorSource.Source.PDNA: PDNA_PARAMS,
 }
 
 

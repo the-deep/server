@@ -11,6 +11,7 @@ from utils.graphene.fields import DjangoPaginatedListObjectField
 from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
 from unified_connector.sources.rss_feed import RssFeed
+from unified_connector.sources.atom_feed import AtomFeed
 
 from .filters import (
     ConnectorSourceGQFilterSet,
@@ -227,9 +228,19 @@ class RssFieldType(graphene.ObjectType):
     label = graphene.String()
 
 
+class AtomFeedFieldType(graphene.ObjectType):
+    key = graphene.String()
+    label = graphene.String()
+
+
 class Query:
     rss_fields = graphene.Field(graphene.List(graphene.NonNull(RssFieldType)), url=graphene.String())
+    atom_feed_fields = graphene.Field(graphene.List(graphene.NonNull(AtomFeedFieldType)), url=graphene.String())
 
     @staticmethod
     def resolve_rss_fields(root, info, url):
         return RssFeed().query_fields({"feed-url": url})
+
+    @staticmethod
+    def resolve_atom_feed_fields(root, info, url):
+        return AtomFeed().query_fields({"feed-url": url})
