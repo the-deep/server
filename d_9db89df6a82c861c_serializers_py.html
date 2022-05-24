@@ -2,7 +2,6 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
     <title>Coverage for apps/project/serializers.py: 89%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
@@ -15,34 +14,46 @@
             <span class="text">Coverage for </span><b>apps/project/serializers.py</b>:
             <span class="pc_cov">89%</span>
         </h1>
-        <div id="help_panel_wrapper">
+        <aside id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
             <label for="help_panel_state">
                 <img id="keyboard_icon" src="keybd_closed.png" alt="Show/hide keyboard shortcuts" />
             </label>
             <div id="help_panel">
                 <p class="legend">Shortcuts on this page</p>
-                <div>
-                    <p class="keyhelp">
+                <div class="keyhelp">
+                    <p>
                         <kbd>r</kbd>
                         <kbd>m</kbd>
                         <kbd>x</kbd>
                         <kbd>p</kbd>
                         &nbsp; toggle line displays
                     </p>
-                    <p class="keyhelp">
+                    <p>
                         <kbd>j</kbd>
-                        <kbd>k</kbd> &nbsp; next/prev highlighted chunk
+                        <kbd>k</kbd>
+                        &nbsp; next/prev highlighted chunk
                     </p>
-                    <p class="keyhelp">
+                    <p>
                         <kbd>0</kbd> &nbsp; (zero) top of page
                     </p>
-                    <p class="keyhelp">
+                    <p>
                         <kbd>1</kbd> &nbsp; (one) first highlighted chunk
+                    </p>
+                    <p>
+                        <kbd>[</kbd>
+                        <kbd>]</kbd>
+                        &nbsp; prev/next file
+                    </p>
+                    <p>
+                        <kbd>u</kbd> &nbsp; up to the index
+                    </p>
+                    <p>
+                        <kbd>?</kbd> &nbsp; show/hide this help
                     </p>
                 </div>
             </div>
-        </div>
+        </aside>
         <h2>
             <span class="text">479 statements &nbsp;</span>
             <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">436<span class="text"> run</span></button>
@@ -50,12 +61,24 @@
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
             <button type="button" class="par run show_par button_toggle_par" value="par" data-shortcut="p" title="Toggle lines partially run">11<span class="text"> partial</span></button>
         </h2>
-        <div style="display: none;">
-            <button type="button" class="button_next_chunk" data-shortcut="j">Next highlighted chunk</button>
-            <button type="button" class="button_prev_chunk" data-shortcut="k">Previous highlighted chunk</button>
-            <button type="button" class="button_top_of_page" data-shortcut="0">Goto top of page</button>
-            <button type="button" class="button_first_chunk" data-shortcut="1">Goto first highlighted chunk</button>
-        </div>
+        <p class="text">
+            <a id="prevFileLink" class="nav" href="d_9db89df6a82c861c_schema_py.html">&#xab; prev</a> &nbsp; &nbsp;
+            <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
+            <a id="nextFileLink" class="nav" href="d_9db89df6a82c861c_tasks_py.html">&#xbb; next</a>
+            &nbsp; &nbsp; &nbsp;
+            <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.4</a>,
+            created at 2022-05-24 10:19 +0000
+        </p>
+        <aside class="hidden">
+            <button type="button" class="button_next_chunk" data-shortcut="j"/>
+            <button type="button" class="button_prev_chunk" data-shortcut="k"/>
+            <button type="button" class="button_top_of_page" data-shortcut="0"/>
+            <button type="button" class="button_first_chunk" data-shortcut="1"/>
+            <button type="button" class="button_prev_file" data-shortcut="["/>
+            <button type="button" class="button_next_file" data-shortcut="]"/>
+            <button type="button" class="button_to_index" data-shortcut="u"/>
+            <button type="button" class="button_show_hide_help" data-shortcut="?"/>
+        </aside>
     </div>
 </header>
 <main id="source">
@@ -855,78 +878,84 @@
     <p class="pln"><span class="n"><a id="t794" href="#t794">794</a></span><span class="t">            <span class="str">'is_private'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t795" href="#t795">795</a></span><span class="t">            <span class="str">'analysis_framework'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t796" href="#t796">796</a></span><span class="t">            <span class="str">'is_visualization_enabled'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t797" href="#t797">797</a></span><span class="t">            <span class="str">'has_publicly_viewable_leads'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t798" href="#t798">798</a></span><span class="t">            <span class="str">'organizations'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t799" href="#t799">799</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t800" href="#t800">800</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t801" href="#t801">801</a></span><span class="t">    <span class="com"># NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t802" href="#t802">802</a></span><span class="t">    <span class="com"># This makes sure only scoped (individual entry) instances (attributes) are updated.</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t803" href="#t803">803</a></span><span class="t">    <span class="key">def</span> <span class="nam">_get_prefetch_related_instances_qs</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">qs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t804" href="#t804">804</a></span><span class="t">        <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t805" href="#t805">805</a></span><span class="t">            <span class="key">return</span> <span class="nam">qs</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">project</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t806" href="#t806">806</a></span><span class="t">        <span class="key">return</span> <span class="nam">qs</span><span class="op">.</span><span class="nam">none</span><span class="op">(</span><span class="op">)</span>  <span class="com"># On create throw error if existing id is provided</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t807" href="#t807">807</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t808" href="#t808">808</a></span><span class="t">    <span class="op">@</span><span class="nam">cached_property</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t809" href="#t809">809</a></span><span class="t">    <span class="key">def</span> <span class="nam">current_user</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t810" href="#t810">810</a></span><span class="t">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">context</span><span class="op">[</span><span class="str">'request'</span><span class="op">]</span><span class="op">.</span><span class="nam">user</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t811" href="#t811">811</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t812" href="#t812">812</a></span><span class="t">    <span class="key">def</span> <span class="nam">validate_is_private</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">is_private</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t813" href="#t813">813</a></span><span class="t">        <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t814" href="#t814">814</a></span><span class="t">            <span class="com"># For update, don't allow changing privacy.</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t815" href="#t815">815</a></span><span class="t">            <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">.</span><span class="nam">is_private</span> <span class="op">!=</span> <span class="nam">is_private</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t816" href="#t816">816</a></span><span class="t">                <span class="key">raise</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ValidationError</span><span class="op">(</span><span class="str">'Cannot change privacy of project.'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t817" href="#t817">817</a></span><span class="t">        <span class="com"># For create, make sure user can feature permission to create private project.</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t818" href="#t818">818</a></span><span class="t">        <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t819" href="#t819">819</a></span><span class="t">            <span class="nam">private_access</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">current_user</span><span class="op">.</span><span class="nam">profile</span><span class="op">.</span><span class="xx">\</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t820" href="#t820">820</a></span><span class="t">                <span class="nam">get_accessible_features</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">key</span><span class="op">=</span><span class="nam">Feature</span><span class="op">.</span><span class="nam">FeatureKey</span><span class="op">.</span><span class="nam">PRIVATE_PROJECT</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t821" href="#t821">821</a></span><span class="t">            <span class="key">if</span> <span class="nam">is_private</span> <span class="key">and</span> <span class="key">not</span> <span class="nam">private_access</span><span class="op">.</span><span class="nam">exists</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t822" href="#t822">822</a></span><span class="t">                <span class="key">raise</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ValidationError</span><span class="op">(</span><span class="str">"You don't have permission to create private project"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t823" href="#t823">823</a></span><span class="t">        <span class="key">return</span> <span class="nam">is_private</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t824" href="#t824">824</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t825" href="#t825">825</a></span><span class="t">    <span class="key">def</span> <span class="nam">validate_analysis_framework</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">framework</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t826" href="#t826">826</a></span><span class="t">        <span class="key">if</span> <span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">instance</span> <span class="key">and</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">.</span><span class="nam">analysis_framework</span><span class="op">)</span> <span class="op">==</span> <span class="nam">framework</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t827" href="#t827">827</a></span><span class="t">            <span class="key">return</span> <span class="nam">framework</span>&nbsp;</span><span class="r"></span></p>
-    <p class="par run show_par"><span class="n"><a id="t828" href="#t828">828</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">framework</span><span class="op">.</span><span class="nam">can_get</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">current_user</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">828&#x202F;&#x219B;&#x202F;829</span><span class="annotate long">line 828 didn't jump to line 829, because the condition on line 828 was never true</span></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t829" href="#t829">829</a></span><span class="t">            <span class="key">raise</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ValidationError</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t830" href="#t830">830</a></span><span class="t">                <span class="str">"Given framework either doesn't exists or you don't have access to it"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t831" href="#t831">831</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t832" href="#t832">832</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">framework</span><span class="op">.</span><span class="nam">is_private</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t833" href="#t833">833</a></span><span class="t">            <span class="key">return</span> <span class="nam">framework</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t834" href="#t834">834</a></span><span class="t">        <span class="com"># Check membership+permissions if private</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t835" href="#t835">835</a></span><span class="t">        <span class="nam">allowed_permission</span> <span class="op">=</span> <span class="nam">AfP</span><span class="op">.</span><span class="nam">get_permissions</span><span class="op">(</span><span class="nam">framework</span><span class="op">.</span><span class="nam">get_current_user_role</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">current_user</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t836" href="#t836">836</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">allowed_permission</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t837" href="#t837">837</a></span><span class="t">            <span class="key">raise</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ValidationError</span><span class="op">(</span><span class="str">"Either framework doesn't exists or you don't have access"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="par run show_par"><span class="n"><a id="t838" href="#t838">838</a></span><span class="t">        <span class="key">if</span> <span class="nam">AfP</span><span class="op">.</span><span class="nam">Permission</span><span class="op">.</span><span class="nam">CAN_USE_IN_OTHER_PROJECTS</span> <span class="key">not</span> <span class="key">in</span> <span class="nam">allowed_permission</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">838&#x202F;&#x219B;&#x202F;839</span><span class="annotate long">line 838 didn't jump to line 839, because the condition on line 838 was never true</span></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t839" href="#t839">839</a></span><span class="t">            <span class="key">raise</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ValidationError</span><span class="op">(</span><span class="str">"You don't have permissions to use the analysis framework in the project"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t840" href="#t840">840</a></span><span class="t">        <span class="key">return</span> <span class="nam">framework</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t841" href="#t841">841</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t842" href="#t842">842</a></span><span class="t">    <span class="key">def</span> <span class="nam">validate</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t843" href="#t843">843</a></span><span class="t">        <span class="nam">is_private</span> <span class="op">=</span> <span class="nam">data</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'is_private'</span><span class="op">,</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span> <span class="key">and</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">.</span><span class="nam">is_private</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t844" href="#t844">844</a></span><span class="t">        <span class="nam">framework</span> <span class="op">=</span> <span class="nam">data</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'analysis_framework'</span><span class="op">,</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span> <span class="key">and</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">.</span><span class="nam">analysis_framework</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t845" href="#t845">845</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t846" href="#t846">846</a></span><span class="t">        <span class="com"># Analysis Frameowrk check</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t847" href="#t847">847</a></span><span class="t">        <span class="key">if</span> <span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">instance</span> <span class="key">and</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">.</span><span class="nam">analysis_framework</span><span class="op">)</span> <span class="op">!=</span> <span class="nam">framework</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t848" href="#t848">848</a></span><span class="t">            <span class="com"># Check private</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t849" href="#t849">849</a></span><span class="t">            <span class="key">if</span> <span class="key">not</span> <span class="nam">is_private</span> <span class="key">and</span> <span class="nam">framework</span><span class="op">.</span><span class="nam">is_private</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t850" href="#t850">850</a></span><span class="t">                <span class="key">raise</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ValidationError</span><span class="op">(</span><span class="op">{</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t851" href="#t851">851</a></span><span class="t">                    <span class="str">'analysis_framework'</span><span class="op">:</span> <span class="str">'Cannot use private framework in public project'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t852" href="#t852">852</a></span><span class="t">                <span class="op">}</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t853" href="#t853">853</a></span><span class="t">        <span class="key">return</span> <span class="nam">data</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t854" href="#t854">854</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t855" href="#t855">855</a></span><span class="t">    <span class="key">def</span> <span class="nam">create</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">validated_data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t856" href="#t856">856</a></span><span class="t">        <span class="nam">project</span> <span class="op">=</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="nam">validated_data</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t857" href="#t857">857</a></span><span class="t">        <span class="nam">ProjectMembership</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t858" href="#t858">858</a></span><span class="t">            <span class="nam">project</span><span class="op">=</span><span class="nam">project</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t859" href="#t859">859</a></span><span class="t">            <span class="nam">member</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">current_user</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t860" href="#t860">860</a></span><span class="t">            <span class="nam">role</span><span class="op">=</span><span class="nam">ProjectRole</span><span class="op">.</span><span class="nam">get_owner_role</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t861" href="#t861">861</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t862" href="#t862">862</a></span><span class="t">        <span class="key">return</span> <span class="nam">project</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t797" href="#t797">797</a></span><span class="t">            <span class="str">'has_publicly_viewable_unprotected_leads'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t798" href="#t798">798</a></span><span class="t">            <span class="str">'has_publicly_viewable_restricted_leads'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t799" href="#t799">799</a></span><span class="t">            <span class="str">'has_publicly_viewable_confidential_leads'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t800" href="#t800">800</a></span><span class="t">            <span class="str">'organizations'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t801" href="#t801">801</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t802" href="#t802">802</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t803" href="#t803">803</a></span><span class="t">    <span class="com"># NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t804" href="#t804">804</a></span><span class="t">    <span class="com"># This makes sure only scoped (individual entry) instances (attributes) are updated.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t805" href="#t805">805</a></span><span class="t">    <span class="key">def</span> <span class="nam">_get_prefetch_related_instances_qs</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">qs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t806" href="#t806">806</a></span><span class="t">        <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t807" href="#t807">807</a></span><span class="t">            <span class="key">return</span> <span class="nam">qs</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">project</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t808" href="#t808">808</a></span><span class="t">        <span class="key">return</span> <span class="nam">qs</span><span class="op">.</span><span class="nam">none</span><span class="op">(</span><span class="op">)</span>  <span class="com"># On create throw error if existing id is provided</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t809" href="#t809">809</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t810" href="#t810">810</a></span><span class="t">    <span class="op">@</span><span class="nam">cached_property</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t811" href="#t811">811</a></span><span class="t">    <span class="key">def</span> <span class="nam">current_user</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t812" href="#t812">812</a></span><span class="t">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">context</span><span class="op">[</span><span class="str">'request'</span><span class="op">]</span><span class="op">.</span><span class="nam">user</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t813" href="#t813">813</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t814" href="#t814">814</a></span><span class="t">    <span class="key">def</span> <span class="nam">validate_is_private</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">is_private</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t815" href="#t815">815</a></span><span class="t">        <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t816" href="#t816">816</a></span><span class="t">            <span class="com"># For update, don't allow changing privacy.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t817" href="#t817">817</a></span><span class="t">            <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">.</span><span class="nam">is_private</span> <span class="op">!=</span> <span class="nam">is_private</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t818" href="#t818">818</a></span><span class="t">                <span class="key">raise</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ValidationError</span><span class="op">(</span><span class="str">'Cannot change privacy of project.'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t819" href="#t819">819</a></span><span class="t">        <span class="com"># For create, make sure user can feature permission to create private project.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t820" href="#t820">820</a></span><span class="t">        <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t821" href="#t821">821</a></span><span class="t">            <span class="nam">private_access</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">current_user</span><span class="op">.</span><span class="nam">profile</span><span class="op">.</span><span class="xx">\</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t822" href="#t822">822</a></span><span class="t">                <span class="nam">get_accessible_features</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">key</span><span class="op">=</span><span class="nam">Feature</span><span class="op">.</span><span class="nam">FeatureKey</span><span class="op">.</span><span class="nam">PRIVATE_PROJECT</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t823" href="#t823">823</a></span><span class="t">            <span class="key">if</span> <span class="nam">is_private</span> <span class="key">and</span> <span class="key">not</span> <span class="nam">private_access</span><span class="op">.</span><span class="nam">exists</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t824" href="#t824">824</a></span><span class="t">                <span class="key">raise</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ValidationError</span><span class="op">(</span><span class="str">"You don't have permission to create private project"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t825" href="#t825">825</a></span><span class="t">        <span class="key">return</span> <span class="nam">is_private</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t826" href="#t826">826</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t827" href="#t827">827</a></span><span class="t">    <span class="key">def</span> <span class="nam">validate_analysis_framework</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">framework</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t828" href="#t828">828</a></span><span class="t">        <span class="key">if</span> <span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">instance</span> <span class="key">and</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">.</span><span class="nam">analysis_framework</span><span class="op">)</span> <span class="op">==</span> <span class="nam">framework</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t829" href="#t829">829</a></span><span class="t">            <span class="key">return</span> <span class="nam">framework</span>&nbsp;</span><span class="r"></span></p>
+    <p class="par run show_par"><span class="n"><a id="t830" href="#t830">830</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">framework</span><span class="op">.</span><span class="nam">can_get</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">current_user</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">830&#x202F;&#x219B;&#x202F;831</span><span class="annotate long">line 830 didn't jump to line 831, because the condition on line 830 was never true</span></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t831" href="#t831">831</a></span><span class="t">            <span class="key">raise</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ValidationError</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t832" href="#t832">832</a></span><span class="t">                <span class="str">"Given framework either doesn't exists or you don't have access to it"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t833" href="#t833">833</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t834" href="#t834">834</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">framework</span><span class="op">.</span><span class="nam">is_private</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t835" href="#t835">835</a></span><span class="t">            <span class="key">return</span> <span class="nam">framework</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t836" href="#t836">836</a></span><span class="t">        <span class="com"># Check membership+permissions if private</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t837" href="#t837">837</a></span><span class="t">        <span class="nam">allowed_permission</span> <span class="op">=</span> <span class="nam">AfP</span><span class="op">.</span><span class="nam">get_permissions</span><span class="op">(</span><span class="nam">framework</span><span class="op">.</span><span class="nam">get_current_user_role</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">current_user</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t838" href="#t838">838</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">allowed_permission</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t839" href="#t839">839</a></span><span class="t">            <span class="key">raise</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ValidationError</span><span class="op">(</span><span class="str">"Either framework doesn't exists or you don't have access"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="par run show_par"><span class="n"><a id="t840" href="#t840">840</a></span><span class="t">        <span class="key">if</span> <span class="nam">AfP</span><span class="op">.</span><span class="nam">Permission</span><span class="op">.</span><span class="nam">CAN_USE_IN_OTHER_PROJECTS</span> <span class="key">not</span> <span class="key">in</span> <span class="nam">allowed_permission</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">840&#x202F;&#x219B;&#x202F;841</span><span class="annotate long">line 840 didn't jump to line 841, because the condition on line 840 was never true</span></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t841" href="#t841">841</a></span><span class="t">            <span class="key">raise</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ValidationError</span><span class="op">(</span><span class="str">"You don't have permissions to use the analysis framework in the project"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t842" href="#t842">842</a></span><span class="t">        <span class="key">return</span> <span class="nam">framework</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t843" href="#t843">843</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t844" href="#t844">844</a></span><span class="t">    <span class="key">def</span> <span class="nam">validate</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t845" href="#t845">845</a></span><span class="t">        <span class="nam">is_private</span> <span class="op">=</span> <span class="nam">data</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'is_private'</span><span class="op">,</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span> <span class="key">and</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">.</span><span class="nam">is_private</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t846" href="#t846">846</a></span><span class="t">        <span class="nam">framework</span> <span class="op">=</span> <span class="nam">data</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'analysis_framework'</span><span class="op">,</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span> <span class="key">and</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">.</span><span class="nam">analysis_framework</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t847" href="#t847">847</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t848" href="#t848">848</a></span><span class="t">        <span class="com"># Analysis Frameowrk check</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t849" href="#t849">849</a></span><span class="t">        <span class="key">if</span> <span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">instance</span> <span class="key">and</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">.</span><span class="nam">analysis_framework</span><span class="op">)</span> <span class="op">!=</span> <span class="nam">framework</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t850" href="#t850">850</a></span><span class="t">            <span class="com"># Check private</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t851" href="#t851">851</a></span><span class="t">            <span class="key">if</span> <span class="key">not</span> <span class="nam">is_private</span> <span class="key">and</span> <span class="nam">framework</span><span class="op">.</span><span class="nam">is_private</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t852" href="#t852">852</a></span><span class="t">                <span class="key">raise</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ValidationError</span><span class="op">(</span><span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t853" href="#t853">853</a></span><span class="t">                    <span class="str">'analysis_framework'</span><span class="op">:</span> <span class="str">'Cannot use private framework in public project'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t854" href="#t854">854</a></span><span class="t">                <span class="op">}</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t855" href="#t855">855</a></span><span class="t">        <span class="key">return</span> <span class="nam">data</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t856" href="#t856">856</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t857" href="#t857">857</a></span><span class="t">    <span class="key">def</span> <span class="nam">create</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">validated_data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t858" href="#t858">858</a></span><span class="t">        <span class="nam">project</span> <span class="op">=</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="nam">validated_data</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t859" href="#t859">859</a></span><span class="t">        <span class="nam">ProjectMembership</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t860" href="#t860">860</a></span><span class="t">            <span class="nam">project</span><span class="op">=</span><span class="nam">project</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t861" href="#t861">861</a></span><span class="t">            <span class="nam">member</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">current_user</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t862" href="#t862">862</a></span><span class="t">            <span class="nam">role</span><span class="op">=</span><span class="nam">ProjectRole</span><span class="op">.</span><span class="nam">get_owner_role</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t863" href="#t863">863</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t864" href="#t864">864</a></span><span class="t">        <span class="key">return</span> <span class="nam">project</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
         <p>
-            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.3.3</a>,
-            created at 2022-05-22 13:04 +0000
+            <a id="prevFileLink" class="nav" href="d_9db89df6a82c861c_schema_py.html">&#xab; prev</a> &nbsp; &nbsp;
+            <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
+            <a id="nextFileLink" class="nav" href="d_9db89df6a82c861c_tasks_py.html">&#xbb; next</a>
+            &nbsp; &nbsp; &nbsp;
+            <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.4</a>,
+            created at 2022-05-24 10:19 +0000
         </p>
     </div>
 </footer>
