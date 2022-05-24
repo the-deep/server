@@ -173,7 +173,7 @@ type AnalysisPillarDetailType {
   clientId: String!
   analysis: ID!
   clonedFrom: ID!
-  entries(id: ID, excerpt: String, controlled: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], leads: [ID!], leadCreatedBy: [ID!], leadPublishedOn: Date, leadPublishedOnGte: Date, leadPublishedOnLte: Date, leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], leadAuthoringOrganizationTypes: [ID!], leadAuthorOrganizations: [ID!], leadSourceOrganizations: [ID!], search: String, entryTypes: [EntryTagTypeEnum!], projectEntryLabels: [ID!], entriesId: [ID!], geoCustomShape: String, leadGroupLabel: String, filterableData: [EntryFilterDataType!], hasComment: Boolean, isVerified: Boolean, discarded: Boolean, excludeEntries: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarEntryListType
+  entries(id: ID, excerpt: String, controlled: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], leads: [ID!], leadCreatedBy: [ID!], leadPublishedOn: Date, leadPublishedOnGte: Date, leadPublishedOnLte: Date, leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], leadAuthoringOrganizationTypes: [ID!], leadAuthorOrganizations: [ID!], leadSourceOrganizations: [ID!], search: String, commentStatus: EntryFilterCommentStatusEnum, entryTypes: [EntryTagTypeEnum!], projectEntryLabels: [ID!], entriesId: [ID!], geoCustomShape: String, leadGroupLabel: String, filterableData: [EntryFilterDataType!], discarded: Boolean, excludeEntries: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarEntryListType
 }
 
 type AnalysisPillarEntryListType {
@@ -778,6 +778,46 @@ type EntriesCountType {
   controlled: Int
 }
 
+input EntriesFilterDataType {
+  id: ID
+  excerpt: String
+  controlled: Boolean
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
+  createdBy: [ID!]
+  modifiedBy: [ID!]
+  leads: [ID!]
+  leadCreatedBy: [ID!]
+  leadPublishedOn: Date
+  leadPublishedOnGte: Date
+  leadPublishedOnLte: Date
+  leadTitle: String
+  leadAssignees: [ID!]
+  leadStatuses: [LeadStatusEnum!]
+  leadPriorities: [LeadPriorityEnum!]
+  leadConfidentialities: [LeadConfidentialityEnum!]
+  leadAuthoringOrganizationTypes: [ID!]
+  leadAuthorOrganizations: [ID!]
+  leadSourceOrganizations: [ID!]
+  search: String
+  commentStatus: EntryFilterCommentStatusEnum
+  entryTypes: [EntryTagTypeEnum!]
+  projectEntryLabels: [ID!]
+  entriesId: [ID!]
+  geoCustomShape: String
+  leadGroupLabel: String
+  filterableData: [EntryFilterDataType!]
+}
+
+enum EntryFilterCommentStatusEnum {
+  RESOLVED
+  UNRESOLVED
+}
+
 input EntryFilterDataType {
   filterKey: ID!
   value: String
@@ -940,7 +980,7 @@ input ExportCreateInputType {
   format: ExportFormatEnum!
   exportType: ExportExportTypeEnum!
   isPreview: Boolean
-  filters: ExportLeadsEntriesFilterData!
+  filters: LeadsFilterDataType!
   analysis: ID
   excelDecoupled: Boolean
   reportShowGroups: Boolean
@@ -971,41 +1011,6 @@ enum ExportFormatEnum {
   DOCX
   PDF
   JSON
-}
-
-input ExportLeadsEntriesFilterData {
-  text: String
-  url: String
-  createdAt: DateTime
-  createdAtGte: DateTime
-  createdAtLte: DateTime
-  modifiedAt: DateTime
-  modifiedAtGte: DateTime
-  modifiedAtLte: DateTime
-  createdBy: [ID!]
-  modifiedBy: [ID!]
-  ids: [ID!]
-  excludeProvidedLeadsId: Boolean
-  sourceTypes: [LeadSourceTypeEnum!]
-  priorities: [LeadPriorityEnum!]
-  confidentiality: LeadConfidentialityEnum
-  statuses: [LeadStatusEnum!]
-  extractionStatus: LeadExtractionStatusEnum
-  assignees: [ID!]
-  authoringOrganizationTypes: [ID!]
-  authorOrganizations: [ID!]
-  sourceOrganizations: [ID!]
-  hasEntries: Boolean
-  hasAssessment: Boolean
-  entriesFilterData: LeadEntriesFilterData
-  search: String
-  publishedOn: Date
-  publishedOnGte: Date
-  publishedOnLte: Date
-  emmEntities: String
-  emmKeywords: String
-  emmRiskFactors: String
-  ordering: [LeadOrderingEnum!]
 }
 
 input ExportReportLevelWidgetFourthLevelInputType {
@@ -1215,42 +1220,6 @@ type LeadEmmTriggerType {
   count: Int!
 }
 
-input LeadEntriesFilterData {
-  id: ID
-  excerpt: String
-  controlled: Boolean
-  createdAt: DateTime
-  createdAtGte: DateTime
-  createdAtLte: DateTime
-  modifiedAt: DateTime
-  modifiedAtGte: DateTime
-  modifiedAtLte: DateTime
-  createdBy: [ID!]
-  modifiedBy: [ID!]
-  leads: [ID!]
-  leadCreatedBy: [ID!]
-  leadPublishedOn: Date
-  leadPublishedOnGte: Date
-  leadPublishedOnLte: Date
-  leadTitle: String
-  leadAssignees: [ID!]
-  leadStatuses: [LeadStatusEnum!]
-  leadPriorities: [LeadPriorityEnum!]
-  leadConfidentialities: [LeadConfidentialityEnum!]
-  leadAuthoringOrganizationTypes: [ID!]
-  leadAuthorOrganizations: [ID!]
-  leadSourceOrganizations: [ID!]
-  search: String
-  entryTypes: [EntryTagTypeEnum!]
-  projectEntryLabels: [ID!]
-  entriesId: [ID!]
-  geoCustomShape: String
-  leadGroupLabel: String
-  filterableData: [EntryFilterDataType!]
-  hasComment: Boolean
-  isVerified: Boolean
-}
-
 enum LeadExtractionStatusEnum {
   PENDING
   STARTED
@@ -1423,7 +1392,42 @@ input LeadsFilterDataInputType {
   sourceOrganizations: [ID!]
   hasEntries: Boolean
   hasAssessment: Boolean
-  entriesFilterData: LeadEntriesFilterData
+  entriesFilterData: EntriesFilterDataType
+  search: String
+  publishedOn: Date
+  publishedOnGte: Date
+  publishedOnLte: Date
+  emmEntities: String
+  emmKeywords: String
+  emmRiskFactors: String
+  ordering: [LeadOrderingEnum!]
+}
+
+input LeadsFilterDataType {
+  text: String
+  url: String
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
+  createdBy: [ID!]
+  modifiedBy: [ID!]
+  ids: [ID!]
+  excludeProvidedLeadsId: Boolean
+  sourceTypes: [LeadSourceTypeEnum!]
+  priorities: [LeadPriorityEnum!]
+  confidentiality: LeadConfidentialityEnum
+  statuses: [LeadStatusEnum!]
+  extractionStatus: LeadExtractionStatusEnum
+  assignees: [ID!]
+  authoringOrganizationTypes: [ID!]
+  authorOrganizations: [ID!]
+  sourceOrganizations: [ID!]
+  hasEntries: Boolean
+  hasAssessment: Boolean
+  entriesFilterData: EntriesFilterDataType
   search: String
   publishedOn: Date
   publishedOnGte: Date
@@ -1700,15 +1704,16 @@ type ProjectDetailType {
   export(id: ID!): UserExportType
   exports(type: [ExportDataTypeEnum!], format: [ExportFormatEnum!], status: [ExportStatusEnum!], search: String, exportedAt: DateTime, exportedAtGte: DateTime, exportedAtLte: DateTime, page: Int = 1, ordering: String, pageSize: Int): UserExportListType
   entry(id: ID!): EntryType
-  entries(id: ID, excerpt: String, controlled: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], leads: [ID!], leadCreatedBy: [ID!], leadPublishedOn: Date, leadPublishedOnGte: Date, leadPublishedOnLte: Date, leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], leadAuthoringOrganizationTypes: [ID!], leadAuthorOrganizations: [ID!], leadSourceOrganizations: [ID!], search: String, entryTypes: [EntryTagTypeEnum!], projectEntryLabels: [ID!], entriesId: [ID!], geoCustomShape: String, leadGroupLabel: String, filterableData: [EntryFilterDataType!], hasComment: Boolean, isVerified: Boolean, page: Int = 1, ordering: String, pageSize: Int): EntryListType
+  entries(id: ID, excerpt: String, controlled: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], leads: [ID!], leadCreatedBy: [ID!], leadPublishedOn: Date, leadPublishedOnGte: Date, leadPublishedOnLte: Date, leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], leadAuthoringOrganizationTypes: [ID!], leadAuthorOrganizations: [ID!], leadSourceOrganizations: [ID!], search: String, commentStatus: EntryFilterCommentStatusEnum, entryTypes: [EntryTagTypeEnum!], projectEntryLabels: [ID!], entriesId: [ID!], geoCustomShape: String, leadGroupLabel: String, filterableData: [EntryFilterDataType!], page: Int = 1, ordering: String, pageSize: Int): EntryListType
   lead(id: ID!): LeadDetailType
-  leads(text: String, url: String, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeProvidedLeadsId: Boolean, sourceTypes: [LeadSourceTypeEnum!], priorities: [LeadPriorityEnum!], confidentiality: LeadConfidentialityEnum, statuses: [LeadStatusEnum!], extractionStatus: LeadExtractionStatusEnum, assignees: [ID!], authoringOrganizationTypes: [ID!], authorOrganizations: [ID!], sourceOrganizations: [ID!], hasEntries: Boolean, hasAssessment: Boolean, entriesFilterData: LeadEntriesFilterData, search: String, publishedOn: Date, publishedOnGte: Date, publishedOnLte: Date, emmEntities: String, emmKeywords: String, emmRiskFactors: String, ordering: [LeadOrderingEnum!], page: Int = 1, pageSize: Int): LeadListType
+  leads(text: String, url: String, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeProvidedLeadsId: Boolean, sourceTypes: [LeadSourceTypeEnum!], priorities: [LeadPriorityEnum!], confidentiality: LeadConfidentialityEnum, statuses: [LeadStatusEnum!], extractionStatus: LeadExtractionStatusEnum, assignees: [ID!], authoringOrganizationTypes: [ID!], authorOrganizations: [ID!], sourceOrganizations: [ID!], hasEntries: Boolean, hasAssessment: Boolean, entriesFilterData: EntriesFilterDataType, search: String, publishedOn: Date, publishedOnGte: Date, publishedOnLte: Date, emmEntities: String, emmKeywords: String, emmRiskFactors: String, ordering: [LeadOrderingEnum!], page: Int = 1, pageSize: Int): LeadListType
   leadGroup(id: ID!): LeadGroupType
   leadGroups(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): LeadGroupListType
   emmEntities(name: String, page: Int = 1, ordering: String, pageSize: Int): EmmEntityListType
   leadEmmTriggers(lead: ID, emmKeyword: String, emmRiskFactor: String, count: Int, page: Int = 1, ordering: String, pageSize: Int): LeadEmmTriggerListType
   emmKeywords: [EmmKeyWordType!]
   emmRiskFactors: [EmmKeyRiskFactorType!]
+  userSavedLeadFilter: UserSavedLeadFilterType
   activityLog: GenericScalar
   recentActiveUsers: [UserEntityDateType!]
   topSourcers: [UserEntityCountType!]
@@ -1824,6 +1829,7 @@ type ProjectMutationType {
   leadBulk(items: [BulkLeadInputType!]): BulkLead
   leadGroupDelete(id: ID!): DeleteLeadGroup
   leadCopy(data: LeadCopyInputType!): LeadCopy
+  leadFilterSave(data: UserSavedLeadFilterInputType!): SaveUserSavedLeadFilter
   projectUpdate(data: ProjectUpdateInputType!): UpdateProject
   projectDelete: ProjectDelete
   acceptRejectProject(data: ProjectAcceptRejectInputType!, id: ID!): ProjectAcceptReject
@@ -2142,30 +2148,12 @@ type Query {
   project(id: ID!): ProjectDetailType
   projects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, ordering: [ProjectOrderingEnum!], isTest: Boolean, page: Int = 1, pageSize: Int): ProjectListType
   recentProjects: [ProjectDetailType!]
-  recentActivities: [RecentActivityType!]
   projectExploreStats: ProjectExploreStatType
   projectsByRegion(projectFilter: RegionProjectFilterData, ordering: String): ProjectByRegionListType
   publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, ordering: [PublicProjectOrderingEnum!], isTest: Boolean, page: Int = 1, pageSize: Int): PublicProjectListType
   publicProjectsByRegion(projectFilter: RegionProjectFilterData, page: Int = 1, ordering: String, pageSize: Int): PublicProjectByRegionListType
   assistedTagging: AssistedTaggingRootQueryType
   _debug: DjangoDebug
-}
-
-type RecentActivityType {
-  id: ID!
-  createdAt: DateTime
-  project: ProjectType
-  createdBy: UserType
-  type: RecentActivityTypeEnum!
-  typeDisplay: EnumDescription!
-  leadId: ID!
-  entryId: ID
-}
-
-enum RecentActivityTypeEnum {
-  LEAD
-  ENTRY
-  ENTRY_COMMENT
 }
 
 type RegionDetailType {
@@ -2256,6 +2244,12 @@ input ResetPasswordInputType {
 type RssFieldType {
   key: String
   label: String
+}
+
+type SaveUserSavedLeadFilter {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserSavedLeadFilterType
 }
 
 input SectionGqlInputType {
@@ -2566,6 +2560,19 @@ type UserProfileType {
   id: ID!
   displayPictureUrl: String
   organization: String
+}
+
+input UserSavedLeadFilterInputType {
+  title: String
+  filters: LeadsFilterDataType!
+}
+
+type UserSavedLeadFilterType {
+  id: ID!
+  title: String!
+  filters: GenericScalar!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
 }
 
 type UserType {

@@ -3,6 +3,7 @@ from typing import Union
 from django.db import models
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType, DjangoListField
+from graphene_django.filter.utils import get_filtering_args_from_filterset
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.pagination import NoOrderingPageGraphqlPagination
@@ -25,6 +26,7 @@ from .models import (
     LeadPreview,
     LeadEMMTrigger,
     EMMEntity,
+    UserSavedLeadFilter,
 )
 from .enums import (
     LeadConfidentialityEnum,
@@ -132,6 +134,25 @@ class EmmKeyRiskFactorType(graphene.ObjectType):
 class EntriesCountType(graphene.ObjectType):
     total = graphene.Int()
     controlled = graphene.Int()
+
+
+LeadsFilterDataType = type(
+    'LeadsFilterDataType',
+    (graphene.InputObjectType,),
+    get_filtering_args_from_filterset(LeadGQFilterSet, 'lead.schema.LeadListType')
+)
+
+
+class UserSavedLeadFilterType(DjangoObjectType):
+    class Meta:
+        model = UserSavedLeadFilter
+        only_fields = (
+            'id',
+            'title',
+            'created_at',
+            'modified_at',
+            'filters',
+        )
 
 
 class LeadGroupType(UserResourceMixin, DjangoObjectType):
@@ -295,6 +316,8 @@ class Query:
     emm_keywords = graphene.List(graphene.NonNull(EmmKeyWordType))
     emm_risk_factors = graphene.List(graphene.NonNull(EmmKeyRiskFactorType))
 
+    user_saved_lead_filter = graphene.Field(UserSavedLeadFilterType)
+
     @staticmethod
     def resolve_leads(root, info, **kwargs) -> QuerySet:
         return get_lead_qs(info)
@@ -332,3 +355,11 @@ class Query:
             key=models.F('emm_risk_factor'),
             label=models.F('emm_risk_factor'),
         ).order_by('emm_risk_factor')
+
+    @staticmethod
+    def resolve_user_saved_lead_filter(root, info, **kwargs):
+        if root.get_current_user_role(info.context.request.user) is not None:
+            return UserSavedLeadFilter.objects.filter(
+                user=info.context.user,
+                project=info.context.active_project,
+            ).first()

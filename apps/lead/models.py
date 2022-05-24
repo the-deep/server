@@ -395,3 +395,12 @@ class EMMEntity(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class UserSavedLeadFilter(models.Model):
+    title = models.CharField(max_length=255, blank=True)
+    filters = models.JSONField(default=dict)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)

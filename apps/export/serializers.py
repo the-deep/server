@@ -1,10 +1,7 @@
-import graphene
-
 from django.db import transaction
 
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
-from graphene_django.filter.utils import get_filtering_args_from_filterset
 
 from utils.graphene.fields import generate_serializer_field_class
 from deep.serializers import (
@@ -13,7 +10,7 @@ from deep.serializers import (
     StringIDField,
     GraphqlSupportDrfSerializerJSONField,
 )
-from lead.filter_set import LeadGQFilterSet
+from lead.filter_set import LeadGQFilterSet, LeadsFilterDataType
 from analysis_framework.models import Widget, Exportable
 from .tasks import export_task
 from .models import Export
@@ -222,14 +219,7 @@ class UserExportBaseGqlMixin(ProjectPropertySerializerMixin):
     report_structure = ExportReportStructureWidgetSerializer(
         required=False, many=True, help_text=ExportReportStructureWidgetSerializer.__doc__)
 
-    filters = generate_serializer_field_class(
-        type(
-            'ExportLeadsEntriesFilterData',
-            (graphene.InputObjectType,),
-            get_filtering_args_from_filterset(LeadGQFilterSet, 'lead.schema.LeadListType')
-        ),
-        GraphqlSupportDrfSerializerJSONField,
-    )()
+    filters = generate_serializer_field_class(LeadsFilterDataType, GraphqlSupportDrfSerializerJSONField)()
 
     @property
     def widget_qs(self):
