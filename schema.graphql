@@ -1966,12 +1966,14 @@ type PublicLeadDetailType {
   projectTitle: String
   createdByDisplayName: String
   sourceTitle: String
+  sourceUrl: String
   publishedOn: Date
   sourceType: LeadSourceTypeEnum!
   sourceTypeDisplay: EnumDescription!
   text: String
   url: String
   attachment: PublicGalleryFileType
+  title: String
 }
 
 type PublicLeadMetaType {
