@@ -12,7 +12,8 @@ from lead.factories import (
     LeadEMMTriggerFactory,
     LeadFactory,
     EmmEntityFactory,
-    LeadGroupFactory
+    LeadGroupFactory,
+    UserSavedLeadFilterFactory,
 )
 
 from lead.enums import LeadOrderingEnum
@@ -36,7 +37,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
             $emmEntities: String
             $emmKeywords: String
             $emmRiskFactors: String
-            $entriesFilterData: LeadEntriesFilterData
+            $entriesFilterData: EntriesFilterDataType
             $priorities: [LeadPriorityEnum!]
             $publishedOn: Date
             $publishedOnGte: Date
@@ -707,6 +708,46 @@ class TestLeadQuerySchema(GraphQLTestCase):
         self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 1)
         self.assertEqual(content['data']['project']['leadGroups']['results'][0]['id'], str(lead_group3.id))
         self.assertEqual(content['data']['project']['leadGroups']['results'][0]['leadCounts'], 2)
+
+    def test_user_saved_lead_filter_query(self):
+        query = '''
+            query MyQuery ($id: ID!) {
+              project(id: $id) {
+                userSavedLeadFilter {
+                  id
+                  title
+                  filters
+                }
+              }
+            }
+        '''
+        project = ProjectFactory.create()
+        non_member_user = UserFactory.create(email='non-member@x.y')
+        member_user = UserFactory.create(email='member@x.y')
+
+        def _query_check(**kwargs):
+            return self.query_check(query, variables={'id': str(project.id)}, **kwargs)
+
+        # Without login
+        _query_check(assert_for_error=True)
+
+        # login with non-member-user
+        self.force_login(non_member_user)
+        content = _query_check()
+        self.assertIsNone(content['data']['project']['userSavedLeadFilter'], content)
+        UserSavedLeadFilterFactory.create(user=non_member_user, project=project)
+
+        # Same here as well even with saved filter in backend
+        content = _query_check()
+        self.assertIsNone(content['data']['project']['userSavedLeadFilter'], content)
+
+        # login with member-user
+        self.force_login(member_user)
+        content = _query_check()
+        self.assertIsNone(content['data']['project']['userSavedLeadFilter'], content)
+        UserSavedLeadFilterFactory.create(user=member_user, project=project)
+        content = _query_check()
+        self.assertIsNone(content['data']['project']['userSavedLeadFilter'], content)
 
     def test_public_lead_query(self):
         query = '''

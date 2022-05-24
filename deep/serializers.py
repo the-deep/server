@@ -200,6 +200,10 @@ class ProjectPropertySerializerMixin(serializers.Serializer):
                 raise serializers.ValidationError('Invalid access')
         return project
 
+    @cached_property
+    def current_user(self):
+        return self.context['request'].user
+
 
 class IntegerIDField(serializers.IntegerField):
     """

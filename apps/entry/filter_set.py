@@ -2,12 +2,13 @@ import copy
 from functools import reduce
 from datetime import datetime
 
+import graphene
+import django_filters
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.postgres.aggregates.general import ArrayAgg
-import django_filters
-import graphene
 from graphene_django.filter.filterset import GrapheneFilterSetMixin
+from graphene_django.filter.utils import get_filtering_args_from_filterset
 
 from user_resource.filters import UserResourceGqlFilterSet
 from utils.graphene.filters import (
@@ -681,3 +682,10 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
         if self.data.get('from_subquery', False):
             return Entry.objects.filter(id__in=qs)
         return qs.distinct()
+
+
+EntriesFilterDataType = type(
+    'EntriesFilterDataType',
+    (graphene.InputObjectType,),
+    get_filtering_args_from_filterset(EntryGQFilterSet, 'entry.schema.EntryListType')
+)
