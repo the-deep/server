@@ -190,7 +190,9 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
                   startDate
                   endDate
                   isPrivate
-                  hasPubliclyViewableLeads
+                  hasPubliclyViewableUnprotectedLeads
+                  hasPubliclyViewableRestrictedLeads
+                  hasPubliclyViewableConfidentialLeads
                   isVisualizationEnabled
                   organizations {
                     id
@@ -224,7 +226,9 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
             endDate='2021-01-01',
             status=self.genum(Project.Status.ACTIVE),
             isPrivate=True,
-            hasPubliclyViewableLeads=False,
+            hasPubliclyViewableUnprotectedLeads=False,
+            hasPubliclyViewableRestrictedLeads=False,
+            hasPubliclyViewableConfidentialLeads=False,
             isVisualizationEnabled=False,
             organizations=[
                 dict(
@@ -291,7 +295,9 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
                       startDate
                       endDate
                       isPrivate
-                      hasPubliclyViewableLeads
+                      hasPubliclyViewableUnprotectedLeads
+                      hasPubliclyViewableRestrictedLeads
+                      hasPubliclyViewableConfidentialLeads
                       isVisualizationEnabled
                       organizations {
                         id
