@@ -32,6 +32,7 @@ class PublicLeadDetailType(graphene.ObjectType):
     project_title = graphene.String()
     created_by_display_name = graphene.String()
     source_title = graphene.String()
+    source_url = graphene.String()
     published_on = graphene.Date()
 
     source_type = graphene.Field(LeadSourceTypeEnum, required=True)
@@ -39,6 +40,7 @@ class PublicLeadDetailType(graphene.ObjectType):
     text = graphene.String()
     url = graphene.String()
     attachment = graphene.Field(PublicGalleryFileType)
+    title = graphene.String()
 
     @staticmethod
     def resolve_project_title(root, info, **_):
@@ -53,6 +55,10 @@ class PublicLeadDetailType(graphene.ObjectType):
     @staticmethod
     def resolve_source_title(root, info, **_):
         return root.source and root.source.data.title
+
+    @staticmethod
+    def resolve_source_url(root, info, **_):
+        return root.source and root.source.data.url
 
 
 class PublicLeadMetaType(graphene.ObjectType):
