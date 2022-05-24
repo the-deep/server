@@ -1601,7 +1601,9 @@ input ProjectCreateInputType {
   isPrivate: Boolean
   analysisFramework: ID
   isVisualizationEnabled: Boolean
-  hasPubliclyViewableLeads: Boolean
+  hasPubliclyViewableUnprotectedLeads: Boolean
+  hasPubliclyViewableRestrictedLeads: Boolean
+  hasPubliclyViewableConfidentialLeads: Boolean
   organizations: [ProjectOrganizationGqInputType!]
 }
 
@@ -1620,7 +1622,9 @@ type ProjectDetailType {
   isPrivate: Boolean!
   isVisualizationEnabled: Boolean!
   data: GenericScalar
-  hasPubliclyViewableLeads: Boolean!
+  hasPubliclyViewableUnprotectedLeads: Boolean!
+  hasPubliclyViewableRestrictedLeads: Boolean!
+  hasPubliclyViewableConfidentialLeads: Boolean!
   currentUserRole: ProjectRoleTypeEnum
   allowedPermissions: [ProjectPermission!]!
   stats: ProjectStatType
@@ -1904,7 +1908,9 @@ input ProjectUpdateInputType {
   isPrivate: Boolean
   analysisFramework: ID
   isVisualizationEnabled: Boolean
-  hasPubliclyViewableLeads: Boolean
+  hasPubliclyViewableUnprotectedLeads: Boolean
+  hasPubliclyViewableRestrictedLeads: Boolean
+  hasPubliclyViewableConfidentialLeads: Boolean
   organizations: [ProjectOrganizationGqInputType!]
 }
 
@@ -1960,12 +1966,14 @@ type PublicLeadDetailType {
   projectTitle: String
   createdByDisplayName: String
   sourceTitle: String
+  sourceUrl: String
   publishedOn: Date
   sourceType: LeadSourceTypeEnum!
   sourceTypeDisplay: EnumDescription!
   text: String
   url: String
   attachment: PublicGalleryFileType
+  title: String
 }
 
 type PublicLeadMetaType {

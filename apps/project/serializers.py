@@ -794,7 +794,9 @@ class ProjectGqSerializer(DeprecatedUserResourceSerializer):
             'is_private',
             'analysis_framework',
             'is_visualization_enabled',
-            'has_publicly_viewable_leads',
+            'has_publicly_viewable_unprotected_leads',
+            'has_publicly_viewable_restricted_leads',
+            'has_publicly_viewable_confidential_leads',
             'organizations',
         )
 

@@ -1,4 +1,5 @@
 import graphene
+from django.db import models
 
 from deep.permissions import ProjectPermissions as PP
 from utils.graphene.enums import EnumDescription
@@ -11,8 +12,18 @@ from .schema import LeadSourceTypeEnum
 
 def get_public_lead_qs():
     return Lead.objects.filter(
-        project__has_publicly_viewable_leads=True,
-        confidentiality=Lead.Confidentiality.UNPROTECTED,
+        models.Q(
+            project__has_publicly_viewable_unprotected_leads=True,
+            confidentiality=Lead.Confidentiality.UNPROTECTED,
+        ) |
+        models.Q(
+            project__has_publicly_viewable_restricted_leads=True,
+            confidentiality=Lead.Confidentiality.RESTRICTED,
+        ) |
+        models.Q(
+            project__has_publicly_viewable_confidential_leads=True,
+            confidentiality=Lead.Confidentiality.CONFIDENTIAL,
+        )
     )
 
 
@@ -21,6 +32,7 @@ class PublicLeadDetailType(graphene.ObjectType):
     project_title = graphene.String()
     created_by_display_name = graphene.String()
     source_title = graphene.String()
+    source_url = graphene.String()
     published_on = graphene.Date()
 
     source_type = graphene.Field(LeadSourceTypeEnum, required=True)
@@ -28,6 +40,7 @@ class PublicLeadDetailType(graphene.ObjectType):
     text = graphene.String()
     url = graphene.String()
     attachment = graphene.Field(PublicGalleryFileType)
+    title = graphene.String()
 
     @staticmethod
     def resolve_project_title(root, info, **_):
@@ -42,6 +55,10 @@ class PublicLeadDetailType(graphene.ObjectType):
     @staticmethod
     def resolve_source_title(root, info, **_):
         return root.source and root.source.data.title
+
+    @staticmethod
+    def resolve_source_url(root, info, **_):
+        return root.source and root.source.data.url
 
 
 class PublicLeadMetaType(graphene.ObjectType):
@@ -78,24 +95,29 @@ class Query:
                 ).filter(uuid=kwargs['uuid']).first()
 
         user = info.context.user
+        public_lead = _get_lead_from_qs(get_public_lead_qs())
         if user is None or user.is_anonymous:
-            lead = _get_lead_from_qs(get_public_lead_qs())
-            return _return(lead, None, False)
+            return _return(public_lead, None, False)
 
-        lead = _get_lead_from_qs(Lead.objects.all())
+        # We need to show/hide project title according to users membership.
+        lead = public_lead or _get_lead_from_qs(Lead.objects.all())
         if lead is None:
             return _return(None, None, False)
         user_permissions = PP.get_permissions(lead.project, user)
-        has_access = len(user_permissions) > 0
+
+        # NOTE: Without access to project (Project is passed for join-request action/status)
+        if not len(user_permissions) > 0:
+            return _return(public_lead, lead.project, False)
+
+        # NOTE: With access to project (Project is passed for membership status)
+        # Check if user have enough access for the resource.
+        if public_lead:
+            return _return(lead, lead.project, True)
+        if PP.Permission.VIEW_ALL_LEAD in user_permissions:
+            return _return(lead, lead.project, True)
         if (
-            PP.Permission.VIEW_ALL_LEAD in user_permissions or
-            (
-                PP.Permission.VIEW_ONLY_UNPROTECTED_LEAD in user_permissions and
-                lead.confidentiality != Lead.Confidentiality.CONFIDENTIAL
-            ) or (
-                lead.confidentiality == Lead.Confidentiality.UNPROTECTED and  # IS public
-                lead.project.has_publicly_viewable_leads  # Project allows to share pubilc leads
-            )
+            PP.Permission.VIEW_ONLY_UNPROTECTED_LEAD in user_permissions and
+            lead.confidentiality != Lead.Confidentiality.CONFIDENTIAL
         ):
-            return _return(lead, lead.project, has_access)
-        return _return(None, lead.project, has_access)
+            return _return(lead, lead.project, True)
+        return _return(None, lead.project, True)

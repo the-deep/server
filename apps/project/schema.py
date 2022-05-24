@@ -363,7 +363,10 @@ class ProjectDetailType(
             'category_editor', 'assessment_template', 'data',
             'created_at', 'created_by',
             'modified_at', 'modified_by',
-            'is_default', 'is_private', 'is_visualization_enabled', 'has_publicly_viewable_leads',
+            'is_default', 'is_private', 'is_visualization_enabled',
+            'has_publicly_viewable_unprotected_leads',
+            'has_publicly_viewable_restricted_leads',
+            'has_publicly_viewable_confidential_leads',
         )
 
     analysis_framework = graphene.Field(AnalysisFrameworkDetailType)
