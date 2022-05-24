@@ -767,10 +767,12 @@ class TestLeadQuerySchema(GraphQLTestCase):
 
         cases = [
             # Public Project
+            #  is_private, (public_lead, restricted_lead, confidential_lead)
+            #   : [Lead, show_project, show_lead, show_project_title]
             (
-                False, False, [  # Project view public leads
+                False, (False, False, False), [  # Project view public leads
                     (
-                        # Without login [Lead, show_project, show_lead]
+                        # Without login
                         None, [
                             [unprotected_lead, False, False, None],
                             [restricted_lead, False, False, None],
@@ -804,7 +806,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 ]
             ),
             (
-                False, True, [  # Project view public leads
+                False, (True, False, False), [  # Project view public leads
                     (
                         # Without login
                         None, [
@@ -839,9 +841,81 @@ class TestLeadQuerySchema(GraphQLTestCase):
                     ),
                 ]
             ),
+            (
+                False, (False, True, False), [  # Project view public leads
+                    (
+                        # Without login
+                        None, [
+                            [unprotected_lead, False, False, None],
+                            [restricted_lead, False, True, True],
+                            [confidential_lead, False, False, None],
+                        ],
+                    ),
+                    (
+                        # Non member user
+                        non_member_user, [
+                            [unprotected_lead, True, False, None],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, False, None],
+                        ]
+                    ),
+                    (
+                        # Member user with non-confidential access
+                        member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, False, None],
+                        ]
+                    ),
+                    (
+                        # Member user with confidential access
+                        confidential_member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, True, True],
+                        ]
+                    ),
+                ]
+            ),
+            (
+                False, (False, False, True), [  # Project view public leads
+                    (
+                        # Without login
+                        None, [
+                            [unprotected_lead, False, False, None],
+                            [restricted_lead, False, False, None],
+                            [confidential_lead, False, True, True],
+                        ],
+                    ),
+                    (
+                        # Non member user
+                        non_member_user, [
+                            [unprotected_lead, True, False, None],
+                            [restricted_lead, True, False, None],
+                            [confidential_lead, True, True, True],
+                        ]
+                    ),
+                    (
+                        # Member user with non-confidential access
+                        member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, True, True],
+                        ]
+                    ),
+                    (
+                        # Member user with confidential access
+                        confidential_member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, True, True],
+                        ]
+                    ),
+                ]
+            ),
             # Private Project
             (
-                True, False, [  # Project view public leads
+                True, (False, False, False), [  # Project view public leads
                     (
                         # Without login
                         None, [
@@ -877,7 +951,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 ]
             ),
             (
-                True, True, [  # Project view public leads
+                True, (True, False, False), [  # Project view public leads
                     (
                         # Without login
                         None, [
@@ -900,6 +974,78 @@ class TestLeadQuerySchema(GraphQLTestCase):
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, False, None],
+                        ]
+                    ),
+                    (
+                        # Member user with confidential access
+                        confidential_member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, True, True],
+                        ]
+                    ),
+                ]
+            ),
+            (
+                True, (False, True, False), [  # Project view public leads
+                    (
+                        # Without login
+                        None, [
+                            [unprotected_lead, False, False, None],
+                            [restricted_lead, False, True, False],
+                            [confidential_lead, False, False, None],
+                        ],
+                    ),
+                    (
+                        # Non member user
+                        non_member_user, [
+                            [unprotected_lead, False, False, None],
+                            [restricted_lead, False, True, False],
+                            [confidential_lead, False, False, None],
+                        ]
+                    ),
+                    (
+                        # Member user with non-confidential access
+                        member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, False, None],
+                        ]
+                    ),
+                    (
+                        # Member user with confidential access
+                        confidential_member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, True, True],
+                        ]
+                    ),
+                ]
+            ),
+            (
+                True, (False, False, True), [  # Project view public leads
+                    (
+                        # Without login
+                        None, [
+                            [unprotected_lead, False, False, None],
+                            [restricted_lead, False, False, None],
+                            [confidential_lead, False, True, False],
+                        ],
+                    ),
+                    (
+                        # Non member user
+                        non_member_user, [
+                            [unprotected_lead, False, False, None],
+                            [restricted_lead, False, False, None],
+                            [confidential_lead, False, True, False],
+                        ]
+                    ),
+                    (
+                        # Member user with non-confidential access
+                        member_user, [
+                            [unprotected_lead, True, True, True],
+                            [restricted_lead, True, True, True],
+                            [confidential_lead, True, True, True],
                         ]
                     ),
                     (
@@ -913,10 +1059,28 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 ]
             ),
         ]
-        for is_private, project_show_public_leads, user_and_conditions in cases:
+
+        for (
+            is_private,
+            (
+                project_show_public_leads,
+                project_show_restricted_leads,
+                project_show_confidential_leads,
+            ),
+            user_and_conditions,
+        ) in cases:
             project.is_private = is_private
-            project.has_publicly_viewable_leads = project_show_public_leads
-            project.save(update_fields=('is_private', 'has_publicly_viewable_leads',))
+            project.has_publicly_viewable_unprotected_leads = project_show_public_leads
+            project.has_publicly_viewable_restricted_leads = project_show_restricted_leads
+            project.has_publicly_viewable_confidential_leads = project_show_confidential_leads
+            project.save(
+                update_fields=(
+                    'is_private',
+                    'has_publicly_viewable_unprotected_leads',
+                    'has_publicly_viewable_restricted_leads',
+                    'has_publicly_viewable_confidential_leads',
+                )
+            )
             for user, conditions in user_and_conditions:
                 if user:
                     self.force_login(user)
@@ -924,7 +1088,16 @@ class TestLeadQuerySchema(GraphQLTestCase):
                     self.logout()
                 for used_lead, expect_project_membership_data, expect_lead, show_project_title in conditions:
                     content = _query_check(used_lead)['data']['publicLead']
-                    check_meta = (is_private, project_show_public_leads, user, used_lead)
+                    check_meta = dict(
+                        project_private=is_private,
+                        project_show=dict(
+                            public_leads=project_show_public_leads,
+                            restricted_leads=project_show_restricted_leads,
+                            confidential_leads=project_show_confidential_leads,
+                        ),
+                        user=user,
+                        used_lead=used_lead,
+                    )
                     # Excepted Lead
                     if expect_lead:
                         self.assertIsNotNone(content['lead'], check_meta)
