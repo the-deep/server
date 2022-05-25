@@ -1,16 +1,18 @@
 import logging
 from django.core.files.base import ContentFile
 
-from export.formats.xlsx import WorkBook, RowsBuilder
-from entry.models import Entry, ExportData, ProjectEntryLabel, LeadEntryGroup
-from lead.models import Lead
-from export.models import Export
 
+from deep.permalinks import Permalink
 from utils.common import (
     format_date,
     excel_column_name,
     get_valid_xml_string as xstr
 )
+from export.formats.xlsx import WorkBook, RowsBuilder
+
+from entry.models import Entry, ExportData, ProjectEntryLabel, LeadEntryGroup
+from lead.models import Lead
+from export.models import Export
 
 logger = logging.getLogger(__name__)
 
@@ -416,7 +418,7 @@ class ExcelExporter:
                 'Controlled' if entry.controlled else 'Uncontrolled',
                 f'{lead.id}',
                 lead.title,
-                lead.url or lead.generate_client_url(),
+                lead.url or Permalink.lead_share_view(lead.uuid),
                 lead.get_authoring_organizations_type_display(),
                 lead.get_authors_display(),
                 lead.get_source_display(),

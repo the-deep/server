@@ -40,11 +40,6 @@ class ExcelExporter:
         for analytical_statement_entry in qs.iterator():
             entry = analytical_statement_entry.entry
             lead = entry.lead
-            entry_permalink_url = Permalink().entry(
-                entry.project_id,
-                lead.id,
-                entry.id,
-            )
             analytical_statement = analytical_statement_entry.analytical_statement
             analysis_pillar = analytical_statement.analysis_pillar
             self.analysis_sheet.append([[
@@ -55,7 +50,7 @@ class ExcelExporter:
                 analytical_statement.statement,
                 entry.id,
                 entry.excerpt,
-                entry_permalink_url,
+                Permalink.entry(entry.project_id, lead.id, entry.id),
                 lead.url,
             ]])
         return self
