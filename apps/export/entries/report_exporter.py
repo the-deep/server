@@ -12,6 +12,7 @@ from django.db.models import (
     Q,
 )
 from docx.shared import Inches
+from deep.permalinks import Permalink
 
 from export.formats.docx import Document
 
@@ -509,10 +510,7 @@ class ReportExporter:
         if self.show_lead_entry_id:
             para.add_run('[', bold=True)
             # Add lead-entry id
-            url = (
-                f'{settings.HTTP_PROTOCOL}://{settings.DEEPER_FRONTEND_HOST}'
-                f'/permalink/projects/{entry.project_id}/leads/{entry.lead_id}/entries/{entry.id}/'
-            )
+            url = Permalink.entry(entry.project_id, entry.lead_id, entry.id),
             para.add_hyperlink(url, f"{entry.lead_id}-{entry.id}")
             para.add_run(']', bold=True)
 
@@ -574,7 +572,7 @@ class ReportExporter:
 
         source = lead.get_source_display() or 'Reference'
         author = lead.get_authors_display()
-        url = lead.url or lead.generate_client_url()
+        url = lead.url or Permalink.lead_share_view(lead.uuid),
         date = entry.lead.published_on
 
         para.add_run('(' if widget_texts_exists else ' (')
@@ -824,7 +822,7 @@ class ReportExporter:
             lead.published_on and para.add_run(f" {lead.published_on.strftime('%m/%d/%y')}. ")
 
             para = self.doc.add_paragraph()
-            url = lead.url or lead.generate_client_url()
+            url = lead.url or Permalink.lead_share_view(lead.uuid)
             if url:
                 para.add_hyperlink(url, url)
             else:
