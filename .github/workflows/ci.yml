@@ -72,7 +72,7 @@ jobs:
           CC_TEST_REPORTER_ID: ${{ secrets.CODE_CLIMATE_ID }}
           DOCKER_IMAGE_SERVER: ${{ steps.prep.outputs.tagged_image }}
         with:
-          coverageCommand: docker-compose -f ./gh-docker-compose.yml run --rm server bash -c 'wait-for-it db:5432 && /code/scripts/run_tests.sh'
+          coverageCommand: docker-compose -f gh-docker-compose.yml run --rm server /code/scripts/run_tests.sh
           coverageLocations: |
             ${{github.workspace}}/coverage/coverage.xml:coverage.py
 
