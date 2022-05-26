@@ -10,6 +10,8 @@ from deep.serializers import URLCachedFileField
 from utils.graphene.types import CustomDjangoListObjectType, FileFieldType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 
+from lead.schema import LeadsFilterDataType
+
 from .models import Export
 from .filter_set import ExportGQLFilterSet
 from .enums import (
@@ -29,11 +31,13 @@ def get_export_qs(info):
 
 
 class UserExportType(DjangoObjectType):
+    filters = graphene.Field(LeadsFilterDataType)
+
     class Meta:
         model = Export
         only_fields = (
             'id', 'project', 'is_preview', 'title',
-            'filters', 'mime_type', 'extra_options', 'exported_by',
+            'mime_type', 'extra_options', 'exported_by',
             'exported_at', 'started_at', 'ended_at', 'pending', 'is_archived',
             'analysis',
         )

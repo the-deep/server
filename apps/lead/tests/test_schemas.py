@@ -37,7 +37,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
             $emmEntities: String
             $emmKeywords: String
             $emmRiskFactors: String
-            $entriesFilterData: EntriesFilterDataType
+            $entriesFilterData: EntriesFilterDataInputType
             $priorities: [LeadPriorityEnum!]
             $publishedOn: Date
             $publishedOnGte: Date

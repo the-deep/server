@@ -28,7 +28,7 @@ from gallery.serializers import SimpleFileSerializer, File
 from user.models import User
 from project.models import ProjectMembership
 from unified_connector.models import ConnectorSourceLead
-from lead.filter_set import LeadsFilterDataType
+from lead.filter_set import LeadsFilterDataInputType
 
 from .tasks import LeadExtraction
 from .models import (
@@ -699,7 +699,7 @@ class ExtractCallbackSerializer(serializers.Serializer):
 
 
 class UserSavedLeadFilterSerializer(ProjectPropertySerializerMixin, serializers.ModelSerializer):
-    filters = generate_serializer_field_class(LeadsFilterDataType, GraphqlSupportDrfSerializerJSONField)()
+    filters = generate_serializer_field_class(LeadsFilterDataInputType, GraphqlSupportDrfSerializerJSONField)()
 
     class Meta:
         model = UserSavedLeadFilter

@@ -11,6 +11,11 @@ from graphene_django.filter.filterset import GrapheneFilterSetMixin
 from graphene_django.filter.utils import get_filtering_args_from_filterset
 
 from user_resource.filters import UserResourceGqlFilterSet
+from utils.graphene.fields import (
+    generate_simple_object_type_from_input_type,
+    generate_object_field_from_input_type,
+    compare_input_output_type_fields,
+)
 from utils.graphene.filters import (
     IDListFilter,
     MultipleInputFilter,
@@ -524,7 +529,7 @@ def get_created_at_filters(query_params):
     return parsed_query
 
 
-class EntryFilterDataType(graphene.InputObjectType):
+class EntryFilterDataInputType(graphene.InputObjectType):
     """
     Behaviour for each type:
     - NUMBER (value or (value_lte or value_gte) are applied if provided)
@@ -579,7 +584,7 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
     # Entry Group Label Filters
     lead_group_label = django_filters.CharFilter(label='Lead Group Label', method='lead_group_label_filter')
     # Dynamic filterable data
-    filterable_data = MultipleInputFilter(EntryFilterDataType, method='filterable_data_filter')
+    filterable_data = MultipleInputFilter(EntryFilterDataInputType, method='filterable_data_filter')
     has_comment = django_filters.BooleanFilter(method='filter_commented_entries')
     is_verified = django_filters.BooleanFilter(method='filter_verified_entries')
 
@@ -684,8 +689,19 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
         return qs.distinct()
 
 
-EntriesFilterDataType = type(
-    'EntriesFilterDataType',
+def get_entry_filter_object_type(input_type):
+    new_fields_map = generate_object_field_from_input_type(input_type, skip_fields=['filterable_data'])
+    new_fields_map['filterable_data'] = graphene.Field(
+        generate_simple_object_type_from_input_type(EntryFilterDataInputType)
+    )
+    new_type = type('EntriesFilterDataType', (graphene.ObjectType,), new_fields_map)
+    compare_input_output_type_fields(input_type, new_type)
+    return new_type
+
+
+EntriesFilterDataInputType = type(
+    'EntriesFilterDataInputType',
     (graphene.InputObjectType,),
     get_filtering_args_from_filterset(EntryGQFilterSet, 'entry.schema.EntryListType')
 )
+EntriesFilterDataType = get_entry_filter_object_type(EntriesFilterDataInputType)
