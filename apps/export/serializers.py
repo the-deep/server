@@ -10,7 +10,7 @@ from deep.serializers import (
     StringIDField,
     GraphqlSupportDrfSerializerJSONField,
 )
-from lead.filter_set import LeadGQFilterSet, LeadsFilterDataType
+from lead.filter_set import LeadGQFilterSet, LeadsFilterDataInputType
 from analysis_framework.models import Widget, Exportable
 from .tasks import export_task
 from .models import Export
@@ -219,7 +219,7 @@ class UserExportBaseGqlMixin(ProjectPropertySerializerMixin):
     report_structure = ExportReportStructureWidgetSerializer(
         required=False, many=True, help_text=ExportReportStructureWidgetSerializer.__doc__)
 
-    filters = generate_serializer_field_class(LeadsFilterDataType, GraphqlSupportDrfSerializerJSONField)()
+    filters = generate_serializer_field_class(LeadsFilterDataInputType, GraphqlSupportDrfSerializerJSONField)()
 
     @property
     def widget_qs(self):

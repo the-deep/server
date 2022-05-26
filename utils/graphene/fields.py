@@ -1,3 +1,4 @@
+import inspect
 from functools import partial
 
 from django.db.models import QuerySet
@@ -258,3 +259,34 @@ def generate_serializer_field_class(inner_type, serializer_field, non_null=False
         lambda _: graphene.NonNull(inner_type) if non_null else inner_type
     )
     return new_serializer_field
+
+
+# Only use this for single object type with direct scaler access.
+def generate_object_field_from_input_type(input_type, skip_fields=[]):
+    new_fields_map = {}
+    for field_key, field in input_type._meta.fields.items():
+        if field_key in skip_fields:
+            continue
+        _type = field.type
+        if inspect.isclass(_type) and (
+            issubclass(_type, graphene.Scalar) or
+            issubclass(_type, graphene.Enum)
+        ):
+            new_fields_map[field_key] = graphene.Field(_type)
+        else:
+            new_fields_map[field_key] = _type
+    return new_fields_map
+
+
+# use this for input type with direct scaler fields only.
+def generate_simple_object_type_from_input_type(input_type):
+    new_fields_map = generate_object_field_from_input_type(input_type)
+    return type(input_type._meta.name.replace('Input', ''), (graphene.ObjectType,), new_fields_map)
+
+
+def compare_input_output_type_fields(input_type, output_type):
+    if len(output_type._meta.fields) != len(input_type._meta.fields):
+        for field in input_type._meta.fields.keys():
+            if field not in output_type._meta.fields.keys():
+                print('---> [Entry] Missing: ', field)
+        raise Exception('Conversion failed')

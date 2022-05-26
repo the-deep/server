@@ -3,7 +3,6 @@ from typing import Union
 from django.db import models
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType, DjangoListField
-from graphene_django.filter.utils import get_filtering_args_from_filterset
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.pagination import NoOrderingPageGraphqlPagination
@@ -17,6 +16,7 @@ from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
 from organization.schema import OrganizationType
 
+from lead.filter_set import LeadsFilterDataType
 from user.schema import UserType
 
 
@@ -136,14 +136,9 @@ class EntriesCountType(graphene.ObjectType):
     controlled = graphene.Int()
 
 
-LeadsFilterDataType = type(
-    'LeadsFilterDataType',
-    (graphene.InputObjectType,),
-    get_filtering_args_from_filterset(LeadGQFilterSet, 'lead.schema.LeadListType')
-)
-
-
 class UserSavedLeadFilterType(DjangoObjectType):
+    filters = graphene.Field(LeadsFilterDataType)
+
     class Meta:
         model = UserSavedLeadFilter
         only_fields = (
@@ -151,7 +146,6 @@ class UserSavedLeadFilterType(DjangoObjectType):
             'title',
             'created_at',
             'modified_at',
-            'filters',
         )
 
 
