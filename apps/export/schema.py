@@ -1,4 +1,3 @@
-import json
 import graphene
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
