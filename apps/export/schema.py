@@ -1,10 +1,8 @@
-import json
 import graphene
 
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
-from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
 from deep.serializers import URLCachedFileField
 from utils.graphene.types import CustomDjangoListObjectType, FileFieldType
