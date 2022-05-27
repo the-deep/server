@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="d_293da1cd5d5c69eb_enums_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.4</a>,
-            created at 2022-05-27 09:14 +0000
+            created at 2022-05-27 11:35 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"/>
@@ -594,7 +594,7 @@
     <p class="mis show_mis"><span class="n"><a id="t510" href="#t510">510</a></span><span class="t">        <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">show_lead_entry_id</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t511" href="#t511">511</a></span><span class="t">            <span class="nam">para</span><span class="op">.</span><span class="nam">add_run</span><span class="op">(</span><span class="str">'['</span><span class="op">,</span> <span class="nam">bold</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t512" href="#t512">512</a></span><span class="t">            <span class="com"># Add lead-entry id</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t513" href="#t513">513</a></span><span class="t">            <span class="nam">url</span> <span class="op">=</span> <span class="nam">Permalink</span><span class="op">.</span><span class="nam">entry</span><span class="op">(</span><span class="nam">entry</span><span class="op">.</span><span class="nam">project_id</span><span class="op">,</span> <span class="nam">entry</span><span class="op">.</span><span class="nam">lead_id</span><span class="op">,</span> <span class="nam">entry</span><span class="op">.</span><span class="nam">id</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t513" href="#t513">513</a></span><span class="t">            <span class="nam">url</span> <span class="op">=</span> <span class="nam">Permalink</span><span class="op">.</span><span class="nam">entry</span><span class="op">(</span><span class="nam">entry</span><span class="op">.</span><span class="nam">project_id</span><span class="op">,</span> <span class="nam">entry</span><span class="op">.</span><span class="nam">lead_id</span><span class="op">,</span> <span class="nam">entry</span><span class="op">.</span><span class="nam">id</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t514" href="#t514">514</a></span><span class="t">            <span class="nam">para</span><span class="op">.</span><span class="nam">add_hyperlink</span><span class="op">(</span><span class="nam">url</span><span class="op">,</span> <span class="str">f"{entry.lead_id}-{entry.id}"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t515" href="#t515">515</a></span><span class="t">            <span class="nam">para</span><span class="op">.</span><span class="nam">add_run</span><span class="op">(</span><span class="str">']'</span><span class="op">,</span> <span class="nam">bold</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t516" href="#t516">516</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -656,7 +656,7 @@
     <p class="pln"><span class="n"><a id="t572" href="#t572">572</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t573" href="#t573">573</a></span><span class="t">        <span class="nam">source</span> <span class="op">=</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">get_source_display</span><span class="op">(</span><span class="op">)</span> <span class="key">or</span> <span class="str">'Reference'</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t574" href="#t574">574</a></span><span class="t">        <span class="nam">author</span> <span class="op">=</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">get_authors_display</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t575" href="#t575">575</a></span><span class="t">        <span class="nam">url</span> <span class="op">=</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">url</span> <span class="key">or</span> <span class="nam">Permalink</span><span class="op">.</span><span class="nam">lead_share_view</span><span class="op">(</span><span class="nam">lead</span><span class="op">.</span><span class="nam">uuid</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t575" href="#t575">575</a></span><span class="t">        <span class="nam">url</span> <span class="op">=</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">url</span> <span class="key">or</span> <span class="nam">Permalink</span><span class="op">.</span><span class="nam">lead_share_view</span><span class="op">(</span><span class="nam">lead</span><span class="op">.</span><span class="nam">uuid</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t576" href="#t576">576</a></span><span class="t">        <span class="nam">date</span> <span class="op">=</span> <span class="nam">entry</span><span class="op">.</span><span class="nam">lead</span><span class="op">.</span><span class="nam">published_on</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t577" href="#t577">577</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t578" href="#t578">578</a></span><span class="t">        <span class="nam">para</span><span class="op">.</span><span class="nam">add_run</span><span class="op">(</span><span class="str">'('</span> <span class="key">if</span> <span class="nam">widget_texts_exists</span> <span class="key">else</span> <span class="str">' ('</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -948,7 +948,7 @@
             <a id="nextFileLink" class="nav" href="d_293da1cd5d5c69eb_enums_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.4</a>,
-            created at 2022-05-27 09:14 +0000
+            created at 2022-05-27 11:35 +0000
         </p>
     </div>
 </footer>
