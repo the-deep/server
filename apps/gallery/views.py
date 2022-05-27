@@ -21,6 +21,7 @@ from rest_framework import (
 import django_filters
 
 from deep.permissions import ModifyPermission
+from deep.permalinks import Permalink
 from project.models import Project
 from lead.models import Lead
 from entry.models import Entry
@@ -67,8 +68,10 @@ class PrivateFileView(views.APIView):
         queryset = File.objects.prefetch_related('lead_set')
         file = get_object_or_404(queryset, uuid=uuid)
         user = request.user
-        leads_pk = file.lead_set.values_list('pk', flat=True)
+        if file.lead_set.count() == 1:
+            return redirect(Permalink.lead_share_view(file.lead_set.first().uuid))
 
+        leads_pk = file.lead_set.values_list('pk', flat=True)
         if (
                 file.is_public or
                 Lead.get_for(user).filter(pk__in=leads_pk).exists() or

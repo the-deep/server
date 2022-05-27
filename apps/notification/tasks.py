@@ -4,6 +4,7 @@ from django.db import transaction
 from entry.models import EntryComment
 from user.models import User, EmailCondition
 from user.utils import send_mail_to_user
+from deep.permalinks import Permalink
 
 from quality_assurance.models import EntryReviewComment
 
@@ -23,6 +24,7 @@ def send_entry_comment_email(user_id, comment_id):
             'assignees_display': ', '.join(
                 assignee.profile.get_display_name() for assignee in comment.assignees.all()
             ),
+            'entry_comment_client_url': Permalink.ientry_comments(comment.entry)
         },
         subject_template_name='entry/comment_notification_email.txt',
         email_template_name='entry/comment_notification_email.html',
@@ -40,6 +42,7 @@ def send_entry_review_comment_email(user_id, comment_id, notification_type):
             'CommentType': EntryReviewComment.CommentType,
             'notification_type': notification_type,
             'comment': comment,
+            'entry_comment_client_url': Permalink.ientry_comment(comment)
         },
         subject_template_name='entry/review_comment_notification_email.txt',
         email_template_name='entry/review_comment_notification_email.html',
