@@ -420,6 +420,11 @@ urlpatterns = [
         PrivateFileView.as_view(),
         name='gallery_private_url',
     ),
+    path(
+        'private-file/<uuid:uuid>/<filename:filename>',
+        PrivateFileView.as_view(),
+        name='deprecated_gallery_private_url',
+    ),
     re_path(
         r'^public-file/(?P<fidb64>[0-9A-Za-z]+)/(?P<token>.+)/(?P<filename>.*)$',
         PublicFileView.as_view(),

@@ -62,14 +62,33 @@ class FileView(View):
 
 
 class PrivateFileView(views.APIView):
+    def get(self, request, uuid=None, filename=None):
+        queryset = File.objects.prefetch_related('lead_set')
+        file = get_object_or_404(queryset, uuid=uuid)
+        if file.lead_set.count() == 1:
+            # Redirect to new url
+            return redirect(
+                Permalink.lead_share_view(file.lead_set.first().uuid)
+            )
+        # Redirect to old url
+        return redirect(
+            reverse(
+                'deprecated_gallery_private_url',
+                kwargs=dict(
+                    uuid=uuid,
+                    filename=filename,
+                ),
+            ),
+        )
+
+
+class DeprecatedPrivateFileView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, uuid=None, filename=None):
         queryset = File.objects.prefetch_related('lead_set')
         file = get_object_or_404(queryset, uuid=uuid)
         user = request.user
-        if file.lead_set.count() == 1:
-            return redirect(Permalink.lead_share_view(file.lead_set.first().uuid))
 
         leads_pk = file.lead_set.values_list('pk', flat=True)
         if (
