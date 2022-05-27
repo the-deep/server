@@ -691,8 +691,10 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
 
 def get_entry_filter_object_type(input_type):
     new_fields_map = generate_object_field_from_input_type(input_type, skip_fields=['filterable_data'])
-    new_fields_map['filterable_data'] = graphene.Field(
-        generate_simple_object_type_from_input_type(EntryFilterDataInputType)
+    new_fields_map['filterable_data'] = graphene.List(
+        graphene.NonNull(
+            generate_simple_object_type_from_input_type(EntryFilterDataInputType)
+        )
     )
     new_type = type('EntriesFilterDataType', (graphene.ObjectType,), new_fields_map)
     compare_input_output_type_fields(input_type, new_type)

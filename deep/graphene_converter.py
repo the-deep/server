@@ -1,3 +1,5 @@
+from aniso8601 import parse_date, parse_datetime, parse_time
+import graphene
 from graphene.types.generic import GenericScalar
 
 from graphene_django.compat import HStoreField, JSONField, PGJSONField
@@ -42,3 +44,40 @@ def gis_converter(field, registry=None):
     return GIS_FIELD_SCALAR[class_name](
         required=not field.null, description=field.help_text
     )
+
+
+original_time_serialize = graphene.Time.serialize
+original_date_serialize = graphene.Date.serialize
+original_datetime_serialize = graphene.DateTime.serialize
+
+
+# Add option to add string as well.
+class CustomSerialize():
+    @staticmethod
+    def _parse(dt, parse_func):
+        if isinstance(dt, str):
+            return parse_func(dt)
+        return dt
+
+    @classmethod
+    def time(cls, time) -> str:
+        return original_time_serialize(
+            cls._parse(time, parse_time)
+        )
+
+    @classmethod
+    def date(cls, date) -> str:
+        return original_date_serialize(
+            cls._parse(date, parse_date)
+        )
+
+    @classmethod
+    def datetime(cls, dt) -> str:
+        return original_datetime_serialize(
+            cls._parse(dt, parse_datetime)
+        )
+
+
+graphene.Time.serialize = CustomSerialize.time
+graphene.Date.serialize = CustomSerialize.date
+graphene.DateTime.serialize = CustomSerialize.datetime

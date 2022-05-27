@@ -845,7 +845,7 @@ type EntriesFilterDataType {
   commentStatus: EntryFilterCommentStatusEnum
   geoCustomShape: String
   leadGroupLabel: String
-  filterableData: EntryFilterDataType
+  filterableData: [EntryFilterDataType!]
 }
 
 enum EntryFilterCommentStatusEnum {
