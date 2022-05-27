@@ -35,6 +35,7 @@ from gallery.views import (
     FileExtractionTriggerView,
     MetaExtractionView,
     PrivateFileView,
+    DeprecatedPrivateFileView,
     PublicFileView,
 )
 from tabular.views import (
@@ -421,8 +422,8 @@ urlpatterns = [
         name='gallery_private_url',
     ),
     path(
-        'private-file/<uuid:uuid>/<filename:filename>',
-        PrivateFileView.as_view(),
+        'deprecated-private-file/<uuid:uuid>/<filename:filename>',
+        DeprecatedPrivateFileView.as_view(),
         name='deprecated_gallery_private_url',
     ),
     re_path(

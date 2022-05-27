@@ -510,7 +510,7 @@ class ReportExporter:
         if self.show_lead_entry_id:
             para.add_run('[', bold=True)
             # Add lead-entry id
-            url = Permalink.entry(entry.project_id, entry.lead_id, entry.id),
+            url = Permalink.entry(entry.project_id, entry.lead_id, entry.id)
             para.add_hyperlink(url, f"{entry.lead_id}-{entry.id}")
             para.add_run(']', bold=True)
 
@@ -572,7 +572,7 @@ class ReportExporter:
 
         source = lead.get_source_display() or 'Reference'
         author = lead.get_authors_display()
-        url = lead.url or Permalink.lead_share_view(lead.uuid),
+        url = lead.url or Permalink.lead_share_view(lead.uuid)
         date = entry.lead.published_on
 
         para.add_run('(' if widget_texts_exists else ' (')
