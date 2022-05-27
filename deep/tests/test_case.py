@@ -1,5 +1,4 @@
 import os
-import shutil
 import autofixture
 from rest_framework import (
     test,
@@ -86,11 +85,6 @@ class TestCase(test.APITestCase):
                 file_path = file.file.path
                 if os.path.isfile(file_path):
                     os.unlink(file_path)
-        # clear the temporary media files
-        try:
-            shutil.rmtree(os.path.join(settings.BASE_DIR, TEST_MEDIA_ROOT), ignore_errors=True)
-        except FileNotFoundError:
-            pass
 
     def authenticate(self, user=None):
         user = user or self.user
