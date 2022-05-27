@@ -156,13 +156,22 @@ class GalleryTests(TestCase):
 
         # Without authentication
         response = self.client.get(file_url)
+        assert response.status_code == 302, "Should return 302 redirect"
+        # -- Try again with redirect url
+        response = self.client.get(response.url)
         assert response.status_code == 403, "Should return 403 forbidden"
 
         # With authentication but no file access
         self.authenticate()
         response = self.client.get(file_url)
+        assert response.status_code == 302, "Should return 302 redirect"
+        # -- Try again with redirect url
+        response = self.client.get(response.url)
         assert response.status_code == 403, "Should return 403 forbidden"
         response = self.client.get(entry_file_url)
+        assert response.status_code == 302, "Should return 302 redirect"
+        # -- Try again with redirect url
+        response = self.client.get(response.url)
         assert response.status_code == 403, "Should return 403 forbidden"
 
         # With authentication and with file access (LEAD)
