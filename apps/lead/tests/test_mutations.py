@@ -627,7 +627,9 @@ class TestLeadCopyMutation(GraphQLTestCase):
                   result {
                     id
                     title
-                    filters
+                    filters {
+                        ids
+                    }
                   }
                 }
               }

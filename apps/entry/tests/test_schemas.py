@@ -239,7 +239,7 @@ class TestEntryQuery(GraphQLTestCase):
                 $entriesId: [ID!]
                 $entryTypes: [EntryTagTypeEnum!]
                 $excerpt: String
-                $filterableData: [EntryFilterDataType!]
+                $filterableData: [EntryFilterDataInputType!]
                 $geoCustomShape: String
                 $leadAssignees: [ID!]
                 $leadConfidentialities: [LeadConfidentialityEnum!]
@@ -450,7 +450,7 @@ class TestEntryFilterDataQuery(GraphQLTestCase):
     def setUp(self):
         super().setUp()
         self.entries_query = '''
-            query MyQuery ($projectId: ID!  $filterableData: [EntryFilterDataType!]) {
+            query MyQuery ($projectId: ID!  $filterableData: [EntryFilterDataInputType!]) {
               project(id: $projectId) {
                 entries (filterableData: $filterableData) {
                   results {

@@ -716,7 +716,9 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 userSavedLeadFilter {
                   id
                   title
-                  filters
+                  filters {
+                    ids
+                  }
                 }
               }
             }
