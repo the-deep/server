@@ -1,4 +1,5 @@
 import graphene
+from functools import reduce
 from typing import Union
 from django.db import models
 from django.db.models import QuerySet
@@ -11,13 +12,17 @@ from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
 
 from user.models import User
+from organization.models import Organization, OrganizationType as OrganizationTypeModel
+from geo.models import GeoArea
+from analysis_framework.models import Filter as AfFilter, Widget
 
 from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
-from organization.schema import OrganizationType
+from organization.schema import OrganizationType, OrganizationTypeType
+from user.schema import UserType
+from geo.schema import ProjectGeoAreaType
 
 from lead.filter_set import LeadsFilterDataType
-from user.schema import UserType
 
 
 from .models import (
@@ -74,6 +79,111 @@ def get_lead_emm_entities_qs(info):
     elif PP.check_permission(info, PP.Permission.VIEW_ONLY_UNPROTECTED_LEAD):
         return lead_emm_qs.filter(lead__confidentiality=Lead.Confidentiality.UNPROTECTED)
     return LeadEMMTrigger.objects.none()
+
+
+# Generates database level objects used in filters.
+def get_lead_filter_data(filters, context):
+    def _filter_by_id(entity_list, entity_id_list):
+        return [
+            entity
+            for entity in entity_list
+            if entity.id in entity_id_list
+        ]
+
+    if filters is None or type(filters) != dict:
+        return {}
+
+    entry_filter_data = filters.get('entry_filter_data') or {}
+    geo_widget_filter_keys = AfFilter.objects.filter(
+        widget_key=Widget.objects.filter(
+            analysis_framework=context.active_project.analysis_framework_id,
+        ).values('key')
+    ).values_list('key', flat=True)
+
+    # Lead Filter Data
+    created_by_ids = filters.get('created_by') or []
+    assignee_ids = filters.get('assignees') or []
+    author_organization_type_ids = filters.get('authoring_organization_types') or []
+    author_organization_ids = filters.get('author_organizations') or []
+    source_organization_ids = filters.get('source_organizations') or []
+    # Entry Filter Data
+    ef_lead_assignee_ids = entry_filter_data.get('lead_assignees') or []
+    ef_lead_authoring_organizationtype_ids = entry_filter_data.get('lead_authoring_organization_types') or []
+    ef_lead_author_organization_ids = entry_filter_data.get('lead_author_organizations') or []
+    ef_lead_source_organization_ids = entry_filter_data.get('lead_source_organizations') or []
+    ef_lead_created_by_ids = entry_filter_data.get('lead_created_by') or []
+    ef_created_by_ids = entry_filter_data.get('created_by') or []
+    ef_modified_by_ids = entry_filter_data.get('modified_by') or []
+    ef_geo_area_ids = set(
+        reduce(
+            lambda a, b: a + b,
+            [
+                filterable_data['value_list'] or []
+                for filterable_data in entry_filter_data.get('filterable_data') or []
+                if filterable_data.get('filter_key') in geo_widget_filter_keys and filterable_data.get('value_list')
+            ], []
+        )
+    )
+
+    # Prefetch all data
+    users = list(
+        User.objects.filter(
+            projectmembership__project=context.active_project,
+            id__in=set(
+                *created_by_ids,
+                *assignee_ids,
+                *ef_created_by_ids,
+                *ef_lead_assignee_ids,
+                *ef_lead_created_by_ids,
+                *ef_modified_by_ids,
+            )
+        )
+    )
+
+    organizations = list(
+        Organization.objects.filter(
+            id__in=set(
+                *author_organization_ids,
+                *source_organization_ids,
+                *ef_lead_author_organization_ids,
+                *ef_lead_source_organization_ids,
+            )
+        )
+    )
+
+    organization_types = list(
+        OrganizationTypeModel.objects.filter(
+            id__in=set(
+                *author_organization_type_ids,
+                *ef_lead_authoring_organizationtype_ids,
+            )
+        )
+    )
+
+    geoareas = list(
+        GeoArea.objects.filter(
+            admin_level__region__project=context.active_project,
+            id__in=ef_geo_area_ids
+        )
+    )
+
+    return dict(
+        created_by_options=_filter_by_id(users, created_by_ids),
+        assignee_options=_filter_by_id(users, assignee_ids),
+        author_organization_type_options=_filter_by_id(organization_types, author_organization_type_ids),
+        author_organization_options=_filter_by_id(organizations, author_organization_ids),
+        source_organization_options=_filter_by_id(organizations, source_organization_ids),
+        entry_filter_lead_assignee_options=_filter_by_id(users, ef_lead_assignee_ids),
+        entry_filter_lead_authoring_organizationtype_options=_filter_by_id(
+            organization_types, ef_lead_authoring_organizationtype_ids
+        ),
+        entry_filter_lead_author_organization_options=_filter_by_id(organizations, ef_lead_author_organization_ids),
+        entry_filter_lead_source_organization_options=_filter_by_id(organizations, ef_lead_source_organization_ids),
+        entry_filter_lead_created_by_options=_filter_by_id(users, ef_lead_created_by_ids),
+        entry_filter_created_by_options=_filter_by_id(users, ef_created_by_ids),
+        entry_filter_modified_by_options=_filter_by_id(users, ef_modified_by_ids),
+        entry_filter_geo_area_options=_filter_by_id(geoareas, ef_geo_area_ids),
+    )
 
 
 class LeadPreviewType(DjangoObjectType):
@@ -136,8 +246,28 @@ class EntriesCountType(graphene.ObjectType):
     controlled = graphene.Int()
 
 
+class LeadFilterDataType(graphene.ObjectType):
+    created_by_options = graphene.List(graphene.NonNull(UserType), required=True)
+    assignee_options = graphene.List(graphene.NonNull(UserType), required=True)
+    author_organization_type_options = graphene.List(graphene.NonNull(OrganizationTypeType), required=True)
+    author_organization_options = graphene.List(graphene.NonNull(OrganizationType), required=True)
+    source_organization_options = graphene.List(graphene.NonNull(OrganizationType), required=True)
+
+    entry_filter_created_by_options = graphene.List(graphene.NonNull(UserType), required=True)
+    entry_filter_lead_assignee_options = graphene.List(graphene.NonNull(UserType), required=True)
+    entry_filter_lead_author_organization_options = graphene.List(graphene.NonNull(OrganizationType), required=True)
+    entry_filter_lead_authoring_organizationtype_options = graphene.List(
+        graphene.NonNull(OrganizationTypeType), required=True,
+    )
+    entry_filter_lead_created_by_options = graphene.List(graphene.NonNull(UserType), required=True)
+    entry_filter_lead_source_organization_options = graphene.List(graphene.NonNull(OrganizationType), required=True)
+    entry_filter_modified_by_options = graphene.List(graphene.NonNull(UserType), required=True)
+    entry_filter_geo_area_options = graphene.List(graphene.NonNull(ProjectGeoAreaType), required=True)
+
+
 class UserSavedLeadFilterType(DjangoObjectType):
     filters = graphene.Field(LeadsFilterDataType)
+    filters_data = graphene.Field(LeadFilterDataType)
 
     class Meta:
         model = UserSavedLeadFilter
@@ -147,6 +277,10 @@ class UserSavedLeadFilterType(DjangoObjectType):
             'created_at',
             'modified_at',
         )
+
+    @staticmethod
+    def resolve_filters_data(root, info):
+        return get_lead_filter_data(root.filters, info.context)
 
 
 class LeadGroupType(UserResourceMixin, DjangoObjectType):
