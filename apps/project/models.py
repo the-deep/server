@@ -94,6 +94,9 @@ class Project(UserResource):
 
     # Store project stats data as cache. View project/tasks for structure
     stats_cache = models.JSONField(default=dict)
+    # Stores the geo locations data as cache.
+    geo_cache_hash = models.CharField(max_length=256, null=True, blank=True)
+    geo_cache_file = models.FileField(null=True, blank=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

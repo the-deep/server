@@ -1,3 +1,5 @@
+import json
+
 from deep.tests import TestCase
 from geo.models import Region, AdminLevel, GeoArea
 from project.models import Project
@@ -148,24 +150,27 @@ class GeoOptionsApi(TestCase):
     def test_geo_options(self):
         region = self.create(Region)
 
-        admin_level1 = self.create(AdminLevel, region=region)
-        admin_level2 = self.create(AdminLevel, region=region)
-        geo_area1 = self.create(GeoArea, admin_level=admin_level1)
-        geo_area2 = self.create(GeoArea, admin_level=admin_level2,
-                                parent=geo_area1)
+        project = self.create_project()
+        project.regions.add(region)
+        admin_level1 = self.create(AdminLevel, title='AdminLevel1', region=region, level=0)
+        admin_level2 = self.create(AdminLevel, title='AdminLevel2', region=region, level=1)
+        geo_area1 = self.create(GeoArea, title='GeoArea1', admin_level=admin_level1)
+        geo_area2 = self.create(GeoArea, title='GeoArea2', admin_level=admin_level2, parent=geo_area1)
 
-        url = '/api/v1/geo-options/'
+        url = f'/api/v1/geo-options/?project={project.pk}'
 
         self.authenticate()
-        response = self.client.get(url)
+        response = self.client.get(url, follow=True)
         self.assert_200(response)
 
-        self.assertEqual(response.data[str(region.id)][1].get('label'),
-                         '{} / {}'.format(admin_level2.title,
-                                          geo_area2.title))
+        data = json.loads(b''.join(list(response.streaming_content)))
+        self.assertEqual(
+            data[str(region.id)][1].get('label'),
+            '{} / {}'.format(admin_level2.title, geo_area2.title)
+        )
 
         # check if parent is present in geo options
-        for k, options in response.data.items():
+        for _, options in data.items():
             for option in options:
                 assert 'parent' in option
 

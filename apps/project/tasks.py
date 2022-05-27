@@ -12,6 +12,7 @@ from redis_store import redis
 from ary.stats import get_project_ary_entry_stats
 from lead.models import Lead
 from entry.models import Entry
+from geo.models import GeoArea
 
 from .models import (
     Project,
@@ -178,3 +179,32 @@ def generate_project_stats_cache(force=False):
     _generate_project_stats_cache()
     lock.release()
     return True
+
+
+def generate_project_geo_region_cache(project):
+    region_qs = project.regions.defer('geo_options', 'centroid')
+    geoarea_qs = GeoArea.objects.select_related('admin_level').order_by('admin_level__level')
+    geo_options = {
+        region.id: [
+            {
+                'label': '{} / {}'.format(
+                    geo_area.admin_level.title,
+                    geo_area.title,
+                ),
+                'title': geo_area.title,
+                'key': str(geo_area.id),
+                'admin_level': geo_area.admin_level.level,
+                'admin_level_title': geo_area.admin_level.title,
+                'region': region.id,
+                'region_title': region.title,
+                'parent': geo_area.parent.id if geo_area.parent else None,
+            } for geo_area in geoarea_qs.filter(admin_level__region=region)
+        ] for region in region_qs
+    }
+    project.geo_cache_file.save(
+        f'project-geo-cache-{project.pk}.json',
+        ContentFile(json.dumps(geo_options).encode('utf-8')),
+        save=False,
+    )
+    project.geo_cache_hash = hash(tuple(region_qs.order_by('id').values_list('cache_index', flat=True)))
+    project.save(update_fields=('geo_cache_hash', 'geo_cache_file'))
