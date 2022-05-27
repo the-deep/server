@@ -1,6 +1,4 @@
 import graphene
-import json
-from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
@@ -10,7 +8,11 @@ from deep.serializers import URLCachedFileField
 from utils.graphene.types import CustomDjangoListObjectType, FileFieldType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 
-from lead.schema import LeadsFilterDataType
+from lead.schema import (
+    LeadsFilterDataType,
+    LeadFilterDataType,
+    get_lead_filter_data,
+)
 
 from .models import Export
 from .filter_set import ExportGQLFilterSet
@@ -49,15 +51,17 @@ class UserExportType(DjangoObjectType):
     export_type = graphene.Field(graphene.NonNull(ExportExportTypeEnum))
     file = graphene.Field(FileFieldType)
     file_download_url = graphene.String()
+    # Filter Data
+    filters = graphene.Field(LeadsFilterDataType)
+    filters_data = graphene.Field(LeadFilterDataType)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
         return get_export_qs(info)
 
     @staticmethod
-    def resolve_filters(root, info, **kwargs):
-        # XXX: Better way?
-        return json.loads(CamelCaseJSONRenderer().render(root.filters))
+    def resolve_filters_data(root, info):
+        return get_lead_filter_data(root.filters, info.context)
 
     @staticmethod
     def resolve_file_download_url(root, info, **kwargs):

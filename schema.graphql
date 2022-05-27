@@ -1274,6 +1274,22 @@ enum LeadExtractionStatusEnum {
   FAILED
 }
 
+type LeadFilterDataType {
+  createdByOptions: [UserType!]!
+  assigneeOptions: [UserType!]!
+  authorOrganizationTypeOptions: [OrganizationTypeType!]!
+  authorOrganizationOptions: [OrganizationType!]!
+  sourceOrganizationOptions: [OrganizationType!]!
+  entryFilterCreatedByOptions: [UserType!]!
+  entryFilterLeadAssigneeOptions: [UserType!]!
+  entryFilterLeadAuthorOrganizationOptions: [OrganizationType!]!
+  entryFilterLeadAuthoringOrganizationtypeOptions: [OrganizationTypeType!]!
+  entryFilterLeadCreatedByOptions: [UserType!]!
+  entryFilterLeadSourceOrganizationOptions: [OrganizationType!]!
+  entryFilterModifiedByOptions: [UserType!]!
+  entryFilterGeoAreaOptions: [ProjectGeoAreaType!]!
+}
+
 type LeadGroupListType {
   results: [LeadGroupType!]
   totalCount: Int
@@ -2542,13 +2558,17 @@ type UserExportType {
   pending: Boolean!
   isArchived: Boolean!
   analysis: AnalysisType
-  filters: LeadsFilterDataType
   format: ExportFormatEnum!
   type: ExportDataTypeEnum!
   status: ExportStatusEnum!
   exportType: ExportExportTypeEnum!
   file: FileFieldType
+<<<<<<< HEAD
   fileDownloadUrl: String
+=======
+  filters: LeadsFilterDataType
+  filtersData: LeadFilterDataType
+>>>>>>> 5b2ff6b7c (Add filter with options in export and leadSavedQuery)
 }
 
 type UserFeatureAccessType {
@@ -2657,6 +2677,7 @@ type UserSavedLeadFilterType {
   createdAt: DateTime!
   modifiedAt: DateTime!
   filters: LeadsFilterDataType
+  filtersData: LeadFilterDataType
 }
 
 type UserType {
