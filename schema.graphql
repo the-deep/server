@@ -55,6 +55,7 @@ type AnalysisFrameworkExportableType {
 
 type AnalysisFrameworkFilterType {
   id: ID!
+  widgetKey: String!
   title: String!
   properties: GenericScalar
   key: String!
