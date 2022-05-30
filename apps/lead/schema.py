@@ -9,12 +9,15 @@ from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 from utils.graphene.enums import EnumDescription
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
+
+from user.models import User
+
 from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
 from organization.schema import OrganizationType
-from user.models import User
 
 from user.schema import UserType
+
 
 from .models import (
     Lead,
