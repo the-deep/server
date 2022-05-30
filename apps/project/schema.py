@@ -4,6 +4,7 @@ import graphene
 from django.db import transaction, models
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType, DjangoListField
+from graphene_django.filter.utils import get_filtering_args_from_filterset
 from graphene.types import generic
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
@@ -38,6 +39,8 @@ from lead.models import Lead
 from entry.models import Entry
 from geo.models import Region
 
+from lead.filter_set import LeadGQFilterSet
+
 from .models import (
     Project,
     ProjectRole,
@@ -64,7 +67,7 @@ from .filter_set import (
     PublicProjectByRegionGqlFileterSet,
 )
 from .activity import project_activity_log
-from .tasks import generate_viz_stats
+from .tasks import generate_viz_stats, get_project_stats
 from .public_schema import PublicProjectListType
 
 
@@ -153,6 +156,15 @@ class ProjectStatType(graphene.ObjectType):
     number_of_users = graphene.Field(graphene.Int)
     leads_activity = graphene.List(graphene.NonNull(DateCountType))
     entries_activity = graphene.List(graphene.NonNull(DateCountType))
+
+    # With Filter
+    filtered_number_of_leads = graphene.Field(graphene.Int)
+    filtered_number_of_leads_not_tagged = graphene.Field(graphene.Int)
+    filtered_number_of_leads_in_progress = graphene.Field(graphene.Int)
+    filtered_number_of_leads_tagged = graphene.Field(graphene.Int)
+    filtered_number_of_entries = graphene.Field(graphene.Int)
+    filtered_number_of_entries_verified = graphene.Field(graphene.Int)
+    filtered_number_of_entries_controlled = graphene.Field(graphene.Int)
 
     @staticmethod
     def resolve_leads_activity(root, info, **kwargs):
@@ -391,6 +403,14 @@ class ProjectDetailType(
         required=True,
         description='Checks if visualization is enabled and analysis framework is configured.',
     )
+    stats = graphene.Field(
+        ProjectStatType,
+        filters=type(  # TODO: Use LeadsFilterDataInputType after lead-filter-save branch is merged
+            'LeadsFilterDataInputType',
+            (graphene.InputObjectType,),
+            get_filtering_args_from_filterset(LeadGQFilterSet, 'lead.schema.LeadListType')
+        )(),
+    )
     viz_data = graphene.Field(ProjectVizDataType)
     # Other scoped queries
     unified_connector = graphene.Field(UnifiedConnectorQueryType)
@@ -428,6 +448,11 @@ class ProjectDetailType(
     def resolve_viz_data(root, info, **kwargs):
         if root.get_current_user_role(info.context.request.user) is not None and root.is_visualization_available:
             return root.project_stats
+
+    @staticmethod
+    def resolve_stats(root, info, filters=None):
+        if root.get_current_user_role(info.context.request.user) is not None:
+            return get_project_stats(root, info, filters)
 
     @staticmethod
     def resolve_unified_connector(root, info, **kwargs):
