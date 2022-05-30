@@ -14,6 +14,9 @@ from lead.models import Lead
 from entry.models import Entry
 from geo.models import GeoArea
 
+from lead.filter_set import LeadGQFilterSet
+from entry.filter_set import EntryGQFilterSet
+
 from .models import (
     Project,
     ProjectStats,
@@ -53,6 +56,53 @@ def _generate_project_viz_stats(project_id):
         logger.warning(f'Ary Stats Generation Failed ({project_id})!!', exc_info=True)
         project_stats.status = ProjectStats.Status.FAILURE
         project_stats.save()
+
+
+def get_project_stats(project, info, filters):
+    # XXX: Circular dependency
+    from lead.schema import get_lead_qs
+    from entry.schema import get_entry_qs
+
+    def _count_by_project(qs):
+        return qs\
+            .filter(project=project)\
+            .order_by().values('project')\
+            .aggregate(count=models.Count('id', distinct=True))['count']
+
+    lead_qs = get_lead_qs(info)
+    entry_qs = get_entry_qs(info)
+    filters_counts = {}
+    if filters:
+        entry_filter_data = filters.get('entries_filter_data') or {}
+        filtered_lead_qs = LeadGQFilterSet(request=info.context.request, queryset=lead_qs, data=filters).qs
+        filtered_entry_qs = EntryGQFilterSet(
+            request=info.context.request,
+            queryset=entry_qs.filter(lead__in=filtered_lead_qs),
+            data=entry_filter_data,
+        ).qs
+        filters_counts = dict(
+            filtered_number_of_leads=_count_by_project(filtered_lead_qs),
+            filtered_number_of_leads_not_tagged=_count_by_project(filtered_lead_qs.filter(status=Lead.Status.NOT_TAGGED)),
+            filtered_number_of_leads_in_progress=_count_by_project(filtered_lead_qs.filter(status=Lead.Status.IN_PROGRESS)),
+            filtered_number_of_leads_tagged=_count_by_project(filtered_lead_qs.filter(status=Lead.Status.TAGGED)),
+            filtered_number_of_entries=_count_by_project(filtered_entry_qs),
+            filtered_number_of_entries_verified=_count_by_project(filtered_entry_qs.filter(verified_by__isnull=False)),
+            filtered_number_of_entries_controlled=_count_by_project(filtered_entry_qs.filter(controlled=True)),
+        )
+    counts = dict(
+        number_of_users=_count_by_project(ProjectMembership.objects),
+        number_of_leads=_count_by_project(lead_qs),
+        number_of_leads_not_tagged=_count_by_project(lead_qs.filter(status=Lead.Status.NOT_TAGGED)),
+        number_of_leads_in_progress=_count_by_project(lead_qs.filter(status=Lead.Status.IN_PROGRESS)),
+        number_of_leads_tagged=_count_by_project(lead_qs.filter(status=Lead.Status.TAGGED)),
+        number_of_entries=_count_by_project(entry_qs),
+        number_of_entries_verified=_count_by_project(entry_qs.filter(verified_by__isnull=False)),
+        number_of_entries_controlled=_count_by_project(entry_qs.filter(controlled=True)),
+        **filters_counts,
+    )
+    for key, value in counts.items():
+        setattr(project, key, value)
+    return project
 
 
 def _generate_project_stats_cache():

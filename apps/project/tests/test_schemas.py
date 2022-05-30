@@ -697,6 +697,111 @@ class TestProjectSchema(GraphQLTestCase):
         content = _query_check({'search': 'Brazil'})['data']['publicProjectsByRegion']
         self.assertEqual(content['totalCount'], 0, content)  # Private projects are not shown
 
+    def test_project_stats_with_filter(self):
+        query = '''
+            query MyQuery ($projectId: ID! $leadFilters: LeadsFilterDataInputType) {
+              project(id: $projectId) {
+                stats(filters: $leadFilters) {
+                  filteredNumberOfEntries
+                  filteredNumberOfEntriesControlled
+                  filteredNumberOfEntriesVerified
+                  filteredNumberOfLeads
+                  filteredNumberOfLeadsInProgress
+                  filteredNumberOfLeadsNotTagged
+                  filteredNumberOfLeadsTagged
+                  numberOfEntries
+                  numberOfEntriesControlled
+                  numberOfEntriesVerified
+                  numberOfLeads
+                  numberOfLeadsInProgress
+                  numberOfLeadsNotTagged
+                  numberOfLeadsTagged
+                  numberOfUsers
+                }
+              }
+            }
+        '''
+
+        non_member_user, member_user = UserFactory.create_batch(2)
+        af = AnalysisFrameworkFactory.create()
+        project = ProjectFactory.create(analysis_framework=af)
+        project.add_member(member_user)
+        lead1 = LeadFactory.create(project=project, confidentiality=Lead.Confidentiality.CONFIDENTIAL)
+        lead2 = LeadFactory.create(project=project, status=Lead.Status.TAGGED)
+        EntryFactory.create_batch(2, lead=lead1, controlled=True)
+        EntryFactory.create(lead=lead2, verified_by=[member_user])
+        lead2.status = Lead.Status.TAGGED
+        lead2.save(update_fields=('status',))
+
+        def _query_check(filters=None, **kwargs):
+            return self.query_check(
+                query,
+                variables={
+                    'projectId': project.id,
+                    'leadFilters': filters,
+                },
+                **kwargs
+            )
+
+        def _expected_response(
+            filtered_number_of_leads,
+            filtered_number_of_leadsInProgress,
+            filtered_number_of_leadsNotTagged,
+            filtered_number_of_leadsTagged,
+            filtered_number_of_entries,
+            filtered_number_of_entriesControlled,
+            filtered_number_of_entriesVerified,
+        ):
+            return dict(
+                numberOfUsers=1,
+                numberOfEntries=3,
+                numberOfEntriesControlled=2,
+                numberOfEntriesVerified=1,
+                numberOfLeads=2,
+                numberOfLeadsInProgress=1,
+                numberOfLeadsNotTagged=0,
+                numberOfLeadsTagged=1,
+                filteredNumberOfEntries=filtered_number_of_entries,
+                filteredNumberOfEntriesControlled=filtered_number_of_entriesControlled,
+                filteredNumberOfEntriesVerified=filtered_number_of_entriesVerified,
+                filteredNumberOfLeads=filtered_number_of_leads,
+                filteredNumberOfLeadsInProgress=filtered_number_of_leadsInProgress,
+                filteredNumberOfLeadsNotTagged=filtered_number_of_leadsNotTagged,
+                filteredNumberOfLeadsTagged=filtered_number_of_leadsTagged,
+            )
+
+        # Without login
+        _query_check(assert_for_error=True)
+
+        # With login - non-member zero count
+        self.force_login(non_member_user)
+        content = _query_check()['data']['project']['stats']
+        self.assertIsNone(content, content)
+
+        # With login - member
+        self.force_login(member_user)
+        self.maxDiff = None
+        for index, (filters, _expected) in enumerate([
+                (
+                    {'confidentiality': self.genum(Lead.Confidentiality.CONFIDENTIAL)},
+                    [1, 1, 0, 0, 2, 2, 0]
+                ),
+                (
+                    {'entriesFilterData': {'leadConfidentialities': self.genum(Lead.Confidentiality.CONFIDENTIAL)}},
+                    [1, 1, 0, 0, 2, 2, 0]
+                ),
+                (
+                    {'confidentiality': self.genum(Lead.Confidentiality.UNPROTECTED)},
+                    [1, 0, 0, 1, 1, 0, 1]
+                ),
+                (
+                    {'entriesFilterData': {'leadConfidentialities': self.genum(Lead.Confidentiality.UNPROTECTED)}},
+                    [1, 0, 0, 1, 1, 0, 1]
+                ),
+        ]):
+            content = _query_check(filters=filters)['data']['project']['stats']
+            self.assertEqual(_expected_response(*_expected), content, index)
+
 
 class TestProjectViz(GraphQLTestCase):
     ENABLE_NOW_PATCHER = True
