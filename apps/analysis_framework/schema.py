@@ -124,7 +124,7 @@ class AnalysisFrameworkRoleType(DjangoObjectType):
 class AnalysisFrameworkFilterType(DjangoObjectType):
     class Meta:
         model = Filter
-        only_fields = ('id', 'title', 'properties',)
+        only_fields = ('id', 'title', 'properties', 'widget_key',)
 
     key = graphene.String(required=True)
     widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
