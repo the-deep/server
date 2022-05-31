@@ -69,8 +69,12 @@ def get_project_stats(project, info, filters):
             .order_by().values('project')\
             .aggregate(count=models.Count('id', distinct=True))['count']
 
-    lead_qs = get_lead_qs(info)
-    entry_qs = get_entry_qs(info)
+    if info.context.active_project:
+        lead_qs = get_lead_qs(info)
+        entry_qs = get_entry_qs(info)
+    else:
+        lead_qs = Lead.objects.filter(project=project)
+        entry_qs = Entry.objects.filter(project=project, analysis_framework=project.analysis_framework_id)
     filters_counts = {}
     if filters:
         entry_filter_data = filters.get('entries_filter_data') or {}

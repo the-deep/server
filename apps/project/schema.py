@@ -272,7 +272,8 @@ class ProjectType(UserResourceMixin, DjangoObjectType):
     def resolve_allowed_permissions(root, info) -> List[PP.Permission]:
         return PP.get_permissions(root, info.context.request.user)
 
-    def resolve_stats(root, info, **kwargs):
+    @staticmethod
+    def resolve_stats(root, info):
         return info.context.dl.project.project_stat.load(root.pk)
 
     @staticmethod
