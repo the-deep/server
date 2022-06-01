@@ -105,6 +105,10 @@ class Project(UserResource):
     geo_cache_hash = models.CharField(max_length=256, null=True, blank=True)
     geo_cache_file = models.FileField(null=True, blank=True)
 
+    # this is used for project deletion
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateField(null=True, blank=True)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.analysis_framework_id: int

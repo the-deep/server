@@ -251,3 +251,18 @@ def generate_project_geo_region_cache(project):
     )
     project.geo_cache_hash = hash(tuple(region_qs.order_by('id').values_list('cache_index', flat=True)))
     project.save(update_fields=('geo_cache_hash', 'geo_cache_file'))
+
+
+@shared_task
+def project_deletion(force=False):
+    # check every project if there `is_deleted` is set True
+    # if greater than 30 days delete those projects
+    logger.info('Checking project is_deleted')
+    today = timezone.now().date()
+    project_qs = Project.objects.filter(
+        is_deleted=True,
+    )
+    for project in project_qs:
+        if abs((project.deleted_at - today).days) > 30:  # HardCode this here?
+            logger.info(f'Deleting Project {project.id}')
+            project.delete()
