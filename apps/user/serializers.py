@@ -5,6 +5,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
 from django.conf import settings
 from django.db import transaction, models
+from django.utils import timezone
 
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
@@ -489,3 +490,29 @@ class HIDLoginSerializer(serializers.Serializer):
         except Exception:
             logger.error('HID error', exc_info=True)
             raise serializers.ValidationError('Unexpected Error')
+
+
+class UserDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username')
+
+    def validate(self, data):
+        from project.models import ProjectMembership, ProjectRole
+
+        if ProjectMembership.objects.filter(
+            member=self,
+            role__type=ProjectRole.Type.ADMIN
+        ).exists():
+            raise serializers.ValidationError(
+                'You are admin in Projects.Choose other project admin before you delete yourself'
+            )
+        return data
+
+    def update(self, instance, validated_data):
+        user = super().update(instance, validated_data)
+        user.username = settings.USER_DELETE_NAME
+        user.profile.old_display_name = Profile.get_display_name
+        user.profile.deleted_at = timezone.now().date()
+        user.save()
+        return user

@@ -1,6 +1,9 @@
 import graphene
 from django.contrib.auth import login, logout
 from django.contrib.auth import update_session_auth_hash
+from django.conf import settings
+from django.utils import timezone
+from django.contrib.auth.models import User
 
 from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
 from utils.graphene.mutation import generate_input_type_for_serializer
@@ -11,7 +14,8 @@ from .serializers import (
     GqPasswordResetSerializer as ResetPasswordSerializer,
     PasswordChangeSerializer,
     UserMeSerializer,
-    HIDLoginSerializer
+    HIDLoginSerializer,
+    UserDeleteSerializer,
 )
 from .schema import UserMeType
 
@@ -22,6 +26,10 @@ RegisterInputType = generate_input_type_for_serializer('RegisterInputType', Regi
 ResetPasswordInputType = generate_input_type_for_serializer('ResetPasswordInputType', ResetPasswordSerializer)
 PasswordChangeInputType = generate_input_type_for_serializer('PasswordChangeInputType', PasswordChangeSerializer)
 UserMeInputType = generate_input_type_for_serializer('UserMeInputType', UserMeSerializer)
+UserDeleteInputType = generate_input_type_for_serializer(
+    'UserDeleteInputType',
+    UserDeleteSerializer
+)
 
 
 class Login(graphene.Mutation):
@@ -166,6 +174,37 @@ class UpdateMe(graphene.Mutation):
         return UpdateMe(result=serializer.instance, errors=None, ok=True)
 
 
+class UserDelete(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+
+    errors = graphene.List(graphene.NonNull(CustomErrorType))
+    ok = graphene.Boolean()
+    result = graphene.Field(UserMeType)
+
+    @staticmethod
+    def mutate(root, info, id):
+        user = User.objects.get(id=id)
+        from project.models import ProjectMembership, ProjectRole
+
+        if ProjectMembership.objects.filter(
+            member=id,
+            role__type=ProjectRole.Type.ADMIN
+        ).exists():
+            return UserDelete(errors=[
+                    dict(
+                        field='nonFieldErrors',
+                        messages='You are admin in Projects.Choose another Project admin before you delete yourself',
+                    )
+                ], ok=False)
+
+        user.profile.old_display_name = user.username
+        user.username = settings.USER_DELETE_NAME
+        user.profile.deleted_at = timezone.now().date()
+        user.save()
+        return UserDelete(result=user, errors=None, ok=True)
+
+
 class Mutation():
     login = Login.Field()
     login_with_hid = LoginWithHID.Field()
@@ -174,3 +213,4 @@ class Mutation():
     reset_password = ResetPassword.Field()
     change_password = ChangeUserPassword.Field()
     update_me = UpdateMe.Field()
+    delete_user = UserDelete.Field()

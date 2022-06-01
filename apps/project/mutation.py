@@ -1,10 +1,12 @@
 from django.utils.translation import gettext
+from django.utils import timezone
 
 import graphene
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
 
 from django.core.exceptions import PermissionDenied
+from django.conf import settings
 
 from utils.graphene.mutation import (
     generate_input_type_for_serializer,
@@ -32,6 +34,7 @@ from .models import (
     ProjectJoinRequest,
     ProjectMembership,
     ProjectUserGroupMembership,
+    ProjectRole,
 )
 from .serializers import (
     ProjectGqSerializer,
@@ -153,6 +156,35 @@ class ProjectJoinRequestDelete(graphene.Mutation):
         instance.delete()
         instance.id = id
         return ProjectJoinRequestDelete(result=instance, errors=None, ok=True)
+
+
+class ProjectDelete(graphene.Mutation):
+    class Arguments:
+        pass
+
+    errors = graphene.List(graphene.NonNull(CustomErrorType))
+    ok = graphene.Boolean()
+    result = graphene.Field(ProjectDetailType)
+
+    @staticmethod
+    def mutate(root, info, **kwargs):
+        kwargs['id'] = info.context.active_project.id
+        member = ProjectMembership.objects.filter(
+            project=info.context.active_project.id,
+            member=info.context.user,
+        )
+        role_type = member.first().role.type
+        if role_type not in [ProjectRole.Type.ADMIN, ProjectRole.Type.PROJECT_OWNER]:
+            return ProjectJoinRequestDelete(errors=[
+                dict(
+                    field='nonFieldErrors',
+                    messages=gettext('You should be Project Admin or Project Owner to delete this project(id:%s)' % info.context.active_project.id),
+                )
+            ], ok=False)
+        root.is_deleted = True
+        root.deleted_at = timezone.now().date()
+        root.save()
+        return ProjectDelete(result=root, errors=None, ok=True)
 
 
 class CreateProjectJoin(graphene.Mutation):
@@ -304,6 +336,7 @@ class ProjectMutationType(
         fields = ('id', 'title')
 
     project_update = UpdateProject.Field()
+    project_delete = ProjectDelete.Field()
     accept_reject_project = ProjectAcceptReject.Field()
     project_user_membership_bulk = BulkUpdateProjectMembership.Field()
     project_user_group_membership_bulk = BulkUpdateProjectUserGroupMembership.Field()

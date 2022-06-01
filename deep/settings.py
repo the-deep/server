@@ -488,6 +488,16 @@ CELERY_BEAT_SCHEDULE = {
         # Every 6 hours
         'schedule': crontab(hour="*/6"),
     },
+    # Project Deletion
+    'project_deletion': {
+        'task': 'project.tasks.project_deletion',
+        'schedule': crontab(minute=0, hour=0),  # excute every day
+    },
+    # User Deletion
+    'user_deletion': {
+        'task': 'project.tasks.user_deletion',
+        'schedule': crontab(minute=0, hour=0),
+    }
 }
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
@@ -873,3 +883,6 @@ if DEEP_ENVIRONMENT in ['production']:
     GRAPHENE['MIDDLEWARE'].append('deep.middleware.DisableIntrospectionSchemaMiddleware')
 
 UNHCR_PORTAL_API_KEY = env('UNHCR_PORTAL_API_KEY')
+
+# Used for project and user deletion
+USER_DELETE_NAME = 'Deep-User'
