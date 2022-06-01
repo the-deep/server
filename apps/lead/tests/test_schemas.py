@@ -1212,27 +1212,26 @@ class TestUserSavedLeadFilters(GraphQLTestCase):
         }
     '''
 
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-        cls.af = AnalysisFrameworkFactory.create()
-        cls.region1, cls.region2 = RegionFactory.create_batch(2)
-        cls.project = ProjectFactory.create(analysis_framework=cls.af)
-        cls.project.regions.add(cls.region1)
-        cls.non_member_user = UserFactory.create(email='non-member@x.y')
-        cls.member_user = UserFactory.create(email='member@x.y')
-        cls.project.add_member(cls.member_user)
+    def setUp(self):
+        super().setUp()
+        self.af = AnalysisFrameworkFactory.create()
+        self.region1, self.region2 = RegionFactory.create_batch(2)
+        self.project = ProjectFactory.create(analysis_framework=self.af)
+        self.project.regions.add(self.region1)
+        self.non_member_user = UserFactory.create(email='non-member@x.y')
+        self.member_user = UserFactory.create(email='member@x.y')
+        self.project.add_member(self.member_user)
 
         # Create entities used for entryFilterdData
         # -- Geo Data
-        geo_widget = WidgetFactory.create(analysis_framework=cls.af, widget_id=Widget.WidgetType.GEO)
-        geo_widget_filter = AfFilterFactory.create(analysis_framework=cls.af, widget_key=geo_widget.key)
+        geo_widget = WidgetFactory.create(analysis_framework=self.af, widget_id=Widget.WidgetType.GEO)
+        geo_widget_filter = AfFilterFactory.create(analysis_framework=self.af, widget_key=geo_widget.key)
         # -- -- Access access here
-        admin_level1_1, admin_level1_2 = AdminLevelFactory.create_batch(2, region=cls.region1)
+        admin_level1_1, admin_level1_2 = AdminLevelFactory.create_batch(2, region=self.region1)
         geoarea1_1_1, _ = GeoAreaFactory.create_batch(2, admin_level=admin_level1_1)
         geoarea1_2_1, geoarea1_2_1 = GeoAreaFactory.create_batch(2, admin_level=admin_level1_2)
         # -- -- No access here
-        admin_level2 = AdminLevelFactory.create(region=cls.region2)
+        admin_level2 = AdminLevelFactory.create(region=self.region2)
         _, geoarea2_2 = GeoAreaFactory.create_batch(2, admin_level=admin_level2)
 
         # -- Organizations/ Organization Types
@@ -1240,7 +1239,7 @@ class TestUserSavedLeadFilters(GraphQLTestCase):
         org1, org2, org3 = OrganizationFactory.create_batch(3, organization_type=org_type1)
         # -- Users (Members)
         m_user1, m_user2, m_user3, user4 = UserFactory.create_batch(4)
-        [cls.project.add_member(user) for user in [m_user1, m_user2, m_user3]]
+        [self.project.add_member(user) for user in [m_user1, m_user2, m_user3]]
 
         def _str_list(int_list):
             return [str(_int) for _int in int_list]
@@ -1250,7 +1249,7 @@ class TestUserSavedLeadFilters(GraphQLTestCase):
                 dict(id=str(obj.pk)) for obj in objs
             ]
 
-        cls.custom_filters = dict(
+        self.custom_filters = dict(
             assignees=_str_list([m_user1.pk, m_user2.pk]),
             author_organizations=_str_list([org1.pk, org2.pk]),
             authoring_organization_types=_str_list([org_type1.pk, org_type2.pk]),
@@ -1271,9 +1270,9 @@ class TestUserSavedLeadFilters(GraphQLTestCase):
                 )],
             )
         )
-        cls.custom_filters_camel_case = json.loads(CamelCaseJSONRenderer().render(cls.custom_filters))
+        self.custom_filters_camel_case = json.loads(CamelCaseJSONRenderer().render(self.custom_filters))
 
-        cls.expected_filter_data_options = dict(
+        self.expected_filter_data_options = dict(
             assigneeOptions=get_id_obj([m_user1, m_user2]),
             authorOrganizationOptions=get_id_obj([org1, org2]),
             authorOrganizationTypeOptions=get_id_obj([org_type1, org_type2]),
