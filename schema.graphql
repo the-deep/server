@@ -1276,6 +1276,7 @@ enum LeadExtractionStatusEnum {
 
 type LeadFilterDataType {
   createdByOptions: [UserType!]!
+  modifiedByOptions: [UserType!]!
   assigneeOptions: [UserType!]!
   authorOrganizationTypeOptions: [OrganizationTypeType!]!
   authorOrganizationOptions: [OrganizationType!]!
@@ -1283,7 +1284,7 @@ type LeadFilterDataType {
   entryFilterCreatedByOptions: [UserType!]!
   entryFilterLeadAssigneeOptions: [UserType!]!
   entryFilterLeadAuthorOrganizationOptions: [OrganizationType!]!
-  entryFilterLeadAuthoringOrganizationtypeOptions: [OrganizationTypeType!]!
+  entryFilterLeadAuthoringOrganizationTypeOptions: [OrganizationTypeType!]!
   entryFilterLeadCreatedByOptions: [UserType!]!
   entryFilterLeadSourceOrganizationOptions: [OrganizationType!]!
   entryFilterModifiedByOptions: [UserType!]!

@@ -90,38 +90,45 @@ def get_lead_filter_data(filters, context):
             if entity.id in entity_id_list
         ]
 
+    def _id_to_int(ids):
+        return [int(_id) for _id in ids]
+
     if filters is None or type(filters) != dict:
         return {}
 
-    entry_filter_data = filters.get('entry_filter_data') or {}
+    entry_filter_data = filters.get('entries_filter_data') or {}
     geo_widget_filter_keys = AfFilter.objects.filter(
-        widget_key=Widget.objects.filter(
+        analysis_framework=context.active_project.analysis_framework_id,
+        widget_key__in=Widget.objects.filter(
             analysis_framework=context.active_project.analysis_framework_id,
-        ).values('key')
+        ).values_list('key', flat=True)
     ).values_list('key', flat=True)
 
     # Lead Filter Data
-    created_by_ids = filters.get('created_by') or []
-    assignee_ids = filters.get('assignees') or []
-    author_organization_type_ids = filters.get('authoring_organization_types') or []
-    author_organization_ids = filters.get('author_organizations') or []
-    source_organization_ids = filters.get('source_organizations') or []
+    created_by_ids = _id_to_int(filters.get('created_by') or [])
+    modified_by_ids = _id_to_int(filters.get('modified_by') or [])
+    assignee_ids = _id_to_int(filters.get('assignees') or [])
+    author_organization_type_ids = _id_to_int(filters.get('authoring_organization_types') or [])
+    author_organization_ids = _id_to_int(filters.get('author_organizations') or [])
+    source_organization_ids = _id_to_int(filters.get('source_organizations') or [])
     # Entry Filter Data
-    ef_lead_assignee_ids = entry_filter_data.get('lead_assignees') or []
-    ef_lead_authoring_organizationtype_ids = entry_filter_data.get('lead_authoring_organization_types') or []
-    ef_lead_author_organization_ids = entry_filter_data.get('lead_author_organizations') or []
-    ef_lead_source_organization_ids = entry_filter_data.get('lead_source_organizations') or []
-    ef_lead_created_by_ids = entry_filter_data.get('lead_created_by') or []
-    ef_created_by_ids = entry_filter_data.get('created_by') or []
-    ef_modified_by_ids = entry_filter_data.get('modified_by') or []
+    ef_lead_assignee_ids = _id_to_int(entry_filter_data.get('lead_assignees') or [])
+    ef_lead_authoring_organizationtype_ids = _id_to_int(entry_filter_data.get('lead_authoring_organization_types') or [])
+    ef_lead_author_organization_ids = _id_to_int(entry_filter_data.get('lead_author_organizations') or [])
+    ef_lead_source_organization_ids = _id_to_int(entry_filter_data.get('lead_source_organizations') or [])
+    ef_lead_created_by_ids = _id_to_int(entry_filter_data.get('lead_created_by') or [])
+    ef_created_by_ids = _id_to_int(entry_filter_data.get('created_by') or [])
+    ef_modified_by_ids = _id_to_int(entry_filter_data.get('modified_by') or [])
     ef_geo_area_ids = set(
-        reduce(
-            lambda a, b: a + b,
-            [
-                filterable_data['value_list'] or []
-                for filterable_data in entry_filter_data.get('filterable_data') or []
-                if filterable_data.get('filter_key') in geo_widget_filter_keys and filterable_data.get('value_list')
-            ], []
+        _id_to_int(
+            reduce(
+                lambda a, b: a + b,
+                [
+                    filterable_data['value_list'] or []
+                    for filterable_data in entry_filter_data.get('filterable_data') or []
+                    if filterable_data.get('filter_key') in geo_widget_filter_keys and filterable_data.get('value_list')
+                ], []
+            )
         )
     )
 
@@ -129,34 +136,35 @@ def get_lead_filter_data(filters, context):
     users = list(
         User.objects.filter(
             projectmembership__project=context.active_project,
-            id__in=set(
+            id__in=set([
                 *created_by_ids,
+                *modified_by_ids,
                 *assignee_ids,
                 *ef_created_by_ids,
                 *ef_lead_assignee_ids,
                 *ef_lead_created_by_ids,
                 *ef_modified_by_ids,
-            )
+            ])
         )
     )
 
     organizations = list(
         Organization.objects.filter(
-            id__in=set(
+            id__in=set([
                 *author_organization_ids,
                 *source_organization_ids,
                 *ef_lead_author_organization_ids,
                 *ef_lead_source_organization_ids,
-            )
+            ])
         )
     )
 
     organization_types = list(
         OrganizationTypeModel.objects.filter(
-            id__in=set(
+            id__in=set([
                 *author_organization_type_ids,
                 *ef_lead_authoring_organizationtype_ids,
-            )
+            ])
         )
     )
 
@@ -169,12 +177,13 @@ def get_lead_filter_data(filters, context):
 
     return dict(
         created_by_options=_filter_by_id(users, created_by_ids),
+        modified_by_options=_filter_by_id(users, modified_by_ids),
         assignee_options=_filter_by_id(users, assignee_ids),
         author_organization_type_options=_filter_by_id(organization_types, author_organization_type_ids),
         author_organization_options=_filter_by_id(organizations, author_organization_ids),
         source_organization_options=_filter_by_id(organizations, source_organization_ids),
         entry_filter_lead_assignee_options=_filter_by_id(users, ef_lead_assignee_ids),
-        entry_filter_lead_authoring_organizationtype_options=_filter_by_id(
+        entry_filter_lead_authoring_organization_type_options=_filter_by_id(
             organization_types, ef_lead_authoring_organizationtype_ids
         ),
         entry_filter_lead_author_organization_options=_filter_by_id(organizations, ef_lead_author_organization_ids),
@@ -248,6 +257,7 @@ class EntriesCountType(graphene.ObjectType):
 
 class LeadFilterDataType(graphene.ObjectType):
     created_by_options = graphene.List(graphene.NonNull(UserType), required=True)
+    modified_by_options = graphene.List(graphene.NonNull(UserType), required=True)
     assignee_options = graphene.List(graphene.NonNull(UserType), required=True)
     author_organization_type_options = graphene.List(graphene.NonNull(OrganizationTypeType), required=True)
     author_organization_options = graphene.List(graphene.NonNull(OrganizationType), required=True)
@@ -256,7 +266,7 @@ class LeadFilterDataType(graphene.ObjectType):
     entry_filter_created_by_options = graphene.List(graphene.NonNull(UserType), required=True)
     entry_filter_lead_assignee_options = graphene.List(graphene.NonNull(UserType), required=True)
     entry_filter_lead_author_organization_options = graphene.List(graphene.NonNull(OrganizationType), required=True)
-    entry_filter_lead_authoring_organizationtype_options = graphene.List(
+    entry_filter_lead_authoring_organization_type_options = graphene.List(
         graphene.NonNull(OrganizationTypeType), required=True,
     )
     entry_filter_lead_created_by_options = graphene.List(graphene.NonNull(UserType), required=True)
