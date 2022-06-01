@@ -45,6 +45,9 @@ class TestUnifiedConnectorResponse(GraphQLTestCase):
         [ConnectorSource.Source.RELIEF_WEB, 'unified_connector.sources.relief_web.ReliefWeb.get_content'],
         [ConnectorSource.Source.RSS_FEED, 'unified_connector.sources.rss_feed.RssFeed.get_content'],
         [ConnectorSource.Source.ATOM_FEED, 'unified_connector.sources.atom_feed.AtomFeed.get_content'],
+        [ConnectorSource.Source.PDNA, 'unified_connector.sources.pdna.PDNA.get_content'],
+        [ConnectorSource.Source.HUMANITARIAN_RESP,
+            'unified_connector.sources.humanitarian_response.HumanitarianResponse.get_content'],
     ])
     def test_connector_source_(self, source_type, response_mock_path):
         response_mock_patch = patch(response_mock_path)

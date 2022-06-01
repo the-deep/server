@@ -298,6 +298,11 @@ type AssistedTaggingRootQueryType {
   predictionTags: [AssistedTaggingModelPredictionTagType!]
 }
 
+type AtomFeedFieldType {
+  key: String
+  label: String
+}
+
 input AttributeGqInputType {
   id: ID
   data: GenericScalar
@@ -522,6 +527,8 @@ enum ConnectorSourceSourceEnum {
   RELIEF_WEB
   RSS_FEED
   UNHCR
+  HUMANITARIAN_RESP
+  PDNA
 }
 
 type ConnectorSourceStatsType {
@@ -2074,6 +2081,7 @@ type PublicProjectWithMembershipData {
 
 type Query {
   rssFields(url: String): [RssFieldType!]
+  atomFeedFields(url: String): [AtomFeedFieldType!]
   publicLead(uuid: UUID!): PublicLeadMetaType
   notification(id: ID!): NotificationType
   notifications(timestamp: DateTime, timestampLte: DateTime, timestampGte: DateTime, isPending: Boolean, notificationType: NotificationTypeEnum, status: NotificationStatusEnum, page: Int = 1, ordering: String, pageSize: Int): NotificationListType

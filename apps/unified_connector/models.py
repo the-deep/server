@@ -12,6 +12,8 @@ from .sources import (
     rss_feed,
     unhcr_portal,
     relief_web,
+    humanitarian_response,
+    pdna,
 )
 
 
@@ -102,6 +104,8 @@ class ConnectorSource(UserResource):
         RELIEF_WEB = 'relief-web', 'Relifweb'
         RSS_FEED = 'rss-feed', 'RSS Feed'
         UNHCR = 'unhcr-portal', 'UNHCR Portal'
+        HUMANITARIAN_RESP = 'humanitarian-resp', 'Humanitarian Response'
+        PDNA = 'pdna', 'Post Disaster Needs Assessments'
 
     class Status(models.IntegerChoices):
         PENDING = 0, 'Pending'
@@ -114,6 +118,8 @@ class ConnectorSource(UserResource):
         Source.RELIEF_WEB: relief_web.ReliefWeb,
         Source.RSS_FEED: rss_feed.RssFeed,
         Source.UNHCR: unhcr_portal.UNHCRPortal,
+        Source.HUMANITARIAN_RESP: humanitarian_response.HumanitarianResponse,
+        Source.PDNA: pdna.PDNA,
     }
 
     title = models.CharField(max_length=255)
