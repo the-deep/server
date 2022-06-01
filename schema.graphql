@@ -1431,44 +1431,6 @@ type LeadType {
 }
 
 input LeadsFilterDataInputType {
-<<<<<<< HEAD
-  text: String
-  url: String
-  createdAt: DateTime
-  createdAtGte: DateTime
-  createdAtLte: DateTime
-  modifiedAt: DateTime
-  modifiedAtGte: DateTime
-  modifiedAtLte: DateTime
-  createdBy: [ID!]
-  modifiedBy: [ID!]
-  ids: [ID!]
-  excludeProvidedLeadsId: Boolean
-  sourceTypes: [LeadSourceTypeEnum!]
-  priorities: [LeadPriorityEnum!]
-  confidentiality: LeadConfidentialityEnum
-  statuses: [LeadStatusEnum!]
-  extractionStatus: LeadExtractionStatusEnum
-  assignees: [ID!]
-  authoringOrganizationTypes: [ID!]
-  authorOrganizations: [ID!]
-  sourceOrganizations: [ID!]
-  hasEntries: Boolean
-  hasAssessment: Boolean
-  entriesFilterData: EntriesFilterDataType
-  search: String
-  publishedOn: Date
-  publishedOnGte: Date
-  publishedOnLte: Date
-  emmEntities: String
-  emmKeywords: String
-  emmRiskFactors: String
-  ordering: [LeadOrderingEnum!]
-}
-
-input LeadsFilterDataType {
-=======
->>>>>>> 67e3917ab (Add graphql type for filters in)
   text: String
   url: String
   createdAt: DateTime

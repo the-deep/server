@@ -4,7 +4,6 @@ import graphene
 from django.db import transaction, models
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType, DjangoListField
-from graphene_django.filter.utils import get_filtering_args_from_filterset
 from graphene.types import generic
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
@@ -41,7 +40,7 @@ from lead.models import Lead
 from entry.models import Entry
 from geo.models import Region
 
-from lead.filter_set import LeadGQFilterSet
+from lead.filter_set import LeadsFilterDataInputType
 
 from .models import (
     Project,
@@ -437,11 +436,7 @@ class ProjectDetailType(
     )
     stats = graphene.Field(
         ProjectStatType,
-        filters=type(  # TODO: Use LeadsFilterDataInputType after lead-filter-save branch is merged
-            'LeadsFilterDataInputType',
-            (graphene.InputObjectType,),
-            get_filtering_args_from_filterset(LeadGQFilterSet, 'lead.schema.LeadListType')
-        )(),
+        filters=LeadsFilterDataInputType(),
     )
     viz_data = graphene.Field(ProjectVizDataType)
     # Other scoped queries
