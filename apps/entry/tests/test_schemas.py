@@ -12,6 +12,7 @@ from lead.factories import LeadFactory
 from entry.factories import EntryFactory, EntryAttributeFactory
 from analysis_framework.factories import AnalysisFrameworkFactory, WidgetFactory
 from organization.factories import OrganizationFactory, OrganizationTypeFactory
+from quality_assurance.factories import EntryReviewCommentFactory
 
 from lead.tests.test_schemas import TestLeadQuerySchema
 
@@ -229,7 +230,6 @@ class TestEntryQuery(GraphQLTestCase):
             query MyQuery (
                 $projectId: ID!
                 $leadAuthoringOrganizationTypes: [ID!]
-                $commentStatus: EntryFilterCommentStatusEnum
                 $controlled: Boolean
                 $createdAt: DateTime
                 $createdAtGte: DateTime
@@ -253,10 +253,10 @@ class TestEntryQuery(GraphQLTestCase):
                 $modifiedAt: DateTime
                 $modifiedBy: [ID!]
                 $projectEntryLabels: [ID!]
+                $hasComment: Boolean
             ) {
               project(id: $projectId) {
                 entries (
-                    commentStatus: $commentStatus
                     controlled: $controlled
                     createdAt: $createdAt
                     createdAtGte: $createdAtGte
@@ -282,6 +282,7 @@ class TestEntryQuery(GraphQLTestCase):
                     leads: $leads
                     leadStatuses: $leadStatuses
                     leadTitle: $leadTitle
+                    hasComment: $hasComment
                 ) {
                   results {
                     id
@@ -349,6 +350,10 @@ class TestEntryQuery(GraphQLTestCase):
             project=project, analysis_framework=af, lead=lead3, entry_type=Entry.TagType.EXCERPT, controlled=False)
         entry4_1 = EntryFactory.create(
             project=project, analysis_framework=af, lead=lead4, entry_type=Entry.TagType.EXCERPT, controlled=False)
+
+        # create entry review comment for entry
+        EntryReviewCommentFactory(entry=entry1_1, created_by=user)
+        EntryReviewCommentFactory(entry=entry2_1, created_by=member1)
         # Change lead1 status to TAGGED
         lead1.status = Lead.Status.TAGGED
         lead1.save(update_fields=['status'])
@@ -393,6 +398,8 @@ class TestEntryQuery(GraphQLTestCase):
                 {'leadStatuses': [self.genum(Lead.Status.IN_PROGRESS), self.genum(Lead.Status.TAGGED)]},
                 [entry1_1, entry2_1, entry3_1, entry4_1]
             ),
+            ({'hasComment': True}, [entry1_1, entry2_1]),
+            ({'hasComment': False}, [entry3_1, entry4_1]),
             # TODO: Common filters
             # ({'excerpt': []}, []),
             # ({'modifiedAt': []}, []),
