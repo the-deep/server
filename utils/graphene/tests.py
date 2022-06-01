@@ -78,13 +78,10 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
         mock.get.return_value.text = ''
         mock.post.return_value.text = ''
 
-    @classmethod
-    def setUpTestData(cls):
-        cls.create_project_roles()
-        cls.create_af_roles()
-
     def setUp(self):
         super().setUp()
+        self.create_project_roles()
+        self.create_af_roles()
         self.premailer_patcher_requests = patch('premailer.premailer.requests')
         self._setup_premailer_patcher(self.premailer_patcher_requests.start())
         if self.ENABLE_NOW_PATCHER:
@@ -147,8 +144,7 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
                         self.assertFalse(okay_response, content)
         return content
 
-    @classmethod
-    def create_project_roles(cls):
+    def create_project_roles(self):
         # Remove roles if already exist. Right now, we just have global roles
         ProjectRole.objects.all().delete()
 
@@ -170,40 +166,39 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
 
         # TODO: Make sure merge roles have all the permissions
         # Follow deep.permissions.py PERMISSION_MAP for permitted actions.
-        cls.project_role_reader_non_confidential = _create_role(
+        self.project_role_reader_non_confidential = _create_role(
             'Reader (Non Confidential)',
             ProjectRole.Type.READER_NON_CONFIDENTIAL,
             level=800,
         )
-        cls.project_role_reader = _create_role(
+        self.project_role_reader = _create_role(
             'Reader',
             ProjectRole.Type.READER,
             level=400,
         )
-        cls.project_role_member = _create_role(
+        self.project_role_member = _create_role(
             'Member',
             ProjectRole.Type.MEMBER,
             level=200,
             is_default_role=True,
         )
-        cls.project_role_admin = _create_role(
+        self.project_role_admin = _create_role(
             'Admin',
             ProjectRole.Type.ADMIN,
             level=100,
         )
-        cls.project_role_owner = _create_role(
+        self.project_role_owner = _create_role(
             'Project Owner',
             ProjectRole.Type.PROJECT_OWNER,
             level=1,
         )
-        cls.project_base_access = _create_role(
+        self.project_base_access = _create_role(
             'Base Access',
             ProjectRole.Type.UNKNOWN,
             level=999999,
         )
 
-    @classmethod
-    def create_af_roles(cls):  # Create Analysis Framework Roles
+    def create_af_roles(self):  # Create Analysis Framework Roles
         # Remove roles if already exist. Right now, we just have global roles
         AnalysisFrameworkRole.objects.all().delete()
 
@@ -222,35 +217,35 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
         public_temp_af = AnalysisFramework()
         private_temp_af = AnalysisFramework(is_private=True)
 
-        cls.af_editor = _create_role(
+        self.af_editor = _create_role(
             'Editor',
             AnalysisFrameworkRole.Type.EDITOR,
             permissions=public_temp_af.get_editor_permissions()
         )
-        cls.af_owner = _create_role(
+        self.af_owner = _create_role(
             'Owner',
             AnalysisFrameworkRole.Type.OWNER,
             permissions=public_temp_af.get_owner_permissions(),
         )
-        cls.af_default = _create_role(
+        self.af_default = _create_role(
             'Default',
             AnalysisFrameworkRole.Type.DEFAULT,
             permissions=public_temp_af.get_default_permissions(),
             is_default_role=True,
         )
-        cls.af_private_editor = _create_role(
+        self.af_private_editor = _create_role(
             'Private Editor',
             AnalysisFrameworkRole.Type.PRIVATE_EDITOR,
             permissions=private_temp_af.get_editor_permissions(),
             is_private_role=True,
         )
-        cls.af_private_owner = _create_role(
+        self.af_private_owner = _create_role(
             'Private Owner',
             AnalysisFrameworkRole.Type.PRIVATE_OWNER,
             permissions=private_temp_af.get_owner_permissions(),
             is_private_role=True,
         )
-        cls.af_private_viewer = _create_role(
+        self.af_private_viewer = _create_role(
             'Private Viewer',
             AnalysisFrameworkRole.Type.PRIVATE_VIEWER,
             permissions=private_temp_af.get_default_permissions(),
