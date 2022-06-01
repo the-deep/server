@@ -197,7 +197,7 @@ class HumanitarianResponse(Source):
                 url = tds[4].find('a')['href']
                 data = {
                     'id': url,
-                    'title': title,
+                    'title': title.replace('\u200b', ''),
                     'published_on': date.date(),
                     'url': url,
                     'source': 'Humanitarian Response',
@@ -210,5 +210,4 @@ class HumanitarianResponse(Source):
                     "Exception parsing humanitarian response connector: " +
                     str(e.args)
                 )
-
         return results, len(results)
