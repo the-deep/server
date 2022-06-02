@@ -403,9 +403,11 @@ class ProjectDetailType(
         model = Project
         skip_registry = True
         only_fields = (
-            'id', 'title', 'description', 'start_date', 'end_date', 'analysis_framework',
-            'category_editor', 'assessment_template', 'data', 'old_title', 'deleted_at',
-            'created_at', 'created_by',
+            'id', 'title', 'description', 'start_date',
+            'end_date', 'analysis_framework',
+            'category_editor', 'assessment_template',
+            'data', 'deleted_at',
+            'created_at', 'created_by', 'is_deleted',
             'modified_at', 'modified_by',
             'is_default', 'is_private', 'is_test', 'is_visualization_enabled',
             'has_publicly_viewable_unprotected_leads',

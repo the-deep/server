@@ -1499,6 +1499,7 @@ type Mutation {
   resetPassword(data: ResetPasswordInputType!): ResetPassword
   changePassword(data: PasswordChangeInputType!): ChangeUserPassword
   updateMe(data: UserMeInputType!): UpdateMe
+  deleteUser(id: ID!): UserDelete
   analysisFrameworkCreate(data: AnalysisFrameworkInputType!): CreateAnalysisFramework
   analysisFramework(id: ID!): AnalysisFrameworkMutationType
 }
@@ -1651,6 +1652,12 @@ input ProjectCreateInputType {
   organizations: [ProjectOrganizationGqInputType!]
 }
 
+type ProjectDelete {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectDetailType
+}
+
 type ProjectDetailType {
   id: ID!
   createdAt: DateTime!
@@ -1670,6 +1677,8 @@ type ProjectDetailType {
   hasPubliclyViewableUnprotectedLeads: Boolean!
   hasPubliclyViewableRestrictedLeads: Boolean!
   hasPubliclyViewableConfidentialLeads: Boolean!
+  isDeleted: Boolean!
+  deletedAt: Date
   currentUserRole: ProjectRoleTypeEnum
   allowedPermissions: [ProjectPermission!]!
   stats(filters: LeadsFilterDataInputType): ProjectStatType
@@ -1818,6 +1827,7 @@ type ProjectMutationType {
   leadGroupDelete(id: ID!): DeleteLeadGroup
   leadCopy(data: LeadCopyInputType!): LeadCopy
   projectUpdate(data: ProjectUpdateInputType!): UpdateProject
+  projectDelete: ProjectDelete
   acceptRejectProject(data: ProjectAcceptRejectInputType!, id: ID!): ProjectAcceptReject
   projectUserMembershipBulk(deleteIds: [ID!], items: [BulkProjectMembershipInputType!]): BulkUpdateProjectMembership
   projectUserGroupMembershipBulk(deleteIds: [ID!], items: [BulkProjectUserGroupMembershipInputType!]): BulkUpdateProjectUserGroupMembership
@@ -2410,6 +2420,12 @@ type UpdateUserGroup {
 
 scalar Upload
 
+type UserDelete {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserMeType
+}
+
 enum UserEmailConditionOptOutEnum {
   JOIN_REQUESTS
   NEWS_AND_UPDATES
@@ -2538,6 +2554,8 @@ type UserMeType {
   jwtToken: JwtTokenType
   lastActiveProject: ProjectDetailType
   accessibleFeatures: [UserFeatureAccessType!]!
+  oldDisplayName: String
+  deletedAt: Date
 }
 
 type UserType {

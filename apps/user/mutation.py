@@ -191,15 +191,18 @@ class UserDelete(graphene.Mutation):
             member=id,
             role__type=ProjectRole.Type.ADMIN
         ).exists():
-            return UserDelete(errors=[
+            return UserDelete(
+                errors=[
                     dict(
                         field='nonFieldErrors',
                         messages='You are admin in Projects.Choose another Project admin before you delete yourself',
                     )
-                ], ok=False)
+                ], ok=False
+            )
 
         user.profile.old_display_name = user.username
-        user.username = settings.USER_DELETE_NAME
+        user.first_name = settings.DELETED_USER_FIRST_NAME
+        user.last_name = settings.DELETED_USER_LAST_NAME
         user.profile.deleted_at = timezone.now().date()
         user.save()
         return UserDelete(result=user, errors=None, ok=True)

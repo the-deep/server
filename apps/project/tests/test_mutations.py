@@ -25,7 +25,7 @@ from project.factories import ProjectFactory, ProjectJoinRequestFactory
 from organization.factories import OrganizationFactory
 from geo.factories import RegionFactory
 
-from project.tasks import _generate_project_viz_stats
+from project.tasks import _generate_project_viz_stats, project_deletion
 
 from project.models import Project, ProjectOrganization
 from . import entry_stats_data
@@ -1116,3 +1116,67 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
 
     def test_user_group_membership_admin_bulk(self):
         self._user_group_membership_bulk(self.project_role_admin)
+
+    def test_project_deletion(self):
+        query = '''
+            mutation MyMutation($projectId: ID!) {
+              __typename
+              project(id: $projectId) {
+                  projectDelete {
+                    ok
+                    errors
+                    result {
+                      id
+                      title
+                      isDeleted
+                    }
+                  }
+              }
+            }
+        '''
+
+        admin_user = UserFactory.create()
+        member_user = UserFactory.create()
+        af = AnalysisFrameworkFactory.create()
+        project = ProjectFactory.create(analysis_framework=af)
+
+        project.add_member(admin_user, role=self.project_role_admin)
+        project.add_member(member_user, role=self.project_role_member)
+
+        def _query_check(**kwargs):
+            return self.query_check(
+                query,
+                mnested=['project'],
+                variables={'projectId': project.id},
+                **kwargs,
+            )
+        # without login
+        _query_check(assert_for_error=True)
+        # ---------- With login and member_user in project
+        self.force_login(member_user)
+        _query_check(okay=False)
+
+        # ------ Login with admin_user
+        self.force_login(admin_user)
+        response = _query_check(okay=True)
+        # make sure that the `is_deleted` field is set to True
+        self.assertEqual(response['data']['project']['projectDelete']['result']['isDeleted'], True)
+
+    def test_project_deletion_celery_task(self):
+        old_project_count = Project.objects.count()
+        admin_user = UserFactory.create()
+        af = AnalysisFrameworkFactory.create()
+        project = ProjectFactory.create(analysis_framework=af)
+
+        project.add_member(admin_user, role=self.project_role_admin)
+        # check for project_count
+        self.assertEqual(Project.objects.count(), old_project_count + 1)
+        # now delete the project
+        project.is_deleted = True
+        project.deleted_at = '2022-01-01'
+        project.save()
+
+        # call the deletion method
+        project_deletion()
+
+        self.assertEqual(Project.objects.count(), old_project_count)
