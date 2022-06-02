@@ -5,7 +5,7 @@ from celery import shared_task
 from django.utils import timezone
 from django.contrib.auth.models import User
 
-logger = logging.getLogger('__name__')
+logger = logging.getLogger(__name__)
 
 
 @shared_task
@@ -18,6 +18,6 @@ def user_deletion(force=False):
     )
     today = timezone.now().date()
     for user in user_qs:
-        if abs((user.deleted_at - today).days) > 30:  # HardCode this here?
+        if abs((user.profile.deleted_at - today).days) > 30:  # HardCode this here?
             logger.info(f'Deleting User {user.id}')
             user.delete()

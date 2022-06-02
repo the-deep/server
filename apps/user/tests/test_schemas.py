@@ -19,6 +19,7 @@ from utils.hid.tests.test_hid import (
     HIDIntegrationTest,
     HID_EMAIL
 )
+from user.tasks import user_deletion
 
 
 class TestUserSchema(GraphQLTestCase):
@@ -631,3 +632,53 @@ class TestUserSchema(GraphQLTestCase):
             ('a@deep.com', 'a***a@deep.com'),
         ]:
             self.assertEqual(expected, generate_hidden_email(original))
+
+    def test_user_deletion(self):
+        admin_user = UserFactory.create()
+        member_user = UserFactory.create(
+            email='testuser@deep.com',
+            username='testuser@deep.com'
+        )
+        af = AnalysisFrameworkFactory.create()
+        project = ProjectFactory.create(analysis_framework=af)
+
+        project.add_member(admin_user, role=self.project_role_admin)
+        project.add_member(member_user, role=self.project_role_member)
+
+        query = '''
+            mutation Mutation($id: ID!) {
+              deleteUser(id: $id) {
+                ok
+                errors
+                result {
+                    id
+                    displayName
+                    oldDisplayName
+                }
+              }
+            }
+        '''
+        # without login
+        self.query_check(query, variables={'id': admin_user.id}, assert_for_error=True)
+        # login with admin user
+        self.force_login(admin_user)
+        self.query_check(query, variables={'id': admin_user.id}, okay=False)
+
+        # login with user that is not memeber in any of projects
+        self.force_login(member_user)
+        response = self.query_check(query, variables={'id': member_user.id}, okay=True)
+        self.assertEqual(
+            response['data']['deleteUser']['result']['displayName'],
+            settings.DELETED_USER_FIRST_NAME + ' ' + settings.DELETED_USER_LAST_NAME
+        )
+
+    def test_user_deletion_celery_method(self):
+        old_user_count = User.objects.count()
+        user = UserFactory.create()
+        self.assertEqual(User.objects.count(), old_user_count + 1)
+        user.profile.deleted_at = '2022-01-01'
+        user.save()
+
+        user_deletion()
+
+        self.assertEqual(User.objects.count(), old_user_count)

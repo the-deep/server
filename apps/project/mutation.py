@@ -6,7 +6,6 @@ from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
 
 from django.core.exceptions import PermissionDenied
-from django.conf import settings
 
 from utils.graphene.mutation import (
     generate_input_type_for_serializer,
@@ -178,7 +177,10 @@ class ProjectDelete(graphene.Mutation):
             return ProjectJoinRequestDelete(errors=[
                 dict(
                     field='nonFieldErrors',
-                    messages=gettext('You should be Project Admin or Project Owner to delete this project(id:%s)' % info.context.active_project.id),
+                    messages=gettext(
+                        'You should be Project Admin or Project Owner to delete this project(id:%s)'
+                        % info.context.active_project.id
+                    ),
                 )
             ], ok=False)
         root.is_deleted = True
