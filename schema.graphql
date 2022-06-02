@@ -1027,16 +1027,8 @@ input ExportCreateInputType {
   exportType: ExportExportTypeEnum!
   isPreview: Boolean
   filters: LeadsFilterDataInputType!
+  extraOptions: ExportExtraOptionsInputType
   analysis: ID
-  excelDecoupled: Boolean
-  reportShowGroups: Boolean
-  reportShowLeadEntryId: Boolean
-  reportShowAssessmentData: Boolean
-  reportShowEntryWidgetData: Boolean
-  reportTextWidgetIds: [Int!]
-  reportExportingWidgets: [Int!]
-  reportLevels: [ExportReportLevelWidgetInputType!]
-  reportStructure: [ExportReportStructureWidgetInputType!]
 }
 
 enum ExportDataTypeEnum {
@@ -1050,6 +1042,30 @@ enum ExportExportTypeEnum {
   EXCEL
   REPORT
   JSON
+}
+
+input ExportExtraOptionsInputType {
+  excelDecoupled: Boolean
+  reportShowGroups: Boolean
+  reportShowLeadEntryId: Boolean
+  reportShowAssessmentData: Boolean
+  reportShowEntryWidgetData: Boolean
+  reportTextWidgetIds: [Int!]
+  reportExportingWidgets: [Int!]
+  reportLevels: [ExportReportLevelWidgetInputType!]
+  reportStructure: [ExportReportStructureWidgetInputType!]
+}
+
+type ExportExtraOptionsType {
+  excelDecoupled: Boolean
+  reportShowGroups: Boolean
+  reportShowLeadEntryId: Boolean
+  reportShowAssessmentData: Boolean
+  reportShowEntryWidgetData: Boolean
+  reportTextWidgetIds: [Int]
+  reportExportingWidgets: [Int]
+  reportLevels: [ExportReportLevelWidgetType!]
+  reportStructure: [ExportReportStructureWidgetType!]
 }
 
 enum ExportFormatEnum {
@@ -1110,6 +1126,11 @@ type ExportReportLevelWidgetSubSubLevelType {
   sublevels: [ExportReportLevelWidgetFourthLevelType!]
 }
 
+type ExportReportLevelWidgetType {
+  id: String!
+  levels: [ExportReportLevelWidgetLevelType!]
+}
+
 input ExportReportStructureWidgetFirstLevelInputType {
   id: ID!
   levels: [ExportReportStructureWidgetSecondLevelInputType!]
@@ -1151,6 +1172,11 @@ input ExportReportStructureWidgetThirdLevelInputType {
 type ExportReportStructureWidgetThirdLevelType {
   id: String!
   levels: [ExportReportStructureWidgetFourthLevelType!]
+}
+
+type ExportReportStructureWidgetType {
+  id: String!
+  levels: [ExportReportStructureWidgetFirstLevelType!]
 }
 
 enum ExportStatusEnum {
@@ -2549,16 +2575,6 @@ type UserExportListType {
   pageSize: Int
 }
 
-type UserExportReportLevelWidgetType {
-  id: String!
-  levels: [ExportReportLevelWidgetLevelType!]
-}
-
-type UserExportReportStructureWidgetType {
-  id: String!
-  levels: [ExportReportStructureWidgetFirstLevelType!]
-}
-
 type UserExportType {
   id: ID!
   project: ID
@@ -2568,7 +2584,7 @@ type UserExportType {
   exportedAt: DateTime!
   startedAt: DateTime
   endedAt: DateTime
-  extraOptions: UserExportTypeExtraOptions!
+  extraOptions: ExportExtraOptionsType!
   mimeType: String!
   pending: Boolean!
   isArchived: Boolean!
@@ -2584,18 +2600,6 @@ type UserExportType {
   filters: LeadsFilterDataType
   filtersData: LeadFilterDataType
 >>>>>>> 5b2ff6b7c (Add filter with options in export and leadSavedQuery)
-}
-
-type UserExportTypeExtraOptions {
-  excelDecoupled: Boolean
-  reportShowGroups: Boolean
-  reportShowLeadEntryId: Boolean
-  reportShowAssessmentData: Boolean
-  reportShowEntryWidgetData: Boolean
-  reportTextWidgetIds: [Int!]
-  reportExportingWidgets: [Int!]
-  reportLevels: [UserExportReportLevelWidgetType!]
-  reportStructure: [UserExportReportStructureWidgetType!]
 }
 
 type UserFeatureAccessType {
