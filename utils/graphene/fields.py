@@ -1,5 +1,7 @@
 import inspect
 from functools import partial
+from collections import OrderedDict
+from typing import Type
 
 from django.db.models import QuerySet
 import graphene
@@ -7,6 +9,7 @@ from graphene.types.structures import Structure
 from graphene.utils.str_converters import to_snake_case
 from graphene_django.filter.utils import get_filtering_args_from_filterset
 from graphene_django.utils import maybe_queryset, is_valid_django_model
+from graphene_django.registry import get_global_registry
 from graphene_django_extras import DjangoFilterPaginateListField
 from graphene_django_extras.base_types import DjangoListObjectBase
 from graphene_django_extras.fields import DjangoListField
@@ -15,6 +18,7 @@ from graphene_django_extras.paginations.pagination import BaseDjangoGraphqlPagin
 from graphene_django_extras.settings import graphql_api_settings
 from graphene_django_extras.utils import get_extra_filters
 from graphene_django.rest_framework.serializer_converter import get_graphene_type_from_serializer_field
+from rest_framework import serializers
 
 from utils.graphene.pagination import OrderingOnlyArgumentPagination, NoOrderingPageGraphqlPagination
 
@@ -290,3 +294,120 @@ def compare_input_output_type_fields(input_type, output_type):
             if field not in output_type._meta.fields.keys():
                 print('---> [Entry] Missing: ', field)
         raise Exception('Conversion failed')
+
+
+def convert_serializer_field(field, convert_choices_to_enum=True, force_optional=False):
+    """
+    Converts a django rest frameworks field to a graphql field
+    and marks the field as required if we are creating an type
+    and the field itself is required
+    """
+
+    if isinstance(field, serializers.ChoiceField) and not convert_choices_to_enum:
+        graphql_type = graphene.String
+    # elif isinstance(field, serializers.FileField):
+    #     graphql_type = Upload
+    else:
+        graphql_type = get_graphene_type_from_serializer_field(field)
+
+    args = []
+    kwargs = {
+        "description": field.help_text,
+        "required": field.required and not force_optional
+    }
+
+    # if it is a tuple or a list it means that we are returning
+    # the graphql type and the child type
+    if isinstance(graphql_type, (list, tuple)):
+        kwargs["of_type"] = graphql_type[1]
+        graphql_type = graphql_type[0]
+
+    if isinstance(field, serializers.ModelSerializer):
+        global_registry = get_global_registry()
+        field_model = field.Meta.model
+        args = [global_registry.get_type_for_model(field_model)]
+    elif isinstance(field, serializers.Serializer):
+        pass
+    elif isinstance(field, serializers.ListSerializer):
+        field = field.child
+        if isinstance(field, serializers.ModelSerializer):
+            del kwargs["of_type"]
+            global_registry = get_global_registry()
+            field_model = field.Meta.model
+            args = [global_registry.get_type_for_model(field_model)]
+        elif isinstance(field, serializers.Serializer):
+            kwargs["of_type"] = graphene.NonNull(convert_serializer_to_type(field.__class__))
+    return graphql_type(*args, **kwargs)
+
+
+def convert_serializer_to_type(serializer_class):
+    """
+    graphene_django.rest_framework.serializer_converter.convert_serializer_to_type
+    """
+    cached_type = convert_serializer_to_type.cache.get(
+        serializer_class.__name__, None
+    )
+    if cached_type:
+        return cached_type
+    serializer = serializer_class()
+
+    items = {
+        name: convert_serializer_field(field)
+        for name, field in serializer.fields.items()
+    }
+    # Alter naming
+    serializer_name = serializer.__class__.__name__
+    serializer_name = ''.join(''.join(serializer_name.split('ModelSerializer')).split('Serializer'))
+    ref_name = f'{serializer_name}Type'
+
+    base_classes = (graphene.ObjectType,)
+
+    ret_type = type(
+        ref_name,
+        base_classes,
+        items,
+    )
+    convert_serializer_to_type.cache[serializer_class.__name__] = ret_type
+    return ret_type
+
+
+convert_serializer_to_type.cache = {}
+
+
+def fields_for_serializer(
+    serializer,
+    only_fields,
+    exclude_fields,
+    convert_choices_to_enum=True,
+    partial=False,
+):
+    """
+    NOTE: Same as the original definition. Needs overriding to
+    handle relative import of convert_serializer_field
+    """
+    fields = OrderedDict()
+    for name, field in serializer.fields.items():
+        is_not_in_only = only_fields and name not in only_fields
+        is_excluded = name in exclude_fields
+        if is_not_in_only or is_excluded:
+            continue
+        fields[name] = convert_serializer_field(
+            field,
+            convert_choices_to_enum=convert_choices_to_enum,
+            force_optional=partial,
+        )
+    return fields
+
+
+def generate_type_for_serializer(
+    name: str,
+    serializer_class,
+    partial=False,
+) -> Type[graphene.InputObjectType]:
+    data_members = fields_for_serializer(
+        serializer_class(),
+        only_fields=[],
+        exclude_fields=[],
+        partial=partial,
+    )
+    return type(name, (graphene.ObjectType,), data_members)

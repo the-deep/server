@@ -1064,6 +1064,11 @@ input ExportReportLevelWidgetFourthLevelInputType {
   title: String!
 }
 
+type ExportReportLevelWidgetFourthLevelType {
+  id: String!
+  title: String!
+}
+
 input ExportReportLevelWidgetInputType {
   id: ID!
   levels: [ExportReportLevelWidgetLevelInputType!]
@@ -1075,10 +1080,22 @@ input ExportReportLevelWidgetLevelInputType {
   sublevels: [ExportReportLevelWidgetSubLevelInputType!]
 }
 
+type ExportReportLevelWidgetLevelType {
+  id: String!
+  title: String!
+  sublevels: [ExportReportLevelWidgetSubLevelType!]
+}
+
 input ExportReportLevelWidgetSubLevelInputType {
   id: ID!
   title: String!
   sublevels: [ExportReportLevelWidgetSubSubLevelInputType!]
+}
+
+type ExportReportLevelWidgetSubLevelType {
+  id: String!
+  title: String!
+  sublevels: [ExportReportLevelWidgetSubSubLevelType!]
 }
 
 input ExportReportLevelWidgetSubSubLevelInputType {
@@ -1087,13 +1104,28 @@ input ExportReportLevelWidgetSubSubLevelInputType {
   sublevels: [ExportReportLevelWidgetFourthLevelInputType!]
 }
 
+type ExportReportLevelWidgetSubSubLevelType {
+  id: String!
+  title: String!
+  sublevels: [ExportReportLevelWidgetFourthLevelType!]
+}
+
 input ExportReportStructureWidgetFirstLevelInputType {
   id: ID!
   levels: [ExportReportStructureWidgetSecondLevelInputType!]
 }
 
+type ExportReportStructureWidgetFirstLevelType {
+  id: String!
+  levels: [ExportReportStructureWidgetSecondLevelType!]
+}
+
 input ExportReportStructureWidgetFourthLevelInputType {
   id: ID!
+}
+
+type ExportReportStructureWidgetFourthLevelType {
+  id: String!
 }
 
 input ExportReportStructureWidgetInputType {
@@ -1106,9 +1138,19 @@ input ExportReportStructureWidgetSecondLevelInputType {
   levels: [ExportReportStructureWidgetThirdLevelInputType!]
 }
 
+type ExportReportStructureWidgetSecondLevelType {
+  id: String!
+  levels: [ExportReportStructureWidgetThirdLevelType!]
+}
+
 input ExportReportStructureWidgetThirdLevelInputType {
   id: ID!
   levels: [ExportReportStructureWidgetFourthLevelInputType!]
+}
+
+type ExportReportStructureWidgetThirdLevelType {
+  id: String!
+  levels: [ExportReportStructureWidgetFourthLevelType!]
 }
 
 enum ExportStatusEnum {
@@ -2507,6 +2549,16 @@ type UserExportListType {
   pageSize: Int
 }
 
+type UserExportReportLevelWidgetType {
+  id: String!
+  levels: [ExportReportLevelWidgetLevelType!]
+}
+
+type UserExportReportStructureWidgetType {
+  id: String!
+  levels: [ExportReportStructureWidgetFirstLevelType!]
+}
+
 type UserExportType {
   id: ID!
   project: ID
@@ -2516,7 +2568,7 @@ type UserExportType {
   exportedAt: DateTime!
   startedAt: DateTime
   endedAt: DateTime
-  extraOptions: GenericScalar!
+  extraOptions: UserExportTypeExtraOptions!
   mimeType: String!
   pending: Boolean!
   isArchived: Boolean!
@@ -2532,6 +2584,18 @@ type UserExportType {
   filters: LeadsFilterDataType
   filtersData: LeadFilterDataType
 >>>>>>> 5b2ff6b7c (Add filter with options in export and leadSavedQuery)
+}
+
+type UserExportTypeExtraOptions {
+  excelDecoupled: Boolean
+  reportShowGroups: Boolean
+  reportShowLeadEntryId: Boolean
+  reportShowAssessmentData: Boolean
+  reportShowEntryWidgetData: Boolean
+  reportTextWidgetIds: [Int!]
+  reportExportingWidgets: [Int!]
+  reportLevels: [UserExportReportLevelWidgetType!]
+  reportStructure: [UserExportReportStructureWidgetType!]
 }
 
 type UserFeatureAccessType {
