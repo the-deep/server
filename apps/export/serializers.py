@@ -196,13 +196,7 @@ class ExportReportStructureWidgetSerializer(serializers.Serializer):
 # ---- [End] ExportReportStructure Serialisers
 
 
-class UserExportBaseGqlMixin(ProjectPropertySerializerMixin):
-    title = serializers.CharField(required=False)
-
-    class Meta:
-        model = Export
-        fields = []
-
+class ExportExtraOptionsSerializer(ProjectPropertySerializerMixin, serializers.Serializer):
     # Excel
     excel_decoupled = serializers.BooleanField(
         help_text="Don't group entries tags. Slower export generation.", required=False)
@@ -219,7 +213,25 @@ class UserExportBaseGqlMixin(ProjectPropertySerializerMixin):
     report_structure = ExportReportStructureWidgetSerializer(
         required=False, many=True, help_text=ExportReportStructureWidgetSerializer.__doc__)
 
+
+class UserExportBaseGqlMixin(ProjectPropertySerializerMixin, serializers.ModelSerializer):
+    title = serializers.CharField(required=False)
+
+    class Meta:
+        model = Export
+        fields = (
+            'title',
+            'type',  # Data type (entries, assessments, ..)
+            'format',  # xlsx, docx, pdf, ...
+            'export_type',  # excel, report, json, ...
+            'is_preview',
+            'filters',
+            'extra_options',
+            'analysis',
+        )
+
     filters = generate_serializer_field_class(LeadsFilterDataInputType, GraphqlSupportDrfSerializerJSONField)()
+    extra_options = ExportExtraOptionsSerializer(required=False)
 
     @property
     def widget_qs(self):
@@ -315,21 +327,6 @@ class UserExportCreateGqlSerializer(UserExportBaseGqlMixin, serializers.ModelSer
         data['title'] = data.get('title') or Export.generate_title(data['type'], data['export_type'], data['format'])
         data['exported_by'] = self.context['request'].user
         data['project'] = self.project
-        data['extra_options'] = {
-            key: data.pop(key)
-            for key in (
-                'excel_decoupled',
-                # Report
-                'report_show_groups',
-                'report_show_lead_entry_id',
-                'report_show_assessment_data',
-                'report_show_entry_widget_data',
-                'report_text_widget_ids',
-                'report_exporting_widgets',
-                'report_levels',
-                'report_structure',
-            ) if key in data
-        }
         export = super().create(data)
         transaction.on_commit(
             lambda: export.set_task_id(export_task.delay(export.id).id)

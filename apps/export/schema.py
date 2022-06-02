@@ -14,10 +14,7 @@ from lead.schema import (
     get_lead_filter_data,
 )
 
-from .serializers import (
-    ExportReportLevelWidgetSerializer,
-    ExportReportStructureWidgetSerializer,
-)
+from .serializers import ExportExtraOptionsSerializer
 from .models import Export
 from .filter_set import ExportGQLFilterSet
 from .enums import (
@@ -36,35 +33,10 @@ def get_export_qs(info):
     )
 
 
-UserExportReportLevelWidgetType = generate_type_for_serializer(
-    'UserExportReportLevelWidgetType',
-    serializer_class=ExportReportLevelWidgetSerializer,
+ExportExtraOptionsType = generate_type_for_serializer(
+    'ExportExtraOptionsType',
+    serializer_class=ExportExtraOptionsSerializer,
 )
-
-UserExportReportStructureWidgetType = generate_type_for_serializer(
-    'UserExportReportStructureWidgetType',
-    serializer_class=ExportReportStructureWidgetSerializer,
-)
-
-
-class UserExportTypeExtraOptions(graphene.ObjectType):
-    # -- Excel
-    excel_decoupled = graphene.Boolean(description='Don\'t group entries tags. Slower export generation.')
-    # -- Report
-    report_show_groups = graphene.Boolean()
-    report_show_lead_entry_id = graphene.Boolean()
-    report_show_assessment_data = graphene.Boolean()
-    report_show_entry_widget_data = graphene.Boolean()
-    report_text_widget_ids = graphene.List(graphene.NonNull(graphene.Int))
-    report_exporting_widgets = graphene.List(graphene.NonNull(graphene.Int))
-    report_levels = graphene.List(
-        graphene.NonNull(UserExportReportLevelWidgetType),
-        description=ExportReportLevelWidgetSerializer.__doc__,
-    )
-    report_structure = graphene.List(
-        graphene.NonNull(UserExportReportStructureWidgetType),
-        description=ExportReportStructureWidgetSerializer.__doc__,
-    )
 
 
 class UserExportType(DjangoObjectType):
@@ -87,7 +59,7 @@ class UserExportType(DjangoObjectType):
     # Filter Data
     filters = graphene.Field(LeadsFilterDataType)
     filters_data = graphene.Field(LeadFilterDataType)
-    extra_options = graphene.NonNull(UserExportTypeExtraOptions)
+    extra_options = graphene.NonNull(ExportExtraOptionsType)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
