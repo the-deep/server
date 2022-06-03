@@ -14,6 +14,7 @@ from .models import (
     ProjectStats,
     ProjectMembership,
     ProjectUserGroupMembership,
+    RecentActivityType,
 )
 
 ProjectPermissionEnum = graphene.Enum.from_enum(PP.Permission)
@@ -25,6 +26,7 @@ ProjectStatsStatusEnum = convert_enum_to_graphene_enum(ProjectStats.Status, name
 ProjectStatsActionEnum = convert_enum_to_graphene_enum(ProjectStats.Action, name='ProjectStatsActionEnum')
 ProjectMembershipBadgeTypeEnum = convert_enum_to_graphene_enum(
     ProjectMembership.BadgeType, name='ProjectMembershipBadgeTypeEnum')
+RecentActivityTypeEnum = convert_enum_to_graphene_enum(RecentActivityType, name='RecentActivityTypeEnum')
 
 enum_map = {
     get_enum_name_from_django_field(field): enum
