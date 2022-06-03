@@ -2125,12 +2125,28 @@ type Query {
   project(id: ID!): ProjectDetailType
   projects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, ordering: [ProjectOrderingEnum!], page: Int = 1, pageSize: Int): ProjectListType
   recentProjects: [ProjectDetailType!]
+  recentActivities: [RecentActivityType!]
   projectExploreStats: ProjectExploreStatType
   projectsByRegion(projectFilter: RegionProjectFilterData, ordering: String): ProjectByRegionListType
   publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, ordering: [PublicProjectOrderingEnum!], page: Int = 1, pageSize: Int): PublicProjectListType
   publicProjectsByRegion(projectFilter: RegionProjectFilterData, page: Int = 1, ordering: String, pageSize: Int): PublicProjectByRegionListType
   assistedTagging: AssistedTaggingRootQueryType
   _debug: DjangoDebug
+}
+
+type RecentActivityType {
+  id: ID!
+  createdAt: DateTime
+  project: ProjectType
+  createdBy: UserType
+  type: RecentActivityTypeEnum!
+  typeDisplay: EnumDescription!
+}
+
+enum RecentActivityTypeEnum {
+  LEAD
+  ENTRY
+  ENTRY_COMMENT
 }
 
 type RegionDetailType {

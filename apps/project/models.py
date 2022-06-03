@@ -27,6 +27,12 @@ from django.utils import timezone
 from datetime import timedelta
 
 
+class RecentActivityType(models.TextChoices):
+    LEAD = 'lead', 'Source'
+    ENTRY = 'entry', 'Entry'
+    ENTRY_COMMENT = 'entry-comment', 'Entry Comment'
+
+
 class Project(UserResource):
     """
     Project model
@@ -276,7 +282,6 @@ class Project(UserResource):
             _get_activities,
             60 * 5,  # 5min
         )
-
         return [
             {
                 field: item[index]
