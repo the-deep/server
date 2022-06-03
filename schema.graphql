@@ -1038,6 +1038,36 @@ enum ExportDataTypeEnum {
   ANALYSES
 }
 
+input ExportExcelSelectedColumnInputType {
+  isWidget: Boolean!
+  exportableKey: String
+  staticColumn: ExportExcelSelectedStaticColumnEnum
+}
+
+type ExportExcelSelectedColumnType {
+  isWidget: Boolean!
+  exportableKey: String
+  staticColumn: ExportExcelSelectedStaticColumnEnum
+}
+
+enum ExportExcelSelectedStaticColumnEnum {
+  LEAD_PUBLISHED_ON
+  ENTRY_CREATED_BY
+  ENTRY_CREATED_AT
+  ENTRY_CONTROL_STATUS
+  LEAD_ID
+  LEAD_TITLE
+  LEAD_URL
+  LEAD_ORGANIZATION_TYPE_AUTHOR
+  LEAD_ORGANIZATION_AUTHOR
+  LEAD_ORGANIZATION_SOURCE
+  LEAD_PRIORITY
+  LEAD_ASSIGNEE
+  ENTRY_ID
+  LEAD_ENTRY_ID
+  ENTRY_EXCERPT
+}
+
 enum ExportExportTypeEnum {
   EXCEL
   REPORT
@@ -1046,24 +1076,26 @@ enum ExportExportTypeEnum {
 
 input ExportExtraOptionsInputType {
   excelDecoupled: Boolean
+  excelColumns: [ExportExcelSelectedColumnInputType!]
   reportShowGroups: Boolean
   reportShowLeadEntryId: Boolean
   reportShowAssessmentData: Boolean
   reportShowEntryWidgetData: Boolean
-  reportTextWidgetIds: [Int!]
-  reportExportingWidgets: [Int!]
+  reportTextWidgetIds: [ID!]
+  reportExportingWidgets: [ID!]
   reportLevels: [ExportReportLevelWidgetInputType!]
   reportStructure: [ExportReportStructureWidgetInputType!]
 }
 
 type ExportExtraOptionsType {
   excelDecoupled: Boolean
+  excelColumns: [ExportExcelSelectedColumnType!]
   reportShowGroups: Boolean
   reportShowLeadEntryId: Boolean
   reportShowAssessmentData: Boolean
   reportShowEntryWidgetData: Boolean
-  reportTextWidgetIds: [Int]
-  reportExportingWidgets: [Int]
+  reportTextWidgetIds: [ID!]
+  reportExportingWidgets: [ID!]
   reportLevels: [ExportReportLevelWidgetType!]
   reportStructure: [ExportReportStructureWidgetType!]
 }
@@ -1081,7 +1113,7 @@ input ExportReportLevelWidgetFourthLevelInputType {
 }
 
 type ExportReportLevelWidgetFourthLevelType {
-  id: String!
+  id: ID!
   title: String!
 }
 
@@ -1097,7 +1129,7 @@ input ExportReportLevelWidgetLevelInputType {
 }
 
 type ExportReportLevelWidgetLevelType {
-  id: String!
+  id: ID!
   title: String!
   sublevels: [ExportReportLevelWidgetSubLevelType!]
 }
@@ -1109,7 +1141,7 @@ input ExportReportLevelWidgetSubLevelInputType {
 }
 
 type ExportReportLevelWidgetSubLevelType {
-  id: String!
+  id: ID!
   title: String!
   sublevels: [ExportReportLevelWidgetSubSubLevelType!]
 }
@@ -1121,13 +1153,13 @@ input ExportReportLevelWidgetSubSubLevelInputType {
 }
 
 type ExportReportLevelWidgetSubSubLevelType {
-  id: String!
+  id: ID!
   title: String!
   sublevels: [ExportReportLevelWidgetFourthLevelType!]
 }
 
 type ExportReportLevelWidgetType {
-  id: String!
+  id: ID!
   levels: [ExportReportLevelWidgetLevelType!]
 }
 
@@ -1137,7 +1169,7 @@ input ExportReportStructureWidgetFirstLevelInputType {
 }
 
 type ExportReportStructureWidgetFirstLevelType {
-  id: String!
+  id: ID!
   levels: [ExportReportStructureWidgetSecondLevelType!]
 }
 
@@ -1146,7 +1178,7 @@ input ExportReportStructureWidgetFourthLevelInputType {
 }
 
 type ExportReportStructureWidgetFourthLevelType {
-  id: String!
+  id: ID!
 }
 
 input ExportReportStructureWidgetInputType {
@@ -1160,7 +1192,7 @@ input ExportReportStructureWidgetSecondLevelInputType {
 }
 
 type ExportReportStructureWidgetSecondLevelType {
-  id: String!
+  id: ID!
   levels: [ExportReportStructureWidgetThirdLevelType!]
 }
 
@@ -1170,12 +1202,12 @@ input ExportReportStructureWidgetThirdLevelInputType {
 }
 
 type ExportReportStructureWidgetThirdLevelType {
-  id: String!
+  id: ID!
   levels: [ExportReportStructureWidgetFourthLevelType!]
 }
 
 type ExportReportStructureWidgetType {
-  id: String!
+  id: ID!
   levels: [ExportReportStructureWidgetFirstLevelType!]
 }
 

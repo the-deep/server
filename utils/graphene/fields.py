@@ -404,6 +404,9 @@ def generate_type_for_serializer(
     serializer_class,
     partial=False,
 ) -> Type[graphene.InputObjectType]:
+    # NOTE: Custom converter are defined in mutation which needs to be set first.
+    from utils.graphene import mutation  # noqa:F401
+
     data_members = fields_for_serializer(
         serializer_class(),
         only_fields=[],
