@@ -218,7 +218,7 @@ class GeoOptionsView(views.APIView):
         if (
             project.geo_cache_file is None or
             project.geo_cache_hash is None or
-            project.geo_cache_hash != hash(tuple(project.regions.order_by('id').values_list('cache_index', flat=True)))
+            project.geo_cache_hash != str(hash(tuple(project.regions.order_by('id').values_list('cache_index', flat=True))))
         ):
             generate_project_geo_region_cache(project)
         return redirect(

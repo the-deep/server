@@ -148,31 +148,67 @@ class AdminLevelTests(TestCase):
 
 class GeoOptionsApi(TestCase):
     def test_geo_options(self):
-        region = self.create(Region)
+        region1 = self.create(Region, title='Region 1')
+        region2 = self.create(Region, title='Region 2')
+        region3 = self.create(Region, title='Region 3')
 
         project = self.create_project()
-        project.regions.add(region)
-        admin_level1 = self.create(AdminLevel, title='AdminLevel1', region=region, level=0)
-        admin_level2 = self.create(AdminLevel, title='AdminLevel2', region=region, level=1)
-        geo_area1 = self.create(GeoArea, title='GeoArea1', admin_level=admin_level1)
-        geo_area2 = self.create(GeoArea, title='GeoArea2', admin_level=admin_level2, parent=geo_area1)
+        project.regions.add(region1, region2)
+        admin_level1_1 = self.create(AdminLevel, title='AdminLevel1', region=region1, level=0)
+        admin_level1_2 = self.create(AdminLevel, title='AdminLevel2', region=region2, level=1)
+        admin_level2_1 = self.create(AdminLevel, title='AdminLevel1', region=region1, level=0)
+        self.create(AdminLevel, title='AdminLevel1', region=region2, level=0)
+        self.create(AdminLevel, title='AdminLevel2', region=region2, level=1)
+        self.create(AdminLevel, title='AdminLevel1', region=region3, level=0)
+        self.create(AdminLevel, title='AdminLevel2', region=region3, level=1)
+        geo_area1_1 = self.create(GeoArea, title='GeoArea1', admin_level=admin_level1_1)
+        geo_area1_2 = self.create(GeoArea, title='GeoArea2', admin_level=admin_level1_2, parent=geo_area1_1)
+        self.create(GeoArea, title='GeoArea2', admin_level=admin_level2_1)
 
         url = f'/api/v1/geo-options/?project={project.pk}'
 
         self.authenticate()
         response = self.client.get(url, follow=True)
         self.assert_200(response)
+        cached_file_url = response.redirect_chain[-1]
 
         data = json.loads(b''.join(list(response.streaming_content)))
         self.assertEqual(
-            data[str(region.id)][1].get('label'),
-            '{} / {}'.format(admin_level2.title, geo_area2.title)
+            data[str(region1.id)][1].get('label'),
+            '{} / {}'.format(admin_level1_1.title, geo_area1_2.title)
         )
 
         # check if parent is present in geo options
         for _, options in data.items():
             for option in options:
                 assert 'parent' in option
+
+        # URL should be same for future request
+        response = self.client.get(url, follow=True)
+        self.assert_200(response)
+        assert cached_file_url == response.redirect_chain[-1]
+
+        # URL should be changed if region data is changed
+        region1.refresh_from_db()
+        region1.cache_index += 1
+        region1.save(update_fields=('cache_index',))
+        response = self.client.get(url, follow=True)
+        self.assert_200(response)
+        assert cached_file_url != response.redirect_chain[-1]
+        cached_file_url = response.redirect_chain[-1]
+
+        # URL should be same again for future request
+        response = self.client.get(url, follow=True)
+        self.assert_200(response)
+        assert cached_file_url == response.redirect_chain[-1]
+
+        # URL shouldn't be changed if non assigned region data is changed
+        region3.refresh_from_db()
+        region3.cache_index += 1
+        region3.save(update_fields=('cache_index',))
+        response = self.client.get(url, follow=True)
+        self.assert_200(response)
+        assert cached_file_url == response.redirect_chain[-1]
 
 
 class TestGeoAreaApi(TestCase):
