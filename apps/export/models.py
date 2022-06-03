@@ -45,6 +45,24 @@ class Export(models.Model):
         PDF = 'pdf', 'pdf'
         JSON = 'json', 'json'
 
+    # Used by extra options
+    class StaticColumn(models.TextChoices):
+        LEAD_PUBLISHED_ON = 'lead_published_on', 'Lead published on'
+        ENTRY_CREATED_BY = 'entry_created_by', 'Entry created by'
+        ENTRY_CREATED_AT = 'ENTRY_CREATED_AT', 'Entry created at'
+        ENTRY_CONTROL_STATUS = 'ENTRY_CONTROL_STATUS', 'Entry control status'
+        LEAD_ID = 'LEAD_ID', 'Lead id'
+        LEAD_TITLE = 'LEAD_TITLE', 'Lead title'
+        LEAD_URL = 'LEAD_URL', 'Lead url'
+        LEAD_ORGANIZATION_TYPE_AUTHOR = 'LEAD_ORGANIZATION_TYPE_AUTHOR', 'Lead organization type author'
+        LEAD_ORGANIZATION_AUTHOR = 'LEAD_ORGANIZATION_AUTHOR', 'Lead organization author'
+        LEAD_ORGANIZATION_SOURCE = 'LEAD_ORGANIZATION_SOURCE', 'Lead organization source'
+        LEAD_PRIORITY = 'LEAD_PRIORITY', 'Lead priority'
+        LEAD_ASSIGNEE = 'LEAD_ASSIGNEE', 'Lead assignee'
+        ENTRY_ID = 'ENTRY_ID', 'Entry id'
+        LEAD_ENTRY_ID = 'LEAD_ENTRY_ID', 'Lead entry id'
+        ENTRY_EXCERPT = 'ENTRY_EXCERPT', 'Entry excerpt'
+
     MIME_TYPE_MAP = {
         Format.XLSX: EXCEL_MIME_TYPE,
         Format.DOCX: DOCX_MIME_TYPE,

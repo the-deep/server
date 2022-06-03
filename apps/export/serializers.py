@@ -196,18 +196,36 @@ class ExportReportStructureWidgetSerializer(serializers.Serializer):
 # ---- [End] ExportReportStructure Serialisers
 
 
+class ExportExcelSelectedColumnSerializer(serializers.Serializer):
+    is_widget = serializers.BooleanField(required=True)
+    exportable_key = serializers.CharField(required=False)
+    static_column = serializers.ChoiceField(choices=Export.StaticColumn.choices, required=False)
+
+    def validate(self, data):
+        if data['is_widget'] and data.get('exportable_key') is None:
+            raise serializers.ValidationError('exportable key is required when is widget is True')
+        elif data.get('static_column') is None:
+            raise serializers.ValidationError('static_column is required when is widget is False')
+        return data
+
+
 class ExportExtraOptionsSerializer(ProjectPropertySerializerMixin, serializers.Serializer):
     # Excel
     excel_decoupled = serializers.BooleanField(
         help_text="Don't group entries tags. Slower export generation.", required=False)
+    excel_columns = ExportExcelSelectedColumnSerializer(
+        required=False,
+        many=True,
+        help_text=ExportExcelSelectedColumnSerializer.__doc__,
+    )
 
     # Report
     report_show_groups = serializers.BooleanField(required=False)
     report_show_lead_entry_id = serializers.BooleanField(required=False)
     report_show_assessment_data = serializers.BooleanField(required=False)
     report_show_entry_widget_data = serializers.BooleanField(required=False)
-    report_text_widget_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=True, required=False)
-    report_exporting_widgets = serializers.ListField(child=serializers.IntegerField(), allow_empty=True, required=False)
+    report_text_widget_ids = serializers.ListField(child=StringIDField(), allow_empty=True, required=False)
+    report_exporting_widgets = serializers.ListField(child=StringIDField(), allow_empty=True, required=False)
     report_levels = ExportReportLevelWidgetSerializer(
         required=False, many=True, help_text=ExportReportLevelWidgetSerializer.__doc__)
     report_structure = ExportReportStructureWidgetSerializer(

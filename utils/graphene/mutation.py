@@ -8,7 +8,6 @@ from graphene.types.generic import GenericScalar
 from graphene_django.registry import get_global_registry
 from graphene_django.rest_framework.serializer_converter import (
     get_graphene_type_from_serializer_field,
-    convert_choices_to_named_enum_with_descriptions,
 )
 from rest_framework import serializers
 from graphene_file_upload.scalars import Upload
@@ -69,12 +68,9 @@ def convert_serializer_field_to_enum(field):
     if custom_name not in ENUM_TO_GRAPHENE_ENUM_MAP:
         # Try django_enumfield (NOTE: Let's try to avoid this)
         custom_name = type(list(field.choices.values())[-1]).__name__
-    fallback_name = field.field_name or field.source or "Choices"
-    return (
-        ENUM_TO_GRAPHENE_ENUM_MAP.get(custom_name) or
-        # If all fails, use default behaviour
-        convert_choices_to_named_enum_with_descriptions(fallback_name, field.choices)
-    )
+    if custom_name is None:
+        raise Exception(f'Enum name generation failed for {field=}')
+    return ENUM_TO_GRAPHENE_ENUM_MAP[custom_name]
 
 
 def convert_serializer_field(field, is_input=True, convert_choices_to_enum=True, force_optional=False):
