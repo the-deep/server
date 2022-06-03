@@ -26,6 +26,7 @@ from deep.serializers import URLCachedFileField
 from user_resource.schema import UserResourceMixin
 
 from user.models import User
+from user.schema import UserType
 from lead.schema import Query as LeadQuery
 from entry.schema import Query as EntryQuery
 from export.schema import Query as ExportQuery
@@ -50,6 +51,7 @@ from .models import (
     ProjectJoinRequest,
     ProjectOrganization,
     ProjectStats,
+    RecentActivityType as ActivityTypes,
 )
 from .enums import (
     ProjectPermissionEnum,
@@ -58,6 +60,7 @@ from .enums import (
     ProjectJoinRequestStatusEnum,
     ProjectOrganizationTypeEnum,
     ProjectMembershipBadgeTypeEnum,
+    RecentActivityTypeEnum,
 )
 
 from .filter_set import (
@@ -296,6 +299,26 @@ class ProjectType(UserResourceMixin, DjangoObjectType):
         return info.context.dl.project.public_geo_region.load(root.pk)
 
 
+class RecentActivityType(graphene.ObjectType):
+    id = graphene.ID(required=True)
+    created_at = graphene.DateTime()
+    project = graphene.Field(ProjectType)
+    created_by = graphene.Field(UserType)
+    type = graphene.Field(RecentActivityTypeEnum, required=True)
+    type_display = EnumDescription(required=True)
+
+    def resolve_created_by(root, info, **kwargs):
+        id = int(root['created_by'])
+        return info.context.dl.project.users.load(id)
+
+    def resolve_project(root, info, **kwargs):
+        id = int(root['project'])
+        return info.context.dl.project.projects.load(id)
+
+    def resolve_type_display(root, info, **kwargs):
+        return ActivityTypes(root['type']).label
+
+
 class AnalysisFrameworkVisibleProjectType(DjangoObjectType):
     class Meta:
         model = Project
@@ -525,6 +548,7 @@ class Query:
         )
     )
     recent_projects = graphene.List(graphene.NonNull(ProjectDetailType))
+    recent_activities = graphene.List(graphene.NonNull(RecentActivityType))
     project_explore_stats = graphene.Field(ProjectExploreStatType)
 
     # only the region for which project are public
@@ -546,6 +570,10 @@ class Query:
 
     # NOTE: This is a custom feature, see https://github.com/the-deep/graphene-django-extras
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
+
+    @staticmethod
+    def resolve_recent_activities(root, info, **kwargs) -> QuerySet:
+        return Project.get_recent_activities(info.context.user)
 
     @staticmethod
     def resolve_projects(root, info, **kwargs) -> QuerySet:
