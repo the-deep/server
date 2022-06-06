@@ -216,7 +216,7 @@ class GeoOptionsView(views.APIView):
             raise exceptions.PermissionDenied()
 
         if (
-            project.geo_cache_file is None or
+            project.geo_cache_file.name is None or
             project.geo_cache_hash is None or
             project.geo_cache_hash != str(hash(tuple(project.regions.order_by('id').values_list('cache_index', flat=True))))
         ):
