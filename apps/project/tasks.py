@@ -8,6 +8,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
 from django.db import models
 from redis_store import redis
+from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
 from ary.stats import get_project_ary_entry_stats
 from lead.models import Lead
@@ -245,7 +246,7 @@ def generate_project_geo_region_cache(project):
 
     project.geo_cache_file.save(
         f'project-geo-cache-{project.pk}.json',
-        ContentFile(json.dumps(geo_options).encode('utf-8')),
+        ContentFile(CamelCaseJSONRenderer().render(geo_options)),
         save=False,
     )
     project.geo_cache_hash = hash(tuple(region_qs.order_by('id').values_list('cache_index', flat=True)))

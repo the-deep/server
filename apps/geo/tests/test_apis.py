@@ -170,9 +170,9 @@ class GeoOptionsApi(TestCase):
         self.authenticate()
         response = self.client.get(url, follow=True)
         self.assert_200(response)
-        cached_file_url = response.redirect_chain[-1]
+        cached_file_url = response.data['geo_options_cached_file']
 
-        data = json.loads(b''.join(list(response.streaming_content)))
+        data = json.loads(b''.join(list(self.client.get(cached_file_url).streaming_content)))
         self.assertEqual(
             data[str(region1.id)][1].get('label'),
             '{} / {}'.format(admin_level1_1.title, geo_area1_2.title)
@@ -186,7 +186,7 @@ class GeoOptionsApi(TestCase):
         # URL should be same for future request
         response = self.client.get(url, follow=True)
         self.assert_200(response)
-        assert cached_file_url == response.redirect_chain[-1]
+        assert cached_file_url == response.data['geo_options_cached_file']
 
         # URL should be changed if region data is changed
         region1.refresh_from_db()
@@ -194,13 +194,13 @@ class GeoOptionsApi(TestCase):
         region1.save(update_fields=('cache_index',))
         response = self.client.get(url, follow=True)
         self.assert_200(response)
-        assert cached_file_url != response.redirect_chain[-1]
-        cached_file_url = response.redirect_chain[-1]
+        assert cached_file_url != response.data['geo_options_cached_file']
+        cached_file_url = response.data['geo_options_cached_file']
 
         # URL should be same again for future request
         response = self.client.get(url, follow=True)
         self.assert_200(response)
-        assert cached_file_url == response.redirect_chain[-1]
+        assert cached_file_url == response.data['geo_options_cached_file']
 
         # URL shouldn't be changed if non assigned region data is changed
         region3.refresh_from_db()
@@ -208,7 +208,7 @@ class GeoOptionsApi(TestCase):
         region3.save(update_fields=('cache_index',))
         response = self.client.get(url, follow=True)
         self.assert_200(response)
-        assert cached_file_url == response.redirect_chain[-1]
+        assert cached_file_url == response.data['geo_options_cached_file']
 
 
 class TestGeoAreaApi(TestCase):
