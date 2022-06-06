@@ -221,11 +221,9 @@ class GeoOptionsView(views.APIView):
             project.geo_cache_hash != str(hash(tuple(project.regions.order_by('id').values_list('cache_index', flat=True))))
         ):
             generate_project_geo_region_cache(project)
-        return redirect(
-            request.build_absolute_uri(
-                project.geo_cache_file.url
-            )
-        )
+        return response.Response({
+            'geo_options_cached_file': request.build_absolute_uri(project.geo_cache_file.url)
+        })
 
 
 class GeoAreaView(viewsets.ReadOnlyModelViewSet):
