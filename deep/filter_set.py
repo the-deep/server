@@ -20,8 +20,14 @@ class DjangoFilterCSVWidget(django_filters.widgets.CSVWidget):
 class OrderEnumMixin():
     def ordering_filter(self, qs, _, value):
         for ordering in value:
-            if ordering.startswith('-'):
-                qs = qs.order_by(models.F(ordering).desc(nulls_last=True))
+            if isinstance(ordering, str):
+                if ordering.startswith('-'):
+                    _ordering = models.F(ordering[1:]).desc()
+                else:
+                    _ordering = models.F(ordering).asc()
+                qs = qs.order_by(_ordering)
             else:
-                qs = qs.order_by(models.F(ordering).asc(nulls_last=True))
+                _ordering = ordering
+            _ordering.nulls_last = True
+            qs = qs.order_by(_ordering)
         return qs
