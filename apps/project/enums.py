@@ -1,4 +1,5 @@
 import graphene
+from django.db.models.functions import Lower
 
 from utils.graphene.enums import (
     convert_enum_to_graphene_enum,
@@ -47,3 +48,33 @@ enum_map.update({
         model_name=ProjectStats.__name__,
     ): ProjectStatsActionEnum,
 })
+
+
+class ProjectOrderingEnum(graphene.Enum):
+    # ASC
+    ASC_TITLE = Lower('title').asc()
+    ASC_USER_COUNT = 'stats_cache__number_of_users'
+    ASC_LEAD_COUNT = 'stats_cache__number_of_leads'
+    ASC_CREATED_AT = 'created_at'
+    ASC_ANALYSIS_FRAMEWORK = Lower('analysis_framework__title').asc()
+    # DESC
+    DESC_TITLE = Lower('title').desc()
+    DESC_USER_COUNT = f'-{ASC_USER_COUNT}'
+    DESC_LEAD_COUNT = f'-{ASC_LEAD_COUNT}'
+    DESC_CREATED_AT = f'-{ASC_CREATED_AT}'
+    DESC_ANALYSIS_FRAMEWORK = Lower('analysis_framework__title').desc()
+
+
+class PublicProjectOrderingEnum(graphene.Enum):
+    # ASC
+    ASC_TITLE = Lower('title').asc()
+    ASC_USER_COUNT = 'number_of_users'
+    ASC_LEAD_COUNT = 'number_of_leads'
+    ASC_CREATED_AT = 'created_at'
+    ASC_ANALYSIS_FRAMEWORK = Lower('analysis_framework__title').asc()
+    # DESC
+    DESC_TITLE = Lower('title').desc()
+    DESC_USER_COUNT = f'-{ASC_USER_COUNT}'
+    DESC_LEAD_COUNT = f'-{ASC_LEAD_COUNT}'
+    DESC_CREATED_AT = f'-{ASC_CREATED_AT}'
+    DESC_ANALYSIS_FRAMEWORK = Lower('analysis_framework__title').desc()
