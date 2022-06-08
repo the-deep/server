@@ -51,7 +51,7 @@ class ExcelExporter:
                 entry.id,
                 entry.excerpt,
                 Permalink.entry(entry.project_id, lead.id, entry.id),
-                lead.url,
+                lead.url or Permalink.lead_share_view(lead.uuid),
             ]])
         return self
 
