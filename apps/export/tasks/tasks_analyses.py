@@ -17,7 +17,7 @@ def export_analyses(export):
             .export()
     else:
         raise Exception(
-            f'(Analyses Export) Unkown Export Type Provided: {export_type} for Export: {export.id}'
+            f'(Analysis Export) Unkown Export Type Provided: {export_type} for Export: {export.id}'
         )
 
     return export_data
