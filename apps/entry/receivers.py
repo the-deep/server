@@ -8,6 +8,6 @@ from .models import Entry
 @receiver(models.signals.post_save, sender=Entry)
 def update_lead_status(sender, instance, created, **kwargs):
     lead = instance.lead
-    if lead.status != Lead.Status.IN_PROGRESS:
+    if lead.status == Lead.Status.NOT_TAGGED:
         lead.status = Lead.Status.IN_PROGRESS
         lead.save(update_fields=['status'])

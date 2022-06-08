@@ -651,7 +651,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
         entry1.save()
         content = _query_check()['data']['project']['leads']['results']
         self.assertEqual(len(content), 2, content)
-        self.assertEqual(content[0]['status'], self.genum(Lead.Status.IN_PROGRESS), content)
+        # -- We don't change TAGGED -> IN_PROGRESS
+        self.assertEqual(content[0]['status'], self.genum(Lead.Status.TAGGED), content)
         self.assertEqual(content[1]['status'], self.genum(Lead.Status.NOT_TAGGED), content)
 
     def test_lead_group_query(self):
