@@ -1,7 +1,6 @@
 import logging
 from django.core.files.base import ContentFile
 
-
 from deep.permalinks import Permalink
 from utils.common import (
     format_date,
@@ -27,25 +26,6 @@ def get_hyperlink(url, text):
 class ExcelExporter:
     class ColumnsData:
         TITLES = {
-            Export.StaticColumn.LEAD_PUBLISHED_ON: 'Date of Lead Publication',
-            Export.StaticColumn.ENTRY_CREATED_BY: 'Imported By',
-            Export.StaticColumn.ENTRY_CREATED_AT: 'Date Imported',
-            Export.StaticColumn.ENTRY_CONTROL_STATUS: 'Verification Status',
-            Export.StaticColumn.LEAD_ID: 'Lead Id',
-            Export.StaticColumn.LEAD_TITLE: 'Lead Title',
-            Export.StaticColumn.LEAD_URL: 'Lead URL',
-            Export.StaticColumn.LEAD_ORGANIZATION_TYPE_AUTHOR: 'Authoring Organizations Type',
-            Export.StaticColumn.LEAD_ORGANIZATION_AUTHOR: 'Author',
-            Export.StaticColumn.LEAD_ORGANIZATION_SOURCE: 'Source',
-            Export.StaticColumn.LEAD_PRIORITY: 'Lead Priority',
-            Export.StaticColumn.LEAD_ASSIGNEE: 'Assignee',
-            Export.StaticColumn.ENTRY_ID: 'Entry Id',
-            Export.StaticColumn.LEAD_ENTRY_ID: 'Lead-Entry Id',
-            Export.StaticColumn.ENTRY_EXCERPT: lambda self: [
-                'Modified Excerpt', 'Original Excerpt'
-            ] if self.modified_excerpt_exists else ['Excerpt'],
-        }
-        ENTRY_DATA = {
             Export.StaticColumn.LEAD_PUBLISHED_ON: 'Date of Lead Publication',
             Export.StaticColumn.ENTRY_CREATED_BY: 'Imported By',
             Export.StaticColumn.ENTRY_CREATED_AT: 'Date Imported',
@@ -187,55 +167,42 @@ class ExcelExporter:
     def load_exportables(self, exportables, regions=None):
         # Take all exportables that contains excel info
         widget_exportables = {
-            exportable.key: exportable
+            exportable.widget_key: exportable
             for exportable in exportables.filter(
                 data__excel__isnull=False,
             )
         }
         if self.columns is not None:
             self.exportables = [
-                widget_exportables[column['exportable_key']] if column['is_widget'] else column['static_column']
+                widget_exportables[column['widget_key']] if column['is_widget'] else column['static_column']
                 for column in self.columns
             ]
         else:
             self.exportables = [
                 *self.ColumnsData.TITLES.keys(),
-                *widget_exportables
+                *widget_exportables.values(),
             ]
 
-        # Initial titles
-        column_titles = [
-            'Date of Lead Publication',
-            'Imported By',
-            'Date Imported',
-            'Verification Status',
-            'Lead Id',
-            'Lead Title',
-            'Lead URL',
-            'Authoring Organizations Type',
-            'Author',
-            'Source',
-            'Lead Priority',
-            'Assignee',
-            'Entry Id',
-            'Lead-Entry Id',
-            *(
-                [
-                    'Modified Excerpt',
-                    'Original Excerpt',
-                ] if self.modified_excerpt_exists else
-                ['Excerpt']
-            )
-        ]
+        column_titles = []
 
         # information_date_index = 1
         for exportable in self.exportables:
-            # For each exportable, create titles according to type
-            # and data
-            data = exportable.data.get('excel')
-            column_titles.extend(
-                self.load_exportable_titles(data, regions)
-            )
+            if isinstance(exportable, str):
+                titles = self.ColumnsData.TITLES.get(exportable, [])
+                if callable(titles):
+                    _titles = titles(self)
+                else:
+                    _titles = titles
+                if type(_titles) not in [list, tuple]:
+                    _titles = [_titles]
+                column_titles.extend(_titles)
+            else:
+                # For each exportable, create titles according to type
+                # and data
+                data = exportable.data.get('excel')
+                column_titles.extend(
+                    self.load_exportable_titles(data, regions)
+                )
 
         if self.decoupled and self.split:
             self.split.append([column_titles])
@@ -247,6 +214,47 @@ class ExcelExporter:
 
         self.regions = regions
         return self
+
+    def add_entries_from_excel_data_for_static_column(
+        self,
+        exportable,
+        entry,
+        lead,
+        assignee,
+    ):
+        if exportable == Export.StaticColumn.LEAD_PUBLISHED_ON:
+            return format_date(lead.published_on)
+        if exportable == Export.StaticColumn.ENTRY_CREATED_BY:
+            return entry.created_by and entry.created_by.profile.get_display_name()
+        elif exportable == Export.StaticColumn.ENTRY_CREATED_AT:
+            return format_date(entry.created_at.date())
+        elif exportable == Export.StaticColumn.ENTRY_CONTROL_STATUS:
+            return 'Controlled' if entry.controlled else 'Uncontrolled'
+        elif exportable == Export.StaticColumn.LEAD_ID:
+            return f'{lead.id}'
+        elif exportable == Export.StaticColumn.LEAD_TITLE:
+            return lead.title
+        elif exportable == Export.StaticColumn.LEAD_URL:
+            return lead.url or Permalink.lead_share_view(lead.uuid)
+        elif exportable == Export.StaticColumn.LEAD_ORGANIZATION_TYPE_AUTHOR:
+            return lead.get_authoring_organizations_type_display()
+        elif exportable == Export.StaticColumn.LEAD_ORGANIZATION_AUTHOR:
+            return lead.get_authors_display()
+        elif exportable == Export.StaticColumn.LEAD_ORGANIZATION_SOURCE:
+            return lead.get_source_display()
+        elif exportable == Export.StaticColumn.LEAD_PRIORITY:
+            return lead.get_priority_display()
+        elif exportable == Export.StaticColumn.LEAD_ASSIGNEE:
+            return assignee and assignee.profile.get_display_name()
+        elif exportable == Export.StaticColumn.ENTRY_ID:
+            return f'{entry.id}'
+        elif exportable == Export.StaticColumn.LEAD_ENTRY_ID:
+            return f'{lead.id}-{entry.id}'
+        elif exportable == Export.StaticColumn.ENTRY_EXCERPT:
+            entry_excerpt = self.get_entry_data(entry)
+            if self.modified_excerpt_exists:
+                return [entry_excerpt, entry.dropped_excerpt]
+            return entry_excerpt
 
     def add_entries_from_excel_data(self, rows, data, export_data):
         export_type = data.get('type')
@@ -472,54 +480,41 @@ class ExcelExporter:
             self.bibliography_data[lead.id] = (author, source, published_on, url, lead.title)
 
             rows = RowsBuilder(self.split, self.group, self.decoupled)
-            rows.add_value(format_date(lead.published_on))
-
-            rows.add_value_list([
-                entry.created_by and entry.created_by.profile.get_display_name(),
-                format_date(entry.created_at.date()),
-                'Controlled' if entry.controlled else 'Uncontrolled',
-                f'{lead.id}',
-                lead.title,
-                lead.url or Permalink.lead_share_view(lead.uuid),
-                lead.get_authoring_organizations_type_display(),
-                lead.get_authors_display(),
-                lead.get_source_display(),
-                lead.get_priority_display(),
-                assignee and assignee.profile.get_display_name(),
-                f'{entry.id}',
-                f'{lead.id}-{entry.id}',
-                *(
-                    [
-                        self.get_entry_data(entry),
-                        entry.dropped_excerpt,
-                    ] if self.modified_excerpt_exists else
-                    [self.get_entry_data(entry)]
-                )
-            ])
 
             for exportable in self.exportables:
-                # Get export data for this entry corresponding to this
-                # exportable.
-
-                # And write some value based on type and data
-                # or empty strings if no data.
-
-                data = exportable.data.get('excel')
-                export_data = ExportData.objects.filter(
-                    exportable=exportable,
-                    entry=entry,
-                    data__excel__isnull=False,
-                ).first()
-
-                # TODO: handle for conditional widget
-                if export_data and type(export_data.data.get('excel', {})) == list:
-                    export_data = export_data.data.get('excel', [])
+                if isinstance(exportable, str):
+                    # Static columns
+                    values = self.add_entries_from_excel_data_for_static_column(
+                        exportable,
+                        entry,
+                        lead,
+                        assignee,
+                    ) or []
+                    if type(values) in [list, tuple]:
+                        rows.add_value_list(values)
+                    else:
+                        rows.add_value(values)
                 else:
-                    export_data = export_data and {
-                        **export_data.data.get('common', {}),
-                        **export_data.data.get('excel', {})
-                    }
-                self.add_entries_from_excel_data(rows, data, export_data)
+                    # Get export data for this entry corresponding to this
+                    # exportable.
+                    # And write some value based on type and data
+                    # or empty strings if no data.
+                    data = exportable.data.get('excel')
+                    export_data = ExportData.objects.filter(
+                        exportable=exportable,
+                        entry=entry,
+                        data__excel__isnull=False,
+                    ).first()
+
+                    # TODO: handle for conditional widget
+                    if export_data and type(export_data.data.get('excel', {})) == list:
+                        export_data = export_data.data.get('excel', [])
+                    else:
+                        export_data = export_data and {
+                            **export_data.data.get('common', {}),
+                            **export_data.data.get('excel', {})
+                        }
+                    self.add_entries_from_excel_data(rows, data, export_data)
 
             rows.apply()
 
