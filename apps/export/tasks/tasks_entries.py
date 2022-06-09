@@ -60,7 +60,14 @@ def export_entries(export):
 
     if export_type == Export.ExportType.EXCEL:
         decoupled = extra_options.get('excel_decoupled', False)
-        export_data = ExcelExporter(entries_qs, decoupled, project.id, is_preview=is_preview)\
+        columns = extra_options.get('excel_columns')
+        export_data = ExcelExporter(
+            entries_qs,
+            columns=columns,
+            decoupled=decoupled,
+            project_id=project.id,
+            is_preview=is_preview,
+        )\
             .load_exportables(exportables, regions)\
             .add_entries(entries_qs)\
             .export()
