@@ -61,6 +61,7 @@ class TestProjectSchema(GraphQLTestCase):
                         statusDisplay
                         title
                     }
+                    leadId
                 }
             }
         '''

@@ -2141,6 +2141,8 @@ type RecentActivityType {
   createdBy: UserType
   type: RecentActivityTypeEnum!
   typeDisplay: EnumDescription!
+  leadId: ID!
+  entryId: ID
 }
 
 enum RecentActivityTypeEnum {

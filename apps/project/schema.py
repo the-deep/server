@@ -306,6 +306,8 @@ class RecentActivityType(graphene.ObjectType):
     created_by = graphene.Field(UserType)
     type = graphene.Field(RecentActivityTypeEnum, required=True)
     type_display = EnumDescription(required=True)
+    lead_id = graphene.ID(required=True)
+    entry_id = graphene.ID()
 
     def resolve_created_by(root, info, **kwargs):
         id = int(root['created_by'])
@@ -317,6 +319,11 @@ class RecentActivityType(graphene.ObjectType):
 
     def resolve_type_display(root, info, **kwargs):
         return ActivityTypes(root['type']).label
+
+    def resolve_entry_id(root, info, **kwargs):
+        if root['type'] == ActivityTypes.LEAD:
+            return
+        return root['entry_id']
 
 
 class AnalysisFrameworkVisibleProjectType(DjangoObjectType):
