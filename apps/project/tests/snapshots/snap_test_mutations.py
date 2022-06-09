@@ -17,9 +17,9 @@ snapshots['ProjectMutationSnapshotTest::test_project_create_mutation private-af-
         },
         'description': 'Project description 101',
         'endDate': '2021-01-01',
-        'hasPubliclyViewableUnprotectedLeads': False,
-        'hasPubliclyViewableRestrictedLeads': False,
         'hasPubliclyViewableConfidentialLeads': False,
+        'hasPubliclyViewableRestrictedLeads': False,
+        'hasPubliclyViewableUnprotectedLeads': False,
         'id': '1',
         'isPrivate': True,
         'isVisualizationEnabled': False,
@@ -50,9 +50,9 @@ snapshots['ProjectMutationSnapshotTest::test_project_create_mutation public-af-p
         },
         'description': 'Project description 101',
         'endDate': '2021-01-01',
-        'hasPubliclyViewableUnprotectedLeads': False,
-        'hasPubliclyViewableRestrictedLeads': False,
         'hasPubliclyViewableConfidentialLeads': False,
+        'hasPubliclyViewableRestrictedLeads': False,
+        'hasPubliclyViewableUnprotectedLeads': False,
         'id': '2',
         'isPrivate': True,
         'isVisualizationEnabled': False,
@@ -73,6 +73,72 @@ snapshots['ProjectMutationSnapshotTest::test_project_create_mutation public-af-p
     }
 }
 
+snapshots['ProjectMutationSnapshotTest::test_project_create_mutation public-af-private-project-success-2'] = {
+    'errors': None,
+    'ok': True,
+    'result': {
+        'analysisFramework': {
+            'id': '1',
+            'isPrivate': False
+        },
+        'description': 'Project description 101',
+        'endDate': '2021-01-01',
+        'hasPubliclyViewableConfidentialLeads': False,
+        'hasPubliclyViewableRestrictedLeads': False,
+        'hasPubliclyViewableUnprotectedLeads': False,
+        'id': '2',
+        'isPrivate': True,
+        'isVisualizationEnabled': False,
+        'organizations': [
+            {
+                'id': '2',
+                'organization': {
+                    'id': '1',
+                    'title': 'Organization-0'
+                },
+                'organizationType': 'LEAD_ORGANIZATION',
+                'organizationTypeDisplay': 'Lead Organization'
+            }
+        ],
+        'startDate': '2020-01-01',
+        'status': 'ACTIVE',
+        'title': 'Project 2'
+    }
+}
+
+snapshots['ProjectMutationSnapshotTest::test_project_create_mutation public-af-private-project-success-3'] = {
+    'errors': None,
+    'ok': True,
+    'result': {
+        'analysisFramework': {
+            'id': '1',
+            'isPrivate': False
+        },
+        'description': 'Project description 101',
+        'endDate': '2021-01-01',
+        'hasPubliclyViewableConfidentialLeads': False,
+        'hasPubliclyViewableRestrictedLeads': False,
+        'hasPubliclyViewableUnprotectedLeads': False,
+        'id': '2',
+        'isPrivate': True,
+        'isVisualizationEnabled': False,
+        'organizations': [
+            {
+                'id': '2',
+                'organization': {
+                    'id': '1',
+                    'title': 'Organization-0'
+                },
+                'organizationType': 'LEAD_ORGANIZATION',
+                'organizationTypeDisplay': 'Lead Organization'
+            }
+        ],
+        'startDate': '2020-01-01',
+        'status': 'ACTIVE',
+        'title': 'Project 3'
+    }
+}
+
 snapshots['ProjectMutationSnapshotTest::test_project_create_mutation public-af-public-project-success'] = {
     'errors': None,
     'ok': True,
@@ -83,9 +149,9 @@ snapshots['ProjectMutationSnapshotTest::test_project_create_mutation public-af-p
         },
         'description': 'Project description 101',
         'endDate': '2021-01-01',
-        'hasPubliclyViewableUnprotectedLeads': False,
-        'hasPubliclyViewableRestrictedLeads': False,
         'hasPubliclyViewableConfidentialLeads': False,
+        'hasPubliclyViewableRestrictedLeads': False,
+        'hasPubliclyViewableUnprotectedLeads': False,
         'id': '3',
         'isPrivate': False,
         'isVisualizationEnabled': False,
@@ -103,6 +169,39 @@ snapshots['ProjectMutationSnapshotTest::test_project_create_mutation public-af-p
         'startDate': '2020-01-01',
         'status': 'ACTIVE',
         'title': 'Project 1'
+    }
+}
+
+snapshots['ProjectMutationSnapshotTest::test_project_create_mutation public-af-public-project-success-3'] = {
+    'errors': None,
+    'ok': True,
+    'result': {
+        'analysisFramework': {
+            'id': '1',
+            'isPrivate': False
+        },
+        'description': 'Project description 101',
+        'endDate': '2021-01-01',
+        'hasPubliclyViewableConfidentialLeads': False,
+        'hasPubliclyViewableRestrictedLeads': False,
+        'hasPubliclyViewableUnprotectedLeads': False,
+        'id': '3',
+        'isPrivate': False,
+        'isVisualizationEnabled': False,
+        'organizations': [
+            {
+                'id': '3',
+                'organization': {
+                    'id': '1',
+                    'title': 'Organization-0'
+                },
+                'organizationType': 'LEAD_ORGANIZATION',
+                'organizationTypeDisplay': 'Lead Organization'
+            }
+        ],
+        'startDate': '2020-01-01',
+        'status': 'ACTIVE',
+        'title': 'Project 3'
     }
 }
 
