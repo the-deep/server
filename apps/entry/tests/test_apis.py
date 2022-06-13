@@ -642,21 +642,6 @@ class EntryTests(TestCase):
         response = self.client.post(uncontrol_url, {'version_id': current_version}, format='json')
         self.assert_400(response)
 
-    def test_update_entry_unverifies_controlled_entry(self):
-        entry = self.create_entry(controlled=True)
-        self.assertTrue(entry.controlled)
-
-        url = '/api/v1/entries/{}/'.format(entry.id)
-        data = {
-            'excerpt': 'updated...'
-        }
-
-        self.authenticate()
-        response = self.client.patch(url, data)
-        self.assert_200(response)
-        entry.refresh_from_db()
-        self.assertFalse(entry.controlled)
-
     def test_authoring_organization_filter(self):
         organization_type1 = self.create(OrganizationType, title="National")
         organization_type2 = self.create(OrganizationType, title="International")

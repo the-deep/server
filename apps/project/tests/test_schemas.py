@@ -255,7 +255,7 @@ class TestProjectSchema(GraphQLTestCase):
     def test_project_query_has_assesment_af(self):
         query = '''
             query MyQuery {
-              projects(ordering: "id") {
+              projects(ordering: ASC_TITLE) {
                   results {
                     id
                     hasAnalysisFramework
@@ -288,7 +288,7 @@ class TestProjectSchema(GraphQLTestCase):
         """
         query = '''
             query MyQuery {
-              projects (ordering: "id") {
+              projects (ordering: ASC_TITLE) {
                 page
                 pageSize
                 totalCount
@@ -330,7 +330,7 @@ class TestProjectSchema(GraphQLTestCase):
     def test_public_projects(self):
         query = '''
             query MyQuery {
-              publicProjects (ordering: "id") {
+              publicProjects (ordering: ASC_TITLE) {
                 page
                 pageSize
                 totalCount

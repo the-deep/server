@@ -11,7 +11,7 @@ from utils.graphene.types import CustomDjangoListObjectType
 from deep.serializers import URLCachedFileField
 
 from .models import Project
-from .filter_set import ProjectGqlFilterSet
+from .filter_set import PublicProjectGqlFilterSet
 
 
 class PublicProjectType(DjangoObjectType):
@@ -47,7 +47,7 @@ class PublicProjectListType(CustomDjangoListObjectType):
     class Meta:
         model = Project
         base_type = PublicProjectType
-        filterset_class = ProjectGqlFilterSet
+        filterset_class = PublicProjectGqlFilterSet
 
     @classmethod
     def queryset(cls):
