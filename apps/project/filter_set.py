@@ -7,7 +7,12 @@ from django.db.models.functions import Concat, Lower
 import django_filters
 
 from deep.permissions import ProjectPermissions as PP
-from utils.graphene.filters import SimpleInputFilter, IDListFilter
+from deep.filter_set import OrderEnumMixin
+from utils.graphene.filters import (
+    SimpleInputFilter,
+    IDListFilter,
+    MultipleInputFilter,
+)
 from user_resource.filters import UserResourceFilterSet, UserResourceGqlFilterSet
 
 from geo.models import Region
@@ -19,6 +24,8 @@ from .models import (
 from .enums import (
     ProjectPermissionEnum,
     ProjectStatusEnum,
+    ProjectOrderingEnum,
+    PublicProjectOrderingEnum,
 )
 
 
@@ -83,7 +90,7 @@ def get_filtered_projects(user, queries, annotate=False):
 
 
 # -------------------- Graphql Filters -----------------------------------
-class ProjectGqlFilterSet(UserResourceGqlFilterSet):
+class ProjectGqlFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
     ids = IDListFilter(field_name='id')
     exclude_ids = IDListFilter(method='filter_exclude_ids')
     status = SimpleInputFilter(ProjectStatusEnum)
@@ -94,6 +101,7 @@ class ProjectGqlFilterSet(UserResourceGqlFilterSet):
     is_current_user_member = django_filters.BooleanFilter(
         field_name='is_current_user_member', method='filter_with_membership')
     has_permission_access = SimpleInputFilter(ProjectPermissionEnum, method='filter_has_permission_access')
+    ordering = MultipleInputFilter(ProjectOrderingEnum, method='ordering_filter')
 
     class Meta:
         model = Project
@@ -128,6 +136,10 @@ class ProjectGqlFilterSet(UserResourceGqlFilterSet):
                 ).values('project')
             )
         return queryset
+
+
+class PublicProjectGqlFilterSet(ProjectGqlFilterSet):
+    ordering = MultipleInputFilter(PublicProjectOrderingEnum, method='ordering_filter')
 
 
 class ProjectMembershipGqlFilterSet(UserResourceGqlFilterSet):
