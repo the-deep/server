@@ -657,7 +657,14 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
                     EntryReviewComment.CommentType.UNCONTROL,
                 ]
             )
-        return queryset.filter(review_comments__isnull=True)
+        return queryset.filter(
+            models.Q(
+                review_comments__comment_type__in=[
+                    EntryReviewComment.CommentType.VERIFY,
+                    EntryReviewComment.CommentType.CONTROL,
+                ]
+            ) | models.Q(review_comments__isnull=True)
+        )
 
     def search_filter(self, qs, _, value):
         if value:

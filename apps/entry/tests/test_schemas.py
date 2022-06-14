@@ -1,6 +1,7 @@
 from lead.models import Lead
 
 from entry.models import Entry
+from quality_assurance.models import EntryReviewComment
 from analysis_framework.models import Widget
 
 from utils.graphene.tests import GraphQLTestCase
@@ -353,7 +354,8 @@ class TestEntryQuery(GraphQLTestCase):
 
         # create entry review comment for entry
         EntryReviewCommentFactory(entry=entry1_1, created_by=user)
-        EntryReviewCommentFactory(entry=entry2_1, created_by=member1)
+        EntryReviewCommentFactory(entry=entry2_1, created_by=member1, comment_type=EntryReviewComment.CommentType.CONTROL)
+        EntryReviewCommentFactory(entry=entry3_1, created_by=member1, comment_type=EntryReviewComment.CommentType.VERIFY)
         # Change lead1 status to TAGGED
         lead1.status = Lead.Status.TAGGED
         lead1.save(update_fields=['status'])
@@ -398,8 +400,8 @@ class TestEntryQuery(GraphQLTestCase):
                 {'leadStatuses': [self.genum(Lead.Status.IN_PROGRESS), self.genum(Lead.Status.TAGGED)]},
                 [entry1_1, entry2_1, entry3_1, entry4_1]
             ),
-            ({'hasComment': True}, [entry1_1, entry2_1]),
-            ({'hasComment': False}, [entry3_1, entry4_1]),
+            ({'hasComment': True}, [entry1_1]),
+            ({'hasComment': False}, [entry2_1, entry3_1, entry4_1]),
             # TODO: Common filters
             # ({'excerpt': []}, []),
             # ({'modifiedAt': []}, []),
