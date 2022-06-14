@@ -509,7 +509,10 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             qs = qs.annotate(
                 filtered_entry_count=_entry_subquery(
                     EntryGQFilterSet(
-                        data=entries_filter_data,
+                        data={
+                            **entries_filter_data,
+                            'from_subquery': True,
+                        },
                         request=self.request,
                     ).qs
                 )
