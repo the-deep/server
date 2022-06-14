@@ -14,18 +14,20 @@ class TestProjectSchema(GraphQLTestCase):
         project11 = ProjectFactory(title='Japan Earthquake')
         project12 = ProjectFactory(title='Japan Hurricane')
 
+        excepted_projects_name = {
+            project1.pk: 'Ukraine war (1)',
+            project2.pk: 'Ukraine war (2)',
+            project3.pk: 'Nepal Food Crisis (1)',
+            project4.pk: 'Nepal Food Crisis (2)',
+            project5.pk: 'Iran Bombblast (1)',
+            project6.pk: 'Iran Bombblast (4)',
+            project9.pk: 'Iran Bombblast (2)',
+            project10.pk: 'Iran Bombblast (3)',
+            project11.pk: 'Japan Earthquake',
+            project12.pk: 'Japan Hurricane',
+        }
+
         _rename_duplicate_name(Project)
 
-        title_list_1 = [p.title for p in Project.objects.filter(id__in=[project1.id, project2.id])]
-        title_list_2 = [p.title for p in Project.objects.filter(id__in=[project3.id, project4.id])]
-        title_list_3 = [
-            p.title for p in Project.objects.filter(id__in=[project5.id, project6.id, project9.id, project10.id])
-        ]
-        title_list_4 = [p.title for p in Project.objects.filter(id__in=[project11.id, project12.id])]
-        self.assertEqual(title_list_1, ['Ukraine war (1)', 'Ukraine war (2)'])
-        self.assertEqual(title_list_2, ['Nepal Food Crisis (1)', 'Nepal Food Crisis (2)'])
-        self.assertEqual(
-            sorted(title_list_3),
-            sorted(['Iran Bombblast (1)', 'Iran Bombblast (2)', 'Iran Bombblast (3)', 'Iran Bombblast (4)'])
-        )
-        self.assertEqual(sorted(title_list_4), sorted(['Japan Earthquake', 'Japan Hurricane']))
+        for id, title in Project.objects.values_list('id', 'title'):
+            assert excepted_projects_name[id] == title
