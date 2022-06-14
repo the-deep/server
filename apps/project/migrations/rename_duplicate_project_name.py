@@ -1,28 +1,25 @@
-
 from django.db import migrations
 from django.db.models import Count
+from django.db.models.functions import Lower
 
 
 def _rename_duplicate_name(Project):
     # NOTE: Assuming there are just 4-5k projects.
-    project_title_qs = Project.objects.order_by().values('title').annotate(count=Count('id'))
+    project_title_qs = Project.objects.annotate(title_lower=Lower('title')).order_by().values('title_lower').annotate(count=Count('id'))
     existing_project_titles = list(  # NOTE: High memory usages
-        project_title_qs.values_list('title', flat=True).distinct()
+        project_title_qs.values_list('title_lower', flat=True)
     )
-    existing_project_titles_lower = [title.lower() for title in existing_project_titles]
     title_projects_map = {}
-    for title in existing_project_titles_lower:
-        projects = Project.objects.filter(title__iexact=title)
-        if projects.count() > 1:
-            title_projects_map[title] = projects
+    for title in project_title_qs.filter(count__gt=1).values_list('title_lower', flat=True):
+        title_projects_map[title] = Project.objects.filter(title__iexact=title)
     for title, projects in title_projects_map.items():
         index = 0
-        for project in projects:
-            while True:  # Or for loop.
+        for project in projects.order_by('id'):
+            while True:
                 index += 1
                 new_title = f"{project.title} ({str(index)})"
-                if new_title.lower() not in existing_project_titles_lower:
-                    existing_project_titles_lower.append(new_title.lower())
+                if new_title.lower() not in existing_project_titles:
+                    existing_project_titles.append(new_title.lower())
                     break
             project.title = new_title
             project.save(update_fields=('title',))
