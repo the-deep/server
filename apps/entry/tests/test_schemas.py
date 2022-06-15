@@ -256,6 +256,7 @@ class TestEntryQuery(GraphQLTestCase):
                 $projectEntryLabels: [ID!]
                 $hasComment: Boolean
                 $isVerified: Boolean
+                $search: String
             ) {
               project(id: $projectId) {
                 entries (
@@ -286,6 +287,7 @@ class TestEntryQuery(GraphQLTestCase):
                     leadTitle: $leadTitle
                     hasComment: $hasComment
                     isVerified: $isVerified
+                    search: $search
                 ) {
                   results {
                     id
@@ -410,6 +412,7 @@ class TestEntryQuery(GraphQLTestCase):
             ({'hasComment': False}, [entry2_1, entry4_1]),
             ({'isVerified': True}, [entry1_1, entry2_1]),
             ({'isVerified': False}, [entry3_1, entry4_1]),
+            ({'search': str(entry1_1.id)}, [entry1_1]),
             # TODO: Common filters
             # ({'excerpt': []}, []),
             # ({'modifiedAt': []}, []),
