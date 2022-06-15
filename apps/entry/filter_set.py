@@ -675,6 +675,7 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
     def search_filter(self, qs, _, value):
         if value:
             return qs.filter(
+                models.Q(id=value) |
                 models.Q(lead__title__icontains=value) |
                 models.Q(excerpt__icontains=value)
             )
