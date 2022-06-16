@@ -255,6 +255,7 @@ class TestEntryQuery(GraphQLTestCase):
                 $modifiedBy: [ID!]
                 $projectEntryLabels: [ID!]
                 $hasComment: Boolean
+                $isVerified: Boolean
             ) {
               project(id: $projectId) {
                 entries (
@@ -284,6 +285,7 @@ class TestEntryQuery(GraphQLTestCase):
                     leadStatuses: $leadStatuses
                     leadTitle: $leadTitle
                     hasComment: $hasComment
+                    isVerified: $isVerified
                 ) {
                   results {
                     id
@@ -345,17 +347,22 @@ class TestEntryQuery(GraphQLTestCase):
         outside_entry = EntryFactory.create(project=other_project, analysis_framework=af, lead=other_lead)
         entry1_1 = EntryFactory.create(
             project=project, analysis_framework=af, lead=lead1, entry_type=Entry.TagType.EXCERPT, controlled=False)
+        entry1_1.verified_by.add(user)
+
         entry2_1 = EntryFactory.create(
             project=project, analysis_framework=af, lead=lead2, entry_type=Entry.TagType.IMAGE, controlled=True)
+        entry2_1.verified_by.add(user)
+
         entry3_1 = EntryFactory.create(
             project=project, analysis_framework=af, lead=lead3, entry_type=Entry.TagType.EXCERPT, controlled=False)
+
         entry4_1 = EntryFactory.create(
             project=project, analysis_framework=af, lead=lead4, entry_type=Entry.TagType.EXCERPT, controlled=False)
 
         # create entry review comment for entry
-        EntryReviewCommentFactory(entry=entry1_1, created_by=user)
+        EntryReviewCommentFactory(entry=entry1_1, created_by=user, comment_type=EntryReviewComment.CommentType.COMMENT)
         EntryReviewCommentFactory(entry=entry2_1, created_by=member1, comment_type=EntryReviewComment.CommentType.CONTROL)
-        EntryReviewCommentFactory(entry=entry3_1, created_by=member1, comment_type=EntryReviewComment.CommentType.VERIFY)
+        EntryReviewCommentFactory(entry=entry3_1, created_by=member1, comment_type=EntryReviewComment.CommentType.UNCONTROL)
         # Change lead1 status to TAGGED
         lead1.status = Lead.Status.TAGGED
         lead1.save(update_fields=['status'])
@@ -400,8 +407,10 @@ class TestEntryQuery(GraphQLTestCase):
                 {'leadStatuses': [self.genum(Lead.Status.IN_PROGRESS), self.genum(Lead.Status.TAGGED)]},
                 [entry1_1, entry2_1, entry3_1, entry4_1]
             ),
-            ({'hasComment': True}, [entry1_1]),
-            ({'hasComment': False}, [entry2_1, entry3_1, entry4_1]),
+            ({'hasComment': True}, [entry1_1, entry3_1]),
+            ({'hasComment': False}, [entry2_1, entry4_1]),
+            ({'isVerified': True}, [entry1_1, entry2_1]),
+            ({'isVerified': False}, [entry3_1, entry4_1]),
             # TODO: Common filters
             # ({'excerpt': []}, []),
             # ({'modifiedAt': []}, []),

@@ -580,6 +580,7 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
     # Dynamic filterable data
     filterable_data = MultipleInputFilter(EntryFilterDataType, method='filterable_data_filter')
     has_comment = django_filters.BooleanFilter(method='filter_commented_entries')
+    is_verified = django_filters.BooleanFilter(method='filter_verified_entries')
 
     class Meta:
         model = Entry
@@ -649,22 +650,21 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
         return qs
 
     def filter_commented_entries(self, queryset, name, value):
-        if value:
-            return queryset.filter(
-                review_comments__comment_type__in=[
-                    EntryReviewComment.CommentType.COMMENT,
-                    EntryReviewComment.CommentType.UNVERIFY,
-                    EntryReviewComment.CommentType.UNCONTROL,
-                ]
-            )
-        return queryset.filter(
-            models.Q(
-                review_comments__comment_type__in=[
-                    EntryReviewComment.CommentType.VERIFY,
-                    EntryReviewComment.CommentType.CONTROL,
-                ]
-            ) | models.Q(review_comments__isnull=True)
+        _filter = dict(
+            review_comments__comment_type__in=[
+                EntryReviewComment.CommentType.COMMENT,
+                EntryReviewComment.CommentType.UNVERIFY,
+                EntryReviewComment.CommentType.UNCONTROL,
+            ]
         )
+        if value:
+            return queryset.filter(**_filter)
+        return queryset.exclude(**_filter)
+
+    def filter_verified_entries(self, queryset, name, value):
+        if value:
+            return queryset.filter(verified_by__isnull=False)
+        return queryset.filter(verified_by__isnull=True)
 
     def search_filter(self, qs, _, value):
         if value:
