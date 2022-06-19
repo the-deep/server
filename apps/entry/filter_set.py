@@ -13,17 +13,16 @@ from user_resource.filters import UserResourceGqlFilterSet
 from utils.graphene.filters import (
     IDListFilter,
     MultipleInputFilter,
-    SimpleInputFilter,
     DateGteFilter,
     DateLteFilter,
 )
-from utils.graphene.enums import convert_enum_to_graphene_enum
 from deep.filter_set import DjangoFilterCSVWidget
 from analysis_framework.models import Filter
 from lead.models import Lead
 from organization.models import OrganizationType
 from analysis_framework.models import Widget
 from geo.models import GeoArea
+from quality_assurance.models import EntryReviewComment
 
 from lead.enums import (
     LeadStatusEnum,
@@ -554,10 +553,6 @@ class EntryFilterDataType(graphene.InputObjectType):
 
 # ----------------------------- Graphql Filters ---------------------------------------
 class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
-    class CommentStatus(models.TextChoices):
-        RESOLVED = 'resolved', 'Resolved',
-        UNRESOLVED = 'unresolved', 'Unresolved',
-
     # Lead fields
     leads = IDListFilter(field_name='lead')
     lead_created_by = IDListFilter(field_name='lead__created_by')
@@ -576,10 +571,6 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
     search = django_filters.CharFilter(method='search_filter')
     created_by = IDListFilter()
     modified_by = IDListFilter()
-    comment_status = SimpleInputFilter(
-        convert_enum_to_graphene_enum(CommentStatus, name='EntryFilterCommentStatusEnum'),
-        label='Comment Status', method='comment_status_filter',
-    )
     entry_types = MultipleInputFilter(EntryTagTypeEnum, field_name='entry_type')
     project_entry_labels = IDListFilter(label='Project Entry Labels', method='project_entry_labels_filter')
     entries_id = IDListFilter(field_name='id')
@@ -588,6 +579,8 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
     lead_group_label = django_filters.CharFilter(label='Lead Group Label', method='lead_group_label_filter')
     # Dynamic filterable data
     filterable_data = MultipleInputFilter(EntryFilterDataType, method='filterable_data_filter')
+    has_comment = django_filters.BooleanFilter(method='filter_commented_entries')
+    is_verified = django_filters.BooleanFilter(method='filter_verified_entries')
 
     class Meta:
         model = Entry
@@ -615,19 +608,6 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
                 raise Exception(f'Both should be defined {project=} {project and project.analysis_framework_id=}')
             filters = Filter.qs_with_widget_type().filter(analysis_framework_id=project.analysis_framework_id).all()
             return get_filtered_entries_using_af_filter(queryset, filters, value, project=project, new_query_structure=True)
-        return queryset
-
-    def comment_status_filter(self, queryset, name, value):
-        if value == self.CommentStatus.UNRESOLVED:
-            return queryset.filter(
-                entrycomment__is_resolved=False,
-                entrycomment__parent__isnull=True,
-            )
-        elif value == self.CommentStatus.RESOLVED:
-            return queryset.filter(
-                entrycomment__is_resolved=True,
-                entrycomment__parent__isnull=True,
-            )
         return queryset
 
     def geo_custom_shape_filter(self, queryset, name, value):
@@ -668,6 +648,23 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
                 return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
             return qs.filter(organization_types__in=value).distinct()
         return qs
+
+    def filter_commented_entries(self, queryset, name, value):
+        _filter = dict(
+            review_comments__comment_type__in=[
+                EntryReviewComment.CommentType.COMMENT,
+                EntryReviewComment.CommentType.UNVERIFY,
+                EntryReviewComment.CommentType.UNCONTROL,
+            ]
+        )
+        if value:
+            return queryset.filter(**_filter)
+        return queryset.exclude(**_filter)
+
+    def filter_verified_entries(self, queryset, name, value):
+        if value:
+            return queryset.filter(verified_by__isnull=False)
+        return queryset.filter(verified_by__isnull=True)
 
     def search_filter(self, qs, _, value):
         if value:

@@ -226,7 +226,7 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         }
         comment_pk = self._query_check(data, okay=True)['data']['project']['entryReviewCommentCreate']['result']['id']
 
-        assert self.entry.entryreviewcomment_set.count() == 1
+        assert self.entry.review_comments.count() == 1
 
         # Update only allowd by comment creater
         data['text'] = 'This is updated text comment'
@@ -246,7 +246,7 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         }
         self._query_check(data, okay=True)
 
-        assert self.entry.entryreviewcomment_set.count() == 2
+        assert self.entry.review_comments.count() == 2
 
         self.force_login(user4)
         data = {
