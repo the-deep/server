@@ -78,7 +78,7 @@ class EntryReviewComment(BaseReviewComment):
         CONTROL = 3, 'Control'
         UNCONTROL = 4, 'UnControl'
 
-    entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name='review_comments')
     comment_type = models.IntegerField(choices=CommentType.choices, default=CommentType.COMMENT)
     entry_comment = models.ForeignKey(EntryComment, on_delete=models.SET_NULL, null=True, blank=True)
     assignments = GenericRelation(Assignment, related_query_name='entry_review_comment')
