@@ -1175,3 +1175,60 @@ class TestAnalysisAPIs(TestCase):
             response.data[1]['value'],
             DiscardedEntry.TagType.TOO_OLD.label
         )
+
+    def test_add_same_entries_in_multiple_analytical_statements(self):
+        user = self.create_user()
+        project = self.create_project()
+        entry = self.create_entry(project=project)
+        entry1 = self.create_entry(project=project)
+        entry2 = self.create_entry(project=project)
+        project.add_member(user)
+
+        analysis = self.create(Analysis, title='Test Analysis', team_lead=user, project=project)
+
+        data = {
+            'main_statement': 'Some main statement',
+            'information_gap': 'Some information gap',
+            'assignee': user.id,
+            'title': 'Some title',
+            'analytical_statements': [
+                {
+                    "statement": "coffee",
+                    "order": 1,
+                    "client_id": "1",
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "client_id": "1",
+                            "entry": entry.id,
+                        },
+                        {
+                            "order": 2,
+                            "client_id": "2",
+                            "entry": entry2.id,
+                        },
+                    ]
+                },
+                {
+                    "statement": "tea",
+                    "order": 2,
+                    "client_id": "2",
+                    "analytical_entries": [
+                        {
+                            "order": 1,
+                            "client_id": "4",
+                            "entry": entry1.id,
+                        },
+                        {
+                            "order": 2,
+                            "client_id": "5",
+                            "entry": entry2.id,
+                        },
+                    ]
+                },
+            ]
+        }
+        url = f'/api/v1/projects/{project.id}/analysis/{analysis.id}/pillars/'
+        self.authenticate(user)
+        response = self.client.post(url, data)
+        self.assert_201(response)
