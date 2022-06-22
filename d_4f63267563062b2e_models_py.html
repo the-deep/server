@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="d_4f63267563062b2e_mutation_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.4.1</a>,
-            created at 2022-06-13 10:35 +0000
+            created at 2022-06-22 11:05 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"/>
@@ -162,7 +162,7 @@
     <p class="run"><span class="n"><a id="t78" href="#t78">78</a></span><span class="t">        <span class="nam">CONTROL</span> <span class="op">=</span> <span class="num">3</span><span class="op">,</span> <span class="str">'Control'</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t79" href="#t79">79</a></span><span class="t">        <span class="nam">UNCONTROL</span> <span class="op">=</span> <span class="num">4</span><span class="op">,</span> <span class="str">'UnControl'</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t80" href="#t80">80</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t81" href="#t81">81</a></span><span class="t">    <span class="nam">entry</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">ForeignKey</span><span class="op">(</span><span class="nam">Entry</span><span class="op">,</span> <span class="nam">on_delete</span><span class="op">=</span><span class="nam">models</span><span class="op">.</span><span class="nam">CASCADE</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t81" href="#t81">81</a></span><span class="t">    <span class="nam">entry</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">ForeignKey</span><span class="op">(</span><span class="nam">Entry</span><span class="op">,</span> <span class="nam">on_delete</span><span class="op">=</span><span class="nam">models</span><span class="op">.</span><span class="nam">CASCADE</span><span class="op">,</span> <span class="nam">related_name</span><span class="op">=</span><span class="str">'review_comments'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t82" href="#t82">82</a></span><span class="t">    <span class="nam">comment_type</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">IntegerField</span><span class="op">(</span><span class="nam">choices</span><span class="op">=</span><span class="nam">CommentType</span><span class="op">.</span><span class="nam">choices</span><span class="op">,</span> <span class="nam">default</span><span class="op">=</span><span class="nam">CommentType</span><span class="op">.</span><span class="nam">COMMENT</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t83" href="#t83">83</a></span><span class="t">    <span class="nam">entry_comment</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">ForeignKey</span><span class="op">(</span><span class="nam">EntryComment</span><span class="op">,</span> <span class="nam">on_delete</span><span class="op">=</span><span class="nam">models</span><span class="op">.</span><span class="nam">SET_NULL</span><span class="op">,</span> <span class="nam">null</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">blank</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t84" href="#t84">84</a></span><span class="t">    <span class="nam">assignments</span> <span class="op">=</span> <span class="nam">GenericRelation</span><span class="op">(</span><span class="nam">Assignment</span><span class="op">,</span> <span class="nam">related_query_name</span><span class="op">=</span><span class="str">'entry_review_comment'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -209,7 +209,7 @@
             <a id="nextFileLink" class="nav" href="d_4f63267563062b2e_mutation_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.4.1</a>,
-            created at 2022-06-13 10:35 +0000
+            created at 2022-06-22 11:05 +0000
         </p>
     </div>
 </footer>
