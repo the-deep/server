@@ -1,6 +1,7 @@
 import json
 import logging
 from collections import defaultdict
+from datetime import datetime, timedelta
 
 from celery import shared_task
 from django.core.files.base import ContentFile
@@ -9,6 +10,7 @@ from django.utils import timezone
 from django.db import models
 from redis_store import redis
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
+from django.conf import settings
 
 from ary.stats import get_project_ary_entry_stats
 from lead.models import Lead
@@ -254,15 +256,16 @@ def generate_project_geo_region_cache(project):
 
 
 @shared_task
-def project_deletion(force=False):
+def project_deletion():
     # check every project if there `is_deleted` is set True
     # if greater than 30 days delete those projects
     logger.info('Checking project is_deleted')
     today = timezone.now().date()
     project_qs = Project.objects.filter(
         is_deleted=True,
+        deleted_at__lte=datetime.now() - timedelta(days=30)
     )
     for project in project_qs:
-        if abs((project.deleted_at - today).days) > 30:  # HardCode this here?
+        if abs((project.deleted_at - today).days) > settings.USER_AND_PROJECT_DELETE_IN_DAYS:
             logger.info(f'Deleting Project {project.id}')
             project.delete()

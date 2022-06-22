@@ -1,5 +1,5 @@
 from unittest import mock
-
+from datetime import datetime, timedelta
 from factory import fuzzy
 
 from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
@@ -1128,20 +1128,24 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                     result {
                       id
                       title
-                      isDeleted
                     }
                   }
               }
             }
         '''
-
+        normal_user = UserFactory.create()
         admin_user = UserFactory.create()
         member_user = UserFactory.create()
+        owner_user = UserFactory.create()
+        reader_user = UserFactory.create()
+
         af = AnalysisFrameworkFactory.create()
         project = ProjectFactory.create(analysis_framework=af)
 
         project.add_member(admin_user, role=self.project_role_admin)
         project.add_member(member_user, role=self.project_role_member)
+        project.add_member(owner_user, role=self.project_role_owner)
+        project.add_member(reader_user, role=self.project_role_reader)
 
         def _query_check(**kwargs):
             return self.query_check(
@@ -1152,23 +1156,32 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
             )
         # without login
         _query_check(assert_for_error=True)
+
+        # ------login and normal user
+        self.force_login(normal_user)
+        _query_check(assert_for_error=True)
+
         # ---------- With login and member_user in project
         self.force_login(member_user)
         _query_check(okay=False)
 
+        # ---------- Login with reader user
+        self.force_login(reader_user)
+        _query_check(okay=False)
+
         # ------ Login with admin_user
         self.force_login(admin_user)
-        response = _query_check(okay=True)
-        # make sure that the `is_deleted` field is set to True
-        self.assertEqual(response['data']['project']['projectDelete']['result']['isDeleted'], True)
+        _query_check(okay=False)
+
+        # ------ Login with owner_user
+        self.force_login(owner_user)
+        _query_check(okay=True)
 
     def test_project_deletion_celery_task(self):
         old_project_count = Project.objects.count()
-        admin_user = UserFactory.create()
         af = AnalysisFrameworkFactory.create()
         project = ProjectFactory.create(analysis_framework=af)
 
-        project.add_member(admin_user, role=self.project_role_admin)
         # check for project_count
         self.assertEqual(Project.objects.count(), old_project_count + 1)
         # now delete the project
@@ -1180,3 +1193,29 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         project_deletion()
 
         self.assertEqual(Project.objects.count(), old_project_count)
+
+        project1 = ProjectFactory.create(
+            title='Test Project 1',
+            is_deleted=True,
+            deleted_at=datetime.now() - timedelta(days=32)
+        )
+        project2 = ProjectFactory.create(
+            title='Test Project 2',
+        )
+        project3 = ProjectFactory.create(
+            title='Test Project 3',
+            is_deleted=True,
+            deleted_at=datetime.now() - timedelta(days=42)
+        )
+        project4 = ProjectFactory.create(
+            title='Test Project 4',
+            is_deleted=True,
+            deleted_at=datetime.now() - timedelta(days=20)
+        )
+
+        project_deletion()
+
+        # project ids
+        project_ids = Project.objects.values_list('id', flat=True)
+        self.assertEqual([id for id in project_ids], [project2.id, project4.id])
+        self.assertNotEqual([id for id in project_ids], [project1.id, project3.id])

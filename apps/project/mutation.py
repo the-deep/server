@@ -12,6 +12,7 @@ from utils.graphene.mutation import (
     GrapheneMutation,
     PsGrapheneMutation,
     PsBulkGrapheneMutation,
+    DeleteMutation,
 )
 from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
 
@@ -157,35 +158,30 @@ class ProjectJoinRequestDelete(graphene.Mutation):
         return ProjectJoinRequestDelete(result=instance, errors=None, ok=True)
 
 
-class ProjectDelete(graphene.Mutation):
-    class Arguments:
-        pass
-
+class ProjectDelete(DeleteMutation):
     errors = graphene.List(graphene.NonNull(CustomErrorType))
-    ok = graphene.Boolean()
     result = graphene.Field(ProjectDetailType)
 
     @staticmethod
     def mutate(root, info, **kwargs):
-        kwargs['id'] = info.context.active_project.id
         member = ProjectMembership.objects.filter(
             project=info.context.active_project.id,
             member=info.context.user,
         )
         role_type = member.first().role.type
-        if role_type not in [ProjectRole.Type.ADMIN, ProjectRole.Type.PROJECT_OWNER]:
+        if role_type != ProjectRole.Type.PROJECT_OWNER:
             return ProjectJoinRequestDelete(errors=[
                 dict(
                     field='nonFieldErrors',
                     messages=gettext(
-                        'You should be Project Admin or Project Owner to delete this project(id:%s)'
+                        'You should be Project Owner to delete this project(id:%s)'
                         % info.context.active_project.id
                     ),
                 )
             ], ok=False)
         root.is_deleted = True
         root.deleted_at = timezone.now().date()
-        root.save()
+        root.save(update_fields=['is_deleted', 'deleted_at'])
         return ProjectDelete(result=root, errors=None, ok=True)
 
 

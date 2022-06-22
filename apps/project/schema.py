@@ -254,7 +254,7 @@ class ProjectType(UserResourceMixin, DjangoObjectType):
     @staticmethod
     def get_custom_node(_, info, id):
         try:
-            project = Project.get_for_gq(info.context.user).get(pk=id, is_deleted=False)
+            project = Project.get_for_gq(info.context.user).get(pk=id)
             info.context.set_active_project(project)
             return project
         except Project.DoesNotExist:
@@ -407,7 +407,7 @@ class ProjectDetailType(
             'end_date', 'analysis_framework',
             'category_editor', 'assessment_template',
             'data', 'deleted_at',
-            'created_at', 'created_by', 'is_deleted',
+            'created_at', 'created_by',
             'modified_at', 'modified_by',
             'is_default', 'is_private', 'is_test', 'is_visualization_enabled',
             'has_publicly_viewable_unprotected_leads',
@@ -586,12 +586,12 @@ class Query:
 
     @staticmethod
     def resolve_projects(root, info, **kwargs) -> QuerySet:
-        return Project.get_for_gq(info.context.user).filter(is_deleted=False).distinct()
+        return Project.get_for_gq(info.context.user).distinct()
 
     @staticmethod
     def resolve_recent_projects(root, info, **kwargs) -> QuerySet:
         # only the recent project of the user member of
-        queryset = Project.get_for_gq(info.context.user, only_member=True).filter(is_deleted=False)
+        queryset = Project.get_for_gq(info.context.user, only_member=True)
         return Project.get_recent_active_projects(info.context.user, queryset)
 
     @staticmethod

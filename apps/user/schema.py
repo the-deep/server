@@ -41,7 +41,7 @@ class UserType(DjangoObjectType):
     class Meta:
         model = User
         only_fields = (
-            'id', 'first_name', 'last_name', 'is_active',
+            'id', 'is_active',
         )
 
     display_name = graphene.String()
@@ -50,6 +50,9 @@ class UserType(DjangoObjectType):
     organization = graphene.String()
     language = graphene.String()
     email_display = graphene.String(required=True)
+    deleted_at = graphene.Date()
+    first_name = graphene.String()
+    last_name = graphene.String()
 
     @staticmethod
     def resolve_display_picture_url(root, info, **kwargs) -> Union[str, None]:
@@ -64,6 +67,22 @@ class UserType(DjangoObjectType):
     @staticmethod
     def resolve_email_display(root, info, **kwargs) -> Union[str, None]:
         return generate_hidden_email(root.email)
+
+    @staticmethod
+    def resolve_deleted_at(root, info, **kwargs) -> Union[datetime.datetime.date, None]:
+        return root.profile.deleted_at
+
+    @staticmethod
+    def resolve_display_name(root, info, **kwargs) -> Union[str, None]:
+        return info.context.dl.user.display_name.load(root.id)
+
+    @staticmethod
+    def resolve_first_name(root, info, **kwargs) -> Union[str, None]:
+        return info.context.dl.user.first_name.load(root.id)
+
+    @staticmethod
+    def resolve_last_name(root, info, **kwargs) -> Union[str, None]:
+        return info.context.dl.user.last_name.load(root.id)
 
 
 class UserMeType(DjangoObjectType):
@@ -86,8 +105,6 @@ class UserMeType(DjangoObjectType):
     jwt_token = graphene.Field(JwtTokenType)
     last_active_project = graphene.Field('project.schema.ProjectDetailType')
     accessible_features = graphene.List(graphene.NonNull(UserFeatureAccessType), required=True)
-    old_display_name = graphene.String()
-    deleted_at = graphene.Date()
 
     @staticmethod
     @only_me
@@ -145,16 +162,6 @@ class UserMeType(DjangoObjectType):
     @only_me
     def resolve_accessible_features(root, info, **kwargs) -> Union[Feature, None]:
         return root.get_accessible_features()
-
-    @staticmethod
-    @only_me
-    def resolve_old_display_name(root, info, **kwargs) -> Union[str, None]:
-        return root.profile.old_display_name
-
-    @staticmethod
-    @only_me
-    def resolve_deleted_at(root, info, **kwargs) -> Union[datetime.datetime.date, None]:
-        return root.profile.deleted_at
 
 
 class UserListType(CustomDjangoListObjectType):

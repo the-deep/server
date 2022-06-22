@@ -206,7 +206,10 @@ class Project(UserResource):
                 # NOTE: This is used by permission module
                 current_user_membership_data=current_user_membership_data_subquery,
                 # NOTE: Exclude if project is private + user is not a member
-            ).exclude(is_private=True, current_user_role__isnull=True)
+            ).exclude(
+                is_private=True,
+                current_user_role__isnull=True,
+            ).filter(is_deleted=False)
         if only_member:
             return visible_projects.filter(current_user_role__isnull=False)
         return visible_projects
@@ -403,7 +406,7 @@ class Project(UserResource):
 
     @staticmethod
     def get_query_for_member(user):
-        return models.Q(members=user)
+        return models.Q(members=user) & models.Q(is_deleted=False)
 
     @staticmethod
     def get_modifiable_for(user):
