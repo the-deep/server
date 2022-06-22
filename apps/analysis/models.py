@@ -413,4 +413,3 @@ class AnalyticalStatementEntry(UserResource):
 
     class Meta:
         ordering = ('order',)
-        unique_together = ('entry', 'analytical_statement')
